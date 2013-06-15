@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_COMMON_WEB_ELEMENT_DESCRIPTOR_H_
-#define COMPONENTS_AUTOFILL_COMMON_WEB_ELEMENT_DESCRIPTOR_H_
+#ifndef COMPONENTS_AUTOFILL_SHARED_WEB_ELEMENT_DESCRIPTOR_H_
+#define COMPONENTS_AUTOFILL_SHARED_WEB_ELEMENT_DESCRIPTOR_H_
 
 #include <string>
 
@@ -28,4 +28,4 @@ struct WebElementDescriptor {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_COMMON_WEB_ELEMENT_DESCRIPTOR_H_
+#endif  // COMPONENTS_AUTOFILL_SHARED_WEB_ELEMENT_DESCRIPTOR_H_

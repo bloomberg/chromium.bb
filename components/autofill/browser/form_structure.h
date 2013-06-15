@@ -14,7 +14,7 @@
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/field_types.h"
-#include "components/autofill/common/web_element_descriptor.h"
+#include "components/autofill/shared/web_element_descriptor.h"
 #include "googleurl/src/gurl.h"
 
 enum RequestMethod {

@@ -24,7 +24,7 @@
 #include "components/autofill/browser/phone_number_i18n.h"
 #include "components/autofill/browser/validation.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
-#include "components/autofill/common/autofill_pref_names.h"
+#include "components/autofill/shared/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 

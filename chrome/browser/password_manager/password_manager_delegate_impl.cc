@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "components/autofill/browser/autofill_manager.h"
-#include "components/autofill/common/autofill_messages.h"
+#include "components/autofill/shared/autofill_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"

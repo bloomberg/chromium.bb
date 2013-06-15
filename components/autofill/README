@@ -4,7 +4,7 @@ to enable it to be shared cleanly on iOS.
 
 When this process is complete, this component will have the following structure:
 
-- Top-level shared code that does not depend on src/content/ or src/ios/
+- shared/: Shared code that does not depend on src/content/ or src/ios/
 - content/: Driver for the shared code based on the content layer.
   - browser/: Browser process code.
   - renderer/: Renderer process code.

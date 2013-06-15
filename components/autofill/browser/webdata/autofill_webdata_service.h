@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/browser/webdata/autofill_webdata.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/shared/form_field_data.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"

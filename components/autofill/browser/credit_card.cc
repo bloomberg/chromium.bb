@@ -22,7 +22,7 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/validation.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/shared/form_field_data.h"
 #include "grit/component_resources.h"
 #include "grit/webkit_resources.h"
 #include "third_party/icu/public/common/unicode/uloc.h"

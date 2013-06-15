@@ -14,7 +14,7 @@
 
 #include <map>
 
-#include "components/autofill/common/password_form_fill_data.h"
+#include "components/autofill/shared/password_form_fill_data.h"
 
 namespace content {
 class WebContents;

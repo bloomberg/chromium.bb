@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_COMMON_PASSWORD_FORM_FILL_DATA_H_
-#define COMPONENTS_AUTOFILL_COMMON_PASSWORD_FORM_FILL_DATA_H_
+#ifndef COMPONENTS_AUTOFILL_SHARED_PASSWORD_FORM_FILL_DATA_H_
+#define COMPONENTS_AUTOFILL_SHARED_PASSWORD_FORM_FILL_DATA_H_
 
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
-#include "components/autofill/common/form_data.h"
+#include "components/autofill/shared/form_data.h"
 #include "content/public/common/password_form.h"
 
 namespace autofill {
@@ -69,4 +69,4 @@ void InitPasswordFormFillData(
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_COMMON_PASSWORD_FORM_FILL_DATA_H__
+#endif  // COMPONENTS_AUTOFILL_SHARED_PASSWORD_FORM_FILL_DATA_H__

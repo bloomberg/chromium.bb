@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "components/autofill/common/web_element_descriptor.h"
+#include "components/autofill/shared/web_element_descriptor.h"
 
 namespace autofill {
 

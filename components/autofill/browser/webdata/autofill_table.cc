@@ -24,7 +24,7 @@
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/browser/webdata/autofill_change.h"
 #include "components/autofill/browser/webdata/autofill_entry.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/shared/form_field_data.h"
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/encryptor/encryptor.h"
 #include "googleurl/src/gurl.h"

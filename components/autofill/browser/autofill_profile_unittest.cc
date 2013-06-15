@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_profile.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/shared/form_field_data.h"
 #include "grit/component_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

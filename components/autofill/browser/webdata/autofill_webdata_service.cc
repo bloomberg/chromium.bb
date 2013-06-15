@@ -14,7 +14,7 @@
 #include "components/autofill/browser/webdata/autofill_table.h"
 #include "components/autofill/browser/webdata/autofill_webdata_backend_impl.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service_observer.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/shared/form_field_data.h"
 #include "components/webdata/common/web_data_service_backend.h"
 #include "components/webdata/common/web_database_service.h"
 

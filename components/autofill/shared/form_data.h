@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_COMMON_FORM_DATA_H__
-#define COMPONENTS_AUTOFILL_COMMON_FORM_DATA_H__
+#ifndef COMPONENTS_AUTOFILL_SHARED_FORM_DATA_H__
+#define COMPONENTS_AUTOFILL_SHARED_FORM_DATA_H__
 
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/shared/form_field_data.h"
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
 
@@ -42,4 +42,4 @@ struct FormData {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_COMMON_FORM_DATA_H__
+#endif  // COMPONENTS_AUTOFILL_SHARED_FORM_DATA_H__
