@@ -353,6 +353,7 @@ string16 GetSearchTerms(const content::WebContents* contents) {
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
   return url.is_valid() &&
          profile &&
+         IsInstantExtendedAPIEnabled() &&
          (url.SchemeIs(chrome::kChromeSearchScheme) ||
           IsInstantURL(url, profile));
 }
@@ -588,7 +589,8 @@ GURL GetPrivilegedURLForInstant(const GURL& url, Profile* profile) {
 }
 
 bool IsPrivilegedURLForInstant(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeSearchScheme);
+  return IsInstantExtendedAPIEnabled() &&
+         url.SchemeIs(chrome::kChromeSearchScheme);
 }
 
 int GetInstantLoaderStalenessTimeoutSec() {
@@ -635,6 +637,11 @@ bool IsPreloadedInstantExtendedNTP(const content::WebContents* contents) {
 void EnableInstantExtendedAPIForTesting() {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableInstantExtendedAPI);
+}
+
+void DisableInstantExtendedAPIForTesting() {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  cl->AppendSwitch(switches::kDisableInstantExtendedAPI);
 }
 
 bool GetFieldTrialInfo(const std::string& group_name,

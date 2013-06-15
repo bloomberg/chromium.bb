@@ -190,6 +190,9 @@ bool IsPreloadedInstantExtendedNTP(const content::WebContents* contents);
 // Forces the Instant Extended API to be enabled for tests.
 void EnableInstantExtendedAPIForTesting();
 
+// Forces the Instant Extended API to be disabled for tests.
+void DisableInstantExtendedAPIForTesting();
+
 // Type for a collection of experiment configuration parameters.
 typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;
 

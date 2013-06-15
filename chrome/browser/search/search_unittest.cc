@@ -341,14 +341,16 @@ struct SearchTestCase {
 };
 
 TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedDisabled) {
+  DisableInstantExtendedAPIForTesting();
+
   const SearchTestCase kTestCases[] = {
-    {"chrome-search://foo/bar",                 true,  ""},
-    {"http://foo.com/instant",                  true,  ""},
-    {"http://foo.com/instant?foo=bar",          true,  ""},
-    {"https://foo.com/instant",                 true,  ""},
-    {"https://foo.com/instant#foo=bar",         true,  ""},
-    {"HtTpS://fOo.CoM/instant",                 true,  ""},
-    {"http://foo.com:80/instant",               true,  ""},
+    {"chrome-search://foo/bar",                 false,  ""},
+    {"http://foo.com/instant",                  false,  ""},
+    {"http://foo.com/instant?foo=bar",          false,  ""},
+    {"https://foo.com/instant",                 false,  ""},
+    {"https://foo.com/instant#foo=bar",         false,  ""},
+    {"HtTpS://fOo.CoM/instant",                 false,  ""},
+    {"http://foo.com:80/instant",               false,  ""},
     {"invalid URL",                             false, "Invalid URL"},
     {"unknown://scheme/path",                   false, "Unknown scheme"},
     {"ftp://foo.com/instant",                   false, "Non-HTTP scheme"},
