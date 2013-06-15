@@ -123,14 +123,7 @@ class WindowSliderDelegateTest : public WindowSlider::Delegate {
 
 typedef aura::test::AuraTestBase WindowSliderTest;
 
-#if defined(OS_WIN)
-// This test currently fails on the Win Aura (2) bot. http://crbug.com/249634
-#define MAYBE_WindowSlideUsingGesture DISABLED_WindowSlideUsingGesture
-#else
-#define MAYBE_WindowSlideUsingGesture WindowSlideUsingGesture
-#endif
-
-TEST_F(WindowSliderTest, MAYBE_WindowSlideUsingGesture) {
+TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   scoped_ptr<aura::Window> window(CreateNormalWindow(0, root_window(), NULL));
   window->SetBounds(gfx::Rect(0, 0, 400, 400));
   WindowSliderDelegateTest slider_delegate;
@@ -198,17 +191,9 @@ TEST_F(WindowSliderTest, MAYBE_WindowSlideUsingGesture) {
   EXPECT_TRUE(slider_delegate.slider_destroyed());
 }
 
-#if defined(OS_WIN)
-// This test currently fails on the Win Aura (2) bot. http://crbug.com/249634
-#define MAYBE_WindowSlideIsCancelledOnEvent \
-    DISABLED_WindowSlideIsCancelledOnEvent
-#else
-#define MAYBE_WindowSlideIsCancelledOnEvent WindowSlideIsCancelledOnEvent
-#endif
-
 // Tests that the window slide is cancelled when a different type of event
 // happens.
-TEST_F(WindowSliderTest, MAYBE_WindowSlideIsCancelledOnEvent) {
+TEST_F(WindowSliderTest, WindowSlideIsCancelledOnEvent) {
   scoped_ptr<aura::Window> window(CreateNormalWindow(0, root_window(), NULL));
   WindowSliderDelegateTest slider_delegate;
 
