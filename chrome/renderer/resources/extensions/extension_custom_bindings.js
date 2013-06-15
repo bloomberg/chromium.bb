@@ -7,7 +7,6 @@
 var binding = require('binding').Binding.create('extension');
 
 var extensionNatives = requireNative('extension');
-var forEach = require('utils').forEach;
 var GetExtensionViews = extensionNatives.GetExtensionViews;
 var miscBindings = require('miscellaneous_bindings');
 var runtimeNatives = requireNative('runtime');
@@ -77,7 +76,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     // Events
     'onConnect', 'onConnectExternal', 'onMessage', 'onMessageExternal'
   ];
-  forEach(mayNeedAlias, function(i, alias) {
+  $Array.forEach(mayNeedAlias, function(alias) {
     // Checking existence isn't enough since some functions are disabled via
     // getters that throw exceptions. Assume that any getter is such a function.
     if (chrome.runtime &&
@@ -88,7 +87,8 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   });
 
   apiFunctions.setUpdateArgumentsPreValidate('sendRequest',
-      miscBindings.sendMessageUpdateArguments.bind(null, 'sendRequest'));
+      $Function.bind(miscBindings.sendMessageUpdateArguments,
+                      null, 'sendRequest'));
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(targetId, request, responseCallback) {

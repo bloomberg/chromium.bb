@@ -52,18 +52,19 @@ ChromeRenderViewTest::~ChromeRenderViewTest() {
 }
 
 void ChromeRenderViewTest::SetUp() {
+  chrome_render_thread_ = new ChromeMockRenderThread();
+  render_thread_.reset(chrome_render_thread_);
+
   content::SetRendererClientForTesting(&chrome_content_renderer_client_);
   extension_dispatcher_ = new extensions::Dispatcher();
   chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
   chrome_content_renderer_client_.SetSpellcheck(new SpellCheck());
 
-  chrome_render_thread_ = new ChromeMockRenderThread();
-  render_thread_.reset(chrome_render_thread_);
   content::RenderViewTest::SetUp();
 
-  // RenderView doesn't expose it's PasswordAutofillAgent or
-  // AutofillAgent objects, because it has no need to store them directly
-  // (they're stored as RenderViewObserver*).  So just create another set.
+  // RenderView doesn't expose its PasswordAutofillAgent or AutofillAgent
+  // objects, because it has no need to store them directly (they're stored as
+  // RenderViewObserver*).  So just create another set.
   password_autofill_ = new PasswordAutofillAgent(view_);
   autofill_agent_ = new AutofillAgent(view_, password_autofill_);
 }

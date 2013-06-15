@@ -33,7 +33,8 @@ ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
     : v8_context_(v8_context),
       web_frame_(web_frame),
       extension_(extension),
-      context_type_(context_type) {
+      context_type_(context_type),
+      safe_builtins_(this) {
   VLOG(1) << "Created context:\n"
           << "  extension id: " << GetExtensionID() << "\n"
           << "  frame:        " << web_frame_ << "\n"

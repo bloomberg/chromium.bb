@@ -13,7 +13,7 @@ function image_data_setter(context, key) {
   var f = function(val) {
     this[key] = val;
   };
-  return f.bind(context);
+  return $Function.bind(f, context);
 }
 
 function replaceNotificationOptionURLs(notification_details, callback) {

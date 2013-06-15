@@ -10,6 +10,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 
 namespace content {
 
@@ -158,6 +159,7 @@ scoped_ptr<base::SharedMemory>
 }
 
 void MockRenderThread::RegisterExtension(v8::Extension* extension) {
+  WebKit::WebScriptController::registerExtension(extension);
 }
 
 void MockRenderThread::ScheduleIdleHandler(int64 initial_delay_ms) {

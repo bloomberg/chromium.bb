@@ -81,7 +81,9 @@
       throw new Error("Port '" + portId + "' already exists.");
     var port = new Port(portId, opt_name);
     ports[portId] = port;
-    portReleasers[portId] = miscNatives.PortRelease.bind(this, portId);
+    portReleasers[portId] = $Function.bind(miscNatives.PortRelease,
+                                            this,
+                                            portId);
     unloadEvent.addListener(portReleasers[portId]);
     miscNatives.PortAddRef(portId);
     return port;

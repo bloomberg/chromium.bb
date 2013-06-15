@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var forEach = require('utils').forEach;
 var lastError = require('lastError');
 var logging = requireNative('logging');
 var natives = requireNative('sendRequest');
@@ -36,11 +35,11 @@ function handleResponse(requestId, name, success, responseList, error) {
         chromesForLastError.push(chromeForCallback);
     }
 
-    forEach(chromesForLastError, function(i, c) {lastError.clear(c)});
+    $Array.forEach(chromesForLastError, function(c) {lastError.clear(c)});
     if (!success) {
       if (!error)
         error = "Unknown error.";
-      forEach(chromesForLastError, function(i, c) {
+      $Array.forEach(chromesForLastError, function(c) {
         lastError.set(name, error, request.stack, c)
       });
     }
@@ -79,7 +78,7 @@ function handleResponse(requestId, name, success, responseList, error) {
     }
   } finally {
     delete requests[requestId];
-    forEach(chromesForLastError, function(i, c) {lastError.clear(c)});
+    $Array.forEach(chromesForLastError, function(c) {lastError.clear(c)});
   }
 };
 

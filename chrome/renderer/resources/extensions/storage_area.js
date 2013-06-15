@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var forEach = require('utils').forEach;
 var normalizeArgumentsAndValidate =
     require('schemaUtils').normalizeArgumentsAndValidate
 var sendRequest = require('sendRequest').sendRequest;
@@ -22,7 +21,7 @@ function StorageArea(namespace, schema) {
   // even generate) for other APIs that need to do this. Same for other
   // callers of registerCustomType().
   var self = this;
-  function bindApiFunction(i, functionName) {
+  function bindApiFunction(functionName) {
     self[functionName] = function() {
       var funSchema = this.functionSchemas[functionName];
       var args = Array.prototype.slice.call(arguments);
@@ -35,7 +34,7 @@ function StorageArea(namespace, schema) {
     };
   }
   var apiFunctions = ['get', 'set', 'remove', 'clear', 'getBytesInUse'];
-  forEach(apiFunctions, bindApiFunction);
+  $Array.forEach(apiFunctions, bindApiFunction);
 }
 
 exports.StorageArea = StorageArea;

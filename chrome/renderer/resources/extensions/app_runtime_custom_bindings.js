@@ -8,7 +8,6 @@ var binding = require('binding').Binding.create('app.runtime');
 
 var eventBindings = require('event_bindings');
 var fileSystemHelpers = requireNative('file_system_natives');
-var forEach = require('utils').forEach;
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
 var appNatives = requireNative('app_runtime');
 var DeserializeString = appNatives.DeserializeString;
@@ -39,7 +38,7 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
         }
       }
     };
-    forEach(launchData.items, function(i, item) {
+    $Array.forEach(launchData.items, function(item) {
       var fs = GetIsolatedFileSystem(item.fileSystemId);
       fs.root.getFile(item.baseName, {}, function(fileEntry) {
         entryIdManager.registerEntry(item.entryId, fileEntry);

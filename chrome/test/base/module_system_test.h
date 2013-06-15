@@ -11,9 +11,6 @@
 #include "v8/include/v8.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class AssertNatives;
-class StringSourceMap;
-
 // Test fixture for testing JS that makes use of the module system.
 //
 // Typically tests will look like:
@@ -62,7 +59,9 @@ class ModuleSystemTest : public testing::Test {
   v8::Isolate* isolate_;
   v8::HandleScope handle_scope_;
   scoped_ptr<extensions::ChromeV8Context> context_;
+  class AssertNatives;
   AssertNatives* assert_natives_;
+  class StringSourceMap;
   scoped_ptr<StringSourceMap> source_map_;
   scoped_ptr<extensions::ModuleSystem> module_system_;
   bool should_assertions_be_made_;

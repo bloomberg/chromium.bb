@@ -377,7 +377,7 @@
     function validateRules(rules, conditions, actions) {
       var conditionsSchema = buildArrayOfChoicesSchema(conditions);
       var actionsSchema = buildArrayOfChoicesSchema(actions);
-      utils.forEach(rules, function(i, rule) {
+      $Array.forEach(rules, function(rule) {
         validate([rule.conditions], [conditionsSchema]);
         validate([rule.actions], [actionsSchema]);
       });

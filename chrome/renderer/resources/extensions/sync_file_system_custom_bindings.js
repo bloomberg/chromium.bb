@@ -8,24 +8,23 @@ var binding = require('binding').Binding.create('syncFileSystem');
 
 var eventBindings = require('event_bindings');
 var fileSystemNatives = requireNative('file_system_natives');
-var forEach = require('utils').forEach;
 var syncFileSystemNatives = requireNative('sync_file_system');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // Functions which take in an [instanceOf=FileEntry].
-  function bindFileEntryFunction(i, functionName) {
+  function bindFileEntryFunction(functionName) {
     apiFunctions.setUpdateArgumentsPostValidate(
         functionName, function(entry, callback) {
       var fileSystemUrl = entry.toURL();
       return [fileSystemUrl, callback];
     });
   }
-  forEach(['getFileStatus'], bindFileEntryFunction);
+  $Array.forEach(['getFileStatus'], bindFileEntryFunction);
 
   // Functions which take in an [instanceOf=EntryArray].
-  function bindFileEntryArrayFunction(i, functionName) {
+  function bindFileEntryArrayFunction(functionName) {
     apiFunctions.setUpdateArgumentsPostValidate(
         functionName, function(entries, callback) {
       var fileSystemUrlArray = [];
@@ -35,17 +34,17 @@ binding.registerCustomHook(function(bindingsAPI) {
       return [fileSystemUrlArray, callback];
     });
   }
-  forEach(['getFileStatuses'], bindFileEntryArrayFunction);
+  $Array.forEach(['getFileStatuses'], bindFileEntryArrayFunction);
 
   // Functions which take in an [instanceOf=DOMFileSystem].
-  function bindFileSystemFunction(i, functionName) {
+  function bindFileSystemFunction(functionName) {
     apiFunctions.setUpdateArgumentsPostValidate(
         functionName, function(filesystem, callback) {
       var fileSystemUrl = filesystem.root.toURL();
       return [fileSystemUrl, callback];
     });
   }
-  forEach(['getUsageAndQuota'], bindFileSystemFunction);
+  $Array.forEach(['getUsageAndQuota'], bindFileSystemFunction);
 
   // Functions which return an [instanceOf=DOMFileSystem].
   apiFunctions.setCustomCallback('requestFileSystem',

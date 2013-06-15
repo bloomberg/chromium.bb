@@ -7,13 +7,16 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/logging_native_handler.h"
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
+#include "chrome/renderer/extensions/safe_builtins.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #include <map>
@@ -23,8 +26,40 @@ using extensions::ModuleSystem;
 using extensions::NativeHandler;
 using extensions::ObjectBackedNativeHandler;
 
+namespace {
+
+class FailsOnException : public ModuleSystem::ExceptionHandler {
+ public:
+  virtual void HandleUncaughtException(const v8::TryCatch& try_catch) OVERRIDE {
+    FAIL() << "Uncaught exception: " << CreateExceptionString(try_catch);
+  }
+};
+
+class V8ExtensionConfigurator {
+ public:
+  V8ExtensionConfigurator()
+      : safe_builtins_(extensions::SafeBuiltins::CreateV8Extension()) {
+    v8::RegisterExtension(safe_builtins_);
+    names_.push_back(safe_builtins_->name());
+  }
+
+  v8::ExtensionConfiguration* NewConfiguration() {
+    return new v8::ExtensionConfiguration(names_.size(),
+                                          vector_as_array(&names_));
+  }
+
+ private:
+  v8::Extension* safe_builtins_;
+  std::vector<const char*> names_;
+};
+
+base::LazyInstance<V8ExtensionConfigurator> g_v8_extension_configurator =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 // Native JS functions for doing asserts.
-class AssertNatives : public ObjectBackedNativeHandler {
+class ModuleSystemTest::AssertNatives : public ObjectBackedNativeHandler {
  public:
   explicit AssertNatives(extensions::ChromeV8Context* context)
       : ObjectBackedNativeHandler(context),
@@ -57,7 +92,7 @@ class AssertNatives : public ObjectBackedNativeHandler {
 };
 
 // Source map that operates on std::strings.
-class StringSourceMap : public ModuleSystem::SourceMap {
+class ModuleSystemTest::StringSourceMap : public ModuleSystem::SourceMap {
  public:
   StringSourceMap() {}
   virtual ~StringSourceMap() {}
@@ -81,19 +116,14 @@ class StringSourceMap : public ModuleSystem::SourceMap {
   std::map<std::string, std::string> source_map_;
 };
 
-class FailsOnException : public ModuleSystem::ExceptionHandler {
- public:
-  virtual void HandleUncaughtException(const v8::TryCatch& try_catch) OVERRIDE {
-    FAIL() << "Uncaught exception: " << CreateExceptionString(try_catch);
-  }
-};
-
 ModuleSystemTest::ModuleSystemTest()
     : isolate_(v8::Isolate::GetCurrent()),
       handle_scope_(isolate_),
       context_(
           new extensions::ChromeV8Context(
-              v8::Context::New(isolate_),
+              v8::Context::New(
+                  isolate_,
+                  g_v8_extension_configurator.Get().NewConfiguration()),
               NULL,  // WebFrame
               NULL,  // Extension
               extensions::Feature::UNSPECIFIED_CONTEXT)),

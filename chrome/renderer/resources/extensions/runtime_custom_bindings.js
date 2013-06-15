@@ -92,9 +92,9 @@ binding.registerCustomHook(function(binding, id, contextType) {
 
   var sendMessageUpdateArguments = miscBindings.sendMessageUpdateArguments;
   apiFunctions.setUpdateArgumentsPreValidate('sendMessage',
-      sendMessageUpdateArguments.bind(null, 'sendMessage'));
+      $Function.bind(sendMessageUpdateArguments, null, 'sendMessage'));
   apiFunctions.setUpdateArgumentsPreValidate('sendNativeMessage',
-      sendMessageUpdateArguments.bind(null, 'sendNativeMessage'));
+      $Function.bind(sendMessageUpdateArguments, null, 'sendNativeMessage'));
 
   apiFunctions.setHandleRequest('sendMessage',
                                 function(targetId, message, responseCallback) {

@@ -5,18 +5,18 @@
 var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
 var GetAvailability = requireNative('v8_context').GetAvailability;
+var logActivity = requireNative('activityLogger');
 var logging = requireNative('logging');
 var process = requireNative('process');
-var contextType = process.GetContextType();
-var extensionId = process.GetExtensionId();
-var manifestVersion = process.GetManifestVersion();
 var schemaRegistry = requireNative('schema_registry');
 var schemaUtils = require('schemaUtils');
 var utils = require('utils');
-var CHECK = requireNative('logging').CHECK;
 var sendRequestHandler = require('sendRequest');
+
+var contextType = process.GetContextType();
+var extensionId = process.GetExtensionId();
+var manifestVersion = process.GetManifestVersion();
 var sendRequest = sendRequestHandler.sendRequest;
-var logActivity = requireNative('activityLogger');
 
 // Stores the name and definition of each API function, with methods to
 // modify their behaviour (such as a custom way to handle requests to the
@@ -88,7 +88,7 @@ CustomBindingsObject.prototype.setSchema = function(schema) {
   // dictionary for easier access.
   var self = this;
   self.functionSchemas = {};
-  forEach(schema.functions, function(i, f) {
+  $Array.forEach(schema.functions, function(f) {
     self.functionSchemas[f.name] = {
       name: f.name,
       definition: f
@@ -131,12 +131,13 @@ function isSchemaNodeSupported(schemaNode, platform, manifestVersion) {
 
 function createCustomType(type) {
   var jsModuleName = type.js_module;
-  CHECK(jsModuleName, 'Custom type ' + type.id +
-      ' has no "js_module" property.');
+  logging.CHECK(jsModuleName, 'Custom type ' + type.id +
+                ' has no "js_module" property.');
   var jsModule = require(jsModuleName);
-  CHECK(jsModule, 'No module ' + jsModuleName + ' found for ' + type.id + '.');
+  logging.CHECK(jsModule, 'No module ' + jsModuleName + ' found for ' +
+                type.id + '.');
   var customType = jsModule[jsModuleName];
-  CHECK(customType, jsModuleName + ' must export itself.');
+  logging.CHECK(customType, jsModuleName + ' must export itself.');
   customType.prototype = new CustomBindingsObject();
   customType.prototype.setSchema(type);
   return customType;
@@ -180,7 +181,7 @@ Binding.prototype = {
 
   // TODO(kalman/cduvall): Refactor this so |runHooks_| is not needed.
   runHooks_: function(api) {
-    forEach(this.customHooks_, function(i, hook) {
+    $Array.forEach(this.customHooks_, function(hook) {
       if (!isSchemaNodeSupported(this.schema_, platform, manifestVersion))
         return;
 
@@ -205,9 +206,9 @@ Binding.prototype = {
       if (shouldCheck)
         return shouldCheck;
 
-      forEach(['functions', 'events'], function(i, type) {
+      $Array.forEach(['functions', 'events'], function(type) {
         if (schema.hasOwnProperty(type)) {
-          forEach(schema[type], function(i, node) {
+          $Array.forEach(schema[type], function(node) {
             if ('unprivileged' in node)
               shouldCheck = true;
           });
@@ -246,10 +247,9 @@ Binding.prototype = {
     // Add types to global schemaValidator, the types we depend on from other
     // namespaces will be added as needed.
     if (schema.types) {
-      forEach(schema.types, function(i, t) {
+      $Array.forEach(schema.types, function(t) {
         if (!isSchemaNodeSupported(t, platform, manifestVersion))
           return;
-
         schemaUtils.schemaValidator.addTypes(t);
       }, this);
     }
@@ -266,7 +266,7 @@ Binding.prototype = {
 
     // Setup Functions.
     if (schema.functions) {
-      forEach(schema.functions, function(i, functionDef) {
+      $Array.forEach(schema.functions, function(functionDef) {
         if (functionDef.name in mod) {
           throw new Error('Function ' + functionDef.name +
                           ' already defined in ' + schema.namespace);
@@ -300,7 +300,7 @@ Binding.prototype = {
 
         this.apiFunctions_.register(functionDef.name, apiFunction);
 
-        mod[functionDef.name] = (function() {
+        mod[functionDef.name] = $Function.bind(function() {
           var args = Array.prototype.slice.call(arguments);
           if (this.updateArgumentsPreValidate)
             args = this.updateArgumentsPreValidate.apply(this, args);
@@ -328,13 +328,13 @@ Binding.prototype = {
           if (logging.DCHECK_IS_ON() && this.definition.returns)
             schemaUtils.validate([retval], [this.definition.returns]);
           return retval;
-        }).bind(apiFunction);
+        }, apiFunction);
       }, this);
     }
 
     // Setup Events
     if (schema.events) {
-      forEach(schema.events, function(i, eventDef) {
+      $Array.forEach(schema.events, function(eventDef) {
         if (eventDef.name in mod) {
           throw new Error('Event ' + eventDef.name +
                           ' already defined in ' + schema.namespace);
@@ -395,7 +395,7 @@ Binding.prototype = {
           } else if (propertyDef['$ref']) {
             var ref = propertyDef['$ref'];
             var type = utils.loadTypeSchema(propertyDef['$ref'], schema);
-            CHECK(type, 'Schema for $ref type ' + ref + ' not found');
+            logging.CHECK(type, 'Schema for $ref type ' + ref + ' not found');
             var constructor = createCustomType(type);
             var args = value;
             // For an object propertyDef, |value| is an array of constructor

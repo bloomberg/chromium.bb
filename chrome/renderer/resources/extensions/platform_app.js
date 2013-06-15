@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var forEach = require('utils').forEach;
-
 /**
  * Returns a function that throws a 'not available' exception when called.
  *
@@ -29,7 +27,7 @@ function generateDisabledMethodStub(messagePrefix, opt_messageSuffix) {
  * @param {Array.<string>} methodNames names of methods to disable.
  */
 function disableMethods(object, objectName, methodNames) {
-  forEach(methodNames, function(i, methodName) {
+  $Array.forEach(methodNames, function(methodName) {
     object[methodName] =
         generateDisabledMethodStub(objectName + '.' + methodName + '()');
   });
@@ -49,7 +47,7 @@ function disableMethods(object, objectName, methodNames) {
  * @param {Array.<string>} propertyNames names of properties to disable.
  */
 function disableGetters(object, objectName, propertyNames, opt_messageSuffix) {
-  forEach(propertyNames, function(i, propertyName) {
+  $Array.forEach(propertyNames, function(propertyName) {
     var stub = generateDisabledMethodStub(objectName + '.' + propertyName,
                                           opt_messageSuffix);
     stub._is_platform_app_disabled_getter = true;

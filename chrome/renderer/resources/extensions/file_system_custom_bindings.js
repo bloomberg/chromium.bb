@@ -7,7 +7,6 @@
 var binding = require('binding').Binding.create('fileSystem');
 
 var fileSystemNatives = requireNative('file_system_natives');
-var forEach = require('utils').forEach;
 var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
 var lastError = require('lastError');
 var sendRequest = require('sendRequest').sendRequest;
@@ -73,7 +72,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   var fileSystem = bindingsAPI.compiledApi;
 
-  function bindFileEntryFunction(i, functionName) {
+  function bindFileEntryFunction(functionName) {
     apiFunctions.setUpdateArgumentsPostValidate(
         functionName, function(fileEntry, callback) {
       var fileSystemName = fileEntry.filesystem.name;
@@ -81,11 +80,11 @@ binding.registerCustomHook(function(bindingsAPI) {
       return [fileSystemName, relativePath, callback];
     });
   }
-  forEach(['getDisplayPath', 'getWritableEntry', 'isWritableEntry'],
-          bindFileEntryFunction);
+  $Array.forEach(['getDisplayPath', 'getWritableEntry', 'isWritableEntry'],
+                  bindFileEntryFunction);
 
-  forEach(['getWritableEntry', 'chooseEntry', 'restoreEntry'],
-      function(i, functionName) {
+  $Array.forEach(['getWritableEntry', 'chooseEntry', 'restoreEntry'],
+                  function(functionName) {
     bindFileEntryCallback(functionName, apiFunctions);
   });
 

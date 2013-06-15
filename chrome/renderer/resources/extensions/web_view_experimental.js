@@ -15,7 +15,6 @@ var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var webRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
 var WebView = require('webView').WebView;
-var forEach = require('utils').forEach;
 
 /** @type {Array.<string>} */
 var PERMISSION_TYPES = ['download', 'media', 'geolocation', 'pointerLock'];
@@ -51,7 +50,7 @@ WebView.prototype.setupPermissionEvent_ = function() {
   browserPluginNode.addEventListener(internalevent, function(e) {
     var evt = new Event('permissionrequest', {bubbles: true, cancelable: true});
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    forEach(EXPOSED_PERMISSION_EVENT_ATTRIBS, function(i, attribName) {
+    $Array.forEach(EXPOSED_PERMISSION_EVENT_ATTRIBS, function(attribName) {
       if (detail[attribName] !== undefined)
         evt[attribName] = detail[attribName];
     });

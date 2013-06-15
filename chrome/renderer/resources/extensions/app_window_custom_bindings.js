@@ -85,12 +85,11 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     var currentWindowInternal =
         Binding.create('app.currentWindowInternal').generate();
     var AppWindow = function() {};
-    forEach(currentWindowInternal, function(fn) {
-      AppWindow.prototype[fn] =
-          currentWindowInternal[fn];
+    forEach(currentWindowInternal, function(key, value) {
+      AppWindow.prototype[key] = value;
     });
-    AppWindow.prototype.moveTo = window.moveTo.bind(window);
-    AppWindow.prototype.resizeTo = window.resizeTo.bind(window);
+    AppWindow.prototype.moveTo = $Function.bind(window.moveTo, window);
+    AppWindow.prototype.resizeTo = $Function.bind(window.resizeTo, window);
     AppWindow.prototype.contentWindow = window;
     AppWindow.prototype.onClosed = new Event();
     AppWindow.prototype.close = function() {

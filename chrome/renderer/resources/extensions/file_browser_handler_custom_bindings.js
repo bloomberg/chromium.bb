@@ -50,7 +50,7 @@ binding.registerCustomHook(function(bindingsAPI) {
     }
 
     return fileBrowserHandlerInternal.selectFile(
-        selectionParams, internalCallback.bind(null, callback));
+        selectionParams, $Function.bind(internalCallback, null, callback));
   });
 });
 

@@ -7,7 +7,6 @@
 // The actual tag is implemented via the browser plugin. The internals of this
 // are hidden via Shadow DOM.
 
-var forEach = require('utils').forEach;
 var watchForTag = require('tagWatcher').watchForTag;
 
 /** @type {Array.<string>} */
@@ -76,7 +75,7 @@ WebView.prototype.createBrowserPluginNode_ = function() {
   // The <object> node fills in the <webview> container.
   browserPluginNode.style.width = '100%';
   browserPluginNode.style.height = '100%';
-  forEach(WEB_VIEW_ATTRIBUTES, function(i, attributeName) {
+  $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
     // Only copy attributes that have been assigned values, rather than copying
     // a series of undefined attributes to BrowserPlugin.
     if (this.webviewNode_.hasAttribute(attributeName)) {
@@ -124,7 +123,7 @@ WebView.prototype.setupWebviewNodeMethods_ = function() {
   // this.browserPluginNode_[apiMethod] are not necessarily defined immediately
   // after the shadow object is appended to the shadow root.
   var self = this;
-  forEach(WEB_VIEW_API_METHODS, function(i, apiMethod) {
+  $Array.forEach(WEB_VIEW_API_METHODS, function(apiMethod) {
     self.webviewNode_[apiMethod] = function(var_args) {
       return self.browserPluginNode_[apiMethod].apply(
           self.browserPluginNode_, arguments);
@@ -139,7 +138,7 @@ WebView.prototype.setupWebviewNodeMethods_ = function() {
 WebView.prototype.setupWebviewNodeProperties_ = function() {
   var browserPluginNode = this.browserPluginNode_;
   // Expose getters and setters for the attributes.
-  forEach(WEB_VIEW_ATTRIBUTES, function(i, attributeName) {
+  $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
     Object.defineProperty(this.webviewNode_, attributeName, {
       get: function() {
         return browserPluginNode[attributeName];
@@ -181,11 +180,11 @@ WebView.prototype.setupWebviewNodeAttributes_ = function() {
 WebView.prototype.setupWebviewNodeObservers_ = function() {
   // Map attribute modifications on the <webview> tag to property changes in
   // the underlying <object> node.
-  var handleMutation = function(i, mutation) {
+  var handleMutation = $Function.bind(function(mutation) {
     this.handleWebviewAttributeMutation_(mutation);
-  }.bind(this);
+  }, this);
   var observer = new WebKitMutationObserver(function(mutations) {
-    forEach(mutations, handleMutation);
+    $Array.forEach(mutations, handleMutation);
   });
   observer.observe(
       this.webviewNode_,
@@ -196,11 +195,11 @@ WebView.prototype.setupWebviewNodeObservers_ = function() {
  * @private
  */
 WebView.prototype.setupBrowserPluginNodeObservers_ = function() {
-  var handleMutation = function(i, mutation) {
+  var handleMutation = $Function.bind(function(mutation) {
     this.handleBrowserPluginAttributeMutation_(mutation);
-  }.bind(this);
+  }, this);
   var objectObserver = new WebKitMutationObserver(function(mutations) {
-    forEach(mutations, handleMutation);
+    $Array.forEach(mutations, handleMutation);
   });
   objectObserver.observe(
       this.browserPluginNode_,
@@ -265,7 +264,7 @@ WebView.prototype.setupEvent_ = function(eventname, attribs) {
   this.browserPluginNode_.addEventListener(internalname, function(e) {
     var evt = new Event(eventname, { bubbles: true });
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    forEach(attribs, function(i, attribName) {
+    $Array.forEach(attribs, function(attribName) {
       evt[attribName] = detail[attribName];
     });
     webviewNode.dispatchEvent(evt);

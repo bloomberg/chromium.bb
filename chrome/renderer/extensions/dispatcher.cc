@@ -57,6 +57,7 @@
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 #include "chrome/renderer/extensions/request_sender.h"
 #include "chrome/renderer/extensions/runtime_custom_bindings.h"
+#include "chrome/renderer/extensions/safe_builtins.h"
 #include "chrome/renderer/extensions/send_request_natives.h"
 #include "chrome/renderer/extensions/set_icon_natives.h"
 #include "chrome/renderer/extensions/sync_file_system_custom_bindings.h"
@@ -387,6 +388,8 @@ Dispatcher::Dispatcher()
     RenderThread::Get()->SetIdleNotificationDelayInMs(
         kInitialExtensionIdleHandlerDelayMs);
   }
+
+  RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
 
   user_script_slave_.reset(new UserScriptSlave(&extensions_));
   request_sender_.reset(new RequestSender(this));

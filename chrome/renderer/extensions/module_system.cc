@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/console.h"
+#include "chrome/renderer/extensions/safe_builtins.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
@@ -188,10 +189,16 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
 
   exports = v8::Object::New();
   v8::Handle<v8::Object> natives(NewInstance());
+  // These must match the argument order in WrapSource.
   v8::Handle<v8::Value> args[] = {
+    // CommonJS.
     natives->Get(v8::String::NewSymbol("require")),
     natives->Get(v8::String::NewSymbol("requireNative")),
     exports,
+    // Each safe builtin. Keep in order with the arguments in WrapSource.
+    context_->safe_builtins()->GetArray(),
+    context_->safe_builtins()->GetFunction(),
+    context_->safe_builtins()->GetObjekt(),
   };
   {
     v8::TryCatch try_catch;
@@ -472,8 +479,11 @@ v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
 
 v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
   v8::HandleScope handle_scope;
+  // Keep in order with the arguments in RequireForJsInner.
   v8::Handle<v8::String> left = v8::String::New(
-      "(function(require, requireNative, exports) {'use strict';");
+      "(function(require, requireNative, exports,"
+                "$Array, $Function, $Object) {"
+       "'use strict';");
   v8::Handle<v8::String> right = v8::String::New("\n})");
   return handle_scope.Close(
       v8::String::Concat(left, v8::String::Concat(source, right)));

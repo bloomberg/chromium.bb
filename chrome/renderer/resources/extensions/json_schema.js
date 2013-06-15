@@ -48,7 +48,7 @@ function isInstanceOfClass(instance, className) {
   if (Object.prototype.toString.call(instance) == "[object " + className + "]")
     return true;
 
-  return isInstanceOfClass(Object.getPrototypeOf(instance), className);
+  return isInstanceOfClass($Object.getPrototypeOf(instance), className);
 }
 
 function isOptionalValue(value) {

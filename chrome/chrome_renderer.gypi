@@ -119,6 +119,8 @@
         'renderer/extensions/resource_request_policy.h',
         'renderer/extensions/runtime_custom_bindings.cc',
         'renderer/extensions/runtime_custom_bindings.h',
+        'renderer/extensions/safe_builtins.cc',
+        'renderer/extensions/safe_builtins.h',
         'renderer/extensions/scoped_persistent.h',
         'renderer/extensions/send_request_natives.cc',
         'renderer/extensions/send_request_natives.h',
