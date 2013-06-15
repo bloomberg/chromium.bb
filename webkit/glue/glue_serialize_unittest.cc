@@ -13,7 +13,6 @@
 #include "ui/gfx/screen.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/glue_serialize_deprecated.h"
-#include "webkit/glue/web_io_operators.h"
 
 using WebKit::WebData;
 using WebKit::WebHistoryItem;

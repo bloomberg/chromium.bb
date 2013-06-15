@@ -24,7 +24,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "webkit/glue/web_io_operators.h"
 
 using WebKit::WebDocument;
 using WebKit::WebElement;

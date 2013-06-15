@@ -7,11 +7,10 @@
 #include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/common/form_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
-#include "webkit/glue/web_io_operators.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURLError.h"
 
 using WebKit::WebFrame;
 using WebKit::WebString;
