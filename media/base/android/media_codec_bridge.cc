@@ -197,8 +197,10 @@ bool AudioCodecBridge::Start(
   if (!ConfigureMediaFormat(j_format.obj(), codec, extra_data, extra_data_size))
     return false;
 
-  Java_MediaCodecBridge_configureAudio(
-      env, media_codec(), j_format.obj(), NULL, 0, play_audio);
+  if (!Java_MediaCodecBridge_configureAudio(
+      env, media_codec(), j_format.obj(), NULL, 0, play_audio)) {
+    return false;
+  }
   StartInternal();
   return true;
 }
@@ -336,8 +338,10 @@ bool VideoCodecBridge::Start(
       Java_MediaCodecBridge_createVideoFormat(
           env, j_mime.obj(), size.width(), size.height()));
   DCHECK(!j_format.is_null());
-  Java_MediaCodecBridge_configureVideo(
-      env, media_codec(), j_format.obj(), surface, NULL, 0);
+  if (!Java_MediaCodecBridge_configureVideo(
+      env, media_codec(), j_format.obj(), surface, NULL, 0)) {
+    return false;
+  }
   StartInternal();
   return true;
 }
