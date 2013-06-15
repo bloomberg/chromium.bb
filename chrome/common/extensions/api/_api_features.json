@@ -350,6 +350,10 @@
     "dependencies": ["permission:power"],
     "contexts": ["blessed_extension"]
   },
+  "preferencesPrivate": {
+    "dependencies": ["permission:preferencesPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "privacy": {
     "dependencies": ["permission:privacy"],
     "contexts": ["blessed_extension"]
