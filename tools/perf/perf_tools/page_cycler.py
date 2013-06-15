@@ -28,6 +28,16 @@ MEMORY_HISTOGRAMS = [
     {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb'}]
 
 class PageCycler(page_measurement.PageMeasurement):
+  def __init__(self, *args, **kwargs):
+    super(PageCycler, self).__init__(*args, **kwargs)
+
+    with open(os.path.join(os.path.dirname(__file__),
+                           'page_cycler.js'), 'r') as f:
+      self._page_cycler_js = f.read()
+
+    self._start_commit_charge = None
+    self._histograms = None
+
   def AddCommandLineOptions(self, parser):
     # The page cyclers should default to 10 iterations. In order to change the
     # default of an option, we must remove and re-add it.
@@ -36,29 +46,23 @@ class PageCycler(page_measurement.PageMeasurement):
     parser.remove_option('--pageset-repeat')
     parser.add_option(pageset_repeat_option)
 
-  def WillRunPageSet(self, tab, results):
-    # Avoid paying for a cross-renderer navigation on the first page on legacy
-    # page cyclers which use the filesystem.
-    if tab.browser.http_server:
-      tab.Navigate(tab.browser.http_server.UrlOf('nonexistent.html'))
+  def SetUpBrowser(self, browser):
+    self._start_commit_charge = browser.memory_stats['SystemCommitCharge']
 
-    with open(os.path.join(os.path.dirname(__file__),
-                           'page_cycler.js'), 'r') as f:
-      self.page_cycler_js = f.read()  # pylint: disable=W0201
-
-    # pylint: disable=W0201
-    self.start_commit_charge = tab.browser.memory_stats['SystemCommitCharge']
-
-    # pylint: disable=W0201
-    self.histograms = [histogram_metric.HistogramMetric(
+    self._histograms = [histogram_metric.HistogramMetric(
                            h, histogram_metric.RENDERER_HISTOGRAM)
                        for h in MEMORY_HISTOGRAMS]
 
+  def DidStartHTTPServer(self, tab):
+    # Avoid paying for a cross-renderer navigation on the first page on legacy
+    # page cyclers which use the filesystem.
+    tab.Navigate(tab.browser.http_server.UrlOf('nonexistent.html'))
+
   def WillNavigateToPage(self, page, tab):
-    page.script_to_evaluate_on_commit = self.page_cycler_js
+    page.script_to_evaluate_on_commit = self._page_cycler_js
 
   def DidNavigateToPage(self, page, tab):
-    for h in self.histograms:
+    for h in self._histograms:
       h.Start(page, tab)
 
   def CustomizeBrowserOptions(self, options):
@@ -107,7 +111,7 @@ class PageCycler(page_measurement.PageMeasurement):
     AddSummariesForProcessTypes(['Browser', 'Renderer', 'Gpu'], 'total')
 
     results.AddSummary('commit_charge', 'kb',
-                       memory['SystemCommitCharge'] - self.start_commit_charge,
+                       memory['SystemCommitCharge'] - self._start_commit_charge,
                        data_type='unimportant')
     results.AddSummary('processes', 'count', memory['ProcessCount'],
                        data_type='unimportant')
@@ -147,7 +151,7 @@ class PageCycler(page_measurement.PageMeasurement):
       return bool(tab.EvaluateJavaScript('__pc_load_time'))
     util.WaitFor(_IsDone, 60)
 
-    for h in self.histograms:
+    for h in self._histograms:
       h.GetValue(page, tab, results)
 
     results.Add('page_load_time', 'ms',
