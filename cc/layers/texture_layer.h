@@ -84,6 +84,23 @@ class CC_EXPORT TextureLayer : public Layer {
   virtual ~TextureLayer();
 
  private:
+  class MailboxHolder : public base::RefCounted<MailboxHolder> {
+   public:
+    explicit MailboxHolder(const TextureMailbox& mailbox);
+
+    const TextureMailbox& mailbox() const { return mailbox_; }
+    void Return(unsigned sync_point, bool is_lost);
+
+   private:
+    friend class base::RefCounted<MailboxHolder>;
+    ~MailboxHolder();
+
+    TextureMailbox mailbox_;
+    unsigned sync_point_;
+    bool is_lost_;
+    DISALLOW_COPY_AND_ASSIGN(MailboxHolder);
+  };
+
   TextureLayerClient* client_;
   bool uses_mailbox_;
 
@@ -98,8 +115,8 @@ class CC_EXPORT TextureLayer : public Layer {
   bool content_committed_;
 
   unsigned texture_id_;
-  TextureMailbox texture_mailbox_;
-  bool own_mailbox_;
+  scoped_refptr<MailboxHolder> holder_;
+  bool needs_set_mailbox_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureLayer);
 };
