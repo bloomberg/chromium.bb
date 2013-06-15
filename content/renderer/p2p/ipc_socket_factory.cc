@@ -136,9 +136,10 @@ IpcPacketSocket::~IpcPacketSocket() {
 }
 
 void IpcPacketSocket::TraceSendThrottlingState() const {
-  TRACE_COUNTER1("p2p", "P2PSendBytesAvailable", send_bytes_available_);
-  TRACE_COUNTER1("p2p", "P2PSendPacketsInFlight",
-                 in_flight_packet_sizes_.size());
+  TRACE_COUNTER_ID1("p2p", "P2PSendBytesAvailable", local_address_.port(),
+                    send_bytes_available_);
+  TRACE_COUNTER_ID1("p2p", "P2PSendPacketsInFlight", local_address_.port(),
+                    in_flight_packet_sizes_.size());
 }
 
 bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
