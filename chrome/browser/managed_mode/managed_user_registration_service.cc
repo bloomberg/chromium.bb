@@ -264,7 +264,7 @@ SyncError ManagedUserRegistrationService::ProcessSyncChanges(
 
         // If the managed user switched from unacknowledged to acknowledged,
         // we might need to continue with a registration.
-        if (!old_value->HasKey(kAcknowledged))
+        if (old_value && !old_value->HasKey(kAcknowledged))
           OnManagedUserAcknowledged(managed_user.id());
 
         DictionaryValue* value = new DictionaryValue;
