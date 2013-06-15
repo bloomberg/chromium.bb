@@ -1009,7 +1009,7 @@ webkit.org/b/92022 [ Debug ] svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure Pass 
 crbug.com/243711 [ Lion Release ] svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure ]
 
 webkit.org/b/92027 fast/performance/performance-now-timestamps.html [ Failure Pass ]
-webkit.org/b/99333 [ Lion Debug ] plugins/update-widgets-crash.html [ Pass Timeout ]
+webkit.org/b/99333 [ Linux Lion Debug ] plugins/update-widgets-crash.html [ Pass Timeout ]
 
 webkit.org/b/93566 [ Debug ] fast/parser/iframe-sets-parent-to-javascript-url.html [ Failure Pass ]
 webkit.org/b/93567 [ Debug ] fast/parser/javascript-url-compat-mode.html [ Failure Pass ]
