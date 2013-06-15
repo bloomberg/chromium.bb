@@ -372,7 +372,7 @@ DownloadItem* DownloadManagerImpl::StartDownload(
     DownloadMap::iterator item_iterator = downloads_.find(id.local());
     // Trying to resume an interrupted download.
     if (item_iterator == downloads_.end() ||
-        item_iterator->second->IsCancelled()) {
+        (item_iterator->second->GetState() == DownloadItem::CANCELLED)) {
       // If the download is no longer known to the DownloadManager, then it was
       // removed after it was resumed. Ignore. If the download is cancelled
       // while resuming, then also ignore the request.
@@ -380,7 +380,7 @@ DownloadItem* DownloadManagerImpl::StartDownload(
       return NULL;
     }
     download = item_iterator->second;
-    DCHECK(download->IsInterrupted());
+    DCHECK_EQ(DownloadItem::INTERRUPTED, download->GetState());
   }
 
   base::FilePath default_download_directory;
@@ -425,7 +425,7 @@ void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
 
 void DownloadManagerImpl::CheckForFileRemoval(DownloadItemImpl* download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (download_item->IsComplete() &&
+  if ((download_item->GetState() == DownloadItem::COMPLETE) &&
       !download_item->GetFileExternallyRemoved() &&
       delegate_) {
     delegate_->CheckForFileExistence(
@@ -530,7 +530,7 @@ int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
 
     if (download->GetStartTime() >= remove_begin &&
         (remove_end.is_null() || download->GetStartTime() < remove_end) &&
-        !download->IsInProgress()) {
+        (download->GetState() != DownloadItem::IN_PROGRESS)) {
       // Erases the download from downloads_.
       download->Remove();
       count++;
@@ -609,7 +609,7 @@ int DownloadManagerImpl::InProgressCount() const {
   int count = 0;
   for (DownloadMap::const_iterator it = downloads_.begin();
        it != downloads_.end(); ++it) {
-    if (it->second->IsInProgress())
+    if (it->second->GetState() == DownloadItem::IN_PROGRESS)
       ++count;
   }
   return count;
@@ -631,7 +631,7 @@ void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
   for (DownloadMap::iterator it = downloads_.begin();
        it != downloads_.end(); ++it) {
     DownloadItemImpl* item = it->second;
-    if (item->IsComplete() &&
+    if ((item->GetState() == DownloadItem::COMPLETE) &&
         !item->GetOpened())
       ++num_unopened;
   }

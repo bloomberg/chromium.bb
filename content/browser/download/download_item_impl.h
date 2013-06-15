@@ -107,10 +107,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual bool IsTemporary() const OVERRIDE;
   virtual bool CanResume() const OVERRIDE;
   virtual bool IsDone() const OVERRIDE;
-  virtual bool IsInProgress() const OVERRIDE;
-  virtual bool IsCancelled() const OVERRIDE;
-  virtual bool IsInterrupted() const OVERRIDE;
-  virtual bool IsComplete() const OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual const std::vector<GURL>& GetUrlChain() const OVERRIDE;
   virtual const GURL& GetOriginalUrl() const OVERRIDE;

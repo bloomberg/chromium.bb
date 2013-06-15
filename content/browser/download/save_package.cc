@@ -363,7 +363,7 @@ void SavePackage::OnMHTMLGenerated(const base::FilePath& path, int64 size) {
   // Hack to avoid touching download_ after user cancel.
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
-  if (download_->IsInProgress()) {
+  if (download_->GetState() == DownloadItem::IN_PROGRESS) {
     download_->SetTotalBytes(size);
     download_->DestinationUpdate(size, 0, std::string());
     // Must call OnAllDataSaved here in order for
@@ -790,7 +790,7 @@ void SavePackage::Finish() {
     // Hack to avoid touching download_ after user cancel.
     // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
     // with SavePackage flow.
-    if (download_->IsInProgress()) {
+    if (download_->GetState() == DownloadItem::IN_PROGRESS) {
       if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
         download_->DestinationUpdate(
             all_save_items_count_, CurrentSpeed(), std::string());
@@ -822,7 +822,7 @@ void SavePackage::SaveFinished(int32 save_id, int64 size, bool is_success) {
   // Hack to avoid touching download_ after user cancel.
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
-  if (download_ && download_->IsInProgress()) {
+  if (download_ && (download_->GetState() == DownloadItem::IN_PROGRESS)) {
     download_->DestinationUpdate(
         completed_count(), CurrentSpeed(), std::string());
   }
@@ -869,7 +869,7 @@ void SavePackage::SaveFailed(const GURL& save_url) {
   // Hack to avoid touching download_ after user cancel.
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
-  if (download_ && download_->IsInProgress()) {
+  if (download_ && (download_->GetState() == DownloadItem::IN_PROGRESS)) {
     download_->DestinationUpdate(
         completed_count(), CurrentSpeed(), std::string());
   }
@@ -1164,7 +1164,7 @@ void SavePackage::OnReceivedSavableResourceLinksForCurrentPage(
   // Hack to avoid touching download_ after user cancel.
   // TODO(rdsmith/benjhayden): Integrate canceling on DownloadItem
   // with SavePackage flow.
-  if (download_ && download_->IsInProgress())
+  if (download_ && (download_->GetState() == DownloadItem::IN_PROGRESS))
     download_->SetTotalBytes(all_save_items_count_);
 
   if (all_save_items_count_) {

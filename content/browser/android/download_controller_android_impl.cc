@@ -254,10 +254,11 @@ void DownloadControllerAndroidImpl::OnDownloadStarted(
 
 void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (item->IsDangerous() && !item->IsCancelled())
+  if (item->IsDangerous() &&
+      (item->GetState() != DownloadItem::CANCELLED))
     OnDangerousDownload(item);
 
-  if (!item->IsComplete())
+  if (item->GetState() != DownloadItem::COMPLETE)
     return;
 
   // Multiple OnDownloadUpdated() notifications may be issued while the download

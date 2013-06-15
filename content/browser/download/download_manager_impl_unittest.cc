@@ -115,10 +115,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(AllDataSaved, bool());
   MOCK_CONST_METHOD1(MatchesQuery, bool(const string16& query));
   MOCK_CONST_METHOD0(IsDone, bool());
-  MOCK_CONST_METHOD0(IsInProgress, bool());
-  MOCK_CONST_METHOD0(IsCancelled, bool());
-  MOCK_CONST_METHOD0(IsInterrupted, bool());
-  MOCK_CONST_METHOD0(IsComplete, bool());
   MOCK_CONST_METHOD0(GetFullPath, const base::FilePath&());
   MOCK_CONST_METHOD0(GetTargetFilePath, const base::FilePath&());
   MOCK_CONST_METHOD0(GetTargetDisposition, TargetDisposition());
@@ -607,8 +603,8 @@ TEST_F(DownloadManagerTest, StartDownload) {
 TEST_F(DownloadManagerTest, DetermineDownloadTarget_True) {
   // Put a mock we have a handle to on the download manager.
   MockDownloadItemImpl& item(AddItemToManager());
-  EXPECT_CALL(item, IsInProgress())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetState())
+      .WillRepeatedly(Return(DownloadItem::IN_PROGRESS));
 
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
               DetermineDownloadTarget(&item, _))
@@ -647,27 +643,17 @@ TEST_F(DownloadManagerTest, RemoveAllDownloads) {
     EXPECT_EQ(i, item.GetId());
     EXPECT_CALL(item, GetStartTime())
         .WillRepeatedly(Return(now));
-
-    // Default returns; overridden for each item below.
-    EXPECT_CALL(GetMockDownloadItem(i), IsComplete())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(GetMockDownloadItem(i), IsCancelled())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(GetMockDownloadItem(i), IsInterrupted())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(GetMockDownloadItem(i), IsInProgress())
-        .WillRepeatedly(Return(false));
   }
 
   // Specify states for each.
-  EXPECT_CALL(GetMockDownloadItem(0), IsComplete())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(GetMockDownloadItem(1), IsCancelled())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(GetMockDownloadItem(2), IsInterrupted())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(GetMockDownloadItem(3), IsInProgress())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(GetMockDownloadItem(0), GetState())
+      .WillRepeatedly(Return(DownloadItem::COMPLETE));
+  EXPECT_CALL(GetMockDownloadItem(1), GetState())
+      .WillRepeatedly(Return(DownloadItem::CANCELLED));
+  EXPECT_CALL(GetMockDownloadItem(2), GetState())
+      .WillRepeatedly(Return(DownloadItem::INTERRUPTED));
+  EXPECT_CALL(GetMockDownloadItem(3), GetState())
+      .WillRepeatedly(Return(DownloadItem::IN_PROGRESS));
 
   // Expectations for whether or not they'll actually be removed.
   EXPECT_CALL(GetMockDownloadItem(0), Remove())

@@ -764,7 +764,7 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Restart) {
       AddDownloadFileToDownloadItem(item, &callback);
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   base::FilePath final_path(base::FilePath(kDummyPath).AppendASCII("foo.bar"));
   base::FilePath intermediate_path(final_path.InsertBeforeExtensionASCII("x"));
@@ -782,7 +782,7 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Restart) {
   // All the callbacks should have happened by now.
   ::testing::Mock::VerifyAndClearExpectations(download_file);
   mock_delegate()->VerifyAndClearExpectations();
-  EXPECT_TRUE(item->IsInterrupted());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
   EXPECT_TRUE(item->GetFullPath().empty());
   EXPECT_EQ(final_path, item->GetTargetFilePath());
 }
@@ -799,7 +799,7 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Continue) {
       AddDownloadFileToDownloadItem(item, &callback);
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   base::FilePath final_path(base::FilePath(kDummyPath).AppendASCII("foo.bar"));
   base::FilePath intermediate_path(final_path.InsertBeforeExtensionASCII("x"));
@@ -818,7 +818,7 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Continue) {
   // All the callbacks should have happened by now.
   ::testing::Mock::VerifyAndClearExpectations(download_file);
   mock_delegate()->VerifyAndClearExpectations();
-  EXPECT_TRUE(item->IsInterrupted());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
   EXPECT_EQ(new_intermediate_path, item->GetFullPath());
   EXPECT_EQ(final_path, item->GetTargetFilePath());
 }
@@ -834,7 +834,7 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Failed) {
       AddDownloadFileToDownloadItem(item, &callback);
   item->DestinationObserverAsWeakPtr()->DestinationError(
       DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
 
   base::FilePath final_path(base::FilePath(kDummyPath).AppendASCII("foo.bar"));
   base::FilePath intermediate_path(final_path.InsertBeforeExtensionASCII("x"));
@@ -852,7 +852,7 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Failed) {
   // All the callbacks should have happened by now.
   ::testing::Mock::VerifyAndClearExpectations(download_file);
   mock_delegate()->VerifyAndClearExpectations();
-  EXPECT_TRUE(item->IsInterrupted());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, item->GetLastReason());
   EXPECT_TRUE(item->GetFullPath().empty());
   EXPECT_EQ(final_path, item->GetTargetFilePath());
@@ -962,7 +962,7 @@ TEST_F(DownloadItemTest, EnabledActionsForNormalDownload) {
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
 
   // InProgress
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   ASSERT_FALSE(item->GetTargetFilePath().empty());
   EXPECT_TRUE(item->CanShowInFolder());
   EXPECT_TRUE(item->CanOpenDownload());
@@ -979,7 +979,7 @@ TEST_F(DownloadItemTest, EnabledActionsForNormalDownload) {
   item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
   RunAllPendingInMessageLoops();
 
-  ASSERT_TRUE(item->IsComplete());
+  ASSERT_EQ(DownloadItem::COMPLETE, item->GetState());
   EXPECT_TRUE(item->CanShowInFolder());
   EXPECT_TRUE(item->CanOpenDownload());
 }
@@ -991,7 +991,7 @@ TEST_F(DownloadItemTest, EnabledActionsForTemporaryDownload) {
   item->SetIsTemporary(true);
 
   // InProgress Temporary
-  ASSERT_TRUE(item->IsInProgress());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   ASSERT_FALSE(item->GetTargetFilePath().empty());
   ASSERT_TRUE(item->IsTemporary());
   EXPECT_FALSE(item->CanShowInFolder());
@@ -1009,7 +1009,7 @@ TEST_F(DownloadItemTest, EnabledActionsForTemporaryDownload) {
   item->DestinationObserverAsWeakPtr()->DestinationCompleted(std::string());
   RunAllPendingInMessageLoops();
 
-  ASSERT_TRUE(item->IsComplete());
+  ASSERT_EQ(DownloadItem::COMPLETE, item->GetState());
   EXPECT_FALSE(item->CanShowInFolder());
   EXPECT_FALSE(item->CanOpenDownload());
 }
@@ -1024,7 +1024,7 @@ TEST_F(DownloadItemTest, EnabledActionsForInterruptedDownload) {
       DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   RunAllPendingInMessageLoops();
 
-  ASSERT_TRUE(item->IsInterrupted());
+  ASSERT_EQ(DownloadItem::INTERRUPTED, item->GetState());
   ASSERT_FALSE(item->GetTargetFilePath().empty());
   EXPECT_FALSE(item->CanShowInFolder());
   EXPECT_FALSE(item->CanOpenDownload());
@@ -1039,7 +1039,7 @@ TEST_F(DownloadItemTest, EnabledActionsForCancelledDownload) {
   item->Cancel(true);
   RunAllPendingInMessageLoops();
 
-  ASSERT_TRUE(item->IsCancelled());
+  ASSERT_EQ(DownloadItem::CANCELLED, item->GetState());
   EXPECT_FALSE(item->CanShowInFolder());
   EXPECT_FALSE(item->CanOpenDownload());
 }

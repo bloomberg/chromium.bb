@@ -175,20 +175,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // can't be resumed.
   virtual bool IsDone() const = 0;
 
-  //    Convenience routines for accessing GetState() results conceptually -----
-
-  // Returns true if the download is still receiving data.
-  virtual bool IsInProgress() const = 0;
-
-  // Returns true if the download has been cancelled or was interrupted.
-  virtual bool IsCancelled() const = 0;
-
-  // Returns true if the download was interrupted.
-  virtual bool IsInterrupted() const = 0;
-
-  // Returns true if we have all the data and know the final file name.
-  virtual bool IsComplete() const = 0;
-
   //    Origin State accessors -------------------------------------------------
 
   virtual const GURL& GetURL() const = 0;

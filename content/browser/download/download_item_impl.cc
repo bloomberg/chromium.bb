@@ -476,7 +476,7 @@ bool DownloadItemImpl::IsTemporary() const {
 }
 
 bool DownloadItemImpl::CanResume() const {
-  if (IsInProgress() && IsPaused())
+  if ((GetState() == IN_PROGRESS) && IsPaused())
     return true;
 
   if (state_ != INTERRUPTED_INTERNAL)
@@ -514,22 +514,6 @@ bool DownloadItemImpl::IsDone() const {
   }
   NOTREACHED();
   return true;
-}
-
-bool DownloadItemImpl::IsInProgress() const {
-  return InternalToExternalState(state_) == IN_PROGRESS;
-}
-
-bool DownloadItemImpl::IsCancelled() const {
-  return  InternalToExternalState(state_) == CANCELLED;
-}
-
-bool DownloadItemImpl::IsInterrupted() const {
-  return InternalToExternalState(state_) == INTERRUPTED;
-}
-
-bool DownloadItemImpl::IsComplete() const {
-  return InternalToExternalState(state_) == COMPLETE;
 }
 
 const GURL& DownloadItemImpl::GetURL() const {
@@ -703,7 +687,8 @@ bool DownloadItemImpl::CanOpenDownload() {
   // We can open the file or mark it for opening on completion if the download
   // is expected to complete successfully. Exclude temporary downloads, since
   // they aren't owned by the download system.
-  return (!IsDone() || IsComplete()) && !IsTemporary() &&
+  const bool is_complete = GetState() == DownloadItem::COMPLETE;
+  return (!IsDone() || is_complete) && !IsTemporary() &&
          !file_externally_removed_;
 }
 
@@ -944,7 +929,7 @@ void DownloadItemImpl::DestinationUpdate(int64 bytes_so_far,
   VLOG(20) << __FUNCTION__ << " so_far=" << bytes_so_far
            << " per_sec=" << bytes_per_sec << " download=" << DebugString(true);
 
-  if (!IsInProgress()) {
+  if (GetState() != IN_PROGRESS) {
     // Ignore if we're no longer in-progress.  This can happen if we race a
     // Cancel on the UI thread with an update on the FILE thread.
     //
@@ -986,7 +971,7 @@ void DownloadItemImpl::DestinationError(DownloadInterruptReason reason) {
 
 void DownloadItemImpl::DestinationCompleted(const std::string& final_hash) {
   VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
-  if (!IsInProgress())
+  if (GetState() != IN_PROGRESS)
     return;
   OnAllDataSaved(final_hash);
   MaybeCompleteDownload();
@@ -1041,7 +1026,7 @@ void DownloadItemImpl::Start(
   download_file_ = file.Pass();
   request_handle_ = req_handle.Pass();
 
-  if (IsCancelled()) {
+  if (GetState() == CANCELLED) {
     // The download was in the process of resuming when it was cancelled. Don't
     // proceed.
     ReleaseDownloadFile(true);

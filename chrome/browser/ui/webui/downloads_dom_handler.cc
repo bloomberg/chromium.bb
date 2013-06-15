@@ -356,10 +356,17 @@ void DownloadsDOMHandler::HandleOpenFile(const base::ListValue* args) {
 void DownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_DRAG);
   content::DownloadItem* file = GetDownloadByValue(args);
+  if (!file)
+    return;
+
   content::WebContents* web_contents = GetWebUIWebContents();
   // |web_contents| is only NULL in the test.
-  if (!file || !web_contents || !file->IsComplete())
+  if (!web_contents)
     return;
+
+  if (file->GetState() != content::DownloadItem::COMPLETE)
+    return;
+
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
       file->GetTargetFilePath(), IconLoader::NORMAL);
   gfx::NativeView view = web_contents->GetView()->GetNativeView();

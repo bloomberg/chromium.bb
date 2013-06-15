@@ -105,12 +105,13 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   virtual void OnDownloadUpdated(DownloadItem* item) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(download_item_, item);
-    if (download_item_->IsComplete() ||
-        download_item_->IsCancelled() ||
-        download_item_->IsInterrupted()) {
+    DownloadItem::DownloadState state = download_item_->GetState();
+    if (state == DownloadItem::COMPLETE ||
+        state == DownloadItem::CANCELLED ||
+        state == DownloadItem::INTERRUPTED) {
       if (!on_completed_.is_null()) {
         on_completed_loop_->PostTask(FROM_HERE, base::Bind(
-            on_completed_, download_item_->IsComplete()));
+            on_completed_, state == DownloadItem::COMPLETE));
         on_completed_.Reset();
       }
       download_item_->RemoveObserver(this);
@@ -123,8 +124,10 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(download_item_, item);
     if (!on_completed_.is_null()) {
+      const bool is_complete =
+          download_item_->GetState() == DownloadItem::COMPLETE;
       on_completed_loop_->PostTask(FROM_HERE, base::Bind(
-          on_completed_, download_item_->IsComplete()));
+          on_completed_, is_complete));
       on_completed_.Reset();
     }
     download_item_->RemoveObserver(this);
