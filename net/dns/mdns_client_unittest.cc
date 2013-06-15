@@ -402,9 +402,9 @@ class MDnsTest : public ::testing::Test {
  public:
   MDnsTest();
   virtual ~MDnsTest();
+  virtual void TearDown() OVERRIDE;
   void DeleteTransaction();
   void DeleteBothListeners();
-  void RunUntilIdle();
   void RunFor(base::TimeDelta time_period);
   void Stop();
 
@@ -414,8 +414,6 @@ class MDnsTest : public ::testing::Test {
  protected:
   void ExpectPacket(const char* packet, unsigned size);
   void SimulatePacketReceive(const char* packet, unsigned size);
-
-  base::MessageLoop* message_loop_;
 
   scoped_ptr<MDnsClientImpl> test_client_;
   IPEndPoint mdns_ipv4_endpoint_;
@@ -437,14 +435,21 @@ class MockListenerDelegate : public MDnsListener::Delegate {
   MOCK_METHOD0(OnCachePurged, void());
 };
 
-MDnsTest::MDnsTest()
-    : message_loop_(base::MessageLoop::current()) {
+MDnsTest::MDnsTest() {
   socket_factory_ = new StrictMock<MockSocketFactory>();
   test_client_.reset(new MDnsClientImpl(
       scoped_ptr<MDnsConnection::SocketFactory>(socket_factory_)));
 }
 
 MDnsTest::~MDnsTest() {
+}
+
+void MDnsTest::TearDown() {
+  base::MessageLoop::current()->RunUntilIdle();
+
+  ASSERT_FALSE(test_client_->IsListeningForTests());
+
+  base::MessageLoop::current()->AssertIdle();
 }
 
 void MDnsTest::SimulatePacketReceive(const char* packet, unsigned size) {
@@ -465,10 +470,6 @@ void MDnsTest::DeleteTransaction() {
 void MDnsTest::DeleteBothListeners() {
   listener1_.reset();
   listener2_.reset();
-}
-
-void MDnsTest::RunUntilIdle() {
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 void MDnsTest::RunFor(base::TimeDelta time_period) {
@@ -541,13 +542,6 @@ TEST_F(MDnsTest, PassiveListeners) {
       .Times(Exactly(2));
 
   SimulatePacketReceive(kSamplePacket2, sizeof(kSamplePacket2));
-
-  // Test to make sure mdns listener is not active with no listeners present.
-  listener_ptr.reset();
-
-  RunUntilIdle();
-
-  ASSERT_FALSE(test_client_->IsListeningForTests());
 }
 
 TEST_F(MDnsTest, PassiveListenersCacheCleanup) {
@@ -571,8 +565,6 @@ TEST_F(MDnsTest, PassiveListenersCacheCleanup) {
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
 
-  RunUntilIdle();
-
   EXPECT_TRUE(record_privet.IsRecordWith("_privet._tcp.local",
                                          "hello._privet._tcp.local"));
 
@@ -584,8 +576,6 @@ TEST_F(MDnsTest, PassiveListenersCacheCleanup) {
                              &PtrRecordCopyContainer::SaveWithDummyArg)));
 
   RunFor(base::TimeDelta::FromSeconds(record_privet.ttl() + 1));
-
-  RunUntilIdle();
 
   EXPECT_TRUE(record_privet2.IsRecordWith("_privet._tcp.local",
                                           "hello._privet._tcp.local"));
@@ -621,8 +611,6 @@ TEST_F(MDnsTest, MalformedPacket) {
   SimulatePacketReceive(kCorruptedPacketSalvagable,
                         sizeof(kCorruptedPacketSalvagable));
 
-  RunUntilIdle();
-
   EXPECT_TRUE(record_printer.IsRecordWith("_printer._tcp.local",
                                           "hello._printer._tcp.local"));
 }
@@ -652,12 +640,8 @@ TEST_F(MDnsTest, TransactionWithEmptyCache) {
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
 
-  RunUntilIdle();
-
   EXPECT_TRUE(record_privet.IsRecordWith("_privet._tcp.local",
                                          "hello._privet._tcp.local"));
-
-  EXPECT_FALSE(test_client_->IsListeningForTests());
 }
 
 TEST_F(MDnsTest, TransactionCacheOnlyNoResult) {
@@ -676,8 +660,6 @@ TEST_F(MDnsTest, TransactionCacheOnlyNoResult) {
   ASSERT_TRUE(transaction_privet->Start());
 
   EXPECT_FALSE(test_client_->IsListeningForTests());
-
-  RunUntilIdle();
 }
 
 TEST_F(MDnsTest, TransactionWithCache) {
@@ -693,7 +675,6 @@ TEST_F(MDnsTest, TransactionWithCache) {
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
 
-  RunUntilIdle();
 
   PtrRecordCopyContainer record_privet;
 
@@ -711,8 +692,6 @@ TEST_F(MDnsTest, TransactionWithCache) {
                      base::Unretained(this)));
 
   ASSERT_TRUE(transaction_privet->Start());
-
-  RunUntilIdle();
 
   EXPECT_TRUE(record_privet.IsRecordWith("_privet._tcp.local",
                                          "hello._privet._tcp.local"));
@@ -738,8 +717,6 @@ TEST_F(MDnsTest, AdditionalRecords) {
           &PtrRecordCopyContainer::SaveWithDummyArg));
 
   SimulatePacketReceive(kSamplePacketAdditionalOnly, sizeof(kSamplePacket1));
-
-  RunUntilIdle();
 
   EXPECT_TRUE(record_privet.IsRecordWith("_privet._tcp.local",
                                          "hello._privet._tcp.local"));
@@ -767,8 +744,6 @@ TEST_F(MDnsTest, TransactionTimeout) {
       .WillOnce(InvokeWithoutArgs(this, &MDnsTest::Stop));
 
   RunFor(base::TimeDelta::FromSeconds(4));
-
-  EXPECT_FALSE(test_client_->IsListeningForTests());
 }
 
 TEST_F(MDnsTest, TransactionMultipleRecords) {
@@ -799,8 +774,6 @@ TEST_F(MDnsTest, TransactionMultipleRecords) {
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
   SimulatePacketReceive(kSamplePacket2, sizeof(kSamplePacket2));
 
-  RunUntilIdle();
-
   EXPECT_TRUE(record_privet.IsRecordWith("_privet._tcp.local",
                                          "hello._privet._tcp.local"));
 
@@ -811,8 +784,6 @@ TEST_F(MDnsTest, TransactionMultipleRecords) {
       .WillOnce(InvokeWithoutArgs(this, &MDnsTest::Stop));
 
   RunFor(base::TimeDelta::FromSeconds(4));
-
-  EXPECT_FALSE(test_client_->IsListeningForTests());
 }
 
 TEST_F(MDnsTest, TransactionReentrantDelete) {
@@ -839,8 +810,6 @@ TEST_F(MDnsTest, TransactionReentrantDelete) {
   RunFor(base::TimeDelta::FromSeconds(4));
 
   EXPECT_EQ(NULL, transaction_.get());
-
-  EXPECT_FALSE(test_client_->IsListeningForTests());
 }
 
 TEST_F(MDnsTest, TransactionReentrantDeleteFromCache) {
@@ -866,8 +835,6 @@ TEST_F(MDnsTest, TransactionReentrantDeleteFromCache) {
       .WillOnce(InvokeWithoutArgs(this, &MDnsTest::DeleteTransaction));
 
   ASSERT_TRUE(transaction_->Start());
-
-  RunUntilIdle();
 
   EXPECT_EQ(NULL, transaction_.get());
 }
@@ -899,12 +866,8 @@ TEST_F(MDnsTest, ListenerReentrantDelete) {
 
   SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
 
-  RunUntilIdle();
-
   EXPECT_EQ(NULL, listener1_.get());
   EXPECT_EQ(NULL, listener2_.get());
-
-  EXPECT_FALSE(test_client_->IsListeningForTests());
 }
 
 // Note: These tests assume that the ipv4 socket will always be created first.
