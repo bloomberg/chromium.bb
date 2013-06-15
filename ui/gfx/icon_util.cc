@@ -75,11 +75,9 @@ bool BuildResizedImageFamily(const gfx::ImageFamily& image_family,
       // There is no |dimension|x|dimension| source image.
       // Resize this one to the desired size, and insert it.
       SkBitmap best_bitmap = best->AsBitmap();
-      // If a gfx::Image was created from a SkBitmap with no allocated pixels,
-      // AsBitmap will return a null bitmap instead. This bitmap will have no
-      // config and a size of 0x0. Check this and fail early, to avoid having
-      // 0x0-sized bitmaps in our resized image family.
-      if (best_bitmap.config() == SkBitmap::kNo_Config)
+      // Only kARGB_8888 images are supported.
+      // This will also filter out images with no pixels.
+      if (best_bitmap.config() != SkBitmap::kARGB_8888_Config)
         return false;
       SkBitmap resized_bitmap = skia::ImageOperations::Resize(
           best_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
