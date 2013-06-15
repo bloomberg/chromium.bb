@@ -77,7 +77,6 @@ void MailboxManager::TextureDeleted(Texture* texture) {
   std::pair<TextureToMailboxMap::iterator,
             TextureToMailboxMap::iterator> range =
       textures_to_mailboxes_.equal_range(texture);
-  DCHECK(range.first != range.second);
   for (TextureToMailboxMap::iterator it = range.first;
        it != range.second; ++it) {
     size_t count = mailbox_to_textures_.erase(it->second);

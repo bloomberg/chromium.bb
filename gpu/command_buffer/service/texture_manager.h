@@ -160,6 +160,7 @@ class GPU_EXPORT Texture {
 
  private:
   friend class MailboxManager;
+  friend class MailboxManagerTest;
   friend class TextureManager;
   friend class TextureRef;
   friend class TextureTestHelper;
