@@ -67,17 +67,20 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 // uploads, after which we are just wasting memory. Since we don't
 // know our upload throughput yet, this just caps our memory usage.
 #if defined(OS_ANDROID)
-// For reference, the Nexus10 can upload 1MB in about 2.5ms.
-// Assuming a three frame deep pipeline this implies ~20MB.
-const size_t kMaxPendingUploadBytes = 20 * 1024 * 1024;
-// TODO(epenner): We should remove this upload limit (crbug.com/176197)
-const size_t kMaxPendingUploads = 72;
+// For reference Nexus10 can upload 1MB in about 2.5ms.
+const size_t kMaxBytesUploadedPerMs = (2 * 1024 * 1024) / 5;
 #else
-const size_t kMaxPendingUploadBytes = 100 * 1024 * 1024;
-const size_t kMaxPendingUploads = 1000;
+// For reference Chromebook Pixel can upload 1MB in about 0.5ms.
+const size_t kMaxBytesUploadedPerMs = 1024 * 1024 * 2;
 #endif
 
+// Assuming a two frame deep pipeline.
+const size_t kMaxPendingUploadBytes = 16 * 2 * kMaxBytesUploadedPerMs;
+
 const int kCheckForCompletedRasterTasksDelayMs = 6;
+
+const size_t kMaxPendingRasterBytes =
+    kMaxBytesUploadedPerMs * kCheckForCompletedRasterTasksDelayMs;
 
 }  // namespace
 
@@ -284,8 +287,8 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
 void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   TRACE_EVENT0("cc", "PixelBufferRasterWorkerPool::ScheduleMoreTasks");
 
-  size_t tasks_with_pending_upload = tasks_with_pending_upload_.size();
   size_t bytes_pending_upload = bytes_pending_upload_;
+  size_t bytes_pending_raster = 0;
 
   internal::WorkerPoolTask::TaskVector tasks;
 
@@ -306,10 +309,10 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
       continue;
     }
 
-    // Throttle raster tasks based on number of pending uploads.
-    size_t new_tasks_with_pending_upload = tasks_with_pending_upload;
-    new_tasks_with_pending_upload += 1;
-    if (new_tasks_with_pending_upload > kMaxPendingUploads)
+    // Throttle raster tasks based on bytes pending.
+    size_t new_bytes_pending_raster = bytes_pending_raster;
+    new_bytes_pending_raster += task->resource()->bytes();
+    if (new_bytes_pending_raster > kMaxPendingRasterBytes)
       break;
 
     // Throttle raster tasks based on bytes of pending uploads.
@@ -318,9 +321,9 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     if (new_bytes_pending_upload > kMaxPendingUploadBytes)
       break;
 
-    // Update |tasks_with_pending_upload| and |bytes_pending_upload|
+    // Update |bytes_pending_raster| and |bytes_pending_upload|
     // now that task has cleared throttling limits.
-    tasks_with_pending_upload = new_tasks_with_pending_upload;
+    bytes_pending_raster = new_bytes_pending_raster;
     bytes_pending_upload = new_bytes_pending_upload;
 
     // Request a pixel buffer. This will reserve shared memory.
