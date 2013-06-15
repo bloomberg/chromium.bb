@@ -96,7 +96,6 @@ private:
     QualifiedName m_name;
     AtomicString m_standaloneValue;
 
-    RefPtr<MutableStylePropertySet> m_style;
     unsigned m_ignoreChildrenChanged : 31;
     bool m_specified : 1;
 };
