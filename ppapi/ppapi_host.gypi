@@ -23,6 +23,8 @@
       ],
       'sources': [
         'host/dispatch_host_message.h',
+        'host/error_conversion.cc',
+        'host/error_conversion.h',
         'host/host_factory.h',
         'host/host_message_context.cc',
         'host/host_message_context.h',

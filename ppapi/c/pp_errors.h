@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From pp_errors.idl modified Thu Mar 28 10:12:22 2013. */
+/* From pp_errors.idl modified Thu Jun 13 13:02:05 2013. */
 
 #ifndef PPAPI_C_PP_ERRORS_H_
 #define PPAPI_C_PP_ERRORS_H_
@@ -75,7 +75,6 @@ enum {
    * progress.
    */
   PP_ERROR_INPROGRESS = -11,
-  /** This value indicates failure due to a file that does not exist. */
   /**
    * The requested command is not supported by the browser.
    */
@@ -85,14 +84,9 @@ enum {
    * complete" on the main thread. Blocking the main thread is not permitted
    * to keep the browser responsive (otherwise, you may not be able to handle
    * input events, and there are reentrancy and deadlock issues).
-   *
-   * The goal is to provide blocking calls from background threads, but PPAPI
-   * calls on background threads are not currently supported. Until this
-   * support is complete, you must either do asynchronous operations on the
-   * main thread, or provide an adaptor for a blocking background thread to
-   * execute the operations on the main thread.
    */
   PP_ERROR_BLOCKS_MAIN_THREAD = -13,
+  /** This value indicates failure due to a file that does not exist. */
   PP_ERROR_FILENOTFOUND = -20,
   /** This value indicates failure due to a file that already exists. */
   PP_ERROR_FILEEXISTS = -21,
@@ -134,7 +128,57 @@ enum {
    * Indicates that the requested operation is not permitted on the current
    * thread.
    */
-  PP_ERROR_WRONG_THREAD = -52
+  PP_ERROR_WRONG_THREAD = -52,
+  /**
+   * This value indicates that the connection was closed. For TCP sockets, it
+   * corresponds to a TCP FIN.
+   */
+  PP_ERROR_CONNECTION_CLOSED = -100,
+  /**
+   * This value indicates that the connection was reset. For TCP sockets, it
+   * corresponds to a TCP RST.
+   */
+  PP_ERROR_CONNECTION_RESET = -101,
+  /**
+   * This value indicates that the connection attempt was refused.
+   */
+  PP_ERROR_CONNECTION_REFUSED = -102,
+  /**
+   * This value indicates that the connection was aborted. For TCP sockets, it
+   * means the connection timed out as a result of not receiving an ACK for data
+   * sent. This can include a FIN packet that did not get ACK'd.
+   */
+  PP_ERROR_CONNECTION_ABORTED = -103,
+  /**
+   * This value indicates that the connection attempt failed.
+   */
+  PP_ERROR_CONNECTION_FAILED = -104,
+  /**
+   * This value indicates that the connection attempt timed out.
+   */
+  PP_ERROR_CONNECTION_TIMEDOUT = -105,
+  /**
+   * This value indicates that the IP address or port number is invalid.
+   */
+  PP_ERROR_ADDRESS_INVALID = -106,
+  /**
+   * This value indicates that the IP address is unreachable. This usually means
+   * that there is no route to the specified host or network.
+   */
+  PP_ERROR_ADDRESS_UNREACHABLE = -107,
+  /**
+   * This value is returned when attempting to bind an address that is already
+   * in use.
+   */
+  PP_ERROR_ADDRESS_IN_USE = -108,
+  /**
+   * This value indicates that the message was too large for the transport.
+   */
+  PP_ERROR_MESSAGE_TOO_BIG = -109,
+  /**
+   * This value indicates that the host name could not be resolved.
+   */
+  PP_ERROR_NAME_NOT_RESOLVED = -110
 };
 /**
  * @}
