@@ -969,15 +969,12 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   if (root_list->GetDictionary(4, &extras)) {
     extras->GetList("google:suggesttype", &types);
 
-    // Only accept relevance suggestions if Instant is disabled.
-    if (!chrome::IsInstantEnabled(profile_)) {
-      // Discard this list if its size does not match that of the suggestions.
-      if (extras->GetList("google:suggestrelevance", &relevances) &&
-          relevances->GetSize() != results_list->GetSize())
-        relevances = NULL;
-      extras->GetInteger("google:verbatimrelevance",
-                         &results->verbatim_relevance);
-    }
+    // Discard this list if its size does not match that of the suggestions.
+    if (extras->GetList("google:suggestrelevance", &relevances) &&
+        relevances->GetSize() != results_list->GetSize())
+      relevances = NULL;
+    extras->GetInteger("google:verbatimrelevance",
+                       &results->verbatim_relevance);
 
     // Check if the active suggest field trial (if any) has triggered either
     // for the default provider or keyword provider.
