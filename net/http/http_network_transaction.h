@@ -99,17 +99,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
                            WindowUpdateOverflow);
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            FlowControlStallResume);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy3Test,
-                           WindowUpdateReceived);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy3Test,
-                           WindowUpdateSent);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy3Test,
-                           WindowUpdateOverflow);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy3Test,
-                           FlowControlStallResume);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy3Test,
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            FlowControlStallResumeAfterSettings);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy3Test,
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            FlowControlNegativeSendWindowSize);
 
   enum State {

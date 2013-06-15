@@ -16,6 +16,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
@@ -259,7 +260,13 @@ class SpdyTestUtil {
       base::StringPiece url) const;
   scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlockForProxy(
       base::StringPiece url) const;
+  scoped_ptr<SpdyHeaderBlock> ConstructHeadHeaderBlock(
+      base::StringPiece url,
+      int64 content_length) const;
   scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(
+      base::StringPiece url,
+      int64 content_length) const;
+  scoped_ptr<SpdyHeaderBlock> ConstructPutHeaderBlock(
       base::StringPiece url,
       int64 content_length) const;
 
@@ -479,6 +486,13 @@ class SpdyTestUtil {
   const char* GetPathKey() const;
 
  private:
+  // |content_length| may be NULL, in which case the content-length
+  // header will be omitted.
+  scoped_ptr<SpdyHeaderBlock> ConstructHeaderBlock(
+      base::StringPiece method,
+      base::StringPiece url,
+      int64* content_length) const;
+
   const NextProto protocol_;
   const SpdyMajorVersion spdy_version_;
 };
