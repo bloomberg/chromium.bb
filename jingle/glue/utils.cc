@@ -17,26 +17,20 @@
 
 namespace jingle_glue {
 
-bool IPEndPointToSocketAddress(const net::IPEndPoint& address_chrome,
-                               talk_base::SocketAddress* address_lj) {
-  if (address_chrome.GetFamily() != net::ADDRESS_FAMILY_IPV4) {
-    LOG(ERROR) << "Only IPv4 addresses are supported.";
-    return false;
-  }
-  uint32 ip_as_int = talk_base::NetworkToHost32(
-      *reinterpret_cast<const uint32*>(&address_chrome.address()[0]));
-  *address_lj =  talk_base::SocketAddress(ip_as_int, address_chrome.port());
-  return true;
+bool IPEndPointToSocketAddress(const net::IPEndPoint& ip_endpoint,
+                               talk_base::SocketAddress* address) {
+  sockaddr_storage addr;
+  socklen_t len = sizeof(addr);
+  return ip_endpoint.ToSockAddr(reinterpret_cast<sockaddr*>(&addr), &len) &&
+      talk_base::SocketAddressFromSockAddrStorage(addr, address);
 }
 
-bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address_lj,
-                               net::IPEndPoint* address_chrome) {
-  uint32 ip = talk_base::HostToNetwork32(address_lj.ip());
-  net::IPAddressNumber address;
-  address.resize(net::kIPv4AddressSize);
-  memcpy(&address[0], &ip, net::kIPv4AddressSize);
-  *address_chrome = net::IPEndPoint(address, address_lj.port());
-  return true;
+bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address,
+                               net::IPEndPoint* ip_endpoint) {
+  sockaddr_storage addr;
+  int size = address.ToSockAddrStorage(&addr);
+  return (size > 0) &&
+      ip_endpoint->FromSockAddr(reinterpret_cast<sockaddr*>(&addr), size);
 }
 
 std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {

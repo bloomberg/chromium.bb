@@ -24,10 +24,10 @@ namespace jingle_glue {
 // Chromium and libjingle represent socket addresses differently. The
 // following two functions are used to convert addresses from one
 // representation to another.
-bool IPEndPointToSocketAddress(const net::IPEndPoint& address_chrome,
-                               talk_base::SocketAddress* address_lj);
-bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address_lj,
-                               net::IPEndPoint* address_chrome);
+bool IPEndPointToSocketAddress(const net::IPEndPoint& ip_endpoint,
+                               talk_base::SocketAddress* address);
+bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address,
+                               net::IPEndPoint* ip_endpoint);
 
 // Helper functions to serialize and deserialize P2P candidates.
 std::string SerializeP2PCandidate(const cricket::Candidate& candidate);

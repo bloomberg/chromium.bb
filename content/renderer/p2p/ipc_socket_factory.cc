@@ -155,12 +155,14 @@ bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
   state_ = IS_OPENING;
 
   net::IPEndPoint local_endpoint;
-  if (!jingle_glue::SocketAddressToIPEndPoint(local_address, &local_endpoint)) {
+  if (!jingle_glue::SocketAddressToIPEndPoint(
+          local_address, &local_endpoint)) {
     return false;
   }
 
   net::IPEndPoint remote_endpoint;
-  if (!jingle_glue::SocketAddressToIPEndPoint(
+  if (!remote_address.IsNil() &&
+      !jingle_glue::SocketAddressToIPEndPoint(
           remote_address, &remote_endpoint)) {
     return false;
   }
@@ -236,6 +238,7 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
   net::IPEndPoint address_chrome;
   if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
     NOTREACHED();
+    error_ = EINVAL;
     return -1;
   }
 
