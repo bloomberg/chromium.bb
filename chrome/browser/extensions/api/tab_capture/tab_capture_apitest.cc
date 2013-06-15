@@ -70,24 +70,12 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
                                   "api_tests_audio.html")) << message_;
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_EndToEnd DISABLED_EndToEnd
-#else
-#define MAYBE_EndToEnd EndToEnd
-#endif
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_EndToEnd) {
+// TODO(miu): Disabled until the two most-likely sources of the "flaky timeouts"
+// are resolved: 1) http://crbug.com/177163 and 2) http://crbug.com/174519.
+// See http://crbug.com/174640.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_EndToEnd) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
-
-#if defined(OS_WIN)
-  // TODO(justinlin): Disabled for WinXP due to timeout issues.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    return;
-  }
-#endif
-
-  AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
                                   "end_to_end.html")) << message_;
 }
