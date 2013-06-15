@@ -12,7 +12,6 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_cell_single_line.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -9,7 +9,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#import "chrome/browser/ui/cocoa/bookmarks/bookmark_cell_single_line.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
