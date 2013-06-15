@@ -1,13 +1,15 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "base/command_line.h"
-#include "base/message_loop.h"
+
+#include "chrome/browser/extensions/api/system_info_display/system_info_display_api.h"
+
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/system_info_display/display_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
+
+namespace utils = extension_function_test_utils;
 
 namespace extensions {
 
@@ -16,6 +18,8 @@ using api::system_info_display::DisplayUnitInfo;
 
 class MockDisplayInfoProvider : public DisplayInfoProvider {
  public:
+  MockDisplayInfoProvider() {}
+
   virtual bool QueryInfo(DisplayInfo* info) OVERRIDE {
     info->clear();
     for (int i = 0; i < 4; i++) {
@@ -48,9 +52,33 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     }
     return true;
   }
+
+  virtual void SetInfo(
+      const std::string& display_id,
+      const api::system_info_display::DisplayProperties& params,
+      const SetInfoCallback& callback) OVERRIDE {
+    // Should get called only once per test case.
+    EXPECT_FALSE(set_info_value_);
+    set_info_value_ = params.ToValue();
+    set_info_display_id_ = display_id;
+    callback.Run(true, std::string());
+  }
+
+  scoped_ptr<base::DictionaryValue> GetSetInfoValue() {
+    return set_info_value_.Pass();
+  }
+
+  std::string GetSetInfoDisplayId() const {
+    return set_info_display_id_;
+  }
+
  private:
   virtual ~MockDisplayInfoProvider() {}
 
+  scoped_ptr<base::DictionaryValue> set_info_value_;
+  std::string set_info_display_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDisplayInfoProvider);
 };
 
 class SystemInfoDisplayApiTest: public ExtensionApiTest {
@@ -58,26 +86,127 @@ class SystemInfoDisplayApiTest: public ExtensionApiTest {
   SystemInfoDisplayApiTest() {}
   virtual ~SystemInfoDisplayApiTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
+    provider_ = new MockDisplayInfoProvider();
+    // The |provider| will be co-owned by the singleton instance.
+    DisplayInfoProvider::InitializeForTesting(provider_);
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    // Has to be released before the main thread is gone.
+    provider_ = NULL;
+    ExtensionApiTest::CleanUpOnMainThread();
   }
 
- private:
-  scoped_ptr<base::MessageLoop> message_loop_;
+ protected:
+  scoped_refptr<MockDisplayInfoProvider> provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemInfoDisplayApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, Display) {
-  // The |provider| will be owned by the singleton instance.
-  scoped_refptr<MockDisplayInfoProvider> provider =
-      new MockDisplayInfoProvider();
-  DisplayInfoProvider::InitializeForTesting(provider);
+IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, GetDisplay) {
   ASSERT_TRUE(RunPlatformAppTest("systeminfo/display")) << message_;
 }
+
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplay) {
+  scoped_refptr<SystemInfoDisplaySetDisplayPropertiesFunction>
+      set_info_function(new SystemInfoDisplaySetDisplayPropertiesFunction());
+
+  set_info_function->set_has_callback(true);
+
+  EXPECT_EQ("Function available only on ChromeOS.",
+            utils::RunFunctionAndReturnError(set_info_function.get(),
+                                             "[\"display_id\", {}]",
+                                             browser()));
+
+  scoped_ptr<base::DictionaryValue> set_info = provider_->GetSetInfoValue();
+  EXPECT_FALSE(set_info);
+}
+#endif  // !defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplayNotKioskEnabled) {
+  scoped_ptr<base::DictionaryValue> test_extension_value(utils::ParseDictionary(
+      "{\n"
+      "  \"name\": \"Test\",\n"
+      "  \"version\": \"1.0\",\n"
+      "  \"app\": {\n"
+      "    \"background\": {\n"
+      "      \"scripts\": [\"background.js\"]\n"
+      "    }\n"
+      "  }\n"
+      "}"));
+  scoped_refptr<Extension> test_extension(
+      utils::CreateExtension(test_extension_value.get()));
+
+  scoped_refptr<SystemInfoDisplaySetDisplayPropertiesFunction>
+      set_info_function(new SystemInfoDisplaySetDisplayPropertiesFunction());
+
+  set_info_function->set_extension(test_extension.get());
+  set_info_function->set_has_callback(true);
+
+  EXPECT_EQ("The extension needs to be kiosk enabled to use the function.",
+            utils::RunFunctionAndReturnError(set_info_function.get(),
+                                             "[\"display_id\", {}]",
+                                             browser()));
+
+  scoped_ptr<base::DictionaryValue> set_info = provider_->GetSetInfoValue();
+  EXPECT_FALSE(set_info);
+}
+
+IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplayKioskEnabled) {
+  scoped_ptr<base::DictionaryValue> test_extension_value(utils::ParseDictionary(
+      "{\n"
+      "  \"name\": \"Test\",\n"
+      "  \"version\": \"1.0\",\n"
+      "  \"app\": {\n"
+      "    \"background\": {\n"
+      "      \"scripts\": [\"background.js\"]\n"
+      "    }\n"
+      "  },\n"
+      "  \"kiosk_enabled\": true\n"
+      "}"));
+  scoped_refptr<Extension> test_extension(
+      utils::CreateExtension(test_extension_value.get()));
+
+  scoped_refptr<SystemInfoDisplaySetDisplayPropertiesFunction>
+      set_info_function(new SystemInfoDisplaySetDisplayPropertiesFunction());
+
+  set_info_function->set_has_callback(true);
+  set_info_function->set_extension(test_extension.get());
+
+  ASSERT_TRUE(utils::RunFunction(
+      set_info_function.get(),
+      "[\"display_id\", {\n"
+      "  \"isPrimary\": true,\n"
+      "  \"mirroringSourceId\": \"mirroringId\",\n"
+      "  \"boundsOriginX\": 100,\n"
+      "  \"boundsOriginY\": 200,\n"
+      "  \"rotation\": 90,\n"
+      "  \"overscan\": {\"left\": 1, \"top\": 2, \"right\": 3, \"bottom\": 4}\n"
+      "}]",
+      browser(),
+      utils::NONE));
+
+  scoped_ptr<base::DictionaryValue> set_info = provider_->GetSetInfoValue();
+  ASSERT_TRUE(set_info);
+  EXPECT_TRUE(utils::GetBoolean(set_info.get(), "isPrimary"));
+  EXPECT_EQ("mirroringId",
+            utils::GetString(set_info.get(), "mirroringSourceId"));
+  EXPECT_EQ(100, utils::GetInteger(set_info.get(), "boundsOriginX"));
+  EXPECT_EQ(200, utils::GetInteger(set_info.get(), "boundsOriginY"));
+  EXPECT_EQ(90, utils::GetInteger(set_info.get(), "rotation"));
+  base::DictionaryValue* overscan;
+  ASSERT_TRUE(set_info->GetDictionary("overscan", &overscan));
+  EXPECT_EQ(1, utils::GetInteger(overscan, "left"));
+  EXPECT_EQ(2, utils::GetInteger(overscan, "top"));
+  EXPECT_EQ(3, utils::GetInteger(overscan, "right"));
+  EXPECT_EQ(4, utils::GetInteger(overscan, "bottom"));
+
+  EXPECT_EQ("display_id", provider_->GetSetInfoDisplayId());
+}
+#endif  // defined(OS_CHROMEOS)
 
 } // namespace extensions

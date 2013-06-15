@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_DISPLAY_SYSTEM_INFO_DISPLAY_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_INFO_DISPLAY_SYSTEM_INFO_DISPLAY_API_H_
 
+#include <string>
+
 #include "chrome/browser/extensions/api/system_info_display/display_info_provider.h"
 #include "chrome/browser/extensions/extension_function.h"
 
@@ -21,6 +23,20 @@ class SystemInfoDisplayGetDisplayInfoFunction : public AsyncExtensionFunction {
 
  private:
   void OnGetDisplayInfoCompleted(const DisplayInfo& info, bool success);
+};
+
+class SystemInfoDisplaySetDisplayPropertiesFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("systemInfo.display.setDisplayProperties",
+                             SYSTEMINFO_DISPLAY_SETDISPLAYPROPERTIES);
+
+ protected:
+  virtual ~SystemInfoDisplaySetDisplayPropertiesFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void OnPropertiesSet(bool success, const std::string& error);
 };
 
 }  // namespace extensions

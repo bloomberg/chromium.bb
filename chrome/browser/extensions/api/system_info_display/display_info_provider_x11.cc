@@ -11,6 +11,15 @@ void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
   StartQueryInfo(callback);
 }
 
+void DisplayInfoProvider::SetInfo(
+    const std::string& display_id,
+    const api::system_info_display::DisplayProperties& info,
+    const SetInfoCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, false, "Not implemented"));
+}
+
 // TODO(hongbo): implement X11 display info querying.
 bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
   return false;

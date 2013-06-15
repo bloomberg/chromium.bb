@@ -771,6 +771,7 @@
         'browser/extensions/api/streams_private/streams_private_manifest_unittest.cc',
         'browser/extensions/api/system_info_cpu/cpu_info_provider_unittest.cc',
         'browser/extensions/api/system_info_display/display_info_provider_unittest.cc',
+        'browser/extensions/api/system_info_display/display_info_provider_chromeos_unittest.cc',
         'browser/extensions/api/system_info_memory/memory_info_provider_unittest.cc',
         'browser/extensions/api/system_info_storage/storage_info_provider_linux_unittest.cc',
         'browser/extensions/api/system_info_storage/storage_info_provider_unittest.cc',
