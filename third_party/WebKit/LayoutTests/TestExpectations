@@ -104,6 +104,7 @@ crbug.com/246105 [ Release ] fast/events/scale-and-scroll-body.html [ ImageOnlyF
 crbug.com/246105 [ Release ] fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
 crbug.com/246105 [ Release ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
 crbug.com/246105 [ Release ] fast/events/scale-and-scroll-window.html [ ImageOnlyFailure ]
+crbug.com/246105 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failure Pass ]
 crbug.com/246107 [ Release ] fast/events/selectionchange-iframe.html [ Timeout ]
 
 # -----------------------------------------------------------------
@@ -1335,8 +1336,8 @@ crbug.com/237270 [ Win7 ] transforms/2d/transform-2d.html [ Pass Timeout ]
 crbug.com/237270 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Pass Timeout ]
 crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Pass Timeout ]
 # was: webkit.org/b/110873 - Flaky on most platforms
-crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ ImageOnlyFailure Timeout ]
-crbug.com/237270 [ Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ ImageOnlyFailure Timeout ]
+crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass Timeout ]
+crbug.com/237270 [ Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Pass Timeout ]
 
 crbug.com/241851 [ SnowLeopard Lion Linux Debug ] fast/speechsynthesis/speech-synthesis-cancel.html [ Crash Pass Timeout ]
 
@@ -1407,10 +1408,6 @@ crbug.com/242511 [ Mac Debug ] svg/custom/uri-reference-handling.svg [ Crash Pas
 
 # Seems to be flaky on all platforms
 crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure Pass ]
-
-# Crashing on Mac 
-crbug.com/244925 [ Mac Debug ] fast/dom/HTMLSelectElement/select-selectedIndex-multiple.html [ Crash ]
-crbug.com/244925 [ Mac Debug ] fast/dom/HTMLSelectElement/select-selectedIndex.html [ Crash ]
 
 # Crashes according to crbug.com/245294
 crbug.com/244118 [ Linux ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Crash ImageOnlyFailure ]
@@ -1504,7 +1501,6 @@ crbug.com/243353 animations/suspend-resume-animation.html [ Failure Pass ]
 crbug.com/243353 [ Win Linux ] animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243353 [ Win Linux ] animations/animation-direction-reverse.html [ Failure Pass ]
 crbug.com/243353 animations/play-state-paused.html [ ImageOnlyFailure Pass ]
-crbug.com/243369 [ Mac Debug ] fast/events/scroll-after-click-on-tab-index.html [ Failure ]
 crbug.com/243370 [ Mac ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
 crbug.com/243378 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.html [ Failure ]
 crbug.com/243420 http/tests/appcache/different-https-origin-resource-main.html [ Failure ]
@@ -1523,7 +1519,6 @@ crbug.com/243599 [ Release ] fast/loader/stateobjects/replacestate-in-onunload.h
 crbug.com/243599 [ Mac ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243649 [ Mac ] transitions/cancel-transition.html [ Failure Pass ]
 crbug.com/243655 [ Win7 Debug ] compositing/iframes/scroll-grandchild-iframe.html [ Timeout Pass ]
-crbug.com/243658 [ Lion ] fast/writing-mode/vertical-font-vmtx-units-per-em.html [ Crash ]
 crbug.com/243663 [ Win7 ] compositing/animation/computed-style-during-delay.html [ Pass Failure ]
 crbug.com/243663 [ Win7 ] compositing/reflections/nested-reflection-transition.html [ ImageOnlyFailure Pass ]
 crbug.com/243683 [ Linux ] http/tests/css/link-css-disabled-value-with-slow-loading-sheet-in-error.html [ Pass Failure ]
@@ -1578,8 +1573,6 @@ crbug.com/244112 [ Linux ] fast/dom/gc-11.html [ Pass Failure ]
 crbug.com/244123 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-key-operations.html [ Failure Pass Timeout ]
 crbug.com/244123 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-key-operations.html [ Failure Pass Timeout ]
 crbug.com/244123 [ Win ] fast/forms/suggestion-picker/week-suggestion-picker-key-operations.html [ Failure Pass Timeout ]
-crbug.com/244130 [ Win Debug ] fast/forms/input-search-press-escape-key.html [ Crash ]
-crbug.com/244131 [ Win Debug ] fast/forms/search-disabled-readonly.html [ Crash ]
 crbug.com/244341 [ Win ] css3/filters/composited-during-animation.html [ Failure Pass Timeout ]
 crbug.com/244341 [ Mac Linux ] css3/filters/composited-during-animation-layertree.html [ Failure Pass ]
 crbug.com/244739 [ Win ] compositing/video-frame-size-change.html [ Slow ]
@@ -1641,7 +1634,7 @@ crbug.com/229120 virtual/deferred/fast/images/rgb-png-with-cmyk-color-profile.ht
 crbug.com/229120 virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
 crbug.com/229120 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html [ ImageOnlyFailure ]
 
-crbug.com/246749 [ Debug ] inspector/extensions/extensions-panel.html [ Timeout Failure ]
+crbug.com/246749 [ Debug ] inspector/extensions/extensions-panel.html [ Timeout Pass ]
 
 crbug.com/226256 storage/indexeddb/pending-version-change-stuck.html [ Timeout Pass ]
 
@@ -1651,9 +1644,6 @@ crbug.com/243309 [ Mac Debug ] fast/css/font-size-nan.svg [ Crash Pass ]
 crbug.com/243309 [ Mac Debug ] fast/css/large-font-size-crash.html [ Crash Pass ]
 crbug.com/243309 [ Mac Debug ] svg/text/font-size-too-large-crash.svg [ Crash Pass ]
 
-
-
-crbug.com/244678 [ Win7 Debug ] animations/3d/matrix-transform-type-animation.html [ Failure Timeout ]
 crbug.com/245154 editing/selection/move-by-character-brute-force.html [ Pass Timeout ]
 
 crbug.com/245630 [ Win7 Debug ] compositing/overflow/overflow-positioning.html [ ImageOnlyFailure Pass  ]
@@ -1823,4 +1813,4 @@ crbug.com/242761 [ Mac ] editing/style/create-block-for-style-013.html [ Failure
 crbug.com/242761 [ Mac ] editing/style/smoosh-styles-001.html [ Failure ]
 crbug.com/242761 [ Mac ] editing/unsupported-content/list-delete-001.html [ Failure ]
 crbug.com/242761 [ Mac ] fast/ruby/rubyDOM-remove-text2.html [ Failure ]
-crbug.com/242761 [ Mac Win ] editing/style/create-block-for-style-012.html [ Failure ]
+crbug.com/242761 [ Mac ] editing/style/create-block-for-style-012.html [ Failure ]
