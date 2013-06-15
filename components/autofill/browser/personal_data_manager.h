@@ -166,11 +166,11 @@ class PersonalDataManager : public WebDataServiceConsumer,
   static bool IsValidLearnableProfile(const AutofillProfile& profile,
                                       const std::string& app_locale);
 
-  // Merges |profile| into one of the |existing_profiles| if possible; otherwise
-  // appends |profile| to the end of that list. Fills |merged_profiles| with the
-  // result.
+  // Merges |new_profile| into one of the |existing_profiles| if possible;
+  // otherwise appends |new_profile| to the end of that list. Fills
+  // |merged_profiles| with the result.
   static bool MergeProfile(
-      const AutofillProfile& profile,
+      const AutofillProfile& new_profile,
       const std::vector<AutofillProfile*>& existing_profiles,
       const std::string& app_locale,
       std::vector<AutofillProfile>* merged_profiles);

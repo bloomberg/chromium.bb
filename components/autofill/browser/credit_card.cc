@@ -498,9 +498,14 @@ bool CreditCard::UpdateFromImportedCard(const CreditCard& imported_card,
     return false;
   }
 
-  DCHECK(!imported_card.IsVerified());
-  if (this->IsVerified())
+  // Heuristically aggregated data should never overwrite verified data.
+  // Instead, discard any heuristically aggregated credit cards that disagree
+  // with explicitly entered data, so that the UI is not cluttered with
+  // duplicate cards.
+  if (this->IsVerified() && !imported_card.IsVerified())
     return true;
+
+  set_origin(imported_card.origin());
 
   // Note that the card number is intentionally not updated, so as to preserve
   // any formatting (i.e. separator characters).  Since the card number is not

@@ -2020,6 +2020,124 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(0, credit_card.Compare(*results[0]));
 }
 
+// Ensure that verified profiles can be saved via SaveImportedProfile,
+// overwriting existing unverified profiles.
+TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
+  // Start with an unverified profile.
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile,
+      "Marion", "Mitchell", "Morrison",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "12345678910");
+  EXPECT_FALSE(profile.IsVerified());
+
+  // Add the profile to the database.
+  personal_data_->AddProfile(profile);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  AutofillProfile new_verified_profile = profile;
+  new_verified_profile.set_guid(base::GenerateGUID());
+  new_verified_profile.set_origin("Chrome settings");
+  new_verified_profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Fizzbang, Inc."));
+  EXPECT_TRUE(new_verified_profile.IsVerified());
+
+  personal_data_->SaveImportedProfile(new_verified_profile);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Expect that the existing profile is not modified, and instead the new
+  // profile is added.
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, new_verified_profile.Compare(*results[0]));
+}
+
+// Ensure that verified profiles can be saved via SaveImportedProfile,
+// overwriting existing verified profiles as well.
+TEST_F(PersonalDataManagerTest, SaveImportedProfileWithExistingVerifiedData) {
+  // Start with a verified profile.
+  AutofillProfile profile(base::GenerateGUID(), "Chrome settings");
+  test::SetProfileInfo(&profile,
+      "Marion", "Mitchell", "Morrison",
+      "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
+      "91601", "US", "12345678910");
+  EXPECT_TRUE(profile.IsVerified());
+
+  // Add the profile to the database.
+  personal_data_->AddProfile(profile);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  AutofillProfile new_verified_profile = profile;
+  new_verified_profile.set_guid(base::GenerateGUID());
+  new_verified_profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Fizzbang, Inc."));
+  new_verified_profile.SetRawInfo(NAME_MIDDLE, base::string16());
+  EXPECT_TRUE(new_verified_profile.IsVerified());
+
+  personal_data_->SaveImportedProfile(new_verified_profile);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // The new profile should be merged into the existing one.
+  AutofillProfile expected_profile = new_verified_profile;
+  expected_profile.set_guid(profile.guid());
+  std::vector<base::string16> names;
+  expected_profile.GetRawMultiInfo(NAME_FULL, &names);
+  names.insert(names.begin(), ASCIIToUTF16("Marion Mitchell Morrison"));
+  expected_profile.SetRawMultiInfo(NAME_FULL, names);
+
+  const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(expected_profile, *results[0]);
+}
+
+// Ensure that verified credit cards can be saved via SaveImportedCreditCard.
+TEST_F(PersonalDataManagerTest, SaveImportedCreditCardWithVerifiedData) {
+  // Start with a verified credit card.
+  CreditCard credit_card(base::GenerateGUID(), "Chrome settings");
+  test::SetCreditCardInfo(&credit_card,
+      "Biggie Smalls", "4111 1111 1111 1111" /* Visa */, "01", "2011");
+  EXPECT_TRUE(credit_card.IsVerified());
+
+  // Add the credit card to the database.
+  personal_data_->AddCreditCard(credit_card);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  CreditCard new_verified_card = credit_card;
+  new_verified_card.set_guid(base::GenerateGUID());
+  new_verified_card.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("B. Small"));
+  EXPECT_TRUE(new_verified_card.IsVerified());
+
+  personal_data_->SaveImportedCreditCard(new_verified_card);
+
+  // Verify that the web database has been updated and the notification sent.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Expect that the saved credit card is updated.
+  const std::vector<CreditCard*>& results = personal_data_->GetCreditCards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(ASCIIToUTF16("B. Small"), results[0]->GetRawInfo(CREDIT_CARD_NAME));
+}
+
 TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   // Check that there are no available types with no profiles stored.
   FieldTypeSet non_empty_types;

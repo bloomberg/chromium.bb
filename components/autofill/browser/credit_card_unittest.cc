@@ -155,6 +155,79 @@ TEST(CreditCardTest, Compare) {
   EXPECT_LT(0, b.Compare(a));
 }
 
+TEST(CreditCardTest, UpdateFromImportedCard) {
+  CreditCard original_card(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(
+      &original_card, "John Dillinger", "123456789012", "09", "2017");
+
+  CreditCard a = original_card;
+
+  // The new card has a different name, expiration date, and origin.
+  CreditCard b = a;
+  b.set_guid(base::GenerateGUID());
+  b.set_origin("https://www.example.org");
+  b.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("J. Dillinger"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("08"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2019"));
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("https://www.example.org", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Try again, but with no name set for |b|.
+  a = original_card;
+  b.SetRawInfo(CREDIT_CARD_NAME, base::string16());
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("https://www.example.org", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Try again, but with only the original card having a verified origin.
+  // |a| should be unchanged.
+  a = original_card;
+  a.set_origin("Chrome settings");
+  b.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("J. Dillinger"));
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("John Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(ASCIIToUTF16("09"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2017"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Try again, but with only the new card having a verified origin.
+  a = original_card;
+  b.set_origin("Chrome settings");
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Try again, with both cards having a verified origin.
+  a = original_card;
+  a.set_origin("Chrome Autofill dialog");
+  b.set_origin("Chrome settings");
+
+  EXPECT_TRUE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("J. Dillinger"), a.GetRawInfo(CREDIT_CARD_NAME));
+  EXPECT_EQ(ASCIIToUTF16("08"), a.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+  EXPECT_EQ(ASCIIToUTF16("2019"), a.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
+
+  // Try again, but with |b| having a different card number.
+  // |a| should be unchanged.
+  a = original_card;
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+
+  EXPECT_FALSE(a.UpdateFromImportedCard(b, "en-US"));
+  EXPECT_EQ(original_card, a);
+}
+
 TEST(CreditCardTest, IsComplete) {
   CreditCard card(base::GenerateGUID(), "https://www.example.com/");
   EXPECT_FALSE(card.IsComplete());

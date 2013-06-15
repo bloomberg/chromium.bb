@@ -545,6 +545,42 @@ TEST(AutofillProfileTest, IsSubsetOf) {
   EXPECT_FALSE(a->IsSubsetOf(*b, "en-US"));
 }
 
+TEST(AutofillProfileTest, OverwriteWithOrAddTo) {
+  AutofillProfile a(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison",
+                       "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US",
+                       "12345678910");
+  std::vector<base::string16> names;
+  a.GetRawMultiInfo(NAME_FULL, &names);
+  names.push_back(ASCIIToUTF16("Marion Morrison"));
+  a.SetRawMultiInfo(NAME_FULL, names);
+
+  // Create an identical profile except that the new profile:
+  //   (1) Has a different origin,
+  //   (2) Has a different address line 2,
+  //   (3) Lacks a company name, and
+  //   (4) Has a different full name variant.
+  AutofillProfile b = a;
+  b.set_guid(base::GenerateGUID());
+  b.set_origin("Chrome settings");
+  b.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("area 51"));
+  b.SetRawInfo(COMPANY_NAME, base::string16());
+  b.GetRawMultiInfo(NAME_FULL, &names);
+  names.push_back(ASCIIToUTF16("Marion M. Morrison"));
+  b.SetRawMultiInfo(NAME_FULL, names);
+
+  a.OverwriteWithOrAddTo(b, "en-US");
+  EXPECT_EQ("Chrome settings", a.origin());
+  EXPECT_EQ(ASCIIToUTF16("area 51"), a.GetRawInfo(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(ASCIIToUTF16("Fox"), a.GetRawInfo(COMPANY_NAME));
+  a.GetRawMultiInfo(NAME_FULL, &names);
+  ASSERT_EQ(3U, names.size());
+  EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison"), names[0]);
+  EXPECT_EQ(ASCIIToUTF16("Marion Morrison"), names[1]);
+  EXPECT_EQ(ASCIIToUTF16("Marion M. Morrison"), names[2]);
+}
+
 TEST(AutofillProfileTest, AssignmentOperator) {
   AutofillProfile a(base::GenerateGUID(), "https://www.example.com/");
   test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison",

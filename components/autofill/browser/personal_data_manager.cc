@@ -725,41 +725,41 @@ bool PersonalDataManager::IsValidLearnableProfile(
 
 // static
 bool PersonalDataManager::MergeProfile(
-    const AutofillProfile& profile,
+    const AutofillProfile& new_profile,
     const std::vector<AutofillProfile*>& existing_profiles,
     const std::string& app_locale,
     std::vector<AutofillProfile>* merged_profiles) {
   merged_profiles->clear();
 
-  // Set to true if |profile| is merged into |existing_profiles|.
-  bool merged = false;
+  // Set to true if |existing_profiles| already contains an equivalent profile.
+  bool matching_profile_found = false;
 
   // If we have already saved this address, merge in any missing values.
   // Only merge with the first match.
   for (std::vector<AutofillProfile*>::const_iterator iter =
            existing_profiles.begin();
        iter != existing_profiles.end(); ++iter) {
-    if (!merged) {
-      if (!profile.PrimaryValue().empty() &&
-          StringToLowerASCII((*iter)->PrimaryValue()) ==
-              StringToLowerASCII(profile.PrimaryValue())) {
-        merged = true;
-
-        // Automatically aggregated profiles should never overwrite explicitly
-        // user-entered ones.  If one would, just drop it.
-        DCHECK(!profile.IsVerified());
-        if (!(*iter)->IsVerified())
-          (*iter)->OverwriteWithOrAddTo(profile, app_locale);
-      }
+    AutofillProfile* existing_profile = *iter;
+    if (!matching_profile_found &&
+        !new_profile.PrimaryValue().empty() &&
+        StringToLowerASCII(existing_profile->PrimaryValue()) ==
+            StringToLowerASCII(new_profile.PrimaryValue())) {
+      // Unverified profiles should always be updated with the newer data,
+      // whereas verified profiles should only ever be overwritten by verified
+      // data.  If an automatically aggregated profile would overwrite a
+      // verified profile, just drop it.
+      matching_profile_found = true;
+      if (!existing_profile->IsVerified() || new_profile.IsVerified())
+        existing_profile->OverwriteWithOrAddTo(new_profile, app_locale);
     }
-    merged_profiles->push_back(**iter);
+    merged_profiles->push_back(*existing_profile);
   }
 
   // If the new profile was not merged with an existing one, add it to the list.
-  if (!merged)
-    merged_profiles->push_back(profile);
+  if (!matching_profile_found)
+    merged_profiles->push_back(new_profile);
 
-  return merged;
+  return matching_profile_found;
 }
 
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {

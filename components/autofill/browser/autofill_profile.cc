@@ -505,6 +505,10 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
 
 void AutofillProfile::OverwriteWithOrAddTo(const AutofillProfile& profile,
                                            const std::string& app_locale) {
+  // Verified profiles should never be overwritten with unverified data.
+  DCHECK(!IsVerified() || profile.IsVerified());
+  set_origin(profile.origin());
+
   FieldTypeSet field_types;
   profile.GetNonEmptyTypes(app_locale, &field_types);
 
