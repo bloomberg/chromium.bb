@@ -47,6 +47,8 @@ class FakeBaseTabStripController : public TabStripController {
   virtual void CreateNewTab() OVERRIDE;
   virtual bool IsIncognito() OVERRIDE;
   virtual void LayoutTypeMaybeChanged() OVERRIDE;
+  virtual void OnStartedDraggingTabs() OVERRIDE;
+  virtual void OnStoppedDraggingTabs() OVERRIDE;
 
  private:
   TabStrip* tab_strip_;

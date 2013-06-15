@@ -95,6 +95,14 @@ class TabStripController {
 
   // Invoked if the layout type might have changed.
   virtual void LayoutTypeMaybeChanged() = 0;
+
+  // Notifies controller that the user started dragging this tabstrip's tabs.
+  virtual void OnStartedDraggingTabs() = 0;
+
+  // Notifies controller that the user stopped dragging this tabstrip's tabs.
+  // This is also called when the tabs that the user is dragging were detached
+  // from this tabstrip but the user is still dragging the tabs.
+  virtual void OnStoppedDraggingTabs() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

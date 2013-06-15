@@ -112,3 +112,9 @@ bool FakeBaseTabStripController::IsIncognito() {
 
 void FakeBaseTabStripController::LayoutTypeMaybeChanged() {
 }
+
+void FakeBaseTabStripController::OnStartedDraggingTabs() {
+}
+
+void FakeBaseTabStripController::OnStoppedDraggingTabs() {
+}

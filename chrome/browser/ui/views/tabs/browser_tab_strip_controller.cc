@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -354,6 +355,23 @@ void BrowserTabStripController::LayoutTypeMaybeChanged() {
   g_browser_process->local_state()->SetInteger(
       prefs::kTabStripLayoutType,
       static_cast<int>(tabstrip_->layout_type()));
+}
+
+void BrowserTabStripController::OnStartedDraggingTabs() {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  if (browser_view && !immersive_reveal_lock_.get()) {
+    // The top-of-window views should be revealed while the user is dragging
+    // tabs in immersive fullscreen. The top-of-window views may not be already
+    // revealed if the user is attempting to attach a tab to a tabstrip
+    // belonging to an immersive fullscreen window.
+    immersive_reveal_lock_.reset(
+        browser_view->immersive_mode_controller()->GetRevealedLock(
+            ImmersiveModeController::ANIMATE_REVEAL_NO));
+  }
+}
+
+void BrowserTabStripController::OnStoppedDraggingTabs() {
+  immersive_reveal_lock_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

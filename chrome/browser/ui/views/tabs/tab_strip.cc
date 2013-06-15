@@ -1927,6 +1927,9 @@ void TabStrip::UpdateTabsClosingMap(int index, int delta) {
 }
 
 void TabStrip::StartedDraggingTabs(const std::vector<Tab*>& tabs) {
+  // Let the controller know that the user started dragging tabs.
+  controller()->OnStartedDraggingTabs();
+
   // Hide the new tab button immediately if we didn't originate the drag.
   if (!drag_controller_.get())
     newtab_button_->SetVisible(false);
@@ -1955,6 +1958,9 @@ void TabStrip::StartedDraggingTabs(const std::vector<Tab*>& tabs) {
 }
 
 void TabStrip::DraggedTabsDetached() {
+  // Let the controller know that the user is not dragging this tabstrip's tabs
+  // anymore.
+  controller()->OnStoppedDraggingTabs();
   newtab_button_->SetVisible(true);
 }
 
@@ -1962,6 +1968,9 @@ void TabStrip::StoppedDraggingTabs(const std::vector<Tab*>& tabs,
                                    const std::vector<int>& initial_positions,
                                    bool move_only,
                                    bool completed) {
+  // Let the controller know that the user stopped dragging tabs.
+  controller()->OnStoppedDraggingTabs();
+
   newtab_button_->SetVisible(true);
   if (move_only && touch_layout_.get()) {
     if (completed) {

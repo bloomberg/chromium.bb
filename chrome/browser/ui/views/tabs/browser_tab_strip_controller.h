@@ -10,6 +10,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 
 class Browser;
@@ -69,6 +70,8 @@ class BrowserTabStripController : public TabStripController,
   virtual void CreateNewTab() OVERRIDE;
   virtual bool IsIncognito() OVERRIDE;
   virtual void LayoutTypeMaybeChanged() OVERRIDE;
+  virtual void OnStartedDraggingTabs() OVERRIDE;
+  virtual void OnStoppedDraggingTabs() OVERRIDE;
 
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(content::WebContents* contents,
@@ -146,6 +149,11 @@ class BrowserTabStripController : public TabStripController,
 
   // Helper for performing tab selection as a result of dragging over a tab.
   HoverTabSelector hover_tab_selector_;
+
+  // Forces the tabs to use the regular (non-immersive) style and the
+  // top-of-window views to be revealed when the user is dragging |tabstrip|'s
+  // tabs.
+  scoped_ptr<ImmersiveRevealedLock> immersive_reveal_lock_;
 
   PrefChangeRegistrar local_pref_registrar_;
 

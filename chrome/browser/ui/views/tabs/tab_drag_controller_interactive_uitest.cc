@@ -11,9 +11,11 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -41,6 +43,7 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -1368,6 +1371,85 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   EXPECT_TRUE(browser()->window()->IsMaximized());
   EXPECT_FALSE(browser2->window()->IsMaximized());
 }
+
+// Immersive fullscreen is ChromeOS only.
+#if defined(OS_CHROMEOS)
+// Drags from a restored browser to an immersive fullscreen browser on a
+// second display and releases input.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
+                       DragTabToImmersiveBrowserOnSeparateDisplay) {
+  ImmersiveFullscreenConfiguration::EnableImmersiveFullscreenForTest();
+  ASSERT_TRUE(ImmersiveFullscreenConfiguration::UseImmersiveFullscreen());
+
+  // Add another tab.
+  AddTabAndResetBrowser(browser());
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Create another browser.
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+  ResetIDs(browser2->tab_strip_model(), 100);
+
+  // Move the second browser to the second display.
+  std::vector<aura::RootWindow*> roots(ash::Shell::GetAllRootWindows());
+  ASSERT_EQ(2u, roots.size());
+  aura::RootWindow* second_root = roots[1];
+  gfx::Rect work_area = gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
+      second_root).work_area();
+  browser2->window()->SetBounds(work_area);
+  EXPECT_EQ(second_root,
+            browser2->window()->GetNativeWindow()->GetRootWindow());
+
+  // Put the second browser into immersive fullscreen.
+  BrowserView* browser_view2 = BrowserView::GetBrowserViewForBrowser(browser2);
+  ImmersiveModeControllerAsh* immersive_controller2 =
+      static_cast<ImmersiveModeControllerAsh*>(
+          browser_view2->immersive_mode_controller());
+  immersive_controller2->DisableAnimationsForTest();
+  chrome::ToggleFullscreenMode(browser2);
+  ASSERT_TRUE(immersive_controller2->IsEnabled());
+  ASSERT_FALSE(immersive_controller2->IsRevealed());
+  ASSERT_TRUE(tab_strip2->IsImmersiveStyle());
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough that it attaches to browser2.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+                  tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+                  base::Bind(&DragTabToWindowInSeparateDisplayStep2,
+                             this, tab_strip, tab_strip2)));
+  QuitWhenNotDragging();
+
+  // Should now be attached to tab_strip2.
+  ASSERT_TRUE(tab_strip2->IsDragSessionActive());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_TRUE(TabDragController::IsActive());
+
+  // browser2's top chrome should be revealed and the tab strip should be
+  // at normal height while user is tragging tabs_strip2's tabs.
+  ASSERT_TRUE(immersive_controller2->IsRevealed());
+  ASSERT_FALSE(tab_strip2->IsImmersiveStyle());
+
+  // Release the mouse, stopping the drag session.
+  ASSERT_TRUE(ReleaseInput());
+  ASSERT_FALSE(tab_strip2->IsDragSessionActive());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ("0 100", IDString(browser2->tab_strip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+
+  // The first browser window should not be in immersive fullscreen.
+  // browser2 should still be in immersive fullscreen, but the top chrome should
+  // no longer be revealed.
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
+
+  EXPECT_TRUE(immersive_controller2->IsEnabled());
+  EXPECT_FALSE(immersive_controller2->IsRevealed());
+  EXPECT_TRUE(tab_strip2->IsImmersiveStyle());
+}
+#endif  // OS_CHROMEOS
 
 class DifferentDeviceScaleFactorDisplayTabDragControllerTest
     : public DetachToBrowserTabDragControllerTest {
