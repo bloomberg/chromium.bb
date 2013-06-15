@@ -1700,6 +1700,7 @@ crbug.com/249237 fast/forms/interactive-validation-required-checkbox.html [ Cras
 crbug.com/249237 fast/forms/interactive-validation-attach-assertion.html [ Crash Pass ]
 crbug.com/249237 [ Release ] fast/forms/interactive-validation-formnovalidate-child.html [ Crash Pass ]
 crbug.com/249237 [ Release ] fast/forms/interactive-validation-select-crash.html [ Crash Pass ]
+crbug.com/249237 [ Release ] fast/forms/interactive-validation-novalidate.html [ Crash Pass ]
 
 crbug.com/247979 [ Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure Pass ]
 crbug.com/247979 [ XP Release ] inspector/elements/edit-dom-actions.html [ Slow Pass Failure ]
