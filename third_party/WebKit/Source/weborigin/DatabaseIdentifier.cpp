@@ -45,72 +45,11 @@ const int maxAllowedPort = 65535;
 
 static const char separatorCharacter = '_';
 
-// The following lower-ASCII characters need escaping to be used in a filename
-// across all systems, including Windows:
-//     - Unprintable ASCII (00-1F)
-//     - Space             (20)
-//     - Double quote      (22)
-//     - Percent           (25) (escaped because it is our escape character)
-//     - Asterisk          (2A)
-//     - Slash             (2F)
-//     - Colon             (3A)
-//     - Less-than         (3C)
-//     - Greater-than      (3E)
-//     - Question Mark     (3F)
-//     - Backslash         (5C)
-//     - Pipe              (7C)
-//     - Delete            (7F)
-
-static const bool needsEscaping[128] = {
-    /* 00-07 */ true,  true,  true,  true,  true,  true,  true,  true,
-    /* 08-0F */ true,  true,  true,  true,  true,  true,  true,  true,
-
-    /* 10-17 */ true,  true,  true,  true,  true,  true,  true,  true,
-    /* 18-1F */ true,  true,  true,  true,  true,  true,  true,  true,
-
-    /* 20-27 */ true,  false, true,  false, false, true,  false, false,
-    /* 28-2F */ false, false, true,  false, false, false, false, true,
-
-    /* 30-37 */ false, false, false, false, false, false, false, false,
-    /* 38-3F */ false, false, true,  false, true,  false, true,  true,
-
-    /* 40-47 */ false, false, false, false, false, false, false, false,
-    /* 48-4F */ false, false, false, false, false, false, false, false,
-
-    /* 50-57 */ false, false, false, false, false, false, false, false,
-    /* 58-5F */ false, false, false, false, true,  false, false, false,
-
-    /* 60-67 */ false, false, false, false, false, false, false, false,
-    /* 68-6F */ false, false, false, false, false, false, false, false,
-
-    /* 70-77 */ false, false, false, false, false, false, false, false,
-    /* 78-7F */ false, false, false, false, true,  false, false, true,
-};
-
-static inline bool shouldEscapeUChar(UChar c)
-{
-    return c > 127 ? false : needsEscaping[c];
-}
-
-// FIXME: Move this function to another compilation unit.
-static String encodeForFileName(const String& string)
-{
-    StringBuilder result;
-    const StringImpl* stringImpl = string.impl();
-    unsigned length = string.length();
-    for (unsigned i = 0; i < length; ++i) {
-        UChar c = (*stringImpl)[i];
-        if (shouldEscapeUChar(c)) {
-            result.append('%');
-            appendByteAsHex(c, result);
-        } else
-            result.append(c);
-    }
-    return result.toString();
-}
-
 PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const String& databaseIdentifier)
 {
+    if (!databaseIdentifier.containsOnlyASCII())
+        return SecurityOrigin::createUnique();
+
     // Make sure there's a first separator
     size_t separator1 = databaseIdentifier.find(separatorCharacter);
     if (separator1 == notFound)
@@ -140,15 +79,12 @@ PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const Stri
     String protocol = databaseIdentifier.substring(0, separator1);
     String host = databaseIdentifier.substring(separator1 + 1, separator2 - separator1 - 1);
 
-    // Make sure the host section contains no characters that should have been escaped when encoding.
-    for (size_t i = 0; i < host.length(); ++i) {
-        UChar c = host[i];
-        if (c > 127 || shouldEscapeUChar(c))
-            return SecurityOrigin::createUnique();
-    }
+    // Make sure the components match their canonical representation so we are sure we're round tripping correctly.
+    KURL url(KURL(), protocol + "://" + host + ":" + String::number(port) + "/");
+    if (!url.isValid() || url.protocol() != protocol || url.host() != host)
+        return SecurityOrigin::createUnique();
 
-    host = decodeURLEscapeSequences(host);
-    return SecurityOrigin::create(KURL(KURL(), protocol + "://" + host + ":" + String::number(port) + "/"));
+    return SecurityOrigin::create(url);
 }
 
 String createDatabaseIdentifierFromSecurityOrigin(const SecurityOrigin* securityOrigin)
@@ -163,7 +99,7 @@ String createDatabaseIdentifierFromSecurityOrigin(const SecurityOrigin* security
 
     String separatorString(&separatorCharacter, 1);
 
-    return securityOrigin->protocol() + separatorString + encodeForFileName(securityOrigin->host()) + separatorString + String::number(securityOrigin->port());
+    return securityOrigin->protocol() + separatorString + securityOrigin->host() + separatorString + String::number(securityOrigin->port());
 }
 
 } // namespace WebCore

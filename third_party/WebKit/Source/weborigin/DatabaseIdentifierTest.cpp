@@ -83,19 +83,19 @@ TEST(DatabaseIdentifierTest, CreateIdentifierAllHostChars)
     } cases[] = {
         {"x\x1Fx", "__0", false},
 
-        {"x\x20x", "http_x%2520x_0", false},
-        {"x\x21x", "http_x%2521x_0", false},
-        {"x\x22x", "http_x%2522x_0", false},
-        {"x\x23x", "http_x_0"}, // 'x#x', the # and following are ignored.
-        {"x\x24x", "http_x%2524x_0", false},
+        {"x\x20x", "http_x%20x_0", false},
+        {"x\x21x", "http_x%21x_0", false},
+        {"x\x22x", "http_x%22x_0", false},
+        {"x\x23x", "http_x_0", false}, // 'x#x', the # and following are ignored.
+        {"x\x24x", "http_x%24x_0", false},
         {"x\x25x", "__0", false},
-        {"x\x26x", "http_x%2526x_0", false},
-        {"x\x27x", "http_x%2527x_0", false},
-        {"x\x28x", "http_x%2528x_0", false},
-        {"x\x29x", "http_x%2529x_0", false},
-        {"x\x2ax", "http_x%252ax_0", false},
-        {"x\x2bx", "http_x+x_0"},
-        {"x\x2cx", "http_x%252cx_0", false},
+        {"x\x26x", "http_x%26x_0", false},
+        {"x\x27x", "http_x%27x_0", false},
+        {"x\x28x", "http_x%28x_0", false},
+        {"x\x29x", "http_x%29x_0", false},
+        {"x\x2ax", "http_x%2ax_0", false},
+        {"x\x2bx", "http_x+x_0", false},
+        {"x\x2cx", "http_x%2cx_0", false},
         {"x\x2dx", "http_x-x_0", true},
         {"x\x2ex", "http_x.x_0", true},
         {"x\x2fx", "http_x_0", false}, // 'x/x', the / and following are ignored.
@@ -112,9 +112,9 @@ TEST(DatabaseIdentifierTest, CreateIdentifierAllHostChars)
         {"x\x39x", "http_x9x_0", true},
         {"x\x3ax", "__0", false},
         {"x\x3bx", "__0", false},
-        {"x\x3cx", "http_x%253cx_0", false},
-        {"x\x3dx", "http_x%253dx_0", false},
-        {"x\x3ex", "http_x%253ex_0", false},
+        {"x\x3cx", "http_x%3cx_0", false},
+        {"x\x3dx", "http_x%3dx_0", false},
+        {"x\x3ex", "http_x%3ex_0", false},
         {"x\x3fx", "http_x_0", false}, // 'x?x', the ? and following are ignored.
 
         {"x\x40x", "http_x_0", false}, // 'x@x', the @ and following are ignored.
@@ -151,7 +151,7 @@ TEST(DatabaseIdentifierTest, CreateIdentifierAllHostChars)
         {"x\x5ex", "__0", false},
         {"x\x5fx", "http_x_x_0", true},
 
-        {"x\x60x", "http_x%2560x_0", false},
+        {"x\x60x", "http_x%60x_0", false},
         {"x\x61x", "http_xax_0", true},
         {"x\x62x", "http_xbx_0", true},
         {"x\x63x", "http_xcx_0", true},
@@ -179,9 +179,9 @@ TEST(DatabaseIdentifierTest, CreateIdentifierAllHostChars)
         {"x\x78x", "http_xxx_0", true},
         {"x\x79x", "http_xyx_0", true},
         {"x\x7ax", "http_xzx_0", true},
-        {"x\x7bx", "http_x%257bx_0", false},
-        {"x\x7cx", "http_x%257cx_0", false},
-        {"x\x7dx", "http_x%257dx_0", false},
+        {"x\x7bx", "http_x%7bx_0", false},
+        {"x\x7cx", "http_x%7cx_0", false},
+        {"x\x7dx", "http_x%7dx_0", false},
         {"x\x7ex", "__0", false},
         {"x\x7fx", "__0", false},
 
@@ -194,7 +194,7 @@ TEST(DatabaseIdentifierTest, CreateIdentifierAllHostChars)
         EXPECT_EQ(cases[i].expected, identifier) << "test case " << i << ": \"" << cases[i].hostname << "\"";
         if (cases[i].shouldRoundTrip) {
             RefPtr<SecurityOrigin> parsedOrigin = createSecurityOriginFromDatabaseIdentifier(identifier);
-            EXPECT_EQ(cases[i].hostname.lower(), parsedOrigin->host()) << "test case " << i;
+            EXPECT_EQ(cases[i].hostname.lower(), parsedOrigin->host()) << "test case " << i << ": \"" << cases[i].hostname << "\"";
         }
     }
 
@@ -215,13 +215,14 @@ TEST(DatabaseIdentifierTest, CreateSecurityOriginFromIdentifier)
         {"http_google.com_0", "http", "google.com", 0, "http://google.com", false},
         {"https_google.com_0", "https", "google.com", 0, "https://google.com", false},
         {"ftp_google.com_0", "ftp", "google.com", 0, "ftp://google.com", false},
-        {"unknown_google.com_0", "unknown", "", 0, "unknown://", false},
+        {"unknown_google.com_0", "", "", 0, "null", true},
         {"http_nondefaultport.net_8001", "http", "nondefaultport.net", 8001, "http://nondefaultport.net:8001", false},
         {"file__0", "", "", 0, "null", true},
         {"__0", "", "", 0, "null", true},
         {"http_foo_bar_baz.org_0", "http", "foo_bar_baz.org", 0, "http://foo_bar_baz.org", false},
         {"http_xn--n3h.unicode.com_0", "http", "xn--n3h.unicode.com", 0, "http://xn--n3h.unicode.com", false},
         {"http_dot.com_0", "http", "dot.com", 0, "http://dot.com", false},
+        {"http_escaped%3Dfun.com_0", "http", "escaped%3dfun.com", 0, "http://escaped%3dfun.com", false},
     };
 
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(validCases); ++i) {
@@ -245,6 +246,9 @@ TEST(DatabaseIdentifierTest, CreateSecurityOriginFromIdentifier)
         "http_latin1\x8a.org_8001",
         String::fromUTF8("http_\xe2\x98\x83.unicode.com_0"),
         "http_dot%252ecom_0",
+        "HtTp_NonCanonicalRepresenTation_0",
+        "http_non_ascii.\xa1.com_0",
+        "http_not_canonical_escape%3d_0",
     };
 
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(bogusIdentifiers); ++i) {
