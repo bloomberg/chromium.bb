@@ -1,0 +1,5 @@
+android.view.View focusable focused scrollable
+    android.widget.ListView item_count=2
+        android.view.View clickable name='Term'
+        android.view.View clickable name='Description'
+    android.view.View clickable name='Definition'

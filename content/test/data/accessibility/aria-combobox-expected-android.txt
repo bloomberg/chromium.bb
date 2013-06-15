@@ -1,0 +1,7 @@
+android.view.View focusable focused scrollable
+    android.view.View
+        android.view.View clickable name='State'
+        android.widget.Spinner clickable editable_text focusable name='State'
+    android.widget.ListView item_count=2
+        android.view.View clickable focusable name='Alabama'
+        android.view.View clickable focusable name='Alaska' item_index=1

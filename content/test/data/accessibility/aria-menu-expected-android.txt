@@ -1,0 +1,10 @@
+android.view.View focusable focused scrollable
+    android.view.View
+        android.view.View clickable name='File'
+        android.view.View clickable name='Edit'
+        android.view.View clickable name='View'
+    android.view.View name='File'
+        android.view.View clickable name='New'
+        android.view.View clickable name='Open'
+        android.view.View clickable name='Save'
+        android.view.View clickable name='Quit'

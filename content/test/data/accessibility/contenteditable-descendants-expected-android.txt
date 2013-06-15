@@ -1,0 +1,19 @@
+android.view.View focusable focused scrollable
+    android.view.View editable_text focusable
+        android.view.View editable_text
+            android.view.View clickable editable_text name='Contentditable with'
+            android.view.View clickable editable_text name='link Link'
+            android.view.View clickable editable_text name='and'
+            android.widget.Image clickable editable_text name='image'
+            android.view.View clickable editable_text name='and'
+            android.widget.Button clickable editable_text focusable name='button'
+        android.widget.GridView editable_text
+            android.view.View editable_text
+                android.view.View clickable editable_text name='Always expose editable tables as tables'
+            android.view.View editable_text
+            android.view.View editable_text
+        android.widget.ListView editable_text item_count=1
+            android.view.View editable_text
+                android.view.View clickable name='1'
+                android.view.View clickable editable_text name='Editable list item'
+    android.view.View clickable editable_text focusable name='Keep the role, just change the state'

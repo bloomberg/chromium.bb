@@ -1,0 +1,3 @@
+android.view.View focusable focused scrollable
+    android.widget.ProgressBar item_index=3 item_count=37
+    android.widget.ProgressBar clickable name='three' item_count=96

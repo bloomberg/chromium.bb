@@ -1,0 +1,7 @@
+android.view.View focusable focused scrollable
+    android.view.View clickable name='invalid=true'
+    android.view.View clickable name='invalid=spelling'
+    android.view.View clickable name='invalid=grammar'
+    android.view.View clickable name='invalid=false'
+    android.view.View clickable name='invalid=<empty>'
+    android.view.View clickable name='invalid=somethingelse'

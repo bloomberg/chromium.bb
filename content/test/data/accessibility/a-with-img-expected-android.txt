@@ -1,0 +1,6 @@
+android.view.View focusable focused scrollable
+    android.view.View
+        android.view.View clickable focusable name='Linkwith image at start. Link'
+        android.view.View clickable focusable name='Link withimagein the middle. Link'
+        android.view.View clickable focusable name='Link withbrokenin the middle. Link'
+        android.view.View clickable focusable name='Link with image at theend Link'

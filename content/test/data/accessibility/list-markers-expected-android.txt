@@ -1,0 +1,17 @@
+android.view.View focusable focused scrollable
+    android.widget.ListView item_count=3
+        android.view.View
+            android.view.View clickable name='•'
+            android.view.View clickable name='First item properly groups itself despite'
+            android.view.View clickable name='bolded'
+            android.view.View clickable name='text.'
+        android.view.View item_index=1
+            android.view.View clickable name='•'
+            android.view.View clickable name='This should also be'
+            android.view.View clickable name='seen'
+            android.view.View clickable name='as a group.'
+        android.view.View item_index=2
+            android.view.View clickable name='•'
+            android.view.View clickable name='Some'
+            android.view.View clickable name='more'
+            android.view.View clickable name='text.'

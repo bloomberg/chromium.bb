@@ -1,0 +1,11 @@
+android.view.View focusable focused scrollable
+    android.widget.ListView item_count=3
+        android.view.View
+            android.view.View clickable name='•'
+            android.view.View clickable name='Item 1'
+        android.view.View item_index=1
+            android.view.View clickable name='•'
+            android.view.View clickable name='Item 2'
+        android.view.View item_index=2
+            android.view.View clickable name='•'
+            android.view.View clickable name='Item 3'

@@ -1,0 +1,9 @@
+#<skip - this is definitely wrong
+android.view.View focusable focused scrollable
+    android.view.View
+        android.widget.Button clickable focusable name='InnerText0'
+        android.widget.Button clickable focusable name='InnerText1'
+        android.widget.Button clickable focusable name='InnerText2'
+        android.widget.Button clickable focusable name='InnerText3'
+        android.widget.Button clickable focusable name='InnerText4'
+        android.widget.Button clickable focusable name='InnerText5'

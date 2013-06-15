@@ -1,0 +1,4 @@
+android.view.View focusable focused scrollable
+    android.view.View clickable name='autocomplete=inline'
+    android.view.View clickable name='autocomplete=list'
+    android.view.View clickable name='autocomplete=both'

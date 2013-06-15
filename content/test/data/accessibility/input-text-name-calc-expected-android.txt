@@ -1,0 +1,10 @@
+#<skip - calc is wrong
+android.view.View focusable focused scrollable
+    android.view.View
+        android.widget.EditText clickable editable_text focusable name='Title0'
+        android.widget.EditText clickable editable_text focusable name='Title1'
+        android.widget.EditText clickable editable_text focusable name='Label2'
+        android.widget.EditText clickable editable_text focusable name='Label3'
+        android.widget.EditText editable_text focusable
+        android.widget.EditText clickable editable_text focusable name='Title5'
+        android.widget.EditText clickable editable_text focusable name='Label6'

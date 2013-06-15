@@ -1,0 +1,3 @@
+android.view.View focusable focused scrollable
+    android.widget.Button clickable focusable name='Regular button'
+    android.widget.ToggleButton checkable clickable focusable name='Toggle button'

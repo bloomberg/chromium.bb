@@ -1,0 +1,14 @@
+android.view.View focusable focused scrollable name='Table example'
+    android.widget.GridView
+        android.view.View
+            android.view.View clickable name='A'
+            android.view.View clickable name='B'
+            android.view.View clickable name='C'
+        android.view.View
+            android.view.View clickable name='D'
+            android.view.View clickable name='E'
+            android.view.View clickable name='F'
+        android.view.View editable_text
+        android.view.View editable_text
+        android.view.View editable_text
+        android.view.View editable_text

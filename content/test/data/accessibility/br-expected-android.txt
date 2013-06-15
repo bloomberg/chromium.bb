@@ -1,0 +1,3 @@
+#<skip - need whitespace between lines.
+android.view.View focusable focused scrollable
+    android.view.View clickable name='Text line 1Text line 2'

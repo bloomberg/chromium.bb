@@ -1,0 +1,5 @@
+android.view.View focusable focused scrollable
+    android.view.View
+        android.widget.Button clickable focusable name='Bullet'
+    android.view.View
+        android.widget.Button clickable focusable name='Bullet'

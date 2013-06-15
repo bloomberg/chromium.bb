@@ -1,0 +1,5 @@
+android.view.View focusable focused scrollable
+    android.widget.ProgressBar item_index=51 item_count=101
+    android.view.View
+    android.widget.SeekBar item_index=53 item_count=103
+    android.widget.EditText
