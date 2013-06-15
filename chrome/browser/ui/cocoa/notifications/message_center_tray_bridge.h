@@ -48,6 +48,9 @@ class MessageCenterTrayBridge :
   // Updates the unread count on the status item.
   void UpdateStatusItem();
 
+  // Opens the message center tray.
+  void OpenTrayWindow();
+
   // The global, singleton message center model object. Weak.
   message_center::MessageCenter* message_center_;
 
@@ -56,10 +59,6 @@ class MessageCenterTrayBridge :
 
   // Obj-C window controller for the notification tray.
   scoped_nsobject<MCTrayController> tray_controller_;
-
-  // Whether or not the |tray_controller_| needs to be updated the next time
-  // it is opened.
-  bool updates_pending_;
 
   // View that is displayed on the system menu bar item.
   scoped_nsobject<MCStatusItemView> status_item_view_;
