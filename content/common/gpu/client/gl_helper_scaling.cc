@@ -536,6 +536,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
     std::basic_string<WebKit::WGC3Dchar> vertex_program;
     std::basic_string<WebKit::WGC3Dchar> fragment_program;
     std::basic_string<WebKit::WGC3Dchar> vertex_header;
+    std::basic_string<WebKit::WGC3Dchar> fragment_directives;
     std::basic_string<WebKit::WGC3Dchar> fragment_header;
     std::basic_string<WebKit::WGC3Dchar> shared_variables;
 
@@ -767,6 +768,8 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "  v_texcoords[0].zw = texcoord - step * 0.5;\n"
             "  v_texcoords[1].xy = texcoord + step * 0.5;\n"
             "  v_texcoords[1].zw = texcoord + step * 1.5;\n");
+        fragment_directives.append(
+            "#extension GL_EXT_draw_buffers : enable\n");
         fragment_header.append(
             "const vec3 kRGBtoY = vec3(0.257, 0.504, 0.098);\n"
             "const float kYBias = 0.0625;\n"
@@ -803,6 +806,8 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "  step /= 2.0;\n"
             "  v_texcoords.xy = texcoord - step * 0.5;\n"
             "  v_texcoords.zw = texcoord + step * 0.5;\n");
+        fragment_directives.append(
+            "#extension GL_EXT_draw_buffers : enable\n");
         fragment_program.append(
             "  vec4 lo_uuvv = texture2D(s_texture, v_texcoords.xy);\n"
             "  vec4 hi_uuvv = texture2D(s_texture, v_texcoords.zw);\n"
@@ -824,6 +829,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         "}\n";
 
     fragment_program =
+        fragment_directives +
         fragment_header +
         shared_variables +
         "void main() {\n" +
