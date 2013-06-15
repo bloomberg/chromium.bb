@@ -111,7 +111,7 @@ gfx::NativeView WebContentsViewWin::GetContentNativeView() const {
 }
 
 gfx::NativeWindow WebContentsViewWin::GetTopLevelNativeWindow() const {
-  return GetParent(GetNativeView());
+  return ::GetAncestor(GetNativeView(), GA_ROOT);
 }
 
 void WebContentsViewWin::GetContainerBounds(gfx::Rect *out) const {

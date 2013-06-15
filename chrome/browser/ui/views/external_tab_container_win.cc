@@ -1406,8 +1406,9 @@ ExternalTabContainer* ExternalTabContainer::Create(
 // static
 ExternalTabContainer* ExternalTabContainer::GetContainerForTab(
     content::WebContents* web_contents) {
-  HWND parent_window = views::HWNDForNativeWindow(
-      web_contents->GetView()->GetTopLevelNativeWindow());
+  HWND webcontents_view_window = views::HWNDForNativeWindow(
+      web_contents->GetView()->GetNativeView());
+  HWND parent_window = ::GetParent(webcontents_view_window);
   if (!::IsWindow(parent_window))
     return NULL;
   return reinterpret_cast<ExternalTabContainerWin*>(
