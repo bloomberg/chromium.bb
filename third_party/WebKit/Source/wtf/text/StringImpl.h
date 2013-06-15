@@ -759,18 +759,6 @@ private:
 
 COMPILE_ASSERT(sizeof(StringImpl) == sizeof(StringImpl::StaticASCIILiteral), StringImpl_should_match_its_StaticASCIILiteral);
 
-#if !ASSERT_DISABLED
-// StringImpls created from StaticASCIILiteral will ASSERT
-// in the generic ValueCheck<T>::checkConsistency
-// as they are not allocated by fastMalloc.
-// We don't currently have any way to detect that case
-// so we ignore the consistency check for all StringImpl*.
-template<> struct
-ValueCheck<StringImpl*> {
-    static void checkConsistency(const StringImpl*) { }
-};
-#endif
-
 template <>
 ALWAYS_INLINE const LChar* StringImpl::getCharacters<LChar>() const { return characters8(); }
 

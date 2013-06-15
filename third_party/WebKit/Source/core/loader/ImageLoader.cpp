@@ -40,24 +40,6 @@
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "weborigin/SecurityOrigin.h"
 
-#if !ASSERT_DISABLED
-// ImageLoader objects are allocated as members of other objects, so generic pointer check would always fail.
-namespace WTF {
-
-template<> struct ValueCheck<WebCore::ImageLoader*> {
-    typedef WebCore::ImageLoader* TraitType;
-    static void checkConsistency(const WebCore::ImageLoader* p)
-    {
-        if (!p)
-            return;
-        ASSERT(p->element());
-        ValueCheck<WebCore::Element*>::checkConsistency(p->element());
-    }
-};
-
-}
-#endif
-
 namespace WebCore {
 
 static ImageEventSender& beforeLoadEventSender()

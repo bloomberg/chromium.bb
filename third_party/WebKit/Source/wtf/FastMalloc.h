@@ -36,7 +36,6 @@ namespace WTF {
     WTF_EXPORT void* fastCalloc(size_t numElements, size_t elementSize);
     WTF_EXPORT void* fastRealloc(void*, size_t);
     WTF_EXPORT char* fastStrDup(const char*);
-    WTF_EXPORT size_t fastMallocSize(const void*);
     WTF_EXPORT size_t fastMallocGoodSize(size_t);
 
     struct TryMallocReturnValue {
@@ -227,7 +226,6 @@ using WTF::fastCalloc;
 using WTF::fastFree;
 using WTF::fastMalloc;
 using WTF::fastMallocGoodSize;
-using WTF::fastMallocSize;
 using WTF::fastRealloc;
 using WTF::fastStrDup;
 using WTF::fastZeroedMalloc;

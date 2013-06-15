@@ -53,10 +53,6 @@
 #include <wtf/DataLog.h>
 #endif
 
-#if !ASSERT_DISABLED
-#include <wtf/ValueCheck.h>
-#endif
-
 namespace WTF {
 
 #if DUMP_HASHTABLE_STATS
@@ -1251,8 +1247,6 @@ namespace WTF {
             const_iterator it = find(Extractor::extract(*entry));
             ASSERT(entry == it.m_position);
             ++count;
-
-            ValueCheck<Key>::checkConsistency(it->key);
         }
 
         ASSERT(count == m_keyCount);

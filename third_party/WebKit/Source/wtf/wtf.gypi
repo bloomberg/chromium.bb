@@ -154,7 +154,6 @@
             'Uint8Array.h',
             'UnusedParam.h',
             'VMTags.h',
-            'ValueCheck.h',
             'Vector.h',
             'VectorTraits.h',
             'WTFExport.h',

@@ -97,8 +97,6 @@ template<typename T> void EventSender<T>::dispatchPendingEvents()
 
     m_timer.stop();
 
-    m_dispatchSoonList.checkConsistency();
-
     m_dispatchingList.swap(m_dispatchSoonList);
     size_t size = m_dispatchingList.size();
     for (size_t i = 0; i < size; ++i) {

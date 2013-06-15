@@ -391,20 +391,6 @@ FastMallocStatistics fastMallocStatistics()
     return statistics;
 }
 
-size_t fastMallocSize(const void* p)
-{
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    return Internal::fastMallocValidationHeader(const_cast<void*>(p))->m_size;
-#elif OS(DARWIN)
-    return malloc_size(p);
-#elif OS(WINDOWS)
-    return _msize(const_cast<void*>(p));
-#else
-    UNUSED_PARAM(p);
-    return 1;
-#endif
-}
-
 } // namespace WTF
 
 #if OS(DARWIN)
@@ -3840,29 +3826,6 @@ FastMallocStatistics fastMallocStatistics()
         statistics.freeListBytes += threadCache->Size();
 
     return statistics;
-}
-
-size_t fastMallocSize(const void* ptr)
-{
-#if ENABLE(WTF_MALLOC_VALIDATION)
-    return Internal::fastMallocValidationHeader(const_cast<void*>(ptr))->m_size;
-#else
-    const PageID p = reinterpret_cast<uintptr_t>(ptr) >> kPageShift;
-    Span* span = pageheap->GetDescriptorEnsureSafe(p);
-
-    if (!span || span->free)
-        return 0;
-
-    for (HardenedSLL free = span->objects; free; free = SLL_Next(free, HARDENING_ENTROPY)) {
-        if (ptr == free.value())
-            return 0;
-    }
-
-    if (size_t cl = span->sizeclass)
-        return ByteSizeForClass(cl);
-
-    return span->length << kPageShift;
-#endif
 }
 
 #if OS(DARWIN)
