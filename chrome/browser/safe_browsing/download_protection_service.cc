@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
+#include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/sandboxed_zip_analyzer.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
@@ -421,6 +422,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
                     << response.verdict();
         reason = REASON_INVALID_RESPONSE_VERDICT;
       }
+      DownloadFeedbackService::MaybeStorePingsForDownload(
+          result, item_, client_download_request_data_, data);
     }
     // We don't need the fetcher anymore.
     fetcher_.reset();
@@ -636,8 +639,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
     request.set_download_type(type_);
     request.mutable_signature()->CopyFrom(signature_info_);
-    std::string request_data;
-    if (!request.SerializeToString(&request_data)) {
+    if (!request.SerializeToString(&client_download_request_data_)) {
       FinishRequest(SAFE, REASON_INVALID_REQUEST_PROTO);
       return;
     }
@@ -651,7 +653,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     fetcher_->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
     fetcher_->SetRequestContext(service_->request_context_getter_.get());
-    fetcher_->SetUploadData("application/octet-stream", request_data);
+    fetcher_->SetUploadData("application/octet-stream",
+                            client_download_request_data_);
     fetcher_->Start();
   }
 
@@ -754,6 +757,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   base::TimeTicks zip_analysis_start_time_;
   bool finished_;
   ClientDownloadRequest::DownloadType type_;
+  std::string client_download_request_data_;
   base::WeakPtrFactory<CheckClientDownloadRequest> weakptr_factory_;
   base::TimeTicks start_time_;  // Used for stats.
 
@@ -766,7 +770,9 @@ DownloadProtectionService::DownloadProtectionService(
     : request_context_getter_(request_context_getter),
       enabled_(false),
       signature_util_(new SignatureUtil()),
-      download_request_timeout_ms_(kDownloadRequestTimeoutMs) {
+      download_request_timeout_ms_(kDownloadRequestTimeoutMs),
+      feedback_service_(new DownloadFeedbackService(
+          request_context_getter, BrowserThread::GetBlockingPool())) {
 
   if (sb_service) {
     ui_manager_ = sb_service->ui_manager();

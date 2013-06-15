@@ -21,6 +21,9 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/safe_browsing/download_feedback_service.h"
+#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
@@ -524,6 +527,8 @@ void DownloadItemView::ShowContextMenuForView(View* source,
 void DownloadItemView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   if (sender == discard_button_) {
+    if (model_.ShouldAllowDownloadFeedback() && BeginDownloadFeedback())
+      return;
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                              base::Time::Now() - creation_time_);
     download()->Remove();
@@ -842,6 +847,22 @@ void DownloadItemView::OpenDownload() {
   UpdateAccessibleName();
 }
 
+bool DownloadItemView::BeginDownloadFeedback() {
+  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
+  if (!sb_service)
+    return false;
+  safe_browsing::DownloadProtectionService* download_protection_service =
+      sb_service->download_protection_service();
+  if (!download_protection_service)
+    return false;
+  UMA_HISTOGRAM_LONG_TIMES("clickjacking.report_and_discard_download",
+                           base::Time::Now() - creation_time_);
+  download_protection_service->feedback_service()->BeginFeedbackForDownload(
+      download());
+  // WARNING: we are deleted at this point.  Don't access 'this'.
+  return true;
+}
+
 void DownloadItemView::LoadIcon() {
   IconManager* im = g_browser_process->icon_manager();
   last_download_item_path_ = download()->GetTargetFilePath();
@@ -1049,8 +1070,15 @@ void DownloadItemView::ShowWarningDialog() {
     save_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     AddChildView(save_button_);
   }
-  discard_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
+  if (model_.ShouldAllowDownloadFeedback()) {
+    safe_browsing::DownloadFeedbackService::RecordFeedbackButtonShown(
+        download()->GetDangerType());
+    discard_button_ = new views::LabelButton(
+        this, l10n_util::GetStringUTF16(IDS_REPORT_AND_DISCARD_DOWNLOAD));
+  } else {
+    discard_button_ = new views::LabelButton(
+        this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
+  }
   discard_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   AddChildView(discard_button_);
 

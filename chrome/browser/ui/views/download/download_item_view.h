@@ -146,6 +146,11 @@ class DownloadItemView : public views::ButtonListener,
 
   void OpenDownload();
 
+  // Submit the downloaded file to the safebrowsing download feedback service.
+  // If true is returned, the DownloadItem and |this| have been deleted.  If
+  // false is returned, nothing has changed.
+  bool BeginDownloadFeedback();
+
   void LoadIcon();
   void LoadIconIfItemPathChanged();
 

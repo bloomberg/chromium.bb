@@ -54,7 +54,7 @@ class TwoPhaseUploader : public base::NonThreadSafe {
   // The first phase request will be sent to |base_url|, with |metadata|
   // included.
   // |progress_callback| will be called periodically as the second phase
-  // progresses.
+  // progresses, if it is non-null.
   // On success |finish_callback| will be called with state = STATE_SUCCESS and
   // the server response in response_data. On failure, state will specify
   // which step the failure occurred in, and net_error, response_code, and

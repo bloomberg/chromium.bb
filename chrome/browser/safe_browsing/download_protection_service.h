@@ -33,6 +33,7 @@ class X509Certificate;
 }  // namespace net
 
 namespace safe_browsing {
+class DownloadFeedbackService;
 class SignatureUtil;
 
 // This class provides an asynchronous API to check whether a particular
@@ -98,6 +99,10 @@ class DownloadProtectionService {
   // Returns the timeout that is used by CheckClientDownload().
   int64 download_request_timeout_ms() const {
     return download_request_timeout_ms_;
+  }
+
+  DownloadFeedbackService* feedback_service() {
+    return feedback_service_.get();
   }
 
  protected:
@@ -185,6 +190,8 @@ class DownloadProtectionService {
   scoped_refptr<SignatureUtil> signature_util_;
 
   int64 download_request_timeout_ms_;
+
+  scoped_ptr<DownloadFeedbackService> feedback_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadProtectionService);
 };

@@ -1085,6 +1085,8 @@
         'browser/safe_browsing/chunk_range_unittest.cc',
         'browser/safe_browsing/client_side_detection_host_unittest.cc',
         'browser/safe_browsing/client_side_detection_service_unittest.cc',
+        'browser/safe_browsing/download_feedback_service_unittest.cc',
+        'browser/safe_browsing/download_feedback_unittest.cc',
         'browser/safe_browsing/download_protection_service_unittest.cc',
         'browser/safe_browsing/local_two_phase_testserver.cc',
         'browser/safe_browsing/malware_details_unittest.cc',

@@ -941,6 +941,13 @@ other types of suffix sets.
   <summary>TBD</summary>
 </histogram>
 
+<histogram name="clickjacking.report_and_discard_download" units="ms">
+  <summary>
+    Time between &quot;Report and Discard&quot; button being shown and it being
+    clicked.
+  </summary>
+</histogram>
+
 <histogram name="clickjacking.save_download">
   <summary>TBD</summary>
 </histogram>
@@ -10581,6 +10588,53 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SBDownloadFeedback.Activations" enum="DownloadItem.DangerType">
+  <summary>
+    Count of times download feedback has been started, broken down by danger
+    type.
+  </summary>
+</histogram>
+
+<histogram name="SBDownloadFeedback.ActiveFeedbacks">
+  <summary>
+    When a new download feedback request is added, records the number of
+    download requests currently active and/or pending.
+  </summary>
+</histogram>
+
+<histogram name="SBDownloadFeedback.Shown" enum="DownloadItem.DangerType">
+  <summary>
+    Count of times download feedback button has been shown, broken down by
+    danger type.
+  </summary>
+</histogram>
+
+<histogram name="SBDownloadFeedback.SizeEligibleKB" units="KB">
+  <summary>
+    Size of downloads that were of the correct danger type, regardless if they
+    meet the max file size check or if they are actually uploaded or not.
+  </summary>
+</histogram>
+
+<histogram name="SBDownloadFeedback.SizeFailure" units="bytes">
+  <summary>
+    Size of downloads that failed to be uploaded to the feedback service.
+  </summary>
+</histogram>
+
+<histogram name="SBDownloadFeedback.SizeSuccess" units="bytes">
+  <summary>
+    Size of downloads that were successfully uploaded to the feedback service.
+  </summary>
+</histogram>
+
+<histogram name="SBDownloadFeedback.UploadResult"
+    enum="SBDownloadFeedbackUploadResult">
+  <summary>
+    Final result of attempt to upload binary to download feedback service.
+  </summary>
+</histogram>
+
 <histogram name="Search.DefaultSearchProvider" enum="OmniboxSearchEngine">
   <summary>
     The id of the default search engine that is loaded after Chrome startup. See
@@ -17221,6 +17275,17 @@ other types of suffix sets.
   <int value="3" label="MODEL_FILE_TOO_LARGE"/>
   <int value="4" label="MODEL_PARSE_ERROR"/>
   <int value="5" label="MODEL_MISSING_FIELDS"/>
+</enum>
+
+<enum name="SBDownloadFeedbackUploadResult" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="UPLOAD_SUCCESS"/>
+  <int value="2" label="UPLOAD_CANCELLED"/>
+  <int value="3" label="UPLOAD_METADATA_NET_ERROR"/>
+  <int value="4" label="UPLOAD_METADATA_RESPONSE_ERROR"/>
+  <int value="5" label="UPLOAD_FILE_NET_ERROR"/>
+  <int value="6" label="UPLOAD_FILE_RESPONSE_ERROR"/>
+  <int value="7" label="UPLOAD_COMPLETE_RESPONSE_ERROR"/>
 </enum>
 
 <enum name="ShillTerminationActionResult" type="int">

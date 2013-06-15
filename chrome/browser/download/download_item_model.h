@@ -79,6 +79,9 @@ class DownloadItemModel {
   // Is this considered a malicious download? Implies IsDangerous().
   bool IsMalicious() const;
 
+  // Is safe browsing download feedback feature available for this download?
+  bool ShouldAllowDownloadFeedback() const;
+
   // Returns |true| if this download is expected to complete successfully and
   // thereafter be removed from the shelf.  Downloads that are opened
   // automatically or are temporary will be removed from the shelf on successful

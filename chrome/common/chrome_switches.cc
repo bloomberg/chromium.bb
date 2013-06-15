@@ -1248,6 +1248,13 @@ const char kSbDisableExtensionBlacklist[] =
 const char kSbDisableSideEffectFreeWhitelist[] =
     "safebrowsing-disable-side-effect-free-whitelist";
 
+// URL to send safebrowsing download feedback reports to.
+const char kSbDownloadFeedbackURL[] = "safebrowsing-download-feedback-url";
+
+// Enable safebrowsing download feedback.
+const char kSbEnableDownloadFeedback[] =
+    "safebrowsing-enable-download-feedback";
+
 // Enables or disables extension scripts badges in the location bar.
 const char kScriptBadges[]                  = "script-badges";
 

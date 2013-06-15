@@ -12,6 +12,7 @@
 #include "base/supports_user_data.h"
 #include "base/time.h"
 #include "chrome/browser/download/download_crx_util.h"
+#include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -391,6 +392,13 @@ bool DownloadItemModel::IsMalicious() const {
   }
   NOTREACHED();
   return false;
+}
+
+bool DownloadItemModel::ShouldAllowDownloadFeedback() const {
+  if (!IsDangerous())
+    return false;
+  return safe_browsing::DownloadFeedbackService::IsEnabledForDownload(
+      *download_);
 }
 
 bool DownloadItemModel::ShouldRemoveFromShelfWhenComplete() const {

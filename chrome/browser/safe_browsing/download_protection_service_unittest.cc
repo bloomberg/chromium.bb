@@ -10,6 +10,7 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -20,8 +21,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
+#include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread.h"
@@ -146,6 +149,8 @@ ACTION_P(CheckDownloadUrlDone, threat_type) {
 class DownloadProtectionServiceTest : public testing::Test {
  protected:
   virtual void SetUp() {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kSbEnableDownloadFeedback);
     ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                     &msg_loop_));
     // Start real threads for the IO and File threads so that the DCHECKs
@@ -485,6 +490,10 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
                  base::Unretained(this)));
   msg_loop_.Run();
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
+  std::string feedback_ping;
+  std::string feedback_response;
+  EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+      item, &feedback_ping, &feedback_response));
 
   // If the response is dangerous the result should also be marked as dangerous.
   response.set_verdict(ClientDownloadResponse::DANGEROUS);
@@ -498,6 +507,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
   msg_loop_.Run();
+  EXPECT_FALSE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+      item, &feedback_ping, &feedback_response));
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
 #else
@@ -518,6 +529,12 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   msg_loop_.Run();
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::UNCOMMON));
+  EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+      item, &feedback_ping, &feedback_response));
+  ClientDownloadRequest decoded_request;
+  EXPECT_TRUE(decoded_request.ParseFromString(feedback_ping));
+  EXPECT_EQ(url_chain.back().spec(), decoded_request.url());
+  EXPECT_EQ(response.SerializeAsString(), feedback_response);
 #else
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 #endif
@@ -537,6 +554,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   msg_loop_.Run();
 #if defined(OS_WIN)
   EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS_HOST));
+  EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+      item, &feedback_ping, &feedback_response));
+  EXPECT_EQ(response.SerializeAsString(), feedback_response);
 #else
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 #endif

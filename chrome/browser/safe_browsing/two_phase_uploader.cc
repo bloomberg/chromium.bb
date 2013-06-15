@@ -153,7 +153,7 @@ void TwoPhaseUploaderImpl::OnURLFetchUploadProgress(
   DCHECK(CalledOnValidThread());
   DVLOG(3) << __FUNCTION__ << " " << source->GetURL().spec()
            << " " << current << "/" << total;
-  if (state_ == UPLOAD_FILE)
+  if (state_ == UPLOAD_FILE && !progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }
 

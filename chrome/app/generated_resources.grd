@@ -2920,6 +2920,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Text for the button used to stop a dangerous download.">
         Discard
       </message>
+      <message name="IDS_REPORT_AND_DISCARD_DOWNLOAD"
+               desc="Text for the button used to upload a malicious file to Google for analysis and then discard it.">
+        Report &amp; Discard
+      </message>
 
       <!-- Download Tab Items -->
       <message name="IDS_DOWNLOAD_LINK_PAUSE"
