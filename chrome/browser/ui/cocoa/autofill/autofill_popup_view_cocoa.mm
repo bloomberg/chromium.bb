@@ -35,6 +35,10 @@ NSColor* NameColor() {
   return [NSColor blackColor];
 }
 
+NSColor* WarningColor() {
+  return [NSColor grayColor];
+}
+
 NSColor* SubtextColor() {
   return [NSColor grayColor];
 }
@@ -197,10 +201,12 @@ NSColor* SubtextColor() {
 
   BOOL isRTL = controller_->IsRTL();
 
+  NSColor* nameColor =
+      controller_->IsWarning(index) ? WarningColor() : NameColor();
   NSDictionary* nameAttributes =
       [NSDictionary dictionaryWithObjectsAndKeys:
            controller_->GetNameFontForRow(index).GetNativeFont(),
-           NSFontAttributeName, NameColor(), NSForegroundColorAttributeName,
+           NSFontAttributeName, nameColor, NSForegroundColorAttributeName,
            nil];
   NSSize nameSize = [name sizeWithAttributes:nameAttributes];
   CGFloat x = bounds.origin.x +

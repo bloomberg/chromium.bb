@@ -25,6 +25,7 @@ const SkColor kHoveredBackgroundColor = SkColorSetARGB(0xFF, 0xCD, 0xCD, 0xCD);
 const SkColor kItemTextColor = SkColorSetARGB(0xFF, 0x7F, 0x7F, 0x7F);
 const SkColor kPopupBackground = SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF);
 const SkColor kValueTextColor = SkColorSetARGB(0xFF, 0x00, 0x00, 0x00);
+const SkColor kWarningTextColor = SkColorSetARGB(0xFF, 0x7F, 0x7F, 0x7F);
 
 }  // namespace
 
@@ -183,7 +184,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   canvas->DrawStringInt(
       controller_->names()[index],
       controller_->GetNameFontForRow(index),
-      kValueTextColor,
+      controller_->IsWarning(index) ? kWarningTextColor : kValueTextColor,
       value_content_x,
       entry_rect.y(),
       canvas->GetStringWidth(controller_->names()[index],

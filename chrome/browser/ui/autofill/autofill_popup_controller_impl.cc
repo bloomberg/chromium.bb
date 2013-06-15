@@ -270,6 +270,10 @@ bool AutofillPopupControllerImpl::CanDelete(size_t index) const {
       id == WebAutofillClient::MenuItemIDPasswordEntry;
 }
 
+bool AutofillPopupControllerImpl::IsWarning(size_t index) const {
+  return identifiers_[index] == WebAutofillClient::MenuItemIDWarningMessage;
+}
+
 gfx::Rect AutofillPopupControllerImpl::GetRowBounds(size_t index) {
   int top = 0;
   for (size_t i = 0; i < index; ++i) {

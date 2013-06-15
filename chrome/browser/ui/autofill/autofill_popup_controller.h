@@ -51,6 +51,10 @@ class AutofillPopupController {
   // Returns true if the given index refers to an element that can be deleted.
   virtual bool CanDelete(size_t index) const = 0;
 
+  // Returns true if the given index refers to an element that is a warning
+  // rather than an Autofill suggestion.
+  virtual bool IsWarning(size_t index) const = 0;
+
   // Updates the bounds of the popup and initiates a redraw.
   virtual void SetPopupBounds(const gfx::Rect& bounds) = 0;
 

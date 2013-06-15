@@ -81,6 +81,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   virtual void AcceptSuggestion(size_t index) OVERRIDE;
   virtual int GetIconResourceID(const string16& resource_name) OVERRIDE;
   virtual bool CanDelete(size_t index) const OVERRIDE;
+  virtual bool IsWarning(size_t index) const OVERRIDE;
   virtual gfx::Rect GetRowBounds(size_t index) OVERRIDE;
   virtual void SetPopupBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual const gfx::Rect& popup_bounds() const OVERRIDE;

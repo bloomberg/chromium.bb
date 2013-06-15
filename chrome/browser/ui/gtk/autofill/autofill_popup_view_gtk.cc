@@ -28,6 +28,7 @@ namespace {
 const GdkColor kBorderColor = GDK_COLOR_RGB(0xc7, 0xca, 0xce);
 const GdkColor kHoveredBackgroundColor = GDK_COLOR_RGB(0xcd, 0xcd, 0xcd);
 const GdkColor kNameColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
+const GdkColor kWarningColor = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
 const GdkColor kSubtextColor = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
 
 }  // namespace
@@ -225,7 +226,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
   // Draw the value.
   SetLayoutText(controller_->names()[index],
                 controller_->GetNameFontForRow(index),
-                kNameColor);
+                controller_->IsWarning(index) ? kWarningColor : kNameColor);
   int value_text_width = controller_->GetNameFontForRow(index).GetStringWidth(
       controller_->names()[index]);
 
