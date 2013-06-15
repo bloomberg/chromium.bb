@@ -49,6 +49,7 @@ namespace {
 
 const char kKeyMandatory[] = "policy";
 const char kKeyRecommended[] = "recommended";
+const char kKeyRecommendedChrome[] = "Recommended";
 const char kKeySchema[] = "schema";
 const char kKeyThirdParty[] = "3rdparty";
 
@@ -531,7 +532,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     // Remove special-cased entries from the GPO dictionary.
     base::DictionaryValue* temp_dict = NULL;
     scoped_ptr<base::DictionaryValue> recommended_dict(
-        RemoveDict(&gpo_dict, kKeyRecommended));
+        RemoveDict(&gpo_dict, kKeyRecommendedChrome));
     scoped_ptr<base::DictionaryValue> third_party_dict(
         RemoveDict(&gpo_dict, kKeyThirdParty));
 
