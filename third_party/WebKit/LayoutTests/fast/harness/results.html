@@ -53,7 +53,7 @@ th {
 
 .content-container {
     -webkit-flex: 1;
-    min-height: 0;
+    min-height: -webkit-min-content;
     overflow: auto;
 }
 
@@ -137,31 +137,6 @@ tbody.flagged .flag {
     vertical-align: top;
 }
 
-#options {
-    background-color: white;
-}
-
-#options-menu {
-    border: 1px solid;
-    margin-top: 1px;
-    padding: 2px 4px;
-    box-shadow: 2px 2px 2px #888;
-    -webkit-transition: opacity .2s;
-    text-align: left;
-    position: absolute;
-    right: 4px;
-    background-color: white;
-}
-
-#options-menu label {
-    display: block;
-}
-
-.hidden-menu {
-    pointer-events: none;
-    opacity: 0;
-}
-
 .label {
     padding-left: 3px;
     font-weight: bold;
@@ -209,10 +184,19 @@ tbody.flagged .flag {
 }
 
 #flagged-tests {
+    margin: 1px;
     padding: 5px;
     height: 100px;
 }
+
+#flagged-test-container h2 {
+    display: inline-block;
+    margin: 0 10px 0 0;
+}
 </style>
+<style id="unexpected-pass-style"></style>
+<style id="flaky-failures-style"></style>
+<style id="stderr-style"></style>
 <style id="unexpected-style"></style>
 
 <script>
@@ -658,9 +642,9 @@ function updateTestlistCounts()
 function flagAll(headerLink)
 {
     var tests = visibleTests(parentOfType(headerLink, 'div'));
-    forEach(tests, function(tests) {
+    forEach(tests, function(test) {
         var shouldFlag = true;
-        TestNavigator.flagTest(tests, shouldFlag);
+        TestNavigator.flagTest(test, shouldFlag);
     })
 }
 
@@ -939,6 +923,7 @@ var TestNavigator = {};
 TestNavigator.reset = function() {
     TestNavigator.currentTestIndex = -1;
     TestNavigator.flaggedTests = {};
+    TestNavigator._createFlaggedTestContainer();
 }
 
 TestNavigator.handleKeyEvent = function(event)
@@ -1051,18 +1036,21 @@ TestNavigator.flagTest = function(testTbody, shouldFlag)
     TestNavigator.updateFlaggedTests();
 }
 
+TestNavigator._createFlaggedTestContainer = function()
+{
+    var flaggedTestContainer = document.createElement('div');
+    flaggedTestContainer.id = 'flagged-test-container';
+    flaggedTestContainer.innerHTML = '<h2>Flagged Tests</h2>' +
+        '<label title="Use newlines instead of spaces to separate flagged tests">' +
+            '<input id="use-newlines" type=checkbox checked onchange="handleToggleUseNewlines()">Use newlines</input>' +
+        '</label>' +
+        '<pre id="flagged-tests" contentEditable></pre>';
+    document.body.appendChild(flaggedTestContainer);
+}
+
 TestNavigator.updateFlaggedTests = function()
 {
     var flaggedTestTextbox = document.getElementById('flagged-tests');
-    if (!flaggedTestTextbox) {
-        var flaggedTestContainer = document.createElement('div');
-        flaggedTestContainer.id = 'flagged-test-container';
-        flaggedTestContainer.innerHTML = '<h2>Flagged Tests</h2><pre id="flagged-tests" contentEditable></pre>';
-        document.body.appendChild(flaggedTestContainer);
-
-        flaggedTestTextbox = document.getElementById('flagged-tests');
-    }
-
     var flaggedTests = Object.keys(this.flaggedTests);
     flaggedTests.sort();
     var separator = document.getElementById('use-newlines').checked ? '\n' : ' ';
@@ -1122,7 +1110,28 @@ document.addEventListener('keypress', TestNavigator.handleKeyEvent, false);
 
 function onlyShowUnexpectedFailures()
 {
-    return document.getElementById('unexpected-results').checked;
+    return !document.getElementById('show-expected-failures').checked;
+}
+
+function handleStderrChange()
+{
+    OptionWriter.save();
+    document.getElementById('stderr-style').textContent = document.getElementById('show-stderr').checked ?
+        '' : '#stderr-table { display: none; }';
+}
+
+function handleUnexpectedPassesChange()
+{
+    OptionWriter.save();
+    document.getElementById('unexpected-pass-style').textContent = document.getElementById('show-unexpected-passes').checked ?
+        '' : '#passes-table { display: none; }';
+}
+
+function handleFlakyFailuresChange()
+{
+    OptionWriter.save();
+    document.getElementById('flaky-failures-style').textContent = document.getElementById('show-flaky-failures').checked ?
+        '' : '.flaky { display: none; }';
 }
 
 function handleUnexpectedResultsChange()
@@ -1174,7 +1183,7 @@ OptionWriter.apply = function()
 
 function updateAllOptions()
 {
-    forEach(document.querySelectorAll('#options-menu input'), function(input) { input.onchange(); });
+    forEach(document.querySelectorAll('input'), function(input) { input.onchange(); });
 }
 
 function handleToggleUseNewlines()
@@ -1235,20 +1244,6 @@ function convertToNonTogglingHandler(resultFunction)
     }
 }
 
-function toggleOptionsMenu()
-{
-    var menu = document.getElementById('options-menu');
-    menu.className = (menu.className == 'hidden-menu') ? '' : 'hidden-menu';
-}
-
-function handleMouseDown(e)
-{
-    if (!parentOfType(e.target, '#options-menu') && e.target.id != 'options-link')
-        document.getElementById('options-menu').className = 'hidden-menu';
-}
-
-document.addEventListener('mousedown', handleMouseDown, false);
-
 function failingTestsTable(tests, title, id)
 {
     if (!tests.length)
@@ -1262,9 +1257,15 @@ function failingTestsTable(tests, title, id)
             numberofUnexpectedFailures++;
     }
 
-    var header = '<div';
+    var className = '';
+    if (id)
+        className += id.split('-')[0];
     if (!hasUnexpected(tests))
-        header += ' class=expected';
+        className += ' expected';
+
+    var header = '<div';
+    if (className)
+        header += ' class="' + className + '"';
 
     header += '>' + testListHeaderHtml(title) +
         '<table id="' + id + '"><thead><tr>' +
@@ -1292,12 +1293,8 @@ function generatePage()
         '<div class="note">Use the i, j, k and l keys to navigate, e, c to expand and collapse, and f to flag</div>' +
         '<a href="javascript:void()" onclick="expandAllExpectations()">expand all</a> ' +
         '<a href="javascript:void()" onclick="collapseAllExpectations()">collapse all</a> ' +
-        '<a href="javascript:void()" id=options-link onclick="toggleOptionsMenu()">options</a>' +
-        '<div id=options-menu class=hidden-menu>' +
-            '<label><input id="unexpected-results" type=checkbox checked onchange="handleUnexpectedResultsChange()">Only unexpected results</label>' +
-            '<label><input id="toggle-images" type=checkbox checked onchange="handleToggleImagesChange()">Toggle images</label>' +
-            '<label title="Use newlines instead of spaces to separate flagged tests"><input id="use-newlines" type=checkbox checked onchange="handleToggleUseNewlines()">Use newlines</input>' +
-        '</div></div>';
+        '<label><input id="toggle-images" type=checkbox checked onchange="handleToggleImagesChange()">Toggle images</label>' +
+        '</div>';
 
     if (globalState().results.interrupted)
         html += "<p class='stopped-running-early-message'>Testing exited early.</p>"
@@ -1328,7 +1325,14 @@ function generatePage()
             '<p>httpd error log: <a href="error_log.txt">error_log.txt</a></p>';
     }
 
-    document.body.innerHTML = html + '</div>';
+    html += '</div><div>' +
+        '<label><input id="show-expected-failures" type=checkbox onchange="handleUnexpectedResultsChange()">Show expected failures</label>' +
+        '<label><input id="show-flaky-failures" type=checkbox onchange="handleFlakyFailuresChange()">Show flaky failures</label>' +
+        '<label><input id="show-unexpected-passes" type=checkbox onchange="handleUnexpectedPassesChange()">Show unexpected passes</label>' +
+        '<label><input id="show-stderr" type=checkbox onchange="handleStderrChange()">Show stderr</label>' +
+    '</div>';
+
+    document.body.innerHTML = html;
 
     if (document.getElementById('results-table')) {
         document.getElementById('results-table').addEventListener('click', TableSorter.handleClick, false);

@@ -139,13 +139,6 @@ function runTests()
     runTest(results, function() {
         assertTrue(document.getElementById('image-results-header').textContent == '');
         assertTrue(document.getElementById('text-results-header').textContent != '');
-        
-        var optionsMenu = document.getElementById('options-menu');
-        assertTrue(window.getComputedStyle(optionsMenu, null)['opacity'] == 0)
-        toggleOptionsMenu();
-        toggleOptionsMenu();
-        // FIXME: Test the opacity after toggling the menu.
-        // Can't just do it inline due to CSS transitions.
     });
 
     results = mockResults();
@@ -256,8 +249,8 @@ function runTests()
         assertTrue(document.querySelectorAll('.results-row').length == 1);
         assertTrue(window.getComputedStyle(document.querySelectorAll('tbody')[0], null)['display'] == 'none');
         
-        document.getElementById('unexpected-results').checked = false;
-        document.getElementById('unexpected-results').onchange();
+        document.getElementById('show-expected-failures').checked = true;
+        document.getElementById('show-expected-failures').onchange();
 
         assertTrue(visibleExpandLinks().length == 2);
         assertTrue(document.querySelectorAll('.results-row').length == 1);
@@ -466,7 +459,7 @@ function runTests()
     runTest(results, function() {
         assertTrue(window.getComputedStyle(document.querySelector('tbody'), null)['display'] != 'none');
         assertTrue(document.querySelector('tbody td:nth-child(3)').textContent == 'expected actual  diff (1%) ');
-    }, '{"toggle-images":false,"unexpected-results":false}');
+    }, '{"toggle-images":false,"show-expected-failures":true}');
 
     function enclosingNodeWithTagNameHasClassName(node, tagName, className) {
         while (node && (!node.tagName || node.localName != tagName))
@@ -559,8 +552,8 @@ function runTests()
         assertTrue(document.querySelector('#missing-table tbody:not(.expected) .test-link').textContent == 'foo/unexpected-missing.html');
         assertTrue(document.querySelector('#missing-table tbody:not(.expected) .result-link').textContent == 'result');
 
-        document.getElementById('unexpected-results').checked = false;
-        document.getElementById('unexpected-results').onchange();
+        document.getElementById('show-expected-failures').checked = true;
+        document.getElementById('show-expected-failures').onchange();
         expandAllExpectations();
         assertTrue(visibleExpandLinks().length == 2);
     });
@@ -727,8 +720,8 @@ function runTests()
         assertTrue(titles[4].textContent == 'Tests that had stderr output (1): flag all');
         assertTrue(titles[5].textContent == 'Tests expected to fail but passed (1): flag all');
 
-        document.getElementById('unexpected-results').checked = false;
-        document.getElementById('unexpected-results').onchange();
+        document.getElementById('show-expected-failures').checked = true;
+        document.getElementById('show-expected-failures').onchange();
 
         assertTrue(titles[0].textContent == 'Tests that crashed (2): flag all');
         assertTrue(titles[1].textContent == 'Tests that failed text/pixel/audio diff (5): flag all');
@@ -759,13 +752,12 @@ function runTests()
     subtree['bar1.html'] = mockExpectation('TEXT', 'TEXT');
     subtree['bar2.html'] = mockExpectation('TEXT', 'TEXT');
     runTest(results, function() {
-        var flaggedTestsTextbox = document.getElementById('flagged-tests');
-
         flagAll(document.querySelector('.flag-all'));
+        var flaggedTestsTextbox = document.getElementById('flagged-tests');
         assertTrue(flaggedTestsTextbox.innerText == 'foo/bar.html');
 
-        document.getElementById('unexpected-results').checked = false;
-        document.getElementById('unexpected-results').onchange();
+        document.getElementById('show-expected-failures').checked = true;
+        document.getElementById('show-expected-failures').onchange();
 
         flagAll(document.querySelector('.flag-all'));
         assertTrue(flaggedTestsTextbox.innerText == 'foo/bar.html\nfoo/bar1.html\nfoo/bar2.html');
@@ -773,6 +765,26 @@ function runTests()
         unflag(document.querySelector('.flag'));
         assertTrue(flaggedTestsTextbox.innerText == 'foo/bar1.html\nfoo/bar2.html');
     });
+
+    results = mockResults();
+    var subtree = results.tests['foo'] = {}
+    subtree['bar.html'] = mockExpectation('TEXT', 'IMAGE');
+    subtree['bar1.html'] = mockExpectation('TEXT', 'IMAGE');
+    runTest(results, function() {
+        flagAll(document.querySelector('.flag-all'));
+        var flaggedTestsTextbox = document.getElementById('flagged-tests');
+        assertTrue(flaggedTestsTextbox.innerText == 'foo/bar.html\nfoo/bar1.html');
+    }, '{"use-newlines":true}');
+
+    results = mockResults();
+    var subtree = results.tests['foo'] = {}
+    subtree['bar.html'] = mockExpectation('TEXT', 'IMAGE');
+    subtree['bar1.html'] = mockExpectation('TEXT', 'IMAGE');
+    runTest(results, function() {
+        flagAll(document.querySelector('.flag-all'));
+        var flaggedTestsTextbox = document.getElementById('flagged-tests');
+        assertTrue(flaggedTestsTextbox.innerText == 'foo/bar.html foo/bar1.html');
+    }, '{"use-newlines":false}');
 
     results = mockResults();
     results.tests['foo/bar-image.html'] = mockExpectation('PASS', 'TEXT IMAGE+TEXT');
