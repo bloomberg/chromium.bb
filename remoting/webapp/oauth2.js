@@ -128,6 +128,7 @@ remoting.OAuth2.prototype.clear = function() {
 remoting.OAuth2.prototype.setRefreshToken = function(token) {
   window.localStorage.setItem(this.KEY_REFRESH_TOKEN_, escape(token));
   window.localStorage.setItem(this.KEY_REFRESH_TOKEN_REVOKABLE_, true);
+  window.localStorage.removeItem(this.KEY_EMAIL_);
   this.clearAccessToken_();
 };
 
