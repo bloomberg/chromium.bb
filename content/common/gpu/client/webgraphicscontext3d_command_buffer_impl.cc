@@ -1607,6 +1607,23 @@ DELEGATE_TO_GL_1(waitAsyncTexImage2DCHROMIUM, WaitAsyncTexImage2DCHROMIUM,
 
 DELEGATE_TO_GL_2(drawBuffersEXT, DrawBuffersEXT, WGC3Dsizei, const WGC3Denum*)
 
+DELEGATE_TO_GL_4(drawArraysInstancedANGLE, DrawArraysInstancedANGLE, WGC3Denum,
+                 WGC3Dint, WGC3Dsizei, WGC3Dsizei)
+
+void WebGraphicsContext3DCommandBufferImpl::drawElementsInstancedANGLE(
+    WGC3Denum mode,
+    WGC3Dsizei count,
+    WGC3Denum type,
+    WGC3Dintptr offset,
+    WGC3Dsizei primcount) {
+  gl_->DrawElementsInstancedANGLE(
+      mode, count, type,
+      reinterpret_cast<void*>(static_cast<intptr_t>(offset)), primcount);
+}
+
+DELEGATE_TO_GL_2(vertexAttribDivisorANGLE, VertexAttribDivisorANGLE, WGC3Duint,
+                 WGC3Duint)
+
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit::gpu::CreateCommandBufferSkiaGLBinding();
 }
