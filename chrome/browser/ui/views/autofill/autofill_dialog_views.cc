@@ -1542,18 +1542,18 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
     float expand = input.expand_weight;
     column_set->AddColumn(views::GridLayout::FILL,
                           views::GridLayout::BASELINE,
-                          expand ? expand : 1,
+                          expand ? expand : 1.0,
                           views::GridLayout::USE_PREF,
                           0,
                           0);
 
     ui::ComboboxModel* input_model =
         controller_->ComboboxModelForAutofillType(input.type);
+    views::View* view_to_add = NULL;
     if (input_model) {
       views::Combobox* combobox = new views::Combobox(input_model);
       combobox->set_listener(this);
       comboboxes->insert(std::make_pair(&input, combobox));
-      layout->AddView(combobox);
 
       for (int i = 0; i < input_model->GetItemCount(); ++i) {
         if (input.initial_value == input_model->GetItemAt(i)) {
@@ -1561,6 +1561,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
           break;
         }
       }
+      view_to_add = combobox;
     } else {
       DecoratedTextfield* field = new DecoratedTextfield(
           input.initial_value,
@@ -1572,8 +1573,15 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
       field->textfield()->SetIcon(icon.AsImageSkia());
 
       textfields->insert(std::make_pair(&input, field));
-      layout->AddView(field);
+      view_to_add = field;
     }
+
+    // This is the same as AddView(view_to_add), except that 1 is used for the
+    // view's preferred width. Thus the width of the column completely depends
+    // on |expand|.
+    layout->AddView(view_to_add, 1, 1,
+                    views::GridLayout::FILL, views::GridLayout::BASELINE,
+                    1, 0);
   }
 
   return view;
