@@ -127,6 +127,7 @@ int32_t PepperHostResolverPrivateMessageFilter::OnMsgResolve(
       RenderViewHost::FromID(render_process_id_, render_view_id_);
   if (!render_view_host ||
       !pepper_socket_utils::CanUseSocketAPIs(external_plugin_,
+                                             true,
                                              request,
                                              render_view_host)) {
     return PP_ERROR_FAILED;

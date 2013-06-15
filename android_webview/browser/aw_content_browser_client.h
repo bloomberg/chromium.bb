@@ -140,6 +140,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   virtual bool AllowPepperSocketAPI(
       content::BrowserContext* browser_context,
       const GURL& url,
+      bool private_api,
       const content::SocketPermissionRequest& params) OVERRIDE;
 
  private:

@@ -37,16 +37,13 @@ bool HostIsInSet(const std::string& host, const std::set<std::string>& set) {
 bool IsExtensionOrSharedModuleWhitelisted(
     const GURL& url,
     const ExtensionSet* extension_set,
-    const std::set<std::string>& whitelist,
-    const char* command_line_switch) {
-  const std::string host = url.host();
-  if (!url.is_valid())
+    const std::set<std::string>& whitelist) {
+  if (!url.is_valid() || !url.SchemeIs(extensions::kExtensionScheme))
     return false;
 
-  if (url.SchemeIs(extensions::kExtensionScheme) &&
-      HostIsInSet(host, whitelist)) {
+  const std::string host = url.host();
+  if (HostIsInSet(host, whitelist))
     return true;
-  }
 
   // Check the modules that are imported by this extension to see if any of them
   // is whitelisted.
@@ -69,22 +66,37 @@ bool IsExtensionOrSharedModuleWhitelisted(
     }
   }
 
+  return false;
+}
+
+bool IsHostAllowedByCommandLine(const GURL& url,
+                                const ExtensionSet* extension_set,
+                                const char* command_line_switch) {
+  if (!url.is_valid())
+    return false;
+
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   const std::string allowed_list =
       command_line.GetSwitchValueASCII(command_line_switch);
+  if (allowed_list.empty())
+    return false;
+
+  const std::string host = url.host();
   if (allowed_list == "*") {
     // For now, we only allow packaged and platform apps in this wildcard.
+    if (!extension_set || !url.SchemeIs(extensions::kExtensionScheme))
+      return false;
+
+    const Extension* extension = extension_set->GetByID(host);
     return extension &&
         (extension->GetType() == Manifest::TYPE_LEGACY_PACKAGED_APP ||
          extension->GetType() == Manifest::TYPE_PLATFORM_APP);
   }
 
-  if (!allowed_list.empty()) {
-    base::StringTokenizer t(allowed_list, ",");
-    while (t.GetNext()) {
-      if (t.token() == host)
-        return true;
-    }
+  base::StringTokenizer t(allowed_list, ",");
+  while (t.GetNext()) {
+    if (t.token() == host)
+      return true;
   }
 
   return false;

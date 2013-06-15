@@ -20,6 +20,7 @@ SocketPermissionRequest CreateSocketPermissionRequest(
     const PP_NetAddress_Private& net_addr);
 
 bool CanUseSocketAPIs(bool external_plugin,
+                      bool private_api,
                       const SocketPermissionRequest& params,
                       RenderViewHost* render_view_host);
 

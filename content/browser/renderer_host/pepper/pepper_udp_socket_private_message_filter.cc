@@ -42,6 +42,7 @@ bool CanUseSocketAPIs(const SocketPermissionRequest& request,
                                                             render_view_id);
   return render_view_host &&
       pepper_socket_utils::CanUseSocketAPIs(external_plugin,
+                                            true,
                                             request,
                                             render_view_host);
 }

@@ -487,6 +487,7 @@ bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id,
       RenderViewHostImpl::FromID(process_id_, render_id);
 
   return pepper_socket_utils::CanUseSocketAPIs(external_plugin,
+                                               true,
                                                params,
                                                render_view_host);
 }

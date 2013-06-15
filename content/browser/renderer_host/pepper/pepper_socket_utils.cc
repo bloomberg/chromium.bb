@@ -33,6 +33,7 @@ SocketPermissionRequest CreateSocketPermissionRequest(
 }
 
 bool CanUseSocketAPIs(bool external_plugin,
+                      bool private_api,
                       const SocketPermissionRequest& params,
                       RenderViewHost* render_view_host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -52,6 +53,7 @@ bool CanUseSocketAPIs(bool external_plugin,
   if (!GetContentClient()->browser()->AllowPepperSocketAPI(
           site_instance->GetBrowserContext(),
           site_instance->GetSiteURL(),
+          private_api,
           params)) {
     LOG(ERROR) << "Host " << site_instance->GetSiteURL().host()
                << " cannot use socket API or destination is not allowed";

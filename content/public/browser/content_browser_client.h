@@ -509,10 +509,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool SupportsBrowserPlugin(BrowserContext* browser_context,
                                      const GURL& site_url);
 
-  // Returns true if renderer processes can use Pepper TCP/UDP sockets from
-  // the given origin and connection type.
+  // Returns true if the socket operation specified by |params| is allowed
+  // from the given |browser_context| and |url|. |private_api| indicates whether
+  // this permission check is for the private Pepper socket API or the public
+  // one.
   virtual bool AllowPepperSocketAPI(BrowserContext* browser_context,
                                     const GURL& url,
+                                    bool private_api,
                                     const SocketPermissionRequest& params);
 
   // Returns the directory containing hyphenation dictionaries.

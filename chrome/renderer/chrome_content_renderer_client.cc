@@ -1216,11 +1216,13 @@ bool ChromeContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(
 #if defined(ENABLE_PLUGINS)
   if (!container)
     return false;
-  return IsExtensionOrSharedModuleWhitelisted(
-      container->element().document().baseURL(),
-      extension_dispatcher_->extensions(),
-      allowed_file_handle_origins_,
-      switches::kAllowNaClFileHandleAPI);
+  GURL url = container->element().document().baseURL();
+  const ExtensionSet* extension_set = extension_dispatcher_->extensions();
+
+  return IsExtensionOrSharedModuleWhitelisted(url, extension_set,
+                                              allowed_file_handle_origins_) ||
+         IsHostAllowedByCommandLine(url, extension_set,
+                                    switches::kAllowNaClFileHandleAPI);
 #else
   return false;
 #endif

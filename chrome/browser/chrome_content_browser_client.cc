@@ -95,6 +95,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
@@ -2169,6 +2170,7 @@ bool ChromeContentBrowserClient::SupportsBrowserPlugin(
 bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     content::BrowserContext* browser_context,
     const GURL& url,
+    bool private_api,
     const content::SocketPermissionRequest& params) {
 #if defined(ENABLE_PLUGINS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -2177,10 +2179,32 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     extension_set = extensions::ExtensionSystem::Get(profile)->
         extension_service()->extensions();
   }
-  return IsExtensionOrSharedModuleWhitelisted(url,
-                                              extension_set,
-                                              allowed_socket_origins_,
-                                              switches::kAllowNaClSocketAPI);
+
+  if (private_api) {
+    // Access to private socket APIs is controlled by the whitelist.
+    if (IsExtensionOrSharedModuleWhitelisted(url, extension_set,
+                                             allowed_socket_origins_)) {
+      return true;
+    }
+  } else {
+    // Access to public socket APIs is controlled by extension permissions.
+    if (url.is_valid() && url.SchemeIs(extensions::kExtensionScheme) &&
+        extension_set) {
+      const Extension* extension = extension_set->GetByID(url.host());
+      if (extension) {
+        extensions::SocketPermission::CheckParam check_params(
+            params.type, params.host, params.port);
+        if (extensions::PermissionsData::CheckAPIPermissionWithParam(
+                extension, extensions::APIPermission::kSocket, &check_params)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  // Allow both public and private APIs if the command line says so.
+  return IsHostAllowedByCommandLine(url, extension_set,
+                                    switches::kAllowNaClSocketAPI);
 #else
   return false;
 #endif
