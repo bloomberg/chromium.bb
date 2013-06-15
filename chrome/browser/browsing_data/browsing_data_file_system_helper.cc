@@ -8,12 +8,14 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
+#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
@@ -41,7 +43,8 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   virtual ~BrowsingDataFileSystemHelperImpl();
 
   // Enumerates all filesystem files, storing the resulting list into
-  // file_system_file_ for later use. This must be called on the FILE thread.
+  // file_system_file_ for later use. This must be called on the file
+  // task runner.
   void FetchFileSystemInfoInFileThread();
 
   // Triggers the success callback as the end of a StartFetching workflow. This
@@ -49,11 +52,16 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   void NotifyOnUIThread();
 
   // Deletes all file systems associated with |origin|. This must be called on
-  // the FILE thread.
+  // the file task runner.
   void DeleteFileSystemOriginInFileThread(const GURL& origin);
 
+  // Returns the file task runner for the |filesystem_context_|.
+  base::SequencedTaskRunner* file_task_runner() {
+    return filesystem_context_->task_runners()->file_task_runner();
+  }
+
   // Keep a reference to the FileSystemContext object for the current profile
-  // for use on the FILE thread.
+  // for use on the file task runner.
   scoped_refptr<fileapi::FileSystemContext> filesystem_context_;
 
   // Holds the current list of file systems returned to the client after
@@ -61,7 +69,7 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   // indirectly via the UI thread and guarded by |is_fetching_|. This means
   // |file_system_info_| is only accessed while |is_fetching_| is true. The
   // flag |is_fetching_| is only accessed on the UI thread. In the context of
-  // this class |file_system_info_| only mutates on the FILE thread.
+  // this class |file_system_info_| only mutates on the file task runner.
   std::list<FileSystemInfo> file_system_info_;
 
   // Holds the callback passed in at the beginning of the StartFetching workflow
@@ -95,8 +103,8 @@ void BrowsingDataFileSystemHelperImpl::StartFetching(
   DCHECK_EQ(false, callback.is_null());
   is_fetching_ = true;
   completion_callback_ = callback;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  file_task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(
           &BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread,
           this));
@@ -105,15 +113,15 @@ void BrowsingDataFileSystemHelperImpl::StartFetching(
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOrigin(
     const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  file_task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(
           &BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread,
           this, origin));
 }
 
 void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(file_task_runner()->RunsTasksOnCurrentThread());
   scoped_ptr<fileapi::SandboxMountPointProvider::OriginEnumerator>
       origin_enumerator(filesystem_context_->
           sandbox_provider()->CreateOriginEnumerator());
@@ -130,7 +138,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
       continue;  // Non-websafe state is not considered browsing data.
 
     // We can call these synchronous methods as we've already verified that
-    // we're running on the FILE thread.
+    // we're running on the file task runner.
     int64 persistent_usage = quota_util->GetOriginUsageOnFileThread(
         filesystem_context_.get(), current, fileapi::kFileSystemTypePersistent);
     int64 temporary_usage = quota_util->GetOriginUsageOnFileThread(
@@ -166,7 +174,7 @@ void BrowsingDataFileSystemHelperImpl::NotifyOnUIThread() {
 
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread(
     const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(file_task_runner()->RunsTasksOnCurrentThread());
   filesystem_context_->DeleteDataForOriginOnFileThread(origin);
 }
 

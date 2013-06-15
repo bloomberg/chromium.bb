@@ -9,6 +9,8 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -51,11 +53,15 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
     fileapi::ExternalMountPoints* external_mount_points,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy) {
+
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
+      pool->GetSequencedTaskRunner(pool->GetNamedSequenceToken("FileAPI"));
+
   scoped_ptr<fileapi::FileSystemTaskRunners> task_runners(
       new fileapi::FileSystemTaskRunners(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-              .get()));
+          file_task_runner.get()));
 
   // Setting up additional mount point providers.
   ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
@@ -126,7 +132,8 @@ void SyncGetPlatformPath(fileapi::FileSystemContext* context,
                          int process_id,
                          const GURL& path,
                          base::FilePath* platform_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(context->task_runners()->file_task_runner()->
+         RunsTasksOnCurrentThread());
   DCHECK(platform_path);
   *platform_path = base::FilePath();
   fileapi::FileSystemURL url(context->CrackURL(path));

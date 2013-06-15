@@ -11,7 +11,7 @@ namespace fileapi {
 
 FileSystemTaskRunners::FileSystemTaskRunners(
     base::SingleThreadTaskRunner* io_task_runner,
-    base::SingleThreadTaskRunner* file_task_runner)
+    base::SequencedTaskRunner* file_task_runner)
     : io_task_runner_(io_task_runner),
       file_task_runner_(file_task_runner) {
 }
