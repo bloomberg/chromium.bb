@@ -7,9 +7,15 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_X11_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_X11_H_
 
-// Installs the X11 error handlers for the browser process. This will
-// allow us to exit cleanly if X exits before us.
-void SetBrowserX11ErrorHandlers();
+// Installs the X11 error handlers for the browser process used during
+// startup. They simply print error messages and exit because
+// we can't shutdown properly while creating and initializing services.
+void SetBrowserX11ErrorHandlersPreEarlyInitialization();
+
+// Installs the X11 error handlers for the browser process after the
+// main message loop has started. This will allow us to exit cleanly
+// if X exits before us.
+void SetBrowserX11ErrorHandlersPostMainMessageLoopStart();
 
 // Installs empty X11 error handlers. This avoids calling into the message-loop
 // in case an X11 erro happens while the message-loop is being destroyed.

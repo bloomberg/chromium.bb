@@ -708,6 +708,9 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 // content::BrowserMainParts implementation ------------------------------------
 
 void ChromeBrowserMainParts::PreEarlyInitialization() {
+#if defined(USE_X11)
+  SetBrowserX11ErrorHandlersPreEarlyInitialization();
+#endif
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreEarlyInitialization");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreEarlyInitialization();
@@ -735,6 +738,9 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostMainMessageLoopStart");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopStart();
+#if defined(USE_X11)
+  SetBrowserX11ErrorHandlersPostMainMessageLoopStart();
+#endif
 }
 
 int ChromeBrowserMainParts::PreCreateThreads() {
@@ -1200,10 +1206,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     }
   }
 #endif  // !defined(OS_ANDROID)
-
-#if defined(USE_X11)
-  SetBrowserX11ErrorHandlers();
-#endif
 
   // Desktop construction occurs here, (required before profile creation).
   PreProfileInit();
