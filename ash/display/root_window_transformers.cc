@@ -143,12 +143,6 @@ class AshRootWindowTransformer : public aura::RootWindowTransformer {
         GetDisplayInfo(display.id());
     root_window_ui_scale_ = info.ui_scale();
     host_insets_ = info.GetOverscanInsetsInPixel();
-    MagnificationController* magnifier =
-        Shell::GetInstance()->magnification_controller();
-
-    bool scaled = (root_window_ui_scale_ != 1.f) ||
-        (magnifier && magnifier->GetScale() != 1.f);
-    root_window_->layer()->SetForceRenderSurface(scaled);
   }
 
   // aura::RootWindowTransformer overrides:
