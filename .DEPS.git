@@ -140,7 +140,7 @@ deps = {
     'src/tools/swarm_client':
         Var('git_url') + '/chromium/tools/swarm_client.git@7f66a98aab0f70d6388efaf8da6f57f70c306714',
     'src/v8':
-        Var('git_url') + '/external/v8.git@efe19a9f7beb923668dbc96922c2acb4f916e693',
+        Var('git_url') + '/external/v8.git@fe578677d80b14b35f6dca0c193719331b81a81e',
     'src/webkit/renderer/media/crypto/ppapi/cdm':
         Var('git_url') + '/chromium/cdm.git@c2b192a02546916d28233cfd8b7717ffcdcc8347',
 }
