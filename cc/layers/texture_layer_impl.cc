@@ -34,6 +34,8 @@ TextureLayerImpl::~TextureLayerImpl() { FreeTextureMailbox(); }
 
 void TextureLayerImpl::SetTextureMailbox(const TextureMailbox& mailbox) {
   DCHECK(uses_mailbox_);
+  if (own_mailbox_)
+    DCHECK(!mailbox.IsValid() || !mailbox.Equals(texture_mailbox_));
   FreeTextureMailbox();
   texture_mailbox_ = mailbox;
   own_mailbox_ = true;

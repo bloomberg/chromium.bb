@@ -413,27 +413,6 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
         break;
       case 7:
         EXPECT_EQ(4, callback_count_);
-        // Restore a mailbox for the next step.
-        SetMailbox('5');
-        break;
-      case 8:
-        // Case #5: remove layer from tree. Callback should *not* be called, the
-        // mailbox is returned to the main thread.
-        EXPECT_EQ(4, callback_count_);
-        layer_->RemoveFromParent();
-        break;
-      case 9:
-        // Mailbox was released to the main thread, task was posted, but won't
-        // execute until this DidCommit returns.
-        // TODO(piman): fix this.
-        EXPECT_EQ(4, callback_count_);
-        layer_tree_host()->SetNeedsCommit();
-        break;
-      case 10:
-        EXPECT_EQ(4, callback_count_);
-        // Resetting the mailbox will call the callback now.
-        layer_->SetTextureMailbox(TextureMailbox());
-        EXPECT_EQ(5, callback_count_);
         EndTest();
         break;
       default:
