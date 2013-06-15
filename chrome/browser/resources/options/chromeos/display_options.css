@@ -51,9 +51,12 @@
 #selected-display-name {
   font-size: large;
   font-weight: normal;
-  margin-bottom: 10px;
   margin-top: 5px;
   padding: 0;
+}
+
+.selected-display-option-row {
+  margin-top: 10px;
 }
 
 .selected-display-option-title {
@@ -80,10 +83,10 @@
   color: rgb(0, 138, 255);
 }
 
-.display-options-button-container {
-  margin-right: 10px;
+#display-options-toggle-mirroring {
+  margin-right: 5px;
 }
 
 .display-options-button {
-  width: 135px;
+  width: 130px;
 }
