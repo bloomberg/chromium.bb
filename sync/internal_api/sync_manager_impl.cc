@@ -946,8 +946,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
       change_buffers[type].PushDeletedItem(handle);
     else if (exists_now && existed_before &&
              VisiblePropertiesDiffer(it->second, crypto)) {
-      change_buffers[type].PushUpdatedItem(
-          handle, VisiblePositionsDiffer(it->second));
+      change_buffers[type].PushUpdatedItem(handle);
     }
 
     SetExtraChangeRecordData(handle, type, &change_buffers[type], crypto,

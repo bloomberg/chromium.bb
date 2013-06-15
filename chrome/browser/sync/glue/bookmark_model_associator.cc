@@ -508,6 +508,7 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations(
               bookmark_model_,
               profile_,
               this);
+      bookmark_model_->Move(new_child_node, parent_node, index);
       if (new_child_node != child_node) {
         local_merge_result->set_num_items_added(
             local_merge_result->num_items_added() + 1);

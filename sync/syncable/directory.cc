@@ -4,6 +4,8 @@
 
 #include "sync/syncable/directory.h"
 
+#include <iterator>
+
 #include "base/base64.h"
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
@@ -325,6 +327,16 @@ void Directory::GetChildSetForKernel(
 
   // Add our children to the list of items to be traversed.
   child_sets->push_back(descendants);
+}
+
+int Directory::GetPositionIndex(
+    BaseTransaction* trans,
+    EntryKernel* kernel) const {
+  const OrderedChildSet* siblings =
+      kernel_->parent_child_index.GetChildren(kernel->ref(PARENT_ID));
+
+  OrderedChildSet::const_iterator it = siblings->find(kernel);
+  return std::distance(siblings->begin(), it);
 }
 
 EntryKernel* Directory::GetRootEntry() {

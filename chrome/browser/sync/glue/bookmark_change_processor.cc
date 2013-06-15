@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 
+#include <map>
 #include <stack>
 #include <vector>
 
@@ -32,6 +33,8 @@
 #include "ui/gfx/image/image_util.h"
 
 using content::BrowserThread;
+using syncer::ChangeRecord;
+using syncer::ChangeRecordList;
 
 namespace browser_sync {
 
@@ -347,11 +350,7 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
     DCHECK_EQ(model_associator_->GetChromeNodeFromSyncId(
               sync_node.GetParentId()),
               node->parent());
-    // This node's index should be one more than the predecessor's index.
-    DCHECK_EQ(node->parent()->GetIndexOf(node),
-              CalculateBookmarkModelInsertionIndex(node->parent(),
-                                                   &sync_node,
-                                                   model_associator_));
+    DCHECK_EQ(node->parent()->GetIndexOf(node), sync_node.GetPositionIndex());
   }
 
   UpdateTransactionVersion(new_version, model,
@@ -477,31 +476,6 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
   return success;
 }
 
-// Static.
-// Determine the bookmark model index to which a node must be moved so that
-// predecessor of the node (in the bookmark model) matches the predecessor of
-// |source| (in the sync model).
-// As a precondition, this assumes that the predecessor of |source| has been
-// updated and is already in the correct position in the bookmark model.
-int BookmarkChangeProcessor::CalculateBookmarkModelInsertionIndex(
-    const BookmarkNode* parent,
-    const syncer::BaseNode* child_info,
-    BookmarkModelAssociator* model_associator) {
-  DCHECK(parent);
-  DCHECK(child_info);
-  int64 predecessor_id = child_info->GetPredecessorId();
-  // A return ID of kInvalidId indicates no predecessor.
-  if (predecessor_id == syncer::kInvalidId)
-    return 0;
-
-  // Otherwise, insert after the predecessor bookmark node.
-  const BookmarkNode* predecessor =
-      model_associator->GetChromeNodeFromSyncId(predecessor_id);
-  DCHECK(predecessor);
-  DCHECK_EQ(predecessor->parent(), parent);
-  return parent->GetIndexOf(predecessor) + 1;
-}
-
 // ApplyModelChanges is called by the sync backend after changes have been made
 // to the sync engine's model.  Apply these changes to the browser bookmark
 // model.
@@ -534,94 +508,118 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
   model->RemoveObserver(this);
 
   // A parent to hold nodes temporarily orphaned by parent deletion.  It is
-  // lazily created inside the loop.
+  // created only if it is needed.
   const BookmarkNode* foster_parent = NULL;
 
-  // Whether we have passed all the deletes (which should be at the
-  // front of the list).
-  bool passed_deletes = false;
-  for (syncer::ChangeRecordList::const_iterator it =
-           changes.Get().begin(); it != changes.Get().end(); ++it) {
+  // Iterate over the deletions, which are always at the front of the list.
+  ChangeRecordList::const_iterator it;
+  for (it = changes.Get().begin();
+       it != changes.Get().end() && it->action == ChangeRecord::ACTION_DELETE;
+       ++it) {
     const BookmarkNode* dst =
         model_associator_->GetChromeNodeFromSyncId(it->id);
+
     // Ignore changes to the permanent top-level nodes.  We only care about
     // their children.
     if (model->is_permanent_node(dst))
       continue;
-    if (it->action ==
-        syncer::ChangeRecord::ACTION_DELETE) {
-      // Deletions should always be at the front of the list.
-      DCHECK(!passed_deletes);
-      // Children of a deleted node should not be deleted; they may be
-      // reparented by a later change record.  Move them to a temporary place.
-      if (!dst) // Can't do anything if we can't find the chrome node.
-        continue;
-      const BookmarkNode* parent = dst->parent();
-      if (!dst->empty()) {
+
+    // Can't do anything if we can't find the chrome node.
+    if (!dst)
+      continue;
+
+    // Children of a deleted node should not be deleted; they may be
+    // reparented by a later change record.  Move them to a temporary place.
+    if (!dst->empty()) {
+      if (!foster_parent) {
+        foster_parent = model->AddFolder(model->other_node(),
+                                         model->other_node()->child_count(),
+                                         string16());
         if (!foster_parent) {
-          foster_parent = model->AddFolder(model->other_node(),
-                                           model->other_node()->child_count(),
-                                           string16());
-          if (!foster_parent) {
-            error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-                "Failed to create foster parent.");
-            return;
-          }
-        }
-        for (int i = dst->child_count() - 1; i >= 0; --i) {
-          model->Move(dst->GetChild(i), foster_parent,
-                      foster_parent->child_count());
+          error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+              "Failed to create foster parent.");
+          return;
         }
       }
-      DCHECK_EQ(dst->child_count(), 0) << "Node being deleted has children";
-      model_associator_->Disassociate(it->id);
-      int index = parent->GetIndexOf(dst);
-      if (index > -1)
-        model->Remove(parent, index);
-      dst = NULL;
+      for (int i = dst->child_count() - 1; i >= 0; --i) {
+        model->Move(dst->GetChild(i), foster_parent,
+                    foster_parent->child_count());
+      }
+    }
+    DCHECK_EQ(dst->child_count(), 0) << "Node being deleted has children";
+
+    model_associator_->Disassociate(it->id);
+
+    const BookmarkNode* parent = dst->parent();
+    int index = parent->GetIndexOf(dst);
+    if (index > -1)
+      model->Remove(parent, index);
+  }
+
+  // A map to keep track of some reordering work we defer until later.
+  std::multimap<int, const BookmarkNode*> to_reposition;
+
+  // Continue iterating where the previous loop left off.
+  for ( ; it != changes.Get().end(); ++it) {
+    const BookmarkNode* dst =
+        model_associator_->GetChromeNodeFromSyncId(it->id);
+
+    // Ignore changes to the permanent top-level nodes.  We only care about
+    // their children.
+    if (model->is_permanent_node(dst))
+      continue;
+
+    DCHECK_NE(it->action, ChangeRecord::ACTION_DELETE)
+        << "We should have passed all deletes by this point.";
+    DCHECK_EQ((it->action == ChangeRecord::ACTION_ADD), (dst == NULL))
+        << "ACTION_ADD should be seen if and only if the node is unknown.";
+
+    syncer::ReadNode src(trans);
+    if (src.InitByIdLookup(it->id) != syncer::BaseNode::INIT_OK) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "ApplyModelChanges was passed a bad ID");
+      return;
+    }
+
+    const BookmarkNode* node = CreateOrUpdateBookmarkNode(&src, model,
+                                                          profile_,
+                                                          model_associator_);
+    if (node) {
+      to_reposition.insert(std::make_pair(src.GetPositionIndex(), node));
+      bookmark_model_->SetNodeMetaInfo(node, kBookmarkTransactionVersionKey,
+                                       base::Int64ToString(model_version));
     } else {
-      DCHECK_EQ((it->action ==
-          syncer::ChangeRecord::ACTION_ADD), (dst == NULL))
-          << "ACTION_ADD should be seen if and only if the node is unknown.";
-      passed_deletes = true;
-
-      syncer::ReadNode src(trans);
-      if (src.InitByIdLookup(it->id) != syncer::BaseNode::INIT_OK) {
-        error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-            "ApplyModelChanges was passed a bad ID");
-        return;
-      }
-
-      const BookmarkNode* node = CreateOrUpdateBookmarkNode(&src, model,
-                                                            profile_,
-                                                            model_associator_);
-      if (node) {
-        bookmark_model_->SetNodeMetaInfo(node, kBookmarkTransactionVersionKey,
-                                         base::Int64ToString(model_version));
+      // Because the Synced Bookmarks node can be created server side, it's
+      // possible it'll arrive at the client as an update. In that case it won't
+      // have been associated at startup, the GetChromeNodeFromSyncId call above
+      // will return NULL, and we won't detect it as a permanent node, resulting
+      // in us trying to create it here (which will fail). Therefore, we add
+      // special logic here just to detect the Synced Bookmarks folder.
+      syncer::ReadNode synced_bookmarks(trans);
+      if (synced_bookmarks.InitByTagLookup(kMobileBookmarksTag) ==
+              syncer::BaseNode::INIT_OK &&
+          synced_bookmarks.GetId() == it->id) {
+        // This is a newly created Synced Bookmarks node. Associate it.
+        model_associator_->Associate(model->mobile_node(), it->id);
       } else {
-        // Because the Synced Bookmarks node can be created server side, it's
-        // possible it'll arrive at the client as an update. In that case it
-        // won't have been associated at startup, the GetChromeNodeFromSyncId
-        // call above will return NULL, and we won't detect it as a permanent
-        // node, resulting in us trying to create it here (which will
-        // fail). Therefore, we add special logic here just to detect the
-        // Synced Bookmarks folder.
-        syncer::ReadNode synced_bookmarks(trans);
-        if (synced_bookmarks.InitByTagLookup(kMobileBookmarksTag) ==
-                syncer::BaseNode::INIT_OK &&
-            synced_bookmarks.GetId() == it->id) {
-          // This is a newly created Synced Bookmarks node. Associate it.
-          model_associator_->Associate(model->mobile_node(), it->id);
-        } else {
-          // We ignore bookmarks we can't add. Chances are this is caused by
-          // a bookmark that was not fully associated.
-          LOG(ERROR) << "Failed to create bookmark node with title "
-                     << src.GetTitle() + " and url "
-                     << src.GetBookmarkSpecifics().url();
-        }
+        // We ignore bookmarks we can't add. Chances are this is caused by
+        // a bookmark that was not fully associated.
+        LOG(ERROR) << "Failed to create bookmark node with title "
+                   << src.GetTitle() + " and url "
+                   << src.GetBookmarkSpecifics().url();
       }
     }
   }
+
+  // When we added or updated bookmarks in the previous loop, we placed them to
+  // the far right position.  Now we iterate over all these modified items in
+  // sync order, left to right, moving them into their proper positions.
+  for (std::multimap<int, const BookmarkNode*>::iterator it =
+       to_reposition.begin(); it != to_reposition.end(); ++it) {
+    const BookmarkNode* parent = it->second->parent();
+    model->Move(it->second, parent, it->first);
+  }
+
   // Clean up the temporary node.
   if (foster_parent) {
     // There should be no nodes left under the foster parent.
@@ -660,13 +658,10 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
 
     return NULL;
   }
-  int index = CalculateBookmarkModelInsertionIndex(parent,
-                                                   src,
-                                                   model_associator);
   const BookmarkNode* dst = model_associator->GetChromeNodeFromSyncId(
       src->GetId());
   if (!dst) {
-    dst = CreateBookmarkNode(src, parent, model, profile, index);
+    dst = CreateBookmarkNode(src, parent, model, profile);
     if (dst)
       model_associator->Associate(dst, src->GetId());
   } else {
@@ -674,8 +669,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
     // TODO(ncarter): Determine if such changes should be legal or not.
     DCHECK_EQ(src->GetIsFolder(), dst->is_folder());
 
-    // Handle reparenting and/or repositioning.
-    model->Move(dst, parent, index);
+    // Move all modified entries to the right.  The caller will fix this later.
+    model->Move(dst, parent, parent->child_count());
 
     const sync_pb::BookmarkSpecifics& specifics = src->GetBookmarkSpecifics();
     if (!src->GetIsFolder())
@@ -715,14 +710,12 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
-    Profile* profile,
-    int index) {
+    Profile* profile) {
   DCHECK(parent);
-  DCHECK(index >= 0 && index <= parent->child_count());
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
-    node = model->AddFolder(parent, index,
+    node = model->AddFolder(parent, parent->child_count(),
                             UTF8ToUTF16(sync_node->GetTitle()));
   } else {
     // 'creation_time_us' was added in m24. Assume a time of 0 means now.
@@ -731,7 +724,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const int64 create_time_internal = specifics.creation_time_us();
     base::Time create_time = (create_time_internal == 0) ?
         base::Time::Now() : base::Time::FromInternalValue(create_time_internal);
-    node = model->AddURLWithCreationTime(parent, index,
+    node = model->AddURLWithCreationTime(parent, parent->child_count(),
                                          UTF8ToUTF16(sync_node->GetTitle()),
                                          GURL(specifics.url()), create_time);
     if (node)

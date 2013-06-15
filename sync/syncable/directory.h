@@ -257,6 +257,10 @@ class SYNC_EXPORT Directory {
   // Counts all items under the given node, including the node itself.
   int GetTotalNodeCount(BaseTransaction*, EntryKernel* kernel_) const;
 
+  // Returns this item's position within its parent folder.
+  // The left-most item is 0, second left-most is 1, etc.
+  int GetPositionIndex(BaseTransaction*, EntryKernel* kernel_) const;
+
   // Returns true iff |id| has children.
   bool HasChildren(BaseTransaction* trans, const Id& id);
 

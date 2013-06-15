@@ -9,9 +9,8 @@
 #include <set>
 #include <utility>  // for pair<>
 
-#include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/read_node.h"
-#include "sync/syncable/directory.h"
+#include "sync/internal_api/public/base_node.h"
+#include "sync/internal_api/public/base_transaction.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/syncable_base_transaction.h"
 
@@ -61,7 +60,7 @@ class ChangeReorderBuffer::Traversal {
       } else {
         // Otherwise, get the parent ID so that we can add a ParentChildLink.
         syncable::Entry parent(trans, syncable::GET_BY_ID,
-                             node.Get(syncable::PARENT_ID));
+                               node.Get(syncable::PARENT_ID));
         CHECK(parent.good());
         node_parent = parent.Get(syncable::META_HANDLE);
 
@@ -121,6 +120,38 @@ ChangeReorderBuffer::ChangeReorderBuffer() {
 ChangeReorderBuffer::~ChangeReorderBuffer() {
 }
 
+void ChangeReorderBuffer::PushAddedItem(int64 id) {
+  operations_[id] = ChangeRecord::ACTION_ADD;
+}
+
+void ChangeReorderBuffer::PushDeletedItem(int64 id) {
+  operations_[id] = ChangeRecord::ACTION_DELETE;
+}
+
+void ChangeReorderBuffer::PushUpdatedItem(int64 id) {
+  operations_[id] = ChangeRecord::ACTION_UPDATE;
+}
+
+void ChangeReorderBuffer::SetExtraDataForId(
+    int64 id,
+    ExtraPasswordChangeRecordData* extra) {
+  extra_data_[id] = make_linked_ptr<ExtraPasswordChangeRecordData>(extra);
+}
+
+void ChangeReorderBuffer::SetSpecificsForId(
+    int64 id,
+    const sync_pb::EntitySpecifics& specifics) {
+  specifics_[id] = specifics;
+}
+
+void ChangeReorderBuffer::Clear() {
+  operations_.clear();
+}
+
+bool ChangeReorderBuffer::IsEmpty() const {
+  return operations_.empty();
+}
+
 bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
     const BaseTransaction* sync_trans,
     ImmutableChangeRecordList* changes) {
@@ -130,17 +161,16 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
   // (a) Push deleted items straight into the |changelist|.
   // (b) Construct a traversal spanning all non-deleted items.
   // (c) Construct a set of all parent nodes of any position changes.
-  set<int64> parents_of_position_changes;
   Traversal traversal;
 
   ChangeRecordList changelist;
 
   OperationMap::const_iterator i;
   for (i = operations_.begin(); i != operations_.end(); ++i) {
-    if (i->second == OP_DELETE) {
+    if (i->second == ChangeRecord::ACTION_DELETE) {
       ChangeRecord record;
       record.id = i->first;
-      record.action = ChangeRecord::ACTION_DELETE;
+      record.action = i->second;
       if (specifics_.find(record.id) != specifics_.end())
         record.specifics = specifics_[record.id];
       if (extra_data_.find(record.id) != extra_data_.end())
@@ -148,22 +178,10 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
       changelist.push_back(record);
     } else {
       traversal.ExpandToInclude(trans, i->first);
-      if (i->second == OP_ADD ||
-          i->second == OP_UPDATE_POSITION_AND_PROPERTIES) {
-        ReadNode node(sync_trans);
-        CHECK_EQ(BaseNode::INIT_OK, node.InitByIdLookup(i->first));
-
-        // We only care about parents of entry's with position-sensitive models.
-        if (node.GetEntry()->ShouldMaintainPosition()) {
-          parents_of_position_changes.insert(node.GetParentId());
-          traversal.ExpandToInclude(trans, node.GetParentId());
-        }
-      }
     }
   }
 
-  // Step 2: Breadth-first expansion of the traversal, enumerating children in
-  // the syncable sibling order if there were any position updates.
+  // Step 2: Breadth-first expansion of the traversal.
   queue<int64> to_visit;
   to_visit.push(traversal.top());
   while (!to_visit.empty()) {
@@ -175,10 +193,7 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
     if (i != operations_.end()) {
       ChangeRecord record;
       record.id = next;
-      if (i->second == OP_ADD)
-        record.action = ChangeRecord::ACTION_ADD;
-      else
-        record.action = ChangeRecord::ACTION_UPDATE;
+      record.action = i->second;
       if (specifics_.find(record.id) != specifics_.end())
         record.specifics = specifics_[record.id];
       if (extra_data_.find(record.id) != extra_data_.end())
@@ -187,33 +202,11 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
     }
 
     // Now add the children of |next| to |to_visit|.
-    if (parents_of_position_changes.find(next) ==
-        parents_of_position_changes.end()) {
-        // No order changes on this parent -- traverse only the nodes listed
-        // in the traversal (and not in sibling order).
-        Traversal::LinkSet::const_iterator j = traversal.begin_children(next);
-        Traversal::LinkSet::const_iterator end = traversal.end_children(next);
-        for (; j != end; ++j) {
-          CHECK(j->first == next);
-          to_visit.push(j->second);
-        }
-    } else {
-      // There were ordering changes on the children of this parent, so
-      // enumerate all the children in the sibling order.
-      syncable::Entry parent(trans, syncable::GET_BY_HANDLE, next);
-      syncable::Id id = parent.GetFirstChildId();
-      while (!id.IsRoot()) {
-        syncable::Entry child(trans, syncable::GET_BY_ID, id);
-        CHECK(child.good());
-        int64 handle = child.Get(syncable::META_HANDLE);
-        to_visit.push(handle);
-        // If there is no operation on this child node, record it as as an
-        // update, so that the listener gets notified of all nodes in the new
-        // ordering.
-        if (operations_.find(handle) == operations_.end())
-          operations_[handle] = OP_UPDATE_POSITION_AND_PROPERTIES;
-        id = child.GetSuccessorId();
-      }
+    Traversal::LinkSet::const_iterator j = traversal.begin_children(next);
+    Traversal::LinkSet::const_iterator end = traversal.end_children(next);
+    for (; j != end; ++j) {
+      CHECK(j->first == next);
+      to_visit.push(j->second);
     }
   }
 

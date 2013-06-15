@@ -14,11 +14,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
+
+class BaseTransaction;
 
 // ChangeReorderBuffer is a utility type which accepts an unordered set
 // of changes (via its Push methods), and yields an ImmutableChangeRecordList
@@ -28,61 +29,34 @@ namespace syncer {
 // The ordering produced by ChangeReorderBuffer is as follows:
 //  (a) All Deleted items appear first.
 //  (b) For Updated and/or Added items, parents appear before their children.
-//  (c) When there are changes to the sibling order (this means Added items,
-//      or Updated items with the |position_changed| parameter set to true),
-//      all siblings under a parent will appear in the output, even if they
-//      are not explicitly pushed.  The sibling order will be preserved in
-//      the output list -- items will appear before their sibling-order
-//      successors.
-//  (d) When there are no changes to the sibling order under a parent node,
-//      the sibling order is not necessarily preserved in the output for
-//      its children.
+//
+// The sibling order is not necessarily preserved.
 class ChangeReorderBuffer {
  public:
   ChangeReorderBuffer();
   ~ChangeReorderBuffer();
 
-  // Insert an item, identified by the metahandle |id|, into the reorder
-  // buffer. This item will appear in the output list as an ACTION_ADD
-  // ChangeRecord.
-  void PushAddedItem(int64 id) {
-    operations_[id] = OP_ADD;
-  }
+  // Insert an item, identified by the metahandle |id|, into the reorder buffer.
+  // This item will appear in the output list as an ACTION_ADD ChangeRecord.
+  void PushAddedItem(int64 id);
 
-  // Insert an item, identified by the metahandle |id|, into the reorder
-  // buffer. This item will appear in the output list as an ACTION_DELETE
-  // ChangeRecord.
-  void PushDeletedItem(int64 id) {
-    operations_[id] = OP_DELETE;
-  }
+  // Insert an item, identified by the metahandle |id|, into the reorder buffer.
+  // This item will appear in the output list as an ACTION_DELETE ChangeRecord.
+  void PushDeletedItem(int64 id);
 
-  // Insert an item, identified by the metahandle |id|, into the reorder
-  // buffer. This item will appear in the output list as an ACTION_UPDATE
-  // ChangeRecord. Also, if |position_changed| is true, all siblings of this
-  // item will appear in the output list as well; if it wasn't explicitly
-  // pushed, the siblings will have an ACTION_UPDATE ChangeRecord.
-  void PushUpdatedItem(int64 id, bool position_changed) {
-    operations_[id] = position_changed ? OP_UPDATE_POSITION_AND_PROPERTIES :
-                                         OP_UPDATE_PROPERTIES_ONLY;
-  }
+  // Insert an item, identified by the metahandle |id|, into the reorder buffer.
+  // This item will appear in the output list as an ACTION_UPDATE ChangeRecord.
+  void PushUpdatedItem(int64 id);
 
-  void SetExtraDataForId(int64 id, ExtraPasswordChangeRecordData* extra) {
-    extra_data_[id] = make_linked_ptr<ExtraPasswordChangeRecordData>(extra);
-  }
+  void SetExtraDataForId(int64 id, ExtraPasswordChangeRecordData* extra);
 
-  void SetSpecificsForId(int64 id, const sync_pb::EntitySpecifics& specifics) {
-    specifics_[id] = specifics;
-  }
+  void SetSpecificsForId(int64 id, const sync_pb::EntitySpecifics& specifics);
 
-  // Reset the buffer, forgetting any pushed items, so that it can be used
-  // again to reorder a new set of changes.
-  void Clear() {
-    operations_.clear();
-  }
+  // Reset the buffer, forgetting any pushed items, so that it can be used again
+  // to reorder a new set of changes.
+  void Clear();
 
-  bool IsEmpty() const {
-    return operations_.empty();
-  }
+  bool IsEmpty() const;
 
   // Output a reordered list of changes to |changes| using the items
   // that were pushed into the reorder buffer. |sync_trans| is used to
@@ -94,13 +68,7 @@ class ChangeReorderBuffer {
 
  private:
   class Traversal;
-  enum Operation {
-    OP_ADD,                             // AddedItem.
-    OP_DELETE,                          // DeletedItem.
-    OP_UPDATE_PROPERTIES_ONLY,          // UpdatedItem with position_changed=0.
-    OP_UPDATE_POSITION_AND_PROPERTIES,  // UpdatedItem with position_changed=1.
-  };
-  typedef std::map<int64, Operation> OperationMap;
+  typedef std::map<int64, ChangeRecord::Action> OperationMap;
   typedef std::map<int64, sync_pb::EntitySpecifics> SpecificsMap;
   typedef std::map<int64, linked_ptr<ExtraPasswordChangeRecordData> >
       ExtraDataMap;

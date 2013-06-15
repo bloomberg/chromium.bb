@@ -223,6 +223,10 @@ int BaseNode::GetTotalNodeCount() const {
   return GetEntry()->GetTotalNodeCount();
 }
 
+int BaseNode::GetPositionIndex() const {
+  return GetEntry()->GetPositionIndex();
+}
+
 DictionaryValue* BaseNode::GetSummaryAsValue() const {
   DictionaryValue* node_info = new DictionaryValue();
   node_info->SetString("id", base::Int64ToString(GetId()));

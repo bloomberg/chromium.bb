@@ -204,6 +204,11 @@ class SYNC_EXPORT BaseNode {
   // Recursively iterates through all children.
   int GetTotalNodeCount() const;
 
+  // Returns this item's position within its parent.
+  // Do not call this function on items that do not support positioning
+  // (ie. non-bookmarks).
+  int GetPositionIndex() const;
+
   // These virtual accessors provide access to data members of derived classes.
   virtual const syncable::Entry* GetEntry() const = 0;
   virtual const BaseTransaction* GetTransaction() const = 0;

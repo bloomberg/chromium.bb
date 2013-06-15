@@ -112,6 +112,10 @@ int Entry::GetTotalNodeCount() const {
   return dir()->GetTotalNodeCount(basetrans_, kernel_);
 }
 
+int Entry::GetPositionIndex() const {
+  return dir()->GetPositionIndex(basetrans_, kernel_);
+}
+
 bool Entry::ShouldMaintainPosition() const {
   return kernel_->ShouldMaintainPosition();
 }

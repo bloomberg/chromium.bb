@@ -3500,16 +3500,11 @@ TEST_F(SyncManagerChangeProcessingTest, MoveIntoPopulatedFolder) {
     child_a.PutPredecessor(child_b.Get(syncable::ID));
   }
 
-  EXPECT_EQ(2UL, GetChangeListSize());
+  EXPECT_EQ(1UL, GetChangeListSize());
 
-  // Verify that both child A and child B are in the change list, even though
-  // only child A was moved.  The rules state that all siblings of
-  // position-modified items must be included in the list of changes.
-  int64 child_a_pos = FindChangeInList(child_a_id, ChangeRecord::ACTION_UPDATE);
-  int64 child_b_pos = FindChangeInList(child_b_id, ChangeRecord::ACTION_UPDATE);
-
-  // Siblings should appear in left-to-right order.
-  EXPECT_LT(child_b_pos, child_a_pos);
+  // Verify that only child a is in the change list.
+  // (This function will add a failure if the lookup fails.)
+  FindChangeInList(child_a_id, ChangeRecord::ACTION_UPDATE);
 }
 
 // Tests the ordering of deletion changes.
