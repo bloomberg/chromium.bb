@@ -19478,6 +19478,7 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="SqliteDatabases" separator=".">
+  <group name="Activity" label="Activity"/>
   <group name="AppCache" label="AppCache"/>
   <group name="Cookie" label="Cookie"/>
   <group name="DatabaseTracker" label="DatabaseTracker"/>

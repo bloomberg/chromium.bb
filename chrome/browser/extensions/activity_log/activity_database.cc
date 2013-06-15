@@ -51,6 +51,7 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
   did_init_ = true;
   if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  db_.set_histogram_tag("Activity");
   db_.set_error_callback(
       base::Bind(&ActivityDatabase::DatabaseErrorCallback,
                  base::Unretained(this)));
