@@ -985,6 +985,7 @@ webkit.org/b/88832 [ Win ] http/tests/xmlhttprequest/origin-exact-matching.html 
 
 crbug.com/128057 [ Win ] http/tests/websocket/tests/hybi/connect-error-by-no-websocket-server.html [ Failure Pass ]
 crbug.com/128057 [ Win ] http/tests/websocket/tests/hybi/workers/connect-error-by-no-websocket-server.html [ Failure Pass ]
+crbug.com/128057 [ Linux Mac Debug ] http/tests/websocket/tests/hybi/workers/worker-reload.html [ Slow ]
 
 webkit.org/b/89702 virtual/softwarecompositing/scaling/tiled-layer-recursion.html [ ImageOnlyFailure Pass ]
 
