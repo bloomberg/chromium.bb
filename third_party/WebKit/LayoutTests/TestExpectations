@@ -111,8 +111,6 @@ crbug.com/246107 [ Release ] fast/events/selectionchange-iframe.html [ Timeout ]
 # TEMPORARILY SKIPPED TESTS
 # -----------------------------------------------------------------
 
-webkit.org/b/100071 fast/canvas/canvas-blend-image.html [ Failure Pass ]
-webkit.org/b/100071 fast/canvas/canvas-blend-solid.html [ Failure Pass ]
 webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-image.html [ Pass Timeout ]
 webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Pass Timeout ]
 
