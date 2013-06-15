@@ -316,24 +316,15 @@ public class AwContents {
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param internalAccessAdapter to access private methods on containerView.
      * @param contentsClient will receive API callbacks from this WebView Contents
+     * @param isAccessFromFileURLsGrantedByDefault passed to AwSettings.
      *
      * This constructor uses the default view sizing policy.
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
-            InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient) {
-        this(browserContext, containerView, internalAccessAdapter, contentsClient,
-                new AwLayoutSizer());
-    }
-
-    // TODO(joth): Remove this overload when downstream no-longer passing
-    // isAccessFromFileURLsGrantedByDefault.
-    @Deprecated
-    public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
             boolean isAccessFromFileURLsGrantedByDefault) {
         this(browserContext, containerView, internalAccessAdapter, contentsClient,
-                new AwLayoutSizer());
-        browserContext.mIsFileAccessGrantedByDefault = isAccessFromFileURLsGrantedByDefault;
+                isAccessFromFileURLsGrantedByDefault, new AwLayoutSizer());
     }
 
     private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
@@ -360,7 +351,7 @@ public class AwContents {
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
-            AwLayoutSizer layoutSizer) {
+            boolean isAccessFromFileURLsGrantedByDefault, AwLayoutSizer layoutSizer) {
         mBrowserContext = browserContext;
         mContainerView = containerView;
         mInternalAccessAdapter = internalAccessAdapter;
@@ -388,7 +379,7 @@ public class AwContents {
                     }
                 };
         mSettings = new AwSettings(hasInternetPermission, zoomListener,
-                mBrowserContext.mIsFileAccessGrantedByDefault, mDIPScale);
+                isAccessFromFileURLsGrantedByDefault, mDIPScale);
         mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());

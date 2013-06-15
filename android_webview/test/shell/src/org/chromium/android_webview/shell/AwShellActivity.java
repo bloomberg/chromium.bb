@@ -85,11 +85,11 @@ public class AwShellActivity extends Activity {
         SharedPreferences sharedPreferences =
             getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         if (mBrowserContext == null) {
-            mBrowserContext = new AwBrowserContext(sharedPreferences, false);
+            mBrowserContext = new AwBrowserContext(sharedPreferences);
         }
         testContainerView.initialize(new AwContents(mBrowserContext, testContainerView,
                 testContainerView.getInternalAccessDelegate(),
-                awContentsClient));
+                awContentsClient, false));
         testContainerView.getAwContents().getSettings().setJavaScriptEnabled(true);
         return testContainerView;
     }

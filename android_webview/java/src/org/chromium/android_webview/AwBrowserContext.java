@@ -24,14 +24,7 @@ public class AwBrowserContext {
     private AwGeolocationPermissions mGeolocationPermissions;
     private AwCookieManager mCookieManager;
     private AwFormDatabase mFormDatabase;
-    boolean mIsFileAccessGrantedByDefault;
 
-    public AwBrowserContext(SharedPreferences sharedPreferences,
-            boolean isFileAccessGrantedByDefault) {
-        mIsFileAccessGrantedByDefault = isFileAccessGrantedByDefault;
-    }
-
-    @Deprecated
     public AwBrowserContext(SharedPreferences sharedPreferences) {
         mSharedPreferences = sharedPreferences;
     }
