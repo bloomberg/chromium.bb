@@ -1481,6 +1481,13 @@ const Experiment kExperiments[] = {
     kOsMac,
     SINGLE_VALUE_TYPE(switches::kEnableAppShims)
   },
+  {
+    "enable-simplified-fullscreen",
+    IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_NAME,
+    IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kEnableSimplifiedFullscreen)
+  },
 #endif
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
   {

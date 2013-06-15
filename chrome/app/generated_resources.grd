@@ -7286,6 +7286,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_APP_SHIMS_DESCRIPTION" desc="Description for the flag to enable packaged apps appearing in the dock in OSX.">
           Enables packaged app shortcuts to be added to Applications and to appear in the dock.
         </message>
+        <message name="IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_NAME" desc="Title for the flag to enable a simplified Mac fullscreen interface.">
+          Enables simplified fullscreen.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_DESCRIPTION" desc="Description for the flag to enable a simplified Mac fullscreen interface.">
+          Enables a simplified and improved fullscreen experience on Mac.
+        </message>
       </if>
       <message name="IDS_FLAGS_ENABLE_TRANSLATE_SETTINGS_NAME" desc="Name of the flag to enable translate setting.">
         Enable Translate settings.

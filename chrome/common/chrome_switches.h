@@ -428,6 +428,7 @@ extern const char kPasswordStore[];
 extern const char kEnableAppListShim[];
 extern const char kEnableAppShims[];
 extern const char kEnableExposeForTabs[];
+extern const char kEnableSimplifiedFullscreen[];
 extern const char kKeychainReauthorize[];
 extern const char kRelauncherProcess[];
 extern const char kUseMockKeychain[];

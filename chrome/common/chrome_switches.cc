@@ -1547,6 +1547,9 @@ const char kEnableAppShims[]                = "enable-app-shims";
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
 const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
 
+// Enables a simplified fullscreen UI on Mac.
+const char kEnableSimplifiedFullscreen[]    = "enable-simplified-fullscreen";
+
 // Performs Keychain reauthorization from the command line on behalf of a
 // special Keychain reauthorization stub executable. Used during auto-update.
 const char kKeychainReauthorize[]           = "keychain-reauthorize";
