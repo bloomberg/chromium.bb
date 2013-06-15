@@ -212,11 +212,6 @@ static ALWAYS_INLINE void partitionPageInit(PartitionPageHeader* page, Partition
         freelist = next;
     }
     freelist->next = partitionFreelistMask(0);
-    // Artifically elevate the allocation count on free page metadata bucket
-    // pages, so they never become candidates for being freed. It's a
-    // re-entrancy headache.
-    if (bucket == &bucket->root->buckets[kFreePageBucket])
-        ++page->numAllocatedSlots;
 }
 
 static ALWAYS_INLINE void partitionUnlinkPage(PartitionPageHeader* page)
