@@ -22,12 +22,14 @@ enum FileType {
 struct FileMetadata {
   FileMetadata() {}
 
-  // Note the sync_status is set later and not during construction.
+  // sync_status is not known until SyncFileSystemService because
+  // local_file_sync_service has to be checked for pending changes.
   FileMetadata(const std::string& title,
                FileType type,
                const std::string& service_specific_metadata)
      : title(title),
        type(type),
+       sync_status(SYNC_FILE_STATUS_UNKNOWN),
        service_specific_metadata(service_specific_metadata) {}
 
 

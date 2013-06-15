@@ -29,6 +29,7 @@
 #include "webkit/browser/fileapi/syncable/sync_direction.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
+#include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 using content::BrowserThread;
 using fileapi::FileSystemURL;
@@ -97,6 +98,36 @@ void DidHandleOriginForExtensionEnabledEvent(
               origin.spec().c_str());
 }
 
+// Gets called repeatedly until every SyncFileStatus has been mapped.
+void DidGetFileSyncStatus(
+    const SyncStatusCallback& callback,
+    FileMetadata* metadata,
+    size_t expected_results,
+    size_t* num_results,
+    SyncStatusCode sync_status_code,
+    SyncFileStatus sync_file_status) {
+  DCHECK(metadata);
+  DCHECK(num_results);
+
+  // TODO(calvinlo): Unfortunately the sync_status_code will only be OK if
+  // the app that matches the url.origin() is actually running. Otherwise
+  // the FileSystemContext isn't loaded into the map in
+  // LocalFileSyncService::HasPendingLocalChanges() and the contains key check
+  // fails. This causes SYNC_FILE_ERROR_INVALID_URL to be returned.
+  // With this check in, the SyncFileStatus will therefore show nothing (for
+  // SYNC_FILE_STATUS_UNKNOWN) for syncFS apps which aren't running.
+  metadata->sync_status = (sync_status_code == SYNC_STATUS_OK) ?
+      sync_file_status : SYNC_FILE_STATUS_UNKNOWN;
+
+  // Once all results have been received, run the callback to signal end.
+  DCHECK_LE(*num_results, expected_results);
+  (*num_results)++;
+  if (*num_results < expected_results)
+    return;
+
+  callback.Run(SYNC_STATUS_OK);
+}
+
 }  // namespace
 
 void SyncFileSystemService::Shutdown() {
@@ -144,6 +175,47 @@ void SyncFileSystemService::GetExtensionStatusMap(
     std::map<GURL, std::string>* status_map) {
   DCHECK(status_map);
   remote_file_service_->GetOriginStatusMap(status_map);
+}
+
+void SyncFileSystemService::GetFileMetadataMap(
+    RemoteFileSyncService::OriginFileMetadataMap* metadata_map,
+    size_t* num_results,
+    const SyncStatusCallback& callback) {
+  DCHECK(metadata_map);
+  DCHECK(num_results);
+  remote_file_service_->GetFileMetadataMap(metadata_map);
+
+  // Figure out how many results have to be waited on before callback.
+  size_t expected_results = 0;
+  RemoteFileSyncService::OriginFileMetadataMap::iterator origin_itr;
+  for (origin_itr = metadata_map->begin();
+       origin_itr != metadata_map->end();
+       ++origin_itr)
+    expected_results += origin_itr->second.size();
+  if (expected_results == 0) {
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
+  // After all metadata loaded, sync status can be added to each entry.
+  for (origin_itr = metadata_map->begin();
+       origin_itr != metadata_map->end();
+       ++origin_itr) {
+    RemoteFileSyncService::FileMetadataMap::iterator file_path_itr;
+    for (file_path_itr = origin_itr->second.begin();
+         file_path_itr != origin_itr->second.end();
+         ++file_path_itr) {
+      const GURL& origin = origin_itr->first;
+      const base::FilePath& file_path = file_path_itr->first;
+      const FileSystemURL url = CreateSyncableFileSystemURL(origin, file_path);
+      FileMetadata& metadata = file_path_itr->second;
+      GetFileSyncStatus(url, base::Bind(&DidGetFileSyncStatus,
+                                        callback,
+                                        &metadata,
+                                        expected_results,
+                                        num_results));
+    }
+  }
 }
 
 void SyncFileSystemService::GetFileSyncStatus(

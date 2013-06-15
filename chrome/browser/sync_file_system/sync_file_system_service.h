@@ -55,6 +55,10 @@ class SyncFileSystemService
 
   SyncServiceState GetSyncServiceState();
   void GetExtensionStatusMap(std::map<GURL, std::string>* status_map);
+  void GetFileMetadataMap(
+      RemoteFileSyncService::OriginFileMetadataMap* metadata_map,
+      size_t* num_results,
+      const SyncStatusCallback& callback);
 
   // Returns the file |url|'s sync status.
   void GetFileSyncStatus(

@@ -270,6 +270,12 @@ void DriveFileSyncService::GetOriginStatusMap(OriginStatusMap* status_map) {
     (*status_map)[itr->first] = "Disabled";
 }
 
+void DriveFileSyncService::GetFileMetadataMap(
+    OriginFileMetadataMap* metadata_map) {
+  DCHECK(metadata_map);
+  metadata_store_->GetFileMetadataMap(metadata_map);
+}
+
 void DriveFileSyncService::SetSyncEnabled(bool enabled) {
   if (sync_enabled_ == enabled)
     return;

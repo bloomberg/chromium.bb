@@ -785,9 +785,9 @@ void DriveMetadataStore::GetFileMetadataMap(
       const DriveMetadata& metadata = itr->second;
       const FileType type = DriveTypeToFileMetadataType(metadata.type());
       std::ostringstream details;
-      details << "resource_id=" << metadata.resource_id() << "\n"
-              << "md5_checksum=" << metadata.md5_checksum() << "\n"
-              << "to_be_fetched=" << metadata.to_be_fetched() << "\n";
+      details << "resource_id=" << metadata.resource_id() << ", "
+              << "md5_checksum=" << metadata.md5_checksum() << ", "
+              << "to_be_fetched=" << metadata.to_be_fetched();
       FileMetadata file_metadata(title, type, details.str());
       (*output_map)[origin][itr->first] = file_metadata;
     }

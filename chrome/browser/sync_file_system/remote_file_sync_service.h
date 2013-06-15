@@ -5,10 +5,12 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_FILE_SYNC_SERVICE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_FILE_SYNC_SERVICE_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
+#include "chrome/browser/sync_file_system/file_metadata.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 
@@ -142,6 +144,11 @@ class RemoteFileSyncService {
   // corresponding sync statuses.
   typedef std::map<GURL, std::string> OriginStatusMap;
   virtual void GetOriginStatusMap(OriginStatusMap* status_map) = 0;
+
+  // Returns all file metadata grouped by origin.
+  typedef std::map<base::FilePath, FileMetadata> FileMetadataMap;
+  typedef std::map<GURL, FileMetadataMap> OriginFileMetadataMap;
+  virtual void GetFileMetadataMap(OriginFileMetadataMap* metadata_map) = 0;
 
   // Enables or disables the background sync.
   // Setting this to false should disable the synchronization (and make

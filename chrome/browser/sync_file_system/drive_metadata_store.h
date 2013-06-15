@@ -147,7 +147,7 @@ class DriveMetadataStore
   bool GetOriginByOriginRootDirectoryId(const std::string& resource_id,
                                         GURL* origin);
 
-  // Returns all file metadata in serialized format.
+  // Returns all file metadata grouped by origin.
   typedef std::map<base::FilePath, FileMetadata> FileMetadataMap;
   typedef std::map<GURL, FileMetadataMap> OriginToFileMetadataMap;
   void GetFileMetadataMap(OriginToFileMetadataMap* output_map);
