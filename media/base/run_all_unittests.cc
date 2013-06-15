@@ -34,13 +34,10 @@ void TestSuiteNoAtExit::Initialize() {
   // Run this here instead of main() to ensure an AtExitManager is already
   // present.
   media::InitializeMediaLibraryForTesting();
-  // Enable VP9 video codec support for all media tests.
-  // TODO(tomfinegan): Remove this once the VP9 flag is removed or negated.
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  cmd_line->AppendSwitch(switches::kEnableVp9Playback);
   // Enable VP8 alpha support for all media tests.
   // TODO(tomfinegan): Remove this once the VP8 alpha flag is removed or
   // negated.
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   cmd_line->AppendSwitch(switches::kEnableVp8AlphaPlayback);
 }
 

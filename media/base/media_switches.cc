@@ -18,9 +18,6 @@ const char kEnableOpusPlayback[] = "enable-opus-playback";
 // Enables VP8 Alpha playback in media elements.
 const char kEnableVp8AlphaPlayback[] = "enable-vp8-alpha-playback";
 
-// Enables VP9 playback in media elements.
-const char kEnableVp9Playback[] = "enable-vp9-playback";
-
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 

@@ -305,6 +305,7 @@ static const char* const common_media_codecs[] = {
 #endif
   "vorbis",
   "vp8",
+  "vp9",
   "1"  // WAVE_FORMAT_PCM.
 };
 
@@ -410,7 +411,7 @@ struct MediaFormatStrict {
 };
 
 static const MediaFormatStrict format_codec_mappings[] = {
-  { "video/webm", "vorbis,vp8,vp8.0" },
+  { "video/webm", "vorbis,vp8,vp8.0,vp9,vp9.0" },
   { "audio/webm", "vorbis" },
   { "audio/wav", "1" }
 };

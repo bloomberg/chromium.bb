@@ -927,7 +927,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kMaxUntiledLayerHeight,
     switches::kEnableViewport,
     switches::kEnableOpusPlayback,
-    switches::kEnableVp9Playback,
     switches::kEnableVp8AlphaPlayback,
     switches::kEnableEac3Playback,
     switches::kForceDeviceScaleFactor,

@@ -200,25 +200,19 @@ static bool VerifyCodec(
     const CodecInfo* codec_info,
     std::vector<CodecInfo::HistogramTag>* audio_codecs,
     std::vector<CodecInfo::HistogramTag>* video_codecs) {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   switch (codec_info->type) {
     case CodecInfo::AUDIO:
 #if defined(ENABLE_EAC3_PLAYBACK)
-      if (codec_info->tag == CodecInfo::HISTOGRAM_EAC3 &&
-          !cmd_line->HasSwitch(switches::kEnableEac3Playback)) {
-        return false;
+      if (codec_info->tag == CodecInfo::HISTOGRAM_EAC3) {
+        const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+        if (!cmd_line->HasSwitch(switches::kEnableEac3Playback))
+          return false;
       }
 #endif
       if (audio_codecs)
         audio_codecs->push_back(codec_info->tag);
       return true;
     case CodecInfo::VIDEO:
-      // TODO(tomfinegan): Remove this check (or negate it, if we just
-      // negate the flag) when VP9 is enabled by default.
-      if (codec_info->tag == CodecInfo::HISTOGRAM_VP9 &&
-          !cmd_line->HasSwitch(switches::kEnableVp9Playback)) {
-        return false;
-      }
       if (video_codecs)
         video_codecs->push_back(codec_info->tag);
       return true;

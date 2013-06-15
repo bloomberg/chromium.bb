@@ -734,14 +734,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableOpusPlayback)
   },
-  {
-    "enable-vp9-playback",
-    IDS_FLAGS_ENABLE_VP9_PLAYBACK_NAME,
-    IDS_FLAGS_ENABLE_VP9_PLAYBACK_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableVp9Playback)
-  },
-  {
+ {
     "enable-vp8-alpha-playback",
     IDS_FLAGS_ENABLE_VP8_ALPHA_PLAYBACK_NAME,
     IDS_FLAGS_ENABLE_VP8_ALPHA_PLAYBACK_DESCRIPTION,

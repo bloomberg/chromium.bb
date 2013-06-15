@@ -1078,10 +1078,7 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
   // TODO(phajdan.jr): Remove ifdefs when libvpx with vp9 support is released
   // (http://crbug.com/174287) .
 #if !defined(MEDIA_DISABLE_LIBVPX)
-  if (cmd_line->HasSwitch(switches::kEnableVp9Playback) ||
-      cmd_line->HasSwitch(switches::kEnableVp8AlphaPlayback)) {
-    video_decoders.push_back(new media::VpxVideoDecoder(media_loop_));
-  }
+  video_decoders.push_back(new media::VpxVideoDecoder(media_loop_));
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
   video_decoders.push_back(new media::FFmpegVideoDecoder(media_loop_));

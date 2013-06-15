@@ -123,10 +123,8 @@ bool VpxVideoDecoder::ConfigureDecoder() {
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   bool can_handle = false;
-  if (cmd_line->HasSwitch(switches::kEnableVp9Playback) &&
-      config.codec() == kCodecVP9) {
+  if (config.codec() == kCodecVP9)
     can_handle = true;
-  }
   if (cmd_line->HasSwitch(switches::kEnableVp8AlphaPlayback) &&
       config.codec() == kCodecVP8 && config.format() == VideoFrame::YV12A) {
     can_handle = true;
