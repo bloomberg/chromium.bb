@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // An implementation of WebThread in terms of base::MessageLoop and
 // base::Thread
 
-#include "webkit/glue/webthread_impl.h"
+#include "webkit/child/webthread_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

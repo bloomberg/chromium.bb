@@ -33,6 +33,7 @@
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
         '<(DEPTH)/webkit/storage_renderer.gyp:webkit_storage_renderer',
         'glue',
+        'glue_child',
         'glue_common',
         'plugins',
         'webkit_common',

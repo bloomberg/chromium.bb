@@ -9,8 +9,8 @@
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
+#include "webkit/child/webkitplatformsupport_child_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
-#include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/mocks/mock_webhyphenator.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/support/mock_webclipboard_impl.h"
@@ -37,7 +37,7 @@ class WebLayerTreeView;
 // An implementation of WebKitPlatformSupport for tests.
 class TestWebKitPlatformSupport :
     public WebKit::WebUnitTestSupport,
-    public webkit_glue::WebKitPlatformSupportImpl {
+    public webkit_glue::WebKitPlatformSupportChildImpl {
  public:
   TestWebKitPlatformSupport(bool unit_test_mode,
                             WebKit::Platform* shadow_platform_delegate);
