@@ -15,7 +15,7 @@
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/form_structure.h"
-#include "components/autofill/shared/form_data.h"
+#include "components/autofill/common/form_data.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"

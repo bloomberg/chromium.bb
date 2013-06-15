@@ -5,8 +5,8 @@
 #include "components/autofill/content/renderer/password_generation_manager.h"
 
 #include "base/logging.h"
-#include "components/autofill/shared/autofill_messages.h"
-#include "components/autofill/shared/password_generation_util.h"
+#include "components/autofill/common/autofill_messages.h"
+#include "components/autofill/common/password_generation_util.h"
 #include "content/public/renderer/password_form_conversion_utils.h"
 #include "content/public/renderer/render_view.h"
 #include "google_apis/gaia/gaia_urls.h"

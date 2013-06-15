@@ -6,9 +6,10 @@ include_rules = [
   "+chrome/tools/profiles",  # For history unit tests.
   "+chromeos",
   "+components/autofill/browser",
+  "+components/autofill/common",
   "+components/autofill/content/browser",
-  "+components/autofill/shared",
   "+components/auto_login_parser",
+  "+components/autofill/common",
   "+components/browser_context_keyed_service",
   "+components/navigation_interception",
   "+components/user_prefs",

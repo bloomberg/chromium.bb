@@ -3,8 +3,8 @@ include_rules = [
   "+grit",  # For generated headers
   "+jni",
   "+net",
+  # Allow inclusion of WebKit API files.
+  "+third_party/WebKit/public/platform",
+  "+third_party/WebKit/Source/WebKit/chromium",
   "+ui",
-  # Autofill is a layered component; subdirectories must explicitly introduce
-  # the ability to use the content layer as appropriate.
-  "-content/public/common",
 ]

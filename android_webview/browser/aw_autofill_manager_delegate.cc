@@ -11,8 +11,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_builder.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/common/autofill_pref_names.h"
 #include "components/autofill/content/browser/autocheckout/whitelist_manager.h"
-#include "components/autofill/shared/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 
 namespace {

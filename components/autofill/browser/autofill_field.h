@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "components/autofill/browser/field_types.h"
-#include "components/autofill/shared/form_field_data.h"
+#include "components/autofill/common/form_field_data.h"
 
 namespace autofill {
 

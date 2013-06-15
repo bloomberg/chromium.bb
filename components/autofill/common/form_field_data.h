@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_SHARED_FORM_FIELD_DATA_H_
-#define COMPONENTS_AUTOFILL_SHARED_FORM_FIELD_DATA_H_
+#ifndef COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_H_
+#define COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_H_
 
 #include <vector>
 
@@ -65,5 +65,5 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_SHARED_FORM_FIELD_DATA_H_
+#endif  // COMPONENTS_AUTOFILL_COMMON_FORM_FIELD_DATA_H_
 

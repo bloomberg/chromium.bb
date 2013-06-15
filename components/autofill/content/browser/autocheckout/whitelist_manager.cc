@@ -10,7 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "components/autofill/shared/autofill_switches.h"
+#include "components/autofill/common/autofill_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"

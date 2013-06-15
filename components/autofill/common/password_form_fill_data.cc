@@ -1,11 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/shared/password_form_fill_data.h"
+#include "components/autofill/common/password_form_fill_data.h"
 
 #include "base/logging.h"
-#include "components/autofill/shared/form_field_data.h"
+#include "components/autofill/common/form_field_data.h"
 
 namespace autofill {
 

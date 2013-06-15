@@ -7,9 +7,9 @@
 
 #include "base/supports_user_data.h"
 #include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/common/autocheckout_status.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
-#include "components/autofill/shared/autocheckout_status.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {

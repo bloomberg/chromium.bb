@@ -4,8 +4,8 @@
 
 #include "base/time.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "components/autofill/shared/autofill_messages.h"
-#include "components/autofill/shared/form_data.h"
+#include "components/autofill/common/autofill_messages.h"
+#include "components/autofill/common/form_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"

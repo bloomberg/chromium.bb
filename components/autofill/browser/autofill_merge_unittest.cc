@@ -13,7 +13,7 @@
 #include "components/autofill/browser/data_driven_test.h"
 #include "components/autofill/browser/form_structure.h"
 #include "components/autofill/browser/personal_data_manager.h"
-#include "components/autofill/shared/form_data.h"
+#include "components/autofill/common/form_data.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"

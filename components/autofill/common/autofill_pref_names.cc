@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/shared/autofill_pref_names.h"
+#include "components/autofill/common/autofill_pref_names.h"
 
 namespace autofill {
 namespace prefs {

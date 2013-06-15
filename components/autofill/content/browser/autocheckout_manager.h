@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
+#include "components/autofill/common/autocheckout_status.h"
 #include "components/autofill/content/browser/autocheckout_page_meta_data.h"
-#include "components/autofill/shared/autocheckout_status.h"
 
 class GURL;
 

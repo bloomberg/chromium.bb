@@ -9,6 +9,9 @@
 
 #include "base/strings/string16.h"
 
+struct FormData;
+struct FormFieldData;
+
 namespace WebKit {
 class WebDocument;
 class WebFormElement;
@@ -18,8 +21,6 @@ class WebInputElement;
 
 namespace autofill {
 
-struct FormData;
-struct FormFieldData;
 struct WebElementDescriptor;
 
 // A bit field mask for form or form element requirements.

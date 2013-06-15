@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/browser/password_generator.h"
-#include "components/autofill/shared/autofill_messages.h"
+#include "components/autofill/common/autofill_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"

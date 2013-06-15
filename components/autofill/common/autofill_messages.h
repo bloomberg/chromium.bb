@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,14 +7,14 @@
 #include <string>
 
 #include "base/time.h"
-#include "components/autofill/shared/autocheckout_status.h"
-#include "components/autofill/shared/form_data.h"
-#include "components/autofill/shared/form_data_predictions.h"
-#include "components/autofill/shared/form_field_data.h"
-#include "components/autofill/shared/form_field_data_predictions.h"
-#include "components/autofill/shared/forms_seen_state.h"
-#include "components/autofill/shared/password_form_fill_data.h"
-#include "components/autofill/shared/web_element_descriptor.h"
+#include "components/autofill/common/autocheckout_status.h"
+#include "components/autofill/common/form_data.h"
+#include "components/autofill/common/form_data_predictions.h"
+#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/common/form_field_data_predictions.h"
+#include "components/autofill/common/forms_seen_state.h"
+#include "components/autofill/common/password_form_fill_data.h"
+#include "components/autofill/common/web_element_descriptor.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "content/public/common/password_form.h"

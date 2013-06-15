@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 
 #include "base/base_switches.h"
-#include "components/autofill/shared/autofill_switches.h"
+#include "components/autofill/common/autofill_switches.h"
 #include "content/public/common/content_switches.h"
 
 namespace switches {

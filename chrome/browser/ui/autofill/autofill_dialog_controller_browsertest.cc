@@ -19,10 +19,10 @@
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/test_personal_data_manager.h"
 #include "components/autofill/browser/validation.h"
+#include "components/autofill/common/autofill_switches.h"
+#include "components/autofill/common/form_data.h"
+#include "components/autofill/common/form_field_data.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
-#include "components/autofill/shared/autofill_switches.h"
-#include "components/autofill/shared/form_data.h"
-#include "components/autofill/shared/form_field_data.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
