@@ -1528,29 +1528,23 @@ bool RenderProcessHost::ShouldUseProcessPerSite(
   // Returns true if we should use the process-per-site model.  This will be
   // the case if the --process-per-site switch is specified, or in
   // process-per-site-instance for particular sites (e.g., WebUI).
-
+  // Note that --single-process is handled in ShouldTryToUseExistingProcessHost.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kProcessPerSite))
     return true;
 
-  // We want to consolidate particular sites like WebUI when we are using
-  // process-per-tab or process-per-site-instance models.
-  // Note that --single-process is handled in ShouldTryToUseExistingProcessHost.
-
-  if (GetContentClient()->browser()->
-          ShouldUseProcessPerSite(browser_context, url)) {
-    return true;
-  }
-
-  // DevTools pages have WebUI type but should not reuse the same host.
+  // We want to consolidate particular sites like WebUI even when we are using
+  // the process-per-tab or process-per-site-instance models.
+  // Note: DevTools pages have WebUI type but should not reuse the same host.
   if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
           browser_context, url) &&
       !url.SchemeIs(chrome::kChromeDevToolsScheme)) {
     return true;
   }
 
-  // In all other cases, don't use process-per-site logic.
-  return false;
+  // Otherwise let the content client decide, defaulting to false.
+  return GetContentClient()->browser()->ShouldUseProcessPerSite(browser_context,
+                                                                url);
 }
 
 // static
