@@ -73,9 +73,12 @@ binding.registerCustomHook(function(api) {
         // not objects, validation will fail after the for-loop above.  This
         // skips validation and calls the callback directly, then clears it so
         // that handleResponse doesn't call it again.
-        if (request.callback)
-          request.callback.apply(request, [response]);
-        delete request.callback;
+        try {
+          if (request.callback)
+            request.callback.apply(request, [response]);
+        } finally {
+          delete request.callback;
+        }
       });
 
   // Also convert complex permissions back to objects for events.  The

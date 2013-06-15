@@ -2,9 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.tabs.create({}, function() {
-  throw new Error("tada");
-});
-chrome.tabs.create({}, function() {
-  chrome.test.notifyPass();
-});
+function testCallback(callback) {
+  var done = chrome.test.callbackAdded();
+  return function() {
+    try {
+      callback.call(null, arguments);
+    } finally {
+      done();
+    }
+  };
+}
+
+chrome.test.runTests([
+  function tabsCreateThrowsError() {
+    chrome.tabs.create({}, testCallback(function() {
+      throw new Error("tata");
+    }));
+  },
+  function permissionsGetAllThrowsError() {
+    // permissions.getAll has a custom callback, as do many other methods, but
+    // this is easy to call.
+    chrome.permissions.getAll(testCallback(function() {
+      throw new Error("boom");
+    }));
+  }
+]);

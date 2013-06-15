@@ -55,10 +55,16 @@ binding.registerCustomHook(function(api) {
   apiFunctions.setHandleRequest('callbackAdded', function() {
     pendingCallbacks++;
 
-    var called = false;
+    var called = null;
     return function() {
-      chromeTest.assertFalse(called, 'callback has already been run');
-      called = true;
+      if (called != null) {
+        var redundantPrefix = 'Error\n';
+        chrome.test.fail(
+          'Callback has already been run. ' +
+          'First call:\n' + called.slice(redundantPrefix.length) + '\n' +
+          'Second call:\n' + new Error().stack.slice(redundantPrefix.length));
+      }
+      called = new Error().stack;
 
       pendingCallbacks--;
       if (pendingCallbacks == 0) {
