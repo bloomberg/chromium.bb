@@ -62,8 +62,6 @@ scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
 // created, and unregister from the manager when they are deleted.
 class CC_EXPORT TileManager : public RasterWorkerPoolClient {
  public:
-  typedef base::hash_set<uint32_t> PixelRefSet;
-
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
       ResourceProvider* resource_provider,
@@ -117,10 +115,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   virtual void ScheduleTasks();
 
  private:
-  // Task callbacks.
-  void OnImageDecodeTaskCompleted(
-      scoped_refptr<Tile> tile,
-      uint32_t pixel_ref_id);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,
@@ -131,6 +125,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   void AssignBinsToTiles();
   void SortTiles();
   RasterMode DetermineRasterMode(const Tile* tile) const;
+  void CleanUpUnusedImageDecodeTasks();
   void AssignGpuMemoryToTiles();
   void FreeResourceForTile(Tile* tile, RasterMode mode);
   void FreeResourcesForTile(Tile* tile);
@@ -138,9 +133,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   RasterWorkerPool::Task CreateImageDecodeTask(
       Tile* tile, skia::LazyPixelRef* pixel_ref);
   RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;
-  RasterWorkerPool::RasterTask CreateRasterTask(
-      Tile* tile,
-      PixelRefSet* decoded_images);
+  RasterWorkerPool::RasterTask CreateRasterTask(Tile* tile);
   void DidFinishTileInitialization(Tile* tile);
   void DidTileTreeBinChange(Tile* tile,
                             TileManagerBin new_tree_bin,
@@ -159,9 +152,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   typedef std::set<Tile*> TileSet;
   TileSet tiles_that_need_to_be_initialized_for_activation_;
 
-  typedef base::hash_map<uint32_t, RasterWorkerPool::Task> PixelRefMap;
-  PixelRefMap pending_decode_tasks_;
-
   bool ever_exceeded_memory_budget_;
   MemoryHistory::Entry memory_stats_from_last_assign_;
 
@@ -171,6 +161,10 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   bool did_initialize_visible_tile_;
 
   GLenum texture_format_;
+
+  typedef base::hash_map<uint32_t, RasterWorkerPool::Task> PixelRefTaskMap;
+  typedef base::hash_map<int, PixelRefTaskMap> LayerPixelRefTaskMap;
+  LayerPixelRefTaskMap image_decode_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

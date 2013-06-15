@@ -220,8 +220,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   static Task CreateImageDecodeTask(
       skia::LazyPixelRef* pixel_ref,
       int layer_id,
-      RenderingStatsInstrumentation* stats_instrumentation,
-      const Task::Reply& reply);
+      RenderingStatsInstrumentation* stats_instrumentation);
 
  protected:
   class RootTask {

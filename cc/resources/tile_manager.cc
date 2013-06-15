@@ -128,6 +128,7 @@ TileManager::~TileManager() {
   // our memory usage to drop to zero.
   global_state_ = GlobalStateThatImpactsTilePriority();
   AssignGpuMemoryToTiles();
+  CleanUpUnusedImageDecodeTasks();
   // This should finish all pending tasks and release any uninitialized
   // resources.
   raster_worker_pool_->Shutdown();
@@ -287,6 +288,7 @@ void TileManager::ManageTiles() {
   AssignBinsToTiles();
   SortTiles();
   AssignGpuMemoryToTiles();
+  CleanUpUnusedImageDecodeTasks();
 
   // This could have changed after AssignGpuMemoryToTiles.
   if (AreTilesRequiredForActivationReady())
@@ -561,6 +563,30 @@ void TileManager::AssignGpuMemoryToTiles() {
       bytes_that_exceeded_memory_budget_in_now_bin;
 }
 
+void TileManager::CleanUpUnusedImageDecodeTasks() {
+  // Calculate a set of layers that are used by at least one tile.
+  base::hash_set<int> used_layers;
+  for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    used_layers.insert((*it)->layer_id());
+
+  // Now calculate the set of layers in |image_decode_tasks_| that are not used
+  // by any tile.
+  std::vector<int> unused_layers;
+  for (LayerPixelRefTaskMap::iterator it = image_decode_tasks_.begin();
+       it != image_decode_tasks_.end();
+       ++it) {
+    if (used_layers.find(it->first) == used_layers.end())
+      unused_layers.push_back(it->first);
+  }
+
+  // Erase unused layers from |image_decode_tasks_|.
+  for (std::vector<int>::iterator it = unused_layers.begin();
+       it != unused_layers.end();
+       ++it) {
+    image_decode_tasks_.erase(*it);
+  }
+}
+
 void TileManager::FreeResourceForTile(Tile* tile, RasterMode mode) {
   ManagedTileState& mts = tile->managed_state();
   if (mts.tile_versions[mode].resource_) {
@@ -587,7 +613,6 @@ void TileManager::FreeUnusedResourcesForTile(Tile* tile) {
 void TileManager::ScheduleTasks() {
   TRACE_EVENT0("cc", "TileManager::ScheduleTasks");
   RasterWorkerPool::RasterTask::Queue tasks;
-  PixelRefSet decoded_images;
 
   // Build a new task queue containing all task currently needed. Tasks
   // are added in order of priority, highest priority task first.
@@ -603,7 +628,7 @@ void TileManager::ScheduleTasks() {
     DCHECK(!tile_version.resource_);
 
     if (tile_version.raster_task_.is_null())
-      tile_version.raster_task_ = CreateRasterTask(tile, &decoded_images);
+      tile_version.raster_task_ = CreateRasterTask(tile);
 
     tasks.Append(tile_version.raster_task_, tile->required_for_activation());
   }
@@ -621,19 +646,7 @@ RasterWorkerPool::Task TileManager::CreateImageDecodeTask(
   return RasterWorkerPool::CreateImageDecodeTask(
       pixel_ref,
       tile->layer_id(),
-      rendering_stats_instrumentation_,
-      base::Bind(&TileManager::OnImageDecodeTaskCompleted,
-                 base::Unretained(this),
-                 make_scoped_refptr(tile),
-                 pixel_ref->getGenerationID()));
-}
-
-void TileManager::OnImageDecodeTaskCompleted(scoped_refptr<Tile> tile,
-                                             uint32_t pixel_ref_id) {
-  TRACE_EVENT0("cc", "TileManager::OnImageDecodeTaskCompleted");
-  DCHECK(pending_decode_tasks_.find(pixel_ref_id) !=
-         pending_decode_tasks_.end());
-  pending_decode_tasks_.erase(pixel_ref_id);
+      rendering_stats_instrumentation_);
 }
 
 RasterTaskMetadata TileManager::GetRasterTaskMetadata(
@@ -649,9 +662,7 @@ RasterTaskMetadata TileManager::GetRasterTaskMetadata(
   return metadata;
 }
 
-RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
-    Tile* tile,
-    PixelRefSet* decoded_images) {
+RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
   TRACE_EVENT0("cc", "TileManager::CreateRasterTask");
 
   ManagedTileState& mts = tile->managed_state();
@@ -663,6 +674,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
 
   // Create and queue all image decode tasks that this tile depends on.
   RasterWorkerPool::Task::Set decode_tasks;
+  PixelRefTaskMap& existing_pixel_refs = image_decode_tasks_[tile->layer_id()];
   for (PicturePileImpl::PixelRefIterator iter(tile->content_rect(),
                                               tile->contents_scale(),
                                               tile->picture_pile());
@@ -671,18 +683,9 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
     uint32_t id = pixel_ref->getGenerationID();
 
     // Append existing image decode task if available.
-    PixelRefMap::iterator decode_task_it = pending_decode_tasks_.find(id);
-    if (decode_task_it != pending_decode_tasks_.end()) {
+    PixelRefTaskMap::iterator decode_task_it = existing_pixel_refs.find(id);
+    if (decode_task_it != existing_pixel_refs.end()) {
       decode_tasks.Insert(decode_task_it->second);
-      continue;
-    }
-
-    if (decoded_images->find(id) != decoded_images->end())
-      continue;
-
-    if (pixel_ref->MaybeDecoded()) {
-      decoded_images->insert(id);
-      rendering_stats_instrumentation_->IncrementDeferredImageCacheHitCount();
       continue;
     }
 
@@ -690,7 +693,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
     RasterWorkerPool::Task decode_task = CreateImageDecodeTask(
         tile, pixel_ref);
     decode_tasks.Insert(decode_task);
-    pending_decode_tasks_[id] = decode_task;
+    existing_pixel_refs[id] = decode_task;
   }
 
   RasterTaskMetadata metadata = GetRasterTaskMetadata(*tile);

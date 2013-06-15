@@ -204,12 +204,10 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
   ImageDecodeWorkerPoolTaskImpl(skia::LazyPixelRef* pixel_ref,
                                 int layer_id,
-                                RenderingStatsInstrumentation* rendering_stats,
-                                const RasterWorkerPool::Task::Reply& reply)
+                                RenderingStatsInstrumentation* rendering_stats)
       : pixel_ref_(pixel_ref),
         layer_id_(layer_id),
-        rendering_stats_(rendering_stats),
-        reply_(reply) {}
+        rendering_stats_(rendering_stats) {}
 
   // Overridden from internal::WorkerPoolTask:
   virtual void RunOnThread(unsigned thread_index) OVERRIDE {
@@ -221,9 +219,7 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     base::TimeDelta duration = rendering_stats_->EndRecording(start_time);
     rendering_stats_->AddDeferredImageDecode(duration);
   }
-  virtual void DispatchCompletionCallback() OVERRIDE {
-    reply_.Run();
-  }
+  virtual void DispatchCompletionCallback() OVERRIDE {}
 
  protected:
   virtual ~ImageDecodeWorkerPoolTaskImpl() {}
@@ -232,7 +228,6 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   skia::LazyPixelRef* pixel_ref_;
   int layer_id_;
   RenderingStatsInstrumentation* rendering_stats_;
-  const RasterWorkerPool::Task::Reply reply_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeWorkerPoolTaskImpl);
 };
@@ -384,12 +379,10 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
 RasterWorkerPool::Task RasterWorkerPool::CreateImageDecodeTask(
     skia::LazyPixelRef* pixel_ref,
     int layer_id,
-    RenderingStatsInstrumentation* stats_instrumentation,
-    const Task::Reply& reply) {
+    RenderingStatsInstrumentation* stats_instrumentation) {
   return Task(new ImageDecodeWorkerPoolTaskImpl(pixel_ref,
                                                 layer_id,
-                                                stats_instrumentation,
-                                                reply));
+                                                stats_instrumentation));
 }
 
 RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
