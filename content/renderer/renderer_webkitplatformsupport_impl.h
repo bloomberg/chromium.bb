@@ -104,6 +104,9 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       double sample_rate, WebKit::WebAudioDevice::RenderCallback* callback,
       const WebKit::WebString& input_device_id);
 
+  virtual WebKit::WebContentDecryptionModule* createContentDecryptionModule(
+      const WebKit::WebString& key_system);
+
   virtual WebKit::WebBlobRegistry* blobRegistry();
   virtual void sampleGamepads(WebKit::WebGamepads&);
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url);

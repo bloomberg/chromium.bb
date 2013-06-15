@@ -31,6 +31,7 @@
 #include "content/renderer/hyphenator/hyphenator.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
+#include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/websharedworkerrepository_impl.h"
@@ -728,6 +729,14 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
       static_cast<int>(sample_rate), 16, buffer_size);
 
   return new RendererWebAudioDeviceImpl(params, callback, session_id);
+}
+
+//------------------------------------------------------------------------------
+
+WebKit::WebContentDecryptionModule*
+RendererWebKitPlatformSupportImpl::createContentDecryptionModule(
+    const WebKit::WebString& key_system) {
+  return WebContentDecryptionModuleImpl::Create(key_system);
 }
 
 //------------------------------------------------------------------------------

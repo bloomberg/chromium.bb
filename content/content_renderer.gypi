@@ -174,6 +174,8 @@
     'renderer/media/video_capture_impl_manager.h',
     'renderer/media/video_capture_message_filter.cc',
     'renderer/media/video_capture_message_filter.h',
+    'renderer/media/webcontentdecryptionmodule_impl.cc',
+    'renderer/media/webcontentdecryptionmodule_impl.h',
     'renderer/media/webmediaplayer_proxy_impl_android.cc',
     'renderer/media/webmediaplayer_proxy_impl_android.h',
     'renderer/memory_benchmarking_extension.cc',
