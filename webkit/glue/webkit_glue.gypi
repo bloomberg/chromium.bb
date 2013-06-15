@@ -177,9 +177,12 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
-        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+        '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+        '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+        '<(DEPTH)/ui/ui.gyp:ui',
         'glue_common',
+        'webkit_common',
       ],
 
       'sources': [
@@ -187,6 +190,8 @@
         '../renderer/cpp_bound_class.h',
         '../renderer/cpp_variant.cc',
         '../renderer/cpp_variant.h',
+        '../renderer/cursor_utils.cc',
+        '../renderer/cursor_utils.h',
         '../renderer/webkit_renderer_export.h',
         '../renderer/webpreferences_renderer.cc',
         '../renderer/webpreferences_renderer.h',
@@ -239,8 +244,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui',
       ],
       'sources': [
-        'cursor_utils.cc',
-        'cursor_utils.h',
         'ftp_directory_listing_response_delegate.cc',
         'ftp_directory_listing_response_delegate.h',
         'glue_serialize_deprecated.cc',
