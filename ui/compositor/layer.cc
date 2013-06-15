@@ -788,8 +788,7 @@ void Layer::SetGrayscaleImmediately(float grayscale) {
 
 void Layer::SetColorImmediately(SkColor color) {
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
-  // WebColor is equivalent to SkColor, per WebColor.h.
-  solid_color_layer_->SetBackgroundColor(static_cast<WebKit::WebColor>(color));
+  solid_color_layer_->SetBackgroundColor(color);
   SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
 }
 
