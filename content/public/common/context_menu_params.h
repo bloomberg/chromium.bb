@@ -13,9 +13,9 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
-#include "webkit/glue/webmenuitem.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "webkit/common/webmenuitem.h"
 
 #if defined(OS_ANDROID)
 #include "ui/gfx/point.h"

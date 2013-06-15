@@ -6,15 +6,15 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ui/gfx/point.h"
-#include "webkit/glue/webmenuitem.h"
+#include "webkit/common/webmenuitem.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace chrome {

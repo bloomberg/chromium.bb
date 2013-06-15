@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/memory/scoped_nsobject.h"
+#include "webkit/common/webmenuitem.h"
 #include "webkit/glue/webkit_glue_export.h"
-#include "webkit/glue/webmenuitem.h"
 
 
 // WebMenuRunner ---------------------------------------------------------------

@@ -1,19 +1,19 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBMENUITEM_H_
-#define WEBMENUITEM_H_
+#ifndef WEBKIT_COMMON_WEBMENUITEM_H_
+#define WEBKIT_COMMON_WEBMENUITEM_H_
 
 #include <vector>
 
 #include "base/strings/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMenuItemInfo.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 // Container for information about entries in an HTML select popup menu and
 // custom entries of the context menu.
-struct WEBKIT_GLUE_EXPORT WebMenuItem {
+struct WEBKIT_COMMON_EXPORT WebMenuItem {
   enum Type {
     OPTION    = WebKit::WebMenuItemInfo::Option,
     CHECKABLE_OPTION = WebKit::WebMenuItemInfo::CheckableOption,
@@ -38,4 +38,4 @@ struct WEBKIT_GLUE_EXPORT WebMenuItem {
   std::vector<WebMenuItem> submenu;
 };
 
-#endif  // WEBMENUITEM_H_
+#endif  // WEBKIT_COMMON_WEBMENUITEM_H_

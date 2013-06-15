@@ -69,7 +69,6 @@ include_rules = [
   "+webkit/glue/image_decoder.h",
   "+webkit/glue/resource_type.h",
   "+webkit/glue/webkit_glue.h",
-  "+webkit/glue/webmenuitem.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "-chrome/browser/ui/views",

@@ -52,7 +52,7 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/size_f.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-#include "webkit/glue/webmenuitem.h"
+#include "webkit/common/webmenuitem.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
