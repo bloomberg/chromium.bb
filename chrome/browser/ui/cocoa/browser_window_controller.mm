@@ -1953,6 +1953,19 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return fullscreenExitBubbleController_.get();
 }
 
+- (NSRect)omniboxPopupAnchorRect {
+  // Start with toolbar rect.
+  NSView* toolbarView = [toolbarController_ view];
+  NSRect anchorRect = [toolbarView frame];
+
+  // Adjust to account for height and possible bookmark bar.
+  anchorRect.origin.y =
+      NSMaxY(anchorRect) - [toolbarController_ desiredHeightForCompression:0];
+
+  // Shift to window base coordinates.
+  return [[toolbarView superview] convertRect:anchorRect toView:nil];
+}
+
 - (void)commitInstant {
   if (BrowserInstantController* controller = browser_->instant_controller())
     controller->instant()->CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);

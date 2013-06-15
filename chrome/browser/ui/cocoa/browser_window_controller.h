@@ -502,6 +502,11 @@ class WebContents;
 
 // The fullscreen exit bubble controller, or nil if the bubble isn't showing.
 - (FullscreenExitBubbleController*)fullscreenExitBubbleController;
+
+// Gets the rect, in window base coordinates, that the omnibox popup should be
+// positioned relative to.
+- (NSRect)omniboxPopupAnchorRect;
+
 @end  // @interface BrowserWindowController (TestingAPI)
 
 

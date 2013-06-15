@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "ui/gfx/font.h"
 
-@class NSImage;
+@class AutocompleteMatrix;
 class OmniboxEditModel;
 class OmniboxPopupModel;
 class OmniboxView;
@@ -128,6 +128,8 @@ class OmniboxPopupViewMac : public OmniboxPopupView {
   // Child window containing a matrix which implements the popup.
   scoped_nsobject<NSWindow> popup_;
   NSRect targetPopupFrame_;
+
+  scoped_nsobject<AutocompleteMatrix> autocomplete_matrix_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupViewMac);
 };

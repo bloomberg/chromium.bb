@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -18,68 +19,50 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/cocoa_event_utils.h"
+#import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-// The size delta between the font used for the edit and the result
-// rows.
-const int kEditFontAdjust = -1;
+namespace {
 
 // How much to adjust the cell sizing up from the default determined
 // by the font.
-const int kCellHeightAdjust = 6.0;
+const CGFloat kCellHeightAdjust = 6.0;
 
-// How to round off the popup's corners.  Goal is to match star and go
-// buttons.
-const CGFloat kPopupRoundingRadius = 3;
-
-// Gap between the field and the popup.
-const CGFloat kPopupFieldGap = 2.0;
-
-// How opaque the popup window should be.  This matches Windows (see
-// autocomplete_popup_contents_view.cc, kGlassPopupTransparency).
-const CGFloat kPopupAlpha = 240.0 / 255.0;
+// Padding between matrix and the top and bottom of the popup window.
+const CGFloat kPopupPaddingVertical = 5.0;
 
 // How far to offset image column from the left.
-const CGFloat kImageXOffset = 4.0;
+const CGFloat kImageXOffset = 5.0;
 
 // How far to offset the text column from the left.
-const CGFloat kTextXOffset = 27.0;
+const CGFloat kTextXOffset = 28.0;
 
 // Animation duration when animating the popup window smaller.
 const NSTimeInterval kShrinkAnimationDuration = 0.1;
 
 // Maximum fraction of the popup width that can be used to display match
 // contents.
-const float kMaxContentsFraction = 0.7;
+const CGFloat kMaxContentsFraction = 0.7;
 
 // NSEvent -buttonNumber for middle mouse button.
-const static NSInteger kMiddleButtonNumber(2);
+const NSInteger kMiddleButtonNumber = 2;
 
-// The autocomplete field's visual border is slightly inset from the
-// actual border so that it can spill a glow into the toolbar or
-// something like that.  This is how much to inset vertically.
-const CGFloat kFieldVisualInset = 1.0;
-
-// The popup window has a single-pixel border in screen coordinates,
-// which has to be backed out to line the borders up with the field
-// borders.
-const CGFloat kWindowBorderWidth = 1.0;
-
-namespace {
+// Rounding radius of selection and hover background on popup items.
+const CGFloat kCellRoundingRadius = 2.0;
 
 // Background colors for different states of the popup elements.
 NSColor* BackgroundColor() {
-  return [[NSColor controlBackgroundColor] colorWithAlphaComponent:kPopupAlpha];
+  return [NSColor controlBackgroundColor];
 }
 NSColor* SelectedBackgroundColor() {
-  return [[NSColor selectedControlColor] colorWithAlphaComponent:kPopupAlpha];
+  return [NSColor selectedControlColor];
 }
 NSColor* HoveredBackgroundColor() {
-  return [[NSColor controlHighlightColor] colorWithAlphaComponent:kPopupAlpha];
+  return [NSColor controlHighlightColor];
 }
 
 NSColor* ContentTextColor() {
@@ -311,9 +294,7 @@ OmniboxPopupViewMac::~OmniboxPopupViewMac() {
 
   // Break references to |this| because the popup may not be
   // deallocated immediately.
-  AutocompleteMatrix* matrix = [popup_ contentView];
-  DCHECK(matrix == nil || [matrix isKindOfClass:[AutocompleteMatrix class]]);
-  [matrix setPopupView:NULL];
+  [autocomplete_matrix_ setPopupView:NULL];
 }
 
 bool OmniboxPopupViewMac::IsOpen() const {
@@ -330,14 +311,19 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
     [popup_ setMovableByWindowBackground:NO];
     // The window shape is determined by the content view.
     [popup_ setAlphaValue:1.0];
-    [popup_ setOpaque:NO];
-    [popup_ setBackgroundColor:[NSColor clearColor]];
+    [popup_ setOpaque:YES];
+    [popup_ setBackgroundColor:BackgroundColor()];
     [popup_ setHasShadow:YES];
     [popup_ setLevel:NSNormalWindowLevel];
+    // Use a flipped view to pin the matrix top the top left. This is needed
+    // for animated resize.
+    scoped_nsobject<FlippedView> contentView(
+        [[FlippedView alloc] initWithFrame:NSZeroRect]);
+    [popup_ setContentView:contentView];
 
-    scoped_nsobject<AutocompleteMatrix> matrix(
+    autocomplete_matrix_.reset(
         [[AutocompleteMatrix alloc] initWithPopupView:this]);
-    [popup_ setContentView:matrix];
+    [contentView addSubview:autocomplete_matrix_];
 
     // TODO(dtseng): Ignore until we provide NSAccessibility support.
     [popup_ accessibilitySetOverrideValue:NSAccessibilityUnknownRole
@@ -346,29 +332,31 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
 }
 
 void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
-  // Calculate the popup's position on the screen.  It should abut the
-  // field's visual border vertically, and be below the bounds
-  // horizontally.
+  BrowserWindowController* controller =
+      [BrowserWindowController browserWindowControllerForView:field_];
+  NSRect anchorRectBase = [controller omniboxPopupAnchorRect];
 
-  // Start with the field's rect on the screen.
-  NSRect popupFrame = NSInsetRect([field_ bounds], 0.0, kFieldVisualInset);
-  popupFrame = [field_ convertRect:popupFrame toView:nil];
-  popupFrame.origin = [[field_ window] convertBaseToScreen:popupFrame.origin];
-
-  // Size to fit the matrix, and shift down by the size plus the top
-  // window border.
-  popupFrame.size.height = matrixHeight;
-  popupFrame.origin.y -= NSHeight(popupFrame) + kWindowBorderWidth;
-
-  // Inset to account for the horizontal border drawn by the window.
-  popupFrame = NSInsetRect(popupFrame, kWindowBorderWidth, 0.0);
-
-  // Leave a gap between the popup and the field.
-  popupFrame.origin.y -= kPopupFieldGap;
+  // Calculate the popup's position on the screen.
+  NSRect popupFrame = anchorRectBase;
+  // Size to fit the matrix and shift down by the size.
+  popupFrame.size.height = matrixHeight + kPopupPaddingVertical * 2.0;
+  popupFrame.origin.y -= NSHeight(popupFrame);
+  // Shift to screen coordinates.
+  popupFrame.origin =
+      [[controller window] convertBaseToScreen:popupFrame.origin];
 
   // Do nothing if the popup is already animating to the given |frame|.
   if (NSEqualRects(popupFrame, targetPopupFrame_))
     return;
+
+  NSPoint fieldOriginBase =
+      [field_ convertPoint:[field_ bounds].origin toView:nil];
+  NSRect matrixFrame = NSZeroRect;
+  matrixFrame.origin.x = fieldOriginBase.x - NSMinX(anchorRectBase);
+  matrixFrame.origin.y = kPopupPaddingVertical;
+  matrixFrame.size.width = [autocomplete_matrix_ cellSize].width;
+  matrixFrame.size.height = matrixHeight;
+  [autocomplete_matrix_ setFrame:matrixFrame];
 
   NSRect currentPopupFrame = [popup_ frame];
   targetPopupFrame_ = popupFrame;
@@ -429,9 +417,8 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
 
     // Break references to |this| because the popup may not be
     // deallocated immediately.
-    AutocompleteMatrix* matrix = [popup_ contentView];
-    DCHECK(matrix == nil || [matrix isKindOfClass:[AutocompleteMatrix class]]);
-    [matrix setPopupView:NULL];
+    [autocomplete_matrix_ setPopupView:NULL];
+    autocomplete_matrix_.reset();
 
     popup_.reset(nil);
 
@@ -444,25 +431,21 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
 
   // The popup's font is a slightly smaller version of the field's.
   NSFont* fieldFont = OmniboxViewMac::GetFieldFont();
-  const CGFloat resultFontSize = [fieldFont pointSize] + kEditFontAdjust;
+  const CGFloat resultFontSize = [fieldFont pointSize];
   gfx::Font resultFont(base::SysNSStringToUTF8([fieldFont fontName]),
                        static_cast<int>(resultFontSize));
 
-  AutocompleteMatrix* matrix = [popup_ contentView];
-
   // Calculate the width of the matrix based on backing out the
   // popup's border from the width of the field.
-  const NSRect fieldRectBase = [field_ convertRect:[field_ bounds] toView:nil];
-  const CGFloat popupWidth = NSWidth(fieldRectBase) - 2 * kWindowBorderWidth;
-  DCHECK_GT(popupWidth, 0.0);
-  const CGFloat matrixWidth = popupWidth;
+  const CGFloat matrixWidth = NSWidth([field_ bounds]);
+  DCHECK_GT(matrixWidth, 0.0);
 
   // Load the results into the popup's matrix.
   const size_t rows = model_->result().size();
   DCHECK_GT(rows, 0U);
-  [matrix renewRows:rows columns:1];
+  [autocomplete_matrix_ renewRows:rows columns:1];
   for (size_t ii = 0; ii < rows; ++ii) {
-    AutocompleteButtonCell* cell = [matrix cellAtRow:ii column:0];
+    AutocompleteButtonCell* cell = [autocomplete_matrix_ cellAtRow:ii column:0];
     const AutocompleteMatch& match = model_->result().match_at(ii);
     [cell setImage:ImageForMatch(match)];
     [cell setAttributedTitle:MatchText(match, resultFont, matrixWidth)];
@@ -471,10 +454,11 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   // Set the cell size to fit a line of text in the cell's font.  All
   // cells should use the same font and each should layout in one
   // line, so they should all be about the same height.
-  const NSSize cellSize = [[matrix cellAtRow:0 column:0] cellSize];
+  const NSSize cellSize =
+      [[autocomplete_matrix_ cellAtRow:0 column:0] cellSize];
   DCHECK_GT(cellSize.height, 0.0);
   const CGFloat cellHeight = cellSize.height + kCellHeightAdjust;
-  [matrix setCellSize:NSMakeSize(matrixWidth, cellHeight)];
+  [autocomplete_matrix_ setCellSize:NSMakeSize(matrixWidth, cellHeight)];
 
   // Update the selection before placing (and displaying) the window.
   PaintUpdatesNow();
@@ -482,7 +466,7 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   // Calculate the matrix size manually rather than using -sizeToCells
   // because actually resizing the matrix messed up the popup size
   // animation.
-  DCHECK_EQ([matrix intercellSpacing].height, 0.0);
+  DCHECK_EQ([autocomplete_matrix_ intercellSpacing].height, 0.0);
   PositionPopup(rows * cellHeight);
 }
 
@@ -502,8 +486,7 @@ void OmniboxPopupViewMac::SetSelectedLine(size_t line) {
 // This is only called by model in SetSelectedLine() after updating
 // everything.  Popup should already be visible.
 void OmniboxPopupViewMac::PaintUpdatesNow() {
-  AutocompleteMatrix* matrix = [popup_ contentView];
-  [matrix selectCellAtRow:model_->selected_line() column:0];
+  [autocomplete_matrix_ selectCellAtRow:model_->selected_line() column:0];
 }
 
 void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
@@ -537,21 +520,23 @@ void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
   return self;
 }
 
-- (NSColor*)backgroundColor {
-  if ([self state] == NSOnState) {
-    return SelectedBackgroundColor();
-  } else if ([self isHighlighted]) {
-    return HoveredBackgroundColor();
-  }
-  return BackgroundColor();
-}
-
 // The default NSButtonCell drawing leaves the image flush left and
 // the title next to the image.  This spaces things out to line up
 // with the star button and autocomplete field.
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
-  [[self backgroundColor] set];
+  [BackgroundColor() set];
   NSRectFill(cellFrame);
+  if ([self state] == NSOnState || [self isHighlighted]) {
+    if ([self state] == NSOnState)
+      [SelectedBackgroundColor() set];
+    else
+      [HoveredBackgroundColor() set];
+    NSBezierPath* path =
+        [NSBezierPath bezierPathWithRoundedRect:cellFrame
+                                        xRadius:kCellRoundingRadius
+                                        yRadius:kCellRoundingRadius];
+    [path fill];
+  }
 
   // Put the image centered vertically but in a fixed column.
   NSImage* image = [self image];
@@ -755,24 +740,6 @@ void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
     }
   }
   return -1;
-}
-
-- (BOOL)isOpaque {
-  return NO;
-}
-
-// This handles drawing the decorations of the rounded popup window,
-// calling on NSMatrix to draw the actual contents.
-- (void)drawRect:(NSRect)rect {
-  NSBezierPath* path =
-     [NSBezierPath bezierPathWithRoundedRect:[self bounds]
-                                     xRadius:kPopupRoundingRadius
-                                     yRadius:kPopupRoundingRadius];
-
-  // Draw the matrix clipped to our border.
-  gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-  [path addClip];
-  [super drawRect:rect];
 }
 
 @end
