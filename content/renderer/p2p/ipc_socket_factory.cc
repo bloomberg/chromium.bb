@@ -19,6 +19,11 @@ namespace content {
 
 namespace {
 
+bool IsTcpClientSocket(P2PSocketType type) {
+  return (type == P2P_SOCKET_STUN_TCP_CLIENT) ||
+         (type == P2P_SOCKET_TCP_CLIENT);
+}
+
 // TODO(miu): This needs tuning.  http://crbug.com/237960
 const size_t kMaximumInFlightBytes = 64 * 1024;  // 64 KB
 
@@ -75,7 +80,6 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   void InitAcceptedTcp(P2PSocketClient* client,
                        const talk_base::SocketAddress& local_address,
                        const talk_base::SocketAddress& remote_address);
-
   P2PSocketType type_;
 
   // Message loop on which this socket was created and being used.
@@ -267,7 +271,7 @@ talk_base::AsyncPacketSocket::State IpcPacketSocket::GetState() const {
       return STATE_BINDING;
 
     case IS_OPEN:
-      if (type_ == P2P_SOCKET_TCP_CLIENT) {
+      if (IsTcpClientSocket(type_)) {
         return STATE_CONNECTED;
       } else {
         return STATE_BOUND;
@@ -316,7 +320,7 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
   TraceSendThrottlingState();
 
   SignalAddressReady(this, local_address_);
-  if (type_ == P2P_SOCKET_TCP_CLIENT)
+  if (IsTcpClientSocket(type_))
     SignalConnect(this);
 }
 
