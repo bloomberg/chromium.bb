@@ -258,8 +258,6 @@ def summarize_results(port_obj, expectations, initial_results, retry_results, en
     # FIXME: Remove this. It is redundant with results['num_failures_by_type'].
     results['num_missing'] = num_missing
     results['num_regressions'] = num_regressions
-    # FIXME: This is always true for Blink. We should remove this and update the code in Layouts/fast/harness/results.html that uses this.
-    results['uses_expectations_file'] = port_obj.uses_test_expectations_file()
     results['interrupted'] = initial_results.interrupted  # Does results.html have enough information to compute this itself? (by checking total number of results vs. total number of tests?)
     results['layout_tests_dir'] = port_obj.layout_tests_dir()
     results['has_wdiff'] = port_obj.wdiff_available()

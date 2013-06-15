@@ -470,23 +470,6 @@ function resultLink(testPrefix, suffix, contents)
     return '<a class=result-link href="' + testPrefix + suffix + '" data-prefix="' + testPrefix + '">' + contents + '</a> ';
 }
 
-function isFailureExpected(expected, actual)
-{
-    var isExpected = true;
-    if (actual != 'SKIP') {
-        var expectedArray = expected.split(' ');
-        var actualArray = actual.split(' ');
-        for (var i = 0; i < actualArray.length; i++) {
-            var actualValue = actualArray[i];
-            if (expectedArray.indexOf(actualValue) == -1 &&
-                (expectedArray.indexOf('FAIL') == -1 ||
-                 (actualValue != 'TEXT' && actualValue != 'IMAGE+TEXT' && actualValue != 'AUDIO')))
-                isExpected = false;
-        }
-    }
-    return isExpected;
-}
-
 function processGlobalStateFor(testObject)
 {
     var test = testObject.name;
@@ -497,8 +480,6 @@ function processGlobalStateFor(testObject)
 
     var actual = testObject.actual;    
     var expected = testObject.expected || 'PASS';
-    if (globalState().results.uses_expectations_file)
-        testObject.isExpected = isFailureExpected(expected, actual);
 
     if (actual == 'MISSING') {
         // FIXME: make sure that new-run-webkit-tests spits out an -actual.txt file for
@@ -599,9 +580,7 @@ function imageResultsCell(testObject, testPrefix, actual) {
 
 function tableRow(testObject)
 {    
-    var row = '<tbody'
-    if (globalState().results.uses_expectations_file)
-        row += ' class="' + (testObject.isExpected ? 'expected' : '') + '"';
+    var row = '<tbody class="' + (testObject.is_unexpected ? '' : 'expected') + '"';
     if (testObject.reftest_type && testObject.reftest_type.indexOf('!=') != -1)
         row += ' mismatchreftest=true';
     row += '><tr>';
@@ -634,15 +613,10 @@ function tableRow(testObject)
     if (!cell && actualTokens.length > 1)
         cell = imageResultsCell(testObject, 'retries/' + testPrefix, actualTokens[1]);
 
-    row += '</td><td>' + cell + '</td>';
-
-    if (globalState().results.uses_expectations_file || actual.indexOf(' ') != -1)
-        row += '<td>' + actual + '</td>';
-
-    if (globalState().results.uses_expectations_file)
-        row += '<td>' + (actual.indexOf('MISSING') == -1 ? testObject.expected : '') + '</td>';
-
-    row += '</tr></tbody>';
+    row += '</td><td>' + cell + '</td>' +
+        '<td>' + actual + '</td>' +
+        '<td>' + (actual.indexOf('MISSING') == -1 ? testObject.expected : '') + '</td>' +
+    '</tr></tbody>';
     return row;
 }
 
@@ -664,7 +638,7 @@ function forEachTest(handler, opt_tree, opt_prefix)
 
 function hasUnexpected(tests)
 {
-    return tests.some(function (test) { return !test.isExpected; });
+    return tests.some(function (test) { return test.is_unexpected; });
 }
 
 function updateTestlistCounts()
@@ -702,19 +676,16 @@ function testList(tests, header, tableId)
     var html = '<div' + ((!hasUnexpected(tests) && tableId != 'stderr-table') ? ' class=expected' : '') + ' id=' + tableId + '>' +
         testListHeaderHtml(header) + '<table>';
 
-    // FIXME: add the expected failure column for all the test lists if globalState().results.uses_expectations_file
+    // FIXME: Include this for all testLists.
     if (tableId == 'passes-table')
         html += '<thead><th>test</th><th>expected failure</th></thead>';
 
     for (var i = 0; i < tests.length; i++) {
         var testObject = tests[i];
         var test = testObject.name;
-        html += '<tbody';
-        if (globalState().results.uses_expectations_file)
-            html += ' class="' + ((testObject.isExpected && tableId != 'stderr-table') ? 'expected' : '') + '"';
-        html += '><tr><td>';
-        html += (tableId == 'passes-table') ? testLink(test) : testLinkWithExpandButton(test);
-        html += '</td><td>';
+        html += '<tbody class="' + ((testObject.is_unexpected || tableId == 'stderr-table') ? '' : 'expected') + '"><tr><td>' +
+            ((tableId == 'passes-table') ? testLink(test) : testLinkWithExpandButton(test)) +
+        '</td><td>';
 
         if (tableId == 'stderr-table')
             html += resultLink(stripExtension(test), '-stderr.txt', 'stderr');
@@ -1287,7 +1258,7 @@ function failingTestsTable(tests, title, id)
     var tableRowHtml = '';
     for (var i = 0; i < tests.length; i++){
         tableRowHtml += tableRow(tests[i]);
-        if (!tests[i].isExpected)
+        if (tests[i].is_unexpected)
             numberofUnexpectedFailures++;
     }
 
@@ -1299,10 +1270,9 @@ function failingTestsTable(tests, title, id)
         '<table id="' + id + '"><thead><tr>' +
         '<th>test</th>' +
         '<th id="text-results-header">results</th>' +
-        '<th id="image-results-header">image results</th>';
-
-    if (globalState().results.uses_expectations_file)
-        header += '<th>actual failure</th><th>expected failure</th>';
+        '<th id="image-results-header">image results</th>' +
+        '<th>actual failure</th>' +
+        '<th>expected failure</th>';
 
     if (id == 'flaky-tests-table')
         header += '<th>failures</th>';
@@ -1350,7 +1320,7 @@ function generatePage()
     html += failingTestsTable(globalState().flakyPassTests,
         'Flaky tests (failed the first run and passed on retry)', 'flaky-tests-table');
 
-    if (globalState().results.uses_expectations_file && globalState().unexpectedPassTests.length)
+    if (globalState().unexpectedPassTests.length)
         html += testList(globalState().unexpectedPassTests, 'Tests expected to fail but passed', 'passes-table');
 
     if (globalState().hasHttpTests) {
@@ -1363,8 +1333,6 @@ function generatePage()
     if (document.getElementById('results-table')) {
         document.getElementById('results-table').addEventListener('click', TableSorter.handleClick, false);
         TableSorter.sortColumn(0);
-        if (!globalState().results.uses_expectations_file)
-            parentOfType(document.getElementById('unexpected-results'), 'label').style.display = 'none';
         if (!globalState().hasTextFailures)
             document.getElementById('text-results-header').textContent = '';
         if (!globalState().hasImageFailures) {

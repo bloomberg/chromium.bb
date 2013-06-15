@@ -27,12 +27,28 @@ function mockResults()
         "fixable": 0,
         "num_flaky": 0,
         "layout_tests_dir": "/WEBKITROOT",
-        "uses_expectations_file": true,
         "has_pretty_patch": false,
         "has_wdiff": false,
         "revision": 12345,
         "pixel_tests_enabled": true
     };
+}
+
+function isFailureExpected(expected, actual)
+{
+    var isExpected = true;
+    if (actual != 'SKIP') {
+        var expectedArray = expected.split(' ');
+        var actualArray = actual.split(' ');
+        for (var i = 0; i < actualArray.length; i++) {
+            var actualValue = actualArray[i];
+            if (expectedArray.indexOf(actualValue) == -1 &&
+                (expectedArray.indexOf('FAIL') == -1 ||
+                 (actualValue != 'TEXT' && actualValue != 'IMAGE+TEXT' && actualValue != 'AUDIO')))
+                isExpected = false;
+        }
+    }
+    return isExpected;
 }
 
 function mockExpectation(expected, actual, diff_percentage)
@@ -43,7 +59,8 @@ function mockExpectation(expected, actual, diff_percentage)
         time_ms: 1,
         actual: actual,
         image_diff_percent: diff_percentage,
-        has_stderr: false
+        has_stderr: false,
+        is_unexpected: !isFailureExpected(expected, actual)
     };
 }
 
@@ -333,21 +350,6 @@ function runTests()
         assertTrue(links[0].getClientRects().length == 2);
         assertTrue(links[1].getClientRects().length == 1);
         document.body.style.width = '';
-    });
-
-    results = mockResults();
-    var subtree = results.tests['foo'] = {}
-    subtree['bar.html'] = mockExpectation('TEXT', 'TEXT');
-    subtree['bar1.html'] = mockExpectation('CRASH', 'PASS');
-    subtree['bar2.html'] = mockExpectation('IMAGE', 'PASS');
-    subtree['flaky-fail.html'] = mockExpectation('PASS TEXT', 'IMAGE PASS');
-    results.uses_expectations_file = false;
-    runTest(results, function() {
-        assertTrue(window.getComputedStyle(document.getElementById('results-table').parentNode, null)['display'] != 'none');
-        assertTrue(document.querySelectorAll('#results-table tbody td').length == 3);
-        assertTrue(!document.querySelector('tbody.expected'));
-        assertTrue(!document.getElementById('passes-table'));
-        assertTrue(document.querySelectorAll('#flaky-tests-table tbody td').length == 4);
     });
 
     results = mockResults();

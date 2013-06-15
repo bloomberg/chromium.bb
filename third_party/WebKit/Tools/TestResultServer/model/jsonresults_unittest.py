@@ -99,7 +99,6 @@ FULL_RESULT_EXAMPLE = """ADD_RESULTS({
     "build_number": "3",
     "interrupted": false,
     "num_missing": 0,
-    "uses_expectations_file": true,
     "layout_tests_dir": "\/tmp\/cr\/src\/third_party\/WebKit\/LayoutTests",
     "version": 3,
     "builder_name": "Webkit",

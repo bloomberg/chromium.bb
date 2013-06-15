@@ -77,7 +77,6 @@ unittest.kExampleResultsJSON = {
     "has_pretty_patch": false,
     "fixable": 1233,
     "num_flaky":1,
-    "uses_expectations_file": true,
     "has_wdiff": true,
     "blink_revision": "90430"
 };
