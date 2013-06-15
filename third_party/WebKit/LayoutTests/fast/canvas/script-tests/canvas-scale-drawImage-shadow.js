@@ -150,4 +150,8 @@ function checkPixels() {
     shouldBe('d[1]', '0');
     shouldBe('d[2]', '0');
     shouldBeAround('d[3]', '24');
+
+    finishJSTest();
 }
+
+window.jsTestIsAsync = true;

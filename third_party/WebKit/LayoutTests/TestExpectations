@@ -1176,9 +1176,6 @@ webkit.org/b/108876 [ Linux Win ] media/track/track-cues-enter-exit.html [ Slow 
 
 crbug.com/239549 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 
-webkit.org/b/109312 fast/canvas/canvas-drawImage-shadow.html [ Failure Pass ]
-webkit.org/b/109312 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ Failure Pass ]
-
 webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Crash Pass Slow ]
 
 # This test is quite large, and can time out on win debug builds.
@@ -1301,11 +1298,7 @@ crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure 
 # These tests need a rebasline after crbug.com/224317
 # Note, after the rebaseline need to uncomment another more-specific instance of each of these.
 crbug.com/224317 virtual/softwarecompositing/tiling/huge-layer-img.html [ Slow Failure Pass ]
-crbug.com/224317 virtual/gpu/fast/canvas/canvas-createPattern-fillRect-shadow.html [ Failure Pass ]
 crbug.com/224317 fast/forms/basic-buttons.html [ Crash Failure Pass ]
-crbug.com/224317 fast/canvas/canvas-scale-drawImage-shadow.html [ Failure Pass ]
-crbug.com/224317 virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Failure Pass ]
-crbug.com/224317 fast/canvas/canvas-createPattern-fillRect-shadow.html [ Failure Pass ]
 crbug.com/224317 http/tests/security/canvas-remote-read-data-url-svg-image.html [ Failure Pass ]
 
 crbug.com/234758 [ Win Debug ] tables/mozilla/other/test3.html [ Crash Pass ]
