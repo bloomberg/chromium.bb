@@ -1359,9 +1359,16 @@ public class AwContents {
         return mInternalAccessAdapter.requestDrawGL(canvas);
     }
 
+    private static final boolean SUPPORTS_ON_ANIMATION =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
+
     @CalledByNative
-    private void invalidate() {
-        mContainerView.invalidate();
+    private void postInvalidateOnAnimation() {
+        if (SUPPORTS_ON_ANIMATION) {
+            mContainerView.postInvalidateOnAnimation();
+        } else {
+            mContainerView.postInvalidate();
+        }
     }
 
     @CalledByNative

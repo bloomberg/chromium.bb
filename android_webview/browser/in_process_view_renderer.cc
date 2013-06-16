@@ -307,14 +307,13 @@ InProcessViewRenderer::InProcessViewRenderer(
       compositor_(NULL),
       view_visible_(false),
       continuous_invalidate_(false),
-      continuous_invalidate_task_pending_(false),
+      block_invalidates_(false),
       width_(0),
       height_(0),
       attached_to_window_(false),
       hardware_initialized_(false),
       hardware_failed_(false),
-      egl_context_at_init_(NULL),
-      weak_factory_(this) {
+      egl_context_at_init_(NULL) {
   CHECK(web_contents_);
   web_contents_->SetUserData(kUserDataKey, new UserData(this));
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
@@ -351,8 +350,10 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
     return true;
   }
   // Perform a software draw
+  block_invalidates_ = true;
   bool result = DrawSWInternal(java_canvas, clip);
-  EnsureContinuousInvalidation();
+  block_invalidates_ = false;
+  EnsureContinuousInvalidation(NULL);
   return result;
 }
 
@@ -393,11 +394,13 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   if (!compositor_)
     return;
 
+
   gfx::Transform transform;
   transform.matrix().setColMajorf(draw_info->transform);
   transform.Translate(scroll_at_start_of_frame_.x(),
                       scroll_at_start_of_frame_.y());
   // TODO(joth): Check return value.
+  block_invalidates_ = true;
   compositor_->DemandDrawHw(
       gfx::Size(draw_info->width, draw_info->height),
       transform,
@@ -405,8 +408,9 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
                 draw_info->clip_top,
                 draw_info->clip_right - draw_info->clip_left,
                 draw_info->clip_bottom - draw_info->clip_top));
+  block_invalidates_ = false;
 
-  EnsureContinuousInvalidation();
+  EnsureContinuousInvalidation(draw_info);
 }
 
 bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
@@ -594,7 +598,7 @@ void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
 
   continuous_invalidate_ = invalidate;
   // TODO(boliu): Handle if not attached to window case.
-  EnsureContinuousInvalidation();
+  EnsureContinuousInvalidation(NULL);
 }
 
 void InProcessViewRenderer::SetTotalRootLayerScrollOffset(
@@ -607,18 +611,19 @@ gfx::Vector2dF InProcessViewRenderer::GetTotalRootLayerScrollOffset() {
   return scroll_offset_;
 }
 
-void InProcessViewRenderer::Invalidate() {
-  continuous_invalidate_task_pending_ = false;
-  if (continuous_invalidate_)
-    client_->Invalidate();
-}
-
-void InProcessViewRenderer::EnsureContinuousInvalidation() {
-  if (continuous_invalidate_ && !continuous_invalidate_task_pending_) {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&InProcessViewRenderer::Invalidate,
-                   weak_factory_.GetWeakPtr()));
-    continuous_invalidate_task_pending_ = true;
+void InProcessViewRenderer::EnsureContinuousInvalidation(
+    AwDrawGLInfo* draw_info) {
+  if (continuous_invalidate_ && !block_invalidates_) {
+    if (draw_info) {
+      draw_info->dirty_left = draw_info->clip_left;
+      draw_info->dirty_top = draw_info->clip_top;
+      draw_info->dirty_right = draw_info->clip_right;
+      draw_info->dirty_bottom = draw_info->clip_bottom;
+      draw_info->status_mask |= AwDrawGLInfo::kStatusMaskDraw;
+    } else {
+      client_->PostInvalidate();
+    }
+    block_invalidates_ = true;
   }
 }
 

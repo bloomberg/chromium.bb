@@ -62,8 +62,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   void WebContentsGone();
 
  private:
-  void Invalidate();
-  void EnsureContinuousInvalidation();
+  void EnsureContinuousInvalidation(AwDrawGLInfo* draw_info);
   bool DrawSWInternal(jobject java_canvas,
                       const gfx::Rect& clip_bounds);
   bool RenderSW(SkCanvas* canvas);
@@ -79,8 +78,10 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation.
   bool continuous_invalidate_;
-  // True while an asynchronous invalidation task is pending.
-  bool continuous_invalidate_task_pending_;
+  // Used to block additional invalidates while one is already pending or before
+  // compositor draw which may switch continuous_invalidate on and off in the
+  // process.
+  bool block_invalidates_;
 
   int width_;
   int height_;
@@ -97,8 +98,6 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   gfx::Point scroll_at_start_of_frame_;
 
   gfx::Vector2dF scroll_offset_;
-
-  base::WeakPtrFactory<InProcessViewRenderer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessViewRenderer);
 };

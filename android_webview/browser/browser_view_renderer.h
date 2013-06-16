@@ -38,7 +38,7 @@ class BrowserViewRenderer {
     virtual void OnNewPicture() = 0;
 
     // Called to trigger view invalidations.
-    virtual void Invalidate() = 0;
+    virtual void PostInvalidate() = 0;
 
     // Called to get view's absolute location on the screen.
     virtual gfx::Point GetLocationOnScreen() = 0;

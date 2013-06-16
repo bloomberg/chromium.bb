@@ -502,11 +502,11 @@ bool AwContents::RequestDrawGL(jobject canvas) {
   return Java_AwContents_requestDrawGL(env, obj.obj(), canvas);
 }
 
-void AwContents::Invalidate() {
+void AwContents::PostInvalidate() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
-    Java_AwContents_invalidate(env, obj.obj());
+    Java_AwContents_postInvalidateOnAnimation(env, obj.obj());
 }
 
 void AwContents::OnNewPicture() {
