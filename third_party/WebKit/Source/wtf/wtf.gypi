@@ -95,6 +95,8 @@
             'OwnArrayPtr.h',
             'OwnPtr.h',
             'OwnPtrCommon.h',
+            'PageAllocator.cpp',
+            'PageAllocator.h',
             'ParallelJobs.h',
             'ParallelJobsGeneric.cpp',
             'ParallelJobsGeneric.h',
