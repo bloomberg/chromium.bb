@@ -346,8 +346,8 @@ bool HTMLSelectElement::childShouldCreateRenderer(const NodeRenderingContext& ch
     if (!HTMLFormControlElementWithState::childShouldCreateRenderer(childContext))
         return false;
     if (!usesMenuList())
-        return childContext.node()->hasTagName(HTMLNames::optionTag) || childContext.node()->hasTagName(HTMLNames::optgroupTag) || validationMessageShadowTreeContains(childContext.node());
-    return validationMessageShadowTreeContains(childContext.node());
+        return childContext.node()->hasTagName(HTMLNames::optionTag) || childContext.node()->hasTagName(HTMLNames::optgroupTag);
+    return false;
 }
 
 PassRefPtr<HTMLCollection> HTMLSelectElement::selectedOptions()

@@ -31,21 +31,17 @@
 #ifndef ValidationMessage_h
 #define ValidationMessage_h
 
-#include "core/platform/Timer.h"
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
-class HTMLElement;
 class HTMLFormControlElement;
 class Node;
 class ValidationMessageClient;
 
-// FIXME: We should remove the code for !validationMessageClient() when all
-// ports supporting interactive validation switch to ValidationMessageClient.
+// FIXME: Fold this class into HTMLFormControlElement. This class is very small.
 class ValidationMessage {
     WTF_MAKE_NONCOPYABLE(ValidationMessage); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -54,22 +50,12 @@ public:
     void updateValidationMessage(const String&);
     void requestToHideMessage();
     bool isVisible() const;
-    bool shadowTreeContains(Node*) const;
 
 private:
     ValidationMessage(HTMLFormControlElement*);
     ValidationMessageClient* validationMessageClient() const;
-    void setMessage(const String&);
-    void setMessageDOMAndStartTimer(Timer<ValidationMessage>* = 0);
-    void buildBubbleTree(Timer<ValidationMessage>*);
-    void deleteBubbleTree(Timer<ValidationMessage>* = 0);
 
     HTMLFormControlElement* m_element;
-    String m_message;
-    OwnPtr<Timer<ValidationMessage> > m_timer;
-    RefPtr<HTMLElement> m_bubble;
-    RefPtr<HTMLElement> m_messageHeading;
-    RefPtr<HTMLElement> m_messageBody;
 };
 
 } // namespace WebCore

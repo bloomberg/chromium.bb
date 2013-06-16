@@ -442,11 +442,6 @@ void HTMLFormControlElement::setCustomValidity(const String& error)
     setNeedsValidityCheck();
 }
 
-bool HTMLFormControlElement::validationMessageShadowTreeContains(Node* node) const
-{
-    return m_validationMessage && m_validationMessage->shadowTreeContains(node);
-}
-
 void HTMLFormControlElement::dispatchBlurEvent(PassRefPtr<Node> newFocusedNode)
 {
     HTMLElement::dispatchBlurEvent(newFocusedNode);
