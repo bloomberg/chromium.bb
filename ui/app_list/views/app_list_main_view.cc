@@ -189,7 +189,7 @@ void AppListMainView::ActivateApp(AppListItemModel* item, int event_flags) {
 }
 
 void AppListMainView::QueryChanged(SearchBoxView* sender) {
-  string16 query;
+  base::string16 query;
   TrimWhitespace(model_->search_box()->text(), TRIM_ALL, &query);
   bool should_show_search = !query.empty();
   contents_view_->ShowSearchResults(should_show_search);

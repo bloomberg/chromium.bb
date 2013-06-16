@@ -66,10 +66,10 @@ class APP_LIST_EXPORT AppListViewDelegate {
   virtual gfx::ImageSkia GetWindowIcon() = 0;
 
   // Returns the name of the current user.
-  virtual string16 GetCurrentUserName() = 0;
+  virtual base::string16 GetCurrentUserName() = 0;
 
   // Returns the email of the current user.
-  virtual string16 GetCurrentUserEmail() = 0;
+  virtual base::string16 GetCurrentUserEmail() = 0;
 
   // Open the settings UI.
   virtual void OpenSettings() = 0;

@@ -23,8 +23,8 @@ namespace {
 
 class CurrentUserView : public views::View {
  public:
-  CurrentUserView(const string16& user_name,
-                  const string16& user_email,
+  CurrentUserView(const base::string16& user_name,
+                  const base::string16& user_email,
                   const gfx::ImageSkia& icon) {
     const views::MenuConfig& menu_config = views::MenuConfig::instance(NULL);
     views::GridLayout* layout = new views::GridLayout(this);
@@ -74,8 +74,8 @@ class CurrentUserMenuItem : public MenuItemView {
  public:
   CurrentUserMenuItem(MenuItemView* parent,
                       int id,
-                      const string16& user_name,
-                      const string16& user_email,
+                      const base::string16& user_name,
+                      const base::string16& user_email,
                       const gfx::ImageSkia& icon)
       : MenuItemView(parent, id, MenuItemView::NORMAL) {
     AddChildView(new CurrentUserView(user_name, user_email, icon));

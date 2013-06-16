@@ -31,8 +31,8 @@ class APP_LIST_EXPORT SearchBoxModel {
   const gfx::ImageSkia& icon() const { return icon_; }
 
   // Sets/gets the hint text to display when there is in input.
-  void SetHintText(const string16& hint_text);
-  const string16& hint_text() const { return hint_text_; }
+  void SetHintText(const base::string16& hint_text);
+  const base::string16& hint_text() const { return hint_text_; }
 
   // Sets/gets the selection model for the search box's Textfield.
   void SetSelectionModel(const gfx::SelectionModel& sel);
@@ -41,17 +41,17 @@ class APP_LIST_EXPORT SearchBoxModel {
   }
 
   // Sets/gets the text for the search box's Textfield.
-  void SetText(const string16& text);
-  const string16& text() const { return text_; }
+  void SetText(const base::string16& text);
+  const base::string16& text() const { return text_; }
 
   void AddObserver(SearchBoxModelObserver* observer);
   void RemoveObserver(SearchBoxModelObserver* observer);
 
  private:
   gfx::ImageSkia icon_;
-  string16 hint_text_;
+  base::string16 hint_text_;
   gfx::SelectionModel selection_model_;
-  string16 text_;
+  base::string16 text_;
 
   ObserverList<SearchBoxModelObserver> observers_;
 

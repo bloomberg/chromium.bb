@@ -36,7 +36,7 @@ class SearchBoxModelObserverBridge : public SearchBoxModelObserver {
   SearchBoxModelObserverBridge(AppsSearchBoxController* parent);
   virtual ~SearchBoxModelObserverBridge();
 
-  void SetSearchText(const string16& text);
+  void SetSearchText(const base::string16& text);
 
   virtual void IconChanged() OVERRIDE;
   virtual void HintTextChanged() OVERRIDE;
@@ -69,7 +69,7 @@ SearchBoxModel* SearchBoxModelObserverBridge::GetModel() {
   return searchBoxModel;
 }
 
-void SearchBoxModelObserverBridge::SetSearchText(const string16& text) {
+void SearchBoxModelObserverBridge::SetSearchText(const base::string16& text) {
   SearchBoxModel* model = GetModel();
   model->RemoveObserver(this);
   model->SetText(text);

@@ -19,7 +19,7 @@ void SearchBoxModel::SetIcon(const gfx::ImageSkia& icon) {
   FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, IconChanged());
 }
 
-void SearchBoxModel::SetHintText(const string16& hint_text) {
+void SearchBoxModel::SetHintText(const base::string16& hint_text) {
   if (hint_text_ == hint_text)
     return;
 
@@ -37,7 +37,7 @@ void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
                     SelectionModelChanged());
 }
 
-void SearchBoxModel::SetText(const string16& text) {
+void SearchBoxModel::SetText(const base::string16& text) {
   if (text_ == text)
     return;
 

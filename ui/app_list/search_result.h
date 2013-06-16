@@ -55,14 +55,14 @@ class APP_LIST_EXPORT SearchResult {
     ActionIconSet(const gfx::ImageSkia& base_image,
                   const gfx::ImageSkia& hover_image,
                   const gfx::ImageSkia& pressed_image,
-                  const string16& tooltip_text);
+                  const base::string16& tooltip_text);
     ~ActionIconSet();
 
     gfx::ImageSkia base_image;
     gfx::ImageSkia hover_image;
     gfx::ImageSkia pressed_image;
 
-    string16 tooltip_text;
+    base::string16 tooltip_text;
   };
   typedef std::vector<ActionIconSet> ActionIconSets;
 
@@ -72,14 +72,14 @@ class APP_LIST_EXPORT SearchResult {
   const gfx::ImageSkia& icon() const { return icon_; }
   void SetIcon(const gfx::ImageSkia& icon);
 
-  const string16& title() const { return title_; }
-  void set_title(const string16& title) { title_ = title;}
+  const base::string16& title() const { return title_; }
+  void set_title(const base::string16& title) { title_ = title;}
 
   const Tags& title_tags() const { return title_tags_; }
   void set_title_tags(const Tags& tags) { title_tags_ = tags; }
 
-  const string16& details() const { return details_; }
-  void set_details(const string16& details) { details_ = details; }
+  const base::string16& details() const { return details_; }
+  void set_details(const base::string16& details) { details_ = details; }
 
   const Tags& details_tags() const { return details_tags_; }
   void set_details_tags(const Tags& tags) { details_tags_ = tags; }
@@ -99,10 +99,10 @@ class APP_LIST_EXPORT SearchResult {
  private:
   gfx::ImageSkia icon_;
 
-  string16 title_;
+  base::string16 title_;
   Tags title_tags_;
 
-  string16 details_;
+  base::string16 details_;
   Tags details_tags_;
 
   // Optional list of icons representing additional actions that can be

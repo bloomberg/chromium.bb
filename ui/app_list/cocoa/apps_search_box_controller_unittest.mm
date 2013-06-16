@@ -90,12 +90,13 @@ TEST_VIEW(AppsSearchBoxControllerTest, [apps_search_box_controller_ view]);
 // Test the search box initialization, and search input and clearing.
 TEST_F(AppsSearchBoxControllerTest, SearchBoxModel) {
   app_list::SearchBoxModel* model = [delegate_ searchBoxModel];
-  const string16 hit_text(ASCIIToUTF16("hint"));  // Usually localized "Search".
+  // Usually localized "Search".
+  const base::string16 hit_text(ASCIIToUTF16("hint"));
   model->SetHintText(hit_text);
   EXPECT_NSEQ(base::SysUTF16ToNSString(hit_text),
       [[[apps_search_box_controller_ searchTextField] cell] placeholderString]);
 
-  const string16 search_text(ASCIIToUTF16("test"));
+  const base::string16 search_text(ASCIIToUTF16("test"));
   model->SetText(search_text);
   EXPECT_NSEQ(base::SysUTF16ToNSString(search_text),
               [[apps_search_box_controller_ searchTextField] stringValue]);
@@ -104,7 +105,7 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxModel) {
 
   // Updates from the view should update the model and notify the delegate.
   [apps_search_box_controller_ clearSearch];
-  EXPECT_EQ(string16(), model->text());
+  EXPECT_EQ(base::string16(), model->text());
   EXPECT_NSEQ([NSString string],
               [[apps_search_box_controller_ searchTextField] stringValue]);
   EXPECT_EQ(1, [delegate_ textChangeCount]);

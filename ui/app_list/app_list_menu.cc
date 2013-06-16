@@ -21,7 +21,7 @@ AppListMenu::AppListMenu(AppListViewDelegate* delegate)
 AppListMenu::~AppListMenu() {}
 
 void AppListMenu::InitMenu() {
-  menu_model_.AddItem(CURRENT_USER, string16());
+  menu_model_.AddItem(CURRENT_USER, base::string16());
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
   menu_model_.AddItem(SHOW_SETTINGS, l10n_util::GetStringUTF16(

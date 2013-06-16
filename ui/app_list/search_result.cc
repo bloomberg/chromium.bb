@@ -11,7 +11,7 @@ namespace app_list {
 SearchResult::ActionIconSet::ActionIconSet(const gfx::ImageSkia& base_image,
                                            const gfx::ImageSkia& hover_image,
                                            const gfx::ImageSkia& pressed_image,
-                                           const string16& tooltip_text)
+                                           const base::string16& tooltip_text)
     : base_image(base_image),
       hover_image(hover_image),
       pressed_image(pressed_image),

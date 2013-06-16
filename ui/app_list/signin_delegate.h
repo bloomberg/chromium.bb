@@ -24,11 +24,11 @@ class APP_LIST_EXPORT SigninDelegate {
   virtual void OpenLearnMore() = 0;
   virtual void OpenSettings() = 0;
 
-  virtual string16 GetSigninHeading() = 0;
-  virtual string16 GetSigninText() = 0;
-  virtual string16 GetSigninButtonText() = 0;
-  virtual string16 GetLearnMoreLinkText() = 0;
-  virtual string16 GetSettingsLinkText() = 0;
+  virtual base::string16 GetSigninHeading() = 0;
+  virtual base::string16 GetSigninText() = 0;
+  virtual base::string16 GetSigninButtonText() = 0;
+  virtual base::string16 GetLearnMoreLinkText() = 0;
+  virtual base::string16 GetSettingsLinkText() = 0;
 
   void AddObserver(SigninDelegateObserver* observer);
   void RemoveObserver(SigninDelegateObserver* observer);

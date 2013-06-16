@@ -55,7 +55,7 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
 
 - (id)initWithSearchResult:(app_list::SearchResult*)result;
 
-- (NSMutableAttributedString*)createRenderText:(const string16&)content
+- (NSMutableAttributedString*)createRenderText:(const base::string16&)content
     tags:(const app_list::SearchResult::Tags&)tags;
 
 - (NSAttributedString*)createResultsAttributedStringWithModel
@@ -297,7 +297,7 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
   return self;
 }
 
-- (NSMutableAttributedString*)createRenderText:(const string16&)content
+- (NSMutableAttributedString*)createRenderText:(const base::string16&)content
     tags:(const app_list::SearchResult::Tags&)tags {
   NSFont* boldFont = nil;
   scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(

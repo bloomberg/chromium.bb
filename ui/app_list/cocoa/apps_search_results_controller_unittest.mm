@@ -98,7 +98,7 @@ void AppsSearchResultsControllerTest::ExpectConsistent() {
   // model data that should have been reloaded has been reloaded in the view.
   for (NSInteger i = 0; i < item_count; ++i) {
     SearchResult* result = ModelResultAt(i);
-    string16 string_in_model = result->title();
+    base::string16 string_in_model = result->title();
     if (!result->details().empty())
       string_in_model += ASCIIToUTF16("\n") + result->details();
     EXPECT_NSEQ(base::SysUTF16ToNSString(string_in_model),

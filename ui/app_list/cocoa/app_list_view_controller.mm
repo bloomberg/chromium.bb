@@ -252,7 +252,7 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
   if (!searchBoxModel || !delegate_)
     return;
 
-  string16 query;
+  base::string16 query;
   TrimWhitespace(searchBoxModel->text(), TRIM_ALL, &query);
   BOOL shouldShowSearch = !query.empty();
   [self revealSearchResults:shouldShowSearch];

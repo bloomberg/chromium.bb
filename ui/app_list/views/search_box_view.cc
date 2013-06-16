@@ -42,7 +42,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
 #if !defined(OS_CHROMEOS)
-  menu_button_ = new views::MenuButton(NULL, string16(), this, false);
+  menu_button_ = new views::MenuButton(NULL, base::string16(), this, false);
   menu_button_->set_border(NULL);
   menu_button_->SetIcon(*rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_NORMAL));
   menu_button_->SetHoverIcon(*rb.GetImageSkiaNamed(IDR_APP_LIST_TOOLS_HOVER));
@@ -83,7 +83,7 @@ bool SearchBoxView::HasSearch() const {
 }
 
 void SearchBoxView::ClearSearch() {
-  search_box_->SetText(string16());
+  search_box_->SetText(base::string16());
   // Updates model and fires query changed manually because SetText() above
   // does not generate ContentsChanged() notification.
   UpdateModel();
@@ -144,7 +144,7 @@ void SearchBoxView::NotifyQueryChanged() {
 }
 
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
-                                    const string16& new_contents) {
+                                    const base::string16& new_contents) {
   UpdateModel();
   NotifyQueryChanged();
 }
