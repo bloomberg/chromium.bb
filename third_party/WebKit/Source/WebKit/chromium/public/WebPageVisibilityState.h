@@ -1,1 +1,1 @@
-#include "../../../../public/webpage/WebPageVisibilityState.h"
+#include "../../../../public/web/WebPageVisibilityState.h"

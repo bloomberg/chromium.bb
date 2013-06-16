@@ -32,7 +32,7 @@
 #define MockWebValidationMessageClient_h
 
 #include "TestCommon.h"
-#include "public/webpage/WebValidationMessageClient.h"
+#include "public/web/WebValidationMessageClient.h"
 
 namespace WebTestRunner {
 

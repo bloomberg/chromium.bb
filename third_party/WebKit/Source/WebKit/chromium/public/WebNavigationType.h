@@ -1,1 +1,1 @@
-#include "../../../../public/webpage/WebNavigationType.h"
+#include "../../../../public/web/WebNavigationType.h"

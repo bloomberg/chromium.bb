@@ -1,1 +1,1 @@
-#include "../../../../public/webpage/WebNavigationPolicy.h"
+#include "../../../../public/web/WebNavigationPolicy.h"

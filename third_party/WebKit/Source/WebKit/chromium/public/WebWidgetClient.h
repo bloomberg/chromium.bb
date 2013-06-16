@@ -1,1 +1,1 @@
-#include "../../../../public/webpage/WebWidgetClient.h"
+#include "../../../../public/web/WebWidgetClient.h"

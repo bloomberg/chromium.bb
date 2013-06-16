@@ -1,1 +1,1 @@
-#include "../../../../public/webpage/WebSecurityPolicy.h"
+#include "../../../../public/web/WebSecurityPolicy.h"

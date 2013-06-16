@@ -1,1 +1,1 @@
-#include "../../../../public/webpage/WebBindings.h"
+#include "../../../../public/web/WebBindings.h"

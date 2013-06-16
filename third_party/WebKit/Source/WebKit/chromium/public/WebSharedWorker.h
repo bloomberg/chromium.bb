@@ -1,1 +1,1 @@
-#include "../../../../public/webpage/WebSharedWorker.h"
+#include "../../../../public/web/WebSharedWorker.h"

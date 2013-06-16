@@ -1,1 +1,1 @@
-#include "../../../../public/webpage/WebPluginParams.h"
+#include "../../../../public/web/WebPluginParams.h"

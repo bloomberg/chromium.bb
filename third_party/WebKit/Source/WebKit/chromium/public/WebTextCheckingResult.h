@@ -1,1 +1,1 @@
-#include "../../../../public/webpage/WebTextCheckingResult.h"
+#include "../../../../public/web/WebTextCheckingResult.h"
