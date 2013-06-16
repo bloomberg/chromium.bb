@@ -112,6 +112,12 @@ bool ValidationMessageClientImpl::isValidationMessageVisible(const Element& anch
     return m_currentAnchor == &anchor;
 }
 
+void ValidationMessageClientImpl::documentDetached(const Document& document)
+{
+    if (m_currentAnchor && m_currentAnchor->document() == &document)
+        hideValidationMessage(*m_currentAnchor);
+}
+
 void ValidationMessageClientImpl::checkAnchorStatus(Timer<ValidationMessageClientImpl>*)
 {
     ASSERT(m_currentAnchor);

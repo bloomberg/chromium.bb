@@ -26,10 +26,11 @@
 #ifndef ValidationMessageClient_h
 #define ValidationMessageClient_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
+class Document;
 class Element;
 
 class ValidationMessageClient {
@@ -48,6 +49,8 @@ public:
     // Returns true if the validation message for the specified anchor element
     // is visible.
     virtual bool isValidationMessageVisible(const Element& anchor) = 0;
+
+    virtual void documentDetached(const Document&) = 0;
 };
 
 }

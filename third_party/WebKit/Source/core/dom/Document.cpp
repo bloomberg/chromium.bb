@@ -157,6 +157,7 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/Settings.h"
 #include "core/page/UserContentURLPattern.h"
+#include "core/page/ValidationMessageClient.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/DateComponents.h"
@@ -1943,8 +1944,11 @@ void Document::detach(const AttachContext& context)
 {
     ASSERT(attached());
 
-    if (page())
+    if (page()) {
         page()->pointerLockController()->documentDetached(this);
+        if (ValidationMessageClient* client = page()->validationMessageClient())
+            client->documentDetached(*this);
+    }
 
     if (this == topDocument())
         clearAXObjectCache();
