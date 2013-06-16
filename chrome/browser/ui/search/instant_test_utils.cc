@@ -182,6 +182,14 @@ void InstantTestBase::SetOmniboxTextAndWaitForSuggestion(
   observer.Wait();
 }
 
+void InstantTestBase::PressEnterAndWaitForNavigation() {
+  content::WindowedNotificationObserver nav_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  browser_->window()->GetLocationBar()->AcceptInput();
+  nav_observer.Wait();
+}
+
 bool InstantTestBase::GetBoolFromJS(content::WebContents* contents,
                                     const std::string& script,
                                     bool* result) {

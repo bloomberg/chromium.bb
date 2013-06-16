@@ -108,14 +108,6 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
         SearchMode::MODE_SEARCH_SUGGESTIONS;
   }
 
-  void PressEnterAndWaitForNavigation() {
-    content::WindowedNotificationObserver nav_observer(
-        content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-        content::NotificationService::AllSources());
-    browser()->window()->GetLocationBar()->AcceptInput();
-    nav_observer.Wait();
-  }
-
   bool PressEnterAndWaitForNavigationWithTitle(content::WebContents* contents,
                                                const string16& title) {
     content::TitleWatcher title_watcher(contents, title);

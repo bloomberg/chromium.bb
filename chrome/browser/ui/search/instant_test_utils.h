@@ -95,6 +95,8 @@ class InstantTestBase {
   bool SetOmniboxTextAndWaitForOverlayToShow(const std::string& text);
   void SetOmniboxTextAndWaitForSuggestion(const std::string& text);
 
+  void PressEnterAndWaitForNavigation();
+
   bool GetBoolFromJS(content::WebContents* contents,
                      const std::string& script,
                      bool* result) WARN_UNUSED_RESULT;

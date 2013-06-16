@@ -2714,6 +2714,52 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_KeyboardTogglesVoiceSearch) {
   EXPECT_EQ(1, on_toggle_voice_search_calls_);
 }
 
+// Test to verify that the omnibox search query is updated on browser
+// back/forward button press events.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, UpdateSearchQueryOnNavigation) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+
+  // Focus omnibox and confirm overlay isn't shown.
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+  content::WebContents* overlay = instant()->GetOverlayContents();
+  EXPECT_TRUE(overlay);
+  EXPECT_TRUE(instant()->model()->mode().is_default());
+  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
+
+  // Typing in the omnibox should show the overlay.
+  SetOmniboxTextAndWaitForOverlayToShow("flowers");
+  EXPECT_TRUE(instant()->IsOverlayingSearchResults());
+  EXPECT_EQ(overlay, instant()->GetOverlayContents());
+
+  // Commit the search by pressing 'Enter'.
+  PressEnterAndWaitForNavigation();
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+
+  // Typing in the new search query in omnibox.
+  SetOmniboxText("cattles");
+  // Commit the search by pressing 'Enter'.
+  PressEnterAndWaitForNavigation();
+  // 'Enter' commits the query as it was typed. This creates a navigation entry
+  // in the history.
+  EXPECT_EQ(ASCIIToUTF16("cattles"), omnibox()->GetText());
+
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(active_tab->GetController().CanGoBack());
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &active_tab->GetController()));
+  active_tab->GetController().GoBack();
+  load_stop_observer.Wait();
+
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+  // Commit the search by pressing 'Enter'.
+  FocusOmnibox();
+  PressEnterAndWaitForNavigation();
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+}
+
 #endif  // HTML_INSTANT_EXTENDED_POPUP
 
 #if !defined(HTML_INSTANT_EXTENDED_POPUP)

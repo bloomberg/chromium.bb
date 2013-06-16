@@ -320,6 +320,14 @@ bool InstantController::Update(const AutocompleteMatch& match,
       verbatim, user_input_in_progress, omnibox_popup_is_open, escape_pressed,
       is_keyword_search));
 
+  // Store the current |last_omnibox_text_| and update |last_omnibox_text_|
+  // upfront with the contents of |full_text|. Even if we do an early return,
+  // |last_omnibox_text_| will be updated.
+  string16 previous_omnibox_text = last_omnibox_text_;
+  last_omnibox_text_ = full_text;
+  last_match_was_search_ = AutocompleteMatch::IsSearchType(match.type) &&
+                           !user_text.empty();
+
   // TODO(dhollowa): Complete keyword match UI.  For now just hide suggestions.
   // http://crbug.com/153932.  Note, this early escape is happens prior to the
   // DCHECKs below because |user_text| and |full_text| have different semantics
@@ -365,9 +373,6 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // query is sent to the overlay, the mode is set to "allow" further below.
   if (!extended_enabled())
     search_mode_.mode = SearchMode::MODE_DEFAULT;
-
-  last_match_was_search_ = AutocompleteMatch::IsSearchType(match.type) &&
-                           !user_text.empty();
 
   // In non extended mode, Instant is disabled for URLs and keyword mode.
   if (!extended_enabled() &&
@@ -440,7 +445,6 @@ bool InstantController::Update(const AutocompleteMatch& match,
         // Enter, we'll send the correct query to instant_tab_->Submit(). If the
         // partial text is not a query (|last_match_was_search_| is false), we
         // won't Submit(), so no need to worry about that.
-        last_omnibox_text_ = full_text;
         last_user_text_ = user_text;
         last_suggestion_ = InstantSuggestion();
       }
@@ -472,21 +476,22 @@ bool InstantController::Update(const AutocompleteMatch& match,
   bool reused_suggestion = false;
   if (last_suggestion_.behavior == INSTANT_COMPLETE_NEVER &&
       !last_omnibox_text_has_inline_autocompletion_) {
-    if (StartsWith(last_omnibox_text_, full_text, false)) {
+    if (StartsWith(previous_omnibox_text, full_text, false))  {
       // The user is backspacing away characters.
-      last_suggestion_.text.insert(0, last_omnibox_text_, full_text.size(),
-          last_omnibox_text_.size() - full_text.size());
+      last_suggestion_.text.insert(0, previous_omnibox_text, full_text.size(),
+          previous_omnibox_text.size() - full_text.size());
       reused_suggestion = true;
-    } else if (StartsWith(full_text, last_omnibox_text_, false)) {
+    } else if (StartsWith(full_text, previous_omnibox_text, false)) {
       // The user is typing forward. Normalize any added characters.
       reused_suggestion = NormalizeAndStripPrefix(&last_suggestion_.text,
-          string16(full_text, last_omnibox_text_.size()));
+          string16(full_text, previous_omnibox_text.size()));
     }
   }
   if (!reused_suggestion)
     last_suggestion_ = InstantSuggestion();
 
-  last_omnibox_text_ = full_text;
+  // TODO(kmadhusu): Investigate whether it's possible to update
+  // |last_user_text_| at the beginning of this function.
   last_user_text_ = user_text;
 
   if (!extended_enabled()) {
