@@ -1061,6 +1061,7 @@ crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-simple.html [ ImageOnl
 crbug.com/245611 [ Win ] fast/hidpi/image-set-simple.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win Release ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win ] fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Pass ]
+crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 virtual/gpu/fast/canvas/webgl/webgl-composite-modes.html [ ImageOnlyFailure Pass ]
 
 crbug.com/248415 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-strokeRect-gradient-shadow.html [ Timeout Pass ]
