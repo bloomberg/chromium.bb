@@ -667,6 +667,8 @@ webkit.org/b/91429 [ Linux Mac Win ] http/tests/plugins/post-url-file.html [ Tim
 crbug.com/66087 [ Win ] fast/dom/Geolocation/timestamp.html [ Failure Pass ]
 crbug.com/66087 [ Win ] http/tests/misc/no-last-modified.html [ Pass Timeout ]
 
+crbug.com/250528 fast/dom/gc-2.html [ Failure Pass ]
+
 # Needs V8 investigation.  Skipped due to concern that this may be corrupting
 # memory and thus leading to unpredictable results.
 crbug.com/66099 fast/js/array-sort-modifying-tostring.html [ Pass Timeout ]
