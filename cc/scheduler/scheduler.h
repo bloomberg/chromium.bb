@@ -44,6 +44,7 @@ class SchedulerClient {
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() = 0;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;
+  virtual base::TimeDelta DrawDurationEstimate() = 0;
 
  protected:
   virtual ~SchedulerClient() {}

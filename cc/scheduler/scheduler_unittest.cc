@@ -115,6 +115,9 @@ class FakeSchedulerClient : public SchedulerClient {
     states_.push_back(scheduler_->StateAsStringForTesting());
   }
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
+  virtual base::TimeDelta DrawDurationEstimate() OVERRIDE {
+    return base::TimeDelta();
+  }
 
  protected:
   bool needs_begin_frame_;

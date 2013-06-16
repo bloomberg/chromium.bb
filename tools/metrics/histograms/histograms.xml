@@ -9214,6 +9214,26 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer.DrawDuration" units="milliseconds">
+  <summary>The time it takes for the compositor to draw a frame.</summary>
+</histogram>
+
+<histogram name="Renderer.DrawDurationOverestimate" units="milliseconds">
+  <summary>
+    The amount by which the compositor's draw duration was overestimated in a
+    particular frame (0 if the duration was perfectly predicted or
+    underestimated).
+  </summary>
+</histogram>
+
+<histogram name="Renderer.DrawDurationUnderestimate" units="milliseconds">
+  <summary>
+    The amount by which the compositor's draw duration was underestimated in a
+    particular frame (0 if the duration was perfectly predicted or
+    overestimated).
+  </summary>
+</histogram>
+
 <histogram name="Renderer.PixelIncreaseFromTransitions">
   <summary>
     A lower-bound on the percentage increase in memory that would result from

@@ -13,6 +13,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/base/completion_event.h"
 #include "cc/resources/resource_update_controller.h"
+#include "cc/scheduler/rolling_time_delta_history.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
@@ -101,6 +102,7 @@ class ThreadProxy : public Proxy,
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE;
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) OVERRIDE;
+  virtual base::TimeDelta DrawDurationEstimate() OVERRIDE;
 
   // ResourceUpdateControllerClient implementation
   virtual void ReadyToFinalizeTextureUpdates() OVERRIDE;
@@ -242,6 +244,8 @@ class ThreadProxy : public Proxy,
 
   base::TimeTicks smoothness_takes_priority_expiration_time_;
   bool renew_tree_priority_on_impl_thread_pending_;
+
+  RollingTimeDeltaHistory draw_duration_history_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadProxy);
 };

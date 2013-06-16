@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/metrics/histogram.h"
 #include "cc/base/thread.h"
 #include "cc/input/input_handler.h"
 #include "cc/output/context_provider.h"
@@ -28,6 +29,10 @@ const double kContextRecreationTickRate = 0.03;
 
 // Measured in seconds.
 const double kSmoothnessTakesPriorityExpirationDelay = 0.25;
+
+const size_t kDrawDurationHistorySize = 60;
+const double kDrawDurationEstimationPercentile = 100.0;
+const int kDrawDurationEstimatePaddingInMicroseconds = 0;
 
 }  // namespace
 
@@ -84,7 +89,8 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layer_tree_host,
           layer_tree_host->settings().using_synchronous_renderer_compositor),
       inside_draw_(false),
       defer_commits_(false),
-      renew_tree_priority_on_impl_thread_pending_(false) {
+      renew_tree_priority_on_impl_thread_pending_(false),
+      draw_duration_history_(kDrawDurationHistorySize) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host_);
@@ -907,6 +913,8 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   layer_tree_host_impl_->Animate(monotonic_time, wall_clock_time);
   layer_tree_host_impl_->UpdateBackgroundAnimateTicking(false);
 
+  base::TimeTicks start_time = base::TimeTicks::HighResNow();
+  base::TimeDelta draw_duration_estimate = DrawDurationEstimate();
   base::AutoReset<bool> mark_inside(&inside_draw_, true);
 
   // This method is called on a forced draw, regardless of whether we are able
@@ -978,8 +986,33 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
         base::Bind(&ThreadProxy::DidCommitAndDrawFrame, main_thread_weak_ptr_));
   }
 
-  if (draw_frame)
+  if (draw_frame) {
     CheckOutputSurfaceStatusOnImplThread();
+
+    base::TimeDelta draw_duration = base::TimeTicks::HighResNow() - start_time;
+    draw_duration_history_.InsertSample(draw_duration);
+    base::TimeDelta draw_duration_overestimate;
+    base::TimeDelta draw_duration_underestimate;
+    if (draw_duration > draw_duration_estimate)
+      draw_duration_underestimate = draw_duration - draw_duration_estimate;
+    else
+      draw_duration_overestimate = draw_duration_estimate - draw_duration;
+    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDuration",
+                               draw_duration,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMilliseconds(100),
+                               50);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDurationUnderestimate",
+                               draw_duration_underestimate,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMilliseconds(100),
+                               50);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDurationOverestimate",
+                               draw_duration_overestimate,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMilliseconds(100),
+                               50);
+  }
 
   // Update the tile state after drawing.  This prevents manage tiles from
   // being in the critical path for getting things on screen, but still
@@ -1044,6 +1077,14 @@ void ThreadProxy::DidAnticipatedDrawTimeChange(base::TimeTicks time) {
     current_resource_update_controller_on_impl_thread_
         ->PerformMoreUpdates(time);
   layer_tree_host_impl_->ResetCurrentFrameTimeForNextFrame();
+}
+
+base::TimeDelta ThreadProxy::DrawDurationEstimate() {
+  base::TimeDelta historical_estimate =
+      draw_duration_history_.Percentile(kDrawDurationEstimationPercentile);
+  base::TimeDelta padding = base::TimeDelta::FromMicroseconds(
+      kDrawDurationEstimatePaddingInMicroseconds);
+  return historical_estimate + padding;
 }
 
 void ThreadProxy::ReadyToFinalizeTextureUpdates() {
