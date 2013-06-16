@@ -115,8 +115,8 @@ class TestTextInputClient : public ui::TextInputClient {
       const ui::CompositionText& composition) OVERRIDE {}
   virtual void ConfirmCompositionText() OVERRIDE {}
   virtual void ClearCompositionText() OVERRIDE {}
-  virtual void InsertText(const string16& text) OVERRIDE {}
-  virtual void InsertChar(char16 ch, int flags) OVERRIDE {}
+  virtual void InsertText(const base::string16& text) OVERRIDE {}
+  virtual void InsertChar(base::char16 ch, int flags) OVERRIDE {}
   virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE {
     return static_cast<gfx::NativeWindow>(NULL);
   }
@@ -141,7 +141,7 @@ class TestTextInputClient : public ui::TextInputClient {
   }
   virtual bool DeleteRange(const ui::Range& range) OVERRIDE { return false; }
   virtual bool GetTextFromRange(const ui::Range& range,
-                                string16* text) OVERRIDE {
+                                base::string16* text) OVERRIDE {
     return false;
   }
   virtual void OnInputMethodChanged() OVERRIDE {}
