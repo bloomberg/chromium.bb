@@ -302,7 +302,8 @@ void ShellWindow::AddNewContents(WebContents* source,
                                  bool* was_blocked) {
   DCHECK(Profile::FromBrowserContext(new_contents->GetBrowserContext()) ==
       profile_);
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (disable_external_open_for_testing_) {
     Browser* browser =
         chrome::FindOrCreateTabbedBrowser(profile_, chrome::GetActiveDesktop());
