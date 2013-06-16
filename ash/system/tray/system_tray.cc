@@ -89,6 +89,11 @@ class SystemBubbleWrapper {
     bubble_->InitView(anchor, login_status, init_params);
     bubble_wrapper_.reset(
         new internal::TrayBubbleWrapper(tray, bubble_->bubble_view()));
+    if (ash::switches::UseAlternateShelfLayout()) {
+      // The system bubble should not have an arrow.
+      bubble_->bubble_view()->SetArrowPaintType(
+          views::BubbleBorder::PAINT_NONE);
+    }
   }
 
   // Convenience accessors:
@@ -510,7 +515,8 @@ void SystemTray::AnchorUpdated() {
   }
   if (system_bubble_) {
     system_bubble_->bubble_view()->UpdateBubble();
-    UpdateBubbleViewArrow(system_bubble_->bubble_view());
+    if (!ash::switches::UseAlternateShelfLayout())
+      UpdateBubbleViewArrow(system_bubble_->bubble_view());
   }
 }
 

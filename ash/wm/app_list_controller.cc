@@ -4,6 +4,7 @@
 
 #include "ash/wm/app_list_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -127,6 +128,8 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
         gfx::Point(),
         GetBubbleArrow(container),
         true /* border_accepts_events */);
+    if (ash::switches::UseAlternateShelfLayout())
+      view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     SetView(view);
   }
 }

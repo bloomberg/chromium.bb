@@ -277,6 +277,12 @@ void BubbleDelegateView::SetAlignment(BubbleBorder::BubbleAlignment alignment) {
   SizeToContents();
 }
 
+void BubbleDelegateView::SetArrowPaintType(
+    BubbleBorder::ArrowPaintType paint_type) {
+  GetBubbleFrameView()->bubble_border()->set_paint_arrow(paint_type);
+  SizeToContents();
+}
+
 bool BubbleDelegateView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (!close_on_esc() || accelerator.key_code() != ui::VKEY_ESCAPE)
