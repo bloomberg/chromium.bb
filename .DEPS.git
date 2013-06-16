@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@6d593701560126cfb9eacb625d0440fa2898f61e'
+         '@7133236ea35d17bdefbbb5ef070d07553dc28aac'
 }
 
 deps = {
@@ -114,7 +114,7 @@ deps = {
     'src/third_party/swig/Lib':
         Var('git_url') + '/chromium/deps/swig/Lib.git@549f0b084ad9c40ef42d111303d831eb8d91252e',
     'src/third_party/trace-viewer':
-        Var('git_url') + '/external/trace-viewer.git@1c7f2724410e34bdafd1d321501a2bdee36f6666',
+        Var('git_url') + '/external/trace-viewer.git@93e519deed709747aa1cdddd0332a70b7a500d61',
     'src/third_party/usrsctp/usrsctplib':
         Var('git_url') + '/external/usrsctplib.git@062bff767b4ad4c70476e94c7d0e2a62f57306bb',
     'src/third_party/v8-i18n':
