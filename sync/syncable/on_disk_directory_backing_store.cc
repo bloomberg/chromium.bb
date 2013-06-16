@@ -81,6 +81,12 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
   STLDeleteValues(handles_map);
   STLDeleteElements(delete_journals);
   db_.reset(new sql::Connection);
+  // TODO: Manually propagating the default database settings is
+  // brittle.  Either have a helper to set these up (or generate a new
+  // connection), or add something like Reset() to sql::Connection.
+  db_->set_exclusive_locking();
+  db_->set_page_size(4096);
+  db_->set_histogram_tag("SyncDirectory");
   file_util::Delete(backing_filepath_, false);
 
   result = TryLoad(handles_map, delete_journals, kernel_load_info);

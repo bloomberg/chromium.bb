@@ -155,6 +155,7 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
   : db_(new sql::Connection()),
     dir_name_(dir_name),
     needs_column_refresh_(false) {
+  db_->set_histogram_tag("SyncDirectory");
 }
 
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,

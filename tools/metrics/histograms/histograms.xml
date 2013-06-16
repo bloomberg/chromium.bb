@@ -19593,6 +19593,7 @@ other types of suffix sets.
   <group name="DomStorageDatabase" label="DomStorageDatabase"/>
   <group name="History" label="History"/>
   <group name="Quota" label="Quota"/>
+  <group name="SyncDirectory" label="SyncDirectory"/>
   <group name="Text" label="Text"/>
   <group name="Thumbnail" label="Thumbnail"/>
   <group name="TopSites" label="TopSites"/>
