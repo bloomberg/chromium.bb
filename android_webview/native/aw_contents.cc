@@ -28,9 +28,9 @@
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
-#include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,7 +48,7 @@
 struct AwDrawSWFunctionTable;
 struct AwDrawGLFunctionTable;
 
-using autofill::AutofillExternalDelegate;
+using autofill::AutofillDriverImpl;
 using autofill::AutofillManager;
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -179,7 +179,7 @@ void AwContents::SetSaveFormData(bool enabled) {
   InitAutofillIfNecessary(enabled);
   // We need to check for the existence, since autofill_manager_delegate
   // may not be created when the setting is false.
-  if (AutofillManager::FromWebContents(web_contents_.get())) {
+  if (AutofillDriverImpl::FromWebContents(web_contents_.get())) {
     AwAutofillManagerDelegate* autofill_manager_delegate =
         AwBrowserContext::FromWebContents(web_contents_.get())->
             AutofillManagerDelegate();
@@ -193,22 +193,16 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
     return;
   // Check if the autofill manager already exists.
   content::WebContents* web_contents = web_contents_.get();
-  if (AutofillManager::FromWebContents(web_contents))
+  if (AutofillDriverImpl::FromWebContents(web_contents))
     return;
 
-  AutofillManager::CreateForWebContentsAndDelegate(
+  AutofillDriverImpl::CreateForWebContentsAndDelegate(
       web_contents,
       AwBrowserContext::FromWebContents(web_contents)->
           CreateAutofillManagerDelegate(enabled),
       l10n_util::GetDefaultLocale(),
-      AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
-  AutofillManager* autofill_manager =
-      AutofillManager::FromWebContents(web_contents);
-  AutofillExternalDelegate::CreateForWebContentsAndManager(
-      web_contents,
-      autofill_manager);
-  autofill_manager->SetExternalDelegate(
-      AutofillExternalDelegate::FromWebContents(web_contents));
+      AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
+      true);
 }
 
 AwContents::~AwContents() {

@@ -22,6 +22,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/autofill/browser/autocomplete_history_manager.h"
 #include "components/autofill/browser/autofill_data_model.h"
+#include "components/autofill/browser/autofill_driver.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
@@ -50,6 +51,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/component_resources.h"
@@ -68,8 +70,6 @@ using content::RenderViewHost;
 using WebKit::WebFormElement;
 
 namespace {
-
-const char* kAutofillManagerWebContentsUserDataKey = "web_contents_autofill";
 
 // We only send a fraction of the forms to upload server.
 // The rate for positive/negative matches potentially could be different.
@@ -182,44 +182,16 @@ bool HasServerSpecifiedFieldTypes(const FormStructure& form_structure) {
 
 }  // namespace
 
-// static
-void AutofillManager::CreateForWebContentsAndDelegate(
-    content::WebContents* contents,
-    autofill::AutofillManagerDelegate* delegate,
-    const std::string& app_locale,
-    AutofillDownloadManagerState enable_download_manager) {
-  if (FromWebContents(contents))
-    return;
-
-  contents->SetUserData(
-      kAutofillManagerWebContentsUserDataKey,
-      new AutofillManager(
-          contents, delegate, app_locale, enable_download_manager));
-
-  // Trigger the lazy creation of AutocheckoutWhitelistManagerService, and
-  // schedule a fetch of the Autocheckout whitelist file if it's not already
-  // loaded. This helps ensure that the whitelist will be available by the time
-  // the user navigates to a form on which Autocheckout should be enabled.
-  delegate->GetAutocheckoutWhitelistManager();
-}
-
-// static
-AutofillManager* AutofillManager::FromWebContents(
-    content::WebContents* contents) {
-  return static_cast<AutofillManager*>(
-      contents->GetUserData(kAutofillManagerWebContentsUserDataKey));
-}
-
 AutofillManager::AutofillManager(
-    content::WebContents* web_contents,
+    AutofillDriver* driver,
     autofill::AutofillManagerDelegate* delegate,
     const std::string& app_locale,
     AutofillDownloadManagerState enable_download_manager)
-    : content::WebContentsObserver(web_contents),
+    : driver_(driver),
       manager_delegate_(delegate),
       app_locale_(app_locale),
       personal_data_(delegate->GetPersonalDataManager()),
-      autocomplete_history_manager_(web_contents),
+      autocomplete_history_manager_(driver),
       autocheckout_manager_(this),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
@@ -233,7 +205,8 @@ AutofillManager::AutofillManager(
       weak_ptr_factory_(this) {
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     download_manager_.reset(
-        new AutofillDownloadManager(web_contents->GetBrowserContext(), this));
+        new AutofillDownloadManager(
+            driver->GetWebContents()->GetBrowserContext(), this));
   }
 }
 
@@ -321,6 +294,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnClickFailed)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_MaybeShowAutocheckoutBubble,
                         OnMaybeShowAutocheckoutBubble)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_RemoveAutocompleteEntry,
+                        RemoveAutocompleteEntry)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -335,7 +310,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
   if (!IsAutofillEnabled())
     return false;
 
-  if (web_contents()->GetBrowserContext()->IsOffTheRecord())
+  if (driver_->GetWebContents()->GetBrowserContext()->IsOffTheRecord())
     return false;
 
   // Don't save data that was submitted through JavaScript.
@@ -414,7 +389,7 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
   if (is_post_document_load)
     Reset();
 
-  RenderViewHost* host = web_contents()->GetRenderViewHost();
+  RenderViewHost* host = driver_->GetWebContents()->GetRenderViewHost();
   if (!host)
     return;
 
@@ -722,7 +697,7 @@ void AutofillManager::RemoveAutocompleteEntry(const base::string16& name,
 }
 
 content::WebContents* AutofillManager::GetWebContents() const {
-  return web_contents();
+  return driver_->GetWebContents();
 }
 
 const std::vector<FormStructure*>& AutofillManager::GetFormStructures() {
@@ -794,12 +769,12 @@ void AutofillManager::OnRequestAutocomplete(
 
 void AutofillManager::ReturnAutocompleteResult(
     WebFormElement::AutocompleteResult result, const FormData& form_data) {
-  // web_contents() will be NULL when the interactive autocomplete is closed due
-  // to a tab or browser window closing.
-  if (!web_contents())
+  // driver_->GetWebContents() will be NULL when the interactive autocomplete
+  // is closed due to a tab or browser window closing.
+  if (!driver_->GetWebContents())
     return;
 
-  RenderViewHost* host = web_contents()->GetRenderViewHost();
+  RenderViewHost* host = driver_->GetWebContents()->GetRenderViewHost();
   if (!host)
     return;
 
@@ -832,7 +807,7 @@ void AutofillManager::OnLoadedServerPredictions(
                                     *metric_logger_);
 
   if (page_meta_data->IsInAutofillableFlow()) {
-    RenderViewHost* host = web_contents()->GetRenderViewHost();
+    RenderViewHost* host = driver_->GetWebContents()->GetRenderViewHost();
     if (host)
       host->Send(new AutofillMsg_AutocheckoutSupported(host->GetRoutingID()));
   }
@@ -858,13 +833,14 @@ void AutofillManager::OnClickFailed(autofill::AutocheckoutStatus status) {
 }
 
 std::string AutofillManager::GetAutocheckoutURLPrefix() const {
-  if (!web_contents())
+  if (!driver_->GetWebContents())
     return std::string();
 
   autofill::autocheckout::WhitelistManager* whitelist_manager =
       manager_delegate_->GetAutocheckoutWhitelistManager();
 
-  return whitelist_manager->GetMatchedURLPrefix(web_contents()->GetURL());
+  return whitelist_manager->GetMatchedURLPrefix(
+      driver_->GetWebContents()->GetURL());
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
@@ -877,7 +853,7 @@ void AutofillManager::SendAutofillTypePredictions(
            switches::kShowAutofillTypePredictions))
     return;
 
-  RenderViewHost* host = web_contents()->GetRenderViewHost();
+  RenderViewHost* host = driver_->GetWebContents()->GetRenderViewHost();
   if (!host)
     return;
 
@@ -982,14 +958,14 @@ void AutofillManager::Reset() {
     external_delegate_->Reset();
 }
 
-AutofillManager::AutofillManager(content::WebContents* web_contents,
+AutofillManager::AutofillManager(AutofillDriver* driver,
                                  autofill::AutofillManagerDelegate* delegate,
                                  PersonalDataManager* personal_data)
-    : content::WebContentsObserver(web_contents),
+    : driver_(driver),
       manager_delegate_(delegate),
       app_locale_("en-US"),
       personal_data_(personal_data),
-      autocomplete_history_manager_(web_contents),
+      autocomplete_history_manager_(driver),
       autocheckout_manager_(this),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
@@ -1001,7 +977,8 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       external_delegate_(NULL),
       test_delegate_(NULL),
       weak_ptr_factory_(this) {
-  DCHECK(web_contents);
+  DCHECK(driver_);
+  DCHECK(driver_->GetWebContents());
   DCHECK(manager_delegate_);
 }
 
@@ -1019,7 +996,7 @@ bool AutofillManager::GetHost(RenderViewHost** host) const {
     return false;
   }
 
-  *host = web_contents()->GetRenderViewHost();
+  *host = driver_->GetWebContents()->GetRenderViewHost();
   if (!*host)
     return false;
 

@@ -14,6 +14,7 @@
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/test_autofill_external_delegate.h"
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
+#include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
@@ -156,14 +157,18 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    AutofillManager::CreateForWebContentsAndDelegate(
+    AutofillDriverImpl::CreateForWebContentsAndDelegate(
         web_contents(),
         manager_delegate_.get(),
         "en-US",
-        AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
+        AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
+        false);
+    AutofillDriverImpl* driver =
+        AutofillDriverImpl::FromWebContents(web_contents());
     external_delegate_.reset(
         new NiceMock<MockAutofillExternalDelegate>(
-            web_contents(), AutofillManager::FromWebContents(web_contents())));
+            web_contents(),
+            driver->autofill_manager()));
 
     autofill_popup_controller_ =
         new testing::NiceMock<TestAutofillPopupController>(
@@ -360,8 +365,10 @@ TEST_F(AutofillPopupControllerUnitTest, RowWidthWithoutText) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
+  AutofillDriverImpl* driver =
+      AutofillDriverImpl::FromWebContents(web_contents());
   MockAutofillExternalDelegate delegate(
-      web_contents(), AutofillManager::FromWebContents(web_contents()));
+      web_contents(), driver->autofill_manager());
 
   WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
@@ -517,8 +524,10 @@ TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
                 desired_width, desired_height));
 
   for (size_t i = 0; i < element_bounds.size(); ++i) {
+    AutofillDriverImpl* driver =
+        AutofillDriverImpl::FromWebContents(web_contents());
     NiceMock<MockAutofillExternalDelegate> external_delegate(
-        web_contents(), AutofillManager::FromWebContents(web_contents()));
+        web_contents(), driver->autofill_manager());
     TestAutofillPopupController* autofill_popup_controller =
         new TestAutofillPopupController(external_delegate.GetWeakPtr(),
                                         element_bounds[i]);

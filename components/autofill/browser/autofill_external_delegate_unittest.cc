@@ -10,6 +10,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/browser/test_autofill_driver.h"
 #include "components/autofill/browser/test_autofill_external_delegate.h"
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/common/form_data.h"
@@ -69,11 +70,11 @@ class MockAutofillManagerDelegate
 
 class MockAutofillManager : public AutofillManager {
  public:
-  MockAutofillManager(content::WebContents* web_contents,
+  MockAutofillManager(AutofillDriver* driver,
                       MockAutofillManagerDelegate* delegate)
       // Force to use the constructor designated for unit test, but we don't
       // really need personal_data in this test so we pass a NULL pointer.
-      : AutofillManager(web_contents, delegate, NULL) {
+      : AutofillManager(driver, delegate, NULL) {
   }
   virtual ~MockAutofillManager() {}
 
@@ -94,8 +95,10 @@ class AutofillExternalDelegateUnitTest
  protected:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
+    autofill_driver_.reset(new TestAutofillDriver(web_contents()));
     autofill_manager_.reset(
-        new MockAutofillManager(web_contents(), &manager_delegate_));
+        new MockAutofillManager(autofill_driver_.get(),
+                                &manager_delegate_));
     external_delegate_.reset(
         new testing::NiceMock<MockAutofillExternalDelegate>(
             web_contents(),
@@ -109,6 +112,7 @@ class AutofillExternalDelegateUnitTest
     // be destroyed at the destruction of the WebContents.
     autofill_manager_.reset();
     external_delegate_.reset();
+    autofill_driver_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -124,6 +128,7 @@ class AutofillExternalDelegateUnitTest
   }
 
   MockAutofillManagerDelegate manager_delegate_;
+  scoped_ptr<AutofillDriver> autofill_driver_;
   scoped_ptr<MockAutofillManager> autofill_manager_;
   scoped_ptr<testing::NiceMock<MockAutofillExternalDelegate> >
       external_delegate_;

@@ -22,6 +22,7 @@
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/forms_seen_state.h"
+#include "components/autofill/browser/test_autofill_driver.h"
 #include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 #include "components/webdata/common/web_data_results.h"
 #include "content/public/test/test_utils.h"
@@ -184,10 +185,10 @@ class TestFormStructure : public FormStructure {
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(content::WebContents* web_contents,
+  TestAutofillManager(AutofillDriver* driver,
                       AutofillManagerDelegate* manager_delegate,
                       TestPersonalDataManager* personal_manager)
-      : AutofillManager(web_contents, manager_delegate, personal_manager),
+      : AutofillManager(driver, manager_delegate, personal_manager),
         autofill_enabled_(true) {
     set_metric_logger(new testing::NiceMock<MockAutofillMetrics>);
   }
@@ -266,6 +267,7 @@ class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<ConfirmInfoBarDelegate> CreateDelegate(
       MockAutofillMetrics* metric_logger);
 
+  scoped_ptr<TestAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestPersonalDataManager> personal_data_;
 };
@@ -291,8 +293,9 @@ void AutofillMetricsTest::SetUp() {
 
   personal_data_.reset(new TestPersonalDataManager());
   personal_data_->SetBrowserContext(profile);
+  autofill_driver_.reset(new TestAutofillDriver(web_contents()));
   autofill_manager_.reset(new TestAutofillManager(
-      web_contents(),
+      autofill_driver_.get(),
       TabAutofillManagerDelegate::FromWebContents(web_contents()),
       personal_data_.get()));
 }
@@ -303,6 +306,7 @@ void AutofillMetricsTest::TearDown() {
   // AutofillManager is tied to the lifetime of the WebContents, so it must
   // be destroyed at the destruction of the WebContents.
   autofill_manager_.reset();
+  autofill_driver_.reset();
   personal_data_.reset();
   profile()->ResetRequestContext();
   ChromeRenderViewHostTestHarness::TearDown();

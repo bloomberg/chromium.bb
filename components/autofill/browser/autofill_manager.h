@@ -18,7 +18,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/supports_user_data.h"
 #include "base/time.h"
 #include "components/autofill/browser/autocomplete_history_manager.h"
 #include "components/autofill/browser/autofill_download.h"
@@ -30,17 +29,16 @@
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/forms_seen_state.h"
 #include "components/autofill/content/browser/autocheckout_manager.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 
 class GURL;
 
-struct ViewHostMsg_FrameNavigate_Params;
-
 namespace content {
 class RenderViewHost;
 class WebContents;
+struct FrameNavigateParams;
+struct LoadCommittedDetails;
 }
 
 namespace gfx {
@@ -58,6 +56,7 @@ class PrefRegistrySyncable;
 
 namespace autofill {
 
+class AutofillDriver;
 class AutofillDataModel;
 class AutofillDownloadManager;
 class AutofillExternalDelegate;
@@ -75,24 +74,21 @@ struct PasswordFormFillData;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
-class AutofillManager : public content::WebContentsObserver,
-                        public AutofillDownloadManager::Observer,
-                        public base::SupportsUserData::Data {
+class AutofillManager : public AutofillDownloadManager::Observer {
  public:
   enum AutofillDownloadManagerState {
     ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
     DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
   };
 
-  static void CreateForWebContentsAndDelegate(
-      content::WebContents* contents,
-      autofill::AutofillManagerDelegate* delegate,
-      const std::string& app_locale,
-      AutofillDownloadManagerState enable_download_manager);
-  static AutofillManager* FromWebContents(content::WebContents* contents);
-
   // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  AutofillManager(AutofillDriver* driver,
+                  autofill::AutofillManagerDelegate* delegate,
+                  const std::string& app_locale,
+                  AutofillDownloadManagerState enable_download_manager);
+  virtual ~AutofillManager();
 
   // Set an external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
@@ -144,16 +140,16 @@ class AutofillManager : public content::WebContentsObserver,
   // Only for testing.
   void SetTestDelegate(autofill::AutofillManagerTestDelegate* delegate);
 
- protected:
-  // Only test code should subclass AutofillManager.
-  AutofillManager(content::WebContents* web_contents,
-                  autofill::AutofillManagerDelegate* delegate,
-                  const std::string& app_locale,
-                  AutofillDownloadManagerState enable_download_manager);
-  virtual ~AutofillManager();
+  // TODO(blundell): Move the logic in these methods into AutofillDriver and
+  // eliminate these methods.
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
+ protected:
   // Test code should prefer to use this constructor.
-  AutofillManager(content::WebContents* web_contents,
+  AutofillManager(AutofillDriver* driver,
                   autofill::AutofillManagerDelegate* delegate,
                   PersonalDataManager* personal_data);
 
@@ -221,11 +217,6 @@ class AutofillManager : public content::WebContentsObserver,
       const FormData& form_data);
 
  private:
-  // content::WebContentsObserver:
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // AutofillDownloadManager::Observer:
   virtual void OnLoadedServerPredictions(
@@ -342,6 +333,10 @@ class AutofillManager : public content::WebContentsObserver,
   // the appropriate command-line flag is not set.
   void SendAutofillTypePredictions(
       const std::vector<FormStructure*>& forms) const;
+
+  // Provides driver-level context to the shared code of the component. Must
+  // outlive this object.
+  AutofillDriver* driver_;
 
   autofill::AutofillManagerDelegate* const manager_delegate_;
 

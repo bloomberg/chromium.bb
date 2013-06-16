@@ -275,6 +275,8 @@
         '../components/autofill/browser/autofill_common_test.h',
         '../components/autofill/browser/data_driven_test.cc',
         '../components/autofill/browser/data_driven_test.h',
+        '../components/autofill/browser/test_autofill_driver.cc',
+        '../components/autofill/browser/test_autofill_driver.h',
         '../components/autofill/browser/test_autofill_external_delegate.cc',
         '../components/autofill/browser/test_autofill_external_delegate.h',
         '../components/autofill/browser/test_autofill_manager_delegate.cc',

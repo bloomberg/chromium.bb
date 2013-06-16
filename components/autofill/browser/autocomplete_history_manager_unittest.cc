@@ -17,6 +17,7 @@
 #include "components/autofill/browser/autocomplete_history_manager.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/browser/test_autofill_driver.h"
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/common/form_data.h"
@@ -99,7 +100,9 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
     web_data_service_ = new MockWebDataService();
     WebDataServiceFactory::GetInstance()->SetTestingFactory(
         profile(), MockWebDataServiceWrapperCurrent::Build);
-    autocomplete_manager_.reset(new AutocompleteHistoryManager(web_contents()));
+    autofill_driver_.reset(new TestAutofillDriver(web_contents()));
+    autocomplete_manager_.reset(
+        new AutocompleteHistoryManager(autofill_driver_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -110,6 +113,7 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
 
   scoped_refptr<MockWebDataService> web_data_service_;
   scoped_ptr<AutocompleteHistoryManager> autocomplete_manager_;
+  scoped_ptr<AutofillDriver> autofill_driver_;
   MockAutofillManagerDelegate manager_delegate;
 };
 
@@ -202,9 +206,9 @@ namespace {
 
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
-  explicit MockAutofillExternalDelegate(content::WebContents* web_contents)
-      : AutofillExternalDelegate(
-            web_contents, AutofillManager::FromWebContents(web_contents)) {}
+  explicit MockAutofillExternalDelegate(content::WebContents* web_contents,
+                                        AutofillManager* autofill_manager)
+      : AutofillExternalDelegate(web_contents, autofill_manager) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD5(OnSuggestionsReturned,
@@ -218,38 +222,32 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
 };
 
-class AutocompleteHistoryManagerStubSend : public AutocompleteHistoryManager {
- public:
-  explicit AutocompleteHistoryManagerStubSend(WebContents* web_contents)
-      : AutocompleteHistoryManager(web_contents) {}
+class AutocompleteHistoryManagerNoIPC : public AutocompleteHistoryManager {
+  public:
+   explicit AutocompleteHistoryManagerNoIPC(AutofillDriver* driver)
+       : AutocompleteHistoryManager(driver) {
+     // Ensure that IPC is not sent during the test.
+     set_send_ipc(false);
+   }
 
-  // Increase visibility for testing.
-  void SendSuggestions(const std::vector<base::string16>* suggestions) {
-    AutocompleteHistoryManager::SendSuggestions(suggestions);
-  }
-
-  // Intentionally swallow the message.
-  virtual bool Send(IPC::Message* message) OVERRIDE {
-    delete message;
-    return true;
-  }
+  using AutocompleteHistoryManager::SendSuggestions;
 };
 
 }  // namespace
 
 // Make sure our external delegate is called at the right time.
 TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
-  // Local version with a stubbed out Send()
-  AutocompleteHistoryManagerStubSend autocomplete_history_manager(
-      web_contents());
+  AutocompleteHistoryManagerNoIPC autocomplete_history_manager(
+      autofill_driver_.get());
 
-  AutofillManager::CreateForWebContentsAndDelegate(
-      web_contents(),
+  scoped_ptr<AutofillManager> autofill_manager(new AutofillManager(
+      autofill_driver_.get(),
       &manager_delegate,
       "en-US",
-      AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
+      AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER));
 
-  MockAutofillExternalDelegate external_delegate(web_contents());
+  MockAutofillExternalDelegate external_delegate(web_contents(),
+                                                 autofill_manager.get());
   autocomplete_history_manager.SetExternalDelegate(&external_delegate);
 
   // Should trigger a call to OnSuggestionsReturned, verified by the mock.

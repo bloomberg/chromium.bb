@@ -14,6 +14,7 @@
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/data_driven_test.h"
 #include "components/autofill/browser/form_structure.h"
+#include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "googleurl/src/gurl.h"
 
 namespace autofill {
@@ -59,8 +60,10 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
                                                        HTMLToDataURI(input)));
 
-  AutofillManager* autofill_manager = AutofillManager::FromWebContents(
+  AutofillDriverImpl* autofill_driver = AutofillDriverImpl::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_NE(static_cast<AutofillDriverImpl*>(NULL), autofill_driver);
+  AutofillManager* autofill_manager = autofill_driver->autofill_manager();
   ASSERT_NE(static_cast<AutofillManager*>(NULL), autofill_manager);
   std::vector<FormStructure*> forms = autofill_manager->form_structures_.get();
   *output = FormStructureBrowserTest::FormStructuresToString(forms);

@@ -11,6 +11,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/test_autofill_external_delegate.h"
+#include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
@@ -77,7 +78,8 @@ class AutofillPopupControllerBrowserTest
     autofill_external_delegate_.reset(
        new TestAutofillExternalDelegate(
            web_contents_,
-           AutofillManager::FromWebContents(web_contents_)));
+           AutofillDriverImpl::FromWebContents(
+               web_contents_)->autofill_manager()));
   }
 
   // Normally the WebContents will automatically delete the delegate, but here

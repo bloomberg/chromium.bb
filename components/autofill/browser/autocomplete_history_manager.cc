@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/browser/autofill_driver.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/validation.h"
 #include "components/autofill/common/autofill_messages.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ipc/ipc_message_macros.h"
 
 using content::BrowserContext;
 using content::WebContents;
@@ -41,15 +43,15 @@ bool IsTextField(const FormFieldData& field) {
 
 }  // namespace
 
-AutocompleteHistoryManager::AutocompleteHistoryManager(
-    WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      browser_context_(web_contents->GetBrowserContext()),
+AutocompleteHistoryManager::AutocompleteHistoryManager(AutofillDriver* driver)
+    : browser_context_(driver->GetWebContents()->GetBrowserContext()),
+      driver_(driver),
       autofill_data_(
           AutofillWebDataService::FromBrowserContext(browser_context_)),
       pending_query_handle_(0),
       query_id_(0),
-      external_delegate_(NULL) {
+      external_delegate_(NULL),
+      send_ipc_(true) {
   autofill_enabled_.Init(
       prefs::kAutofillEnabled,
       user_prefs::UserPrefs::Get(browser_context_));
@@ -57,17 +59,6 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {
   CancelPendingQuery();
-}
-
-bool AutocompleteHistoryManager::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AutocompleteHistoryManager, message)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_RemoveAutocompleteEntry,
-                        OnRemoveAutocompleteEntry)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
@@ -207,12 +198,16 @@ void AutocompleteHistoryManager::SendSuggestions(
         autofill_icons_,
         autofill_unique_ids_);
   } else {
-    Send(new AutofillMsg_SuggestionsReturned(routing_id(),
-                                             query_id_,
-                                             autofill_values_,
-                                             autofill_labels_,
-                                             autofill_icons_,
-                                             autofill_unique_ids_));
+    WebContents* web_contents = driver_->GetWebContents();
+    if (web_contents && send_ipc_) {
+      web_contents->Send(
+          new AutofillMsg_SuggestionsReturned(web_contents->GetRoutingID(),
+                                              query_id_,
+                                              autofill_values_,
+                                              autofill_labels_,
+                                              autofill_icons_,
+                                              autofill_unique_ids_));
+    }
   }
 
   query_id_ = 0;

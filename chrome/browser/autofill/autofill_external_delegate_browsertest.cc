@@ -11,6 +11,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/browser/test_autofill_driver.h"
 #include "components/autofill/browser/test_autofill_external_delegate.h"
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,9 +61,9 @@ class MockAutofillManagerDelegate
 // Subclass AutofillManager so we can create AutofillManager instance.
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(content::WebContents* web_contents,
+  TestAutofillManager(AutofillDriver* driver,
                       autofill::AutofillManagerDelegate* delegate)
-      : AutofillManager(web_contents,
+      : AutofillManager(driver,
                         delegate,
                         g_browser_process->GetApplicationLocale(),
                         AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
@@ -97,8 +99,9 @@ class AutofillExternalDelegateBrowserTest
 
     AutofillManager::RegisterUserPrefs(manager_delegate_.GetPrefRegistry());
 
+    autofill_driver_.reset(new TestAutofillDriver(web_contents_));
     autofill_manager_.reset(
-        new TestAutofillManager(web_contents_, &manager_delegate_));
+        new TestAutofillManager(autofill_driver_.get(), &manager_delegate_));
     autofill_external_delegate_.reset(
         new TestAutofillExternalDelegate(web_contents_,
                                          autofill_manager_.get()));
@@ -111,12 +114,14 @@ class AutofillExternalDelegateBrowserTest
     DCHECK_EQ(web_contents_, web_contents);
     autofill_external_delegate_.reset();
     autofill_manager_.reset();
+    autofill_driver_.reset();
   }
 
  protected:
   content::WebContents* web_contents_;
 
   testing::NiceMock<MockAutofillManagerDelegate> manager_delegate_;
+  scoped_ptr<TestAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestAutofillExternalDelegate> autofill_external_delegate_;
 };

@@ -34,6 +34,7 @@
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/personal_data_manager.h"
+#include "components/autofill/browser/test_autofill_driver.h"
 #include "components/autofill/browser/test_autofill_external_delegate.h"
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/common/autofill_messages.h"
@@ -481,10 +482,10 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(content::WebContents* web_contents,
+  TestAutofillManager(AutofillDriver* driver,
                       autofill::AutofillManagerDelegate* delegate,
                       TestPersonalDataManager* personal_data)
-      : AutofillManager(web_contents, delegate, personal_data),
+      : AutofillManager(driver, delegate, personal_data),
         personal_data_(personal_data),
         autofill_enabled_(true) {}
   virtual ~TestAutofillManager() {}
@@ -660,8 +661,9 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
 
     personal_data_.SetBrowserContext(profile);
+    autofill_driver_.reset(new TestAutofillDriver(web_contents()));
     autofill_manager_.reset(new TestAutofillManager(
-        web_contents(),
+        autofill_driver_.get(),
         autofill::TabAutofillManagerDelegate::FromWebContents(web_contents()),
         &personal_data_));
   }
@@ -672,6 +674,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     // AutofillManager is tied to the lifetime of the WebContents, so it must
     // be destroyed at the destruction of the WebContents.
     autofill_manager_.reset();
+    autofill_driver_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
 
     // Remove the BrowserContext so TestPersonalDataManager does not need to
@@ -789,6 +792,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  scoped_ptr<TestAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   TestPersonalDataManager personal_data_;
 
@@ -3216,7 +3220,7 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 TEST_F(AutofillManagerTest, TestBubbleShown) {
   MockAutofillManagerDelegate delegate;
   autofill_manager_.reset(new TestAutofillManager(
-      web_contents(), &delegate, &personal_data_));
+      autofill_driver_.get(), &delegate, &personal_data_));
   autofill_manager_->set_autofill_enabled(true);
   autofill_manager_->MarkAsFirstPageInAutocheckoutFlow();
 
@@ -3246,7 +3250,7 @@ TEST_F(AutofillManagerTest, TestBubbleShown) {
 TEST_F(AutofillManagerTest, TestAutocheckoutBubbleNotShown) {
   MockAutofillManagerDelegate delegate;
   autofill_manager_.reset(new TestAutofillManager(
-      web_contents(), &delegate, &personal_data_));
+      autofill_driver_.get(), &delegate, &personal_data_));
   autofill_manager_->set_autofill_enabled(true);
   autofill_manager_->MarkAsFirstPageInAutocheckoutFlow();
 

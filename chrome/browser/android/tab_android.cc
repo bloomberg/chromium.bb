@@ -26,8 +26,7 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
-#include "components/autofill/browser/autofill_external_delegate.h"
-#include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
@@ -62,15 +61,12 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
 
   AlternateErrorPageTabObserver::CreateForWebContents(contents);
   autofill::TabAutofillManagerDelegate::CreateForWebContents(contents);
-  autofill::AutofillManager::CreateForWebContentsAndDelegate(
+  autofill::AutofillDriverImpl::CreateForWebContentsAndDelegate(
       contents,
       autofill::TabAutofillManagerDelegate::FromWebContents(contents),
       g_browser_process->GetApplicationLocale(),
-      autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-  autofill::AutofillExternalDelegate::CreateForWebContentsAndManager(
-      contents, autofill::AutofillManager::FromWebContents(contents));
-  autofill::AutofillManager::FromWebContents(contents)->SetExternalDelegate(
-      autofill::AutofillExternalDelegate::FromWebContents(contents));
+      autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
+      true);
   BlockedContentTabHelper::CreateForWebContents(contents);
   BookmarkTabHelper::CreateForWebContents(contents);
   CoreTabHelper::CreateForWebContents(contents);

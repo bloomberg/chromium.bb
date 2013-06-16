@@ -11,28 +11,25 @@
 #include "base/prefs/pref_member.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
-#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace autofill {
 
+class AutofillDriver;
 class AutofillExternalDelegate;
 struct FormData;
 
 // Per-tab Autocomplete history manager. Handles receiving form data
 // from the renderer and the storing and retrieving of form data
 // through WebDataServiceBase.
-class AutocompleteHistoryManager : public content::WebContentsObserver,
-                                   public WebDataServiceConsumer {
+class AutocompleteHistoryManager : public WebDataServiceConsumer {
  public:
-  explicit AutocompleteHistoryManager(content::WebContents* web_contents);
+  explicit AutocompleteHistoryManager(AutofillDriver* driver);
   virtual ~AutocompleteHistoryManager();
-
-  // content::WebContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(
@@ -64,11 +61,16 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
   // Sends the given |suggestions| for display in the Autofill popup.
   void SendSuggestions(const std::vector<base::string16>* suggestions);
 
+  // Used by tests to disable sending IPC.
+  void set_send_ipc(bool send_ipc) { send_ipc_ = send_ipc; }
+
  private:
   // Cancels the currently pending WebDataService query, if there is one.
   void CancelPendingQuery();
 
   content::BrowserContext* browser_context_;
+  // Provides driver-level context. Must outlive this object.
+  AutofillDriver* driver_;
   scoped_refptr<AutofillWebDataService> autofill_data_;
 
   BooleanPrefMember autofill_enabled_;
@@ -86,6 +88,9 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
   // Delegate to perform external processing (display, selection) on
   // our behalf.  Weak.
   AutofillExternalDelegate* external_delegate_;
+
+  // Whether IPC is sent.
+  bool send_ipc_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteHistoryManager);
 };

@@ -10,6 +10,7 @@
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/form_structure.h"
+#include "components/autofill/browser/test_autofill_driver.h"
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/common/form_data.h"
@@ -309,9 +310,9 @@ class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
 
 class TestAutofillManager : public AutofillManager {
  public:
-  explicit TestAutofillManager(content::WebContents* contents,
+  explicit TestAutofillManager(AutofillDriver* driver,
                                AutofillManagerDelegate* delegate)
-      : AutofillManager(contents, delegate, NULL) {
+      : AutofillManager(driver, delegate, NULL) {
   }
   virtual ~TestAutofillManager() {}
 
@@ -359,8 +360,9 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     profile()->CreateRequestContext();
     autofill_manager_delegate_.reset(new MockAutofillManagerDelegate());
+    autofill_driver_.reset(new TestAutofillDriver(web_contents()));
     autofill_manager_.reset(new TestAutofillManager(
-        web_contents(),
+        autofill_driver_.get(),
         autofill_manager_delegate_.get()));
     autocheckout_manager_.reset(
         new TestAutocheckoutManager(autofill_manager_.get()));
@@ -370,6 +372,7 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     autocheckout_manager_.reset();
     autofill_manager_delegate_.reset();
     autofill_manager_.reset();
+    autofill_driver_.reset();
     profile()->ResetRequestContext();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -435,6 +438,7 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  scoped_ptr<TestAutofillDriver> autofill_driver_;
   scoped_ptr<TestAutofillManager> autofill_manager_;
   scoped_ptr<TestAutocheckoutManager> autocheckout_manager_;
   scoped_ptr<MockAutofillManagerDelegate> autofill_manager_delegate_;

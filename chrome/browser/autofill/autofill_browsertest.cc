@@ -36,6 +36,7 @@
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
 #include "components/autofill/browser/validation.h"
+#include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -229,7 +230,7 @@ class AutofillTest : public InProcessBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     AutofillManager* autofill_manager =
-        AutofillManager::FromWebContents(web_contents);
+        AutofillDriverImpl::FromWebContents(web_contents)->autofill_manager();
     if (autofill_manager->IsNativeUiEnabled()) {
       external_delegate_.reset(
           new TestAutofillExternalDelegate(web_contents, autofill_manager));
@@ -243,7 +244,7 @@ class AutofillTest : public InProcessBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     AutofillManager* autofill_manager =
-        AutofillManager::FromWebContents(web_contents);
+        AutofillDriverImpl::FromWebContents(web_contents)->autofill_manager();
     autofill_manager->delegate()->HideAutofillPopup();
   }
 
