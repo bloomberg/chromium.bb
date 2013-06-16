@@ -1257,7 +1257,7 @@ webkit.org/b/113487 [ Debug ] plugins/npruntime/npruntime-calls-with-null-npp.ht
 webkit.org/b/113555 fast/forms/state-restore-per-form.html [ Pass Timeout ]
 
 # These mixedContent tests are flakey. Some are more flakey than others.
-crbug.com/239811 crbug.com/229113 [ Win Mac ] http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
+crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 crbug.com/239811 crbug.com/239811 http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html [ Failure Pass ]
 crbug.com/239811 webkit.org/b/112598 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Failure Pass ]
 crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
@@ -1675,12 +1675,6 @@ Bug(jamesr) virtual/softwarecompositing/video/video-controls-layer-creation.html
 
 # New baseline might fail on Mac according to trybots.
 crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ ImageOnlyFailure ]
-
-# Temporary expectations until I've fixed fast/hidpi
-Bug(jochen) virtual/gpu/fast/hidpi [ Slow ]
-
-# started crashing in V8 roll in r206439
-crbug.com/249873 fast/js/concat-large-strings-crash.html [ Crash ]
 
 crbug.com/249237 fast/forms/interactive-validation-remove-node-in-handler.html [ Crash Pass ]
 crbug.com/249237 fast/forms/interactive-validation-required-checkbox.html [ Crash Pass ]
