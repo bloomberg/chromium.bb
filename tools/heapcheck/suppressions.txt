@@ -1429,4 +1429,12 @@
    fun:NewConfiguration
    fun:ModuleSystemTest::ModuleSystemTest
 }
-
+{
+   bug_250533
+   Heapcheck:Leak
+   ...
+   fun:net::TestURLRequestContextGetter::GetURLRequestContext
+   fun:ProxyResolvingClientSocket
+   fun:jingle_glue::XmppClientSocketFactory::CreateTransportClientSocket
+   fun:jingle_glue::ChromeAsyncSocket::Connect
+}
