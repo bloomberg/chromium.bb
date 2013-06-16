@@ -369,6 +369,7 @@
 }
 
 - (void)close:(id)sender {
+  [closeButton_ setTarget:nil];
   messageCenter_->RemoveNotification([self notificationID], /*by_user=*/true);
 }
 
