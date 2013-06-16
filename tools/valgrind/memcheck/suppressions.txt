@@ -7204,7 +7204,7 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN12_GLOBAL__N_123V8ExtensionConfigurator16NewConfigurationEv
-   fun:_ZN16ModuleSystemTestC1Ev
+   fun:_ZN16ModuleSystemTest*
 }
 {
    bug_250533
