@@ -33,8 +33,8 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
-#include <googleurl/src/url_canon.h>
-#include <googleurl/src/url_parse.h>
+#include <url/url_canon.h>
+#include <url/url_parse.h>
 
 namespace WebCore {
 

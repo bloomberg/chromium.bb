@@ -34,8 +34,7 @@
 #include "public/platform/Platform.h"
 #include "weborigin/KURL.h"
 #include "wtf/text/StringUTF8Adaptor.h"
-
-#include <googleurl/src/url_util.h>
+#include <url/url_util.h>
 
 namespace WebCore {
 

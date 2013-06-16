@@ -38,9 +38,9 @@
     'dependencies': [
       '../config.gyp:config',
       '../wtf/wtf.gyp:wtf',
-      '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+      '<(DEPTH)/url/url.gyp:url_lib',
     ],
     'defines': [
       'WEBORIGIN_IMPLEMENTATION=1',

@@ -40,7 +40,7 @@
       '../wtf/wtf.gyp:wtf',
       '../wtf/wtf_tests.gyp:run_all_tests',
       '../config.gyp:unittest_config',
-      '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+      '<(DEPTH)/url/url.gyp:url_lib',
     ],
     'sources': [
       '<@(weborigin_test_files)',
