@@ -70,7 +70,7 @@ deps = {
     (Var("googlecode_url") % "angleproject") + "/trunk@2249",
 
   "src/third_party/trace-viewer":
-    (Var("googlecode_url") % "trace-viewer") + "/trunk@579",
+    (Var("googlecode_url") % "trace-viewer") + "/trunk@621",
 
   "src/third_party/WebKit":
     Var("webkit_trunk") + "@" + Var("webkit_revision"),
