@@ -7206,3 +7206,15 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN12_GLOBAL__N_123V8ExtensionConfigurator16NewConfigurationEv
    fun:_ZN16ModuleSystemTestC1Ev
 }
+{
+   bug_250533
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net21TestURLRequestContext4InitEv
+   fun:_ZN3net21TestURLRequestContextC1Ev
+   fun:_ZN3net27TestURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN11jingle_glue26ProxyResolvingClientSocketC1EPN3net19ClientSocketFactoryERK13scoped_refptrINS1_23URLRequestContextGetterEERKNS1_9SSLConfigERKNS1_12HostPortPairE
+   fun:_ZN11jingle_glue23XmppClientSocketFactory27CreateTransportClientSocketERKN3net12HostPortPairE
+   fun:_ZN11jingle_glue17ChromeAsyncSocket7ConnectERKN9talk_base13SocketAddressE
+}
