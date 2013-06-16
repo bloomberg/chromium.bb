@@ -119,7 +119,8 @@
    fun:_CFRuntimeCreateInstance
    fun:__CFArrayInit
    fun:CFArrayCreateMutableCopy
-   fun:_ZN8Security12KeychainCore5Trust8evaluateEv
+   ...
+   fun:_ZN8Security12KeychainCore5Trust8evaluate*
 }
 # See description of bug_20653a/b in suppressions.txt.
 {
