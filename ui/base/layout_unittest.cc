@@ -7,7 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
 #endif

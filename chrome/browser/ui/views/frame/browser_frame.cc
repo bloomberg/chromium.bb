@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
 #include "ash/shell.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/themes/theme_service.h"

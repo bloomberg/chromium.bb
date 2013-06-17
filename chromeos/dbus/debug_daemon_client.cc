@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"

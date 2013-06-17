@@ -13,10 +13,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/views/corewm/compound_event_filter.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
-#endif
-
 namespace ash {
 
 const int LockStateController::kLockTimeoutMs = 400;

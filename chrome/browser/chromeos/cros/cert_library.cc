@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/string_compare.h"
 #include "base/memory/weak_ptr.h"

@@ -5,7 +5,6 @@
 #include "chromeos/dbus/shill_service_client.h"
 
 #include "base/bind.h"
-#include "base/chromeos/chromeos_version.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"

@@ -73,7 +73,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"

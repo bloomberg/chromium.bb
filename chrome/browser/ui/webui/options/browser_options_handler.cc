@@ -99,7 +99,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/magnifier/magnifier_constants.h"
-#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"

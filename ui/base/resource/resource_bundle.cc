@@ -34,10 +34,6 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/chromeos/chromeos_version.h"
-#endif
-
 namespace ui {
 
 namespace {

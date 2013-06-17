@@ -4,7 +4,6 @@
 
 #include "webkit/browser/chromeos/fileapi/cros_mount_point_provider.h"
 
-#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
