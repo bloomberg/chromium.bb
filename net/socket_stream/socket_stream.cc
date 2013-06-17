@@ -268,7 +268,7 @@ void SocketStream::RestartWithAuth(const AuthCredentials& credentials) {
       << "The current base::MessageLoop must be TYPE_IO";
   DCHECK(proxy_auth_controller_.get());
   if (!socket_.get()) {
-    LOG(ERROR) << "Socket is closed before restarting with auth.";
+    DVLOG(1) << "Socket is closed before restarting with auth.";
     return;
   }
 
@@ -626,7 +626,7 @@ int SocketStream::DoResolveProxy() {
 int SocketStream::DoResolveProxyComplete(int result) {
   pac_request_ = NULL;
   if (result != OK) {
-    LOG(ERROR) << "Failed to resolve proxy: " << result;
+    DVLOG(1) << "Failed to resolve proxy: " << result;
     if (delegate_)
       delegate_->OnError(this, result);
     proxy_info_.UseDirect();
