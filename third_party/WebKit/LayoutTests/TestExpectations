@@ -1814,3 +1814,12 @@ crbug.com/242761 [ Mac ] editing/style/smoosh-styles-001.html [ Failure ]
 crbug.com/242761 [ Mac ] editing/unsupported-content/list-delete-001.html [ Failure ]
 crbug.com/242761 [ Mac ] fast/ruby/rubyDOM-remove-text2.html [ Failure ]
 crbug.com/242761 [ Mac ] editing/style/create-block-for-style-012.html [ Failure ]
+
+# Requires rebaseline
+crbug.com/250895 svg/dom/SVGLengthList-appendItem.xhtml [ Failure ImageOnlyFailure ]
+crbug.com/250895 svg/dom/SVGLengthList-getItem.xhtml [ Failure ImageOnlyFailure ]
+crbug.com/250895 svg/dom/SVGLengthList-initialize.xhtml [ Failure ImageOnlyFailure ]
+crbug.com/250895 svg/dom/SVGLengthList-insertItemBefore.xhtml [ Failure ImageOnlyFailure ]
+crbug.com/250895 svg/dom/SVGLengthList-removeItem.xhtml [ Failure ImageOnlyFailure ]
+crbug.com/250895 svg/dom/SVGLengthList-replaceItem.xhtml [ Failure ImageOnlyFailure ]
+crbug.com/250895 svg/dom/SVGPathSegList-clear-and-initialize.xhtml [ Failure ImageOnlyFailure ]
