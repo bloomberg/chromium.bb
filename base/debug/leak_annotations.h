@@ -33,7 +33,7 @@
 #define ANNOTATE_LEAKING_OBJECT_PTR(X) \
     HeapLeakChecker::IgnoreObject(X)
 
-#elif defined(LEAK_SANITIZER)
+#elif defined(LEAK_SANITIZER) && !defined(OS_NACL)
 
 extern "C" {
 void __lsan_disable();
