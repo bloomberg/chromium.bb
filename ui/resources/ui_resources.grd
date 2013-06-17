@@ -256,7 +256,7 @@
       <structure type="chrome_scaled_image" name="IDR_RADIO_FOCUSED_PRESSED" file="common/radio_focused_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_RADIO_HOVER" file="common/radio_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_RADIO_PRESSED" file="common/radio_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE" file="common/text_selection_handle.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE" file="common/text_selection_handle_small.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_CLOSE" file="linux/linux_close.png" />
       </if>
