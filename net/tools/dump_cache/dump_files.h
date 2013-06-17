@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #ifndef NET_TOOLS_DUMP_CACHE_DUMP_FILES_H_
-#define NET_TOOLS_DUMP_CACHE_DUMP_FILE_H_
+#define NET_TOOLS_DUMP_CACHE_DUMP_FILES_H_
 
 // Performs basic inspection of the disk cache files with minimal disruption
 // to the actual files (they still may change if an error is detected on the

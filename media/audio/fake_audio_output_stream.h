@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #ifndef MEDIA_AUDIO_FAKE_AUDIO_OUTPUT_STREAM_H_
-#define MEDIA_AUDIO_FAKE_AUDIO_OUTOUT_STREAM_H_
+#define MEDIA_AUDIO_FAKE_AUDIO_OUTPUT_STREAM_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"

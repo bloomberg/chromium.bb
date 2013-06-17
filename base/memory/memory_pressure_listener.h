@@ -11,7 +11,7 @@
 // signals can be sent under what conditions.
 
 #ifndef BASE_MEMORY_PRESSURE_LISTENER_H_
-#define BASE_MEMORY_PRESSURE_H_
+#define BASE_MEMORY_PRESSURE_LISTENER_H_
 
 #include "base/base_export.h"
 #include "base/basictypes.h"

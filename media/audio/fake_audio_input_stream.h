@@ -5,7 +5,7 @@
 // A fake implementation of AudioInputStream, useful for testing purpose.
 
 #ifndef MEDIA_AUDIO_FAKE_AUDIO_INPUT_STREAM_H_
-#define MEDIA_AUDIO_FAKE_AUDIO_INOUT_STREAM_H_
+#define MEDIA_AUDIO_FAKE_AUDIO_INPUT_STREAM_H_
 
 #include <vector>
 
