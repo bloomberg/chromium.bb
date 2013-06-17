@@ -42,6 +42,7 @@
       'ENABLE_SVG_FONTS=1',
       'ENABLE_TOUCH_ICON_LOADING=<(enable_touch_icon_loading)',
       'ENABLE_XHR_TIMEOUT=0',
+      'ENABLE_GDI_FONTS_ON_WINDOWS=1',
       # WTF_USE_DYNAMIC_ANNOTATIONS=1 may be defined in build/common.gypi
       # We can't define it here because it should be present only
       # in Debug or release_valgrind_build=1 builds.

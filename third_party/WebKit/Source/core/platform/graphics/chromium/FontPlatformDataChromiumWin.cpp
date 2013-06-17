@@ -47,6 +47,15 @@
 
 namespace WebCore {
 
+#if !ENABLE(GDI_FONTS_ON_WINDOWS)
+void FontPlatformData::setupPaint(SkPaint* paint) const
+{
+    const float ts = m_size >= 0 ? m_size : 12;
+    paint->setTextSize(SkFloatToScalar(m_size));
+    paint->setTypeface(m_typeface);
+}
+#endif
+
 // Lookup the current system settings for font smoothing.
 // We cache these values for performance, but if the browser has a way to be
 // notified when these change, we could re-query them at that time.

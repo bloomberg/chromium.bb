@@ -40,6 +40,10 @@
 #include "core/platform/graphics/chromium/VDMXParser.h"
 #include <wtf/unicode/Unicode.h>
 
+#if OS(WINDOWS)
+#include "core/platform/win/HWndDC.h"
+#endif
+
 namespace WebCore {
 
 // This is the largest VDMX table which we'll try to load and parse.
@@ -113,8 +117,12 @@ void SimpleFontData::platformInit()
         m_fontMetrics.setHasXHeight(false);
     }
 
-
     float lineGap = SkScalarToFloat(metrics.fLeading);
+#if OS(WINDOWS)
+    // FIXME: Windows code uses tmExternalLeading from TEXTMETRIC, SkPaint::FontMetrics does not seem to
+    // offer an equivalent. The formula below tries to proximate it based on fLeading.
+    lineGap = floorf(lineGap * 0.45);
+#endif
     m_fontMetrics.setLineGap(lineGap);
     m_fontMetrics.setLineSpacing(lroundf(ascent) + lroundf(descent) + lroundf(lineGap));
 
@@ -171,9 +179,19 @@ void SimpleFontData::platformDestroy()
 
 PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const FontDescription& fontDescription, float scaleFactor) const
 {
+#if OS(WINDOWS)
+    LOGFONT winFont;
+    GetObject(m_platformData.hfont(), sizeof(LOGFONT), &winFont);
+    float scaledSize = scaleFactor * fontDescription.computedSize();
+    winFont.lfHeight = -lroundf(scaledSize);
+    HFONT hfont = CreateFontIndirect(&winFont);
+    return SimpleFontData::create(FontPlatformData(hfont, scaledSize, m_platformData.orientation()), isCustomFont(), false);
+#else
     const float scaledSize = lroundf(fontDescription.computedSize() * scaleFactor);
     return SimpleFontData::create(FontPlatformData(m_platformData, scaledSize), isCustomFont(), false);
+#endif
 }
+
 
 bool SimpleFontData::containsCharacters(const UChar* characters, int length) const
 {
@@ -203,7 +221,30 @@ bool SimpleFontData::containsCharacters(const UChar* characters, int length) con
 
 void SimpleFontData::determinePitch()
 {
+#if OS(WINDOWS)
+    // TEXTMETRICS have this. Set m_treatAsFixedPitch based off that.
+    HWndDC dc(0);
+    HGDIOBJ oldFont = SelectObject(dc, m_platformData.hfont());
+
+    // Yes, this looks backwards, but the fixed pitch bit is actually set if the font
+    // is *not* fixed pitch. Unbelievable but true.
+    TEXTMETRIC textMetric = { 0 };
+    if (!GetTextMetrics(dc, &textMetric)) {
+        if (FontPlatformData::ensureFontLoaded(m_platformData.hfont())) {
+            // Retry GetTextMetrics.
+            // FIXME: Handle gracefully the error if this call also fails.
+            // See http://crbug.com/6401.
+            if (!GetTextMetrics(dc, &textMetric))
+                LOG_ERROR("Unable to get the text metrics after second attempt");
+        }
+    }
+
+    m_treatAsFixedPitch = !(textMetric.tmPitchAndFamily & TMPF_FIXED_PITCH);
+
+    SelectObject(dc, oldFont);
+#else
     m_treatAsFixedPitch = platformData().isFixedPitch();
+#endif
 }
 
 FloatRect SimpleFontData::platformBoundsForGlyph(Glyph glyph) const

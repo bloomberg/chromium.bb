@@ -779,7 +779,7 @@
             ['exclude', 'platform/graphics/FontPlatformData\\.cpp$'],
           ],
         }],
-        ['OS != "linux" and OS != "mac"', {
+        ['OS != "linux" and OS != "mac" and (OS != "win" or (OS == "win" and "ENABLE_GDI_FONTS_ON_WINDOWS=1"))', {
           'sources/': [
             ['exclude', 'VDMX[^/]+\\.(cpp|h)$'],
           ],
@@ -796,7 +796,6 @@
             # platform/graphics/chromium, included by regex above, instead.
             ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
             ['exclude', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
-            ['exclude', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
 
             # SystemInfo.cpp is useful and we don't want to copy it.
             ['include', 'platform/win/SystemInfo\\.cpp$'],
@@ -805,6 +804,18 @@
             ['exclude', 'platform/text/LocaleICU\\.h$'],
             ['include', 'platform/text/win/LocaleWin\.cpp$'],
             ['include', 'platform/text/win/LocaleWin\.h$'],
+          ],
+          'conditions': [
+            ['"ENABLE_GDI_FONTS_ON_WINDOWS=1" in feature_defines', {
+              'sources/': [
+                ['exclude', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
+              ],
+            },{ # ENABLE_GDI_FONTS_ON_WINDOWS!=1
+              'sources/': [
+                ['exclude', 'platform/graphics/chromium/SimpleFontDataChromiumWin\\.cpp$'],
+                ['include', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
+              ],
+            }],
           ],
         },{ # OS!="win"
           'sources/': [
