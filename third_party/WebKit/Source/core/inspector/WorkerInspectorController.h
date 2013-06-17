@@ -44,7 +44,6 @@ class InjectedScriptManager;
 class InspectorBackendDispatcher;
 class InspectorFrontend;
 class InspectorFrontendChannel;
-class InspectorRuntimeAgent;
 class InspectorState;
 class InspectorStateClient;
 class InstrumentingAgents;
@@ -74,7 +73,6 @@ private:
     RefPtr<InstrumentingAgents> m_instrumentingAgents;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     OwnPtr<WorkerScriptDebugServer> m_debugServer;
-    InspectorRuntimeAgent* m_runtimeAgent;
     InspectorAgentRegistry m_agents;
     OwnPtr<InspectorFrontendChannel> m_frontendChannel;
     OwnPtr<InspectorFrontend> m_frontend;

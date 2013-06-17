@@ -33,6 +33,7 @@
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InspectorState.h"
+#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
@@ -88,6 +89,12 @@ void InspectorAgentRegistry::discardAgents()
 {
     for (size_t i = 0; i < m_agents.size(); i++)
         m_agents[i]->discardAgent();
+}
+
+void InspectorAgentRegistry::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+{
+    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Inspector);
+    info.addMember(&m_agents, "agents");
 }
 
 } // namespace WebCore

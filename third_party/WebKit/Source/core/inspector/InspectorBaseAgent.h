@@ -76,6 +76,8 @@ public:
     void registerInDispatcher(InspectorBackendDispatcher*);
     void discardAgents();
 
+    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
+
 private:
     Vector<OwnPtr<InspectorBaseAgentInterface> > m_agents;
 };

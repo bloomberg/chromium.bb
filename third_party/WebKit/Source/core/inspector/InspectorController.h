@@ -44,22 +44,13 @@ class DOMWrapperWorld;
 class Frame;
 class GraphicsContext;
 class InjectedScriptManager;
-class InspectorAgent;
-class InspectorApplicationCacheAgent;
 class InspectorBackendDispatcher;
-class InspectorBaseAgentInterface;
 class InspectorClient;
-class InspectorDOMAgent;
-class InspectorDOMDebuggerAgent;
-class InspectorDebuggerAgent;
 class InspectorFrontend;
 class InspectorFrontendChannel;
 class InspectorFrontendClient;
 class InspectorMemoryAgent;
 class InspectorOverlay;
-class InspectorPageAgent;
-class InspectorProfilerAgent;
-class InspectorResourceAgent;
 class InspectorState;
 class InstrumentingAgents;
 class IntSize;
@@ -108,14 +99,11 @@ public:
     bool isUnderTest();
     void evaluateForTestInFrontend(long callId, const String& script);
 
-    bool profilerEnabled();
-
     void resume();
 
     void setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize);
 
     InspectorClient* inspectorClient() const { return m_inspectorClient; }
-    InspectorPageAgent* pageAgent() const { return m_pageAgent; }
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -140,14 +128,7 @@ private:
     OwnPtr<InspectorCompositeState> m_state;
     OwnPtr<InspectorOverlay> m_overlay;
 
-    InspectorAgent* m_inspectorAgent;
-    InspectorDOMAgent* m_domAgent;
-    InspectorResourceAgent* m_resourceAgent;
-    InspectorPageAgent* m_pageAgent;
     InspectorMemoryAgent* m_memoryAgent;
-    InspectorDebuggerAgent* m_debuggerAgent;
-    InspectorDOMDebuggerAgent* m_domDebuggerAgent;
-    InspectorProfilerAgent* m_profilerAgent;
 
     RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontendClient> m_inspectorFrontendClient;

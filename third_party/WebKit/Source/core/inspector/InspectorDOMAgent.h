@@ -156,7 +156,7 @@ public:
     virtual void focus(ErrorString*, int nodeId);
     virtual void setFileInputFiles(ErrorString*, int nodeId, const RefPtr<InspectorArray>& files);
 
-    void getEventListeners(Node*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
+    static void getEventListeners(Node*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
 
     // Methods called from the InspectorInstrumentation.
     void setDocument(Document*);
