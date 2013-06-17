@@ -5,7 +5,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/google_apis/drive_notification_manager_factory.h"
+#include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"

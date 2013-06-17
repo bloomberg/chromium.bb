@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/drive_notification_manager_factory.h"
+#include "chrome/browser/drive/drive_notification_manager_factory.h"
 
-#include "chrome/browser/google_apis/drive_notification_manager.h"
+#include "chrome/browser/drive/drive_notification_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"

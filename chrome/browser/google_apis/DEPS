@@ -7,8 +7,6 @@ include_rules = [
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/signin/token_service_factory.h",
   "!chrome/browser/signin/token_service.h",
-  "!chrome/browser/sync/profile_sync_service_factory.h",
-  "!chrome/browser/sync/profile_sync_service.h",
   "!chrome/common/chrome_notification_types.h",
   "!content/public/browser/browser_thread.h",
   "!content/public/browser/notification_details.h",
@@ -29,8 +27,5 @@ specific_include_rules = {
   ],
   "drive_uploader.cc": [
     "!content/public/browser/power_save_blocker.h",
-  ],
-  "http_server.cc": [
-    "!content/public/test/test_utils.h",
   ],
 }
