@@ -30,6 +30,7 @@
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
@@ -194,7 +195,10 @@ v8::Handle<v8::Object> V8Float64Array::createWrapper(PassRefPtr<Float64Array> im
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, impl.get(), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
-
+    if (!impl->buffer()->hasDeallocationObserver()) {
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->buffer()->byteLength());
+        impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+    }
     installPerContextProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;

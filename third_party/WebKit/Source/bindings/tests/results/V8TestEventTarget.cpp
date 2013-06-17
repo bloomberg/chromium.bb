@@ -255,15 +255,14 @@ void V8TestEventTarget::namedPropertyQuery(v8::Local<v8::String> name, const v8:
     TestEventTarget* collection = toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
     ExceptionCode ec = 0;
-    int returnValue = 0;
-    bool result = collection->namedPropertyQuery(propertyName, returnValue, ec);
+    bool result = collection->namedPropertyQuery(propertyName, ec);
     if (ec) {
         setDOMException(ec, info.GetIsolate());
         return;
     }
     if (!result)
         return;
-    v8SetReturnValueInt(info, 0);
+    v8SetReturnValueInt(info, v8::None);
 }
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -334,7 +333,6 @@ v8::Handle<v8::Object> V8TestEventTarget::createWrapper(PassRefPtr<TestEventTarg
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, impl.get(), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
-
     installPerContextProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
