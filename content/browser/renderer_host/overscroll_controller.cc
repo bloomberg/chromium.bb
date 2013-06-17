@@ -97,8 +97,10 @@ bool OverscrollController::WillDispatchEvent(
     ProcessEventForOverscroll(event);
 
     if (event.type == WebKit::WebInputEvent::TouchEnd ||
-        event.type == WebKit::WebInputEvent::TouchCancel)
+        event.type == WebKit::WebInputEvent::TouchCancel ||
+        event.type == WebKit::WebInputEvent::TouchMove) {
       return true;
+    }
     return false;
   }
 
