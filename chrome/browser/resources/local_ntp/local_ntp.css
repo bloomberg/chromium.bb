@@ -11,16 +11,6 @@ body {
   overflow-x: hidden;
 }
 
-#active-suggestions-container {
-  position: absolute;
-  width: 100%;
-  z-index: 1;
-}
-
-.suggestion-contents {
-  z-index: 1;
-}
-
 #ntp-contents {
   position: absolute;
   text-align: -webkit-center;
@@ -196,12 +186,6 @@ body.fakebox-focused #cursor {
   width: 138px;
 }
 
-.mv-tile.mv-tile-hide {
-  -webkit-margin-end: -10px;
-  opacity: 0;
-  width: 10px;
-}
-
 /* Class applied to tiles to trigger the blacklist animation. */
 .mv-tile.mv-blacklist {
   -webkit-transform: scale(0.5);
@@ -298,13 +282,6 @@ body.rtl .mv-page .mv-x {
   opacity: 1;
 }
 
-.mv-domain {
-  bottom: 24px;
-  color: #777;
-  margin: 0 7px;
-  position: absolute;
-}
-
 .mv-favicon {
   bottom: -8px;
   height: 16px;
@@ -370,48 +347,4 @@ body.rtl .mv-page .mv-x {
 
 #attribution img {
   display: block;
-}
-
-.suggestions-box {
-  background-color: #fff;
-  border-bottom: 1px #d9d9d9 solid;
-  padding-bottom: 6px;
-  padding-top: 6px;
-}
-
-.suggestion {
-  background: -webkit-image-set(
-      url(images/page_icon.png) 1x,
-      url(images/2x/page_icon.png) 2x) no-repeat;
-  border-radius: 2px;
-  height: 22px;
-  padding-bottom: 2px;
-  padding-top: 3px;
-  white-space: nowrap;
-}
-
-.search {
-  background: -webkit-image-set(
-      url(images/search_icon.png) 1x,
-      url(images/2x/search_icon.png) 2x) no-repeat;
-}
-
-.hovered {
-  background-color: #eee;
-}
-
-.selected {
-  background-color: rgba(181, 213, 255, 0.5);
-}
-
-.suggestion-contents {
-  -webkit-user-select: none;
-  border: none;
-  height: 22px;
-  overflow: hidden;
-  position: absolute;
-}
-
-#pending-suggestions-container {
-  display: none;
 }

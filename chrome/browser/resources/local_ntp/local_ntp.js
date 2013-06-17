@@ -4,7 +4,7 @@
 
 
 /**
- * @fileoverview The local InstantExtended NTP and suggestions dropdown.
+ * @fileoverview The local InstantExtended NTP.
  */
 
 /**
@@ -15,10 +15,6 @@
 function LocalNTP(location) {
 <include src="../../../../ui/webui/resources/js/assert.js">
 
-
-// ==========================================================
-//  Enums
-// ==========================================================
 
 
 /**
@@ -31,26 +27,18 @@ var CLASSES = {
   BLACKLIST_BUTTON: 'mv-x',
   CUSTOM_THEME: 'custom-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
-  DOMAIN: 'mv-domain',
   FAKEBOX_DISABLE: 'fakebox-disable', // Makes fakebox non-interactive
   FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
   FAVICON: 'mv-favicon',
   HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
   HIDE_NOTIFICATION: 'mv-notice-hide',
-  HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
-  HOVERED: 'hovered',
-  // Vertically centers the most visited section for a non-Google provided page
+  // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   PAGE: 'mv-page', // page tiles
   PAGE_READY: 'mv-page-ready',  // page tile when ready
   ROW: 'mv-row',  // tile row
-  RTL: 'rtl',  // sets element alignments for an RTL language
-  SEARCH: 'search',
-  SELECTED: 'selected', // a selected suggestion (if any)
-  SUGGESTION: 'suggestion',
-  SUGGESTION_CONTENTS: 'suggestion-contents',
-  SUGGESTIONS_BOX: 'suggestions-box',
+  RTL: 'rtl',  // Right-to-left language text.
   THUMBNAIL: 'mv-thumb',
   THUMBNAIL_MASK: 'mv-mask',
   TILE: 'mv-tile',
@@ -64,20 +52,14 @@ var CLASSES = {
  * @const
  */
 var IDS = {
-  ACTIVE_SUGGESTIONS_CONTAINER: 'active-suggestions-container',
   ATTRIBUTION: 'attribution',
-  CURSOR: 'cursor',
   FAKEBOX: 'fakebox',
   LOGO: 'logo',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
-  PENDING_SUGGESTIONS_CONTAINER: 'pending-suggestions-container',
   RESTORE_ALL_LINK: 'mv-restore',
-  SUGGESTION_LOADER: 'suggestion-loader',
-  SUGGESTION_STYLE: 'suggestion-style',
-  SUGGESTION_TEXT_PREFIX: 'suggestion-text-',
   TILES: 'mv-tiles',
   UNDO_LINK: 'mv-undo'
 };
@@ -90,10 +72,7 @@ var IDS = {
  */
 var KEYCODE = {
   DELETE: 46,
-  DOWN_ARROW: 40,
-  ENTER: 13,
-  ESC: 27,
-  UP_ARROW: 38
+  ENTER: 13
 };
 
 
@@ -107,10 +86,6 @@ var NTP_DISPOSE_STATE = {
   DISABLE_FAKEBOX: 1,
   HIDE_FAKEBOX_AND_LOGO: 2
 };
-
-// =============================================================================
-//  NTP implementation
-// =============================================================================
 
 
 /**
@@ -143,8 +118,7 @@ var fakebox;
 
 
 /**
- * The container for NTP elements that should be hidden when suggestions are
- * visible.
+ * The container for NTP elements.
  * @type {Element}
  */
 var ntpContents;
@@ -194,6 +168,13 @@ var userInitiatedMostVisitedChange = false;
  * @type {Object}
  */
 var ntpApiHandle;
+
+
+/**
+ * The browser embeddedSearch.searchBox object.
+ * @type {Object}
+ */
+var searchboxApiHandle;
 
 
 /**
@@ -726,12 +707,10 @@ function disposeNtp(wasFakeboxInput) {
 
 
 /**
- * Restores the NTP (destroys the activeBox if exists, reloads the custom
- * theme, shows the top visible bars, re-enables the fakebox and unhides all
- * NTP elements.
+ * Restores the NTP (reloads the custom theme, shows the top visible bars,
+ * re-enables the fakebox and unhides all NTP elements.)
  */
 function restoreNtp() {
-  hideActiveSuggestions();
   searchboxApiHandle.showBars();
   setFakeboxActive(true);
   setFakeboxAndLogoVisibility(true);
@@ -789,838 +768,6 @@ function setFakeboxAndLogoVisibility(show) {
   document.body.classList.toggle(CLASSES.HIDE_FAKEBOX_AND_LOGO, !show);
 }
 
-// =============================================================================
-//  Dropdown Implementation
-// =============================================================================
-
-
-/**
- * Possible behaviors for navigateContentWindow.
- * @enum {number}
- */
-var WindowOpenDisposition = {
-  CURRENT_TAB: 1,
-  NEW_BACKGROUND_TAB: 2
-};
-
-
-/**
- * The JavaScript button event value for a middle click.
- * @type {number}
- * @const
- */
-var MIDDLE_MOUSE_BUTTON = 1;
-
-
-/**
- * The maximum number of suggestions to show.
- * @type {number}
- * @const
- */
-var MAX_SUGGESTIONS_TO_SHOW = 5;
-
-
-/**
- * Assume any native suggestion with a score higher than this value has been
- * inlined by the browser.
- * @type {number}
- * @const
- */
-var INLINE_SUGGESTION_THRESHOLD = 1200;
-
-
-/**
- * The color code for a query.
- * @type {number}
- * @const
- */
-var SUGGESTION_QUERY_COLOR = 0x000000;
-
-
-/**
- * The color code for a suggestion display URL.
- * @type {number}
- * @const
- */
-var SUGGESTION_URL_COLOR = 0x009933;
-
-
-/**
- * The color code for a suggestion title.
- * @type {number}
- * @const
- */
-var SUGGESTION_TITLE_COLOR = 0x666666;
-
-
-/**
- * A top position which is off-screen.
- * @type {string}
- * @const
- */
-var OFF_SCREEN = '-1000px';
-
-
-/**
- * The expected origin of a suggestion iframe.
- * @type {string}
- * @const
- */
-var SUGGESTION_ORIGIN = 'chrome-search://suggestion';
-
-
-/**
- * Suggestion provider type corresponding to a verbatim URL suggestion.
- * @type {string}
- * @const
- */
-var VERBATIM_URL_TYPE = 'url-what-you-typed';
-
-
-/**
- * Suggestion provider type corresponding to a verbatim search suggestion.
- * @type {string}
- * @const
- */
-var VERBATIM_SEARCH_TYPE = 'search-what-you-typed';
-
-
-/**
- * Pixels of padding inside a suggestion div for displaying its icon.
- * @type {number}
- * @const
- */
-var SUGGESTION_ICON_PADDING = 26;
-
-
-/**
- * Pixels by which iframes should be moved down relative to their wrapping
- * suggestion div.
- */
-var SUGGESTION_TOP_OFFSET = 4;
-
-
-/**
- * The displayed suggestions.
- * @type {SuggestionsBox}
- */
-var activeBox;
-
-
-/**
- * The suggestions being rendered.
- * @type {SuggestionsBox}
- */
-var pendingBox;
-
-
-/**
- * A pool of iframes to display suggestions.
- * @type {IframePool}
- */
-var iframePool;
-
-
-/**
- * A serial number for the next suggestions rendered.
- * @type {number}
- */
-var nextRequestId = 0;
-
-
-/**
- * The omnibox input value during the last onnativesuggestions event.
- * @type {string}
- */
-var lastInputValue = '';
-
-
-/**
- * True if updateSuggestions() was deferred due to suggestion iframes not being
- * ready and false otherwise.
- * @type {boolean}
- */
-var updateSuggestionsWasDeferred = false;
-
-
-/**
- * @param {Object} suggestion A suggestion.
- * @param {boolean} inVerbatimMode Are we in verbatim mode?
- * @return {boolean} True if the suggestion should be selected.
- */
-function shouldSelectSuggestion(suggestion, inVerbatimMode) {
-  var isVerbatimUrl = suggestion.type == VERBATIM_URL_TYPE;
-  var inlineableSuggestion = suggestion.type != VERBATIM_SEARCH_TYPE &&
-      suggestion.rankingData.relevance > INLINE_SUGGESTION_THRESHOLD;
-  // Verbatim URLs should always be selected. Otherwise, select suggestions
-  // with a high enough score unless we are in verbatim mode (e.g. backspacing
-  // away).
-  return isVerbatimUrl || (!inVerbatimMode && inlineableSuggestion);
-}
-
-
-/**
- * Extract the desired navigation behavior from a click button.
- * @param {number} button The Event#button property of a click event.
- * @return {WindowOpenDisposition} The desired behavior for
- *     navigateContentWindow.
- */
-function getDispositionFromClickButton(button) {
-  if (button == MIDDLE_MOUSE_BUTTON)
-    return WindowOpenDisposition.NEW_BACKGROUND_TAB;
-  return WindowOpenDisposition.CURRENT_TAB;
-}
-
-
-/**
- * @return {boolean} True if all suggestion iframes are ready.
- */
-function suggestionIframesReady() {
-  return iframePool.ready() && $(IDS.SUGGESTION_LOADER).loaded;
-}
-
-
-/**
- * Manages a pool of chrome-search suggestion result iframes.
- * @constructor
- */
-function IframePool() {
-}
-
-IframePool.prototype = {
-  /**
-   * HTML iframe elements.
-   * @type {Array.<Element>}
-   * @private
-   */
-  iframes_: [],
-
-  /**
-   * Number of iframes pending load.
-   * @type {number}
-   * @private
-   */
-  pendingCount_: 0,
-
-  /**
-   * Initializes the pool with blank result template iframes, positioned off
-   * screen.
-   */
-  init: function() {
-    for (var i = 0; i < 2 * MAX_SUGGESTIONS_TO_SHOW; ++i) {
-      var iframe = document.createElement('iframe');
-      iframe.className = CLASSES.SUGGESTION_CONTENTS;
-      iframe.id = IDS.SUGGESTION_TEXT_PREFIX + i;
-      iframe.src = 'chrome-search://suggestion/result.html';
-      iframe.style.top = OFF_SCREEN;
-      iframe.tabIndex = '-1';
-      iframe.addEventListener('mouseover', function(e) {
-        if (activeBox)
-          activeBox.hover(e.currentTarget.id);
-      }, false);
-      iframe.addEventListener('mouseout', function(e) {
-        if (activeBox)
-          activeBox.unhover(e.currentTarget.id);
-      }, false);
-      this.pendingCount_++;
-      var self = this;
-      iframe.onload = function() {
-        self.pendingCount_--;
-        callDeferredUpdateSuggestions();
-      };
-      document.body.appendChild(iframe);
-      this.iframes_.push(iframe);
-    }
-  },
-
-  /**
-   * @return {boolean} True if all suggestion iframes are loaded.
-   */
-  ready: function() {
-    return this.pendingCount_ == 0;
-  },
-
-  /**
-   * Reserves a free suggestion iframe from the pool.
-   * @return {Element} An iframe suitable for holding a suggestion.
-   */
-  reserve: function() {
-    return this.iframes_.pop();
-  },
-
-  /**
-   * Releases a suggestion iframe back into the pool.
-   * @param {Element} iframe The iframe to return to the pool.
-   */
-  release: function(iframe) {
-    this.iframes_.push(iframe);
-    iframe.style.top = OFF_SCREEN;
-  }
-};
-
-
-/**
- * An individual suggestion.
- * @param {!Object} data Autocomplete fields for this suggestion.
- * @constructor
- */
-function Suggestion(data) {
-  assert(data);
-  /**
-   * Autocomplete fields for this suggestion.
-   * @type {!Object}
-   * @private
-   */
-  this.data_ = data;
-}
-
-Suggestion.prototype = {
-  /**
-   * Releases the iframe reserved for this suggestion.
-   */
-  destroy: function() {
-    if (this.iframe_)
-      iframePool.release(this.iframe_);
-  },
-
-  /**
-   * Creates and appends the placeholder div for this suggestion to box.
-   * @param {Element} box A suggestions box.
-   * @param {boolean} selected True if the suggestion should be drawn as
-   *     selected and false otherwise.
-   */
-  appendToBox: function(box, selected) {
-    var div = document.createElement('div');
-    div.classList.add(CLASSES.SUGGESTION);
-    div.classList.toggle(CLASSES.SELECTED, selected);
-    div.classList.toggle(CLASSES.SEARCH, this.data_.is_search);
-    box.appendChild(div);
-    this.div_ = div;
-  },
-
-  /**
-   * Repositions the suggestion iframe to align with its expected dropdown
-   * position.
-   * @param {boolean} isRtl True if rendering right-to-left and false if not.
-   * @param {number} startMargin Leading space before suggestion.
-   * @param {number} totalMargin Total non-content space on suggestion line.
-   */
-  reposition: function(isRtl, startMargin, totalMargin) {
-    // Add in the expected parent offset and the top margin.
-    this.iframe_.style.top = this.div_.offsetTop + SUGGESTION_TOP_OFFSET + 'px';
-    // Call parseInt to enforce that startMargin and totalMargin are really
-    // numbers since we're interpolating CSS.
-    startMargin = parseInt(startMargin, 10);
-    totalMargin = parseInt(totalMargin, 10);
-    if (isFinite(startMargin) && isFinite(totalMargin)) {
-      this.iframe_.style[isRtl ? 'right' : 'left'] = startMargin + 'px';
-      this.iframe_.style.width = '-webkit-calc(100% - ' +
-          (totalMargin + SUGGESTION_ICON_PADDING) + 'px)';
-    }
-  },
-
-  /**
-   * Updates the suggestion selection state.
-   * @param {boolean} selected True if drawn selected or false if not.
-   */
-  select: function(selected) {
-    this.div_.classList.toggle(CLASSES.SELECTED, selected);
-  },
-
-  /**
-   * Updates the suggestion hover state.
-   * @param {boolean} hovered True if drawn hovered or false if not.
-   */
-  hover: function(hovered) {
-    this.div_.classList.toggle(CLASSES.HOVERED, hovered);
-  },
-
-  /**
-   * @param {Window} iframeWindow The content window of an iframe.
-   * @return {boolean} True if this suggestion's iframe has the specified
-   *     window and false if not.
-   */
-  hasIframeWindow: function(iframeWindow) {
-    return this.iframe_.contentWindow == iframeWindow;
-  },
-
-  /**
-   * @param {string} id An element id.
-   * @return {boolean} True if this suggestion's iframe has the specified id
-   *     and false if not.
-   */
-  hasIframeId: function(id) {
-    return this.iframe_.id == id;
-  },
-
-  /**
-   * The iframe element for this suggestion.
-   * @type {Element}
-   */
-  set iframe(iframe) {
-    this.iframe_ = iframe;
-  },
-
-  /**
-   * The restricted id associated with this suggestion.
-   * @type {number}
-   */
-  get restrictedId() {
-    return this.data_.rid;
-  },
-};
-
-
-/**
- * Displays a suggestions box.
- * @param {string} inputValue The user text that prompted these suggestions.
- * @param {!Array.<!Object>} suggestionData Suggestion data to display.
- * @param {number} selectedIndex The index of the suggestion selected.
- * @constructor
- */
-function SuggestionsBox(inputValue, suggestionData, selectedIndex) {
-  /**
-   * The user text that prompted these suggestions.
-   * @type {string}
-   * @private
-   */
-  this.inputValue_ = inputValue;
-
-  /**
-   * The index of the suggestion currently selected, whether by default or
-   * because the user arrowed down to it.
-   * @type {number}
-   * @private
-   */
-  this.selectedIndex_ = selectedIndex;
-
-  /**
-   * The index of the suggestion currently under the mouse pointer.
-   * @type {number}
-   * @private
-   */
-  this.hoveredIndex_ = -1;
-
-  /**
-   * A stamp to distinguish this suggestions box from others.
-   * @type {number}
-   * @private
-   */
-  this.requestId_ = nextRequestId++;
-
-  /**
-   * The ordered suggestions this box is displaying.
-   * @type {Array.<Suggestion>}
-   * @private
-   */
-  this.suggestions_ = [];
-  for (var i = 0; i < suggestionData.length; ++i) {
-    this.suggestions_.push(new Suggestion(suggestionData[i]));
-  }
-
-  /**
-   * The container for this suggestions box. #pending-suggestion-container
-   * if inactive and #active-suggestion-container if active.
-   * @type {Element}
-   * @private
-   */
-  this.container_ = $(IDS.PENDING_SUGGESTIONS_CONTAINER);
-  assert(this.container_);
-}
-
-SuggestionsBox.prototype = {
-  /**
-   * Releases suggestion iframes and ignores any load done message for the
-   * current suggestions.
-   */
-  destroy: function() {
-    while (this.suggestions_.length > 0) {
-      this.suggestions_.pop().destroy();
-    }
-    this.responseId = -1;
-  },
-
-  /**
-   * Starts rendering new suggestions.
-   */
-  loadSuggestions: function() {
-    // Create a placeholder DOM in the invisible container.
-    this.container_.innerHTML = '';
-
-    var box = document.createElement('div');
-    box.className = CLASSES.SUGGESTIONS_BOX;
-    this.container_.appendChild(box);
-
-    var iframesToLoad = {};
-    for (var i = 0; i < this.suggestions_.length; ++i) {
-      var suggestion = this.suggestions_[i];
-      suggestion.appendToBox(box, i == this.selectedIndex_);
-      var iframe = iframePool.reserve();
-      suggestion.iframe = iframe;
-      iframesToLoad[iframe.id] = suggestion.restrictedId;
-    }
-
-    // Ask the loader iframe to populate the iframes just reserved.
-    var loadRequest = {
-      load: iframesToLoad,
-      requestId: this.requestId_,
-      style: {
-        queryColor: SUGGESTION_QUERY_COLOR,
-        urlColor: SUGGESTION_URL_COLOR,
-        titleColor: SUGGESTION_TITLE_COLOR
-      }
-    };
-    $(IDS.SUGGESTION_LOADER).contentWindow.postMessage(loadRequest,
-        SUGGESTION_ORIGIN);
-  },
-
-  /**
-   * @param {number} responseId The id of a request that just finished
-   *     rendering.
-   * @return {boolean} Whether the request is for the suggestions in this box.
-   */
-  isResponseCurrent: function(responseId) {
-    return responseId == this.requestId_;
-  },
-
-  /**
-   * Moves suggestion iframes into position.
-   */
-  repositionSuggestions: function() {
-    // Note: This may be called before margins are ready. In that case,
-    // suggestion iframes will initially be too large and then size down
-    // onmarginchange.
-    var startMargin = searchboxApiHandle.startMargin;
-    var totalMargin = window.innerWidth - searchboxApiHandle.width;
-    var isRtl = searchboxApiHandle.rtl;
-    for (var i = 0; i < this.suggestions_.length; ++i) {
-      this.suggestions_[i].reposition(isRtl, startMargin, totalMargin);
-    }
-  },
-
-  /**
-   * Selects the suggestion before the current selection.
-   */
-  selectPrevious: function() {
-    this.changeSelection_(this.selectedIndex_ - 1);
-  },
-
-  /**
-   * Selects the suggestion after the current selection.
-   */
-  selectNext: function() {
-    this.changeSelection_(this.selectedIndex_ + 1);
-  },
-
-  /**
-   * @return {boolean} True if a suggestion is selected by default or because
-   * the user arrowed down to it.
-   */
-  hasSelectedSuggestion: function() {
-    return this.selectedIndex_ != -1;
-  },
-
-  /**
-   * Clears the selected suggestion.
-   */
-  clearSelection: function() {
-    this.selectedIndex_ = -1;
-    var oldSelection = this.container_.querySelector('.' + CLASSES.SELECTED);
-    if (oldSelection)
-      oldSelection.classList.remove(CLASSES.SELECTED);
-  },
-
-  /**
-   * Changes the current selected suggestion index.
-   * @param {number} index The new selection to suggest.
-   * @private
-   */
-  changeSelection_: function(index) {
-    var numSuggestions = this.suggestions_.length;
-    this.selectedIndex_ = Math.min(numSuggestions - 1, Math.max(-1, index));
-
-    this.redrawSelection_();
-    this.redrawHover_();
-  },
-
-  /**
-   * Redraws the selected suggestion.
-   * @private
-   */
-  redrawSelection_: function() {
-    var oldSelection = this.container_.querySelector('.' + CLASSES.SELECTED);
-    if (oldSelection)
-      oldSelection.classList.remove(CLASSES.SELECTED);
-    if (!this.hasSelectedSuggestion()) {
-      searchboxApiHandle.setValue(this.inputValue_);
-    } else {
-      this.suggestions_[this.selectedIndex_].select(true);
-      searchboxApiHandle.setRestrictedValue(
-          this.suggestions_[this.selectedIndex_].restrictedId);
-    }
-  },
-
-  /**
-   * @param {!Window} iframeWindow The window of the iframe that was clicked.
-   * @return {?number} The restricted ID of the iframe that was clicked, or
-   *     null if there was none.
-   */
-  getClickTarget: function(iframeWindow) {
-    for (var i = 0; i < this.suggestions_.length; ++i) {
-      if (this.suggestions_[i].hasIframeWindow(iframeWindow))
-        return this.suggestions_[i].restrictedId;
-    }
-    return null;
-  },
-
-  /**
-   * Called when the user hovers on the specified iframe to update hoveredIndex_
-   * and draw a hover background.
-   * @param {string} iframeId The id of the iframe hovered.
-   */
-  hover: function(iframeId) {
-    this.hoveredIndex_ = -1;
-    for (var i = 0; i < this.suggestions_.length; ++i) {
-      if (this.suggestions_[i].hasIframeId(iframeId)) {
-        this.hoveredIndex_ = i;
-        break;
-      }
-    }
-    this.redrawHover_();
-  },
-
-  /**
-   * Called when the user unhovers the specified iframe to clear the current
-   * hover.
-   * @param {string} iframeId The id of the iframe hovered.
-   */
-  unhover: function(iframeId) {
-    if (this.suggestions_[this.hoveredIndex_] &&
-        this.suggestions_[this.hoveredIndex_].hasIframeId(iframeId)) {
-      this.clearHover();
-    }
-  },
-
-  /**
-   * Clears the current hover.
-   */
-  clearHover: function() {
-    this.hoveredIndex_ = -1;
-    this.redrawHover_();
-  },
-
-  /**
-   * Redraws the mouse hover background.
-   * @private
-   */
-  redrawHover_: function() {
-    var oldHover = this.container_.querySelector('.' + CLASSES.HOVERED);
-    if (oldHover)
-      oldHover.classList.remove(CLASSES.HOVERED);
-    if (this.hoveredIndex_ != -1 && this.hoveredIndex_ != this.selectedIndex_)
-      this.suggestions_[this.hoveredIndex_].hover(true);
-  },
-
-  /**
-   * Marks the suggestions container as active.
-   */
-  activate: function() {
-    this.container_.id = IDS.ACTIVE_SUGGESTIONS_CONTAINER;
-  },
-
-  /**
-   * Marks the suggestions container as inactive.
-   */
-  deactivate: function() {
-    this.container_.id = IDS.PENDING_SUGGESTIONS_CONTAINER;
-    this.container_.innerHTML = '';
-  },
-
-  /**
-   * The height of the suggestions container.
-   * @type {number}
-   */
-  get height() {
-    return this.container_.offsetHeight;
-  },
-};
-
-
-/**
- * Clears the currently active suggestions and shows pending suggestions.
- */
-function makePendingSuggestionsActive() {
-  if (activeBox) {
-    activeBox.deactivate();
-    activeBox.destroy();
-  } else {
-    // Initially there will be no active suggestions, but we still want to use
-    // #active-suggestions-container to load the next suggestions.
-    $(IDS.ACTIVE_SUGGESTIONS_CONTAINER).id = IDS.PENDING_SUGGESTIONS_CONTAINER;
-  }
-  pendingBox.activate();
-  activeBox = pendingBox;
-  pendingBox = null;
-  activeBox.repositionSuggestions();
-  searchboxApiHandle.showOverlay(activeBox.height);
-}
-
-
-/**
- * Hides the active suggestions box.
- */
-function hideActiveSuggestions() {
-  searchboxApiHandle.showOverlay(0);
-  if (activeBox) {
-    $(IDS.ACTIVE_SUGGESTIONS_CONTAINER).innerHTML = '';
-    activeBox.destroy();
-  }
-  activeBox = null;
-}
-
-
-/**
- * Updates suggestions in response to a onchange or onnativesuggestions call.
- */
-function updateSuggestions() {
-  updateSuggestionsWasDeferred = !suggestionIframesReady();
-  // Suggestion iframes aren't loaded, so the page can't show suggestions yet.
-  if (updateSuggestionsWasDeferred)
-    return;
-  if (pendingBox)
-    pendingBox.destroy();
-  pendingBox = null;
-  var suggestions = searchboxApiHandle.nativeSuggestions;
-  if (suggestions.length) {
-    suggestions.sort(function(a, b) {
-      return b.rankingData.relevance - a.rankingData.relevance;
-    });
-    var selectedIndex = -1;
-    if (shouldSelectSuggestion(suggestions[0], searchboxApiHandle.verbatim))
-      selectedIndex = 0;
-    // Don't display a search-what-you-typed suggestion if it's the top match.
-    if (suggestions[0].type == VERBATIM_SEARCH_TYPE)
-      suggestions.shift();
-  }
-  var inputValue = searchboxApiHandle.value;
-
-  // Update the NTP on new or empty input.
-  if (inputValue != '' && lastInputValue == '')
-    onInputStart();
-  else if (inputValue == '')
-    restoreNtp();
-
-  if (inputValue != '' && suggestions.length) {
-    pendingBox = new SuggestionsBox(inputValue,
-        suggestions.slice(0, MAX_SUGGESTIONS_TO_SHOW), selectedIndex);
-    searchboxApiHandle.hideBars();
-    pendingBox.loadSuggestions();
-  } else {
-    hideActiveSuggestions();
-  }
-
-  lastInputValue = inputValue;
-}
-
-
-/**
- * Calls updateSuggestions() if it was deferred until suggestion iframes loaded
- * and they have now all loaded.
- */
-function callDeferredUpdateSuggestions() {
-  if (updateSuggestionsWasDeferred && suggestionIframesReady())
-    updateSuggestions();
-}
-
-
-/**
- * Appends or replaces a style node for suggestion properties that depend on
- * searchboxApiHandle.
- */
-function setSuggestionStyles() {
-  assert(window.innerWidth > 0);
-  var isRtl = searchboxApiHandle.rtl;
-  var startMargin = searchboxApiHandle.startMargin;
-  var style = $(IDS.SUGGESTION_STYLE) || document.createElement('style');
-  style.type = 'text/css';
-  style.id = IDS.SUGGESTION_STYLE;
-  style.textContent =
-      '.suggestion, ' +
-      '.suggestion.search {' +
-      '  background-position: ' +
-          (isRtl ? '-webkit-calc(100% - 5px)' : '5px') + ' 4px;' +
-      '  margin-' + (isRtl ? 'right' : 'left') + ': ' + startMargin + 'px;' +
-      '  margin-' + (isRtl ? 'left' : 'right') + ': ' +
-          (window.innerWidth - searchboxApiHandle.width - startMargin) + 'px;' +
-      '  font: ' + searchboxApiHandle.fontSize + 'px "' +
-          searchboxApiHandle.font + '";' +
-      '}' +
-      '.suggestion-contents {' +
-      '  padding-' + (isRtl ? 'right' : 'left') + ': 26px;' +
-      '}';
-  $qs('head').appendChild(style);
-
-  if (activeBox)
-    activeBox.repositionSuggestions();
-
-  // This is bound only for initialization. Afterwards this style should only
-  // change onmarginchange.
-  window.removeEventListener('resize', setSuggestionStyles);
-}
-
-
-/**
- * Handles key press events.
- * @param {Object} e The key being pressed.
- */
-function handleKeyPress(e) {
-  switch (e.keyCode) {
-    case KEYCODE.UP_ARROW:
-      if (activeBox)
-        activeBox.selectPrevious();
-      break;
-    case KEYCODE.DOWN_ARROW:
-      if (activeBox)
-        activeBox.selectNext();
-      break;
-    case KEYCODE.ESC:
-      if (activeBox && activeBox.hasSelectedSuggestion())
-        activeBox.clearSelection();
-      else
-        restoreNtp();
-      break;
-  }
-}
-
-
-/**
- * Handles postMessage calls from suggestion iframes.
- * @param {Object} message A notification that all iframes are done loading or
- *     that an iframe was clicked.
- */
-function handleMessage(message) {
-  if (message.origin != SUGGESTION_ORIGIN)
-    return;
-
-  if ('loaded' in message.data) {
-    if (pendingBox && pendingBox.isResponseCurrent(message.data.loaded))
-      makePendingSuggestionsActive();
-  } else if ('click' in message.data) {
-    if (activeBox) {
-      var restrictedId = activeBox.getClickTarget(message.source);
-      if (restrictedId != null) {
-        hideActiveSuggestions();
-        searchboxApiHandle.navigateContentWindow(restrictedId,
-            getDispositionFromClickButton(message.data.click));
-      }
-    }
-  }
-}
-
-// =============================================================================
-//  Utils
-// =============================================================================
-
 
 /**
  * Shortcut for document.getElementById.
@@ -1629,16 +776,6 @@ function handleMessage(message) {
  */
 function $(id) {
   return document.getElementById(id);
-}
-
-
-/**
- * Shortcut for document.querySelector.
- * @param {string} selector A selector to query the desired element.
- * @return {HTMLElement} The first element to match |selector| or null.
- */
-function $qs(selector) {
-  return document.querySelector(selector);
 }
 
 
@@ -1711,11 +848,6 @@ function isGooglePage() {
 }
 
 
-// =============================================================================
-//  Initialization
-// =============================================================================
-
-
 /**
  * Prepares the New Tab Page by adding listeners, rendering the current
  * theme, the most visited pages section, and Google-specific elements for a
@@ -1723,13 +855,6 @@ function isGooglePage() {
  */
 function init() {
   document.title = templateData.title;
-
-  iframePool = new IframePool();
-  iframePool.init();
-  $(IDS.SUGGESTION_LOADER).onload = function() {
-    $(IDS.SUGGESTION_LOADER).loaded = true;
-    callDeferredUpdateSuggestions();
-  };
 
   tilesContainer = $(IDS.TILES);
   notification = $(IDS.NOTIFICATION);
@@ -1794,21 +919,6 @@ function init() {
   onMostVisitedChange();
 
   searchboxApiHandle = topLevelHandle.searchBox;
-  searchboxApiHandle.onnativesuggestions = updateSuggestions;
-  searchboxApiHandle.onchange = updateSuggestions;
-  searchboxApiHandle.onkeypress = handleKeyPress;
-  // TODO(jered): Re-enable this after http://crbug.com/236492 is fixed.
-  // searchboxApiHandle.onmarginchange = setSuggestionStyles;
-  if (window.innerWidth > 0) {
-    setSuggestionStyles();
-  } else {
-    // Wait until the overlay is shown to initialize suggestion margins.
-    window.addEventListener('resize', setSuggestionStyles);
-  }
-  searchboxApiHandle.onsubmit = function() {
-    // Hide the drop down right away when the user submits.
-    hideActiveSuggestions();
-  };
 
   if (fakebox) {
     // Listener for updating the key capture state.
@@ -1826,7 +936,7 @@ function init() {
   if (searchboxApiHandle.rtl) {
     $(IDS.NOTIFICATION).dir = 'rtl';
     // Add class for setting alignments based on language directionality.
-    document.body.classList.add('rtl');
+    document.body.classList.add(CLASSES.RTL);
     $(IDS.TILES).dir = 'rtl';
   }
 }
@@ -1837,11 +947,6 @@ function init() {
  */
 function listen() {
   document.addEventListener('DOMContentLoaded', init);
-  window.addEventListener('message', handleMessage, false);
-  window.addEventListener('blur', function() {
-    if (activeBox)
-      activeBox.clearHover();
-  }, false);
 }
 
 return {
