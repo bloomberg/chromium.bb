@@ -57,6 +57,8 @@ layer at (0,0) size 800x600
                   [SourceGraphic]
           RenderSVGResourceFilter {filter} [id="flood"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feFlood flood-color="#008000" flood-opacity="1.00"]
+          RenderSVGResourceFilter {filter} [id="turbulence"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+            [feTurbulence type="TURBULENCE" baseFrequency="0.05, 0.05" seed="0.00" numOctaves="2" stitchTiles="0"]
       RenderText {#text} at (0,95) size 4x19
         text run at (0,95) width 4: " "
       RenderText {#text} at (0,0) size 0x0
@@ -82,6 +84,8 @@ layer at (0,0) size 800x600
         text run at (364,325) width 4: " "
       RenderText {#text} at (548,325) size 4x19
         text run at (548,325) width 4: " "
+      RenderText {#text} at (732,325) size 4x19
+        text run at (732,325) width 4: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (22,18) size 160x90
   RenderImage {IMG} at (14,10) size 160x90
@@ -107,3 +111,5 @@ layer at (386,248) size 160x90
   RenderImage {IMG} at (378,240) size 160x90
 layer at (570,248) size 160x90
   RenderImage {IMG} at (562,240) size 160x90
+layer at (18,363) size 160x90
+  RenderImage {IMG} at (10,355) size 160x90

@@ -40,6 +40,13 @@ layer at (0,0) size 800x600
                   [SourceGraphic]
               [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 0.50 0.00"]
                 [SourceGraphic]
+          RenderSVGResourceFilter {filter} [id="arithmetic"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+            [feComposite operation="ARITHMETIC" k1="0.00" k2="1.00" k3="1.00" k4="0.00"]
+              [feOffset dx="10.00" dy="10.00"]
+                [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 0.50 0.00"]
+                  [SourceGraphic]
+              [feColorMatrix type="MATRIX" values="1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 0.00 0.00 0.50 0.00"]
+                [SourceGraphic]
       RenderText {#text} at (0,95) size 4x19
         text run at (0,95) width 4: " "
       RenderText {#text} at (0,0) size 0x0
@@ -51,6 +58,8 @@ layer at (0,0) size 800x600
         text run at (552,95) width 4: " "
       RenderText {#text} at (736,95) size 4x19
         text run at (736,95) width 4: " "
+      RenderText {#text} at (180,210) size 4x19
+        text run at (180,210) width 4: " "
       RenderText {#text} at (0,0) size 0x0
 layer at (22,18) size 160x90
   RenderImage {IMG} at (14,10) size 160x90
@@ -62,3 +71,5 @@ layer at (574,18) size 160x90
   RenderImage {IMG} at (566,10) size 160x90
 layer at (18,133) size 160x90
   RenderImage {IMG} at (10,125) size 160x90
+layer at (202,133) size 160x90
+  RenderImage {IMG} at (194,125) size 160x90
