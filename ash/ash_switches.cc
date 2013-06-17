@@ -100,6 +100,11 @@ const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
 // Forces chrome to use mirror mode when an external display is connected.
 const char kAshForceMirrorMode[] = "ash-force-mirror-mode";
 
+// Hides notifications that are irrelevant to Chrome OS device factory testing,
+// such as battery level updates.
+const char kAshHideNotificationsForFactory[] =
+    "ash-hide-notifications-for-factory";
+
 // Sets a window size, optional position, and optional scale factor.
 // "1024x768" creates a window of size 1024x768.
 // "100+200-1024x768" positions the window at 100,200.
