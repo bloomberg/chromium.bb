@@ -7237,3 +7237,23 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN3net20MockHostResolverBase11ResolveProcEmRKNS_12HostResolver11RequestInfoEPNS_11AddressListE
    fun:_ZN3net20MockHostResolverBase10ResolveNowEm
 }
+{
+   bug_251018_a
+   Memcheck:Uninitialized
+   fun:_ZN10extensions11ActivityLog12LogDOMActionERKSsRK4GURLRKSbItN4base20string16_char_traitsESaItEES2_PKNS6_9ListValueENS_13DomActionType4TypeES2_
+   fun:_ZN10extensions39ActivityLogTest_LogAndFetchActions_Test8TestBodyEv
+}
+{
+   bug_251018_b
+   Memcheck:Uninitialized
+   fun:_ZN10extensions11ActivityLog20LogAPIActionInternalERKSsS2_PN4base9ListValueES2_NS_9APIAction4TypeE
+   fun:_ZN10extensions11ActivityLog12LogAPIActionERKSsS2_PN4base9ListValueES2_
+   fun:_ZN10extensions39ActivityLogTest_LogAndFetchActions_Test8TestBodyEv
+}
+{
+   bug_251018_c
+   Memcheck:Uninitialized
+   fun:_ZN10extensions11ActivityLog20LogAPIActionInternalERKSsS2_PN4base9ListValueES2_NS_9APIAction4TypeE
+   fun:_ZN10extensions11ActivityLog12LogAPIActionERKSsS2_PN4base9ListValueES2_
+   fun:_ZN10extensions37ActivityLogTest_LogWithArguments_Test8TestBodyEv
+}
