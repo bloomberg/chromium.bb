@@ -27,6 +27,7 @@
 #define RenderSVGShape_h
 
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/svg/RenderSVGModelObject.h"
 #include "core/rendering/svg/SVGMarkerData.h"
@@ -41,6 +42,26 @@ class RenderSVGContainer;
 class RenderSVGPath;
 class RenderSVGResource;
 class SVGStyledTransformableElement;
+
+class BoundingRectStrokeStyleApplier : public StrokeStyleApplier {
+public:
+    BoundingRectStrokeStyleApplier(const RenderObject* object, RenderStyle* style)
+        : m_object(object)
+        , m_style(style)
+    {
+        ASSERT(style);
+        ASSERT(object);
+    }
+
+    void strokeStyle(GraphicsContext* context)
+    {
+        SVGRenderSupport::applyStrokeStyleToContext(context, m_style, m_object);
+    }
+
+private:
+    const RenderObject* m_object;
+    RenderStyle* m_style;
+};
 
 class RenderSVGShape : public RenderSVGModelObject {
 public:

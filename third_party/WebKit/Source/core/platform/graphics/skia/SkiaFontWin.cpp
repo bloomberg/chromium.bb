@@ -146,7 +146,7 @@ static void paintSkiaText(GraphicsContext* context, HFONT hfont,
         && context->strokeThickness() > 0) {
 
         paint.reset();
-        context->setupPaintForStroking(&paint);
+        context->setupPaintForStroking(&paint, 0, 0);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
         setupPaintForFont(&paint, context, face, size, textFlags);
 

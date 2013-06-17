@@ -103,25 +103,25 @@ public:
     void saveLayer(const SkRect* bounds, const SkPaint*, SkCanvas::SaveFlags = SkCanvas::kARGB_ClipLayer_SaveFlag);
     void restoreLayer();
 
-    float strokeThickness() const { return m_state->m_strokeData.thickness(); }
-    void setStrokeThickness(float thickness) { m_state->m_strokeData.setThickness(thickness); }
+    float strokeThickness() const { return m_state->m_strokeThickness; }
+    void setStrokeThickness(float thickness) { m_state->m_strokeThickness = thickness; }
 
-    StrokeStyle strokeStyle() const { return m_state->m_strokeData.style(); }
-    void setStrokeStyle(StrokeStyle style) { m_state->m_strokeData.setStyle(style); }
+    StrokeStyle strokeStyle() const { return m_state->m_strokeStyle; }
+    void setStrokeStyle(StrokeStyle style) { m_state->m_strokeStyle = style; }
 
-    Color strokeColor() const { return m_state->m_strokeData.color(); }
+    Color strokeColor() const { return m_state->m_strokeColor; }
     void setStrokeColor(const Color&);
 
-    Pattern* strokePattern() const { return m_state->m_strokeData.pattern(); }
+    Pattern* strokePattern() const { return m_state->m_strokePattern.get(); }
     void setStrokePattern(PassRefPtr<Pattern>);
 
-    Gradient* strokeGradient() const { return m_state->m_strokeData.gradient(); }
+    Gradient* strokeGradient() const { return m_state->m_strokeGradient.get(); }
     void setStrokeGradient(PassRefPtr<Gradient>);
 
-    void setLineCap(LineCap cap) { m_state->m_strokeData.setLineCap(cap); }
-    void setLineDash(const DashArray& dashes, float dashOffset) { m_state->m_strokeData.setLineDash(dashes, dashOffset); }
-    void setLineJoin(LineJoin join) { m_state->m_strokeData.setLineJoin(join); }
-    void setMiterLimit(float limit) { m_state->m_strokeData.setMiterLimit(limit); }
+    void setLineCap(LineCap cap) { m_state->m_lineCap = (SkPaint::Cap)cap; }
+    void setLineDash(const DashArray&, float dashOffset);
+    void setLineJoin(LineJoin join) { m_state->m_lineJoin = (SkPaint::Join)join; }
+    void setMiterLimit(float limit) { m_state->m_miterLimit = limit; }
 
     WindRule fillRule() const { return m_state->m_fillRule; }
     void setFillRule(WindRule fillRule) { m_state->m_fillRule = fillRule; }
@@ -137,7 +137,8 @@ public:
     Gradient* fillGradient() const { return m_state->m_fillGradient.get(); }
 
     SkDrawLooper* drawLooper() const { return m_state->m_looper; }
-    SkColor effectiveStrokeColor() const { return m_state->applyAlpha(m_state->m_strokeData.color().rgb()); }
+    void setDashPathEffect(SkDashPathEffect*);
+    SkColor effectiveStrokeColor() const { return m_state->applyAlpha(m_state->m_strokeColor.rgb()); }
 
     int getNormalizedAlpha() const;
 
@@ -217,7 +218,7 @@ public:
     // effective width of the pen. If a non-zero length is provided, the
     // number of dashes/dots on a dashed/dotted line will be adjusted to
     // start and end that length with a dash/dot.
-    float setupPaintForStroking(SkPaint*, int length = 0) const;
+    float setupPaintForStroking(SkPaint*, SkRect*, int length) const;
 
     // These draw methods will do both stroking and filling.
     // FIXME: ...except drawRect(), which fills properly but always strokes

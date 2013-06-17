@@ -78,6 +78,11 @@ void ClipRectToCanvas(const GraphicsContext*, const SkRect& srcRect, SkRect* des
 // Determine if a given WebKit point is contained in a path
 bool SkPathContainsPoint(SkPath*, const FloatPoint&, SkPath::FillType);
 
+// Returns a statically allocated 1x1 GraphicsContext intended for temporary
+// operations. Please save() the state and restore() it when you're done with
+// the context.
+GraphicsContext* scratchContext();
+
 }  // namespace WebCore
 
 #endif  // SkiaUtils_h

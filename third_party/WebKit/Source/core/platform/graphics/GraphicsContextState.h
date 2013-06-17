@@ -33,7 +33,6 @@
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/Pattern.h"
-#include "core/platform/graphics/StrokeData.h"
 
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -50,13 +49,21 @@ public:
     ~GraphicsContextState()
     {
         SkSafeUnref(m_looper);
+        SkSafeUnref(m_dash);
     }
 
 private:
     friend class GraphicsContext;
 
     GraphicsContextState()
-        : m_fillColor(Color::black)
+        : m_strokeStyle(SolidStroke)
+        , m_strokeThickness(0)
+        , m_strokeColor(Color::black)
+        , m_miterLimit(4)
+        , m_lineCap(SkPaint::kDefault_Cap)
+        , m_lineJoin(SkPaint::kDefault_Join)
+        , m_dash(0)
+        , m_fillColor(Color::black)
         , m_fillRule(RULE_NONZERO)
         , m_looper(0)
         , m_textDrawingMode(TextModeFill)
@@ -77,7 +84,15 @@ private:
     }
 
     GraphicsContextState(const GraphicsContextState& other)
-        : m_strokeData(other.m_strokeData)
+        : m_strokeStyle(other.m_strokeStyle)
+        , m_strokeThickness(other.m_strokeThickness)
+        , m_strokeColor(other.m_strokeColor)
+        , m_strokeGradient(other.m_strokeGradient)
+        , m_strokePattern(other.m_strokePattern)
+        , m_miterLimit(other.m_miterLimit)
+        , m_lineCap(other.m_lineCap)
+        , m_lineJoin(other.m_lineJoin)
+        , m_dash(other.m_dash)
         , m_fillColor(other.m_fillColor)
         , m_fillRule(other.m_fillRule)
         , m_fillGradient(other.m_fillGradient)
@@ -97,6 +112,7 @@ private:
     {
         // Up the ref count of these. SkSafeRef does nothing if its argument is 0.
         SkSafeRef(m_looper);
+        SkSafeRef(m_dash);
 
         // The clip image only needs to be applied once. Reset the image so that we
         // don't attempt to clip multiple times.
@@ -124,7 +140,15 @@ private:
     void operator=(const GraphicsContextState&);
 
     // Stroke.
-    StrokeData m_strokeData;
+    StrokeStyle m_strokeStyle;
+    float m_strokeThickness;
+    Color m_strokeColor;
+    RefPtr<Gradient> m_strokeGradient;
+    RefPtr<Pattern> m_strokePattern;
+    float m_miterLimit;
+    SkPaint::Cap m_lineCap;
+    SkPaint::Join m_lineJoin;
+    SkDashPathEffect* m_dash;
 
     // Fill.
     Color m_fillColor;

@@ -44,7 +44,7 @@ namespace WebCore {
     class FloatRect;
     class FloatSize;
     class GraphicsContext;
-    class StrokeData;
+    class StrokeStyleApplier;
 
     enum PathElementType {
         PathElementMoveToPoint, // The points member will contain 1 value.
@@ -75,9 +75,9 @@ namespace WebCore {
         bool operator==(const Path&) const;
 
         bool contains(const FloatPoint&, WindRule rule = RULE_NONZERO) const;
-        bool strokeContains(const FloatPoint&, const StrokeData&) const;
+        bool strokeContains(StrokeStyleApplier*, const FloatPoint&) const;
         FloatRect boundingRect() const;
-        FloatRect strokeBoundingRect(const StrokeData&) const;
+        FloatRect strokeBoundingRect(StrokeStyleApplier* = 0) const;
         
         float length() const;
         FloatPoint pointAtLength(float length, bool& ok) const;

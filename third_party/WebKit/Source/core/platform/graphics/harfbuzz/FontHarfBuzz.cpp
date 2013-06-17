@@ -115,7 +115,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         && gc->strokeThickness() > 0) {
 
         SkPaint paint;
-        gc->setupPaintForStroking(&paint);
+        gc->setupPaintForStroking(&paint, 0, 0);
         font->platformData().setupPaint(&paint);
         gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
@@ -166,7 +166,7 @@ void Font::drawComplexText(GraphicsContext* gc, const TextRunPaintInfo& runInfo,
         setupForTextPainting(&fillPaint, gc->fillColor().rgb());
     }
     if (stroke) {
-        gc->setupPaintForStroking(&strokePaint);
+        gc->setupPaintForStroking(&strokePaint, 0, 0);
         setupForTextPainting(&strokePaint, gc->strokeColor().rgb());
     }
 

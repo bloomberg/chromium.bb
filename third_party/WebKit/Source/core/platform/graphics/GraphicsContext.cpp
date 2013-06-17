@@ -52,6 +52,8 @@ using namespace std;
 
 namespace WebCore {
 
+static const int dashRatio = 3; // Ratio of the length of a dash to its width.
+
 struct GraphicsContext::DeferredSaveState {
     DeferredSaveState(unsigned mask, int count) : m_flags(mask), m_restoreCount(count) { }
 
@@ -188,9 +190,9 @@ void GraphicsContext::endAnnotation()
 
 void GraphicsContext::setStrokeColor(const Color& color)
 {
-    m_state->m_strokeData.setColor(color);
-    m_state->m_strokeData.clearGradient();
-    m_state->m_strokeData.clearPattern();
+    m_state->m_strokeColor = color;
+    m_state->m_strokeGradient.clear();
+    m_state->m_strokePattern.clear();
 }
 
 void GraphicsContext::setStrokePattern(PassRefPtr<Pattern> pattern)
@@ -203,8 +205,8 @@ void GraphicsContext::setStrokePattern(PassRefPtr<Pattern> pattern)
         setStrokeColor(Color::black);
         return;
     }
-    m_state->m_strokeData.clearGradient();
-    m_state->m_strokeData.setPattern(pattern);
+    m_state->m_strokeGradient.clear();
+    m_state->m_strokePattern = pattern;
 }
 
 void GraphicsContext::setStrokeGradient(PassRefPtr<Gradient> gradient)
@@ -217,8 +219,32 @@ void GraphicsContext::setStrokeGradient(PassRefPtr<Gradient> gradient)
         setStrokeColor(Color::black);
         return;
     }
-    m_state->m_strokeData.setGradient(gradient);
-    m_state->m_strokeData.clearPattern();
+    m_state->m_strokeGradient = gradient;
+    m_state->m_strokePattern.clear();
+}
+
+void GraphicsContext::setLineDash(const DashArray& dashes, float dashOffset)
+{
+    // FIXME: This is lifted directly off SkiaSupport, lines 49-74
+    // so it is not guaranteed to work correctly.
+    size_t dashLength = dashes.size();
+    if (!dashLength) {
+        // If no dash is set, revert to solid stroke
+        // FIXME: do we need to set NoStroke in some cases?
+        m_state->m_strokeStyle = SolidStroke;
+        setDashPathEffect(0);
+        return;
+    }
+
+    size_t count = !(dashLength % 2) ? dashLength : dashLength * 2;
+    SkScalar* intervals = new SkScalar[count];
+
+    for (unsigned i = 0; i < count; i++)
+        intervals[i] = dashes[i % dashLength];
+
+    setDashPathEffect(new SkDashPathEffect(intervals, count, dashOffset));
+
+    delete[] intervals;
 }
 
 void GraphicsContext::setFillColor(const Color& color)
@@ -353,6 +379,14 @@ bool GraphicsContext::couldUseLCDRenderedText()
     return shouldSmoothFonts();
 }
 
+void GraphicsContext::setDashPathEffect(SkDashPathEffect* dash)
+{
+    if (dash != m_state->m_dash) {
+        SkSafeUnref(m_state->m_dash);
+        m_state->m_dash = dash;
+    }
+}
+
 void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation, BlendMode blendMode)
 {
     m_state->m_compositeOperator = compositeOperation;
@@ -474,17 +508,61 @@ void GraphicsContext::setupPaintForFilling(SkPaint* paint) const
     setupShader(paint, m_state->m_fillGradient.get(), m_state->m_fillPattern.get(), m_state->m_fillColor.rgb());
 }
 
-float GraphicsContext::setupPaintForStroking(SkPaint* paint, int length) const
+float GraphicsContext::setupPaintForStroking(SkPaint* paint, SkRect* rect, int length) const
 {
     if (paintingDisabled())
         return 0.0f;
 
     setupPaintCommon(paint);
 
-    setupShader(paint, m_state->m_strokeData.gradient(), m_state->m_strokeData.pattern(),
-        m_state->m_strokeData.color().rgb());
+    setupShader(paint, m_state->m_strokeGradient.get(), m_state->m_strokePattern.get(), m_state->m_strokeColor.rgb());
 
-    return m_state->m_strokeData.setupPaint(paint, length);
+    float width = m_state->m_strokeThickness;
+
+    paint->setStyle(SkPaint::kStroke_Style);
+    paint->setStrokeWidth(SkFloatToScalar(width));
+    paint->setStrokeCap(m_state->m_lineCap);
+    paint->setStrokeJoin(m_state->m_lineJoin);
+    paint->setStrokeMiter(SkFloatToScalar(m_state->m_miterLimit));
+
+    if (m_state->m_dash)
+        paint->setPathEffect(m_state->m_dash);
+    else {
+        switch (m_state->m_strokeStyle) {
+        case NoStroke:
+        case SolidStroke:
+        case DoubleStroke:
+        case WavyStroke: // FIXME: https://code.google.com/p/chromium/issues/detail?id=229574
+            break;
+        case DashedStroke:
+            width = dashRatio * width;
+            // Fall through.
+        case DottedStroke:
+            // Truncate the width, since we don't want fuzzy dots or dashes.
+            int dashLength = static_cast<int>(width);
+            // Subtract off the endcaps, since they're rendered separately.
+            int distance = length - 2 * static_cast<int>(m_state->m_strokeThickness);
+            int phase = 1;
+            if (dashLength > 1) {
+                // Determine how many dashes or dots we should have.
+                int numDashes = distance / dashLength;
+                int remainder = distance % dashLength;
+                // Adjust the phase to center the dashes within the line.
+                if (numDashes % 2) {
+                    // Odd: shift right a full dash, minus half the remainder.
+                    phase = dashLength - remainder / 2;
+                } else {
+                    // Even: shift right half a dash, minus half the remainder.
+                    phase = (dashLength - remainder) / 2;
+                }
+            }
+            SkScalar dashLengthSk = SkIntToScalar(dashLength);
+            SkScalar intervals[2] = { dashLengthSk, dashLengthSk };
+            paint->setPathEffect(new SkDashPathEffect(intervals, 2, SkIntToScalar(phase)))->unref();
+        }
+    }
+
+    return width;
 }
 
 void GraphicsContext::drawConvexPolygon(size_t numPoints, const FloatPoint* points, bool shouldAntialias)
@@ -505,7 +583,7 @@ void GraphicsContext::drawConvexPolygon(size_t numPoints, const FloatPoint* poin
 
     if (strokeStyle() != NoStroke) {
         paint.reset();
-        setupPaintForStroking(&paint);
+        setupPaintForStroking(&paint, 0, 0);
         drawPath(path, paint);
     }
 }
@@ -523,7 +601,7 @@ void GraphicsContext::drawEllipse(const IntRect& elipseRect)
 
     if (strokeStyle() != NoStroke) {
         paint.reset();
-        setupPaintForStroking(&paint);
+        setupPaintForStroking(&paint, &rect, 0);
         drawOval(rect, paint);
     }
 }
@@ -582,7 +660,7 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
     // probably worth the speed up of no square root, which also won't be exact.
     FloatSize disp = p2 - p1;
     int length = SkScalarRound(disp.width() + disp.height());
-    setupPaintForStroking(&paint, length);
+    setupPaintForStroking(&paint, 0, length);
 
     if (strokeStyle() == DottedStroke || strokeStyle() == DashedStroke) {
         // Do a rect fill of our endpoints.  This ensures we always have the
@@ -774,7 +852,7 @@ void GraphicsContext::drawLineForText(const FloatPoint& pt, float width, bool pr
         break;
     case DottedStroke:
     case DashedStroke:
-        setupPaintForStroking(&paint);
+        setupPaintForStroking(&paint, &r, 0);
         break;
     }
 
@@ -801,7 +879,7 @@ void GraphicsContext::drawRect(const IntRect& rect)
         drawRect(skRect, paint);
     }
 
-    if (m_state->m_strokeData.style() != NoStroke && (m_state->m_strokeData.color().rgb() & 0xFF000000)) {
+    if (m_state->m_strokeStyle != NoStroke && (m_state->m_strokeColor.rgb() & 0xFF000000)) {
         // We do a fill of four rects to simulate the stroke of a border.
         paint.reset();
         setupPaintForFilling(&paint);
@@ -1230,7 +1308,7 @@ void GraphicsContext::strokePath(const Path& pathToStroke)
 
     const SkPath& path = pathToStroke.skPath();
     SkPaint paint;
-    setupPaintForStroking(&paint);
+    setupPaintForStroking(&paint, 0, 0);
     drawPath(path, paint);
 }
 
@@ -1240,7 +1318,7 @@ void GraphicsContext::strokeRect(const FloatRect& rect, float lineWidth)
         return;
 
     SkPaint paint;
-    setupPaintForStroking(&paint);
+    setupPaintForStroking(&paint, 0, 0);
     paint.setStrokeWidth(WebCoreFloatToSkScalar(lineWidth));
     // strokerect has special rules for CSS when the rect is degenerate:
     // if width==0 && height==0, do nothing
@@ -1268,7 +1346,7 @@ void GraphicsContext::strokeEllipse(const FloatRect& ellipse)
 
     SkRect rect(ellipse);
     SkPaint paint;
-    setupPaintForStroking(&paint);
+    setupPaintForStroking(&paint, 0, 0);
     drawOval(rect, paint);
 }
 

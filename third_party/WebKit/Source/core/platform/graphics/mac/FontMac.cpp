@@ -160,7 +160,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         && gc->strokeThickness() > 0) {
 
         SkPaint paint;
-        gc->setupPaintForStroking(&paint);
+        gc->setupPaintForStroking(&paint, 0, 0);
         setupPaint(&paint, font, this, shouldAntialias, shouldSmoothFonts);
         gc->adjustTextRenderMode(&paint);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);

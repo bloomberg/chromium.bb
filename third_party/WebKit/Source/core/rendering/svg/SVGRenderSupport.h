@@ -73,7 +73,6 @@ public:
 
     // Shared between SVG renderers and resources.
     static void applyStrokeStyleToContext(GraphicsContext*, const RenderStyle*, const RenderObject*);
-    static void applyStrokeStyleToStrokeData(StrokeData*, const RenderStyle*, const RenderObject*);
 
     // Determines if any ancestor's transform has changed.
     static bool transformToRootChanged(RenderObject*);
