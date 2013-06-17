@@ -153,8 +153,6 @@
         'browser/chromeos/boot_times_loader.h',
         'browser/chromeos/camera_detector.cc',
         'browser/chromeos/camera_detector.h',
-        'browser/chromeos/caps_lock_rewriter.cc',
-        'browser/chromeos/caps_lock_rewriter.h',
         'browser/chromeos/choose_mobile_network_dialog.cc',
         'browser/chromeos/choose_mobile_network_dialog.h',
         'browser/chromeos/chrome_browser_main_chromeos.cc',

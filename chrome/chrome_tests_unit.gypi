@@ -544,7 +544,6 @@
         'browser/chromeos/accessibility/magnification_manager_unittest.cc',
         'browser/chromeos/attestation/attestation_ca_client_unittest.cc',
         'browser/chromeos/attestation/attestation_policy_observer_unittest.cc',
-        'browser/chromeos/caps_lock_rewriter_unittest.cc',
         'browser/chromeos/contacts/contact_database_unittest.cc',
         'browser/chromeos/contacts/contact_manager_stub.cc',
         'browser/chromeos/contacts/contact_manager_stub.h',
