@@ -34,9 +34,6 @@ class CONTENT_EXPORT ShaderDiskCache
   void Init();
 
   void set_host_id(int host_id) { host_id_ = host_id; }
-  void set_max_cache_size(size_t max_cache_size) {
-    max_cache_size_ = max_cache_size;
-  }
 
   // Store the |shader| into the cache under |key|.
   void Cache(const std::string& key, const std::string& shader);
@@ -84,7 +81,6 @@ class CONTENT_EXPORT ShaderDiskCache
   void ReadComplete();
 
   bool cache_available_;
-  size_t max_cache_size_;
   int host_id_;
   base::FilePath cache_path_;
   bool is_initialized_;

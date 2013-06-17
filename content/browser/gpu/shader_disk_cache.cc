@@ -7,6 +7,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -502,7 +503,6 @@ void ShaderCacheFactory::CacheCleared(const base::FilePath& path) {
 
 ShaderDiskCache::ShaderDiskCache(const base::FilePath& cache_path)
     : cache_available_(false),
-      max_cache_size_(0),
       host_id_(0),
       cache_path_(cache_path),
       is_initialized_(false),
@@ -527,7 +527,7 @@ void ShaderDiskCache::Init() {
       net::SHADER_CACHE,
       net::CACHE_BACKEND_BLOCKFILE,
       cache_path_.Append(kGpuCachePath),
-      max_cache_size_,
+      gpu::kDefaultMaxProgramCacheMemoryBytes,
       true,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE).get(),
       NULL,

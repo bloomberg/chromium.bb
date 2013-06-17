@@ -174,7 +174,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params);
 #endif
 
-  void CreateChannelCache(int32 client_id, size_t cache_size);
+  void CreateChannelCache(int32 client_id);
   void OnDestroyChannel(int32 client_id);
   void OnCacheShader(int32 client_id, const std::string& key,
                      const std::string& shader);

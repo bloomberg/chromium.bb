@@ -35,7 +35,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
@@ -723,7 +722,7 @@ void GpuProcessHost::EstablishGpuChannel(
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuShaderDiskCache)) {
-    CreateChannelCache(client_id, gpu::kDefaultMaxProgramCacheMemoryBytes);
+    CreateChannelCache(client_id);
   }
 }
 
@@ -1253,7 +1252,7 @@ void GpuProcessHost::LoadedShader(const std::string& key,
     Send(new GpuMsg_LoadedShader(data));
 }
 
-void GpuProcessHost::CreateChannelCache(int32 client_id, size_t cache_size) {
+void GpuProcessHost::CreateChannelCache(int32 client_id) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateChannelCache");
 
   scoped_refptr<ShaderDiskCache> cache =
@@ -1261,7 +1260,6 @@ void GpuProcessHost::CreateChannelCache(int32 client_id, size_t cache_size) {
   if (!cache.get())
     return;
 
-  cache->set_max_cache_size(cache_size);
   cache->set_host_id(host_id_);
 
   client_id_to_shader_cache_[client_id] = cache;
