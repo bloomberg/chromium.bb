@@ -575,7 +575,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
       "    function () { window.domAutomationController.send(true); },\n"
       "    %d);\n"
       "worker.postMessage();\n",
-      minimal_heap_size,
+      static_cast<unsigned long>(minimal_heap_size),
       GetUpdateTimeMs() + extra_timeout_ms);
   bool ok;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
