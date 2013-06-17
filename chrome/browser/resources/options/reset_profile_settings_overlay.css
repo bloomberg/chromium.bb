@@ -6,11 +6,6 @@
   min-width: 500px;
 }
 
-#reset-profile-settings-checkboxes {
-  -webkit-padding-start: 8px;
-  margin: 5px 0;
-}
-
 #reset-profile-settings-throbber {
   margin: 4px 10px;
   vertical-align: middle;

@@ -1352,18 +1352,6 @@ const char kProfileMetrics[] = "user_experience_metrics.profiles";
 // kProfileMetrics.kProfilePrefix<hashed-profile-id>.
 const char kProfilePrefix[] = "profile-";
 
-// Reset Profile Data dialog preferences
-const char kResetDefaultSearchEngine[] =
-    "browser.reset_profile_settings.default_search_engine";
-const char kResetHomepage[] = "browser.reset_profile_settings.homepage";
-const char kResetContentSettings[] =
-    "browser.reset_profile_settings.content_settings";
-const char kResetCookiesAndSiteData[] =
-    "browser.reset_profile_settings.cookies_and_site_data";
-const char kResetExtensions[] = "browser.reset_profile_settings.extensions";
-const char kResetExtensionsHandling[] =
-    "browser.reset_profile_settings.extensions_handling";
-
 // True if the previous run of the program exited cleanly.
 const char kStabilityExitedCleanly[] =
     "user_experience_metrics.stability.exited_cleanly";

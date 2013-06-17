@@ -479,13 +479,6 @@ extern const char kProfileCreatedByVersion[];
 extern const char kProfileMetrics[];
 extern const char kProfilePrefix[];
 
-extern const char kResetDefaultSearchEngine[];
-extern const char kResetHomepage[];
-extern const char kResetContentSettings[];
-extern const char kResetCookiesAndSiteData[];
-extern const char kResetExtensions[];
-extern const char kResetExtensionsHandling[];
-
 extern const char kStabilityExitedCleanly[];
 extern const char kStabilityStatsVersion[];
 extern const char kStabilityStatsBuildTime[];

@@ -15470,31 +15470,7 @@ For help, please visit our help center.
     <message name="IDS_RESET_PROFILE_SETTINGS_TITLE" desc="Dialog title">
       Reset profile settings
     </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_LABEL" desc="Label at the top of the client area of the dialog">
-      What would you like to reset?
-    </message>
-    <message name="IDS_RESET_PROFILE_DEFAULT_SEARCH_ENGINE_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
-      Search Engines
-    </message>
-    <message name="IDS_RESET_PROFILE_STARTUP_HOMEPAGE_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
-      Home and startup pages
-    </message>
-    <message name="IDS_RESET_PROFILE_CONTENT_SETTINGS_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
-      Content settings
-    </message>
-    <message name="IDS_RESET_PROFILE_COOKIES_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
-      Cookies and site data
-    </message>
-    <message name="IDS_RESET_PROFILE_EXTENSIONS_CHECKBOX" desc="Checkbox of the Reset Profile Settings dialog">
-      Extensions, new tab page and themes
-    </message>
-    <message name="IDS_RESET_PROFILE_EXTENSIONS_DISABLE" desc="Listbox item of the Reset Profile Settings dialog, indicating how to handle extensions">
-      Disable
-    </message>
-    <message name="IDS_RESET_PROFILE_EXTENSIONS_UNINSTALL" desc="Listbox item of the Reset Profile Settings dialog, indicating how to handle extensions">
-      Uninstall
-    </message>
-    <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Checkbox of the Reset Profile Settings dialog">
+    <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Reset button of the Reset Profile Settings dialog">
       Reset
     </message>
 

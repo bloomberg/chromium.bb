@@ -2383,6 +2383,7 @@
             ['exclude', '^browser/importer/'],
             ['exclude', '^browser/lifetime/'],
             ['exclude', '^browser/media_galleries/'],
+            ['exclude', '^browser/profile_resetter/'],
             ['exclude', '^browser/speech/'],
             ['exclude', '^browser/sync/glue/app_'],
             ['exclude', '^browser/sync/glue/extension_'],

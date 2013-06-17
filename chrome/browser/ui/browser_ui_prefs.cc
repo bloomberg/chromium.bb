@@ -191,31 +191,6 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kHideWebStoreIcon,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  registry->RegisterBooleanPref(
-      prefs::kResetDefaultSearchEngine,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kResetHomepage,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kResetContentSettings,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kResetCookiesAndSiteData,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kResetExtensions,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kResetExtensionsHandling,
-      0,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 void RegisterAppPrefs(const std::string& app_name, Profile* profile) {

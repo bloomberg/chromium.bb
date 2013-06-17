@@ -29,22 +29,6 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      var f = this.updateCommitButtonState_.bind(this);
-      var types = ['browser.reset_profile_settings.default_search_engine',
-                   'browser.reset_profile_settings.homepage',
-                   'browser.reset_profile_settings.content_settings',
-                   'browser.reset_profile_settings.cookies_and_site_data',
-                   'browser.reset_profile_settings.extensions'];
-      types.forEach(function(type) {
-          Preferences.getInstance().addEventListener(type, f);
-      });
-
-      var checkboxes = document.querySelectorAll(
-          '#reset-profile-settings-content-area input[type=checkbox]');
-      for (var i = 0; i < checkboxes.length; i++)
-        checkboxes[i].onclick = f;
-      this.updateCommitButtonState_();
-
       $('reset-profile-settings-dismiss').onclick = function(event) {
         ResetProfileSettingsOverlay.dismiss();
       };
@@ -53,14 +37,6 @@ cr.define('options', function() {
         chrome.send('performResetProfileSettings');
       };
     },
-
-    // Sets the enabled state of the commit button.
-    updateCommitButtonState_: function() {
-      var sel =
-          '#reset-profile-settings-content-area input[type=checkbox]:checked';
-      $('reset-profile-settings-commit').disabled =
-        !document.querySelector(sel);
-    },
   };
 
   /**
@@ -68,20 +44,10 @@ cr.define('options', function() {
    * @param {boolean} state If true, UI elements are disabled.
    */
   ResetProfileSettingsOverlay.setResettingState = function(state) {
-    $('reset-default-search-engine-checkbox').disabled = state;
-    $('reset-homepage-checkbox').disabled = state;
-    $('reset-content-settings-checkbox').disabled = state;
-    $('reset-cookies-and-site-data-checkbox').disabled = state;
-    $('reset-extensions-checkbox').disabled = state;
-    $('reset-extensions-handling').disabled = state;
     $('reset-profile-settings-throbber').style.visibility =
         state ? 'visible' : 'hidden';
     $('reset-profile-settings-dismiss').disabled = state;
-
-    if (state)
-      $('reset-profile-settings-commit').disabled = true;
-    else
-      ResetProfileSettingsOverlay.getInstance().updateCommitButtonState_();
+    $('reset-profile-settings-commit').disabled = state;
   };
 
   /**

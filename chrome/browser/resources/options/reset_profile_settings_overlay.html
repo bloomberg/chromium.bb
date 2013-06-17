@@ -1,54 +1,7 @@
 <div id="reset-profile-settings-overlay" class="page" hidden>
   <div class="close-button"></div>
   <h1 i18n-content="resetProfileSettingsOverlay"></h1>
-  <div id="reset-profile-settings-content-area" class="content-area">
-    <span i18n-content="resetProfileSettingsLabel"></span>
-    <div id="reset-profile-settings-checkboxes">
-      <div class="checkbox">
-        <label>
-          <input id="reset-default-search-engine-checkbox"
-              pref="browser.reset_profile_settings.default_search_engine"
-              type="checkbox">
-          <span i18n-content="resetDefaultSearchEngineCheckbox"></span>
-        </label>
-      </div>
-      <div class="checkbox">
-        <label>
-          <input id="reset-homepage-checkbox"
-              pref="browser.reset_profile_settings.homepage" type="checkbox">
-          <span i18n-content="resetStartupAndHomepageCheckbox"></span>
-        </label>
-      </div>
-      <div class="checkbox" hidden>
-        <label>
-          <input id="reset-content-settings-checkbox"
-              pref="browser.reset_profile_settings.content_settings"
-              type="checkbox">
-          <span i18n-content="resetContentSettingsCheckbox"></span>
-        </label>
-      </div>
-      <div class="checkbox" hidden>
-        <label>
-          <input id="reset-cookies-and-site-data-checkbox"
-              pref="browser.reset_profile_settings.cookies_and_site_data"
-              type="checkbox">
-          <span i18n-content="resetCookiesAndSiteDataCheckbox"></span>
-        </label>
-      </div>
-      <div class="checkbox" hidden>
-        <label>
-          <input id="reset-extensions-checkbox"
-              pref="browser.reset_profile_settings.extensions" type="checkbox">
-          <span i18n-content="resetExtensionsCheckbox"></span>
-        </label>
-        <select id="reset-extensions-handling"
-            i18n-options="resetExtensionsHandling"
-            pref="browser.reset_profile_settings.extensions_handling"
-            data-type="number">
-        </select>
-      </div>
-    </div>
-  </div>
+  <div id="reset-profile-settings-content-area" class="content-area"></div>
   <div class="action-area">
     <div class="hbox stretch">
       <a target="_blank" i18n-content="learnMore"

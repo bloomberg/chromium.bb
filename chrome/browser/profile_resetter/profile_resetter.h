@@ -27,17 +27,12 @@ class ProfileResetter : public base::NonThreadSafe,
     CONTENT_SETTINGS = 1 << 2,
     COOKIES_AND_SITE_DATA = 1 << 3,
     EXTENSIONS = 1 << 4,
-    STARTUP_PAGE = 1 << 5,
+    STARTUP_PAGES = 1 << 5,
+    PINNED_TABS = 1 << 6,
     // Update ALL if you add new values and check whether the type of
     // ResettableFlags needs to be enlarged.
     ALL = DEFAULT_SEARCH_ENGINE | HOMEPAGE | CONTENT_SETTINGS |
-          COOKIES_AND_SITE_DATA | EXTENSIONS | STARTUP_PAGE
-  };
-
-  // How to handle extensions that shall be reset.
-  enum ExtensionHandling {
-    DISABLE_EXTENSIONS,
-    UNINSTALL_EXTENSIONS
+          COOKIES_AND_SITE_DATA | EXTENSIONS | STARTUP_PAGES | PINNED_TABS
   };
 
   // Bit vector for Resettable enum.
@@ -53,7 +48,6 @@ class ProfileResetter : public base::NonThreadSafe,
   // completion. If |resettable_flags| contains EXTENSIONS, these are handled
   // according to |extension_handling|.
   void Reset(ResettableFlags resettable_flags,
-             ExtensionHandling extension_handling,
              const base::Closure& callback);
 
   bool IsActive() const;
@@ -67,8 +61,9 @@ class ProfileResetter : public base::NonThreadSafe,
   void ResetHomepage();
   void ResetContentSettings();
   void ResetCookiesAndSiteData();
-  void ResetExtensions(ExtensionHandling extension_handling);
-  void ResetStartPage();
+  void ResetExtensions();
+  void ResetStartupPages();
+  void ResetPinnedTabs();
 
   // content::NotificationObserver:
   virtual void Observe(int type,
