@@ -52,8 +52,6 @@ UI_EXPORT int GdkKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift);
 UI_EXPORT int GdkNativeKeyCodeForWindowsKeyCode(KeyboardCode keycode,
                                                 bool shift);
 
-UI_EXPORT KeyboardCode KeyboardCodeFromGdkEventKey(GdkEventKey* event);
-
 } // namespace ui
 
 #endif  // UI_BASE_KEYCODES_KEYBOARD_CODE_CONVERSION_GTK_H_

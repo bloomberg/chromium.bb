@@ -82,15 +82,4 @@ int GdkNativeKeyCodeForWindowsKeyCode(KeyboardCode keycode, bool shift) {
   return native_keycode;
 }
 
-KeyboardCode KeyboardCodeFromGdkEventKey(GdkEventKey* event) {
-  KeyboardCode keycode = WindowsKeyCodeForGdkKeyCode(event->keyval);
-  // Gtk's key values are same as X11's keysyms.
-  if (keycode == VKEY_UNKNOWN) {
-    unsigned int keyval =
-        DefaultXKeysymFromHardwareKeycode(event->hardware_keycode);
-    keycode = WindowsKeyCodeForGdkKeyCode(keyval);
-  }
-  return keycode;
-}
-
 }  // namespace ui
