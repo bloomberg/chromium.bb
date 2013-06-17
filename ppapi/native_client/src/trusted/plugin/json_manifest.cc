@@ -41,7 +41,6 @@ const char* const kPnaclTranslateKey = "pnacl-translate";
 const char* const kUrlKey =            "url";
 
 // Pnacl keys
-const char* const kCacheIdentityKey = "sha256";
 const char* const kOptLevelKey = "-O";
 const char* const kPnaclExperimentalFlags = "experimental_flags";
 
@@ -77,7 +76,6 @@ const char* const kPnaclExperimentalFlags = "experimental_flags";
 //     "portable": {
 //       "pnacl-translate": {
 //         "url": "myprogram.pexe",
-//         "sha256": "...",
 //         "-O": 0
 //       }
 //     }
@@ -169,7 +167,6 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
   if (sandbox_isa == kPortableKey) {
     static const char* kPnaclUrlSpecPlusOptional[] = {
       kUrlKey,
-      kCacheIdentityKey,
       kOptLevelKey,
     };
     urlSpecPlusOptional = kPnaclUrlSpecPlusOptional;
@@ -203,15 +200,6 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
     error_stream << parent_key << " property '" << container_key <<
         "' has non-string value '" << url.toStyledString() <<
         "' for key '" << kUrlKey << "'.";
-    *error_string = error_stream.str();
-    return false;
-  }
-  Json::Value cache_identity = url_spec[kCacheIdentityKey];
-  if (!cache_identity.empty() && !cache_identity.isString()) {
-    nacl::stringstream error_stream;
-    error_stream << parent_key << " property '" << container_key <<
-        "' has non-string value '" << cache_identity.toStyledString() <<
-        "' for key '" << kCacheIdentityKey << "'.";
     *error_string = error_stream.str();
     return false;
   }
@@ -375,9 +363,6 @@ void GrabUrlAndPnaclOptions(const Json::Value& url_spec,
                             nacl::string* url,
                             PnaclOptions* pnacl_options) {
   *url = url_spec[kUrlKey].asString();
-  if (url_spec.isMember(kCacheIdentityKey)) {
-    pnacl_options->set_bitcode_hash(url_spec[kCacheIdentityKey].asString());
-  }
   if (url_spec.isMember(kOptLevelKey)) {
     uint32_t opt_raw = url_spec[kOptLevelKey].asUInt();
     // Clamp the opt value to fit into an int8_t.

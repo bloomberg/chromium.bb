@@ -170,6 +170,11 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   void FileSystemDidOpen(int32_t pp_error);
   // Invoked after we are sure the PNaCl temporary directory exists.
   void DirectoryWasCreated(int32_t pp_error);
+  // Invoke to issue a GET request for bitcode.
+  void OpenBitcodeStream();
+  // Invoked when we've started an URL fetch for the pexe to check for
+  // caching metadata.
+  void BitcodeStreamDidOpen(int32_t pp_error);
   // Invoked after we have checked the PNaCl cache for a translated version.
   void CachedFileDidOpen(int32_t pp_error);
   // Invoked when a pexe data chunk arrives (when using streaming translation)

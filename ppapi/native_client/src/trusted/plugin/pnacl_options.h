@@ -19,37 +19,40 @@ class PnaclOptions {
   PnaclOptions();
   ~PnaclOptions();
 
-  // Return true if we know the hash of the bitcode, for caching.
-  bool HasCacheKey() { return bitcode_hash_ != ""; }
+  // Return |true| if PNaCl is allowed to cache.
+  // PNaCl is allowed to cache if the server sends cache validators
+  // like Last-Modified time or ETags in the HTTP response, and
+  // it does not send "Cache-Control: no-store".
+  bool HasCacheKey() const { return (!cache_validators_.empty()); }
 
   // Return the cache key (which takes into account the bitcode hash,
   // as well as the commandline options).
-  nacl::string GetCacheKey();
+  nacl::string GetCacheKey() const;
 
   // Return true if the manifest did not specify any special options
   // (just using the default).
-  bool HasDefaultOpts() {
-    return opt_level_ == -1 && experimental_flags_ == "";
+  bool HasDefaultOpts() const {
+    return opt_level_ == -1 && experimental_flags_.empty();
   }
 
   // Return a character array of \x00 delimited commandline options.
-  std::vector<char> GetOptCommandline();
+  std::vector<char> GetOptCommandline() const;
 
-  bool translate() { return translate_; }
+  bool translate() const { return translate_; }
   void set_translate(bool t) { translate_ = t; }
 
-  uint8_t opt_level() { return opt_level_; }
+  uint8_t opt_level() const { return opt_level_; }
   void set_opt_level(int8_t l);
 
-  nacl::string experimental_flags() {
+  nacl::string experimental_flags() const {
     return experimental_flags_;
   }
   void set_experimental_flags(const nacl::string& f) {
     experimental_flags_ = f;
   }
 
-  void set_bitcode_hash(const nacl::string& c) {
-    bitcode_hash_ = c;
+  void set_cache_validators(const nacl::string& c) {
+    cache_validators_ = c;
   }
 
  private:
@@ -59,7 +62,7 @@ class PnaclOptions {
   bool translate_;
   int8_t opt_level_;
   nacl::string experimental_flags_;
-  nacl::string bitcode_hash_;
+  nacl::string cache_validators_;
 };
 
 }  // namespace plugin;

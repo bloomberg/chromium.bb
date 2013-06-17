@@ -15,8 +15,9 @@
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/file_io.h"
-#include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/url_response_info.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace plugin {
@@ -49,11 +50,13 @@ class FileDownloader {
   FileDownloader()
       : instance_(NULL),
         file_open_notify_callback_(pp::BlockUntilComplete()),
+        stream_finish_callback_(pp::BlockUntilComplete()),
         file_handle_(PP_kInvalidFileHandle),
         file_io_trusted_interface_(NULL),
         url_loader_trusted_interface_(NULL),
         open_time_(-1),
         mode_(DOWNLOAD_NONE),
+        open_and_stream_(true),
         url_scheme_(SCHEME_OTHER),
         data_stream_callback_source_(NULL) {}
   ~FileDownloader() {}
@@ -61,8 +64,9 @@ class FileDownloader {
   // Initialize() can only be called once during the lifetime of this instance.
   void Initialize(Plugin* instance);
 
-  // Issues a GET on |url| downloading the response into a file. The file is
-  // then opened and a file descriptor is made available.
+  // Issues a GET on |url| to start downloading the response into a file,
+  // and finish streaming it. |callback| will be run after streaming is
+  // done or if an error prevents streaming from completing.
   // Returns true when callback is scheduled to be called on success or failure.
   // Returns false if callback is NULL, Initialize() has not been called or if
   // the PPB_FileIO_Trusted interface is not available.
@@ -77,13 +81,21 @@ class FileDownloader {
             bool record_progress,
             PP_URLLoaderTrusted_StatusCallback progress_callback);
 
-  // Same as Open, but used for streaming the file data directly to the
-  // caller without buffering it. The callbacks provided by
+  // Similar to Open(), but used for streaming the |url| data directly to the
+  // caller without writing to a temporary file. The callbacks provided by
   // |stream_callback_source| are expected to copy the data before returning.
-  // |callback| will still be called when the stream is finished.
+  // |callback| is called once the response headers are received,
+  // and streaming must be completed separately via FinishStreaming().
   bool OpenStream(const nacl::string& url,
                   const pp::CompletionCallback& callback,
                   StreamCallbackSource* stream_callback_source);
+
+  // Finish streaming the response body for a URL request started by either
+  // Open() or OpenStream().  If DownloadMode is DOWNLOAD_TO_FILE,
+  // then the response body is streamed to a file, the file is opened and
+  // a file descriptor is made available.  Runs the given |callback| when
+  // streaming is done.
+  void FinishStreaming(const pp::CompletionCallback& callback);
 
   // Bypasses downloading and takes a handle to the open file. To get the fd,
   // call GetFileInfo().
@@ -135,6 +147,7 @@ class FileDownloader {
   bool not_streaming() const;
 
   int status_code() const { return status_code_; }
+  nacl::string GetResponseHeaders() const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(FileDownloader);
@@ -150,17 +163,21 @@ class FileDownloader {
   // through a factory to take advantage of ref-counting.
   // DOWNLOAD_STREAM is similar to DOWNLOAD_TO_BUFFER except the downloaded
   // data is passed directly to the user instead of saved in a buffer.
+  // The public Open*() functions start step 1), and the public FinishStreaming
+  // function proceeds to step 2) and 3).
   bool InitialResponseIsValid(int32_t pp_error);
   void URLLoadStartNotify(int32_t pp_error);
   void URLLoadFinishNotify(int32_t pp_error);
   void URLBufferStartNotify(int32_t pp_error);
   void URLReadBodyNotify(int32_t pp_error);
-  void FileOpenNotify(int32_t pp_error);
+  void StreamFinishNotify(int32_t pp_error);
 
   Plugin* instance_;
   nacl::string url_to_open_;
   nacl::string url_;
+  pp::URLResponseInfo url_response_;
   pp::CompletionCallback file_open_notify_callback_;
+  pp::CompletionCallback stream_finish_callback_;
   pp::FileIO file_reader_;
   PP_FileHandle file_handle_;
   struct NaClFileToken file_token_;
@@ -171,6 +188,7 @@ class FileDownloader {
   int64_t open_time_;
   int32_t status_code_;
   DownloadMode mode_;
+  bool open_and_stream_;
   static const uint32_t kTempBufferSize = 2048;
   std::vector<char> temp_buffer_;
   std::deque<char> buffer_;

@@ -12,6 +12,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/plugin/local_temp_file.h"
 #include "native_client/src/trusted/plugin/manifest.h"
+#include "native_client/src/trusted/plugin/nacl_http_response_headers.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/pnacl_translate_thread.h"
@@ -691,7 +692,7 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
     }
   } else {
     // We don't have a cache, so do the non-cached codepath.
-    CachedFileDidOpen(PP_ERROR_FAILED);
+    OpenBitcodeStream();
   }
 }
 
@@ -753,35 +754,18 @@ void PnaclCoordinator::DirectoryWasCreated(int32_t pp_error) {
         "PNaCl translation cache directory creation/check failed.");
     return;
   }
-  if (pnacl_options_.HasCacheKey()) {
-    cached_nexe_file_.reset(new LocalTempFile(
-        plugin_, file_system_.get(),
-        nacl::string(kPnaclTempDir),
-        pnacl_options_.GetCacheKey()));
-    pp::CompletionCallback cb =
-        callback_factory_.NewCallback(&PnaclCoordinator::CachedFileDidOpen);
-    cached_nexe_file_->OpenRead(cb);
-  } else {
-    // For now, tolerate lack of cache identity...
-    CachedFileDidOpen(PP_ERROR_FAILED);
-  }
+  OpenBitcodeStream();
 }
 
-void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::CachedFileDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error == PP_OK) {
-    HistogramEnumerateTranslationCache(true);
-    NexeReadDidOpen(PP_OK);
-    return;
-  }
-  // Otherwise, the cache file is missing, or the cache simply
-  // cannot be created (e.g., incognito mode), so we must translate.
-  HistogramEnumerateTranslationCache(false);
+void PnaclCoordinator::OpenBitcodeStream() {
+  // Now open the pexe stream.
+  streaming_downloader_.reset(new FileDownloader());
+  streaming_downloader_->Initialize(plugin_);
 
-  // Create the translation thread object immediately. This ensures that any
-  // pieces of the file that get downloaded before the compilation thread
-  // is accepting SRPCs won't get dropped.
+  // Even though we haven't started downloading, create the translation
+  // thread object immediately. This ensures that any pieces of the file
+  // that get downloaded before the compilation thread is accepting
+  // SRPCs won't get dropped.
   translate_thread_.reset(new PnaclTranslateThread());
   if (translate_thread_ == NULL) {
     ReportNonPpapiError(ERROR_PNACL_THREAD_CREATE,
@@ -795,16 +779,70 @@ void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
     callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileDidOpen);
   obj_file_->Open(obj_cb);
 
-  streaming_downloader_.reset(new FileDownloader());
-  streaming_downloader_->Initialize(plugin_);
   pp::CompletionCallback cb =
-      callback_factory_.NewCallback(
-          &PnaclCoordinator::BitcodeStreamDidFinish);
-
+      callback_factory_.NewCallback(&PnaclCoordinator::BitcodeStreamDidOpen);
   if (!streaming_downloader_->OpenStream(pexe_url_, cb, this)) {
     ReportNonPpapiError(ERROR_PNACL_PEXE_FETCH_OTHER,
                         nacl::string("failed to open stream ") + pexe_url_);
   }
+}
+
+void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
+  if (pp_error != PP_OK) {
+    BitcodeStreamDidFinish(pp_error);
+    return;
+  }
+
+  if (!off_the_record_) {
+    // Get the cache key and try to open an existing entry.
+    nacl::string headers = streaming_downloader_->GetResponseHeaders();
+    NaClHttpResponseHeaders parser;
+    parser.Parse(headers);
+    nacl::string cache_validators = parser.GetCacheValidators();
+    if (parser.CacheControlNoStore() || cache_validators.empty()) {
+      // We can't cache in this case.
+      pnacl_options_.set_cache_validators("");
+      CachedFileDidOpen(PP_ERROR_FAILED);
+      return;
+    } else {
+      nacl::string url = streaming_downloader_->url();
+      // For now, combine the cache_validators + the URL as the key.
+      // When we change the cache backend to be not-origin-specific
+      // we should send the URL separately, and check in the browser's
+      // RenderViewHost / SiteInstance's IsSameWebsite() to prevent
+      // people from forging the URL for a different origin.
+      pnacl_options_.set_cache_validators(cache_validators + url);
+    }
+    cached_nexe_file_.reset(new LocalTempFile(
+        plugin_, file_system_.get(),
+        nacl::string(kPnaclTempDir),
+        pnacl_options_.GetCacheKey()));
+    pp::CompletionCallback cb =
+        callback_factory_.NewCallback(&PnaclCoordinator::CachedFileDidOpen);
+    cached_nexe_file_->OpenRead(cb);
+  } else {
+    // No cache case.
+    CachedFileDidOpen(PP_ERROR_FAILED);
+  }
+}
+
+void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
+  PLUGIN_PRINTF(("PnaclCoordinator::CachedFileDidOpen (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+  if (pp_error == PP_OK) {
+    // Cache hit -- no need to stream the rest of the file.
+    streaming_downloader_.reset(NULL);
+    HistogramEnumerateTranslationCache(true);
+    NexeReadDidOpen(PP_OK);
+    return;
+  }
+  // Otherwise, the cache file is missing so we must translate.
+  HistogramEnumerateTranslationCache(false);
+
+  // Continue streaming.
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::BitcodeStreamDidFinish);
+  streaming_downloader_->FinishStreaming(cb);
 }
 
 void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
@@ -840,6 +878,7 @@ void PnaclCoordinator::BitcodeStreamGotData(int32_t pp_error,
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamGotData (pp_error=%"
                  NACL_PRId32", data=%p)\n", pp_error, data ? &(*data)[0] : 0));
   DCHECK(translate_thread_.get());
+
   translate_thread_->PutBytes(data, pp_error);
   // If pp_error > 0, then it represents the number of bytes received.
   if (data && pp_error > 0) {

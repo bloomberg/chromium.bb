@@ -85,6 +85,19 @@ class CompletionCallback {
     PP_RunCompletionCallback(&cc_, result);
   }
 
+  /// RunAndClear() is used to run the <code>CompletionCallback</code> and
+  /// clear out the callback so that it cannot be run a second time.
+  ///
+  /// @param[in] result The result of the operation to be passed to the
+  /// callback function. Non-positive values correspond to the error codes
+  /// from <code>pp_errors.h</code> (excluding
+  /// <code>PP_OK_COMPLETIONPENDING</code>). Positive values indicate
+  /// additional information such as bytes read.
+  void RunAndClear(int32_t result) {
+    PP_DCHECK(cc_.func);
+    PP_RunAndClearCompletionCallback(&cc_, result);
+  }
+
   /// IsOptional() is used to determine the setting of the
   /// <code>PP_COMPLETIONCALLBACK_FLAG_OPTIONAL</code> flag. This flag allows
   /// any method taking such callback to complete synchronously
