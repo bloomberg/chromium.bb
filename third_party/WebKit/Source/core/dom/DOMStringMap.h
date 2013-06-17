@@ -69,6 +69,7 @@ public:
     {
         getNames(names);
     }
+    bool namedPropertyQuery(const AtomicString&, ExceptionCode&);
 
     virtual Element* element() = 0;
 

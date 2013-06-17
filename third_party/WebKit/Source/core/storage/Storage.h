@@ -60,6 +60,7 @@ namespace WebCore {
         bool anonymousNamedDeleter(const AtomicString&, ExceptionCode&);
         bool anonymousIndexedDeleter(unsigned, ExceptionCode&);
         void namedPropertyEnumerator(Vector<String>&, ExceptionCode&);
+        bool namedPropertyQuery(const AtomicString&, ExceptionCode&);
 
     private:
         Storage(Frame*, PassRefPtr<StorageArea>);

@@ -593,6 +593,22 @@ void V8TestInterface::namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8:
     v8SetReturnValue(info, v8names);
 }
 
+void V8TestInterface::namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TestInterface* collection = toNative(info.Holder());
+    AtomicString propertyName = toWebCoreAtomicString(name);
+    ExceptionCode ec = 0;
+    int returnValue = 0;
+    bool result = collection->namedPropertyQuery(propertyName, returnValue, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return;
+    }
+    if (!result)
+        return;
+    v8SetReturnValueInt(info, 0);
+}
+
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();

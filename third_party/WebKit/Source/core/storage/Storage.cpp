@@ -115,4 +115,14 @@ void Storage::namedPropertyEnumerator(Vector<String>& names, ExceptionCode& ec)
     }
 }
 
+bool Storage::namedPropertyQuery(const AtomicString& name, ExceptionCode& ec)
+{
+    if (name == "length")
+        return false;
+    bool found = contains(name, ec);
+    if (ec || !found)
+        return false;
+    return true;
+}
+
 }

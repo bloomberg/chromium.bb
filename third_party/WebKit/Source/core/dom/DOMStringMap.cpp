@@ -32,4 +32,9 @@ DOMStringMap::~DOMStringMap()
 {
 }
 
+bool DOMStringMap::namedPropertyQuery(const AtomicString& name, ExceptionCode& ec)
+{
+    return contains(name);
+}
+
 } // namespace WebCore

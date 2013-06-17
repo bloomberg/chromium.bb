@@ -3192,7 +3192,6 @@ sub GenerateImplementationIndexedPropertyAccessors
     my $indexedEnumeratorFunction = $indexedGetterFunction;
     $indexedEnumeratorFunction = 0 if $indexedGetterFunction && $indexedGetterFunction->extendedAttributes->{"NotEnumerable"};
 
-    # FIXME: Support generated named query bindings.
     my $indexedQueryFunction = 0;
     # If there is an enumerator, there MUST be a query method to properly communicate property attributes.
     my $hasQuery = $indexedQueryFunction || $indexedEnumeratorFunction;
@@ -3350,10 +3349,12 @@ sub GenerateImplementationNamedPropertyAccessors
         GenerateImplementationNamedPropertyEnumerator($interface);
     }
 
-    # FIXME: Support generated named query bindings.
-    my $namedQueryFunction = 0;
     # If there is an enumerator, there MUST be a query method to properly communicate property attributes.
-    my $hasQuery = $namedQueryFunction || $namedEnumeratorFunction;
+    my $hasQuery = $namedEnumeratorFunction;
+    my $hasCustomNamedQuery = $hasCustomNamedEnumerator;
+    if ($hasQuery && !$hasCustomNamedQuery) {
+        GenerateImplementationNamedPropertyQuery($interface);
+    }
 
     my $subCode = "";
     if ($namedGetterFunction || $namedSetterFunction || $namedDeleterFunction || $namedEnumeratorFunction || $hasQuery) {
@@ -3637,6 +3638,31 @@ void ${v8ClassName}::namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
     v8SetReturnValue(info, v8names);
+}
+
+END
+}
+
+sub GenerateImplementationNamedPropertyQuery
+{
+    my $interface = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    $implementation{nameSpaceWebCore}->add(<<END);
+void ${v8ClassName}::namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    ${implClassName}* collection = toNative(info.Holder());
+    AtomicString propertyName = toWebCoreAtomicString(name);
+    ExceptionCode ec = 0;
+    bool result = collection->namedPropertyQuery(propertyName, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return;
+    }
+    if (!result)
+        return;
+    v8SetReturnValueInt(info, v8::None);
 }
 
 END
