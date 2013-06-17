@@ -49,9 +49,6 @@ class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
   void XShowRect(const gfx::Point &origin, const gfx::Rect& damage,
                  XID target);
 
-  // As above, but use Cairo instead of Xlib.
-  void CairoShowRect(const gfx::Rect& damage, GdkDrawable* drawable);
-
 #if defined(TOOLKIT_GTK)
   // Paint the backing store into the target's |dest_rect|.
   void PaintToRect(const gfx::Rect& dest_rect, GdkDrawable* target);
