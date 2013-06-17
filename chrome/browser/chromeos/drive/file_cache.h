@@ -72,8 +72,7 @@ class FileCache {
   enum CacheSubDirectoryType {
     CACHE_TYPE_META = 0,       // Resource metadata.
     CACHE_TYPE_FILES,          // Cached files.
-    CACHE_TYPE_TMP_DOWNLOADS,  // Downloaded files.
-    CACHE_TYPE_TMP_DOCUMENTS,  // Temporary JSON files for hosted documents.
+    CACHE_TYPE_TMP,            // Temporary files.
     NUM_CACHE_TYPES,           // This must be at the end.
   };
 
@@ -98,7 +97,7 @@ class FileCache {
             FreeDiskSpaceGetterInterface* free_disk_space_getter);
 
   // Returns the sub-directory under drive cache directory for the given sub
-  // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
+  // directory type. Example:  <user_profile_dir>/GCache/v1/files
   //
   // Can be called on any thread.
   base::FilePath GetCacheDirectoryPath(

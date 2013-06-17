@@ -322,8 +322,7 @@ void DriveIntegrationService::InitializeAfterResourceMetadataInitialized(
       BrowserContext::GetDownloadManager(profile_) : NULL;
   download_handler_->Initialize(
       download_manager,
-      cache_->GetCacheDirectoryPath(
-          internal::FileCache::CACHE_TYPE_TMP_DOWNLOADS));
+      cache_->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_TMP));
 
   // Register for Google Drive invalidation notifications.
   google_apis::DriveNotificationManager* drive_notification_manager =

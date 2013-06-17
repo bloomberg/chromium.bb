@@ -31,10 +31,7 @@ typedef std::map<std::string, FileCacheEntry> CacheMap;
 const base::FilePath::CharType kFileCacheMetaDir[] = FILE_PATH_LITERAL("meta");
 const base::FilePath::CharType kFileCacheFilesDir[] =
     FILE_PATH_LITERAL("files");
-const base::FilePath::CharType kFileCacheTmpDownloadsDir[] =
-    FILE_PATH_LITERAL("tmp/downloads");
-const base::FilePath::CharType kFileCacheTmpDocumentsDir[] =
-    FILE_PATH_LITERAL("tmp/documents");
+const base::FilePath::CharType kFileCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
 
 // Returns true if |md5| matches the one in |cache_entry| with some
 // exceptions. See the function definition for details.
@@ -938,8 +935,7 @@ std::vector<base::FilePath> FileCache::GetCachePaths(
   // The order should match FileCache::CacheSubDirectoryType enum.
   cache_paths.push_back(cache_root_path.Append(kFileCacheMetaDir));
   cache_paths.push_back(cache_root_path.Append(kFileCacheFilesDir));
-  cache_paths.push_back(cache_root_path.Append(kFileCacheTmpDownloadsDir));
-  cache_paths.push_back(cache_root_path.Append(kFileCacheTmpDocumentsDir));
+  cache_paths.push_back(cache_root_path.Append(kFileCacheTmpDir));
   return cache_paths;
 }
 

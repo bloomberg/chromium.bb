@@ -56,8 +56,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   if (entry->file_specific_info().is_hosted_document()) {
     base::FilePath gdoc_file_path;
     if (!file_util::CreateTemporaryFileInDir(
-            cache->GetCacheDirectoryPath(
-                internal::FileCache::CACHE_TYPE_TMP_DOCUMENTS),
+            cache->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_TMP),
             &gdoc_file_path) ||
         !util::CreateGDocFile(gdoc_file_path,
                               GURL(entry->file_specific_info().alternate_url()),
@@ -182,10 +181,8 @@ FileError PrepareForDownloadFile(
 
   // Create the temporary file which will store the donwloaded content.
   return CreateTemporaryReadableFileInDir(
-      cache->GetCacheDirectoryPath(
-          internal::FileCache::CACHE_TYPE_TMP_DOWNLOADS),
-      temp_download_file) ?
-      FILE_ERROR_OK : FILE_ERROR_FAILED;
+      cache->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_TMP),
+      temp_download_file) ? FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 // Stores the downloaded file at |downloaded_file_path| into |cache|.
