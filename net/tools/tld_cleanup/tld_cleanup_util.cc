@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_parse.h"
@@ -14,6 +15,10 @@ namespace {
 
 const char kBeginPrivateDomainsComment[] = "// ===BEGIN PRIVATE DOMAINS===";
 const char kEndPrivateDomainsComment[] = "// ===END PRIVATE DOMAINS===";
+
+const int kExceptionRule = 1;
+const int kWildcardRule = 2;
+const int kPrivateRule = 4;
 }
 
 namespace net {
@@ -34,8 +39,7 @@ bool WriteRules(const RuleMap& rules, const base::FilePath& outfile) {
 "%}\n"
 "struct DomainRule {\n"
 "  const char *name;\n"
-"  int type;  // 1: exception, 2: wildcard\n"
-"  bool is_private;\n"
+"  int type;  // flags: 1: exception, 2: wildcard, 4: private\n"
 "};\n"
 "%%\n"
   );
@@ -43,18 +47,16 @@ bool WriteRules(const RuleMap& rules, const base::FilePath& outfile) {
   for (RuleMap::const_iterator i = rules.begin(); i != rules.end(); ++i) {
     data.append(i->first);
     data.append(", ");
+    int type = 0;
     if (i->second.exception) {
-      data.append("1");
+      type = kExceptionRule;
     } else if (i->second.wildcard) {
-      data.append("2");
-    } else {
-      data.append("0");
+      type = kWildcardRule;
     }
     if (i->second.is_private) {
-      data.append(", true");
-    } else {
-      data.append(", false");
+      type += kPrivateRule;
     }
+    data.append(base::IntToString(type));
     data.append("\n");
   }
 

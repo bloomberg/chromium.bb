@@ -40,8 +40,7 @@
 #line 10 "effective_tld_names_unittest1.gperf"
 struct DomainRule {
   const char *name;
-  int type;  // 1: exception, 2: wildcard
-  bool is_private;
+  int type;  // 1: exception, 2: wildcard, 4: private
 };
 
 #define TOTAL_KEYWORDS 11
@@ -137,28 +136,28 @@ Perfect_Hash_Test1::FindDomain (register const char *str, register unsigned int 
 {
   static const struct DomainRule wordlist[] =
     {
-#line 22 "effective_tld_names_unittest1.gperf"
-      {"c", 2, false},
-#line 16 "effective_tld_names_unittest1.gperf"
-      {"jp", 0, false},
-#line 23 "effective_tld_names_unittest1.gperf"
-      {"b.c", 1, false},
-#line 17 "effective_tld_names_unittest1.gperf"
-      {"ac.jp", 0, false},
-#line 18 "effective_tld_names_unittest1.gperf"
-      {"bar.jp", 2, false},
-#line 24 "effective_tld_names_unittest1.gperf"
-      {"no", 0, false},
-#line 19 "effective_tld_names_unittest1.gperf"
-      {"baz.bar.jp", 2, false},
 #line 21 "effective_tld_names_unittest1.gperf"
-      {"bar.baz.com", 0, false},
-#line 25 "effective_tld_names_unittest1.gperf"
-      {"priv.no", 0, true},
+      {"c", 2},
+#line 15 "effective_tld_names_unittest1.gperf"
+      {"jp", 0},
+#line 22 "effective_tld_names_unittest1.gperf"
+      {"b.c", 1},
+#line 16 "effective_tld_names_unittest1.gperf"
+      {"ac.jp", 0},
+#line 17 "effective_tld_names_unittest1.gperf"
+      {"bar.jp", 2},
+#line 23 "effective_tld_names_unittest1.gperf"
+      {"no", 0},
+#line 18 "effective_tld_names_unittest1.gperf"
+      {"baz.bar.jp", 2},
 #line 20 "effective_tld_names_unittest1.gperf"
-      {"pref.bar.jp", 1, false},
-#line 26 "effective_tld_names_unittest1.gperf"
-      {"private", 0, true}
+      {"bar.baz.com", 0},
+#line 24 "effective_tld_names_unittest1.gperf"
+      {"priv.no", 4},
+#line 19 "effective_tld_names_unittest1.gperf"
+      {"pref.bar.jp", 1},
+#line 25 "effective_tld_names_unittest1.gperf"
+      {"private", 4}
     };
 
   static const signed char lookup[] =
@@ -186,5 +185,5 @@ Perfect_Hash_Test1::FindDomain (register const char *str, register unsigned int 
     }
   return 0;
 }
-#line 27 "effective_tld_names_unittest1.gperf"
+#line 26 "effective_tld_names_unittest1.gperf"
 

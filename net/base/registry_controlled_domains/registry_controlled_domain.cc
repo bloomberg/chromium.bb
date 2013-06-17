@@ -62,6 +62,7 @@ namespace {
 
 const int kExceptionRule = 1;
 const int kWildcardRule = 2;
+const int kPrivateRule = 4;
 
 const FindDomainPtr kDefaultFindDomainFunction = Perfect_Hash::FindDomain;
 FindDomainPtr g_find_domain_function = kDefaultFindDomainFunction;
@@ -106,18 +107,19 @@ size_t GetRegistryLengthImpl(
     // Furthermore, if the apparent match is a private registry and we're not
     // including those, it can't be an actual match.
     if (rule &&
-        (private_filter == INCLUDE_PRIVATE_REGISTRIES || !rule->is_private) &&
+        (!(rule->type & kPrivateRule) ||
+            private_filter == INCLUDE_PRIVATE_REGISTRIES) &&
         base::strncasecmp(domain_str, rule->name, domain_length) == 0) {
       // Exception rules override wildcard rules when the domain is an exact
       // match, but wildcards take precedence when there's a subdomain.
-      if (rule->type == kWildcardRule && (prev_start != std::string::npos)) {
+      if (rule->type & kWildcardRule && (prev_start != std::string::npos)) {
         // If prev_start == host_check_begin, then the host is the registry
         // itself, so return 0.
         return (prev_start == host_check_begin) ?
             0 : (host.length() - prev_start);
       }
 
-      if (rule->type == kExceptionRule) {
+      if (rule->type & kExceptionRule) {
         if (next_dot == std::string::npos) {
           // If we get here, we had an exception rule with no dots (e.g.
           // "!foo").  This would only be valid if we had a corresponding
