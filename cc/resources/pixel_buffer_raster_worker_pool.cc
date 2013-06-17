@@ -297,34 +297,43 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
        it != raster_tasks().end(); ++it) {
     internal::RasterWorkerPoolTask* task = it->get();
 
+    // |pixel_buffer_tasks_| contains all tasks that have not yet completed.
     TaskMap::iterator pixel_buffer_it = pixel_buffer_tasks_.find(task);
     if (pixel_buffer_it == pixel_buffer_tasks_.end())
       continue;
 
-    scoped_refptr<internal::WorkerPoolTask> pixel_buffer_task(
-        pixel_buffer_it->second);
-    if (pixel_buffer_task.get()) {
-      if (!pixel_buffer_task->HasCompleted())
-        tasks.push_back(pixel_buffer_task);
-      continue;
-    }
-
-    // Throttle raster tasks based on bytes pending.
-    size_t new_bytes_pending_raster = bytes_pending_raster;
-    new_bytes_pending_raster += task->resource()->bytes();
-    if (new_bytes_pending_raster > kMaxPendingRasterBytes)
-      break;
-
-    // Throttle raster tasks based on bytes of pending uploads.
+    // All raster tasks need to be throttled by bytes of pending uploads.
     size_t new_bytes_pending_upload = bytes_pending_upload;
     new_bytes_pending_upload += task->resource()->bytes();
     if (new_bytes_pending_upload > kMaxPendingUploadBytes)
       break;
 
-    // Update |bytes_pending_raster| and |bytes_pending_upload|
-    // now that task has cleared throttling limits.
+    internal::WorkerPoolTask* pixel_buffer_task = pixel_buffer_it->second;
+
+    // If raster has finished, just update |bytes_pending_upload|.
+    if (pixel_buffer_task && pixel_buffer_task->HasCompleted()) {
+      bytes_pending_upload = new_bytes_pending_upload;
+      continue;
+    }
+
+    // Throttle raster tasks based on bytes pending if raster has not
+    // finished.
+    size_t new_bytes_pending_raster = bytes_pending_raster;
+    new_bytes_pending_raster += task->resource()->bytes();
+    if (new_bytes_pending_raster > kMaxPendingRasterBytes)
+      break;
+
+    // Update both |bytes_pending_raster| and |bytes_pending_upload|
+    // now that task has cleared all throttling limits.
     bytes_pending_raster = new_bytes_pending_raster;
     bytes_pending_upload = new_bytes_pending_upload;
+
+    // Use existing pixel buffer task if available.
+    if (pixel_buffer_task) {
+      DCHECK(!pixel_buffer_task->HasCompleted());
+      tasks.push_back(pixel_buffer_task);
+      continue;
+    }
 
     // Request a pixel buffer. This will reserve shared memory.
     resource_provider()->AcquirePixelBuffer(task->resource()->id());
@@ -337,7 +346,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
 
     // TODO(reveman): Avoid having to make a copy of dependencies.
     internal::WorkerPoolTask::TaskVector dependencies = task->dependencies();
-    pixel_buffer_task = make_scoped_refptr(
+    scoped_refptr<internal::WorkerPoolTask> new_pixel_buffer_task(
         new PixelBufferWorkerPoolTaskImpl(
             task,
             &dependencies,
@@ -346,8 +355,8 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
                        base::Unretained(this),
                        make_scoped_refptr(task))));
 
-    pixel_buffer_tasks_[task] = pixel_buffer_task;
-    tasks.push_back(pixel_buffer_task);
+    pixel_buffer_tasks_[task] = new_pixel_buffer_task;
+    tasks.push_back(new_pixel_buffer_task);
   }
 
   ++schedule_more_tasks_count_;

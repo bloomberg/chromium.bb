@@ -99,7 +99,7 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 
     // TODO(reveman): Avoid having to make a copy of dependencies.
     internal::WorkerPoolTask::TaskVector dependencies = task->dependencies();
-    scoped_refptr<internal::WorkerPoolTask> image_task(
+    scoped_refptr<internal::WorkerPoolTask> new_image_task(
         new ImageWorkerPoolTaskImpl(
             task,
             &dependencies,
@@ -109,8 +109,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
                        base::Unretained(this),
                        make_scoped_refptr(task))));
 
-    image_tasks_[task] = image_task;
-    tasks.push_back(image_task);
+    image_tasks_[task] = new_image_task;
+    tasks.push_back(new_image_task);
   }
 
   if (tasks.empty()) {
