@@ -175,12 +175,15 @@ void JobScheduler::RemoveObserver(JobListObserver* observer) {
 void JobScheduler::CancelJob(JobID job_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // TODO(kinaba): Move the cancellation feature from DriveService
-  // to JobScheduler. In particular, implement cancel based on job_id.
-  // crbug.com/231029
+  // TODO(kinaba): Completely remove drive_service_->CancelForFilePath
+  // once DriveUploader supported cancellation callback: crbug.com/257012.
   JobEntry* job = job_map_.Lookup(job_id);
-  if (job)
-    drive_service_->CancelForFilePath(job->job_info.file_path);
+  if (job) {
+    if (!job->cancel_callback.is_null())
+      job->cancel_callback.Run();
+    else
+      drive_service_->CancelForFilePath(job->job_info.file_path);
+  }
 }
 
 void JobScheduler::CancelAllJobs() {
@@ -686,7 +689,7 @@ void JobScheduler::DoJobLoop(QueueType queue_type) {
   job_info->start_time = base::Time::Now();
   NotifyJobUpdated(*job_info);
 
-  entry->task.Run();
+  entry->cancel_callback = entry->task.Run();
 
   util::Log("Job started: %s - %s",
             job_info->ToString().c_str(),
@@ -776,6 +779,7 @@ bool JobScheduler::OnJobDone(JobID job_id, google_apis::GDataErrorCode error) {
   if ((error == google_apis::HTTP_SERVICE_UNAVAILABLE ||
       error == google_apis::HTTP_INTERNAL_SERVER_ERROR) &&
       job_entry->retry_count < kMaxRetryCount) {
+    job_entry->cancel_callback.Reset();
     job_info->state = STATE_RETRY;
     NotifyJobUpdated(*job_info);
 

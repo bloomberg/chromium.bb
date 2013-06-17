@@ -194,14 +194,20 @@ class JobScheduler
     explicit JobEntry(JobType type);
     ~JobEntry();
 
+    // General user-visible information on the job.
     JobInfo job_info;
 
     // Context of the job.
     ClientContext context;
 
+    // The number of times the jobs is retried due to server errors.
     int retry_count;
 
+    // The callback to start the job. Called each time it is retry.
     base::Callback<google_apis::CancelCallback()> task;
+
+    // The callback to cancel the running job. It is returned from task.Run().
+    google_apis::CancelCallback cancel_callback;
   };
 
   // Parameters for DriveUploader::ResumeUploadFile.
