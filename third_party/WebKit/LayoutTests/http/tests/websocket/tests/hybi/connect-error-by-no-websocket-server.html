@@ -79,7 +79,10 @@ function timeOutCallback()
     endTest();
 }
 
-var timeoutID = setTimeout(timeOutCallback, 3000);
+// Each failure to connect to 127.0.0.1 takes 1 second on Windows. Since the
+// test performs three connection attempts in sequence, it will take more
+// than 3 seconds to complete.
+var timeoutID = setTimeout(timeOutCallback, 4000);
 
 doTest(0);
 
