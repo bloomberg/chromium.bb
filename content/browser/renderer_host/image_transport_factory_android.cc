@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 
 #include "base/memory/singleton.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/common/gpu/client/gl_helper.h"
@@ -56,6 +57,9 @@ DirectGLImageTransportFactory::DirectGLImageTransportFactory() {
   attrs.noAutomaticFlushes = true;
   context_.reset(webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
                      CreateViewContext(attrs, NULL));
+  if (context_->makeContextCurrent())
+    context_->pushGroupMarkerEXT(
+        base::StringPrintf("DirectGLImageTransportFactory-%p", this).c_str());
 }
 
 DirectGLImageTransportFactory::~DirectGLImageTransportFactory() {
@@ -100,6 +104,10 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
       attrs,
       false,
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
+
+  if (context_->makeContextCurrent())
+    context_->pushGroupMarkerEXT(
+        base::StringPrintf("CmdBufferImageTransportFactory-%p", this).c_str());
 }
 
 CmdBufferImageTransportFactory::~CmdBufferImageTransportFactory() {
