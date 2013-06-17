@@ -1043,8 +1043,12 @@ internal_pfq = internal.derive(official_chrome, pfq,
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=constants.PRIVATE,
 )
-internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS,
-                                          trybot_list=False, branch=True)
+
+# Because branch directories may be shared amongst builders on multiple
+# branches, they must delete the chroot every time they run.
+internal_pfq_branch = internal_pfq.derive(branch=True, chroot_replace=True,
+                                          trybot_list=False)
+
 internal_paladin = internal.derive(official_chrome, paladin,
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=constants.PRIVATE,
