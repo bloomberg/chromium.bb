@@ -1319,6 +1319,7 @@ void ResourceProvider::AcquireImage(ResourceId id) {
   DCHECK(context3d);
   resource->image_id = context3d->createImageCHROMIUM(
       resource->size.width(), resource->size.height(), GL_RGBA8_OES);
+  DCHECK(resource->image_id);
 }
 
 void ResourceProvider::ReleaseImage(ResourceId id) {

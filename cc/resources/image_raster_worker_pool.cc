@@ -30,7 +30,9 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
   // Overridden from internal::WorkerPoolTask:
   virtual void RunOnThread(unsigned thread_index) OVERRIDE {
-    DCHECK(buffer_);
+    if (!buffer_)
+      return;
+
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                      task_->resource()->size().width(),

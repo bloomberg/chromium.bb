@@ -48,6 +48,8 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       times_bind_texture_succeeds_(-1),
       times_end_query_succeeds_(-1),
       context_lost_(false),
+      times_map_image_chromium_succeeds_(-1),
+      times_map_buffer_chromium_succeeds_(-1),
       context_lost_callback_(NULL),
       swap_buffers_callback_(NULL),
       max_texture_size_(1024),
@@ -72,6 +74,8 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D(
       times_bind_texture_succeeds_(-1),
       times_end_query_succeeds_(-1),
       context_lost_(false),
+      times_map_image_chromium_succeeds_(-1),
+      times_map_buffer_chromium_succeeds_(-1),
       context_lost_callback_(NULL),
       swap_buffers_callback_(NULL),
       max_texture_size_(1024),
@@ -439,6 +443,12 @@ void* TestWebGraphicsContext3D::mapBufferCHROMIUM(WebKit::WGC3Denum target,
                                                   WebKit::WGC3Denum access) {
   DCHECK_GT(buffers_.count(bound_buffer_), 0u);
   DCHECK_EQ(target, buffers_.get(bound_buffer_)->target);
+  if (times_map_buffer_chromium_succeeds_ >= 0) {
+    if (!times_map_buffer_chromium_succeeds_) {
+      return NULL;
+    }
+    --times_map_buffer_chromium_succeeds_;
+  }
   return buffers_.get(bound_buffer_)->pixels.get();
 }
 
@@ -486,6 +496,12 @@ void TestWebGraphicsContext3D::getImageParameterivCHROMIUM(
 void* TestWebGraphicsContext3D::mapImageCHROMIUM(WebKit::WGC3Duint image_id,
                                                  WebKit::WGC3Denum access) {
   DCHECK_GT(images_.count(image_id), 0u);
+  if (times_map_image_chromium_succeeds_ >= 0) {
+    if (!times_map_image_chromium_succeeds_) {
+      return NULL;
+    }
+    --times_map_image_chromium_succeeds_;
+  }
   return images_.get(image_id)->pixels.get();
 }
 

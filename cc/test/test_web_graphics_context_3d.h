@@ -154,6 +154,15 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     times_end_query_succeeds_ = times;
   }
 
+  // When set, mapImageCHROMIUM and mapBufferCHROMIUM will return NULL after
+  // this many times.
+  void set_times_map_image_chromium_succeeds(int times) {
+    times_map_image_chromium_succeeds_ = times;
+  }
+  void set_times_map_buffer_chromium_succeeds(int times) {
+    times_map_buffer_chromium_succeeds_ = times;
+  }
+
   size_t NumTextures() const { return textures_.size(); }
   WebKit::WebGLId TextureAt(int i) const { return textures_[i]; }
 
@@ -207,6 +216,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int times_bind_texture_succeeds_;
   int times_end_query_succeeds_;
   bool context_lost_;
+  int times_map_image_chromium_succeeds_;
+  int times_map_buffer_chromium_succeeds_;
   WebGraphicsContextLostCallback* context_lost_callback_;
   WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* swap_buffers_callback_;
   std::vector<WebGraphicsSyncPointCallback*> sync_point_callbacks_;
