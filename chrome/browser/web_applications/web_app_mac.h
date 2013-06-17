@@ -33,10 +33,10 @@ void MaybeLaunchShortcut(const ShellIntegration::ShortcutInfo& shortcut_info);
 class WebAppShortcutCreator {
  public:
   // Creates a new shortcut based on information in |shortcut_info|.
-  // The shortcut stores its user data directory in |user_data_dir|.
+  // A copy of the shortcut is placed in |app_data_path|.
   // |chrome_bundle_id| is the CFBundleIdentifier of the Chrome browser bundle.
   WebAppShortcutCreator(
-      const base::FilePath& user_data_dir,
+      const base::FilePath& app_data_path,
       const ShellIntegration::ShortcutInfo& shortcut_info,
       const string16& chrome_bundle_id);
 
@@ -69,11 +69,6 @@ class WebAppShortcutCreator {
   // the app.
   bool UpdateDisplayName(const base::FilePath& app_path) const;
 
-  // Path to the app's user data directory. For example:
-  // ~/Library/Application Support/Chromium/Default/Web Applications/_crx_abc/
-  // Note, the user data directory is the parent of the profile directory.
-  base::FilePath user_data_dir_;
-
   // Returns the bundle identifier to use for this app bundle.
   // |plist| is a dictionary containg a copy of the template plist file to
   // be used for creating the app bundle.
@@ -82,6 +77,10 @@ class WebAppShortcutCreator {
   // Show the bundle we just generated in the Finder.
   virtual void RevealGeneratedBundleInFinder(
       const base::FilePath& generated_bundle) const;
+
+  // Path to the data directory for this app. For example:
+  // ~/Library/Application Support/Chromium/Default/Web Applications/_crx_abc/
+  base::FilePath app_data_path_;
 
   // Information about the app.
   ShellIntegration::ShortcutInfo info_;

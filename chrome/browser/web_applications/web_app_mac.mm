@@ -166,10 +166,10 @@ namespace web_app {
 const char kChromeAppDirName[] = "Chrome Apps.localized";
 
 WebAppShortcutCreator::WebAppShortcutCreator(
-    const base::FilePath& user_data_dir,
+    const base::FilePath& app_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const string16& chrome_bundle_id)
-    : user_data_dir_(user_data_dir),
+    : app_data_path_(app_data_path),
       info_(shortcut_info),
       chrome_bundle_id_(chrome_bundle_id) {
 }
@@ -195,6 +195,11 @@ bool WebAppShortcutCreator::CreateShortcut() {
     LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
     return false;
   }
+  if (!file_util::CreateDirectory(app_data_path_)) {
+    LOG(ERROR) << "Creating app_data_path " << app_data_path_.value()
+               << " failed.";
+    return false;
+  }
   if (!file_util::CreateDirectory(dst_path)) {
     LOG(ERROR) << "Creating directory " << dst_path.value() << " failed.";
     return false;
@@ -209,7 +214,7 @@ bool WebAppShortcutCreator::CreateShortcut() {
   // a Finder bug where the app's icon doesn't properly update.
   if (!file_util::CopyDirectory(GetAppLoaderPath(), staging_path, true)) {
     LOG(ERROR) << "Copying app to staging path: " << staging_path.value()
-               << " failed";
+               << " failed.";
     return false;
   }
 
@@ -222,10 +227,16 @@ bool WebAppShortcutCreator::CreateShortcut() {
   if (!UpdateIcon(staging_path))
     return false;
 
-  if (!file_util::CopyDirectory(staging_path, dst_path, true)) {
-    LOG(ERROR) << "Copying app to dst path: " << dst_path.value() << " failed";
+  // Put one copy in the app's app_data_path so we can still run it if the user
+  // deletes the one in the applications folder.
+  if (!file_util::CopyDirectory(staging_path, app_data_path_, true)) {
+    NOTREACHED();
     return false;
   }
+  base::mac::RemoveQuarantineAttribute(app_data_path_.Append(app_name));
+
+  if (!file_util::CopyDirectory(staging_path, dst_path, true))
+    return false;
 
   base::mac::RemoveQuarantineAttribute(app_path);
   RevealGeneratedBundleInFinder(app_path);
@@ -282,7 +293,7 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   // 2. Fill in other values.
   [plist setObject:GetBundleIdentifier(plist)
             forKey:base::mac::CFToNSCast(kCFBundleIdentifierKey)];
-  [plist setObject:base::mac::FilePathToNSString(user_data_dir_)
+  [plist setObject:base::mac::FilePathToNSString(app_data_path_)
             forKey:app_mode::kCrAppModeUserDataDirKey];
   [plist setObject:base::mac::FilePathToNSString(info_.profile_path.BaseName())
             forKey:app_mode::kCrAppModeProfileDirKey];
@@ -382,8 +393,14 @@ void LaunchShimOnFileThread(
       const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   base::FilePath shim_path = web_app::GetAppInstallPath(shortcut_info);
-  if (shim_path.empty())
-    return;
+
+  if (shim_path.empty() || !file_util::PathExists(shim_path)) {
+    // The user may have deleted the copy in the Applications folder, use the
+    // one in the web app's app_data_path.
+    base::FilePath app_data_path = GetWebAppDataDirectory(
+        shortcut_info.profile_path, shortcut_info.extension_id, GURL());
+    shim_path = app_data_path.Append(shim_path.BaseName());
+  }
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(app_mode::kNoLaunchApp);
@@ -433,18 +450,18 @@ base::FilePath GetAppBundleByExtensionId(std::string extension_id) {
 }
 
 bool CreatePlatformShortcuts(
-    const base::FilePath& web_app_path,
+    const base::FilePath& app_data_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
-    const ShellIntegration::ShortcutLocations& /*creation_locations*/) {
+    const ShellIntegration::ShortcutLocations& creation_locations) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   string16 bundle_id = UTF8ToUTF16(base::mac::BaseBundleID());
-  WebAppShortcutCreator shortcut_creator(web_app_path, shortcut_info,
+  WebAppShortcutCreator shortcut_creator(app_data_path, shortcut_info,
                             bundle_id);
   return shortcut_creator.CreateShortcut();
 }
 
 void DeletePlatformShortcuts(
-    const base::FilePath& web_app_path,
+    const base::FilePath& app_data_path,
     const ShellIntegration::ShortcutInfo& info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -453,7 +470,7 @@ void DeletePlatformShortcuts(
 }
 
 void UpdatePlatformShortcuts(
-    const base::FilePath& web_app_path,
+    const base::FilePath& app_data_path,
     const string16& old_app_title,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   // TODO(benwells): Implement this when shortcuts / weblings are enabled on
