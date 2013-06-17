@@ -56,7 +56,7 @@ EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-PASS: Media Source set duration. Got expected exception Error: InvalidAccessError: DOM Exception 15
+PASS: Media Source set duration. Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
 
 running testSetPositiveInfinity
 EVENT(webkitsourceopen)
@@ -73,21 +73,21 @@ EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-PASS: Media Source set duration. Got expected exception Error: InvalidAccessError: DOM Exception 15
+PASS: Media Source set duration. Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
 
 running testSetLowestValue
 EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-PASS: Media Source set duration. Got expected exception Error: InvalidAccessError: DOM Exception 15
+PASS: Media Source set duration. Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
 
 running testSetNegativeDouble
 EVENT(webkitsourceopen)
 onDurationChange : video.duration is 6.042
 EXPECTED (mediaSource.duration == 'video.duration') OK
 EVENT(loadedmetadata)
-PASS: Media Source set duration. Got expected exception Error: InvalidAccessError: DOM Exception 15
+PASS: Media Source set duration. Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
 
 running testSetPositiveDouble
 EVENT(webkitsourceopen)

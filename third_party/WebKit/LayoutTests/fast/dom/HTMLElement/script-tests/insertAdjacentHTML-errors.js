@@ -5,5 +5,5 @@ var div = document.createElement("div");
 shouldBeUndefined("div.insertAdjacentHTML('beforeBegin', 'text')");
 shouldBeUndefined("div.insertAdjacentHTML('afterEnd', 'text')");
 
-shouldThrow("div.insertAdjacentHTML('FOO', 'text')", '"Error: SyntaxError: DOM Exception 12"');
-shouldThrow("document.documentElement.insertAdjacentHTML('afterEnd', 'text')", '"Error: NoModificationAllowedError: DOM Exception 7"');
+shouldThrow("div.insertAdjacentHTML('FOO', 'text')", '"SyntaxError: An invalid or illegal string was specified."');
+shouldThrow("document.documentElement.insertAdjacentHTML('afterEnd', 'text')", '"NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed."');

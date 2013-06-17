@@ -1,5 +1,5 @@
-Caught expected exception: Error: NotSupportedError: DOM Exception 9
-Caught expected exception: Error: TypeMismatchError: DOM Exception 17
+Caught expected exception: NotSupportedError: The implementation did not support the requested type of object or operation.
+Caught expected exception: TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object.
 1 (black) 2 (green) 3 (green) 4 (black) 
 
 PASS

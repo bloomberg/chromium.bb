@@ -95,7 +95,7 @@ debug("");
 debug("2.1 Detached Range, attached node");
 var detachedRange = document.createRange();
 detachedRange.detach();
-shouldThrow("detachedRange.intersectsNode(document.getElementById('a1'))", '"Error: InvalidStateError: DOM Exception 11"');
+shouldThrow("detachedRange.intersectsNode(document.getElementById('a1'))", '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
 debug("");
 
 debug("2.2 attached range, detached node");

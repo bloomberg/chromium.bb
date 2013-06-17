@@ -70,12 +70,12 @@ shouldBe('setValueAsNumberAndGetValue(1.2345678901234567e+38)', '"100"');
 
 debug('Tests to set invalid values to valueAsNumber:');
 shouldBe('setValueAsNumberAndGetValue(null)', '"0"');
-shouldThrow('setValueAsNumberAndGetValue("foo")', '"Error: NotSupportedError: DOM Exception 9"');
-shouldThrow('setValueAsNumberAndGetValue(NaN)', '"Error: NotSupportedError: DOM Exception 9"');
-shouldThrow('setValueAsNumberAndGetValue(Number.NaN)', '"Error: NotSupportedError: DOM Exception 9"');
-shouldThrow('setValueAsNumberAndGetValue(Infinity)', '"Error: NotSupportedError: DOM Exception 9"');
-shouldThrow('setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY)', '"Error: NotSupportedError: DOM Exception 9"');
-shouldThrow('setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY)', '"Error: NotSupportedError: DOM Exception 9"');
+shouldThrow('setValueAsNumberAndGetValue("foo")', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('setValueAsNumberAndGetValue(NaN)', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('setValueAsNumberAndGetValue(Number.NaN)', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('setValueAsNumberAndGetValue(Infinity)', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('setValueAsNumberAndGetValue(Number.POSITIVE_INFINITY)', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow('setValueAsNumberAndGetValue(Number.NEGATIVE_INFINITY)', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </body>

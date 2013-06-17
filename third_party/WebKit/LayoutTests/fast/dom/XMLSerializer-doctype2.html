@@ -19,10 +19,10 @@
                 var text = serializer.serializeToString(docType);
                 debug("FAIL: XMLSerializer.serializeToString() should throw an exception if it tries to serialize a documentless DocumentType node.");
             } catch (e) {
-                if (e == "Error: InvalidAccessError: DOM Exception 15")
+                if (e == "InvalidAccessError: A parameter or an operation was not supported by the underlying object.")
                     debug("PASS: an " + e + " was thrown as expected.")
                 else
-                    debug("FAIL: XMLSerializer.serializeToString() should throw an INVALID_ACCESS_ERR DOMExeption if it tries to serialize a documentless DocumentType node.");
+                    debug("FAIL: XMLSerializer.serializeToString() should throw an InvalidAccessError DOMExeption if it tries to serialize a documentless DocumentType node.");
             }
         }
     </script>

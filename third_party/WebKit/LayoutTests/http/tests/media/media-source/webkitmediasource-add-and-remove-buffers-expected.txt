@@ -1,29 +1,29 @@
 Tests webkitSourceAddId() & webkitSourceRemoveId() methods
 
 Test adding an ID while closed.
-Got expected exception Error: InvalidStateError: DOM Exception 11
+Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
 
 running testAddBufferFailureCases
 EVENT(webkitsourceopen)
 Test empty type.
-Got expected exception Error: InvalidAccessError: DOM Exception 15
+Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
 Test an unsupported type.
-Got expected exception Error: NotSupportedError: DOM Exception 9
+Got expected exception NotSupportedError: The implementation did not support the requested type of object or operation.
 Test a supported type with an unsupported codec.
-Got expected exception Error: NotSupportedError: DOM Exception 9
+Got expected exception NotSupportedError: The implementation did not support the requested type of object or operation.
 Test reaching sourceID limit.
 Test that SourceBuffers can't be added while in the ended state.
-Got expected exception Error: InvalidStateError: DOM Exception 11
+Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
 
 running testRemoveNullBuffer
 EVENT(webkitsourceopen)
 Test null buffer case
-Got expected exception Error: InvalidAccessError: DOM Exception 15
+Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
 
 running testRemoveAgain
 EVENT(webkitsourceopen)
 Test removing a buffer that was already removed.
-Got expected exception Error: InvalidStateError: DOM Exception 11
+Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
 
 running testRemoveBufferAfterEnded
 EVENT(webkitsourceopen)
@@ -37,8 +37,8 @@ running testAppendFailureCases
 EVENT(webkitsourceopen)
 Test a successful append.
 Test append with a null buffer.
-Got expected exception Error: InvalidAccessError: DOM Exception 15
+Got expected exception InvalidAccessError: A parameter or an operation was not supported by the underlying object.
 Test append after buffer has been removed.
-Got expected exception Error: InvalidStateError: DOM Exception 11
+Got expected exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
 END OF TEST
 

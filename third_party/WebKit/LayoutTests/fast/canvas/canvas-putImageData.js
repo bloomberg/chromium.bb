@@ -39,7 +39,7 @@ var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
 
 if (!context.createImageData)
-    context.createImageData = function(w,h) { 
+    context.createImageData = function(w,h) {
         var data = this.getImageData(0, 0, w, h);
         for (var i = 0; i < data.data.length; i++)
             data.data[i] = 0;
@@ -202,24 +202,24 @@ pixelShouldBe(9, 9, [0, 128,0,255]);
 
 
 shouldThrow("context.putImageData({}, 0, 0)", "'TypeError: Type error'");
-shouldThrow("context.putImageData(buffer, NaN, 0, 0, 0, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, NaN, 0, 0, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, NaN, 0, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, NaN, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, NaN, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, NaN)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, Infinity, 0, 0, 0, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, Infinity, 0, 0, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, Infinity, 0, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, Infinity, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, Infinity, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, Infinity)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, undefined, 0, 0, 0, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, undefined, 0, 0, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, undefined, 0, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, undefined, 0, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, undefined, 0)", "'Error: NotSupportedError: DOM Exception 9'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, undefined)", "'Error: NotSupportedError: DOM Exception 9'");
+shouldThrow("context.putImageData(buffer, NaN, 0, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, NaN, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, NaN, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, NaN, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, NaN, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, NaN)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, Infinity, 0, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, Infinity, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, Infinity, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, Infinity, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, Infinity, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, Infinity)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, undefined, 0, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, undefined, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, undefined, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, undefined, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, undefined, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, undefined)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
 
 // Ensure we don't mess up bounds clipping checks
 var rectcanvas = document.createElement("canvas");

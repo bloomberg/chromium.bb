@@ -1,8 +1,8 @@
 foobarbaz
 Success: window.getSelection() is ar.
-Success: s.extend(span2.firstChild, 4) raised Error: IndexSizeError: DOM Exception 1.
-Success: s.extend(span2.firstChild, -1) raised Error: IndexSizeError: DOM Exception 1.
+Success: s.extend(span2.firstChild, 4) raised IndexSizeError: Index or size was negative, or greater than the allowed value..
+Success: s.extend(span2.firstChild, -1) raised IndexSizeError: Index or size was negative, or greater than the allowed value..
 Success: window.getSelection() is b.
 Success: window.getSelection() is arbaz.
-Success: s.extend() raised Error: TypeMismatchError: DOM Exception 17.
-Success: s.extend(null, 0) raised Error: TypeMismatchError: DOM Exception 17.
+Success: s.extend() raised TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
+Success: s.extend(null, 0) raised TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..

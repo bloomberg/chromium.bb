@@ -8,7 +8,7 @@ try {
     e = err;
 }
 
-shouldBeEqualToString("e.toString()", "Error: InvalidStateError: DOM Exception 11");
+shouldBeEqualToString("e.toString()", "InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.");
 shouldBeEqualToString("Object.prototype.toString.call(e)", "[object DOMException]");
 shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object DOMExceptionPrototype]");
 shouldBeEqualToString("e.constructor.toString()", "function DOMException() { [native code] }");

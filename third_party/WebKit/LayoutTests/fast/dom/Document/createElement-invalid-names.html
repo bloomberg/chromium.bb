@@ -26,7 +26,7 @@ var nameList = [
                 ];
 
 for (var i in nameList)
-    shouldThrow("document.createElement('" + nameList[i] +"')", "'Error: InvalidCharacterError: DOM Exception 5'");
+    shouldThrow("document.createElement('" + nameList[i] +"')", "'InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name.'");
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </body>

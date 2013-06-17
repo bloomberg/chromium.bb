@@ -11,7 +11,7 @@ function fileSystemCallback(fs)
     try {
         postMessage(fs, '*');
     } catch (e) {
-        debug(e.message);
+        debug(e);
     }
 
     finishJSTest();

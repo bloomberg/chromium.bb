@@ -41,7 +41,7 @@ class ExceptionBase : public RefCounted<ExceptionBase> {
 public:
     unsigned short code() const { return m_code; }
     String name() const { return m_name; }
-    String message() const { return m_message; }
+    String message() const { return description(); }
     String description() const { return m_description; }
 
     String toString() const;
@@ -52,7 +52,6 @@ protected:
 private:
     unsigned short m_code;
     String m_name;
-    String m_message;
     String m_description;
 };
 

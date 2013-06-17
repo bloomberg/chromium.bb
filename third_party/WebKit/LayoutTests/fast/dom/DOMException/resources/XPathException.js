@@ -11,7 +11,7 @@ try {
     e = err;
 }
 
-shouldBeEqualToString("e.toString()", "Error: TYPE_ERR: DOM XPath Exception 52");
+shouldBeEqualToString("e.toString()", "TYPE_ERR: The expression could not be converted to return the specified type.");
 shouldBeEqualToString("Object.prototype.toString.call(e)", "[object XPathException]");
 shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object XPathExceptionPrototype]");
 shouldBeEqualToString("e.constructor.toString()", "function XPathException() { [native code] }");

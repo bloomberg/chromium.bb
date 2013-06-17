@@ -54,9 +54,9 @@ function shouldThrow(_a, _e)
 <script>
 
 window.onload = function() {
-    shouldThrow("window.openDatabase('SandboxedIframeStorageDisallowed', '1.0', '', 1)", "'Error: SecurityError: DOM Exception 18'");
-    shouldThrow("window.localStorage", "'Error: SecurityError: DOM Exception 18'");
-    shouldThrow("window.sessionStorage", "'Error: SecurityError: DOM Exception 18'");
+    shouldThrow("window.openDatabase('SandboxedIframeStorageDisallowed', '1.0', '', 1)", "'SecurityError: An attempt was made to break through the security policy of the user agent.'");
+    shouldThrow("window.localStorage", "'SecurityError: An attempt was made to break through the security policy of the user agent.'");
+    shouldThrow("window.sessionStorage", "'SecurityError: An attempt was made to break through the security policy of the user agent.'");
 }
 
 </script>

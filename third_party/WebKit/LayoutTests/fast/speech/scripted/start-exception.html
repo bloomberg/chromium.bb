@@ -34,14 +34,14 @@ function doubleStart() {
                         finishJSTest();
                     }
                 } else {
-                    shouldThrow("r.start()", '"Error: InvalidStateError: DOM Exception 11"');
+                    shouldThrow("r.start()", '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
                 }
             }
         }
     }
 
     shouldNotThrow("r.start()");
-    shouldThrow("r.start()", '"Error: InvalidStateError: DOM Exception 11"');
+    shouldThrow("r.start()", '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
 }
 
 window.onload = run;

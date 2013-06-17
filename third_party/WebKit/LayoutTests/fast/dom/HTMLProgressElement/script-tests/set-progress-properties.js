@@ -27,16 +27,16 @@ shouldBe('p.value', '0');
 shouldBe('p.position', '0');
 
 debug("Set invalid value, should throw");
-shouldThrow('p.value = "200A";', '"Error: NotSupportedError: DOM Exception 9"');
+shouldThrow('p.value = "200A";', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
 
 debug("Set invalid max, should throw");
-shouldThrow('p.max = "max";', '"Error: NotSupportedError: DOM Exception 9"');
+shouldThrow('p.max = "max";', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
 
 debug("Set max to Infinity, should throw");
-shouldThrow('p.max = Infinity;', '"Error: NotSupportedError: DOM Exception 9"');
+shouldThrow('p.max = Infinity;', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
 
 debug("Set value to NaN, should throw");
-shouldThrow('p.value = NaN;', '"Error: NotSupportedError: DOM Exception 9"');
+shouldThrow('p.value = NaN;', '"NotSupportedError: The implementation did not support the requested type of object or operation."');
 
 debug("Set value to null and max to 0");
 p.value = null;

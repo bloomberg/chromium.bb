@@ -2,8 +2,8 @@ Tests various use cases when cloning MessagePorts.
 
 Should be a series of SUCCESS messages, followed with DONE.
 
-SUCCESS: Posting port to itself: Error: InvalidStateError: DOM Exception 11
-SUCCESS: Posting entangled port: Error: InvalidStateError: DOM Exception 11
+SUCCESS: Posting port to itself: InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
+SUCCESS: Posting entangled port: InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
 SUCCESS: Posting cloned port.
 SUCCESS: Posted messages to cloned port.
 SUCCESS: Cloned both endpoints of a channel.

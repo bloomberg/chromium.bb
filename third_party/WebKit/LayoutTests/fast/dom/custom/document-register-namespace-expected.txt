@@ -26,7 +26,7 @@ PASS notSVG2 instanceof CustomSVGElement is false
 PASS notSVG2 instanceof HTMLUnknownElement is false
 PASS notSVG2 instanceof HTMLElement is true
 PASS Object.getPrototypeOf(notSVG2) is HTMLElement.prototype
-PASS document.register('xml-foo', { prototype: Object.create(Element.prototype) }) threw exception Error: NamespaceError: DOM Exception 14.
+PASS document.register('xml-foo', { prototype: Object.create(Element.prototype) }) threw exception NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces..
 PASS successfullyParsed is true
 
 TEST COMPLETE

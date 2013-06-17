@@ -7,4 +7,4 @@ var text = document.createTextNode('hello');
 var element = document.createElement("div");
 range.selectNodeContents(text);
 
-shouldThrow("range.surroundContents(element)", '"Error: HierarchyRequestError: DOM Exception 3"');
+shouldThrow("range.surroundContents(element)", '"HierarchyRequestError: A Node was inserted somewhere it doesn\'t belong."');

@@ -41,7 +41,7 @@ PASS comment.namespaceURI is null
 PASS comment.prefix is null
 PASS comment.nodeValue is 'foo'
 PASS comment.data is 'foo'
-PASS document.createCDATASection('foo') threw exception Error: NotSupportedError: DOM Exception 9.
+PASS document.createCDATASection('foo') threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS cdata.nodeName is '#cdata-section'
 PASS cdata.localName is null
 PASS cdata.namespaceURI is null
@@ -113,7 +113,7 @@ PASS element.namespaceURI is 'http://www.w3.org/1999/xhtml'
 PASS element.prefix is 'html'
 PASS element.nodeValue is null
 PASS element.attributes.toString() is '[object NamedNodeMap]'
-PASS document.createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="missing.xsl"') threw exception Error: NotSupportedError: DOM Exception 9.
+PASS document.createProcessingInstruction('xml-stylesheet', 'type="text/xsl" href="missing.xsl"') threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS processingInstruction.nodeName is 'xml-stylesheet'
 PASS processingInstruction.localName is null
 PASS processingInstruction.namespaceURI is null

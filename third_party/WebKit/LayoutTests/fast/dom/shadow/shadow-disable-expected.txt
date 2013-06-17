@@ -12,39 +12,39 @@ PASS element.webkitCreateShadowRoot() is not null
 SECTION
 PASS element.webkitCreateShadowRoot() is not null
 INPUT
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 tref
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 AUDIO
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 VIDEO
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 SELECT
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 IMG
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 TEXTAREA
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 IFRAME
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 CANVAS
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 METER
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 PROGRESS
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 OBJECT
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 EMBED
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 KEYGEN
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 VIDEO
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 AUDIO
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 FIELDSET
-PASS element.webkitCreateShadowRoot() threw exception Error: HierarchyRequestError: DOM Exception 3.
+PASS element.webkitCreateShadowRoot() threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 PASS successfullyParsed is true
 
 TEST COMPLETE

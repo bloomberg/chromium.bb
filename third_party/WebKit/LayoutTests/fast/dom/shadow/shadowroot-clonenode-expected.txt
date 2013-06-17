@@ -1,9 +1,9 @@
-Calling ShadowRoot.cloneNode() should throw a DATA_CLONE_ERR exception.
+Calling ShadowRoot.cloneNode() should throw a DataCloneError exception.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS shadowRoot.cloneNode() threw exception Error: DataCloneError: DOM Exception 25.
+PASS shadowRoot.cloneNode() threw exception DataCloneError: An object could not be cloned..
 PASS successfullyParsed is true
 
 TEST COMPLETE

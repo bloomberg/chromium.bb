@@ -47,9 +47,9 @@ shouldBeTrue("testSet('', 'data-')");
 shouldBeTrue("testSet('\xE0', 'data-\xE0')");
 debug("");
 
-shouldThrow("testSet('-foo', 'dummy')", "'Error: SyntaxError: DOM Exception 12'");
-shouldThrow("testSet('foo\x20', 'dummy')", "'Error: InvalidCharacterError: DOM Exception 5'");
-shouldThrow("testSet('foo\uF900', 'dummy')", "'Error: InvalidCharacterError: DOM Exception 5'");
+shouldThrow("testSet('-foo', 'dummy')", "'SyntaxError: An invalid or illegal string was specified.'");
+shouldThrow("testSet('foo\x20', 'dummy')", "'InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name.'");
+shouldThrow("testSet('foo\uF900', 'dummy')", "'InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name.'");
 debug("");
 
 function testDelete(attr, prop)

@@ -12,7 +12,7 @@ Step 2: Cross origin request, disallowed
 readystatechange 4
 error
 loadend
-Error: NetworkError: DOM Exception 19
+NetworkError: A network error occurred.
 
 Step 3: Cross origin request, allowed
 readystatechange 4

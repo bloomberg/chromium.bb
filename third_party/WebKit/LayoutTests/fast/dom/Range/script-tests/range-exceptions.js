@@ -22,9 +22,9 @@ node.appendChild(c2);
 var r = document.createRange();
 r.setStart(c1, 2);
 r.setEnd(c2, 3);
-shouldThrow("r.surroundContents(document.createElement('a'))", '"Error: InvalidStateError: DOM Exception 11"');
+shouldThrow("r.surroundContents(document.createElement('a'))", '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
 
 // But not when we don't try to split the comment.
 r.setStart(c1, 0);
 r.setEnd(c1, 5);
-shouldThrow("r.surroundContents(document.createElement('a'))", '"Error: HierarchyRequestError: DOM Exception 3"');
+shouldThrow("r.surroundContents(document.createElement('a'))", '"HierarchyRequestError: A Node was inserted somewhere it doesn\'t belong."');

@@ -1,2 +1,2 @@
-ALERT: Error: HierarchyRequestError: DOM Exception 3
+ALERT: HierarchyRequestError: A Node was inserted somewhere it doesn't belong.
 

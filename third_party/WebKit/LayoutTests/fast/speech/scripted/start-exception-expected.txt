@@ -9,23 +9,23 @@ PASS webkitSpeechRecognition == null is false
 doubleStart():
 window.r = new webkitSpeechRecognition()
 PASS r.start() did not throw exception.
-PASS r.start() threw exception Error: InvalidStateError: DOM Exception 11.
+PASS r.start() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 onstart
-PASS r.start() threw exception Error: InvalidStateError: DOM Exception 11.
+PASS r.start() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 onaudiostart
-PASS r.start() threw exception Error: InvalidStateError: DOM Exception 11.
+PASS r.start() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 onsoundstart
-PASS r.start() threw exception Error: InvalidStateError: DOM Exception 11.
+PASS r.start() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 onspeechstart
-PASS r.start() threw exception Error: InvalidStateError: DOM Exception 11.
+PASS r.start() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 onnomatch
-PASS r.start() threw exception Error: InvalidStateError: DOM Exception 11.
+PASS r.start() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 onspeechend
-PASS r.start() threw exception Error: InvalidStateError: DOM Exception 11.
+PASS r.start() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 onsoundend
-PASS r.start() threw exception Error: InvalidStateError: DOM Exception 11.
+PASS r.start() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 onaudioend
-PASS r.start() threw exception Error: InvalidStateError: DOM Exception 11.
+PASS r.start() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 onend
 PASS r.start() did not throw exception.
 r.abort()

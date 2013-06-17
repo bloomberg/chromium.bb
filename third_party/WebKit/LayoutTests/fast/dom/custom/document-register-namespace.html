@@ -64,7 +64,7 @@ shouldBe("Object.getPrototypeOf(notSVG2)", "HTMLElement.prototype");
 // Trying to extend something outside HTML or SVG should throw a NAMESPACE_ERR
 shouldThrow(
     "document.register('xml-foo', { prototype: Object.create(Element.prototype) })",
-    "'Error: NamespaceError: DOM Exception 14'");
+    "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
 
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

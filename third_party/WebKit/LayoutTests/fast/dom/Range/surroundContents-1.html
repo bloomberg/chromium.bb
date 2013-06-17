@@ -20,15 +20,15 @@ range.setStart(text, 0);
 range.setEnd(text, text.length);
 
 try {
-    range.surroundContents(select);    
+    range.surroundContents(select);
 } catch (e) {
-    var error = "Error: HierarchyRequestError: DOM Exception 3";
+    var error = "HierarchyRequestError: A Node was inserted somewhere it doesn't belong.";
     if (e != error)
         log ("Failure, expected: " + error);
 }
 
 try {
-    range.surroundContents(insert); 
+    range.surroundContents(insert);
 } catch (e) {
     log ("Failure: " + error);
 }
