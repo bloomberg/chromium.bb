@@ -119,6 +119,12 @@ void OverscrollController::Reset() {
   scroll_state_ = STATE_UNKNOWN;
 }
 
+void OverscrollController::Cancel() {
+  SetOverscrollMode(OVERSCROLL_NONE);
+  overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
+  scroll_state_ = STATE_UNKNOWN;
+}
+
 bool OverscrollController::DispatchEventCompletesAction (
     const WebKit::WebInputEvent& event) const {
   if (overscroll_mode_ == OVERSCROLL_NONE)

@@ -585,6 +585,10 @@ void RenderWidgetHostImpl::Blur() {
   if (IsMouseLocked())
     view_->UnlockMouse();
 
+  // If there is a pending overscroll, then that should be cancelled.
+  if (overscroll_controller_)
+    overscroll_controller_->Cancel();
+
   Send(new InputMsg_SetFocus(routing_id_, false));
 }
 

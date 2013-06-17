@@ -59,6 +59,10 @@ class OverscrollController {
   // Resets internal states.
   void Reset();
 
+  // Cancels any in-progress overscroll (and calls OnOverscrollModeChange on the
+  // delegate if necessary), and resets internal states.
+  void Cancel();
+
  private:
   friend class MockRenderWidgetHost;
 
