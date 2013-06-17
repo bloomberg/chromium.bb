@@ -796,10 +796,7 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 which, PRBool on)
 	    rv = SECFailure;
 	} else {
             if (PR_FALSE != on) {
-                /* PKCS#11 bypass is not supported with TLS 1.2. */
-                if (ss->vrange.max >= SSL_LIBRARY_VERSION_TLS_1_2) {
-                    ss->opt.bypassPKCS11 = PR_FALSE;
-                } else if (PR_SUCCESS == SSL_BypassSetup() ) {
+                if (PR_SUCCESS == SSL_BypassSetup() ) {
 #ifdef NO_PKCS11_BYPASS
                     ss->opt.bypassPKCS11 = PR_FALSE;
 #else
@@ -1963,10 +1960,6 @@ SSL_VersionRangeSet(PRFileDesc *fd, const SSLVersionRange *vrange)
 	    return SECFailure;
 	}
 	ss->vrange.max = SSL_LIBRARY_VERSION_TLS_1_1;
-    }
-    /* PKCS#11 bypass is not supported with TLS 1.2. */
-    if (ss->vrange.max >= SSL_LIBRARY_VERSION_TLS_1_2) {
-	ss->opt.bypassPKCS11 = PR_FALSE;
     }
 
     ssl_ReleaseSSL3HandshakeLock(ss);
