@@ -10,16 +10,57 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/google_one_shot_remote_engine.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
+#include "media/base/audio_converter.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if defined(OS_WIN)
+#include "media/audio/win/core_audio_util_win.h"
+#endif
+
+using media::AudioBus;
+using media::AudioConverter;
 using media::AudioInputController;
 using media::AudioManager;
 using media::AudioParameters;
 using media::ChannelLayout;
 
 namespace content {
+
+// Private class which encapsulates the audio converter and the
+// AudioConverter::InputCallback. It handles resampling, buffering and
+// channel mixing between input and output parameters.
+class SpeechRecognizerImpl::OnDataConverter
+    : public media::AudioConverter::InputCallback {
+ public:
+  OnDataConverter(const AudioParameters& input_params,
+                  const AudioParameters& output_params);
+  virtual ~OnDataConverter();
+
+  // Converts input |data| buffer into an AudioChunk where the input format
+  // is given by |input_parameters_| and the output format by
+  // |output_parameters_|.
+  scoped_refptr<AudioChunk> Convert(const uint8* data, size_t size);
+
+ private:
+  // media::AudioConverter::InputCallback implementation.
+  virtual double ProvideInput(AudioBus* dest,
+                              base::TimeDelta buffer_delay) OVERRIDE;
+
+  // Handles resampling, buffering, and channel mixing between input and output
+  // parameters.
+  AudioConverter audio_converter_;
+
+  scoped_ptr<AudioBus> input_bus_;
+  scoped_ptr<AudioBus> output_bus_;
+  const AudioParameters input_parameters_;
+  const AudioParameters output_parameters_;
+  bool waiting_for_input_;
+  scoped_ptr<uint8[]> converted_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnDataConverter);
+};
+
 namespace {
 
 // The following constants are related to the volume level indicator shown in
@@ -69,6 +110,65 @@ media::AudioManager* SpeechRecognizerImpl::audio_manager_for_tests_ = NULL;
 
 COMPILE_ASSERT(SpeechRecognizerImpl::kNumBitsPerAudioSample % 8 == 0,
                kNumBitsPerAudioSample_must_be_a_multiple_of_8);
+
+// SpeechRecognizerImpl::OnDataConverter implementation
+
+SpeechRecognizerImpl::OnDataConverter::OnDataConverter(
+    const AudioParameters& input_params, const AudioParameters& output_params)
+    : audio_converter_(input_params, output_params, false),
+      input_bus_(AudioBus::Create(input_params)),
+      output_bus_(AudioBus::Create(output_params)),
+      input_parameters_(input_params),
+      output_parameters_(output_params),
+      waiting_for_input_(false),
+      converted_data_(new uint8[output_parameters_.GetBytesPerBuffer()]) {
+  audio_converter_.AddInput(this);
+}
+
+SpeechRecognizerImpl::OnDataConverter::~OnDataConverter() {
+  // It should now be safe to unregister the converter since no more OnData()
+  // callbacks are outstanding at this point.
+  audio_converter_.RemoveInput(this);
+}
+
+scoped_refptr<AudioChunk> SpeechRecognizerImpl::OnDataConverter::Convert(
+    const uint8* data, size_t size) {
+  CHECK_EQ(size, static_cast<size_t>(input_parameters_.GetBytesPerBuffer()));
+
+  input_bus_->FromInterleaved(
+      data, input_bus_->frames(), input_parameters_.bits_per_sample() / 8);
+
+  waiting_for_input_ = true;
+  audio_converter_.Convert(output_bus_.get());
+
+  output_bus_->ToInterleaved(
+      output_bus_->frames(), output_parameters_.bits_per_sample() / 8,
+      converted_data_.get());
+
+  // TODO(primiano): Refactor AudioChunk to avoid the extra-copy here
+  // (see http://crbug.com/249316 for details).
+  return scoped_refptr<AudioChunk>(new AudioChunk(
+      converted_data_.get(),
+      output_parameters_.GetBytesPerBuffer(),
+      output_parameters_.bits_per_sample() / 8));
+}
+
+double SpeechRecognizerImpl::OnDataConverter::ProvideInput(
+    AudioBus* dest, base::TimeDelta buffer_delay) {
+  // The audio converted should never ask for more than one bus in each call
+  // to Convert(). If so, we have a serious issue in our design since we might
+  // miss recorded chunks of 100 ms audio data.
+  CHECK(waiting_for_input_);
+
+  // Read from the input bus to feed the converter.
+  input_bus_->CopyTo(dest);
+
+  // |input_bus_| should only be provide once.
+  waiting_for_input_ = false;
+  return 1;
+}
+
+// SpeechRecognizerImpl implementation
 
 SpeechRecognizerImpl::SpeechRecognizerImpl(
     SpeechRecognitionEventListener* listener,
@@ -169,9 +269,10 @@ void SpeechRecognizerImpl::OnData(AudioInputController* controller,
   if (size == 0)  // This could happen when audio capture stops and is normal.
     return;
 
+  // Convert audio from native format to fixed format used by WebSpeech.
   FSMEventArgs event_args(EVENT_AUDIO_DATA);
-  event_args.audio_data = new AudioChunk(data, static_cast<size_t>(size),
-                                         kNumBitsPerAudioSample / 8);
+  event_args.audio_data = audio_converter_->Convert(data, size);
+
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SpeechRecognizerImpl::DispatchEvent,
                                      this, event_args));
@@ -387,9 +488,10 @@ SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
   DCHECK(recognition_engine_.get() != NULL);
   DCHECK(!IsCapturingAudio());
-  AudioManager* audio_manager = (audio_manager_for_tests_ != NULL) ?
-                                 audio_manager_for_tests_ :
-                                 BrowserMainLoop::GetAudioManager();
+  const bool unit_test_is_active = (audio_manager_for_tests_ != NULL);
+  AudioManager* audio_manager = unit_test_is_active ?
+                                audio_manager_for_tests_ :
+                                AudioManager::Get();
   DCHECK(audio_manager != NULL);
 
   DVLOG(1) << "SpeechRecognizerImpl starting audio capture.";
@@ -402,14 +504,66 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
                                         SPEECH_AUDIO_ERROR_DETAILS_NO_MIC));
   }
 
-  const int samples_per_packet = (kAudioSampleRate *
-      recognition_engine_->GetDesiredAudioChunkDurationMs()) / 1000;
-  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
-                         kAudioSampleRate, kNumBitsPerAudioSample,
-                         samples_per_packet);
-  audio_controller_ = AudioInputController::Create(audio_manager, this, params);
+  int chunk_duration_ms = recognition_engine_->GetDesiredAudioChunkDurationMs();
 
-  if (audio_controller_.get() == NULL) {
+  // TODO(xians): use the correct input device here.
+  AudioParameters in_params = audio_manager->GetInputStreamParameters(
+      media::AudioManagerBase::kDefaultDeviceId);
+  if (!in_params.IsValid() && !unit_test_is_active) {
+    DLOG(ERROR) << "Invalid native audio input parameters";
+    return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
+  }
+
+  // Audio converter shall provide audio based on these parameters as output.
+  // Hard coded, WebSpeech specific parameters are utilized here.
+  int frames_per_buffer = (kAudioSampleRate * chunk_duration_ms) / 1000;
+  AudioParameters output_parameters = AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, kChannelLayout, kAudioSampleRate,
+      kNumBitsPerAudioSample, frames_per_buffer);
+
+  // Audio converter will receive audio based on these parameters as input.
+  // On Windows we start by verifying that Core Audio is supported. If not,
+  // the WaveIn API is used and we might as well avoid all audio conversations
+  // since WaveIn does the conversion for us.
+  // TODO(henrika): this code should be moved to platform dependent audio
+  // managers.
+  bool use_native_audio_params = true;
+#if defined(OS_WIN)
+  use_native_audio_params = media::CoreAudioUtil::IsSupported();
+  DVLOG_IF(1, !use_native_audio_params) << "Reverting to WaveIn for WebSpeech";
+#endif
+
+  AudioParameters input_parameters = output_parameters;
+  if (use_native_audio_params && !unit_test_is_active) {
+    // Use native audio parameters but avoid opening up at the native buffer
+    // size. Instead use same frame size (in milliseconds) as WebSpeech uses.
+    // We rely on internal buffers in the audio back-end to fulfill this request
+    // and the idea is to simplify the audio conversion since each Convert()
+    // call will then render exactly one ProvideInput() call.
+    // Due to implementation details in the audio converter, 2 milliseconds
+    // are added to the default frame size (100 ms) to ensure there is enough
+    // data to generate 100 ms of output when resampling.
+    frames_per_buffer =
+        ((in_params.sample_rate() * (chunk_duration_ms + 2)) / 1000.0) + 0.5;
+    input_parameters.Reset(in_params.format(),
+                           in_params.channel_layout(),
+                           in_params.channels(),
+                           in_params.input_channels(),
+                           in_params.sample_rate(),
+                           in_params.bits_per_sample(),
+                           frames_per_buffer);
+  }
+
+  // Create an audio converter which converts data between native input format
+  // and WebSpeech specific output format.
+  audio_converter_.reset(
+      new OnDataConverter(input_parameters, output_parameters));
+
+  // TODO(xians): use the correct input device here.
+  audio_controller_ = AudioInputController::Create(
+      audio_manager, this, input_parameters);
+
+  if (!audio_controller_) {
     return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
   }
 

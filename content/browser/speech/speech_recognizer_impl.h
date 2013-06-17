@@ -149,6 +149,12 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   bool is_single_shot_;
   FSMState state_;
 
+  class OnDataConverter;
+
+  // Converts data between native input format and a WebSpeech specific
+  // output format.
+  scoped_ptr<SpeechRecognizerImpl::OnDataConverter> audio_converter_;
+
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerImpl);
 };
 
