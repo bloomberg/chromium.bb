@@ -68,7 +68,7 @@ OptionsMenuModel::~OptionsMenuModel() {
 bool OptionsMenuModel::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG:
-      return translate_infobar_delegate_->IsLanguageBlacklisted();
+      return !translate_infobar_delegate_->IsTranslatableLanguageByPrefs();
 
     case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE:
       return translate_infobar_delegate_->IsSiteBlacklisted();
@@ -90,7 +90,7 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
       return !translate_infobar_delegate_->ShouldAlwaysTranslate();
 
     case IDC_TRANSLATE_OPTIONS_ALWAYS :
-      return (!translate_infobar_delegate_->IsLanguageBlacklisted() &&
+      return (translate_infobar_delegate_->IsTranslatableLanguageByPrefs() &&
           !translate_infobar_delegate_->IsSiteBlacklisted());
 
     default:
@@ -108,7 +108,7 @@ void OptionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG:
       UMA_HISTOGRAM_BOOLEAN("Translate.NeverTranslateLang", true);
-      translate_infobar_delegate_->ToggleLanguageBlacklist();
+      translate_infobar_delegate_->ToggleTranslatableLanguageByPrefs();
       break;
 
     case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE:

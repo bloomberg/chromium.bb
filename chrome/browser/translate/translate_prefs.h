@@ -10,6 +10,7 @@
 #include "googleurl/src/gurl.h"
 
 class PrefService;
+class Profile;
 
 namespace base {
 class DictionaryValue;
@@ -70,8 +71,8 @@ class TranslatePrefs {
   void IncrementTranslationAcceptedCount(const std::string& language);
   void ResetTranslationAcceptedCount(const std::string& language);
 
-  static bool CanTranslate(PrefService* user_prefs,
-      const std::string& original_language, const GURL& url);
+  static bool CanTranslateLanguage(
+      Profile* profile, const std::string& language);
   static bool ShouldAutoTranslate(PrefService* user_prefs,
       const std::string& original_language, std::string* target_language);
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);

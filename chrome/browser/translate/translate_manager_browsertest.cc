@@ -1090,11 +1090,12 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateLanguagePref) {
                 pref_callback_);
   TranslatePrefs translate_prefs(prefs);
   EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
-  EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+  EXPECT_TRUE(translate_prefs.CanTranslateLanguage(profile, "fr"));
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateLanguageBlacklist);
   translate_prefs.BlacklistLanguage("fr");
   EXPECT_TRUE(translate_prefs.IsLanguageBlacklisted("fr"));
-  EXPECT_FALSE(translate_prefs.CanTranslate(prefs, "fr", url));
+  EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
+  EXPECT_FALSE(translate_prefs.CanTranslateLanguage(profile, "fr"));
 
   // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
@@ -1109,7 +1110,8 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateLanguagePref) {
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateLanguageBlacklist);
   translate_prefs.RemoveLanguageFromBlacklist("fr");
   EXPECT_FALSE(translate_prefs.IsLanguageBlacklisted("fr"));
-  EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+  EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(url.host()));
+  EXPECT_TRUE(translate_prefs.CanTranslateLanguage(profile, "fr"));
 
   // Navigate to a page in French.
   SimulateNavigation(url, "fr", true);
@@ -1137,11 +1139,11 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateSitePref) {
   registrar.Add(TranslatePrefs::kPrefTranslateSiteBlacklist, pref_callback_);
   TranslatePrefs translate_prefs(prefs);
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(host));
-  EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+  EXPECT_TRUE(translate_prefs.CanTranslateLanguage(profile, "fr"));
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateSiteBlacklist);
   translate_prefs.BlacklistSite(host);
   EXPECT_TRUE(translate_prefs.IsSiteBlacklisted(host));
-  EXPECT_FALSE(translate_prefs.CanTranslate(prefs, "fr", url));
+  EXPECT_TRUE(translate_prefs.CanTranslateLanguage(profile, "fr"));
 
   // Close the infobar.
   EXPECT_TRUE(CloseTranslateInfoBar());
@@ -1156,7 +1158,7 @@ TEST_F(TranslateManagerBrowserTest, NeverTranslateSitePref) {
   SetPrefObserverExpectation(TranslatePrefs::kPrefTranslateSiteBlacklist);
   translate_prefs.RemoveSiteFromBlacklist(host);
   EXPECT_FALSE(translate_prefs.IsSiteBlacklisted(host));
-  EXPECT_TRUE(translate_prefs.CanTranslate(prefs, "fr", url));
+  EXPECT_TRUE(translate_prefs.CanTranslateLanguage(profile, "fr"));
 
   // Navigate to a page in French.
   SimulateNavigation(url, "fr", true);

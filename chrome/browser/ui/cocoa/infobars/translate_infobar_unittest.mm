@@ -48,8 +48,8 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
 
   MOCK_METHOD0(TranslationDeclined, void());
 
-  virtual bool IsLanguageBlacklisted() OVERRIDE { return false; }
-  MOCK_METHOD0(ToggleLanguageBlacklist, void());
+  virtual bool IsTranslatableLanguageByPrefs() OVERRIDE { return true; }
+  MOCK_METHOD0(ToggleTranslatableLanguageByPrefs, void());
   virtual bool IsSiteBlacklisted() OVERRIDE { return false; }
   MOCK_METHOD0(ToggleSiteBlacklist, void());
   virtual bool ShouldAlwaysTranslate() OVERRIDE { return false; }
@@ -172,7 +172,7 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
   }
 
   {
-    EXPECT_CALL(*infobar_delegate_, ToggleLanguageBlacklist())
+    EXPECT_CALL(*infobar_delegate_, ToggleTranslatableLanguageByPrefs())
     .Times(1);
     [infobar_controller_ optionsMenuChanged:neverTranslateLanguateItem];
   }

@@ -129,8 +129,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual void TranslationDeclined();
 
   // Methods called by the Options menu delegate.
-  virtual bool IsLanguageBlacklisted();
-  virtual void ToggleLanguageBlacklist();
+  virtual bool IsTranslatableLanguageByPrefs();
+  virtual void ToggleTranslatableLanguageByPrefs();
   virtual bool IsSiteBlacklisted();
   virtual void ToggleSiteBlacklist();
   virtual bool ShouldAlwaysTranslate();

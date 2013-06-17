@@ -24,6 +24,7 @@ class GURL;
 struct LanguageDetectionDetails;
 struct PageTranslatedDetails;
 class PrefService;
+class Profile;
 struct ShortcutConfiguration;
 class TranslateAcceptLanguages;
 struct TranslateErrorDetails;
@@ -73,6 +74,9 @@ class TranslateManager : public content::NotificationObserver,
   // Returns true if |language| is supported by the translation server as a
   // alpha language.
   static bool IsAlphaLanguage(const std::string& language);
+
+  // Returns true if |language| is an Accept language for the user profile.
+  static bool IsAcceptLanguage(Profile* profile, const std::string& language);
 
   // Let the caller decide if and when we should fetch the language list from
   // the translate server. This is a NOOP if switches::kDisableTranslate is set

@@ -22,19 +22,23 @@ class TranslateAcceptLanguages : public content::NotificationObserver {
   TranslateAcceptLanguages();
   virtual ~TranslateAcceptLanguages();
 
+  // Returns true if |language| is available as Accept-Languages. |language|
+  // will be cnverted if it has the synonym of accept language.
+  static bool CanBeAcceptLanguage(const std::string& language);
+
   // Returns true if the passed language has been configured by the user as an
   // accept language. |language| will be converted if it has the synonym of
   // accept languages.
   bool IsAcceptLanguage(Profile* profile,
                         const std::string& language);
 
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguages);
+
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguages);
 
   // Initializes the |accept_languages_| language table based on the associated
   // preference in |prefs|.

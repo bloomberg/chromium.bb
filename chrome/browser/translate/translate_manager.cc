@@ -176,6 +176,17 @@ bool TranslateManager::IsAlphaLanguage(const std::string& language) {
   return false;
 }
 
+// static
+bool TranslateManager::IsAcceptLanguage(Profile* profile,
+                                        const std::string& language) {
+  if (GetInstance()->accept_languages_.get()) {
+    return GetInstance()->accept_languages_->IsAcceptLanguage(
+        profile, language);
+  }
+  NOTREACHED();
+  return false;
+}
+
 void TranslateManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
@@ -436,8 +447,14 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     return;
   }
 
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
   // Don't translate any language the user configured as accepted languages.
-  if (accept_languages_->IsAcceptLanguage(original_profile, language_code)) {
+  // When the flag --enable-translate-settings is on, the condition is
+  // different. In this case, even though a language is an Accept language,
+  // it could be translated due to the blacklist.
+  if (!command_line->HasSwitch(switches::kEnableTranslateSettings) &&
+      accept_languages_->IsAcceptLanguage(original_profile, language_code)) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_ACCEPT_LANGUAGES);
     return;
@@ -453,9 +470,17 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     return;
   }
 
-  // Don't translate any user black-listed URLs or user selected language
-  // combination.
-  if (!TranslatePrefs::CanTranslate(prefs, language_code, page_url)) {
+  TranslatePrefs translate_prefs(prefs);
+
+  // Don't translate any user black-listed languages.
+  if (!TranslatePrefs::CanTranslateLanguage(profile, language_code)) {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG);
+    return;
+  }
+
+  // Don't translate any user black-listed URLs.
+  if (translate_prefs.IsSiteBlacklisted(page_url.HostNoBrackets())) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_CONFIG);
     return;

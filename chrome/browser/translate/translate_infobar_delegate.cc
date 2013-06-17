@@ -8,9 +8,11 @@
 
 #include "base/i18n/string_compare.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "content/public/browser/navigation_details.h"
@@ -132,11 +134,15 @@ bool TranslateInfoBarDelegate::InTranslateNavigation() {
   return translate_tab_helper->language_state().InTranslateNavigation();
 }
 
-bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {
-  return prefs_.IsLanguageBlacklisted(original_language_code());
+bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  Profile* original_profile = profile->GetOriginalProfile();
+  return TranslatePrefs::CanTranslateLanguage(original_profile,
+                                              original_language_code());
 }
 
-void TranslateInfoBarDelegate::ToggleLanguageBlacklist() {
+void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
   const std::string& original_lang = original_language_code();
   if (prefs_.IsLanguageBlacklisted(original_lang)) {
     prefs_.RemoveLanguageFromBlacklist(original_lang);

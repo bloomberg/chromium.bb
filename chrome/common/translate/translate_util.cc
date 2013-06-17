@@ -18,6 +18,8 @@ struct LanguageCodeSynonym {
   const char* const chrome_language;
 };
 
+// If this table is updated, please sync this with that in
+// chrome/browser/resources/options/language_options.js
 const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
   {"no", "nb"},
   {"iw", "he"},

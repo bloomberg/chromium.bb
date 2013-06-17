@@ -4,9 +4,17 @@
 
 #include "chrome/browser/translate/translate_prefs.h"
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/translate/translate_accept_languages.h"
+#include "chrome/browser/translate/translate_manager.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/translate/translate_util.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 const char TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
@@ -19,6 +27,30 @@ const char TranslatePrefs::kPrefTranslateDeniedCount[] =
     "translate_denied_count";
 const char TranslatePrefs::kPrefTranslateAcceptedCount[] =
     "translate_accepted_count";
+
+namespace {
+
+void AppendLanguageToAcceptLanguages(PrefService* prefs,
+                                     const std::string& language) {
+  if (!TranslateAcceptLanguages::CanBeAcceptLanguage(language))
+    return;
+
+  std::string accept_language = language;
+  TranslateUtil::ToChromeLanguageSynonym(&accept_language);
+
+  std::string accept_languages_str = prefs->GetString(prefs::kAcceptLanguages);
+  std::vector<std::string> accept_languages;
+  base::SplitString(accept_languages_str, ',', &accept_languages);
+  if (std::find(accept_languages.begin(),
+                accept_languages.end(),
+                accept_language) == accept_languages.end()) {
+    accept_languages.push_back(accept_language);
+  }
+  accept_languages_str = JoinString(accept_languages, ',');
+  prefs->SetString(prefs::kAcceptLanguages, accept_languages_str);
+}
+
+}  // namespace
 
 // TranslatePrefs: public: -----------------------------------------------------
 
@@ -33,6 +65,9 @@ bool TranslatePrefs::IsLanguageBlacklisted(
 
 void TranslatePrefs::BlacklistLanguage(const std::string& original_language) {
   BlacklistValue(kPrefTranslateLanguageBlacklist, original_language);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableTranslateSettings))
+    AppendLanguageToAcceptLanguages(prefs_, original_language);
 }
 
 void TranslatePrefs::RemoveLanguageFromBlacklist(
@@ -160,20 +195,45 @@ void TranslatePrefs::ResetTranslationAcceptedCount(
 
 // TranslatePrefs: public, static: ---------------------------------------------
 
-bool TranslatePrefs::CanTranslate(PrefService* user_prefs,
-    const std::string& original_language, const GURL& url) {
-  TranslatePrefs prefs(user_prefs);
-  if (prefs.IsSiteBlacklisted(url.HostNoBrackets()))
-    return false;
-  return (!prefs.IsLanguageBlacklisted(original_language));
+// static
+bool TranslatePrefs::CanTranslateLanguage(Profile* profile,
+                                          const std::string& language) {
+  TranslatePrefs translate_prefs(profile->GetPrefs());
+  bool blacklisted = translate_prefs.IsLanguageBlacklisted(language);
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableTranslateSettings)) {
+    bool is_accept_language =
+        TranslateManager::IsAcceptLanguage(profile, language);
+    bool can_be_accept_language =
+        TranslateAcceptLanguages::CanBeAcceptLanguage(language);
+
+    // Don't translate any user black-listed languages. Checking
+    // |is_accept_language| is necessary because if the user eliminates the
+    // language from the preference, it is natural to forget whether or not
+    // the language should be translated. Checking |cannot_be_accept_language|
+    // is also necessary because some minor languages can't be selected in the
+    // language preference even though the language is available in Translate
+    // server.
+    if (blacklisted && (is_accept_language || !can_be_accept_language))
+      return false;
+  } else {
+    // Don't translate any user user selected language.
+    if (blacklisted)
+      return false;
+  }
+
+  return true;
 }
 
+// static
 bool TranslatePrefs::ShouldAutoTranslate(PrefService* user_prefs,
     const std::string& original_language, std::string* target_language) {
   TranslatePrefs prefs(user_prefs);
   return prefs.IsLanguageWhitelisted(original_language, target_language);
 }
 
+// static
 void TranslatePrefs::RegisterUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(kPrefTranslateLanguageBlacklist,
@@ -191,6 +251,7 @@ void TranslatePrefs::RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
+// static
 void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs) {
   // Old format of kPrefTranslateWhitelists
   // - original language -> list of target langs to auto-translate
