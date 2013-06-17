@@ -709,10 +709,16 @@ SlideMode.prototype.commitItem_ = function(callback) {
   this.showSpinner_(false);
   this.showErrorBanner_(false);
   this.editor_.getPrompt().hide();
-  if (this.isShowingVideo_()) {
-    this.mediaControls_.pause();
+
+  // Detach any media attached to the controls.
+  if (this.mediaControls_.getMedia())
     this.mediaControls_.detachMedia();
-  }
+
+  // If showing the video, then pause it. Note, that it may not be attached
+  // to the media controls yet.
+  if (this.isShowingVideo_())
+    this.imageView_.getVideo().pause();
+
   this.editor_.closeSession(callback);
 };
 
