@@ -47,6 +47,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #else
 #include "chrome/browser/signin/signin_manager.h"
@@ -866,10 +868,14 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
 }
 
 #if defined(OS_CHROMEOS)
-// On ChromeOS, we need to sign out the user session to fix an auth error, so
-// the user goes through the real signin flow to generate a new auth token.
+// On ChromeOS, we invalidate the existing OAuth2 token and sign out the user
+// session to fix an auth error, so the user goes through the real signin flow
+// to generate a new auth token.
 void SyncSetupHandler::HandleDoSignOutOnAuthError(const ListValue* args) {
   DLOG(INFO) << "Signing out the user to fix a sync error.";
+  chromeos::UserManager::Get()->SaveUserOAuthStatus(
+      chromeos::UserManager::Get()->GetLoggedInUser()->email(),
+      chromeos::User::OAUTH2_TOKEN_STATUS_INVALID);
   chrome::AttemptUserExit();
 }
 #endif
