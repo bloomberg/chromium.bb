@@ -7,8 +7,12 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/spellcheck/spellcheck_handler.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
+
 namespace extensions {
 
 namespace keys = extension_manifest_keys;

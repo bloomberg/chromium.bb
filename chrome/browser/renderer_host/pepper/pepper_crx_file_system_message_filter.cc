@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "content/public/browser/browser_ppapi_host.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/common/constants.h"
@@ -68,7 +69,8 @@ PepperCrxFileSystemMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
   // In order to reach ExtensionSystem, we need to get ProfileManager first.
   // ProfileManager lives in UI thread, so we need to do this in UI thread.
-  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  return content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::UI);
 }
 
 int32_t PepperCrxFileSystemMessageFilter::OnResourceMessageReceived(
@@ -82,7 +84,7 @@ int32_t PepperCrxFileSystemMessageFilter::OnResourceMessageReceived(
 }
 
 Profile* PepperCrxFileSystemMessageFilter::GetProfile() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetProfile(profile_directory_);
 }

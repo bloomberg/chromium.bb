@@ -35,6 +35,8 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+using content::BrowserThread;
+
 namespace extensions {
 
 class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {

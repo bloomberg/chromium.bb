@@ -60,6 +60,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_util.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"

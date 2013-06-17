@@ -9,7 +9,9 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 
 using extensions::Extension;

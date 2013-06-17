@@ -4,6 +4,9 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
+#include "chrome/browser/extensions/api/api_function.h"
+#include "chrome/browser/extensions/api/api_resource_manager.h"
+#include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -17,14 +20,21 @@ namespace utils = extension_function_test_utils;
 
 namespace extensions {
 
+BrowserContextKeyedService* ApiResourceManagerTestFactory(
+    content::BrowserContext* profile) {
+  content::BrowserThread::ID id;
+  CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
+  return ApiResourceManager<Socket>::CreateApiResourceManagerForTest(
+      static_cast<Profile*>(profile), id);
+}
+
 class SocketUnitTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
 
-    TestExtensionSystem* system = static_cast<TestExtensionSystem*>(
-        ExtensionSystem::Get(browser()->profile()));
-    system->CreateSocketManager();
+    ApiResourceManager<Socket>::GetFactoryInstance()->SetTestingFactoryAndUse(
+        browser()->profile(), ApiResourceManagerTestFactory);
 
     extension_ = utils::CreateEmptyExtensionWithLocation(
         extensions::Manifest::UNPACKED);
@@ -48,15 +58,18 @@ class SocketUnitTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(SocketUnitTest, Create) {
-  // TODO(miket): enable this test. This will require teaching
-  // SocketCreateFunction to do its work on a thread other than IO. Getting
-  // this CL landed was hard enough already, so we're going to save this work
-  // for another day.
-  if (false) {
-    scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDict(
-        new SocketCreateFunction(), "[\"tcp\"]"));
-    ASSERT_TRUE(result.get());
-  }
+  // Get BrowserThread
+  content::BrowserThread::ID id;
+  CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
+
+  // Create SocketCreateFunction and put it on BrowserThread
+  SocketCreateFunction *function = new SocketCreateFunction();
+  function->set_work_thread_id(id);
+
+  // Run tests
+  scoped_ptr<base::DictionaryValue> result(RunFunctionAndReturnDict(
+      function, "[\"tcp\"]"));
+  ASSERT_TRUE(result.get());
 }
 
 }  // namespace extensions

@@ -46,17 +46,6 @@ void TestExtensionSystem::CreateExtensionProcessManager() {
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
 }
 
-void TestExtensionSystem::CreateSocketManager() {
-  // Note that we're intentionally creating the socket manager on the wrong
-  // thread (not the IO thread). This is because we don't want to presume or
-  // require that there be an IO thread in a lightweight test context. If we do
-  // need thread-specific behavior someday, we'll probably need something like
-  // CreateSocketManagerOnThreadForTesting(thread_id). But not today.
-  BrowserThread::ID id;
-  CHECK(BrowserThread::GetCurrentThreadIdentifier(&id));
-  socket_manager_.reset(new ApiResourceManager<Socket>(id));
-}
-
 ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
     const CommandLine* command_line,
     const base::FilePath& install_directory) {
@@ -145,20 +134,6 @@ TestExtensionSystem::lazy_background_task_queue() {
 }
 
 EventRouter* TestExtensionSystem::event_router() {
-  return NULL;
-}
-
-ApiResourceManager<SerialConnection>*
-TestExtensionSystem::serial_connection_manager() {
-  return NULL;
-}
-
-ApiResourceManager<Socket>*TestExtensionSystem::socket_manager() {
-  return socket_manager_.get();
-}
-
-ApiResourceManager<UsbDeviceResource>*
-TestExtensionSystem::usb_device_resource_manager() {
   return NULL;
 }
 

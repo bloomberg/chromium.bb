@@ -9,10 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/api_resource_manager.h"
-#include "chrome/browser/extensions/api/serial/serial_connection.h"
-#include "chrome/browser/extensions/api/socket/socket.h"
-#include "chrome/browser/extensions/api/usb/usb_device_resource.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/common/one_shot_event.h"
@@ -23,8 +19,6 @@ class ExtensionService;
 class Profile;
 
 namespace extensions {
-// Unfortunately, for the ApiResourceManager<> template classes, we don't seem
-// to be able to forward-declare because of compilation errors on Windows.
 class Blacklist;
 class EventRouter;
 class Extension;
@@ -89,18 +83,6 @@ class ExtensionSystem : public BrowserContextKeyedService {
   // The EventRouter is created at startup.
   virtual EventRouter* event_router() = 0;
 
-  // The SerialConnection ResourceManager is created at startup.
-  virtual ApiResourceManager<SerialConnection>*
-  serial_connection_manager() = 0;
-
-  // The Socket ResourceManager is created at startup.
-  virtual ApiResourceManager<Socket>*
-  socket_manager() = 0;
-
-  // The UsbDeviceResource ResourceManager is created at startup.
-  virtual ApiResourceManager<UsbDeviceResource>*
-  usb_device_resource_manager() = 0;
-
   // The ExtensionWarningService is created at startup.
   virtual ExtensionWarningService* warning_service() = 0;
 
@@ -151,11 +133,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
   virtual EventRouter* event_router() OVERRIDE;  // shared
-  virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
-      OVERRIDE;
-  virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;
-  virtual ApiResourceManager<UsbDeviceResource>* usb_device_resource_manager()
-      OVERRIDE;
   virtual ExtensionWarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;  // shared
 
@@ -236,10 +213,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // incoming resource requests from extension processes and those require
   // access to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
-  scoped_ptr<ApiResourceManager<SerialConnection> > serial_connection_manager_;
-  scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
-  scoped_ptr<ApiResourceManager<
-               UsbDeviceResource> > usb_device_resource_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };

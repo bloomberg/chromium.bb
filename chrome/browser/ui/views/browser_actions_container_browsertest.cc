@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/test/test_utils.h"
 
 using extensions::Extension;

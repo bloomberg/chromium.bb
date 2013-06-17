@@ -7,11 +7,24 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/extensions/api/api_resource_manager.h"
 
 namespace extensions {
 
 const char kSerialConnectionNotFoundError[] = "Serial connection not found";
+
+static base::LazyInstance<ProfileKeyedAPIFactory<
+    ApiResourceManager<SerialConnection> > >
+        g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+template <>
+ProfileKeyedAPIFactory<ApiResourceManager<SerialConnection> >*
+ApiResourceManager<SerialConnection>::GetFactoryInstance() {
+  return &g_factory.Get();
+}
 
 SerialConnection::SerialConnection(const std::string& port, int bitrate,
                                    const std::string& owner_extension_id)

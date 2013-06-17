@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "content/public/browser/browser_thread.h"
 

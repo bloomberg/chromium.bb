@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/socket/socket.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
+#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -14,6 +16,16 @@
 namespace extensions {
 
 const char kSocketTypeNotSupported[] = "Socket type does not support this API";
+
+static base::LazyInstance<ProfileKeyedAPIFactory<ApiResourceManager<Socket> > >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+template <>
+ProfileKeyedAPIFactory<ApiResourceManager<Socket> >*
+ApiResourceManager<Socket>::GetFactoryInstance() {
+  return &g_factory.Get();
+}
 
 Socket::Socket(const std::string& owner_extension_id)
     : ApiResource(owner_extension_id), is_connected_(false) {

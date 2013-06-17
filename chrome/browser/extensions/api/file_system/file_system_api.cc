@@ -628,7 +628,7 @@ void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
 void FileSystemChooseEntryFunction::SetInitialPathOnFileThread(
     const base::FilePath& suggested_name,
     const base::FilePath& previous_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   if (!previous_path.empty() && file_util::DirectoryExists(previous_path)) {
     initial_path_ = previous_path.Append(suggested_name);
   } else {
@@ -759,8 +759,8 @@ bool FileSystemChooseEntryFunction::RunImpl() {
       extension_prefs()->GetLastChooseEntryDirectory(
           GetExtension()->id(), &previous_path);
 
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE,
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
           &FileSystemChooseEntryFunction::SetInitialPathOnFileThread, this,

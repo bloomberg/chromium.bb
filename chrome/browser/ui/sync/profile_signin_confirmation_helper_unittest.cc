@@ -116,7 +116,7 @@ static scoped_refptr<extensions::Extension> CreateExtension(
 class ProfileSigninConfirmationHelperTest : public testing::Test {
  public:
   ProfileSigninConfirmationHelperTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
         user_prefs_(NULL),
         model_(NULL) {
   }

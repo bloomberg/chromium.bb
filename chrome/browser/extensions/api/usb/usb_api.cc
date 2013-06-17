@@ -31,6 +31,7 @@ namespace SetInterfaceAlternateSetting =
     extensions::api::usb::SetInterfaceAlternateSetting;
 namespace usb = extensions::api::usb;
 
+using content::BrowserThread;
 using std::string;
 using std::vector;
 using usb::ControlTransferInfo;
@@ -337,7 +338,7 @@ UsbAsyncApiFunction::~UsbAsyncApiFunction() {
 }
 
 bool UsbAsyncApiFunction::PrePrepare() {
-  manager_ = ExtensionSystem::Get(profile())->usb_device_resource_manager();
+  manager_ = ApiResourceManager<UsbDeviceResource>::Get(profile());
   return manager_ != NULL;
 }
 

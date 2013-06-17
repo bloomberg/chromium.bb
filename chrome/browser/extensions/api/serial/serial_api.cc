@@ -36,8 +36,9 @@ SerialAsyncApiFunction::~SerialAsyncApiFunction() {
 }
 
 bool SerialAsyncApiFunction::PrePrepare() {
-  manager_ = ExtensionSystem::Get(profile())->serial_connection_manager();
-  return manager_ != NULL;
+  manager_ = ApiResourceManager<SerialConnection>::Get(profile());
+  DCHECK(manager_);
+  return true;
 }
 
 SerialConnection* SerialAsyncApiFunction::GetSerialConnection(

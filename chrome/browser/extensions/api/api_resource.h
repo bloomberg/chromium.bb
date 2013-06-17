@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 
@@ -21,6 +22,9 @@ class ApiResource {
   const std::string& owner_extension_id() const {
     return owner_extension_id_;
   }
+
+  static const content::BrowserThread::ID kThreadId =
+      content::BrowserThread::IO;
 
  protected:
   explicit ApiResource(const std::string& owner_extension_id);

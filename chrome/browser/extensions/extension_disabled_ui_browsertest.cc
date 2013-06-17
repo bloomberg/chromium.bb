@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "net/url_request/url_fetcher.h"
@@ -81,7 +82,7 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
     size_t size_before = service_->extensions()->size();
     if (UpdateExtension(extension->id(), crx_path, expected_change))
       return NULL;
-    BrowserThread::GetBlockingPool()->FlushForTesting();
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(size_before + expected_change, service_->extensions()->size());
     if (service_->disabled_extensions()->size() != 1u)
@@ -211,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   EXPECT_FALSE(service_->ProcessExtensionSyncData(sync_data));
 
   WaitForExtensionInstall();
-  BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
   extension = service_->GetExtensionById(extension_id, true);

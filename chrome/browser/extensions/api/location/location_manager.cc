@@ -8,10 +8,17 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/location.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/common/geoposition.h"
+
+using content::BrowserThread;
 
 // TODO(vadimt): Add tests.
 namespace extensions {
@@ -46,8 +53,7 @@ class LocationRequest
 
  private:
   friend class base::DeleteHelper<LocationRequest>;
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::IO>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
 
   virtual ~LocationRequest();
 

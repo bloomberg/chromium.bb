@@ -13,6 +13,9 @@
 #include "chrome/browser/ui/app_list/search/app_result.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string_match.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 
 namespace app_list {
 

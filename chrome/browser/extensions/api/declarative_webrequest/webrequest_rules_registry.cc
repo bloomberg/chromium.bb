@@ -227,8 +227,8 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
   ClearCacheOnNavigation();
 
   if (profile_id_ && !registered_rules.empty()) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
         base::Bind(&extension_web_request_api_helpers::NotifyWebRequestAPIUsed,
                    profile_id_, make_scoped_refptr(extension)));
   }

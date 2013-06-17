@@ -30,14 +30,15 @@ class ApiResourceManagerUnitTest : public BrowserWithTestWindowTest {
 
 class FakeApiResource : public ApiResource {
  public:
-  FakeApiResource(const std::string& owner_extension_id) :
+  explicit FakeApiResource(const std::string& owner_extension_id) :
       ApiResource(owner_extension_id) {}
   virtual ~FakeApiResource() {}
+  static const BrowserThread::ID kThreadId = BrowserThread::UI;
 };
 
 TEST_F(ApiResourceManagerUnitTest, TwoAppsCannotShareResources) {
   scoped_ptr<ApiResourceManager<FakeApiResource> > manager(
-      new ApiResourceManager<FakeApiResource>(BrowserThread::UI));
+      new ApiResourceManager<FakeApiResource>(NULL));
   scoped_refptr<extensions::Extension> extension_one(
       utils::CreateEmptyExtension("one"));
   scoped_refptr<extensions::Extension> extension_two(

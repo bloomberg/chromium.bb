@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using base::TimeDelta;
+using content::BrowserThread;
 
 namespace {
 
@@ -35,7 +36,7 @@ const size_t kDialMaxDevices = 256;
 namespace extensions {
 
 DialAPI::DialAPI(Profile* profile)
-    : RefcountedBrowserContextKeyedService(content::BrowserThread::IO),
+    : RefcountedBrowserContextKeyedService(BrowserThread::IO),
       profile_(profile) {
   ExtensionSystem::Get(profile)->event_router()->RegisterObserver(
       this, extensions::event_names::kOnDialDeviceList);

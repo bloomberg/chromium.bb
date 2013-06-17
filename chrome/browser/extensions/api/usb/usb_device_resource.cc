@@ -16,6 +16,17 @@
 
 namespace extensions {
 
+static base::LazyInstance<ProfileKeyedAPIFactory<
+        ApiResourceManager<UsbDeviceResource> > >
+            g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+template <>
+ProfileKeyedAPIFactory<ApiResourceManager<UsbDeviceResource> >*
+ApiResourceManager<UsbDeviceResource>::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 UsbDeviceResource::UsbDeviceResource(const std::string& owner_extension_id,
                                      scoped_refptr<UsbDevice> device)
     : ApiResource(owner_extension_id), device_(device) {}

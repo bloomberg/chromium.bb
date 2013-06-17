@@ -16,6 +16,10 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/base/cocoa/focus_window_set.h"
 
 namespace apps {

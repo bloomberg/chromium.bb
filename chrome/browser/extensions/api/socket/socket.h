@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_resource.h"
+#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -105,6 +106,11 @@ class Socket : public ApiResource {
   bool is_connected_;
 
  private:
+  friend class ApiResourceManager<Socket>;
+  static const char* service_name() {
+    return "SocketManager";
+  }
+
   struct WriteRequest {
     WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,
                  int byte_count,

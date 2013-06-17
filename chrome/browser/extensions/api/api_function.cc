@@ -64,7 +64,7 @@ void AsyncApiFunction::AsyncWorkCompleted() {
 
 void AsyncApiFunction::WorkOnWorkThread() {
   DCHECK(BrowserThread::CurrentlyOn(work_thread_id_));
-  DCHECK(work_thread_id_ != BrowserThread::UI) <<
+  DLOG_IF(ERROR, (work_thread_id_ == BrowserThread::UI)) <<
       "You have specified that AsyncApiFunction::Work() should happen on "
       "the UI thread. This nullifies the point of this class. Either "
       "specify a different thread or derive from a different class.";

@@ -55,7 +55,7 @@ SocketAsyncApiFunction::~SocketAsyncApiFunction() {
 }
 
 bool SocketAsyncApiFunction::PrePrepare() {
-  manager_ = ExtensionSystem::Get(profile())->socket_manager();
+  manager_ = ApiResourceManager<Socket>::Get(profile());
   DCHECK(manager_) << "There is no socket manager. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "

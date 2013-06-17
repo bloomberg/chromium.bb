@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/extensions/api/api_resource.h"
+#include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/usb/usb_device.h"
 #include "chrome/common/extensions/api/usb.h"
 
@@ -35,6 +36,11 @@ class UsbDeviceResource : public ApiResource {
   }
 
  private:
+  friend class ApiResourceManager<UsbDeviceResource>;
+  static const char* service_name() {
+    return "UsbDeviceResourceManager";
+  }
+
   scoped_refptr<UsbDevice> device_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceResource);

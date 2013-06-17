@@ -10,8 +10,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_service.h"
 
 using extensions::FileSystemChooseEntryFunction;
 

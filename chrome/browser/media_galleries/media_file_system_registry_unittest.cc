@@ -60,6 +60,8 @@
 #include "chrome/browser/storage_monitor/test_volume_mount_watcher_win.h"
 #endif
 
+using content::BrowserThread;
+
 namespace chrome {
 
 // Not anonymous so it can be friends with MediaFileSystemRegistry.

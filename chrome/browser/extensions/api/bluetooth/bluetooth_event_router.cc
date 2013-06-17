@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"

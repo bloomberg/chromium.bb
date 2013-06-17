@@ -139,8 +139,8 @@ void ComponentExtensionIMEManagerImpl::InitializeAsync(
 
   std::vector<ComponentExtensionIME>* component_extension_ime_list
       = new std::vector<ComponentExtensionIME>;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE,
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo,
                  base::Unretained(component_extension_ime_list)),

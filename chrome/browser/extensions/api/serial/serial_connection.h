@@ -55,6 +55,8 @@ class SerialConnection : public ApiResource {
   virtual bool GetControlSignals(ControlSignals &control_signals);
   virtual bool SetControlSignals(const ControlSignals &control_signals);
 
+  static const BrowserThread::ID kThreadId = BrowserThread::FILE;
+
  protected:
   // Do platform-specific work after a successful Open().
   bool PostOpen();
@@ -63,6 +65,10 @@ class SerialConnection : public ApiResource {
   static std::string MaybeFixUpPortName(const std::string &port_name);
 
  private:
+  friend class ApiResourceManager<SerialConnection>;
+  static const char* service_name() {
+    return "SerialConnectionManager";
+  }
   std::string port_;
   int bitrate_;
   base::PlatformFile file_;

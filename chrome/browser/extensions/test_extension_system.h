@@ -62,11 +62,6 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ExtensionInfoMap* info_map() OVERRIDE;
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
   virtual EventRouter* event_router() OVERRIDE;
-  virtual ApiResourceManager<SerialConnection>* serial_connection_manager()
-      OVERRIDE;
-  virtual ApiResourceManager<Socket>* socket_manager() OVERRIDE;
-  virtual ApiResourceManager<UsbDeviceResource>* usb_device_resource_manager()
-      OVERRIDE;
   virtual ExtensionWarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;
   virtual const OneShotEvent& ready() const OVERRIDE;
@@ -88,7 +83,6 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;
-  scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
   OneShotEvent ready_;
 };
 

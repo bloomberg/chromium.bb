@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKET_SOCKET_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SOCKET_SOCKET_API_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
@@ -79,6 +80,7 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
   virtual void Work() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SocketUnitTest, Create);
   enum SocketType {
     kSocketTypeInvalid = -1,
     kSocketTypeTCP,

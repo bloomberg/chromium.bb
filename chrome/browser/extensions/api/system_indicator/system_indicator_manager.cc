@@ -14,8 +14,11 @@
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/status_icons/status_tray.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/system_indicator.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "ui/gfx/image/image.h"
 
 namespace extensions {

@@ -305,12 +305,6 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
 
-  serial_connection_manager_.reset(new ApiResourceManager<SerialConnection>(
-      BrowserThread::FILE));
-  socket_manager_.reset(new ApiResourceManager<Socket>(BrowserThread::IO));
-  usb_device_resource_manager_.reset(
-      new ApiResourceManager<UsbDeviceResource>(BrowserThread::IO));
-
   shared_->Init(extensions_enabled);
 }
 
@@ -348,20 +342,6 @@ LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
 
 EventRouter* ExtensionSystemImpl::event_router() {
   return shared_->event_router();
-}
-
-ApiResourceManager<SerialConnection>*
-ExtensionSystemImpl::serial_connection_manager() {
-  return serial_connection_manager_.get();
-}
-
-ApiResourceManager<Socket>* ExtensionSystemImpl::socket_manager() {
-  return socket_manager_.get();
-}
-
-ApiResourceManager<UsbDeviceResource>*
-ExtensionSystemImpl::usb_device_resource_manager() {
-  return usb_device_resource_manager_.get();
 }
 
 ExtensionWarningService* ExtensionSystemImpl::warning_service() {
