@@ -1019,15 +1019,13 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)shouldAllowOverlappingViews:(BOOL)inPresentationMode {
-  if (chrome::IsInstantExtendedAPIEnabled())
-    return YES;
-
   if (inPresentationMode)
     return YES;
 
   if (findBarCocoaController_ &&
-      ![[findBarCocoaController_ findBarView] isHidden])
+      ![[findBarCocoaController_ findBarView] isHidden]) {
     return YES;
+  }
 
   if (historyOverlayCount_)
     return YES;
