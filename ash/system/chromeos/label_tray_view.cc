@@ -42,14 +42,22 @@ void LabelTrayView::SetMessage(const base::string16& message) {
 
 views::View* LabelTrayView::CreateChildView(
     const base::string16& message) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* icon = rb.GetImageSkiaNamed(icon_resource_id_);
   HoverHighlightView* child = new HoverHighlightView(click_listener_);
-  child->AddIconAndLabel(*icon, message, gfx::Font::NORMAL);
+  if (icon_resource_id_) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    const gfx::ImageSkia* icon = rb.GetImageSkiaNamed(icon_resource_id_);
+    child->AddIconAndLabel(*icon, message, gfx::Font::NORMAL);
+    child->set_border(
+        views::Border::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal,
+                                         0, kTrayPopupPaddingHorizontal));
+    child->text_label()->SizeToFit(kTrayNotificationContentsWidth);
+  } else {
+    child->AddLabel(message, gfx::Font::NORMAL);
+    child->text_label()->SizeToFit(kTrayNotificationContentsWidth +
+                                   kNotificationIconWidth);
+  }
   child->text_label()->SetMultiLine(true);
   child->text_label()->SetAllowCharacterBreak(true);
-  child->set_border(views::Border::CreateEmptyBorder(0,
-      kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingHorizontal));
   child->SetExpandable(true);
   child->SetVisible(true);
   return child;

@@ -19,7 +19,7 @@ namespace {
 class ManagedUserNotificationView : public TrayNotificationView {
  public:
   explicit ManagedUserNotificationView(TrayLocallyManagedUser* tray_managed)
-      : TrayNotificationView(tray_managed, 0),
+      : TrayNotificationView(tray_managed, IDR_AURA_UBER_TRAY_MANAGED_USER),
         tray_managed_(tray_managed) {
     CreateMessageView();
     InitView(message_view_);
@@ -32,8 +32,7 @@ class ManagedUserNotificationView : public TrayNotificationView {
 
  private:
   void CreateMessageView() {
-    message_view_ = new LabelTrayView(tray_managed_,
-                                      IDR_AURA_UBER_TRAY_MANAGED_USER);
+    message_view_ = new LabelTrayView(tray_managed_, 0);
     base::string16 message = Shell::GetInstance()->system_tray_delegate()->
         GetLocallyManagedUserMessage();
     message_view_->SetMessage(message);
