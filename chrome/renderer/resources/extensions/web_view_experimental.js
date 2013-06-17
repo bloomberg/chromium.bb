@@ -19,10 +19,6 @@ var WebView = require('webView').WebView;
 /** @type {Array.<string>} */
 var PERMISSION_TYPES = ['download', 'media', 'geolocation', 'pointerLock'];
 
-/** @type {string} */
-var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
-    'Permission has already been decided for this "permissionrequest" event.';
-
 var EXPOSED_PERMISSION_EVENT_ATTRIBS = [
     'lastUnlockedBySelf',
     'permission',
@@ -44,6 +40,9 @@ WebView.prototype.maybeSetupExperimentalAPI_ = function() {
  * @private
  */
 WebView.prototype.setupPermissionEvent_ = function() {
+  var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
+      'Permission has already been decided for this "permissionrequest" event.';
+
   var node = this.webviewNode_;
   var browserPluginNode = this.browserPluginNode_;
   var internalevent = '-internal-permissionrequest';

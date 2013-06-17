@@ -136,6 +136,10 @@ WebView.prototype.setupWebviewNodeMethods_ = function() {
  * @private
  */
 WebView.prototype.setupWebviewNodeProperties_ = function() {
+  var ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE = '<webview>: ' +
+    'contentWindow is not available at this time. It will become available ' +
+        'when the page has finished loading.';
+
   var browserPluginNode = this.browserPluginNode_;
   // Expose getters and setters for the attributes.
   $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
@@ -158,8 +162,7 @@ WebView.prototype.setupWebviewNodeProperties_ = function() {
       // contentWindow.postMessage until http://crbug.com/152006 is fixed.
       if (browserPluginNode.contentWindow)
         return browserPluginNode.contentWindow.self;
-      console.error('contentWindow is not available at this time. ' +
-          'It will become available when the page has finished loading.');
+      console.error(ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE);
     },
     // No setter.
     enumerable: true
@@ -278,7 +281,12 @@ WebView.prototype.setupNewWindowEvent_ = function() {
   var ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN = '<webview>: ' +
       'An action has already been taken for this "newwindow" event.';
 
+  var ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH = '<webview>: ' +
+      'Unable to attach the new window to the provided webview.';
+
   var ERROR_MSG_WEBVIEW_EXPECTED = '<webview> element expected.';
+
+  var WARNING_MSG_NEWWINDOW_BLOCKED = '<webview>: A new window was blocked.';
 
   var NEW_WINDOW_EVENT_ATTRIBUTES = [
     'initialHeight',
@@ -321,8 +329,7 @@ WebView.prototype.setupNewWindowEvent_ = function() {
               browserPluginNode['-internal-attachWindowTo'](webview,
                                                             detail.windowId);
           if (!attached) {
-            console.error('Unable to attach the new window to the provided ' +
-                'webview.');
+            console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
           }
           // If the object being passed into attach is not a valid <webview>
           // then we will fail and it will be treated as if the new window
@@ -346,7 +353,7 @@ WebView.prototype.setupNewWindowEvent_ = function() {
       actionTaken = true;
       // The default action is to discard the window.
       browserPluginNode['-internal-setPermission'](requestId, false);
-      console.warn('<webview>: A new window was blocked.');
+      console.warn(WARNING_MSG_NEWWINDOW_BLOCKED);
     }
   });
 };
