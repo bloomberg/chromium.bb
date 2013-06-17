@@ -1071,8 +1071,11 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
 
   if (!IsInOverscrollGesture() &&
       !gesture_event_filter_->ShouldForward(
-          GestureEventWithLatencyInfo(gesture_event, latency_info)))
+          GestureEventWithLatencyInfo(gesture_event, latency_info))) {
+    if (overscroll_controller_.get())
+      overscroll_controller_->DiscardingGestureEvent(gesture_event);
     return;
+  }
 
   ForwardInputEvent(gesture_event, sizeof(WebGestureEvent),
                     latency_info, false);

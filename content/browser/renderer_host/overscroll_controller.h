@@ -50,6 +50,10 @@ class OverscrollController {
   // overscroll gesture status as appropriate.
   void ReceivedEventACK(const WebKit::WebInputEvent& event, bool processed);
 
+  // This must be called when a gesture event is filtered out and not sent to
+  // the renderer.
+  void DiscardingGestureEvent(const WebKit::WebGestureEvent& event);
+
   OverscrollMode overscroll_mode() const { return overscroll_mode_; }
 
   void set_delegate(OverscrollControllerDelegate* delegate) {

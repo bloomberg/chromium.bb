@@ -29,21 +29,29 @@ bool OverscrollController::WillDispatchEvent(
     const WebKit::WebInputEvent& event,
     const ui::LatencyInfo& latency_info) {
   if (scroll_state_ != STATE_UNKNOWN) {
-    if (event.type == WebKit::WebInputEvent::GestureScrollEnd) {
-      scroll_state_ = STATE_UNKNOWN;
-    } else if (event.type == WebKit::WebInputEvent::GestureFlingStart) {
-      // Start of a fling indicates the end of a scroll, both from touchpad and
-      // touchscreen. So it is not necessary to check |sourceDevice| of the
-      // event.
-      scroll_state_ = STATE_UNKNOWN;
-    } else if (event.type == WebKit::WebInputEvent::MouseWheel) {
-      const WebKit::WebMouseWheelEvent& wheel =
-          static_cast<const WebKit::WebMouseWheelEvent&>(event);
-      if (wheel.hasPreciseScrollingDeltas &&
-          (wheel.phase == WebKit::WebMouseWheelEvent::PhaseEnded ||
-           wheel.phase == WebKit::WebMouseWheelEvent::PhaseCancelled)) {
+    switch (event.type) {
+      case WebKit::WebInputEvent::GestureScrollEnd:
+      case WebKit::WebInputEvent::GestureFlingStart:
         scroll_state_ = STATE_UNKNOWN;
+        break;
+
+      case WebKit::WebInputEvent::MouseWheel: {
+        const WebKit::WebMouseWheelEvent& wheel =
+            static_cast<const WebKit::WebMouseWheelEvent&>(event);
+        if (!wheel.hasPreciseScrollingDeltas ||
+            wheel.phase == WebKit::WebMouseWheelEvent::PhaseEnded ||
+            wheel.phase == WebKit::WebMouseWheelEvent::PhaseCancelled) {
+          scroll_state_ = STATE_UNKNOWN;
+        }
+        break;
       }
+
+      default:
+        if (WebKit::WebInputEvent::isMouseEventType(event.type) ||
+            WebKit::WebInputEvent::isKeyboardEventType(event.type)) {
+          scroll_state_ = STATE_UNKNOWN;
+        }
+        break;
     }
   }
 
@@ -111,6 +119,15 @@ void OverscrollController::ReceivedEventACK(const WebKit::WebInputEvent& event,
     return;
   }
   ProcessEventForOverscroll(event);
+}
+
+void OverscrollController::DiscardingGestureEvent(
+    const WebKit::WebGestureEvent& gesture) {
+  if (scroll_state_ != STATE_UNKNOWN &&
+      (gesture.type == WebKit::WebInputEvent::GestureScrollEnd ||
+       gesture.type == WebKit::WebInputEvent::GestureFlingStart)) {
+    scroll_state_ = STATE_UNKNOWN;
+  }
 }
 
 void OverscrollController::Reset() {
