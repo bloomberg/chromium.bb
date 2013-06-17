@@ -494,6 +494,7 @@
         '../webkit/common/blob/shareable_file_reference_unittest.cc',
         '../webkit/common/cursors/webcursor_unittest.cc',
         '../webkit/common/database/database_connections_unittest.cc',
+        '../webkit/common/database/database_identifier_unittest.cc',
         '../webkit/common/dom_storage/dom_storage_map_unittest.cc',
         '../webkit/common/fileapi/file_system_util_unittest.cc',
         '../webkit/glue/glue_serialize_unittest.cc',

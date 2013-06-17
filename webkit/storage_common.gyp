@@ -29,6 +29,8 @@
         'common/blob/shareable_file_reference.h',
         'common/database/database_connections.cc',
         'common/database/database_connections.h',
+        'common/database/database_identifier.cc',
+        'common/database/database_identifier.cc',
         'common/dom_storage/dom_storage_map.cc',
         'common/dom_storage/dom_storage_map.h',
         'common/dom_storage/dom_storage_types.cc',
