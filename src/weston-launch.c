@@ -453,13 +453,9 @@ handle_signal(struct weston_launch *wl)
 		}
 		break;
 	case SIGTERM:
-		if (wl->child)
-			kill(wl->child, SIGTERM);
-		quit(wl, 0);
-		break;
 	case SIGINT:
 		if (wl->child)
-			kill(wl->child, SIGTERM);
+			kill(wl->child, sig.ssi_signo);
 		break;
 	default:
 		return -1;
