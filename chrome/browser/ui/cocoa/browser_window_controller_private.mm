@@ -367,10 +367,9 @@ willPositionSheet:(NSWindow*)sheet
     rightIndent += -[window fullScreenButtonOriginAdjustment].x;
   } else if ([self shouldShowAvatar]) {
     rightIndent += kAvatarTabStripShrink;
-    if ([avatarButtonController_ labelView]) {
-      rightIndent += NSWidth([[avatarButtonController_ labelView] frame]) +
-                     kAvatarRightOffset;
-    }
+    NSButton* labelButton = [avatarButtonController_ labelButtonView];
+    if (labelButton)
+      rightIndent += NSWidth([labelButton frame]) + kAvatarRightOffset;
   }
   [tabStripController_ setRightIndentForControls:rightIndent];
 

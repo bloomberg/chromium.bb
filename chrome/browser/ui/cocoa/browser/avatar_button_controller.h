@@ -39,14 +39,14 @@ class ThemeProvider;
   scoped_nsobject<NSButton> button_;
 
   // The managed user avatar label. Only used for managed user profiles.
-  scoped_nsobject<NSTextField> label_;
+  scoped_nsobject<NSButton> labelButton_;
 }
 
 // The avatar button view.
 @property(readonly, nonatomic) NSButton* buttonView;
 
-// The managed user avatar label view.
-@property(readonly, nonatomic) NSTextField* labelView;
+// The managed user avatar label button view.
+@property(readonly, nonatomic) NSButton* labelButtonView;
 
 // Designated initializer.
 - (id)initWithBrowser:(Browser*)browser;
@@ -55,12 +55,8 @@ class ThemeProvider;
 // and will be resized to the frame of the button.
 - (void)setImage:(NSImage*)image;
 
-// Updates the text color and the background color of the avatar label
-// according to the chosen theme.
-- (void)updateColors:(ui::ThemeProvider*)themeProvider;
-
 // Shows the avatar bubble.
-- (void)showAvatarBubble;
+- (void)showAvatarBubble:(NSView*)anchor;
 
 @end
 

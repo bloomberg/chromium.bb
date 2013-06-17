@@ -82,7 +82,7 @@ TEST_F(AvatarButtonControllerTest, ManagedUserLabel) {
   // Create a second profile to enable the avatar menu.
   testing_profile_manager()->CreateTestingProfile("p2");
 
-  EXPECT_FALSE([controller() labelView]);
+  EXPECT_FALSE([controller() labelButtonView]);
 
   // Transform the first profile to a managed user profile.
   profile()->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, true);
@@ -92,5 +92,5 @@ TEST_F(AvatarButtonControllerTest, ManagedUserLabel) {
   scoped_nsobject<AvatarButtonController> controller(
       [[AvatarButtonController alloc] initWithBrowser:browser()]);
 
-  EXPECT_TRUE([controller labelView]);
+  EXPECT_TRUE([controller labelButtonView]);
 }

@@ -152,28 +152,30 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
       // Managed users cannot enter incognito mode, so we only need to check
       // it in this code path.
       if (ManagedUserService::ProfileIsManaged(profile)) {
-        label_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
-        [label_ setEditable:NO];
-        [label_ setSelectable:NO];
-        [label_ setBezeled:NO];
-        [label_ setDrawsBackground:YES];
-        [label_ setFont:[NSFont labelFontOfSize:12.0]];
-        [label_ setStringValue:
+        labelButton_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
+        [labelButton_ setButtonType:NSMomentaryLightButton];
+        [labelButton_ setBezelStyle:NSRecessedBezelStyle];
+        [labelButton_ setTitle:
             l10n_util::GetNSString(IDS_MANAGED_USER_AVATAR_LABEL)];
-        [label_ sizeToFit];
-        [label_ setFrameOrigin:NSMakePoint(
-            kAvatarSpacing,
-            (profiles::kAvatarIconHeight - NSHeight([label_ frame])) / 2)];
-        [[self view] addSubview:label_];
+        [labelButton_ setShowsBorderOnlyWhileMouseInside:YES];
+
+        [labelButton_ setTarget:self];
+        [labelButton_ setAction:@selector(buttonClicked:)];
+
+        [labelButton_ sizeToFit];
+        [labelButton_ setFrameOrigin:
+            NSMakePoint(kAvatarSpacing,
+                        (profiles::kAvatarIconHeight -
+                             NSHeight([labelButton_ frame])) / 2)];
+        [[self view] addSubview:labelButton_];
 
         // Reposition the avatar button and resize the container.
         CGFloat avatarButtonXOffset =
-            NSWidth([label_ frame]) + 2 * kAvatarSpacing;
+            NSWidth([labelButton_ frame]) + 2 * kAvatarSpacing;
         [container setFrameSize:
             NSMakeSize(avatarButtonXOffset + NSWidth([button_ frame]),
                        profiles::kAvatarIconHeight)];
         [button_ setFrameOrigin:NSMakePoint(avatarButtonXOffset, 0)];
-
       }
     }
   }
@@ -192,27 +194,15 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   return button_.get();
 }
 
-- (NSTextField*)labelView {
-  return label_.get();
+- (NSButton*)labelButtonView {
+  return labelButton_.get();
 }
 
 - (void)setImage:(NSImage*)image {
   [button_ setImage:image];
 }
 
-- (void)updateColors:(ui::ThemeProvider*)themeProvider {
-  if (themeProvider && label_.get()) {
-    NSColor* backgroundColor =
-        themeProvider->GetNSColor(ThemeProperties::COLOR_TOOLBAR, true);
-    [label_ setBackgroundColor:backgroundColor];
-    NSColor* textColor =
-        themeProvider->GetNSColor(ThemeProperties::COLOR_BOOKMARK_TEXT, true);
-    [label_ setTextColor:textColor];
-    [label_ setNeedsDisplay:YES];
-  }
-}
-
-- (void)showAvatarBubble {
+- (void)showAvatarBubble:(NSView*)anchor {
   if (menuController_)
     return;
 
@@ -225,10 +215,10 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
         lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
   }
 
-  NSPoint point = NSMakePoint(NSMidX([button_ bounds]),
-                              NSMaxY([button_ bounds]) - kMenuYOffsetAdjust);
-  point = [button_ convertPoint:point toView:nil];
-  point = [[button_ window] convertBaseToScreen:point];
+  NSPoint point = NSMakePoint(NSMidX([anchor bounds]),
+                              NSMaxY([anchor bounds]) - kMenuYOffsetAdjust);
+  point = [anchor convertPoint:point toView:nil];
+  point = [[anchor window] convertBaseToScreen:point];
 
   // |menu| will automatically release itself on close.
   menuController_ = [[AvatarMenuBubbleController alloc] initWithBrowser:browser_
@@ -250,8 +240,8 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 }
 
 - (IBAction)buttonClicked:(id)sender {
-  DCHECK_EQ(button_.get(), sender);
-  [self showAvatarBubble];
+  DCHECK(sender == button_.get() || sender == labelButton_.get());
+  [self showAvatarBubble:sender];
 }
 
 - (void)bubbleWillClose:(NSNotification*)notif {
