@@ -16,55 +16,26 @@
 
 namespace ui {
 
-// An InputMethod implementation based on Windows IMM32 API.
+// A common InputMethod implementation shared between IMM32 and TSF.
 class UI_EXPORT InputMethodWin : public InputMethodBase {
  public:
-  explicit InputMethodWin(internal::InputMethodDelegate* delegate, HWND hwnd);
-  virtual ~InputMethodWin();
+  InputMethodWin(internal::InputMethodDelegate* delegate,
+                 HWND toplevel_window_handle);
 
   // Overridden from InputMethod:
   virtual void Init(bool focused) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnBlur() OVERRIDE;
-  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
-                                        NativeEventResult* result) OVERRIDE;
   virtual bool DispatchKeyEvent(
       const base::NativeEvent& native_key_event) OVERRIDE;
   virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
-  virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
-  virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
   virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
-  virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
-  virtual TextInputClient* GetTextInputClient() const OVERRIDE;
 
  protected:
-  // Overridden from InputMethodBase:
-  virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,
-                                         TextInputClient* focused) OVERRIDE;
-  virtual void OnDidChangeFocusedClient(TextInputClient* focused_before,
-                                        TextInputClient* focused) OVERRIDE;
-
- private:
-  LRESULT OnImeSetContext(UINT message,
-                          WPARAM wparam,
-                          LPARAM lparam,
-                          BOOL* handled);
-  LRESULT OnImeStartComposition(UINT message,
-                                WPARAM wparam,
-                                LPARAM lparam,
-                                BOOL* handled);
-  LRESULT OnImeComposition(UINT message,
-                           WPARAM wparam,
-                           LPARAM lparam,
-                           BOOL* handled);
-  LRESULT OnImeEndComposition(UINT message,
-                              WPARAM wparam,
-                              LPARAM lparam,
-                              BOOL* handled);
+  // Some IMEs rely on WM_IME_REQUEST message even when TSF is enabled. So
+  // OnImeRequest (and its actual implementations as OnDocumentFeed,
+  // OnReconvertString, and OnQueryCharPosition) are placed in this base class.
   LRESULT OnImeRequest(UINT message,
                        WPARAM wparam,
                        LPARAM lparam,
@@ -78,17 +49,21 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   LRESULT OnReconvertString(RECONVERTSTRING* reconv);
   LRESULT OnQueryCharPosition(IMECHARPOSITION* char_positon);
 
-  // Asks the client to confirm current composition text.
-  void ConfirmCompositionText();
-
-  // Enables or disables the IME according to the current text input type.
-  void UpdateIMEState();
-
-  // The HWND this InputMethod is bound to.
-  HWND hwnd_;
+  // Returns the window handle to which |text_input_client| is bound.
+  // On Aura environment, |toplevel_window_handle_| is always returned.
+  HWND GetAttachedWindowHandle(const TextInputClient* text_input_client) const;
 
   // Indicates if the current input locale has an IME.
   bool active_;
+
+  // Windows IMM32 wrapper.
+  // (See "ui/base/win/ime_input.h" for its details.)
+  ui::ImeInput ime_input_;
+
+ private:
+  // The toplevel window handle.
+  // On non-Aura environment, this value is not used and always NULL.
+  const HWND toplevel_window_handle_;
 
   // Name of the current input locale.
   std::string locale_;
@@ -100,12 +75,6 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   // pressing ctrl-shift. It'll be sent to the text input client when the key
   // is released.
   base::i18n::TextDirection pending_requested_direction_;
-
-  // Windows IMM32 wrapper.
-  // (See "ui/base/win/ime_input.h" for its details.)
-  ui::ImeInput ime_input_;
-
-  bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodWin);
 };

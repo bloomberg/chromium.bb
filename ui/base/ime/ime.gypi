@@ -18,8 +18,12 @@
       'input_method_factory.h',
       'input_method_ibus.cc',
       'input_method_ibus.h',
+      'input_method_imm32.cc',
+      'input_method_imm32.h',
       'input_method_initializer.h',
       'input_method_initializer.cc',
+      'input_method_tsf.cc',
+      'input_method_tsf.h',
       'input_method_win.cc',
       'input_method_win.h',
       'mock_input_method.cc',
@@ -74,6 +78,10 @@
     ['OS!="win"', {
       'sources!': [
         '<@(tsf_files)',
+        'input_method_imm32.cc',
+        'input_method_imm32.h',
+        'input_method_tsf.cc',
+        'input_method_tsf.h',
       ],
     }],
   ],
