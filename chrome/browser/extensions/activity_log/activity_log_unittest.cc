@@ -237,7 +237,7 @@ TEST_F(ActivityLogTest, LogWithoutArguments) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   activity_log->SetArgumentLoggingForTesting(false);
   ASSERT_TRUE(activity_log->IsLogEnabled());
-
+  activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_NOARGS);
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
@@ -249,6 +249,7 @@ TEST_F(ActivityLogTest, LogWithoutArguments) {
 
 TEST_F(ActivityLogTest, LogWithArguments) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
+  activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   ASSERT_TRUE(activity_log->IsLogEnabled());
 
   scoped_ptr<ListValue> args(new ListValue());
@@ -272,6 +273,7 @@ TEST_F(RenderViewActivityLogTest, LogPrerender) {
           .Build();
   extension_service_->AddExtension(extension.get());
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
+  activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   ASSERT_TRUE(activity_log->IsLogEnabled());
   GURL url("http://www.google.com");
 

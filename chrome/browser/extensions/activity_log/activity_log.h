@@ -9,16 +9,14 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
+#include "chrome/browser/extensions/activity_log/activity_log_policy.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -27,13 +25,13 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
-#include "content/public/browser/browser_thread.h"
 
 class Profile;
 using content::BrowserThread;
 
 namespace extensions {
 class Extension;
+class ActivityLogPolicy;
 
 // A utility for tracing interesting activity for each extension.
 // It writes to an ActivityDatabase on a separate thread to record the activity.
@@ -88,7 +86,7 @@ class ActivityLog : public BrowserContextKeyedService,
   void LogBlockedAction(const std::string& extension_id,
                         const std::string& blocked_call,  // e.g., tabs.get
                         ListValue* args,                  // argument values
-                        const BlockedAction::Reason reason,  // why it's blocked
+                        BlockedAction::Reason reason,     // why it's blocked
                         const std::string& extra);        // extra logging info
 
   // Log an interaction between an extension and a URL.
@@ -143,11 +141,21 @@ class ActivityLog : public BrowserContextKeyedService,
   virtual void OnShutdown() OVERRIDE {}
 
   // For unit tests only.
+  // TODO(felt) In the future, when we'll have multiple policies, it might
+  // be needed to rename the argument.
   void SetArgumentLoggingForTesting(bool log_arguments);
   static void RecomputeLoggingIsEnabled(bool profile_enabled);
 
   // BrowserContextKeyedService
   virtual void Shutdown() OVERRIDE;
+
+  // At the moment, ActivityLog will use only one policy for summarization
+  // (POLICY_NOARGS by default).  This static member function can be used
+  // to change the default type, but has to be called before the first
+  // GetInstance call.
+  // TODO(dbabic,felt) ActivityLog should support multiple policies at the
+  // same time, so this will need to be changed later.
+  void SetDefaultPolicy(ActivityLogPolicy::PolicyType policy_type);
 
  private:
   friend class ActivityLogFactory;
@@ -172,60 +180,32 @@ class ActivityLog : public BrowserContextKeyedService,
       int32 page_id,
       const GURL& on_url) OVERRIDE;
 
-  // The Schedule methods dispatch the calls to the database on a
-  // separate thread. We dispatch to the UI thread if the DB thread doesn't
-  // exist, which should only happen in tests where there is no DB thread.
-  template<typename DatabaseFunc>
-  void ScheduleAndForget(DatabaseFunc func) {
-    if (!has_threads_) return;
-    BrowserThread::PostTask(BrowserThread::DB,
-                            FROM_HERE,
-                            base::Bind(func, base::Unretained(db_)));
-  }
-
-  template<typename DatabaseFunc, typename ArgA>
-  void ScheduleAndForget(DatabaseFunc func, ArgA a) {
-    if (!has_threads_) return;
-    BrowserThread::PostTask(BrowserThread::DB,
-                            FROM_HERE,
-                            base::Bind(func, base::Unretained(db_), a));
-  }
-
-  template<typename DatabaseFunc, typename ArgA, typename ArgB>
-  void ScheduleAndForget(DatabaseFunc func, ArgA a, ArgB b) {
-    if (!has_threads_) return;
-    BrowserThread::PostTask(BrowserThread::DB,
-                            FROM_HERE,
-                            base::Bind(func, base::Unretained(db_), a, b));
-  }
-
   typedef ObserverListThreadSafe<Observer> ObserverList;
   scoped_refptr<ObserverList> observers_;
 
-  // The database wrapper that does the actual database I/O.
-  // We initialize this on the same thread as the ActivityLog, but then
-  // subsequent operations occur on the DB thread. Instead of destructing the
-  // ActivityDatabase, we call its Close() method on the DB thread and it
-  // commits suicide.
-  extensions::ActivityDatabase* db_;
+  // The policy object takes care of data summarization, compression, and
+  // logging
+  extensions::ActivityLogPolicy* policy_;
 
+  // TODO(dbabic,felt) change this into a list of policy types later.
+  ActivityLogPolicy::PolicyType policy_type_;
+
+  Profile* profile_;
+  // TODO(felt) These two flags could use a comment.
+  bool enabled_;
+  bool first_time_checking_;
   // testing_mode_ controls whether to log API call arguments. By default, we
   // don't log most arguments to avoid saving too much data. In testing mode,
   // argument collection is enabled. We also whitelist some arguments for
   // collection regardless of whether this bool is true.
   // When testing_mode_ is enabled, we also print to the console.
   bool testing_mode_;
-  base::hash_set<std::string> arg_whitelist_api_;
-
-  Profile* profile_;
-  bool enabled_;
-  bool first_time_checking_;
-  InstallTracker* tracker_;
-
   // We need the DB, FILE, and IO threads to operate. In some cases (tests),
   // these threads might not exist, so we avoid dispatching anything to the
   // ActivityDatabase to prevent things from exploding.
   bool has_threads_;
+
+  InstallTracker* tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLog);
 };

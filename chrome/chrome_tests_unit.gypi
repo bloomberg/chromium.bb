@@ -716,6 +716,8 @@
         'browser/extensions/active_tab_unittest.cc',
         'browser/extensions/activity_log/activity_database_unittest.cc',
         'browser/extensions/activity_log/activity_log_unittest.cc',
+        'browser/extensions/activity_log/fullstream_ui_policy_unittest.cc',
+        'browser/extensions/activity_log/stream_noargs_ui_policy_unittest.cc',
         'browser/extensions/admin_policy_unittest.cc',
         'browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc',
         'browser/extensions/api/alarms/alarms_api_unittest.cc',
