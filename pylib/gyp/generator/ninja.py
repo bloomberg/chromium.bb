@@ -1361,7 +1361,7 @@ def GetDefaultConcurrentLinks():
     stat.dwLength = ctypes.sizeof(stat)
     ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
 
-    return max(1, stat.ullTotalPhys / (2 ** 31))
+    return max(1, stat.ullTotalPhys / (4 ** 31))
   else:
     # TODO(scottmg): Implement this for other platforms.
     return 1
