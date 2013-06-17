@@ -94,8 +94,8 @@ weston_spring_update(struct weston_spring *spring, uint32_t msec)
 WL_EXPORT int
 weston_spring_done(struct weston_spring *spring)
 {
-	return fabs(spring->previous - spring->target) < 0.0002 &&
-		fabs(spring->current - spring->target) < 0.0002;
+	return fabs(spring->previous - spring->target) < 0.002 &&
+		fabs(spring->current - spring->target) < 0.002;
 }
 
 typedef	void (*weston_surface_animation_frame_func_t)(struct weston_surface_animation *animation);
