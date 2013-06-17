@@ -46,3 +46,6 @@ WebRTCAudioDeviceTest.WebRtcRecordingSetupTime
 # http://crbug.com/247601
 FontSerializationTest.StyledFonts
 MacSandboxTest.FontLoadingTest
+
+# http://crbug.com/244102, http://crbug.com/250681
+ScreenCaptureDeviceTest.Capture
