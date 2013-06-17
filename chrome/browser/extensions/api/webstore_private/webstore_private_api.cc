@@ -426,6 +426,7 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
   if (dummy_extension_->is_platform_app() &&
+      signin_manager &&
       signin_manager->GetAuthenticatedUsername().empty() &&
       signin_manager->AuthInProgress()) {
     signin_tracker_.reset(new SigninTracker(profile(), this));
