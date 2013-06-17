@@ -84,7 +84,7 @@ var test = function()
             function didFormatPage()
             {
                 InspectorTest.addResult("Removing breakpoint.");
-                InspectorTest.removeBreakpoint(sourceFrame, 19);
+                InspectorTest.removeBreakpoint(sourceFrame, 16);
                 InspectorTest.addResult("Unformatting.");
                 sourceFrame._uiSourceCode.setFormatted(false);
                 var breakpoints = WebInspector.breakpointManager._storage._setting.get();

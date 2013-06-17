@@ -6,8 +6,14 @@
 <script>
 function test()
 {
-    WebInspector.showPanel("scripts");
-    InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step1)
+    InspectorTest.reloadPage(step1);
+
+    function step1()
+    {
+        WebInspector.showPanel("scripts");
+        InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step2)
+    }
+
 
     function runSearchAndDumpResults(searchConfig, callback)
     {
@@ -46,7 +52,7 @@ function test()
         }
     }
 
-    function step1()
+    function step2()
     {
         InspectorTest.runTestSuite([
             function testIgnoreCase(next)
