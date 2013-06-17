@@ -40,7 +40,7 @@ class SandboxingError(Exception):
 BUNDLE_SIZE = 32
 
 
-def ValidateNop(instruction):
+def _ValidateNop(instruction):
   if instruction.disasm in [
       'nop',
       'xchg %ax,%ax',
@@ -57,7 +57,7 @@ def ValidateNop(instruction):
   raise DoNotMatchError(instruction)
 
 
-def ValidateOperandlessInstruction(instruction, bitness):
+def _ValidateOperandlessInstruction(instruction, bitness):
   assert bitness in [32, 64]
 
   if instruction.disasm in [
@@ -76,7 +76,7 @@ def ValidateOperandlessInstruction(instruction, bitness):
   raise DoNotMatchError(instruction)
 
 
-def ValidateStringInstruction(instruction):
+def _ValidateStringInstruction(instruction):
   prefix_re = r'(rep |repz |repnz )?'
   lods_re = r'lods %ds:\(%esi\),(%al|%ax|%eax)'
   stos_re = r'stos (%al|%ax|%eax),%es:\(%edi\)'
@@ -94,7 +94,7 @@ def ValidateStringInstruction(instruction):
   raise DoNotMatchError(instruction)
 
 
-def ValidateTlsInstruction(instruction):
+def _ValidateTlsInstruction(instruction):
   if re.match(r'mov %gs:(0x0|0x4),%e[a-z][a-z]$', instruction.disasm):
     return
 
@@ -105,26 +105,26 @@ def ValidateRegularInstruction(instruction, bitness):
   assert bitness in [32, 64]
 
   try:
-    ValidateNop(instruction)
+    _ValidateNop(instruction)
     return
   except DoNotMatchError:
     pass
 
   try:
-    ValidateOperandlessInstruction(instruction, bitness)
+    _ValidateOperandlessInstruction(instruction, bitness)
     return
   except DoNotMatchError:
     pass
 
   if bitness == 32:
     try:
-      ValidateStringInstruction(instruction)
+      _ValidateStringInstruction(instruction)
       return
     except DoNotMatchError:
       pass
 
     try:
-      ValidateTlsInstruction(instruction)
+      _ValidateTlsInstruction(instruction)
       return
     except DoNotMatchError:
       pass
@@ -132,7 +132,7 @@ def ValidateRegularInstruction(instruction, bitness):
   raise DoNotMatchError(instruction)
 
 
-def ImmediateRE(group_name='immediate'):
+def _ImmediateRE(group_name='immediate'):
   return r'(?P<%s>0x[\da-f]+)' % group_name
 
 
@@ -142,7 +142,7 @@ def ValidateDirectJump(instruction):
   cond_jumps_re = re.compile(
       r'(ja(e?)|jb(e?)|jg(e?)|jl(e?)|'
       r'j(n?)e|j(n?)o|j(n?)p|j(n?)s)'
-      r' %s$' % ImmediateRE('destination'))
+      r' %s$' % _ImmediateRE('destination'))
   m = cond_jumps_re.match(instruction.disasm)
   if m is not None:
     # 16-bit conditional jump has the following form:
@@ -157,7 +157,7 @@ def ValidateDirectJump(instruction):
           '16-bit conditional jumps are disallowed', instruction)
     return int(m.group('destination'), 16)
 
-  jumps_re = re.compile(r'(jmp|call)(|w|q) %s$' % ImmediateRE('destination'))
+  jumps_re = re.compile(r'(jmp|call)(|w|q) %s$' % _ImmediateRE('destination'))
   m = jumps_re.match(instruction.disasm)
   if m is not None:
     if m.group(2) == 'w':
