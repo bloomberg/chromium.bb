@@ -43,7 +43,7 @@
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libgcc_a',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libgcc_eh_a',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libpnacl_irt_shim_a',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_llc_nexe',
+                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_pnacl_llc_nexe',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_crtbegin_o',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_crtbeginS_o',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_ld_nexe',
@@ -51,7 +51,7 @@
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libgcc_a',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libgcc_eh_a',
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libpnacl_irt_shim_a',
-                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_llc_nexe',
+                      '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_pnacl_llc_nexe',
                     ],
                     'inputs': [
                       '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-32/libpnacl_irt_shim.a',
@@ -78,7 +78,7 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_libgcc_a',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_libgcc_eh_a',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_libpnacl_irt_shim_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_llc_nexe',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_pnacl_llc_nexe',
                         ],
                         'inputs': [
                           '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-arm/libpnacl_irt_shim.a',
@@ -100,7 +100,7 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libgcc_a',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libgcc_eh_a',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_libpnacl_irt_shim_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_llc_nexe',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_pnacl_llc_nexe',
                         ],
                         'inputs': [
                           '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-32/libpnacl_irt_shim.a',
@@ -122,7 +122,7 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libgcc_a',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libgcc_eh_a',
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_libpnacl_irt_shim_a',
-                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_llc_nexe',
+                          '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_pnacl_llc_nexe',
                         ],
                         'inputs': [
                           '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-x86-64/libpnacl_irt_shim.a',
