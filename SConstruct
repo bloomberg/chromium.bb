@@ -366,6 +366,10 @@ def SetUpArgumentBits(env):
     raise ValueError("pnacl_generate_pexe and use_sandboxed_translator"
                         "don't make sense without bitcode")
 
+  # Sandboxed translator only accepts stable bitcode. Hence we must disallow
+  # nonstable bitcodes.
+  if env.Bit('use_sandboxed_translator'):
+    env.SetBits('skip_nonstable_bitcode')
 
 def CheckArguments():
   for key in ARGUMENTS:

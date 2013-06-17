@@ -42,9 +42,9 @@ def main(argv):
   else:
     f_output = inputs[0]
 
-  # Transform the file, and wrap the result.
-  driver_tools.RunWithEnv('${RUN_OPT}', input=inputs[0], output=f_output)
-  driver_tools.WrapBitcode(f_output)
+  # Transform the file, and convert it to a PNaCl bitcode file.
+  driver_tools.RunWithEnv(' '.join(['${RUN_OPT}', '--bitcode-format=pnacl']),
+                          input=inputs[0], output=f_output)
   return 0
 
 

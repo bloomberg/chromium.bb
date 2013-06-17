@@ -129,7 +129,8 @@ EXTRA_ENV = {
   # Append additional non-default flags here.
   'LLC_FLAGS_EXTRA' : '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST}} ' +
                       '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
-                      '${OPT_LEVEL == 0 ? -disable-fp-elim}',
+                      '${OPT_LEVEL == 0 ? -disable-fp-elim} ' +
+                      '${SANDBOXED ? --bitcode-format=pnacl}',
 
   # Opt level from command line (if any)
   'OPT_LEVEL' : '',
@@ -254,7 +255,8 @@ def main(argv):
 
   # Find the bitcode file on the command line.
   bcfiles = [f for f in inputs
-             if driver_tools.IsLLVMBitcode(f)
+             if driver_tools.IsPNaClBitcode(f)
+                or driver_tools.IsLLVMBitcode(f)
                 or driver_tools.FileType(f) == 'll']
   if len(bcfiles) > 1:
     Log.Fatal('Expecting at most 1 bitcode file')
@@ -478,7 +480,10 @@ def RunLLC(infile, outfile, filetype):
     # soname and dt_needed libs are returned from LLC and passed to LD
     driver_tools.SetBitcodeMetadata(infile, is_shared, soname, needed)
   else:
-    driver_tools.Run("${RUN_LLC}")
+    args = ["${RUN_LLC}"]
+    if driver_tools.IsPNaClBitcode(infile):
+      args.append("-bitcode-format=pnacl")
+    driver_tools.Run(' '.join(args))
     env.pop()
   return 0
 
@@ -486,8 +491,8 @@ def RunLLCSandboxed():
   driver_tools.CheckTranslatorPrerequisites()
   infile = env.getone('input')
   outfile = env.getone('output')
-  if not driver_tools.IsLLVMBitcode(infile):
-    Log.Fatal('Input to sandboxed translator must be bitcode')
+  if not driver_tools.IsPNaClBitcode(infile):
+    Log.Fatal('Input to sandboxed translator must be PNaCl bitcode')
   script = MakeSelUniversalScriptForLLC(infile, outfile)
   command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
     '-- ${LLC_SB}')

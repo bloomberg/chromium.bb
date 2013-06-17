@@ -9,7 +9,6 @@
 # updates the copy in the toolchain/ tree.
 #
 
-import hashlib
 import platform
 import os
 import re
@@ -521,8 +520,8 @@ def DecodeLE(bytes):
 # to make sure this interface gets tested
 FORCED_METADATA = {}
 @SimpleCache
-def GetBitcodeMetadata(filename, assume_pexe):
-  assert(IsLLVMBitcode(filename))
+def GetBitcodeMetadata(filename, assume_pexe=False):
+  assert(IsPNaClBitcode(filename) or IsLLVMBitcode(filename))
   # The argument |assume_pexe| helps break a dependency on bitcode metadata,
   # as the shared library metadata is not finalized yet.
   if assume_pexe:
@@ -535,6 +534,8 @@ def GetBitcodeMetadata(filename, assume_pexe):
 
   llvm_dis = env.getone('LLVM_DIS')
   args = [ llvm_dis, '-dump-metadata', filename ]
+  if IsPNaClBitcode(filename):
+    args += ['-bitcode-format=pnacl']
   _, stdout_contents, _  = Run(args, redirect_stdout=subprocess.PIPE)
 
   metadata = { 'OutputFormat': '',
@@ -639,7 +640,7 @@ def FileType(filename):
   if IsELF(filename):
     return GetELFType(filename)
 
-  if IsLLVMBitcode(filename):
+  if IsLLVMBitcode(filename) or IsPNaClBitcode(filename):
     return GetBitcodeType(filename, False)
 
   if (ext in ('o','so','a','po','pso','pa','x') and
@@ -668,7 +669,7 @@ def GetELFType(filename):
 @SimpleCache
 def GetBitcodeType(filename, assume_pexe):
   """ Bitcode type as determined by bitcode metadata """
-  assert(IsLLVMBitcode(filename))
+  assert(IsLLVMBitcode(filename) or IsPNaClBitcode(filename))
   metadata = GetBitcodeMetadata(filename, assume_pexe)
   format_map = {
     'object': 'po',
@@ -676,43 +677,6 @@ def GetBitcodeType(filename, assume_pexe):
     'executable': 'pexe'
   }
   return format_map[metadata['OutputFormat']]
-
-def GetBasicHeaderData(data):
-  """ Extract bitcode offset and size from LLVM bitcode wrapper header.
-      Format is 4-bytes each of [ magic, version, bc offset, bc size, ...
-      (documented at http://llvm.org/docs/BitCodeFormat.html)
-  """
-  if not IsLLVMBitcodeWrapperHeader(data):
-    raise ValueError('Data is not a bitcode wrapper')
-  magic, llvm_bcversion, offset, size = struct.unpack('<IIII', data)
-  if llvm_bcversion != 0:
-    raise ValueError('Data is not a valid bitcode wrapper')
-  return offset, size
-
-def WrapBitcode(output):
-  """ Hash the bitcode and insert a wrapper header with the sha value.
-      If the bitcode is already wrapped, the old hash is overwritten.
-  """
-  fd = DriverOpen(output, 'rb')
-  maybe_header = fd.read(16)
-  if IsLLVMBitcodeWrapperHeader(maybe_header):
-    offset, bytes_left = GetBasicHeaderData(maybe_header)
-    fd.seek(offset)
-  else:
-    offset = 0
-    fd.seek(0, os.SEEK_END)
-    bytes_left = fd.tell()
-    fd.seek(0)
-  # get the hash
-  sha = hashlib.sha256()
-  while bytes_left:
-    block = fd.read(min(bytes_left, 4096))
-    sha.update(block)
-    bytes_left -= len(block)
-  DriverClose(fd)
-  # run bc-wrap
-  Run(' '.join(['${LLVM_BCWRAP}', '-hash', sha.hexdigest(), '"%s"' % output]))
-
 
 ######################################################################
 #
