@@ -67,7 +67,6 @@ public:
 private:
     HTMLOptionElement(const QualifiedName&, Document*);
 
-    virtual bool supportsFocus() const;
     virtual bool isFocusable() const;
     virtual bool rendererIsNeeded(const NodeRenderingContext&) { return false; }
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
