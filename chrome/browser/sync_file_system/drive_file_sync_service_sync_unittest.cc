@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync_file_system/drive/fake_api_util.h"
+#include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
@@ -25,10 +26,20 @@ namespace sync_file_system {
 
 namespace {
 
-const char kSyncRootResourceId[] = "folder:sync_root_resource_id";
-const char kParentResourceId[] = "folder:parent_resource_id";
 const char kAppId[] = "app-id";
 const char kAppOrigin[] = "chrome-extension://app-id";
+
+std::string GetSyncRootResourceId() {
+  const std::string kSyncRootResourceId("folder:sync_root_resource_id");
+  return IsDriveAPIDisabled() ? kSyncRootResourceId
+                              : drive::RemoveWapiIdPrefix(kSyncRootResourceId);
+}
+
+std::string GetParentResourceId() {
+  const std::string kParentResourceId("folder:parent_resource_id");
+  return IsDriveAPIDisabled() ? kParentResourceId
+                              : drive::RemoveWapiIdPrefix(kParentResourceId);
+}
 
 void DidInitialize(bool* done, SyncStatusCode status, bool created) {
   EXPECT_EQ(SYNC_STATUS_OK, status);
@@ -59,13 +70,12 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     SetEnableSyncFSDirectoryOperation(true);
-    SetDisableDriveAPI(true);
     RegisterSyncableFileSystem();
   }
 
   virtual void TearDown() OVERRIDE {
-    RevokeSyncableFileSystem();
     SetDisableDriveAPI(false);
+    RevokeSyncableFileSystem();
     SetEnableSyncFSDirectoryOperation(false);
   }
 
@@ -160,6 +170,15 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     base_dir_ = base::FilePath();
   }
 
+  void AddFileTest_Body();
+  void UpdateFileTest_Body();
+  void DeleteFileTest_Body();
+  void RelaunchTest_Body();
+  void SquashedFileAddTest_Body();
+  void RelaunchTestWithSquashedDeletion_Body();
+  void CreateDirectoryTest_Body();
+  void DeleteDirectoryTest_Body();
+
  private:
   void SetUpForTestCase() {
     fake_api_util_ = new drive::FakeAPIUtil;
@@ -173,9 +192,9 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     message_loop_.RunUntilIdle();
     EXPECT_TRUE(done);
 
-    metadata_store_->SetSyncRootDirectory(kSyncRootResourceId);
+    metadata_store_->SetSyncRootDirectory(GetSyncRootResourceId());
     metadata_store_->AddIncrementalSyncOrigin(GURL(kAppOrigin),
-                                              kParentResourceId);
+                                              GetParentResourceId());
 
     sync_service_ = DriveFileSyncService::CreateForTesting(
         &profile_,
@@ -204,12 +223,14 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
           NOTREACHED();
           break;
         case SYNC_FILE_TYPE_FILE:
-          inserted.first->second =
-              base::StringPrintf("file:%" PRId64, ++resource_count_);
+          inserted.first->second = IsDriveAPIDisabled()
+              ? base::StringPrintf("file:%" PRId64, ++resource_count_)
+              : base::StringPrintf("%" PRId64, ++resource_count_);
           break;
         case SYNC_FILE_TYPE_DIRECTORY:
-          inserted.first->second =
-              base::StringPrintf("folder:%" PRId64, ++resource_count_);
+          inserted.first->second = IsDriveAPIDisabled()
+              ? base::StringPrintf("folder:%" PRId64, ++resource_count_)
+              : base::StringPrintf("%" PRId64, ++resource_count_);
           break;
       }
     }
@@ -218,7 +239,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     if (type == SYNC_FILE_TYPE_FILE)
       md5_checksum = base::StringPrintf("%" PRIx64, base::RandUint64());
 
-    fake_api_util_->PushRemoteChange(kParentResourceId,
+    fake_api_util_->PushRemoteChange(GetParentResourceId(),
                                      kAppId,
                                      title,
                                      resource_id,
@@ -234,7 +255,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
       return;
     std::string resource_id = found->second;
     resources_.erase(found);
-    fake_api_util_->PushRemoteChange(kParentResourceId,
+    fake_api_util_->PushRemoteChange(GetParentResourceId(),
                                      kAppId,
                                      title,
                                      resource_id,
@@ -357,7 +378,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DriveFileSyncServiceSyncTest);
 };
 
-TEST_F(DriveFileSyncServiceSyncTest, AddFileTest) {
+void DriveFileSyncServiceSyncTest::AddFileTest_Body() {
   std::string kFile1 = "file title 1";
   SyncEvent sync_event[] = {
     CreateRemoteFileAddOrUpdateEvent(kFile1),
@@ -366,7 +387,7 @@ TEST_F(DriveFileSyncServiceSyncTest, AddFileTest) {
   RunTest(CreateTestCase(sync_event));
 }
 
-TEST_F(DriveFileSyncServiceSyncTest, UpdateFileTest) {
+void DriveFileSyncServiceSyncTest::UpdateFileTest_Body() {
   std::string kFile1 = "file title 1";
   SyncEvent sync_event[] = {
     CreateRemoteFileAddOrUpdateEvent(kFile1),
@@ -376,7 +397,7 @@ TEST_F(DriveFileSyncServiceSyncTest, UpdateFileTest) {
   RunTest(CreateTestCase(sync_event));
 }
 
-TEST_F(DriveFileSyncServiceSyncTest, DeleteFileTest) {
+void DriveFileSyncServiceSyncTest::DeleteFileTest_Body() {
   std::string kFile1 = "file title 1";
   SyncEvent sync_event[] = {
     CreateRemoteFileAddOrUpdateEvent(kFile1),
@@ -388,7 +409,7 @@ TEST_F(DriveFileSyncServiceSyncTest, DeleteFileTest) {
   RunTest(CreateTestCase(sync_event));
 }
 
-TEST_F(DriveFileSyncServiceSyncTest, RelaunchTest) {
+void DriveFileSyncServiceSyncTest::RelaunchTest_Body() {
   SyncEvent sync_event[] = {
     CreateRelaunchEvent(),
   };
@@ -396,7 +417,7 @@ TEST_F(DriveFileSyncServiceSyncTest, RelaunchTest) {
   RunTest(CreateTestCase(sync_event));
 }
 
-TEST_F(DriveFileSyncServiceSyncTest, SquashedFileAddTest) {
+void DriveFileSyncServiceSyncTest::SquashedFileAddTest_Body() {
   std::string kFile1 = "file title 1";
   SyncEvent sync_event[] = {
     CreateRemoteFileAddOrUpdateEvent(kFile1),
@@ -406,7 +427,7 @@ TEST_F(DriveFileSyncServiceSyncTest, SquashedFileAddTest) {
   RunTest(CreateTestCase(sync_event));
 }
 
-TEST_F(DriveFileSyncServiceSyncTest, RelaunchTestWithSquashedDeletion) {
+void DriveFileSyncServiceSyncTest::RelaunchTestWithSquashedDeletion_Body() {
   std::string kFile1 = "file title 1";
   std::string kFile2 = "file title 2";
   SyncEvent sync_event[] = {
@@ -425,7 +446,7 @@ TEST_F(DriveFileSyncServiceSyncTest, RelaunchTestWithSquashedDeletion) {
   RunTest(CreateTestCase(sync_event));
 }
 
-TEST_F(DriveFileSyncServiceSyncTest, CreateDirectoryTest) {
+void DriveFileSyncServiceSyncTest::CreateDirectoryTest_Body() {
   std::string kDir = "dir title";
   SyncEvent sync_event[] = {
     CreateRemoteDirectoryAddEvent(kDir),
@@ -433,13 +454,93 @@ TEST_F(DriveFileSyncServiceSyncTest, CreateDirectoryTest) {
   RunTest(CreateTestCase(sync_event));
 }
 
-TEST_F(DriveFileSyncServiceSyncTest, DeleteDirectoryTest) {
+void DriveFileSyncServiceSyncTest::DeleteDirectoryTest_Body() {
   std::string kDir = "dir title";
   SyncEvent sync_event[] = {
     CreateRemoteDirectoryAddEvent(kDir),
     CreateRemoteFileDeleteEvent(kDir),
   };
   RunTest(CreateTestCase(sync_event));
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, AddFileTest) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  AddFileTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, AddFileTest_WAPI) {
+  SetDisableDriveAPI(true);
+  AddFileTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, UpdateFileTest) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  UpdateFileTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, UpdateFileTest_WAPI) {
+  SetDisableDriveAPI(true);
+  UpdateFileTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, DeleteFileTest) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  DeleteFileTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, DeleteFileTest_WAPI) {
+  SetDisableDriveAPI(true);
+  DeleteFileTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, RelaunchTest) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  RelaunchTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, RelaunchTest_WAPI) {
+  SetDisableDriveAPI(true);
+  RelaunchTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, SquashedFileAddTest) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  SquashedFileAddTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, SquashedFileAddTest_WAPI) {
+  SetDisableDriveAPI(true);
+  SquashedFileAddTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, RelaunchTestWithSquashedDeletion) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  RelaunchTestWithSquashedDeletion_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, RelaunchTestWithSquashedDeletion_WAPI) {
+  SetDisableDriveAPI(true);
+  RelaunchTestWithSquashedDeletion_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, CreateDirectoryTest) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  CreateDirectoryTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, CreateDirectoryTest_WAPI) {
+  SetDisableDriveAPI(true);
+  CreateDirectoryTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, DeleteDirectoryTest) {
+  ASSERT_FALSE(IsDriveAPIDisabled());
+  DeleteDirectoryTest_Body();
+}
+
+TEST_F(DriveFileSyncServiceSyncTest, DeleteDirectoryTest_WAPI) {
+  SetDisableDriveAPI(true);
+  DeleteDirectoryTest_Body();
 }
 
 }  // namespace sync_file_system
