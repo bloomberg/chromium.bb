@@ -212,7 +212,7 @@ UserManagerImpl::UserManagerImpl()
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
       content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources());
   RetrieveTrustedDevicePolicies();
   UpdateLoginState();
@@ -689,12 +689,12 @@ void UserManagerImpl::Observe(int type,
       CheckOwnership();
       RetrieveTrustedDevicePolicies();
       break;
-    case chrome::NOTIFICATION_PROFILE_ADDED:
+    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED:
       if (IsUserLoggedIn() &&
           !IsLoggedInAsGuest() &&
           !IsLoggedInAsLocallyManagedUser() &&
           !IsLoggedInAsKioskApp()) {
-        Profile* profile = content::Source<Profile>(source).ptr();
+        Profile* profile = content::Details<Profile>(details).ptr();
         if (!profile->IsOffTheRecord() &&
             profile == ProfileManager::GetDefaultProfile()) {
           // TODO(nkostylev): We should observe all logged in user's profiles.
