@@ -61,7 +61,6 @@
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/RenderHTMLCanvas.h"
@@ -94,30 +93,6 @@ static bool isOriginClean(CachedImage* cachedImage, SecurityOrigin* securityOrig
         return true;
     return !securityOrigin->taintsCanvas(cachedImage->response().url());
 }
-
-class CanvasStrokeStyleApplier : public StrokeStyleApplier {
-public:
-    CanvasStrokeStyleApplier(CanvasRenderingContext2D* canvasContext)
-        : m_canvasContext(canvasContext)
-    {
-    }
-
-    virtual void strokeStyle(GraphicsContext* c)
-    {
-        c->setStrokeThickness(m_canvasContext->lineWidth());
-        c->setLineCap(m_canvasContext->getLineCap());
-        c->setLineJoin(m_canvasContext->getLineJoin());
-        c->setMiterLimit(m_canvasContext->miterLimit());
-        const Vector<float>& lineDash = m_canvasContext->getLineDash();
-        DashArray convertedLineDash(lineDash.size());
-        for (size_t i = 0; i < lineDash.size(); ++i)
-            convertedLineDash[i] = static_cast<DashArrayElement>(lineDash[i]);
-        c->setLineDash(convertedLineDash, m_canvasContext->lineDashOffset());
-    }
-
-private:
-    CanvasRenderingContext2D* m_canvasContext;
-};
 
 CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     : CanvasRenderingContext(canvas)
@@ -1012,8 +987,13 @@ bool CanvasRenderingContext2D::isPointInStroke(const float x, const float y)
     if (!std::isfinite(transformedPoint.x()) || !std::isfinite(transformedPoint.y()))
         return false;
 
-    CanvasStrokeStyleApplier applier(this);
-    return m_path.strokeContains(&applier, transformedPoint);
+    StrokeData strokeData;
+    strokeData.setThickness(lineWidth());
+    strokeData.setLineCap(getLineCap());
+    strokeData.setLineJoin(getLineJoin());
+    strokeData.setMiterLimit(miterLimit());
+    strokeData.setLineDash(getLineDash(), lineDashOffset());
+    return m_path.strokeContains(transformedPoint, strokeData);
 }
 
 void CanvasRenderingContext2D::clearRect(float x, float y, float width, float height)

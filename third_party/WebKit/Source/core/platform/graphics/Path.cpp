@@ -33,7 +33,6 @@
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -74,24 +73,14 @@ bool Path::contains(const FloatPoint& point, WindRule rule) const
     return SkPathContainsPoint(path, point, rule == RULE_NONZERO ? SkPath::kWinding_FillType : SkPath::kEvenOdd_FillType);
 }
 
-bool Path::strokeContains(StrokeStyleApplier* applier, const FloatPoint& point) const
+bool Path::strokeContains(const FloatPoint& point, const StrokeData& strokeData) const
 {
-    // FIXME(crbug.com/229267): Rewrite this to not require a scratch context.
-    GraphicsContext* scratch = scratchContext();
-    scratch->save();
-
-    ASSERT(applier);
-    applier->strokeStyle(scratch);
-
     SkPaint paint;
-    scratch->setupPaintForStroking(&paint, 0, 0);
+    strokeData.setupPaint(&paint);
     SkPath strokePath;
     paint.getFillPath(m_path, &strokePath);
 
-    bool contains = SkPathContainsPoint(&strokePath, point, SkPath::kWinding_FillType);
-
-    scratch->restore();
-    return contains;
+    return SkPathContainsPoint(&strokePath, point, SkPath::kWinding_FillType);
 }
 
 FloatRect Path::boundingRect() const
@@ -99,23 +88,14 @@ FloatRect Path::boundingRect() const
     return m_path.getBounds();
 }
 
-FloatRect Path::strokeBoundingRect(StrokeStyleApplier* applier) const
+FloatRect Path::strokeBoundingRect(const StrokeData& strokeData) const
 {
-    // FIXME(crbug.com/229267): Rewrite this to not require a scratch context.
-    GraphicsContext* scratch = scratchContext();
-    scratch->save();
-
-    if (applier)
-        applier->strokeStyle(scratch);
-
     SkPaint paint;
-    scratch->setupPaintForStroking(&paint, 0, 0);
+    strokeData.setupPaint(&paint);
     SkPath boundingPath;
     paint.getFillPath(m_path, &boundingPath);
 
-    FloatRect boundingRect = boundingPath.getBounds();
-    scratch->restore();
-    return boundingRect;
+    return boundingPath.getBounds();
 }
 
 static FloatPoint* convertPathPoints(FloatPoint dst[], const SkPoint src[], int count)
