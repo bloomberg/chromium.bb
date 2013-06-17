@@ -870,3 +870,58 @@
    fun:jingle_glue::XmppClientSocketFactory::CreateTransportClientSocket
    fun:jingle_glue::ChromeAsyncSocket::Connect
 }
+{
+   bug_251034_a
+   Heapcheck:Leak
+   ...
+   fun:gfx::OSMESAApiBase::OSMesaMakeCurrentFn
+   fun:gfx::GLContextOSMesa::MakeCurrent
+   fun:gpu::gles2::GLES2DecoderImpl::MakeCurrent
+   fun:webkit::gpu::GLInProcessContext::PumpCommands
+}
+{
+   bug_251034_b
+   Heapcheck:Leak
+   ...
+   fun:gfx::OSMESAApiBase::OSMesaMakeCurrentFn
+   fun:gfx::GLContextOSMesa::MakeCurrent
+   fun:webkit::gpu::GLInProcessContext::Initialize
+   fun:webkit::gpu::GLInProcessContext::CreateContext
+   fun:webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL
+   fun:webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::makeContextCurrent
+   fun:ui::DefaultContextFactory::CreateContextCommon
+   fun:ui::DefaultContextFactory::CreateOutputSurface
+   fun:ui::Compositor::CreateOutputSurface
+   fun:cc::LayerTreeHost::CreateOutputSurface
+   fun:cc::LayerTreeHost::InitializeProxy
+   fun:cc::LayerTreeHost::Initialize
+   fun:cc::LayerTreeHost::Create
+   fun:Compositor
+   fun:ui::TestCompositorHostLinux::Show
+   fun:SetUp
+}
+{
+   bug_251034_c
+   Heapcheck:Leak
+   ...
+   fun:gfx::OSMESAApiBase::OSMesaMakeCurrentFn
+   fun:gfx::GLContextOSMesa::MakeCurrent
+   fun:ScopedMakeCurrent
+   fun:gfx::GLSurfaceOSMesa::Resize
+   fun:gfx::NativeViewGLSurfaceOSMesa::Resize
+   fun:webkit::gpu::GLInProcessContext::OnResizeView
+}
+{
+   bug_251034_d
+   Heapcheck:Leak
+   ...
+   fun:gfx::OSMESAApiBase::OSMesaMakeCurrentFn
+   fun:gfx::GLContextOSMesa::MakeCurrent
+   fun:~ScopedMakeCurrent
+   fun:base::DefaultDeleter::operator
+   fun:~scoped_ptr_impl
+   fun:~scoped_ptr
+   fun:gfx::GLSurfaceOSMesa::Resize
+   fun:gfx::NativeViewGLSurfaceOSMesa::Resize
+   fun:webkit::gpu::GLInProcessContext::OnResizeView
+}
