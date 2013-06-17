@@ -689,10 +689,9 @@ crbug.com/69639 webkit.org/b/63227 http/tests/loading/cross-origin-XHR-willLoadR
 
 # These tests are too slow with our MESA backend.  We can re-enable when we have
 # bots running tests on real hardware.
-# senorblanco: experimentally setting these Slow to see if they finish.
-webkit.org/b/49629 compositing/lots-of-img-layers.html [ Slow Failure ImageOnlyFailure Pass Crash ]
+webkit.org/b/49629 compositing/lots-of-img-layers.html [ Failure Timeout ]
 webkit.org/b/49629 [ Win Debug ] virtual/softwarecompositing/lots-of-img-layers.html [ Slow ]
-webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Slow Failure ImageOnlyFailure Pass Crash ]
+webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Failure Timeout ]
 
 crbug.com/76550 [ Win Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Slow ]
 crbug.com/76550 [ Lion SnowLeopard Debug ] fast/dom/Window/window-function-frame-getter-precedence.html [ Timeout ]
