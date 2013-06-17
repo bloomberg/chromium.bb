@@ -134,16 +134,20 @@ ResourceMetadata::ResourceMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void ResourceMetadata::Initialize(const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
+FileError ResourceMetadata::Initialize() {
+  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::InitializeOnBlockingPool,
-                 base::Unretained(this)),
-      callback);
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return FILE_ERROR_NO_SPACE;
+
+  // Initialize the storage.
+  if (!storage_->Initialize())
+    return FILE_ERROR_FAILED;
+
+  if (!SetUpDefaultEntries())
+    return FILE_ERROR_FAILED;
+
+  return FILE_ERROR_OK;
 }
 
 void ResourceMetadata::Destroy() {
@@ -183,22 +187,6 @@ FileError ResourceMetadata::Reset() {
 
 ResourceMetadata::~ResourceMetadata() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-}
-
-FileError ResourceMetadata::InitializeOnBlockingPool() {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-    return FILE_ERROR_NO_SPACE;
-
-  // Initialize the storage.
-  if (!storage_->Initialize())
-    return FILE_ERROR_FAILED;
-
-  if (!SetUpDefaultEntries())
-    return FILE_ERROR_FAILED;
-
-  return FILE_ERROR_OK;
 }
 
 bool ResourceMetadata::SetUpDefaultEntries() {

@@ -253,10 +253,8 @@ class FileCache {
   // Must be called on the UI thread.
   void ClearAllOnUIThread(const InitializeCacheCallback& callback);
 
-  // Utility method to call Initialize on UI thread. |callback| is called on
-  // UI thread when the initialization is complete.
-  // |callback| must not be null.
-  void RequestInitialize(const InitializeCacheCallback& callback);
+  // Initializes the cache. Returns true on success.
+  bool Initialize();
 
   // Destroys this cache. This function posts a task to the blocking task
   // runner to safely delete the object.
@@ -299,9 +297,6 @@ class FileCache {
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
   void AssertOnSequencedWorkerPool();
-
-  // Initializes the cache. Returns true on success.
-  bool InitializeOnBlockingPool();
 
   // Destroys the cache on the blocking pool.
   void DestroyOnBlockingPool();

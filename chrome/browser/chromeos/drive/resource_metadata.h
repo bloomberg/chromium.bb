@@ -120,8 +120,7 @@ class ResourceMetadata {
 
   // Initializes this object.
   // This method should be called before any other methods.
-  // Must be called on the UI thread.
-  void Initialize(const FileOperationCallback& callback);
+  FileError Initialize() WARN_UNUSED_RESULT;
 
   // Destroys this object.  This method posts a task to |blocking_task_runner_|
   // to safely delete this object.
@@ -251,9 +250,6 @@ class ResourceMetadata {
  private:
   // Note: Use Destroy() to delete this object.
   ~ResourceMetadata();
-
-  // Used to implement Initialize();
-  FileError InitializeOnBlockingPool() WARN_UNUSED_RESULT;
 
   // Sets up entries which should be present by default.
   bool SetUpDefaultEntries();

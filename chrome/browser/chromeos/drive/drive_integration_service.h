@@ -132,13 +132,9 @@ class DriveIntegrationService
   void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
                               bool success);
 
-  // Called when cache initialization is done. Continues initialization if
-  // the cache initialization is successful.
-  void InitializeAfterCacheInitialized(bool success);
-
-  // Called when resource metadata initialization is done. Continues
-  // initialization if resource metadata initialization is successful.
-  void InitializeAfterResourceMetadataInitialized(FileError error);
+  // Called when metadata initialization is done. Continues initialization if
+  // the metadata initialization is successful.
+  void InitializeAfterMetadataInitialized(FileError error);
 
   // Disables Drive. Used to disable Drive when needed (ex. initialization of
   // the Drive cache failed).

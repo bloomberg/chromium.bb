@@ -682,32 +682,7 @@ void FileCache::ClearAllOnUIThread(const InitializeCacheCallback& callback) {
       callback);
 }
 
-void FileCache::RequestInitialize(const InitializeCacheCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&FileCache::InitializeOnBlockingPool, base::Unretained(this)),
-      callback);
-}
-
-void FileCache::Destroy() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Invalidate the weak pointer.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
-  // Destroy myself on the blocking pool.
-  // Note that base::DeletePointer<> cannot be used as the destructor of this
-  // class is private.
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&FileCache::DestroyOnBlockingPool, base::Unretained(this)));
-}
-
-bool FileCache::InitializeOnBlockingPool() {
+bool FileCache::Initialize() {
   AssertOnSequencedWorkerPool();
 
   if (!InitCachePaths(cache_paths_))
@@ -735,6 +710,20 @@ bool FileCache::InitializeOnBlockingPool() {
     }
   }
   return true;
+}
+
+void FileCache::Destroy() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Invalidate the weak pointer.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  // Destroy myself on the blocking pool.
+  // Note that base::DeletePointer<> cannot be used as the destructor of this
+  // class is private.
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&FileCache::DestroyOnBlockingPool, base::Unretained(this)));
 }
 
 void FileCache::DestroyOnBlockingPool() {
@@ -908,7 +897,7 @@ bool FileCache::ClearAll() {
     return false;
   }
 
-  if (!InitializeOnBlockingPool()) {
+  if (!Initialize()) {
     LOG(WARNING) << "Failed to initialize the cache";
     return false;
   }

@@ -88,20 +88,12 @@ class SyncClientTest : public testing::Test {
     scheduler_.reset(new JobScheduler(profile_.get(), drive_service_.get()));
     metadata_.reset(new internal::ResourceMetadata(
         temp_dir_.path(), base::MessageLoopProxy::current()));
-    FileError error = FILE_ERROR_FAILED;
-    metadata_->Initialize(
-        google_apis::test_util::CreateCopyResultCallback(&error));
-    base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(FILE_ERROR_OK, error);
+    ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     cache_.reset(new FileCache(temp_dir_.path(),
                                base::MessageLoopProxy::current(),
                                NULL /* free_disk_space_getter */));
-    bool success = false;
-    cache_->RequestInitialize(
-        google_apis::test_util::CreateCopyResultCallback(&success));
-    base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(success);
+    ASSERT_TRUE(cache_->Initialize());
 
     ASSERT_NO_FATAL_FAILURE(SetUpTestData());
 

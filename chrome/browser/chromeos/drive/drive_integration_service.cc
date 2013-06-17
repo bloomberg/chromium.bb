@@ -88,6 +88,21 @@ std::string GetDriveUserAgent() {
                             os_cpu_info.c_str());
 }
 
+// Initializes FileCache and ResourceMetadata.
+// Must be run on the same task runner used by |cache| and |resource_metadata|.
+FileError InitializeMetadata(internal::FileCache* cache,
+                             internal::ResourceMetadata* resource_metadata) {
+  if (!cache->Initialize()) {
+    LOG(WARNING) << "Failed to initialize the cache.";
+    return FILE_ERROR_FAILED;
+  }
+
+  FileError error = resource_metadata->Initialize();
+  LOG_IF(WARNING, error != FILE_ERROR_OK)
+      << "Failed to initialize resource metadata. " << FileErrorToString(error);
+  return error;
+}
+
 }  // namespace
 
 DriveIntegrationService::DriveIntegrationService(
@@ -153,8 +168,14 @@ void DriveIntegrationService::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   drive_service_->Initialize(profile_);
   file_system_->Initialize();
-  cache_->RequestInitialize(
-      base::Bind(&DriveIntegrationService::InitializeAfterCacheInitialized,
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&InitializeMetadata,
+                 cache_.get(),
+                 resource_metadata_.get()),
+      base::Bind(&DriveIntegrationService::InitializeAfterMetadataInitialized,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -291,27 +312,12 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
   util::Log("Drive mount point is removed");
 }
 
-void DriveIntegrationService::InitializeAfterCacheInitialized(bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!success) {
-    LOG(WARNING) << "Failed to initialize the cache. Disabling Drive";
-    DisableDrive();
-    return;
-  }
-
-  resource_metadata_->Initialize(
-      base::Bind(
-          &DriveIntegrationService::InitializeAfterResourceMetadataInitialized,
-          weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DriveIntegrationService::InitializeAfterResourceMetadataInitialized(
+void DriveIntegrationService::InitializeAfterMetadataInitialized(
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != FILE_ERROR_OK) {
-    LOG(WARNING) << "Failed to initialize resource metadata. Disabling Drive : "
+    LOG(WARNING) << "Failed to initialize. Disabling Drive : "
                  << FileErrorToString(error);
     DisableDrive();
     return;

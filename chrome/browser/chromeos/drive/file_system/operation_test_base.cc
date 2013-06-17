@@ -64,7 +64,11 @@ void OperationTestBase::SetUp() {
                                                  blocking_task_runner_));
 
   FileError error = FILE_ERROR_FAILED;
-  metadata_->Initialize(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::Initialize,
+                 base::Unretained(metadata_.get())),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
@@ -74,7 +78,11 @@ void OperationTestBase::SetUp() {
                                        blocking_task_runner_.get(),
                                        fake_free_disk_space_getter_.get()));
   bool success = false;
-  cache_->RequestInitialize(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&internal::FileCache::Initialize,
+                 base::Unretained(cache_.get())),
       google_apis::test_util::CreateCopyResultCallback(&success));
   google_apis::test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);

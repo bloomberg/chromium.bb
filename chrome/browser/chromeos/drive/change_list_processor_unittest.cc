@@ -54,7 +54,11 @@ class ChangeListProcessorTest : public testing::Test {
                                                    blocking_task_runner_));
 
     FileError error = FILE_ERROR_FAILED;
-    metadata_->Initialize(
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&ResourceMetadata::Initialize,
+                   base::Unretained(metadata_.get())),
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     ASSERT_EQ(FILE_ERROR_OK, error);

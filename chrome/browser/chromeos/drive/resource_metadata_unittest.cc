@@ -131,7 +131,11 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
                                                   blocking_task_runner_));
 
     FileError error = FILE_ERROR_FAILED;
-    resource_metadata_->Initialize(
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&ResourceMetadata::Initialize,
+                   base::Unretained(resource_metadata_.get())),
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     ASSERT_EQ(FILE_ERROR_OK, error);
@@ -190,7 +194,11 @@ TEST_F(ResourceMetadataTestOnUIThread, LargestChangestamp) {
       resource_metadata(new ResourceMetadata(temp_dir_.path(),
                                              blocking_task_runner_));
   FileError error = FILE_ERROR_FAILED;
-  resource_metadata->Initialize(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::Initialize,
+                 base::Unretained(resource_metadata.get())),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
@@ -214,7 +222,11 @@ TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById_RootDirectory) {
       resource_metadata(new ResourceMetadata(temp_dir_.path(),
                                              blocking_task_runner_));
   FileError error = FILE_ERROR_FAILED;
-  resource_metadata->Initialize(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::Initialize,
+                 base::Unretained(resource_metadata.get())),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);
@@ -869,11 +881,7 @@ class ResourceMetadataTest : public testing::Test {
     resource_metadata_.reset(new ResourceMetadata(
         temp_dir_.path(), message_loop_.message_loop_proxy()));
 
-    FileError error = FILE_ERROR_FAILED;
-    resource_metadata_->Initialize(
-        google_apis::test_util::CreateCopyResultCallback(&error));
-    message_loop_.RunUntilIdle();
-    ASSERT_EQ(FILE_ERROR_OK, error);
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
     SetUpEntries(resource_metadata_.get());
   }

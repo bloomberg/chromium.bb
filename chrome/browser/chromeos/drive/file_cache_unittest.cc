@@ -65,7 +65,11 @@ class FileCacheTestOnUIThread : public testing::Test {
                                fake_free_disk_space_getter_.get()));
 
     bool success = false;
-    cache_->RequestInitialize(
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&FileCache::Initialize,
+                   base::Unretained(cache_.get())),
         google_apis::test_util::CreateCopyResultCallback(&success));
     google_apis::test_util::RunBlockingPoolTask();
     ASSERT_TRUE(success);
@@ -885,11 +889,7 @@ TEST(FileCacheExtraTest, InitializationFailure) {
       base::MessageLoopProxy::current(),
       NULL /* free_disk_space_getter */));
 
-  bool success = true;
-  cache->RequestInitialize(
-      google_apis::test_util::CreateCopyResultCallback(&success));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(success);
+  EXPECT_FALSE(cache->Initialize());
 }
 
 TEST_F(FileCacheTestOnUIThread, UpdatePinnedCache) {
@@ -923,11 +923,7 @@ class FileCacheTest : public testing::Test {
                                base::MessageLoopProxy::current(),
                                fake_free_disk_space_getter_.get()));
 
-    bool success = false;
-    cache_->RequestInitialize(
-        google_apis::test_util::CreateCopyResultCallback(&success));
-    base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(success);
+    ASSERT_TRUE(cache_->Initialize());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -988,11 +984,7 @@ TEST_F(FileCacheTest, ScanCacheFile) {
   cache_.reset(new FileCache(temp_dir_.path(),
                              base::MessageLoopProxy::current(),
                              fake_free_disk_space_getter_.get()));
-  bool success = false;
-  cache_->RequestInitialize(
-      google_apis::test_util::CreateCopyResultCallback(&success));
-  base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(success);
+  ASSERT_TRUE(cache_->Initialize());
 
   // Check contents of the cache.
   FileCacheEntry cache_entry;
