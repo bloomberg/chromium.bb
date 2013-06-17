@@ -547,7 +547,6 @@
             ['exclude', '\\.(cc|mm)$'],
             ['include', '_ios\\.(cc|mm)$'],
             ['include', '^browser/notification_service_impl_unittest\\.cc$'],
-            ['include', '^browser/speech/.*_unittest\\.cc$'],
             ['include', '^browser/web_contents/navigation_entry_impl_unittest\\.cc$'],
             ['include', '^test/run_all_unittests\\.cc$'],
           ],

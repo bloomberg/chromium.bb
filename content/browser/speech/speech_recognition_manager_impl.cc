@@ -179,11 +179,6 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
   if (!SessionExists(session_id))
     return;
 
-#if defined(OS_IOS)
-  // On iOS, voice search can only be initiated by clear user action and thus
-  // it is always allowed.
-  DCHECK(!ask_user && is_allowed);
-#else
   if (ask_user) {
     SessionsTable::iterator iter = sessions_.find(session_id);
     DCHECK(iter != sessions_.end());
@@ -199,7 +194,6 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
                 weak_factory_.GetWeakPtr(), session_id));
     return;
   }
-#endif  // defined(OS_IOS)
 
   if (is_allowed) {
     base::MessageLoop::current()->PostTask(

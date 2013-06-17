@@ -1137,7 +1137,6 @@
         ['include', '^public/browser/navigation_details\\.cc$'],
         ['include', '^public/browser/notification_registrar\\.cc$'],
         ['include', '^public/browser/page_navigator\\.cc$'],
-        ['include', '^public/browser/speech_recognition_'],
         ['include', '^public/browser/web_ui_controller\\.cc'],
         ['include', '^browser/browser_context\\.cc$'],
         ['include', '^browser/browser_main_loop\\.cc$'],
@@ -1149,9 +1148,6 @@
         ['include', '^browser/download/download_create_info\\.cc$'],
         ['include', '^browser/notification_service_impl\\.cc$'],
         ['include', '^browser/storage_partition_impl\\.cc$'],
-        # Pull in all but one file from speech.
-        ['include', '^browser/speech/'],
-        ['exclude', '^browser/speech/input_tag_speech_dispatcher_host\\.cc$$'],
         ['include', '^browser/user_metrics\\.cc$'],
         ['include', '^browser/web_contents/navigation_entry_impl\\.cc$'],
       ],

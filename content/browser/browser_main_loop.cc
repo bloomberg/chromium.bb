@@ -824,7 +824,6 @@ void BrowserMainLoop::BrowserThreadsStarted() {
   // Initialize the GpuDataManager before we set up the MessageLoops because
   // otherwise we'll trigger the assertion about doing IO on the UI thread.
   GpuDataManagerImpl::GetInstance()->Initialize();
-#endif  // !OS_IOS
 
   {
     TRACE_EVENT0("startup",
@@ -832,7 +831,6 @@ void BrowserMainLoop::BrowserThreadsStarted() {
     speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl());
   }
 
-#if !defined(OS_IOS)
   // Alert the clipboard class to which threads are allowed to access the
   // clipboard:
   std::vector<base::PlatformThreadId> allowed_clipboard_threads;
