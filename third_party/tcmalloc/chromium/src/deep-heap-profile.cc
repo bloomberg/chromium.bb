@@ -592,8 +592,9 @@ void DeepHeapProfile::DeepBucketTable::WriteForBucketFile(
       if (deep_bucket->is_logged) {
         continue;  // Skip the bucket if it is already logged.
       }
-      if (bucket->alloc_size - bucket->free_size <= 64) {
-        continue;  // Skip small buckets.
+      if (!deep_bucket->is_mmap &&
+          bucket->alloc_size - bucket->free_size <= 64) {
+        continue;  // Skip small malloc buckets.
       }
 
       deep_bucket->UnparseForBucketFile(&buffer);
