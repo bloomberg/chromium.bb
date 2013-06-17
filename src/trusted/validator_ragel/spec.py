@@ -108,7 +108,7 @@ def _AnyRegisterRE(group_name='register'):
 
 
 def _HexRE(group_name='value'):
-  return r'(?P<%s>0x[\da-f]+)' % group_name
+  return r'(?P<%s>-?0x[\da-f]+)' % group_name
 
 
 def _ImmediateRE(group_name='immediate'):
@@ -132,12 +132,20 @@ def _MemoryRE(group_name='memory'):
       _AnyRegisterRE(group_name=group_name + '_index'))
 
 
+def _IndirectJumpTargetRE(group_name='target'):
+  return r'(?P<%s>\*(%s|%s))' % (
+      group_name,
+      _AnyRegisterRE(group_name=group_name + '_register'),
+      _MemoryRE(group_name=group_name + '_memory'))
+
+
 def _OperandRE(group_name='operand'):
-  return r'(?P<%s>%s|%s|%s)' % (
+  return r'(?P<%s>%s|%s|%s|%s)' % (
       group_name,
       _AnyRegisterRE(group_name=group_name + '_register'),
       _ImmediateRE(group_name=group_name + '_immediate'),
-      _MemoryRE(group_name=group_name + '_memory'))
+      _MemoryRE(group_name=group_name + '_memory'),
+      _IndirectJumpTargetRE(group_name=group_name + '_target'))
 
 
 def _SplitOps(insn, args):
@@ -146,10 +154,12 @@ def _SplitOps(insn, args):
   ops = []
   i = 0
   while True:
-    m = re.compile(_OperandRE()).match(args, i)
+    # We do not use mere re.compile(_OperandRE(), args, i) here because
+    # python backtracking regexes do not guarantee to find longest match.
+    m = re.compile(r'(%s)($|,)' % _OperandRE()).match(args, i)
     assert m is not None, (args, i)
-    ops.append(m.group())
-    i = m.end()
+    ops.append(m.group(1))
+    i = m.end(1)
     if i == len(args):
       break
     assert args[i] == ',', (insn, args, i)
@@ -158,7 +168,9 @@ def _SplitOps(insn, args):
 
 
 def _ParseInstruction(instruction):
-  elems = instruction.disasm.split()
+  # Strip comment.
+  disasm, _, _ = instruction.disasm.partition('#')
+  elems = disasm.split()
   prefixes = []
   while elems[0] in ['lock', 'rep', 'repz', 'repnz']:
     prefixes.append(elems.pop(0))
@@ -175,7 +187,7 @@ def _ParseInstruction(instruction):
   elif len(elems) == 2:
     ops = _SplitOps(instruction, elems[1])
   else:
-    assert False, elems
+    assert False, instruction
 
   return prefixes, name, ops
 
