@@ -1311,8 +1311,6 @@ crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ 
 crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass Timeout ]
 crbug.com/237270 [ Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Pass Timeout ]
 
-crbug.com/241851 [ SnowLeopard Lion Linux Debug ] fast/speechsynthesis/speech-synthesis-cancel.html [ Crash Pass Timeout ]
-
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Debug ] fast/js/JSON-stringify.html [ Failure ]
 
@@ -1753,6 +1751,9 @@ Bug(dpranke) http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm
 Bug(dpranke) virtual/gpu/compositedscrolling/overflow/remove-overflow-crash2.html [ Slow ]
 
 crbug.com/248541 [ Win7 Release ] virtual/gpu/fast/canvas/webgl/webgl-depth-texture.html [ Pass Crash ]
+crbug.com/250818 [ Win Mac Release ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Pass Failure ]
+crbug.com/250818 [ Win Debug ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Slow ]
+
 crbug.com/248832 [ XP ] virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ ImageOnlyFailure ]
 
 crbug.com/242761 [ Mac ] editing/deleting/4922367.html [ Failure ]
