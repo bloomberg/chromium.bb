@@ -38,6 +38,7 @@ crbug.com/24182 [ Debug ] svg/filters/big-sized-filter.svg [ Slow ]
 crbug.com/24182 [ Debug ] fast/harness/results.html [ Slow ]
 
 webkit.org/b/106606 [ Debug ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
+crbug.com/250818 [ Win Debug ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Slow ]
 webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout ]
 webkit.org/b/109400 [ Mac Win ] http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Slow ]
 crbug.com/239871 [ Win Mac Debug ] editing/selection/move-by-word-visually-multi-space.html [ Slow ]
@@ -1751,8 +1752,10 @@ Bug(dpranke) http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm
 Bug(dpranke) virtual/gpu/compositedscrolling/overflow/remove-overflow-crash2.html [ Slow ]
 
 crbug.com/248541 [ Win7 Release ] virtual/gpu/fast/canvas/webgl/webgl-depth-texture.html [ Pass Crash ]
-crbug.com/250818 [ Win Mac Release ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Pass Failure ]
-crbug.com/250818 [ Win Debug ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Slow ]
+crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Pass Failure ]
+crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/gl-teximage.html [ Pass Failure ]
+crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/texture-active-bind.html [ Pass Failure ]
+crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/texture-npot.html [ Pass Failure ]
 
 crbug.com/248832 [ XP ] virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ ImageOnlyFailure ]
 
