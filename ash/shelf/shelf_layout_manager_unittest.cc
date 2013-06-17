@@ -22,6 +22,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -518,17 +519,50 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
-  // Make the window fullscreen.
+  // Enter into fullscreen with minimal chrome (immersive fullscreen).
   widget->SetFullscreen(true);
+  window->SetProperty(ash::internal::kFullscreenUsesMinimalChromeKey, true);
+  shelf->UpdateVisibilityState();
+
   gfx::Rect bounds_fullscreen = window->bounds();
   EXPECT_TRUE(widget->IsFullscreen());
   EXPECT_NE(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
+
+  // Swipe up. This should show the shelf.
+  end = below_start - delta;
+  generator.GestureScrollSequenceWithCallback(below_start, end,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(shelf_shown.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(bounds_fullscreen.ToString(), window->bounds().ToString());
+
+  // Swipe up again. This should hide the shelf.
+  generator.GestureScrollSequenceWithCallback(below_start, end,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(shelf_hidden.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(bounds_fullscreen.ToString(), window->bounds().ToString());
+
+  // Put the window into fullscreen without any chrome at all (eg tab
+  // fullscreen).
+  window->SetProperty(ash::internal::kFullscreenUsesMinimalChromeKey, false);
+  shelf->UpdateVisibilityState();
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
 
   // Swipe-up. This should not change anything.
   end = start - delta;
-  generator.GestureScrollSequenceWithCallback(end, start,
+  generator.GestureScrollSequenceWithCallback(below_start, end,
       base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
       base::Bind(&ShelfDragCallback::ProcessScroll,
                  base::Unretained(&handler)));

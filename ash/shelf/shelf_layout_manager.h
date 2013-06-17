@@ -108,10 +108,6 @@ class ASH_EXPORT ShelfLayoutManager :
   // behavior setting.
   ShelfVisibilityState CalculateShelfVisibility();
 
-  // Returns shelf visibility state based on current value of auto hide
-  // behavior setting.
-  ShelfVisibilityState CalculateShelfVisibilityWhileDragging();
-
   // Updates the visibility state.
   void UpdateVisibilityState();
 

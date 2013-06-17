@@ -287,26 +287,12 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
   return SHELF_VISIBLE;
 }
 
-ShelfVisibilityState
-ShelfLayoutManager::CalculateShelfVisibilityWhileDragging() {
-  switch(auto_hide_behavior_) {
-    case SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
-    case SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
-      return SHELF_AUTO_HIDE;
-    case SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
-      return SHELF_HIDDEN;
-  }
-  return SHELF_VISIBLE;
-}
-
 void ShelfLayoutManager::UpdateVisibilityState() {
   if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
     SetState(SHELF_VISIBLE);
-  } else if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS) {
+  } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
-    SetState(CalculateShelfVisibilityWhileDragging());
-  } else {
     WorkspaceWindowState window_state(workspace_controller_->GetWindowState());
     switch (window_state) {
       case WORKSPACE_WINDOW_STATE_FULL_SCREEN:
@@ -455,23 +441,20 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
   gesture_drag_auto_hide_state_ =
       gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN ?
       SHELF_AUTO_HIDE_HIDDEN : SHELF_AUTO_HIDE_SHOWN;
-  if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_HIDDEN &&
-      auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
-    gesture_drag_status_ = GESTURE_DRAG_NONE;
-    if (!FullscreenWithMinimalChrome()) {
-      SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-    } else {
-      UpdateVisibilityState();
-    }
-  } else if (gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN &&
-             auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_NEVER) {
-    gesture_drag_status_ = GESTURE_DRAG_NONE;
-    SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  } else {
-    gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
+  ShelfAutoHideBehavior new_auto_hide_behavior =
+      gesture_drag_auto_hide_state_ == SHELF_AUTO_HIDE_SHOWN ?
+      SHELF_AUTO_HIDE_BEHAVIOR_NEVER : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+
+  // In fullscreen with minimal chrome, the auto hide behavior affects neither
+  // the visibility state nor the auto hide state. Set |gesture_drag_status_|
+  // to GESTURE_DRAG_COMPLETE_IN_PROGRESS to set the auto hide state to
+  // |gesture_drag_auto_hide_state_|.
+  gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
+  if (auto_hide_behavior_ != new_auto_hide_behavior)
+    SetAutoHideBehavior(new_auto_hide_behavior);
+  else
     UpdateVisibilityState();
-    gesture_drag_status_ = GESTURE_DRAG_NONE;
-  }
+  gesture_drag_status_ = GESTURE_DRAG_NONE;
   LayoutShelf();
 }
 
@@ -752,7 +735,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
   }
 
   target_bounds->opacity =
-      (gesture_drag_status_ != GESTURE_DRAG_NONE ||
+      (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
        state.visibility_state == SHELF_VISIBLE ||
        state.visibility_state == SHELF_AUTO_HIDE) ? 1.0f : 0.0f;
 
@@ -855,9 +838,9 @@ void ShelfLayoutManager::UpdateShelfBackground(
 }
 
 bool ShelfLayoutManager::GetLauncherPaintsBackground() const {
-  return gesture_drag_status_ != GESTURE_DRAG_NONE ||
+  return gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
       (!state_.is_screen_locked && window_overlaps_shelf_) ||
-      (state_.visibility_state == SHELF_AUTO_HIDE) ;
+      (state_.visibility_state == SHELF_AUTO_HIDE);
 }
 
 void ShelfLayoutManager::UpdateAutoHideStateNow() {
