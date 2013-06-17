@@ -19,11 +19,11 @@
   ],
 
   'POST': """
+
 #
 # Specify the MAP files to be created.
 #
-$(eval $(call MAP_RULE,$(TARGET),$(TARGET)))
-""",
+$(eval $(call MAP_RULE,$(TARGET),$(TARGET)))""",
   'DATA': [
     'example.js',
   ],

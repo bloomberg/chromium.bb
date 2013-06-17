@@ -6,7 +6,6 @@
 # GNU Make based build file.  For details on GNU Make see:
 #   http://www.gnu.org/software/make/manual/make.html
 #
-#
 
 
 #
@@ -74,11 +73,11 @@ endef
 #
 #
 define LIB_RULE
-$(STAMPDIR)/$(1).stamp : $(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
 all:$(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib
-$(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
+$(LIBDIR)/$(OSNAME)_x86_32_host/$(CONFIG)/$(1).lib: $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB,$$@,$(HOST_LIB) /OUT:$$@ $$^ $(WIN_LDFLAGS))
 endef
@@ -96,7 +95,7 @@ endef
 #
 define LINKER_RULE
 all: $(1)
-$(1) : $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+$(1): $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(HOST_LINK) /DLL /OUT:$(1) /PDB:$(1).pdb $(2) /DEBUG $(foreach path,$(5),/LIBPATH:$(path)/$(OSNAME)_x86_32_host/$(CONFIG)) $(foreach lib,$(3),$(lib).lib) $(6))
 endef
 
@@ -130,4 +129,4 @@ $(OUTDIR)/$(1)$(HOST_EXT): $(OUTDIR)/$(2)$(HOST_EXT)
 	$(call LOG,COPY,$$@,$(CP) $$^ $$@)
 endef
 
-all : $(LIB_LIST) $(DEPS_LIST)
+all: $(LIB_LIST) $(DEPS_LIST)

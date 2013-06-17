@@ -6,7 +6,6 @@
 # GNU Make based build file.  For details on GNU Make see:
 #   http://www.gnu.org/software/make/manual/make.html
 #
-#
 
 
 #
@@ -18,9 +17,7 @@
 # toolchain we use by default will be the first valid one listed
 VALID_TOOLCHAINS:={{' '.join(tools)}}
 
-
 {{pre}}
-
 #
 # Get pepper directory for toolchain and includes.
 #
@@ -105,7 +102,4 @@ endif
 #
 # Specify the NMF to be created with no additional arguments.
 #
-$(eval $(call NMF_RULE,$(TARGET),))
-
-{{post}}
-
+$(eval $(call NMF_RULE,$(TARGET),)){{post}}

@@ -6,7 +6,6 @@
 # GNU Make based build file.  For details on GNU Make see:
 #   http://www.gnu.org/software/make/manual/make.html
 #
-#
 
 
 #
@@ -141,6 +140,17 @@ NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
 
 define NMF_RULE
 all: $(OUTDIR)/$(1).nmf
-$(OUTDIR)/$(1).nmf : $(OUTDIR)/$(1).pexe
+$(OUTDIR)/$(1).nmf: $(OUTDIR)/$(1).pexe
 	$(call LOG,CREATE_NMF,$$@,$(NMF) -o $$@ $$^ -s $(OUTDIR) $(2))
+endef
+
+#
+# HTML file generation
+#
+CREATE_HTML := python $(NACL_SDK_ROOT)/tools/create_html.py
+
+define HTML_RULE
+all: $(OUTDIR)/$(1).html
+$(OUTDIR)/$(1).html: $(foreach arch,$(ARCH_SUFFIXES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
+	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) -o $$@ $$^)
 endef

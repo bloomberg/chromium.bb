@@ -6,13 +6,11 @@
 # GNU Make based build file.  For details on GNU Make see:
 #   http://www.gnu.org/software/make/manual/make.html
 #
-#
 
 
 #
-# Default Paths
+# Default library paths
 #
-
 LD_X86_32 := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)
 LD_X86_64 := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)
 LD_ARM := -L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)
@@ -175,13 +173,13 @@ endef
 # $4 = VC Link Flags (unused)
 #
 define LIB_RULE
-$(STAMPDIR)/$(1).stamp : $(OUTDIR)/lib$(1)_x86_32.a
-$(STAMPDIR)/$(1).stamp : $(OUTDIR)/lib$(1)_x86_64.a
+$(STAMPDIR)/$(1).stamp: $(OUTDIR)/lib$(1)_x86_32.a
+$(STAMPDIR)/$(1).stamp: $(OUTDIR)/lib$(1)_x86_64.a
 ifneq ($(TOOLCHAIN),glibc)
-$(STAMPDIR)/$(1).stamp : $(OUTDIR)/lib$(1)_arm.a
+$(STAMPDIR)/$(1).stamp: $(OUTDIR)/lib$(1)_arm.a
 endif
 
-$(STAMPDIR)/$(1).stamp :
+$(STAMPDIR)/$(1).stamp:
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
 
@@ -218,6 +216,24 @@ $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a: $(OUTDIR)/lib$(1)_arm.a
 endif
 endef
 
+#
+# Determine which architectures to build for.  The user can set NACL_ARCH or
+# ARCHES in the environment to control this.
+#
+VALID_ARCHES := x86_32 x86_64
+ifeq (newlib,$(TOOLCHAIN))
+VALID_ARCHES += arm
+endif
+
+ifdef NACL_ARCH
+ifeq (,$(findstring $(NACL_ARCH),$(VALID_ARCHES)))
+$(error Invalid arch specified in NACL_ARCH: $(NACL_ARCH).  Valid values are: $(VALID_ARCHES))
+endif
+ARCHES = ${NACL_ARCH}
+else
+ARCHES ?= ${VALID_ARCHES}
+endif
+
 
 #
 # Specific Link Macro
@@ -230,14 +246,23 @@ endef
 # $6 = Library Paths
 #
 define LINKER_RULE
-$(OUTDIR)/$(1)_x86_32.nexe : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+ifneq (,$(findstring x86_32,$(ARCHES)))
+all: $(OUTDIR)/$(1)_x86_32.nexe
+$(OUTDIR)/$(1)_x86_32.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_32/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+endif
 
-$(OUTDIR)/$(1)_x86_64.nexe : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+ifneq (,$(findstring x86_64,$(ARCHES)))
+all: $(OUTDIR)/$(1)_x86_64.nexe
+$(OUTDIR)/$(1)_x86_64.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(X86_64_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_x86_64/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+endif
 
-$(OUTDIR)/$(1)_arm.nexe : $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+ifneq (,$(findstring arm,$(ARCHES)))
+all: $(OUTDIR)/$(1)_arm.nexe
+$(OUTDIR)/$(1)_arm.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
 	$(call LOG,LINK,$$@,$(ARM_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+endif
 endef
 
 
@@ -263,14 +288,20 @@ endef
 # $2 = Source Name
 #
 define STRIP_ALL_RULE
-$(OUTDIR)/$(1)_x86_32.nexe : $(OUTDIR)/$(2)_x86_32.nexe
+ifneq (,$(findstring x86_32,$(ARCHES)))
+$(OUTDIR)/$(1)_x86_32.nexe: $(OUTDIR)/$(2)_x86_32.nexe
 	$(call LOG,STRIP,$$@,$(X86_32_STRIP) -o $$@ $$^)
+endif
 
-$(OUTDIR)/$(1)_x86_64.nexe : $(OUTDIR)/$(2)_x86_64.nexe
+ifneq (,$(findstring x86_64,$(ARCHES)))
+$(OUTDIR)/$(1)_x86_64.nexe: $(OUTDIR)/$(2)_x86_64.nexe
 	$(call LOG,STRIP,$$@,$(X86_64_STRIP) -o $$@ $$^)
+endif
 
-$(OUTDIR)/$(1)_arm.nexe : $(OUTDIR)/$(2)_arm.nexe
+ifneq (,$(findstring arm,$(ARCHES)))
+$(OUTDIR)/$(1)_arm.nexe: $(OUTDIR)/$(2)_arm.nexe
 	$(call LOG,STRIP,$$@,$(ARM_STRIP) -o $$@ $$^)
+endif
 endef
 
 
@@ -292,13 +323,13 @@ endef
 # $2 = Source Name
 #
 define MAP_ALL_RULE
-$(OUTDIR)/$(1)_x86_32.map : $(OUTDIR)/$(2)_x86_32.nexe
+$(OUTDIR)/$(1)_x86_32.map: $(OUTDIR)/$(2)_x86_32.nexe
 	$(call LOG,MAP,$$@,$(X86_32_NM) -l $$^ > $$@)
 
-$(OUTDIR)/$(1)_x86_64.map : $(OUTDIR)/$(2)_x86_64.nexe
+$(OUTDIR)/$(1)_x86_64.map: $(OUTDIR)/$(2)_x86_64.nexe
 	$(call LOG,MAP,$$@,$(X86_64_NM) -l $$^ > $$@)
 
-$(OUTDIR)/$(1)_arm.map : $(OUTDIR)/$(2)_arm.nexe
+$(OUTDIR)/$(1)_arm.map: $(OUTDIR)/$(2)_arm.nexe
 	$(call LOG,MAP,$$@,$(ARM_NM) -l $$^ > $$@ )
 
 all: $(OUTDIR)/$(1)_x86_32.map $(OUTDIR)/$(1)_x86_64.map $(OUTDIR)/$(1)_arm.map
@@ -317,28 +348,10 @@ endef
 
 
 #
-# Determine which architectures to build for.  The user can set NACL_ARCH or
-# ARCHES in the environment to control this.
+# Generate ARCH_SUFFIXES, a list of suffixes for executables corresponding to all
+# the architectures in the current build.
 #
-VALID_ARCHES := x86_32 x86_64
-ifeq (newlib,$(TOOLCHAIN))
-VALID_ARCHES += arm
-endif
-
-ifdef NACL_ARCH
-ifeq (,$(findstring $(NACL_ARCH),$(VALID_ARCHES)))
-$(error Invalid arch specified in NACL_ARCH: $(NACL_ARCH).  Valid values are: $(VALID_ARCHES))
-endif
-ARCHES = ${NACL_ARCH}
-else
-ARCHES ?= ${VALID_ARCHES}
-endif
-
-
-#
-# Generate NMF_ARCHES
-#
-NMF_ARCHES := $(foreach arch,$(ARCHES),_$(arch).nexe)
+ARCH_SUFFIXES := $(foreach arch,$(ARCHES),_$(arch).nexe)
 
 
 #
@@ -357,9 +370,21 @@ ifeq ($(CONFIG),Debug)
 NMF_FLAGS += --debug-libs
 endif
 
+EXECUTABLES=$(foreach arch,$(ARCH_SUFFIXES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
 
 define NMF_RULE
-all:$(OUTDIR)/$(1).nmf
-$(OUTDIR)/$(1).nmf : $(foreach arch,$(NMF_ARCHES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
+all: $(OUTDIR)/$(1).nmf
+$(OUTDIR)/$(1).nmf: $(EXECUTABLES)
 	$(call LOG,CREATE_NMF,$$@,$(NMF) $(NMF_FLAGS) -o $$@ $$^ $(GLIBC_PATHS) -s $(OUTDIR) $(2) $(GLIBC_REMAP))
+endef
+
+#
+# HTML file generation
+#
+CREATE_HTML := python $(NACL_SDK_ROOT)/tools/create_html.py
+
+define HTML_RULE
+all: $(OUTDIR)/$(1).html
+$(OUTDIR)/$(1).html: $(EXECUTABLES)
+	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) -o $$@ $$^)
 endef

@@ -44,7 +44,7 @@ class TestCreateHtml(unittest.TestCase):
         with mock.patch('os.path.isfile'):
           options = mock.MagicMock(return_value=False)
           options.output = None
-          create_html.CreateHTML(nmf_file, options)
+          create_html.CreateHTML([nmf_file], options)
     # Assert that the file was created
     self.assertTrue(os.path.exists(expected_html))
     # Assert that nothing else was created

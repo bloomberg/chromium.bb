@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Script for creating HTML needed to run a NaCl module.
+"""Creates simple HTML for running a NaCl module.
 
 This script is designed to make the process of creating running
 Native Client executables in the browers simple by creating
@@ -99,25 +99,41 @@ def Log(msg):
 Log.enabled = False
 
 
-def CreateHTML(filename, options):
-  if not os.path.exists(filename):
-    raise Error('file not found: %s' % filename)
+def CreateHTML(filenames, options):
+  nmf = None
 
-  if not os.path.isfile(filename):
-    raise Error('specified input is not a file: %s' % filename)
+  for filename in filenames:
+    if not os.path.exists(filename):
+      raise Error('file not found: %s' % filename)
 
-  basename, ext = os.path.splitext(filename)
-  if ext not in ('.nexe', '.pexe', '.nmf'):
-    raise Error('input file must be .nexe, .pexe or .nmf: %s' % filename)
+    if not os.path.isfile(filename):
+      raise Error('specified input is not a file: %s' % filename)
 
-  if ext in ('.nexe', '.pexe'):
-    nmf = basename + '.nmf'
+    basename, ext = os.path.splitext(filename)
+    if ext not in ('.nexe', '.pexe', '.nmf'):
+      raise Error('input file must be .nexe, .pexe or .nmf: %s' % filename)
+
+    if ext == '.nmf':
+      if len(filenames) > 1:
+        raise Error('Only one .nmf argument can be specified')
+      nmf = filename
+    elif len(filenames) > 1 and not options.output:
+      raise Error('When specifying muliple input files -o must'
+                  ' also be specified.')
+
+  htmlfile = options.output
+  if not htmlfile:
+    htmlfile = basename + '.html'
+  basename = os.path.splitext(os.path.basename(htmlfile))[0]
+
+  if not nmf:
+    nmf = os.path.splitext(htmlfile)[0] + '.nmf'
     Log('creating nmf: %s' % nmf)
     create_nmf = os.path.join(SCRIPT_DIR, 'create_nmf.py')
     staging = os.path.dirname(nmf)
     if not staging:
       staging = '.'
-    cmd = [create_nmf, '-s', staging, '-o', nmf, filename]
+    cmd = [create_nmf, '-s', staging, '-o', nmf] + filenames
     if options.verbose:
       cmd.append('-v')
     Log(cmd)
@@ -125,25 +141,21 @@ def CreateHTML(filename, options):
       subprocess.check_call(cmd)
     except subprocess.CalledProcessError:
       raise Error('create_nmf failed')
-  else:
-    nmf = filename
-
-  htmlfile = options.output
-  if not htmlfile:
-    htmlfile = basename + '.html'
 
   Log('creating html: %s' % htmlfile)
   with open(htmlfile, 'w') as outfile:
     args = {}
     args['title'] = basename
     args['module_name'] = basename
-    args['nmf'] = nmf
+    args['nmf'] = os.path.basename(nmf)
     outfile.write(HTML_TEMPLATE % args)
 
 
 def main(argv):
   usage = 'Usage: %prog [options] <.nexe/.pexe or .nmf>'
-  parser = optparse.OptionParser(usage)
+  description = __doc__
+  epilog = 'Example: create_html.py -o index.html my_nexe.nexe'
+  parser = optparse.OptionParser(usage, description=description, epilog=epilog)
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Verbose output')
   parser.add_option('-o', '--output', dest='output',
@@ -152,8 +164,6 @@ def main(argv):
                     metavar='FILE')
 
   options, args = parser.parse_args(argv)
-  if len(args) > 1:
-    parser.error('more than one input file specified')
 
   if not args:
     parser.error('no input file specified')
@@ -161,7 +171,7 @@ def main(argv):
   if options.verbose:
     Log.enabled = True
 
-  CreateHTML(args[0], options)
+  CreateHTML(args, options)
   return 0
 
 

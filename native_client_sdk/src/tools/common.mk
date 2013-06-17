@@ -245,12 +245,12 @@ else
 endif
 
 all: rebuild_$(1)
-$(STAMPDIR)/$(1).stamp : rebuild_$(1)
+$(STAMPDIR)/$(1).stamp: rebuild_$(1)
 
 else
 
 .PHONY: $(STAMPDIR)/$(1).stamp
-$(STAMPDIR)/$(1).stamp :
+$(STAMPDIR)/$(1).stamp:
 	@echo Ignore $(1)
 endif
 endef
