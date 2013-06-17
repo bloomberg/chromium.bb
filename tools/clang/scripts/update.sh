@@ -34,7 +34,6 @@ mac_only=
 run_tests=
 bootstrap=
 with_android=yes
-with_tools_extra=
 chrome_tools="plugins"
 
 if [[ "${OS}" = "Darwin" ]]; then
@@ -58,9 +57,6 @@ while [[ $# > 0 ]]; do
     --without-android)
       with_android=
       ;;
-    --with-tools-extra)
-      with_tools_extra=yes
-      ;;
     --with-chrome-tools)
       shift
       if [[ $# == 0 ]]; then
@@ -76,7 +72,6 @@ while [[ $# > 0 ]]; do
       echo "--mac-only: Do initial download only on Mac systems."
       echo "--run-tests: Run tests after building. Only for local builds."
       echo "--without-android: Don't build ASan Android runtime library."
-      echo "--with-tools-extra: Also build the clang-tools-extra repository."
       echo "--with-chrome-tools: Select which chrome tools to build." \
            "Defaults to plugins."
       echo "    Example: --with-chrome-tools 'plugins empty-string'"
@@ -247,15 +242,6 @@ svn co --force "${LLVM_REPO_URL}/cfe/trunk@${CLANG_REVISION}" "${CLANG_DIR}"
 echo Getting compiler-rt r"${CLANG_REVISION}" in "${COMPILER_RT_DIR}"
 svn co --force "${LLVM_REPO_URL}/compiler-rt/trunk@${CLANG_REVISION}" \
                "${COMPILER_RT_DIR}"
-
-if [[ -n "${with_tools_extra}" ]]; then
-  echo Getting clang-tools-extra r"${CLANG_REVISION}" in \
-       "${CLANG_TOOLS_EXTRA_DIR}"
-  svn co --force "${LLVM_REPO_URL}/clang-tools-extra/trunk@${CLANG_REVISION}" \
-                 "${CLANG_TOOLS_EXTRA_DIR}"
-else
-  rm -rf "${CLANG_TOOLS_EXTRA_DIR}"
-fi
 
 # Echo all commands.
 set -x
