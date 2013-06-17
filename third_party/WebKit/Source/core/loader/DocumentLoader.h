@@ -179,6 +179,7 @@ namespace WebCore {
         void commitLoad(const char*, int);
         void clearMainResourceLoader();
         ResourceLoader* mainResourceLoader() const;
+        void clearMainResourceHandle();
 
         bool maybeCreateArchive();
         void clearArchiveResources();

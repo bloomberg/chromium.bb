@@ -125,11 +125,7 @@ DocumentLoader::~DocumentLoader()
 {
     ASSERT(!m_frame || frameLoader()->activeDocumentLoader() != this || !isLoading());
     m_cachedResourceLoader->clearDocumentLoader();
-    
-    if (m_mainResource) {
-        m_mainResource->removeClient(this);
-        m_mainResource = 0;
-    }
+    clearMainResourceHandle();
 }
 
 PassRefPtr<SharedBuffer> DocumentLoader::mainResourceData() const
@@ -226,6 +222,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
     setMainDocumentError(error);
     clearMainResourceLoader();
     frameLoader()->receivedMainResourceError(error);
+    clearMainResourceHandle();
 }
 
 // Cancels the data source's pending loads.  Conceptually, a data source only loads
@@ -363,6 +360,7 @@ void DocumentLoader::finishedLoading(double finishTime)
             memoryCache()->remove(m_mainResource.get());
     }
     m_applicationCacheHost->finishedLoadingMainResource();
+    clearMainResourceHandle();
 }
 
 bool DocumentLoader::isPostOrRedirectAfterPost(const ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
@@ -733,6 +731,14 @@ void DocumentLoader::clearMainResourceLoader()
     m_loadingMainResource = false;
     if (this == frameLoader()->activeDocumentLoader())
         checkLoadComplete();
+}
+
+void DocumentLoader::clearMainResourceHandle()
+{
+    if (!m_mainResource)
+        return;
+    m_mainResource->removeClient(this);
+    m_mainResource = 0;
 }
 
 bool DocumentLoader::isLoadingInAPISense() const
