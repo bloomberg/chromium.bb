@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/webdatabase/chromium/DatabaseObserver.h"
+#include "modules/webdatabase/DatabaseObserver.h"
 
 #include "WebCommonWorkerClient.h"
 #include "WebDatabase.h"

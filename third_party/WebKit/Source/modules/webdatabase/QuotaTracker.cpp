@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/webdatabase/chromium/QuotaTracker.h"
+#include "modules/webdatabase/QuotaTracker.h"
 
 #include "public/platform/Platform.h"
 #include "wtf/StdLibExtras.h"

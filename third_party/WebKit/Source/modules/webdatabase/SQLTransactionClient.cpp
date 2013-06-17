@@ -34,7 +34,7 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
-#include "modules/webdatabase/chromium/DatabaseObserver.h"
+#include "modules/webdatabase/DatabaseObserver.h"
 
 namespace WebCore {
 

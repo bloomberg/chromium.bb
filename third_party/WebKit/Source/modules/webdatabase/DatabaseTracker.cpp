@@ -35,8 +35,8 @@
 #include "core/platform/sql/SQLiteFileSystem.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseBackendContext.h"
-#include "modules/webdatabase/chromium/DatabaseObserver.h"
-#include "modules/webdatabase/chromium/QuotaTracker.h"
+#include "modules/webdatabase/DatabaseObserver.h"
+#include "modules/webdatabase/QuotaTracker.h"
 #include "weborigin/DatabaseIdentifier.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityOriginHash.h"
@@ -227,7 +227,8 @@ private:
     DatabaseBackendBase* m_database; // Intentionally a raw pointer.
 };
 
-void DatabaseTracker::closeDatabasesImmediately(const String& originIdentifier, const String& name) {
+void DatabaseTracker::closeDatabasesImmediately(const String& originIdentifier, const String& name)
+{
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
     if (!m_openDatabaseMap)
         return;
