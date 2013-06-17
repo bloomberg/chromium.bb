@@ -37,9 +37,6 @@ namespace {
 EGLConfig g_config;
 EGLDisplay g_display;
 EGLNativeDisplayType g_native_display;
-EGLConfig g_software_config;
-EGLDisplay g_software_display;
-EGLNativeDisplayType g_software_native_display;
 
 const char* g_egl_extensions = NULL;
 bool g_egl_create_context_robustness_supported = false;
@@ -83,7 +80,7 @@ class EGLSyncControlVSyncProvider
 
 }  // namespace
 
-GLSurfaceEGL::GLSurfaceEGL() : software_(false) {}
+GLSurfaceEGL::GLSurfaceEGL() {}
 
 bool GLSurfaceEGL::InitializeOneOff() {
   static bool initialized = false;
@@ -157,57 +154,15 @@ bool GLSurfaceEGL::InitializeOneOff() {
 
   initialized = true;
 
-#if defined(USE_X11) || defined(OS_ANDROID) \
-    || defined(USE_OZONE)
-  return true;
-#else
-  g_software_native_display = EGL_SOFTWARE_DISPLAY_ANGLE;
-#endif
-  g_software_display = eglGetDisplay(g_software_native_display);
-  if (!g_software_display) {
-    return true;
-  }
-
-  if (!eglInitialize(g_software_display, NULL, NULL)) {
-    return true;
-  }
-
-  if (!eglChooseConfig(g_software_display,
-                       kConfigAttribs,
-                       NULL,
-                       0,
-                       &num_configs)) {
-    g_software_display = NULL;
-    return true;
-  }
-
-  if (num_configs == 0) {
-    g_software_display = NULL;
-    return true;
-  }
-
-  if (!eglChooseConfig(g_software_display,
-                       kConfigAttribs,
-                       &g_software_config,
-                       1,
-                       &num_configs)) {
-    g_software_display = NULL;
-    return false;
-  }
-
   return true;
 }
 
 EGLDisplay GLSurfaceEGL::GetDisplay() {
-  return software_ ? g_software_display : g_display;
+  return g_display;
 }
 
 EGLDisplay GLSurfaceEGL::GetHardwareDisplay() {
   return g_display;
-}
-
-EGLDisplay GLSurfaceEGL::GetSoftwareDisplay() {
-  return g_software_display;
 }
 
 EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
@@ -228,13 +183,11 @@ bool GLSurfaceEGL::IsCreateContextRobustnessSupported() {
 
 GLSurfaceEGL::~GLSurfaceEGL() {}
 
-NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
-                                               gfx::AcceleratedWidget window)
+NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(gfx::AcceleratedWidget window)
     : window_(window),
       surface_(NULL),
       supports_post_sub_buffer_(false),
       config_(NULL) {
-  software_ = software;
 #if defined(OS_ANDROID)
   if (window)
     ANativeWindow_acquire(window);
@@ -305,7 +258,7 @@ void NativeViewGLSurfaceEGL::Destroy() {
 
 EGLConfig NativeViewGLSurfaceEGL::GetConfig() {
 #if !defined(USE_X11)
-  return software_ ? g_software_config : g_config;
+  return g_config;
 #else
   if (!config_) {
     // Get a config compatible with the window
@@ -480,10 +433,9 @@ void NativeViewGLSurfaceEGL::SetHandle(EGLSurface surface) {
   surface_ = surface;
 }
 
-PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(bool software, const gfx::Size& size)
+PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)
     : size_(size),
       surface_(NULL) {
-  software_ = software;
 }
 
 bool PbufferGLSurfaceEGL::Initialize() {
@@ -538,7 +490,7 @@ void PbufferGLSurfaceEGL::Destroy() {
 }
 
 EGLConfig PbufferGLSurfaceEGL::GetConfig() {
-  return software_ ? g_software_config : g_config;
+  return g_config;
 }
 
 bool PbufferGLSurfaceEGL::IsOffscreen() {
@@ -623,10 +575,7 @@ bool GLSurface::InitializeOneOffInternal() {
 
 // static
 scoped_refptr<GLSurface>
-GLSurface::CreateViewGLSurface(bool software, gfx::AcceleratedWidget window) {
-  if (software)
-    return NULL;
-
+GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window) {
   DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
   if (window) {
     scoped_refptr<NativeViewGLSurfaceEGL> surface;
@@ -637,7 +586,7 @@ GLSurface::CreateViewGLSurface(bool software, gfx::AcceleratedWidget window) {
     sync_provider =
         ui::SurfaceFactoryOzone::GetInstance()->GetVSyncProvider(window);
 #endif
-    surface = new NativeViewGLSurfaceEGL(false, window);
+    surface = new NativeViewGLSurfaceEGL(window);
     if(surface->Initialize(sync_provider))
       return surface;
   } else {
@@ -650,14 +599,11 @@ GLSurface::CreateViewGLSurface(bool software, gfx::AcceleratedWidget window) {
 
 // static
 scoped_refptr<GLSurface>
-GLSurface::CreateOffscreenGLSurface(bool software, const gfx::Size& size) {
-  if (software)
-    return NULL;
-
+GLSurface::CreateOffscreenGLSurface(const gfx::Size& size) {
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2: {
       scoped_refptr<PbufferGLSurfaceEGL> surface(
-          new PbufferGLSurfaceEGL(false, size));
+          new PbufferGLSurfaceEGL(size));
       if (!surface->Initialize())
         return NULL;
       return surface;

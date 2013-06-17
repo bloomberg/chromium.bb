@@ -44,7 +44,7 @@ TEST_F(GLSurfaceTextureTest, SimpleTest) {
   EXPECT_TRUE(window != NULL);
 
   scoped_refptr<gfx::GLSurface> gl_surface =
-      gfx::GLSurface::CreateViewGLSurface(false, window);
+      gfx::GLSurface::CreateViewGLSurface(window);
   EXPECT_TRUE(gl_surface.get() != NULL);
 
   gl_.SetSurface(gl_surface.get());

@@ -600,9 +600,9 @@ bool GLInProcessContext::Initialize(
     decoder_->set_engine(gpu_scheduler_.get());
 
     if (is_offscreen)
-      surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, size);
+      surface_ = gfx::GLSurface::CreateOffscreenGLSurface(size);
     else
-      surface_ = gfx::GLSurface::CreateViewGLSurface(false, window);
+      surface_ = gfx::GLSurface::CreateViewGLSurface(window);
 
     if (!surface_.get()) {
       LOG(ERROR) << "Could not create GLSurface.";

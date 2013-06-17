@@ -92,7 +92,7 @@ bool Window::CreateRenderContext(gfx::AcceleratedWidget hwnd) {
 
   decoder_->set_engine(gpu_scheduler_.get());
 
-  surface_ = gfx::GLSurface::CreateViewGLSurface(false, hwnd);
+  surface_ = gfx::GLSurface::CreateViewGLSurface(hwnd);
   if (!surface_.get())
     return false;
 

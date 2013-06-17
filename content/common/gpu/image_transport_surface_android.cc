@@ -22,7 +22,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
       GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
           stub->surface_id());
   scoped_refptr<gfx::GLSurface> surface =
-      new gfx::NativeViewGLSurfaceEGL(false, window);
+      new gfx::NativeViewGLSurfaceEGL(window);
   bool initialize_success = surface->Initialize();
   if (window)
     ANativeWindow_release(window);

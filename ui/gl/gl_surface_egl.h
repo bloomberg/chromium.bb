@@ -31,7 +31,6 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
   static bool InitializeOneOff();
   static EGLDisplay GetHardwareDisplay();
-  static EGLDisplay GetSoftwareDisplay();
   static EGLNativeDisplayType GetNativeDisplay();
 
   // These aren't particularly tied to surfaces, but since we already
@@ -44,8 +43,6 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
  protected:
   virtual ~GLSurfaceEGL();
 
-  bool software_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);
 };
@@ -53,7 +50,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 // Encapsulates an EGL surface bound to a view.
 class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  NativeViewGLSurfaceEGL(bool software, gfx::AcceleratedWidget window);
+  explicit NativeViewGLSurfaceEGL(gfx::AcceleratedWidget window);
 
   // Implement GLSurface.
   virtual EGLConfig GetConfig() OVERRIDE;
@@ -90,7 +87,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 // Encapsulates a pbuffer EGL surface.
 class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
  public:
-  PbufferGLSurfaceEGL(bool software, const gfx::Size& size);
+  explicit PbufferGLSurfaceEGL(const gfx::Size& size);
 
   // Implement GLSurface.
   virtual EGLConfig GetConfig() OVERRIDE;

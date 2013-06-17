@@ -99,12 +99,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // Create a GL surface that renders directly to a view.
   static scoped_refptr<GLSurface> CreateViewGLSurface(
-      bool software,
       gfx::AcceleratedWidget window);
 
   // Create a GL surface used for offscreen rendering.
   static scoped_refptr<GLSurface> CreateOffscreenGLSurface(
-      bool software,
       const gfx::Size& size);
 
   static GLSurface* GetCurrent();

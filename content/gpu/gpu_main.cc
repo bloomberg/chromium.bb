@@ -308,7 +308,7 @@ namespace {
 #if defined(OS_LINUX)
 void CreateDummyGlContext() {
   scoped_refptr<gfx::GLSurface> surface(
-      gfx::GLSurface::CreateOffscreenGLSurface(false, gfx::Size(1, 1)));
+      gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1)));
   if (!surface.get()) {
     VLOG(1) << "gfx::GLSurface::CreateOffscreenGLSurface failed";
     return;

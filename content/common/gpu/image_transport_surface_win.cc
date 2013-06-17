@@ -79,7 +79,7 @@ class PbufferImageTransportSurface
 PbufferImageTransportSurface::PbufferImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
-    : GLSurfaceAdapter(new gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1))),
+    : GLSurfaceAdapter(new gfx::PbufferGLSurfaceEGL(gfx::Size(1, 1))),
       backbuffer_suggested_allocation_(true),
       frontbuffer_suggested_allocation_(true),
       is_swap_buffers_pending_(false),
@@ -270,7 +270,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   }
 
   scoped_refptr<gfx::GLSurface> surface =
-      gfx::GLSurface::CreateViewGLSurface(false, handle.handle);
+      gfx::GLSurface::CreateViewGLSurface(handle.handle);
   if (!surface)
     return surface;
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(

@@ -148,7 +148,7 @@ void GLManager::Initialize(const GLManager::Options& options) {
 
   decoder_->set_engine(gpu_scheduler_.get());
 
-  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(false, options.size);
+  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(options.size);
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
 
   if (real_gl_context) {
@@ -217,7 +217,7 @@ void GLManager::SetupBaseContext() {
           new gfx::GLShareGroup);
       gfx::Size size(4, 4);
       base_surface_ = new scoped_refptr<gfx::GLSurface>(
-          gfx::GLSurface::CreateOffscreenGLSurface(false, size));
+          gfx::GLSurface::CreateOffscreenGLSurface(size));
       gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
       base_context_ = new scoped_refptr<gfx::GLContext>(
           gfx::GLContext::CreateGLContext(base_share_group_->get(),

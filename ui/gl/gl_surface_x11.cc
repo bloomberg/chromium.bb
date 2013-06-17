@@ -266,12 +266,8 @@ NativeViewGLSurfaceOSMesa::~NativeViewGLSurfaceOSMesa() {
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
-    bool software,
     gfx::AcceleratedWidget window) {
   TRACE_EVENT0("gpu", "GLSurface::CreateViewGLSurface");
-  if (software)
-    return NULL;
-
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(
@@ -282,16 +278,14 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       return surface;
     }
     case kGLImplementationDesktopGL: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceGLX(
-          window));
+      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceGLX(window));
       if (!surface->Initialize())
         return NULL;
 
       return surface;
     }
     case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(
-          false, window));
+      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(window));
       if (!surface->Initialize())
         return NULL;
 
@@ -306,12 +300,8 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
-    bool software,
     const gfx::Size& size) {
   TRACE_EVENT0("gpu", "GLSurface::CreateOffscreenGLSurface");
-  if (software)
-    return NULL;
-
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
@@ -329,7 +319,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
       return surface;
     }
     case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceEGL(false, size));
+      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceEGL(size));
       if (!surface->Initialize())
         return NULL;
 
