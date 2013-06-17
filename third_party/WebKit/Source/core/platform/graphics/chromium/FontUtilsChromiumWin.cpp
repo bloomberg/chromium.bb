@@ -249,13 +249,15 @@ int getAscent(HFONT hfont)
     return gotMetrics ? tm.tmAscent : kUndefinedAscent;
 }
 
+const WORD kUnsupportedGlyph = 0xffff;
+
 WORD getSpaceGlyph(HFONT hfont) 
 {
     HWndDC dc(0);
     HGDIOBJ oldFont = SelectObject(dc, hfont);
     WCHAR space = L' ';
-    WORD spaceGlyph = 0;
-    GetGlyphIndices(dc, &space, 1, &spaceGlyph, 0);
+    WORD spaceGlyph = kUnsupportedGlyph;
+    GetGlyphIndices(dc, &space, 1, &spaceGlyph, GGI_MARK_NONEXISTING_GLYPHS);
     SelectObject(dc, oldFont);
     return spaceGlyph;
 }
@@ -424,17 +426,19 @@ bool getDerivedFontData(const UChar* family,
         derived->spaceGlyph = getSpaceGlyph(derived->hfont);
     } else {
         derived = &iter->value;
-        // Last time, GetAscent failed so that only HFONT was
+        // Last time, getAscent or getSpaceGlyph failed so that only HFONT was
         // cached. Try once more assuming that TryPreloadFont
         // was called by a caller between calls.
         if (kUndefinedAscent == derived->ascent)
             derived->ascent = getAscent(derived->hfont);
+        if (kUnsupportedGlyph == derived->spaceGlyph)
+            derived->spaceGlyph = getSpaceGlyph(derived->hfont);
     }
     *hfont = derived->hfont;
     *ascent = derived->ascent;
     *scriptCache = &(derived->scriptCache);
     *spaceGlyph = derived->spaceGlyph;
-    return *ascent != kUndefinedAscent;
+    return *ascent != kUndefinedAscent && *spaceGlyph != kUnsupportedGlyph;
 }
 
 int getStyleFromLogfont(const LOGFONT* logfont)
