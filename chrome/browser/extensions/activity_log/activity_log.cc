@@ -153,6 +153,7 @@ ActivityLog::ActivityLog(Profile* profile)
       policy_type_(ActivityLogPolicy::POLICY_INVALID),
       profile_(profile),
       first_time_checking_(true),
+      testing_mode_(false),
       has_threads_(true),
       tracker_(NULL) {
   enabled_ = IsLogEnabledOnAnyProfile();
