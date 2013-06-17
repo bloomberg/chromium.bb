@@ -5,8 +5,6 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
-#include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_context.h"
 
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
