@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -371,7 +372,6 @@ bool CreateTemporaryDirInDir(const FilePath& base_dir,
   base::ThreadRestrictions::AssertIOAllowed();
 
   FilePath path_to_create;
-  srand(static_cast<uint32>(time(NULL)));
 
   for (int count = 0; count < 50; ++count) {
     // Try create a new temporary directory with random generated name. If
@@ -380,7 +380,7 @@ bool CreateTemporaryDirInDir(const FilePath& base_dir,
     new_dir_name.assign(prefix);
     new_dir_name.append(base::IntToString16(::base::GetCurrentProcId()));
     new_dir_name.push_back('_');
-    new_dir_name.append(base::IntToString16(rand() % kint16max));
+    new_dir_name.append(base::IntToString16(base::RandInt(0, kint16max)));
 
     path_to_create = base_dir.Append(new_dir_name);
     if (::CreateDirectory(path_to_create.value().c_str(), NULL)) {
