@@ -11,6 +11,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace content {
@@ -64,6 +65,7 @@ void SetContentCommandLineFlags(int max_render_process_count,
   // Run the GPU service as a thread in the browser instead of as a
   // standalone process.
   parsed_command_line->AppendSwitch(switches::kInProcessGPU);
+  parsed_command_line->AppendSwitch(switches::kDisableGpuShaderDiskCache);
 
   // Always use fixed layout and viewport tag.
   parsed_command_line->AppendSwitch(switches::kEnableFixedLayout);
