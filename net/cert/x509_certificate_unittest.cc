@@ -781,6 +781,20 @@ TEST(X509CertificateTest, IsIssuedByEncodedWithIntermediates) {
   EXPECT_FALSE(cert_chain->IsIssuedByEncoded(issuers));
 }
 
+#if defined(USE_NSS)
+TEST(X509CertificateTest, GetDefaultNickname) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "no_subject_common_name_cert.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+
+  std::string nickname = test_cert->GetDefaultNickname(USER_CERT);
+  EXPECT_EQ("wtc@google.com's COMODO Client Authentication and "
+            "Secure Email CA ID", nickname);
+}
+#endif
+
 #if !defined(OS_IOS)  // TODO(ios): Unable to create certificates.
 #if defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
 // This test creates a self-signed cert from a private key and then verify the

@@ -208,3 +208,7 @@ unit tests.
      chain that was issued under the Baltimore root. Combined, these
      certificates can be used to test real-world cross-signing; in practice,
      they are used to test certain workarounds for OS X's chain building code.
+
+- no_subject_common_name_cert.pem: Used to test the function that generates a
+  NSS certificate nickname for a user certificate. This certificate's Subject
+  field doesn't have a common name.

@@ -91,13 +91,19 @@ std::string X509Certificate::GetDefaultNickname(CertType type) const {
       PORT_Free(nickname);
       break;
     }
-    case USER_CERT:
+    case USER_CERT: {
+      std::string subject_name = subject_.GetDisplayName();
+      if (subject_name.empty()) {
+        const char* email = CERT_GetFirstEmailAddress(cert_handle_);
+        if (email)
+          subject_name = email;
+      }
       // TODO(gspencer): Internationalize this. It's wrong to assume English
       // here.
-      result = base::StringPrintf("%s's %s ID",
-                                  subject_.GetDisplayName().c_str(),
+      result = base::StringPrintf("%s's %s ID", subject_name.c_str(),
                                   issuer_.GetDisplayName().c_str());
       break;
+    }
     case SERVER_CERT:
       result = subject_.GetDisplayName();
       break;
