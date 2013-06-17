@@ -357,6 +357,7 @@ MessageView::MessageView(const Notification& notification,
   close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
   close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
   close->set_owned_by_client();
+  close->set_animate_on_state_change(false);
   close->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
   close_button_.reset(close);
@@ -367,6 +368,7 @@ MessageView::MessageView(const Notification& notification,
   expand->SetHoveredImage(IDR_NOTIFICATION_EXPAND_HOVER);
   expand->SetPressedImage(IDR_NOTIFICATION_EXPAND_PRESSED);
   expand->set_owned_by_client();
+  expand->set_animate_on_state_change(false);
   expand->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
   expand_button_.reset(expand);
