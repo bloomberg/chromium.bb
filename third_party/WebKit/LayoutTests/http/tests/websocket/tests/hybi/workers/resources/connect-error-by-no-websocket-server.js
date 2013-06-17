@@ -29,7 +29,7 @@ function endTest()
     postMessage("DONE");
 }
 
-var url = "ws://localhost:8888"; // Here it should have no websocket server to listen.
+var url = "ws://127.0.0.1:8888"; // This port must be closed.
 
 function doTest(index)
 {
@@ -92,6 +92,9 @@ function timeOutCallback()
     endTest();
 }
 
-var timeoutID = setTimeout(timeOutCallback, 3000);
+// On Windows, a localhost "Connection Refused" takes around 1 second. Since we
+// need to have 3 connections refused in serial, we need > 3 seconds on
+// Windows.
+var timeoutID = setTimeout(timeOutCallback, 4000);
 
 doTest(0);
