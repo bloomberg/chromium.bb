@@ -8,6 +8,8 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
@@ -20,12 +22,14 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/random.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace chromeos {
 
 namespace {
 
+const int kMasterKeySize = 32;
 const int kUserCreationTimeoutSeconds = 60; // 60 seconds.
 
 bool StoreManagedUserFiles(const std::string& token,
@@ -128,6 +132,15 @@ void LocallyManagedUserCreationController::OnMountSuccess(
     const std::string& mount_hash) {
   creation_context_->mount_hash = mount_hash;
 
+  // Generate master password.
+  char master_key_bytes[kMasterKeySize];
+  crypto::RandBytes(&master_key_bytes, sizeof(master_key_bytes));
+  creation_context_->master_key = StringToLowerASCII(base::HexEncode(
+      reinterpret_cast<const void*>(master_key_bytes),
+      sizeof(master_key_bytes)));
+  // TODO(antrim): Add this key as secondary as soon as wad@ adds API in
+  // cryptohome.
+
   timeout_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
       this,
@@ -137,8 +150,10 @@ void LocallyManagedUserCreationController::OnMountSuccess(
       ManagedUserRegistrationServiceFactory::GetForProfile(
           creation_context_->manager_profile);
 
+  ManagedUserRegistrationInfo info(creation_context_->display_name);
+  info.master_key = creation_context_->master_key;
   creation_context_->service->Register(
-      creation_context_->display_name,
+      info,
       base::Bind(&LocallyManagedUserCreationController::RegistrationCallback,
                  weak_factory_.GetWeakPtr()));
 }

@@ -29,6 +29,13 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+// Structure to store registration information.
+struct ManagedUserRegistrationInfo {
+  explicit ManagedUserRegistrationInfo(const string16& name);
+  string16 name;
+  std::string master_key;
+};
+
 // Holds the state necessary for registering a new managed user with the
 // management server and associating it with its custodian. It is owned by the
 // custodian's profile.
@@ -50,11 +57,13 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
 
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Registers a new managed user with the server. |name| is the display name of
-  // the user. |callback| is called with the result of the registration. We use
-  // the name here and not the profile, because on Chrome OS the profile of the
-  // managed user does not yet exist.
-  void Register(const string16& name, const RegistrationCallback& callback);
+  // Registers a new managed user with the server. |info| contains necessary
+  // information like the display name of the  the user. |callback| is called
+  // with the result of the registration. We use the info here and not the
+  // profile, because on Chrome OS the profile of the managed user does
+  // not yet exist.
+  void Register(const ManagedUserRegistrationInfo& info,
+                const RegistrationCallback& callback);
 
   // Cancels any registration currently in progress, without calling the
   // callback or reporting an error. This should be called when the user

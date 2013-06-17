@@ -23,4 +23,6 @@ message ManagedUserSpecifics {
   // This flag is set by the server to acknowledge that it has committed a
   // newly created managed user.
   optional bool acknowledged = 3 [default = false];
+  // Master key for managed user cryptohome.
+  optional string master_key = 4;
 }

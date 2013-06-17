@@ -46,19 +46,27 @@ namespace {
 
 const char kAcknowledged[] = "acknowledged";
 const char kName[] = "name";
+const char kMasterKey[] = "masterKey";
 
 SyncData CreateLocalSyncData(const std::string& id,
                              const std::string& name,
-                             bool acknowledged) {
+                             bool acknowledged,
+                             const std::string& master_key) {
   ::sync_pb::EntitySpecifics specifics;
   specifics.mutable_managed_user()->set_id(id);
   specifics.mutable_managed_user()->set_name(name);
+  if (!master_key.empty())
+    specifics.mutable_managed_user()->set_master_key(master_key);
   if (acknowledged)
     specifics.mutable_managed_user()->set_acknowledged(true);
   return SyncData::CreateLocalData(id, name, specifics);
 }
 
 }  // namespace
+
+ManagedUserRegistrationInfo::ManagedUserRegistrationInfo(const string16& name)
+    : name(name) {
+}
 
 ManagedUserRegistrationService::ManagedUserRegistrationService(
     PrefService* prefs,
@@ -87,7 +95,7 @@ void ManagedUserRegistrationService::RegisterUserPrefs(
 }
 
 void ManagedUserRegistrationService::Register(
-    const string16& name,
+    const ManagedUserRegistrationInfo& info,
     const RegistrationCallback& callback) {
   DCHECK(pending_managed_user_id_.empty());
   DCHECK(!registration_timer_.IsRunning());
@@ -108,7 +116,8 @@ void ManagedUserRegistrationService::Register(
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
   DictionaryValue* dict = update.Get();
   DictionaryValue* value = new DictionaryValue;
-  value->SetString(kName, name);
+  value->SetString(kName, info.name);
+  value->SetString(kMasterKey, info.master_key);
   std::string id_raw = base::RandBytesAsString(8);
   bool success = base::Base64Encode(id_raw, &pending_managed_user_id_);
   DCHECK(success);
@@ -121,8 +130,9 @@ void ManagedUserRegistrationService::Register(
     change_list.push_back(SyncChange(
         FROM_HERE,
         SyncChange::ACTION_ADD,
-        CreateLocalSyncData(
-            pending_managed_user_id_, base::UTF16ToUTF8(name), false)));
+        CreateLocalSyncData(pending_managed_user_id_,
+                            base::UTF16ToUTF8(info.name),
+                            false, info.master_key)));
     SyncError error =
         sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
     DCHECK(!error.IsSet()) << error.ToString();
@@ -130,7 +140,7 @@ void ManagedUserRegistrationService::Register(
 
   browser_sync::DeviceInfo::CreateLocalDeviceInfo(
       base::Bind(&ManagedUserRegistrationService::FetchToken,
-                 weak_ptr_factory_.GetWeakPtr(), name));
+                 weak_ptr_factory_.GetWeakPtr(), info.name));
 }
 
 void ManagedUserRegistrationService::CancelPendingRegistration() {
@@ -172,6 +182,7 @@ SyncMergeResult ManagedUserRegistrationService::MergeDataAndStartSyncing(
     value->SetString(kName, managed_user.name());
     DCHECK(managed_user.acknowledged());
     value->SetBoolean(kAcknowledged, managed_user.acknowledged());
+    value->SetString(kMasterKey, managed_user.master_key());
     if (dict->HasKey(managed_user.id()))
       num_items_modified++;
     else
@@ -191,10 +202,12 @@ SyncMergeResult ManagedUserRegistrationService::MergeDataAndStartSyncing(
     dict->GetBoolean(kAcknowledged, &acknowledged);
     std::string name;
     dict->GetString(kName, &name);
+    std::string master_key;
+    dict->GetString(kMasterKey, &master_key);
     DCHECK(!name.empty());
     change_list.push_back(
         SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
-                   CreateLocalSyncData(it.key(), name, acknowledged)));
+            CreateLocalSyncData(it.key(), name, acknowledged, master_key)));
   }
   result.set_error(sync_processor_->ProcessSyncChanges(FROM_HERE, change_list));
 
@@ -229,9 +242,12 @@ SyncDataList ManagedUserRegistrationService::GetAllSyncData(
     DCHECK(success);
     std::string name;
     dict->GetString(kName, &name);
+    std::string master_key;
+    dict->GetString(kMasterKey, &master_key);
     bool acknowledged = false;
     dict->GetBoolean(kAcknowledged, &acknowledged);
-    data.push_back(CreateLocalSyncData(it.key(), name, acknowledged));
+    data.push_back(
+        CreateLocalSyncData(it.key(), name, acknowledged, master_key));
   }
   return data;
 }
@@ -270,6 +286,7 @@ SyncError ManagedUserRegistrationService::ProcessSyncChanges(
         DictionaryValue* value = new DictionaryValue;
         value->SetString(kName, managed_user.name());
         value->SetBoolean(kAcknowledged, managed_user.acknowledged());
+        value->SetString(kMasterKey, managed_user.master_key());
         dict->SetWithoutPathExpansion(managed_user.id(), value);
         break;
       }

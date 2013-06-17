@@ -531,8 +531,9 @@ void ManagedUserService::RegisterAndInitSync(
       ManagedUserRegistrationServiceFactory::GetForProfile(custodian_profile);
   string16 name = UTF8ToUTF16(
       profile_->GetPrefs()->GetString(prefs::kProfileName));
+  ManagedUserRegistrationInfo info(name);
   registration_service->Register(
-      name,
+      info,
       base::Bind(&ManagedUserService::OnManagedUserRegistered,
                  weak_ptr_factory_.GetWeakPtr(), callback, custodian_profile));
 }

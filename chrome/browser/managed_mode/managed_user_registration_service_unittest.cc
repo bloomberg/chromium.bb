@@ -339,7 +339,8 @@ TEST_F(ManagedUserRegistrationServiceTest, MergeExisting) {
 
 TEST_F(ManagedUserRegistrationServiceTest, Register) {
   StartInitialSync();
-  service()->Register(ASCIIToUTF16("Dug"), GetRegistrationCallback());
+  service()->Register(ManagedUserRegistrationInfo(ASCIIToUTF16("Dug")),
+      GetRegistrationCallback());
   EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   Acknowledge();
 
@@ -349,7 +350,8 @@ TEST_F(ManagedUserRegistrationServiceTest, Register) {
 }
 
 TEST_F(ManagedUserRegistrationServiceTest, RegisterBeforeInitialSync) {
-  service()->Register(ASCIIToUTF16("Nemo"), GetRegistrationCallback());
+  service()->Register(ManagedUserRegistrationInfo(ASCIIToUTF16("Nemo")),
+      GetRegistrationCallback());
   EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   StartInitialSync();
   Acknowledge();
@@ -361,7 +363,8 @@ TEST_F(ManagedUserRegistrationServiceTest, RegisterBeforeInitialSync) {
 
 TEST_F(ManagedUserRegistrationServiceTest, Shutdown) {
   StartInitialSync();
-  service()->Register(ASCIIToUTF16("Remy"), GetRegistrationCallback());
+  service()->Register(ManagedUserRegistrationInfo(ASCIIToUTF16("Remy")),
+      GetRegistrationCallback());
   EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   ResetService();
   EXPECT_EQ(0u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
@@ -372,7 +375,8 @@ TEST_F(ManagedUserRegistrationServiceTest, Shutdown) {
 
 TEST_F(ManagedUserRegistrationServiceTest, StopSyncing) {
   StartInitialSync();
-  service()->Register(ASCIIToUTF16("Mike"), GetRegistrationCallback());
+  service()->Register(ManagedUserRegistrationInfo(ASCIIToUTF16("Mike")),
+      GetRegistrationCallback());
   EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   service()->StopSyncing(MANAGED_USERS);
   EXPECT_EQ(0u, prefs()->GetDictionary(prefs::kManagedUsers)->size());

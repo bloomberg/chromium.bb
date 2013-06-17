@@ -82,6 +82,7 @@ class LocallyManagedUserCreationController
     std::string user_id;
     std::string password;
     std::string mount_hash;
+    std::string master_key;
     bool token_acquired;
     std::string token;
     bool token_succesfully_written;
