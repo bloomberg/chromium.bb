@@ -76,11 +76,13 @@ struct( domFunction => {
 # Used to represent domInterface contents (name of attribute, signature)
 struct( domAttribute => {
     type => '$',              # Attribute type (including namespace) (string or UnionType)
+    name => '$',
+    isNullable => '$', # Is variable type Nullable (T?)
     isStatic => '$',
     isReadOnly => '$',
-    signature => '$',         # Attribute signature
     getterExceptions => '@',  # Possibly raised exceptions.
     setterExceptions => '@',  # Possibly raised exceptions.
+    extendedAttributes => '$', # Extended attributes
 });
 
 # Used to represent a map of 'variable name' <-> 'variable type'
@@ -393,7 +395,7 @@ sub applyTypedefs
                 }
             }
             foreach my $attribute (@{$definition->attributes}) {
-                $self->applyTypedefsForSignature($attribute->signature);
+                $self->applyTypedefsForSignature($attribute);
             }
             foreach my $function (@{$definition->functions}, @{$definition->constructors}, @{$definition->customConstructors}) {
                 $self->applyTypedefsForSignature($function);
@@ -1153,27 +1155,23 @@ sub parseAttributeRest
     if ($next->value() =~ /$nextAttributeRest_1/) {
         my $newDataNode = domAttribute->new();
         if ($self->parseReadOnly()) {
-            $newDataNode->type("attribute");
             $newDataNode->isReadOnly(1);
-        } else {
-            $newDataNode->type("attribute");
         }
         $self->assertTokenValue($self->getToken(), "attribute", __LINE__);
-        $newDataNode->signature(domSignature->new());
         my $type = $self->parseType();
-        $newDataNode->signature->isNullable(typeHasNullableSuffix($type));
+        $newDataNode->isNullable(typeHasNullableSuffix($type));
         # Remove all "?" in the type declaration, e.g. "double?" -> "double".
-        $newDataNode->signature->type(typeRemoveNullableSuffix($type));
+        $newDataNode->type(typeRemoveNullableSuffix($type));
         my $token = $self->getToken();
         $self->assertTokenType($token, IdentifierToken);
-        $newDataNode->signature->name($token->value());
+        $newDataNode->name($token->value());
         $self->assertTokenValue($self->getToken(), ";", __LINE__);
         # CustomConstructor may also be used on attributes.
         if (defined $extendedAttributeList->{"CustomConstructors"}) {
             delete $extendedAttributeList->{"CustomConstructors"};
             $extendedAttributeList->{"CustomConstructor"} = "VALUE_IS_MISSING";
         }
-        $newDataNode->signature->extendedAttributes($extendedAttributeList);
+        $newDataNode->extendedAttributes($extendedAttributeList);
         return $newDataNode;
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);

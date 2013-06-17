@@ -481,27 +481,27 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 static const V8DOMConfiguration::BatchedAttribute V8TestInterfaceAttrs[] = {
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStaticReadOnlyAttr' (Type: 'attribute' ExtAttr: 'Conditional ImplementedBy')
+    // Attribute 'supplementalStaticReadOnlyAttr'
     {"supplementalStaticReadOnlyAttr", TestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStaticAttr' (Type: 'attribute' ExtAttr: 'Conditional ImplementedBy')
+    // Attribute 'supplementalStaticAttr'
     {"supplementalStaticAttr", TestInterfaceV8Internal::supplementalStaticAttrAttrGetterCallback, TestInterfaceV8Internal::supplementalStaticAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStr1' (Type: 'attribute' ExtAttr: 'Conditional ImplementedBy')
+    // Attribute 'supplementalStr1'
     {"supplementalStr1", TestInterfaceV8Internal::supplementalStr1AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStr2' (Type: 'attribute' ExtAttr: 'Conditional ImplementedBy')
+    // Attribute 'supplementalStr2'
     {"supplementalStr2", TestInterfaceV8Internal::supplementalStr2AttrGetterCallback, TestInterfaceV8Internal::supplementalStr2AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalStr3' (Type: 'attribute' ExtAttr: 'CustomSetter CustomGetter Conditional ImplementedBy')
+    // Attribute 'supplementalStr3'
     {"supplementalStr3", TestInterfaceV8Internal::supplementalStr3AttrGetterCallback, TestInterfaceV8Internal::supplementalStr3AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    // Attribute 'supplementalNode' (Type: 'attribute' ExtAttr: 'Conditional ImplementedBy')
+    // Attribute 'supplementalNode'
     {"supplementalNode", TestInterfaceV8Internal::supplementalNodeAttrGetterCallback, TestInterfaceV8Internal::supplementalNodeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 };
@@ -612,7 +612,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
 #if ENABLE(Condition11) || ENABLE(Condition12)
     if (RuntimeEnabledFeatures::condition13Enabled()) {
         static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node13' (Type: 'attribute' ExtAttr: 'EnabledAtRuntime Conditional ImplementedBy')
+        // Attribute 'Node13'
         {"Node13", TestInterfaceV8Internal::Node13AttrGetterCallback, TestInterfaceV8Internal::Node13AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
     }
@@ -670,7 +670,7 @@ void V8TestInterface::installPerContextProperties(v8::Handle<v8::Object> instanc
 #if ENABLE(Condition11) || ENABLE(Condition12)
     if (ContextFeatures::condition14Enabled(impl->document())) {
         static const V8DOMConfiguration::BatchedAttribute attrData =\
-        // Attribute 'Node14' (Type: 'attribute' ExtAttr: 'EnabledPerContext Conditional ImplementedBy')
+        // Attribute 'Node14'
         {"Node14", TestInterfaceV8Internal::Node14AttrGetterCallback, TestInterfaceV8Internal::Node14AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate);
     }

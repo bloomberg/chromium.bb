@@ -470,19 +470,19 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 } // namespace TestTypedefsV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestTypedefsAttrs[] = {
-    // Attribute 'unsignedLongLongAttr' (Type: 'attribute' ExtAttr: '')
+    // Attribute 'unsignedLongLongAttr'
     {"unsignedLongLongAttr", TestTypedefsV8Internal::unsignedLongLongAttrAttrGetterCallback, TestTypedefsV8Internal::unsignedLongLongAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'immutableSerializedScriptValue' (Type: 'attribute' ExtAttr: 'Immutable')
+    // Attribute 'immutableSerializedScriptValue'
     {"immutableSerializedScriptValue", TestTypedefsV8Internal::immutableSerializedScriptValueAttrGetterCallback, TestTypedefsV8Internal::immutableSerializedScriptValueAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'TestSubObj' (Type: 'attribute' ExtAttr: '')
+    // Attribute 'TestSubObj'
     {"TestSubObj", TestTypedefsV8Internal::TestTypedefsConstructorGetter, 0, 0, 0, &V8TestSubObj::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None | v8::DontEnum), 0 /* on instance */},
-    // Attribute 'attrWithGetterException' (Type: 'attribute' ExtAttr: 'GetterRaisesException')
+    // Attribute 'attrWithGetterException'
     {"attrWithGetterException", TestTypedefsV8Internal::attrWithGetterExceptionAttrGetterCallback, TestTypedefsV8Internal::attrWithGetterExceptionAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'attrWithSetterException' (Type: 'attribute' ExtAttr: 'SetterRaisesException')
+    // Attribute 'attrWithSetterException'
     {"attrWithSetterException", TestTypedefsV8Internal::attrWithSetterExceptionAttrGetterCallback, TestTypedefsV8Internal::attrWithSetterExceptionAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'stringAttrWithGetterException' (Type: 'attribute' ExtAttr: 'GetterRaisesException')
+    // Attribute 'stringAttrWithGetterException'
     {"stringAttrWithGetterException", TestTypedefsV8Internal::stringAttrWithGetterExceptionAttrGetterCallback, TestTypedefsV8Internal::stringAttrWithGetterExceptionAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'stringAttrWithSetterException' (Type: 'attribute' ExtAttr: 'SetterRaisesException')
+    // Attribute 'stringAttrWithSetterException'
     {"stringAttrWithSetterException", TestTypedefsV8Internal::stringAttrWithSetterExceptionAttrGetterCallback, TestTypedefsV8Internal::stringAttrWithSetterExceptionAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 

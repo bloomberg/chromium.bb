@@ -150,9 +150,9 @@ static void funcTestInterfaceImplementedAsParamMethodCallback(const v8::Function
 } // namespace RealClassV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestInterfaceImplementedAsAttrs[] = {
-    // Attribute 'a' (Type: 'attribute' ExtAttr: '')
+    // Attribute 'a'
     {"a", RealClassV8Internal::aAttrGetterCallback, RealClassV8Internal::aAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'b' (Type: 'attribute' ExtAttr: '')
+    // Attribute 'b'
     {"b", RealClassV8Internal::bAttrGetterCallback, RealClassV8Internal::bAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 

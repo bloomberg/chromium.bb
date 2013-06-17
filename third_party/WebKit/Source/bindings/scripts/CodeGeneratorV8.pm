@@ -726,9 +726,9 @@ END
 
     my @enabledPerContextAttributes;
     foreach my $attribute (@{$interface->attributes}) {
-        my $name = $attribute->signature->name;
-        my $attrExt = $attribute->signature->extendedAttributes;
-        my $conditionalString = GenerateConditionalString($attribute->signature);
+        my $name = $attribute->name;
+        my $attrExt = $attribute->extendedAttributes;
+        my $conditionalString = GenerateConditionalString($attribute);
         if (HasCustomGetter($attrExt) && !$attrExt->{"ImplementedBy"}) {
             $header{classPublic}->add("#if ${conditionalString}\n") if $conditionalString;
             $header{classPublic}->add(<<END);
@@ -1103,7 +1103,7 @@ sub HasCustomMethod
 sub IsReadonly
 {
     my $attribute = shift;
-    my $attrExt = $attribute->signature->extendedAttributes;
+    my $attrExt = $attribute->extendedAttributes;
     return $attribute->isReadOnly && !$attrExt->{"Replaceable"};
 }
 
@@ -1304,10 +1304,10 @@ sub GenerateNormalAttrGetterCallback
 
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $attrExt = $attribute->signature->extendedAttributes;
-    my $attrName = $attribute->signature->name;
+    my $attrExt = $attribute->extendedAttributes;
+    my $attrName = $attribute->name;
 
-    my $conditionalString = GenerateConditionalString($attribute->signature);
+    my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
 
@@ -1338,9 +1338,9 @@ sub GenerateNormalAttrGetter
     my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $attrExt = $attribute->signature->extendedAttributes;
-    my $attrName = $attribute->signature->name;
-    my $attrType = $attribute->signature->type;
+    my $attrExt = $attribute->extendedAttributes;
+    my $attrName = $attribute->name;
+    my $attrType = $attribute->type;
 
     if (HasCustomGetter($attrExt)) {
         return;
@@ -1348,10 +1348,10 @@ sub GenerateNormalAttrGetter
 
     AssertNotSequenceType($attrType);
     my $getterStringUsesImp = $interfaceName ne "SVGNumber";
-    my $nativeType = GetNativeTypeFromSignature($attribute->signature, -1);
+    my $nativeType = GetNativeTypeFromSignature($attribute, -1);
     my $svgNativeType = GetSVGTypeNeedingTearOff($interfaceName);
 
-    my $conditionalString = GenerateConditionalString($attribute->signature);
+    my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
     $code .= <<END;
@@ -1392,8 +1392,8 @@ END
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
 END
     } else {
-        my $reflect = $attribute->signature->extendedAttributes->{"Reflect"};
-        my $url = $attribute->signature->extendedAttributes->{"URL"};
+        my $reflect = $attribute->extendedAttributes->{"Reflect"};
+        my $url = $attribute->extendedAttributes->{"URL"};
         if ($getterStringUsesImp && $reflect && !$url && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
             # Generate super-compact call for regular attribute getter:
             my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
@@ -1406,7 +1406,7 @@ END
             return;
             # Skip the rest of the function!
         }
-        if ($attribute->signature->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
+        if ($attribute->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
             $code .= <<END;
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("${attrName}");
     v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
@@ -1424,16 +1424,16 @@ END
     }
 
     # Generate security checks if necessary
-    if ($attribute->signature->extendedAttributes->{"CheckSecurityForNode"}) {
+    if ($attribute->extendedAttributes->{"CheckSecurityForNode"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute->signature) . "())) {\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute) . "())) {\n";
         $code .= "        v8SetReturnValueNull(info);\n";
         $code .= "        return;\n";
         $code .= "    }\n";
     }
 
-    my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"GetterRaisesException"} ||  $attribute->signature->extendedAttributes->{"RaisesException"};
-    my $isNullable = $attribute->signature->isNullable;
+    my $useExceptions = 1 if $attribute->extendedAttributes->{"GetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
+    my $isNullable = $attribute->isNullable;
     if ($useExceptions) {
         AddToImplIncludes("core/dom/ExceptionCode.h");
         $code .= "    ExceptionCode ec = 0;\n";
@@ -1443,15 +1443,15 @@ END
         $code .= "    bool isNull = false;\n";
     }
 
-    my $returnType = $attribute->signature->type;
+    my $returnType = $attribute->type;
     my $getterString;
 
     if ($getterStringUsesImp) {
         my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
         push(@arguments, "isNull") if $isNullable;
         push(@arguments, "ec") if $useExceptions;
-        if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
-            my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
+        if ($attribute->extendedAttributes->{"ImplementedBy"}) {
+            my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
             my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
             AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
             unshift(@arguments, "imp") if !$attribute->isStatic;
@@ -1461,7 +1461,7 @@ END
         } else {
             $functionName = "imp->${functionName}";
         }
-        my ($arg, $subCode) = GenerateCallWith($attribute->signature->extendedAttributes->{"CallWith"}, "    ", 0);
+        my ($arg, $subCode) = GenerateCallWith($attribute->extendedAttributes->{"CallWith"}, "    ", 0);
         $code .= $subCode;
         unshift(@arguments, @$arg);
         $getterString = "${functionName}(" . join(", ", @arguments) . ")";
@@ -1470,14 +1470,14 @@ END
     }
 
     my $expression;
-    if ($attribute->signature->type eq "EventListener" && $interface->name eq "Window") {
+    if ($attribute->type eq "EventListener" && $interface->name eq "Window") {
         $code .= "    if (!imp->document())\n";
         $code .= "        return;\n";
     }
 
     if ($useExceptions || $isNullable) {
         if ($nativeType =~ /^V8StringResource/) {
-            $code .= "    " . ConvertToV8StringResource($attribute->signature, $nativeType, "v", $getterString) . ";\n";
+            $code .= "    " . ConvertToV8StringResource($attribute, $nativeType, "v", $getterString) . ";\n";
         } else {
             $code .= "    $nativeType v = $getterString;\n";
         }
@@ -1495,7 +1495,7 @@ END
             $code .= "        return;\n";
             $code .= "    };\n";
 
-            if (ExtendedAttributeContains($attribute->signature->extendedAttributes->{"CallWith"}, "ScriptState")) {
+            if (ExtendedAttributeContains($attribute->extendedAttributes->{"CallWith"}, "ScriptState")) {
                 $code .= "    if (state.hadException()) {\n";
                 $code .= "        throwError(state.exception(), info.GetIsolate());\n";
                 $code .= "        return;\n";
@@ -1558,7 +1558,7 @@ END
         AddToImplIncludes("core/svg/properties/SVGPropertyTearOff.h");
         my $tearOffType = GetSVGTypeNeedingTearOff($attrType);
         my $wrappedValue;
-        if (IsSVGTypeWithWritablePropertiesNeedingTearOff($attrType) and not defined $attribute->signature->extendedAttributes->{"Immutable"}) {
+        if (IsSVGTypeWithWritablePropertiesNeedingTearOff($attrType) and not defined $attribute->extendedAttributes->{"Immutable"}) {
             my $getter = $expression;
             $getter =~ s/imp->//;
             $getter =~ s/\(\)//;
@@ -1592,8 +1592,8 @@ END
         }
         $code .= "    v8SetReturnValue(info, toV8Fast$forMainWorldSuffix($wrappedValue, info, imp));\n";
         $code .= "    return;\n";
-    } elsif ($attribute->signature->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
-        my $getterFunc = ToMethodName($attribute->signature->name);
+    } elsif ($attribute->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
+        my $getterFunc = ToMethodName($attribute->name);
         $code .= <<END;
     RefPtr<SerializedScriptValue> serialized = imp->${getterFunc}();
     value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8Null(info.GetIsolate()));
@@ -1601,15 +1601,15 @@ END
     v8SetReturnValue(info, value);
     return;
 END
-    } elsif ($attribute->signature->type eq "EventListener") {
+    } elsif ($attribute->type eq "EventListener") {
         AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
-        my $getterFunc = ToMethodName($attribute->signature->name);
+        my $getterFunc = ToMethodName($attribute->name);
         # FIXME: Pass the main world ID for main-world-only getters.
         $code .= "    EventListener* listener = imp->${getterFunc}(isolatedWorldForIsolate(info.GetIsolate()));\n";
         $code .= "    v8SetReturnValue(info, listener ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(listener)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8Null(info.GetIsolate())));\n";
         $code .= "    return;\n";
     } else {
-        my $nativeValue = NativeToJSValue($attribute->signature->type, $attribute->signature->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
+        my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
         $code .= "${nativeValue}\n";
         $code .= "    return;\n";
     }
@@ -1622,15 +1622,15 @@ END
 sub ShouldKeepAttributeAlive
 {
     my ($interface, $attribute, $returnType) = @_;
-    my $attrName = $attribute->signature->name;
+    my $attrName = $attribute->name;
 
-    return 1 if $attribute->signature->extendedAttributes->{"KeepAttributeAliveForGC"};
+    return 1 if $attribute->extendedAttributes->{"KeepAttributeAliveForGC"};
 
     # Basically, for readonly or replaceable attributes, we have to guarantee
     # that JS wrappers don't get garbage-collected prematually when their
     # lifetime is strongly tied to their owner.
     return 0 if !IsWrapperType($returnType);
-    return 0 if !IsReadonly($attribute) && !$attribute->signature->extendedAttributes->{"Replaceable"};
+    return 0 if !IsReadonly($attribute) && !$attribute->extendedAttributes->{"Replaceable"};
 
     # However, there are a couple of exceptions.
 
@@ -1727,10 +1727,10 @@ sub GenerateNormalAttrSetterCallback
 
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $attrExt = $attribute->signature->extendedAttributes;
-    my $attrName = $attribute->signature->name;
+    my $attrExt = $attribute->extendedAttributes;
+    my $attrName = $attribute->name;
 
-    my $conditionalString = GenerateConditionalString($attribute->signature);
+    my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
 
@@ -1760,15 +1760,15 @@ sub GenerateNormalAttrSetter
     my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $attrName = $attribute->signature->name;
-    my $attrExt = $attribute->signature->extendedAttributes;
-    my $attrType = $attribute->signature->type;
+    my $attrName = $attribute->name;
+    my $attrExt = $attribute->extendedAttributes;
+    my $attrType = $attribute->type;
 
     if (HasCustomSetter($attrExt)) {
         return;
     }
 
-    my $conditionalString = GenerateConditionalString($attribute->signature);
+    my $conditionalString = GenerateConditionalString($attribute);
     my $code = "";
     $code .= "#if ${conditionalString}\n\n" if $conditionalString;
     $code .= "static void ${attrName}AttrSetter${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)\n";
@@ -1779,8 +1779,8 @@ sub GenerateNormalAttrSetter
     # thrown rather than silently passing NULL to the C++ code.
     # Per the Web IDL and ECMAScript specifications, incoming values can always be converted to both
     # strings and numbers, so do not throw TypeError if the attribute is of these types.
-    if ($attribute->signature->extendedAttributes->{"StrictTypeChecking"}) {
-        my $argType = $attribute->signature->type;
+    if ($attribute->extendedAttributes->{"StrictTypeChecking"}) {
+        my $argType = $attribute->type;
         if (IsWrapperType($argType)) {
             $code .= "    if (!isUndefinedOrNull(value) && !V8${argType}::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
             $code .= "        throwTypeError(0, info.GetIsolate());\n";
@@ -1811,7 +1811,7 @@ END
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
 END
     } else {
-        my $reflect = $attribute->signature->extendedAttributes->{"Reflect"};
+        my $reflect = $attribute->extendedAttributes->{"Reflect"};
         if ($reflect && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
             # Generate super-compact call for regular attribute setter:
             my $contentAttributeName = $reflect eq "VALUE_IS_MISSING" ? lc $attrName : $reflect;
@@ -1834,21 +1834,21 @@ END
         }
     }
 
-    my $nativeType = GetNativeTypeFromSignature($attribute->signature, 0);
-    if ($attribute->signature->type eq "EventListener") {
+    my $nativeType = GetNativeTypeFromSignature($attribute, 0);
+    if ($attribute->type eq "EventListener") {
         if ($interface->name eq "Window") {
             $code .= "    if (!imp->document())\n";
             $code .= "        return;\n";
         }
     } else {
-        my $value = JSValueToNative($attribute->signature->type, $attribute->signature->extendedAttributes, "value", "info.GetIsolate()");
+        my $value = JSValueToNative($attribute->type, $attribute->extendedAttributes, "value", "info.GetIsolate()");
         my $arrayType = GetArrayType($nativeType);
 
         if ($nativeType =~ /^V8StringResource/) {
-            $code .= "    " . ConvertToV8StringResource($attribute->signature, $nativeType, "v", $value) . "\n";
+            $code .= "    " . ConvertToV8StringResource($attribute, $nativeType, "v", $value) . "\n";
         } elsif ($arrayType) {
             $code .= "    Vector<$arrayType> v = $value;\n";
-        } elsif ($attribute->signature->extendedAttributes->{"EnforceRange"}) {
+        } elsif ($attribute->extendedAttributes->{"EnforceRange"}) {
             $code .= "    V8TRYCATCH_WITH_TYPECHECK_VOID($nativeType, v, $value, info.GetIsolate());\n";
         } else {
             $code .= "    V8TRYCATCH_VOID($nativeType, v, $value);\n";
@@ -1871,14 +1871,14 @@ END
     }
 
     my $expression = "v";
-    my $returnType = $attribute->signature->type;
+    my $returnType = $attribute->type;
     if (IsRefPtrType($returnType) && !GetArrayType($returnType)) {
         $expression = "WTF::getPtr(" . $expression . ")";
     }
 
-    $code .= GenerateCustomElementInvocationScopeIfNeeded($attribute->signature->extendedAttributes);
+    $code .= GenerateCustomElementInvocationScopeIfNeeded($attribute->extendedAttributes);
 
-    my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"SetterRaisesException"} ||  $attribute->signature->extendedAttributes->{"RaisesException"};
+    my $useExceptions = 1 if $attribute->extendedAttributes->{"SetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
 
     if ($useExceptions) {
         AddToImplIncludes("core/dom/ExceptionCode.h");
@@ -1888,15 +1888,15 @@ END
     if ($interfaceName eq "SVGNumber") {
         $code .= "    *imp = $expression;\n";
     } else {
-        if ($attribute->signature->type eq "EventListener") {
+        if ($attribute->type eq "EventListener") {
             my $implSetterFunctionName = FirstLetterToUpperCase($attrName);
             AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
             if (!InheritsInterface($interface, "Node")) {
-                my $attrImplName = GetImplName($attribute->signature);
+                my $attrImplName = GetImplName($attribute);
                 $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(isolatedWorldForIsolate(info.GetIsolate())), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
             }
             AddToImplIncludes("bindings/v8/V8EventListenerList.h");
-            if (($interfaceName eq "Window" or $interfaceName eq "WorkerContext") and $attribute->signature->name eq "onerror") {
+            if (($interfaceName eq "Window" or $interfaceName eq "WorkerContext") and $attribute->name eq "onerror") {
                 AddToImplIncludes("bindings/v8/V8ErrorHandler.h");
                 $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(value, true), isolatedWorldForIsolate(info.GetIsolate()));\n";
             } else {
@@ -1906,8 +1906,8 @@ END
             my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
             push(@arguments, $expression);
             push(@arguments, "ec") if $useExceptions;
-            if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
-                my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
+            if ($attribute->extendedAttributes->{"ImplementedBy"}) {
+                my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
                 my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
                 AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
                 unshift(@arguments, "imp") if !$attribute->isStatic;
@@ -1917,7 +1917,7 @@ END
             } else {
                 $functionName = "imp->${functionName}";
             }
-            my ($arg, $subCode) = GenerateCallWith($attribute->signature->extendedAttributes->{"SetterCallWith"} || $attribute->signature->extendedAttributes->{"CallWith"}, "    ", 1);
+            my ($arg, $subCode) = GenerateCallWith($attribute->extendedAttributes->{"SetterCallWith"} || $attribute->extendedAttributes->{"CallWith"}, "    ", 1);
             $code .= $subCode;
             unshift(@arguments, @$arg);
             $code .= "    ${functionName}(" . join(", ", @arguments) . ");\n";
@@ -1929,7 +1929,7 @@ END
         $code .= "        setDOMException(ec, info.GetIsolate());\n";
     }
 
-    if (ExtendedAttributeContains($attribute->signature->extendedAttributes->{"CallWith"}, "ScriptState")) {
+    if (ExtendedAttributeContains($attribute->extendedAttributes->{"CallWith"}, "ScriptState")) {
         $code .= "    if (state.hadException())\n";
         $code .= "        throwError(state.exception(), info.GetIsolate());\n";
     }
@@ -1943,7 +1943,7 @@ END
         }
     }
 
-    if ($attribute->signature->type eq "SerializedScriptValue" && $attribute->signature->extendedAttributes->{"CachedAttribute"}) {
+    if ($attribute->type eq "SerializedScriptValue" && $attribute->extendedAttributes->{"CachedAttribute"}) {
         $code .= <<END;
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("${attrName}")); // Invalidate the cached value.
 END
@@ -2702,8 +2702,8 @@ END
 
     for (my $index = 0; $index < @{$interface->attributes}; $index++) {
         my $attribute = @{$interface->attributes}[$index];
-        if ($attribute->signature->extendedAttributes->{"InitializedByEventConstructor"}) {
-            my $attributeName = $attribute->signature->name;
+        if ($attribute->extendedAttributes->{"InitializedByEventConstructor"}) {
+            my $attributeName = $attribute->name;
             $code .= "    options.get(\"$attributeName\", eventInit.$attributeName);\n";
         }
     }
@@ -2890,7 +2890,7 @@ sub GenerateBatchedAttributeData
     my $code = "";
 
     foreach my $attribute (@$attributes) {
-        my $conditionalString = GenerateConditionalString($attribute->signature);
+        my $conditionalString = GenerateConditionalString($attribute);
         my $subCode = "";
         $subCode .= "#if ${conditionalString}\n" if $conditionalString;
         $subCode .= GenerateSingleBatchedAttribute($interface, $attribute, ",", "");
@@ -2907,8 +2907,8 @@ sub GenerateSingleBatchedAttribute
     my $delimiter = shift;
     my $indent = shift;
     my $code = "";
-    my $attrName = $attribute->signature->name;
-    my $attrExt = $attribute->signature->extendedAttributes;
+    my $attrName = $attribute->name;
+    my $attrExt = $attribute->extendedAttributes;
     my $implClassName = GetImplName($interface);
 
     my $accessControl = "v8::DEFAULT";
@@ -2939,7 +2939,7 @@ sub GenerateSingleBatchedAttribute
     my $setterForMainWorld;
     my $propAttr = "v8::None";
 
-    my $isConstructor = ($attribute->signature->type =~ /Constructor$/);
+    my $isConstructor = ($attribute->type =~ /Constructor$/);
 
     # Check attributes.
     # As per Web IDL specification, constructor properties on the ECMAScript global object should be
@@ -2956,12 +2956,12 @@ sub GenerateSingleBatchedAttribute
 
     # Constructor
     if ($isConstructor) {
-        my $constructorType = $attribute->signature->type;
+        my $constructorType = $attribute->type;
         $constructorType =~ s/Constructor$//;
         # $constructorType ~= /Constructor$/ indicates that it is NamedConstructor.
         # We do not generate the header file for NamedConstructor of class XXXX,
         # since we generate the NamedConstructor declaration into the header file of class XXXX.
-        if ($constructorType !~ /Constructor$/ || $attribute->signature->extendedAttributes->{"CustomConstructor"}) {
+        if ($constructorType !~ /Constructor$/ || $attribute->extendedAttributes->{"CustomConstructor"}) {
             AddToImplIncludes("V8${constructorType}.h");
         }
         $data = "&V8${constructorType}::info";
@@ -2998,8 +2998,7 @@ sub GenerateSingleBatchedAttribute
       $setterForMainWorld = "0";
     }
 
-    my $commentInfo = "Attribute '$attrName' (Type: '" . $attribute->type .
-                      "' ExtAttr: '" . join(' ', keys(%{$attrExt})) . "')";
+    my $commentInfo = "Attribute '$attrName'";
 
     $code .= $indent . "    \/\/ $commentInfo\n";
     $code .= $indent . "    {\"$attrName\", $getter, $setter, $getterForMainWorld, $setterForMainWorld, $data, $accessControl, static_cast<v8::PropertyAttribute>($propAttr), $on_proto}" . $delimiter . "\n";
@@ -3750,8 +3749,8 @@ END
     # Generate property accessors for attributes.
     for (my $index = 0; $index < @{$interface->attributes}; $index++) {
         my $attribute = @{$interface->attributes}[$index];
-        my $attrType = $attribute->signature->type;
-        my $attrExt = $attribute->signature->extendedAttributes;
+        my $attrType = $attribute->type;
+        my $attrExt = $attribute->extendedAttributes;
 
         # Generate special code for the constructor attributes.
         if ($attrType =~ /Constructor$/) {
@@ -3878,13 +3877,13 @@ END
     my @normalAttributes;
     foreach my $attribute (@$attributes) {
 
-        if ($interfaceName eq "Window" && $attribute->signature->extendedAttributes->{"Unforgeable"}) {
+        if ($interfaceName eq "Window" && $attribute->extendedAttributes->{"Unforgeable"}) {
             push(@disallowsShadowing, $attribute);
-        } elsif ($attribute->signature->extendedAttributes->{"EnabledAtRuntime"} || $attribute->signature->extendedAttributes->{"EnabledPerContext"}) {
-            if ($attribute->signature->extendedAttributes->{"EnabledPerContext"}) {
+        } elsif ($attribute->extendedAttributes->{"EnabledAtRuntime"} || $attribute->extendedAttributes->{"EnabledPerContext"}) {
+            if ($attribute->extendedAttributes->{"EnabledPerContext"}) {
                 push(@enabledPerContextAttributes, $attribute);
             }
-            if ($attribute->signature->extendedAttributes->{"EnabledAtRuntime"}) {
+            if ($attribute->extendedAttributes->{"EnabledAtRuntime"}) {
                 push(@enabledAtRuntimeAttributes, $attribute);
             }
         } else {
@@ -4088,8 +4087,8 @@ END
     # Setup the enable-at-runtime attrs if we have them
     foreach my $runtime_attr (@enabledAtRuntimeAttributes) {
         next if grep { $_ eq $runtime_attr } @enabledPerContextAttributes;
-        my $enable_function = GetRuntimeEnableFunctionName($runtime_attr->signature);
-        my $conditionalString = GenerateConditionalString($runtime_attr->signature);
+        my $enable_function = GetRuntimeEnableFunctionName($runtime_attr);
+        my $conditionalString = GenerateConditionalString($runtime_attr);
         $code .= "\n#if ${conditionalString}\n" if $conditionalString;
         $code .= "    if (${enable_function}()) {\n";
         $code .= "        static const V8DOMConfiguration::BatchedAttribute attrData =\\\n";
@@ -4215,11 +4214,11 @@ END
 
         # Setup the enable-by-settings attrs if we have them
         foreach my $runtimeAttr (@enabledPerContextAttributes) {
-            my $enableFunction = GetContextEnableFunction($runtimeAttr->signature);
-            my $conditionalString = GenerateConditionalString($runtimeAttr->signature);
+            my $enableFunction = GetContextEnableFunction($runtimeAttr);
+            my $conditionalString = GenerateConditionalString($runtimeAttr);
             $code .= "\n#if ${conditionalString}\n" if $conditionalString;
             if (grep { $_ eq $runtimeAttr } @enabledAtRuntimeAttributes) {
-                my $runtimeEnableFunction = GetRuntimeEnableFunctionName($runtimeAttr->signature);
+                my $runtimeEnableFunction = GetRuntimeEnableFunctionName($runtimeAttr);
                 $code .= "    if (${enableFunction}(impl->document()) && ${runtimeEnableFunction}()) {\n";
             } else {
                 $code .= "    if (${enableFunction}(impl->document())) {\n";
@@ -5665,11 +5664,11 @@ sub AttributeNameForGetterAndSetter
 {
     my $attribute = shift;
 
-    my $attributeName = GetImplName($attribute->signature);
-    if ($attribute->signature->extendedAttributes->{"ImplementedAs"}) {
-        $attributeName = $attribute->signature->extendedAttributes->{"ImplementedAs"};
+    my $attributeName = GetImplName($attribute);
+    if ($attribute->extendedAttributes->{"ImplementedAs"}) {
+        $attributeName = $attribute->extendedAttributes->{"ImplementedAs"};
     }
-    my $attributeType = $attribute->signature->type;
+    my $attributeType = $attribute->type;
 
     # Avoid clash with C++ keyword.
     $attributeName = "_operator" if $attributeName eq "operator";
@@ -5689,7 +5688,7 @@ sub ContentAttributeName
 {
     my ($interfaceName, $attribute) = @_;
 
-    my $contentAttributeName = $attribute->signature->extendedAttributes->{"Reflect"};
+    my $contentAttributeName = $attribute->extendedAttributes->{"Reflect"};
     return undef if !$contentAttributeName;
 
     $contentAttributeName = lc AttributeNameForGetterAndSetter($attribute) if $contentAttributeName eq "VALUE_IS_MISSING";
@@ -5703,7 +5702,7 @@ sub ContentAttributeName
 sub CanUseFastAttribute
 {
     my $attribute = shift;
-    return !IsSVGAnimatedType($attribute->signature->type);
+    return !IsSVGAnimatedType($attribute->type);
 }
 
 sub GetterExpression
@@ -5717,17 +5716,17 @@ sub GetterExpression
     }
 
     my $functionName;
-    if ($attribute->signature->extendedAttributes->{"URL"}) {
+    if ($attribute->extendedAttributes->{"URL"}) {
         $functionName = "getURLAttribute";
-    } elsif ($attribute->signature->type eq "boolean") {
+    } elsif ($attribute->type eq "boolean") {
         if (CanUseFastAttribute($attribute)) {
             $functionName = "fastHasAttribute";
         } else {
             $functionName = "hasAttribute";
         }
-    } elsif ($attribute->signature->type eq "long") {
+    } elsif ($attribute->type eq "long") {
         $functionName = "getIntegralAttribute";
-    } elsif ($attribute->signature->type eq "unsigned long") {
+    } elsif ($attribute->type eq "unsigned long") {
         $functionName = "getUnsignedIntegralAttribute";
     } else {
         if ($contentAttributeName eq "WebCore::HTMLNames::idAttr") {
@@ -5760,11 +5759,11 @@ sub SetterExpression
     }
 
     my $functionName;
-    if ($attribute->signature->type eq "boolean") {
+    if ($attribute->type eq "boolean") {
         $functionName = "setBooleanAttribute";
-    } elsif ($attribute->signature->type eq "long") {
+    } elsif ($attribute->type eq "long") {
         $functionName = "setIntegralAttribute";
-    } elsif ($attribute->signature->type eq "unsigned long") {
+    } elsif ($attribute->type eq "unsigned long") {
         $functionName = "setUnsignedIntegralAttribute";
     } else {
         $functionName = "setAttribute";
