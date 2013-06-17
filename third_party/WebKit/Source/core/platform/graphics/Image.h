@@ -41,7 +41,6 @@
 
 namespace WebCore {
 
-class AffineTransform;
 class FloatPoint;
 class FloatRect;
 class FloatSize;
@@ -112,8 +111,9 @@ public:
 
     virtual PassNativeImagePtr nativeImageForCurrentFrame() { return 0; }
 
-    virtual void drawPattern(GraphicsContext*, const FloatRect& srcRect, const AffineTransform& patternTransform,
-        const FloatPoint& phase, CompositeOperator, const FloatRect& destRect, BlendMode = BlendModeNormal);
+    virtual void drawPattern(GraphicsContext*, const FloatRect&,
+        const FloatSize&, const FloatPoint& phase, CompositeOperator,
+        const FloatRect&, BlendMode = BlendModeNormal);
 
 #if !ASSERT_DISABLED
     virtual bool notSolidColor() { return true; }

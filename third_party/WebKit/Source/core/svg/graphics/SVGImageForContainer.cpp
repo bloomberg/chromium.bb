@@ -23,7 +23,6 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/graphics/SVGImage.h"
 
 namespace WebCore {
@@ -41,10 +40,10 @@ void SVGImageForContainer::draw(GraphicsContext* context, const FloatRect& dstRe
     m_image->drawForContainer(context, m_containerSize, m_zoom, dstRect, srcRect, compositeOp, blendMode);
 }
 
-void SVGImageForContainer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const AffineTransform& patternTransform,
+void SVGImageForContainer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode)
 {
-    m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, patternTransform, phase, compositeOp, dstRect);
+    m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, scale, phase, compositeOp, dstRect);
 }
 
 PassNativeImagePtr SVGImageForContainer::nativeImageForCurrentFrame()

@@ -27,7 +27,6 @@
 #define GeneratedImage_h
 
 #include "core/platform/graphics/Image.h"
-
 #include "core/platform/graphics/IntSize.h"
 #include "wtf/RefPtr.h"
 
@@ -52,8 +51,9 @@ public:
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
 protected:
-    virtual void drawPattern(GraphicsContext*, const FloatRect& srcRect, const AffineTransform& patternTransform,
-        const FloatPoint& phase, CompositeOperator, const FloatRect& destRect, BlendMode) OVERRIDE = 0;
+    virtual void drawPattern(GraphicsContext*, const FloatRect&,
+        const FloatSize&, const FloatPoint&, CompositeOperator,
+        const FloatRect&, BlendMode) OVERRIDE = 0;
 
     // FIXME: Implement this to be less conservative.
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE { return false; }

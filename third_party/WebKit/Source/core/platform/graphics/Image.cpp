@@ -35,7 +35,6 @@
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "wtf/MainThread.h"
 #include "wtf/MemoryObjectInfo.h"
 #include "wtf/StdLibExtras.h"
@@ -141,9 +140,8 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
         return;
     }
 
-    AffineTransform patternTransform = AffineTransform().scaleNonUniform(scale.width(), scale.height());
     FloatRect tileRect(FloatPoint(), intrinsicTileSize);
-    drawPattern(ctxt, tileRect, patternTransform, oneTileRect.location(), op, destRect, blendMode);
+    drawPattern(ctxt, tileRect, scale, oneTileRect.location(), op, destRect, blendMode);
 
     startAnimation();
 }
@@ -163,8 +161,6 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
     if (vRule == RoundTile || vRule == SpaceTile)
         vRule = RepeatTile;
 
-    AffineTransform patternTransform = AffineTransform().scaleNonUniform(tileScaleFactor.width(), tileScaleFactor.height());
-
     // We want to construct the phase such that the pattern is centered (when stretch is not
     // set for a particular rule).
     float hPhase = tileScaleFactor.width() * srcRect.x();
@@ -177,7 +173,7 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
         vPhase -= (dstRect.height() - scaledTileHeight) / 2;
     FloatPoint patternPhase(dstRect.x() - hPhase, dstRect.y() - vPhase);
 
-    drawPattern(ctxt, srcRect, patternTransform, patternPhase, op, dstRect);
+    drawPattern(ctxt, srcRect, tileScaleFactor, patternPhase, op, dstRect);
 
     startAnimation();
 }

@@ -53,8 +53,11 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
 protected:
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, BlendMode);
-    virtual void drawPattern(GraphicsContext*, const FloatRect& srcRect, const AffineTransform& patternTransform, const FloatPoint& phase, CompositeOperator, const FloatRect& dstRect, BlendMode);
+    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
+        CompositeOperator, BlendMode) OVERRIDE;
+    virtual void drawPattern(GraphicsContext*, const FloatRect&,
+        const FloatSize&, const FloatPoint&, CompositeOperator,
+        const FloatRect&, BlendMode) OVERRIDE;
 
     CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize&);
 

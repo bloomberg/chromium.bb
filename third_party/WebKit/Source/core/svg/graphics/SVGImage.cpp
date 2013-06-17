@@ -160,16 +160,19 @@ PassNativeImagePtr SVGImage::nativeImageForCurrentFrame()
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& srcRect,
-    const AffineTransform& patternTransform, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect)
+    const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect)
 {
     FloatRect zoomedContainerRect = FloatRect(FloatPoint(), containerSize);
     zoomedContainerRect.scale(zoom);
 
     // The ImageBuffer size needs to be scaled to match the final resolution.
+    // FIXME: No need to get the full CTM here, we just need the scale.
     AffineTransform transform = context->getCTM();
     FloatSize imageBufferScale = FloatSize(transform.xScale(), transform.yScale());
     ASSERT(imageBufferScale.width());
     ASSERT(imageBufferScale.height());
+
+    FloatSize scaleWithoutCTM(scale.width() / imageBufferScale.width(), scale.height() / imageBufferScale.height());
 
     FloatRect imageBufferSize = zoomedContainerRect;
     imageBufferSize.scale(imageBufferScale.width(), imageBufferScale.height());
@@ -183,10 +186,8 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     // Adjust the source rect and transform due to the image buffer's scaling.
     FloatRect scaledSrcRect = srcRect;
     scaledSrcRect.scale(imageBufferScale.width(), imageBufferScale.height());
-    AffineTransform unscaledPatternTransform(patternTransform);
-    unscaledPatternTransform.scale(1 / imageBufferScale.width(), 1 / imageBufferScale.height());
 
-    image->drawPattern(context, scaledSrcRect, unscaledPatternTransform, phase, compositeOp, dstRect);
+    image->drawPattern(context, scaledSrcRect, scaleWithoutCTM, phase, compositeOp, dstRect);
 }
 
 void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode)

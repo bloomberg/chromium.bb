@@ -345,7 +345,7 @@ bool FrameData::clear(bool clearMetadata)
 
 void Image::drawPattern(GraphicsContext* context,
                         const FloatRect& floatSrcRect,
-                        const AffineTransform& patternTransform,
+                        const FloatSize& scale,
                         const FloatPoint& phase,
                         CompositeOperator compositeOp,
                         const FloatRect& destRect,
@@ -361,9 +361,10 @@ void Image::drawPattern(GraphicsContext* context,
     if (destRect.isEmpty() || normSrcRect.isEmpty())
         return; // nothing to draw
 
-    SkMatrix ctm = context->getTotalMatrix();
-    SkMatrix totalMatrix;
-    totalMatrix.setConcat(ctm, patternTransform);
+    SkMatrix totalMatrix = context->getTotalMatrix();
+    SkScalar ctmScaleX = totalMatrix.getScaleX();
+    SkScalar ctmScaleY = totalMatrix.getScaleY();
+    totalMatrix.preScale(scale.width(), scale.height());
 
     // Figure out what size the bitmap will be in the destination. The
     // destination rect is the bounds of the pattern, we need to use the
@@ -382,9 +383,7 @@ void Image::drawPattern(GraphicsContext* context,
         resampling = computeResamplingMode(totalMatrix, *bitmap, normSrcRect.width(), normSrcRect.height(), destBitmapWidth, destBitmapHeight);
     resampling = limitResamplingMode(context, resampling);
 
-    // Load the transform WebKit requested.
-    SkMatrix matrix(patternTransform);
-
+    SkMatrix shaderTransform;
     SkShader* shader;
 
     // Bicubic filter is only applied to defer-decoded images, see
@@ -407,30 +406,29 @@ void Image::drawPattern(GraphicsContext* context,
 
         // Since we just resized the bitmap, we need to remove the scale
         // applied to the pixels in the bitmap shader. This means we need
-        // CTM * patternTransform to have identity scale. Since we
+        // CTM * shaderTransform to have identity scale. Since we
         // can't modify CTM (or the rectangle will be drawn in the wrong
-        // place), we must set patternTransform's scale to the inverse of
+        // place), we must set shaderTransform's scale to the inverse of
         // CTM scale.
-        matrix.setScaleX(ctm.getScaleX() ? 1 / ctm.getScaleX() : 1);
-        matrix.setScaleY(ctm.getScaleY() ? 1 / ctm.getScaleY() : 1);
+        shaderTransform.setScale(ctmScaleX ? 1 / ctmScaleX : 1, ctmScaleY ? 1 / ctmScaleY : 1);
     } else {
         // No need to resample before drawing.
         SkBitmap srcSubset;
         bitmap->bitmap().extractSubset(&srcSubset, enclosingIntRect(normSrcRect));
         shader = SkShader::CreateBitmapShader(srcSubset, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
+        // Because no resizing occurred, the shader transform should be
+        // set to the pattern's transform, which just includes scale.
+        shaderTransform.setScale(scale.width(), scale.height());
     }
 
     // We also need to translate it such that the origin of the pattern is the
     // origin of the destination rect, which is what WebKit expects. Skia uses
-    // the coordinate system origin as the base for the patter. If WebKit wants
-    // a shifted image, it will shift it from there using the patternTransform.
-    float adjustedX = phase.x() + normSrcRect.x() *
-                      narrowPrecisionToFloat(patternTransform.a());
-    float adjustedY = phase.y() + normSrcRect.y() *
-                      narrowPrecisionToFloat(patternTransform.d());
-    matrix.postTranslate(SkFloatToScalar(adjustedX),
-                         SkFloatToScalar(adjustedY));
-    shader->setLocalMatrix(matrix);
+    // the coordinate system origin as the base for the pattern. If WebKit wants
+    // a shifted image, it will shift it from there using the shaderTransform.
+    float adjustedX = phase.x() + normSrcRect.x() * scale.width();
+    float adjustedY = phase.y() + normSrcRect.y() * scale.height();
+    shaderTransform.postTranslate(SkFloatToScalar(adjustedX), SkFloatToScalar(adjustedY));
+    shader->setLocalMatrix(shaderTransform);
 
     SkPaint paint;
     paint.setShader(shader)->unref();

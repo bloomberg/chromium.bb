@@ -94,7 +94,7 @@ void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& ds
     drawCrossfade(context);
 }
 
-void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const AffineTransform& patternTransform, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode)
+void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode)
 {
     OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(m_size, 1, context->isAccelerated() ? Accelerated : Unaccelerated);
     if (!imageBuffer)
@@ -105,7 +105,7 @@ void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatR
     drawCrossfade(graphicsContext);
 
     // Tile the image buffer into the context.
-    imageBuffer->drawPattern(context, srcRect, patternTransform, phase, compositeOp, dstRect);
+    imageBuffer->drawPattern(context, srcRect, scale, phase, compositeOp, dstRect);
 }
 
 void CrossfadeGeneratedImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

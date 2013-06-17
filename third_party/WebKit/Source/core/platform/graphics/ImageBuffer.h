@@ -134,8 +134,8 @@ namespace WebCore {
     private:
         void clip(GraphicsContext*, const FloatRect&) const;
 
-        void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
-        void drawPattern(GraphicsContext*, const FloatRect& srcRect, const AffineTransform& patternTransform, const FloatPoint& phase, CompositeOperator, const FloatRect& destRect);
+        void draw(GraphicsContext*, const FloatRect&, const FloatRect& = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
+        void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&);
 
         inline void genericConvertToLuminanceMask();
 

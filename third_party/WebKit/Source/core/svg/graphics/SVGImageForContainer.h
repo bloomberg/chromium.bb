@@ -29,7 +29,6 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/svg/graphics/SVGImage.h"
 
 namespace WebCore {
@@ -55,7 +54,7 @@ public:
 
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, BlendMode) OVERRIDE;
 
-    virtual void drawPattern(GraphicsContext*, const FloatRect&, const AffineTransform&, const FloatPoint&, CompositeOperator, const FloatRect&, BlendMode) OVERRIDE;
+    virtual void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&, BlendMode) OVERRIDE;
 
     // FIXME: Implement this to be less conservative.
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE { return false; }

@@ -45,7 +45,7 @@ void GeneratorGeneratedImage::draw(GraphicsContext* destContext, const FloatRect
     destContext->fillRect(FloatRect(FloatPoint(), m_size));
 }
 
-void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const AffineTransform& patternTransform,
+void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& destRect, BlendMode)
 {
     // Allow the generator to provide visually-equivalent tiling parameters for better performance.
@@ -53,12 +53,12 @@ void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const Fl
     FloatRect adjustedSrcRect = srcRect;
     m_gradient->adjustParametersForTiledDrawing(adjustedSize, adjustedSrcRect);
 
-    // Factor in the destination context's scale to generate at the best resolution
+    // Factor in the destination context's scale to generate at the best resolution.
+    // FIXME: No need to get the full CTM here, we just need the scale.
     AffineTransform destContextCTM = destContext->getCTM(GraphicsContext::DefinitelyIncludeDeviceScale);
-    double xScale = fabs(destContextCTM.xScale());
-    double yScale = fabs(destContextCTM.yScale());
-    AffineTransform adjustedPatternCTM = patternTransform;
-    adjustedPatternCTM.scale(1.0 / xScale, 1.0 / yScale);
+    float xScale = fabs(destContextCTM.xScale());
+    float yScale = fabs(destContextCTM.yScale());
+    FloatSize scaleWithoutCTM(scale.width() / xScale, scale.height() / yScale);
     adjustedSrcRect.scale(xScale, yScale);
 
     unsigned generatorHash = m_gradient->hash();
@@ -77,7 +77,7 @@ void GeneratorGeneratedImage::drawPattern(GraphicsContext* destContext, const Fl
     }
 
     // Tile the image buffer into the context.
-    m_cachedImageBuffer->drawPattern(destContext, adjustedSrcRect, adjustedPatternCTM, phase, compositeOp, destRect);
+    m_cachedImageBuffer->drawPattern(destContext, adjustedSrcRect, scaleWithoutCTM, phase, compositeOp, destRect);
     m_cacheTimer.restart();
 }
 
