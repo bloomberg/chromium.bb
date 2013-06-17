@@ -293,27 +293,59 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
   }
 }
 
+bool MediaGalleriesPreferences::UpdateDeviceIDForSingletonType(
+    const std::string& device_id) {
+  StorageInfo::Type singleton_type;
+  if (!StorageInfo::CrackDeviceId(device_id, &singleton_type, NULL))
+    return false;
+
+  PrefService* prefs = profile_->GetPrefs();
+  scoped_ptr<ListPrefUpdate> update(new ListPrefUpdate(
+      prefs, prefs::kMediaGalleriesRememberedGalleries));
+  ListValue* list = update->Get();
+  for (ListValue::iterator iter = list->begin(); iter != list->end(); ++iter) {
+    // All of these calls should succeed, but preferences file can be corrupt.
+    DictionaryValue* dict;
+    if (!(*iter)->GetAsDictionary(&dict))
+      continue;
+    std::string this_device_id;
+    if (!dict->GetString(kMediaGalleriesDeviceIdKey, &this_device_id))
+      continue;
+    if (this_device_id == device_id)
+      return true;  // No update is necessary.
+    StorageInfo::Type device_type;
+    if (!StorageInfo::CrackDeviceId(this_device_id, &device_type, NULL))
+      continue;
+
+    if (device_type == singleton_type) {
+      dict->SetString(kMediaGalleriesDeviceIdKey, device_id);
+      update.reset();  // commits the update.
+      InitFromPrefs(true /* notify observers */);
+      return true;
+    }
+  }
+  return false;
+}
+
 void MediaGalleriesPreferences::OnITunesDeviceID(const std::string& device_id) {
   if (device_id.empty())
     return;
-
-  // TODO(vandebo): Since we only want to support one iTunes location (and
-  // it is possible for it to move), but we want to preserve the user's
-  // permissions for "the" iTunes gallery, we need to Amend any existing
-  // iTunes galleries instead of adding a new one.
-  AddGalleryInternal(device_id, ASCIIToUTF16(kITunesGalleryName),
-                     base::FilePath(), false /*not user added*/,
-                     string16(), string16(), string16(), 0,
-                     base::Time(), false, 2);
+  if (!UpdateDeviceIDForSingletonType(device_id)) {
+    AddGalleryInternal(device_id, ASCIIToUTF16(kITunesGalleryName),
+                       base::FilePath(), false /*not user added*/,
+                       string16(), string16(), string16(), 0,
+                       base::Time(), false, 2);
+  }
 }
 
 void MediaGalleriesPreferences::OnPicasaDeviceID(const std::string& device_id) {
-  // TODO(tommycli): Implement support for location moves.
   DCHECK(!device_id.empty());
-  AddGalleryInternal(device_id, ASCIIToUTF16(kPicasaGalleryName),
-                     base::FilePath(), false /*not user added*/,
-                     string16(), string16(), string16(), 0,
-                     base::Time(), false, 2);
+  if (!UpdateDeviceIDForSingletonType(device_id)) {
+    AddGalleryInternal(device_id, ASCIIToUTF16(kPicasaGalleryName),
+                       base::FilePath(), false /*not user added*/,
+                       string16(), string16(), string16(), 0,
+                       base::Time(), false, 2);
+  }
 }
 
 void MediaGalleriesPreferences::InitFromPrefs(bool notify_observers) {

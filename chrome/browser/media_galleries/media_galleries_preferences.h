@@ -207,6 +207,17 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   // Populates the default galleries if this is a fresh profile.
   void AddDefaultGalleriesIfFreshProfile();
 
+  // This is a hack - Some devices (iTunes, Picasa) are singletons in that only
+  // one instance of that type is supported at a time. As such, the device id
+  // should just be "itunes:" or "picasa:" but that would mean finding the
+  // location of the database file multiple times, which may be an async
+  // operation. Storing the location of the backing database in the device
+  // id allows that look up to be avoided. However, the cost is that if the
+  // database moves, the device id in preferences has to be updated.  This
+  // method searches for a gallery of the type passed in and updates its
+  // device id.  It returns true if the device id is up to date.
+  bool UpdateDeviceIDForSingletonType(const std::string& device_id);
+
   // Try to add an entry for the iTunes 'device'.
   void OnITunesDeviceID(const std::string& device_id);
 

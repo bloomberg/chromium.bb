@@ -219,6 +219,10 @@ class MediaGalleriesPreferencesTest : public testing::Test {
         string16(), string16(), string16(), 0, base::Time(), false, 2);
   }
 
+  bool UpdateDeviceIDForSingletonType(const std::string& device_id) {
+    return gallery_prefs()->UpdateDeviceIDForSingletonType(device_id);
+  }
+
   scoped_refptr<extensions::Extension> all_permission_extension;
   scoped_refptr<extensions::Extension> regular_permission_extension;
   scoped_refptr<extensions::Extension> no_permissions_extension;
@@ -762,6 +766,47 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryChangeObserver) {
 
   EXPECT_EQ(2, observer1.notifications());
   EXPECT_EQ(3, observer2.notifications());
+}
+
+TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
+  MediaGalleryPrefId id;
+  base::FilePath path;
+  StorageInfo info;
+  base::FilePath relative_path;
+  Verify();
+
+  // Add a new auto detect gallery to test with.
+  path = MakePath("new_auto");
+  MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
+  info.set_name(ASCIIToUTF16("NewAutoGallery"));
+  info.set_device_id(StorageInfo::MakeDeviceId(StorageInfo::ITUNES,
+                                               path.AsUTF8Unsafe()));
+  id = AddGalleryWithNameV2(info.device_id(), info.name(), relative_path,
+                            false /*auto*/);
+  EXPECT_EQ(default_galleries_count() + 1UL, id);
+  AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
+                        MediaGalleryPrefInfo::kAutoDetected);
+  Verify();
+
+  // Update the device id.
+  MockGalleryChangeObserver observer(gallery_prefs());
+  gallery_prefs()->AddGalleryChangeObserver(&observer);
+
+  path = MakePath("updated_path");
+  std::string updated_device_id =
+      StorageInfo::MakeDeviceId(StorageInfo::ITUNES, path.AsUTF8Unsafe());
+  EXPECT_TRUE(UpdateDeviceIDForSingletonType(updated_device_id));
+  AddGalleryExpectation(id, info.name(), updated_device_id, relative_path,
+                        MediaGalleryPrefInfo::kAutoDetected);
+  expected_device_map[info.device_id()].erase(id);
+  expected_device_map[updated_device_id].insert(id);
+  Verify();
+  EXPECT_EQ(1, observer.notifications());
+
+  // No gallery for type.
+  std::string new_device_id =
+      StorageInfo::MakeDeviceId(StorageInfo::PICASA, path.AsUTF8Unsafe());
+  EXPECT_FALSE(UpdateDeviceIDForSingletonType(new_device_id));
 }
 
 }  // namespace chrome
