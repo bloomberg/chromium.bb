@@ -151,12 +151,7 @@ bool NeedOverrideDefaultUIFont(string16* override_font_family,
 }
 
 void AdjustUIFont(LOGFONT* logfont) {
-#if defined(ENABLE_HIDPI)
-  float dpi_scale = ui::GetDPIScale();
-#else
-  float dpi_scale = 1;
-#endif
-  AdjustUIFontForDIP(dpi_scale, logfont);
+  AdjustUIFontForDIP(ui::GetDPIScale(), logfont);
 }
 
 void AdjustUIFontForDIP(float dpi_scale, LOGFONT* logfont) {

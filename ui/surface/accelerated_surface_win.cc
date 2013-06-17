@@ -724,18 +724,17 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   // If the window is a different size than the swap chain that is being
   // presented then drop the frame.
   gfx::Size window_size = GetWindowSize();
-#if defined(ENABLE_HIDPI)
-  // Check if the size mismatch is within allowable round off or truncation
-  // error.
-  gfx::Size dip_size = ui::win::ScreenToDIPSize(window_size);
-  gfx::Size pixel_size = ui::win::DIPToScreenSize(dip_size);
-  bool size_mismatch = abs(window_size.width() - size.width()) >
-      abs(window_size.width() - pixel_size.width()) ||
-      abs(window_size.height() - size.height()) >
-      abs(window_size.height() - pixel_size.height());
-#else
   bool size_mismatch = size != window_size;
-#endif
+  if (ui::IsInHighDPIMode()) {
+    // Check if the size mismatch is within allowable round off or truncation
+    // error.
+    gfx::Size dip_size = ui::win::ScreenToDIPSize(window_size);
+    gfx::Size pixel_size = ui::win::DIPToScreenSize(dip_size);
+    size_mismatch = abs(window_size.width() - size.width()) >
+        abs(window_size.width() - pixel_size.width()) ||
+        abs(window_size.height() - size.height()) >
+        abs(window_size.height() - pixel_size.height());
+  }
   if (hidden_ && size_mismatch) {
     TRACE_EVENT2("gpu", "EarlyOut_WrongWindowSize",
                  "backwidth", size.width(), "backheight", size.height());
