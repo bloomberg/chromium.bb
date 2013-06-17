@@ -291,6 +291,10 @@ MediaSourcePlayer::~MediaSourcePlayer() {
 void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   surface_ =  surface.Pass();
   pending_event_ |= SURFACE_CHANGE_EVENT_PENDING;
+  if (pending_event_ & SEEK_EVENT_PENDING) {
+    // Waiting for the seek to finish.
+    return;
+  }
   // Setting a new surface will require a new MediaCodec to be created.
   // Request a seek so that the new decoder will decode an I-frame first.
   // Or otherwise, the new MediaCodec might crash. See b/8950387.

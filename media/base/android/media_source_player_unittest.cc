@@ -93,20 +93,28 @@ class MediaSourcePlayerTest : public testing::Test {
     return player_->video_decoder_job_.get();
   }
 
+  // Starts an audio decoder job.
+  void StartAudioDecoderJob() {
+    MediaPlayerHostMsg_DemuxerReady_Params params;
+    params.audio_codec = kCodecVorbis;
+    params.audio_channels = 2;
+    params.audio_sampling_rate = 44100;
+    params.is_audio_encrypted = false;
+    Start(params);
+  }
+
+  void StartVideoDecoderJob() {
+    MediaPlayerHostMsg_DemuxerReady_Params params;
+    params.video_codec = kCodecVP8;
+    params.video_size = gfx::Size(320, 240);
+    params.is_video_encrypted = false;
+    Start(params);
+  }
+
   // Starts decoding the data.
   void Start(const MediaPlayerHostMsg_DemuxerReady_Params& params) {
     player_->DemuxerReady(params);
     player_->Start();
-  }
-
-  // Set the surface to the player.
-  void SetVideoSurface(gfx::ScopedJavaSurface surface) {
-    unsigned last_seek_request_id = manager_->last_seek_request_id();
-    // Calling SetVideoSurface will trigger a seek.
-    player_->SetVideoSurface(surface.Pass());
-    EXPECT_EQ(last_seek_request_id + 1, manager_->last_seek_request_id());
-    // Sending back the seek ACK.
-    player_->OnSeekRequestAck(manager_->last_seek_request_id());
   }
 
  protected:
@@ -122,12 +130,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithValidConfig) {
     return;
 
   // Test audio decoder job will be created when codec is successfully started.
-  MediaPlayerHostMsg_DemuxerReady_Params params;
-  params.audio_codec = kCodecVorbis;
-  params.audio_channels = 2;
-  params.audio_sampling_rate = 44100;
-  params.is_audio_encrypted = false;
-  Start(params);
+  StartAudioDecoderJob();
   EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
   EXPECT_EQ(1, manager_->num_requests());
 }
@@ -158,16 +161,14 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
   scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
       new gfx::SurfaceTextureBridge(0));
   gfx::ScopedJavaSurface surface(surface_texture.get());
-  MediaPlayerHostMsg_DemuxerReady_Params params;
-  params.video_codec = kCodecVP8;
-  params.video_size = gfx::Size(320, 240);
-  params.is_video_encrypted = false;
-  Start(params);
+  StartVideoDecoderJob();
   // Video decoder job will not be created until surface is available.
   EXPECT_TRUE(NULL == GetMediaDecoderJob(false));
   EXPECT_EQ(0, manager_->num_requests());
 
-  SetVideoSurface(surface.Pass());
+  player_->SetVideoSurface(surface.Pass());
+  EXPECT_EQ(1u, manager_->last_seek_request_id());
+  player_->OnSeekRequestAck(manager_->last_seek_request_id());
   // The decoder job should be ready now.
   EXPECT_TRUE(NULL != GetMediaDecoderJob(false));
   EXPECT_EQ(1, manager_->num_requests());
@@ -181,18 +182,16 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
   scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
       new gfx::SurfaceTextureBridge(0));
   gfx::ScopedJavaSurface surface(surface_texture.get());
-  MediaPlayerHostMsg_DemuxerReady_Params params;
-  params.video_codec = kCodecVP8;
-  params.video_size = gfx::Size(320, 240);
-  params.is_video_encrypted = false;
-  Start(params);
+  StartVideoDecoderJob();
   // Video decoder job will not be created until surface is available.
   EXPECT_TRUE(NULL == GetMediaDecoderJob(false));
   EXPECT_EQ(0, manager_->num_requests());
 
   // Release the surface texture.
   surface_texture = NULL;
-  SetVideoSurface(surface.Pass());
+  player_->SetVideoSurface(surface.Pass());
+  EXPECT_EQ(1u, manager_->last_seek_request_id());
+  player_->OnSeekRequestAck(manager_->last_seek_request_id());
   EXPECT_TRUE(NULL == GetMediaDecoderJob(false));
   EXPECT_EQ(0, manager_->num_requests());
 }
@@ -202,12 +201,7 @@ TEST_F(MediaSourcePlayerTest, ReadFromDemuxerAfterSeek) {
     return;
 
   // Test decoder job will resend a ReadFromDemuxer request after seek.
-  MediaPlayerHostMsg_DemuxerReady_Params params;
-  params.audio_codec = kCodecVorbis;
-  params.audio_channels = 2;
-  params.audio_sampling_rate = 44100;
-  params.is_audio_encrypted = false;
-  Start(params);
+  StartAudioDecoderJob();
   EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
   EXPECT_EQ(1, manager_->num_requests());
 
@@ -220,5 +214,29 @@ TEST_F(MediaSourcePlayerTest, ReadFromDemuxerAfterSeek) {
   EXPECT_EQ(2, manager_->num_requests());
 }
 
+TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
+  if (!MediaCodecBridge::IsAvailable())
+    return;
+
+  // Test SetVideoSurface() will not cause an extra seek while the player is
+  // waiting for a seek ACK.
+  scoped_refptr<gfx::SurfaceTextureBridge> surface_texture(
+      new gfx::SurfaceTextureBridge(0));
+  gfx::ScopedJavaSurface surface(surface_texture.get());
+  StartVideoDecoderJob();
+  // Player is still waiting for SetVideoSurface(), so no request is sent.
+  EXPECT_EQ(0, manager_->num_requests());
+  player_->SeekTo(base::TimeDelta());
+  EXPECT_EQ(1u, manager_->last_seek_request_id());
+
+  player_->SetVideoSurface(surface.Pass());
+  EXPECT_TRUE(NULL == GetMediaDecoderJob(false));
+  EXPECT_EQ(1u, manager_->last_seek_request_id());
+
+  // Send the seek ack, player should start requesting data afterwards.
+  player_->OnSeekRequestAck(manager_->last_seek_request_id());
+  EXPECT_TRUE(NULL != GetMediaDecoderJob(false));
+  EXPECT_EQ(1, manager_->num_requests());
+}
 
 }  // namespace media
