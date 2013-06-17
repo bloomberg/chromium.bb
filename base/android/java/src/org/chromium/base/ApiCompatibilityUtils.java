@@ -73,7 +73,7 @@ public class ApiCompatibilityUtils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             view.postInvalidateOnAnimation();
         } else {
-            view.invalidate();
+            view.postInvalidate();
         }
     }
 
