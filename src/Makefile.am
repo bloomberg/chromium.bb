@@ -280,6 +280,17 @@ cms_colord_la_SOURCES =				\
 endif
 endif
 
+noinst_PROGRAMS = spring-tool
+
+spring_tool_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+spring_tool_LDADD = $(COMPOSITOR_LIBS) -lm
+spring_tool_SOURCES =				\
+	spring-tool.c				\
+	animation.c				\
+	../shared/matrix.c			\
+	../shared/matrix.h			\
+	compositor.h
+
 BUILT_SOURCES =					\
 	screenshooter-server-protocol.h		\
 	screenshooter-protocol.c		\
