@@ -46,6 +46,8 @@ public:
 
     PassRefPtr<SharedBuffer> sanitize();
 
+    static bool supportsFormat(const String&);
+
 private:
     SharedBuffer* const m_buffer;
 };

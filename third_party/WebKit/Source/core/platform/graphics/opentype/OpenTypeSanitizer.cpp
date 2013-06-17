@@ -67,4 +67,10 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
     return SharedBuffer::create(static_cast<unsigned char*>(output.get()), transcodeLen);
 }
 
+bool OpenTypeSanitizer::supportsFormat(const String& format)
+{
+    return equalIgnoringCase(format, "woff")
+        || (RuntimeEnabledFeatures::woff2Enabled() && equalIgnoringCase(format, "woff2"));
+}
+
 } // namespace WebCore
