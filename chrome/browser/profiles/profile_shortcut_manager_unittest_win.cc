@@ -36,7 +36,6 @@ class ProfileShortcutManagerTest : public testing::Test {
   ProfileShortcutManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        profile_shortcut_manager_(NULL),
         profile_info_cache_(NULL),
         fake_user_desktop_(base::DIR_USER_DESKTOP),
         fake_system_desktop_(base::DIR_COMMON_DESKTOP) {

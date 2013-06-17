@@ -439,7 +439,7 @@ DaemonController::AsyncResult DaemonControllerWin::HResultToAsyncResult(
 void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
-  scoped_ptr<base::DictionaryValue> dictionary_null(NULL);
+  scoped_ptr<base::DictionaryValue> dictionary_null;
 
   // Configure and start the Daemon Controller if it is installed already.
   HRESULT hr = ActivateController();

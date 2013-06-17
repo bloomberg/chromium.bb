@@ -263,7 +263,7 @@ void WebContentsDragWin::PrepareDragForDownload(
   scoped_refptr<DragDownloadFile> download_file =
       new DragDownloadFile(
           download_path,
-          scoped_ptr<net::FileStream>(NULL),
+          scoped_ptr<net::FileStream>(),
           download_url,
           Referrer(page_url, drop_data.referrer_policy),
           page_encoding,
