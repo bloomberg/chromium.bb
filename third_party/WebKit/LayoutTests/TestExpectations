@@ -137,7 +137,7 @@ webkit.org/b/100985 media/progress-events-generated-correctly.html [ Failure Pas
 
 # CSS3 Text support is not yet enabled (needs ENABLE_CSS3_TEXT).
 webkit.org/b/112755 fast/css3-text/css3-text-indent/text-indent-each-line.html [ ImageOnlyFailure ]
-webkit.org/b/58491 [ Mac ] fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-color.html [ Failure Pass ]
+webkit.org/b/58491 [ Lion SnowLeopard ] fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-color.html [ Failure Pass ]
 webkit.org/b/58491 [ Mac ] fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-underline-position.html [ Failure Pass ]
 webkit.org/b/76173 [ Mac ] fast/css3-text/css3-text-align-last/getComputedStyle/getComputedStyle-text-align-last-inherited.html [ Failure Pass ]
 webkit.org/b/76173 [ Mac ] fast/css3-text/css3-text-align-last/getComputedStyle/getComputedStyle-text-align-last.html [ Failure Pass ]
@@ -145,12 +145,10 @@ webkit.org/b/112755 [ Mac ] fast/css3-text/css3-text-indent/getComputedStyle/get
 webkit.org/b/112755 [ Mac ] fast/css3-text/css3-text-indent/getComputedStyle/getComputedStyle-text-indent-inherited.html [ Failure Pass ]
 
 # Requires rebaseline after CSS3_TEXT feature flag has been replaced.
-webkit.org/b/58491 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-line.html [ Failure Pass ]
-webkit.org/b/58491 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-style.html [ Failure Pass ]
-webkit.org/b/58491 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-line.html [ Pass ImageOnlyFailure ]
+webkit.org/b/58491 [ Linux Lion SnowLeopard Win ] fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-line.html [ Failure Pass ]
+webkit.org/b/58491 [ Linux Lion SnowLeopard Win ] fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-style.html [ Failure Pass ]
 webkit.org/b/58491 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-style.html [ Pass ImageOnlyFailure ]
 webkit.org/b/58491 fast/css3-text/css3-text-decoration/text-decoration-line.html [ Pass ImageOnlyFailure ]
-webkit.org/b/58491 fast/css3-text/css3-text-decoration/text-decoration-style.html [ Pass ImageOnlyFailure ]
 
 # Chromium does not support smart pasting in text controls yet.
 webkit.org/b/60830 editing/pasteboard/smart-paste-in-text-control.html [ Crash Failure ImageOnlyFailure Pass Timeout ]
