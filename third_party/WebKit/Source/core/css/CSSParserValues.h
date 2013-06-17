@@ -143,6 +143,7 @@ struct CSSParserValue {
     int unit;
 
     inline void setFromNumber(double value, int unit = CSSPrimitiveValue::CSS_NUMBER);
+    inline void setFromFunction(CSSParserFunction*);
 
     PassRefPtr<CSSValue> createCSSValue();
 };
@@ -244,6 +245,13 @@ inline void CSSParserValue::setFromNumber(double value, int unit)
     isInt = false;
     fValue = value;
     this->unit = unit;
+}
+
+inline void CSSParserValue::setFromFunction(CSSParserFunction* function)
+{
+    id = CSSValueInvalid;
+    this->function = function;
+    unit = Function;
 }
 
 }

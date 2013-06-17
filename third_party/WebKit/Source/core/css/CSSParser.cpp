@@ -10787,6 +10787,14 @@ CSSParserFunction* CSSParser::createFloatingFunction()
     return function;
 }
 
+CSSParserFunction* CSSParser::createFloatingFunction(const CSSParserString& name, PassOwnPtr<CSSParserValueList> args)
+{
+    CSSParserFunction* function = createFloatingFunction();
+    function->name = name;
+    function->args = args;
+    return function;
+}
+
 PassOwnPtr<CSSParserFunction> CSSParser::sinkFloatingFunction(CSSParserFunction* function)
 {
     if (function) {
