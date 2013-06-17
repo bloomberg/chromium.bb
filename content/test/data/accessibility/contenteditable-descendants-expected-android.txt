@@ -10,8 +10,8 @@ android.view.View focusable focused scrollable
         android.widget.GridView editable_text
             android.view.View editable_text
                 android.view.View clickable editable_text name='Always expose editable tables as tables'
-            android.view.View editable_text
-            android.view.View editable_text
+            android.view.View
+            android.view.View
         android.widget.ListView editable_text item_count=1
             android.view.View editable_text
                 android.view.View clickable name='1'

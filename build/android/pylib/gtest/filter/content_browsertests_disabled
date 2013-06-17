@@ -92,6 +92,3 @@ MediaSourceTest.Playback_VideoOnly_WebM
 ResourceFetcherTests.ResourceFetcher404
 ResourceFetcherTests.ResourceFetcherDeletedInCallback
 ResourceFetcherTests.ResourceFetcherTimeout
-
-# http://crbug.com/249887
-DumpAccessibilityTreeTest.*

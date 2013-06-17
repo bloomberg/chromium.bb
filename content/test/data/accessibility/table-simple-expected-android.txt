@@ -8,7 +8,7 @@ android.view.View focusable focused scrollable name='Table example'
             android.view.View clickable name='D'
             android.view.View clickable name='E'
             android.view.View clickable name='F'
-        android.view.View editable_text
-        android.view.View editable_text
-        android.view.View editable_text
-        android.view.View editable_text
+        android.view.View
+        android.view.View
+        android.view.View
+        android.view.View
