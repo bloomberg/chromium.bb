@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009, 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013, Intel Corporation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -35,6 +36,8 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResourceHandle.h"
+#include "core/platform/Timer.h"
+#include "core/platform/network/ResourceError.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
@@ -84,10 +87,12 @@ namespace WebCore {
         virtual void notifyFinished(CachedResource*);
         virtual void dataDownloaded(CachedResource*, int);
 
+        void cancelWithError(const ResourceError&);
         void didReceiveResponse(unsigned long identifier, const ResourceResponse&);
         void didReceiveData(unsigned long identifier, const char* data, int dataLength);
         void didFinishLoading(unsigned long identifier, double finishTime);
         void didFail(unsigned long identifier, const ResourceError&);
+        void didTimeout(Timer<DocumentThreadableLoader>*);
         void makeCrossOriginAccessRequest(const ResourceRequest&);
         void makeSimpleCrossOriginAccessRequest(const ResourceRequest& request);
         void makeCrossOriginAccessRequestWithPreflight(const ResourceRequest& request);
@@ -108,6 +113,7 @@ namespace WebCore {
         bool m_simpleRequest;
         bool m_async;
         OwnPtr<ResourceRequest> m_actualRequest;  // non-null during Access Control preflight checks
+        Timer<DocumentThreadableLoader> m_timeoutTimer;
     };
 
 } // namespace WebCore

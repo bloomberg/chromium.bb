@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011, 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013, Intel Corporation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -74,6 +75,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document* document, Threadabl
     , m_sameOriginRequest(securityOrigin()->canRequest(request.url()))
     , m_simpleRequest(true)
     , m_async(blockingBehavior == LoadAsynchronously)
+    , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
 {
     ASSERT(document);
     ASSERT(client);
@@ -141,14 +143,22 @@ DocumentThreadableLoader::~DocumentThreadableLoader()
 
 void DocumentThreadableLoader::cancel()
 {
+    cancelWithError(ResourceError());
+}
+
+void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
+{
     RefPtr<DocumentThreadableLoader> protect(this);
 
     // Cancel can re-enter and m_resource might be null here as a result.
     if (m_client && m_resource) {
-        // FIXME: This error is sent to the client in didFail(), so it should not be an internal one. Use FrameLoaderClient::cancelledError() instead.
-        ResourceError error(errorDomainWebKitInternal, 0, m_resource->url().string(), "Load cancelled");
-        error.setIsCancellation(true);
-        didFail(m_resource->identifier(), error);
+        ResourceError errorForCallback = error;
+        if (errorForCallback.isNull()) {
+            // FIXME: This error is sent to the client in didFail(), so it should not be an internal one. Use FrameLoaderClient::cancelledError() instead.
+            errorForCallback = ResourceError(errorDomainWebKitInternal, 0, m_resource->url().string(), "Load cancelled");
+            errorForCallback.setIsCancellation(true);
+        }
+        didFail(m_resource->identifier(), errorForCallback);
     }
     clearResource();
     m_client = 0;
@@ -319,6 +329,8 @@ void DocumentThreadableLoader::notifyFinished(CachedResource* resource)
 {
     ASSERT(m_client);
     ASSERT_UNUSED(resource, resource == m_resource);
+
+    m_timeoutTimer.stop();
         
     if (m_resource->errorOccurred())
         didFail(m_resource->identifier(), m_resource->resourceError());
@@ -343,6 +355,18 @@ void DocumentThreadableLoader::didFail(unsigned long identifier, const ResourceE
         InspectorInstrumentation::didFailLoading(m_document->frame(), identifier, m_document->frame()->loader()->documentLoader(), error);
 
     m_client->didFail(error);
+}
+
+void DocumentThreadableLoader::didTimeout(Timer<DocumentThreadableLoader>* timer)
+{
+    ASSERT_UNUSED(timer, timer == &m_timeoutTimer);
+
+    // Using values from net/base/net_error_list.h ERR_TIMED_OUT,
+    // Same as existing FIXME above - this error should be coming from FrameLoaderClient to be identifiable.
+    static const int timeoutError = -7;
+    ResourceError error("net", timeoutError, m_resource->url(), String());
+    error.setIsTimeout(true);
+    cancelWithError(error);
 }
 
 void DocumentThreadableLoader::preflightSuccess()
@@ -385,6 +409,9 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
             // Keep buffering the data for the preflight request.
             options.dataBufferingPolicy = BufferData;
         }
+
+        if (m_options.timeoutMilliseconds > 0)
+            m_timeoutTimer.startOneShot(m_options.timeoutMilliseconds / 1000.0);
 
         CachedResourceRequest newRequest(request, m_options.initiator, options);
         ASSERT(!m_resource);

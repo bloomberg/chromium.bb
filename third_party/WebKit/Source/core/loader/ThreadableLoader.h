@@ -68,13 +68,15 @@ namespace WebCore {
         ThreadableLoaderOptions()
             : preflightPolicy(ConsiderPreflight)
             , crossOriginRequestPolicy(DenyCrossOriginRequests)
-            , contentSecurityPolicyEnforcement(EnforceConnectSrcDirective) { }
+            , contentSecurityPolicyEnforcement(EnforceConnectSrcDirective)
+            , timeoutMilliseconds(0) { }
 
         PreflightPolicy preflightPolicy; // If AccessControl is used, how to determine if a preflight is needed.
         CrossOriginRequestPolicy crossOriginRequestPolicy;
         RefPtr<SecurityOrigin> securityOrigin;
         AtomicString initiator;
         ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
+        unsigned long timeoutMilliseconds;
     };
 
     // Useful for doing loader operations from any thread (not threadsafe, 
