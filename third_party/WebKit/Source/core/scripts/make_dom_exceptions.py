@@ -115,8 +115,7 @@ ExceptionCodeDescription::ExceptionCodeDescription(ExceptionCode ec)
 
 class ExceptionCodeDescriptionWriter(name_macros.Writer):
     defaults = {
-        'JSInterfaceName': None,
-        'interfaceName': None,
+        'implementedAs': None,
         'conditional': None,
     }
     default_parameters = {
@@ -132,8 +131,7 @@ class ExceptionCodeDescriptionWriter(name_macros.Writer):
         return self.in_file.name_dictionaries
 
     def _exception_type(self, exception):
-        name = os.path.basename(exception['name'])
-        return self.wrap_with_condition('    ' + name + 'Type,', exception['conditional'])
+        return self.wrap_with_condition('    ' + self._class_name_for_entry(exception) + 'Type,', exception['conditional'])
 
     def generate_header(self):
         return HEADER_TEMPLATE % {
@@ -143,13 +141,13 @@ class ExceptionCodeDescriptionWriter(name_macros.Writer):
         }
 
     def _include(self, exception):
-        include = '#include "' + exception['name'] + '.h"'
+        include = '#include "' + self._headers_header_include_path(exception) + '"'
         return self.wrap_with_condition(include, exception['conditional'])
 
     def _description_initalization(self, exception):
         name = os.path.basename(exception['name'])
-        if name == 'DOMCoreException':
-            return ''  # DOMCoreException needs to be last because it's a catch-all.
+        if name == 'DOMException':
+            return ''  # DOMException needs to be last because it's a catch-all.
         description_initalization = """    if (%(name)s::initializeDescription(ec, this))
         return;""" % {'name': name}
         return self.wrap_with_condition(description_initalization, exception['conditional'])

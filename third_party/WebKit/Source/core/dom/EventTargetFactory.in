@@ -3,15 +3,16 @@ namespace="EventTarget"
 core/css/FontLoader
 core/dom/MessagePort
 core/dom/Node
+core/dom/WebKitNamedFlow implementedAs=NamedFlow
 core/fileapi/FileReader
 core/html/MediaController
 core/html/track/TextTrack
 core/html/track/TextTrackCue
 core/html/track/TextTrackList
 core/loader/appcache/DOMApplicationCache
-core/page/DOMWindow JSInterfaceName=Window
 core/page/EventSource
 core/page/Performance
+core/page/Window implementedAs=DOMWindow
 core/svg/SVGElementInstance
 core/workers/DedicatedWorkerContext
 core/workers/SharedWorker
@@ -32,8 +33,8 @@ modules/mediasource/WebKitMediaSource
 modules/mediasource/WebKitSourceBufferList
 modules/mediastream/MediaStream
 modules/mediastream/MediaStreamTrack
-modules/mediastream/RTCDataChannel
 modules/mediastream/RTCDTMFSender
+modules/mediastream/RTCDataChannel
 modules/mediastream/RTCPeerConnection
 modules/notifications/Notification conditional=NOTIFICATIONS
 modules/speech/SpeechRecognition
@@ -44,4 +45,3 @@ modules/webmidi/MIDIAccess
 modules/webmidi/MIDIInput
 modules/webmidi/MIDIPort
 modules/websockets/WebSocket
-NamedFlow JSInterfaceName=WebKitNamedFlow

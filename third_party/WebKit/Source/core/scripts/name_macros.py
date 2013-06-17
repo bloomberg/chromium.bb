@@ -67,17 +67,6 @@ def _to_macro_style(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).upper()
 
 
-def _name_for_entry(entry):
-    if entry['interfaceName']:
-        return entry['interfaceName']
-    return os.path.basename(entry['name'])
-
-
-def _js_name_for_entry(entry):
-    if entry['JSInterfaceName']:
-        return entry['JSInterfaceName']
-    return _name_for_entry(entry)
-
 class Writer(in_generator.Writer):
     def __init__(self, in_file_path, enabled_conditions):
         super(Writer, self).__init__(in_file_path, enabled_conditions)
@@ -94,14 +83,14 @@ class Writer(in_generator.Writer):
         for entry in self.in_file.name_dictionaries:
             conditional = entry['conditional']
             if not conditional:
-                name = _name_for_entry(entry)
+                name = self._class_name_for_entry(entry)
                 if name in unconditional_names:
                     continue
                 unconditional_names.add(name)
                 self._unconditional_entries.append(entry)
                 continue
         for entry in self.in_file.name_dictionaries:
-            name = _name_for_entry(entry)
+            name = self._class_name_for_entry(entry)
             if name in unconditional_names:
                 continue
             conditional = entry['conditional']
@@ -109,22 +98,40 @@ class Writer(in_generator.Writer):
                 self._entries_by_conditional[conditional] = []
             self._entries_by_conditional[conditional].append(entry)
 
-    def _headers_header_include(self, entry):
-        path = entry['name']
-        js_name = _js_name_for_entry(entry)
-        if entry['interfaceName']:
-            path = entry['interfaceName']  # FIXME: This seems wrong
-        include = '#include "%(path)s.h"\n#include "V8%(js_name)s.h"' % {
-            'path': path,
-            'js_name': js_name,
-        }
-        return self.wrap_with_condition(include, entry['conditional'])
+    def _class_name_for_entry(self, entry):
+        if entry['implementedAs']:
+            return entry['implementedAs']
+        return os.path.basename(entry['name'])
+
+    def _headers_header_include_path(self, entry):
+        if entry['implementedAs']:
+            path = os.path.dirname(entry['name'])
+            if len(path):
+                path += '/'
+            path += entry['implementedAs']
+        else:
+            path = entry['name']
+        return path + '.h'
+
+    def _headers_header_includes(self, entries):
+        includes = dict()
+        for entry in entries:
+            class_name = self._class_name_for_entry(entry)
+            # Avoid duplicate includes.
+            if class_name in includes:
+                continue
+            include = '#include "%(path)s"\n#include "V8%(js_name)s.h"' % {
+                'path': self._headers_header_include_path(entry),
+                'js_name': os.path.basename(entry['name']),
+            }
+            includes[class_name] = self.wrap_with_condition(include, entry['conditional'])
+        return includes.values()
 
     def generate_headers_header(self):
         return HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
-            'includes': '\n'.join(map(self._headers_header_include, self.in_file.name_dictionaries)),
+            'includes': '\n'.join(self._headers_header_includes(self.in_file.name_dictionaries)),
         }
 
     def _declare_one_conditional_macro(self, conditional, entries):
@@ -139,7 +146,7 @@ class Writer(in_generator.Writer):
 #define %(macro_name)s(macro)""" % {
             'macro_name': macro_name,
             'declarations': '\n'.join(sorted(set([
-                '    macro(%(name)s) \\' % {'name': _name_for_entry(entry)}
+                '    macro(%(name)s) \\' % {'name': self._class_name_for_entry(entry)}
                 for entry in entries]))),
         }, conditional)
 
@@ -149,7 +156,7 @@ class Writer(in_generator.Writer):
             for conditional, entries in self._entries_by_conditional.items()])
 
     def _unconditional_macro(self, entry):
-        return '    macro(%(name)s) \\' % {'name': _name_for_entry(entry)}
+        return '    macro(%(name)s) \\' % {'name': self._class_name_for_entry(entry)}
 
     def _conditional_macros(self, conditional):
         return '    %(macro_style_name)s_INTERFACES_FOR_EACH_%(conditional)s(macro) \\' % {
