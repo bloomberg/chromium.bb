@@ -6,7 +6,7 @@
   "incognito": "split",  // Run a separate instance for the incognito mode.
   "manifest_version": 2,
   "background": {
-    "scripts": ["background.js", "test_cases.js"]
+    "scripts": ["test_cases.js", "background.js"]
   },
   "permissions": [
     "tabs",
