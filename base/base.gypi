@@ -434,6 +434,8 @@
           'stl_util.h',
           'strings/latin1_string_conversions.cc',
           'strings/latin1_string_conversions.h',
+          'strings/nullable_string16.cc',
+          'strings/nullable_string16.h',
           'strings/string16.cc',
           'strings/string16.h',
           'strings/string_number_conversions.cc',
