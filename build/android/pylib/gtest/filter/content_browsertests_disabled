@@ -92,3 +92,4 @@ MediaSourceTest.Playback_VideoOnly_WebM
 ResourceFetcherTests.ResourceFetcher404
 ResourceFetcherTests.ResourceFetcherDeletedInCallback
 ResourceFetcherTests.ResourceFetcherTimeout
+ResourceFetcherTests.ResourceFetcherDownload
