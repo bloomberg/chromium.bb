@@ -216,10 +216,20 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
   gfx::Rect top_container_bounds = top_container_->ConvertRectToWidget(
       top_container_->GetLocalBounds());
 
-  // The find bar is positioned 1 pixel above the bottom of the top container so
-  // that it occludes the border between the content area and the top container
-  // and looks connected to the top container.
-  int find_bar_y = top_container_bounds.bottom() - 1;
+  int find_bar_y = 0;
+  if (immersive_mode_controller_->IsEnabled() &&
+      !immersive_mode_controller_->IsRevealed()) {
+    // Position the find bar exactly below the top container. In immersive
+    // fullscreen, when the top-of-window views are not revealed, only the
+    // miniature immersive style tab strip is visible. Do not overlap the
+    // find bar and the tab strip.
+    find_bar_y = top_container_bounds.bottom();
+  } else {
+    // Position the find bar 1 pixel above the bottom of the top container
+    // so that it occludes the border between the content area and the top
+    // container and looks connected to the top container.
+    find_bar_y = top_container_bounds.bottom() - 1;
+  }
 
   // Grow the height of |bounding_box| by the height of any elements between
   // the top container and |contents_container_| such as the detached bookmark
