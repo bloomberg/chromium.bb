@@ -128,7 +128,13 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     net::HttpCache::DefaultBackend* main_backend =
         new net::HttpCache::DefaultBackend(
             net::DISK_CACHE,
+#if defined(OS_ANDROID)
+            // TODO(rdsmith): Remove when default backend for Android is
+            // changed to simple cache.
+            net::CACHE_BACKEND_SIMPLE,
+#else
             net::CACHE_BACKEND_DEFAULT,
+#endif
             cache_path,
             0,
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
