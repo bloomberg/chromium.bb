@@ -231,6 +231,30 @@ def ValidateInstruction(instruction, disassembly, old_validator):
   assert len(instruction) <= validator.BUNDLE_SIZE
   bundle = instruction + [NOP] * (validator.BUNDLE_SIZE - len(instruction))
 
+  dis = validator.DisassembleChunk(
+      ''.join(map(chr, instruction)),
+      bitness=options.bitness)
+
+  # Objdump (and consequently our decoder) displays fwait with rex prefix in
+  # a rather strange way:
+  #   0: 41      fwait
+  #   1: 9b      fwait
+  # So we manually convert it to
+  #   0: 41 9b   fwait
+  # for the purpose of validation.
+  # TODO(shcherbina): get rid of this special handling once
+  # https://code.google.com/p/nativeclient/issues/detail?id=3496 is fixed.
+  if (len(instruction) == 2 and
+      IsRexPrefix(instruction[0]) and
+      instruction[1] == FWAIT):
+    assert len(dis) == 2
+    assert dis[0].disasm == dis[1].disasm == 'fwait'
+    dis[0].bytes.extend(dis[1].bytes)
+    del dis[1]
+
+  assert len(dis) == 1, (instruction, dis)
+  (dis,) = dis
+
   if options.bitness == 32:
     result = validator.ValidateChunk(
         ''.join(map(chr, bundle)),
@@ -240,12 +264,6 @@ def ValidateInstruction(instruction, disassembly, old_validator):
     # text-based specification is complete.
     if result:
       old_validator.Validate(bundle, (disassembly, instruction))
-
-    dis = validator.DisassembleChunk(
-        ''.join(map(chr, instruction)),
-        bitness=options.bitness)
-    assert len(dis) == 1, (instruction, dis)
-    (dis,) = dis
 
     try:
       spec.ValidateDirectJump(dis)
