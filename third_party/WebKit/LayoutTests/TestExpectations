@@ -1609,10 +1609,6 @@ crbug.com/245566 [ Linux Win Debug ] editing/execCommand/delete-no-scroll.html [
 crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
 crbug.com/247575 fast/text/international/hindi-spacing.html [ ImageOnlyFailure Pass ]
 
-# Need to be rebaselined due to test change
-Bug(senorblanco) css3/filters/effect-reference-composite.html [ ImageOnlyFailure Failure ]
-Bug(senorblanco) css3/filters/effect-reference-composite-hw.html [ ImageOnlyFailure Failure ]
-
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
 crbug.com/244114 [ Win Release ] svg/css/font-face-variant-crash.html [ Crash Pass ]
@@ -1732,10 +1728,6 @@ crbug.com/248973 [ Debug ] webmidi/request-midi-access.html [ Failure Crash ]
 crbug.com/249021 [ Debug ] http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Crash Pass ]
 
 crbug.com/248407 [ Debug ] compositing/reflections/animation-inside-reflection.html [ Pass Timeout ]
-
-# Rebaselines needed because of added turbulence case
-crbug.com/229678 css3/filters/effect-reference.html [ Failure ImageOnlyFailure ]
-crbug.com/229678 css3/filters/effect-reference-hw.html [ Failure ImageOnlyFailure ]
 
 # Rebaselines needed because of "turbulance" -> "turbulence" typo fix
 crbug.com/229678 svg/W3C-SVG-1.1-SE/types-dom-04-b.svg [ Failure ]
