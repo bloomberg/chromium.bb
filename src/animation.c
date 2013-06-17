@@ -265,16 +265,19 @@ weston_fade_run(struct weston_surface *surface,
 					    fade_frame, done, data);
 
 	weston_spring_init(&fade->spring, k, start, end);
+
+	fade->spring.friction = 1400;
+	fade->spring.previous = -(end - start) * 0.03;
+
 	surface->alpha = start;
 
 	return fade;
 }
 
 WL_EXPORT void
-weston_fade_update(struct weston_surface_animation *fade,
-		   float start, float end, float k)
+weston_fade_update(struct weston_surface_animation *fade, float target)
 {
-	weston_spring_init(&fade->spring, k, start, end);
+	fade->spring.target = target;
 }
 
 static void

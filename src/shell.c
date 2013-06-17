@@ -3135,12 +3135,11 @@ shell_fade(struct desktop_shell *shell, enum fade_type type)
 	}
 
 	if (shell->fade.animation)
-		weston_fade_update(shell->fade.animation,
-				   shell->fade.surface->alpha, tint, 30.0);
+		weston_fade_update(shell->fade.animation, tint);
 	else
 		shell->fade.animation =
 			weston_fade_run(shell->fade.surface,
-					1.0 - tint, tint, 30.0,
+					1.0 - tint, tint, 300.0,
 					shell_fade_done, shell);
 }
 
@@ -3457,7 +3456,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	{
 		switch (shell->win_animation_type) {
 		case ANIMATION_FADE:
-			weston_fade_run(surface, 0.0, 1.0, 200.0, NULL, NULL);
+			weston_fade_run(surface, 0.0, 1.0, 300.0, NULL, NULL);
 			break;
 		case ANIMATION_ZOOM:
 			weston_zoom_run(surface, 0.8, 1.0, NULL, NULL);

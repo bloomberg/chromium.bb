@@ -1142,8 +1142,7 @@ weston_fade_run(struct weston_surface *surface,
 		float start, float end, float k,
 		weston_surface_animation_done_func_t done, void *data);
 void
-weston_fade_update(struct weston_surface_animation *fade,
-		   float start, float end, float k);
+weston_fade_update(struct weston_surface_animation *fade, float target);
 
 struct weston_surface_animation *
 weston_slide_run(struct weston_surface *surface, float start, float stop,
