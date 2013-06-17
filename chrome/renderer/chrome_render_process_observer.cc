@@ -149,6 +149,103 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
 }
 #endif  // OS_WIN
 
+static const int kWaitForWorkersStatsTimeoutMS = 20;
+
+class HeapStatisticsCollector {
+ public:
+  HeapStatisticsCollector() : round_id_(0) {}
+
+  void InitiateCollection();
+  static HeapStatisticsCollector* Instance();
+
+ private:
+  void CollectOnWorkerThread(scoped_refptr<base::TaskRunner> master,
+                             int round_id);
+  void ReceiveStats(int round_id, size_t total_size, size_t used_size);
+  void SendStatsToBrowser(int round_id);
+
+  size_t total_bytes_;
+  size_t used_bytes_;
+  int workers_to_go_;
+  int round_id_;
+};
+
+HeapStatisticsCollector* HeapStatisticsCollector::Instance() {
+  CR_DEFINE_STATIC_LOCAL(HeapStatisticsCollector, instance, ());
+  return &instance;
+}
+
+void HeapStatisticsCollector::InitiateCollection() {
+  v8::HeapStatistics heap_stats;
+  v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
+  total_bytes_ = heap_stats.total_heap_size();
+  used_bytes_ = heap_stats.used_heap_size();
+  base::Closure collect = base::Bind(
+      &HeapStatisticsCollector::CollectOnWorkerThread,
+      base::Unretained(this),
+      base::MessageLoopProxy::current(),
+      round_id_);
+  workers_to_go_ = RenderThread::Get()->PostTaskToAllWorkers(collect);
+  if (workers_to_go_) {
+    // The guard task to send out partial stats
+    // in case some workers are not responsive.
+    base::MessageLoopProxy::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&HeapStatisticsCollector::SendStatsToBrowser,
+                   base::Unretained(this),
+                   round_id_),
+        base::TimeDelta::FromMilliseconds(kWaitForWorkersStatsTimeoutMS));
+  } else {
+    // No worker threads so just send out the main thread data right away.
+    SendStatsToBrowser(round_id_);
+  }
+}
+
+void HeapStatisticsCollector::CollectOnWorkerThread(
+    scoped_refptr<base::TaskRunner> master,
+    int round_id) {
+
+  size_t total_bytes = 0;
+  size_t used_bytes = 0;
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  if (isolate) {
+    v8::HeapStatistics heap_stats;
+    isolate->GetHeapStatistics(&heap_stats);
+    total_bytes = heap_stats.total_heap_size();
+    used_bytes = heap_stats.used_heap_size();
+  }
+  master->PostTask(
+      FROM_HERE,
+      base::Bind(&HeapStatisticsCollector::ReceiveStats,
+                 base::Unretained(this),
+                 round_id,
+                 total_bytes,
+                 used_bytes));
+}
+
+void HeapStatisticsCollector::ReceiveStats(int round_id,
+                                           size_t total_bytes,
+                                           size_t used_bytes) {
+  if (round_id != round_id_)
+    return;
+  total_bytes_ += total_bytes;
+  used_bytes_ += used_bytes;
+  if (!--workers_to_go_) {
+    SendStatsToBrowser(round_id);
+  }
+}
+
+void HeapStatisticsCollector::SendStatsToBrowser(int round_id) {
+  if (round_id != round_id_)
+    return;
+  // TODO(alph): Do caching heap stats and use the cache if we haven't got
+  //             reply from a worker.
+  //             Currently a busy worker stats are not counted.
+  RenderThread::Get()->Send(new ChromeViewHostMsg_V8HeapStats(
+      total_bytes_, used_bytes_));
+  ++round_id_;
+}
+
 }  // namespace
 
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
@@ -285,12 +382,7 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
 }
 
 void ChromeRenderProcessObserver::OnGetV8HeapStats() {
-  v8::HeapStatistics heap_stats;
-  // TODO(svenpanne) The call below doesn't take web workers into account, this
-  // has to be done manually by iterating over all Isolates involved.
-  v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
-  RenderThread::Get()->Send(new ChromeViewHostMsg_V8HeapStats(
-      heap_stats.total_heap_size(), heap_stats.used_heap_size()));
+  HeapStatisticsCollector::Instance()->InitiateCollection();
 }
 
 void ChromeRenderProcessObserver::OnPurgeMemory() {

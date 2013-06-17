@@ -182,6 +182,10 @@ void MockRenderThread::ToggleWebKitSharedTimer(bool suspend) {
 void MockRenderThread::UpdateHistograms(int sequence_number) {
 }
 
+int MockRenderThread::PostTaskToAllWorkers(const base::Closure& closure) {
+  return 0;
+}
+
 bool MockRenderThread::ResolveProxy(const GURL& url, std::string* proxy_list) {
   return false;
 }

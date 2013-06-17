@@ -53,6 +53,14 @@ bool WorkerTaskRunner::PostTask(
   return found != loop_map_.end();
 }
 
+int WorkerTaskRunner::PostTaskToAllThreads(const base::Closure& closure) {
+  base::AutoLock locker(loop_map_lock_);
+  IDToLoopMap::iterator it;
+  for (it = loop_map_.begin(); it != loop_map_.end(); ++it)
+    it->second.postTask(new RunClosureTask(closure));
+  return static_cast<int>(loop_map_.size());
+}
+
 int WorkerTaskRunner::CurrentWorkerId() {
   if (!current_tls_.Get())
     return 0;

@@ -38,6 +38,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/test/browser_test_utils.h"
 #include "grit/generated_resources.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,6 +90,10 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
   void Refresh() {
     model()->Refresh();
+  }
+
+  int GetUpdateTimeMs() {
+    return TaskManagerModel::kUpdateTimeMs;
   }
 
  protected:
@@ -547,6 +552,46 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
             l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT));
   DCHECK_NE(model()->GetResourceWebCoreCSSCacheSize(resource_count),
             l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT));
+}
+
+// Checks that task manager counts a worker thread JS heap size.
+// http://crbug.com/241066
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
+  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
+      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
+  ui_test_utils::NavigateToURL(browser(), url);
+  const int extra_timeout_ms = 500;
+  size_t minimal_heap_size = 2 * 1024 * 1024 * sizeof(void*);
+  std::string test_js = base::StringPrintf(
+      "var blob = new Blob([\n"
+      "    'mem = new Array(%lu);',\n"
+      "    'for (var i = 0; i < mem.length; i += 16) mem[i] = i;',\n"
+      "    'postMessage();']);\n"
+      "blobURL = window.URL.createObjectURL(blob);\n"
+      "worker = new Worker(blobURL);\n"
+      "// Give the task manager few seconds to poll for JS heap sizes.\n"
+      "worker.onmessage = setTimeout.bind(\n"
+      "    this,\n"
+      "    function () { window.domAutomationController.send(true); },\n"
+      "    %d);\n"
+      "worker.postMessage();\n",
+      minimal_heap_size,
+      GetUpdateTimeMs() + extra_timeout_ms);
+  bool ok;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(), test_js, &ok));
+  ASSERT_TRUE(ok);
+
+  int resource_index = TaskManager::GetInstance()->model()->ResourceCount() - 1;
+  size_t result;
+
+  ASSERT_TRUE(model()->GetV8Memory(resource_index, &result));
+  LOG(INFO) << "Got V8 Heap Size " << result << " bytes";
+  EXPECT_GE(result, minimal_heap_size);
+
+  ASSERT_TRUE(model()->GetV8MemoryUsed(resource_index, &result));
+  LOG(INFO) << "Got V8 Used Heap Size " << result << " bytes";
+  EXPECT_GE(result, minimal_heap_size);
 }
 
 #endif

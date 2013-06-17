@@ -106,6 +106,9 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
 
   virtual void UpdateHistograms(int sequence_number) = 0;
 
+  // Post task to all worker threads. Returns number of workers.
+  virtual int PostTaskToAllWorkers(const base::Closure& closure) = 0;
+
   // Resolve the proxy servers to use for a given url. On success true is
   // returned and |proxy_list| is set to a PAC string containing a list of
   // proxy servers.

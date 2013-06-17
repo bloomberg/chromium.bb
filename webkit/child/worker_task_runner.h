@@ -21,6 +21,7 @@ class WEBKIT_CHILD_EXPORT WorkerTaskRunner {
   WorkerTaskRunner();
 
   bool PostTask(int id, const base::Closure& task);
+  int PostTaskToAllThreads(const base::Closure& task);
   int CurrentWorkerId();
   static WorkerTaskRunner* Instance();
 

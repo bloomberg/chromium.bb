@@ -63,14 +63,6 @@ class Profile;
 
 namespace {
 
-// The delay between updates of the information (in ms).
-#if defined(OS_MACOSX)
-// Match Activity Monitor's default refresh rate.
-const int kUpdateTimeMs = 2000;
-#else
-const int kUpdateTimeMs = 1000;
-#endif
-
 template <class T>
 int ValueCompare(T value1, T value2) {
   if (value1 < value2)

@@ -342,6 +342,14 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
     STOPPING       // A update task is pending and it should stop the update.
   };
 
+  // The delay between updates of the information (in ms).
+#if defined(OS_MACOSX)
+  // Match Activity Monitor's default refresh rate.
+  static const int kUpdateTimeMs = 2000;
+#else
+  static const int kUpdateTimeMs = 1000;
+#endif
+
   // Values cached per resource. Values are validated on demand. The is_XXX
   // members indicate if a value is valid.
   struct PerResourceValues {

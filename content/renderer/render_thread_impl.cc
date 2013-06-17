@@ -99,6 +99,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/child/worker_task_runner.h"
 #include "webkit/renderer/appcache/appcache_frontend_impl.h"
 
 #if defined(OS_WIN)
@@ -856,6 +857,11 @@ void RenderThreadImpl::ToggleWebKitSharedTimer(bool suspend) {
 
 void RenderThreadImpl::UpdateHistograms(int sequence_number) {
   child_histogram_message_filter()->SendHistograms(sequence_number);
+}
+
+int RenderThreadImpl::PostTaskToAllWorkers(const base::Closure& closure) {
+  return webkit_glue::WorkerTaskRunner::Instance()->PostTaskToAllThreads(
+      closure);
 }
 
 bool RenderThreadImpl::ResolveProxy(const GURL& url, std::string* proxy_list) {
