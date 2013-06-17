@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "webkit/common/webdropdata.h"
 

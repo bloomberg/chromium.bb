@@ -20,7 +20,7 @@
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/common/gpu_memory_stats.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/public/web/WebCache.h"
 
 class PrefRegistrySimple;
 class TaskManagerModel;

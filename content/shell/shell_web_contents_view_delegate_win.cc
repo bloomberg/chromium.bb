@@ -18,7 +18,7 @@
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_devtools_frontend.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/public/web/WebContextMenuData.h"
 
 using WebKit::WebContextMenuData;
 

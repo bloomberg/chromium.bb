@@ -11,8 +11,8 @@
 #include "content/public/common/speech_recognition_result.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognitionHandle.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognizer.h"
+#include "third_party/WebKit/public/web/WebSpeechRecognitionHandle.h"
+#include "third_party/WebKit/public/web/WebSpeechRecognizer.h"
 
 namespace content {
 class RenderViewImpl;

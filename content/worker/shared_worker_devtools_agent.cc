@@ -8,7 +8,7 @@
 #include "content/worker/worker_thread.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
+#include "third_party/WebKit/public/web/WebSharedWorker.h"
 
 using WebKit::WebSharedWorker;
 using WebKit::WebString;

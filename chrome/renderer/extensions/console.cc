@@ -14,9 +14,9 @@
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 namespace extensions {
 namespace console {

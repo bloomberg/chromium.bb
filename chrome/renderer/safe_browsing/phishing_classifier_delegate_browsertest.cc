@@ -20,8 +20,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebHistoryItem.h"
 
 using ::testing::_;
 using ::testing::InSequence;

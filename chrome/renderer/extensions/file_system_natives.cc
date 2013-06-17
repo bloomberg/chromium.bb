@@ -16,7 +16,7 @@
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 

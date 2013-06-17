@@ -11,8 +11,8 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileWriterClient.h"
+#include "third_party/WebKit/public/web/WebFileError.h"
+#include "third_party/WebKit/public/web/WebFileWriterClient.h"
 
 namespace fileapi {
 

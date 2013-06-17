@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
 #include "grit/ui_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"

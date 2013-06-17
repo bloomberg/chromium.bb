@@ -13,8 +13,8 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSocket.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSocketClient.h"
+#include "third_party/WebKit/public/web/WebSocket.h"
+#include "third_party/WebKit/public/web/WebSocketClient.h"
 
 namespace ppapi {
 class StringVar;

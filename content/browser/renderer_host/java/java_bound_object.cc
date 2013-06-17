@@ -12,7 +12,7 @@
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/java/java_type.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 
 using base::StringPrintf;
 using base::android::AttachCurrentThread;

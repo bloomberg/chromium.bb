@@ -12,8 +12,8 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
+#include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
+#include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
 namespace IPC {
   class Message;

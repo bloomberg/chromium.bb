@@ -11,8 +11,8 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/gfx/size.h"
 #include "ui/surface/transport_dib.h"
 

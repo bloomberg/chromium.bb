@@ -37,7 +37,7 @@
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/api_id.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 

@@ -25,7 +25,7 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "net/cookies/canonical_cookie.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
 

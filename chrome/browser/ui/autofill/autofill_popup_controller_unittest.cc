@@ -17,7 +17,7 @@
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 

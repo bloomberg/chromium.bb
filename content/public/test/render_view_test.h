@@ -17,7 +17,7 @@
 #include "content/public/test/mock_render_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace WebKit {
 class WebHistoryItem;

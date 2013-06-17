@@ -14,7 +14,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/gfx/rect_f.h"
 
 using WebKit::WebFindOptions;

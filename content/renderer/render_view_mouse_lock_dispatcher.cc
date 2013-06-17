@@ -6,10 +6,10 @@
 
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
+#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/WebWidget.h"
 
 using WebKit::WebUserGestureIndicator;
 

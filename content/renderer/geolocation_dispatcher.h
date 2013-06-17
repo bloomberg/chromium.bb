@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationController.h"
+#include "third_party/WebKit/public/web/WebGeolocationClient.h"
+#include "third_party/WebKit/public/web/WebGeolocationController.h"
 
 namespace WebKit {
 class WebGeolocationController;

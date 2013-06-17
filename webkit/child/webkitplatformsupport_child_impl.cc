@@ -4,7 +4,7 @@
 
 #include "webkit/child/webkitplatformsupport_child_impl.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/child/fling_curve_configuration.h"
 #include "webkit/child/webthread_impl.h"
 #include "webkit/child/worker_task_runner.h"

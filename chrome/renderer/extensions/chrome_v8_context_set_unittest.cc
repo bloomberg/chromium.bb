@@ -8,7 +8,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

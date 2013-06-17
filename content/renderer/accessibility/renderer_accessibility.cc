@@ -7,10 +7,10 @@
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebAccessibilityObject.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 using WebKit::WebAccessibilityNotification;
 using WebKit::WebAccessibilityObject;

@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBuffer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBufferView.h"
+#include "third_party/WebKit/public/web/WebArrayBuffer.h"
+#include "third_party/WebKit/public/web/WebArrayBufferView.h"
 #include "v8/include/v8.h"
 
 namespace content {

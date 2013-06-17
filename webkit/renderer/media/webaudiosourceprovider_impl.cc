@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProviderClient.h"
+#include "third_party/WebKit/public/web/WebAudioSourceProviderClient.h"
 
 using WebKit::WebVector;
 

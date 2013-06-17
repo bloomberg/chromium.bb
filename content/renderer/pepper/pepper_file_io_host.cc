@@ -18,7 +18,7 @@
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"

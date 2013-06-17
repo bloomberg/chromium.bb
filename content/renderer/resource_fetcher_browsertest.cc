@@ -16,8 +16,8 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 using WebKit::WebFrame;
 using WebKit::WebURLRequest;

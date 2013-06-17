@@ -12,7 +12,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "grit/webkit_chromium_resources.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/point_conversions.h"

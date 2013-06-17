@@ -25,9 +25,9 @@
 #include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebHistoryItem.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
 

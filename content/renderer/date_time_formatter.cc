@@ -7,7 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserParams.h"
+#include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
 #include "third_party/icu/public/i18n/unicode/smpdtfmt.h"
 
 

@@ -7,7 +7,7 @@
 #include "content/renderer/date_time_formatter.h"
 #include "content/renderer/renderer_date_time_picker.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserParams.h"
+#include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
 #include "third_party/icu/public/common/unicode/unistr.h"
 #include "ui/base/ime/text_input_type.h"
 

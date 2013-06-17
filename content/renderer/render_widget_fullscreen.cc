@@ -5,7 +5,7 @@
 #include "content/renderer/render_widget_fullscreen.h"
 
 #include "content/common/view_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
+#include "third_party/WebKit/public/web/WebWidget.h"
 
 using WebKit::WebWidget;
 

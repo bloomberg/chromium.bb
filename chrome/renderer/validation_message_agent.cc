@@ -7,7 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "chrome/common/validation_message_messages.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 ValidationMessageAgent::ValidationMessageAgent(content::RenderView* render_view)
     : content::RenderViewObserver(render_view)

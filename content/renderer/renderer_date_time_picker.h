@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserParams.h"
+#include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
 
 struct ViewHostMsg_DateTimeDialogValue_Params;
 

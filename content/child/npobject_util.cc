@@ -8,7 +8,7 @@
 #include "content/child/np_channel_base.h"
 #include "content/child/npobject_proxy.h"
 #include "content/child/plugin_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_host.h"

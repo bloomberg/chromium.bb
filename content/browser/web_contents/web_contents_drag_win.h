@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"

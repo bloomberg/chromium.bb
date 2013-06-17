@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebImageDecoder.h"
+#include "third_party/WebKit/public/web/WebImageDecoder.h"
 
 using base::Time;
 

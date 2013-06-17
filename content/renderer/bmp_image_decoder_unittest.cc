@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/test/image_decoder_test.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebImageDecoder.h"
+#include "third_party/WebKit/public/web/WebImageDecoder.h"
 
 class BMPImageDecoderTest : public ImageDecoderTest {
  public:

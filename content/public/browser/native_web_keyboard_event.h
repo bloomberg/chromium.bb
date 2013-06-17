@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 

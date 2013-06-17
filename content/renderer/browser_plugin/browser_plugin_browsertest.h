@@ -15,7 +15,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 class RenderThreadImpl;
 

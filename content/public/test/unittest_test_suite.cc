@@ -8,7 +8,7 @@
 #include "base/rand_util.h"
 #include "base/test/test_suite.h"
 #include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 
 namespace content {
 

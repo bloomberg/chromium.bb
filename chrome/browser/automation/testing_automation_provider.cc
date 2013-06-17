@@ -142,7 +142,7 @@
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "net/cookies/cookie_store.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_base_types.h"

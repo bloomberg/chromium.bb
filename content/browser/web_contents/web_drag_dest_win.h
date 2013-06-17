@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/base/dragdrop/drop_target_win.h"
 #include "webkit/common/webdropdata.h"
 

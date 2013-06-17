@@ -36,7 +36,7 @@
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "webkit/glue/resource_type.h"
 
 using extensions::Extension;

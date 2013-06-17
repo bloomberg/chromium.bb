@@ -26,7 +26,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d.h"

@@ -9,7 +9,7 @@
 #include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using WebKit::WebSecurityOrigin;
 

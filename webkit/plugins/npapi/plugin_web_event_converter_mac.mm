@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "webkit/plugins/npapi/plugin_web_event_converter_mac.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;

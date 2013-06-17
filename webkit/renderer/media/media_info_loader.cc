@@ -7,7 +7,7 @@
 #include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"

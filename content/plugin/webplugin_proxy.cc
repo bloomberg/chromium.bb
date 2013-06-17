@@ -20,7 +20,7 @@
 #include "content/public/common/url_constants.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/canvas.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"

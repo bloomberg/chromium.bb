@@ -10,7 +10,7 @@
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_listener.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
+#include "third_party/WebKit/public/web/WebSharedWorker.h"
 
 namespace WebKit {
 class WebSharedWorker;

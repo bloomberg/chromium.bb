@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"

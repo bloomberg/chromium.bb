@@ -16,7 +16,7 @@
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/public/web/WebContextMenuData.h"
 
 using extensions::MenuItem;
 using extensions::URLPatternSet;

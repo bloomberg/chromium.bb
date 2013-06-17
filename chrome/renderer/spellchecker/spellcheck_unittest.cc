@@ -16,8 +16,8 @@
 #include "chrome/renderer/spellchecker/hunspell_engine.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
+#include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
+#include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

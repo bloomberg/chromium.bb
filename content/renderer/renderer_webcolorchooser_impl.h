@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebColorChooser.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebColorChooserClient.h"
+#include "third_party/WebKit/public/web/WebColorChooser.h"
+#include "third_party/WebKit/public/web/WebColorChooserClient.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace WebKit {

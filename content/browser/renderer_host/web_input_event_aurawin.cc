@@ -6,7 +6,7 @@
 
 #include "base/event_types.h"
 #include "base/logging.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
+#include "third_party/WebKit/public/web/win/WebInputEventFactory.h"
 
 namespace content {
 

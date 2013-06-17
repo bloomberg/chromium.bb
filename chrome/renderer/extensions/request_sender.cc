@@ -9,10 +9,10 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace extensions {
 

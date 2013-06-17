@@ -15,7 +15,7 @@
 #include "content/common/java_bridge_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 
 namespace content {
 

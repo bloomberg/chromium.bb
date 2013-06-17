@@ -12,9 +12,9 @@
 #include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebRange.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "base/file_util.h"

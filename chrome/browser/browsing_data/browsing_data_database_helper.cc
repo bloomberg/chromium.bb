@@ -17,7 +17,7 @@
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

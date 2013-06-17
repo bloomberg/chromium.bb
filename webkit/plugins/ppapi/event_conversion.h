@@ -9,7 +9,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "ppapi/c/ppb_input_event.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 struct PP_InputEvent;

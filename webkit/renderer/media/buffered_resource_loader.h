@@ -15,7 +15,7 @@
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "webkit/renderer/media/active_loader.h"
 
 namespace media {

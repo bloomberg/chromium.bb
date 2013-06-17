@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
+#include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
 
 namespace WebKit {
 class WebDevToolsAgent;

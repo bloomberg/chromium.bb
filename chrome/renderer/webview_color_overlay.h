@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageOverlay.h"
+#include "third_party/WebKit/public/web/WebPageOverlay.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace content {

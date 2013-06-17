@@ -8,7 +8,7 @@
 #include <string>
 
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebApplicationCacheHostClient.h"
+#include "third_party/WebKit/public/web/WebApplicationCacheHostClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "webkit/common/appcache/appcache_interfaces.h"

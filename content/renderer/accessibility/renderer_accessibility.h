@@ -7,7 +7,7 @@
 
 #include "content/common/accessibility_messages.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
+#include "third_party/WebKit/public/web/WebAccessibilityNotification.h"
 
 namespace WebKit {
 class WebAccessibilityObject;

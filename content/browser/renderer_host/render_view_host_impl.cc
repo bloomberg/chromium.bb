@@ -74,7 +74,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
+#include "third_party/WebKit/public/web/win/WebScreenInfoFactory.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #elif defined(OS_ANDROID)

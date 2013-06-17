@@ -13,7 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 
 class DesktopNotificationServiceTest : public ChromeRenderViewHostTestHarness {
  protected:

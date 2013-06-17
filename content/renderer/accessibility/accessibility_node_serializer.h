@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_ACCESSIBILITY_ACCESSIBILITY_NODE_SERIALIZER_H_
 
 #include "content/common/accessibility_node_data.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
+#include "third_party/WebKit/public/web/WebAccessibilityObject.h"
 
 namespace content {
 

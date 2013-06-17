@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/public/web/WebCache.h"
 #include "webkit/support/webkit_support.h"
 #include "webkit/support/weburl_loader_mock.h"
 

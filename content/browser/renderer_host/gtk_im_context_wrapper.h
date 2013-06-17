@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_type.h"
 

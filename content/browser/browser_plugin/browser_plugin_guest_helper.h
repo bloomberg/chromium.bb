@@ -8,8 +8,8 @@
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 class WebCursor;
 #if defined(OS_MACOSX)

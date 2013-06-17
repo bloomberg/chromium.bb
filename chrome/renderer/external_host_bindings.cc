@@ -8,9 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 using WebKit::WebBindings;
 using webkit_glue::CppArgumentList;

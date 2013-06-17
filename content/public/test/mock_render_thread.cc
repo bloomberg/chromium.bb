@@ -10,7 +10,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
+#include "third_party/WebKit/public/web/WebScriptController.h"
 
 namespace content {
 

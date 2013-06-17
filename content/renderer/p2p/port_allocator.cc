@@ -18,8 +18,8 @@
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
 
 using WebKit::WebString;
 using WebKit::WebURL;

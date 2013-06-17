@@ -7,7 +7,7 @@
 
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileWriter.h"
+#include "third_party/WebKit/public/web/WebFileWriter.h"
 #include "webkit/renderer/webkit_storage_renderer_export.h"
 
 namespace WebKit {

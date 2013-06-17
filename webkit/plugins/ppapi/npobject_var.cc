@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "ppapi/c/pp_var.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/host_var_tracker.h"
 

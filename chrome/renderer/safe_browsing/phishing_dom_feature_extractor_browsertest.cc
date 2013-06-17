@@ -21,8 +21,8 @@
 #include "content/public/test/render_view_fake_resources_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebScriptSource.h"
 
 using ::testing::DoAll;
 using ::testing::Invoke;

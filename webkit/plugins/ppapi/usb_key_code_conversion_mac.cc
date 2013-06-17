@@ -5,7 +5,7 @@
 #include "webkit/plugins/ppapi/usb_key_code_conversion.h"
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using WebKit::WebKeyboardEvent;
 

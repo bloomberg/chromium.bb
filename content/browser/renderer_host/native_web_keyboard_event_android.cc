@@ -5,7 +5,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 
 #include "base/android/jni_android.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/android/WebInputEventFactory.h"
+#include "third_party/WebKit/public/web/android/WebInputEventFactory.h"
 #include "ui/gfx/native_widget_types.h"
 
 using WebKit::WebInputEventFactory;

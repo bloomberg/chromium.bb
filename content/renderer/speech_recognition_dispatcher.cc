@@ -10,10 +10,10 @@
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechGrammar.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognitionParams.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognitionResult.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognizerClient.h"
+#include "third_party/WebKit/public/web/WebSpeechGrammar.h"
+#include "third_party/WebKit/public/web/WebSpeechRecognitionParams.h"
+#include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
+#include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
 
 using WebKit::WebVector;
 using WebKit::WebString;

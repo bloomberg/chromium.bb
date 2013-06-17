@@ -10,7 +10,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/stop_find_action.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 
 class GURL;
 struct WebDropData;

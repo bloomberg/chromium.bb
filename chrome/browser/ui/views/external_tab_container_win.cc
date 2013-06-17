@@ -69,7 +69,7 @@
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"

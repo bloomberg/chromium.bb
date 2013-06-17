@@ -37,8 +37,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebContextMenuData.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/glue/resource_type.h"
 
 using content::WebContents;

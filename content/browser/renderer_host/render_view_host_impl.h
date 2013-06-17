@@ -26,9 +26,9 @@
 #include "content/public/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebPopupType.h"
+#include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/base/window_open_disposition.h"
 
 class SkBitmap;

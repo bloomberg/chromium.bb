@@ -19,8 +19,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/public/web/WebNotificationPresenter.h"
+#include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/message_center/notifier_settings.h"
 
 class ContentSettingsPattern;

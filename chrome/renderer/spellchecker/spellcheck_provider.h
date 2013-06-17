@@ -10,7 +10,7 @@
 #include "base/id_map.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpellCheckClient.h"
+#include "third_party/WebKit/public/web/WebSpellCheckClient.h"
 
 class RenderView;
 class SpellCheck;

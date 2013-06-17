@@ -4,7 +4,7 @@
 
 #include "content/public/browser/native_web_keyboard_event.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
+#include "third_party/WebKit/public/web/win/WebInputEventFactory.h"
 
 using WebKit::WebInputEventFactory;
 using WebKit::WebKeyboardEvent;

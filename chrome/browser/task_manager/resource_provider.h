@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "base/strings/string16.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/public/web/WebCache.h"
 
 class PrefRegistrySimple;
 class TaskManagerModel;

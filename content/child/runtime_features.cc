@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>

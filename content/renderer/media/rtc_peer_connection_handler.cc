@@ -34,7 +34,7 @@
 #include "third_party/WebKit/public/platform/WebRTCStatsRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace content {
 

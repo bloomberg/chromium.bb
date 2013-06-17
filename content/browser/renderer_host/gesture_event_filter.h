@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/transform.h"
 
 namespace content {

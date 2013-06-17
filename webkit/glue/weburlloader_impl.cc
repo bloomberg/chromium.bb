@@ -28,7 +28,7 @@
 #include "third_party/WebKit/public/platform/WebURLLoadTiming.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/ftp_directory_listing_response_delegate.h"
 #include "webkit/glue/multipart_response_delegate.h"

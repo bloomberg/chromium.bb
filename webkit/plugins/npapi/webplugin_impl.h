@@ -19,7 +19,7 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/public/web/WebPlugin.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/webkit_plugins_export.h"

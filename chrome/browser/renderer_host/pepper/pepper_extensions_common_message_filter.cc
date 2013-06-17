@@ -23,7 +23,7 @@
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 namespace chrome {
 

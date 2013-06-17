@@ -14,7 +14,7 @@
 #include "content/port/common/input_event_ack_state.h"
 #include "content/renderer/gpu/input_handler_manager_client.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 // This class can be used to intercept InputMsg_HandleInputEvent messages
 // and have them be delivered to a target thread.  Input events are filtered

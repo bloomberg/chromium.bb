@@ -13,7 +13,7 @@
 #include "content/renderer/media/media_stream_registry_interface.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
+#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
 using cricket::CaptureState;

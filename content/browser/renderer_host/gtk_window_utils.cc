@@ -12,8 +12,8 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/rect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
+#include "third_party/WebKit/public/web/WebScreenInfo.h"
+#include "third_party/WebKit/public/web/x11/WebScreenInfoFactory.h"
 
 namespace content {
 

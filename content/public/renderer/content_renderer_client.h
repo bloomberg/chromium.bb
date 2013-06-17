@@ -12,9 +12,9 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "ipc/ipc_message.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationType.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/web/WebNavigationPolicy.h"
+#include "third_party/WebKit/public/web/WebNavigationType.h"
+#include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "v8/include/v8.h"
 
 class GURL;

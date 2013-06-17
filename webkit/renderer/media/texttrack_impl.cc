@@ -4,7 +4,7 @@
 
 #include "webkit/renderer/media/texttrack_impl.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInbandTextTrackClient.h"
+#include "third_party/WebKit/public/web/WebInbandTextTrackClient.h"
 #include "webkit/renderer/media/webinbandtexttrack_impl.h"
 
 namespace webkit_media {

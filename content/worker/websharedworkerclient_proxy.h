@@ -10,9 +10,9 @@
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaCallbacks.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
+#include "third_party/WebKit/public/web/WebStorageQuotaCallbacks.h"
+#include "third_party/WebKit/public/web/WebStorageQuotaType.h"
 
 namespace WebKit {
 class WebApplicationCacheHost;

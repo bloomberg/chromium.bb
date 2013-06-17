@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"
+#include "third_party/WebKit/public/web/WebDatabaseObserver.h"
 #include "webkit/common/database/database_connections.h"
 
 namespace content {

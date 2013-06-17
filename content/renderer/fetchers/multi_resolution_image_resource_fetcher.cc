@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/image_decoder.h"

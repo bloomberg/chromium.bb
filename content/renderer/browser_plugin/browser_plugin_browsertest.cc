@@ -15,9 +15,9 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebScriptSource.h"
 
 namespace {
 const char kHTMLForBrowserPluginObject[] =

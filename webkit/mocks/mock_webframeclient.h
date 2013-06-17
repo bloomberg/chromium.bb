@@ -5,7 +5,7 @@
 #ifndef WEBKIT_MOCKS_MOCK_WEBFRAMECLIENT_H_
 #define WEBKIT_MOCKS_MOCK_WEBFRAMECLIENT_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/public/web/WebFrameClient.h"
 
 namespace webkit_glue {
 

@@ -17,7 +17,7 @@
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/plugins/ppapi/npapi_glue.h"

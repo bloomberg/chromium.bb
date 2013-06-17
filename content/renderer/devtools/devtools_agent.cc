@@ -18,11 +18,11 @@
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebDevToolsAgent.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"

@@ -4,7 +4,7 @@
 
 #include "webkit/renderer/cursor_utils.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
 
 using WebKit::WebCursorInfo;
 

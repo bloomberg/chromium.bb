@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_ANDROID_CONTENT_DETECTOR_H_
 
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
+#include "third_party/WebKit/public/web/WebRange.h"
 
 namespace WebKit {
 class WebHitTestResult;

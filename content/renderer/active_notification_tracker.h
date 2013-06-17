@@ -11,7 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/id_map.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotification.h"
+#include "third_party/WebKit/public/web/WebNotification.h"
 
 namespace WebKit {
 class WebNotificationPermissionCallback;

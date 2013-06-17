@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSurroundingText.h"
+#include "third_party/WebKit/public/web/WebHitTestResult.h"
+#include "third_party/WebKit/public/web/WebSurroundingText.h"
 
 using WebKit::WebRange;
 using WebKit::WebSurroundingText;

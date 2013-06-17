@@ -33,7 +33,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/common/webdropdata.h"
 
 using WebKit::WebInputEvent;

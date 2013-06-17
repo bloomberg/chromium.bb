@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
+#include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "webkit/renderer/media/active_loader.h"
 

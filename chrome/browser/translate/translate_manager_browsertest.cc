@@ -50,8 +50,8 @@
 #include "ipc/ipc_test_sink.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/public/web/WebContextMenuData.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/cld/languages/public/languages.h"
 
 using content::NavigationController;

@@ -4,8 +4,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebMediaPlayer.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"

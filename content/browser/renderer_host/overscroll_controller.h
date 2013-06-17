@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace ui {
 struct LatencyInfo;

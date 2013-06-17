@@ -9,9 +9,9 @@
 #include "content/renderer/date_time_formatter.h"
 #include "content/renderer/render_view_impl.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserCompletion.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeChooserParams.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDateTimeInputType.h"
+#include "third_party/WebKit/public/web/WebDateTimeChooserCompletion.h"
+#include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
+#include "third_party/WebKit/public/web/WebDateTimeInputType.h"
 
 using WebKit::WebString;
 

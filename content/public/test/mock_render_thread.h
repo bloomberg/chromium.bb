@@ -9,7 +9,7 @@
 #include "base/strings/string16.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/public/web/WebPopupType.h"
 
 struct ViewHostMsg_CreateWindow_Params;
 

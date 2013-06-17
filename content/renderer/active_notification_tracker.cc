@@ -6,8 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotification.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPermissionCallback.h"
+#include "third_party/WebKit/public/web/WebNotification.h"
+#include "third_party/WebKit/public/web/WebNotificationPermissionCallback.h"
 
 using WebKit::WebNotification;
 using WebKit::WebNotificationPermissionCallback;

@@ -7,8 +7,8 @@
 
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/active_notification_tracker.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotification.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/public/web/WebNotification.h"
+#include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 
 namespace WebKit {
 class WebNotificationPermissionCallback;

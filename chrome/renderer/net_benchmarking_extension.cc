@@ -6,7 +6,7 @@
 
 #include "chrome/common/benchmarking_messages.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/public/web/WebCache.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebCache;

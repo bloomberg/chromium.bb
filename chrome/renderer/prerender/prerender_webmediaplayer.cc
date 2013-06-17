@@ -7,7 +7,7 @@
 #include "chrome/common/prerender_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaSource.h"
+#include "third_party/WebKit/public/web/WebMediaSource.h"
 #include "webkit/renderer/media/webmediaplayer_delegate.h"
 
 namespace prerender {

@@ -34,7 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/ui_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/common/cursors/webcursor.h"

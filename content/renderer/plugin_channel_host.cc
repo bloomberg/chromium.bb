@@ -14,7 +14,7 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 
 // TODO(shess): Debugging for http://crbug.com/97285
 //

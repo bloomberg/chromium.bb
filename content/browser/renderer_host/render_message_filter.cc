@@ -60,7 +60,7 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/gfx/color_profile.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webkit_glue.h"

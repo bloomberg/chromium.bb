@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "ppapi/c/pp_var.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/public/web/WebPlugin.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 

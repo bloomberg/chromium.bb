@@ -79,7 +79,7 @@
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/layout.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"

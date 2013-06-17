@@ -22,7 +22,7 @@
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/ui/aura/active_desktop_monitor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"

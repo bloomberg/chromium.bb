@@ -16,8 +16,8 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/view_type.h"
 #include "grit/renderer_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 

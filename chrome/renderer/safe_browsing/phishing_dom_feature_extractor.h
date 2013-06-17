@@ -16,7 +16,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 
 class GURL;
 

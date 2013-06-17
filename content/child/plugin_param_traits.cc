@@ -6,7 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "ipc/ipc_message_utils.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 #include "webkit/glue/npruntime_util.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 

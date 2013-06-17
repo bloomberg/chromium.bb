@@ -74,7 +74,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"

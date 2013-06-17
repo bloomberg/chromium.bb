@@ -17,7 +17,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 namespace content {

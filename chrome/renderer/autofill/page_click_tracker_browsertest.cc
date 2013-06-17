@@ -8,9 +8,9 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 

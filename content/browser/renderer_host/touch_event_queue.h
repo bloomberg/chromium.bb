@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/port/common/input_event_ack_state.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
 

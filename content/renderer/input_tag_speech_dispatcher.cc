@@ -9,14 +9,14 @@
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputListener.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebSpeechInputListener.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 using WebKit::WebDocument;
 using WebKit::WebElement;

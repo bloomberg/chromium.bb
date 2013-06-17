@@ -10,12 +10,12 @@
 #include "base/message_loop.h"
 #include "content/renderer/accessibility/accessibility_node_serializer.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebAccessibilityObject.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 using WebKit::WebAccessibilityNotification;
 using WebKit::WebAccessibilityObject;

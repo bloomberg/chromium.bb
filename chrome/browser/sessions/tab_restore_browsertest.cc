@@ -29,7 +29,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 
 class TabRestoreTest : public InProcessBrowserTest {
  public:

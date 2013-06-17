@@ -13,7 +13,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
+#include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 class GURL;

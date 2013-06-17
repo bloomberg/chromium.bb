@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "content/browser/in_process_webkit/browser_webkitplatformsupport_impl.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace content {

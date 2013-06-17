@@ -8,8 +8,8 @@
 #include "content/child/child_thread.h"
 #include "content/common/quota_messages.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaCallbacks.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageQuotaType.h"
+#include "third_party/WebKit/public/web/WebStorageQuotaCallbacks.h"
+#include "third_party/WebKit/public/web/WebStorageQuotaType.h"
 
 using quota::QuotaStatusCode;
 using quota::StorageType;

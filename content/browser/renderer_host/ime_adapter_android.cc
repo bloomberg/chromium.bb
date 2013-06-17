@@ -16,8 +16,8 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "jni/ImeAdapter_jni.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;

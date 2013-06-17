@@ -7,7 +7,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalPopupMenuClient.h"
+#include "third_party/WebKit/public/web/WebExternalPopupMenuClient.h"
 
 namespace content {
 

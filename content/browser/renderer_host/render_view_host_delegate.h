@@ -17,7 +17,7 @@
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "net/base/load_states.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/base/window_open_disposition.h"
 
 class GURL;

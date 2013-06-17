@@ -12,8 +12,8 @@
 
 #if defined(ENABLE_PEPPER_CDMS)
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
 #include "webkit/renderer/media/crypto/ppapi_decryptor.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"

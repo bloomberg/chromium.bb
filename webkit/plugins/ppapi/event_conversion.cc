@@ -19,7 +19,7 @@
 #include "ppapi/shared_impl/time_conversion.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/usb_key_code_conversion.h"
 

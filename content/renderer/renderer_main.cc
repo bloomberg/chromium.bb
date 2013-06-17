@@ -43,7 +43,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #endif  // OS_MACOSX
 
 namespace content {

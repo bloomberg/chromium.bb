@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/public/web/WebCache.h"
 
 class CookieSettings;
 struct ExtensionHostMsg_APIActionOrEvent_Params;

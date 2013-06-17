@@ -11,7 +11,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMActivityLogger.h"
+#include "third_party/WebKit/public/web/WebDOMActivityLogger.h"
 #include "v8/include/v8.h"
 
 using content::V8ValueConverter;

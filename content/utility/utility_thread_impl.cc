@@ -14,7 +14,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/utility_messages.h"
 #include "content/public/utility/content_utility_client.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(TOOLKIT_GTK)

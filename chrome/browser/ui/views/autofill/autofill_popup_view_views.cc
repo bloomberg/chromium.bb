@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "grit/ui_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"

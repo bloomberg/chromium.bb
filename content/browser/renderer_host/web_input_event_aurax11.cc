@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Portions based heavily on:
-// third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.cpp
+// third_party/WebKit/public/web/gtk/WebInputEventFactory.cpp
 //
 /*
  * Copyright (C) 2006-2011 Google Inc. All rights reserved.

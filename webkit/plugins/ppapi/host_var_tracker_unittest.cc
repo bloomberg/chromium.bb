@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "third_party/npapi/bindings/npruntime.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/host_var_tracker.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"

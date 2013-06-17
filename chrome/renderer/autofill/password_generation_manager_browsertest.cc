@@ -11,8 +11,8 @@
 #include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/content/renderer/password_generation_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebWidget.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 using WebKit::WebDocument;

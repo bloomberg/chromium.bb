@@ -6,8 +6,8 @@
 
 #include "content/common/device_orientation_messages.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientation.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientationController.h"
+#include "third_party/WebKit/public/web/WebDeviceOrientation.h"
+#include "third_party/WebKit/public/web/WebDeviceOrientationController.h"
 
 namespace content {
 

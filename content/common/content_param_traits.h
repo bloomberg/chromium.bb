@@ -15,7 +15,7 @@
 #define CONTENT_COMMON_CONTENT_PARAM_TRAITS_H_
 
 #include "content/common/content_param_traits_macros.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/common/cursors/webcursor.h"
 
 namespace net {

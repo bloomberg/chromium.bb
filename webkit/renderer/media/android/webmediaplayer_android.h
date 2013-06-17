@@ -20,7 +20,7 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
+#include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "ui/gfx/rect_f.h"
 #include "webkit/renderer/media/android/media_source_delegate.h"
 #include "webkit/renderer/media/android/stream_texture_factory_android.h"

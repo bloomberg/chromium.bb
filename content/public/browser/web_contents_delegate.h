@@ -16,7 +16,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/window_container_type.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"

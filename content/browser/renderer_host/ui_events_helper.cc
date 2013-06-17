@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/ui_events_helper.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 

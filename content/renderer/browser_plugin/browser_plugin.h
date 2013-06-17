@@ -5,7 +5,7 @@
 #ifndef  CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
 #define  CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/public/web/WebPlugin.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -20,7 +20,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
+#include "third_party/WebKit/public/web/WebDragStatus.h"
 
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;

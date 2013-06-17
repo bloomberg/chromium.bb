@@ -18,7 +18,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/window_container_type.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
 

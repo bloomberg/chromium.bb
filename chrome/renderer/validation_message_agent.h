@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_VALIDATION_MESSAGE_AGENT_H_
 
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebValidationMessageClient.h"
+#include "third_party/WebKit/public/web/WebValidationMessageClient.h"
 
 namespace content {
 class RenderView;

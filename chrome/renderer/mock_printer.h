@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "printing/image.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintScalingOption.h"
+#include "third_party/WebKit/public/web/WebPrintScalingOption.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 

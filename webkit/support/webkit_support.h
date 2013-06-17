@@ -15,7 +15,7 @@
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgentClient.h"
+#include "third_party/WebKit/public/web/WebDevToolsAgentClient.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace base {

@@ -9,7 +9,7 @@
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/vector2d.h"
 #include "webkit/common/webdropdata.h"

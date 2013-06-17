@@ -16,7 +16,7 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 
 using ppapi::NPObjectVar;
 using ppapi::PpapiGlobals;

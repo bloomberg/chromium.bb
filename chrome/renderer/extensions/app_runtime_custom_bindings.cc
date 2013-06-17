@@ -8,8 +8,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "third_party/WebKit/public/web/WebBlob.h"
+#include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 
 using WebKit::WebBlob;
 using WebKit::WebSerializedScriptValue;

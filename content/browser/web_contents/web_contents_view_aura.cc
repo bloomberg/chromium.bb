@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"

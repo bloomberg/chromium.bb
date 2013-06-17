@@ -37,9 +37,9 @@
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/web/WebAudioSourceProvider.h"
+#include "third_party/WebKit/public/web/WebMediaPlayer.h"
+#include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
 #include "webkit/renderer/media/crypto/key_systems.h"
 #include "webkit/renderer/media/crypto/proxy_decryptor.h"
 

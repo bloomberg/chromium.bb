@@ -9,7 +9,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
+#include "third_party/WebKit/public/web/WebBlob.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

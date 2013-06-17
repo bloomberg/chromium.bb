@@ -14,7 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/database/vfs_backend.h"

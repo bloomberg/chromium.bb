@@ -7,7 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 #include "webkit/renderer/cpp_variant.h"
 
 using WebKit::WebBindings;

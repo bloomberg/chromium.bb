@@ -24,7 +24,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "grit/renderer_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "v8/include/v8.h"
 
 // Message passing API example (in a content script):

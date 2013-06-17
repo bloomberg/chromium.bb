@@ -40,7 +40,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center_util.h"

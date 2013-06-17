@@ -19,8 +19,8 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaRequest.h"
+#include "third_party/WebKit/public/web/WebUserMediaClient.h"
+#include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "webkit/renderer/media/media_stream_client.h"
 

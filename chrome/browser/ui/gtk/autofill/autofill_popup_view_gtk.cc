@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/ui_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_windowing.h"

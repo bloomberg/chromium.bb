@@ -11,11 +11,11 @@
 #include "content/public/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserGestureIndicator.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/WebKit/public/web/WebNodeList.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebDocument;

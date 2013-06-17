@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "chrome/common/extensions/user_script.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
+#include "third_party/WebKit/public/web/WebScriptSource.h"
 
 class ExtensionSet;
 class GURL;

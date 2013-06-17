@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/extension.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 class ExtensionURLInfo {
  public:

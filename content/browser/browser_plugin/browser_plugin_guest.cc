@@ -43,7 +43,7 @@
 #include "content/public/common/result_codes.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/common/webdropdata.h"

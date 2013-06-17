@@ -18,7 +18,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "webkit/common/cursors/webcursor.h"
 #include "webkit/plugins/npapi/plugin_instance.h"

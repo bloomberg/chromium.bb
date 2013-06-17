@@ -23,7 +23,7 @@
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
 #include "net/cert/cert_status_flags.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 #if defined(OS_CHROMEOS)
 // TODO(sque): move to a ChromeOS-specific class. See crosbug.com/22081.

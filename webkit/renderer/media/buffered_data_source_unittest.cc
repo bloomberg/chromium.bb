@@ -9,7 +9,7 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/mocks/mock_webframeclient.h"
 #include "webkit/mocks/mock_weburlloader.h"
 #include "webkit/renderer/media/buffered_data_source.h"

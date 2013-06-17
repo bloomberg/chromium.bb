@@ -13,8 +13,8 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 using std::string;
 using webrtc::MediaConstraintsInterface;

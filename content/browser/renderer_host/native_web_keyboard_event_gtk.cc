@@ -6,7 +6,7 @@
 
 #include <gdk/gdk.h>
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
+#include "third_party/WebKit/public/web/gtk/WebInputEventFactory.h"
 
 using WebKit::WebInputEventFactory;
 

@@ -13,7 +13,7 @@
 #include "components/autofill/browser/autofill_popup_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/webkit_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/events/event.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/display.h"

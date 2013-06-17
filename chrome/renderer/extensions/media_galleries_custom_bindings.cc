@@ -9,8 +9,8 @@
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
 #include "webkit/common/fileapi/file_system_util.h"
 

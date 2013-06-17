@@ -20,7 +20,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamSourcesRequest.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/libjingle/source/talk/app/webrtc/jsep.h"
 
 namespace content {

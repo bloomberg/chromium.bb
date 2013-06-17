@@ -8,7 +8,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
+#include "third_party/WebKit/public/web/WebPageSerializer.h"
 
 namespace content {
 

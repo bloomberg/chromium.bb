@@ -33,8 +33,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebCache.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 

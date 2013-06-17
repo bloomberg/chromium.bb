@@ -9,7 +9,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using WebKit::WebSecurityOrigin;
 using content::IndexedDBBackingStore;

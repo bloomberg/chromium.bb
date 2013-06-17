@@ -16,8 +16,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
+#include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebURLLoaderOptions.h"
 #include "webkit/renderer/media/cache_util.h"
 
 using WebKit::WebFrame;

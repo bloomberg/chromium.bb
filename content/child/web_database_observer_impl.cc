@@ -7,7 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "content/common/database_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/sqlite/sqlite3.h"
 

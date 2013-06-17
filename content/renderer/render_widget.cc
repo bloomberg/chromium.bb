@@ -34,13 +34,13 @@
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebHelperPlugin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPagePopup.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebHelperPlugin.h"
+#include "third_party/WebKit/public/web/WebPagePopup.h"
+#include "third_party/WebKit/public/web/WebPopupMenu.h"
+#include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
+#include "third_party/WebKit/public/web/WebRange.h"
+#include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -70,7 +70,7 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #endif  // defined(OS_POSIX)
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
+#include "third_party/WebKit/public/web/WebWidget.h"
 
 using WebKit::WebCompositionUnderline;
 using WebKit::WebCursorInfo;

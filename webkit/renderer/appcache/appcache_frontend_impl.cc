@@ -5,8 +5,8 @@
 #include "webkit/renderer/appcache/appcache_frontend_impl.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebApplicationCacheHost.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebApplicationCacheHost.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 
 using WebKit::WebApplicationCacheHost;

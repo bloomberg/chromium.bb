@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/latency_info.h"
 
 using WebKit::WebActiveWheelFlingParameters;

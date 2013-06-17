@@ -45,7 +45,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/public/web/WebDevToolsAgent.h"
 #include "ui/base/layout.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/user_agent/user_agent_util.h"

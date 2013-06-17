@@ -9,9 +9,9 @@
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPasswordFormData.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFormElement.h"
+#include "third_party/WebKit/public/web/WebPasswordFormData.h"
 
 using WebKit::WebFormElement;
 using WebKit::WebFrame;

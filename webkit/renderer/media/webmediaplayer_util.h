@@ -8,8 +8,8 @@
 #include "base/time.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTimeRange.h"
+#include "third_party/WebKit/public/web/WebMediaPlayer.h"
+#include "third_party/WebKit/public/web/WebTimeRange.h"
 
 namespace webkit_media {
 

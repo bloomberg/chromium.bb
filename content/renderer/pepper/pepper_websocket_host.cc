@@ -16,11 +16,11 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBuffer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSocket.h"
+#include "third_party/WebKit/public/web/WebArrayBuffer.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebSocket.h"
 
 using WebKit::WebArrayBuffer;
 using WebKit::WebDocument;

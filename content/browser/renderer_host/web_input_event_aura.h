@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_WEB_INPUT_EVENT_AURA_H_
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace ui {
 class GestureEvent;

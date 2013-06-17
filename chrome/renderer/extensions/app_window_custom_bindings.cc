@@ -14,9 +14,9 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

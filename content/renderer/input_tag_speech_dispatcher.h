@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechInputController.h"
+#include "third_party/WebKit/public/web/WebSpeechInputController.h"
 
 namespace WebKit {
 class WebSpeechInputListener;

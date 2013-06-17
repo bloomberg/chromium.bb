@@ -21,7 +21,7 @@
 #include "content/common/edit_command.h"
 #import "content/public/browser/render_widget_host_view_mac_base.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/base/cocoa/base_view.h"
 #include "webkit/common/cursors/webcursor.h"
 

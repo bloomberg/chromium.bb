@@ -5,7 +5,7 @@
 #include "content/public/renderer/password_form_conversion_utils.h"
 
 #include "content/public/common/password_form.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPasswordFormData.h"
+#include "third_party/WebKit/public/web/WebPasswordFormData.h"
 
 using WebKit::WebFormElement;
 using WebKit::WebPasswordFormData;

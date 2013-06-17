@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/renderer/prerender/prerender_extra_data.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 namespace {
 static int s_last_prerender_id = 0;

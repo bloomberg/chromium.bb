@@ -10,8 +10,8 @@
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/media_switches.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 using WebKit::WebAudioDevice;
 using WebKit::WebFrame;

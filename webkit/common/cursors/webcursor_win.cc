@@ -6,7 +6,7 @@
 #include "base/pickle.h"
 #include "grit/ui_unscaled_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/gfx/icon_util.h"
 #include "webkit/common/cursors/webcursor.h"
 

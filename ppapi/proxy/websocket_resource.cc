@@ -14,7 +14,7 @@
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSocket.h"
+#include "third_party/WebKit/public/web/WebSocket.h"
 
 namespace {
 

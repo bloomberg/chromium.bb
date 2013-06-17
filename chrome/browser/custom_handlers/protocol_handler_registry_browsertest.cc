@@ -17,7 +17,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/public/web/WebContextMenuData.h"
 
 using content::WebContents;
 

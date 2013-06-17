@@ -7,7 +7,7 @@
 
 #include "content/renderer/render_widget.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
+#include "third_party/WebKit/public/web/WebWidget.h"
 
 namespace content {
 

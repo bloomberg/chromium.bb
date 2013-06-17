@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalPopupMenu.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
+#include "third_party/WebKit/public/web/WebExternalPopupMenu.h"
+#include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
 
 namespace WebKit {
 class WebExternalPopupMenuClient;

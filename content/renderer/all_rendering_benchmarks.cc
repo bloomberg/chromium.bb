@@ -19,7 +19,7 @@
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebViewBenchmarkSupport.h"
+#include "third_party/WebKit/public/web/WebViewBenchmarkSupport.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

@@ -28,7 +28,7 @@
 #include "gpu/config/gpu_test_config.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

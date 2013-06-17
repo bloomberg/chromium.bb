@@ -16,8 +16,8 @@
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
+#include "third_party/WebKit/public/web/WebFileChooserCompletion.h"
+#include "third_party/WebKit/public/web/WebFileChooserParams.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 
 namespace content {

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMenuItemInfo.h"
+#include "third_party/WebKit/public/web/WebMenuItemInfo.h"
 #include "webkit/common/webkit_common_export.h"
 
 // Container for information about entries in an HTML select popup menu and

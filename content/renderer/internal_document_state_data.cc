@@ -7,7 +7,7 @@
 #include "content/public/common/password_form.h"
 #include "content/public/renderer/document_state.h"
 #include "content/renderer/fetchers/alt_error_page_resource_fetcher.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebDataSource.h"
 
 namespace content {
 

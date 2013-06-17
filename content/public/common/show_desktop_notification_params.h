@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/public/web/WebTextDirection.h"
 
 namespace content {
 

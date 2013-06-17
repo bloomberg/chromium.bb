@@ -16,7 +16,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
 #include "media/base/text_track.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
+#include "third_party/WebKit/public/web/WebMediaPlayer.h"
 
 namespace media {
 class ChunkDemuxer;

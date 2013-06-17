@@ -9,7 +9,7 @@
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerClient.h"
+#include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
 
 namespace content {
 

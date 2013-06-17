@@ -43,7 +43,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
+#include "third_party/WebKit/public/web/WebPageSerializerClient.h"
 
 using base::Time;
 using WebKit::WebPageSerializerClient;

@@ -16,9 +16,9 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
+#include "third_party/WebKit/public/web/WebTextCheckingResult.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 using WebKit::WebVector;
 using WebKit::WebTextCheckingResult;

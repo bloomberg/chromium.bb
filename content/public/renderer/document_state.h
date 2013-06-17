@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "net/http/http_response_info.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebDataSource.h"
 
 namespace content {
 

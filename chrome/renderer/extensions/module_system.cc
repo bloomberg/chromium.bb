@@ -14,8 +14,8 @@
 #include "chrome/renderer/extensions/console.h"
 #include "chrome/renderer/extensions/safe_builtins.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 
 namespace extensions {
 

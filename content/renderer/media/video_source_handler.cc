@@ -11,7 +11,7 @@
 #include "content/renderer/media/media_stream_registry_interface.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
+#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/libjingle/source/talk/media/base/videoframe.h"
 #include "third_party/libjingle/source/talk/media/base/videorenderer.h"
 

@@ -13,7 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
+#include "third_party/WebKit/public/web/WebMediaPlayer.h"
 
 namespace WebKit {
 class WebFrame;

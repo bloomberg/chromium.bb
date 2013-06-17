@@ -7,11 +7,11 @@
 #include "content/common/geolocation_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPermissionRequestManager.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPosition.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationError.h"
+#include "third_party/WebKit/public/web/WebGeolocationPermissionRequest.h"
+#include "third_party/WebKit/public/web/WebGeolocationPermissionRequestManager.h"
+#include "third_party/WebKit/public/web/WebGeolocationClient.h"
+#include "third_party/WebKit/public/web/WebGeolocationPosition.h"
+#include "third_party/WebKit/public/web/WebGeolocationError.h"
 
 using WebKit::WebGeolocationController;
 using WebKit::WebGeolocationError;

@@ -10,7 +10,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
+#include "third_party/WebKit/public/web/WebIconURL.h"
 
 class GURL;
 

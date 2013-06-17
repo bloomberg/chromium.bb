@@ -20,8 +20,8 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 using base::DictionaryValue;
 using chrome_common_net::DnsProbeResult;

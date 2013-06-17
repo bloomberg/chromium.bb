@@ -17,7 +17,7 @@
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/public/web/WebTextDirection.h"
 
 namespace notifier {
 

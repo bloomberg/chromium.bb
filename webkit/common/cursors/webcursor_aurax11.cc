@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/point_conversions.h"

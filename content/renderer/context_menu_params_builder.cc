@@ -8,8 +8,8 @@
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/history_item_serialization.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebNode.h"
 
 namespace content {
 

@@ -32,7 +32,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 
 typedef TabRestoreService::Tab Tab;
 typedef TabRestoreService::Window Window;

@@ -12,7 +12,7 @@
 
 #include "base/metrics/stats_counters.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/blit.h"
 #include "webkit/common/cursors/webcursor.h"

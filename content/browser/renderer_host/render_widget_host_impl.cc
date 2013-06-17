@@ -51,9 +51,9 @@
 #include "content/public/common/result_codes.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #if defined(OS_WIN)
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
+#include "third_party/WebKit/public/web/win/WebScreenInfoFactory.h"
 #endif
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"

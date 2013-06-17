@@ -9,7 +9,7 @@
 #include "content/child/plugin_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/plugins/npapi/plugin_host.h"

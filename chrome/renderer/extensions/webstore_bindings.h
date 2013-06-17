@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace extensions {
 class ChromeV8Context;

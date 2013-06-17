@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/gfx/native_widget_types.h"

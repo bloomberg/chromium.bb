@@ -5,7 +5,7 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "ui/gfx/point.h"
 #include "webkit/common/webdropdata.h"
 

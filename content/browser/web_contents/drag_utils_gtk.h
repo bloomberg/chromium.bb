@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/public/web/WebDragOperation.h"
 
 namespace content {
 

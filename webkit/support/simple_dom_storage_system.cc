@@ -9,7 +9,7 @@
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
+#include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/dom_storage/dom_storage_area.h"
 #include "webkit/browser/dom_storage/dom_storage_host.h"

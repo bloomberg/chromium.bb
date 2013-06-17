@@ -10,8 +10,8 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/test/render_view_test.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
 #include "webkit/renderer/cpp_binding_example.h"
 
 using webkit_glue::CppArgumentList;

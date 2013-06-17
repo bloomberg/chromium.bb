@@ -18,8 +18,8 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 using WebKit::WebBindings;
