@@ -153,25 +153,14 @@ class FileCacheTestOnUIThread : public testing::Test {
                              const std::string& md5) {
     EXPECT_EQ(expected_error_, error);
 
-    // Verify cache map.
     FileCacheEntry cache_entry;
-    const bool cache_entry_found =
-        GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry);
-    if (cache_entry_found)
-      EXPECT_TRUE(cache_entry.is_dirty());
+    if (!GetCacheEntryFromOriginThread(resource_id, md5, &cache_entry)) {
+      EXPECT_EQ(FILE_ERROR_OK, error);
 
-    // If entry doesn't exist, verify that no files with "<resource_id>.*"
-    // exist.
-    const base::FilePath path_pattern = cache_->GetCacheFilePath(
-        resource_id, util::kWildCard, FileCache::CACHED_FILE_FROM_SERVER);
-    if (!cache_entry_found) {
+      // Verify that no files with "<resource_id>.*" exist.
+      const base::FilePath path_pattern = cache_->GetCacheFilePath(
+          resource_id, util::kWildCard, FileCache::CACHED_FILE_FROM_SERVER);
       EXPECT_EQ(0, CountFilesWithPathPattern(path_pattern));
-    } else {
-      // Entry is dirty, verify that only 1 "<resource_id>.local" exists.
-      EXPECT_EQ(1, CountFilesWithPathPattern(path_pattern));
-      EXPECT_TRUE(file_util::PathExists(
-          GetCacheFilePath(resource_id, std::string(),
-                           FileCache::CACHED_FILE_LOCALLY_MODIFIED)));
     }
   }
 
@@ -279,7 +268,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     EXPECT_TRUE(file_util::PathExists(cache_file_path));
     EXPECT_EQ(cache_file_path,
               cache_->GetCacheFilePath(resource_id, entry.md5(),
-                                       FileCache::CACHED_FILE_MOUNTED));
+                                       FileCache::CACHED_FILE_FROM_SERVER));
   }
 
   void TestMarkAsUnmounted(const std::string& resource_id,
@@ -777,7 +766,7 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromDirtyCache) {
                 test_util::TEST_CACHE_STATE_DIRTY);
 
   // Try to remove the file.  Since file is dirty, it should not be removed.
-  TestRemoveFromCache(resource_id, FILE_ERROR_OK);
+  TestRemoveFromCache(resource_id, FILE_ERROR_IN_USE);
 }
 
 TEST_F(FileCacheTestOnUIThread, MountUnmount) {
@@ -789,11 +778,12 @@ TEST_F(FileCacheTestOnUIThread, MountUnmount) {
                    FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT);
 
   // Mark the file mounted.
-  TestMarkAsMounted(resource_id,
-                    FILE_ERROR_OK,
-                    test_util::TEST_CACHE_STATE_PRESENT |
-                    test_util::TEST_CACHE_STATE_MOUNTED);
+  TestMarkAsMounted(resource_id, FILE_ERROR_OK,
+                    test_util::TEST_CACHE_STATE_PRESENT);
   EXPECT_TRUE(CacheEntryExists(resource_id, md5));
+
+  // Try to remove the file.
+  TestRemoveFromCache(resource_id, FILE_ERROR_IN_USE);
 
   // Clear mounted state of the file.
   base::FilePath file_path;

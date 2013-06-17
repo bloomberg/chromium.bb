@@ -36,10 +36,6 @@ namespace util {
 // "<resource-id>.local".
 const base::FilePath::CharType kLocallyModifiedFileExtension[] =
     FILE_PATH_LITERAL("local");
-// The extension for mounted files. The file names look like
-// "<resource-id>.<md5>.mounted".
-const base::FilePath::CharType kMountedArchiveFileExtension[] =
-    FILE_PATH_LITERAL("mounted");
 const base::FilePath::CharType kWildCard[] = FILE_PATH_LITERAL("*");
 
 // Special resource IDs introduced to manage pseudo directory tree locally.
@@ -134,17 +130,12 @@ std::string NormalizeFileName(const std::string& input);
 // profile.
 base::FilePath GetCacheRootPath(Profile* profile);
 
-// Extracts resource_id, md5, and extra_extension from cache path.
-// Case 1: Normal files have both resource_id and md5.
+// Extracts resource_id and md5 from cache path.
 // Example: path="/user/GCache/v1/tmp/pdf:a1b2.01234567" =>
-//          resource_id="pdf:a1b2", md5="01234567", extra_extension="";
-// Case 2: Mounted files have all three parts.
-// Example: path="/user/GCache/v1/persistent/pdf:a1b2.01234567.mounted" =>
-//          resource_id="pdf:a1b2", md5="01234567", extra_extension="mounted".
+//          resource_id="pdf:a1b2", md5="01234567"
 void ParseCacheFilePath(const base::FilePath& path,
                         std::string* resource_id,
-                        std::string* md5,
-                        std::string* extra_extension);
+                        std::string* md5);
 
 // Callback type for PrepareWritableFileAndRun.
 typedef base::Callback<void (FileError, const base::FilePath& path)>

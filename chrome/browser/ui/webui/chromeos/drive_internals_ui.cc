@@ -766,7 +766,6 @@ void DriveInternalsWebUIHandler::UpdateCacheEntry(
   value.SetBoolean("is_present", cache_entry.is_present());
   value.SetBoolean("is_pinned", cache_entry.is_pinned());
   value.SetBoolean("is_dirty", cache_entry.is_dirty());
-  value.SetBoolean("is_mounted", cache_entry.is_mounted());
 
   web_ui()->CallJavascriptFunction("updateCacheContents", value);
 }

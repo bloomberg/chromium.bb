@@ -885,16 +885,12 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  bool success = false;
-  FileCacheEntry cache_entry;
-  cache_->GetCacheEntryOnUIThread(
+  // Cannot remove a cache entry while it's being mounted.
+  cache_->RemoveOnUIThread(
       entry->resource_id(),
-      entry->file_specific_info().md5(),
-      google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
-
-  EXPECT_TRUE(success);
-  EXPECT_TRUE(cache_entry.is_mounted());
+  EXPECT_EQ(FILE_ERROR_IN_USE, error);
 
   // Test for unmounting.
   error = FILE_ERROR_FAILED;
@@ -902,18 +898,14 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
-
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  success = false;
-  cache_->GetCacheEntryOnUIThread(
+  // Now able to remove the cache entry.
+  cache_->RemoveOnUIThread(
       entry->resource_id(),
-      entry->file_specific_info().md5(),
-      google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
-
-  EXPECT_TRUE(success);
-  EXPECT_FALSE(cache_entry.is_mounted());
+  EXPECT_EQ(FILE_ERROR_OK, error);
 }
 
 }   // namespace drive

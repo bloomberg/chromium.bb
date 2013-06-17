@@ -123,9 +123,6 @@ message FileCacheEntry {
   // True if the file is dirty (i.e. modified locally).
   optional bool is_dirty = 4;
 
-  // True if the file is a mounted archive file.
-  optional bool is_mounted = 5;
-
   // TODO(hashimoto): Remove this block after DB merge. crbug.com/234487
   // True if the file is in the persistent directory.
   // optional bool is_persistent = 6;

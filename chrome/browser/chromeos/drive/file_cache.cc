@@ -66,15 +66,7 @@ void ScanCacheDirectory(const base::FilePath& directory_path,
     // Extract resource_id and md5 from filename.
     std::string resource_id;
     std::string md5;
-    std::string extra_extension;
-    util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
-
-    if (extra_extension == util::kMountedArchiveFileExtension) {
-      // Mounted archives in cache should be unmounted upon logout/shutdown.
-      // But if we encounter a mounted file at start, delete it.
-      file_util::Delete(current, false);
-      continue;
-    }
+    util::ParseCacheFilePath(current, &resource_id, &md5);
 
     // Determine cache state.
     FileCacheEntry cache_entry;
@@ -242,12 +234,6 @@ base::FilePath FileCache::GetCacheFilePath(const std::string& resource_id,
     base_name += base::FilePath::kExtensionSeparator;
     base_name += util::EscapeCacheFileName(md5);
   }
-  // For mounted archives the filename is formatted as resource_id.md5.mounted,
-  // i.e. resource_id.md5 is the base name and ".mounted" is the extension
-  if (file_origin == CACHED_FILE_MOUNTED) {
-    base_name += base::FilePath::kExtensionSeparator;
-    base_name += util::kMountedArchiveFileExtension;
-  }
   return GetCacheDirectoryPath(CACHE_TYPE_FILES).Append(
       base::FilePath::FromUTF8Unsafe(base_name));
 }
@@ -343,7 +329,9 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   scoped_ptr<FileCacheMetadata::Iterator> it = metadata_->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     const FileCacheEntry& entry = it->GetValue();
-    if (!entry.is_pinned() && !entry.is_dirty() && !entry.is_mounted())
+    if (!entry.is_pinned() &&
+        !entry.is_dirty() &&
+        !mounted_files_.count(it->GetKey()))
       metadata_->RemoveCacheEntry(it->GetKey());
   }
   DCHECK(!it->HasError());
@@ -354,11 +342,10 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
                                   base::FileEnumerator::FILES);
   std::string resource_id;
   std::string md5;
-  std::string extra_extension;
   FileCacheEntry entry;
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
-    util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
+    util::ParseCacheFilePath(current, &resource_id, &md5);
     if (!GetCacheEntry(resource_id, md5, &entry))
       file_util::Delete(current, false /* recursive */);
   }
@@ -397,15 +384,8 @@ FileError FileCache::GetFile(const std::string& resource_id,
       !cache_entry.is_present())
     return FILE_ERROR_NOT_FOUND;
 
-  CachedFileOrigin file_origin;
-  if (cache_entry.is_mounted()) {
-    file_origin = CACHED_FILE_MOUNTED;
-  } else if (cache_entry.is_dirty()) {
-    file_origin = CACHED_FILE_LOCALLY_MODIFIED;
-  } else {
-    file_origin = CACHED_FILE_FROM_SERVER;
-  }
-
+  CachedFileOrigin file_origin = cache_entry.is_dirty() ?
+      CACHED_FILE_LOCALLY_MODIFIED : CACHED_FILE_FROM_SERVER;
   *cache_file_path = GetCacheFilePath(resource_id, cache_entry.md5(),
                                       file_origin);
   return FILE_ERROR_OK;
@@ -652,11 +632,13 @@ FileError FileCache::Remove(const std::string& resource_id) {
   // So, search for entry in cache without taking md5 into account.
   FileCacheEntry cache_entry;
 
-  // If entry doesn't exist or is dirty or mounted in cache, nothing to do.
-  if (!metadata_->GetCacheEntry(resource_id, &cache_entry) ||
-      cache_entry.is_dirty() ||
-      cache_entry.is_mounted())
+  // If entry doesn't exist, nothing to do.
+  if (!metadata_->GetCacheEntry(resource_id, &cache_entry))
     return FILE_ERROR_OK;
+
+  // Cannot delete a dirty or mounted file.
+  if (cache_entry.is_dirty() || mounted_files_.count(resource_id))
+    return FILE_ERROR_IN_USE;
 
   // Delete files that match "<resource_id>.*" unless modified locally.
   base::FilePath path_to_delete = GetCacheFilePath(resource_id, util::kWildCard,
@@ -767,7 +749,7 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
   metadata_->GetCacheEntry(resource_id, &cache_entry);
 
   // If file is dirty or mounted, return error.
-  if (cache_entry.is_dirty() || cache_entry.is_mounted())
+  if (cache_entry.is_dirty() || mounted_files_.count(resource_id))
     return FILE_ERROR_IN_USE;
 
   base::FilePath dest_path = GetCacheFilePath(resource_id, md5,
@@ -827,30 +809,22 @@ FileError FileCache::MarkAsMounted(const std::string& resource_id,
   if (!metadata_->GetCacheEntry(resource_id, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
-  if (cache_entry.is_mounted())
+  if (mounted_files_.count(resource_id))
     return FILE_ERROR_INVALID_OPERATION;
 
-  // Move cache file.
-  base::FilePath unmounted_path = GetCacheFilePath(
+  // Ensure the file is readable to cros_disks. See crbug.com/236994.
+  base::FilePath path = GetCacheFilePath(
       resource_id, cache_entry.md5(), CACHED_FILE_FROM_SERVER);
-  base::FilePath mounted_path = GetCacheFilePath(
-      resource_id, cache_entry.md5(), CACHED_FILE_MOUNTED);
-  if (!MoveFile(unmounted_path, mounted_path))
-    return FILE_ERROR_FAILED;
-
-  // Ensures the file is readable to cros_disks. See crbug.com/236994.
   file_util::SetPosixFilePermissions(
-      mounted_path,
+      path,
       file_util::FILE_PERMISSION_READ_BY_USER |
       file_util::FILE_PERMISSION_WRITE_BY_USER |
       file_util::FILE_PERMISSION_READ_BY_GROUP |
       file_util::FILE_PERMISSION_READ_BY_OTHERS);
 
-  // Now that cache operation is complete, update metadata.
-  cache_entry.set_is_mounted(true);
-  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  mounted_files_.insert(resource_id);
 
-  *cache_file_path = mounted_path;
+  *cache_file_path = path;
   return FILE_ERROR_OK;
 }
 
@@ -861,31 +835,18 @@ FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {
   // Parse file path to obtain resource_id, md5 and extra_extension.
   std::string resource_id;
   std::string md5;
-  std::string extra_extension;
-  util::ParseCacheFilePath(file_path, &resource_id, &md5, &extra_extension);
-  // The extra_extension shall be ".mounted" iff we're unmounting.
-  DCHECK_EQ(util::kMountedArchiveFileExtension, extra_extension);
+  util::ParseCacheFilePath(file_path, &resource_id, &md5);
 
   // Get cache entry associated with the resource_id and md5
   FileCacheEntry cache_entry;
   if (!GetCacheEntry(resource_id, md5, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
-  if (!cache_entry.is_mounted())
+  std::set<std::string>::iterator it = mounted_files_.find(resource_id);
+  if (it == mounted_files_.end())
     return FILE_ERROR_INVALID_OPERATION;
 
-  // Move cache file.
-  base::FilePath unmounted_path = GetCacheFilePath(
-      resource_id, md5, CACHED_FILE_FROM_SERVER);
-  base::FilePath mounted_path = GetCacheFilePath(
-      resource_id, md5, CACHED_FILE_MOUNTED);
-  if (!MoveFile(mounted_path, unmounted_path))
-    return FILE_ERROR_FAILED;
-
-  // Now that cache operation is complete, update metadata.
-  cache_entry.set_md5(md5);
-  cache_entry.set_is_mounted(false);
-  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  mounted_files_.erase(it);
   return FILE_ERROR_OK;
 }
 

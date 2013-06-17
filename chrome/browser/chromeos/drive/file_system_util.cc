@@ -277,37 +277,22 @@ std::string NormalizeFileName(const std::string& input) {
 
 void ParseCacheFilePath(const base::FilePath& path,
                         std::string* resource_id,
-                        std::string* md5,
-                        std::string* extra_extension) {
+                        std::string* md5) {
   DCHECK(resource_id);
   DCHECK(md5);
-  DCHECK(extra_extension);
 
-  // Extract up to two extensions from the right.
+  // Extract up to one extension from the right.
   base::FilePath base_name = path.BaseName();
-  const int kNumExtensionsToExtract = 2;
-  std::vector<base::FilePath::StringType> extensions;
-  for (int i = 0; i < kNumExtensionsToExtract; ++i) {
-    base::FilePath::StringType extension = base_name.Extension();
-    if (!extension.empty()) {
-      // base::FilePath::Extension returns ".", so strip it.
-      extension = UnescapeCacheFileName(extension.substr(1));
-      base_name = base_name.RemoveExtension();
-      extensions.push_back(extension);
-    } else {
-      break;
-    }
+  base::FilePath::StringType extension = base_name.Extension();
+  if (!extension.empty()) {
+    // base::FilePath::Extension returns ".", so strip it.
+    extension = UnescapeCacheFileName(extension.substr(1));
+    base_name = base_name.RemoveExtension();
   }
 
   // The base_name here is already stripped of extensions in the loop above.
   *resource_id = UnescapeCacheFileName(base_name.value());
-
-  // Assign the extracted extensions to md5 and extra_extension.
-  int extension_count = extensions.size();
-  *md5 = (extension_count > 0) ? extensions[extension_count - 1] :
-                                 std::string();
-  *extra_extension = (extension_count > 1) ? extensions[extension_count - 2] :
-                                             std::string();
+  *md5 = extension;
 }
 
 void PrepareWritableFileAndRun(Profile* profile,

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_CACHE_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -281,7 +282,6 @@ class FileCache {
   enum CachedFileOrigin {
     CACHED_FILE_FROM_SERVER = 0,
     CACHED_FILE_LOCALLY_MODIFIED,
-    CACHED_FILE_MOUNTED,
   };
 
   ~FileCache();
@@ -339,6 +339,9 @@ class FileCache {
   scoped_ptr<FileCacheMetadata> metadata_;
 
   FreeDiskSpaceGetterInterface* free_disk_space_getter_;  // Not owned.
+
+  // Resource IDs of files marked mounted.
+  std::set<std::string> mounted_files_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

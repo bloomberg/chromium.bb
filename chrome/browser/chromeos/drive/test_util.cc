@@ -77,15 +77,13 @@ FileCacheEntry ToCacheEntry(int cache_state) {
   cache_entry.set_is_present(cache_state & TEST_CACHE_STATE_PRESENT);
   cache_entry.set_is_pinned(cache_state & TEST_CACHE_STATE_PINNED);
   cache_entry.set_is_dirty(cache_state & TEST_CACHE_STATE_DIRTY);
-  cache_entry.set_is_mounted(cache_state & TEST_CACHE_STATE_MOUNTED);
   return cache_entry;
 }
 
 bool CacheStatesEqual(const FileCacheEntry& a, const FileCacheEntry& b) {
   return a.is_present() == b.is_present() &&
       a.is_pinned() == b.is_pinned() &&
-      a.is_dirty() == b.is_dirty() &&
-      a.is_mounted() == b.is_mounted();
+      a.is_dirty() == b.is_dirty();
 }
 
 bool PrepareTestCacheResources(
