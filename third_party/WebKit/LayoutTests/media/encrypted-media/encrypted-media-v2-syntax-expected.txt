@@ -4,20 +4,20 @@ Test MediaKeys.
 EXPECTED (typeof window.MediaKeys == 'function') OK
 TEST(new MediaKeys("")) THROWS(DOMException.INVALID_ACCESS_ERR) OK
 TEST(new MediaKeys("unsupported")) THROWS(DOMException.NOT_SUPPORTED_ERR) OK
-RUN(mediaKeys = new MediaKeys("com.webcore.mock"))
+RUN(mediaKeys = new MediaKeys("org.w3.clearkey"))
 EXPECTED (typeof mediaKeys == 'object') OK
-EXPECTED (mediaKeys.keySystem == 'com.webcore.mock') OK
+EXPECTED (mediaKeys.keySystem == 'org.w3.clearkey') OK
 EXPECTED (typeof mediaKeys.createSession == 'function') OK
 TEST(mediaKeys.createSession("", new Uint8Array(1))) THROWS(DOMException.INVALID_ACCESS_ERR) OK
 TEST(mediaKeys.createSession("unsupported/type")) THROWS(DOMException.NOT_SUPPORTED_ERR) OK
 
 Test MediaKeySession.
-RUN(mediaKeySession = mediaKeys.createSession("video/mock", initData))
+RUN(mediaKeySession = mediaKeys.createSession("video/webm", initData))
 EXPECTED (typeof mediaKeySession == 'object') OK
 EXPECTED (typeof mediaKeySession.addEventListener == 'function') OK
 EXPECTED (typeof mediaKeySession.update == 'function') OK
 EXPECTED (mediaKeySession.error == 'null') OK
-EXPECTED (mediaKeySession.keySystem == 'com.webcore.mock') OK
+EXPECTED (mediaKeySession.keySystem == 'org.w3.clearkey') OK
 EXPECTED (mediaKeySession.sessionId != 'null') OK
 EXPECTED (mediaKeySession.onwebkitkeyadded == 'null') OK
 EXPECTED (mediaKeySession.onwebkitkeyerror == 'null') OK

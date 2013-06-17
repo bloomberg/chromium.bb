@@ -270,10 +270,6 @@ public:
 
     void forceReload(bool endToEnd);
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-    void initializeMockCDM();
-#endif
-
     void enableMockSpeechSynthesizer();
 
     String getImageSourceURL(Element*, ExceptionCode&);

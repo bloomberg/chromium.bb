@@ -101,6 +101,7 @@
 #include "core/page/UserStyleSheetTypes.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/FileMetadata.h"
+#include "core/platform/graphics/ContentDecryptionModuleSession.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/FontSmoothingMode.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
@@ -430,6 +431,9 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayerClient::MediaKeyErrorCodeService, Med
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayerClient::MediaKeyErrorCodeOutput, MediaPlayerClient::OutputError);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayerClient::MediaKeyErrorCodeHardwareChange, MediaPlayerClient::HardwareChangeError);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayerClient::MediaKeyErrorCodeDomain, MediaPlayerClient::DomainError);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebContentDecryptionModuleSession::Client::MediaKeyErrorCodeUnknown, ContentDecryptionModuleSessionClient::UnknownError);
+COMPILE_ASSERT_MATCHING_ENUM(WebContentDecryptionModuleSession::Client::MediaKeyErrorCodeClient, ContentDecryptionModuleSessionClient::ClientError);
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 COMPILE_ASSERT_MATCHING_ENUM(WebNotificationPresenter::PermissionAllowed, NotificationClient::PermissionAllowed);

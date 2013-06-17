@@ -18,31 +18,25 @@
 
             function runTest() 
             {
-                // Initialize the MockCDM. It supports the key system 'com.apple.mock', the 
-                // mime type 'video/mock'. It requires init data to begin with 'mock', and
-                // keys to begin with 'key'.
-                if (internals)
-                    internals.initializeMockCDM();
-
                 consoleWrite("Test MediaKeys.");
                 testExpected('typeof window.MediaKeys', 'function');
                 testDOMException('new MediaKeys("")', "DOMException.INVALID_ACCESS_ERR");
                 testDOMException('new MediaKeys("unsupported")', "DOMException.NOT_SUPPORTED_ERR");
-                run('mediaKeys = new MediaKeys("com.webcore.mock")');
+                run('mediaKeys = new MediaKeys("org.w3.clearkey")');
                 testExpected('typeof mediaKeys', 'object');
-                testExpected('mediaKeys.keySystem', 'com.webcore.mock');
+                testExpected('mediaKeys.keySystem', 'org.w3.clearkey');
                 testExpected('typeof mediaKeys.createSession', 'function');
                 testDOMException('mediaKeys.createSession("", new Uint8Array(1))', "DOMException.INVALID_ACCESS_ERR");
                 testDOMException('mediaKeys.createSession("unsupported/type")', "DOMException.NOT_SUPPORTED_ERR");
                 consoleWrite("");
 
                 consoleWrite("Test MediaKeySession.");
-                run('mediaKeySession = mediaKeys.createSession("video/mock", initData)');
+                run('mediaKeySession = mediaKeys.createSession("video/webm", initData)');
                 testExpected('typeof mediaKeySession', 'object');
                 testExpected('typeof mediaKeySession.addEventListener', 'function');
                 testExpected('typeof mediaKeySession.update', 'function');
                 testExpected('mediaKeySession.error', null);
-                testExpected('mediaKeySession.keySystem', 'com.webcore.mock');
+                testExpected('mediaKeySession.keySystem', 'org.w3.clearkey');
                 testExpected('mediaKeySession.sessionId', null, '!=');
                 testExpected('mediaKeySession.onwebkitkeyadded', null);
                 testExpected('mediaKeySession.onwebkitkeyerror', null);

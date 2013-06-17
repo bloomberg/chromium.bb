@@ -110,11 +110,6 @@
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/rendering/RenderLayerBacking.h"
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-#include "core/testing/MockCDM.h"
-#include "modules/encryptedmedia/CDM.h"
-#endif
-
 #include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 #include "modules/speech/SpeechSynthesis.h"
@@ -1878,13 +1873,6 @@ void Internals::forceReload(bool endToEnd)
 {
     frame()->loader()->reload(endToEnd);
 }
-
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-void Internals::initializeMockCDM()
-{
-    CDM::registerCDMFactory(MockCDM::create, MockCDM::supportsKeySytem);
-}
-#endif
 
 String Internals::markerTextForListItem(Element* element, ExceptionCode& ec)
 {

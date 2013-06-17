@@ -26,13 +26,12 @@
 #ifndef MediaKeySession_h
 #define MediaKeySession_h
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/Timer.h"
+#include "core/platform/graphics/ContentDecryptionModuleSession.h"
 #include "wtf/Deque.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -44,21 +43,25 @@ namespace WebCore {
 class GenericEventQueue;
 class MediaKeyError;
 class MediaKeys;
-class CDMSession;
+class ContentDecryptionModule;
+class ContentDecryptionModuleSession;
 
-class MediaKeySession : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTarget, public ContextDestructionObserver {
+// References are held by JS and MediaKeys.
+// Because this object controls the lifetime of the ContentDecryptionModuleSession,
+// it may outlive any references to it as long as the MediaKeys object is alive.
+// The ContentDecryptionModuleSession has the same lifetime as this object.
+class MediaKeySession
+    : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTarget, public ContextDestructionObserver
+    , private ContentDecryptionModuleSessionClient {
 public:
-    static PassRefPtr<MediaKeySession> create(ScriptExecutionContext*, MediaKeys*, const String& keySystem);
+    static PassRefPtr<MediaKeySession> create(ScriptExecutionContext*, ContentDecryptionModule*, MediaKeys*);
     ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
-    const String& sessionId() const;
+    String sessionId() const;
 
     void setError(MediaKeyError*);
     MediaKeyError* error() { return m_error.get(); }
-
-    void setKeys(MediaKeys* keys) { m_keys = keys; }
-    MediaKeys* keys() const { return m_keys; }
 
     void generateKeyRequest(const String& mimeType, Uint8Array* initData);
     void update(Uint8Array* key, ExceptionCode&);
@@ -76,17 +79,22 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
-protected:
-    MediaKeySession(ScriptExecutionContext*, MediaKeys*, const String& keySystem);
+private:
+    MediaKeySession(ScriptExecutionContext*, ContentDecryptionModule*, MediaKeys*);
     void keyRequestTimerFired(Timer<MediaKeySession>*);
     void addKeyTimerFired(Timer<MediaKeySession>*);
 
-    MediaKeys* m_keys;
+    // ContentDecryptionModuleSessionClient
+    virtual void keyAdded() OVERRIDE;
+    virtual void keyError(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
+    virtual void keyMessage(const unsigned char* message, size_t messageLength, const KURL& destinationURL) OVERRIDE;
+
     String m_keySystem;
-    String m_sessionId;
     RefPtr<MediaKeyError> m_error;
     OwnPtr<GenericEventQueue> m_asyncEventQueue;
-    OwnPtr<CDMSession> m_session;
+    OwnPtr<ContentDecryptionModuleSession> m_session;
+    // Used to remove the reference from the parent MediaKeys when close()'d.
+    MediaKeys* m_keys;
 
     struct PendingKeyRequest {
         PendingKeyRequest(const String& mimeType, Uint8Array* initData) : mimeType(mimeType), initData(initData) { }
@@ -110,7 +118,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(ENCRYPTED_MEDIA_V2)
 
 #endif // MediaKeySession_h

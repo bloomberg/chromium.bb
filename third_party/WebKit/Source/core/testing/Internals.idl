@@ -239,8 +239,6 @@
 
     void forceReload(boolean endToEnd);
 
-    [Conditional=ENCRYPTED_MEDIA_V2] void initializeMockCDM();
-
     void enableMockSpeechSynthesizer();
 
     [RaisesException] DOMString getImageSourceURL(Element element);

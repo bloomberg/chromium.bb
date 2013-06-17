@@ -16,18 +16,12 @@
             var mediaKeySession;
             var initData = stringToUint8Array('mock');
             var invalidKey = stringToUint8Array('invalid');
-            var validKey = stringToUint8Array('key');
+            var validKey = stringToUint8Array('1234567890abcdef');
 
             function runTest() 
             {
-                // Initialize the MockCDM. It supports the key system 'com.apple.mock', the 
-                // mime type 'video/mock'. It requires init data to begin with 'mock', and
-                // keys to begin with 'key'.
-                if (internals)
-                    internals.initializeMockCDM();
-
-                run('mediaKeys = new MediaKeys("com.webcore.mock")');
-                run('mediaKeySession = mediaKeys.createSession("video/mock", initData)');
+                run('mediaKeys = new MediaKeys("org.w3.clearkey")');
+                run('mediaKeySession = mediaKeys.createSession("video/webm", initData)');
                 waitForEvent('webkitkeymessage', keyMessage, false, false, mediaKeySession);
                 waitForEvent('webkitkeyerror', keyError, false, false, mediaKeySession);
                 waitForEvent('webkitkeyadded', null, true, false, mediaKeySession);

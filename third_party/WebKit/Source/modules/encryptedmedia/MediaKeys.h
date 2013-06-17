@@ -26,12 +26,9 @@
 #ifndef MediaKeys_h
 #define MediaKeys_h
 
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/encryptedmedia/CDM.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -41,10 +38,15 @@
 
 namespace WebCore {
 
+class ContentDecryptionModule;
 class MediaKeySession;
 class HTMLMediaElement;
 
-class MediaKeys : public RefCounted<MediaKeys>, public ScriptWrappable, public CDMClient {
+// References are held by JS and HTMLMediaElement.
+// The ContentDecryptionModule has the same lifetime as this object.
+// Maintains a reference to all MediaKeySessions created to ensure they live as
+// long as this object unless explicitly close()'d.
+class MediaKeys : public RefCounted<MediaKeys>, public ScriptWrappable {
 public:
     static PassRefPtr<MediaKeys> create(const String& keySystem, ExceptionCode&);
     ~MediaKeys();
@@ -52,26 +54,19 @@ public:
     PassRefPtr<MediaKeySession> createSession(ScriptExecutionContext*, const String& mimeType, Uint8Array* initData, ExceptionCode&);
 
     const String& keySystem() const { return m_keySystem; }
-    CDM* cdm() { return m_cdm.get(); }
 
-    HTMLMediaElement* mediaElement() const { return m_mediaElement; }
     void setMediaElement(HTMLMediaElement*);
 
 protected:
-    // CDMClient:
-    virtual MediaPlayer* cdmMediaPlayer(const CDM*) const OVERRIDE;
-
-    MediaKeys(const String& keySystem, PassOwnPtr<CDM>);
+    MediaKeys(const String& keySystem, PassOwnPtr<ContentDecryptionModule>);
 
     Vector<RefPtr<MediaKeySession> > m_sessions;
 
     HTMLMediaElement* m_mediaElement;
-    String m_keySystem;
-    OwnPtr<CDM> m_cdm;
+    const String m_keySystem;
+    OwnPtr<ContentDecryptionModule> m_cdm;
 };
 
 }
-
-#endif // ENABLE(ENCRYPTED_MEDIA_V2)
 
 #endif // MediaKeys_h

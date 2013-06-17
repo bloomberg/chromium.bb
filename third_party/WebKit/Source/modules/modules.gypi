@@ -216,8 +216,6 @@
       'device_orientation/DeviceRotationRate.h',
       'donottrack/NavigatorDoNotTrack.cpp',
       'donottrack/NavigatorDoNotTrack.h',
-      'encryptedmedia/CDM.cpp',
-      'encryptedmedia/CDM.h',
       'encryptedmedia/MediaKeyMessageEvent.cpp',
       'encryptedmedia/MediaKeyMessageEvent.h',
       'encryptedmedia/MediaKeyNeededEvent.cpp',
