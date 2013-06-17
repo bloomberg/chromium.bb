@@ -5612,9 +5612,9 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
           LOCAL_RENDER_WARNING(
               std::string("texture bound to texture unit ") +
               base::IntToString(texture_unit_index) +
-              " is not renderable. It maybe non-power-of-2 and have "
-              " incompatible texture filtering or is not "
-              "'texture complete'");
+              " is not renderable. It maybe non-power-of-2 and have"
+              " incompatible texture filtering or is not"
+              " 'texture complete'");
         }
       }
       // else: should this be an error?
