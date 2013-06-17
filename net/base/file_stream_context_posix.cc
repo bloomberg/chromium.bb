@@ -23,7 +23,6 @@
 #include "base/metrics/histogram.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -45,22 +44,26 @@ COMPILE_ASSERT(FROM_BEGIN   == SEEK_SET &&
                FROM_CURRENT == SEEK_CUR &&
                FROM_END     == SEEK_END, whence_matches_system);
 
-FileStream::Context::Context(const BoundNetLog& bound_net_log)
+FileStream::Context::Context(const BoundNetLog& bound_net_log,
+                             const scoped_refptr<base::TaskRunner>& task_runner)
     : file_(base::kInvalidPlatformFileValue),
       record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
-      bound_net_log_(bound_net_log) {
+      bound_net_log_(bound_net_log),
+      task_runner_(task_runner) {
 }
 
 FileStream::Context::Context(base::PlatformFile file,
                              const BoundNetLog& bound_net_log,
-                             int /* open_flags */)
+                             int /* open_flags */,
+                             const scoped_refptr<base::TaskRunner>& task_runner)
     : file_(file),
       record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
-      bound_net_log_(bound_net_log) {
+      bound_net_log_(bound_net_log),
+      task_runner_(task_runner) {
 }
 
 FileStream::Context::~Context() {
@@ -84,7 +87,7 @@ int FileStream::Context::ReadAsync(IOBuffer* in_buf,
 
   scoped_refptr<IOBuffer> buf = in_buf;
   const bool posted = base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true /* task is slow */).get(),
+      task_runner_.get(),
       FROM_HERE,
       base::Bind(&Context::ReadFileImpl, base::Unretained(this), buf, buf_len),
       base::Bind(&Context::ProcessAsyncResult,
@@ -111,7 +114,7 @@ int FileStream::Context::WriteAsync(IOBuffer* in_buf,
 
   scoped_refptr<IOBuffer> buf = in_buf;
   const bool posted = base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(true /* task is slow */).get(),
+      task_runner_.get(),
       FROM_HERE,
       base::Bind(&Context::WriteFileImpl, base::Unretained(this), buf, buf_len),
       base::Bind(&Context::ProcessAsyncResult,

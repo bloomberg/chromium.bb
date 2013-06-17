@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -38,28 +37,32 @@ void IncrementOffset(OVERLAPPED* overlapped, DWORD count) {
 
 }  // namespace
 
-FileStream::Context::Context(const BoundNetLog& bound_net_log)
+FileStream::Context::Context(const BoundNetLog& bound_net_log,
+                             const scoped_refptr<base::TaskRunner>& task_runner)
     : io_context_(),
       file_(base::kInvalidPlatformFileValue),
       record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
       bound_net_log_(bound_net_log),
-      error_source_(FILE_ERROR_SOURCE_COUNT) {
+      error_source_(FILE_ERROR_SOURCE_COUNT),
+      task_runner_(task_runner) {
   io_context_.handler = this;
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
 }
 
 FileStream::Context::Context(base::PlatformFile file,
                              const BoundNetLog& bound_net_log,
-                             int open_flags)
+                             int open_flags,
+                             const scoped_refptr<base::TaskRunner>& task_runner)
     : io_context_(),
       file_(file),
       record_uma_(false),
       async_in_progress_(false),
       orphaned_(false),
       bound_net_log_(bound_net_log),
-      error_source_(FILE_ERROR_SOURCE_COUNT) {
+      error_source_(FILE_ERROR_SOURCE_COUNT),
+      task_runner_(task_runner) {
   io_context_.handler = this;
   memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
   if (file_ != base::kInvalidPlatformFileValue &&

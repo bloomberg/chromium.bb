@@ -11,6 +11,7 @@
 #define NET_BASE_FILE_STREAM_H_
 
 #include "base/platform_file.h"
+#include "base/task_runner.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream_whence.h"
 #include "net/base/net_export.h"
@@ -28,6 +29,11 @@ class NET_EXPORT FileStream {
  public:
   // Creates a |FileStream| with a new |BoundNetLog| (based on |net_log|)
   // attached.  |net_log| may be NULL if no logging is needed.
+  // Uses |task_runner| for asynchronous operations.
+  FileStream(net::NetLog* net_log,
+             const scoped_refptr<base::TaskRunner>& task_runner);
+
+  // Same as above, but runs async tasks in base::WorkerPool.
   explicit FileStream(net::NetLog* net_log);
 
   // Construct a FileStream with an existing file handle and opening flags.
@@ -36,8 +42,15 @@ class NET_EXPORT FileStream {
   // opened.
   // |net_log| is the net log pointer to use to create a |BoundNetLog|.  May be
   // NULL if logging is not needed.
+  // Uses |task_runner| for asynchronous operations.
   // Note: the new FileStream object takes ownership of the PlatformFile and
   // will close it on destruction.
+  FileStream(base::PlatformFile file,
+             int flags,
+             net::NetLog* net_log,
+             const scoped_refptr<base::TaskRunner>& task_runner);
+
+  // Same as above, but runs async tasks in base::WorkerPool.
   FileStream(base::PlatformFile file, int flags, net::NetLog* net_log);
 
   // The underlying file is closed automatically.

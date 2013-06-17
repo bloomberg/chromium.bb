@@ -10,9 +10,9 @@
 // FileStream::Context instance). Context was extracted into a different class
 // to be able to do and finish all async operations even when FileStream
 // instance is deleted. So FileStream's destructor can schedule file
-// closing to be done by Context in WorkerPool and then just return (releasing
-// Context pointer from scoped_ptr) without waiting for actual closing to
-// complete.
+// closing to be done by Context in WorkerPool (or the TaskRunner passed to
+// constructor) and then just return (releasing Context pointer from
+// scoped_ptr) without waiting for actual closing to complete.
 // Implementation of FileStream::Context is divided in two parts: some methods
 // and members are platform-independent and some depend on the platform. This
 // header file contains the complete definition of Context class including all
@@ -29,6 +29,7 @@
 
 #include "base/message_loop.h"
 #include "base/platform_file.h"
+#include "base/task_runner.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
 #include "net/base/file_stream_metrics.h"
@@ -58,10 +59,12 @@ class FileStream::Context {
   // file_stream_context_{win,posix}.cc.
   ////////////////////////////////////////////////////////////////////////////
 
-  explicit Context(const BoundNetLog& bound_net_log);
+  Context(const BoundNetLog& bound_net_log,
+          const scoped_refptr<base::TaskRunner>& task_runner);
   Context(base::PlatformFile file,
           const BoundNetLog& bound_net_log,
-          int open_flags);
+          int open_flags,
+          const scoped_refptr<base::TaskRunner>& task_runner);
 #if defined(OS_WIN)
   virtual ~Context();
 #elif defined(OS_POSIX)
@@ -211,6 +214,7 @@ class FileStream::Context {
   bool async_in_progress_;
   bool orphaned_;
   BoundNetLog bound_net_log_;
+  scoped_refptr<base::TaskRunner> task_runner_;
 
 #if defined(OS_WIN)
   base::MessageLoopForIO::IOContext io_context_;

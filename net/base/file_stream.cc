@@ -15,19 +15,43 @@
 
 namespace net {
 
+FileStream::FileStream(NetLog* net_log,
+                       const scoped_refptr<base::TaskRunner>& task_runner)
+      /* To allow never opened stream to be destroyed on any thread we set flags
+         as if stream was opened asynchronously. */
+    : open_flags_(base::PLATFORM_FILE_ASYNC),
+      bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
+      context_(new Context(bound_net_log_, task_runner)) {
+  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
+}
+
 FileStream::FileStream(NetLog* net_log)
       /* To allow never opened stream to be destroyed on any thread we set flags
          as if stream was opened asynchronously. */
     : open_flags_(base::PLATFORM_FILE_ASYNC),
       bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(bound_net_log_)) {
+      context_(new Context(bound_net_log_,
+                           base::WorkerPool::GetTaskRunner(true /* slow */))) {
+  bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
+}
+
+FileStream::FileStream(base::PlatformFile file,
+                       int flags,
+                       NetLog* net_log,
+                       const scoped_refptr<base::TaskRunner>& task_runner)
+    : open_flags_(flags),
+      bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
+      context_(new Context(file, bound_net_log_, open_flags_, task_runner)) {
   bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
 FileStream::FileStream(base::PlatformFile file, int flags, NetLog* net_log)
     : open_flags_(flags),
       bound_net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_FILESTREAM)),
-      context_(new Context(file, bound_net_log_, open_flags_)) {
+      context_(new Context(file,
+                           bound_net_log_,
+                           open_flags_,
+                           base::WorkerPool::GetTaskRunner(true /* slow */))) {
   bound_net_log_.BeginEvent(NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
