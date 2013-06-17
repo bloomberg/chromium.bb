@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
 using content::BrowserThread;
@@ -35,26 +36,14 @@ template base::Callback<void(SyncStatusCode)>
 AssignAndQuitCallback(base::RunLoop*, SyncStatusCode*);
 
 MultiThreadTestHelper::MultiThreadTestHelper()
-    : file_thread_(new base::Thread("File_Thread")),
-      io_thread_(new base::Thread("IO_Thread")) {}
+    : thread_bundle_(new content::TestBrowserThreadBundle(
+          content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+          content::TestBrowserThreadBundle::REAL_IO_THREAD)) {
+}
 
 MultiThreadTestHelper::~MultiThreadTestHelper() {}
 
 void MultiThreadTestHelper::SetUp() {
-  file_thread_->Start();
-  io_thread_->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-
-  browser_ui_thread_.reset(
-      new TestBrowserThread(BrowserThread::UI,
-                            base::MessageLoop::current()));
-  browser_file_thread_.reset(
-      new TestBrowserThread(BrowserThread::FILE,
-                            file_thread_->message_loop()));
-  browser_io_thread_.reset(
-      new TestBrowserThread(BrowserThread::IO,
-                            io_thread_->message_loop()));
-
   ui_task_runner_ =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
   file_task_runner_ =
@@ -70,9 +59,6 @@ void MultiThreadTestHelper::TearDown() {
   file_task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
   run_loop.Run();
-
-  io_thread_->Stop();
-  file_thread_->Stop();
 }
 
 }  // namespace sync_file_system

@@ -12,11 +12,10 @@
 namespace base {
 class RunLoop;
 class SingleThreadTaskRunner;
-class Thread;
 }
 
 namespace content {
-class TestBrowserThread;
+class TestBrowserThreadBundle;
 }
 
 namespace sync_file_system {
@@ -37,8 +36,6 @@ class MultiThreadTestHelper {
   void SetUp();
   void TearDown();
 
-  base::MessageLoop* message_loop() { return &message_loop_; }
-
   base::SingleThreadTaskRunner* ui_task_runner() {
     return ui_task_runner_.get();
   }
@@ -52,13 +49,7 @@ class MultiThreadTestHelper {
   }
 
  private:
-  base::MessageLoop message_loop_;
-  scoped_ptr<base::Thread> file_thread_;
-  scoped_ptr<base::Thread> io_thread_;
-
-  scoped_ptr<content::TestBrowserThread> browser_ui_thread_;
-  scoped_ptr<content::TestBrowserThread> browser_file_thread_;
-  scoped_ptr<content::TestBrowserThread> browser_io_thread_;
+  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
