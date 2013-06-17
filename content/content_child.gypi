@@ -18,6 +18,10 @@
   'sources': [
     'child/android/child_jni_registrar.cc',
     'child/android/child_jni_registrar.h',
+    'child/appcache_backend_proxy.cc',
+    'child/appcache_backend_proxy.h',
+    'child/appcache_dispatcher.cc',
+    'child/appcache_dispatcher.h',
     'child/child_histogram_message_filter.cc',
     'child/child_histogram_message_filter.h',
     'child/child_process.cc',

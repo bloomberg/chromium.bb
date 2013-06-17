@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/appcache/appcache_backend_proxy.h"
+#include "content/child/appcache_backend_proxy.h"
 
 #include "content/common/appcache_messages.h"
 
