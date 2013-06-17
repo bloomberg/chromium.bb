@@ -1578,7 +1578,7 @@
         'browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm',
         'browser/ui/cocoa/one_click_signin_bubble_controller_browsertest.mm',
         'browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm',
-	'browser/ui/cocoa/profile_signin_confirmation_view_controller_browsertest.mm',
+        'browser/ui/cocoa/profile_signin_confirmation_view_controller_browsertest.mm',
         'browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm',
         'browser/ui/cocoa/tab_contents/overlayable_contents_controller_browsertest.mm',
         'browser/ui/cocoa/view_id_util_browsertest.mm',
@@ -1999,6 +1999,7 @@
             'chrome'
           ],
           'sources': [
+            'browser/renderer_host/chrome_render_widget_host_view_mac_delegate_browsertest.cc',
             'browser/spellchecker/spellcheck_message_filter_mac_browsertest.cc',
           ],
           'sources!': [
