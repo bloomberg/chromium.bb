@@ -3514,11 +3514,11 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32
 {
 	struct shell_surface *shsurf = get_shell_surface(es);
 	struct desktop_shell *shell = shsurf->shell;
-	struct weston_compositor *compositor = shsurf->surface->compositor;
 
 	int type_changed = 0;
 
-	if (!weston_surface_is_mapped(es) && !wl_list_empty(&shsurf->popup.grab_link)) {
+	if (!weston_surface_is_mapped(es) &&
+	    !wl_list_empty(&shsurf->popup.grab_link)) {
 		remove_popup_grab(shsurf);
 	}
 
