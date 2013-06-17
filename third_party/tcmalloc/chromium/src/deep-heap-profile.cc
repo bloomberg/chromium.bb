@@ -308,6 +308,10 @@ void DeepHeapProfile::DumpOrderedProfile(const char* reason,
 
   AppendCommandLine(&buffer);
 
+  buffer.AppendString("PageSize: ", 0);
+  buffer.AppendInt(getpagesize(), 0, 0);
+  buffer.AppendChar('\n');
+
   // Fill buffer with the global stats.
   buffer.AppendString(kMMapListHeader, 0);
 
