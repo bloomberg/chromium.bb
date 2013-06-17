@@ -135,7 +135,7 @@ cr.define('options', function() {
      * @private
      */
     setProfileInfo_: function(info) {
-      self.profileInfo_ = info;
+      this.profileInfo_ = info;
       $('managed-user-created-title').textContent =
           loadTimeData.getStringF('managedUserCreateConfirmTitle', info.name);
       $('managed-user-created-switch').textContent =
