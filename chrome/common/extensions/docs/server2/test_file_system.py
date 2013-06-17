@@ -16,7 +16,7 @@ class TestFileSystem(FileSystem):
   # in ServerInstance.
   @staticmethod
   def MoveTo(base, obj):
-    '''Returns an object as |obj| moved to |prefix|. That is,
+    '''Returns an object as |obj| moved to |base|. That is,
     MoveTo('foo/bar', {'a': 'b'}) -> {'foo': {'bar': {'a': 'b'}}}
     '''
     result = {}

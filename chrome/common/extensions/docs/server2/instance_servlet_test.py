@@ -10,7 +10,6 @@ from file_system import FileSystem
 from instance_servlet import InstanceServlet
 from servlet import Request
 from test_branch_utility import TestBranchUtility
-from test_file_system import TestFileSystem
 from test_util import DisableLogging
 
 # NOTE(kalman): The ObjectStore created by the InstanceServlet is backed onto

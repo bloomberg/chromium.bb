@@ -5,7 +5,6 @@
 from appengine_wrappers import db, IsDevServer
 from datastore_models import PersistentObjectStoreItem
 from future import Future
-import logging
 from object_store import ObjectStore
 
 class _AsyncGetFuture(object):

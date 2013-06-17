@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-import re
 import posixpath
 import xml.dom.minidom as xml
 from xml.parsers.expat import ExpatError

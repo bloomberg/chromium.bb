@@ -119,7 +119,7 @@ class TemplateDataSource(object):
     from the TemplateDataSource with the |get| method.
     """
     template = self.GetTemplate(self._public_template_path, template_name)
-    if not template:
+    if template is None:
       return None
       # TODO error handling
     render_data = template.render({
