@@ -33,7 +33,7 @@
     ImplementedAs=DOMNamedFlowCollection
 ] interface WebKitNamedFlowCollection {
     readonly attribute unsigned long length;
-    getter NamedFlow item(unsigned long index);
-    NamedFlow namedItem(DOMString name);
-    [NotEnumerable, ImplementedAs=namedItem] getter NamedFlow (DOMString name);
+    getter WebKitNamedFlow item(unsigned long index);
+    WebKitNamedFlow namedItem(DOMString name);
+    [NotEnumerable, ImplementedAs=namedItem] getter WebKitNamedFlow (DOMString name);
 };

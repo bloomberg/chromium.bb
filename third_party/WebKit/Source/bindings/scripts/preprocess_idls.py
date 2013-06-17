@@ -106,12 +106,7 @@ def generate_constructor_attribute_list(interface_name, extended_attributes):
     else:
         extended_string = ''
 
-    # FIXME: Remove this once we remove [InterfaceName] IDL attribute, http://crbug.com/242137
-    if 'InterfaceName' in extended_attributes:
-        extended_interface_name = extended_attributes['InterfaceName']
-    else:
-        extended_interface_name = interface_name
-    attribute_string = 'attribute %sConstructor %s' % (interface_name, extended_interface_name)
+    attribute_string = 'attribute %(interface_name)sConstructor %(interface_name)s' % {'interface_name': interface_name}
     attributes_list = [extended_string + attribute_string]
 
     # In addition to the regular property, for every [NamedConstructor]

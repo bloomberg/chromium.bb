@@ -26,7 +26,7 @@ TextEvent
 TransitionEvent
 UIEvent
 UIEvents interfaceName=UIEvent
-WebKitAnimationEvent interfaceName=AnimationEvent
+WebKitAnimationEvent interfaceName=AnimationEvent, JSInterfaceName=WebKitAnimationEvent
 WebKitTransitionEvent interfaceName=TransitionEvent
 WheelEvent
 core/xml/XMLHttpRequestProgressEvent

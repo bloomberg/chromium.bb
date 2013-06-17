@@ -1260,7 +1260,7 @@ sub GenerateActivityLogging
     my $interface = shift;
     my $propertyName = shift;
 
-    my $visibleInterfaceName = GetVisibleInterfaceName($interface);
+    my $interfaceName = $interface->name;
 
     AddToImplIncludes("bindings/v8/V8Binding.h");
     AddToImplIncludes("bindings/v8/V8DOMActivityLogger.h");
@@ -1272,7 +1272,7 @@ sub GenerateActivityLogging
     V8PerContextData* contextData = V8PerContextData::from(args.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
         Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(args);
-        contextData->activityLogger()->log("${visibleInterfaceName}.${propertyName}", args.Length(), loggerArgs.data(), "${accessType}");
+        contextData->activityLogger()->log("${interfaceName}.${propertyName}", args.Length(), loggerArgs.data(), "${accessType}");
     }
 END
     } elsif ($accessType eq "Setter") {
@@ -1280,14 +1280,14 @@ END
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
         v8::Handle<v8::Value> loggerArg[] = { value };
-        contextData->activityLogger()->log("${visibleInterfaceName}.${propertyName}", 1, &loggerArg[0], "${accessType}");
+        contextData->activityLogger()->log("${interfaceName}.${propertyName}", 1, &loggerArg[0], "${accessType}");
     }
 END
     } elsif ($accessType eq "Getter") {
         $code .= <<END;
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger())
-        contextData->activityLogger()->log("${visibleInterfaceName}.${propertyName}", 0, 0, "${accessType}");
+        contextData->activityLogger()->log("${interfaceName}.${propertyName}", 0, 0, "${accessType}");
 END
     } else {
         die "Unrecognized activity logging access type";
@@ -3672,7 +3672,6 @@ sub GenerateImplementation
     my $object = shift;
     my $interface = shift;
     my $interfaceName = $interface->name;
-    my $visibleInterfaceName = GetVisibleInterfaceName($interface);
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $nativeType = GetNativeTypeForConversions($interface);
@@ -4037,7 +4036,7 @@ END
 END
     }
     $code .=  <<END;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, \"${visibleInterfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::configureTemplate(desc, \"${interfaceName}\", $parentClassTemplate, ${v8ClassName}::internalFieldCount,
 END
     # Set up our attributes if we have them
     if ($has_attributes) {
@@ -5836,15 +5835,6 @@ sub ExtendedAttributeContains
 
     my @callWithKeywords = split /\s*\|\s*/, $callWith;
     return grep { $_ eq $keyword } @callWithKeywords;
-}
-
-# FIXME: This is backwards. We currently name the interface and the IDL files with the implementation name. We
-# should use the real interface name in the IDL files and then use ImplementedAs to map this to the implementation name.
-sub GetVisibleInterfaceName
-{
-    my $interface = shift;
-    my $interfaceName = $interface->extendedAttributes->{"InterfaceName"};
-    return $interfaceName ? $interfaceName : $interface->name;
 }
 
 sub InheritsInterface

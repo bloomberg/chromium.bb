@@ -31,9 +31,9 @@
     NoInterfaceObject,
     EnabledAtRuntime=cssRegions,
     EventTarget,
-    InterfaceName=WebKitNamedFlow,
+    ImplementedAs=NamedFlow,
     GenerateIsReachable=ownerNode
-] interface NamedFlow {
+] interface WebKitNamedFlow {
     readonly attribute DOMString name;
     readonly attribute boolean overset;
     readonly attribute long firstEmptyRegionIndex;

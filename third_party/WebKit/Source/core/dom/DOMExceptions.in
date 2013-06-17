@@ -1,6 +1,6 @@
 namespace=DOMException
 
-core/dom/DOMCoreException
+core/dom/DOMCoreException JSInterfaceName=DOMException
 core/fileapi/FileException
 modules/webdatabase/SQLException
 core/svg/SVGException

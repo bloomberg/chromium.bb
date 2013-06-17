@@ -60,7 +60,6 @@ GlobalContext=WindowOnly|WorkerOnly|WindowAndWorker
 Immutable
 ImplementedAs=*
 InitializedByEventConstructor
-InterfaceName=*
 IsIndex
 MasqueradesAsUndefined
 MeasureAs=*
