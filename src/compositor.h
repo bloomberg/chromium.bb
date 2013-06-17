@@ -125,6 +125,7 @@ struct weston_spring {
 	double current;
 	double target;
 	double previous;
+	double min, max;
 	uint32_t timestamp;
 	uint32_t clip;
 };

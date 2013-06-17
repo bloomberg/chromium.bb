@@ -42,6 +42,8 @@ weston_spring_init(struct weston_spring *spring,
 	spring->previous = current;
 	spring->target = target;
 	spring->clip = WESTON_SPRING_OVERSHOOT;
+	spring->min = 0.0;
+	spring->max = 1.0;
 }
 
 WL_EXPORT void
@@ -77,22 +79,26 @@ weston_spring_update(struct weston_spring *spring, uint32_t msec)
 			break;
 
 		case WESTON_SPRING_CLAMP:
-			if (spring->current >= 1.0) {
-				spring->current = 1.0;
-				spring->previous = 1.0;
-			} else if (spring->current <= 0.0) {
-				spring->current = 0.0;
-				spring->previous = 0.0;
+			if (spring->current > spring->max) {
+				spring->current = spring->max;
+				spring->previous = spring->max;
+			} else if (spring->current < 0.0) {
+				spring->current = spring->min;
+				spring->previous = spring->min;
 			}
 			break;
 
 		case WESTON_SPRING_BOUNCE:
-			if (spring->current >= 1.0) {
-				spring->current = 2.0 - spring->current;
-				spring->previous = 2.0 - spring->previous;
-			} else if (spring->current <= 0.0) {
-				spring->current = -spring->current;
-				spring->previous = -spring->previous;
+			if (spring->current > spring->max) {
+				spring->current =
+					2 * spring->max - spring->current;
+				spring->previous =
+					2 * spring->max - spring->previous;
+			} else if (spring->current < spring->min) {
+				spring->current =
+					2 * spring->min - spring->current;
+				spring->previous =
+					2 * spring->min - spring->previous;
 			}
 			break;
 		}
