@@ -47,13 +47,14 @@
 using base::DictionaryValue;
 using base::Value;
 using content::BrowserThread;
+using policy::ManagedModePolicyProvider;
 
 namespace {
 
 const char kManagedModeFinchActive[] = "Active";
 const char kManagedModeFinchName[] = "ManagedModeLaunch";
 const char kManagedUserAccessRequestKeyPrefix[] =
-    "X-ManagedUser-AccessRequests:";
+    "X-ManagedUser-AccessRequests";
 const char kManagedUserAccessRequestTime[] = "timestamp";
 const char kManagedUserPseudoEmail[] = "managed_user@localhost";
 
@@ -331,6 +332,12 @@ ScopedVector<ManagedModeSiteList> ManagedUserService::GetActiveSiteLists() {
   return site_lists.Pass();
 }
 
+ManagedModePolicyProvider* ManagedUserService::GetPolicyProvider() {
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
+  return connector->managed_mode_policy_provider();
+}
+
 void ManagedUserService::OnDefaultFilteringBehaviorChanged() {
   DCHECK(ProfileIsManaged());
 
@@ -345,6 +352,25 @@ void ManagedUserService::UpdateSiteLists() {
   url_filter_context_.LoadWhitelists(GetActiveSiteLists());
 }
 
+void ManagedUserService::AddAccessRequest(const GURL& url) {
+  // Normalize the URL.
+  GURL normalized_url = ManagedModeURLFilter::Normalize(url);
+
+  // Escape the URL.
+  std::string output(net::EscapeQueryParamValue(normalized_url.spec(), true));
+
+  // Add the prefix.
+  std::string key = ManagedModePolicyProvider::MakeSplitSettingKey(
+      kManagedUserAccessRequestKeyPrefix, output);
+
+  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+
+  // TODO(sergiu): Use sane time here when it's ready.
+  dict->SetDouble(kManagedUserAccessRequestTime, base::Time::Now().ToJsTime());
+
+  GetPolicyProvider()->UploadItem(key, dict.PassAs<Value>());
+}
+
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForHost(
     const std::string& hostname) {
   const DictionaryValue* dict =
@@ -354,49 +380,6 @@ ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForHost(
     return MANUAL_NONE;
 
   return allow ? MANUAL_ALLOW : MANUAL_BLOCK;
-}
-
-void ManagedUserService::SetManualBehaviorForHosts(
-    const std::vector<std::string>& hostnames,
-    ManualBehavior behavior) {
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
-  policy::ManagedModePolicyProvider* policy_provider =
-      connector->managed_mode_policy_provider();
-  scoped_ptr<DictionaryValue> dict = policy_provider->GetPolicyDictionary(
-      policy::key::kContentPackManualBehaviorHosts);
-  for (std::vector<std::string>::const_iterator it = hostnames.begin();
-       it != hostnames.end(); ++it) {
-    // The hostname should already be canonicalized, i.e. canonicalizing it
-    // shouldn't change it.
-    DCHECK_EQ(CanonicalizeHostname(*it), *it);
-    if (behavior == MANUAL_NONE)
-      dict->RemoveWithoutPathExpansion(*it, NULL);
-    else
-      dict->SetBooleanWithoutPathExpansion(*it, behavior == MANUAL_ALLOW);
-  }
-  policy_provider->SetPolicy(policy::key::kContentPackManualBehaviorHosts,
-                             dict.PassAs<Value>());
-}
-
-void ManagedUserService::AddAccessRequest(const GURL& url) {
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
-  policy::ManagedModePolicyProvider* policy_provider =
-      connector->managed_mode_policy_provider();
-
-  // Escape the URL.
-  std::string output(net::EscapeQueryParamValue(url.spec(), true));
-
-  // Add the prefix.
-  std::string key(kManagedUserAccessRequestKeyPrefix + output);
-
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
-
-  // TODO(sergiu): Use sane time here when it's ready.
-  dict->SetDouble(kManagedUserAccessRequestTime, base::Time::Now().ToJsTime());
-
-  policy_provider->SetPolicy(key, dict.PassAs<Value>());
 }
 
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForURL(
@@ -409,28 +392,6 @@ ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForURL(
     return MANUAL_NONE;
 
   return allow ? MANUAL_ALLOW : MANUAL_BLOCK;
-}
-
-void ManagedUserService::SetManualBehaviorForURLs(const std::vector<GURL>& urls,
-                                                  ManualBehavior behavior) {
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
-  policy::ManagedModePolicyProvider* policy_provider =
-      connector->managed_mode_policy_provider();
-  scoped_ptr<DictionaryValue> dict = policy_provider->GetPolicyDictionary(
-      policy::key::kContentPackManualBehaviorURLs);
-  for (std::vector<GURL>::const_iterator it = urls.begin(); it != urls.end();
-       ++it) {
-    GURL url = ManagedModeURLFilter::Normalize(*it);
-    if (behavior == MANUAL_NONE) {
-      dict->RemoveWithoutPathExpansion(url.spec(), NULL);
-    } else {
-      dict->SetBooleanWithoutPathExpansion(url.spec(),
-                                           behavior == MANUAL_ALLOW);
-    }
-  }
-  policy_provider->SetPolicy(policy::key::kContentPackManualBehaviorURLs,
-                             dict.PassAs<Value>());
 }
 
 void ManagedUserService::GetManualExceptionsForHost(const std::string& host,
@@ -477,8 +438,13 @@ const char* ManagedUserService::GetManagedUserPseudoEmail() {
 }
 
 void ManagedUserService::Init() {
-  if (!ProfileIsManaged())
+  ManagedModePolicyProvider* policy_provider = GetPolicyProvider();
+  if (!ProfileIsManaged()) {
+    if (policy_provider)
+      policy_provider->Clear();
+
     return;
+  }
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kManagedUserSyncToken)) {
@@ -510,12 +476,8 @@ void ManagedUserService::Init() {
       base::Bind(&ManagedUserService::UpdateManualURLs,
                  base::Unretained(this)));
 
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(profile_);
-  policy::ManagedModePolicyProvider* policy_provider =
-      connector->managed_mode_policy_provider();
   if (policy_provider)
-    policy_provider->InitDefaults();
+    policy_provider->InitLocalPolicies();
 
   // Initialize the filter.
   OnDefaultFilteringBehaviorChanged();

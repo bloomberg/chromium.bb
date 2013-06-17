@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/prefs/json_pref_store.h"
+#include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/policy/policy_bundle.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "policy/policy_constants.h"
 #include "sync/api/sync_change.h"
 #include "sync/protocol/sync.pb.h"
@@ -21,6 +23,7 @@
 using base::DictionaryValue;
 using base::Value;
 using content::BrowserThread;
+using content::UserMetricsAction;
 using syncer::MANAGED_USER_SETTINGS;
 using syncer::ModelType;
 using syncer::SyncChange;
@@ -34,22 +37,20 @@ using syncer::SyncMergeResult;
 
 namespace {
 
-SyncData CreateSyncDataForLocalPolicy(const std::string& name,
-                                      const Value* value) {
-  std::string json_value;
-  base::JSONWriter::Write(value, &json_value);
-  ::sync_pb::EntitySpecifics specifics;
-  specifics.mutable_managed_user_setting()->set_name(name);
-  specifics.mutable_managed_user_setting()->set_value(json_value);
-  return SyncData::CreateLocalData(name, name, specifics);
+const char kAtomicSettings[] = "atomic_settings";
+const char kManagedUserInternalPolicyPrefix[] = "X-";
+const char kQueuedItems[] = "queued_items";
+const char kSplitSettingKeySeparator = ':';
+const char kSplitSettings[] = "split_settings";
+
+bool SettingShouldApplyToPolicy(const std::string& key) {
+  return !StartsWithASCII(key, kManagedUserInternalPolicyPrefix, false);
 }
 
 }  // namespace
 
 namespace policy {
 
-// static
-const char ManagedModePolicyProvider::kPolicies[] = "policies";
 
 // static
 scoped_ptr<ManagedModePolicyProvider> ManagedModePolicyProvider::Create(
@@ -70,7 +71,8 @@ scoped_ptr<ManagedModePolicyProvider> ManagedModePolicyProvider::Create(
 
 ManagedModePolicyProvider::ManagedModePolicyProvider(
     PersistentPrefStore* pref_store)
-    : store_(pref_store) {
+    : store_(pref_store),
+      local_policies_(new DictionaryValue) {
   store_->AddObserver(this);
   if (store_->IsInitializationComplete())
     UpdatePolicyFromCache();
@@ -78,70 +80,67 @@ ManagedModePolicyProvider::ManagedModePolicyProvider(
 
 ManagedModePolicyProvider::~ManagedModePolicyProvider() {}
 
-void ManagedModePolicyProvider::InitDefaults() {
-  DCHECK(store_->IsInitializationComplete());
-  if (GetCachedPolicy())
-    return;
-
-  DictionaryValue* dict = new DictionaryValue;
-  dict->SetBoolean(policy::key::kAllowDeletingBrowserHistory, false);
-  dict->SetInteger(policy::key::kContentPackDefaultFilteringBehavior,
-                   ManagedModeURLFilter::ALLOW);
-  dict->SetBoolean(policy::key::kForceSafeSearch, true);
-  dict->SetBoolean(policy::key::kHideWebStoreIcon, true);
-  dict->SetInteger(policy::key::kIncognitoModeAvailability,
-                   IncognitoModePrefs::DISABLED);
-  dict->SetBoolean(policy::key::kSigninAllowed, false);
-
-  store_->SetValue(kPolicies, dict);
-  UpdatePolicyFromCache();
+void ManagedModePolicyProvider::Clear() {
+  store_->RemoveValue(kAtomicSettings);
+  store_->RemoveValue(kSplitSettings);
 }
 
-void ManagedModePolicyProvider::InitDefaultsForTesting(
-    scoped_ptr<DictionaryValue> dict) {
-  DCHECK(store_->IsInitializationComplete());
-  DCHECK(!GetCachedPolicy());
-  store_->SetValue(kPolicies, dict.release());
-  UpdatePolicyFromCache();
-}
-
-const DictionaryValue* ManagedModePolicyProvider::GetPolicies() const {
-  DictionaryValue* dict = GetCachedPolicy();
-  DCHECK(dict);
-  return dict;
-}
-
-const Value* ManagedModePolicyProvider::GetPolicy(
-    const std::string& key) const {
-  DictionaryValue* dict = GetCachedPolicy();
-  Value* value = NULL;
-
-  // Returns NULL if the key doesn't exist.
-  dict->GetWithoutPathExpansion(key, &value);
-  return value;
-}
-
-scoped_ptr<DictionaryValue> ManagedModePolicyProvider::GetPolicyDictionary(
+// static
+std::string ManagedModePolicyProvider::MakeSplitSettingKey(
+    const std::string& prefix,
     const std::string& key) {
-  const Value* value = GetPolicy(key);
-  const DictionaryValue* dict = NULL;
-  if (value && value->GetAsDictionary(&dict))
-    return make_scoped_ptr(dict->DeepCopy());
-
-  return make_scoped_ptr(new DictionaryValue);
+  return prefix + kSplitSettingKeySeparator + key;
 }
 
-void ManagedModePolicyProvider::SetPolicy(const std::string& key,
-                                          scoped_ptr<Value> value) {
-  DictionaryValue* dict = GetCachedPolicy();
-  if (value)
-    dict->SetWithoutPathExpansion(key, value.release());
-  else
-    dict->RemoveWithoutPathExpansion(key, NULL);
+void ManagedModePolicyProvider::UploadItem(const std::string& key,
+                                           scoped_ptr<Value> value) {
+  DCHECK(!SettingShouldApplyToPolicy(key));
 
-  // TODO(bauerb): Report changes to sync.
-  store_->ReportValueChanged(kPolicies);
+  std::string key_suffix = key;
+  DictionaryValue* dict = NULL;
+  if (sync_processor_) {
+    content::RecordAction(
+        UserMetricsAction("ManagedUsers_UploadItem_Syncing"));
+    dict = GetDictionaryAndSplitKey(&key_suffix);
+    DCHECK(GetQueuedItems()->empty());
+    SyncChangeList change_list;
+    SyncData data = CreateSyncDataForPolicy(key, value.get());
+    SyncChange::SyncChangeType change_type =
+        dict->HasKey(key_suffix) ? SyncChange::ACTION_UPDATE
+                                 : SyncChange::ACTION_ADD;
+    change_list.push_back(SyncChange(FROM_HERE, change_type, data));
+    SyncError error =
+        sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
+    DCHECK(!error.IsSet()) << error.ToString();
+  } else {
+    content::RecordAction(
+        UserMetricsAction("ManagedUsers_UploadItem_Queued"));
+    dict = GetQueuedItems();
+  }
+  dict->SetWithoutPathExpansion(key_suffix, value.release());
+}
+
+void ManagedModePolicyProvider::SetLocalPolicyForTesting(
+    const std::string& key,
+    scoped_ptr<Value> value) {
+  if (value)
+    local_policies_->SetWithoutPathExpansion(key, value.release());
+  else
+    local_policies_->RemoveWithoutPathExpansion(key, NULL);
+
   UpdatePolicyFromCache();
+}
+
+// static
+SyncData ManagedModePolicyProvider::CreateSyncDataForPolicy(
+    const std::string& name,
+    const Value* value) {
+  std::string json_value;
+  base::JSONWriter::Write(value, &json_value);
+  ::sync_pb::EntitySpecifics specifics;
+  specifics.mutable_managed_user_setting()->set_name(name);
+  specifics.mutable_managed_user_setting()->set_value(json_value);
+  return SyncData::CreateLocalData(name, name, specifics);
 }
 
 void ManagedModePolicyProvider::Shutdown() {
@@ -175,35 +174,50 @@ SyncMergeResult ManagedModePolicyProvider::MergeDataAndStartSyncing(
   DCHECK_EQ(MANAGED_USER_SETTINGS, type);
   sync_processor_ = sync_processor.Pass();
   error_handler_ = error_handler.Pass();
-  DictionaryValue* policy = GetCachedPolicy();
+
+  // Clear all atomic and split settings, then recreate them from Sync data.
+  Clear();
   base::JSONReader reader;
-  std::set<std::string> seen_keys;
   for (SyncDataList::const_iterator it = initial_sync_data.begin();
        it != initial_sync_data.end(); ++it) {
     DCHECK_EQ(MANAGED_USER_SETTINGS, it->GetDataType());
     const ::sync_pb::ManagedUserSettingSpecifics& managed_user_setting =
         it->GetSpecifics().managed_user_setting();
     Value* value = reader.Read(managed_user_setting.value());
-    seen_keys.insert(managed_user_setting.name());
-    policy->SetWithoutPathExpansion(managed_user_setting.name(), value);
+    std::string name_suffix = managed_user_setting.name();
+    DictionaryValue* dict = GetDictionaryAndSplitKey(&name_suffix);
+    dict->SetWithoutPathExpansion(name_suffix, value);
   }
-
-  SyncChangeList change_list;
-  for (DictionaryValue::Iterator it(*policy); !it.IsAtEnd(); it.Advance()) {
-    // Send all local policies that are not in the initial sync list
-    // to the server.
-    if (seen_keys.find(it.key()) != seen_keys.end())
-      continue;
-
-    SyncData data = CreateSyncDataForLocalPolicy(it.key(), &it.value());
-    change_list.push_back(SyncChange(FROM_HERE, SyncChange::ACTION_ADD, data));
-  }
-  sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
-
-  store_->ReportValueChanged(kPolicies);
+  store_->ReportValueChanged(kAtomicSettings);
+  store_->ReportValueChanged(kSplitSettings);
   UpdatePolicyFromCache();
 
+  // Upload all the queued up items (either with an ADD or an UPDATE action,
+  // depending on whether they already exist) and move them to split settings.
+  SyncChangeList change_list;
+  DictionaryValue* queued_items = GetQueuedItems();
+  for (DictionaryValue::Iterator it(*queued_items); !it.IsAtEnd();
+       it.Advance()) {
+    std::string key_suffix = it.key();
+    DictionaryValue* dict = GetDictionaryAndSplitKey(&key_suffix);
+    SyncData data = CreateSyncDataForPolicy(it.key(), &it.value());
+    SyncChange::SyncChangeType change_type =
+        dict->HasKey(key_suffix) ? SyncChange::ACTION_UPDATE
+                                 : SyncChange::ACTION_ADD;
+    change_list.push_back(SyncChange(FROM_HERE, change_type, data));
+    dict->SetWithoutPathExpansion(key_suffix, it.value().DeepCopy());
+  }
+  queued_items->Clear();
+
   SyncMergeResult result(MANAGED_USER_SETTINGS);
+  // Process all the accumulated changes from the queued items.
+  if (change_list.size() > 0) {
+    store_->ReportValueChanged(kQueuedItems);
+    result.set_error(
+        sync_processor_->ProcessSyncChanges(FROM_HERE, change_list));
+  }
+
+  // TODO(bauerb): Statistics?
   return result;
 }
 
@@ -216,18 +230,26 @@ void ManagedModePolicyProvider::StopSyncing(ModelType type) {
 SyncDataList ManagedModePolicyProvider::GetAllSyncData(ModelType type) const {
   DCHECK_EQ(syncer::MANAGED_USER_SETTINGS, type);
   SyncDataList data;
-  DictionaryValue* policy = GetCachedPolicy();
-  for (DictionaryValue::Iterator it(*policy); !it.IsAtEnd(); it.Advance()) {
-    data.push_back(CreateSyncDataForLocalPolicy(it.key(), &it.value()));
+  for (DictionaryValue::Iterator it(*GetAtomicSettings()); !it.IsAtEnd();
+       it.Advance()) {
+    data.push_back(CreateSyncDataForPolicy(it.key(), &it.value()));
   }
+  for (DictionaryValue::Iterator it(*GetSplitSettings()); !it.IsAtEnd();
+       it.Advance()) {
+    const DictionaryValue* dict = NULL;
+    it.value().GetAsDictionary(&dict);
+    for (DictionaryValue::Iterator jt(*dict); !jt.IsAtEnd(); jt.Advance()) {
+      data.push_back(CreateSyncDataForPolicy(
+          MakeSplitSettingKey(it.key(), jt.key()), &jt.value()));
+    }
+  }
+  DCHECK_EQ(0u, GetQueuedItems()->size());
   return data;
 }
 
 SyncError ManagedModePolicyProvider::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& change_list) {
-  SyncError error;
-  DictionaryValue* policy = GetCachedPolicy();
   base::JSONReader reader;
   for (SyncChangeList::const_iterator it = change_list.begin();
        it != change_list.end(); ++it) {
@@ -235,27 +257,26 @@ SyncError ManagedModePolicyProvider::ProcessSyncChanges(
     DCHECK_EQ(MANAGED_USER_SETTINGS, data.GetDataType());
     const ::sync_pb::ManagedUserSettingSpecifics& managed_user_setting =
         data.GetSpecifics().managed_user_setting();
+    std::string key = managed_user_setting.name();
+    DictionaryValue* dict = GetDictionaryAndSplitKey(&key);
     switch (it->change_type()) {
       case SyncChange::ACTION_ADD:
       case SyncChange::ACTION_UPDATE: {
         Value* value = reader.Read(managed_user_setting.value());
-        if (policy->HasKey(managed_user_setting.name())) {
+        if (dict->HasKey(key)) {
           DLOG_IF(WARNING, it->change_type() == SyncChange::ACTION_ADD)
-              << "Value for key " << managed_user_setting.name()
-              << " already exists";
+              << "Value for key " << key << " already exists";
         } else {
           DLOG_IF(WARNING, it->change_type() == SyncChange::ACTION_UPDATE)
-              << "Value for key " << managed_user_setting.name()
-              << " doesn't exist yet";
+              << "Value for key " << key << " doesn't exist yet";
         }
-        policy->SetWithoutPathExpansion(managed_user_setting.name(), value);
+        dict->SetWithoutPathExpansion(key, value);
         break;
       }
       case SyncChange::ACTION_DELETE: {
-        DLOG_IF(WARNING, !policy->HasKey(managed_user_setting.name()))
-            << "Trying to delete non-existing key "
-            << managed_user_setting.name();
-        policy->RemoveWithoutPathExpansion(managed_user_setting.name(), NULL);
+        DLOG_IF(WARNING, !dict->HasKey(key)) << "Trying to delete nonexistent "
+                                             << "key " << key;
+        dict->RemoveWithoutPathExpansion(key, NULL);
         break;
       }
       case SyncChange::ACTION_INVALID: {
@@ -264,27 +285,97 @@ SyncError ManagedModePolicyProvider::ProcessSyncChanges(
       }
     }
   }
+  store_->ReportValueChanged(kAtomicSettings);
+  store_->ReportValueChanged(kSplitSettings);
+  UpdatePolicyFromCache();
+
+  SyncError error;
   return error;
 }
 
-DictionaryValue* ManagedModePolicyProvider::GetCachedPolicy() const {
-  Value* value = NULL;
-  if (!store_->GetMutableValue(kPolicies, &value))
-    return NULL;
+void ManagedModePolicyProvider::InitLocalPolicies() {
+  local_policies_->Clear();
+  local_policies_->SetBoolean(policy::key::kAllowDeletingBrowserHistory, false);
+  local_policies_->SetInteger(policy::key::kContentPackDefaultFilteringBehavior,
+                              ManagedModeURLFilter::ALLOW);
+  local_policies_->SetBoolean(policy::key::kForceSafeSearch, true);
+  local_policies_->SetBoolean(policy::key::kHideWebStoreIcon, true);
+  local_policies_->SetInteger(policy::key::kIncognitoModeAvailability,
+                              IncognitoModePrefs::DISABLED);
+  local_policies_->SetBoolean(policy::key::kSigninAllowed, false);
+  UpdatePolicyFromCache();
+}
 
+DictionaryValue* ManagedModePolicyProvider::GetOrCreateDictionary(
+    const std::string& key) const {
+  Value* value = NULL;
   DictionaryValue* dict = NULL;
-  bool success = value->GetAsDictionary(&dict);
-  DCHECK(success);
+  if (store_->GetMutableValue(key, &value)) {
+    bool success = value->GetAsDictionary(&dict);
+    DCHECK(success);
+  } else {
+    dict = new base::DictionaryValue;
+    store_->SetValue(key, dict);
+  }
+
+  return dict;
+}
+
+DictionaryValue* ManagedModePolicyProvider::GetAtomicSettings() const {
+  return GetOrCreateDictionary(kAtomicSettings);
+}
+
+DictionaryValue* ManagedModePolicyProvider::GetSplitSettings() const {
+  return GetOrCreateDictionary(kSplitSettings);
+}
+
+DictionaryValue* ManagedModePolicyProvider::GetQueuedItems() const {
+  return GetOrCreateDictionary(kQueuedItems);
+}
+
+DictionaryValue* ManagedModePolicyProvider::GetDictionaryAndSplitKey(
+    std::string* key) const {
+  size_t pos = key->find_first_of(kSplitSettingKeySeparator);
+  if (pos == std::string::npos)
+    return GetAtomicSettings();
+
+  DictionaryValue* split_settings = GetSplitSettings();
+  std::string prefix = key->substr(0, pos);
+  DictionaryValue* dict = NULL;
+  if (!split_settings->GetDictionary(prefix, &dict)) {
+    dict = new DictionaryValue;
+    DCHECK(!split_settings->HasKey(prefix));
+    split_settings->Set(prefix, dict);
+  }
+  key->erase(0, pos + 1);
   return dict;
 }
 
 void ManagedModePolicyProvider::UpdatePolicyFromCache() {
   scoped_ptr<PolicyBundle> policy_bundle(new PolicyBundle);
-  DictionaryValue* policies = GetCachedPolicy();
-  if (policies) {
-    PolicyMap* policy_map = &policy_bundle->Get(
-        PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-    policy_map->LoadFrom(policies, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  PolicyMap* policy_map = &policy_bundle->Get(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+  policy_map->LoadFrom(
+      local_policies_.get(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+
+  DictionaryValue* atomic_settings = GetAtomicSettings();
+  for (DictionaryValue::Iterator it(*atomic_settings); !it.IsAtEnd();
+       it.Advance()) {
+    if (!SettingShouldApplyToPolicy(it.key()))
+      continue;
+
+    policy_map->Set(it.key(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                    it.value().DeepCopy());
+  }
+
+  DictionaryValue* split_settings = GetSplitSettings();
+  for (DictionaryValue::Iterator it(*split_settings); !it.IsAtEnd();
+       it.Advance()) {
+    if (!SettingShouldApplyToPolicy(it.key()))
+      continue;
+
+    policy_map->Set(it.key(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                    it.value().DeepCopy());
   }
   UpdatePolicy(policy_bundle.Pass());
 }

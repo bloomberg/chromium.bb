@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(ManagedModeResourceThrottleTest,
       policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
   policy::ManagedModePolicyProvider* policy_provider =
       connector->managed_mode_policy_provider();
-  policy_provider->SetPolicy(
+  policy_provider->SetLocalPolicyForTesting(
       policy::key::kContentPackDefaultFilteringBehavior,
       scoped_ptr<base::Value>(
           new base::FundamentalValue(ManagedModeURLFilter::BLOCK)));

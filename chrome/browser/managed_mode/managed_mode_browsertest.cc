@@ -114,7 +114,7 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
         policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
     policy::ManagedModePolicyProvider* policy_provider =
         connector->managed_mode_policy_provider();
-    policy_provider->SetPolicy(
+    policy_provider->SetLocalPolicyForTesting(
         policy::key::kContentPackDefaultFilteringBehavior,
         scoped_ptr<base::Value>(
             new base::FundamentalValue(ManagedModeURLFilter::BLOCK)));
@@ -184,12 +184,17 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
 IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
                        HistoryVisitRecorded) {
   GURL allowed_url("http://www.example.com/files/simple.html");
-  std::vector<std::string> hosts;
 
   // Set the host as allowed.
-  hosts.push_back(allowed_url.host());
-  managed_user_service_->SetManualBehaviorForHosts(
-      hosts, ManagedUserService::MANUAL_ALLOW);
+  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+  dict->SetBooleanWithoutPathExpansion(allowed_url.host(), true);
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(
+          browser()->profile());
+  policy::ManagedModePolicyProvider* policy_provider =
+      connector->managed_mode_policy_provider();
+  policy_provider->SetLocalPolicyForTesting(
+      policy::key::kContentPackManualBehaviorHosts, dict.PassAs<Value>());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       ManagedUserService::MANUAL_ALLOW,
