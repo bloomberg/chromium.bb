@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-partial interface DOMWindow {
-    [DeprecateAs=StorageInfo] readonly attribute StorageInfo webkitStorageInfo;
+[
+    EnabledAtRuntime=speechSynthesis,
+    ImplementedAs=DOMWindowSpeechSynthesis
+] partial interface Window {
+    readonly attribute SpeechSynthesis speechSynthesis;
 };
-

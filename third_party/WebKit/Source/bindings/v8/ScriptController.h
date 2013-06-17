@@ -54,7 +54,7 @@ class KURL;
 class ScriptSourceCode;
 class ScriptState;
 class SecurityOrigin;
-class V8DOMWindowShell;
+class V8WindowShell;
 class Widget;
 
 typedef WTF::Vector<v8::Extension*> V8Extensions;
@@ -70,8 +70,8 @@ public:
     ~ScriptController();
 
     bool initializeMainWorld();
-    V8DOMWindowShell* windowShell(DOMWrapperWorld*);
-    V8DOMWindowShell* existingWindowShell(DOMWrapperWorld*);
+    V8WindowShell* windowShell(DOMWrapperWorld*);
+    V8WindowShell* existingWindowShell(DOMWrapperWorld*);
 
     ScriptValue executeScript(const ScriptSourceCode&);
     ScriptValue executeScript(const String& script, bool forceUserGesture = false);
@@ -159,7 +159,7 @@ public:
     static int contextDebugId(v8::Handle<v8::Context>);
 
 private:
-    typedef HashMap<int, OwnPtr<V8DOMWindowShell> > IsolatedWorldMap;
+    typedef HashMap<int, OwnPtr<V8WindowShell> > IsolatedWorldMap;
 
     void clearForClose(bool destroyGlobal);
 
@@ -167,7 +167,7 @@ private:
     const String* m_sourceURL;
     v8::Isolate* m_isolate;
 
-    OwnPtr<V8DOMWindowShell> m_windowShell;
+    OwnPtr<V8WindowShell> m_windowShell;
     IsolatedWorldMap m_isolatedWorlds;
 
     bool m_paused;

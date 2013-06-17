@@ -9,7 +9,7 @@ core/html/track/TextTrack
 core/html/track/TextTrackCue
 core/html/track/TextTrackList
 core/loader/appcache/DOMApplicationCache
-core/page/DOMWindow
+core/page/DOMWindow JSInterfaceName=Window
 core/page/EventSource
 core/page/Performance
 core/svg/SVGElementInstance

@@ -36,7 +36,7 @@ interface TouchEvent : UIEvent {
                         [Default=Undefined] optional TouchList targetTouches,
                         [Default=Undefined] optional TouchList changedTouches,
                         [Default=Undefined] optional DOMString type,
-                        [Default=Undefined] optional DOMWindow view,
+                        [Default=Undefined] optional Window view,
                         [Default=Undefined] optional long screenX, 
                         [Default=Undefined] optional long screenY, 
                         [Default=Undefined] optional long clientX, 

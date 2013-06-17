@@ -33,7 +33,7 @@
 #include "V8SVGDocument.h"
 
 #include "bindings/v8/ScriptController.h"
-#include "bindings/v8/V8DOMWindowShell.h"
+#include "bindings/v8/V8WindowShell.h"
 #include "core/page/Frame.h"
 
 namespace WebCore {

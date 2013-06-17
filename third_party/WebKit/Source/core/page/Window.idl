@@ -29,8 +29,8 @@
     EventTarget,
     CustomToV8,
     DoNotGenerateWrap,
-    InterfaceName=Window
-] interface DOMWindow {
+    ImplementedAs=DOMWindow
+] interface Window {
     // DOM Level 0
     [Replaceable] readonly attribute Screen screen;
     [Replaceable] readonly attribute History history;
@@ -56,7 +56,7 @@
     void print();
     void stop();
 
-    [Custom] DOMWindow open(DOMString url,
+    [Custom] Window open(DOMString url,
                             DOMString name,
                             optional DOMString options);
 
@@ -112,13 +112,13 @@
     attribute DOMString defaultstatus;
 
     // Self referential attributes
-    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute DOMWindow self;
-    [DoNotCheckSecurity, Unforgeable] readonly attribute DOMWindow window;
-    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute  DOMWindow frames;
+    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute Window self;
+    [DoNotCheckSecurity, Unforgeable] readonly attribute Window window;
+    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute  Window frames;
 
-    [Replaceable, DoNotCheckSecurityOnGetter, CustomSetter] readonly attribute DOMWindow opener;
-    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute DOMWindow parent;
-    [DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute DOMWindow top;
+    [Replaceable, DoNotCheckSecurityOnGetter, CustomSetter] readonly attribute Window opener;
+    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute Window parent;
+    [DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute Window top;
 
     // DOM Level 2 AbstractView Interface
     readonly attribute Document document;
@@ -314,7 +314,7 @@
     // window.toString() requires special handling in V8
     [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
 
-    [ImplementedAs=anonymousIndexedGetter, NotEnumerable] getter DOMWindow(unsigned long index);
-    [Custom, NotEnumerable] getter DOMWindow (DOMString name);
+    [ImplementedAs=anonymousIndexedGetter, NotEnumerable] getter Window(unsigned long index);
+    [Custom, NotEnumerable] getter Window (DOMString name);
 };
 

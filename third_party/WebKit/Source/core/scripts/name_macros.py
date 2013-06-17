@@ -72,6 +72,12 @@ def _name_for_entry(entry):
         return entry['interfaceName']
     return os.path.basename(entry['name'])
 
+
+def _js_name_for_entry(entry):
+    if entry['JSInterfaceName']:
+        return entry['JSInterfaceName']
+    return _name_for_entry(entry)
+
 class Writer(in_generator.Writer):
     def __init__(self, in_file_path, enabled_conditions):
         super(Writer, self).__init__(in_file_path, enabled_conditions)
@@ -105,12 +111,12 @@ class Writer(in_generator.Writer):
 
     def _headers_header_include(self, entry):
         path = entry['name']
-        name = _name_for_entry(entry)
+        js_name = _js_name_for_entry(entry)
         if entry['interfaceName']:
             path = entry['interfaceName']  # FIXME: This seems wrong
-        include = '#include "%(path)s.h"\n#include "V8%(name)s.h"' % {
+        include = '#include "%(path)s.h"\n#include "V8%(js_name)s.h"' % {
             'path': path,
-            'name': name,
+            'js_name': js_name,
         }
         return self.wrap_with_condition(include, entry['conditional'])
 

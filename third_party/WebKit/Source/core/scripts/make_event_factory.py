@@ -57,8 +57,9 @@ PassRefPtr<%(class_name)s> %(class_name)sFactory::create(const String& type)
 
 class EventFactoryWriter(name_macros.Writer):
     defaults = {
-        'interfaceName' : None,
-        'conditional' : None,
+        'JSInterfaceName': None,
+        'interfaceName': None,
+        'conditional': None,
         'runtimeConditional': None,
     }
     default_parameters = {

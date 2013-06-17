@@ -166,9 +166,9 @@ def parse_idl_files(idl_files, window_constructors_filename, workercontext_const
         supplementals[full_path] = []
 
     # Generate Global constructors
-    generate_global_constructors_partial_interface("DOMWindow", window_constructors_filename, window_constructor_attributes_list)
-    if 'DOMWindow' in interface_name_to_idl_file:
-        supplemental_dependencies[window_constructors_filename] = 'DOMWindow'
+    generate_global_constructors_partial_interface("Window", window_constructors_filename, window_constructor_attributes_list)
+    if 'Window' in interface_name_to_idl_file:
+        supplemental_dependencies[window_constructors_filename] = 'Window'
     generate_global_constructors_partial_interface("WorkerContext", workercontext_constructors_filename, workercontext_constructor_attributes_list)
     if 'WorkerContext' in interface_name_to_idl_file:
         supplemental_dependencies[workercontext_constructors_filename] = 'WorkerContext'
@@ -188,13 +188,13 @@ def write_dependency_file(filename, supplementals, only_if_changed=False):
 
     The format of a supplemental dependency file:
 
-    DOMWindow.idl P.idl Q.idl R.idl
+    Window.idl P.idl Q.idl R.idl
     Document.idl S.idl
     Event.idl
     ...
 
     The above indicates that:
-    DOMWindow.idl is supplemented by P.idl, Q.idl and R.idl,
+    Window.idl is supplemented by P.idl, Q.idl and R.idl,
     Document.idl is supplemented by S.idl, and
     Event.idl is supplemented by no IDLs.
 

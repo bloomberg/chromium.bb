@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,10 +25,14 @@
  */
 
 [
-    Conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
-] partial interface DOMWindow {
-#if defined(ENABLE_LEGACY_NOTIFICATIONS) && ENABLE_LEGACY_NOTIFICATIONS
-    [EnabledAtRuntime=notifications, MeasureAs=LegacyNotifications, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute NotificationCenter webkitNotifications;
-#endif
+    ImplementedAs=DOMWindowFileSystem
+] partial interface Window {
+    const unsigned short TEMPORARY = 0;
+    const unsigned short PERSISTENT = 1;
+
+    [EnabledAtRuntime=FileSystem] void webkitRequestFileSystem(unsigned short type, long long size,
+            FileSystemCallback successCallback, optional ErrorCallback errorCallback);
+    [EnabledAtRuntime=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url,
+            EntryCallback successCallback, optional ErrorCallback errorCallback);
 };
 

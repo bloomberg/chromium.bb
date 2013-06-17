@@ -115,6 +115,7 @@ ExceptionCodeDescription::ExceptionCodeDescription(ExceptionCode ec)
 
 class ExceptionCodeDescriptionWriter(name_macros.Writer):
     defaults = {
+        'JSInterfaceName': None,
         'interfaceName': None,
         'conditional': None,
     }
