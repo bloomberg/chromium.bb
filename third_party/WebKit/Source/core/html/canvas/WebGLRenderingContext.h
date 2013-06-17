@@ -772,7 +772,7 @@ public:
     void texParameter(GC3Denum target, GC3Denum pname, GC3Dfloat parami, GC3Dint paramf, bool isFloat);
 
     // Helper function to print GL errors to console.
-    bool printGLErrorToConsole(const String&);
+    void printGLErrorToConsole(const String&);
     void printGLWarningToConsole(const char* function, const char* reason);
 
     // Helper function to print warnings to console. Currently

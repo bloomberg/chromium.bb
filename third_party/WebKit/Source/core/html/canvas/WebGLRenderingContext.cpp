@@ -4945,10 +4945,10 @@ bool WebGLRenderingContext::validateStencilFunc(const char* functionName, GC3Den
     }
 }
 
-bool WebGLRenderingContext::printGLErrorToConsole(const String& message)
+void WebGLRenderingContext::printGLErrorToConsole(const String& message)
 {
     if (!m_numGLErrorsToConsoleAllowed)
-        return false;
+        return;
 
     --m_numGLErrorsToConsoleAllowed;
     printWarningToConsole(message);
@@ -4956,7 +4956,7 @@ bool WebGLRenderingContext::printGLErrorToConsole(const String& message)
     if (!m_numGLErrorsToConsoleAllowed)
         printWarningToConsole("WebGL: too many errors, no more errors will be reported to the console for this context.");
 
-    return true;
+    return;
 }
 
 void WebGLRenderingContext::printWarningToConsole(const String& message)
@@ -5475,7 +5475,7 @@ namespace {
         case GraphicsContext3D::CONTEXT_LOST_WEBGL:
             return "CONTEXT_LOST_WEBGL";
         default:
-            return String::format("WebGL ERROR(%04x)", error);
+            return String::format("WebGL ERROR(0x%04X)", error);
         }
     }
 
@@ -5484,18 +5484,17 @@ namespace {
 void WebGLRenderingContext::synthesizeGLError(GC3Denum error, const char* functionName, const char* description, ConsoleDisplayPreference display)
 {
     String errorType = GetErrorString(error);
-    String message = String("WebGL: ") + errorType +  ": " + String(functionName) + ": " + String(description);
-    bool printedToConsole = false;
-    if (m_synthesizedErrorsToConsole && display == DisplayInConsole)
-        printedToConsole = printGLErrorToConsole(message);
-
+    if (m_synthesizedErrorsToConsole && display == DisplayInConsole) {
+        String message = String("WebGL: ") + errorType +  ": " + String(functionName) + ": " + String(description);
+        printGLErrorToConsole(message);
+    }
     if (!isContextLost())
         m_context->synthesizeGLError(error);
     else {
         if (lost_context_errors_.find(error) == WTF::notFound)
             lost_context_errors_.append(error);
     }
-    InspectorInstrumentation::didFireWebGLError(canvas()->document(), errorType, printedToConsole ? String() : message);
+    InspectorInstrumentation::didFireWebGLError(canvas()->document(), errorType);
 }
 
 

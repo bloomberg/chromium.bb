@@ -70,8 +70,6 @@ public:
     virtual void removeInstrumentationBreakpoint(ErrorString*, const String& eventName);
     virtual void setDOMBreakpoint(ErrorString*, int nodeId, const String& type);
     virtual void removeDOMBreakpoint(ErrorString*, int nodeId, const String& type);
-    virtual void setWebGLBreakpoint(ErrorString*, const String& eventName);
-    virtual void removeWebGLBreakpoint(ErrorString*, const String& eventName);
 
     // InspectorInstrumentation API
     void willInsertDOMNode(Node* parent);
@@ -88,7 +86,7 @@ public:
     void didCancelAnimationFrame(Document*, int callbackId);
     void willFireAnimationFrame(Document*, int callbackId);
     void willHandleEvent(Event*);
-    void didFireWebGLError(Document*, const String& eventName, const String& consoleMessage);
+    void didFireWebGLError(const String& errorName);
 
     void didProcessTask();
 
@@ -98,7 +96,8 @@ public:
 private:
     InspectorDOMDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, InspectorDOMAgent*, InspectorDebuggerAgent*);
 
-    void pauseOnNativeEventIfNeeded(bool isDOMEvent, const String& eventName, bool synchronous);
+    void pauseOnNativeEventIfNeeded(PassRefPtr<InspectorObject> eventData, bool synchronous);
+    PassRefPtr<InspectorObject> preparePauseOnNativeEventData(bool isDOMEvent, const String& eventName);
 
     // InspectorDebuggerAgent::Listener implementation.
     virtual void debuggerWasEnabled();
