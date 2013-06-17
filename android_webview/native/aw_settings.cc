@@ -155,10 +155,13 @@ void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
   prefs.default_fixed_font_size =
       Java_AwSettings_getDefaultFixedFontSizeLocked(env, obj);
 
+  // Blink's LoadsImagesAutomatically and ImagesEnabled must be
+  // set cris-cross to Android's. See
+  // https://code.google.com/p/chromium/issues/detail?id=224317#c26
   prefs.loads_images_automatically =
+      Java_AwSettings_getImagesEnabledLocked(env, obj);
+  prefs.images_enabled =
       Java_AwSettings_getLoadsImagesAutomaticallyLocked(env, obj);
-
-  prefs.images_enabled = Java_AwSettings_getImagesEnabledLocked(env, obj);
 
   prefs.javascript_enabled =
       Java_AwSettings_getJavaScriptEnabledLocked(env, obj);

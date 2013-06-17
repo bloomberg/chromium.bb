@@ -174,21 +174,6 @@ void AwRenderViewExt::OnDocumentHasImagesRequest(int id) {
                                                    hasImages));
 }
 
-bool AwRenderViewExt::allowImage(WebKit::WebFrame* frame,
-                                 bool enabled_per_settings,
-                                 const WebKit::WebURL& image_url) {
-  // Implementing setBlockNetworkImages, so allow local scheme images to be
-  // loaded.
-  if (enabled_per_settings)
-    return true;
-
-  // For compatibility, only blacklist network schemes instead of whitelisting.
-  const GURL url(image_url);
-  return !(url.SchemeIs(chrome::kHttpScheme) ||
-           url.SchemeIs(chrome::kHttpsScheme) ||
-           url.SchemeIs(chrome::kFtpScheme));
-}
-
 bool AwRenderViewExt::allowDisplayingInsecureContent(
       WebKit::WebFrame* frame,
       bool enabled_per_settings,

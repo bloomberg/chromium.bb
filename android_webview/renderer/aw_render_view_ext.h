@@ -51,9 +51,6 @@ class AwRenderViewExt : public content::RenderViewObserver,
   void UpdatePageScaleFactor();
 
   // WebKit::WebPermissionClient implementation.
-  virtual bool allowImage(WebKit::WebFrame* frame,
-                          bool enabledPerSettings,
-                          const WebKit::WebURL& imageURL) OVERRIDE;
   virtual bool allowDisplayingInsecureContent(
       WebKit::WebFrame* frame,
       bool enabled_per_settings,

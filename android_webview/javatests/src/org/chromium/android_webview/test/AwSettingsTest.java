@@ -1365,91 +1365,11 @@ public class AwSettingsTest extends AwTestBase {
             new AwSettingsDefaultFontSizeTestHelper(views.getContents1(), views.getClient1()));
     }
 
-    // The test verifies that disabling images loading by setting
-    // setLoadsImagesAutomatically to false doesn't prevent images already
-    // contained in the memory cache to be displayed.  The cache is shared among
-    // all views, so the image can be put there by another view.
-    /*
-     * Fixme (crbug.com/248249): Needs investigation after crbug.com/224317
-     * @Feature({"AndroidWebView", "Preferences"})
-     * @SmallTest
-     */
-    @DisabledTest
-    public void testLoadsImagesAutomaticallyWithCachedImage() throws Throwable {
-        ViewPair views = createViews();
-        AwSettings settings0 = getAwSettingsOnUiThread(views.getContents0());
-        settings0.setJavaScriptEnabled(true);
-        AwSettings settings1 = getAwSettingsOnUiThread(views.getContents1());
-        settings1.setJavaScriptEnabled(true);
-        ImagePageGenerator generator = new ImagePageGenerator(0, false);
-
-        // First disable images loading and verify it.
-        settings0.setLoadsImagesAutomatically(false);
-        settings1.setLoadsImagesAutomatically(false);
-        loadDataSync(views.getContents0(),
-                     views.getClient0().getOnPageFinishedHelper(),
-                     generator.getPageSource(),
-                     "text/html", false);
-        loadDataSync(views.getContents1(),
-                     views.getClient1().getOnPageFinishedHelper(),
-                     generator.getPageSource(),
-                     "text/html", false);
-        assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
-                getTitleOnUiThread(views.getContents0()));
-        assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
-                getTitleOnUiThread(views.getContents1()));
-
-        // Now enable images loading only for view 0.
-        settings0.setLoadsImagesAutomatically(true);
-        loadDataSync(views.getContents0(),
-                     views.getClient0().getOnPageFinishedHelper(),
-                     generator.getPageSource(),
-                     "text/html", false);
-        loadDataSync(views.getContents1(),
-                     views.getClient1().getOnPageFinishedHelper(),
-                     generator.getPageSource(),
-                     "text/html", false);
-
-        // Once the image has been cached by contentView0, it is available to contentView1.
-        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING,
-                getTitleOnUiThread(views.getContents0()));
-        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING,
-                getTitleOnUiThread(views.getContents1()));
-        ImagePageGenerator generator1 = new ImagePageGenerator(1, false);
-
-        // This is a new image. view 1 can't load it.
-        loadDataSync(views.getContents1(),
-                     views.getClient1().getOnPageFinishedHelper(),
-                     generator1.getPageSource(),
-                     "text/html", false);
-        assertEquals(ImagePageGenerator.IMAGE_NOT_LOADED_STRING,
-                     getTitleOnUiThread(views.getContents1()));
-        loadDataSync(views.getContents0(),
-                     views.getClient0().getOnPageFinishedHelper(),
-                     generator1.getPageSource(),
-                     "text/html", false);
-        loadDataSync(views.getContents1(),
-                     views.getClient1().getOnPageFinishedHelper(),
-                     generator1.getPageSource(),
-                     "text/html", false);
-
-        // Once the image has been cached by contentViewCore0, it is available to contentViewCore1.
-        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING,
-                getTitleOnUiThread(views.getContents0()));
-        assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING,
-                getTitleOnUiThread(views.getContents1()));
-    }
-
     // The test verifies that after changing the LoadsImagesAutomatically
     // setting value from false to true previously skipped images are
     // automatically loaded.
-
-    /*
-     * Fixme (crbug.com/248249): Needs investigation after crbug.com/224317
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLoadsImagesAutomaticallyNoPageReload() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1483,12 +1403,8 @@ public class AwSettingsTest extends AwTestBase {
     }
 
 
-    /*
-     * Fixme (crbug.com/248249): Needs investigation after crbug.com/224317
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testLoadsImagesAutomaticallyWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
