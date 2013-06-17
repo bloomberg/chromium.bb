@@ -534,6 +534,62 @@ class TimedEvents {
   }
 };
 
+// An event handler to keep track of events.
+class TestEventHandler : public ui::EventHandler {
+ public:
+  TestEventHandler() : touch_released_count_(0), touch_pressed_count_(0),
+                       touch_moved_count_(0), touch_stationary_count_(0),
+                       touch_cancelled_count_(0) {
+  }
+
+  virtual ~TestEventHandler() {}
+
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    switch (event->type()) {
+      case ui::ET_TOUCH_RELEASED:
+        touch_released_count_++;
+        break;
+      case ui::ET_TOUCH_PRESSED:
+        touch_pressed_count_++;
+        break;
+      case ui::ET_TOUCH_MOVED:
+        touch_moved_count_++;
+        break;
+      case ui::ET_TOUCH_STATIONARY:
+        touch_stationary_count_++;
+        break;
+      case ui::ET_TOUCH_CANCELLED:
+        touch_cancelled_count_++;
+        break;
+      default:
+        break;
+    }
+  }
+
+  void Reset() {
+    touch_released_count_ = 0;
+    touch_pressed_count_ = 0;
+    touch_moved_count_ = 0;
+    touch_stationary_count_ = 0;
+    touch_cancelled_count_ = 0;
+  }
+
+  int touch_released_count() const { return touch_released_count_; }
+  int touch_pressed_count() const { return touch_pressed_count_; }
+  int touch_moved_count() const { return touch_moved_count_; }
+  int touch_stationary_count() const { return touch_stationary_count_; }
+  int touch_cancelled_count() const { return touch_cancelled_count_; }
+
+ private:
+  int touch_released_count_;
+  int touch_pressed_count_;
+  int touch_moved_count_;
+  int touch_stationary_count_;
+  int touch_cancelled_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
+};
+
 }  // namespace
 
 typedef AuraTestBase GestureRecognizerTest;
@@ -2140,6 +2196,60 @@ TEST_F(GestureRecognizerTest, CaptureSendsGestureEnd) {
 
   EXPECT_TRUE(delegate->end());
   EXPECT_TRUE(delegate->tap_cancel());
+}
+
+// Check that previous touch actions that are completely finished (either
+// released or cancelled), do not receive extra synthetic cancels upon change of
+// capture.
+TEST_F(GestureRecognizerTest, CaptureDoesNotCancelFinishedTouches) {
+  scoped_ptr<TestEventHandler> handler(new TestEventHandler);
+  root_window()->AddPreTargetHandler(handler.get());
+
+  // Create a window and set it as the capture window.
+  scoped_ptr<aura::Window> window1(CreateTestWindowWithBounds(
+      gfx::Rect(10, 10, 300, 300), root_window()));
+  window1->SetCapture();
+
+  EventGenerator generator(root_window());
+  TimedEvents tes;
+
+  // Generate two touch-press events on the window.
+  scoped_ptr<ui::TouchEvent> touch0(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
+                                                       gfx::Point(20, 20), 0,
+                                                       tes.Now()));
+  scoped_ptr<ui::TouchEvent> touch1(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
+                                                       gfx::Point(30, 30), 1,
+                                                       tes.Now()));
+  generator.Dispatch(touch0.get());
+  generator.Dispatch(touch1.get());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(2, handler->touch_pressed_count());
+
+  // Advance time.
+  tes.LeapForward(1000);
+
+  // End the two touches, one by a touch-release and one by a touch-cancel; to
+  // cover both cases.
+  touch0.reset(new ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
+                                  tes.Now()));
+  touch1.reset(new ui::TouchEvent(ui::ET_TOUCH_CANCELLED, gfx::Point(30, 30), 1,
+                                  tes.Now()));
+  generator.Dispatch(touch0.get());
+  generator.Dispatch(touch1.get());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ(1, handler->touch_released_count());
+  EXPECT_EQ(1, handler->touch_cancelled_count());
+
+  // Create a new window and set it as the new capture window.
+  scoped_ptr<aura::Window> window2(CreateTestWindowWithBounds(
+      gfx::Rect(100, 100, 300, 300), root_window()));
+  window2->SetCapture();
+  RunAllPendingInMessageLoop();
+  // Check that setting capture does not generate any synthetic touch-cancels
+  // for the two previously finished touch actions.
+  EXPECT_EQ(1, handler->touch_cancelled_count());
+
+  root_window()->RemovePreTargetHandler(handler.get());
 }
 
 TEST_F(GestureRecognizerTest, PressDoesNotCrash) {

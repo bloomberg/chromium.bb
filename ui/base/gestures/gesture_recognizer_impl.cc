@@ -162,12 +162,11 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
     if (i->second != new_consumer &&
         (i->second != current_consumer || new_consumer == NULL) &&
         i->second != gesture_consumer_ignorer_.get()) {
-      TouchEvent touch_event(ui::ET_TOUCH_CANCELLED,
-                             gfx::Point(0, 0),
-                             i->first,
-                             ui::EventTimeForNow());
+      TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
+                             ui::EF_IS_SYNTHESIZED, i->first,
+                             ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f);
       helper_->DispatchCancelTouchEvent(&touch_event);
-      i->second = gesture_consumer_ignorer_.get();
+      DCHECK_EQ(gesture_consumer_ignorer_.get(), i->second);
     }
   }
 
@@ -214,9 +213,13 @@ GestureSequence* GestureRecognizerImpl::GetGestureSequenceForConsumer(
 
 void GestureRecognizerImpl::SetupTargets(const TouchEvent& event,
                                          GestureConsumer* target) {
-  if (event.type() == ui::ET_TOUCH_RELEASED ||
-      event.type() == ui::ET_TOUCH_CANCELLED) {
-    touch_id_target_[event.touch_id()] = NULL;
+  if (event.type() == ui::ET_TOUCH_RELEASED) {
+    touch_id_target_.erase(event.touch_id());
+  } else if (event.type() == ui::ET_TOUCH_CANCELLED) {
+    if (event.flags() & ui::EF_IS_SYNTHESIZED)
+      touch_id_target_[event.touch_id()] = gesture_consumer_ignorer_.get();
+    else
+      touch_id_target_.erase(event.touch_id());
   } else {
     touch_id_target_[event.touch_id()] = target;
     if (target)
