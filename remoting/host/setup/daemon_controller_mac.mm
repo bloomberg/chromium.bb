@@ -31,12 +31,6 @@ namespace remoting {
 
 namespace {
 
-// The NSSystemDirectories.h header has a conflicting definition of
-// NSSearchPathDirectory with the one in base/mac/foundation_util.h.
-// Foundation.h would work, but it can only be included from Objective-C files.
-// Therefore, we define the needed constants here.
-const int NSLibraryDirectory = 5;
-
 class DaemonControllerMac : public remoting::DaemonController {
  public:
   DaemonControllerMac();

@@ -4,8 +4,6 @@
 
 {
   'variables': {
-    # TODO(dmaclach): can we pick this up some other way? Right now it's
-    # duplicated from chrome.gyp
     'chromium_code': 1,
 
     'variables': {
@@ -624,7 +622,7 @@
           'sources': [
             'host/setup/daemon_controller.h',
             'host/setup/daemon_controller_linux.cc',
-            'host/setup/daemon_controller_mac.cc',
+            'host/setup/daemon_controller_mac.mm',
             'host/setup/daemon_controller_win.cc',
             'host/setup/daemon_installer_win.cc',
             'host/setup/daemon_installer_win.h',
