@@ -82,6 +82,7 @@ public:
 
     ~FontPlatformData();
 
+    bool isFixedPitch() const;
     HFONT hfont() const { return m_font ? m_font->hfont() : 0; }
     float size() const { return m_size; }
     SkTypeface* typeface() const { return m_typeface; }

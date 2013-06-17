@@ -211,30 +211,7 @@ bool SimpleFontData::containsCharacters(const UChar* characters, int length) con
 
 void SimpleFontData::determinePitch()
 {
-#if OS(WINDOWS)
-    // TEXTMETRICS have this. Set m_treatAsFixedPitch based off that.
-    HWndDC dc(0);
-    HGDIOBJ oldFont = SelectObject(dc, m_platformData.hfont());
-
-    // Yes, this looks backwards, but the fixed pitch bit is actually set if the font
-    // is *not* fixed pitch. Unbelievable but true.
-    TEXTMETRIC textMetric = { 0 };
-    if (!GetTextMetrics(dc, &textMetric)) {
-        if (FontPlatformData::ensureFontLoaded(m_platformData.hfont())) {
-            // Retry GetTextMetrics.
-            // FIXME: Handle gracefully the error if this call also fails.
-            // See http://crbug.com/6401.
-            if (!GetTextMetrics(dc, &textMetric))
-                LOG_ERROR("Unable to get the text metrics after second attempt");
-        }
-    }
-
-    m_treatAsFixedPitch = !(textMetric.tmPitchAndFamily & TMPF_FIXED_PITCH);
-
-    SelectObject(dc, oldFont);
-#else
     m_treatAsFixedPitch = platformData().isFixedPitch();
-#endif
 }
 
 FloatRect SimpleFontData::platformBoundsForGlyph(Glyph glyph) const

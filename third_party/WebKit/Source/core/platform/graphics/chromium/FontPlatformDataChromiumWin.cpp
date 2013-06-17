@@ -215,6 +215,36 @@ FontPlatformData::~FontPlatformData()
     m_scriptFontProperties = 0;
 }
 
+bool FontPlatformData::isFixedPitch() const
+{
+#if ENABLE(GDI_FONTS_ON_WINDOWS)
+    // TEXTMETRICS have this. Set m_treatAsFixedPitch based off that.
+    HWndDC dc(0);
+    HGDIOBJ oldFont = SelectObject(dc, hfont());
+
+    // Yes, this looks backwards, but the fixed pitch bit is actually set if the font
+    // is *not* fixed pitch. Unbelievable but true.
+    TEXTMETRIC textMetric = { 0 };
+    if (!GetTextMetrics(dc, &textMetric)) {
+        if (ensureFontLoaded(hfont())) {
+            // Retry GetTextMetrics.
+            // FIXME: Handle gracefully the error if this call also fails.
+            // See http://crbug.com/6401.
+            if (!GetTextMetrics(dc, &textMetric))
+                LOG_ERROR("Unable to get the text metrics after second attempt");
+        }
+    }
+
+    bool treatAsFixedPitch = !(textMetric.tmPitchAndFamily & TMPF_FIXED_PITCH);
+
+    SelectObject(dc, oldFont);
+
+    return treatAsFixedPitch;
+#else
+    return typeface()->isFixedPitch();
+#endif
+}
+
 FontPlatformData::RefCountedHFONT::~RefCountedHFONT()
 {
     if (m_hfont != reinterpret_cast<HFONT>(-1)) {
