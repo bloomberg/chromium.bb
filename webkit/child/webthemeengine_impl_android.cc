@@ -2,56 +2,65 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webfallbackthemeengine_impl.h"
+#include "webkit/child/webthemeengine_impl_android.h"
 
+#include "base/logging.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "ui/native_theme/fallback_theme.h"
+#include "ui/native_theme/native_theme.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebColor;
 using WebKit::WebRect;
-using WebKit::WebFallbackThemeEngine;
+using WebKit::WebThemeEngine;
 
 namespace webkit_glue {
 
 static ui::NativeTheme::Part NativeThemePart(
-    WebFallbackThemeEngine::Part part) {
+    WebThemeEngine::Part part) {
   switch (part) {
-    case WebFallbackThemeEngine::PartScrollbarDownArrow:
+    case WebThemeEngine::PartScrollbarDownArrow:
       return ui::NativeTheme::kScrollbarDownArrow;
-    case WebFallbackThemeEngine::PartScrollbarLeftArrow:
+    case WebThemeEngine::PartScrollbarLeftArrow:
       return ui::NativeTheme::kScrollbarLeftArrow;
-    case WebFallbackThemeEngine::PartScrollbarRightArrow:
+    case WebThemeEngine::PartScrollbarRightArrow:
       return ui::NativeTheme::kScrollbarRightArrow;
-    case WebFallbackThemeEngine::PartScrollbarUpArrow:
+    case WebThemeEngine::PartScrollbarUpArrow:
       return ui::NativeTheme::kScrollbarUpArrow;
-    case WebFallbackThemeEngine::PartScrollbarHorizontalThumb:
-      return ui::NativeTheme::kScrollbarHorizontalThumb;
-    case WebFallbackThemeEngine::PartScrollbarVerticalThumb:
-      return ui::NativeTheme::kScrollbarVerticalThumb;
-    case WebFallbackThemeEngine::PartScrollbarHorizontalTrack:
-      return ui::NativeTheme::kScrollbarHorizontalTrack;
-    case WebFallbackThemeEngine::PartScrollbarVerticalTrack:
-      return ui::NativeTheme::kScrollbarVerticalTrack;
-    case WebFallbackThemeEngine::PartCheckbox:
+    case WebThemeEngine::PartScrollbarHorizontalThumb:
+      // Android doesn't draw scrollbars.
+      NOTREACHED();
+      return static_cast<ui::NativeTheme::Part>(0);
+    case WebThemeEngine::PartScrollbarVerticalThumb:
+      // Android doesn't draw scrollbars.
+      NOTREACHED();
+      return static_cast<ui::NativeTheme::Part>(0);
+    case WebThemeEngine::PartScrollbarHorizontalTrack:
+      // Android doesn't draw scrollbars.
+      NOTREACHED();
+      return static_cast<ui::NativeTheme::Part>(0);
+    case WebThemeEngine::PartScrollbarVerticalTrack:
+      // Android doesn't draw scrollbars.
+      NOTREACHED();
+      return static_cast<ui::NativeTheme::Part>(0);
+    case WebThemeEngine::PartCheckbox:
       return ui::NativeTheme::kCheckbox;
-    case WebFallbackThemeEngine::PartRadio:
+    case WebThemeEngine::PartRadio:
       return ui::NativeTheme::kRadio;
-    case WebFallbackThemeEngine::PartButton:
+    case WebThemeEngine::PartButton:
       return ui::NativeTheme::kPushButton;
-    case WebFallbackThemeEngine::PartTextField:
+    case WebThemeEngine::PartTextField:
       return ui::NativeTheme::kTextField;
-    case WebFallbackThemeEngine::PartMenuList:
+    case WebThemeEngine::PartMenuList:
       return ui::NativeTheme::kMenuList;
-    case WebFallbackThemeEngine::PartSliderTrack:
+    case WebThemeEngine::PartSliderTrack:
       return ui::NativeTheme::kSliderTrack;
-    case WebFallbackThemeEngine::PartSliderThumb:
+    case WebThemeEngine::PartSliderThumb:
       return ui::NativeTheme::kSliderThumb;
-    case WebFallbackThemeEngine::PartInnerSpinButton:
+    case WebThemeEngine::PartInnerSpinButton:
       return ui::NativeTheme::kInnerSpinButton;
-    case WebFallbackThemeEngine::PartProgressBar:
+    case WebThemeEngine::PartProgressBar:
       return ui::NativeTheme::kProgressBar;
     default:
       return ui::NativeTheme::kScrollbarDownArrow;
@@ -59,15 +68,15 @@ static ui::NativeTheme::Part NativeThemePart(
 }
 
 static ui::NativeTheme::State NativeThemeState(
-    WebFallbackThemeEngine::State state) {
+    WebThemeEngine::State state) {
   switch (state) {
-    case WebFallbackThemeEngine::StateDisabled:
+    case WebThemeEngine::StateDisabled:
       return ui::NativeTheme::kDisabled;
-    case WebFallbackThemeEngine::StateHover:
+    case WebThemeEngine::StateHover:
       return ui::NativeTheme::kHovered;
-    case WebFallbackThemeEngine::StateNormal:
+    case WebThemeEngine::StateNormal:
       return ui::NativeTheme::kNormal;
-    case WebFallbackThemeEngine::StatePressed:
+    case WebThemeEngine::StatePressed:
       return ui::NativeTheme::kPressed;
     default:
       return ui::NativeTheme::kDisabled;
@@ -75,31 +84,25 @@ static ui::NativeTheme::State NativeThemeState(
 }
 
 static void GetNativeThemeExtraParams(
-    WebFallbackThemeEngine::Part part,
-    WebFallbackThemeEngine::State state,
-    const WebFallbackThemeEngine::ExtraParams* extra_params,
+    WebThemeEngine::Part part,
+    WebThemeEngine::State state,
+    const WebThemeEngine::ExtraParams* extra_params,
     ui::NativeTheme::ExtraParams* native_theme_extra_params) {
   switch (part) {
-    case WebFallbackThemeEngine::PartScrollbarHorizontalTrack:
-    case WebFallbackThemeEngine::PartScrollbarVerticalTrack:
-      native_theme_extra_params->scrollbar_track.track_x =
-          extra_params->scrollbarTrack.trackX;
-      native_theme_extra_params->scrollbar_track.track_y =
-          extra_params->scrollbarTrack.trackY;
-      native_theme_extra_params->scrollbar_track.track_width =
-          extra_params->scrollbarTrack.trackWidth;
-      native_theme_extra_params->scrollbar_track.track_height =
-          extra_params->scrollbarTrack.trackHeight;
+    case WebThemeEngine::PartScrollbarHorizontalTrack:
+    case WebThemeEngine::PartScrollbarVerticalTrack:
+      // Android doesn't draw scrollbars.
+      NOTREACHED();
       break;
-    case WebFallbackThemeEngine::PartCheckbox:
+    case WebThemeEngine::PartCheckbox:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       native_theme_extra_params->button.indeterminate =
           extra_params->button.indeterminate;
       break;
-    case WebFallbackThemeEngine::PartRadio:
+    case WebThemeEngine::PartRadio:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       break;
-    case WebFallbackThemeEngine::PartButton:
+    case WebThemeEngine::PartButton:
       native_theme_extra_params->button.is_default =
           extra_params->button.isDefault;
       native_theme_extra_params->button.has_border =
@@ -109,7 +112,7 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->button.background_color =
           extra_params->button.backgroundColor;
       break;
-    case WebFallbackThemeEngine::PartTextField:
+    case WebThemeEngine::PartTextField:
       native_theme_extra_params->text_field.is_text_area =
           extra_params->textField.isTextArea;
       native_theme_extra_params->text_field.is_listbox =
@@ -117,7 +120,7 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->text_field.background_color =
           extra_params->textField.backgroundColor;
       break;
-    case WebFallbackThemeEngine::PartMenuList:
+    case WebThemeEngine::PartMenuList:
       native_theme_extra_params->menu_list.has_border =
           extra_params->menuList.hasBorder;
       native_theme_extra_params->menu_list.has_border_radius =
@@ -129,19 +132,19 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->menu_list.background_color =
           extra_params->menuList.backgroundColor;
       break;
-    case WebFallbackThemeEngine::PartSliderTrack:
-    case WebFallbackThemeEngine::PartSliderThumb:
+    case WebThemeEngine::PartSliderTrack:
+    case WebThemeEngine::PartSliderThumb:
       native_theme_extra_params->slider.vertical =
           extra_params->slider.vertical;
       native_theme_extra_params->slider.in_drag = extra_params->slider.inDrag;
       break;
-    case WebFallbackThemeEngine::PartInnerSpinButton:
+    case WebThemeEngine::PartInnerSpinButton:
       native_theme_extra_params->inner_spin.spin_up =
           extra_params->innerSpin.spinUp;
       native_theme_extra_params->inner_spin.read_only =
           extra_params->innerSpin.readOnly;
       break;
-    case WebFallbackThemeEngine::PartProgressBar:
+    case WebThemeEngine::PartProgressBar:
       native_theme_extra_params->progress_bar.determinate =
           extra_params->progressBar.determinate;
       native_theme_extra_params->progress_bar.value_rect_x =
@@ -158,34 +161,26 @@ static void GetNativeThemeExtraParams(
   }
 }
 
-WebFallbackThemeEngineImpl::WebFallbackThemeEngineImpl()
-    : theme_(new ui::FallbackTheme()) {
-}
-
-WebFallbackThemeEngineImpl::~WebFallbackThemeEngineImpl() {}
-
-WebKit::WebSize WebFallbackThemeEngineImpl::getSize(
-    WebFallbackThemeEngine::Part part) {
+WebKit::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
   ui::NativeTheme::ExtraParams extra;
-  return theme_->GetPartSize(NativeThemePart(part),
-                             ui::NativeTheme::kNormal,
-                             extra);
+  return ui::NativeTheme::instance()->GetPartSize(
+      NativeThemePart(part), ui::NativeTheme::kNormal, extra);
 }
 
-void WebFallbackThemeEngineImpl::paint(
+void WebThemeEngineImpl::paint(
     WebKit::WebCanvas* canvas,
-    WebFallbackThemeEngine::Part part,
-    WebFallbackThemeEngine::State state,
+    WebThemeEngine::Part part,
+    WebThemeEngine::State state,
     const WebKit::WebRect& rect,
-    const WebFallbackThemeEngine::ExtraParams* extra_params) {
+    const WebThemeEngine::ExtraParams* extra_params) {
   ui::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(
       part, state, extra_params, &native_theme_extra_params);
-  theme_->Paint(canvas,
-                NativeThemePart(part),
-                NativeThemeState(state),
-                gfx::Rect(rect),
-                native_theme_extra_params);
+  ui::NativeTheme::instance()->Paint(
+      canvas,
+      NativeThemePart(part),
+      NativeThemeState(state),
+      gfx::Rect(rect),
+      native_theme_extra_params);
 }
-
 }  // namespace webkit_glue

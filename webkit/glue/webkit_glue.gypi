@@ -65,7 +65,9 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+        '<(DEPTH)/ui/native_theme/native_theme.gyp:native_theme',
         '<(DEPTH)/ui/ui.gyp:ui',
 
         # TODO(scottmg): crbug.com/237249
@@ -84,9 +86,19 @@
         '../child/fling_curve_configuration.h',
         '../child/touch_fling_gesture_curve.cc',
         '../child/touch_fling_gesture_curve.h',
+        '../child/webfallbackthemeengine_impl.cc',
+        '../child/webfallbackthemeengine_impl.h',
         '../child/webkit_child_export.h',
         '../child/webkitplatformsupport_child_impl.cc',
         '../child/webkitplatformsupport_child_impl.h',
+        '../child/webthemeengine_impl_android.cc',
+        '../child/webthemeengine_impl_android.h',
+        '../child/webthemeengine_impl_default.cc',
+        '../child/webthemeengine_impl_default.h',
+        '../child/webthemeengine_impl_mac.cc',
+        '../child/webthemeengine_impl_mac.h',
+        '../child/webthemeengine_impl_win.cc',
+        '../child/webthemeengine_impl_win.h',
         '../child/webthread_impl.cc',
         '../child/webthread_impl.h',
         '../child/worker_task_runner.cc',
@@ -94,6 +106,19 @@
       ],
 
       'conditions': [
+        ['use_default_render_theme==0', {
+          'sources/': [
+            ['exclude', 'webthemeengine_impl_default.cc'],
+            ['exclude', 'webthemeengine_impl_default.h'],
+          ],
+        }],
+        ['OS=="mac"', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+            ],
+          },
+        }],
         ['OS=="android"', {
           'dependencies': [
             'overscroller_jni_headers',
@@ -220,7 +245,6 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
-        '<(DEPTH)/ui/native_theme/native_theme.gyp:native_theme',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/url/url.gyp:url_lib',
@@ -269,8 +293,6 @@
         'webclipboard_impl.h',
         'webcookie.cc',
         'webcookie.h',
-        'webfallbackthemeengine_impl.cc',
-        'webfallbackthemeengine_impl.h',
         'webfileutilities_impl.cc',
         'webfileutilities_impl.h',
         'webkit_glue.cc',
@@ -284,14 +306,6 @@
         'websocketstreamhandle_delegate.h',
         'websocketstreamhandle_impl.cc',
         'websocketstreamhandle_impl.h',
-        'webthemeengine_impl_android.cc',
-        'webthemeengine_impl_android.h',
-        'webthemeengine_impl_default.cc',
-        'webthemeengine_impl_default.h',
-        'webthemeengine_impl_mac.cc',
-        'webthemeengine_impl_mac.h',
-        'webthemeengine_impl_win.cc',
-        'webthemeengine_impl_win.h',
         'weburlloader_impl.cc',
         'weburlloader_impl.h',
       ],
@@ -300,17 +314,6 @@
       # own hard dependencies.
       'hard_dependency': 1,
       'conditions': [
-        ['use_default_render_theme==0', {
-          'sources/': [
-            ['exclude', 'webthemeengine_impl_default.cc'],
-            ['exclude', 'webthemeengine_impl_default.h'],
-          ],
-        }, {  # else: use_default_render_theme==1
-          'sources/': [
-            ['exclude', 'webthemeengine_impl_win.cc'],
-            ['exclude', 'webthemeengine_impl_win.h'],
-          ],
-        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:gtk',
@@ -322,25 +325,7 @@
             'libraries': [ '-lXcursor', ],
           },
         }],
-        ['OS!="mac"', {
-          'sources/': [['exclude', '_mac\\.(cc|mm)$']],
-          'sources!': [
-            'webthemeengine_impl_mac.cc',
-          ],
-        }, {  # else: OS=="mac"
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ],
-          },
-        }],
-        ['OS!="win"', {
-          'sources/': [['exclude', '_win\\.cc$']],
-          'sources!': [
-            'webthemeengine_impl_win.cc',
-          ],
-        }, {  # else: OS=="win"
-          'sources/': [['exclude', '_posix\\.cc$']],
+        ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],

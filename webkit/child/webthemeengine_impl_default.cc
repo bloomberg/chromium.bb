@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webthemeengine_impl_android.h"
+#include "webkit/child/webthemeengine_impl_default.h"
 
-#include "base/logging.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -29,21 +28,13 @@ static ui::NativeTheme::Part NativeThemePart(
     case WebThemeEngine::PartScrollbarUpArrow:
       return ui::NativeTheme::kScrollbarUpArrow;
     case WebThemeEngine::PartScrollbarHorizontalThumb:
-      // Android doesn't draw scrollbars.
-      NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
+      return ui::NativeTheme::kScrollbarHorizontalThumb;
     case WebThemeEngine::PartScrollbarVerticalThumb:
-      // Android doesn't draw scrollbars.
-      NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
+      return ui::NativeTheme::kScrollbarVerticalThumb;
     case WebThemeEngine::PartScrollbarHorizontalTrack:
-      // Android doesn't draw scrollbars.
-      NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
+      return ui::NativeTheme::kScrollbarHorizontalTrack;
     case WebThemeEngine::PartScrollbarVerticalTrack:
-      // Android doesn't draw scrollbars.
-      NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
+      return ui::NativeTheme::kScrollbarVerticalTrack;
     case WebThemeEngine::PartCheckbox:
       return ui::NativeTheme::kCheckbox;
     case WebThemeEngine::PartRadio:
@@ -91,8 +82,14 @@ static void GetNativeThemeExtraParams(
   switch (part) {
     case WebThemeEngine::PartScrollbarHorizontalTrack:
     case WebThemeEngine::PartScrollbarVerticalTrack:
-      // Android doesn't draw scrollbars.
-      NOTREACHED();
+      native_theme_extra_params->scrollbar_track.track_x =
+          extra_params->scrollbarTrack.trackX;
+      native_theme_extra_params->scrollbar_track.track_y =
+          extra_params->scrollbarTrack.trackY;
+      native_theme_extra_params->scrollbar_track.track_width =
+          extra_params->scrollbarTrack.trackWidth;
+      native_theme_extra_params->scrollbar_track.track_height =
+          extra_params->scrollbarTrack.trackHeight;
       break;
     case WebThemeEngine::PartCheckbox:
       native_theme_extra_params->button.checked = extra_params->button.checked;
@@ -163,8 +160,9 @@ static void GetNativeThemeExtraParams(
 
 WebKit::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
   ui::NativeTheme::ExtraParams extra;
-  return ui::NativeTheme::instance()->GetPartSize(
-      NativeThemePart(part), ui::NativeTheme::kNormal, extra);
+  return ui::NativeTheme::instance()->GetPartSize(NativeThemePart(part),
+                                                   ui::NativeTheme::kNormal,
+                                                   extra);
 }
 
 void WebThemeEngineImpl::paint(
@@ -183,4 +181,5 @@ void WebThemeEngineImpl::paint(
       gfx::Rect(rect),
       native_theme_extra_params);
 }
+
 }  // namespace webkit_glue

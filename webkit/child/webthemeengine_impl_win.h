@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_WIN_H_
-#define WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_WIN_H_
+#ifndef WEBKIT_CHILD_WEBTHEMEENGINE_IMPL_WIN_H_
+#define WEBKIT_CHILD_WEBTHEMEENGINE_IMPL_WIN_H_
 
 #include "third_party/WebKit/public/platform/win/WebThemeEngine.h"
 
@@ -46,4 +46,4 @@ class WebThemeEngineImpl : public WebKit::WebThemeEngine {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_WIN_H_
+#endif  // WEBKIT_CHILD_WEBTHEMEENGINE_IMPL_WIN_H_

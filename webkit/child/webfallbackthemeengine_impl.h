@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBFALLBACKTHEMEENGINE_IMPL_H_
-#define WEBKIT_GLUE_WEBFALLBACKTHEMEENGINE_IMPL_H_
+#ifndef WEBKIT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
+#define WEBKIT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebFallbackThemeEngine.h"
@@ -36,4 +36,4 @@ class WebFallbackThemeEngineImpl : public WebKit::WebFallbackThemeEngine {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_WEBFALLBACKTHEMEENGINE_IMPL_H_
+#endif  // WEBKIT_CHILD_WEBFALLBACKTHEMEENGINE_IMPL_H_

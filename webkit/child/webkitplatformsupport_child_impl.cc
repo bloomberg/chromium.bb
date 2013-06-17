@@ -13,6 +13,9 @@
 #include "webkit/child/fling_animator_impl_android.h"
 #endif
 
+using WebKit::WebFallbackThemeEngine;
+using WebKit::WebThemeEngine;
+
 namespace webkit_glue {
 
 WebKitPlatformSupportChildImpl::WebKitPlatformSupportChildImpl()
@@ -20,6 +23,14 @@ WebKitPlatformSupportChildImpl::WebKitPlatformSupportChildImpl()
       fling_curve_configuration_(new FlingCurveConfiguration) {}
 
 WebKitPlatformSupportChildImpl::~WebKitPlatformSupportChildImpl() {}
+
+WebThemeEngine* WebKitPlatformSupportChildImpl::themeEngine() {
+  return &native_theme_engine_;
+}
+
+WebFallbackThemeEngine* WebKitPlatformSupportChildImpl::fallbackThemeEngine() {
+  return &fallback_theme_engine_;
+}
 
 void WebKitPlatformSupportChildImpl::SetFlingCurveParameters(
     const std::vector<float>& new_touchpad,

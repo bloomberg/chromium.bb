@@ -56,12 +56,10 @@
 using WebKit::WebAudioBus;
 using WebKit::WebCookie;
 using WebKit::WebData;
-using WebKit::WebFallbackThemeEngine;
 using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
 using WebKit::WebString;
 using WebKit::WebSocketStreamHandle;
-using WebKit::WebThemeEngine;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
@@ -367,14 +365,6 @@ WebKitPlatformSupportImpl::WebKitPlatformSupportImpl()
       shared_timer_suspended_(0) {}
 
 WebKitPlatformSupportImpl::~WebKitPlatformSupportImpl() {
-}
-
-WebThemeEngine* WebKitPlatformSupportImpl::themeEngine() {
-  return &native_theme_engine_;
-}
-
-WebFallbackThemeEngine* WebKitPlatformSupportImpl::fallbackThemeEngine() {
-  return &fallback_theme_engine_;
 }
 
 WebURLLoader* WebKitPlatformSupportImpl::createURLLoader() {

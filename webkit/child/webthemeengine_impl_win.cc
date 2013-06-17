@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webthemeengine_impl_win.h"
+#include "webkit/child/webthemeengine_impl_win.h"
 
 #include <vsstyle.h>  // To convert to ui::NativeTheme::State
 

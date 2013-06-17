@@ -2,56 +2,56 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webthemeengine_impl_default.h"
+#include "webkit/child/webfallbackthemeengine_impl.h"
 
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/fallback_theme.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebColor;
 using WebKit::WebRect;
-using WebKit::WebThemeEngine;
+using WebKit::WebFallbackThemeEngine;
 
 namespace webkit_glue {
 
 static ui::NativeTheme::Part NativeThemePart(
-    WebThemeEngine::Part part) {
+    WebFallbackThemeEngine::Part part) {
   switch (part) {
-    case WebThemeEngine::PartScrollbarDownArrow:
+    case WebFallbackThemeEngine::PartScrollbarDownArrow:
       return ui::NativeTheme::kScrollbarDownArrow;
-    case WebThemeEngine::PartScrollbarLeftArrow:
+    case WebFallbackThemeEngine::PartScrollbarLeftArrow:
       return ui::NativeTheme::kScrollbarLeftArrow;
-    case WebThemeEngine::PartScrollbarRightArrow:
+    case WebFallbackThemeEngine::PartScrollbarRightArrow:
       return ui::NativeTheme::kScrollbarRightArrow;
-    case WebThemeEngine::PartScrollbarUpArrow:
+    case WebFallbackThemeEngine::PartScrollbarUpArrow:
       return ui::NativeTheme::kScrollbarUpArrow;
-    case WebThemeEngine::PartScrollbarHorizontalThumb:
+    case WebFallbackThemeEngine::PartScrollbarHorizontalThumb:
       return ui::NativeTheme::kScrollbarHorizontalThumb;
-    case WebThemeEngine::PartScrollbarVerticalThumb:
+    case WebFallbackThemeEngine::PartScrollbarVerticalThumb:
       return ui::NativeTheme::kScrollbarVerticalThumb;
-    case WebThemeEngine::PartScrollbarHorizontalTrack:
+    case WebFallbackThemeEngine::PartScrollbarHorizontalTrack:
       return ui::NativeTheme::kScrollbarHorizontalTrack;
-    case WebThemeEngine::PartScrollbarVerticalTrack:
+    case WebFallbackThemeEngine::PartScrollbarVerticalTrack:
       return ui::NativeTheme::kScrollbarVerticalTrack;
-    case WebThemeEngine::PartCheckbox:
+    case WebFallbackThemeEngine::PartCheckbox:
       return ui::NativeTheme::kCheckbox;
-    case WebThemeEngine::PartRadio:
+    case WebFallbackThemeEngine::PartRadio:
       return ui::NativeTheme::kRadio;
-    case WebThemeEngine::PartButton:
+    case WebFallbackThemeEngine::PartButton:
       return ui::NativeTheme::kPushButton;
-    case WebThemeEngine::PartTextField:
+    case WebFallbackThemeEngine::PartTextField:
       return ui::NativeTheme::kTextField;
-    case WebThemeEngine::PartMenuList:
+    case WebFallbackThemeEngine::PartMenuList:
       return ui::NativeTheme::kMenuList;
-    case WebThemeEngine::PartSliderTrack:
+    case WebFallbackThemeEngine::PartSliderTrack:
       return ui::NativeTheme::kSliderTrack;
-    case WebThemeEngine::PartSliderThumb:
+    case WebFallbackThemeEngine::PartSliderThumb:
       return ui::NativeTheme::kSliderThumb;
-    case WebThemeEngine::PartInnerSpinButton:
+    case WebFallbackThemeEngine::PartInnerSpinButton:
       return ui::NativeTheme::kInnerSpinButton;
-    case WebThemeEngine::PartProgressBar:
+    case WebFallbackThemeEngine::PartProgressBar:
       return ui::NativeTheme::kProgressBar;
     default:
       return ui::NativeTheme::kScrollbarDownArrow;
@@ -59,15 +59,15 @@ static ui::NativeTheme::Part NativeThemePart(
 }
 
 static ui::NativeTheme::State NativeThemeState(
-    WebThemeEngine::State state) {
+    WebFallbackThemeEngine::State state) {
   switch (state) {
-    case WebThemeEngine::StateDisabled:
+    case WebFallbackThemeEngine::StateDisabled:
       return ui::NativeTheme::kDisabled;
-    case WebThemeEngine::StateHover:
+    case WebFallbackThemeEngine::StateHover:
       return ui::NativeTheme::kHovered;
-    case WebThemeEngine::StateNormal:
+    case WebFallbackThemeEngine::StateNormal:
       return ui::NativeTheme::kNormal;
-    case WebThemeEngine::StatePressed:
+    case WebFallbackThemeEngine::StatePressed:
       return ui::NativeTheme::kPressed;
     default:
       return ui::NativeTheme::kDisabled;
@@ -75,13 +75,13 @@ static ui::NativeTheme::State NativeThemeState(
 }
 
 static void GetNativeThemeExtraParams(
-    WebThemeEngine::Part part,
-    WebThemeEngine::State state,
-    const WebThemeEngine::ExtraParams* extra_params,
+    WebFallbackThemeEngine::Part part,
+    WebFallbackThemeEngine::State state,
+    const WebFallbackThemeEngine::ExtraParams* extra_params,
     ui::NativeTheme::ExtraParams* native_theme_extra_params) {
   switch (part) {
-    case WebThemeEngine::PartScrollbarHorizontalTrack:
-    case WebThemeEngine::PartScrollbarVerticalTrack:
+    case WebFallbackThemeEngine::PartScrollbarHorizontalTrack:
+    case WebFallbackThemeEngine::PartScrollbarVerticalTrack:
       native_theme_extra_params->scrollbar_track.track_x =
           extra_params->scrollbarTrack.trackX;
       native_theme_extra_params->scrollbar_track.track_y =
@@ -91,15 +91,15 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->scrollbar_track.track_height =
           extra_params->scrollbarTrack.trackHeight;
       break;
-    case WebThemeEngine::PartCheckbox:
+    case WebFallbackThemeEngine::PartCheckbox:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       native_theme_extra_params->button.indeterminate =
           extra_params->button.indeterminate;
       break;
-    case WebThemeEngine::PartRadio:
+    case WebFallbackThemeEngine::PartRadio:
       native_theme_extra_params->button.checked = extra_params->button.checked;
       break;
-    case WebThemeEngine::PartButton:
+    case WebFallbackThemeEngine::PartButton:
       native_theme_extra_params->button.is_default =
           extra_params->button.isDefault;
       native_theme_extra_params->button.has_border =
@@ -109,7 +109,7 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->button.background_color =
           extra_params->button.backgroundColor;
       break;
-    case WebThemeEngine::PartTextField:
+    case WebFallbackThemeEngine::PartTextField:
       native_theme_extra_params->text_field.is_text_area =
           extra_params->textField.isTextArea;
       native_theme_extra_params->text_field.is_listbox =
@@ -117,7 +117,7 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->text_field.background_color =
           extra_params->textField.backgroundColor;
       break;
-    case WebThemeEngine::PartMenuList:
+    case WebFallbackThemeEngine::PartMenuList:
       native_theme_extra_params->menu_list.has_border =
           extra_params->menuList.hasBorder;
       native_theme_extra_params->menu_list.has_border_radius =
@@ -129,19 +129,19 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->menu_list.background_color =
           extra_params->menuList.backgroundColor;
       break;
-    case WebThemeEngine::PartSliderTrack:
-    case WebThemeEngine::PartSliderThumb:
+    case WebFallbackThemeEngine::PartSliderTrack:
+    case WebFallbackThemeEngine::PartSliderThumb:
       native_theme_extra_params->slider.vertical =
           extra_params->slider.vertical;
       native_theme_extra_params->slider.in_drag = extra_params->slider.inDrag;
       break;
-    case WebThemeEngine::PartInnerSpinButton:
+    case WebFallbackThemeEngine::PartInnerSpinButton:
       native_theme_extra_params->inner_spin.spin_up =
           extra_params->innerSpin.spinUp;
       native_theme_extra_params->inner_spin.read_only =
           extra_params->innerSpin.readOnly;
       break;
-    case WebThemeEngine::PartProgressBar:
+    case WebFallbackThemeEngine::PartProgressBar:
       native_theme_extra_params->progress_bar.determinate =
           extra_params->progressBar.determinate;
       native_theme_extra_params->progress_bar.value_rect_x =
@@ -158,28 +158,34 @@ static void GetNativeThemeExtraParams(
   }
 }
 
-WebKit::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
-  ui::NativeTheme::ExtraParams extra;
-  return ui::NativeTheme::instance()->GetPartSize(NativeThemePart(part),
-                                                   ui::NativeTheme::kNormal,
-                                                   extra);
+WebFallbackThemeEngineImpl::WebFallbackThemeEngineImpl()
+    : theme_(new ui::FallbackTheme()) {
 }
 
-void WebThemeEngineImpl::paint(
+WebFallbackThemeEngineImpl::~WebFallbackThemeEngineImpl() {}
+
+WebKit::WebSize WebFallbackThemeEngineImpl::getSize(
+    WebFallbackThemeEngine::Part part) {
+  ui::NativeTheme::ExtraParams extra;
+  return theme_->GetPartSize(NativeThemePart(part),
+                             ui::NativeTheme::kNormal,
+                             extra);
+}
+
+void WebFallbackThemeEngineImpl::paint(
     WebKit::WebCanvas* canvas,
-    WebThemeEngine::Part part,
-    WebThemeEngine::State state,
+    WebFallbackThemeEngine::Part part,
+    WebFallbackThemeEngine::State state,
     const WebKit::WebRect& rect,
-    const WebThemeEngine::ExtraParams* extra_params) {
+    const WebFallbackThemeEngine::ExtraParams* extra_params) {
   ui::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(
       part, state, extra_params, &native_theme_extra_params);
-  ui::NativeTheme::instance()->Paint(
-      canvas,
-      NativeThemePart(part),
-      NativeThemeState(state),
-      gfx::Rect(rect),
-      native_theme_extra_params);
+  theme_->Paint(canvas,
+                NativeThemePart(part),
+                NativeThemeState(state),
+                gfx::Rect(rect),
+                native_theme_extra_params);
 }
 
 }  // namespace webkit_glue

@@ -6,8 +6,19 @@
 #define WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
 
 #include "base/threading/thread_local_storage.h"
+#include "webkit/child/webfallbackthemeengine_impl.h"
 #include "webkit/child/webkit_child_export.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
+
+#if defined(USE_DEFAULT_RENDER_THEME)
+#include "webkit/child/webthemeengine_impl_default.h"
+#elif defined(OS_WIN)
+#include "webkit/child/webthemeengine_impl_win.h"
+#elif defined(OS_MACOSX)
+#include "webkit/child/webthemeengine_impl_mac.h"
+#elif defined(OS_ANDROID)
+#include "webkit/child/webthemeengine_impl_android.h"
+#endif
 
 namespace webkit_glue {
 
@@ -18,6 +29,10 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
  public:
   WebKitPlatformSupportChildImpl();
   virtual ~WebKitPlatformSupportChildImpl();
+
+  // Platform methods (partial implementation):
+  virtual WebKit::WebThemeEngine* themeEngine();
+  virtual WebKit::WebFallbackThemeEngine* fallbackThemeEngine();
 
   void SetFlingCurveParameters(
     const std::vector<float>& new_touchpad,
@@ -39,6 +54,8 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
  private:
   static void DestroyCurrentThread(void*);
 
+  WebThemeEngineImpl native_theme_engine_;
+  WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
 };
