@@ -4,9 +4,6 @@ include_rules = [
   "-content",
   "+sql",
   "+ui",
-
-  # TODO(droger): Remove all dependencies on content (http://crbug.com/248049).
-  "+content/public/browser/browser_thread.h",
 ]
 
 specific_include_rules = {

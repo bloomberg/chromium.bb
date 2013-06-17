@@ -13,7 +13,6 @@
 
 using base::Bind;
 using base::FilePath;
-using content::BrowserThread;
 
 // Receives messages from the backend on the DB thread, posts them to
 // WebDatabaseService on the UI thread.
@@ -22,12 +21,12 @@ class WebDatabaseService::BackendDelegate :
  public:
   BackendDelegate(
       const base::WeakPtr<WebDatabaseService>& web_database_service)
-      : web_database_service_(web_database_service) {
+      : web_database_service_(web_database_service),
+        callback_thread_(base::MessageLoopProxy::current()) {
   }
 
   virtual void DBLoaded(sql::InitStatus status) OVERRIDE {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
+    callback_thread_->PostTask(
         FROM_HERE,
         base::Bind(&WebDatabaseService::OnDatabaseLoadDone,
                    web_database_service_,
@@ -35,19 +34,22 @@ class WebDatabaseService::BackendDelegate :
   }
  private:
   const base::WeakPtr<WebDatabaseService> web_database_service_;
+  scoped_refptr<base::MessageLoopProxy> callback_thread_;
 };
 
 WebDatabaseService::WebDatabaseService(
     const base::FilePath& path,
-    const scoped_refptr<base::MessageLoopProxy>& ui_thread)
+    const scoped_refptr<base::MessageLoopProxy>& ui_thread,
+    const scoped_refptr<base::MessageLoopProxy>& db_thread)
     : base::RefCountedDeleteOnMessageLoop<WebDatabaseService>(ui_thread),
       path_(path),
       weak_ptr_factory_(this),
-      db_loaded_(false) {
+      db_loaded_(false),
+      db_thread_(db_thread) {
   // WebDatabaseService should be instantiated on UI thread.
   DCHECK(ui_thread->BelongsToCurrentThread());
   // WebDatabaseService requires DB thread if instantiated.
-  DCHECK(BrowserThread::IsWellKnownThread(BrowserThread::DB));
+  DCHECK(db_thread);
 }
 
 WebDatabaseService::~WebDatabaseService() {
@@ -56,7 +58,8 @@ WebDatabaseService::~WebDatabaseService() {
 void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
   if (!wds_backend_.get()) {
     wds_backend_ = new WebDataServiceBackend(
-        path_, new BackendDelegate(weak_ptr_factory_.GetWeakPtr()));
+        path_, new BackendDelegate(weak_ptr_factory_.GetWeakPtr()),
+        db_thread_);
   }
   wds_backend_->AddTable(table.Pass());
 }
@@ -64,8 +67,7 @@ void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
 void WebDatabaseService::LoadDatabase() {
   DCHECK(wds_backend_.get());
 
-  BrowserThread::PostTask(
-      BrowserThread::DB,
+  db_thread_->PostTask(
       FROM_HERE,
       Bind(&WebDataServiceBackend::InitDatabase, wds_backend_));
 }
@@ -74,7 +76,7 @@ void WebDatabaseService::UnloadDatabase() {
   db_loaded_ = false;
   if (!wds_backend_.get())
     return;
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+  db_thread_->PostTask(FROM_HERE,
       Bind(&WebDataServiceBackend::ShutdownDatabase,
            wds_backend_, true));
 }
@@ -86,13 +88,13 @@ void WebDatabaseService::ShutdownDatabase() {
   error_callbacks_.clear();
   if (!wds_backend_.get())
     return;
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+  db_thread_->PostTask(FROM_HERE,
       Bind(&WebDataServiceBackend::ShutdownDatabase,
            wds_backend_, false));
 }
 
 WebDatabase* WebDatabaseService::GetDatabaseOnDB() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(db_thread_->BelongsToCurrentThread());
   if (!wds_backend_.get())
     return NULL;
   return wds_backend_->database();
@@ -113,7 +115,7 @@ void WebDatabaseService::ScheduleDBTask(
   scoped_ptr<WebDataRequest> request(
       new WebDataRequest(NULL, wds_backend_->request_manager().get()));
 
-  BrowserThread::PostTask(BrowserThread::DB, from_here,
+  db_thread_->PostTask(from_here,
       Bind(&WebDataServiceBackend::DBWriteTaskWrapper, wds_backend_,
            task, base::Passed(&request)));
 }
@@ -134,7 +136,7 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
       new WebDataRequest(consumer, wds_backend_->request_manager().get()));
   handle = request->GetHandle();
 
-  BrowserThread::PostTask(BrowserThread::DB, from_here,
+  db_thread_->PostTask(from_here,
       Bind(&WebDataServiceBackend::DBReadTaskWrapper, wds_backend_,
            task, base::Passed(&request)));
 

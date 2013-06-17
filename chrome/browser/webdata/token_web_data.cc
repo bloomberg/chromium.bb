@@ -4,9 +4,11 @@
 
 #include "chrome/browser/webdata/token_web_data.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "chrome/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_database_service.h"
+#include "content/public/browser/browser_thread.h"
 
 using base::Bind;
 using base::Time;
@@ -59,7 +61,8 @@ class TokenWebDataBackend
 
 TokenWebData::TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
                                const ProfileErrorCallback& callback)
-    : WebDataServiceBase(wdbs, callback),
+    : WebDataServiceBase(wdbs, callback,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       token_backend_(new TokenWebDataBackend()) {
 }
 
@@ -83,7 +86,8 @@ WebDataServiceBase::Handle TokenWebData::GetAllTokens(
 }
 
 TokenWebData::TokenWebData()
-    : WebDataServiceBase(NULL, ProfileErrorCallback()),
+    : WebDataServiceBase(NULL, ProfileErrorCallback(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       token_backend_(new TokenWebDataBackend()) {
 }
 

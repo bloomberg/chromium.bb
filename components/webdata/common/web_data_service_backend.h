@@ -10,12 +10,11 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/webdata/common/web_database_service.h"
 #include "components/webdata/common/webdata_export.h"
-#include "content/public/browser/browser_thread.h"
-
 
 class WebDatabase;
 class WebDatabaseTable;
@@ -33,9 +32,7 @@ class Location;
 // TODO(caitkp): Rename this class to WebDatabaseBackend.
 
 class WEBDATA_EXPORT WebDataServiceBackend
-    : public base::RefCountedThreadSafe<
-          WebDataServiceBackend,
-          content::BrowserThread::DeleteOnDBThread> {
+    : public base::RefCountedDeleteOnMessageLoop<WebDataServiceBackend> {
  public:
   class Delegate {
     public:
@@ -45,8 +42,9 @@ class WEBDATA_EXPORT WebDataServiceBackend
     virtual void DBLoaded(sql::InitStatus status) = 0;
   };
 
-  explicit WebDataServiceBackend(const base::FilePath& path,
-                                 Delegate* delegate);
+  WebDataServiceBackend(const base::FilePath& path,
+                        Delegate* delegate,
+                        const scoped_refptr<base::MessageLoopProxy>& db_thread);
 
   // Must call only before InitDatabaseWithCallback.
   void AddTable(scoped_ptr<WebDatabaseTable> table);
@@ -88,17 +86,12 @@ class WEBDATA_EXPORT WebDataServiceBackend
   WebDatabase* database() { return db_.get(); }
 
  protected:
+  friend class base::RefCountedDeleteOnMessageLoop<WebDataServiceBackend>;
+  friend class base::DeleteHelper<WebDataServiceBackend>;
+
   virtual ~WebDataServiceBackend();
 
  private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::DB>;
-  friend class base::DeleteHelper<WebDataServiceBackend>;
-  // We have to friend RCTS<> so WIN shared-lib build is happy
-  // (http://crbug/112250).
-  friend class base::RefCountedThreadSafe<WebDataServiceBackend,
-      content::BrowserThread::DeleteOnDBThread>;
-
   // Commit the current transaction.
   void Commit();
 

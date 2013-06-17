@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
@@ -26,8 +27,10 @@
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/autofill/common/form_field_data.h"
-#include "components/webdata/common/web_data_service_test_util.h"
 #include "components/webdata/common/web_database_service.h"
+#include "components/webdata/common/web_data_results.h"
+#include "components/webdata/common/web_data_service_base.h"
+#include "components/webdata/common/web_data_service_consumer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +44,37 @@ using testing::DoDefault;
 using testing::ElementsAreArray;
 using testing::Pointee;
 using testing::Property;
+
+namespace {
+
+template <class T>
+class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
+ public:
+  AutofillWebDataServiceConsumer() : handle_(0) {}
+  virtual ~AutofillWebDataServiceConsumer() {}
+
+  virtual void OnWebDataServiceRequestDone(WebDataService::Handle handle,
+                                           const WDTypedResult* result) {
+    using content::BrowserThread;
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    handle_ = handle;
+    const WDResult<T>* wrapped_result =
+        static_cast<const WDResult<T>*>(result);
+    result_ = wrapped_result->GetValue();
+
+    base::MessageLoop::current()->Quit();
+  }
+
+  WebDataService::Handle handle() { return handle_; }
+  T& result() { return result_; }
+
+ private:
+  WebDataService::Handle handle_;
+  T result_;
+  DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceConsumer);
+};
+
+}  // namespace
 
 namespace autofill {
 
@@ -72,8 +106,10 @@ class WebDataServiceTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
 
-    wdbs_ = new WebDatabaseService(path,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
+    wdbs_ = new WebDatabaseService(
+        path,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
     wdbs_->LoadDatabase();
 

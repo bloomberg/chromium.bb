@@ -12,6 +12,12 @@
 #include "base/strings/string16.h"
 #include "components/webdata/common/web_data_service_base.h"
 
+namespace base {
+
+class Time;
+
+}  // namespace base
+
 class Profile;
 class WebDataServiceConsumer;
 

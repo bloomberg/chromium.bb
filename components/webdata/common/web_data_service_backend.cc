@@ -10,14 +10,15 @@
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/common/web_database_table.h"
 
-
 using base::Bind;
 using base::FilePath;
-using content::BrowserThread;
 
 WebDataServiceBackend::WebDataServiceBackend(
-    const FilePath& path, Delegate* delegate)
-    : db_path_(path),
+    const FilePath& path,
+    Delegate* delegate,
+    const scoped_refptr<base::MessageLoopProxy>& db_thread)
+    : base::RefCountedDeleteOnMessageLoop<WebDataServiceBackend>(db_thread),
+      db_path_(path),
       request_manager_(new WebDataRequestManager()),
       init_status_(sql::INIT_FAILURE),
       init_complete_(false),

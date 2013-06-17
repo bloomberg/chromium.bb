@@ -27,7 +27,8 @@ namespace autofill {
 AutofillWebDataService::AutofillWebDataService(
     scoped_refptr<WebDatabaseService> wdbs,
     const ProfileErrorCallback& callback)
-    : WebDataServiceBase(wdbs, callback),
+    : WebDataServiceBase(wdbs, callback,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       weak_ptr_factory_(this),
       autofill_backend_(NULL) {
 
@@ -41,8 +42,8 @@ AutofillWebDataService::AutofillWebDataService(
 }
 
 AutofillWebDataService::AutofillWebDataService()
-    : WebDataServiceBase(NULL,
-                         WebDataServiceBase::ProfileErrorCallback()),
+    : WebDataServiceBase(NULL, WebDataServiceBase::ProfileErrorCallback(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       weak_ptr_factory_(this),
       autofill_backend_(new AutofillWebDataBackendImpl(NULL, base::Closure())) {
 }

@@ -53,8 +53,10 @@ class WEBDATA_EXPORT WebDatabaseService
   typedef base::Callback<WebDatabase::State(WebDatabase*)> WriteTask;
 
   // Takes the path to the WebDatabase file.
+  // WebDatabaseService lives on |ui_thread| and posts tasks to |db_thread|.
   WebDatabaseService(const base::FilePath& path,
-                     const scoped_refptr<base::MessageLoopProxy>& ui_thread);
+                     const scoped_refptr<base::MessageLoopProxy>& ui_thread,
+                     const scoped_refptr<base::MessageLoopProxy>& db_thread);
 
   // Adds |table| as a WebDatabaseTable that will participate in
   // managing the database, transferring ownership. All calls to this
@@ -145,6 +147,8 @@ class WEBDATA_EXPORT WebDatabaseService
 
   // True if the WebDatabase has loaded.
   bool db_loaded_;
+
+  scoped_refptr<base::MessageLoopProxy> db_thread_;
 };
 
 #endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_SERVICE_H_
