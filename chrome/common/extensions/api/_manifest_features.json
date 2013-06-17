@@ -239,6 +239,15 @@
       "extension", "packaged_app", "platform_app"
     ]
   },
+  "oauth2.auto_approve": {
+    "channel": "stable",
+    "extension_types": [
+      "extension", "platform_app"
+    ],
+    "whitelist": [
+      "mdbihdcgjmagbcapkhhkjbbdlkflmbfo"  // Placeholder to activate whitelist.
+    ]
+  },
   "offline_enabled": {
     "channel": "stable",
     "extension_types": [

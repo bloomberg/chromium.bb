@@ -323,6 +323,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidNaClModulesMIMEType[];
   extern const char kInvalidNaClModulesPath[];
   extern const char kInvalidName[];
+  extern const char kInvalidOAuth2AutoApprove[];
   extern const char kInvalidOAuth2ClientId[];
   extern const char kInvalidOAuth2Scopes[];
   extern const char kInvalidOfflineEnabled[];

@@ -10,9 +10,64 @@
 
 namespace keys = extension_manifest_keys;
 
+namespace {
+
+// Produces extension ID = "mdbihdcgjmagbcapkhhkjbbdlkflmbfo".
+const char kExtensionKey[] =
+    "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCV9PlZjcTIXfnlB3HXo50OlM/CnIq0y7jm"
+    "KfPVyStaWsmFB7NaVnqUXoGb9swBDfVnZ6BrupwnxL76TWEJPo+KQMJ6uz0PPdJWi2jQfZiG"
+    "iheDiKH5Gv+dVd67qf7ly8QWW0o8qmFpqBZQpksm1hOGbfsupv9W4c42tMEIicDMLQIDAQAB";
+const char kAutoApproveNotAllowedWarning[] =
+    "'oauth2.auto_approve' is not allowed for specified extension ID.";
+
+}  // namespace
+
 namespace extensions {
 
 class OAuth2ManifestTest : public ExtensionManifestTest {
+ protected:
+  enum AutoApproveValue {
+    AUTO_APPROVE_NOT_SET,
+    AUTO_APPROVE_FALSE,
+    AUTO_APPROVE_TRUE,
+    AUTO_APPROVE_INVALID
+  };
+
+  base::DictionaryValue* CreateManifest(
+      AutoApproveValue auto_approve,
+      bool extension_id_whitelisted) {
+    parsed_manifest_.reset(base::test::ParseJson(
+        "{ \n"
+        "  \"name\": \"test\", \n"
+        "  \"version\": \"0.1\", \n"
+        "  \"manifest_version\": 2, \n"
+        "  \"oauth2\": { \n"
+        "    \"client_id\": \"client1\", \n"
+        "    \"scopes\": [ \"scope1\" ], \n"
+        "  }, \n"
+        "} \n").release());
+    base::DictionaryValue* ext_manifest;
+    EXPECT_TRUE(parsed_manifest_->GetAsDictionary(&ext_manifest));
+    switch (auto_approve) {
+      case AUTO_APPROVE_NOT_SET:
+        break;
+      case AUTO_APPROVE_FALSE:
+        ext_manifest->SetBoolean(keys::kOAuth2AutoApprove, false);
+        break;
+      case AUTO_APPROVE_TRUE:
+        ext_manifest->SetBoolean(keys::kOAuth2AutoApprove, true);
+        break;
+      case AUTO_APPROVE_INVALID:
+        ext_manifest->SetString(keys::kOAuth2AutoApprove, "incorrect value");
+        break;
+    }
+    if (extension_id_whitelisted)
+      ext_manifest->SetString(keys::kKey, kExtensionKey);
+    return ext_manifest;
+  }
+
+ private:
+  scoped_ptr<Value> parsed_manifest_;
 };
 
 TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
@@ -26,7 +81,6 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
   scopes->Append(new base::StringValue("scope1"));
   scopes->Append(new base::StringValue("scope2"));
   base_manifest.Set(keys::kOAuth2Scopes, scopes);
-  base_manifest.SetBoolean(keys::kOAuth2AutoApprove, true);
 
   // OAuth2 section should be parsed for an extension.
   {
@@ -34,6 +88,8 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
     // Lack of "app" section representa an extension. So the base manifest
     // itself represents an extension.
     ext_manifest.MergeDictionary(&base_manifest);
+    ext_manifest.SetString(keys::kKey, kExtensionKey);
+    ext_manifest.SetBoolean(keys::kOAuth2AutoApprove, true);
 
     Manifest manifest(&ext_manifest, "test");
     scoped_refptr<extensions::Extension> extension =
@@ -60,7 +116,7 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
     EXPECT_EQ(2U, OAuth2Info::GetOAuth2Info(extension.get()).scopes.size());
     EXPECT_EQ("scope1", OAuth2Info::GetOAuth2Info(extension.get()).scopes[0]);
     EXPECT_EQ("scope2", OAuth2Info::GetOAuth2Info(extension.get()).scopes[1]);
-    EXPECT_TRUE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
+    EXPECT_FALSE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
   }
 
   // OAuth2 section should NOT be parsed for a hosted app.
@@ -84,58 +140,95 @@ TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {
   }
 }
 
-TEST_F(OAuth2ManifestTest, OAuth2AutoApprove) {
-  base::DictionaryValue* base_manifest;
-  scoped_ptr<Value> parsed_manifest = base::test::ParseJson(
-      "{ \n"
-      "  \"name\": \"test\", \n"
-      "  \"version\": \"0.1\", \n"
-      "  \"manifest_version\": 2, \n"
-      "  \"oauth2\": { \n"
-      "    \"client_id\": \"client1\", \n"
-      "    \"scopes\": [ \"scope1\" ], \n"
-      "  }, \n"
-      "} \n");
+TEST_F(OAuth2ManifestTest, AutoApproveNotSetExtensionNotOnWhitelist) {
+  base::DictionaryValue* ext_manifest =
+      CreateManifest(AUTO_APPROVE_NOT_SET, false);
+  Manifest manifest(ext_manifest, "test");
+  scoped_refptr<extensions::Extension> extension =
+      LoadAndExpectSuccess(manifest);
+  EXPECT_TRUE(extension->install_warnings().empty());
+  EXPECT_FALSE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
+}
 
-  EXPECT_TRUE(parsed_manifest->GetAsDictionary(&base_manifest));
+TEST_F(OAuth2ManifestTest, AutoApproveFalseExtensionNotOnWhitelist) {
+  base::DictionaryValue* ext_manifest =
+      CreateManifest(AUTO_APPROVE_FALSE, false);
+  Manifest manifest(ext_manifest, "test");
+  scoped_refptr<extensions::Extension> extension =
+      LoadAndExpectSuccess(manifest);
+  EXPECT_EQ(1U, extension->install_warnings().size());
+  const extensions::InstallWarning& warning =
+      extension->install_warnings()[0];
+  EXPECT_EQ(kAutoApproveNotAllowedWarning, warning.message);
+  EXPECT_FALSE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
+}
 
-  // OAuth2 section without auto_approve should end up defaulting to false.
-  {
-    base::DictionaryValue ext_manifest;
-    ext_manifest.MergeDictionary(base_manifest);
+TEST_F(OAuth2ManifestTest, AutoApproveTrueExtensionNotOnWhitelist) {
+  base::DictionaryValue* ext_manifest =
+      CreateManifest(AUTO_APPROVE_TRUE, false);
+  Manifest manifest(ext_manifest, "test");
+  scoped_refptr<extensions::Extension> extension =
+      LoadAndExpectSuccess(manifest);
+  EXPECT_EQ(1U, extension->install_warnings().size());
+  const extensions::InstallWarning& warning =
+      extension->install_warnings()[0];
+  EXPECT_EQ(kAutoApproveNotAllowedWarning, warning.message);
+  EXPECT_FALSE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
+}
 
-    Manifest manifest(&ext_manifest, "test");
-    scoped_refptr<extensions::Extension> extension =
-        LoadAndExpectSuccess(manifest);
-    EXPECT_TRUE(extension->install_warnings().empty());
-    EXPECT_FALSE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
-  }
+TEST_F(OAuth2ManifestTest, AutoApproveInvalidExtensionNotOnWhitelist) {
+  base::DictionaryValue* ext_manifest =
+      CreateManifest(AUTO_APPROVE_INVALID, false);
+  Manifest manifest(ext_manifest, "test");
+  scoped_refptr<extensions::Extension> extension =
+      LoadAndExpectSuccess(manifest);
+  EXPECT_EQ(1U, extension->install_warnings().size());
+  const extensions::InstallWarning& warning =
+      extension->install_warnings()[0];
+  EXPECT_EQ(kAutoApproveNotAllowedWarning, warning.message);
+  EXPECT_FALSE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
+}
 
-  {
-    base::DictionaryValue ext_manifest;
-    ext_manifest.MergeDictionary(base_manifest);
-    // OAuth2 section with auto_approve = false.
-    ext_manifest.SetBoolean(keys::kOAuth2AutoApprove, false);
+TEST_F(OAuth2ManifestTest, AutoApproveNotSetExtensionOnWhitelist) {
+  base::DictionaryValue* ext_manifest =
+      CreateManifest(AUTO_APPROVE_NOT_SET, true);
+  Manifest manifest(ext_manifest, "test");
+  scoped_refptr<extensions::Extension> extension =
+      LoadAndExpectSuccess(manifest);
+  EXPECT_TRUE(extension->install_warnings().empty());
+  EXPECT_FALSE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
+}
 
-    Manifest manifest(&ext_manifest, "test");
-    scoped_refptr<extensions::Extension> extension =
-        LoadAndExpectSuccess(manifest);
-    EXPECT_TRUE(extension->install_warnings().empty());
-    EXPECT_FALSE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
-  }
+TEST_F(OAuth2ManifestTest, AutoApproveFalseExtensionOnWhitelist) {
+  base::DictionaryValue* ext_manifest =
+      CreateManifest(AUTO_APPROVE_FALSE, true);
+  Manifest manifest(ext_manifest, "test");
+  scoped_refptr<extensions::Extension> extension =
+      LoadAndExpectSuccess(manifest);
+  EXPECT_TRUE(extension->install_warnings().empty());
+  EXPECT_FALSE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
+}
 
-  {
-    base::DictionaryValue ext_manifest;
-    ext_manifest.MergeDictionary(base_manifest);
-    // OAuth2 section with auto_approve = true.
-    ext_manifest.SetBoolean(keys::kOAuth2AutoApprove, true);
+TEST_F(OAuth2ManifestTest, AutoApproveTrueExtensionOnWhitelist) {
+  base::DictionaryValue* ext_manifest =
+      CreateManifest(AUTO_APPROVE_TRUE, true);
+  Manifest manifest(ext_manifest, "test");
+  scoped_refptr<extensions::Extension> extension =
+      LoadAndExpectSuccess(manifest);
+  EXPECT_TRUE(extension->install_warnings().empty());
+  EXPECT_TRUE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
+}
 
-    Manifest manifest(&ext_manifest, "test");
-    scoped_refptr<extensions::Extension> extension =
-        LoadAndExpectSuccess(manifest);
-    EXPECT_TRUE(extension->install_warnings().empty());
-    EXPECT_TRUE(OAuth2Info::GetOAuth2Info(extension.get()).auto_approve);
-  }
+TEST_F(OAuth2ManifestTest, AutoApproveInvalidExtensionOnWhitelist) {
+  base::DictionaryValue* ext_manifest =
+      CreateManifest(AUTO_APPROVE_INVALID, true);
+  Manifest manifest(ext_manifest, "test");
+  std::string error;
+  scoped_refptr<extensions::Extension> extension =
+      LoadExtension(manifest, &error);
+  EXPECT_EQ(
+      "Invalid value for 'oauth2.auto_approve'. Value must be true or false.",
+      error);
 }
 
 }  // namespace extensions

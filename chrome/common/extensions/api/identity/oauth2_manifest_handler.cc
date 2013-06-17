@@ -70,7 +70,15 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
     info->scopes.push_back(scope);
   }
 
-  dict->GetBoolean(kAutoApprove, &info->auto_approve);
+  // HasPath checks for whether the manifest is allowed to have
+  // oauth2.auto_approve based on whitelist, and if it is present.
+  // GetBoolean reads the value of auto_approve directly from dict to prevent
+  // duplicate checking.
+  if (extension->manifest()->HasPath(keys::kOAuth2AutoApprove) &&
+      !dict->GetBoolean(kAutoApprove, &info->auto_approve)) {
+    *error = ASCIIToUTF16(errors::kInvalidOAuth2AutoApprove);
+    return false;
+  }
 
   extension->SetManifestData(keys::kOAuth2, info.release());
   return true;

@@ -438,6 +438,8 @@ const char kInvalidNaClModulesPath[] =
     "Invalid value for 'nacl_modules[*].path'.";
 const char kInvalidNaClModulesMIMEType[] =
     "Invalid value for 'nacl_modules[*].mime_type'.";
+const char kInvalidOAuth2AutoApprove[] =
+    "Invalid value for 'oauth2.auto_approve'. Value must be true or false.";
 const char kInvalidOAuth2ClientId[] =
     "Invalid value for 'oauth2.client_id'.";
 const char kInvalidOAuth2Scopes[] =

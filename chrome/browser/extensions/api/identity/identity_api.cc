@@ -211,7 +211,13 @@ void IdentityGetAuthTokenFunction::StartMintToken(
           return;
         }
 #endif
-        StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+        if (oauth2_info.auto_approve)
+          // oauth2_info.auto_approve is protected by a whitelist in
+          // _manifest_features.json hence only selected extensions take
+          // advantage of forcefully minting the token.
+          StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
+        else
+          StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
         break;
 
       case IdentityTokenCacheValue::CACHE_STATUS_TOKEN:
