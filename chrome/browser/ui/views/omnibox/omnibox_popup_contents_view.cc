@@ -27,15 +27,6 @@ namespace {
 const SkAlpha kGlassPopupAlpha = 240;
 const SkAlpha kOpaquePopupAlpha = 255;
 
-// The size delta between the font used for the edit and the result rows. Passed
-// to gfx::Font::DeriveFont.
-#if defined(OS_CHROMEOS)
-// Don't adjust the size on Chrome OS (http://crbug.com/61433).
-const int kEditFontAdjust = 0;
-#else
-const int kEditFontAdjust = -1;
-#endif
-
 // This is the number of pixels in the border image interior to the actual
 // border.
 const int kBorderInterior = 6;
@@ -87,7 +78,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
     : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
       location_bar_view_(location_bar_view),
-      font_(font.DeriveFont(kEditFontAdjust)),
+      font_(font),
       ignore_mouse_drag_(false),
       size_animation_(this),
       left_margin_(0),
