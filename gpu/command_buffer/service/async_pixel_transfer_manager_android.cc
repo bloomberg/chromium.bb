@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 
 #include "base/debug/trace_event.h"
+#include "base/sys_info.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_egl.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_stub.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_sync.h"
@@ -21,12 +22,22 @@ bool IsBroadcom() {
   return false;
 }
 
+bool IsImagination() {
+  const char* vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+  if (vendor)
+    return std::string(vendor).find("Imagination") != std::string::npos;
+  return false;
+}
+
 }
 
 // We only used threaded uploads when we can:
 // - Create EGLImages out of OpenGL textures (EGL_KHR_gl_texture_2D_image)
 // - Bind EGLImages to OpenGL textures (GL_OES_EGL_image)
 // - Use fences (to test for upload completion).
+// - The heap size is large enough.
+// TODO(kaanb|epenner): Remove the IsImagination() check pending the
+// resolution of crbug.com/249147
 AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
     gfx::GLContext* context) {
   TRACE_EVENT0("gpu", "AsyncPixelTransferManager::Create");
@@ -38,7 +49,8 @@ AsyncPixelTransferManager* AsyncPixelTransferManager::Create(
           context->HasExtension("EGL_KHR_image_base") &&
           context->HasExtension("EGL_KHR_gl_texture_2D_image") &&
           context->HasExtension("GL_OES_EGL_image") &&
-          !IsBroadcom()) {
+          !IsBroadcom() &&
+          (!IsImagination() || base::SysInfo::DalvikHeapSizeMB() > 128)) {
         return new AsyncPixelTransferManagerEGL;
       }
       LOG(INFO) << "Async pixel transfers not supported";
