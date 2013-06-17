@@ -48,9 +48,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util_chromeos.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/preconnect.h"
+#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
@@ -280,6 +282,21 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
+  CommandLine user_flags(CommandLine::NO_PROGRAM);
+  about_flags::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
+  about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags);
+  if (!about_flags::AreSwitchesIdenticalToCurrentCommandLine(
+          user_flags, *CommandLine::ForCurrentProcess())) {
+    CommandLine::StringVector flags;
+    // argv[0] is the program name |CommandLine::NO_PROGRAM|.
+    flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
+    VLOG(1) << "Restarting to apply per-session flags...";
+    DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
+        UserManager::Get()->GetActiveUser()->email(), flags);
+    chrome::ExitCleanly();
+    return;
+  }
+
   if (!UserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
     UserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(profile);
     return;
@@ -297,9 +314,6 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   int return_code;
   chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
-
-  // TODO(pastarmovj): Restart the browser and apply any flags set by the user.
-  // See: http://crosbug.com/39249
 
   browser_creator.LaunchBrowser(*CommandLine::ForCurrentProcess(),
                                 profile,

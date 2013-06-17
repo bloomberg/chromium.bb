@@ -126,6 +126,11 @@ void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
 }
 
+void FakeSessionManagerClient::SetFlagsForUser(
+    const std::string& username,
+    const std::vector<std::string>& flags) {
+}
+
 const std::string& FakeSessionManagerClient::device_policy() const {
   return device_policy_;
 }

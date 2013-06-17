@@ -15,7 +15,7 @@
 
 namespace dbus {
 class Bus;
-}  // namespace
+}  // namespace dbus
 
 namespace chromeos {
 
@@ -157,6 +157,11 @@ class CHROMEOS_EXPORT SessionManagerClient {
       const std::string& account_id,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) = 0;
+
+  // Sets the flags to be applied next time by the session manager when Chrome
+  // is restarted inside an already started session for a particular user.
+  virtual void SetFlagsForUser(const std::string& username,
+                               const std::vector<std::string>& flags) = 0;
 
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type,

@@ -223,6 +223,34 @@ TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
   EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
 }
 
+TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
+  SetExperimentEnabled(&flags_storage_, kFlags1, true);
+
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch("foo");
+
+  CommandLine new_command_line(CommandLine::NO_PROGRAM);
+  ConvertFlagsToSwitches(&flags_storage_, &new_command_line);
+
+  EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(new_command_line,
+                                                        command_line));
+
+  ConvertFlagsToSwitches(&flags_storage_, &command_line);
+
+  EXPECT_TRUE(AreSwitchesIdenticalToCurrentCommandLine(new_command_line,
+                                                       command_line));
+
+  // Now both have flags but different.
+  SetExperimentEnabled(&flags_storage_, kFlags1, false);
+  SetExperimentEnabled(&flags_storage_, kFlags2, true);
+
+  CommandLine another_command_line(CommandLine::NO_PROGRAM);
+  ConvertFlagsToSwitches(&flags_storage_, &another_command_line);
+
+  EXPECT_FALSE(AreSwitchesIdenticalToCurrentCommandLine(new_command_line,
+                                                        another_command_line));
+}
+
 TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
   std::map<std::string, CommandLine::StringType> switch_list;
   switch_list[kSwitch1] = CommandLine::StringType();

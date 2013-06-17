@@ -271,6 +271,19 @@ class SessionManagerClientImpl : public SessionManagerClient {
         callback);
   }
 
+  virtual void SetFlagsForUser(const std::string& username,
+                               const std::vector<std::string>& flags) OVERRIDE {
+    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
+                                 login_manager::kSessionManagerSetFlagsForUser);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(username);
+    writer.AppendArrayOfStrings(flags);
+    session_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
  private:
   // Makes a method call to the session manager with no arguments and no
   // response.
@@ -596,6 +609,9 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
       const StorePolicyCallback& callback) OVERRIDE {
     user_policies_[account_name] = policy_blob;
     callback.Run(true);
+  }
+  virtual void SetFlagsForUser(const std::string& username,
+                               const std::vector<std::string>& flags) OVERRIDE {
   }
 
   static void StoreFileInBackground(const base::FilePath& path,

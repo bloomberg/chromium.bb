@@ -110,6 +110,11 @@ struct Experiment {
 void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
                             CommandLine* command_line);
 
+// Compares a set of switches of the two provided command line objects and
+// returns true if they are the same and false otherwise.
+bool AreSwitchesIdenticalToCurrentCommandLine(
+    const CommandLine& new_cmdline, const CommandLine& active_cmdline);
+
 // Differentiate between generic flags available on a per session base and flags
 // that influence the whole machine and can be said by the admin only. This flag
 // is relevant for ChromeOS for now only and dictates whether entries marked

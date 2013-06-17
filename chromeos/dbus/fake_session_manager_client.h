@@ -57,6 +57,8 @@ class FakeSessionManagerClient : public chromeos::SessionManagerClient {
       const std::string& account_id,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) OVERRIDE;
+  virtual void SetFlagsForUser(const std::string& username,
+                               const std::vector<std::string>& flags) OVERRIDE;
 
   const std::string& device_policy() const;
   void set_device_policy(const std::string& policy_blob);

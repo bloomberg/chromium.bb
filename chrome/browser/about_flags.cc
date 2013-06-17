@@ -38,6 +38,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
+#include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
 
 using content::UserMetricsAction;
@@ -81,6 +82,39 @@ void AddOsStrings(unsigned bitmask, ListValue* list) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kBitsToOs); ++i)
     if (bitmask & kBitsToOs[i].bit)
       list->Append(new StringValue(kBitsToOs[i].name));
+}
+
+// Convert switch constants to proper CommandLine::StringType strings.
+CommandLine::StringType GetSwitchString(const std::string& flag) {
+  CommandLine cmd_line(CommandLine::NO_PROGRAM);
+  cmd_line.AppendSwitch(flag);
+  DCHECK(cmd_line.argv().size() == 2);
+  return cmd_line.argv()[1];
+}
+
+// Scoops flags from a command line.
+std::set<CommandLine::StringType> ExtractFlagsFromCommandLine(
+    const CommandLine& cmdline) {
+  std::set<CommandLine::StringType> flags;
+  // First do the ones between --flag-switches-begin and --flag-switches-end.
+  CommandLine::StringVector::const_iterator first =
+      std::find(cmdline.argv().begin(), cmdline.argv().end(),
+                GetSwitchString(switches::kFlagSwitchesBegin));
+  CommandLine::StringVector::const_iterator last =
+      std::find(cmdline.argv().begin(), cmdline.argv().end(),
+                GetSwitchString(switches::kFlagSwitchesEnd));
+  if (first != cmdline.argv().end() && last != cmdline.argv().end())
+    flags.insert(first + 1, last);
+#if defined(OS_CHROMEOS)
+  // Then add those between --policy-switches-begin and --policy-switches-end.
+  first = std::find(cmdline.argv().begin(), cmdline.argv().end(),
+                    GetSwitchString(chromeos::switches::kPolicySwitchesBegin));
+  last = std::find(cmdline.argv().begin(), cmdline.argv().end(),
+                   GetSwitchString(chromeos::switches::kPolicySwitchesEnd));
+  if (first != cmdline.argv().end() && last != cmdline.argv().end())
+    flags.insert(first + 1, last);
+#endif
+  return flags;
 }
 
 const Experiment::Choice
@@ -1724,6 +1758,20 @@ void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
                             CommandLine* command_line) {
   FlagsState::GetInstance()->ConvertFlagsToSwitches(flags_storage,
                                                     command_line);
+}
+
+bool AreSwitchesIdenticalToCurrentCommandLine(
+    const CommandLine& new_cmdline, const CommandLine& active_cmdline) {
+  std::set<CommandLine::StringType> new_flags =
+      ExtractFlagsFromCommandLine(new_cmdline);
+  std::set<CommandLine::StringType> active_flags =
+      ExtractFlagsFromCommandLine(active_cmdline);
+
+  // Needed because std::equal doesn't check if the 2nd set is empty.
+  if (new_flags.size() != active_flags.size())
+    return false;
+
+  return std::equal(new_flags.begin(), new_flags.end(), active_flags.begin());
 }
 
 void GetFlagsExperimentsData(FlagsStorage* flags_storage,

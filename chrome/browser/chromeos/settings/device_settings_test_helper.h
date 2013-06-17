@@ -112,6 +112,9 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
       const std::string& account_id,
       const std::string& policy_blob,
       const StorePolicyCallback& callback) OVERRIDE;
+  virtual void SetFlagsForUser(
+      const std::string& account_id,
+      const std::vector<std::string>& flags) OVERRIDE;
 
  private:
   struct PolicyState {
