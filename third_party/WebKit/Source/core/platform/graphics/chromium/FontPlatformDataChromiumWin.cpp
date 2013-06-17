@@ -173,6 +173,18 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
     SkSafeRef(m_typeface);
 }
 
+FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
+    : m_font(data.m_font)
+    , m_size(textSize)
+    , m_orientation(data.m_orientation)
+    , m_scriptCache(0)
+    , m_scriptFontProperties(0)
+    , m_typeface(data.m_typeface)
+    , m_paintTextFlags(data.m_paintTextFlags)
+{
+    SkSafeRef(m_typeface);
+}
+
 FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
 {
     if (this != &data) {

@@ -179,19 +179,9 @@ void SimpleFontData::platformDestroy()
 
 PassRefPtr<SimpleFontData> SimpleFontData::platformCreateScaledFontData(const FontDescription& fontDescription, float scaleFactor) const
 {
-#if OS(WINDOWS)
-    LOGFONT winFont;
-    GetObject(m_platformData.hfont(), sizeof(LOGFONT), &winFont);
-    float scaledSize = scaleFactor * fontDescription.computedSize();
-    winFont.lfHeight = -lroundf(scaledSize);
-    HFONT hfont = CreateFontIndirect(&winFont);
-    return SimpleFontData::create(FontPlatformData(hfont, scaledSize, m_platformData.orientation()), isCustomFont(), false);
-#else
     const float scaledSize = lroundf(fontDescription.computedSize() * scaleFactor);
     return SimpleFontData::create(FontPlatformData(m_platformData, scaledSize), isCustomFont(), false);
-#endif
 }
-
 
 bool SimpleFontData::containsCharacters(const UChar* characters, int length) const
 {

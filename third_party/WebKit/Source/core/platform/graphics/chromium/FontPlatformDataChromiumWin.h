@@ -70,6 +70,7 @@ public:
     FontPlatformData(HFONT, float size, FontOrientation);
     FontPlatformData(float size, bool bold, bool oblique);
     FontPlatformData(const FontPlatformData&);
+    FontPlatformData(const FontPlatformData&, float textSize);
 
 #if !ENABLE(GDI_FONTS_ON_WINDOWS)
     void setupPaint(SkPaint*) const;
