@@ -87,8 +87,10 @@ public:
     void copyText(const String& text);
     String databaseIdImpl(Database*);
     String storageIdImpl(Storage*);
-    void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber);
-    void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber);
+    void debugFunction(const String& scriptId, int lineNumber, int columnNumber);
+    void undebugFunction(const String& scriptId, int lineNumber, int columnNumber);
+    void monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName);
+    void unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber);
 
     ScriptDebugServer& scriptDebugServer() { return *m_scriptDebugServer; }
 

@@ -47,8 +47,10 @@
     [Custom] any evaluate(DOMString text);
     [Custom] DOMString databaseId(any database);
     [Custom] DOMString storageId(any storage);
-    [Custom] boolean setBreakpoint(any fn);
-    [Custom] boolean removeBreakpoint(any fn);
+    [Custom] void debugFunction(any fn);
+    [Custom] void undebugFunction(any fn);
+    [Custom] void monitorFunction(any fn);
+    [Custom] void unmonitorFunction(any fn);
 
     // Only declarative scope (local, with and catch) is accepted. Returns undefined. 
     [Custom] any setFunctionVariableValue(any functionObject, int scopeIndex, DOMString variableName, any newValue);

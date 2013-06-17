@@ -371,7 +371,6 @@ static bool getFunctionLocation(const v8::FunctionCallbackInfo<v8::Value>& args,
     v8::Handle<v8::Value> fn = args[0];
     if (!fn->IsFunction())
         return false;
-    v8::HandleScope handleScope;
     v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(fn);
     *lineNumber = function->GetScriptLineNumber();
     *columnNumber = function->GetScriptColumnNumber();
@@ -381,7 +380,7 @@ static bool getFunctionLocation(const v8::FunctionCallbackInfo<v8::Value>& args,
     return true;
 }
 
-void V8InjectedScriptHost::setBreakpointMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8InjectedScriptHost::debugFunctionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     String scriptId;
     int lineNumber;
@@ -390,10 +389,10 @@ void V8InjectedScriptHost::setBreakpointMethodCustom(const v8::FunctionCallbackI
         return;
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
-    host->setBreakpoint(scriptId, lineNumber, columnNumber);
+    host->debugFunction(scriptId, lineNumber, columnNumber);
 }
 
-void V8InjectedScriptHost::removeBreakpointMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8InjectedScriptHost::undebugFunctionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     String scriptId;
     int lineNumber;
@@ -402,8 +401,41 @@ void V8InjectedScriptHost::removeBreakpointMethodCustom(const v8::FunctionCallba
         return;
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
-    host->removeBreakpoint(scriptId, lineNumber, columnNumber);
+    host->undebugFunction(scriptId, lineNumber, columnNumber);
 }
 
+void V8InjectedScriptHost::monitorFunctionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    String scriptId;
+    int lineNumber;
+    int columnNumber;
+    if (!getFunctionLocation(args, &scriptId, &lineNumber, &columnNumber))
+        return;
+
+    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(args[0]);
+    v8::Handle<v8::Value> name;
+    if (args.Length() > 0 && args[0]->IsFunction()) {
+        v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(args[0]);
+        name = function->GetName();
+        if (!name->IsString() || !v8::Handle<v8::String>::Cast(name)->Length())
+            name = function->GetInferredName();
+    }
+
+    InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
+    host->monitorFunction(scriptId, lineNumber, columnNumber, toWebCoreStringWithUndefinedOrNullCheck(name));
+}
+
+void V8InjectedScriptHost::unmonitorFunctionMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    String scriptId;
+    int lineNumber;
+    int columnNumber;
+    if (!getFunctionLocation(args, &scriptId, &lineNumber, &columnNumber))
+        return;
+
+    InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
+    host->unmonitorFunction(scriptId, lineNumber, columnNumber);
+}
 
 } // namespace WebCore
+

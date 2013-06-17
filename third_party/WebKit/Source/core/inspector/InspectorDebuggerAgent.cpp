@@ -63,10 +63,22 @@ static const char pauseOnExceptionsState[] = "pauseOnExceptionsState";
 
 const char* InspectorDebuggerAgent::backtraceObjectGroup = "backtrace";
 
+static String breakpointIdSuffix(InspectorDebuggerAgent::BreakpointSource source)
+{
+    switch (source) {
+    case InspectorDebuggerAgent::UserBreakpointSource:
+        break;
+    case InspectorDebuggerAgent::DebugCommandBreakpointSource:
+        return ":debug";
+    case InspectorDebuggerAgent::MonitorCommandBreakpointSource:
+        return ":monitor";
+    }
+    return String();
+}
+
 static String generateBreakpointId(const String& scriptId, int lineNumber, int columnNumber, InspectorDebuggerAgent::BreakpointSource source)
 {
-    return scriptId + ':' + String::number(lineNumber) + ':' + String::number(columnNumber) +
-        (source == InspectorDebuggerAgent::UserBreakpointSource ? String() : String(":debug"));
+    return scriptId + ':' + String::number(lineNumber) + ':' + String::number(columnNumber) + breakpointIdSuffix(source);
 }
 
 InspectorDebuggerAgent::InspectorDebuggerAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
@@ -828,10 +840,10 @@ void ScriptDebugListener::Script::reportMemoryUsage(MemoryObjectInfo* memoryObje
     info.addMember(sourceMappingURL, "sourceMappingURL");
 }
 
-void InspectorDebuggerAgent::setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource source)
+void InspectorDebuggerAgent::setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource source, const String& condition)
 {
     String breakpointId = generateBreakpointId(scriptId, lineNumber, columnNumber, source);
-    ScriptBreakpoint breakpoint(lineNumber, columnNumber, String());
+    ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
     resolveBreakpoint(breakpointId, scriptId, breakpoint, source);
 }
 

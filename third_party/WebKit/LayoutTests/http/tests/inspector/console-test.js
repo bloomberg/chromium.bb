@@ -88,4 +88,9 @@ InspectorTest.checkConsoleMessagesDontHaveParameters = function()
     }
 }
 
+InspectorTest.waitUntilMessageReceived = function(callback)
+{
+    InspectorTest.addSniffer(WebInspector.console, "addMessage", callback, false);
+}
+
 }

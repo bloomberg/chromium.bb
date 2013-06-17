@@ -41,8 +41,9 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/platform/Pasteboard.h"
 
-#include <wtf/RefPtr.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/RefPtr.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 using namespace std;
 
@@ -135,16 +136,35 @@ String InjectedScriptHost::storageIdImpl(Storage* storage)
     return String();
 }
 
-void InjectedScriptHost::setBreakpoint(const String& scriptId, int lineNumber, int columnNumber)
+void InjectedScriptHost::debugFunction(const String& scriptId, int lineNumber, int columnNumber)
 {
     if (InspectorDebuggerAgent* debuggerAgent = m_instrumentingAgents ? m_instrumentingAgents->inspectorDebuggerAgent() : 0)
         debuggerAgent->setBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::DebugCommandBreakpointSource);
 }
 
-void InjectedScriptHost::removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber)
+void InjectedScriptHost::undebugFunction(const String& scriptId, int lineNumber, int columnNumber)
 {
     if (InspectorDebuggerAgent* debuggerAgent = m_instrumentingAgents ? m_instrumentingAgents->inspectorDebuggerAgent() : 0)
         debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::DebugCommandBreakpointSource);
+}
+
+void InjectedScriptHost::monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName)
+{
+    StringBuilder builder;
+    builder.appendLiteral("console.log(\"function ");
+    if (functionName.isEmpty())
+        builder.appendLiteral("(anonymous function)");
+    else
+        builder.append(functionName);
+    builder.appendLiteral(" called\" + (arguments.length > 0 ? \" with arguments: \" + Array.prototype.join.call(arguments, \", \") : \"\")) && false");
+    if (InspectorDebuggerAgent* debuggerAgent = m_instrumentingAgents ? m_instrumentingAgents->inspectorDebuggerAgent() : 0)
+        debuggerAgent->setBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::MonitorCommandBreakpointSource, builder.toString());
+}
+
+void InjectedScriptHost::unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber)
+{
+    if (InspectorDebuggerAgent* debuggerAgent = m_instrumentingAgents ? m_instrumentingAgents->inspectorDebuggerAgent() : 0)
+        debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::MonitorCommandBreakpointSource);
 }
 
 } // namespace WebCore

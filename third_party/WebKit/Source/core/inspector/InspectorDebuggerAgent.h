@@ -66,7 +66,8 @@ class InspectorDebuggerAgent : public InspectorBaseAgent<InspectorDebuggerAgent>
 public:
     enum BreakpointSource {
         UserBreakpointSource,
-        DebugCommandBreakpointSource
+        DebugCommandBreakpointSource,
+        MonitorCommandBreakpointSource
     };
 
     static const char* backtraceObjectGroup;
@@ -141,7 +142,7 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
-    void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
+    void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String());
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
 
 protected:
