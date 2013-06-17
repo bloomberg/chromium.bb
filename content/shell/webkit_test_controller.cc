@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
@@ -42,6 +43,7 @@ WebKitTestResultPrinter::WebKitTestResultPrinter(
     std::ostream* output, std::ostream* error)
     : state_(DURING_TEST),
       capture_text_only_(false),
+      encode_binary_data_(false),
       output_(output),
       error_(error) {
 }
@@ -88,6 +90,11 @@ void WebKitTestResultPrinter::PrintImageBlock(
   if (state_ != IN_IMAGE_BLOCK || capture_text_only_)
     return;
   *output_ << "Content-Type: image/png\n";
+  if (encode_binary_data_) {
+    PrintEncodedBinaryData(png_image);
+    return;
+  }
+
   *output_ << "Content-Length: " << png_image.size() << "\n";
   output_->write(
       reinterpret_cast<const char*>(&png_image[0]), png_image.size());
@@ -116,6 +123,11 @@ void WebKitTestResultPrinter::PrintAudioBlock(
     const std::vector<unsigned char>& audio_data) {
   if (state_ != IN_AUDIO_BLOCK || capture_text_only_)
     return;
+  if (encode_binary_data_) {
+    PrintEncodedBinaryData(audio_data);
+    return;
+  }
+
   *output_ << "Content-Length: " << audio_data.size() << "\n";
   output_->write(
       reinterpret_cast<const char*>(&audio_data[0]), audio_data.size());
@@ -154,6 +166,20 @@ void WebKitTestResultPrinter::AddErrorMessage(const std::string& message) {
   PrintImageFooter();
 }
 
+void WebKitTestResultPrinter::PrintEncodedBinaryData(
+    const std::vector<unsigned char>& data) {
+  *output_ << "Content-Transfer-Encoding: base64\n";
+
+  std::string data_base64;
+  DCHECK(base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(&data[0]), data.size()),
+      &data_base64));
+
+  *output_ << "Content-Length: " << data_base64.length() << "\n";
+  output_->write(data_base64.c_str(), data_base64.length());
+}
+
+
 // WebKitTestController -------------------------------------------------------
 
 WebKitTestController* WebKitTestController::instance_ = NULL;
@@ -170,6 +196,8 @@ WebKitTestController::WebKitTestController()
   CHECK(!instance_);
   instance_ = this;
   printer_.reset(new WebKitTestResultPrinter(&std::cout, &std::cerr));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEncodeBinary))
+    printer_->set_encode_binary_data(true);
   registrar_.Add(this,
                  NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());

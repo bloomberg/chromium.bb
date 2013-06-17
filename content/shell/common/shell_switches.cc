@@ -27,6 +27,9 @@ const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 // Alias for kEnableSoftwareCompositingGLAdapter.
 const char kEnableSoftwareCompositing[] = "enable-software-compositing";
 
+// Encode binary layout test results (images, audio) using base64.
+const char kEncodeBinary[] = "encode-binary";
+
 // Save results when layout-as-browser tests fail.
 const char kOutputLayoutTestDifferences[] = "output-layout-test-differences";
 

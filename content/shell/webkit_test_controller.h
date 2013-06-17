@@ -39,6 +39,10 @@ class WebKitTestResultPrinter {
     capture_text_only_ = capture_text_only;
   }
 
+  void set_encode_binary_data(bool encode_binary_data) {
+    encode_binary_data_ = encode_binary_data;
+  }
+
   void PrintTextHeader();
   void PrintTextBlock(const std::string& block);
   void PrintTextFooter();
@@ -57,6 +61,8 @@ class WebKitTestResultPrinter {
   void AddErrorMessage(const std::string& message);
 
  private:
+  void PrintEncodedBinaryData(const std::vector<unsigned char>& data);
+
   enum State {
     DURING_TEST,
     IN_TEXT_BLOCK,
@@ -65,7 +71,9 @@ class WebKitTestResultPrinter {
     AFTER_TEST
   };
   State state_;
+
   bool capture_text_only_;
+  bool encode_binary_data_;
 
   std::ostream* output_;
   std::ostream* error_;
