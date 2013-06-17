@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -24,6 +25,10 @@ class PicasaDataProvider {
  public:
   explicit PicasaDataProvider(const base::FilePath& database_path);
   virtual ~PicasaDataProvider();
+
+  // Ask the data provider to refresh the data if necessary. |ready_callback|
+  // will be called when the data is up to date
+  void RefreshData(const base::Closure& ready_callback);
 
   scoped_ptr<AlbumMap> GetAlbums();
   scoped_ptr<AlbumMap> GetFolders();
@@ -47,7 +52,7 @@ class PicasaDataProvider {
   AlbumMap folder_map_;
 
   base::FilePath database_path_;
-  bool initialized_;
+  bool needs_refresh_;
 
   DISALLOW_COPY_AND_ASSIGN(PicasaDataProvider);
 };

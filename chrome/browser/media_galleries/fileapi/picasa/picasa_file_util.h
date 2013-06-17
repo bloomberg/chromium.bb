@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FILE_UTIL_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PICASA_FILE_UTIL_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 
 namespace picasa {
@@ -19,10 +20,16 @@ class PicasaFileUtil : public chrome::NativeMediaFileUtil {
   PicasaFileUtil();
   virtual ~PicasaFileUtil();
 
- private:
-  // TODO(tommycli): Eventually, all of the below methods will have to be
-  // overriding the async public methods instead.
+ protected:
   // NativeMediaFileUtil overrides.
+  virtual void GetFileInfoOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const GetFileInfoCallback& callback) OVERRIDE;
+  virtual void ReadDirectoryOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const ReadDirectoryCallback& callback) OVERRIDE;
   virtual base::PlatformFileError GetFileInfoSync(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
@@ -37,7 +44,19 @@ class PicasaFileUtil : public chrome::NativeMediaFileUtil {
       const fileapi::FileSystemURL& url,
       base::FilePath* local_file_path) OVERRIDE;
 
-  virtual PicasaDataProvider* DataProvider();
+ private:
+  void GetFileInfoWithFreshDataProvider(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const GetFileInfoCallback& callback);
+  void ReadDirectoryWithFreshDataProvider(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const ReadDirectoryCallback& callback);
+
+  virtual PicasaDataProvider* GetDataProvider();
+
+  base::WeakPtrFactory<PicasaFileUtil> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PicasaFileUtil);
 };

@@ -126,17 +126,22 @@ class TestPicasaDataProvider : public PicasaDataProvider {
       : PicasaDataProvider(base::FilePath(FILE_PATH_LITERAL("Fake"))) {
     InitializeWith(albums, folders);
   }
+
+ private:
+  virtual bool ReadData() OVERRIDE {
+    return true;
+  }
   virtual ~TestPicasaDataProvider() {}
 };
 
 class TestPicasaFileUtil : public PicasaFileUtil {
  public:
-  explicit TestPicasaFileUtil(scoped_ptr<PicasaDataProvider> data_provider)
-      : data_provider_(data_provider.Pass()) {
+  explicit TestPicasaFileUtil(PicasaDataProvider* data_provider)
+      : data_provider_(data_provider) {
   }
   virtual ~TestPicasaFileUtil() {}
  private:
-  virtual PicasaDataProvider* DataProvider() OVERRIDE {
+  virtual PicasaDataProvider* GetDataProvider() OVERRIDE {
     return data_provider_.get();
   }
 
@@ -216,9 +221,6 @@ class PicasaFileUtilTest : public testing::Test {
     test_helper_.reset(new PmpTestHelper(kPicasaAlbumTableName));
     ASSERT_TRUE(test_helper_->Init());
 
-    scoped_ptr<PicasaDataProvider> data_provider(
-        new PicasaDataProvider(test_helper_->GetTempDirPath()));
-
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
 
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
@@ -227,7 +229,8 @@ class PicasaFileUtilTest : public testing::Test {
     ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
     additional_providers.push_back(new TestMediaFileSystemMountPointProvider(
         profile_dir_.path(),
-        new TestPicasaFileUtil(data_provider.Pass())));
+        new TestPicasaFileUtil(
+            new PicasaDataProvider(test_helper_->GetTempDirPath()))));
 
     file_system_context_ = new fileapi::FileSystemContext(
         fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
@@ -416,9 +419,8 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
       chrome::MediaFileSystemMountPointProvider::kMediaPathFilterKey,
       media_path_filter.get());
 
-  scoped_ptr<PicasaDataProvider> data_provider(
+  TestPicasaFileUtil test_file_util(
       new TestPicasaDataProvider(std::vector<AlbumInfo>(), folders));
-  TestPicasaFileUtil test_file_util(data_provider.Pass());
 
   fileapi::AsyncFileUtil::EntryList file_list;
   ASSERT_EQ(base::PLATFORM_FILE_OK,

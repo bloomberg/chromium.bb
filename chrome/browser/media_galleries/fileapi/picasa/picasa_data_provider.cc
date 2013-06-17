@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_album_table_reader.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -16,33 +17,35 @@ namespace picasa {
 
 PicasaDataProvider::PicasaDataProvider(const base::FilePath& database_path)
     : database_path_(database_path),
-      initialized_(false) {
+      needs_refresh_(true) {
 }
 
 PicasaDataProvider::~PicasaDataProvider() {}
 
-scoped_ptr<AlbumMap> PicasaDataProvider::GetFolders() {
-  if (!ReadData())
-    return scoped_ptr<AlbumMap>();
+void PicasaDataProvider::RefreshData(const base::Closure& ready_callback) {
+  // TODO(tommycli): Need to watch the database_path_ folder and handle
+  // rereading the data when it changes.
+  if (needs_refresh_) {
+    if (ReadData()) {
+      needs_refresh_ = false;
+    }
+  }
 
+  ready_callback.Run();
+}
+
+scoped_ptr<AlbumMap> PicasaDataProvider::GetFolders() {
   return make_scoped_ptr(new AlbumMap(folder_map_));
 }
 
 scoped_ptr<AlbumMap> PicasaDataProvider::GetAlbums() {
-  if (!ReadData())
-    return scoped_ptr<AlbumMap>();
-
   return make_scoped_ptr(new AlbumMap(album_map_));
 }
 
 void PicasaDataProvider::InitializeWith(const std::vector<AlbumInfo>& albums,
                                         const std::vector<AlbumInfo>& folders) {
-  DCHECK(!initialized_);
-
   UniquifyNames(albums, &album_map_);
   UniquifyNames(folders, &folder_map_);
-
-  initialized_ = true;
 }
 
 // static
@@ -86,11 +89,6 @@ void PicasaDataProvider::UniquifyNames(const std::vector<AlbumInfo>& info_list,
 }
 
 bool PicasaDataProvider::ReadData() {
-  // TODO(tommycli): Need to watch the database_path_ folder and handle
-  // rereading the data when it changes.
-  if (initialized_)
-    return true;
-
   PicasaAlbumTableReader album_table_reader(database_path_);
 
   if (!album_table_reader.Init())

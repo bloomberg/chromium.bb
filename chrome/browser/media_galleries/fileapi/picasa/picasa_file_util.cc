@@ -49,9 +49,29 @@ base::PlatformFileError FindAlbumInfo(const std::string& key,
 const char kPicasaDirAlbums[]  = "albums";
 const char kPicasaDirFolders[] = "folders";
 
-PicasaFileUtil::PicasaFileUtil() {}
+PicasaFileUtil::PicasaFileUtil()
+    : weak_factory_(this) {
+}
 
 PicasaFileUtil::~PicasaFileUtil() {}
+
+void PicasaFileUtil::GetFileInfoOnTaskRunnerThread(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    const GetFileInfoCallback& callback) {
+  GetDataProvider()->RefreshData(
+      base::Bind(&PicasaFileUtil::GetFileInfoWithFreshDataProvider,
+                 weak_factory_.GetWeakPtr(), context, url, callback));
+}
+
+void PicasaFileUtil::ReadDirectoryOnTaskRunnerThread(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    const ReadDirectoryCallback& callback) {
+  GetDataProvider()->RefreshData(
+      base::Bind(&PicasaFileUtil::ReadDirectoryWithFreshDataProvider,
+                 weak_factory_.GetWeakPtr(), context, url, callback));
+}
 
 base::PlatformFileError PicasaFileUtil::GetFileInfoSync(
     FileSystemOperationContext* context, const FileSystemURL& url,
@@ -80,7 +100,7 @@ base::PlatformFileError PicasaFileUtil::GetFileInfoSync(
       break;
     case 2:
       if (components[0] == kPicasaDirAlbums) {
-        scoped_ptr<AlbumMap> album_map = DataProvider()->GetAlbums();
+        scoped_ptr<AlbumMap> album_map = GetDataProvider()->GetAlbums();
         base::PlatformFileError error =
             FindAlbumInfo(components[1], album_map.get(), NULL);
         if (error != base::PLATFORM_FILE_OK)
@@ -147,7 +167,7 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
     }
     case 1:
       if (components[0] == kPicasaDirAlbums) {
-        scoped_ptr<AlbumMap> albums = DataProvider()->GetAlbums();
+        scoped_ptr<AlbumMap> albums = GetDataProvider()->GetAlbums();
         if (!albums)
           return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
@@ -158,7 +178,7 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
                              it->second.timestamp));
         }
       } else if (components[0] == kPicasaDirFolders) {
-        scoped_ptr<AlbumMap> folders = DataProvider()->GetFolders();
+        scoped_ptr<AlbumMap> folders = GetDataProvider()->GetFolders();
         if (!folders)
           return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
@@ -206,7 +226,7 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
   switch (components.size()) {
     case 2:
       if (components[0] == kPicasaDirFolders) {
-        scoped_ptr<AlbumMap> album_map = DataProvider()->GetFolders();
+        scoped_ptr<AlbumMap> album_map = GetDataProvider()->GetFolders();
         AlbumInfo album_info;
         base::PlatformFileError error =
             FindAlbumInfo(components[1], album_map.get(), &album_info);
@@ -219,7 +239,7 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
       break;
     case 3:
       if (components[0] == kPicasaDirAlbums) {
-        scoped_ptr<AlbumMap> album_map = DataProvider()->GetAlbums();
+        scoped_ptr<AlbumMap> album_map = GetDataProvider()->GetAlbums();
         base::PlatformFileError error =
             FindAlbumInfo(components[1], album_map.get(), NULL);
         if (error != base::PLATFORM_FILE_OK)
@@ -230,7 +250,7 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
       }
 
       if (components[0] == kPicasaDirFolders) {
-        scoped_ptr<AlbumMap> album_map = DataProvider()->GetFolders();
+        scoped_ptr<AlbumMap> album_map = GetDataProvider()->GetFolders();
         AlbumInfo album_info;
         base::PlatformFileError error =
             FindAlbumInfo(components[1], album_map.get(), &album_info);
@@ -252,7 +272,21 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
   return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }
 
-PicasaDataProvider* PicasaFileUtil::DataProvider() {
+void PicasaFileUtil::GetFileInfoWithFreshDataProvider(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    const GetFileInfoCallback& callback) {
+  NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(context, url, callback);
+}
+
+void PicasaFileUtil::ReadDirectoryWithFreshDataProvider(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    const ReadDirectoryCallback& callback) {
+  NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(context, url, callback);
+}
+
+PicasaDataProvider* PicasaFileUtil::GetDataProvider() {
   return chrome::ImportedMediaGalleryRegistry::PicasaDataProvider();
 }
 
