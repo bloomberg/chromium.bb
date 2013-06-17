@@ -3243,20 +3243,50 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_BLOCKED_POPUPS_LINK" desc="Link to popups section of content blocking management dialog, displayed in bubble when a page tries to display popups.">
         Manage pop-up blocking...
       </message>
-      <message name="IDS_BLOCKED_MEDIASTREAM_ALLOW" desc="Radio button choice to allow a site to access microphone and camera, displayed in bubble when a page tries to access microphone and camera.">
+      <message name="IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_ALLOW" desc="Radio button choice to allow a site to access microphone and camera, displayed in bubble when a page tries to access microphone and camera.">
         Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone
       </message>
-      <message name="IDS_BLOCKED_MEDIASTREAM_ASK" desc="Radio button choice to ask the user for permission when a site tries to access microphone and camera, displayed in bubble when a page was blocked from accessing microphone and camera.">
+      <message name="IDS_BLOCKED_MEDIASTREAM_MIC_ALLOW" desc="Radio button choice to allow a site to access microphone, displayed in bubble when a page tries to access microphone.">
+        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your microphone
+      </message>
+      <message name="IDS_BLOCKED_MEDIASTREAM_CAMERA_ALLOW" desc="Radio button choice to allow a site to access camera, displayed in bubble when a page tries to access camera.">
+        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera
+      </message>
+      <message name="IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_ASK" desc="Radio button choice to ask the user for permission when a site tries to access microphone and camera, displayed in bubble when a page was blocked from accessing microphone and camera.">
         Ask if <ph name="HOST">$1<ex>mail.google.com</ex></ph> wants to access your camera and microphone
       </message>
-      <message name="IDS_ALLOWED_MEDIASTREAM_BLOCK" desc="Radio button choice to block a site to access microphone and camera, displayed in bubble when a page is accessing microphone and camera.">
+      <message name="IDS_BLOCKED_MEDIASTREAM_MIC_ASK" desc="Radio button choice to ask the user for permission when a site tries to access microphone, displayed in bubble when a page was blocked from accessing microphone.">
+        Ask if <ph name="HOST">$1<ex>mail.google.com</ex></ph> wants to access your microphone
+      </message>
+      <message name="IDS_BLOCKED_MEDIASTREAM_CAMERA_ASK" desc="Radio button choice to ask the user for permission when a site tries to access camera, displayed in bubble when a page was blocked from accessing camera.">
+        Ask if <ph name="HOST">$1<ex>mail.google.com</ex></ph> wants to access your camera
+      </message>
+      <message name="IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_BLOCK" desc="Radio button choice to block a site to access microphone and camera, displayed in bubble when a page is accessing microphone and camera.">
         Always block camera and microphone access
       </message>
-      <message name="IDS_BLOCKED_MEDIASTREAM_NO_ACTION" desc="Radio button choice to block a site to access microphone and camera, displayed in bubble when a page was blocked from accesssing microphone and camera.">
+      <message name="IDS_ALLOWED_MEDIASTREAM_MIC_BLOCK" desc="Radio button choice to block a site to access microphone, displayed in bubble when a page is accessing microphone.">
+        Always block microphone access
+      </message>
+      <message name="IDS_ALLOWED_MEDIASTREAM_CAMERA_BLOCK" desc="Radio button choice to block a site to access camera, displayed in bubble when a page is accessing camera.">
+        Always block camera access
+      </message>
+      <message name="IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION" desc="Radio button choice to block a site to access microphone and camera, displayed in bubble when a page was blocked from accesssing microphone and camera.">
         Continue blocking camera and microphone access
       </message>
-      <message name="IDS_ALLOWED_MEDIASTREAM_NO_ACTION" desc="Radio button choice to allow a site to access microphone and camera, displayed in bubble when a page is accessing microphone and camera.">
+      <message name="IDS_BLOCKED_MEDIASTREAM_MIC_NO_ACTION" desc="Radio button choice to block a site to access microphone, displayed in bubble when a page was blocked from accesssing microphone.">
+        Continue blocking microphone access
+      </message>
+      <message name="IDS_BLOCKED_MEDIASTREAM_CAMERA_NO_ACTION" desc="Radio button choice to block a site to access camera, displayed in bubble when a page was blocked from accesssing camera.">
+        Continue blocking camera access
+      </message>
+      <message name="IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION" desc="Radio button choice to allow a site to access microphone and camera, displayed in bubble when a page is accessing microphone and camera.">
         Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone
+      </message>
+      <message name="IDS_ALLOWED_MEDIASTREAM_MIC_NO_ACTION" desc="Radio button choice to allow a site to access microphone, displayed in bubble when a page is accessing microphone.">
+        Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your microphone
+      </message>
+      <message name="IDS_ALLOWED_MEDIASTREAM_CAMERA_NO_ACTION" desc="Radio button choice to allow a site to access camera, displayed in bubble when a page is accessing camera.">
+        Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera
       </message>
       <message name="IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address line when popup is blocked">
         Pop-up blocked
@@ -14449,21 +14479,26 @@ Some features may be unavailable.  Please check that the profile exists and you 
       This page wants to install a service handler.
     </message>
 
-    <!-- MediaStream messages -->
-    <message name="IDS_MEDIASTREAM_BUBBLE_SECTION_ALLOWED" desc="Heading for a section in the geolocation bubble listing all sites which are currently tracking the user's location.">
-      This site is accessing your camera and microphone.
-    </message>
-    <message name="IDS_MEDIASTREAM_BUBBLE_SECTION_BLOCKED" desc="Heading for a section in the geolocation bubble listing all sites which are currently blocked from accessing the user's location.">
-      This site was blocked from accessing your camera and microphone.
-    </message>
     <message name="IDS_MEDIASTREAM_BUBBLE_MANAGE_LINK" desc="Link on the media (camera and microphone) bubble that opens up the Content Settings management dialog for media settings.">
       Manage media settings...
     </message>
-    <message name="IDS_MEDIASTREAM_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use media streams (camera, microphone).">
+    <message name="IDS_MICROPHONE_CAMERA_ALLOWED" desc="Status text that is used as location bar icon tooltip text and as media settings bubble status text when a page is allowed to use the camera and microphone.">
       This page is accessing your camera and microphone.
     </message>
-    <message name="IDS_MEDIASTREAM_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using media streams (camera, microphone).">
+    <message name="IDS_MICROPHONE_CAMERA_BLOCKED" desc="Status text that is used as location bar icon tooltip text and as media settings bubble status text when a page is blocked from using the camera and microphone.">
       This page has been blocked from accessing your camera and microphone.
+    </message>
+    <message name="IDS_MICROPHONE_ACCESSED" desc="Microphone usage status text that is used as tooltip text for the location bar icon and as status text of the media settings bubble when a page is using the microphone (but not the camera).">
+      This page is accessing your microphone.
+    </message>
+    <message name="IDS_CAMERA_ACCESSED" desc="Camera usage status text that is used as tooltip text for the location bar icon and as status text of the media settings bubble when a page is using the camera (but not the microphone).">
+      This page is accessing your camera.
+    </message>
+    <message name="IDS_MICROPHONE_BLOCKED" desc="Microphone usage status text that is used as tooltip text for the location bar icon and as status text of the media settings bubble when a page is blocked from using the microphone.">
+      This page has been blocked from accessing your microphone.
+    </message>
+    <message name="IDS_CAMERA_BLOCKED" desc="Camera usage status text that is used as tooltip text for the location bar icon and as status text of the media settings bubble when a page is blocked from using the camera.">
+      This page has been blocked from accessing your camera.
     </message>
     <message name="IDS_MEDIASTREAM_SETTING_CHANGED_INFOBAR_MESSAGE" desc="Infobar message for reloading when media (camera, michrophone) settings was changed by user.">
       New camera and microphone settings will take effect after reloading the page.

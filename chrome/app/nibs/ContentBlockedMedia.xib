@@ -3,12 +3,12 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">12D78</string>
-		<string key="IBDocument.InterfaceBuilderVersion">2549</string>
+		<string key="IBDocument.InterfaceBuilderVersion">2844</string>
 		<string key="IBDocument.AppKitVersion">1187.37</string>
 		<string key="IBDocument.HIToolboxVersion">626.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">2549</string>
+			<string key="NS.object.0">2844</string>
 		</object>
 		<object class="NSArray" key="IBDocument.IntegratedClassDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -45,7 +45,7 @@
 			<object class="NSWindowTemplate" id="1005">
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{196, 376}, {316, 192}}</string>
+				<string key="NSWindowRect">{{196, 376}, {316, 133}}</string>
 				<int key="NSWTFlags">536873984</int>
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">InfoBubbleWindow</string>
@@ -61,22 +61,10 @@
 							<int key="NSvFlags">274</int>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSCustomView" id="108440459">
-									<reference key="NSNextResponder" ref="301729179"/>
-									<int key="NSvFlags">290</int>
-									<object class="NSMutableArray" key="NSSubviews">
-										<bool key="EncodedWithXMLCoder">YES</bool>
-									</object>
-									<string key="NSFrame">{{20, 59}, {262, 45}}</string>
-									<reference key="NSSuperview" ref="301729179"/>
-									<reference key="NSWindow"/>
-									<reference key="NSNextKeyView" ref="730386640"/>
-									<string key="NSClassName">NSView</string>
-								</object>
 								<object class="NSTextField" id="266815090">
 									<reference key="NSNextResponder" ref="301729179"/>
 									<int key="NSvFlags">266</int>
-									<string key="NSFrame">{{17, 158}, {282, 14}}</string>
+									<string key="NSFrame">{{17, 140}, {282, 14}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="126329017"/>
@@ -84,7 +72,7 @@
 									<object class="NSTextFieldCell" key="NSCell" id="157361777">
 										<int key="NSCellFlags">67108864</int>
 										<int key="NSCellFlags2">272760832</int>
-										<string key="NSContents">^IDS_MEDIASTREAM_BUBBLE_SECTION_BLOCKED</string>
+										<string key="NSContents">^IDS_MICROPHONE_CAMERA_BLOCKED</string>
 										<object class="NSFont" key="NSSupport" id="26">
 											<string key="NSName">LucidaGrande</string>
 											<double key="NSSize">11</double>
@@ -115,7 +103,7 @@
 								<object class="NSMatrix" id="126329017">
 									<reference key="NSNextResponder" ref="301729179"/>
 									<int key="NSvFlags">290</int>
-									<string key="NSFrame">{{20, 112}, {276, 38}}</string>
+									<string key="NSFrame">{{20, 98}, {276, 32}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="913795455"/>
@@ -128,7 +116,7 @@
 										<object class="NSButtonCell" id="193088222">
 											<int key="NSCellFlags">67108864</int>
 											<int key="NSCellFlags2">131072</int>
-											<string key="NSContents">^IDS_BLOCKED_MEDIASTREAM_ALLOW</string>
+											<string key="NSContents">^IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_ALLOW</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="126329017"/>
 											<int key="NSTag">1</int>
@@ -145,7 +133,7 @@
 										<object class="NSButtonCell" id="619648789">
 											<int key="NSCellFlags">-2080374784</int>
 											<int key="NSCellFlags2">131072</int>
-											<string key="NSContents">^IDS_BLOCKED_MEDIASTREAM_NO_ACTION</string>
+											<string key="NSContents">^IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="126329017"/>
 											<int key="NSTag">2</int>
@@ -252,7 +240,7 @@ QXBwbGUgQ29tcHV0ZXIsIEluYy4sIDIwMDUAAAAAA</bytes>
 											<int key="NSPeriodicInterval">75</int>
 										</object>
 									</object>
-									<string key="NSCellSize">{276, 18}</string>
+									<string key="NSCellSize">{276, 15}</string>
 									<string key="NSIntercellSpacing">{4, 2}</string>
 									<int key="NSMatrixFlags">1151868928</int>
 									<string key="NSCellClass">NSActionCell</string>
@@ -324,10 +312,10 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<object class="NSBox" id="913795455">
 									<reference key="NSNextResponder" ref="301729179"/>
 									<int key="NSvFlags">34</int>
-									<string key="NSFrame">{{20, 43}, {276, 5}}</string>
+									<string key="NSFrame">{{20, 85}, {276, 5}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
 									<reference key="NSWindow"/>
-									<reference key="NSNextKeyView" ref="108440459"/>
+									<reference key="NSNextKeyView" ref="730386640"/>
 									<string key="NSOffsets">{0, 0}</string>
 									<object class="NSTextFieldCell" key="NSTitleCell">
 										<int key="NSCellFlags">67108864</int>
@@ -351,7 +339,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									<bool key="NSTransparent">NO</bool>
 								</object>
 							</object>
-							<string key="NSFrameSize">{316, 192}</string>
+							<string key="NSFrame">{{0, -41}, {316, 174}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="266815090"/>
@@ -368,6 +356,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									<string key="NSFrame">{{40, 13}, {68, 28}}</string>
 									<reference key="NSSuperview" ref="395762087"/>
 									<reference key="NSWindow"/>
+									<reference key="NSNextKeyView"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="255173005">
 										<int key="NSCellFlags">67108864</int>
@@ -427,7 +416,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string key="NSClassName">GTMWidthBasedTweaker</string>
 						</object>
 					</object>
-					<string key="NSFrameSize">{316, 192}</string>
+					<string key="NSFrameSize">{316, 133}</string>
 					<reference key="NSSuperview"/>
 					<reference key="NSWindow"/>
 					<reference key="NSNextKeyView" ref="301729179"/>
@@ -517,14 +506,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<reference key="destination" ref="91589614"/>
 					</object>
 					<int key="connectionID">31</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">mediaMenusContainer_</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="108440459"/>
-					</object>
-					<int key="connectionID">54</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -662,9 +643,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="913795455"/>
-							<reference ref="266815090"/>
 							<reference ref="126329017"/>
-							<reference ref="108440459"/>
+							<reference ref="266815090"/>
 						</object>
 						<reference key="parent" ref="1006"/>
 					</object>
@@ -713,11 +693,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<reference key="object" ref="913795455"/>
 						<reference key="parent" ref="301729179"/>
 					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">49</int>
-						<reference key="object" ref="108440459"/>
-						<reference key="parent" ref="301729179"/>
-					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -744,7 +719,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>28.IBPluginDependency</string>
 					<string>29.IBPluginDependency</string>
 					<string>4.IBPluginDependency</string>
-					<string>49.IBPluginDependency</string>
 					<string>7.IBPluginDependency</string>
 					<string>8.IBPluginDependency</string>
 					<string>9.IBPluginDependency</string>
@@ -757,7 +731,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{333, 667}, {316, 134}}</string>
 					<boolean value="NO"/>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1142,10 +1115,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
 			<integer value="1050" key="NS.object.0"/>
-		</object>
-		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencyDefaults">
-			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
-			<real value="1060" key="NS.object.0"/>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>

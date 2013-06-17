@@ -34,6 +34,7 @@
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_FULLSCREEN" file="allowed_fullscreen.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_IMAGES" file="allowed_images.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_LOCATION" file="allowed_location.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALLOWED_MICROPHONE" file="allowed_mic_only.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_MOUSE_CURSOR" file="allowed_mouse_cursor.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_NOTIFICATION" file="allowed_notifications.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_POPUPS" file="allowed_popups.png" />
@@ -96,6 +97,7 @@
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_JAVASCRIPT" file="blocked_script.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_LOCATION" file="blocked_location.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MEDIA" file="blocked_media.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_MICROPHONE" file="blocked_mic_only.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MOUSE_CURSOR" file="blocked_mouse_cursor.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MIXED_CONTENT" file="blocked_mixed_content.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_NOTIFICATION" file="blocked_notifications.png" />

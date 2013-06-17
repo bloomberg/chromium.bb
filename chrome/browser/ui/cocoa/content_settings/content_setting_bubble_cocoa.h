@@ -49,9 +49,6 @@ typedef std::map<NSPopUpButton*, MediaMenuParts*> MediaMenuPartsMap;
   // The container for the bubble contents of the geolocation bubble.
   IBOutlet NSView* contentsContainer_;
 
-  // The container for the bubble contents of the media menus.
-  IBOutlet NSView* mediaMenusContainer_;
-
   IBOutlet NSTextField* blockedResourcesField_;
 
   scoped_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;

@@ -591,6 +591,8 @@ class ContentSettingMediaStreamBubbleModel
   // The content settings that are associated with the individual radio
   // buttons.
   ContentSetting radio_item_setting_[2];
+  // The state of the microphone and camera access.
+  TabSpecificContentSettings::MicrophoneCameraState state_;
 };
 
 ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
@@ -599,12 +601,17 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
     Profile* profile)
     : ContentSettingTitleAndLinkModel(
           delegate, web_contents, profile, CONTENT_SETTINGS_TYPE_MEDIASTREAM),
-      selected_item_(0) {
+      selected_item_(0),
+      state_(TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED) {
   DCHECK(profile);
   // Initialize the content settings associated with the individual radio
   // buttons.
   radio_item_setting_[0] = CONTENT_SETTING_ASK;
   radio_item_setting_[1] = CONTENT_SETTING_BLOCK;
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  state_ = content_settings->GetMicrophoneCameraState();
 
   SetTitle();
   SetRadioGroup();
@@ -641,11 +648,33 @@ ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() {
 }
 
 void ContentSettingMediaStreamBubbleModel::SetTitle() {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  int title_id = IDS_MEDIASTREAM_BUBBLE_SECTION_ALLOWED;
-  if (content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM))
-    title_id = IDS_MEDIASTREAM_BUBBLE_SECTION_BLOCKED;
+  int title_id = 0;
+  switch (state_) {
+    case TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED:
+      // If neither microphone nor camera stream was accessed, then there is no
+      // icon didplayed in the omnibox and no settings bubble availbale. Hence
+      // there is no title.
+      NOTREACHED();
+      return;
+    case TabSpecificContentSettings::MICROPHONE_ACCESSED:
+      title_id = IDS_MICROPHONE_ACCESSED;
+      break;
+    case TabSpecificContentSettings::CAMERA_ACCESSED:
+      title_id = IDS_CAMERA_ACCESSED;
+      break;
+    case TabSpecificContentSettings::MICROPHONE_CAMERA_ACCESSED:
+      title_id = IDS_MICROPHONE_CAMERA_ALLOWED;
+      break;
+    case TabSpecificContentSettings::MICROPHONE_BLOCKED:
+      title_id = IDS_MICROPHONE_BLOCKED;
+      break;
+    case TabSpecificContentSettings::CAMERA_BLOCKED:
+      title_id = IDS_CAMERA_BLOCKED;
+      break;
+    case TabSpecificContentSettings::MICROPHONE_CAMERA_BLOCKED:
+      title_id = IDS_MICROPHONE_CAMERA_BLOCKED;
+      break;
+  }
   set_title(l10n_util::GetStringUTF8(title_id));
 }
 
@@ -663,30 +692,67 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   if (display_host.empty())
     display_host = url.spec();
 
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  bool media_stream_blocked =
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
-  std::string radio_allow_label;
-  std::string radio_block_label;
-  if (media_stream_blocked) {
-    if (!url.SchemeIsSecure()) {
-      radio_allow_label = l10n_util::GetStringFUTF8(
-          IDS_BLOCKED_MEDIASTREAM_ASK, UTF8ToUTF16(display_host));
-    } else {
-      radio_item_setting_[0] = CONTENT_SETTING_ALLOW;
-      radio_allow_label = l10n_util::GetStringFUTF8(
-          IDS_BLOCKED_MEDIASTREAM_ALLOW, UTF8ToUTF16(display_host));
-    }
-    radio_block_label =
-      l10n_util::GetStringUTF8(IDS_BLOCKED_MEDIASTREAM_NO_ACTION);
-  } else {
-    radio_allow_label = l10n_util::GetStringFUTF8(
-          IDS_ALLOWED_MEDIASTREAM_NO_ACTION, UTF8ToUTF16(display_host));
-    radio_block_label =
-      l10n_util::GetStringUTF8(IDS_ALLOWED_MEDIASTREAM_BLOCK);
+  int radio_allow_label_id = 0;
+  int radio_block_label_id = 0;
+  switch (state_) {
+    case TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED:
+      NOTREACHED();
+      return;
+    case TabSpecificContentSettings::MICROPHONE_ACCESSED:
+      radio_allow_label_id = IDS_ALLOWED_MEDIASTREAM_MIC_NO_ACTION;
+      radio_block_label_id = IDS_ALLOWED_MEDIASTREAM_MIC_BLOCK;
+      selected_item_ = 0;
+      break;
+    case TabSpecificContentSettings::CAMERA_ACCESSED:
+      radio_allow_label_id = IDS_ALLOWED_MEDIASTREAM_CAMERA_NO_ACTION;
+      radio_block_label_id = IDS_ALLOWED_MEDIASTREAM_CAMERA_BLOCK;
+      selected_item_ = 0;
+      break;
+    case TabSpecificContentSettings::MICROPHONE_CAMERA_ACCESSED:
+      radio_allow_label_id = IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION;
+      radio_block_label_id = IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_BLOCK;
+      selected_item_ = 0;
+      break;
+    case TabSpecificContentSettings::MICROPHONE_BLOCKED:
+      if (url.SchemeIsSecure()) {
+        radio_allow_label_id = IDS_BLOCKED_MEDIASTREAM_MIC_ALLOW;
+        radio_item_setting_[0] = CONTENT_SETTING_ALLOW;
+      } else {
+        radio_allow_label_id = IDS_BLOCKED_MEDIASTREAM_MIC_ASK;
+      }
+
+      radio_block_label_id = IDS_BLOCKED_MEDIASTREAM_MIC_NO_ACTION;
+      selected_item_ = 1;
+      break;
+    case TabSpecificContentSettings::CAMERA_BLOCKED:
+      if (url.SchemeIsSecure()) {
+        radio_allow_label_id = IDS_BLOCKED_MEDIASTREAM_CAMERA_ALLOW;
+        radio_item_setting_[0] = CONTENT_SETTING_ALLOW;
+      } else {
+        radio_allow_label_id = IDS_BLOCKED_MEDIASTREAM_CAMERA_ASK;
+      }
+
+      radio_block_label_id = IDS_BLOCKED_MEDIASTREAM_CAMERA_NO_ACTION;
+      selected_item_ = 1;
+      break;
+    case TabSpecificContentSettings::MICROPHONE_CAMERA_BLOCKED:
+      if (url.SchemeIsSecure()) {
+        radio_allow_label_id = IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_ALLOW;
+        radio_item_setting_[0] = CONTENT_SETTING_ALLOW;
+      } else {
+        radio_allow_label_id = IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_ASK;
+      }
+
+      radio_block_label_id = IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION;
+      selected_item_ = 1;
+      break;
   }
-  selected_item_ = media_stream_blocked ? 1 : 0;
+
+  std::string radio_allow_label = l10n_util::GetStringFUTF8(
+      radio_allow_label_id, UTF8ToUTF16(display_host));
+  std::string radio_block_label =
+      l10n_util::GetStringUTF8(radio_block_label_id);
+
   radio_group.default_item = selected_item_;
   radio_group.radio_items.push_back(radio_allow_label);
   radio_group.radio_items.push_back(radio_block_label);
@@ -708,12 +774,22 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
         ContentSettingsPattern::FromURLNoWildcard(web_contents()->GetURL());
     ContentSettingsPattern secondary_pattern =
         ContentSettingsPattern::Wildcard();
-    content_settings->SetContentSetting(
-        primary_pattern, secondary_pattern,
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), setting);
-    content_settings->SetContentSetting(
-        primary_pattern, secondary_pattern,
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), setting);
+    if (state_ == TabSpecificContentSettings::MICROPHONE_ACCESSED ||
+        state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_ACCESSED ||
+        state_ == TabSpecificContentSettings::MICROPHONE_BLOCKED ||
+        state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_BLOCKED) {
+      content_settings->SetContentSetting(
+          primary_pattern, secondary_pattern,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string(), setting);
+    }
+    if (state_ == TabSpecificContentSettings::CAMERA_ACCESSED ||
+        state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_ACCESSED ||
+        state_ == TabSpecificContentSettings::CAMERA_BLOCKED ||
+        state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_BLOCKED) {
+      content_settings->SetContentSetting(
+          primary_pattern, secondary_pattern,
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string(), setting);
+    }
   }
 }
 
@@ -736,29 +812,46 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
       MediaCaptureDevicesDispatcher::GetInstance();
   const content::MediaStreamDevices& microphones =
       dispatcher->GetAudioCaptureDevices();
-  MediaMenu mic_menu;
-  mic_menu.label = l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_MIC_LABEL);
-  if (!microphones.empty()) {
-    std::string preferred_mic =
-        prefs->GetString(prefs::kDefaultAudioCaptureDevice);
-    mic_menu.default_device = GetMediaDeviceById(preferred_mic, microphones);
-    mic_menu.selected_device = mic_menu.default_device;
-  }
-  add_media_menu(content::MEDIA_DEVICE_AUDIO_CAPTURE, mic_menu);
 
-  // Add camera menu.
-  const content::MediaStreamDevices& cameras =
-      dispatcher->GetVideoCaptureDevices();
-  MediaMenu camera_menu;
-  camera_menu.label = l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_CAMERA_LABEL);
-  if (!cameras.empty()) {
-    std::string preferred_camera =
-        prefs->GetString(prefs::kDefaultVideoCaptureDevice);
-    camera_menu.default_device =
-        GetMediaDeviceById(preferred_camera, cameras);
-    camera_menu.selected_device = camera_menu.default_device;
+  bool show_mic_menu =
+      (state_ == TabSpecificContentSettings::MICROPHONE_ACCESSED ||
+       state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_ACCESSED ||
+       state_ == TabSpecificContentSettings::MICROPHONE_BLOCKED ||
+       state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_BLOCKED);
+  bool show_camera_menu =
+      (state_ == TabSpecificContentSettings::CAMERA_ACCESSED ||
+       state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_ACCESSED ||
+       state_ == TabSpecificContentSettings::CAMERA_BLOCKED ||
+       state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_BLOCKED);
+  DCHECK(show_mic_menu || show_camera_menu);
+
+  if (show_mic_menu) {
+    MediaMenu mic_menu;
+    mic_menu.label = l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_MIC_LABEL);
+    if (!microphones.empty()) {
+      std::string preferred_mic =
+          prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+      mic_menu.default_device = GetMediaDeviceById(preferred_mic, microphones);
+      mic_menu.selected_device = mic_menu.default_device;
+    }
+    add_media_menu(content::MEDIA_DEVICE_AUDIO_CAPTURE, mic_menu);
   }
-  add_media_menu(content::MEDIA_DEVICE_VIDEO_CAPTURE, camera_menu);
+
+  if (show_camera_menu) {
+    const content::MediaStreamDevices& cameras =
+        dispatcher->GetVideoCaptureDevices();
+    MediaMenu camera_menu;
+    camera_menu.label =
+        l10n_util::GetStringUTF8(IDS_MEDIA_SELECTED_CAMERA_LABEL);
+    if (!cameras.empty()) {
+      std::string preferred_camera =
+          prefs->GetString(prefs::kDefaultVideoCaptureDevice);
+      camera_menu.default_device =
+          GetMediaDeviceById(preferred_camera, cameras);
+      camera_menu.selected_device = camera_menu.default_device;
+    }
+    add_media_menu(content::MEDIA_DEVICE_VIDEO_CAPTURE, camera_menu);
+  }
 }
 
 void ContentSettingMediaStreamBubbleModel::OnRadioClicked(int radio_index) {

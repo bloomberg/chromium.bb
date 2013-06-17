@@ -208,6 +208,8 @@ bool TabSpecificContentSettings::IsContentBlocked(
       content_type == CONTENT_SETTINGS_TYPE_POPUPS ||
       content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
+      content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+      content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
       content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER)
     return content_blocked_[content_type];
 
@@ -230,6 +232,8 @@ bool TabSpecificContentSettings::IsContentAllowed(
   // cookies, mediastream, and PPAPI broker.
   if (content_type != CONTENT_SETTINGS_TYPE_COOKIES &&
       content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM &&
+      content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
+      content_type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA &&
       content_type != CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {
     return false;
   }
@@ -267,7 +271,8 @@ void TabSpecificContentSettings::OnContentBlocked(
   // Media is different from other content setting types since it allows new
   // setting to kick in without reloading the page, and the UI for media is
   // always reflecting the newest permission setting.
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)
     content_allowed_[type] = false;
   else
     content_allowed_[type] = true;
@@ -450,8 +455,27 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
       content::NotificationService::NoDetails());
 }
 
-void TabSpecificContentSettings::OnMediaStreamAllowed() {
-  OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+TabSpecificContentSettings::MicrophoneCameraState
+TabSpecificContentSettings::GetMicrophoneCameraState() const {
+  if (IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
+      IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
+    return MICROPHONE_CAMERA_ACCESSED;
+  } else if (IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) {
+    return MICROPHONE_ACCESSED;
+  } else if (IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
+    return CAMERA_ACCESSED;
+  }
+
+  if (IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
+      IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
+    return MICROPHONE_CAMERA_BLOCKED;
+  } else if (IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)) {
+    return MICROPHONE_BLOCKED;
+  } else if (IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA)) {
+    return CAMERA_BLOCKED;
+  }
+
+  return MICROPHONE_CAMERA_NOT_ACCESSED;
 }
 
 void TabSpecificContentSettings::OnMicrophoneAccessed() {

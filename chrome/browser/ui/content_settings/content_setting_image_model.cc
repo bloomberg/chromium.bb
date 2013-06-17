@@ -33,7 +33,7 @@ class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
 // Image model for displaying media icons in the location bar.
 class ContentSettingMediaImageModel : public ContentSettingImageModel {
  public:
-  ContentSettingMediaImageModel();
+  explicit ContentSettingMediaImageModel(ContentSettingsType type);
 
   virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
 };
@@ -185,13 +185,36 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
       IDS_GEOLOCATION_ALLOWED_TOOLTIP : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
 }
 
-ContentSettingMediaImageModel::ContentSettingMediaImageModel()
-    : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+ContentSettingMediaImageModel::ContentSettingMediaImageModel(
+    ContentSettingsType type)
+    : ContentSettingImageModel(type) {
 }
 
 void ContentSettingMediaImageModel::UpdateFromWebContents(
     WebContents* web_contents) {
   set_visible(false);
+
+  // As long as a single icon is used to display the status of the camera and
+  // microphone usage only display an icon for the
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM. Don't display anything for
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
+  // FIXME: Remove this hack and either display a two omnibox icons (one for
+  // camera and one for microphone), or don't create one image model per
+  // content type but per icon to display. The later is probably the right
+  // thing to do, bebacuse this also allows to add more content settings type
+  // for which no omnibox icon exists.
+  if (get_content_settings_type() == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+      get_content_settings_type() == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
+    return;
+  }
+
+  // The ContentSettingMediaImageModel must not be used with a content type
+  // other then: CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+  // CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA.
+  DCHECK_EQ(get_content_settings_type(), CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+
   if (!web_contents)
     return;
 
@@ -199,17 +222,39 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
     return;
+  TabSpecificContentSettings::MicrophoneCameraState state =
+      content_settings->GetMicrophoneCameraState();
 
-  bool blocked =
-      content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
-  if (!blocked &&
-      !content_settings->IsContentAllowed(get_content_settings_type()))
-    return;
-
-  set_tooltip(
-      l10n_util::GetStringUTF8(blocked ?
-          IDS_MEDIASTREAM_BLOCKED_TOOLTIP : IDS_MEDIASTREAM_ALLOWED_TOOLTIP));
-  set_icon(blocked ? IDR_BLOCKED_MEDIA : IDR_ASK_MEDIA);
+  switch (state) {
+    case TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED:
+      // If neither the microphone nor the camera stream was accessed then no
+      // icon is displayed in the omnibox.
+      return;
+    case TabSpecificContentSettings::MICROPHONE_ACCESSED:
+      set_icon(IDR_ALLOWED_MICROPHONE);
+      set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_ACCESSED));
+      break;
+    case TabSpecificContentSettings::CAMERA_ACCESSED:
+      set_icon(IDR_ASK_MEDIA);
+      set_tooltip(l10n_util::GetStringUTF8(IDS_CAMERA_ACCESSED));
+      break;
+    case TabSpecificContentSettings::MICROPHONE_CAMERA_ACCESSED:
+      set_icon(IDR_ASK_MEDIA);
+      set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_CAMERA_ALLOWED));
+      break;
+    case TabSpecificContentSettings::MICROPHONE_BLOCKED:
+      set_icon(IDR_BLOCKED_MICROPHONE);
+      set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_BLOCKED));
+      break;
+    case TabSpecificContentSettings::CAMERA_BLOCKED:
+      set_icon(IDR_BLOCKED_MEDIA);
+      set_tooltip(l10n_util::GetStringUTF8(IDS_CAMERA_BLOCKED));
+      break;
+    case TabSpecificContentSettings::MICROPHONE_CAMERA_BLOCKED:
+      set_icon(IDR_BLOCKED_MEDIA);
+      set_tooltip(l10n_util::GetStringUTF8(IDS_MICROPHONE_CAMERA_BLOCKED));
+      break;
+  }
   set_visible(true);
 }
 
@@ -266,7 +311,9 @@ ContentSettingImageModel*
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       return new ContentSettingRPHImageModel();
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      return new ContentSettingMediaImageModel();
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      return new ContentSettingMediaImageModel(content_settings_type);
     default:
       return new ContentSettingBlockedImageModel(content_settings_type);
   }

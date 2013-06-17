@@ -43,6 +43,16 @@ class TabSpecificContentSettings
       public content::NotificationObserver,
       public content::WebContentsUserData<TabSpecificContentSettings> {
  public:
+  enum MicrophoneCameraState {
+    MICROPHONE_CAMERA_NOT_ACCESSED = 0,
+    MICROPHONE_ACCESSED,
+    CAMERA_ACCESSED,
+    MICROPHONE_CAMERA_ACCESSED,
+    MICROPHONE_BLOCKED,
+    CAMERA_BLOCKED,
+    MICROPHONE_CAMERA_BLOCKED,
+  };
+
   // Classes that want to be notified about site data events must implement
   // this abstract class and add themselves as observer to the
   // |TabSpecificContentSettings|.
@@ -169,6 +179,9 @@ class TabSpecificContentSettings
   // only tracks cookies.
   bool IsContentAllowed(ContentSettingsType content_type) const;
 
+  // Returns the state of the camera and microphone usage.
+  MicrophoneCameraState GetMicrophoneCameraState() const;
+
   const std::set<std::string>& BlockedResourcesForType(
       ContentSettingsType content_type) const;
 
@@ -282,9 +295,9 @@ class TabSpecificContentSettings
   void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                   bool allowed);
 
-  // This method is called when a media stream is allowed.
-  void OnMediaStreamAllowed();
 
+  // These methods are called to update the status about the microphone and
+  // camera stream access.
   void OnMicrophoneAccessed();
   void OnMicrophoneAccessBlocked();
   void OnCameraAccessed();

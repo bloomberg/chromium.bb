@@ -59,7 +59,7 @@ const int kGeoHostPadding = 4;
 const int kManageDonePadding = 8;
 
 // Padding between radio buttons and media menus buttons in the media bubble.
-const int kMediaMenuVerticalPadding = 20;
+const int kMediaMenuVerticalPadding = 25;
 
 // Padding between media menu elements in the media bubble.
 const int kMediaMenuElementVerticalPadding = 5;
@@ -496,12 +496,11 @@ MediaMenuParts::~MediaMenuParts() {}
   CGFloat maxLabelWidth = 0;
   CGFloat maxMenuWidth = 0;
   CGFloat maxMenuHeight = 0;
-  NSRect mediaMenusFrame = [mediaMenusContainer_ frame];
-  CGFloat topMenuY = NSMaxY(mediaMenusFrame) - kMediaMenuVerticalPadding;
+  NSRect radioFrame = [allowBlockRadioGroup_ frame];
   for (ContentSettingBubbleModel::MediaMenuMap::const_iterator it(
        media_menus.begin()); it != media_menus.end(); ++it) {
     // |labelFrame| will be resized later on in this function.
-    NSRect labelFrame = NSMakeRect(NSMinX(mediaMenusFrame), topMenuY, 0, 0);
+    NSRect labelFrame = NSMakeRect(NSMinX(radioFrame), 0, 0, 0);
     NSTextField* label =
         LabelWithFrame(base::SysUTF8ToNSString(it->second.label), labelFrame);
     SetControlSize(label, NSSmallControlSize);
@@ -512,7 +511,7 @@ MediaMenuParts::~MediaMenuParts() {}
     [[self bubble]  addSubview:label];
 
     // |buttonFrame| will be resized and repositioned later on.
-    NSRect buttonFrame = NSMakeRect(NSMinX(mediaMenusFrame), topMenuY, 0, 0);
+    NSRect buttonFrame = NSMakeRect(NSMinX(radioFrame), 0, 0, 0);
     scoped_nsobject<NSPopUpButton> button(
         [[NSPopUpButton alloc] initWithFrame:buttonFrame]);
     [button setTarget:self];
@@ -535,32 +534,45 @@ MediaMenuParts::~MediaMenuParts() {}
                    relativeTo:nil];
 
     maxMenuHeight = std::max(maxMenuHeight, [button frame].size.height);
-    topMenuY -= (maxMenuHeight + kMediaMenuElementVerticalPadding);
   }
 
+  // Make room for the media menu(s) and enlarege the windows to fit the views.
+  // The bubble view and its subviews autosize themselves when the window is
+  // enlarged.
+  int delta = media_menus.size() * maxMenuHeight +
+      (media_menus.size() - 1) * kMediaMenuElementVerticalPadding;
+  NSSize deltaSize = NSMakeSize(0, delta);
+  deltaSize = [[[self window] contentView] convertSize:deltaSize toView:nil];
+  NSRect windowFrame = [[self window] frame];
+  windowFrame.size.height += deltaSize.height;
+  // If the media menus are wider than the window, widen the window.
+  CGFloat widthNeeded = maxLabelWidth + maxMenuWidth + 2 * NSMinX(radioFrame);
+  if (widthNeeded > windowFrame.size.width)
+    windowFrame.size.width = widthNeeded;
+  [[self window] setFrame:windowFrame display:NO];
+
+  // The radio group lies above the media menus, move the radio group up.
+  radioFrame.origin.y += delta;
+  [allowBlockRadioGroup_ setFrame:radioFrame];
+
   // Resize and reposition the media menus layout.
+  CGFloat topMenuY = NSMinY(radioFrame) - kMediaMenuVerticalPadding;
   maxMenuWidth = std::max(maxMenuWidth, kMinMediaMenuButtonWidth);
   for (content_setting_bubble::MediaMenuPartsMap::const_iterator i =
        mediaMenus_.begin(); i != mediaMenus_.end(); ++i) {
     NSRect labelFrame = [i->second->label frame];
     // Align the label text with the button text.
-    labelFrame.origin.y += (maxMenuHeight - labelFrame.size.height) / 2 + 1;
+    labelFrame.origin.y =
+        topMenuY + (maxMenuHeight - labelFrame.size.height) / 2 + 1;
     labelFrame.size.width = maxLabelWidth;
     [i->second->label setFrame:labelFrame];
     NSRect menuFrame = [i->first frame];
-    menuFrame.origin.x = NSMinX(mediaMenusFrame) + maxLabelWidth;
+    menuFrame.origin.y = topMenuY;
+    menuFrame.origin.x = NSMinX(radioFrame) + maxLabelWidth;
     menuFrame.size.width = maxMenuWidth;
     menuFrame.size.height = maxMenuHeight;
     [i->first setFrame:menuFrame];
-  }
-
-  // If the media menus are wider than the window, widen the window.
-  NSRect frame = [[self window] frame];
-  CGFloat widthNeeded = maxLabelWidth + maxMenuWidth +
-      2 * NSMinX([mediaMenusContainer_ frame]);
-  if (widthNeeded > frame.size.width) {
-    frame.size.width = widthNeeded;
-    [[self window] setFrame:frame display:NO];
+    topMenuY -= (maxMenuHeight + kMediaMenuElementVerticalPadding);
   }
 }
 
@@ -616,9 +628,6 @@ MediaMenuParts::~MediaMenuParts() {}
     [self initializeBlockedPluginsList];
   }
 
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
-    [self initializeMediaMenus];
-
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib
     [self initializeRadioGroup];
 
@@ -626,6 +635,8 @@ MediaMenuParts::~MediaMenuParts() {}
     [self initializePopupList];
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
     [self initializeGeoLists];
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
+    [self initializeMediaMenus];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
