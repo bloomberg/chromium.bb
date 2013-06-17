@@ -3633,12 +3633,12 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             } else if (m_originatingTouchPointDocument.get() && m_originatingTouchPointDocument->frame()) {
                 LayoutPoint pagePointInOriginatingDocument = documentPointForWindowPoint(m_originatingTouchPointDocument->frame(), point.pos());
                 result = hitTestResultInFrame(m_originatingTouchPointDocument->frame(), pagePointInOriginatingDocument, hitType);
-                if (!result.innerNode())
-                    continue;
             } else
                 continue;
+
             Node* node = result.innerNode();
-            ASSERT(node);
+            if (!node)
+                continue;
 
             // Touch events should not go to text nodes
             if (node->isTextNode())
