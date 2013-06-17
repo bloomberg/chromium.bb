@@ -262,6 +262,9 @@ crbug.com/100798 [ Win7 Mac Debug ] fullscreen/full-screen-iframe-allowed-prefix
 # Reporting translation of -0.00.
 webkit.org/b/106126 [ Win ] svg/custom/feComponentTransfer-Table.svg [ ImageOnlyFailure Pass ]
 
+# Only flaky on Linux. Looks like slight pixel differences in text-on-a-path.
+crbug.com/250897 [ Linux ] svg/batik/text/smallFonts.svg [ ImageOnlyFailure Pass ]
+
 # The test needs fixing. Flakiness is common across all Mac platforms, not just chromium.
 webkit.org/b/25817 svg/dom/SVGScriptElement/script-load-and-error-events.svg [ Failure Pass ]
 webkit.org/b/106598 svg/dom/SVGScriptElement/script-onerror-bubbling.svg [ Pass Timeout ]
