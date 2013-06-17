@@ -7,8 +7,10 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "net/base/network_change_notifier.h"
@@ -118,7 +120,7 @@ void NetworkChangeNotifierChromeos::UpdateState(
     // observers, otherwise we have nothing to do. (Under normal circumstances,
     // we should never get duplicate no default network notifications).
     if (connection_type_ != CONNECTION_NONE) {
-      VLOG(1) << "Lost default network!";
+      NET_LOG_EVENT("NCNDefaultNetworkLost", service_path_);
       *ip_address_changed = true;
       *dns_changed = true;
       *connection_type_changed = true;
@@ -135,13 +137,20 @@ void NetworkChangeNotifierChromeos::UpdateState(
       ConnectionTypeFromShill(default_network->type(),
                               default_network->technology());
   if (new_connection_type != connection_type_) {
-    VLOG(1) << "Connection type changed from " << connection_type_ << " -> "
-            << new_connection_type;
+    NET_LOG_EVENT(
+        "NCNDefaultConnectionTypeChanged",
+        base::StringPrintf("%s -> %s",
+                           ConnectionTypeToString(connection_type_),
+                           ConnectionTypeToString(new_connection_type)));
     *connection_type_changed = true;
   }
   if (default_network->path() != service_path_) {
-    VLOG(1) << "Service path changed from " << service_path_ << " -> "
-            << default_network->path();
+    NET_LOG_EVENT(
+        "NCNDefaultNetworkServicePathChanged",
+        base::StringPrintf("%s -> %s",
+                           service_path_.c_str(),
+                           default_network->path().c_str()));
+
     // If we had a default network service change, network resources
     // must always be invalidated.
     *ip_address_changed = true;
@@ -151,19 +160,29 @@ void NetworkChangeNotifierChromeos::UpdateState(
     // Is this a state update with an online->online transition?
     bool stayed_online = (!*connection_type_changed &&
                           connection_type_ != CONNECTION_NONE);
+
+    bool is_suppressed = true;
     // Suppress IP address change signalling on online->online transitions
     // when getting an IP address update for the first time.
-    if (!(stayed_online && ip_address_.empty()))
+    if (!(stayed_online && ip_address_.empty())) {
+      is_suppressed = false;
       *ip_address_changed = true;
-    VLOG(1) << "IP Address changed from " << ip_address_ << " -> "
-            << default_network->ip_address();
+    }
+    NET_LOG_EVENT(
+        base::StringPrintf("%s%s",
+                           "NCNDefaultIPAddressChanged",
+                           is_suppressed ? " (Suppressed)" : "" ),
+        base::StringPrintf("%s -> %s",
+                           ip_address_.c_str(),
+                           default_network->ip_address().c_str()));
   }
   if (default_network->dns_servers() != dns_servers_) {
-    VLOG(1) << "DNS servers changed.\n"
-            << "Old DNS servers were: "
-            << JoinString(dns_servers_, ",") << "\n"
-            << "New DNS servers are: "
-            << JoinString(default_network->dns_servers(), ",");
+    NET_LOG_EVENT(
+        "NCNDefaultDNSServerChanged",
+        base::StringPrintf(
+            "%s -> %s",
+            JoinString(dns_servers_, ",").c_str(),
+            JoinString(default_network->dns_servers(), ",").c_str()));
     *dns_changed = true;
   }
 
