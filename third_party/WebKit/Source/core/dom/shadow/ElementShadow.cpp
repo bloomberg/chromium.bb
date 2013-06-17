@@ -74,7 +74,7 @@ void ElementShadow::removeAllShadowRoots()
 
 void ElementShadow::attach()
 {
-    ContentDistributor::ensureDistribution(youngestShadowRoot());
+    ContentDistributor::ensureDistribution(host());
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         if (!root->attached())

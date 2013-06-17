@@ -49,6 +49,9 @@ void ParentDetails::didTraverseShadowRoot(const ShadowRoot* root)
 
 ContainerNode* parent(const Node* node, ParentDetails* details)
 {
+    if (ShadowRoot* root = node->containingShadowRoot())
+        root->host()->ensureDistribution();
+
     ComposedShadowTreeWalker walker(node, ComposedShadowTreeWalker::CrossUpperBoundary, ComposedShadowTreeWalker::CanStartFromShadowBoundary);
     ContainerNode* found = toContainerNode(walker.traverseParent(walker.get(), details));
     return details->outOfComposition() ? 0 : found;

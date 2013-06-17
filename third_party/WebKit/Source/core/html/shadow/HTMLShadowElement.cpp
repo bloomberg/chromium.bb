@@ -61,7 +61,7 @@ ShadowRoot* HTMLShadowElement::olderShadowRoot()
     if (!containingRoot)
         return 0;
 
-    ContentDistributor::ensureDistribution(containingRoot);
+    containingRoot->host()->ensureDistribution();
 
     ShadowRoot* older = containingRoot->olderShadowRoot();
     if (!older || older->type() != ShadowRoot::AuthorShadowRoot || ScopeContentDistribution::assignedTo(older) != this)

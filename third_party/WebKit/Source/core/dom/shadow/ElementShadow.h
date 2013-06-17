@@ -99,6 +99,11 @@ inline ShadowRoot* Node::youngestShadowRoot() const
     return 0;
 }
 
+inline void Element::ensureDistribution()
+{
+    ContentDistributor::ensureDistribution(this);
+}
+
 inline ElementShadow* ElementShadow::containingShadow() const
 {
     if (ShadowRoot* parentRoot = host()->containingShadowRoot())

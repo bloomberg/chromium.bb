@@ -132,12 +132,13 @@ public:
     void didShadowBoundaryChange(Element* host);
     void didAffectSelector(Element* host, AffectedSelectorMask);
     void willAffectSelector(Element* host);
+    void setNeedsStyleRecalcIfDistributedTo(InsertionPoint*);
 
-    static void ensureDistribution(ShadowRoot*);
+    static void ensureDistribution(Element*);
 
 private:
     void distribute(Element* host);
-    bool invalidate(Element* host);
+    bool invalidate(Element* host, Vector<Node*, 8>& nodesNeedingReattach);
     void populate(Node*, ContentDistribution&);
 
     void collectSelectFeatureSetFrom(ShadowRoot*);
@@ -149,7 +150,8 @@ private:
     bool needsDistribution() const;
     bool needsInvalidation() const { return m_validity != Invalidated; }
 
-    HashMap<const Node*, RefPtr<InsertionPoint> > m_nodeToInsertionPoint;
+    typedef HashMap<const Node*, RefPtr<InsertionPoint> > NodeInsertionPointMap;
+    NodeInsertionPointMap m_nodeToInsertionPoint;
     SelectRuleFeatureSet m_selectFeatures;
     unsigned m_needsSelectFeatureSet : 1;
     unsigned m_validity : 2;

@@ -417,6 +417,7 @@ public:
     ElementShadow* ensureShadow();
     PassRefPtr<ShadowRoot> createShadowRoot(ExceptionCode&);
     ShadowRoot* shadowRoot() const;
+    void ensureDistribution();
 
     bool hasAuthorShadowRoot() const { return shadowRoot(); }
 

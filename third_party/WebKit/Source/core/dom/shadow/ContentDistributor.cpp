@@ -265,7 +265,7 @@ void ContentDistributor::distribute(Element* host)
     }
 }
 
-bool ContentDistributor::invalidate(Element* host)
+bool ContentDistributor::invalidate(Element* host, Vector<Node*, 8>& nodesNeedingReattach)
 {
     ASSERT(needsInvalidation());
     bool needsReattach = (m_validity == Undetermined) || !m_nodeToInsertionPoint.isEmpty();
@@ -275,7 +275,10 @@ bool ContentDistributor::invalidate(Element* host)
             scope->setInsertionPointAssignedTo(0);
             const Vector<RefPtr<InsertionPoint> >& insertionPoints = scope->ensureInsertionPointList(root);
             for (size_t i = 0; i < insertionPoints.size(); ++i) {
-                needsReattach = needsReattach || true;
+                needsReattach = true;
+                for (Node* child = insertionPoints[i]->firstChild(); child; child = child->nextSibling())
+                    nodesNeedingReattach.append(child);
+
                 insertionPoints[i]->clearDistribution();
 
                 // After insertionPoint's distribution is invalidated, its reprojection should also be invalidated.
@@ -342,12 +345,10 @@ void ContentDistributor::distributeNodeChildrenTo(InsertionPoint* insertionPoint
     insertionPoint->setDistribution(distribution);
 }
 
-void ContentDistributor::ensureDistribution(ShadowRoot* shadowRoot)
+void ContentDistributor::ensureDistribution(Element* host)
 {
-    ASSERT(shadowRoot);
-
     Vector<ElementShadow*, 8> elementShadows;
-    for (Element* current = shadowRoot->host(); current; current = current->shadowHost()) {
+    for (Element* current = host; current; current = current->shadowHost()) {
         ElementShadow* elementShadow = current->shadow();
         if (!elementShadow->distributor().needsDistribution())
             break;
@@ -362,12 +363,15 @@ void ContentDistributor::ensureDistribution(ShadowRoot* shadowRoot)
 
 void ContentDistributor::invalidateDistribution(Element* host)
 {
+    Vector<Node*, 8> nodesNeedingReattach;
     bool didNeedInvalidation = needsInvalidation();
-    bool needsReattach = didNeedInvalidation ? invalidate(host) : false;
+    bool needsReattach = didNeedInvalidation ? invalidate(host, nodesNeedingReattach) : false;
 
     if (needsReattach && host->attached()) {
         for (Node* n = host->firstChild(); n; n = n->nextSibling())
-            n->lazyReattach();
+            n->lazyReattachIfAttached();
+        for (size_t i = 0; i < nodesNeedingReattach.size(); ++i)
+            nodesNeedingReattach[i]->lazyReattachIfAttached();
         host->setNeedsStyleRecalc();
     }
 
@@ -426,6 +430,14 @@ void ContentDistributor::willAffectSelector(Element* host)
     }
 
     invalidateDistribution(host);
+}
+
+void ContentDistributor::setNeedsStyleRecalcIfDistributedTo(InsertionPoint* insertionPoint)
+{
+    for (NodeInsertionPointMap::iterator i = m_nodeToInsertionPoint.begin(); i != m_nodeToInsertionPoint.end(); ++i) {
+        if (i->value == insertionPoint)
+            const_cast<Node*>(i->key)->setNeedsStyleRecalc(SyntheticStyleChange);
+    }
 }
 
 void ContentDistributor::didShadowBoundaryChange(Element* host)

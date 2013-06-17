@@ -45,6 +45,7 @@ InsertionPoint::InsertionPoint(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document, CreateInsertionPoint)
     , m_registeredWithShadowRoot(false)
 {
+    setHasCustomStyleCallbacks();
 }
 
 InsertionPoint::~InsertionPoint()
@@ -54,7 +55,7 @@ InsertionPoint::~InsertionPoint()
 void InsertionPoint::attach(const AttachContext& context)
 {
     if (ShadowRoot* shadowRoot = containingShadowRoot())
-        ContentDistributor::ensureDistribution(shadowRoot);
+        shadowRoot->host()->ensureDistribution();
     for (size_t i = 0; i < m_distribution.size(); ++i) {
         if (!m_distribution.at(i)->attached())
             m_distribution.at(i)->attach(context);
@@ -66,12 +67,22 @@ void InsertionPoint::attach(const AttachContext& context)
 void InsertionPoint::detach(const AttachContext& context)
 {
     if (ShadowRoot* shadowRoot = containingShadowRoot())
-        ContentDistributor::ensureDistribution(shadowRoot);
+        shadowRoot->host()->ensureDistribution();
 
     for (size_t i = 0; i < m_distribution.size(); ++i)
         m_distribution.at(i)->detach(context);
 
     HTMLElement::detach(context);
+}
+
+void InsertionPoint::willRecalcStyle(StyleChange change)
+{
+    if (change < Inherit)
+        return;
+    if (ShadowRoot* shadowRoot = containingShadowRoot()) {
+        shadowRoot->host()->ensureDistribution();
+        shadowRoot->owner()->distributor().setNeedsStyleRecalcIfDistributedTo(this);
+    }
 }
 
 bool InsertionPoint::shouldUseFallbackElements() const
@@ -101,7 +112,7 @@ bool InsertionPoint::isActive() const
 PassRefPtr<NodeList> InsertionPoint::getDistributedNodes() const
 {
     if (ShadowRoot* shadowRoot = containingShadowRoot())
-        ContentDistributor::ensureDistribution(shadowRoot);
+        shadowRoot->host()->ensureDistribution();
 
     Vector<RefPtr<Node> > nodes;
 
@@ -206,8 +217,9 @@ InsertionPoint* resolveReprojection(const Node* projectedNode)
 
     while (current) {
         if (ElementShadow* shadow = shadowOfParentForDistribution(current)) {
+            shadow->host()->ensureDistribution();
             if (ShadowRoot* root = current->containingShadowRoot())
-                ContentDistributor::ensureDistribution(root);
+                root->host()->ensureDistribution();
             if (InsertionPoint* insertedTo = shadow->distributor().findInsertionPointFor(projectedNode)) {
                 current = insertedTo;
                 insertionPoint = insertedTo;
@@ -235,7 +247,7 @@ void collectInsertionPointsWhereNodeIsDistributed(const Node* node, Vector<Inser
     while (true) {
         if (ElementShadow* shadow = shadowOfParentForDistribution(current)) {
             if (ShadowRoot* root = current->containingShadowRoot())
-                ContentDistributor::ensureDistribution(root);
+                root->host()->ensureDistribution();
             if (InsertionPoint* insertedTo = shadow->distributor().findInsertionPointFor(node)) {
                 current = insertedTo;
                 results.append(insertedTo);

@@ -1404,6 +1404,10 @@ void Element::recalcStyle(StyleChange change)
             // common, especially during lazy attach.
             newStyle = styleForRenderer();
             localChange = Node::diff(currentStyle.get(), newStyle.get(), document());
+        } else if (attached() && isActiveInsertionPoint(this)) {
+            // Active InsertionPoints will never have renderers so there's no reason to
+            // reattach them repeatedly once they're already attached.
+            localChange = change;
         }
         if (localChange == Detach) {
             AttachContext reattachContext;

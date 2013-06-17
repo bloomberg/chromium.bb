@@ -145,6 +145,14 @@ void ShadowRoot::recalcStyle(StyleChange change)
     if (styleChangeType() == FullStyleChange)
         change = Force;
 
+    if (!attached()) {
+        attach();
+        // attach recalculates the style for all children. No need to do it twice.
+        clearNeedsStyleRecalc();
+        clearChildNeedsStyleRecalc();
+        return;
+    }
+
     StyleResolver* styleResolver = document()->styleResolver();
     styleResolver->pushParentShadowRoot(this);
 
