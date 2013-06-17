@@ -11,13 +11,19 @@ element.style  { ()
 ======== Matched CSS Rules ========
 [expanded] 
 media="screen" (override-screen-size.html)
-@media (max-device-height: 960px) and (max-device-width: 480px) (override-screen-size.html:9)
+@media (max-device-height: 960px) and (max-device-width: 480px) (override-screen-size.html:9 -> override-screen-size.html:9:1)
 #main  { (override-screen-size.html:10 -> override-screen-size.html:10:5)
 background: green;
 
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
+
+======== Inherited from body ========
+[expanded] 
+media="screen" (override-screen-size.html)
+body  { (override-screen-size.html:17 -> override-screen-size.html:17:1)
+font-size: 8px;
 
 
 Override: 800x480
@@ -32,6 +38,12 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
 display: block;
+
+======== Inherited from body ========
+[expanded] 
+media="screen" (override-screen-size.html)
+body  { (override-screen-size.html:17 -> override-screen-size.html:17:1)
+font-size: 8px;
 
 
 Override: 10000001x800 => ERROR

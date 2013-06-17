@@ -7,20 +7,20 @@ element.style  { ()
 ======== Matched CSS Rules ========
 [expanded] 
 media="all" (media-queries.html)
-@media screen (media-queries.css:5)
-#main  { (media-queries.css:6 -> media-queries.css:6:5)
+@media screen (media-queries.css:5 -> media-queries.css:5:5)
+#main  { (media-queries.css:6 -> media-queries.css:6:7)
 color: yellow;
 
 [expanded] 
 media="all" (media-queries.html)
-@import screen (media-queries.css:3)
-@media not aural (media-queries-1.css:5)
+@import screen (media-queries.css:3 -> media-queries.css:3:3)
+@media not aural (media-queries-1.css:5 -> media-queries-1.css:5:1)
 #main  { (media-queries-1.css:6 -> media-queries-1.css:6:5)
 border: 1px solid black;
 
 [expanded] 
 media="screen" (media-queries.html)
-@media not print (media-queries.html:5)
+@media not print (media-queries.html:5 -> media-queries.html:5:1)
 #main  { (media-queries.html:6 -> media-queries.html:6:5)
 background: blue;
 

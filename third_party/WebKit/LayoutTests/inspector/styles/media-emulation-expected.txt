@@ -24,7 +24,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-@media print (media-emulation.html:7)
+@media print (media-emulation.html:7 -> media-emulation.html:7:1)
 #main  { (media-emulation.html:8 -> media-emulation.html:8:1)
 color: black;
 
@@ -45,7 +45,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-@media tty (media-emulation.html:11)
+@media tty (media-emulation.html:11 -> media-emulation.html:11:1)
 #main  { (media-emulation.html:12 -> media-emulation.html:12:1)
 color: green;
 
