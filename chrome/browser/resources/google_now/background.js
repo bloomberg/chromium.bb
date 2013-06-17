@@ -255,6 +255,10 @@ function parseAndShowNotificationCards(response, callback) {
     chrome.notifications.getAll(function(notifications) {
       console.log('parseAndShowNotificationCards-getAll ' +
           JSON.stringify(notifications));
+      // TODO(vadimt): Figure out what to do when notifications are disabled for
+      // our extension.
+      notifications = notifications || {};
+
       // Build a set of non-expired recent dismissals. It will be used for
       // client-side filtering of cards.
       var updatedRecentDismissals = {};
