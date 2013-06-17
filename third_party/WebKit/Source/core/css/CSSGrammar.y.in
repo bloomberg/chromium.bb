@@ -348,13 +348,11 @@ internal_decls:
 
 internal_value:
     INTERNAL_VALUE_SYM '{' maybe_space expr '}' {
-        if ($4) {
-            parser->m_valueList = parser->sinkFloatingValueList($4);
-            int oldParsedProperties = parser->m_parsedProperties.size();
-            if (!parser->parseValue(parser->m_id, parser->m_important))
-                parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
-            parser->m_valueList = nullptr;
-        }
+        parser->m_valueList = parser->sinkFloatingValueList($4);
+        int oldParsedProperties = parser->m_parsedProperties.size();
+        if (!parser->parseValue(parser->m_id, parser->m_important))
+            parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
+        parser->m_valueList = nullptr;
     }
 ;
 
@@ -366,10 +364,8 @@ internal_medialist:
 
 internal_selector:
     INTERNAL_SELECTOR_SYM '{' maybe_space selector_list '}' {
-        if ($4) {
-            if (parser->m_selectorListForParseSelector)
-                parser->m_selectorListForParseSelector->adoptSelectorVector(*$4);
-        }
+        if (parser->m_selectorListForParseSelector)
+            parser->m_selectorListForParseSelector->adoptSelectorVector(*$4);
     }
 ;
 
@@ -1035,12 +1031,8 @@ viewport:
 
 region_selector:
     selector_list {
-        if ($1) {
-            parser->setReusableRegionSelectorVector($1);
-            $$ = parser->reusableRegionSelectorVector();
-        }
-        else
-            $$ = 0;
+        parser->setReusableRegionSelectorVector($1);
+        $$ = parser->reusableRegionSelectorVector();
     }
 ;
 
@@ -1052,12 +1044,7 @@ before_region_rule:
 
 region:
     before_region_rule WEBKIT_REGION_RULE_SYM WHITESPACE region_selector at_rule_header_end '{' at_rule_body_start maybe_space region_block_rule_body closing_brace {
-        if ($4)
-            $$ = parser->createRegionRule($4, $9);
-        else {
-            $$ = 0;
-            parser->endRuleBody(true);
-        }
+        $$ = parser->createRegionRule($4, $9);
     }
   | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_recovery {
         $$ = 0;
@@ -1137,20 +1124,15 @@ before_selector_group_item:
 
 selector_list:
     selector %prec UNIMPORTANT_TOK {
-        if ($1) {
-            $$ = parser->reusableSelectorVector();
-            $$->shrink(0);
-            $$->append(parser->sinkFloatingSelector($1));
-            parser->updateLastSelectorLineAndPosition();
-        }
+        $$ = parser->reusableSelectorVector();
+        $$->shrink(0);
+        $$->append(parser->sinkFloatingSelector($1));
+        parser->updateLastSelectorLineAndPosition();
     }
     | selector_list at_selector_end ',' maybe_space before_selector_group_item selector %prec UNIMPORTANT_TOK {
-        if ($1 && $6) {
-            $$ = $1;
-            $$->append(parser->sinkFloatingSelector($6));
-            parser->updateLastSelectorLineAndPosition();
-        } else
-            $$ = 0;
+        $$ = $1;
+        $$->append(parser->sinkFloatingSelector($6));
+        parser->updateLastSelectorLineAndPosition();
     }
    ;
 
@@ -1162,9 +1144,7 @@ relative_selector:
             end = end->tagHistory();
         end->setRelation($1);
     }
-    | selector {
-        $$ = $1;
-    }
+    | selector
     ;
 
 selector:
@@ -1173,27 +1153,19 @@ selector:
     | selector WHITESPACE simple_selector
     {
         $$ = $3;
-        if (!$1)
-            $$ = 0;
-        else if ($$) {
-            CSSParserSelector* end = $$;
-            while (end->tagHistory())
-                end = end->tagHistory();
-            end->setRelation(CSSSelector::Descendant);
-            end->setTagHistory(parser->sinkFloatingSelector($1));
-        }
+        CSSParserSelector* end = $$;
+        while (end->tagHistory())
+            end = end->tagHistory();
+        end->setRelation(CSSSelector::Descendant);
+        end->setTagHistory(parser->sinkFloatingSelector($1));
     }
     | selector combinator simple_selector {
         $$ = $3;
-        if (!$1)
-            $$ = 0;
-        else if ($$) {
-            CSSParserSelector* end = $$;
-            while (end->tagHistory())
-                end = end->tagHistory();
-            end->setRelation($2);
-            end->setTagHistory(parser->sinkFloatingSelector($1));
-        }
+        CSSParserSelector* end = $$;
+        while (end->tagHistory())
+            end = end->tagHistory();
+        end->setRelation($2);
+        end->setTagHistory(parser->sinkFloatingSelector($1));
     }
     ;
 
@@ -1208,44 +1180,40 @@ simple_selector:
         $$ = parser->createFloatingSelectorWithTagName(QualifiedName(nullAtom, $1, parser->m_defaultNamespace));
     }
     | element_name specifier_list {
-        $$ = $2;
-        if ($$)
-            $$ = parser->rewriteSpecifiersWithElementName(nullAtom, $1, $$);
+        $$ = parser->rewriteSpecifiersWithElementName(nullAtom, $1, $2);
+        if (!$$)
+            YYERROR;
     }
     | specifier_list {
-        $$ = $1;
-        if ($$)
-            $$ = parser->rewriteSpecifiersWithNamespaceIfNeeded($$);
+        $$ = parser->rewriteSpecifiersWithNamespaceIfNeeded($1);
+        if (!$$)
+            YYERROR;
     }
     | namespace_selector element_name {
         $$ = parser->createFloatingSelectorWithTagName(parser->determineNameInNamespace($1, $2));
+        if (!$$)
+            YYERROR;
     }
     | namespace_selector element_name specifier_list {
-        $$ = $3;
-        if ($$)
-            $$ = parser->rewriteSpecifiersWithElementName($1, $2, $$);
+        $$ = parser->rewriteSpecifiersWithElementName($1, $2, $3);
+        if (!$$)
+            YYERROR;
     }
     | namespace_selector specifier_list {
-        $$ = $2;
-        if ($$)
-            $$ = parser->rewriteSpecifiersWithElementName($1, starAtom, $$);
+        $$ = parser->rewriteSpecifiersWithElementName($1, starAtom, $2);
+        if (!$$)
+            YYERROR;
     }
   ;
 
 simple_selector_list:
     simple_selector %prec UNIMPORTANT_TOK {
-        if ($1) {
-            $$ = parser->createFloatingSelectorVector();
-            $$->append(parser->sinkFloatingSelector($1));
-        } else
-            $$ = 0;
+        $$ = parser->createFloatingSelectorVector();
+        $$->append(parser->sinkFloatingSelector($1));
     }
     | simple_selector_list maybe_space ',' maybe_space simple_selector %prec UNIMPORTANT_TOK {
-        if ($1 && $5) {
-            $$ = $1;
-            $$->append(parser->sinkFloatingSelector($5));
-        } else
-            $$ = 0;
+        $$ = $1;
+        $$->append(parser->sinkFloatingSelector($5));
     }
   ;
 
@@ -1266,10 +1234,7 @@ specifier_list:
         $$ = $1;
     }
     | specifier_list specifier {
-        if (!$2)
-            $$ = 0;
-        else if ($1)
-            $$ = parser->rewriteSpecifiers($1, $2);
+        $$ = parser->rewriteSpecifiers($1, $2);
     }
 ;
 
@@ -1283,7 +1248,7 @@ specifier:
     }
   | HEX {
         if ($1[0] >= '0' && $1[0] <= '9') {
-            $$ = 0;
+            YYERROR;
         } else {
             $$ = parser->createFloatingSelector();
             $$->setMatch(CSSSelector::Id);
@@ -1377,7 +1342,7 @@ pseudo_page:
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
-            $$ = 0;
+            YYERROR;
     }
 
 pseudo:
@@ -1388,7 +1353,7 @@ pseudo:
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
-            $$ = 0;
+            YYERROR;
     }
     | ':' ':' IDENT {
         $$ = parser->createFloatingSelector();
@@ -1398,34 +1363,27 @@ pseudo:
         // FIXME: This call is needed to force selector to compute the pseudoType early enough.
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
-            $$ = 0;
+            YYERROR;
     }
     // used by ::cue(:past/:future)
     | ':' ':' CUEFUNCTION maybe_space simple_selector_list maybe_space ')' {
-        if ($5) {
-            $$ = parser->createFloatingSelector();
-            $$->setMatch(CSSSelector::PseudoClass);
-            $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($5));
-            $$->setValue($3);
-            CSSSelector::PseudoType type = $$->pseudoType();
-            if (type != CSSSelector::PseudoCue)
-                $$ = 0;
-        } else
-            $$ = 0;
+        $$ = parser->createFloatingSelector();
+        $$->setMatch(CSSSelector::PseudoClass);
+        $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($5));
+        $$->setValue($3);
+        CSSSelector::PseudoType type = $$->pseudoType();
+        if (type != CSSSelector::PseudoCue)
+            YYERROR;
     }
     | ':' ':' CUEFUNCTION selector_recovery ')' {
         YYERROR;
     }
     | ':' ':' DISTRIBUTEDFUNCTION maybe_space relative_selector ')' {
-        if (!$5)
-            $$ = 0;
-        else {
-            $$ = parser->createFloatingSelector();
-            $$->setMatch(CSSSelector::PseudoElement);
-            $$->setFunctionArgumentSelector($5);
-            parser->tokenToLowerCase($3);
-            $$->setValue($3);
-        }
+        $$ = parser->createFloatingSelector();
+        $$->setMatch(CSSSelector::PseudoElement);
+        $$->setFunctionArgumentSelector($5);
+        parser->tokenToLowerCase($3);
+        $$->setValue($3);
     }
     | ':' ':' DISTRIBUTEDFUNCTION selector_recovery ')' {
         YYERROR;
@@ -1436,17 +1394,14 @@ pseudo:
     // See http://lists.w3.org/Archives/Public/www-style/2010Sep/0566.html for some
     // related discussion with respect to :not.
     | ':' ANYFUNCTION maybe_space simple_selector_list maybe_space ')' {
-        if ($4) {
-            $$ = parser->createFloatingSelector();
-            $$->setMatch(CSSSelector::PseudoClass);
-            $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($4));
-            parser->tokenToLowerCase($2);
-            $$->setValue($2);
-            CSSSelector::PseudoType type = $$->pseudoType();
-            if (type != CSSSelector::PseudoAny)
-                $$ = 0;
-        } else
-            $$ = 0;
+        $$ = parser->createFloatingSelector();
+        $$->setMatch(CSSSelector::PseudoClass);
+        $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($4));
+        parser->tokenToLowerCase($2);
+        $$->setValue($2);
+        CSSSelector::PseudoType type = $$->pseudoType();
+        if (type != CSSSelector::PseudoAny)
+            YYERROR;
     }
     | ':' ANYFUNCTION selector_recovery ')' {
         YYERROR;
@@ -1459,7 +1414,7 @@ pseudo:
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
-            $$ = 0;
+            YYERROR;
     }
     // used by :nth-*
     | ':' FUNCTION maybe_space maybe_unary_operator INTEGER maybe_space ')' {
@@ -1469,7 +1424,7 @@ pseudo:
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
-            $$ = 0;
+            YYERROR;
     }
     // used by :nth-*(odd/even) and :lang
     | ':' FUNCTION maybe_space IDENT maybe_space ')' {
@@ -1480,13 +1435,13 @@ pseudo:
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
-            $$ = 0;
+            YYERROR;
         else if (type == CSSSelector::PseudoNthChild ||
                  type == CSSSelector::PseudoNthOfType ||
                  type == CSSSelector::PseudoNthLastChild ||
                  type == CSSSelector::PseudoNthLastOfType) {
             if (!isValidNthToken($4))
-                $$ = 0;
+                YYERROR;
         }
     }
     | ':' FUNCTION selector_recovery ')' {
@@ -1494,8 +1449,8 @@ pseudo:
     }
     // used by :not
     | ':' NOTFUNCTION maybe_space simple_selector maybe_space ')' {
-        if (!$4 || !$4->isSimple())
-            $$ = 0;
+        if (!$4->isSimple())
+            YYERROR;
         else {
             $$ = parser->createFloatingSelector();
             $$->setMatch(CSSSelector::PseudoClass);
