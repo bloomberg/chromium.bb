@@ -42,15 +42,13 @@ struct UploadNewFileParams {
 google_apis::CancelCallback RunUploadNewFile(
     google_apis::DriveUploaderInterface* uploader,
     const UploadNewFileParams& params) {
-  uploader->UploadNewFile(params.parent_resource_id,
-                          params.drive_file_path,
-                          params.local_file_path,
-                          params.title,
-                          params.content_type,
-                          params.callback,
-                          params.progress_callback);
-  // TODO(kinaba): crbug.com/231209 Return a proper CancelCallback.
-  return google_apis::CancelCallback();
+  return uploader->UploadNewFile(params.parent_resource_id,
+                                 params.drive_file_path,
+                                 params.local_file_path,
+                                 params.title,
+                                 params.content_type,
+                                 params.callback,
+                                 params.progress_callback);
 }
 
 // Parameter struct for RunUploadExistingFile.
@@ -68,15 +66,13 @@ struct UploadExistingFileParams {
 google_apis::CancelCallback RunUploadExistingFile(
     google_apis::DriveUploaderInterface* uploader,
     const UploadExistingFileParams& params) {
-  uploader->UploadExistingFile(params.resource_id,
-                               params.drive_file_path,
-                               params.local_file_path,
-                               params.content_type,
-                               params.etag,
-                               params.callback,
-                               params.progress_callback);
-  // TODO(kinaba): crbug.com/231209 Return a proper CancelCallback.
-  return google_apis::CancelCallback();
+  return uploader->UploadExistingFile(params.resource_id,
+                                      params.drive_file_path,
+                                      params.local_file_path,
+                                      params.content_type,
+                                      params.etag,
+                                      params.callback,
+                                      params.progress_callback);
 }
 
 // Parameter struct for RunResumeUploadFile.
@@ -93,14 +89,12 @@ struct ResumeUploadFileParams {
 google_apis::CancelCallback RunResumeUploadFile(
     google_apis::DriveUploaderInterface* uploader,
     const ResumeUploadFileParams& params) {
-  uploader->ResumeUploadFile(params.upload_location,
-                             params.drive_file_path,
-                             params.local_file_path,
-                             params.content_type,
-                             params.callback,
-                             params.progress_callback);
-  // TODO(kinaba): crbug.com/231209 Return a proper CancelCallback.
-  return google_apis::CancelCallback();
+  return uploader->ResumeUploadFile(params.upload_location,
+                                    params.drive_file_path,
+                                    params.local_file_path,
+                                    params.content_type,
+                                    params.callback,
+                                    params.progress_callback);
 }
 
 }  // namespace

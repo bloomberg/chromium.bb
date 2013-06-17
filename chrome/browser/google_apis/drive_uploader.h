@@ -38,7 +38,7 @@ class DriveUploaderInterface {
   virtual ~DriveUploaderInterface() {}
 
   // Uploads a new file to a directory specified by |upload_location|.
-  // Returns the upload_id.
+  // Returns a callback for cancelling the uploading job.
   //
   // parent_resource_id:
   //   resource id of the destination directory.
@@ -62,17 +62,18 @@ class DriveUploaderInterface {
   // progress_callback:
   //   Periodically called back with the total number of bytes sent so far.
   //   May be null if the information is not needed.
-  virtual void UploadNewFile(const std::string& parent_resource_id,
-                             const base::FilePath& drive_file_path,
-                             const base::FilePath& local_file_path,
-                             const std::string& title,
-                             const std::string& content_type,
-                             const UploadCompletionCallback& callback,
-                             const ProgressCallback& progress_callback) = 0;
+  virtual CancelCallback UploadNewFile(
+      const std::string& parent_resource_id,
+      const base::FilePath& drive_file_path,
+      const base::FilePath& local_file_path,
+      const std::string& title,
+      const std::string& content_type,
+      const UploadCompletionCallback& callback,
+      const ProgressCallback& progress_callback) = 0;
 
   // Uploads an existing file (a file that already exists on Drive).
   //
-  // See comments at UploadNewFile() about common parameters.
+  // See comments at UploadNewFile about common parameters and the return value.
   //
   // resource_id:
   //   resource id of the existing file to be overwritten.
@@ -81,7 +82,7 @@ class DriveUploaderInterface {
   //   Expected ETag for the destination file. If it does not match, the upload
   //   fails with UPLOAD_ERROR_CONFLICT.
   //   If |etag| is empty, the test is skipped.
-  virtual void UploadExistingFile(
+  virtual CancelCallback UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
@@ -90,13 +91,13 @@ class DriveUploaderInterface {
       const UploadCompletionCallback& callback,
       const ProgressCallback& progress_callback) = 0;
 
-  // Resumes the uploading process termineted before the completion.
+  // Resumes the uploading process terminated before the completion.
   // |upload_location| should be the one returned via UploadCompletionCallback
   // for previous invocation. |drive_file_path|, |local_file_path| and
   // |content_type| must be set to the same ones for previous invocation.
   //
-  // See comments for UploadNewFile() about common parameters.
-  virtual void ResumeUploadFile(
+  // See comments at UploadNewFile about common parameters and the return value.
+  virtual CancelCallback ResumeUploadFile(
       const GURL& upload_location,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
@@ -111,7 +112,7 @@ class DriveUploader : public DriveUploaderInterface {
   virtual ~DriveUploader();
 
   // DriveUploaderInterface overrides.
-  virtual void UploadNewFile(
+  virtual CancelCallback UploadNewFile(
       const std::string& parent_resource_id,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
@@ -119,7 +120,7 @@ class DriveUploader : public DriveUploaderInterface {
       const std::string& content_type,
       const UploadCompletionCallback& callback,
       const ProgressCallback& progress_callback) OVERRIDE;
-  virtual void UploadExistingFile(
+  virtual CancelCallback UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
@@ -127,7 +128,7 @@ class DriveUploader : public DriveUploaderInterface {
       const std::string& etag,
       const UploadCompletionCallback& callback,
       const ProgressCallback& progress_callback) OVERRIDE;
-  virtual void ResumeUploadFile(
+  virtual CancelCallback ResumeUploadFile(
       const GURL& upload_location,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
@@ -149,14 +150,14 @@ class DriveUploader : public DriveUploaderInterface {
       const StartInitiateUploadCallback& start_initiate_upload_callback,
       bool get_file_size_result);
 
-  // Starts to initate the new file uploading.
+  // Starts to initiate the new file uploading.
   // Upon completion, OnUploadLocationReceived should be called.
   void StartInitiateUploadNewFile(
       const std::string& parent_resource_id,
       const std::string& title,
       scoped_ptr<UploadFileInfo> upload_file_info);
 
-  // Starts to initate the existing file uploading.
+  // Starts to initiate the existing file uploading.
   // Upon completion, OnUploadLocationReceived should be called.
   void StartInitiateUploadExistingFile(
       const std::string& resource_id,

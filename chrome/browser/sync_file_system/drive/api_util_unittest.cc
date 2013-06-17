@@ -123,7 +123,7 @@ class FakeDriveUploader : public DriveUploaderInterface {
 
   // Pretends that a new file was uploaded successfully, and returns the
   // contents of "chromeos/gdata/file_entry.json" to the caller.
-  virtual void UploadNewFile(
+  virtual google_apis::CancelCallback UploadNewFile(
       const std::string& parent_resource_id,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
@@ -152,12 +152,13 @@ class FakeDriveUploader : public DriveUploaderInterface {
                    google_apis::HTTP_SUCCESS,
                    GURL(),
                    base::Passed(&file_entry)));
+    return google_apis::CancelCallback();
   }
 
   // Pretends that an existing file ("file:resource_id") was uploaded
   // successfully, and returns the contents of "chromeos/gdata/file_entry.json"
   // to the caller.
-  virtual void UploadExistingFile(
+  virtual google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
@@ -178,11 +179,12 @@ class FakeDriveUploader : public DriveUploaderInterface {
                    google_apis::HTTP_SUCCESS,
                    GURL(),
                    base::Passed(&file_entry)));
+    return google_apis::CancelCallback();
   }
 
   // At the moment, sync file system doesn't support resuming of the uploading.
   // So this method shouldn't be reached.
-  virtual void ResumeUploadFile(
+  virtual google_apis::CancelCallback ResumeUploadFile(
       const GURL& upload_location,
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
@@ -190,6 +192,7 @@ class FakeDriveUploader : public DriveUploaderInterface {
       const google_apis::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) OVERRIDE {
     NOTREACHED();
+    return google_apis::CancelCallback();
   }
 
   void set_make_file_conflict(bool enable) {

@@ -106,13 +106,14 @@ DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
 
 DriveUploader::~DriveUploader() {}
 
-void DriveUploader::UploadNewFile(const std::string& parent_resource_id,
-                                  const base::FilePath& drive_file_path,
-                                  const base::FilePath& local_file_path,
-                                  const std::string& title,
-                                  const std::string& content_type,
-                                  const UploadCompletionCallback& callback,
-                                  const ProgressCallback& progress_callback) {
+CancelCallback DriveUploader::UploadNewFile(
+    const std::string& parent_resource_id,
+    const base::FilePath& drive_file_path,
+    const base::FilePath& local_file_path,
+    const std::string& title,
+    const std::string& content_type,
+    const UploadCompletionCallback& callback,
+    const ProgressCallback& progress_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!parent_resource_id.empty());
   DCHECK(!drive_file_path.empty());
@@ -131,9 +132,11 @@ void DriveUploader::UploadNewFile(const std::string& parent_resource_id,
                  weak_ptr_factory_.GetWeakPtr(),
                  parent_resource_id,
                  title));
+  // TODO(kinaba): crbug.com/250712 Return a proper CancelCallback.
+  return CancelCallback();
 }
 
-void DriveUploader::UploadExistingFile(
+CancelCallback DriveUploader::UploadExistingFile(
     const std::string& resource_id,
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
@@ -158,9 +161,11 @@ void DriveUploader::UploadExistingFile(
                  weak_ptr_factory_.GetWeakPtr(),
                  resource_id,
                  etag));
+  // TODO(kinaba): crbug.com/250712 Return a proper CancelCallback.
+  return CancelCallback();
 }
 
-void DriveUploader::ResumeUploadFile(
+CancelCallback DriveUploader::ResumeUploadFile(
     const GURL& upload_location,
     const base::FilePath& drive_file_path,
     const base::FilePath& local_file_path,
@@ -182,6 +187,8 @@ void DriveUploader::ResumeUploadFile(
       upload_file_info.Pass(),
       base::Bind(&DriveUploader::StartGetUploadStatus,
                  weak_ptr_factory_.GetWeakPtr()));
+  // TODO(kinaba): crbug.com/250712 Return a proper CancelCallback.
+  return CancelCallback();
 }
 
 void DriveUploader::StartUploadFile(
