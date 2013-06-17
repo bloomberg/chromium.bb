@@ -39,7 +39,7 @@ namespace {
 const int kInitialDelaySeconds = 10;
 
 // Name of the Pnacl component specified in the manifest.
-const char kPnaclManifestNamePrefix[] = "PNaCl";
+const char kPnaclManifestName[] = "PNaCl Translator";
 
 // Sanitize characters from Pnacl Arch value so that they can be used
 // in path names.  This should only be characters in the set: [a-z0-9_].
@@ -50,68 +50,33 @@ std::string SanitizeForPath(const std::string& input) {
   return result;
 }
 
-// Set the component's hash to the arch-specific PNaCl package.
+// Set the component's hash to the multi-CRX PNaCl package.
 void SetPnaclHash(CrxComponent* component) {
-#if defined(ARCH_CPU_X86_FAMILY)
-  // Define both x86_32 and x86_64, and choose below.
-  static const uint8 x86_sha256_hash[][32] = {
-    { // This corresponds to AppID (x86-32): aealhdcgieaiikaifafholmmeooeeioj
-      0x04, 0x0b, 0x73, 0x26, 0x84, 0x08, 0x8a, 0x08, 0x50, 0x57,
-      0xeb, 0xcc, 0x4e, 0xe4, 0x48, 0xe9, 0x44, 0x2c, 0xc8, 0xa6, 0xd6,
-      0x96, 0x11, 0xd4, 0x2a, 0xc5, 0x26, 0x64, 0x34, 0x76, 0x3d, 0x14},
-    { // This corresponds to AppID (x86-64): knlfebnofcjjnkpkapbgfphaagefndik
-      0xad, 0xb5, 0x41, 0xde, 0x52, 0x99, 0xda, 0xfa, 0x0f, 0x16,
-      0x5f, 0x70, 0x06, 0x45, 0xd3, 0x8a, 0x32, 0x20, 0x84, 0x57, 0x5c,
-      0x1f, 0xef, 0xb4, 0x42, 0x32, 0xce, 0x4a, 0x3c, 0x2d, 0x7e, 0x3a}
-  };
+ static const uint8 sha256_hash[32] =
+     { // This corresponds to AppID: hnimpnehoodheedghdeeijklkeaacbdc
+       0x7d, 0x8c, 0xfd, 0x47, 0xee, 0x37, 0x44, 0x36, 0x73, 0x44,
+       0x89, 0xab, 0xa4, 0x00, 0x21, 0x32, 0x4a, 0x06, 0x06, 0xf1, 0x51,
+       0x3c, 0x51, 0xba, 0x31, 0x2f, 0xbc, 0xb3, 0x99, 0x07, 0xdc, 0x9c};
 
-#if defined(ARCH_CPU_X86_64)
-  component->pk_hash.assign(
-      x86_sha256_hash[1],
-      &x86_sha256_hash[1][sizeof(x86_sha256_hash[1])]);
-#elif defined(OS_WIN)
-  bool x86_64 = (base::win::OSInfo::GetInstance()->wow64_status() ==
-                 base::win::OSInfo::WOW64_ENABLED);
-  if (x86_64) {
-    component->pk_hash.assign(
-        x86_sha256_hash[1],
-        &x86_sha256_hash[1][sizeof(x86_sha256_hash[1])]);
-  } else {
-    component->pk_hash.assign(
-        x86_sha256_hash[0],
-        &x86_sha256_hash[0][sizeof(x86_sha256_hash[0])]);
-  }
-#else
-  component->pk_hash.assign(
-      x86_sha256_hash[0],
-      &x86_sha256_hash[0][sizeof(x86_sha256_hash[0])]);
-#endif
-#elif defined(ARCH_CPU_ARMEL)
-  // This corresponds to AppID: jgobdlakdbanalhiagkdgcnofkbebejj
-  static const uint8 arm_sha256_hash[] = {
-    0x96, 0xe1, 0x3b, 0x0a, 0x31, 0x0d, 0x0b, 0x78, 0x06, 0xa3,
-    0x62, 0xde, 0x5a, 0x14, 0x14, 0x99, 0xd4, 0xd9, 0x01, 0x85, 0xc6,
-    0x9a, 0xd2, 0x51, 0x90, 0xa4, 0xb4, 0x94, 0xbd, 0xb8, 0x8b, 0xe8};
-
-  component->pk_hash.assign(arm_sha256_hash,
-                            &arm_sha256_hash[sizeof(arm_sha256_hash)]);
-#elif defined(ARCH_CPU_MIPSEL)
-  // This is a dummy CRX hash for MIPS, so that it will at least compile.
-  static const uint8 mips32_sha256_hash[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-  component->pk_hash.assign(mips32_sha256_hash,
-                            &mips32_sha256_hash[sizeof(mips32_sha256_hash)]);
-#else
-#error "Add support for your architecture to Pnacl Component Installer."
-#endif
+  component->pk_hash.assign(sha256_hash,
+                            &sha256_hash[arraysize(sha256_hash)]);
 }
-
 
 // If we don't have Pnacl installed, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
+
+// PNaCl is packaged as a multi-CRX.  This returns the platform-specific
+// subdirectory that is part of that multi-CRX.
+base::FilePath GetPlatformDir(const base::FilePath& base_path) {
+  std::string arch = SanitizeForPath(OmahaQueryParams::getNaclArch());
+  return base_path.AppendASCII("_platform_specific").AppendASCII(arch);
+}
+
+// Tell the rest of the world where to find the platform-specific PNaCl files.
+void OverrideDirPnaclComponent(const base::FilePath& base_path) {
+  PathService::Override(chrome::DIR_PNACL_COMPONENT,
+                        GetPlatformDir(base_path));
+}
 
 bool GetLatestPnaclDirectory(PnaclComponentInstaller* pci,
                              base::FilePath* latest_dir,
@@ -159,8 +124,8 @@ base::DictionaryValue* ReadJSONManifest(
 
 // Read the PNaCl specific manifest.
 base::DictionaryValue* ReadPnaclManifest(const base::FilePath& unpack_path) {
-  base::FilePath manifest_path = unpack_path.Append(
-      FILE_PATH_LITERAL("pnacl_public_pnacl_json"));
+  base::FilePath manifest_path = GetPlatformDir(unpack_path).AppendASCII(
+      "pnacl_public_pnacl_json");
   if (!file_util::PathExists(manifest_path))
     return NULL;
   return ReadJSONManifest(manifest_path);
@@ -187,11 +152,12 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
   std::string name;
   manifest.GetStringASCII("name", &name);
   // For the webstore, we've given different names to each of the
-  // architecture specific packages, so only the prefix is the same.
-  if (StartsWithASCII(kPnaclManifestNamePrefix, name, false)) {
+  // architecture specific packages (and test/QA vs not test/QA)
+  // so only part of it is the same.
+  if (name.find(kPnaclManifestName) == std::string::npos) {
     LOG(WARNING) << "'name' field in manifest is invalid ("
-                 << name << ") -- missing prefix ("
-                 << kPnaclManifestNamePrefix << ")";
+                 << name << ") -- missing ("
+                 << kPnaclManifestName << ")";
     return false;
   }
 
@@ -233,9 +199,9 @@ void PnaclComponentInstaller::OnUpdateError(int error) {
 }
 
 // Pnacl components have the version encoded in the path itself:
-// <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\0.1.2.3\.
+// <profile>\AppData\Local\Google\Chrome\User Data\pnacl\0.1.2.3\.
 // and the base directory will be:
-// <profile>\AppData\Local\Google\Chrome\User Data\Pnacl\.
+// <profile>\AppData\Local\Google\Chrome\User Data\pnacl\.
 base::FilePath PnaclComponentInstaller::GetPnaclBaseDirectory() {
   // For ChromeOS, temporarily make this user-dependent (for integrity) until
   // we find a better solution.
@@ -302,7 +268,7 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
   // See: http://code.google.com/p/chromium/issues/detail?id=107438
   set_current_version(version);
 
-  PathService::Override(chrome::DIR_PNACL_COMPONENT, path);
+  OverrideDirPnaclComponent(path);
   return true;
 }
 
@@ -373,7 +339,7 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
         || !version.Equals(manifest_version)) {
       version = Version(kNullVersion);
     } else {
-      PathService::Override(chrome::DIR_PNACL_COMPONENT, path);
+      OverrideDirPnaclComponent(path);
     }
   }
 

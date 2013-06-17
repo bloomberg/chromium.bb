@@ -326,9 +326,12 @@ void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
     AddPair(list.get(),
             ASCIIToUTF16("PNaCl translator path"),
             pnacl_path.LossyDisplayName());
+    // Version string is part of the directory name:
+    // pnacl/<version>/_platform_specific/<arch>/[files]
+    // Keep in sync with pnacl_component_installer.cc.
     AddPair(list.get(),
             ASCIIToUTF16("PNaCl translator version"),
-            pnacl_path.BaseName().LossyDisplayName());
+            pnacl_path.DirName().DirName().BaseName().LossyDisplayName());
   }
 
   ListFlagStatus(list.get(), "Flag '--enable-pnacl'", switches::kEnablePnacl);
