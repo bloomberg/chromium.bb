@@ -42,7 +42,7 @@ int
 main(int argc, char *argv[])
 {
 	const double k = 300.0;
-	const double current = 0.0;
+	const double current = 0.5;
 	const double target = 1.0;
 	const double friction = 1400;
 
@@ -51,7 +51,7 @@ main(int argc, char *argv[])
 
 	weston_spring_init(&spring, k, current, target);
 	spring.friction = friction;
-	spring.previous = -0.03;
+	spring.previous = 0.48;
 	spring.timestamp = 0;
 
 	while (!weston_spring_done(&spring)) {

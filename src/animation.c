@@ -239,8 +239,16 @@ WL_EXPORT struct weston_surface_animation *
 weston_zoom_run(struct weston_surface *surface, float start, float stop,
 		weston_surface_animation_done_func_t done, void *data)
 {
-	return weston_surface_animation_run(surface, start, stop,
+	struct weston_surface_animation *zoom;
+
+	zoom = weston_surface_animation_run(surface, start, stop,
 					    zoom_frame, done, data);
+
+	weston_spring_init(&zoom->spring, 300.0, start, stop);
+	zoom->spring.friction = 1400;
+	zoom->spring.previous = start - (stop - start) * 0.03;
+
+	return zoom;
 }
 
 static void
