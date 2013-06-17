@@ -173,7 +173,6 @@ void SetSupportedLanguages(const std::string& language_list,
   for (DictionaryValue::Iterator iter(*target_languages);
        !iter.IsAtEnd();
        iter.Advance()) {
-    // TODO(toyoshim): Check if UI libraries support adding locale.
     const std::string& lang = iter.key();
     if (!l10n_util::IsLocaleNameTranslated(lang.c_str(), locale)) {
       TranslateBrowserMetrics::ReportUndisplayableLanguage(lang);
