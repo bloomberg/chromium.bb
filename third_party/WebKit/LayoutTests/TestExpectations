@@ -36,8 +36,7 @@ crbug.com/24182 [ Win Linux Debug ] fast/frames/invalid.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/dom/css-delete-doc.html [ Slow ]
 crbug.com/24182 [ Debug ] svg/filters/big-sized-filter.svg [ Slow ]
 crbug.com/24182 [ Debug ] fast/harness/results.html [ Slow ]
-webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-7.html [ Timeout ]
-webkit.org/b/103744 [ Debug ] svg/dom/viewspec-parser-6.html [ Timeout ]
+
 webkit.org/b/106606 [ Debug ] fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
 webkit.org/b/109400 [ Win ] http/tests/css/css-image-loading.html [ Pass Timeout ]
 webkit.org/b/109400 [ Mac Win ] http/tests/css/shared-stylesheet-mutation-preconstruct.html [ Slow ]
@@ -965,17 +964,6 @@ webkit.org/b/87652 http/tests/appcache/load-from-appcache-defer-resume-crash.htm
 
 # Started flaky crashing on Linux around r152400, and on Win near r152459.
 crbug.com/249706 [ Win Linux Release ] fast/dom/shadow/insertion-point-resetStyleInheritance-with-pseudo-element-crash.html [ Crash Pass ]
-
-webkit.org/b/87772 [ Release ] svg/dom/viewspec-parser-1.html [ Slow ]
-webkit.org/b/87772 [ Debug ] svg/dom/viewspec-parser-1.html [ Pass Timeout ]
-webkit.org/b/87772 [ Release ] svg/dom/viewspec-parser-2.html [ Slow ]
-webkit.org/b/87772 [ Debug ] svg/dom/viewspec-parser-2.html [ Pass Timeout ]
-webkit.org/b/87772 [ Release ] svg/dom/viewspec-parser-3.html [ Slow ]
-webkit.org/b/87772 [ Debug ] svg/dom/viewspec-parser-3.html [ Pass Timeout ]
-webkit.org/b/87772 [ Release ] svg/dom/viewspec-parser-4.html [ Slow ]
-webkit.org/b/87772 [ Debug ] svg/dom/viewspec-parser-4.html [ Pass Timeout ]
-webkit.org/b/87772 [ Release ] svg/dom/viewspec-parser-5.html [ Slow ]
-webkit.org/b/87772 [ Debug ] svg/dom/viewspec-parser-5.html [ Pass Timeout ]
 
 webkit.org/b/88939 fast/events/before-unload-adopt-subframe-to-outside.html [ Failure Pass ]
 
