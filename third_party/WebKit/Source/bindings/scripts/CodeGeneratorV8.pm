@@ -1115,8 +1115,8 @@ sub GetV8ClassName
 
 sub GetImplName
 {
-    my $interfaceOrSignature = shift;
-    return $interfaceOrSignature->extendedAttributes->{"ImplementedAs"} || $interfaceOrSignature->name;
+    my $interfaceOrAttributeOrFunction = shift;
+    return $interfaceOrAttributeOrFunction->extendedAttributes->{"ImplementedAs"} || $interfaceOrAttributeOrFunction->name;
 }
 
 sub GetImplNameFromImplementedBy
@@ -1348,7 +1348,7 @@ sub GenerateNormalAttrGetter
 
     AssertNotSequenceType($attrType);
     my $getterStringUsesImp = $interfaceName ne "SVGNumber";
-    my $nativeType = GetNativeTypeFromSignature($attribute, -1);
+    my $nativeType = GetNativeTypeFromAttributeOrParameter($attribute, -1);
     my $svgNativeType = GetSVGTypeNeedingTearOff($interfaceName);
 
     my $conditionalString = GenerateConditionalString($attribute);
@@ -1834,7 +1834,7 @@ END
         }
     }
 
-    my $nativeType = GetNativeTypeFromSignature($attribute, 0);
+    my $nativeType = GetNativeTypeFromAttributeOrParameter($attribute, 0);
     if ($attribute->type eq "EventListener") {
         if ($interface->name eq "Window") {
             $code .= "    if (!imp->document())\n";
@@ -2337,7 +2337,7 @@ sub GenerateParametersCheck
     my %replacements = ();
 
     foreach my $parameter (@{$function->parameters}) {
-        my $nativeType = GetNativeTypeFromSignature($parameter, $paramIndex);
+        my $nativeType = GetNativeTypeFromAttributeOrParameter($parameter, $paramIndex);
 
         # Optional arguments without [Default=...] should generate an early call with fewer arguments.
         # Optional arguments with [Optional=...] should not generate the early call.
@@ -4792,14 +4792,14 @@ sub GenerateFunctionCallString
     return $code;
 }
 
-sub GetNativeTypeFromSignature
+sub GetNativeTypeFromAttributeOrParameter
 {
-    my $signature = shift;
+    my $attributeOrParameter = shift;
     my $parameterIndex = shift;
 
-    my $type = $signature->type;
+    my $type = $attributeOrParameter->type;
 
-    if ($type eq "unsigned long" and $signature->extendedAttributes->{"IsIndex"}) {
+    if ($type eq "unsigned long" and $attributeOrParameter->extendedAttributes->{"IsIndex"}) {
         # Special-case index arguments because we need to check that they aren't < 0.
         return "int";
     }
@@ -4810,12 +4810,12 @@ sub GetNativeTypeFromSignature
         # FIXME: This implements [TreatNullAs=NullString] and [TreatUndefinedAs=NullString],
         # but the Web IDL spec requires [TreatNullAs=EmptyString] and [TreatUndefinedAs=EmptyString].
         my $mode = "";
-        if (($signature->extendedAttributes->{"TreatNullAs"} and $signature->extendedAttributes->{"TreatNullAs"} eq "NullString") and ($signature->extendedAttributes->{"TreatUndefinedAs"} and $signature->extendedAttributes->{"TreatUndefinedAs"} eq "NullString")) {
+        if (($attributeOrParameter->extendedAttributes->{"TreatNullAs"} and $attributeOrParameter->extendedAttributes->{"TreatNullAs"} eq "NullString") and ($attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} and $attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} eq "NullString")) {
             $mode = "WithUndefinedOrNullCheck";
-        } elsif (($signature->extendedAttributes->{"TreatNullAs"} and $signature->extendedAttributes->{"TreatNullAs"} eq "NullString") or $signature->extendedAttributes->{"Reflect"}) {
+        } elsif (($attributeOrParameter->extendedAttributes->{"TreatNullAs"} and $attributeOrParameter->extendedAttributes->{"TreatNullAs"} eq "NullString") or $attributeOrParameter->extendedAttributes->{"Reflect"}) {
             $mode = "WithNullCheck";
         }
-        # FIXME: Add the case for 'elsif ($signature->extendedAttributes->{"TreatUndefinedAs"} and $signature->extendedAttributes->{"TreatUndefinedAs"} eq "NullString"))'.
+        # FIXME: Add the case for 'elsif ($attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} and $attributeOrParameter->extendedAttributes->{"TreatUndefinedAs"} eq "NullString"))'.
         $type .= "<$mode>";
     }
 
@@ -5318,13 +5318,13 @@ sub WriteData
 
 sub ConvertToV8StringResource
 {
-    my $signature = shift;
+    my $attributeOrParameter = shift;
     my $nativeType = shift;
     my $variableName = shift;
     my $value = shift;
 
     die "Wrong native type passed: $nativeType" unless $nativeType =~ /^V8StringResource/;
-    if ($signature->type eq "DOMString" or IsEnumType($signature->type)) {
+    if ($attributeOrParameter->type eq "DOMString" or IsEnumType($attributeOrParameter->type)) {
         return "V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID($nativeType, $variableName, $value);"
     } else {
         return "$nativeType $variableName($value, true);";

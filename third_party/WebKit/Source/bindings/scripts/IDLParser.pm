@@ -62,18 +62,18 @@ struct( domInterface => {
     isPartial => '$', # Used for partial interfaces
 });
 
-# Used to represent domInterface contents (name of method, signature)
+# Used to represent domInterface contents
 struct( domFunction => {
     isStatic => '$',
     name => '$',
     type => '$',
     extendedAttributes => '$', # Extended attributes
     specials => '@',  # Specials
-    parameters => '@',    # List of 'domSignature'
+    parameters => '@',    # List of 'domParameter'
     overloadedIndex => '$',
 });
 
-# Used to represent domInterface contents (name of attribute, signature)
+# Used to represent domInterface contents
 struct( domAttribute => {
     type => '$',              # Attribute type (including namespace) (string or UnionType)
     name => '$',
@@ -86,7 +86,7 @@ struct( domAttribute => {
 });
 
 # Used to represent a map of 'variable name' <-> 'variable type'
-struct( domSignature => {
+struct( domParameter => {
     name => '$',      # Variable name
     type => '$',      # Variable type (string or UnionType)
     extendedAttributes => '$', # Extended attributes
@@ -395,35 +395,35 @@ sub applyTypedefs
                 }
             }
             foreach my $attribute (@{$definition->attributes}) {
-                $self->applyTypedefsForSignature($attribute);
+                $self->applyTypedefsForTypedObject($attribute);
             }
             foreach my $function (@{$definition->functions}, @{$definition->constructors}, @{$definition->customConstructors}) {
-                $self->applyTypedefsForSignature($function);
-                foreach my $signature (@{$function->parameters}) {
-                    $self->applyTypedefsForSignature($signature);
+                $self->applyTypedefsForTypedObject($function);
+                foreach my $parameter (@{$function->parameters}) {
+                    $self->applyTypedefsForTypedObject($parameter);
                 }
             }
         }
     }
 }
 
-sub applyTypedefsForSignature
+sub applyTypedefsForTypedObject
 {
     my $self = shift;
-    my $signature = shift;
+    my $typedObject = shift;
 
-    if (!defined ($signature->type)) {
+    if (!defined ($typedObject->type)) {
         return;
     }
 
-    my $type = $signature->type;
+    my $type = $typedObject->type;
     $type =~ s/[\?\[\]]+$//g;
-    my $typeSuffix = $signature->type;
+    my $typeSuffix = $typedObject->type;
     $typeSuffix =~ s/^[^\?\[\]]+//g;
     if (exists $typedefs{$type}) {
         my $typedef = $typedefs{$type};
-        $signature->type($typedef->type . $typeSuffix);
-        copyExtendedAttributes($signature->extendedAttributes, $typedef->extendedAttributes);
+        $typedObject->type($typedef->type . $typeSuffix);
+        copyExtendedAttributes($typedObject->extendedAttributes, $typedef->extendedAttributes);
     }
 
     # Handle union types, sequences and etc.
@@ -434,9 +434,9 @@ sub applyTypedefsForSignature
         my $typedef = $typedefs{$name};
         my $regex = '\\b' . $name . '\\b';
         my $replacement = $typedef->type;
-        my $type = $signature->type;
+        my $type = $typedObject->type;
         $type =~ s/($regex)/$replacement/g;
-        $signature->type($type);
+        $typedObject->type($type);
     }
 }
 
@@ -1418,7 +1418,7 @@ sub parseOptionalOrRequiredArgument
     my $self = shift;
     my $extendedAttributeList = shift;
 
-    my $paramDataNode = domSignature->new();
+    my $paramDataNode = domParameter->new();
     $paramDataNode->extendedAttributes($extendedAttributeList);
 
     my $next = $self->nextToken();
@@ -1497,13 +1497,12 @@ sub parseExceptionField
         my $newDataNode = domAttribute->new();
         $newDataNode->type("attribute");
         $newDataNode->isReadOnly(1);
-        $newDataNode->signature(domSignature->new());
-        $newDataNode->signature->type($self->parseType());
+        $newDataNode->type($self->parseType());
         my $token = $self->getToken();
         $self->assertTokenType($token, IdentifierToken);
-        $newDataNode->signature->name($token->value());
+        $newDataNode->name($token->value());
         $self->assertTokenValue($self->getToken(), ";", __LINE__);
-        $newDataNode->signature->extendedAttributes($extendedAttributeList);
+        $newDataNode->extendedAttributes($extendedAttributeList);
         return $newDataNode;
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);
