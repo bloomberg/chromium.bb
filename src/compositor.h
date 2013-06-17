@@ -113,6 +113,12 @@ struct weston_animation {
 	struct wl_list link;
 };
 
+enum {
+	WESTON_SPRING_OVERSHOOT,
+	WESTON_SPRING_CLAMP,
+	WESTON_SPRING_BOUNCE
+};
+
 struct weston_spring {
 	double k;
 	double friction;
@@ -120,6 +126,7 @@ struct weston_spring {
 	double target;
 	double previous;
 	uint32_t timestamp;
+	uint32_t clip;
 };
 
 enum {
