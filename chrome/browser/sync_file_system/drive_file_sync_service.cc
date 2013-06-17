@@ -1488,6 +1488,10 @@ void DriveFileSyncService::OnNotificationReceived() {
   util::Log(logging::LOG_INFO,
             FROM_HERE,
             "Notification received to check for Google Drive updates");
+
+  // Likely indicating the network is enabled again.
+  UpdateServiceState(REMOTE_SERVICE_OK, "Got push notification for Drive.");
+
   // TODO(calvinlo): Try to eliminate may_have_unfetched_changes_ variable.
   may_have_unfetched_changes_ = true;
   MaybeStartFetchChanges();
