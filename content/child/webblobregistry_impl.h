@@ -7,9 +7,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
+#include "webkit/common/blob/blob_data.h"
 
 namespace WebKit {
 class WebBlobData;
+class WebThreadSafeData;
 class WebURL;
 }
 
@@ -28,6 +30,10 @@ class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
   virtual void unregisterBlobURL(const WebKit::WebURL& url);
 
  private:
+  void SendData(const WebKit::WebURL& url,
+                const WebKit::WebThreadSafeData& data,
+                webkit_blob::BlobData::Item* item);
+
   scoped_refptr<ThreadSafeSender> sender_;
 };
 
