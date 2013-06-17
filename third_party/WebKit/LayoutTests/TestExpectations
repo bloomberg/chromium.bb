@@ -400,6 +400,7 @@ webkit.org/b/98599 [ Linux Win ] css3/masking/clip-path-reference-userSpaceOnUse
 crbug.com/14009 [ Win ] http/tests/misc/dns-prefetch-control.html [ Pass Timeout ]
 
 webkit.org/b/110296 [ Linux MountainLion ] fast/multicol/newmulticol/column-rules-fixed-height.html [ ImageOnlyFailure ]
+crbug.com/250935 [ Win ] fast/multicol/shrink-to-column-height-for-pagination.html [ ImageOnlyFailure Pass ]
 
 # There seems to be some endemic MountainLion reftest failure.
 # In theory, this shouldn't happen with reftests. Indicates a likely genuine
