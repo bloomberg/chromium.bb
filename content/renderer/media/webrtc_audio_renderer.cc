@@ -38,6 +38,7 @@ const int kValidOutputRates[] = {48000, 44100};
 // low latency, currently 16000 is used to work around audio problem on some
 // Android devices.
 const int kValidOutputRates[] = {48000, 44100, 16000};
+const int kDefaultOutputBufferSize = 2048;
 #else
 const int kValidOutputRates[] = {44100};
 #endif
@@ -169,7 +170,12 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   media::AudioParameters sink_params;
 
+#if defined(OS_ANDROID)
+  buffer_size = kDefaultOutputBufferSize;
+#else
   buffer_size = hardware_config->GetOutputBufferSize();
+#endif
+
   sink_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                     channel_layout, channels, 0, sample_rate, 16, buffer_size);
 

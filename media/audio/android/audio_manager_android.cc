@@ -125,11 +125,7 @@ AudioInputStream* AudioManagerAndroid::MakeLowLatencyInputStream(
 int AudioManagerAndroid::GetOptimalOutputFrameSize(int sample_rate,
                                                    int channels) {
   if (IsAudioLowLatencySupported()) {
-    int frame_size = GetAudioLowLatencyOutputFrameSize();
-    // Return the optimal size as a multiple of the low latency frame
-    // size that is close to the target frame size.
-    return ((kDefaultOutputBufferSize + frame_size / 2) / frame_size) *
-      frame_size;
+    return GetAudioLowLatencyOutputFrameSize();
   } else {
     return std::max(kDefaultOutputBufferSize,
                     Java_AudioManagerAndroid_getMinOutputFrameSize(
