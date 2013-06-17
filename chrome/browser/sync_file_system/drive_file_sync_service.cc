@@ -130,10 +130,10 @@ DriveFileSyncService::~DriveFileSyncService() {
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::Create(
     Profile* profile) {
   scoped_ptr<DriveFileSyncService> service(new DriveFileSyncService(profile));
-  scoped_ptr<DriveFileSyncTaskManager> task_manager(
-      new DriveFileSyncTaskManager(service->AsWeakPtr()));
+  scoped_ptr<SyncTaskManager> task_manager(
+      new SyncTaskManager(service->AsWeakPtr()));
   SyncStatusCallback callback = base::Bind(
-      &DriveFileSyncTaskManager::Initialize, task_manager->AsWeakPtr());
+      &SyncTaskManager::Initialize, task_manager->AsWeakPtr());
   service->Initialize(task_manager.Pass(), callback);
   return service.Pass();
 }
@@ -144,10 +144,10 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
     scoped_ptr<drive::APIUtilInterface> api_util,
     scoped_ptr<DriveMetadataStore> metadata_store) {
   scoped_ptr<DriveFileSyncService> service(new DriveFileSyncService(profile));
-  scoped_ptr<DriveFileSyncTaskManager> task_manager(
-      new DriveFileSyncTaskManager(service->AsWeakPtr()));
+  scoped_ptr<SyncTaskManager> task_manager(
+      new SyncTaskManager(service->AsWeakPtr()));
   SyncStatusCallback callback = base::Bind(
-      &DriveFileSyncTaskManager::Initialize, task_manager->AsWeakPtr());
+      &SyncTaskManager::Initialize, task_manager->AsWeakPtr());
   service->InitializeForTesting(task_manager.Pass(),
                                 base_dir,
                                 api_util.Pass(),
@@ -346,11 +346,12 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       largest_fetched_changestamp_(0),
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
+      last_gdata_error_(google_apis::HTTP_SUCCESS),
       conflict_resolution_(kDefaultPolicy) {
 }
 
 void DriveFileSyncService::Initialize(
-    scoped_ptr<DriveFileSyncTaskManager> task_manager,
+    scoped_ptr<SyncTaskManager> task_manager,
     const SyncStatusCallback& callback) {
   DCHECK(profile_);
   DCHECK(!metadata_store_);
@@ -375,7 +376,7 @@ void DriveFileSyncService::Initialize(
 }
 
 void DriveFileSyncService::InitializeForTesting(
-    scoped_ptr<DriveFileSyncTaskManager> task_manager,
+    scoped_ptr<SyncTaskManager> task_manager,
     const base::FilePath& base_dir,
     scoped_ptr<drive::APIUtilInterface> api_util,
     scoped_ptr<DriveMetadataStore> metadata_store,
@@ -1455,7 +1456,7 @@ void DriveFileSyncService::DidGetRemoteFileMetadataForRemoteUpdatedTime(
 
 SyncStatusCode DriveFileSyncService::GDataErrorCodeToSyncStatusCodeWrapper(
     google_apis::GDataErrorCode error) {
-  task_manager_->NotifyLastDriveError(error);
+  last_gdata_error_ = error;
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK && !api_util_->IsAuthenticated())
     return SYNC_STATUS_AUTHENTICATION_FAILED;
@@ -1512,9 +1513,8 @@ void DriveFileSyncService::MaybeScheduleNextTask() {
 }
 
 void DriveFileSyncService::NotifyLastOperationStatus(
-    SyncStatusCode sync_status,
-    google_apis::GDataErrorCode gdata_error) {
-  UpdateServiceStateFromLastOperationStatus(sync_status, gdata_error);
+    SyncStatusCode sync_status) {
+  UpdateServiceStateFromLastOperationStatus(sync_status, last_gdata_error_);
 }
 
 // static

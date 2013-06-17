@@ -18,13 +18,13 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/google_apis/drive_notification_observer.h"
 #include "chrome/browser/sync_file_system/drive/api_util_interface.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/local_sync_operation_resolver.h"
 #include "chrome/browser/sync_file_system/remote_change_handler.h"
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
+#include "chrome/browser/sync_file_system/sync_task_manager.h"
 #include "webkit/browser/fileapi/syncable/file_change.h"
 #include "webkit/browser/fileapi/syncable/sync_action.h"
 #include "webkit/browser/fileapi/syncable/sync_callbacks.h"
@@ -47,14 +47,14 @@ namespace drive {
 class LocalChangeProcessorDelegate;
 }
 
-class DriveFileSyncTaskManager;
+class SyncTaskManager;
 
 // Maintains remote file changes.
 // Owned by SyncFileSystemService (which is a per-profile object).
 class DriveFileSyncService : public RemoteFileSyncService,
                              public LocalChangeProcessor,
                              public drive::APIUtilObserver,
-                             public DriveFileSyncTaskManager::Client,
+                             public SyncTaskManager::Client,
                              public base::NonThreadSafe,
                              public base::SupportsWeakPtr<DriveFileSyncService>,
                              public google_apis::DriveNotificationObserver {
@@ -134,11 +134,9 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual void OnNotificationReceived() OVERRIDE;
   virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
 
-  // DriveFileSyncTaskManager::Client overrides.
+  // SyncTaskManager::Client overrides.
   virtual void MaybeScheduleNextTask() OVERRIDE;
-  virtual void NotifyLastOperationStatus(
-      SyncStatusCode sync_status,
-      google_apis::GDataErrorCode gdata_error) OVERRIDE;
+  virtual void NotifyLastOperationStatus(SyncStatusCode sync_status) OVERRIDE;
 
   static std::string PathToTitle(const base::FilePath& path);
   static base::FilePath TitleToPath(const std::string& title);
@@ -148,7 +146,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
       DriveMetadata::ResourceType resource_type);
 
  private:
-  friend class DriveFileSyncTaskManager;
+  friend class SyncTaskManager;
   friend class drive::LocalChangeProcessorDelegate;
 
   friend class DriveFileSyncServiceMockTest;
@@ -166,9 +164,9 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   explicit DriveFileSyncService(Profile* profile);
 
-  void Initialize(scoped_ptr<DriveFileSyncTaskManager> task_manager,
+  void Initialize(scoped_ptr<SyncTaskManager> task_manager,
                   const SyncStatusCallback& callback);
-  void InitializeForTesting(scoped_ptr<DriveFileSyncTaskManager> task_manager,
+  void InitializeForTesting(scoped_ptr<SyncTaskManager> task_manager,
                             const base::FilePath& base_dir,
                             scoped_ptr<drive::APIUtilInterface> sync_client,
                             scoped_ptr<DriveMetadataStore> metadata_store,
@@ -386,7 +384,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   Profile* profile_;
 
-  scoped_ptr<DriveFileSyncTaskManager> task_manager_;
+  scoped_ptr<SyncTaskManager> task_manager_;
 
   scoped_ptr<drive::LocalChangeProcessorDelegate> running_local_sync_task_;
 
@@ -423,6 +421,8 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   RemoteChangeHandler remote_change_handler_;
   RemoteChangeProcessor* remote_change_processor_;
+
+  google_apis::GDataErrorCode last_gdata_error_;
 
   ConflictResolutionPolicy conflict_resolution_;
 

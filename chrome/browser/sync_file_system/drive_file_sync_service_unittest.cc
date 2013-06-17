@@ -241,7 +241,7 @@ TEST_F(DriveFileSyncServiceTest, EnableOriginForTrackingChanges) {
 
   // Re-enable the previously disabled origin. It initially goes to pending
   // status and then to enabled (incremental) again when NotifyTasksDone() in
-  // DriveFileSyncTaskManager invokes MaybeStartFetchChanges() and pending
+  // SyncTaskManager invokes MaybeStartFetchChanges() and pending
   // origins > 0.
   sync_service()->EnableOriginForTrackingChanges(origin,
                                                  base::Bind(&ExpectOkStatus));

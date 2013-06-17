@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_TASK_MANAGER_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_TASK_MANAGER_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_TASK_MANAGER_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_TASK_MANAGER_H_
 
 #include <deque>
 
@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 
@@ -23,9 +22,9 @@ class Location;
 
 namespace sync_file_system {
 
-class DriveFileSyncTaskManager
+class SyncTaskManager
     : public base::NonThreadSafe,
-      public base::SupportsWeakPtr<DriveFileSyncTaskManager> {
+      public base::SupportsWeakPtr<SyncTaskManager> {
  public:
   class TaskToken;
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
@@ -39,12 +38,11 @@ class DriveFileSyncTaskManager
 
     // Called when the manager is notified a task is done.
     virtual void NotifyLastOperationStatus(
-        SyncStatusCode last_operation_status,
-        google_apis::GDataErrorCode last_gdata_error) = 0;
+        SyncStatusCode last_operation_status) = 0;
   };
 
-  explicit DriveFileSyncTaskManager(base::WeakPtr<Client> client);
-  virtual ~DriveFileSyncTaskManager();
+  explicit SyncTaskManager(base::WeakPtr<Client> client);
+  virtual ~SyncTaskManager();
 
   // This needs to be called to start task scheduling.
   // If |status| is not SYNC_STATUS_OK calling this may change the
@@ -57,7 +55,6 @@ class DriveFileSyncTaskManager
   // Runs the posted task only when we're idle.
   void ScheduleTaskIfIdle(const Task& task);
 
-  void NotifyLastDriveError(google_apis::GDataErrorCode error);
   void NotifyTaskDone(scoped_ptr<TaskToken> token,
                       const SyncStatusCallback& callback,
                       SyncStatusCode status);
@@ -75,7 +72,6 @@ class DriveFileSyncTaskManager
   base::WeakPtr<Client> client_;
 
   SyncStatusCode last_operation_status_;
-  google_apis::GDataErrorCode last_gdata_error_;
   std::deque<base::Closure> pending_tasks_;
 
   // Absence of |token_| implies a task is running. Incoming tasks should
@@ -85,9 +81,9 @@ class DriveFileSyncTaskManager
   // NotifyTaskDone when the task finished.
   scoped_ptr<TaskToken> token_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveFileSyncTaskManager);
+  DISALLOW_COPY_AND_ASSIGN(SyncTaskManager);
 };
 
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_TASK_MANAGER_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_TASK_MANAGER_H_

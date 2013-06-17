@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/drive_file_sync_task_manager.h"
+#include "chrome/browser/sync_file_system/sync_task_manager.h"
 
 #include "base/debug/trace_event.h"
 #include "base/location.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
 
 using fileapi::FileSystemURL;
 
 namespace sync_file_system {
 
-class DriveFileSyncTaskManager::TaskToken {
+class SyncTaskManager::TaskToken {
  public:
-  explicit TaskToken(const base::WeakPtr<DriveFileSyncTaskManager>& manager)
+  explicit TaskToken(const base::WeakPtr<SyncTaskManager>& manager)
       : manager_(manager) {
   }
 
@@ -45,56 +44,50 @@ class DriveFileSyncTaskManager::TaskToken {
   }
 
  private:
-  base::WeakPtr<DriveFileSyncTaskManager> manager_;
+  base::WeakPtr<SyncTaskManager> manager_;
   tracked_objects::Location location_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskToken);
 };
 
-DriveFileSyncTaskManager::DriveFileSyncTaskManager(
+SyncTaskManager::SyncTaskManager(
     base::WeakPtr<Client> client)
     : client_(client),
-      last_operation_status_(SYNC_STATUS_OK),
-      last_gdata_error_(google_apis::HTTP_SUCCESS) {
+      last_operation_status_(SYNC_STATUS_OK) {
 }
 
-DriveFileSyncTaskManager::~DriveFileSyncTaskManager() {
+SyncTaskManager::~SyncTaskManager() {
   client_.reset();
   token_.reset();
 }
 
-void DriveFileSyncTaskManager::Initialize(SyncStatusCode status) {
+void SyncTaskManager::Initialize(SyncStatusCode status) {
   DCHECK(!token_);
   NotifyTaskDone(make_scoped_ptr(new TaskToken(AsWeakPtr())),
                  SyncStatusCallback(),
                  status);
 }
 
-void DriveFileSyncTaskManager::ScheduleTask(
+void SyncTaskManager::ScheduleTask(
     const Task& task,
     const SyncStatusCallback& callback) {
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
   if (!token) {
     pending_tasks_.push_back(base::Bind(
-        &DriveFileSyncTaskManager::ScheduleTask, AsWeakPtr(), task, callback));
+        &SyncTaskManager::ScheduleTask, AsWeakPtr(), task, callback));
     return;
   }
   task.Run(CreateCompletionCallback(token.Pass(), callback));
 }
 
-void DriveFileSyncTaskManager::ScheduleTaskIfIdle(const Task& task) {
+void SyncTaskManager::ScheduleTaskIfIdle(const Task& task) {
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
   if (!token)
     return;
   task.Run(CreateCompletionCallback(token.Pass(), SyncStatusCallback()));
 }
 
-void DriveFileSyncTaskManager::NotifyLastDriveError(
-    google_apis::GDataErrorCode error) {
-  last_gdata_error_ = error;
-}
-
-void DriveFileSyncTaskManager::NotifyTaskDone(
+void SyncTaskManager::NotifyTaskDone(
     scoped_ptr<TaskToken> token,
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
@@ -107,7 +100,7 @@ void DriveFileSyncTaskManager::NotifyTaskDone(
            << " (" << SyncStatusCodeToString(status) << ")"
            << " " << token_->location().ToString();
 
-  client_->NotifyLastOperationStatus(last_operation_status_, last_gdata_error_);
+  client_->NotifyLastOperationStatus(last_operation_status_);
 
   if (!callback.is_null())
     callback.Run(status);
@@ -122,8 +115,7 @@ void DriveFileSyncTaskManager::NotifyTaskDone(
   client_->MaybeScheduleNextTask();
 }
 
-scoped_ptr<DriveFileSyncTaskManager::TaskToken>
-DriveFileSyncTaskManager::GetToken(
+scoped_ptr<SyncTaskManager::TaskToken> SyncTaskManager::GetToken(
     const tracked_objects::Location& from_here) {
   if (!token_)
     return scoped_ptr<TaskToken>();
@@ -133,11 +125,11 @@ DriveFileSyncTaskManager::GetToken(
   return token_.Pass();
 }
 
-SyncStatusCallback DriveFileSyncTaskManager::CreateCompletionCallback(
+SyncStatusCallback SyncTaskManager::CreateCompletionCallback(
     scoped_ptr<TaskToken> token,
     const SyncStatusCallback& callback) {
   DCHECK(token);
-  return base::Bind(&DriveFileSyncTaskManager::NotifyTaskDone,
+  return base::Bind(&SyncTaskManager::NotifyTaskDone,
                     AsWeakPtr(), base::Passed(&token), callback);
 }
 
