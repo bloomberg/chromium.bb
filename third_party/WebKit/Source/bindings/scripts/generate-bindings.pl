@@ -159,11 +159,11 @@ foreach my $idlFile (@supplementedIdlFiles) {
             # Support for methods of partial interfaces.
             foreach my $function (@{$interface->functions}) {
                 # Record that this method is implemented by $interfaceName.
-                $function->signature->extendedAttributes->{"ImplementedBy"} = $interfaceName;
+                $function->extendedAttributes->{"ImplementedBy"} = $interfaceName;
 
                 # Add interface-wide extended attributes to each method.
                 foreach my $extendedAttributeName (keys %{$interface->extendedAttributes}) {
-                    $function->signature->extendedAttributes->{$extendedAttributeName} = $interface->extendedAttributes->{$extendedAttributeName};
+                    $function->extendedAttributes->{$extendedAttributeName} = $interface->extendedAttributes->{$extendedAttributeName};
                 }
                 push(@{$targetDataNode->functions}, $function);
             }
@@ -267,7 +267,7 @@ sub checkIDLAttributes
         }
 
         foreach my $function (@{$interface->functions}) {
-            checkIfIDLAttributesExists($idlAttributes, $function->signature->extendedAttributes, $idlFile);
+            checkIfIDLAttributesExists($idlAttributes, $function->extendedAttributes, $idlFile);
             foreach my $parameter (@{$function->parameters}) {
                 checkIfIDLAttributesExists($idlAttributes, $parameter->extendedAttributes, $idlFile);
             }
