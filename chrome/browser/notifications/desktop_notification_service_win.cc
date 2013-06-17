@@ -12,21 +12,14 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "win8/util/win8_util.h"
 
-typedef void (*MetroDisplayNotification)(
-    const char* origin_url, const char* icon_url, const wchar_t* title,
-    const wchar_t* body, const wchar_t* display_source,
-    const char* notification_id);
-
-typedef bool (*MetroCancelNotification)(const char* notification_id);
-
 bool DesktopNotificationService::CancelDesktopNotification(
     int process_id, int route_id, int notification_id) {
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
   if (win8::IsSingleWindowMetroMode()) {
-    MetroCancelNotification cancel_metro_notification =
-        reinterpret_cast<MetroCancelNotification>(GetProcAddress(
+    base::win::MetroCancelNotification cancel_metro_notification =
+        reinterpret_cast<base::win::MetroCancelNotification>(GetProcAddress(
             base::win::GetMetroModule(), "CancelNotification"));
     DCHECK(cancel_metro_notification);
     if (cancel_metro_notification(proxy->id().c_str()))
@@ -38,8 +31,8 @@ bool DesktopNotificationService::CancelDesktopNotification(
 void DesktopNotificationService::ShowNotification(
     const Notification& notification) {
   if (win8::IsSingleWindowMetroMode()) {
-    MetroDisplayNotification display_metro_notification =
-        reinterpret_cast<MetroDisplayNotification>(GetProcAddress(
+    base::win::MetroNotification display_metro_notification =
+        reinterpret_cast<base::win::MetroNotification>(GetProcAddress(
             base::win::GetMetroModule(), "DisplayNotification"));
     DCHECK(display_metro_notification);
     if (!notification.is_html()) {
@@ -48,7 +41,8 @@ void DesktopNotificationService::ShowNotification(
                                  notification.title().c_str(),
                                  notification.message().c_str(),
                                  notification.display_source().c_str(),
-                                 notification.notification_id().c_str());
+                                 notification.notification_id().c_str(),
+                                 NULL, NULL);
       return;
     } else {
       NOTREACHED() << "We don't support HTML notifications in Windows 8 metro";

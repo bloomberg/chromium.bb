@@ -116,6 +116,9 @@ typedef void (*MetroNotification)(const char* origin_url,
                                   MetroNotificationClickedHandler handler,
                                   const wchar_t* handler_context);
 
+// Function to cancel displayed notification.
+typedef bool (*MetroCancelNotification)(const char* notification_id);
+
 // Callback for UMA invoked by Metro Pin and UnPin functions after user gesture.
 typedef base::Callback<void(MetroSecondaryTilePinUmaResult)>
     MetroPinUmaResultCallback;
