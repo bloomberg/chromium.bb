@@ -313,7 +313,7 @@ InProcessViewRenderer::InProcessViewRenderer(
       attached_to_window_(false),
       hardware_initialized_(false),
       hardware_failed_(false),
-      egl_context_at_init_(NULL) {
+      last_egl_context_(NULL) {
   CHECK(web_contents_);
   web_contents_->SetUserData(kUserDataKey, new UserData(this));
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
@@ -361,22 +361,25 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   if (!HardwareEnabled())
     return;
 
+  TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawGL");
   DCHECK(view_visible_);
 
   // We need to watch if the current Android context has changed and enforce
   // a clean-up in the compositor.
   EGLContext current_context = eglGetCurrentContext();
   if (!current_context) {
-    LOG(WARNING) << "No current context attached. Skipping composite.";
+    TRACE_EVENT_INSTANT0(
+        "android_webview", "EarlyOut_NullEGLContext", TRACE_EVENT_SCOPE_THREAD);
     return;
   }
 
   GLStateRestore state_restore;
 
   if (attached_to_window_ && compositor_ && !hardware_initialized_) {
+    TRACE_EVENT0("android_webview", "InitializeHwDraw");
     hardware_failed_ = !compositor_->InitializeHwDraw();
     hardware_initialized_ = true;
-    egl_context_at_init_ = current_context;
+    last_egl_context_ = current_context;
 
     if (hardware_failed_)
       return;
@@ -385,14 +388,20 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   if (draw_info->mode == AwDrawGLInfo::kModeProcess)
     return;
 
-  if (egl_context_at_init_ != current_context) {
+  if (last_egl_context_ != current_context) {
     // TODO(boliu): Handle context lost
+    TRACE_EVENT_INSTANT0(
+        "android_webview", "EGLContextChanged", TRACE_EVENT_SCOPE_THREAD);
   }
+  last_egl_context_ = current_context;
 
   // TODO(boliu): Make sure this is not called before compositor is initialized
   // and GL is ready. Then make this a DCHECK.
-  if (!compositor_)
+  if (!compositor_) {
+    TRACE_EVENT_INSTANT0(
+        "android_webview", "EarlyOut_NoCompositor", TRACE_EVENT_SCOPE_THREAD);
     return;
+  }
 
 
   gfx::Transform transform;
@@ -418,8 +427,8 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
   TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawSW");
 
   if (clip.IsEmpty()) {
-    TRACE_EVENT_INSTANT0("android_webview", "Empty Clip",
-                         TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0(
+        "android_webview", "EarlyOut_EmptyClip", TRACE_EVENT_SCOPE_THREAD);
     return true;
   }
 
@@ -430,11 +439,12 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
       sw_functions->access_pixels(env, java_canvas) : NULL;
   // Render into an auxiliary bitmap if pixel info is not available.
   if (pixels == NULL) {
-    TRACE_EVENT0("android_webview", "Render to Aux Bitmap");
+    TRACE_EVENT0("android_webview", "RenderToAuxBitmap");
     ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
         env, clip.width(), clip.height()));
     if (!jbitmap.obj()) {
-      TRACE_EVENT_INSTANT0("android_webview", "Bitmap Alloc Fail",
+      TRACE_EVENT_INSTANT0("android_webview",
+                           "EarlyOut_BitmapAllocFail",
                            TRACE_EVENT_SCOPE_THREAD);
       return false;
     }
@@ -444,7 +454,8 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
                              clip.y() - scroll_at_start_of_frame_.y(),
                              base::Bind(&InProcessViewRenderer::RenderSW,
                                         base::Unretained(this)))) {
-      TRACE_EVENT_INSTANT0("android_webview", "Rasterize Fail",
+      TRACE_EVENT_INSTANT0("android_webview",
+                           "EarlyOut_RasterizeFail",
                            TRACE_EVENT_SCOPE_THREAD);
       return false;
     }
@@ -542,15 +553,35 @@ void InProcessViewRenderer::EnableOnNewPicture(bool enabled) {
 
 void InProcessViewRenderer::OnVisibilityChanged(bool view_visible,
                                                 bool window_visible) {
+  TRACE_EVENT_INSTANT2("android_webview",
+                       "InProcessViewRenderer::OnVisibilityChanged",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "view_visible",
+                       view_visible,
+                       "window_visible",
+                       window_visible);
   view_visible_ = window_visible && view_visible;
 }
 
 void InProcessViewRenderer::OnSizeChanged(int width, int height) {
+  TRACE_EVENT_INSTANT2("android_webview",
+                       "InProcessViewRenderer::OnSizeChanged",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "width",
+                       width,
+                       "height",
+                       height);
   width_ = width;
   height_ = height;
 }
 
 void InProcessViewRenderer::OnAttachedToWindow(int width, int height) {
+  TRACE_EVENT2("android_webview",
+               "InProcessViewRenderer::OnAttachedToWindow",
+               "width",
+               width,
+               "height",
+               height);
   attached_to_window_ = true;
   width_ = width;
   height_ = height;
@@ -559,6 +590,8 @@ void InProcessViewRenderer::OnAttachedToWindow(int width, int height) {
 }
 
 void InProcessViewRenderer::OnDetachedFromWindow() {
+  TRACE_EVENT0("android_webview",
+               "InProcessViewRenderer::OnDetachedFromWindow");
   // TODO(joth): Release GL resources. crbug.com/231986.
   attached_to_window_ = false;
 }
@@ -577,6 +610,8 @@ gfx::Rect InProcessViewRenderer::GetScreenRect() {
 
 void InProcessViewRenderer::DidInitializeCompositor(
     content::SynchronousCompositor* compositor) {
+  TRACE_EVENT0("android_webview",
+               "InProcessViewRenderer::DidInitializeCompositor");
   DCHECK(compositor && compositor_ == NULL);
   compositor_ = compositor;
   hardware_initialized_ = false;
@@ -588,6 +623,8 @@ void InProcessViewRenderer::DidInitializeCompositor(
 
 void InProcessViewRenderer::DidDestroyCompositor(
     content::SynchronousCompositor* compositor) {
+  TRACE_EVENT0("android_webview",
+               "InProcessViewRenderer::DidDestroyCompositor");
   DCHECK(compositor_ == compositor);
   compositor_ = NULL;
 }
@@ -596,6 +633,11 @@ void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
   if (continuous_invalidate_ == invalidate)
     return;
 
+  TRACE_EVENT_INSTANT1("android_webview",
+                       "InProcessViewRenderer::SetContinuousInvalidate",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "invalidate",
+                       invalidate);
   continuous_invalidate_ = invalidate;
   // TODO(boliu): Handle if not attached to window case.
   EnsureContinuousInvalidation(NULL);

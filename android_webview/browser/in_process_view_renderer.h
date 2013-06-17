@@ -92,7 +92,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
 
   // Used only for detecting Android View System context changes.
   // Not to be used between draw calls.
-  EGLContext egl_context_at_init_;
+  EGLContext last_egl_context_;
 
   // Last View scroll when View.onDraw() was called.
   gfx::Point scroll_at_start_of_frame_;
