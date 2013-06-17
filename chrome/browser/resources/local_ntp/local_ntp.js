@@ -7,17 +7,14 @@
  * @fileoverview The local InstantExtended NTP and suggestions dropdown.
  */
 
-(function() {
+/**
+ * Controls rendering the new tab page for InstantExtended.
+ * @param {Object} location window.location or a mock.
+ * @return {Object} A limited interface for testing the local NTP.
+ */
+function LocalNTP(location) {
 <include src="../../../../ui/webui/resources/js/assert.js">
 
-
-/**
- * True if this a Google page and not some other search provider.  Used to
- * determine whether to show the logo and fakebox.
- * @type {boolean}
- * @const
- */
-var isGooglePage = location.href.indexOf('isGoogle') != -1;
 
 // ==========================================================
 //  Enums
@@ -755,7 +752,7 @@ function clearCustomTheme() {
  * @param {boolean} focus True to focus the fakebox.
  */
 function setFakeboxFocus(focus) {
-  return document.body.classList.toggle(CLASSES.FAKEBOX_FOCUS, focus);
+  document.body.classList.toggle(CLASSES.FAKEBOX_FOCUS, focus);
 }
 
 
@@ -1704,6 +1701,16 @@ function getEmbeddedSearchApiHandle() {
   return null;
 }
 
+
+/**
+ * @return {boolean} True if this is a Google page and not some other search
+ *     provider. Used to determine whether to show the logo and fakebox.
+ */
+function isGooglePage() {
+  return location.href.indexOf('isGoogle') != -1;
+}
+
+
 // =============================================================================
 //  Initialization
 // =============================================================================
@@ -1735,7 +1742,7 @@ function init() {
     tilesContainer.appendChild(row);
   }
 
-  if (isGooglePage) {
+  if (isGooglePage()) {
     var logo = document.createElement('div');
     logo.id = IDS.LOGO;
 
@@ -1824,10 +1831,25 @@ function init() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
-window.addEventListener('message', handleMessage, false);
-window.addEventListener('blur', function() {
-  if (activeBox)
-    activeBox.clearHover();
-}, false);
-})();
+
+/**
+ * Binds event listeners.
+ */
+function listen() {
+  document.addEventListener('DOMContentLoaded', init);
+  window.addEventListener('message', handleMessage, false);
+  window.addEventListener('blur', function() {
+    if (activeBox)
+      activeBox.clearHover();
+  }, false);
+}
+
+return {
+  init: init,
+  listen: listen
+};
+}
+
+if (!window.localNTPUnitTest) {
+  LocalNTP(location).listen();
+}

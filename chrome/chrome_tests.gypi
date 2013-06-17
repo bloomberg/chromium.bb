@@ -256,6 +256,7 @@
         'browser/ui/search/instant_extended_manual_interactive_uitest.cc',
         'browser/ui/search/instant_test_utils.h',
         'browser/ui/search/instant_test_utils.cc',
+        'browser/ui/search/local_ntp_browsertest.cc',
         'browser/ui/startup/startup_browser_creator_interactive_uitest.cc',
         'browser/ui/views/ash/tab_scrubber_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
