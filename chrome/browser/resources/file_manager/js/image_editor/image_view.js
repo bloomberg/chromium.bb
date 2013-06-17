@@ -20,10 +20,11 @@ function ImageView(container, viewport, metadataCache) {
   this.displayedContentGeneration_ = 0;
   this.displayedViewportGeneration_ = 0;
 
-  this.imageLoader_ = new ImageUtil.ImageLoader(this.document_);
+  this.imageLoader_ = new ImageUtil.ImageLoader(this.document_, metadataCache);
   // We have a separate image loader for prefetch which does not get cancelled
   // when the selection changes.
-  this.prefetchLoader_ = new ImageUtil.ImageLoader(this.document_);
+  this.prefetchLoader_ = new ImageUtil.ImageLoader(
+      this.document_, metadataCache);
 
   // The content cache is used for prefetching the next image when going
   // through the images sequentially. The real life photos can be large
