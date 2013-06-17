@@ -4,11 +4,15 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,7 +28,11 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #endif
 
 namespace extensions {
@@ -426,6 +434,28 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, IsStorageEnabled) {
 }
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, PolicyDomainDescriptor) {
+  // Verifies that the PolicyDomainDescriptor for the extensions domain is
+  // created on startup.
+  Profile* profile = browser()->profile();
+  ExtensionSystem* extension_system =
+      ExtensionSystemFactory::GetForProfile(profile);
+  if (!extension_system->ready().is_signaled()) {
+    // Wait until the extension system is ready.
+    base::RunLoop run_loop;
+    extension_system->ready().Post(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+    ASSERT_TRUE(extension_system->ready().is_signaled());
+  }
+
+  policy::ProfilePolicyConnector* connector =
+      policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
+  policy::PolicyService* service = connector->policy_service();
+  scoped_refptr<const policy::PolicyDomainDescriptor> descriptor =
+      service->GetPolicyDomainDescriptor(policy::POLICY_DOMAIN_EXTENSIONS);
+  EXPECT_TRUE(descriptor);
+}
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
   // Set policies for the test extension.

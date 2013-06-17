@@ -79,6 +79,9 @@ ManagedValueStoreCache::ExtensionTracker::ExtensionTracker(Profile* profile)
     : profile_(profile),
       weak_factory_(this) {
   registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSIONS_READY,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
