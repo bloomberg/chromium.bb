@@ -47,6 +47,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
       aura::Window* window,
       const gfx::Point& location_in_parent,
       int window_component,
+      aura::client::WindowMoveSource source,
       const std::vector<aura::Window*>& attached_windows);
 
   // Overridden from WindowResizer:

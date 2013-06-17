@@ -24,8 +24,9 @@ DefaultWindowResizer::~DefaultWindowResizer() {
 DefaultWindowResizer*
 DefaultWindowResizer::Create(aura::Window* window,
                              const gfx::Point& location,
-                             int window_component) {
-  Details details(window, location, window_component);
+                             int window_component,
+                             aura::client::WindowMoveSource source) {
+  Details details(window, location, window_component, source);
   return details.is_resizable ? new DefaultWindowResizer(details) : NULL;
 }
 

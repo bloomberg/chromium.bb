@@ -98,8 +98,11 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
       if (WindowComponentsAllowMoving(first_finger_hittest_,
           target->delegate()->GetNonClientComponent(event.location()))) {
         target->AddObserver(this);
-        window_resizer_ = CreateWindowResizer(target,
-            event.details().bounding_box().CenterPoint(), HTCAPTION);
+        window_resizer_ = CreateWindowResizer(
+            target,
+            event.details().bounding_box().CenterPoint(),
+            HTCAPTION,
+            aura::client::WINDOW_MOVE_SOURCE_TOUCH);
         return true;
       }
     }

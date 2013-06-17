@@ -57,11 +57,13 @@ DragWindowResizer::~DragWindowResizer() {
 }
 
 // static
-DragWindowResizer* DragWindowResizer::Create(WindowResizer* next_window_resizer,
-                                             aura::Window* window,
-                                             const gfx::Point& location,
-                                             int window_component) {
-  Details details(window, location, window_component);
+DragWindowResizer* DragWindowResizer::Create(
+    WindowResizer* next_window_resizer,
+    aura::Window* window,
+    const gfx::Point& location,
+    int window_component,
+    aura::client::WindowMoveSource source) {
+  Details details(window, location, window_component, source);
   return details.is_resizable ?
       new DragWindowResizer(next_window_resizer, details) : NULL;
 }

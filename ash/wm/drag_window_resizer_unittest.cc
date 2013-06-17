@@ -112,7 +112,8 @@ class DragWindowResizerTest : public test::AshTestBase {
       const gfx::Point& point_in_parent,
       int window_component) {
     return static_cast<DragWindowResizer*>(CreateWindowResizer(
-        window, point_in_parent, window_component).release());
+        window, point_in_parent, window_component,
+        aura::client::WINDOW_MOVE_SOURCE_MOUSE).release());
   }
 
   aura::test::TestWindowDelegate delegate_;

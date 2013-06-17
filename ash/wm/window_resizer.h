@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/client/window_move_client.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -56,7 +57,8 @@ class ASH_EXPORT WindowResizer {
     Details();
     Details(aura::Window* window,
             const gfx::Point& location,
-            int window_component);
+            int window_component,
+            aura::client::WindowMoveSource source);
     ~Details();
 
     // The window we're resizing.
@@ -89,6 +91,9 @@ class ASH_EXPORT WindowResizer {
 
     // Will the drag actually modify the window?
     bool is_resizable;
+
+    // Source of the event initiating the drag.
+    aura::client::WindowMoveSource source;
   };
 
   static gfx::Rect CalculateBoundsForDrag(const Details& details,
@@ -100,6 +105,12 @@ class ASH_EXPORT WindowResizer {
   static bool IsBottomEdge(int component);
 
  private:
+  // In case of touch resizing, adjusts deltas so that the border is positioned
+  // just under the touch point.
+  static void AdjustDeltaForTouchResize(const Details& details,
+                                        int* delta_x,
+                                        int* delta_y);
+
   // Returns the new origin of the window. The arguments are the difference
   // between the current location and the initial location.
   static gfx::Point GetOriginForDrag(const Details& details,
@@ -127,7 +138,8 @@ class ASH_EXPORT WindowResizer {
 ASH_EXPORT scoped_ptr<WindowResizer> CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
-    int window_component);
+    int window_component,
+    aura::client::WindowMoveSource source);
 
 }  // namespace aura
 

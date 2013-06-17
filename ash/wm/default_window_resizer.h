@@ -21,7 +21,8 @@ class ASH_EXPORT DefaultWindowResizer : public WindowResizer {
   // returned object. Returns NULL if not resizable.
   static DefaultWindowResizer* Create(aura::Window* window,
                                       const gfx::Point& location,
-                                      int window_component);
+                                      int window_component,
+                                      aura::client::WindowMoveSource source);
 
   // Returns true if the drag will result in changing the window in anyway.
   bool is_resizable() const { return details_.is_resizable; }

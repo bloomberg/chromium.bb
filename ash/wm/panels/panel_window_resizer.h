@@ -28,7 +28,8 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
   static PanelWindowResizer* Create(WindowResizer* next_window_resizer,
                                     aura::Window* window,
                                     const gfx::Point& location,
-                                    int window_component);
+                                    int window_component,
+                                    aura::client::WindowMoveSource source);
 
   // WindowResizer overides:
   virtual void Drag(const gfx::Point& location, int event_flags) OVERRIDE;

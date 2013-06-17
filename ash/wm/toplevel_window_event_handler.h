@@ -64,7 +64,8 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   void CreateScopedWindowResizer(aura::Window* window,
                                  const gfx::Point& point_in_parent,
-                                 int window_component);
+                                 int window_component,
+                                 aura::client::WindowMoveSource source);
 
   // Finishes the drag.
   void CompleteDrag(DragCompletionStatus status, int event_flags);

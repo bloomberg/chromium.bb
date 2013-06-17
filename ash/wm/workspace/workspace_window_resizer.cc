@@ -36,9 +36,11 @@
 
 namespace ash {
 
-scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
-                                              const gfx::Point& point_in_parent,
-                                              int window_component) {
+scoped_ptr<WindowResizer> CreateWindowResizer(
+    aura::Window* window,
+    const gfx::Point& point_in_parent,
+    int window_component,
+    aura::client::WindowMoveSource source) {
   DCHECK(window);
   // No need to return a resizer when the window cannot get resized.
   if (!wm::CanResizeWindow(window) && window_component != HTCAPTION)
@@ -56,18 +58,19 @@ scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
         window,
         point_in_parent,
         window_component,
+        source,
         std::vector<aura::Window*>());
   } else if (wm::IsWindowNormal(window)) {
     window_resizer = DefaultWindowResizer::Create(
-        window, point_in_parent, window_component);
+        window, point_in_parent, window_component, source);
   }
   if (window_resizer) {
     window_resizer = internal::DragWindowResizer::Create(
-        window_resizer, window, point_in_parent, window_component);
+        window_resizer, window, point_in_parent, window_component, source);
   }
   if (window_resizer && window->type() == aura::client::WINDOW_TYPE_PANEL) {
     window_resizer = PanelWindowResizer::Create(
-        window_resizer, window, point_in_parent, window_component);
+        window_resizer, window, point_in_parent, window_component, source);
   }
   return make_scoped_ptr<WindowResizer>(window_resizer);
 }
@@ -79,6 +82,10 @@ namespace {
 // Distance in pixels that the cursor must move past an edge for a window
 // to move or resize beyond that edge.
 const int kStickyDistancePixels = 64;
+
+// Snapping distance used instead of WorkspaceWindowResizer::kScreenEdgeInset
+// when resizing a window using touchscreen.
+const int kScreenEdgeInsetForTouchResize = 32;
 
 // Returns true if the window should stick to the edge.
 bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
@@ -310,8 +317,9 @@ WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
     aura::Window* window,
     const gfx::Point& location_in_parent,
     int window_component,
+    aura::client::WindowMoveSource source,
     const std::vector<aura::Window*>& attached_windows) {
-  Details details(window, location_in_parent, window_component);
+  Details details(window, location_in_parent, window_component, source);
   return details.is_resizable ?
       new WorkspaceWindowResizer(details, attached_windows) : NULL;
 }
@@ -326,6 +334,9 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   } else if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableStickyEdges)) {
     sticky_size = kStickyDistancePixels;
+  } else if ((details_.bounds_change & kBoundsChange_Resizes) &&
+      details_.source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
+    sticky_size = kScreenEdgeInsetForTouchResize;
   } else {
     sticky_size = kScreenEdgeInset;
   }

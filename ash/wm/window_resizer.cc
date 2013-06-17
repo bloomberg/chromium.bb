@@ -107,12 +107,14 @@ WindowResizer::Details::Details()
       bounds_change(0),
       position_change_direction(0),
       size_change_direction(0),
-      is_resizable(false) {
+      is_resizable(false),
+      source(aura::client::WINDOW_MOVE_SOURCE_MOUSE) {
 }
 
 WindowResizer::Details::Details(aura::Window* window,
                                 const gfx::Point& location,
-                                int window_component)
+                                int window_component,
+                                aura::client::WindowMoveSource source)
     : window(window),
       initial_bounds_in_parent(window->bounds()),
       restore_bounds(gfx::Rect()),
@@ -124,7 +126,8 @@ WindowResizer::Details::Details(aura::Window* window,
           GetPositionChangeDirectionForWindowComponent(window_component)),
       size_change_direction(
           GetSizeChangeDirectionForWindowComponent(window_component)),
-      is_resizable(bounds_change != kBoundsChangeDirection_None) {
+      is_resizable(bounds_change != kBoundsChangeDirection_None),
+      source(source) {
   if (wm::IsWindowNormal(window) &&
       GetRestoreBoundsInScreen(window) &&
       window_component == HTCAPTION)
@@ -180,6 +183,8 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
 
   int delta_x = location.x() - details.initial_location_in_parent.x();
   int delta_y = location.y() - details.initial_location_in_parent.y();
+
+  AdjustDeltaForTouchResize(details, &delta_x, &delta_y);
 
   // The minimize size constraint may limit how much we change the window
   // position.  For example, dragging the left edge to the right should stop
@@ -270,6 +275,34 @@ bool WindowResizer::IsBottomEdge(int window_component) {
       window_component == HTBOTTOM ||
       window_component == HTBOTTOMRIGHT ||
       window_component == HTGROWBOX;
+}
+
+// static
+void WindowResizer::AdjustDeltaForTouchResize(const Details& details,
+                                              int* delta_x,
+                                              int* delta_y) {
+  if (details.source != aura::client::WINDOW_MOVE_SOURCE_TOUCH ||
+      !(details.bounds_change & kBoundsChange_Resizes))
+    return;
+
+  if (details.size_change_direction & kBoundsChangeDirection_Horizontal) {
+    if (IsRightEdge(details.window_component)) {
+      *delta_x += details.initial_location_in_parent.x() -
+          details.initial_bounds_in_parent.right();
+    } else {
+      *delta_x += details.initial_location_in_parent.x() -
+          details.initial_bounds_in_parent.x();
+    }
+  }
+  if (details.size_change_direction & kBoundsChangeDirection_Vertical) {
+    if (IsBottomEdge(details.window_component)) {
+      *delta_y += details.initial_location_in_parent.y() -
+          details.initial_bounds_in_parent.bottom();
+    } else {
+      *delta_y += details.initial_location_in_parent.y() -
+          details.initial_bounds_in_parent.y();
+    }
+  }
 }
 
 // static

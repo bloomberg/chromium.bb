@@ -228,7 +228,8 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       pre_drag_window_bounds_ = target->bounds();
       gfx::Point location_in_parent(
           ConvertPointToParent(target, event->location()));
-      CreateScopedWindowResizer(target, location_in_parent, component);
+      CreateScopedWindowResizer(target, location_in_parent, component,
+                                aura::client::WINDOW_MOVE_SOURCE_TOUCH);
       break;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
@@ -323,7 +324,7 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
     aura::Window::ConvertPointToTarget(
         root_window, source->parent(), &drag_location);
   }
-  CreateScopedWindowResizer(source, drag_location, HTCAPTION);
+  CreateScopedWindowResizer(source, drag_location, HTCAPTION, move_source);
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
@@ -370,10 +371,12 @@ void ToplevelWindowEventHandler::OnDisplayConfigurationChanging() {
 void ToplevelWindowEventHandler::CreateScopedWindowResizer(
     aura::Window* window,
     const gfx::Point& point_in_parent,
-    int window_component) {
+    int window_component,
+    aura::client::WindowMoveSource source) {
   window_resizer_.reset();
   WindowResizer* resizer =
-      CreateWindowResizer(window, point_in_parent, window_component).release();
+      CreateWindowResizer(window, point_in_parent, window_component,
+                          source).release();
   if (resizer)
     window_resizer_.reset(new ScopedWindowResizer(this, resizer));
 }
@@ -407,7 +410,8 @@ void ToplevelWindowEventHandler::HandleMousePressed(
       WindowResizer::GetBoundsChangeForWindowComponent(component)) {
     gfx::Point location_in_parent(
         ConvertPointToParent(target, event->location()));
-    CreateScopedWindowResizer(target, location_in_parent, component);
+    CreateScopedWindowResizer(target, location_in_parent, component,
+                              aura::client::WINDOW_MOVE_SOURCE_MOUSE);
   } else {
     window_resizer_.reset();
   }

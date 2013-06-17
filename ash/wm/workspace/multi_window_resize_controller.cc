@@ -434,7 +434,11 @@ void MultiWindowResizeController::StartResize(
   }
   int component = windows_.direction == LEFT_RIGHT ? HTRIGHT : HTBOTTOM;
   window_resizer_.reset(WorkspaceWindowResizer::Create(
-      windows_.window1, location_in_parent, component, windows));
+      windows_.window1,
+      location_in_parent,
+      component,
+      aura::client::WINDOW_MOVE_SOURCE_MOUSE,
+      windows));
 }
 
 void MultiWindowResizeController::Resize(const gfx::Point& location_in_screen,

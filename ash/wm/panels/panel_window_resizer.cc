@@ -50,8 +50,9 @@ PanelWindowResizer*
 PanelWindowResizer::Create(WindowResizer* next_window_resizer,
                            aura::Window* window,
                            const gfx::Point& location,
-                           int window_component) {
-  Details details(window, location, window_component);
+                           int window_component,
+                           aura::client::WindowMoveSource source) {
+  Details details(window, location, window_component, source);
   return details.is_resizable ?
       new PanelWindowResizer(next_window_resizer, details) : NULL;
 }
