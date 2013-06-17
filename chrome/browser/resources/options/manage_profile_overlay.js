@@ -78,6 +78,7 @@ cr.define('options', function() {
 
       $('create-profile-limited-signed-in-link').onclick = function(event) {
         OptionsPage.navigateToPage('managedUserLearnMore');
+        return false;
       };
 
       $('create-profile-limited-not-signed-in-link').onclick = function(event) {
@@ -541,6 +542,8 @@ cr.define('options', function() {
       $('create-profile-limited-signed-in').hidden = !isSignedIn;
       $('create-profile-limited-not-signed-in').hidden = isSignedIn;
       $('create-profile-limited').disabled = !isSignedIn;
+      if (!isSignedIn)
+        $('create-profile-limited').checked = false;
 
       $('create-profile-limited-signed-in-label').textContent = text;
     },
