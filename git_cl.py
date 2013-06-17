@@ -7,6 +7,7 @@
 
 """A git-command for integrating reviews on Rietveld."""
 
+import difflib
 import json
 import logging
 import optparse
@@ -15,8 +16,8 @@ import re
 import stat
 import sys
 import textwrap
-import urlparse
 import urllib2
+import urlparse
 
 try:
   import readline  # pylint: disable=F0401,W0611
@@ -2019,8 +2020,43 @@ def CMDformat(parser, args):
   return 0
 
 
+### Glue code for subcommand handling.
+
+
+def Commands():
+  """Returns a dict of command and their handling function."""
+  module = sys.modules[__name__]
+  cmds = (fn[3:] for fn in dir(module) if fn.startswith('CMD'))
+  return dict((cmd, getattr(module, 'CMD' + cmd)) for cmd in cmds)
+
+
 def Command(name):
-  return getattr(sys.modules[__name__], 'CMD' + name, None)
+  """Retrieves the function to handle a command."""
+  commands = Commands()
+  if name in commands:
+    return commands[name]
+
+  # Try to be smart and look if there's something similar.
+  commands_with_prefix = [c for c in commands if c.startswith(name)]
+  if len(commands_with_prefix) == 1:
+    return commands[commands_with_prefix[0]]
+
+  # A #closeenough approximation of levenshtein distance.
+  def close_enough(a, b):
+    return difflib.SequenceMatcher(a=a, b=b).ratio()
+
+  hamming_commands = sorted(
+      ((close_enough(c, name), c) for c in commands),
+      reverse=True)
+  if (hamming_commands[0][0] - hamming_commands[1][0]) < 0.3:
+    # Too ambiguous.
+    return
+
+  if hamming_commands[0][0] < 0.8:
+    # Not similar enough. Don't be a fool and run a random command.
+    return
+
+  return commands[hamming_commands[0][1]]
 
 
 def CMDhelp(parser, args):
@@ -2035,6 +2071,9 @@ def CMDhelp(parser, args):
 def GenUsage(parser, command):
   """Modify an OptParse object with the function's documentation."""
   obj = Command(command)
+  # Get back the real command name in case Command() guess the actual command
+  # name.
+  command = obj.__name__[3:]
   more = getattr(obj, 'usage_more', '')
   if command == 'help':
     command = '<command>'
@@ -2058,9 +2097,13 @@ def main(argv):
   settings = Settings()
 
   # Do it late so all commands are listed.
-  CMDhelp.usage_more = ('\n\nCommands are:\n' + '\n'.join([
-      '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
-      for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
+  commands = Commands()
+  length = max(len(c) for c in commands)
+  docs = sorted(
+      (name, handler.__doc__.split('\n')[0].strip())
+      for name, handler in commands.iteritems())
+  CMDhelp.usage_more = ('\n\nCommands are:\n' + '\n'.join(
+      '  %-*s %s' % (length, name, doc) for name, doc in docs))
 
   # Create the option parse and add --verbose support.
   parser = optparse.OptionParser()
