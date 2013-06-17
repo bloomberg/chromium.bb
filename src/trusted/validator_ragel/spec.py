@@ -193,6 +193,7 @@ def _ParseInstruction(instruction):
 
 
 def ValidateRegularInstruction(instruction, bitness):
+  # TODO(shcherbina): describe meaning of restricted registers in return value.
   assert bitness in [32, 64]
 
   try:
@@ -226,8 +227,6 @@ def ValidateRegularInstruction(instruction, bitness):
 
 
 def ValidateDirectJump(instruction):
-  # TODO(shcherbina): return offset for potential use in text-based ncval
-
   cond_jumps_re = re.compile(
       r'(ja(e?)|jb(e?)|jg(e?)|jl(e?)|'
       r'j(n?)e|j(n?)o|j(n?)p|j(n?)s)'
@@ -254,6 +253,33 @@ def ValidateDirectJump(instruction):
     return int(m.group('destination'), 16)
 
   raise DoNotMatchError(instruction)
+
+
+def ValidateDirectJumpOrRegularInstruction(instruction, bitness):
+  """Validate anything that is not superinstruction.
+
+  Args:
+    instruction: objdump_parser.Instruction tuple.
+    bitness: 32 or 64.
+  Returns:
+    Triple (jump_destination,
+            required_restricted_register,
+            resulting_restricted_register).
+    jump_destination is either absolute offset or None if instruction is not
+    jump. Restricted register business is explained in
+    ValidateRegularInstruction.
+  Raises:
+    According to usual convention.
+  """
+  assert bitness in [32, 64]
+  try:
+    destination = ValidateDirectJump(instruction)
+    return destination, None, None
+  except DoNotMatchError:
+    pass
+
+  ValidateRegularInstruction(instruction, bitness)
+  return None, None, None
 
 
 def ValidateSuperinstruction32(superinstruction):

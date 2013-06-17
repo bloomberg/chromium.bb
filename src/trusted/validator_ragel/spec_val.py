@@ -16,13 +16,6 @@ class Validator(object):
   def ValidateSuperinstruction(self, superinstruction):
     raise NotImplementedError()
 
-  def ValidateDirectJump(self, instruction):
-    destination = spec.ValidateDirectJump(instruction)
-    self.jumps[instruction.address] = destination
-
-  def ValidateRegularInstruction(self, instruction):
-    raise NotImplementedError()
-
   def FitsWithinBundle(self, insns):
     offset = insns[0].address
     last_byte_offset = offset + sum(len(insn.bytes) for insn in insns) - 1
@@ -59,21 +52,24 @@ class Validator(object):
           except spec.DoNotMatchError:
             continue
         else:
-          checkers = [self.ValidateDirectJump, self.ValidateRegularInstruction]
-          for checker in checkers:
-            try:
-              checker(insns[i])
-              if not self.FitsWithinBundle(insns[i:i+1]):
-                self.messages.append(
-                    (offset, 'instruction crosses bundle boundary'))
-              i += 1
-              break
-            except spec.DoNotMatchError:
-              continue
-          else:
+          try:
+            jump_destination, _, _ = (
+                spec.ValidateDirectJumpOrRegularInstruction(
+                    insns[i],
+                    self.BITNESS))
+
+            if jump_destination is not None:
+              self.jumps[insns[i].address] = jump_destination
+
+            if not self.FitsWithinBundle(insns[i:i+1]):
+              self.messages.append(
+                  (offset, 'instruction crosses bundle boundary'))
+            i += 1
+          except spec.DoNotMatchError:
             self.messages.append(
                 (offset, 'unrecognized instruction %r' % insns[i].disasm))
             i += 1
+
       except spec.SandboxingError as e:
         self.messages.append((offset, str(e)))
         i += 1
@@ -95,9 +91,6 @@ class Validator32(Validator):
   def ValidateSuperinstruction(self, superinstruction):
     spec.ValidateSuperinstruction32(superinstruction)
 
-  def ValidateRegularInstruction(self, instruction):
-    spec.ValidateRegularInstruction(instruction, bitness=32)
-
 
 class Validator64(Validator):
 
@@ -108,6 +101,3 @@ class Validator64(Validator):
 
   def ValidateSuperinstruction(self, superinstruction):
     spec.ValidateSuperinstruction64(superinstruction)
-
-  def ValidateRegularInstruction(self, instruction):
-    spec.ValidateRegularInstruction(instruction, bitness=64)

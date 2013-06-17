@@ -266,7 +266,7 @@ def ValidateInstruction(instruction, disassembly, old_validator):
       old_validator.Validate(bundle, (disassembly, instruction))
 
     try:
-      spec.ValidateDirectJump(dis)
+      spec.ValidateDirectJumpOrRegularInstruction(dis, bitness=32)
       if not result:
         print 'warning: validator rejected', dis
     except spec.SandboxingError as e:
@@ -287,6 +287,20 @@ def ValidateInstruction(instruction, disassembly, old_validator):
     if result:
       old_validator.Validate(bundle, (disassembly, instruction))
       CheckFinalRestrictedRegister([], instruction, disassembly, old_validator)
+
+    try:
+      spec.ValidateDirectJumpOrRegularInstruction(dis, bitness=64)
+      # TODO(shcherbina): handle restricted registers.
+      if not result:
+        print 'warning: validator rejected', dis
+    except spec.SandboxingError as e:
+      if result:
+        print 'validator accepted instruction disallowed by specification'
+        raise
+    except spec.DoNotMatchError:
+      # TODO(shcherbina): When text-based specification is complete,
+      # it should raise.
+      pass
 
     # Additionally, we try to restrict all possible
     # registers and check whether instruction would be accepted.
