@@ -101,6 +101,85 @@ def _ValidateTlsInstruction(instruction):
   raise DoNotMatchError(instruction)
 
 
+def _AnyRegisterRE(group_name='register'):
+  # TODO(shcherbina): explicitly list all kinds of registers we care to
+  # distinguish for validation purposes.
+  return r'(?P<%s>%%(st\(\d+\)|\w+))' % group_name
+
+
+def _HexRE(group_name='value'):
+  return r'(?P<%s>0x[\da-f]+)' % group_name
+
+
+def _ImmediateRE(group_name='immediate'):
+  return r'(?P<%s>\$%s)' % (
+      group_name,
+      _HexRE(group_name=group_name + '_value'))
+
+
+def _MemoryRE(group_name='memory'):
+  # Possible forms:
+  #   (%eax)
+  #   (%eax,%ebx,1)
+  #   (,%ebx,1)
+  #   0x42(...)
+  # and even
+  #   0x42
+  return r'(?P<%s>%s?(\(%s?(,%s,\d)?\))?)' % (
+      group_name,
+      _HexRE(group_name=group_name + '_offset'),
+      _AnyRegisterRE(group_name=group_name + '_base'),
+      _AnyRegisterRE(group_name=group_name + '_index'))
+
+
+def _OperandRE(group_name='operand'):
+  return r'(?P<%s>%s|%s|%s)' % (
+      group_name,
+      _AnyRegisterRE(group_name=group_name + '_register'),
+      _ImmediateRE(group_name=group_name + '_immediate'),
+      _MemoryRE(group_name=group_name + '_memory'))
+
+
+def _SplitOps(insn, args):
+  # We can't use just args.split(',') because operands can contain commas
+  # themselves, for example '(%r15,%rax,1)'.
+  ops = []
+  i = 0
+  while True:
+    m = re.compile(_OperandRE()).match(args, i)
+    assert m is not None, (args, i)
+    ops.append(m.group())
+    i = m.end()
+    if i == len(args):
+      break
+    assert args[i] == ',', (insn, args, i)
+    i += 1
+  return ops
+
+
+def _ParseInstruction(instruction):
+  elems = instruction.disasm.split()
+  prefixes = []
+  while elems[0] in ['lock', 'rep', 'repz', 'repnz']:
+    prefixes.append(elems.pop(0))
+
+  # There could be branching expectation information in instruction names:
+  #    jo,pt      <addr>
+  #    jge,pn     <addr>
+  name_re = r'[a-z]\w*(,p[nt])?$'
+  name = elems[0]
+  assert re.match(name_re, name), name
+
+  if len(elems) == 1:
+    ops = []
+  elif len(elems) == 2:
+    ops = _SplitOps(instruction, elems[1])
+  else:
+    assert False, elems
+
+  return prefixes, name, ops
+
+
 def ValidateRegularInstruction(instruction, bitness):
   assert bitness in [32, 64]
 
@@ -129,11 +208,9 @@ def ValidateRegularInstruction(instruction, bitness):
     except DoNotMatchError:
       pass
 
+  _ParseInstruction(instruction)
+
   raise DoNotMatchError(instruction)
-
-
-def _ImmediateRE(group_name='immediate'):
-  return r'(?P<%s>0x[\da-f]+)' % group_name
 
 
 def ValidateDirectJump(instruction):
@@ -142,7 +219,7 @@ def ValidateDirectJump(instruction):
   cond_jumps_re = re.compile(
       r'(ja(e?)|jb(e?)|jg(e?)|jl(e?)|'
       r'j(n?)e|j(n?)o|j(n?)p|j(n?)s)'
-      r' %s$' % _ImmediateRE('destination'))
+      r' %s$' % _HexRE('destination'))
   m = cond_jumps_re.match(instruction.disasm)
   if m is not None:
     # 16-bit conditional jump has the following form:
@@ -157,7 +234,7 @@ def ValidateDirectJump(instruction):
           '16-bit conditional jumps are disallowed', instruction)
     return int(m.group('destination'), 16)
 
-  jumps_re = re.compile(r'(jmp|call)(|w|q) %s$' % _ImmediateRE('destination'))
+  jumps_re = re.compile(r'(jmp|call)(|w|q) %s$' % _HexRE('destination'))
   m = jumps_re.match(instruction.disasm)
   if m is not None:
     if m.group(2) == 'w':
