@@ -66,8 +66,14 @@ deps = {
   "src/testing/gmock":
     (Var("googlecode_url") % "googlemock") + "/trunk@410",
 
+  # TODO(apatrick): Remove dependency on old DX9 version of ANGLE when
+  # transition to new DX11 version is complete.
   "src/third_party/angle":
     (Var("googlecode_url") % "angleproject") + "/trunk@2249",
+
+  "src/third_party/angle_dx11":
+    "https://code.google.com" +
+    "/p/angleproject.git@d089bd98e59b037f7f61df926172b5f25e3556cd",
 
   "src/third_party/trace-viewer":
     (Var("googlecode_url") % "trace-viewer") + "/trunk@621",
