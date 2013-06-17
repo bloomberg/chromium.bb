@@ -17,6 +17,8 @@ DataTypeAssociationStats::DataTypeAssociationStats()
     num_sync_items_added(0),
     num_sync_items_deleted(0),
     num_sync_items_modified(0),
+    local_version_pre_association(0),
+    sync_version_pre_association(0),
     had_error(false) {
 }
 

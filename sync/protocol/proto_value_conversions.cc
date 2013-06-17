@@ -800,6 +800,8 @@ base::DictionaryValue* DatatypeAssociationStatsToValue(
   SET_INT32(num_sync_items_added);
   SET_INT32(num_sync_items_deleted);
   SET_INT32(num_sync_items_modified);
+  SET_INT64(local_version_pre_association);
+  SET_INT64(sync_version_pre_association)
   SET_BOOL(had_error);
   SET_INT64(download_wait_time_us);
   SET_INT64(download_time_us);

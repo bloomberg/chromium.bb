@@ -34,6 +34,7 @@ class SYNC_EXPORT SyncMergeResult {
   void set_num_items_added(int num_items_added);
   void set_num_items_deleted(int num_items_deleted);
   void set_num_items_modified(int num_items_modified);
+  void set_pre_association_version(int64 version);
 
   // Getters.
   ModelType model_type() const;
@@ -43,6 +44,7 @@ class SYNC_EXPORT SyncMergeResult {
   int num_items_added() const;
   int num_items_deleted() const;
   int num_items_modified() const;
+  int64 pre_association_version() const;
 
  private:
   // Make |this| into a copy of |other|.
@@ -66,6 +68,9 @@ class SYNC_EXPORT SyncMergeResult {
   int num_items_added_;
   int num_items_deleted_;
   int num_items_modified_;
+
+  // Version of model before association.
+  int64 pre_association_version_;
 };
 
 }  // namespace syncer

@@ -204,6 +204,10 @@ void DebugInfoEventListener::OnSingleDataTypeConfigureComplete(
       association_stats.num_sync_items_deleted);
   datatype_stats->set_num_sync_items_modified(
       association_stats.num_sync_items_modified);
+  datatype_stats->set_local_version_pre_association(
+      association_stats.local_version_pre_association);
+  datatype_stats->set_sync_version_pre_association(
+      association_stats.sync_version_pre_association);
   datatype_stats->set_had_error(association_stats.had_error);
   datatype_stats->set_association_wait_time_for_same_priority_us(
         association_stats.association_wait_time.InMicroseconds());

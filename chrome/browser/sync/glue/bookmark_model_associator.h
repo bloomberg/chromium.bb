@@ -141,7 +141,8 @@ class BookmarkModelAssociator
 
   // Check whether bookmark model and sync model are synced by comparing
   // their transaction versions.
-  void CheckModelSyncState() const;
+  void CheckModelSyncState(syncer::SyncMergeResult* local_merge_result,
+                           syncer::SyncMergeResult* syncer_merge_result) const;
 
   BookmarkModel* bookmark_model_;
   Profile* profile_;

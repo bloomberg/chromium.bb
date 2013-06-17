@@ -86,6 +86,12 @@ message DatatypeAssociationStats {
   optional int32 num_sync_items_deleted = 10;
   optional int32 num_sync_items_modified = 11;
 
+  // Model versions before association. Ideally local and sync model should
+  // have same version if models were persisted properly in last session.
+  // Note: currently version is only set on bookmark model.
+  optional int64 local_version_pre_association = 20;
+  optional int64 sync_version_pre_association = 21;
+
   // The data type ran into an error during model association.
   optional bool had_error = 12;
 

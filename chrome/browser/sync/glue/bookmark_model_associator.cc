@@ -364,7 +364,7 @@ bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
 syncer::SyncError BookmarkModelAssociator::AssociateModels(
     syncer::SyncMergeResult* local_merge_result,
     syncer::SyncMergeResult* syncer_merge_result) {
-  CheckModelSyncState();
+  CheckModelSyncState(local_merge_result, syncer_merge_result);
 
   scoped_ptr<ScopedAssociationUpdater> association_updater(
       new ScopedAssociationUpdater(bookmark_model_));
@@ -702,14 +702,22 @@ bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
       trans.GetCryptographer()->is_ready();
 }
 
-void BookmarkModelAssociator::CheckModelSyncState() const {
+void BookmarkModelAssociator::CheckModelSyncState(
+    syncer::SyncMergeResult* local_merge_result,
+    syncer::SyncMergeResult* syncer_merge_result) const {
   std::string version_str;
   if (bookmark_model_->root_node()->GetMetaInfo(kBookmarkTransactionVersionKey,
                                                 &version_str)) {
     syncer::ReadTransaction trans(FROM_HERE, user_share_);
     int64 native_version;
-    if (base::StringToInt64(version_str, &native_version) &&
-        native_version != trans.GetModelVersion(syncer::BOOKMARKS)) {
+    if (!base::StringToInt64(version_str, &native_version))
+      return;
+    local_merge_result->set_pre_association_version(native_version);
+
+    int64 sync_version = trans.GetModelVersion(syncer::BOOKMARKS);
+    syncer_merge_result->set_pre_association_version(sync_version);
+
+    if (native_version != sync_version) {
       UMA_HISTOGRAM_ENUMERATION("Sync.LocalModelOutOfSync",
                                 ModelTypeToHistogramInt(syncer::BOOKMARKS),
                                 syncer::MODEL_TYPE_COUNT);

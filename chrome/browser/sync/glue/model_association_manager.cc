@@ -99,12 +99,16 @@ syncer::DataTypeAssociationStats BuildAssociationStatsFromMergeResults(
       local_merge_result.num_items_deleted();
   stats.num_local_items_modified =
       local_merge_result.num_items_modified();
+  stats.local_version_pre_association =
+      local_merge_result.pre_association_version();
   stats.num_sync_items_added =
       syncer_merge_result.num_items_added();
   stats.num_sync_items_deleted =
       syncer_merge_result.num_items_deleted();
   stats.num_sync_items_modified =
       syncer_merge_result.num_items_modified();
+  stats.sync_version_pre_association =
+      syncer_merge_result.pre_association_version();
   stats.association_wait_time = association_wait_time;
   stats.association_time = association_time;
   return stats;

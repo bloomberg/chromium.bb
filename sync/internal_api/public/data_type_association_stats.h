@@ -32,6 +32,10 @@ struct SYNC_EXPORT DataTypeAssociationStats {
   int num_sync_items_deleted;
   int num_sync_items_modified;
 
+  // Model versions before association.
+  int64 local_version_pre_association;
+  int64 sync_version_pre_association;
+
   // Whether a datatype unrecoverable error was encountered during association.
   bool had_error;
 
