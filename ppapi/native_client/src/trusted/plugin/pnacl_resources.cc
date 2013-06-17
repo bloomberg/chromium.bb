@@ -121,9 +121,11 @@ void PnaclResources::ReadResourceInfo(
 
   int32_t fd = GetPnaclFD(plugin_, resource_info_filename.c_str());
   if (fd < 0) {
+    // File-open failed. Assume this means that the file is
+    // not actually installed.
     ReadResourceInfoError(
-        nacl::string("PnaclResources::ReadResourceInfo failed for: ") +
-        resource_info_filename);
+        nacl::string("The Portable Native Client component is not installed"
+                     " or has been disabled."));
     return;
   }
 
@@ -218,10 +220,13 @@ void PnaclResources::StartLoad(
 
     int32_t fd = PnaclResources::GetPnaclFD(plugin_, filename.c_str());
     if (fd < 0) {
+      // File-open failed. Assume this means that the file is
+      // not actually installed. This shouldn't actually occur since
+      // ReadResourceInfo() should happen first, and error out.
       coordinator_->ReportNonPpapiError(
           ERROR_PNACL_RESOURCE_FETCH,
-          nacl::string("PnaclResources::StartLoad failed for: ") +
-          filename + " (PNaCl not installed?  Check chrome://nacl)");
+          nacl::string("The Portable Native Client component is not installed "
+                       "or has been disabled. Cannot open file: ") + filename);
       result = PP_ERROR_FILENOTFOUND;
       break;
     } else {
