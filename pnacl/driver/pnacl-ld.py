@@ -386,14 +386,6 @@ def main(argv):
       # otherwise these are translated to calls to _Unwind_Resume(),
       # which will not be available at native link time.
       preopt_passes += ['-lowerinvoke', '-simplifycfg']
-    elif env.getbool('STATIC'):
-      # On x86-64, the native linker's TLS templates are not
-      # compatible with src/untrusted/nacl/tls.c because tls.c expects
-      # to find ELFCLASS32 ELF headers, and the native linker uses
-      # ELFCLASS64 on x86-64.  This means we must always run
-      # -nacl-expand-tls.  Note that running this means we do not
-      # support linking against native code that uses TLS variables.
-      preopt_passes += ['-nacl-expand-tls']
     if len(preopt_passes) != 0:
       chain.add(DoLLVMPasses(preopt_passes), 'simplify_preopt.' + bitcode_type)
 

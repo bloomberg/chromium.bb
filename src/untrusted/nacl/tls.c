@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "native_client/src/include/elf32.h"
+#include "native_client/src/include/elf64.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/tls_params.h"
@@ -58,7 +59,10 @@ extern uint32_t __tls_template_alignment __attribute__((weak));
  * are not visible in the address space.
  */
 /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-extern const Elf32_Ehdr __ehdr_start __attribute__((weak));
+extern union {
+  Elf32_Ehdr ehdr32;
+  Elf64_Ehdr ehdr64;
+} __ehdr_start __attribute__((weak));
 
 static size_t aligned_size(size_t size, size_t alignment) {
   return (size + alignment - 1) & -alignment;
@@ -80,6 +84,8 @@ struct tls_info {
   size_t tbss_size;         /* Size of .tbss (zero-fill space after .tdata) */
   size_t tls_alignment;     /* Alignment required for TLS segment */
 };
+
+static struct tls_info cached_tls_info;
 
 #if defined(__arm__)
 
@@ -116,36 +122,44 @@ static void finish_info_cache(
 
 #endif  /* defined(__arm__) */
 
+#define DEFINE_READ_PHDR(func_name, ehdr, Elf_Phdr, elf_class)          \
+  __attribute__((unused))                                               \
+  static int func_name(void) {                                          \
+    if ((ehdr) == NULL ||                                               \
+        (ehdr)->e_ident[EI_CLASS] != (elf_class) ||                     \
+        (ehdr)->e_phentsize != sizeof(Elf_Phdr))                        \
+      return 0;                                                         \
+    const Elf_Phdr *phdr =                                              \
+      (const Elf_Phdr *) ((const char *) (ehdr) + (ehdr)->e_phoff);     \
+    for (int i = 0; i < (ehdr)->e_phnum; ++i) {                         \
+      if (phdr[i].p_type == PT_TLS) {                                   \
+        cached_tls_info.tls_alignment = phdr[i].p_align;                \
+        cached_tls_info.tdata_start =                                   \
+          (const void *) (uintptr_t) phdr[i].p_vaddr;                   \
+        cached_tls_info.tdata_size = phdr[i].p_filesz;                  \
+        cached_tls_info.tbss_size = phdr[i].p_memsz - phdr[i].p_filesz; \
+        return 1;                                                       \
+      }                                                                 \
+    }                                                                   \
+    return 0;                                                           \
+  }
+
+DEFINE_READ_PHDR(read_phdr32, &__ehdr_start.ehdr32, Elf32_Phdr, ELFCLASS32)
+DEFINE_READ_PHDR(read_phdr64, &__ehdr_start.ehdr64, Elf64_Phdr, ELFCLASS64)
+
 static const struct tls_info *get_tls_info(void) {
-  static struct tls_info cached_tls_info;
   if (cached_tls_info.tls_alignment == 0) {
+#if defined(__pnacl__)
     /*
-     * This is the first call, so we have to figure out the data.
-     * See if we have access to our own PT_TLS fields to tell from there.
+     * This is only needed in non-ABI-stable pexes for which the
+     * ExpandTls pass has not been run.  On ABI-stable pexes,
+     * link-time optimization will optimize away these calls because
+     * &__ehdr_start == NULL.
      */
-    const Elf32_Phdr *phdr = NULL;
-    int phnum = 0;
-    bool phentsize_ok = false;
-    if (&__ehdr_start != NULL && __ehdr_start.e_ident[EI_CLASS] == ELFCLASS32) {
-      phentsize_ok = __ehdr_start.e_phentsize == sizeof(Elf32_Phdr);
-      phnum = __ehdr_start.e_phnum;
-      phdr = (const Elf32_Phdr *) ((const char *) &__ehdr_start +
-                                   __ehdr_start.e_phoff);
-    }
-    if (phentsize_ok && phdr != NULL) {
-      /*
-       * We have phdrs we can see.  Now find our PT_TLS.
-       */
-      for (int i = 0; i < phnum; ++i) {
-        if (phdr[i].p_type == PT_TLS) {
-          cached_tls_info.tls_alignment = phdr[i].p_align;
-          cached_tls_info.tdata_start = (const void *) phdr[i].p_vaddr;
-          cached_tls_info.tdata_size = phdr[i].p_filesz;
-          cached_tls_info.tbss_size = phdr[i].p_memsz - phdr[i].p_filesz;
-          break;
-        }
-      }
-    }
+    read_phdr32() || read_phdr64();
+#else
+    read_phdr32();
+#endif
 
     if (cached_tls_info.tls_alignment == 0) {
       /*
