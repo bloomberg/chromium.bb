@@ -1664,7 +1664,7 @@ crbug.com/24182 inspector/timeline/timeline-decode-resize.html [ Pass Failure Ti
 
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
-crbug.com/247553 http/tests/inspector/compiler-source-mapping-debug.html [ Crash Timeout Pass ]
+crbug.com/250920 [ Release ] http/tests/inspector/styles/selector-line-sourcemap-header-deprecated.html [ Failure Pass ]
 
 crbug.com/247614 [ Debug ] printing/print-close-crash.html [ Crash ]
 
