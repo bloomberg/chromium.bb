@@ -45,6 +45,11 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     TRACE_EVENT0("startup", "BrowserMainRunnerImpl::Initialize")
     is_initialized_ = true;
 
+#if !defined(OS_IOS)
+  if (parameters.command_line.HasSwitch(switches::kWaitForDebugger))
+    base::debug::WaitForDebugger(60, true);
+#endif
+
 #if defined(OS_WIN)
     if (parameters.command_line.HasSwitch(
             switches::kEnableTextServicesFramework)) {
