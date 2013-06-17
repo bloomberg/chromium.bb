@@ -112,6 +112,9 @@ class PepperPlatformAudioInputImpl
   // Initialized on the main thread and accessed on the I/O thread afterwards.
   media::AudioParameters params_;
 
+  // Whether we have tried to create an audio stream.
+  bool create_stream_sent_;
+
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioInputImpl);
 };
 

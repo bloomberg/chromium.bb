@@ -128,7 +128,8 @@ PepperPlatformAudioInputImpl::~PepperPlatformAudioInputImpl() {
 
 PepperPlatformAudioInputImpl::PepperPlatformAudioInputImpl()
     : client_(NULL),
-      main_message_loop_proxy_(base::MessageLoopProxy::current()) {
+      main_message_loop_proxy_(base::MessageLoopProxy::current()),
+      create_stream_sent_(false) {
 }
 
 bool PepperPlatformAudioInputImpl::Initialize(
@@ -172,6 +173,7 @@ void PepperPlatformAudioInputImpl::InitializeOnIOThread(int session_id) {
     return;
 
   // We will be notified by OnStreamCreated().
+  create_stream_sent_ = true;
   ipc_->CreateStream(this, session_id, params_, false, 1);
 }
 
@@ -188,10 +190,10 @@ void PepperPlatformAudioInputImpl::StopCaptureOnIOThread() {
       BelongsToCurrentThread());
 
   // TODO(yzshen): We cannot re-start capturing if the stream is closed.
-  if (ipc_) {
+  if (ipc_ && create_stream_sent_) {
     ipc_->CloseStream();
-    ipc_.reset();
   }
+  ipc_.reset();
 }
 
 void PepperPlatformAudioInputImpl::ShutDownOnIOThread() {
