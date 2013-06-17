@@ -677,7 +677,13 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
 
     String markup = "<span " + text + "></span>";
     RefPtr<DocumentFragment> fragment = element->document()->createDocumentFragment();
-    fragment->parseXML(markup, 0, DisallowScriptingContent);
+
+    bool shouldIgnoreCase = element->document()->isHTMLDocument() && element->isHTMLElement();
+    // Not all elements can represent the context (i.e. IFRAME), hence using document.body.
+    if (shouldIgnoreCase && element->document()->body())
+        fragment->parseHTML(markup, element->document()->body(), DisallowScriptingContent);
+    else
+        fragment->parseXML(markup, 0, DisallowScriptingContent);
 
     Element* parsedElement = fragment->firstChild() && fragment->firstChild()->isElementNode() ? toElement(fragment->firstChild()) : 0;
     if (!parsedElement) {
@@ -685,7 +691,6 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
         return;
     }
 
-    bool shouldIgnoreCase = element->document()->isHTMLDocument() && element->isHTMLElement();
     String caseAdjustedName = name ? (shouldIgnoreCase ? name->lower() : *name) : String();
 
     if (!parsedElement->hasAttributes() && name) {

@@ -77,6 +77,16 @@ Running: testAddAttribute
       <div id="node-to-add-attribute" newattr="new-value"></div>
   </div>
 
+Running: testAddAttributeUnquotedValue
+==== before ====
+- <div id="testAddAttributeUnquotedValue">
+      <div id="node-to-add-attribute-unquoted-value"></div>
+  </div>
+==== after ====
+- <div id="testAddAttributeUnquotedValue">
+      <div id="node-to-add-attribute-unquoted-value" newattr="unquotedValue"></div>
+  </div>
+
 Running: testEditCommentAsHTML
 ==== before ====
 - <div id="testEditCommentAsHTML">
