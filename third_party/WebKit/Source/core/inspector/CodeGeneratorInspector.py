@@ -1018,7 +1018,7 @@ class TypeBindings:
 
                         @classmethod
                         def get_array_item_c_type_text(cls):
-                            return "const %s%s&" % (helper.full_name_prefix_for_use, fixed_type_name.class_name)
+                            return "%s%s" % (helper.full_name_prefix_for_use, fixed_type_name.class_name)
 
                     return TypedefString
 
