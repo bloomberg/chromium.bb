@@ -544,7 +544,7 @@ tc-tests-all() {
     "toolchain_tests"
   # smaller set of sbtc tests for ARM because qemu is flaky.
   scons-stage-noirt "arm"    "${scons_flags} use_sandboxed_translator=1" \
-    "run_hello_world_test run_eh_catch_many_opt_noframe_test"
+    "run_hello_world_test"
 }
 
 tc-tests-fast() {
