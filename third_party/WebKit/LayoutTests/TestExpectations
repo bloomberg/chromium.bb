@@ -1147,7 +1147,7 @@ webkit.org/b/106387 crbug.com/238363 [ Debug ] svg/W3C-SVG-1.1/animate-elem-80-t
 webkit.org/b/106387 [ Debug ] svg/W3C-SVG-1.1/filters-comptran-01-b.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/106390 [ Win ] svg/dynamic-updates/SVGFEComponentTransferElement-svgdom-tableValues-prop.html [ ImageOnlyFailure Pass ]
 webkit.org/b/106390 [ Win ] svg/dynamic-updates/SVGFEComponentTransferElement-dom-tableValues-attr.html [ ImageOnlyFailure Pass ]
-webkit.org/b/106426 [ XP ] inspector/geolocation-error.html [ Failure Pass ]
+webkit.org/b/106426 inspector/geolocation-error.html [ Failure Pass ]
 webkit.org/b/106426 inspector/geolocation-success.html [ Failure Pass ]
 webkit.org/b/106426 [ XP ] inspector/geolocation-watchPosition.html [ Failure Pass ]
 
