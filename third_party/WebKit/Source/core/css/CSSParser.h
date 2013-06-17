@@ -453,6 +453,9 @@ private:
     inline CharacterType* tokenStart();
 
     template <typename CharacterType>
+    inline CharacterType* dataStart();
+
+    template <typename CharacterType>
     inline void setTokenStart(CharacterType*);
 
     inline unsigned tokenStartOffset();

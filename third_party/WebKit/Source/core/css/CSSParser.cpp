@@ -9471,6 +9471,18 @@ inline UChar* CSSParser::tokenStart<UChar>()
     return m_tokenStart.ptr16;
 }
 
+template <>
+inline LChar* CSSParser::dataStart<LChar>()
+{
+    return m_dataStart8.get();
+}
+
+template <>
+inline UChar* CSSParser::dataStart<UChar>()
+{
+    return m_dataStart16.get();
+}
+
 CSSParserLocation CSSParser::currentLocation()
 {
     CSSParserLocation location;
@@ -10105,7 +10117,7 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
         return;
 
     case 'c':
-        if (length == 8 && isEqualToCSSIdentifier(name + 2, "harset"))
+        if (length == 8 && isEqualToCSSIdentifier(name + 2, "harset") && name == dataStart<CharacterType>())
             m_token = CHARSET_SYM;
         return;
 
@@ -11045,7 +11057,7 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
         break;
 
     case InvalidRuleError:
-        builder.appendLiteral("Invalid CSS rule: ");
+        builder.appendLiteral("Invalid CSS rule at: ");
         break;
 
     default:

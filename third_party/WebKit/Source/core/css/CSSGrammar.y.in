@@ -387,9 +387,8 @@ maybe_sgml:
   ;
 
 maybe_charset:
-   /* empty */
-  | charset {
-  }
+  /* empty */
+  | charset
   ;
 
 closing_brace:
@@ -410,8 +409,9 @@ charset:
      $$ = 0;
   }
   | CHARSET_SYM at_rule_recovery {
+     $$ = 0;
   }
-;
+  ;
 
 rule_list:
    /* empty */
@@ -445,7 +445,10 @@ rule:
 
 block_rule_body:
     block_rule_list
-  | block_rule_list error rule_error_recovery; 
+  | block_rule_list error error_location rule_error_recovery {
+        parser->reportError($3, CSSParser::InvalidRuleError);
+    }
+    ; 
 
 block_rule_list: 
     /* empty */ { $$ = 0; }
@@ -456,12 +459,15 @@ block_rule_list:
               $$ = parser->createRuleList();
           $$->append($2);
       }
-  }
-  ;
+    }
+    ;
 
 region_block_rule_body:
     region_block_rule_list
-  | region_block_rule_list error rule_error_recovery;
+  | region_block_rule_list error error_location rule_error_recovery {
+        parser->reportError($3, CSSParser::InvalidRuleError);
+    }
+    ;
 
 region_block_rule_list:
     /* empty */ { $$ = 0; }
@@ -524,18 +530,24 @@ import:
     }
   ;
 
+before_namespace_rule:
+    /* empty */ {
+        // FIXME: There should be parser->startRuleHeader.
+    }
+    ;
+
 namespace:
-NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space ';' {
-    parser->addNamespace($3, $4);
-    $$ = 0;
-}
-| NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space invalid_block {
-    $$ = 0;
-}
-| NAMESPACE_SYM at_rule_recovery {
-    $$ = 0;
-}
-;
+    before_namespace_rule NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space ';' {
+        parser->addNamespace($4, $5);
+        $$ = 0;
+    }
+  | before_namespace_rule NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space invalid_block {
+        $$ = 0;
+    }
+  | before_namespace_rule NAMESPACE_SYM at_rule_recovery {
+        $$ = 0;
+    }
+  ;
 
 maybe_ns_prefix:
 /* empty */ { $$.clear(); }
@@ -612,10 +624,11 @@ valid_media_query:
 
 media_query:
     valid_media_query
-    | valid_media_query error rule_error_recovery {
+    | valid_media_query error error_location rule_error_recovery {
         $$ = parser->createFloatingNotAllQuery();
     }
-    | error rule_error_recovery {
+    | error error_location rule_error_recovery {
+        parser->reportError($2);
         $$ = parser->createFloatingNotAllQuery();
     }
     ;
@@ -861,7 +874,7 @@ key:
     ;
 
 keyframes_error_recovery:
-    error rule_error_recovery;
+    error error_location rule_error_recovery;
 
 before_page_rule:
     /* empty */ {
@@ -1820,13 +1833,19 @@ min_or_max_function:
     ;
 
 invalid_at:
-    ATKEYWORD at_rule_recovery
-  | margin_sym at_rule_recovery
-  | error CHARSET_SYM at_rule_recovery
+    ATKEYWORD
+  | margin_sym 
     ;
 
 at_rule_recovery:
-    error rule_error_recovery at_rule_end;
+    at_rule_header_recovery at_invalid_rule_header_end at_rule_end
+    ;
+
+at_rule_header_recovery:
+    error error_location rule_error_recovery {
+        parser->reportError($2, CSSParser::InvalidRuleError);
+    }
+    ;
 
 at_rule_end:
     at_invalid_rule_header_end ';'
@@ -1834,10 +1853,13 @@ at_rule_end:
     ;
 
 invalid_rule:
-    error rule_error_recovery at_invalid_rule_header_end invalid_block {
+    error error_location rule_error_recovery at_invalid_rule_header_end invalid_block {
+        parser->reportError($2, CSSParser::InvalidRuleError);
         $$ = 0;
     }
-  | invalid_at {
+  | error_location invalid_at rule_error_recovery at_invalid_rule_header_end at_rule_end {
+        parser->resumeErrorLogging();
+        parser->reportError($1, CSSParser::InvalidRuleError);
         $$ = 0;
     }
     ;
