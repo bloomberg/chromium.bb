@@ -303,8 +303,9 @@ weston_slide_run(struct weston_surface *surface, float start, float stop,
 	if (!animation)
 		return NULL;
 
-	animation->spring.friction = 900;
-	animation->spring.k = 300;
+	animation->spring.friction = 600;
+	animation->spring.k = 400;
+	animation->spring.clip = WESTON_SPRING_BOUNCE;
 
 	return animation;
 }
