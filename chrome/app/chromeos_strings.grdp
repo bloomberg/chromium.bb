@@ -308,9 +308,6 @@ Press any key to continue exploring.
   <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL" desc="Medium length name for the input method for traditional Chinese which is show following the text: Your input method has changed to...">
    Traditional Chinese
   </message>
-  <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_JAPANESE" desc="Medium length name for the input method for Japanese which is show following the text: Your input method has changed to...">
-    Japanese
-  </message>
   <message name="IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN" desc="Medium length name for the input method for Korean which is show following the text: Your input method has changed to...">
     Korean
   </message>
@@ -2255,30 +2252,6 @@ Press any key to continue exploring.
            desc="The label for the Pinyin simplified Chinese input method">
     Pinyin input method (for US Dvorak keyboard)
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_INPUT_METHOD"
-           desc="The label for the Japanese input method for US keyboard">
-    Japanese input method (for US keyboard)
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_DV_INPUT_METHOD"
-           desc="The label for the Japanese input method for US Dvorak keyboard">
-    Japanese input method (for US Dvorak keyboard)
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_JP_INPUT_METHOD"
-           desc="The label for the Japanese input method for Japanese keyboard">
-    Japanese input method (for Japanese keyboard)
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_INPUT_METHOD"
-           desc="The label for the Google Japanese Input input method for US keyboard">
-    Google Japanese Input (for US keyboard)
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_DV_INPUT_METHOD"
-           desc="The label for the Google Japanese Input input method for US Dvorak keyboard">
-    Google Japanese Input (for US Dvorak keyboard)
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_JP_INPUT_METHOD"
-           desc="The label for the Google Japanese Input input method for Japanese keyboard">
-    Google Japanese Input (for Japanese keyboard)
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_HANDWRITING_INPUT_METHOD"
            desc="The label for the Japanese handwriting input method">
     Handwriting input method for Japanese
@@ -3241,12 +3214,6 @@ Battery full
   </message>
   <!-- END GENERATED KEYBOARD OVERLAY STRINGS -->
   <if expr="lang == 'ja'">
-    <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="In the language menu button, this shows a character set in use is set to Hiragana.">
-      Hiragana
-    </message>
-    <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA" desc="In the language menu button, this shows a character set in use is set to KATAKANA.">
-      Katakana
-    </message>
   </if>
   <if expr="lang != 'ja'">
     <message translateable="false" name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="">
@@ -3256,19 +3223,6 @@ Battery full
       Katakana
     </message>
   </if>
-  <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_DIRECT_INPUT" desc="In the language menu button, this shows a character set in use is set to 'direct input' mode.">
-    Direct input
-  </message>
-  <!-- "Half width" part is translateable. -->
-  <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA" desc="In the language menu button, this shows a character set in use is set to half width Katakana.">
-    Half width Katakana
-  </message>
-  <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_LATIN" desc="In the language menu button, this shows a character set in use is set to Latin.">
-    Latin
-  </message>
-  <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN" desc="In the language menu button, this shows a character set in use is set to wide Latin.">
-    Wide Latin
-  </message>
   <message name="IDS_STATUSBAR_IME_KOREAN_HANJA_INPUT_MODE" desc="In the language menu button, this shows the input mode.">
     Hanja mode
   </message>

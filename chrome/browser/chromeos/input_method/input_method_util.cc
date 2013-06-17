@@ -42,9 +42,6 @@ const struct {
   // To distinguish from "xkb:gb::eng"
   { "xkb:gb:dvorak:eng", "DV" },
   // To distinguish from "xkb:jp::jpn"
-  { "mozc", "\xe3\x81\x82" },  // U+3042, Japanese Hiragana letter A in UTF-8.
-  { "mozc-dv", "\xe3\x81\x82" },
-  { "mozc-jp", "\xe3\x81\x82" },
   // TODO(nona): Make following variables configurable. http://crbug.com/232260.
   { "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us", "\xe3\x81\x82" },
   { "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp", "\xe3\x81\x82" },
@@ -75,11 +72,8 @@ const struct {
 } kMappingImeIdToMediumLenNameResourceId[] = {
   { "m17n:zh:cangjie", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
   { "m17n:zh:quick", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "mozc", IDS_LANGUAGES_MEDIUM_LEN_NAME_JAPANESE },
   { "mozc-chewing", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "mozc-dv", IDS_LANGUAGES_MEDIUM_LEN_NAME_JAPANESE },
   { "mozc-hangul", IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN },
-  { "mozc-jp", IDS_LANGUAGES_MEDIUM_LEN_NAME_JAPANESE },
   { "pinyin", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
   { "pinyin-dv", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
 };
@@ -113,15 +107,6 @@ const struct EnglishToResouceId {
   const char* english_string_from_ibus;
   int resource_id;
 } kEnglishToResourceIdArray[] = {
-  // For ibus-mozc.
-  { "Direct input", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_DIRECT_INPUT },
-  { "Hiragana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA },
-  { "Katakana", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_KATAKANA },
-  { "Half width katakana",  // small k is not a typo.
-    IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HALF_WIDTH_KATAKANA },
-  { "Latin", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_LATIN },
-  { "Wide Latin", IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_WIDE_LATIN },
-
   // For ibus-mozc-hangul
   { "Hanja mode", IDS_STATUSBAR_IME_KOREAN_HANJA_INPUT_MODE },
   { "Hangul mode", IDS_STATUSBAR_IME_KOREAN_HANGUL_INPUT_MODE },
@@ -199,21 +184,6 @@ const struct EnglishToResouceId {
   { "pinyin", IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD },
   { "pinyin-dv",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DV_INPUT_METHOD },
-#if defined(GOOGLE_CHROME_BUILD)
-  { "mozc",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_INPUT_METHOD },
-  { "mozc-dv",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_US_DV_INPUT_METHOD },
-  { "mozc-jp",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_GOOGLE_JP_INPUT_METHOD },
-#else
-  { "mozc",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_INPUT_METHOD },
-  { "mozc-dv",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_US_DV_INPUT_METHOD },
-  { "mozc-jp",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_MOZC_JP_INPUT_METHOD },
-#endif  // if defined(GOOGLE_CHROME_BUILD)
   { "zinnia-japanese",
     IDS_OPTIONS_SETTINGS_LANGUAGES_JAPANESE_HANDWRITING_INPUT_METHOD },
   { "mozc-hangul", IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD },
