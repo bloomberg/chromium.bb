@@ -380,10 +380,11 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
     bool destroyed = false;
     destroyed_ = &destroyed;
     ui::ShowSystemMenuAtPoint(GetWidget()->GetNativeView(), point);
-    if (!destroyed_) {
-      SetState(views::CustomButton::STATE_NORMAL);
-      destroyed_ = NULL;
-    }
+    if (destroyed)
+      return;
+
+    destroyed_ = NULL;
+    SetState(views::CustomButton::STATE_NORMAL);
     return;
   }
   views::ImageButton::OnMouseReleased(event);
