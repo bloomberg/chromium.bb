@@ -36,6 +36,7 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
       return SYNC_STATUS_NOT_MODIFIED;
 
     case google_apis::HTTP_CONFLICT:
+    case google_apis::HTTP_PRECONDITION:
       return SYNC_STATUS_HAS_CONFLICT;
 
     case google_apis::HTTP_UNAUTHORIZED:
@@ -57,11 +58,12 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
     case google_apis::GDATA_FILE_ERROR:
       return SYNC_FILE_ERROR_FAILED;
 
+    case google_apis::HTTP_FORBIDDEN:
+      return SYNC_STATUS_ACCESS_FORBIDDEN;
+
     case google_apis::HTTP_RESUME_INCOMPLETE:
     case google_apis::HTTP_BAD_REQUEST:
-    case google_apis::HTTP_FORBIDDEN:
     case google_apis::HTTP_LENGTH_REQUIRED:
-    case google_apis::HTTP_PRECONDITION:
     case google_apis::HTTP_NOT_IMPLEMENTED:
     case google_apis::GDATA_PARSE_ERROR:
     case google_apis::GDATA_OTHER_ERROR:

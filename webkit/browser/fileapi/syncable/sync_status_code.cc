@@ -84,6 +84,8 @@ std::string SyncStatusCodeToString(SyncStatusCode status) {
       return "Sync: file not modified.";
     case SYNC_STATUS_SYNC_DISABLED:
       return "Sync: sync is disabled.";
+    case SYNC_STATUS_ACCESS_FORBIDDEN:
+      return "Sync: service access forbidden.";
   }
   NOTREACHED();
   return "Unknown error.";

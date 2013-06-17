@@ -460,6 +460,12 @@ void DriveFileSyncService::UpdateServiceStateFromLastOperationStatus(
                          "Authentication required");
       break;
 
+    // OAuth token error.
+    case SYNC_STATUS_ACCESS_FORBIDDEN:
+      UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+                         "Access forbidden");
+      break;
+
     // Errors which could make the service temporarily unavailable.
     case SYNC_STATUS_RETRY:
     case SYNC_STATUS_NETWORK_ERROR:
