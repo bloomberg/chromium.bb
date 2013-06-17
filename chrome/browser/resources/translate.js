@@ -208,7 +208,10 @@ cr.googleTranslate = (function(key) {
     onTranslateElementLoad: function() {
       loadedTime = performance.now();
       try {
-        lib = google.translate.TranslateService({'key': key});
+        lib = google.translate.TranslateService({
+          'key': key,
+          'useSecureConnection': true
+        });
       } catch (err) {
         error = true;
         return;
