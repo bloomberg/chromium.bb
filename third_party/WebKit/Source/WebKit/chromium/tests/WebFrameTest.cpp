@@ -55,7 +55,9 @@
 #include "WebTextCheckingResult.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/dom/Clipboard.h"
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/MouseEvent.h"
 #include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
 #include "core/page/EventHandler.h"
@@ -3334,6 +3336,47 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollShortPage)
     EXPECT_FALSE(client.wasProgrammaticScroll());
     EXPECT_TRUE(client.wasUserScroll());
     client.reset();
+
+    m_webView->close();
+    m_webView = 0;
+}
+
+
+class TestNavigationPolicyWebFrameClient : public WebFrameClient {
+public:
+
+    virtual void didChangeLocationWithinPage(WebFrame*)
+    {
+        EXPECT_TRUE(false);
+    }
+
+    virtual WebURLError cancelledError(WebFrame*, const WebURLRequest& request)
+    {
+        // Return a dummy error so the DocumentLoader doesn't assert when
+        // the reload cancels it.
+        WebURLError webURLError;
+        webURLError.domain = "";
+        webURLError.reason = 1;
+        webURLError.isCancellation = true;
+        webURLError.unreachableURL = WebURL();
+        return webURLError;
+    }
+};
+
+TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
+{
+    registerMockedHttpURLLoad("fragment_middle_click.html");
+    TestNavigationPolicyWebFrameClient client;
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fragment_middle_click.html", true, &client);
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+
+    WebCore::Document* document = webViewImpl->page()->mainFrame()->document();
+    WebCore::KURL destination = document->url();
+    destination.setFragmentIdentifier("test");
+
+    RefPtr<WebCore::Event> event = WebCore::MouseEvent::create(WebCore::eventNames().clickEvent, false, false,
+        document->defaultView(), 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 1, 0, 0);
+    webViewImpl->page()->mainFrame()->loader()->urlSelected(destination, "", event.release(), false, WebCore::MaybeSendReferrer);
 
     m_webView->close();
     m_webView = 0;

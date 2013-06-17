@@ -1129,7 +1129,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     bool isFormSubmission = formState;
 
     if (shouldPerformFragmentNavigation(isFormSubmission, request.httpMethod(), type, request.url()))
-        checkNavigationPolicyAndContinueFragmentScroll(NavigationAction(request, type, isFormSubmission));
+        checkNavigationPolicyAndContinueFragmentScroll(action);
     else {
         setPolicyDocumentLoader(loader.get());
         checkNavigationPolicyAndContinueLoad(formState);
