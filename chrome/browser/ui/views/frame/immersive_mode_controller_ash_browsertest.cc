@@ -63,32 +63,6 @@ class ImmersiveModeControllerAshTest : public InProcessBrowserTest {
   BrowserView* browser_view() { return browser_view_; }
   ImmersiveModeControllerAsh* controller() { return controller_; }
 
-  // Sets the target of |event| to the root window and sets |event|'s position
-  // to |position_in_screen|.
-  void SetEventPositionAndTarget(const gfx::Point& position_in_screen,
-                                 ui::LocatedEvent* event) {
-    aura::RootWindow* root_window =
-        browser_view_->GetNativeWindow()->GetRootWindow();
-
-    aura::client::ScreenPositionClient* position_client =
-        aura::client::GetScreenPositionClient(root_window);
-
-    gfx::Point position = position_in_screen;
-    position_client->ConvertPointFromScreen(root_window, &position);
-    event->set_location(position);
-    event->set_root_location(position);
-
-    ui::Event::DispatcherApi(event).set_target(root_window);
-  }
-
-  // Access to private data from the controller.
-  bool top_edge_hover_timer_running() const {
-    return controller_->top_edge_hover_timer_.IsRunning();
-  }
-  int mouse_x_when_hit_top() const {
-    return controller_->mouse_x_when_hit_top_;
-  }
-
   // Callback for when the onbeforeunload dialog closes for the sake of testing
   // the dialog with immersive mode.
   void OnBeforeUnloadJavaScriptDialogClosed(
@@ -353,97 +327,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, Focus) {
   EXPECT_FALSE(controller()->IsRevealed());
 }
 #endif  // OS_WIN
-
-// Test mouse event processing for top-of-screen reveal triggering.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
-                       OnMouseEvent) {
-  // Set up initial state.
-  chrome::ToggleFullscreenMode(browser());
-  ASSERT_TRUE(controller()->IsEnabled());
-  ASSERT_FALSE(controller()->IsRevealed());
-
-  // Mouse wheel event does nothing.
-  ui::MouseEvent wheel(
-      ui::ET_MOUSEWHEEL, gfx::Point(), gfx::Point(), ui::EF_NONE);
-  controller()->OnMouseEvent(&wheel);
-  EXPECT_FALSE(top_edge_hover_timer_running());
-
-  // Move to top edge of screen starts hover timer running.
-  ui::MouseEvent move(
-      ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(100, 0), ui::EF_NONE);
-  ui::Event::DispatcherApi(&move).set_target(
-      browser_view()->GetNativeWindow());
-  controller()->OnMouseEvent(&move);
-  EXPECT_TRUE(top_edge_hover_timer_running());
-  EXPECT_EQ(100, mouse_x_when_hit_top());
-
-  // Moving off the top edge stops it.
-  move.set_root_location(gfx::Point(100, 1));
-  controller()->OnMouseEvent(&move);
-  EXPECT_FALSE(top_edge_hover_timer_running());
-
-  // Moving back to the top starts the timer again.
-  move.set_root_location(gfx::Point(100, 0));
-  controller()->OnMouseEvent(&move);
-  EXPECT_TRUE(top_edge_hover_timer_running());
-  EXPECT_EQ(100, mouse_x_when_hit_top());
-
-  // Slight move to the right keeps the timer running for the same hit point.
-  move.set_root_location(gfx::Point(101, 0));
-  controller()->OnMouseEvent(&move);
-  EXPECT_TRUE(top_edge_hover_timer_running());
-  EXPECT_EQ(100, mouse_x_when_hit_top());
-
-  // Moving back to the left also keeps the timer running.
-  move.set_root_location(gfx::Point(100, 0));
-  controller()->OnMouseEvent(&move);
-  EXPECT_TRUE(top_edge_hover_timer_running());
-  EXPECT_EQ(100, mouse_x_when_hit_top());
-
-  // Large move right restarts the timer (so it is still running) and considers
-  // this a new hit at the top.
-  move.set_root_location(gfx::Point(150, 0));
-  controller()->OnMouseEvent(&move);
-  EXPECT_TRUE(top_edge_hover_timer_running());
-  EXPECT_EQ(150, mouse_x_when_hit_top());
-
-  // Moving off the top edge stops the timer, which also means we won't leak
-  // a posted task from the test.
-  move.set_root_location(gfx::Point(150, 1));
-  controller()->OnMouseEvent(&move);
-  EXPECT_FALSE(top_edge_hover_timer_running());
-
-  // Once revealed, a move just a little below the top container doesn't end a
-  // reveal.
-  EXPECT_FALSE(controller()->IsRevealed());
-  controller()->StartRevealForTest(true);
-  gfx::Point just_below(0, browser_view()->top_container()->height());
-  views::View::ConvertPointToScreen(browser_view()->top_container(),
-                                    &just_below);
-  aura::Env::GetInstance()->set_last_mouse_location(just_below);
-  SetEventPositionAndTarget(just_below, &move);
-  controller()->OnMouseEvent(&move);
-  EXPECT_TRUE(controller()->IsRevealed());
-
-  // Once revealed, clicking just below the top container ends the reveal.
-  controller()->StartRevealForTest(true);
-  ui::MouseEvent click(
-      ui::ET_MOUSE_PRESSED, gfx::Point(), just_below, ui::EF_NONE);
-  aura::Env::GetInstance()->set_last_mouse_location(just_below);
-  SetEventPositionAndTarget(just_below, &click);
-  controller()->OnMouseEvent(&click);
-  EXPECT_FALSE(controller()->IsRevealed());
-
-  // Moving a lot below the top container ends a reveal.
-  controller()->StartRevealForTest(true);
-  gfx::Point far_below(0, browser_view()->top_container()->height() + 50);
-  views::View::ConvertPointToScreen(browser_view()->top_container(),
-                                    &far_below);
-  aura::Env::GetInstance()->set_last_mouse_location(far_below);
-  SetEventPositionAndTarget(far_below, &move);
-  controller()->OnMouseEvent(&move);
-  EXPECT_FALSE(controller()->IsRevealed());
-}
 
 // Test behavior when the mouse becomes hovered without moving.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,

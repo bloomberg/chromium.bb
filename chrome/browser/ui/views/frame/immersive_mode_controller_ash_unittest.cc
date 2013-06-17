@@ -7,11 +7,9 @@
 #include "ash/test/ash_test_base.h"
 #include "chrome/browser/ui/immersive_fullscreen_configuration.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
-#include "ui/base/events/event.h"
 
 // For now, immersive fullscreen is Chrome OS only.
 #if defined(OS_CHROMEOS)
@@ -59,6 +57,18 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
   views::View* top_container() { return top_container_; }
   MockImmersiveModeControllerDelegate* delegate() { return delegate_.get(); }
 
+  aura::test::EventGenerator* event_generator() {
+    return event_generator_.get();
+  }
+
+  // Access to private data from the controller.
+  bool top_edge_hover_timer_running() const {
+    return controller_->top_edge_hover_timer_.IsRunning();
+  }
+  int mouse_x_when_hit_top() const {
+    return controller_->mouse_x_when_hit_top_;
+  }
+
   // ash::test::AshTestBase overrides:
   virtual void SetUp() OVERRIDE {
     ash::test::AshTestBase::SetUp();
@@ -69,15 +79,17 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
     controller_.reset(new ImmersiveModeControllerAsh);
     delegate_.reset(new MockImmersiveModeControllerDelegate);
 
+    event_generator_.reset(new aura::test::EventGenerator(CurrentContext()));
+
     widget_ = new views::Widget();
     views::Widget::InitParams params;
     params.context = CurrentContext();
-    params.bounds = gfx::Rect(0, 0, 100, 500);
+    params.bounds = gfx::Rect(0, 0, 500, 500);
     widget_->Init(params);
     widget_->Show();
 
     top_container_ = new views::View();
-    top_container_->SetBounds(0, 0, 50, 500);
+    top_container_->SetBounds(0, 0, 500, 100);
     top_container_->set_focusable(true);
 
     widget_->GetContentsView()->AddChildView(top_container_);
@@ -99,24 +111,12 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
     AttemptRevealStateChange(false, modality);
   }
 
-  // Move the mouse to |position|. |position| should be in |top_container_|
-  // coordinates.
-  void MoveMouse(const gfx::Point& position) {
-    aura::client::GetCursorClient(CurrentContext())->EnableMouseEvents();
-
-    gfx::Point position_in_screen = position;
-    views::View::ConvertPointToScreen(top_container_, &position_in_screen);
-    aura::Env::GetInstance()->set_last_mouse_location(position_in_screen);
-
-    gfx::Point position_in_root_window = position_in_screen;
-    aura::client::ScreenPositionClient* position_client =
-        aura::client::GetScreenPositionClient(CurrentContext());
-    position_client->ConvertPointFromScreen(CurrentContext(),
-        &position_in_root_window);
-    ui::MouseEvent event(ui::ET_MOUSE_MOVED, position_in_root_window,
-        position_in_root_window, ui::EF_NONE);
-    ui::Event::DispatcherApi(&event).set_target(CurrentContext());
-    controller()->OnMouseEvent(&event);
+  // Move the mouse to the given coordinates. The coordinates should be in
+  // |top_container_| coordinates.
+  void MoveMouse(int x, int y) {
+    // Luckily, |top_container_| is at the top left of the root window so the
+    // provided coordinates are already in the coordinates of the root window.
+    event_generator_->MoveMouseTo(x, y);
 
     // If the top edge timer started running as a result of the mouse move, run
     // the task which occurs after the timer delay. This reveals the
@@ -131,33 +131,23 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
  private:
   // Attempt to change the revealed state to |revealed| via |modality|.
   void AttemptRevealStateChange(bool revealed, Modality modality) {
-    aura::client::CursorClient* cursor_client =
-        aura::client::GetCursorClient(CurrentContext());
-    if (modality == MODALITY_MOUSE)
-      cursor_client->EnableMouseEvents();
-    else
-      cursor_client->DisableMouseEvents();
-
-    switch(modality) {
-      case MODALITY_MOUSE:
-        MoveMouse(GetPosition(revealed));
+    // Compute the event position in |top_container_| coordinates.
+    gfx::Point event_position(0, revealed ? 0 : top_container_->height() + 100);
+    switch (modality) {
+      case MODALITY_MOUSE: {
+        MoveMouse(event_position.x(), event_position.y());
         break;
+      }
       case MODALITY_TOUCH: {
-        gfx::Point position = GetPosition(revealed);
-        views::View::ConvertPointToScreen(top_container_, &position);
-        aura::client::ScreenPositionClient* position_client =
-            aura::client::GetScreenPositionClient(CurrentContext());
-        position_client->ConvertPointFromScreen(CurrentContext(), &position);
-
-        ui::TouchEvent event(ui::ET_TOUCH_PRESSED,
-                             position,
-                             0,
-                             base::TimeDelta());
-        ui::Event::DispatcherApi(&event).set_target(CurrentContext());
-        controller_->OnTouchEvent(&event);
+        // Luckily, |top_container_| is at the top left of the root window so
+        // |event_position| is already in the coordinates of the root window.
+        event_generator_->MoveTouch(event_position);
+        event_generator_->PressTouch();
+        event_generator_->ReleaseTouch();
         break;
       }
       case MODALITY_GESTURE: {
+        aura::client::GetCursorClient(CurrentContext())->DisableMouseEvents();
         ImmersiveModeControllerAsh::SwipeType swipe_type = revealed ?
             ImmersiveModeControllerAsh::SWIPE_OPEN :
             ImmersiveModeControllerAsh::SWIPE_CLOSE;
@@ -167,17 +157,12 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
     }
   }
 
-  // Returns the position of an event which would reveal / unreveal the
-  // top-of-window views. The returned position is in coordinates of
-  // |top_container_|.
-  gfx::Point GetPosition(bool revealed) const {
-    return gfx::Point(0, revealed ? 0 : top_container_->height() + 100);
-  }
-
   scoped_ptr<ImmersiveModeControllerAsh> controller_;
   scoped_ptr<MockImmersiveModeControllerDelegate> delegate_;
   views::Widget* widget_;  // Owned by the native widget.
   views::View* top_container_;  // Owned by |root_view_|.
+  scoped_ptr<aura::test::EventGenerator> event_generator_;
+
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshTest);
 };
 
@@ -205,6 +190,91 @@ TEST_F(ImmersiveModeControllerAshTest, ImmersiveModeControllerAsh) {
   EXPECT_FALSE(delegate()->immersive_style());
 }
 
+// Test mouse event processing for top-of-screen reveal triggering.
+TEST_F(ImmersiveModeControllerAshTest, OnMouseEvent) {
+  // Set up initial state.
+  controller()->SetEnabled(true);
+  ASSERT_TRUE(controller()->IsEnabled());
+  ASSERT_FALSE(controller()->IsRevealed());
+
+  // Mouse wheel event does nothing.
+  ui::MouseEvent wheel(
+      ui::ET_MOUSEWHEEL, gfx::Point(), gfx::Point(), ui::EF_NONE);
+  event_generator()->Dispatch(&wheel);
+  EXPECT_FALSE(top_edge_hover_timer_running());
+
+  // Move to top edge of screen starts hover timer running. We cannot use
+  // MoveMouse() because MoveMouse() stops the timer if it started running.
+  event_generator()->MoveMouseTo(100, 0);
+  EXPECT_TRUE(top_edge_hover_timer_running());
+  EXPECT_EQ(100, mouse_x_when_hit_top());
+
+  // Moving off the top edge stops it.
+  event_generator()->MoveMouseTo(100, 1);
+  EXPECT_FALSE(top_edge_hover_timer_running());
+
+  // Moving back to the top starts the timer again.
+  event_generator()->MoveMouseTo(100, 0);
+  EXPECT_TRUE(top_edge_hover_timer_running());
+  EXPECT_EQ(100, mouse_x_when_hit_top());
+
+  // Slight move to the right keeps the timer running for the same hit point.
+  event_generator()->MoveMouseTo(101, 0);
+  EXPECT_TRUE(top_edge_hover_timer_running());
+  EXPECT_EQ(100, mouse_x_when_hit_top());
+
+  // Moving back to the left also keeps the timer running.
+  event_generator()->MoveMouseTo(100, 0);
+  EXPECT_TRUE(top_edge_hover_timer_running());
+  EXPECT_EQ(100, mouse_x_when_hit_top());
+
+  // Large move right restarts the timer (so it is still running) and considers
+  // this a new hit at the top.
+  event_generator()->MoveMouseTo(150, 0);
+  EXPECT_TRUE(top_edge_hover_timer_running());
+  EXPECT_EQ(150, mouse_x_when_hit_top());
+
+  // Moving off the top edge stops the timer.
+  event_generator()->MoveMouseTo(150, 1);
+  EXPECT_FALSE(top_edge_hover_timer_running());
+
+  // Once revealed, a move just a little below the top container doesn't end a
+  // reveal.
+  AttemptReveal(MODALITY_MOUSE);
+  event_generator()->MoveMouseTo(0, top_container()->height() + 1);
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  // Once revealed, clicking just below the top container ends the reveal.
+  event_generator()->ClickLeftButton();
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Moving a lot below the top container ends a reveal.
+  AttemptReveal(MODALITY_MOUSE);
+  EXPECT_TRUE(controller()->IsRevealed());
+  event_generator()->MoveMouseTo(0, top_container()->height() + 50);
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // The mouse position cannot cause a reveal when TopContainerView's widget
+  // has capture.
+  views::Widget* widget = top_container()->GetWidget();
+  widget->SetCapture(top_container());
+  AttemptReveal(MODALITY_MOUSE);
+  EXPECT_FALSE(controller()->IsRevealed());
+  widget->ReleaseCapture();
+
+  // The mouse position cannot end the reveal while TopContainerView's widget
+  // has capture.
+  AttemptReveal(MODALITY_MOUSE);
+  EXPECT_TRUE(controller()->IsRevealed());
+  widget->SetCapture(top_container());
+  event_generator()->MoveMouseTo(0, top_container()->height() + 51);
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  // Releasing capture should end the reveal.
+  widget->ReleaseCapture();
+  EXPECT_FALSE(controller()->IsRevealed());
+}
+
 // Test revealing the top-of-window views using one modality and ending
 // the reveal via another. For instance, initiating the reveal via a SWIPE_OPEN
 // edge gesture, switching to using the mouse and ending the reveal by moving
@@ -217,7 +287,7 @@ TEST_F(ImmersiveModeControllerAshTest, DifferentModalityEnterExit) {
   // Initiate reveal via gesture, end reveal via mouse.
   AttemptReveal(MODALITY_GESTURE);
   EXPECT_TRUE(controller()->IsRevealed());
-  MoveMouse(gfx::Point(1, 1));
+  MoveMouse(1, 1);
   EXPECT_TRUE(controller()->IsRevealed());
   AttemptUnreveal(MODALITY_MOUSE);
   EXPECT_FALSE(controller()->IsRevealed());
