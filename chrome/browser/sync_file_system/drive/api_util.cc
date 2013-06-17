@@ -232,7 +232,7 @@ void APIUtil::GetDriveDirectoryForSyncRoot(const ResourceIdCallback& callback) {
   if (GetRootResourceId().empty()) {
     GetDriveRootResourceId(
         base::Bind(&APIUtil::DidGetDriveRootResourceIdForGetSyncRoot,
-                                      AsWeakPtr(), callback));
+                   AsWeakPtr(), callback));
     return;
   }
 
@@ -600,8 +600,16 @@ void APIUtil::DidGetDriveRootResourceIdForEnsureSyncRoot(
     const std::string& sync_root_resource_id,
     google_apis::GDataErrorCode error) {
   DCHECK(CalledOnValidThread());
-  // We don't have to check |error| since we can continue to process regardless
-  // of it.
+
+  if (error != google_apis::HTTP_SUCCESS) {
+    DVLOG(2) << "Error on ensuring the sync root directory is not in"
+             << " 'My Drive': " << error;
+    // Give up ensuring the sync root directory is not in 'My Drive'. This will
+    // be retried at some point.
+    return;
+  }
+
+  DCHECK(!GetRootResourceId().empty());
   EnsureSyncRootIsNotInMyDrive(sync_root_resource_id);
 }
 
