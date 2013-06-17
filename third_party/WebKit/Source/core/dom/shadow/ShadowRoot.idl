@@ -30,6 +30,7 @@
     readonly attribute Element activeElement;
     attribute boolean applyAuthorStyles;
     attribute boolean resetStyleInheritance;
+    [EnabledAtRuntime=experimentalShadowDOM, ImplementedAs=bindingsOlderShadowRoot] readonly attribute ShadowRoot olderShadowRoot;
 
     [TreatNullAs=NullString, DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds, SetterRaisesException] attribute DOMString innerHTML;
 

@@ -98,6 +98,15 @@ void ShadowRoot::dispose()
     removeDetachedChildren();
 }
 
+ShadowRoot* ShadowRoot::bindingsOlderShadowRoot() const
+{
+    ShadowRoot* older = olderShadowRoot();
+    while (older && !older->shouldExposeToBindings())
+        older = older->olderShadowRoot();
+    ASSERT(!older || older->shouldExposeToBindings());
+    return older;
+}
+
 PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionCode& ec)
 {
     ec = DATA_CLONE_ERR;

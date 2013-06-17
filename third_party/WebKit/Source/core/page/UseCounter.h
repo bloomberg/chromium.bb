@@ -141,6 +141,7 @@ public:
         XSLTProcessor,
         SVGSwitchElement,
         PrefixedDocumentRegister,
+        HTMLShadowElementOlderShadowRoot,
         // Add new features immediately above this line. Don't change assigned numbers of each items.
         NumberOfFeatures, // This enum value must be last.
     };

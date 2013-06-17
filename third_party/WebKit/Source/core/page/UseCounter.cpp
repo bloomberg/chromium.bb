@@ -636,6 +636,8 @@ String UseCounter::deprecationMessage(Feature feature)
         return "The '(-webkit-transition)' media query feature is deprecated; please consider using the more exact conditional \"@supports('(transition-property: prop_name)')\" instead.";
 
     // Web Components
+    case HTMLShadowElementOlderShadowRoot:
+        return "HTMLShadowElement.olderShadowRoot is deprecated.";
     case PrefixedDocumentRegister:
         return "The document.webkitRegister method is deprecated. Use the document.register method instead.";
 

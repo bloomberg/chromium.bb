@@ -30,5 +30,5 @@
 
 interface HTMLShadowElement : HTMLElement {
     attribute boolean resetStyleInheritance;
-    readonly attribute ShadowRoot olderShadowRoot;
+    [DeprecateAs=HTMLShadowElementOlderShadowRoot] readonly attribute ShadowRoot olderShadowRoot;
 };
