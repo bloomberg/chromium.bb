@@ -1738,6 +1738,7 @@ crbug.com/229678 svg/W3C-SVG-1.1/filters-turb-02-f.svg [ Failure ]
 crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFailure Pass ]
 crbug.com/248146 [ Linux ] editing/style/create-block-for-style-012.html [ ImageOnlyFailure Pass ]
 crbug.com/248146 [ Linux ] fast/text/whitespace/nbsp-mode-and-linewraps.html [ ImageOnlyFailure Pass ]
+crbug.com/250970 [ Debug ] fast/events/simulated-key-state.html [ Crash Timeout ]
 
 Bug(dpranke) [ Linux ] fast/writing-mode/broken-ideographic-font.html [ Failure ]
 
@@ -1750,7 +1751,7 @@ crbug.com/248541 [ Win7 Release ] virtual/gpu/fast/canvas/webgl/webgl-depth-text
 crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Pass Failure ]
 crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/gl-teximage.html [ Pass Failure ]
 crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/texture-active-bind.html [ Pass Failure ]
-crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/texture-npot.html [ Pass Failure ]
+crbug.com/250818 virtual/gpu/fast/canvas/webgl/texture-npot.html [ Pass Failure ]
 
 crbug.com/248832 [ XP ] virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ ImageOnlyFailure ]
 
