@@ -193,7 +193,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws
     started_animating_ = true;
   }
 
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* tree_impl) OVERRIDE {
     if (started_animating_)
       EndTest();
   }
@@ -205,7 +205,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws
     return false;
   }
 
-  virtual void AfterTest() OVERRIDE { }
+  virtual void AfterTest() OVERRIDE {}
 
  private:
   bool started_animating_;

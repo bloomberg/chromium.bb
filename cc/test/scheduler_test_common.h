@@ -62,6 +62,36 @@ class FakeThread : public cc::Thread {
   bool run_pending_task_on_overwrite_;
 };
 
+class FakeTimeSource : public cc::TimeSource {
+ public:
+  FakeTimeSource() : active_(false), client_(0) {}
+
+  virtual void SetClient(cc::TimeSourceClient* client) OVERRIDE;
+  virtual void SetActive(bool b) OVERRIDE;
+  virtual bool Active() const OVERRIDE;
+  virtual void SetTimebaseAndInterval(base::TimeTicks timebase,
+                                      base::TimeDelta interval) OVERRIDE {}
+  virtual base::TimeTicks LastTickTime() OVERRIDE;
+  virtual base::TimeTicks NextTickTime() OVERRIDE;
+
+  void Tick() {
+    ASSERT_TRUE(active_);
+    if (client_)
+      client_->OnTimerTick();
+  }
+
+  void SetNextTickTime(base::TimeTicks next_tick_time) {
+    next_tick_time_ = next_tick_time;
+  }
+
+ protected:
+  virtual ~FakeTimeSource() {}
+
+  bool active_;
+  base::TimeTicks next_tick_time_;
+  cc::TimeSourceClient* client_;
+};
+
 class FakeDelayBasedTimeSource : public cc::DelayBasedTimeSource {
  public:
   static scoped_refptr<FakeDelayBasedTimeSource> Create(

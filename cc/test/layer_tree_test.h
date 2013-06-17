@@ -24,7 +24,6 @@ class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
-class FakeOutputSurface;
 
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public WebKit::WebAnimationDelegate {
@@ -161,7 +160,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   LayerTreeSettings settings_;
   scoped_ptr<LayerTreeHostClientForTesting> client_;
   scoped_ptr<LayerTreeHost> layer_tree_host_;
-  FakeOutputSurface* output_surface_;
 
   bool beginning_;
   bool end_when_begin_returns_;

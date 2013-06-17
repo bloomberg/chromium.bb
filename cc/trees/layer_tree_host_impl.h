@@ -54,6 +54,8 @@ class LayerTreeHostImplClient {
       scoped_refptr<ContextProvider> offscreen_context_provider) = 0;
   virtual void DidLoseOutputSurfaceOnImplThread() = 0;
   virtual void OnSwapBuffersCompleteOnImplThread() = 0;
+  virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
+                                        base::TimeDelta interval) = 0;
   virtual void BeginFrameOnImplThread(base::TimeTicks frame_time) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) = 0;
@@ -181,6 +183,8 @@ class CC_EXPORT LayerTreeHostImpl
   virtual float DeviceScaleFactor() const OVERRIDE;
   virtual const LayerTreeSettings& Settings() const OVERRIDE;
  public:
+  virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE;
   virtual void SetFullRootLayerDamage() OVERRIDE;
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
       OVERRIDE;
@@ -201,12 +205,12 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool DeferredInitialize(
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void SetNeedsRedrawRect(gfx::Rect rect) OVERRIDE;
+  virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
+                                        base::TimeDelta interval) OVERRIDE;
   virtual void BeginFrame(base::TimeTicks frame_time)
       OVERRIDE;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport) OVERRIDE;
-  virtual void DidLoseOutputSurface() OVERRIDE;
-  virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE;
 
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();

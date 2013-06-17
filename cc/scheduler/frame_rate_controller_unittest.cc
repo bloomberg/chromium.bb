@@ -17,7 +17,7 @@ class FakeFrameRateControllerClient : public cc::FrameRateControllerClient {
   void Reset() { began_frame_ = false; }
   bool BeganFrame() const { return began_frame_; }
 
-  virtual void FrameRateControllerTick(bool throttled) OVERRIDE {
+  virtual void BeginFrame(bool throttled) OVERRIDE {
     began_frame_ = !throttled;
   }
 
@@ -74,7 +74,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight) {
 
   controller.SetClient(&client);
   controller.SetActive(true);
-  controller.SetMaxSwapsPending(2);
+  controller.SetMaxFramesPending(2);
 
   base::TimeTicks elapsed;  // Muck around with time a bit
 
@@ -132,7 +132,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled) {
   FrameRateController controller(&thread);
 
   controller.SetClient(&client);
-  controller.SetMaxSwapsPending(2);
+  controller.SetMaxFramesPending(2);
 
   // SetActive triggers 1st frame, make sure the BeginFrame callback
   // is called

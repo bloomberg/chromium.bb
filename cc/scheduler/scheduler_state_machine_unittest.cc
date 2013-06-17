@@ -98,7 +98,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
               state.CommitState());
     EXPECT_FALSE(state.NeedsCommit());
-    EXPECT_TRUE(state.BeginFrameNeededByImplThread());
+    EXPECT_FALSE(state.BeginFrameNeededByImplThread());
   }
 }
 

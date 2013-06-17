@@ -8,8 +8,7 @@ namespace cc {
 
 SchedulerSettings::SchedulerSettings()
     : impl_side_painting(false),
-      timeout_and_draw_when_animation_checkerboards(true),
-      using_synchronous_renderer_compositor(false) {}
+      timeout_and_draw_when_animation_checkerboards(true) {}
 
 SchedulerSettings::~SchedulerSettings() {}
 

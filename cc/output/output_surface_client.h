@@ -27,6 +27,8 @@ class CC_EXPORT OutputSurfaceClient {
   virtual bool DeferredInitialize(
       scoped_refptr<ContextProvider> offscreen_context_provider) = 0;
   virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) = 0;
+  virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
+                                        base::TimeDelta interval) = 0;
   virtual void BeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) = 0;
   virtual void DidLoseOutputSurface() = 0;
