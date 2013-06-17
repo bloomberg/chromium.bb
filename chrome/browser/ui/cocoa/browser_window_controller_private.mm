@@ -1037,8 +1037,17 @@ willPositionSheet:(NSWindow*)sheet
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
   if (!contents)
     return;
-  contents->GetView()->SetAllowOverlappingViews(
-      [self shouldAllowOverlappingViews:inPresentationMode]);
+
+  BOOL allowOverlappingViews =
+      [self shouldAllowOverlappingViews:inPresentationMode];
+  contents->GetView()->SetAllowOverlappingViews(allowOverlappingViews);
+
+  DevToolsWindow* devToolsWindow =
+      DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
+  if (devToolsWindow) {
+    devToolsWindow->web_contents()->GetView()->
+        SetAllowOverlappingViews(allowOverlappingViews);
+  }
 }
 
 - (void)updateInfoBarTipVisibility {
