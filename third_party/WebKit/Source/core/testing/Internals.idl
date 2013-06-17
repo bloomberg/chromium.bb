@@ -166,6 +166,7 @@
     const unsigned short LAYER_TREE_INCLUDES_REPAINT_RECTS = 2;
     const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 4;
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
+    [RaisesException] DOMString elementLayerTreeAsText(Element element, optional unsigned short flags);
 
     [RaisesException] NodeList paintOrderListBeforePromote(Element element);
     [RaisesException] NodeList paintOrderListAfterPromote(Element element);

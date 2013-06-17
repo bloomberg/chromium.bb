@@ -203,6 +203,8 @@ public:
 
     String layerTreeAsText(Document*, unsigned flags, ExceptionCode&) const;
     String layerTreeAsText(Document*, ExceptionCode&) const;
+    String elementLayerTreeAsText(Element*, unsigned flags, ExceptionCode&) const;
+    String elementLayerTreeAsText(Element*, ExceptionCode&) const;
 
     PassRefPtr<NodeList> paintOrderListBeforePromote(Element*, ExceptionCode&);
     PassRefPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionCode&);

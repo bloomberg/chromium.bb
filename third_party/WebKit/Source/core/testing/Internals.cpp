@@ -1447,6 +1447,11 @@ String Internals::layerTreeAsText(Document* document, ExceptionCode& ec) const
     return layerTreeAsText(document, 0, ec);
 }
 
+String Internals::elementLayerTreeAsText(Element* element, ExceptionCode& ec) const
+{
+    return elementLayerTreeAsText(element, 0, ec);
+}
+
 static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionCode& ec, RenderLayer::PaintOrderListType type)
 {
     if (!element) {
@@ -1491,6 +1496,35 @@ String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionC
     }
 
     return document->frame()->layerTreeAsText(flags);
+}
+
+String Internals::elementLayerTreeAsText(Element* element, unsigned flags, ExceptionCode& ec) const
+{
+    if (!element) {
+        ec = INVALID_ACCESS_ERR;
+        return String();
+    }
+
+    element->document()->updateLayout();
+
+    RenderObject* renderer = element->renderer();
+    if (!renderer || !renderer->isBox()) {
+        ec = INVALID_ACCESS_ERR;
+        return String();
+    }
+
+    RenderLayer* layer = toRenderBox(renderer)->layer();
+    if (!layer) {
+        ec = INVALID_ACCESS_ERR;
+        return String();
+    }
+
+    if (!layer->backing() || !layer->backing()->graphicsLayer()) {
+        // Don't raise exception in these cases which may be normally used in tests.
+        return String();
+    }
+
+    return layer->backing()->graphicsLayer()->layerTreeAsText(flags);
 }
 
 void Internals::setNeedsCompositedScrolling(Element* element, unsigned needsCompositedScrolling, ExceptionCode& ec)
