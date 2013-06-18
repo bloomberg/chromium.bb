@@ -1314,7 +1314,7 @@ crbug.com/237270 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Pass Time
 crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Pass Timeout ]
 # was: webkit.org/b/110873 - Flaky on most platforms
 crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass Timeout ]
-crbug.com/237270 [ Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Pass Timeout ]
+crbug.com/251129 [ Linux Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Failure Pass ]
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Debug ] fast/js/JSON-stringify.html [ Failure ]
