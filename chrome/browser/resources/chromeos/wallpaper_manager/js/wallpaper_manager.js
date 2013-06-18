@@ -709,7 +709,8 @@ function WallpaperManager(dialogDom) {
     var files = $('file-selector').files;
     if (files.length != 1)
       console.error('More than one files are selected or no file selected');
-    if (!files[0].type.match('image/jpeg')) {
+    if (!files[0].type.match('image/jpeg') &&
+        !files[0].type.match('image/png')) {
       this.showError_(str('invalidWallpaper'));
       return;
     }

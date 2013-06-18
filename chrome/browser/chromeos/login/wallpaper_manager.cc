@@ -1061,11 +1061,13 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& email,
       GetCustomWallpaperPath(kLargeWallpaperSubDir, email, file_name);
 
   std::vector<unsigned char> image_data = wallpaper.raw_image();
-  // Saves the original file in case that resized wallpaper is not generated
-  // (i.e. chrome shutdown before resized wallpaper is saved).
-  SaveWallpaperInternal(original_path,
-                        reinterpret_cast<char*>(&*image_data.begin()),
-                        image_data.size());
+  // Re-encode orginal file to jpeg format and saves the result in case that
+  // resized wallpaper is not generated (i.e. chrome shutdown before resized
+  // wallpaper is saved).
+  ResizeAndSaveWallpaper(wallpaper, original_path,
+                         ash::WALLPAPER_LAYOUT_STRETCH,
+                         wallpaper.image().width(),
+                         wallpaper.image().height());
   DeleteAllExcept(original_path);
 
   ResizeAndSaveWallpaper(wallpaper, small_wallpaper_path, layout,
@@ -1114,4 +1116,4 @@ void WallpaperManager::TimezoneChanged(const icu::TimeZone& timezone) {
   RestartTimer();
 }
 
-}  // chromeos
+}  // namespace chromeos
