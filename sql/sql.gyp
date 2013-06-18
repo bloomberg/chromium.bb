@@ -14,6 +14,9 @@
         '../base/base.gyp:base',
         '../third_party/sqlite/sqlite.gyp:sqlite',
       ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+      ],
       'defines': [ 'SQL_IMPLEMENTATION' ],
       'sources': [
         'connection.cc',
@@ -28,14 +31,48 @@
         'transaction.cc',
         'transaction.h',
       ],
+      'include_dirs': [
+        '..',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
+    },
+    {
+      'target_name': 'test_support_sql',
+      'type': 'static_library',
+      'dependencies': [
+        'sql',
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'export_dependent_settings': [
+        'sql',
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'test/scoped_error_ignorer.cc',
+        'test/scoped_error_ignorer.h',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
     },
     {
       'target_name': 'sql_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
         'sql',
+        'test_support_sql',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],

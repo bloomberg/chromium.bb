@@ -335,6 +335,9 @@ class SQL_EXPORT Connection {
   const char* GetErrorMessage() const;
 
  private:
+  // Allow test-support code to set/reset error ignorer.
+  friend class ScopedErrorIgnorer;
+
   // Statement accesses StatementRef which we don't want to expose to everybody
   // (they should go through Statement).
   friend class Statement;
@@ -358,6 +361,14 @@ class SQL_EXPORT Connection {
 
   // Internal helper for DoesTableExist and DoesIndexExist.
   bool DoesTableOrIndexExist(const char* name, const char* type) const;
+
+  // Accessors for global error-ignorer, for injecting behavior during tests.
+  // See test/scoped_error_ignorer.h.
+  typedef base::Callback<bool(int)> ErrorIgnorerCallback;
+  static ErrorIgnorerCallback* current_ignorer_cb_;
+  static bool ShouldIgnore(int error);
+  static void SetErrorIgnorer(ErrorIgnorerCallback* ignorer);
+  static void ResetErrorIgnorer();
 
   // A StatementRef is a refcounted wrapper around a sqlite statement pointer.
   // Refcounting allows us to give these statements out to sql::Statement

@@ -8,6 +8,7 @@
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
+#include "sql/test/scoped_error_ignorer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -134,6 +135,19 @@ TEST_F(SQLConnectionTest, Rollback) {
   db().RollbackTransaction();
   EXPECT_FALSE(db().CommitTransaction());
   EXPECT_TRUE(db().BeginTransaction());
+}
+
+// Test the scoped error ignorer by attempting to insert a duplicate
+// value into an index.
+TEST_F(SQLConnectionTest, ScopedIgnoreError) {
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER UNIQUE)";
+  ASSERT_TRUE(db().Execute(kCreateSql));
+  ASSERT_TRUE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
+
+  sql::ScopedErrorIgnorer ignore_errors;
+  ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
+  ASSERT_FALSE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
+  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
 }
 
 // Test that sql::Connection::Raze() results in a database without the
