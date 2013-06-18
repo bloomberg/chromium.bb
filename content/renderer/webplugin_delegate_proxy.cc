@@ -920,12 +920,10 @@ void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
   if (!render_view_)
     return;
 
-  ViewHostMsg_TextInputState_Params params;
-  params.type = static_cast<ui::TextInputType>(input_type);
-  params.can_compose_inline = true;
-  render_view_->Send(new ViewHostMsg_TextInputStateChanged(
+  render_view_->Send(new ViewHostMsg_TextInputTypeChanged(
       render_view_->routing_id(),
-      params));
+      static_cast<ui::TextInputType>(input_type),
+      true));
 
   ViewHostMsg_SelectionBounds_Params bounds_params;
   bounds_params.anchor_rect = bounds_params.focus_rect = caret_rect;

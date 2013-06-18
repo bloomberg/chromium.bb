@@ -93,8 +93,8 @@ class RenderWidgetHostViewAndroid
   virtual float GetOverdrawBottomHeight() const OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
   virtual void SetIsLoading(bool is_loading) OVERRIDE;
-  virtual void TextInputStateChanged(
-      const ViewHostMsg_TextInputState_Params& params) OVERRIDE;
+  virtual void TextInputTypeChanged(ui::TextInputType type,
+                                    bool can_compose_inline) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
   virtual void ImeCompositionRangeChanged(
       const ui::Range& range,
@@ -194,6 +194,7 @@ class RenderWidgetHostViewAndroid
   void SendGestureEvent(const WebKit::WebGestureEvent& event);
   void SendBeginFrame(base::TimeTicks frame_time);
 
+  void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
   void OnProcessImeBatchStateAck(bool is_begin);
   void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);

@@ -1008,12 +1008,12 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewAura::TextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
-  if (text_input_type_ != params.type ||
-      can_compose_inline_ != params.can_compose_inline) {
-    text_input_type_ = params.type;
-    can_compose_inline_ = params.can_compose_inline;
+void RenderWidgetHostViewAura::TextInputTypeChanged(ui::TextInputType type,
+                                                    bool can_compose_inline) {
+  if (text_input_type_ != type ||
+      can_compose_inline_ != can_compose_inline) {
+    text_input_type_ = type;
+    can_compose_inline_ = can_compose_inline;
     if (GetInputMethod())
       GetInputMethod()->OnTextInputTypeChanged(this);
     if (touch_editing_client_)

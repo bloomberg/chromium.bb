@@ -764,7 +764,7 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
 
 // Test that our IME backend sends a notification message when the input focus
 // changes.
-TEST_F(RenderViewImplTest, OnImeStateChanged) {
+TEST_F(RenderViewImplTest, OnImeTypeChanged) {
   // Enable our IME backend code.
   view()->OnSetInputMethodActive(true);
 
@@ -790,19 +790,15 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to activate IMEs.
-    view()->UpdateTextInputState(RenderWidget::DO_NOT_SHOW_IME);
+    view()->UpdateTextInputType();
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
-    ViewHostMsg_TextInputStateChanged::Param params;
-    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
-    EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, params.a.type);
-    EXPECT_EQ(true, params.a.can_compose_inline);
-    EXPECT_EQ("some text", params.a.value);
-    EXPECT_EQ(0, params.a.selection_start);
-    EXPECT_EQ(9, params.a.selection_end);
-    EXPECT_EQ(-1, params.a.composition_start);
-    EXPECT_EQ(-1, params.a.composition_end);
+    EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
+    ui::TextInputType type;
+    bool can_compose_inline = false;
+    ViewHostMsg_TextInputTypeChanged::Read(msg, &type, &can_compose_inline);
+    EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, type);
+    EXPECT_EQ(true, can_compose_inline);
 
     // Move the input focus to the second <input> element, where we should
     // de-activate IMEs.
@@ -812,12 +808,12 @@ TEST_F(RenderViewImplTest, OnImeStateChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to de-activate IMEs.
-    view()->UpdateTextInputState(RenderWidget::DO_NOT_SHOW_IME);
+    view()->UpdateTextInputType();
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
-    EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
-    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
-    EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, params.a.type);
+    EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
+    ViewHostMsg_TextInputTypeChanged::Read(msg, &type, &can_compose_inline);
+    EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
   }
 }
 
@@ -944,7 +940,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
     // Update the status of our IME back-end.
     // TODO(hbono): we should verify messages to be sent from the back-end.
-    view()->UpdateTextInputState(RenderWidget::DO_NOT_SHOW_IME);
+    view()->UpdateTextInputType();
     ProcessPendingMessages();
     render_thread_->sink().ClearMessages();
 

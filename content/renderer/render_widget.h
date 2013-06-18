@@ -405,9 +405,13 @@ class CONTENT_EXPORT RenderWidget
 
   // Checks if the text input state and compose inline mode have been changed.
   // If they are changed, the new value will be sent to the browser process.
+  void UpdateTextInputType();
+
+#if defined(OS_ANDROID)
   // |show_ime_if_needed| should be SHOW_IME_IF_NEEDED iff the update may cause
   // the ime to be displayed, e.g. after a tap on an input field on mobile.
   void UpdateTextInputState(ShowIme show_ime);
+#endif
 
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.

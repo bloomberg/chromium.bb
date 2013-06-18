@@ -1133,7 +1133,7 @@ void RenderWidget::DoDeferredUpdate() {
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
-  UpdateTextInputState(DO_NOT_SHOW_IME);
+  UpdateTextInputType();
   UpdateSelectionBounds();
 
   // Suppress painting if nothing is dirty.  This has to be done after updating
@@ -1512,7 +1512,10 @@ void RenderWidget::willBeginCompositorFrame() {
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
+  UpdateTextInputType();
+#if defined(OS_ANDROID)
   UpdateTextInputState(DO_NOT_SHOW_IME);
+#endif
   UpdateSelectionBounds();
 
   WillInitiatePaint();
@@ -2088,9 +2091,32 @@ void RenderWidget::FinishHandlingImeEvent() {
   // are ignored. These must explicitly be updated once finished handling the
   // ime event.
   UpdateSelectionBounds();
+#if defined(OS_ANDROID)
   UpdateTextInputState(DO_NOT_SHOW_IME);
+#endif
 }
 
+void RenderWidget::UpdateTextInputType() {
+  if (!input_method_is_active_)
+    return;
+
+  ui::TextInputType new_type = GetTextInputType();
+  if (IsDateTimeInput(new_type))
+    return;  // Not considered as a text input field in WebKit/Chromium.
+
+  bool new_can_compose_inline = CanComposeInline();
+
+  if (text_input_type_ != new_type
+      || can_compose_inline_ != new_can_compose_inline) {
+    Send(new ViewHostMsg_TextInputTypeChanged(routing_id(),
+                                              new_type,
+                                              new_can_compose_inline));
+    text_input_type_ = new_type;
+    can_compose_inline_ = new_can_compose_inline;
+  }
+}
+
+#if defined(OS_ANDROID)
 void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
   if (handling_ime_event_)
     return;
@@ -2128,6 +2154,7 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime) {
     can_compose_inline_ = new_can_compose_inline;
   }
 }
+#endif
 
 void RenderWidget::GetSelectionBounds(gfx::Rect* focus, gfx::Rect* anchor) {
   WebRect focus_webrect;

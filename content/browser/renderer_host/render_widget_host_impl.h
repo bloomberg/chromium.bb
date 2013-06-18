@@ -642,8 +642,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void OnBlur();
   void OnHasTouchEventHandlers(bool has_handlers);
   void OnSetCursor(const WebCursor& cursor);
-  void OnTextInputStateChanged(
-      const ViewHostMsg_TextInputState_Params& params);
+  void OnTextInputTypeChanged(ui::TextInputType type, bool can_compose_inline);
   void OnImeCompositionRangeChanged(
       const ui::Range& range,
       const std::vector<gfx::Rect>& character_bounds);

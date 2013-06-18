@@ -406,8 +406,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
-                        OnTextInputStateChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputTypeChanged,
+                        OnTextInputTypeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCompositionRangeChanged,
                         OnImeCompositionRangeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
@@ -2057,10 +2057,10 @@ void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
   view_->UpdateCursor(cursor);
 }
 
-void RenderWidgetHostImpl::OnTextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
+void RenderWidgetHostImpl::OnTextInputTypeChanged(ui::TextInputType type,
+                                                  bool can_compose_inline) {
   if (view_)
-    view_->TextInputStateChanged(params);
+    view_->TextInputTypeChanged(type, can_compose_inline);
 }
 
 void RenderWidgetHostImpl::OnImeCompositionRangeChanged(

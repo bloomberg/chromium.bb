@@ -141,6 +141,8 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
                         OnDidChangeBodyBackgroundColor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrame,
                         OnSetNeedsBeginFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
+                        OnTextInputStateChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -374,7 +376,17 @@ void RenderWidgetHostViewAndroid::SetIsLoading(bool is_loading) {
   // is TabContentsDelegate.
 }
 
-void RenderWidgetHostViewAndroid::TextInputStateChanged(
+void RenderWidgetHostViewAndroid::TextInputTypeChanged(
+    ui::TextInputType type,
+    bool can_compose_inline) {
+  // Unused on Android, which uses OnTextInputChanged instead.
+}
+
+int RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
+  return reinterpret_cast<int>(&ime_adapter_android_);
+}
+
+void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
   if (!IsShowing())
     return;
@@ -385,10 +397,6 @@ void RenderWidgetHostViewAndroid::TextInputStateChanged(
       params.value, params.selection_start, params.selection_end,
       params.composition_start, params.composition_end,
       params.show_ime_if_needed);
-}
-
-int RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
-  return reinterpret_cast<int>(&ime_adapter_android_);
 }
 
 void RenderWidgetHostViewAndroid::OnProcessImeBatchStateAck(bool is_begin) {

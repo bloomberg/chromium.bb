@@ -682,13 +682,13 @@ void RenderWidgetHostViewWin::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewWin::TextInputStateChanged(
-    const ViewHostMsg_TextInputState_Params& params) {
-  if (text_input_type_ != params.type ||
-      can_compose_inline_ != params.can_compose_inline) {
-    const bool text_input_type_changed = (text_input_type_ != params.type);
-    text_input_type_ = params.type;
-    can_compose_inline_ = params.can_compose_inline;
+void RenderWidgetHostViewWin::TextInputTypeChanged(ui::TextInputType type,
+                                                   bool can_compose_inline) {
+  if (text_input_type_ != type ||
+      can_compose_inline_ != can_compose_inline) {
+    const bool text_input_type_changed = (text_input_type_ != type);
+    text_input_type_ = type;
+    can_compose_inline_ = can_compose_inline;
     UpdateIMEState();
     if (text_input_type_changed)
       UpdateInputScopeIfNecessary(text_input_type_);

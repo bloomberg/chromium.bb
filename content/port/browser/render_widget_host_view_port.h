@@ -98,9 +98,9 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // Indicates whether the page has finished loading.
   virtual void SetIsLoading(bool is_loading) = 0;
 
-  // Updates the state of the input method attached to the view.
-  virtual void TextInputStateChanged(
-      const ViewHostMsg_TextInputState_Params& params) = 0;
+  // Updates the type of the input method attached to the view.
+  virtual void TextInputTypeChanged(ui::TextInputType type,
+                                    bool can_compose_inline) = 0;
 
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition() = 0;

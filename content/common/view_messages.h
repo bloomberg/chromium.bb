@@ -1945,6 +1945,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_OpenDateTimeDialog,
                     ViewHostMsg_DateTimeDialogValue_Params /* value */)
 
+IPC_MESSAGE_ROUTED2(ViewHostMsg_TextInputTypeChanged,
+                    ui::TextInputType /* TextInputType of the focused node */,
+                    bool /* can_compose_inline in the focused node */)
+
 // Required for updating text input state.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,
                     ViewHostMsg_TextInputState_Params /* input state params */)

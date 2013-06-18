@@ -2309,7 +2309,10 @@ void RenderViewImpl::didChangeSelection(bool is_empty_selection) {
     selection_text_.clear();
 
   SyncSelectionIfRequired();
+  UpdateTextInputType();
+#if defined(OS_ANDROID)
   UpdateTextInputState(DO_NOT_SHOW_IME);
+#endif
 }
 
 void RenderViewImpl::didExecuteCommand(const WebString& command_name) {
@@ -6067,12 +6070,12 @@ void RenderViewImpl::OnSetFocus(bool enable) {
 }
 
 void RenderViewImpl::PpapiPluginFocusChanged() {
-  UpdateTextInputState(DO_NOT_SHOW_IME);
+  UpdateTextInputType();
   UpdateSelectionBounds();
 }
 
 void RenderViewImpl::PpapiPluginTextInputTypeChanged() {
-  UpdateTextInputState(DO_NOT_SHOW_IME);
+  UpdateTextInputType();
   if (renderer_accessibility_)
     renderer_accessibility_->FocusedNodeChanged(WebNode());
 }
