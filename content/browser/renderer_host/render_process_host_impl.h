@@ -11,7 +11,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/content_export.h"
@@ -306,15 +305,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Records the last time we regarded the child process active.
   base::TimeTicks child_process_activity_time_;
-
-#if defined(OS_ANDROID)
-  // Android WebView needs to use a SyncChannel to block the browser process
-  // for synchronous find-in-page API support. In that case the shutdown event
-  // makes no sense as the Android port doesn't shutdown, but gets killed.
-  // SyncChannel still expects a shutdown event, so create a dummy one that
-  // will never will be signaled.
-  base::WaitableEvent dummy_shutdown_event_;
-#endif
 
   // Indicates whether this is a RenderProcessHost that has permission to embed
   // Browser Plugins.

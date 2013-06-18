@@ -244,7 +244,6 @@ CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 extern const char kDisableMediaHistoryLogging[];
 CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaPlayback[];
 extern const char kNetworkCountryIso[];
-CONTENT_EXPORT extern const char kEnableWebViewSynchronousAPIs[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
 #endif
 
