@@ -286,7 +286,8 @@ void RangeInputType::minOrMaxAttributeChanged()
     // Sanitize the value.
     if (element()->hasDirtyValue())
         element()->setValue(element()->value());
-    element()->setNeedsStyleRecalc();
+
+    sliderThumbElementOf(element())->setPositionFromValue();
 }
 
 void RangeInputType::setValue(const String& value, bool valueChanged, TextFieldEventBehavior eventBehavior)
