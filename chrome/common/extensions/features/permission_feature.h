@@ -20,7 +20,7 @@ class PermissionFeature : public SimpleFeature {
       const GURL& url,
       Feature::Platform platform) const OVERRIDE;
 
-  virtual std::string Parse(const DictionaryValue* value) OVERRIDE;
+  virtual std::string Parse(const base::DictionaryValue* value) OVERRIDE;
 };
 
 }  // extensions

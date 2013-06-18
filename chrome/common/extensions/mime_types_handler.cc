@@ -86,7 +86,7 @@ MimeTypesHandlerParser::~MimeTypesHandlerParser() {
 
 bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
                                    string16* error) {
-  const ListValue* mime_types_value = NULL;
+  const base::ListValue* mime_types_value = NULL;
   if (!extension->manifest()->GetList(keys::kMIMETypes,
                                       &mime_types_value)) {
     *error = ASCIIToUTF16(errors::kInvalidMimeTypesHandler);

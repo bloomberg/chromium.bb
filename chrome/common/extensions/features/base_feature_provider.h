@@ -23,7 +23,8 @@ class BaseFeatureProvider : public FeatureProvider {
 
   // Creates a new BaseFeatureProvider. Pass null to |factory| to have the
   // provider create plain old Feature instances.
-  BaseFeatureProvider(const DictionaryValue& root, FeatureFactory factory);
+  BaseFeatureProvider(const base::DictionaryValue& root,
+                      FeatureFactory factory);
   virtual ~BaseFeatureProvider();
 
   // Gets a feature provider for a specific feature type, like "permission".

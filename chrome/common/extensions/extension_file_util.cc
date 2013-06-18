@@ -140,7 +140,8 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
                                        Manifest::Location location,
                                        int flags,
                                        std::string* error) {
-  scoped_ptr<DictionaryValue> manifest(LoadManifest(extension_path, error));
+  scoped_ptr<base::DictionaryValue> manifest(
+      LoadManifest(extension_path, error));
   if (!manifest.get())
     return NULL;
   if (!extension_l10n_util::LocalizeExtension(extension_path, manifest.get(),
@@ -165,8 +166,8 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
   return extension;
 }
 
-DictionaryValue* LoadManifest(const base::FilePath& extension_path,
-                              std::string* error) {
+base::DictionaryValue* LoadManifest(const base::FilePath& extension_path,
+                                    std::string* error) {
   base::FilePath manifest_path =
       extension_path.Append(extensions::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
@@ -175,7 +176,7 @@ DictionaryValue* LoadManifest(const base::FilePath& extension_path,
   }
 
   JSONFileValueSerializer serializer(manifest_path);
-  scoped_ptr<Value> root(serializer.Deserialize(NULL, error));
+  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, error));
   if (!root.get()) {
     if (error->empty()) {
       // If |error| is empty, than the file could not be read.
@@ -191,12 +192,12 @@ DictionaryValue* LoadManifest(const base::FilePath& extension_path,
     return NULL;
   }
 
-  if (!root->IsType(Value::TYPE_DICTIONARY)) {
+  if (!root->IsType(base::Value::TYPE_DICTIONARY)) {
     *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_INVALID);
     return NULL;
   }
 
-  return static_cast<DictionaryValue*>(root.release());
+  return static_cast<base::DictionaryValue*>(root.release());
 }
 
 std::vector<base::FilePath> FindPrivateKeyFiles(

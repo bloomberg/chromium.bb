@@ -49,7 +49,7 @@ bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
                        errors::kScriptBadgeRequiresFlag));
   }
 
-  const DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kScriptBadge, &dict)) {
     *error = ASCIIToUTF16(errors::kInvalidScriptBadge);
     return false;

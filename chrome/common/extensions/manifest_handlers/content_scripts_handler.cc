@@ -33,7 +33,7 @@ namespace {
 
 // Helper method that loads either the include_globs or exclude_globs list
 // from an entry in the content_script lists of the manifest.
-bool LoadGlobsHelper(const DictionaryValue* content_script,
+bool LoadGlobsHelper(const base::DictionaryValue* content_script,
                      int content_script_index,
                      const char* globs_property_name,
                      string16* error,
@@ -42,7 +42,7 @@ bool LoadGlobsHelper(const DictionaryValue* content_script,
   if (!content_script->HasKey(globs_property_name))
     return true;  // they are optional
 
-  const ListValue* list = NULL;
+  const base::ListValue* list = NULL;
   if (!content_script->GetList(globs_property_name, &list)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidGlobList,
@@ -70,7 +70,7 @@ bool LoadGlobsHelper(const DictionaryValue* content_script,
 
 // Helper method that loads a UserScript object from a dictionary in the
 // content_script list of the manifest.
-bool LoadUserScriptFromDictionary(const DictionaryValue* content_script,
+bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
                                   int definition_index,
                                   Extension* extension,
                                   string16* error,
@@ -111,7 +111,7 @@ bool LoadUserScriptFromDictionary(const DictionaryValue* content_script,
   }
 
   // matches (required)
-  const ListValue* matches = NULL;
+  const base::ListValue* matches = NULL;
   if (!content_script->GetList(keys::kMatches, &matches)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidMatches,
@@ -174,7 +174,7 @@ bool LoadUserScriptFromDictionary(const DictionaryValue* content_script,
 
   // exclude_matches
   if (content_script->HasKey(keys::kExcludeMatches)) {  // optional
-    const ListValue* exclude_matches = NULL;
+    const base::ListValue* exclude_matches = NULL;
     if (!content_script->GetList(keys::kExcludeMatches, &exclude_matches)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidExcludeMatches,
@@ -222,7 +222,7 @@ bool LoadUserScriptFromDictionary(const DictionaryValue* content_script,
   }
 
   // js and css keys
-  const ListValue* js = NULL;
+  const base::ListValue* js = NULL;
   if (content_script->HasKey(keys::kJs) &&
       !content_script->GetList(keys::kJs, &js)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -231,7 +231,7 @@ bool LoadUserScriptFromDictionary(const DictionaryValue* content_script,
     return false;
   }
 
-  const ListValue* css = NULL;
+  const base::ListValue* css = NULL;
   if (content_script->HasKey(keys::kCss) &&
       !content_script->GetList(keys::kCss, &css)) {
     *error = ErrorUtils::
@@ -382,14 +382,14 @@ const std::vector<std::string> ContentScriptsHandler::Keys() const {
 
 bool ContentScriptsHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<ContentScriptsInfo> content_scripts_info(new ContentScriptsInfo);
-  const ListValue* scripts_list = NULL;
+  const base::ListValue* scripts_list = NULL;
   if (!extension->manifest()->GetList(keys::kContentScripts, &scripts_list)) {
     *error = ASCIIToUTF16(errors::kInvalidContentScriptsList);
     return false;
   }
 
   for (size_t i = 0; i < scripts_list->GetSize(); ++i) {
-    const DictionaryValue* script_dict = NULL;
+    const base::DictionaryValue* script_dict = NULL;
     if (!scripts_list->GetDictionary(i, &script_dict)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidContentScript,

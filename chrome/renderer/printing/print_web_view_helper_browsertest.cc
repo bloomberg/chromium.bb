@@ -80,7 +80,7 @@ const char kLongPageHTML[] =
 const char kPrintPreviewHTML[] =
     "<body><p id=\"pdf-viewer\">Hello World!</p></body>";
 
-void CreatePrintSettingsDictionary(DictionaryValue* dict) {
+void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kSettingLandscape, false);
   dict->SetBoolean(kSettingCollate, false);
   dict->SetInteger(kSettingColor, GRAY);
@@ -169,14 +169,14 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
     ProcessPendingMessages();
   }
 
-  void OnPrintPreview(const DictionaryValue& dict) {
+  void OnPrintPreview(const base::DictionaryValue& dict) {
     PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
     print_web_view_helper->OnInitiatePrintPreview(false);
     print_web_view_helper->OnPrintPreview(dict);
     ProcessPendingMessages();
   }
 
-  void OnPrintForPrintPreview(const DictionaryValue& dict) {
+  void OnPrintForPrintPreview(const base::DictionaryValue& dict) {
     PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(dict);
     ProcessPendingMessages();
   }
@@ -540,7 +540,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreview) {
   LoadHTML(kHelloWorldHTML);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
@@ -567,7 +567,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHTMLWithPageMarginsCss) {
   LoadHTML(kHTMLWithPageMarginsCss);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, false);
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
@@ -587,7 +587,7 @@ TEST_F(PrintWebViewHelperPreviewTest, NonDefaultMarginsSelectedIgnorePrintCss) {
   LoadHTML(kHTMLWithPageSizeCss);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, false);
   dict.SetInteger(kSettingMarginsType, NO_MARGINS);
@@ -607,7 +607,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
   LoadHTML(kHTMLWithPageSizeCss);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, true);
   dict.SetInteger(kSettingMarginsType,
@@ -640,7 +640,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPageMarginsCss) {
   LoadHTML(kHTMLWithPageCss);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, true);
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
@@ -660,7 +660,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
   LoadHTML(kHTMLWithPageSizeCss);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, false);
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
@@ -690,7 +690,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   LoadHTML(kHTMLWithPageCss);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, false);
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
@@ -708,7 +708,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
   LoadHTML(kHTMLWithLandscapePageCss);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, false);
   dict.SetInteger(kSettingMarginsType, NO_MARGINS);
@@ -726,7 +726,7 @@ TEST_F(PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorOrientationCss) {
   LoadHTML(kHTMLWithLandscapePageCss);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingPrintToPDF, true);
   dict.SetInteger(kSettingMarginsType, CUSTOM_MARGINS);
@@ -744,17 +744,17 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
   LoadHTML(kMultipageHTML);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
 
   // Set a page range and update the dictionary to generate only the complete
   // metafile with the selected pages. Page numbers used in the dictionary
   // are 1-based.
-  DictionaryValue* page_range = new DictionaryValue();
+  base::DictionaryValue* page_range = new base::DictionaryValue();
   page_range->SetInteger(kSettingPageRangeFrom, 2);
   page_range->SetInteger(kSettingPageRangeTo, 3);
 
-  ListValue* page_range_array = new ListValue();
+  base::ListValue* page_range_array = new base::ListValue();
   page_range_array->Append(page_range);
 
   dict.Set(kSettingPageRange, page_range_array);
@@ -779,7 +779,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
       WebKit::WebRange::fromDocumentRange(GetMainFrame(), 1, 3));
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   dict.SetBoolean(kSettingShouldPrintSelectionOnly, true);
 
@@ -798,7 +798,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewFail) {
   LoadHTML(kHelloWorldHTML);
 
   // An empty dictionary should fail.
-  DictionaryValue empty_dict;
+  base::DictionaryValue empty_dict;
   OnPrintPreview(empty_dict);
 
   EXPECT_EQ(0, chrome_render_thread_->print_preview_pages_remaining());
@@ -815,7 +815,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
   const int kCancelPage = 3;
   chrome_render_thread_->set_print_preview_cancel_page_number(kCancelPage);
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
@@ -833,7 +833,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
   LoadHTML(kPrintPreviewHTML);
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintForPrintPreview(dict);
 
@@ -847,7 +847,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
   LoadHTML(kPrintPreviewHTML);
 
   // An empty dictionary should fail.
-  DictionaryValue empty_dict;
+  base::DictionaryValue empty_dict;
   OnPrintForPrintPreview(empty_dict);
 
   VerifyPagesPrinted(false);
@@ -863,7 +863,7 @@ TEST_F(PrintWebViewHelperPreviewTest,
   chrome_render_thread_->printer()->UseInvalidSettings();
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
@@ -884,7 +884,7 @@ TEST_F(PrintWebViewHelperPreviewTest,
 
   chrome_render_thread_->printer()->UseInvalidPageSize();
 
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
@@ -904,7 +904,7 @@ TEST_F(PrintWebViewHelperPreviewTest,
 
   chrome_render_thread_->printer()->UseInvalidContentSize();
 
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
@@ -924,7 +924,7 @@ TEST_F(PrintWebViewHelperPreviewTest,
   chrome_render_thread_->printer()->UseInvalidSettings();
 
   // Fill in some dummy values.
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintForPrintPreview(dict);
 

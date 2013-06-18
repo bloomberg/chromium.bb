@@ -19,8 +19,8 @@ namespace {
 
 // If filename is a relative path, LoadManifestFile will treat it relative to
 // the appropriate test directory.
-DictionaryValue* LoadManifestFile(
-    const base::FilePath& filename_path, std::string* error) {
+base::DictionaryValue* LoadManifestFile(const base::FilePath& filename_path,
+                                        std::string* error) {
   base::FilePath extension_path;
   base::FilePath manifest_path;
 
@@ -32,8 +32,8 @@ DictionaryValue* LoadManifestFile(
       "Couldn't find " << manifest_path.value();
 
   JSONFileValueSerializer serializer(manifest_path);
-  DictionaryValue* manifest =
-      static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
+  base::DictionaryValue* manifest =
+      static_cast<base::DictionaryValue*>(serializer.Deserialize(NULL, error));
 
   // Most unit tests don't need localization, and they'll fail if we try to
   // localize them, since their manifests don't have a default_locale key.
@@ -61,7 +61,7 @@ ExtensionManifestTest::Manifest::Manifest(const char* name)
     : name_(name), manifest_(NULL) {
 }
 
-ExtensionManifestTest::Manifest::Manifest(DictionaryValue* manifest,
+ExtensionManifestTest::Manifest::Manifest(base::DictionaryValue* manifest,
                                           const char* name)
     : name_(name), manifest_(manifest) {
   CHECK(manifest_) << "Manifest NULL";
@@ -74,7 +74,7 @@ ExtensionManifestTest::Manifest::Manifest(const Manifest& m) {
 ExtensionManifestTest::Manifest::~Manifest() {
 }
 
-DictionaryValue* ExtensionManifestTest::Manifest::GetManifest(
+base::DictionaryValue* ExtensionManifestTest::Manifest::GetManifest(
     char const* test_data_dir, std::string* error) const {
   if (manifest_)
     return manifest_;
@@ -92,7 +92,7 @@ char const* ExtensionManifestTest::test_data_dir() {
   return "manifest_tests";
 }
 
-scoped_ptr<DictionaryValue> ExtensionManifestTest::LoadManifest(
+scoped_ptr<base::DictionaryValue> ExtensionManifestTest::LoadManifest(
     char const* manifest_name, std::string* error) {
   base::FilePath filename_path;
   filename_path = filename_path.AppendASCII("extensions")
@@ -106,7 +106,7 @@ scoped_refptr<Extension> ExtensionManifestTest::LoadExtension(
     std::string* error,
     extensions::Manifest::Location location,
     int flags) {
-  DictionaryValue* value = manifest.GetManifest(test_data_dir(), error);
+  base::DictionaryValue* value = manifest.GetManifest(test_data_dir(), error);
   if (!value)
     return NULL;
   base::FilePath path;

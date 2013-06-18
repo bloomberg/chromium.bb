@@ -93,7 +93,7 @@ TEST_F(BrowserActionManifestTest,
 
 TEST_F(BrowserActionManifestTest,
        BrowserActionManifestIcons_InvalidDefaultIcon) {
-  scoped_ptr<DictionaryValue> manifest_value = DictionaryBuilder()
+  scoped_ptr<base::DictionaryValue> manifest_value = DictionaryBuilder()
       .Set("name", "Invalid default icon").Set("version", "1.0.0")
       .Set("manifest_version", 2)
       .Set("browser_action",

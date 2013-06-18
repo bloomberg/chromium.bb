@@ -33,7 +33,7 @@ Feature::Availability PermissionFeature::IsAvailableToContext(
   return CreateAvailability(IS_AVAILABLE);
 }
 
-std::string PermissionFeature::Parse(const DictionaryValue* value) {
+std::string PermissionFeature::Parse(const base::DictionaryValue* value) {
   std::string error = SimpleFeature::Parse(value);
   if (!error.empty())
     return error;

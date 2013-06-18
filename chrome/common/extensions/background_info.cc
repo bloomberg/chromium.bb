@@ -102,17 +102,17 @@ bool BackgroundInfo::Parse(const Extension* extension, string16* error) {
 bool BackgroundInfo::LoadBackgroundScripts(const Extension* extension,
                                            const std::string& key,
                                            string16* error) {
-  const Value* background_scripts_value = NULL;
+  const base::Value* background_scripts_value = NULL;
   if (!extension->manifest()->Get(key, &background_scripts_value))
     return true;
 
   CHECK(background_scripts_value);
-  if (background_scripts_value->GetType() != Value::TYPE_LIST) {
+  if (background_scripts_value->GetType() != base::Value::TYPE_LIST) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundScripts);
     return false;
   }
 
-  const ListValue* background_scripts = NULL;
+  const base::ListValue* background_scripts = NULL;
   background_scripts_value->GetAsList(&background_scripts);
   for (size_t i = 0; i < background_scripts->GetSize(); ++i) {
     std::string script;
@@ -194,7 +194,7 @@ bool BackgroundInfo::LoadBackgroundPersistent(const Extension* extension,
     return true;
   }
 
-  const Value* background_persistent = NULL;
+  const base::Value* background_persistent = NULL;
   if (!extension->manifest()->Get(keys::kBackgroundPersistent,
                                   &background_persistent))
     return true;
@@ -214,12 +214,12 @@ bool BackgroundInfo::LoadBackgroundPersistent(const Extension* extension,
 
 bool BackgroundInfo::LoadAllowJSAccess(const Extension* extension,
                                        string16* error) {
-  const Value* allow_js_access = NULL;
+  const base::Value* allow_js_access = NULL;
   if (!extension->manifest()->Get(keys::kBackgroundAllowJsAccess,
                                   &allow_js_access))
     return true;
 
-  if (!allow_js_access->IsType(Value::TYPE_BOOLEAN) ||
+  if (!allow_js_access->IsType(base::Value::TYPE_BOOLEAN) ||
       !allow_js_access->GetAsBoolean(&allow_js_access_)) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundAllowJsAccess);
     return false;

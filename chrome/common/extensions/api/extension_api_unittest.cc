@@ -130,7 +130,7 @@ TEST(ExtensionAPITest, IsPrivilegedFeatures) {
   ASSERT_TRUE(file_util::ReadFileToString(
       api_features_path, &api_features_str)) << "privileged_api_features.json";
 
-  scoped_ptr<base::DictionaryValue> value(static_cast<DictionaryValue*>(
+  scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
       base::JSONReader::Read(api_features_str)));
   BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 
@@ -226,7 +226,7 @@ TEST(ExtensionAPITest, APIFeatures) {
   ASSERT_TRUE(file_util::ReadFileToString(
       api_features_path, &api_features_str)) << "api_features.json";
 
-  scoped_ptr<base::DictionaryValue> value(static_cast<DictionaryValue*>(
+  scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
       base::JSONReader::Read(api_features_str)));
   BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 
@@ -278,7 +278,7 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
   ASSERT_TRUE(file_util::ReadFileToString(
       api_features_path, &api_features_str)) << "api_features.json";
 
-  scoped_ptr<base::DictionaryValue> value(static_cast<DictionaryValue*>(
+  scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
       base::JSONReader::Read(api_features_str)));
   BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 

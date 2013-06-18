@@ -29,7 +29,7 @@ class SetIconNatives : public ChromeV8Extension {
                                      Value** bitmap_value);
   bool ConvertImageDataSetToBitmapValueSet(
       const v8::FunctionCallbackInfo<v8::Value>& args,
-      DictionaryValue* bitmap_value);
+      base::DictionaryValue* bitmap_value);
   void SetIconCommon(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   RequestSender* request_sender_;

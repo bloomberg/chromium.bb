@@ -16,7 +16,7 @@ bool APIFeature::IsInternal() const {
   return internal_;
 }
 
-std::string APIFeature::Parse(const DictionaryValue* value) {
+std::string APIFeature::Parse(const base::DictionaryValue* value) {
   std::string error = SimpleFeature::Parse(value);
   if (!error.empty())
     return error;

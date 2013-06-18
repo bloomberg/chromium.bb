@@ -60,10 +60,10 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
   if (extension->manifest_version() == 1) {
     // kPageActionIcons is obsolete, and used by very few extensions. Continue
     // loading it, but only take the first icon as the default_icon path.
-    const ListValue* icons = NULL;
+    const base::ListValue* icons = NULL;
     if (dict->HasKey(keys::kPageActionIcons) &&
         dict->GetList(keys::kPageActionIcons, &icons)) {
-      for (ListValue::const_iterator iter = icons->begin();
+      for (base::ListValue::const_iterator iter = icons->begin();
            iter != icons->end(); ++iter) {
         std::string path;
         if (!(*iter)->GetAsString(&path) ||

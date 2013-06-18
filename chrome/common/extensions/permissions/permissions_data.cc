@@ -126,7 +126,7 @@ bool ParseHelper(Extension* extension,
   if (!extension->manifest()->HasKey(key))
     return true;
 
-  const ListValue* permissions = NULL;
+  const base::ListValue* permissions = NULL;
   if (!extension->manifest()->GetList(key, &permissions)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidPermissions,
                                                  std::string());

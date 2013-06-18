@@ -357,7 +357,7 @@ TEST_F(ExtensionSimpleFeatureTest, ParseNull) {
 }
 
 TEST_F(ExtensionSimpleFeatureTest, ParseWhitelist) {
-  scoped_ptr<base::DictionaryValue> value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   base::ListValue* whitelist = new base::ListValue();
   whitelist->Append(new base::StringValue("foo"));
   whitelist->Append(new base::StringValue("bar"));

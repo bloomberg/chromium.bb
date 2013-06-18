@@ -125,7 +125,7 @@ const int Extension::kValidHostPermissionSchemes = URLPattern::SCHEME_CHROMEUI |
 // static
 scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
                                            Manifest::Location location,
-                                           const DictionaryValue& value,
+                                           const base::DictionaryValue& value,
                                            int flags,
                                            std::string* utf8_error) {
   return Extension::Create(path,
@@ -140,15 +140,15 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
 // with string16. See http://crbug.com/71980.
 scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
                                            Manifest::Location location,
-                                           const DictionaryValue& value,
+                                           const base::DictionaryValue& value,
                                            int flags,
                                            const std::string& explicit_id,
                                            std::string* utf8_error) {
   DCHECK(utf8_error);
   string16 error;
   scoped_ptr<extensions::Manifest> manifest(
-      new extensions::Manifest(location,
-                               scoped_ptr<DictionaryValue>(value.DeepCopy())));
+      new extensions::Manifest(
+          location, scoped_ptr<base::DictionaryValue>(value.DeepCopy())));
 
   if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error)) {
     *utf8_error = UTF16ToUTF8(error);
@@ -662,11 +662,11 @@ bool Extension::LoadExtent(const char* key,
                            const char* list_error,
                            const char* value_error,
                            string16* error) {
-  const Value* temp_pattern_value = NULL;
+  const base::Value* temp_pattern_value = NULL;
   if (!manifest_->Get(key, &temp_pattern_value))
     return true;
 
-  const ListValue* pattern_list = NULL;
+  const base::ListValue* pattern_list = NULL;
   if (!temp_pattern_value->GetAsList(&pattern_list)) {
     *error = ASCIIToUTF16(list_error);
     return false;
@@ -812,7 +812,7 @@ bool Extension::CheckMinimumChromeVersion(string16* error) const {
   return true;
 }
 
-ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
+ExtensionInfo::ExtensionInfo(const base::DictionaryValue* manifest,
                              const std::string& id,
                              const base::FilePath& path,
                              Manifest::Location location)

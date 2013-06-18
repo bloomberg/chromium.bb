@@ -90,7 +90,7 @@ class Manifest {
     return IsUnpackedLocation(location);
   }
 
-  Manifest(Location location, scoped_ptr<DictionaryValue> value);
+  Manifest(Location location, scoped_ptr<base::DictionaryValue> value);
   virtual ~Manifest();
 
   const std::string& extension_id() const { return extension_id_; }

@@ -33,7 +33,7 @@ IPC_MESSAGE_CONTROL4(ServiceMsg_EnableCloudPrintProxyWithRobot,
                      std::string /* robot_auth_code */,
                      std::string /* robot_email */,
                      std::string /* user_email */,
-                     DictionaryValue /* user_settings */)
+                     base::DictionaryValue /* user_settings */)
 
 // Tell the service process to disable the cloud proxy.
 IPC_MESSAGE_CONTROL0(ServiceMsg_DisableCloudPrintProxy)

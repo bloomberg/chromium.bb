@@ -91,7 +91,7 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
 
 bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
     const v8::FunctionCallbackInfo<v8::Value>& args,
-    DictionaryValue* bitmap_set_value) {
+    base::DictionaryValue* bitmap_set_value) {
   v8::Local<v8::Object> extension_args = args[1]->ToObject();
   v8::Local<v8::Object> details =
       extension_args->Get(v8::String::New("0"))->ToObject();
@@ -114,7 +114,8 @@ bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
 
 void SetIconNatives::SetIconCommon(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  scoped_ptr<DictionaryValue> bitmap_set_value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> bitmap_set_value(
+      new base::DictionaryValue());
   if (!ConvertImageDataSetToBitmapValueSet(args, bitmap_set_value.get()))
     return;
 
@@ -122,7 +123,7 @@ void SetIconNatives::SetIconCommon(
   v8::Local<v8::Object> details =
       extension_args->Get(v8::String::New("0"))->ToObject();
 
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("imageData", bitmap_set_value.release());
 
   if (details->Has(v8::String::New("tabId"))) {

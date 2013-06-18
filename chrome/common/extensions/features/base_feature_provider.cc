@@ -61,18 +61,18 @@ class LazyFeatureProvider : public FeatureProvider {
             resource_id_).as_string();
     int error_code = 0;
     std::string error_message;
-    scoped_ptr<Value> value(base::JSONReader::ReadAndReturnError(
+    scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
         features_file, base::JSON_PARSE_RFC,
         &error_code, &error_message));
     DCHECK(value) << "Could not load features: " << name_ << " "
         << error_message;
-    scoped_ptr<DictionaryValue> value_as_dict;
+    scoped_ptr<base::DictionaryValue> value_as_dict;
     if (value) {
-      CHECK(value->IsType(Value::TYPE_DICTIONARY)) << name_;
-      value_as_dict.reset(static_cast<DictionaryValue*>(value.release()));
+      CHECK(value->IsType(base::Value::TYPE_DICTIONARY)) << name_;
+      value_as_dict.reset(static_cast<base::DictionaryValue*>(value.release()));
     } else {
       // http://crbug.com/176381
-      value_as_dict.reset(new DictionaryValue());
+      value_as_dict.reset(new base::DictionaryValue());
     }
     return make_scoped_ptr(new BaseFeatureProvider(*value_as_dict, factory_));
   }
@@ -113,7 +113,7 @@ struct Static {
 
 base::LazyInstance<Static> g_static = LAZY_INSTANCE_INITIALIZER;
 
-bool ParseFeature(const DictionaryValue* value,
+bool ParseFeature(const base::DictionaryValue* value,
                   const std::string& name,
                   SimpleFeature* feature) {
   feature->set_name(name);
@@ -125,12 +125,13 @@ bool ParseFeature(const DictionaryValue* value,
 
 }  // namespace
 
-BaseFeatureProvider::BaseFeatureProvider(const DictionaryValue& root,
+BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
                                          FeatureFactory factory)
     : factory_(factory ? factory :
                static_cast<FeatureFactory>(&CreateFeature<SimpleFeature>)) {
-  for (DictionaryValue::Iterator iter(root); !iter.IsAtEnd(); iter.Advance()) {
-    if (iter.value().GetType() == Value::TYPE_DICTIONARY) {
+  for (base::DictionaryValue::Iterator iter(root); !iter.IsAtEnd();
+       iter.Advance()) {
+    if (iter.value().GetType() == base::Value::TYPE_DICTIONARY) {
       linked_ptr<SimpleFeature> feature((*factory_)());
 
       std::vector<std::string> split;
@@ -140,12 +141,13 @@ BaseFeatureProvider::BaseFeatureProvider(const DictionaryValue& root,
       // If one of the features has "noparent" set, stop pushing features on
       // the stack. The features will then be parsed in order, starting with
       // the farthest parent that is either top level or has "noparent" set.
-      std::stack<std::pair<std::string, const DictionaryValue*> > parse_stack;
+      std::stack<std::pair<std::string, const base::DictionaryValue*> >
+          parse_stack;
       while (!split.empty()) {
         std::string parent_name = JoinString(split, '.');
         split.pop_back();
         if (root.HasKey(parent_name)) {
-          const DictionaryValue* parent = NULL;
+          const base::DictionaryValue* parent = NULL;
           CHECK(root.GetDictionaryWithoutPathExpansion(parent_name, &parent));
           parse_stack.push(std::make_pair(parent_name, parent));
           bool no_parent = false;
@@ -172,24 +174,25 @@ BaseFeatureProvider::BaseFeatureProvider(const DictionaryValue& root,
         continue;
 
       features_[iter.key()] = feature;
-    } else if (iter.value().GetType() == Value::TYPE_LIST) {
+    } else if (iter.value().GetType() == base::Value::TYPE_LIST) {
       // This is a complex feature.
-      const ListValue* list = static_cast<const ListValue*>(&iter.value());
+      const base::ListValue* list =
+          static_cast<const base::ListValue*>(&iter.value());
       CHECK_GT(list->GetSize(), 0UL);
 
       scoped_ptr<ComplexFeature::FeatureList> features(
           new ComplexFeature::FeatureList());
 
       // Parse and add all SimpleFeatures from the list.
-      for (ListValue::const_iterator list_iter = list->begin();
+      for (base::ListValue::const_iterator list_iter = list->begin();
            list_iter != list->end(); ++list_iter) {
-        if ((*list_iter)->GetType() != Value::TYPE_DICTIONARY) {
+        if ((*list_iter)->GetType() != base::Value::TYPE_DICTIONARY) {
           LOG(ERROR) << iter.key() << ": Feature rules must be dictionaries.";
           continue;
         }
 
         scoped_ptr<SimpleFeature> feature((*factory_)());
-        if (!ParseFeature(static_cast<const DictionaryValue*>(*list_iter),
+        if (!ParseFeature(static_cast<const base::DictionaryValue*>(*list_iter),
                           iter.key(),
                           feature.get()))
           continue;

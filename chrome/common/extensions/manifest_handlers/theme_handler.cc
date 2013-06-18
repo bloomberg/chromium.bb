@@ -13,8 +13,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using base::DictionaryValue;
-
 namespace extensions {
 
 namespace keys = extension_manifest_keys;
@@ -22,23 +20,23 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
-bool LoadImages(const DictionaryValue* theme_value,
+bool LoadImages(const base::DictionaryValue* theme_value,
                 string16* error,
                 ThemeInfo* theme_info) {
-  const DictionaryValue* images_value = NULL;
+  const base::DictionaryValue* images_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeImages, &images_value)) {
     // Validate that the images are all strings.
-    for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
+    for (base::DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
          iter.Advance()) {
       // The value may be a dictionary of scales and files paths.
       // Or the value may be a file path, in which case a scale
       // of 100% is assumed.
-      if (iter.value().IsType(Value::TYPE_DICTIONARY)) {
-        const DictionaryValue* inner_value = NULL;
+      if (iter.value().IsType(base::Value::TYPE_DICTIONARY)) {
+        const base::DictionaryValue* inner_value = NULL;
         if (iter.value().GetAsDictionary(&inner_value)) {
-          for (DictionaryValue::Iterator inner_iter(*inner_value);
+          for (base::DictionaryValue::Iterator inner_iter(*inner_value);
                !inner_iter.IsAtEnd(); inner_iter.Advance()) {
-            if (!inner_iter.value().IsType(Value::TYPE_STRING)) {
+            if (!inner_iter.value().IsType(base::Value::TYPE_STRING)) {
               *error = ASCIIToUTF16(errors::kInvalidThemeImages);
               return false;
             }
@@ -47,7 +45,7 @@ bool LoadImages(const DictionaryValue* theme_value,
           *error = ASCIIToUTF16(errors::kInvalidThemeImages);
           return false;
         }
-      } else if (!iter.value().IsType(Value::TYPE_STRING)) {
+      } else if (!iter.value().IsType(base::Value::TYPE_STRING)) {
         *error = ASCIIToUTF16(errors::kInvalidThemeImages);
         return false;
       }
@@ -57,15 +55,15 @@ bool LoadImages(const DictionaryValue* theme_value,
   return true;
 }
 
-bool LoadColors(const DictionaryValue* theme_value,
+bool LoadColors(const base::DictionaryValue* theme_value,
                 string16* error,
                 ThemeInfo* theme_info) {
-  const DictionaryValue* colors_value = NULL;
+  const base::DictionaryValue* colors_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeColors, &colors_value)) {
     // Validate that the colors are RGB or RGBA lists.
-    for (DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
+    for (base::DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
          iter.Advance()) {
-      const ListValue* color_list = NULL;
+      const base::ListValue* color_list = NULL;
       double alpha = 0.0;
       int color = 0;
       // The color must be a list...
@@ -89,17 +87,17 @@ bool LoadColors(const DictionaryValue* theme_value,
   return true;
 }
 
-bool LoadTints(const DictionaryValue* theme_value,
+bool LoadTints(const base::DictionaryValue* theme_value,
                string16* error,
                ThemeInfo* theme_info) {
-  const DictionaryValue* tints_value = NULL;
+  const base::DictionaryValue* tints_value = NULL;
   if (!theme_value->GetDictionary(keys::kThemeTints, &tints_value))
     return true;
 
   // Validate that the tints are all reals.
-  for (DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
        iter.Advance()) {
-    const ListValue* tint_list = NULL;
+    const base::ListValue* tint_list = NULL;
     double v = 0.0;
     if (!iter.value().GetAsList(&tint_list) ||
         tint_list->GetSize() != 3 ||
@@ -114,10 +112,10 @@ bool LoadTints(const DictionaryValue* theme_value,
   return true;
 }
 
-bool LoadDisplayProperties(const DictionaryValue* theme_value,
+bool LoadDisplayProperties(const base::DictionaryValue* theme_value,
                            string16* error,
                            ThemeInfo* theme_info) {
-  const DictionaryValue* display_properties_value = NULL;
+  const base::DictionaryValue* display_properties_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeDisplayProperties,
                                  &display_properties_value)) {
     theme_info->theme_display_properties_.reset(
@@ -139,25 +137,25 @@ ThemeInfo::~ThemeInfo() {
 }
 
 // static
-const DictionaryValue* ThemeInfo::GetImages(const Extension* extension) {
+const base::DictionaryValue* ThemeInfo::GetImages(const Extension* extension) {
   const ThemeInfo* theme_info = GetInfo(extension);
   return theme_info ? theme_info->theme_images_.get() : NULL;
 }
 
 // static
-const DictionaryValue* ThemeInfo::GetColors(const Extension* extension) {
+const base::DictionaryValue* ThemeInfo::GetColors(const Extension* extension) {
   const ThemeInfo* theme_info = GetInfo(extension);
   return theme_info ? theme_info->theme_colors_.get() : NULL;
 }
 
 // static
-const DictionaryValue* ThemeInfo::GetTints(const Extension* extension) {
+const base::DictionaryValue* ThemeInfo::GetTints(const Extension* extension) {
   const ThemeInfo* theme_info = GetInfo(extension);
   return theme_info ? theme_info->theme_tints_.get() : NULL;
 }
 
 // static
-const DictionaryValue* ThemeInfo::GetDisplayProperties(
+const base::DictionaryValue* ThemeInfo::GetDisplayProperties(
     const Extension* extension) {
   const ThemeInfo* theme_info = GetInfo(extension);
   return theme_info ? theme_info->theme_display_properties_.get() : NULL;
@@ -170,7 +168,7 @@ ThemeHandler::~ThemeHandler() {
 }
 
 bool ThemeHandler::Parse(Extension* extension, string16* error) {
-  const DictionaryValue* theme_value = NULL;
+  const base::DictionaryValue* theme_value = NULL;
   if (!extension->manifest()->GetDictionary(keys::kTheme, &theme_value)) {
     *error = ASCIIToUTF16(errors::kInvalidTheme);
     return false;
@@ -195,10 +193,10 @@ bool ThemeHandler::Validate(const Extension* extension,
                             std::vector<InstallWarning>* warnings) const {
   // Validate that theme images exist.
   if (extension->is_theme()) {
-    const DictionaryValue* images_value =
+    const base::DictionaryValue* images_value =
         extensions::ThemeInfo::GetImages(extension);
     if (images_value) {
-      for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
+      for (base::DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
            iter.Advance()) {
         std::string val;
         if (iter.value().GetAsString(&val)) {

@@ -866,7 +866,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
   if (error_html) {
     // Use a local error page.
     int resource_id;
-    DictionaryValue error_strings;
+    base::DictionaryValue error_strings;
     if (extension && !extension->from_bookmark()) {
       LocalizedError::GetAppErrorStrings(error, failed_url, extension,
                                          &error_strings);

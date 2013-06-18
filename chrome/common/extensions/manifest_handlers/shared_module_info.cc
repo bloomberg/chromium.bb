@@ -15,7 +15,6 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "extensions/common/error_utils.h"
 
-using base::DictionaryValue;
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
@@ -118,12 +117,12 @@ bool SharedModuleInfo::Parse(const Extension* extension, string16* error) {
   }
 
   if (has_export) {
-    const DictionaryValue* export_value = NULL;
+    const base::DictionaryValue* export_value = NULL;
     if (!extension->manifest()->GetDictionary(keys::kExport, &export_value)) {
       *error = ASCIIToUTF16(errors::kInvalidExport);
       return false;
     }
-    const ListValue* resources_list = NULL;
+    const base::ListValue* resources_list = NULL;
     if (!export_value->GetList(keys::kResources, &resources_list)) {
       *error = ASCIIToUTF16(errors::kInvalidExportResources);
       return false;
@@ -147,13 +146,13 @@ bool SharedModuleInfo::Parse(const Extension* extension, string16* error) {
   }
 
   if (has_import) {
-    const ListValue* import_list = NULL;
+    const base::ListValue* import_list = NULL;
     if (!extension->manifest()->GetList(keys::kImport, &import_list)) {
       *error = ASCIIToUTF16(errors::kInvalidImport);
       return false;
     }
     for (size_t i = 0; i < import_list->GetSize(); ++i) {
-      const DictionaryValue* import_entry = NULL;
+      const base::DictionaryValue* import_entry = NULL;
       if (!import_list->GetDictionary(i, &import_entry)) {
         *error = ASCIIToUTF16(errors::kInvalidImport);
         return false;

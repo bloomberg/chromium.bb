@@ -22,7 +22,7 @@ RequirementsInfo::RequirementsInfo(const Manifest* manifest)
       npapi(false) {
   // Before parsing requirements from the manifest, automatically default the
   // NPAPI plugin requirement based on whether it includes NPAPI plugins.
-  const ListValue* list_value = NULL;
+  const base::ListValue* list_value = NULL;
   npapi = manifest->GetList(keys::kPlugins, &list_value) &&
           !list_value->empty();
 }
@@ -69,16 +69,17 @@ bool RequirementsHandler::Parse(Extension* extension, string16* error) {
     return true;
   }
 
-  const DictionaryValue* requirements_value = NULL;
+  const base::DictionaryValue* requirements_value = NULL;
   if (!extension->manifest()->GetDictionary(keys::kRequirements,
                                             &requirements_value)) {
     *error = ASCIIToUTF16(errors::kInvalidRequirements);
     return false;
   }
 
-  for (DictionaryValue::Iterator iter(*requirements_value); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*requirements_value);
+       !iter.IsAtEnd();
        iter.Advance()) {
-    const DictionaryValue* requirement_value;
+    const base::DictionaryValue* requirement_value;
     if (!iter.value().GetAsDictionary(&requirement_value)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidRequirement, iter.key());
@@ -86,7 +87,7 @@ bool RequirementsHandler::Parse(Extension* extension, string16* error) {
     }
 
     if (iter.key() == "plugins") {
-      for (DictionaryValue::Iterator plugin_iter(*requirement_value);
+      for (base::DictionaryValue::Iterator plugin_iter(*requirement_value);
            !plugin_iter.IsAtEnd(); plugin_iter.Advance()) {
         bool plugin_required = false;
         if (!plugin_iter.value().GetAsBoolean(&plugin_required)) {
@@ -103,7 +104,7 @@ bool RequirementsHandler::Parse(Extension* extension, string16* error) {
         }
       }
     } else if (iter.key() == "3D") {
-      const ListValue* features = NULL;
+      const base::ListValue* features = NULL;
       if (!requirement_value->GetListWithoutPathExpansion("features",
                                                           &features) ||
           !features) {

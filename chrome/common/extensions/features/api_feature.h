@@ -16,7 +16,7 @@ class APIFeature : public SimpleFeature {
 
   virtual bool IsInternal() const OVERRIDE;
 
-  virtual std::string Parse(const DictionaryValue* value) OVERRIDE;
+  virtual std::string Parse(const base::DictionaryValue* value) OVERRIDE;
 
  private:
   bool internal_;

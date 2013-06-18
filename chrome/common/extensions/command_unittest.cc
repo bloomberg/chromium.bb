@@ -104,7 +104,7 @@ TEST(CommandTest, ExtensionCommandParsing) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
     // First parse the command as a simple string.
-    scoped_ptr<DictionaryValue> input(new DictionaryValue);
+    scoped_ptr<base::DictionaryValue> input(new base::DictionaryValue);
     input->SetString("suggested_key", kTests[i].key);
     input->SetString("description", kTests[i].description);
 
@@ -128,8 +128,8 @@ TEST(CommandTest, ExtensionCommandParsing) {
 
     // Now parse the command as a dictionary of multiple values.
     if (kTests[i].key[0] != '\0') {
-      input.reset(new DictionaryValue);
-      DictionaryValue* key_dict = new DictionaryValue();
+      input.reset(new base::DictionaryValue);
+      base::DictionaryValue* key_dict = new base::DictionaryValue();
       key_dict->SetString("default", kTests[i].key);
       key_dict->SetString("windows", kTests[i].key);
       key_dict->SetString("mac", kTests[i].key);
@@ -155,8 +155,8 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
 
   // Test that platform specific keys are honored on each platform, despite
   // fallback being given.
-  scoped_ptr<DictionaryValue> input(new DictionaryValue);
-  DictionaryValue* key_dict = new DictionaryValue();
+  scoped_ptr<base::DictionaryValue> input(new base::DictionaryValue);
+  base::DictionaryValue* key_dict = new base::DictionaryValue();
   key_dict->SetString("default",  "Ctrl+Shift+D");
   key_dict->SetString("windows",  "Ctrl+Shift+W");
   key_dict->SetString("mac",      "Ctrl+Shift+M");

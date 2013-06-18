@@ -79,13 +79,13 @@ scoped_refptr<const extensions::Extension> CreateTestExtension(
       extensions::Extension::FROM_WEBSTORE:
       extensions::Extension::NO_FLAGS;
 
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("name", "NaCl Extension");
   manifest.SetString("version", "1");
   manifest.SetInteger("manifest_version", 2);
   if (is_hosted_app) {
-    ListValue* url_list = new ListValue();
-    url_list->Append(Value::CreateStringValue(app_url));
+    base::ListValue* url_list = new base::ListValue();
+    url_list->Append(base::Value::CreateStringValue(app_url));
     manifest.Set(extension_manifest_keys::kWebURLs, url_list);
     manifest.SetString(extension_manifest_keys::kLaunchWebURL, app_url);
   }

@@ -103,7 +103,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_BLOCKED_PLUGIN_HTML));
 
-  DictionaryValue values;
+  base::DictionaryValue values;
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   values.SetString("message", l10n_util::GetStringUTF8(IDS_PLUGIN_SEARCHING));
 #else
@@ -128,7 +128,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
 PluginPlaceholder* PluginPlaceholder::CreateErrorPlugin(
     RenderView* render_view,
     const base::FilePath& file_path) {
-  DictionaryValue values;
+  base::DictionaryValue values;
   values.SetString("message",
                    l10n_util::GetStringUTF8(IDS_PLUGIN_INITIALIZATION_ERROR));
 
@@ -158,7 +158,7 @@ PluginPlaceholder* PluginPlaceholder::CreateBlockedPlugin(
     const string16& name,
     int template_id,
     const string16& message) {
-  DictionaryValue values;
+  base::DictionaryValue values;
   values.SetString("message", message);
   values.SetString("name", name);
   values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
@@ -189,7 +189,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMobileYoutubePlugin(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_MOBILE_YOUTUBE_PLUGIN_HTML));
 
-  DictionaryValue values;
+  base::DictionaryValue values;
   values.SetString("video_id", GetYoutubeVideoId(params));
   std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 

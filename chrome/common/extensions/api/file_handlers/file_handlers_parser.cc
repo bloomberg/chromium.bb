@@ -37,7 +37,7 @@ FileHandlersParser::~FileHandlersParser() {
 }
 
 bool LoadFileHandler(const std::string& handler_id,
-                     const DictionaryValue& handler_info,
+                     const base::DictionaryValue& handler_info,
                      std::vector<FileHandlerInfo>* file_handlers,
                      string16* error) {
   DCHECK(error);
@@ -45,7 +45,7 @@ bool LoadFileHandler(const std::string& handler_id,
 
   handler.id = handler_id;
 
-  const ListValue* mime_types = NULL;
+  const base::ListValue* mime_types = NULL;
   if (handler_info.HasKey(keys::kFileHandlerTypes) &&
       !handler_info.GetList(keys::kFileHandlerTypes, &mime_types)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -53,7 +53,7 @@ bool LoadFileHandler(const std::string& handler_id,
     return false;
   }
 
-  const ListValue* file_extensions = NULL;
+  const base::ListValue* file_extensions = NULL;
   if (handler_info.HasKey(keys::kFileHandlerExtensions) &&
       !handler_info.GetList(keys::kFileHandlerExtensions, &file_extensions)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -109,7 +109,7 @@ bool LoadFileHandler(const std::string& handler_id,
 
 bool FileHandlersParser::Parse(Extension* extension, string16* error) {
   scoped_ptr<FileHandlers> info(new FileHandlers);
-  const DictionaryValue* all_handlers = NULL;
+  const base::DictionaryValue* all_handlers = NULL;
   if (!extension->manifest()->GetDictionary(keys::kFileHandlers,
                                             &all_handlers)) {
     *error = ASCIIToUTF16(extension_manifest_errors::kInvalidFileHandlers);
@@ -118,10 +118,10 @@ bool FileHandlersParser::Parse(Extension* extension, string16* error) {
 
   DCHECK(extension->is_platform_app());
 
-  for (DictionaryValue::Iterator iter(*all_handlers); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*all_handlers); !iter.IsAtEnd();
        iter.Advance()) {
     // A file handler entry is a title and a list of MIME types to handle.
-    const DictionaryValue* handler = NULL;
+    const base::DictionaryValue* handler = NULL;
     if (iter.value().GetAsDictionary(&handler)) {
       if (!LoadFileHandler(iter.key(), *handler, &info->file_handlers, error))
         return false;

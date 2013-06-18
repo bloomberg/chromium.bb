@@ -25,10 +25,10 @@ PageActionHandler::~PageActionHandler() {
 
 bool PageActionHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<ActionInfo> page_action_info;
-  const DictionaryValue* page_action_value = NULL;
+  const base::DictionaryValue* page_action_value = NULL;
 
   if (extension->manifest()->HasKey(keys::kPageActions)) {
-    const ListValue* list_value = NULL;
+    const base::ListValue* list_value = NULL;
     if (!extension->manifest()->GetList(keys::kPageActions, &list_value)) {
       *error = ASCIIToUTF16(errors::kInvalidPageActionsList);
       return false;

@@ -127,7 +127,7 @@ IconsHandler::~IconsHandler() {
 
 bool IconsHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<IconsInfo> icons_info(new IconsInfo);
-  const DictionaryValue* icons_dict = NULL;
+  const base::DictionaryValue* icons_dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kIcons, &icons_dict)) {
     *error = ASCIIToUTF16(extension_manifest_errors::kInvalidIcons);
     return false;

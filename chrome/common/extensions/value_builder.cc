@@ -4,16 +4,13 @@
 
 #include "chrome/common/extensions/value_builder.h"
 
-using base::DictionaryValue;
-using base::ListValue;
-
 namespace extensions {
 
 // DictionaryBuilder
 
-DictionaryBuilder::DictionaryBuilder() : dict_(new DictionaryValue) {}
+DictionaryBuilder::DictionaryBuilder() : dict_(new base::DictionaryValue) {}
 
-DictionaryBuilder::DictionaryBuilder(const DictionaryValue& init)
+DictionaryBuilder::DictionaryBuilder(const base::DictionaryValue& init)
     : dict_(init.DeepCopy()) {}
 
 DictionaryBuilder::~DictionaryBuilder() {}
@@ -62,8 +59,9 @@ DictionaryBuilder& DictionaryBuilder::SetBoolean(
 
 // ListBuilder
 
-ListBuilder::ListBuilder() : list_(new ListValue) {}
-ListBuilder::ListBuilder(const ListValue& init) : list_(init.DeepCopy()) {}
+ListBuilder::ListBuilder() : list_(new base::ListValue) {}
+ListBuilder::ListBuilder(const base::ListValue& init) : list_(init.DeepCopy()) {
+}
 ListBuilder::~ListBuilder() {}
 
 ListBuilder& ListBuilder::Append(int in_value) {

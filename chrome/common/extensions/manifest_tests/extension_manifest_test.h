@@ -24,7 +24,7 @@ class ExtensionManifestTest : public testing::Test {
   class Manifest {
    public:
     explicit Manifest(const char* name);
-    Manifest(DictionaryValue* manifest, const char* name);
+    Manifest(base::DictionaryValue* manifest, const char* name);
     // C++98 requires the copy constructor for a type to be visible if you
     // take a const-ref of a temporary for that type.  Since Manifest
     // contains a scoped_ptr, its implicit copy constructor is declared
@@ -40,19 +40,19 @@ class ExtensionManifestTest : public testing::Test {
 
     const std::string& name() const { return name_; };
 
-    DictionaryValue* GetManifest(char const* test_data_dir,
-                                 std::string* error) const;
+    base::DictionaryValue* GetManifest(char const* test_data_dir,
+                                       std::string* error) const;
 
    private:
     const std::string name_;
-    mutable DictionaryValue* manifest_;
-    mutable scoped_ptr<DictionaryValue> manifest_holder_;
+    mutable base::DictionaryValue* manifest_;
+    mutable scoped_ptr<base::DictionaryValue> manifest_holder_;
   };
 
   // The subdirectory in which to find test data files.
   virtual char const* test_data_dir();
 
-  scoped_ptr<DictionaryValue> LoadManifest(
+  scoped_ptr<base::DictionaryValue> LoadManifest(
       char const* manifest_name,
       std::string* error);
 

@@ -73,9 +73,9 @@ bool MessageBundle::Init(const CatalogVector& locale_catalogs,
 
   for (CatalogVector::const_reverse_iterator it = locale_catalogs.rbegin();
        it != locale_catalogs.rend(); ++it) {
-    DictionaryValue* catalog = (*it).get();
-    for (DictionaryValue::Iterator message_it(*catalog); !message_it.IsAtEnd();
-         message_it.Advance()) {
+    base::DictionaryValue* catalog = (*it).get();
+    for (base::DictionaryValue::Iterator message_it(*catalog);
+         !message_it.IsAtEnd(); message_it.Advance()) {
       std::string key(StringToLowerASCII(message_it.key()));
       if (!IsValidName(message_it.key()))
         return BadKeyMessage(key, error);
@@ -130,11 +130,11 @@ bool MessageBundle::AppendReservedMessagesForLocale(
 }
 
 bool MessageBundle::GetMessageValue(const std::string& key,
-                                    const Value& name_value,
+                                    const base::Value& name_value,
                                     std::string* value,
                                     std::string* error) const {
   // Get the top level tree for given key (name part).
-  const DictionaryValue* name_tree;
+  const base::DictionaryValue* name_tree;
   if (!name_value.GetAsDictionary(&name_tree)) {
     *error = base::StringPrintf("Not a valid tree for key %s.", key.c_str());
     return false;
@@ -159,23 +159,23 @@ bool MessageBundle::GetMessageValue(const std::string& key,
 MessageBundle::MessageBundle() {
 }
 
-bool MessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
+bool MessageBundle::GetPlaceholders(const base::DictionaryValue& name_tree,
                                     const std::string& name_key,
                                     SubstitutionMap* placeholders,
                                     std::string* error) const {
   if (!name_tree.HasKey(kPlaceholdersKey))
     return true;
 
-  const DictionaryValue* placeholders_tree;
+  const base::DictionaryValue* placeholders_tree;
   if (!name_tree.GetDictionary(kPlaceholdersKey, &placeholders_tree)) {
     *error = base::StringPrintf("Not a valid \"%s\" element for key %s.",
                                 kPlaceholdersKey, name_key.c_str());
     return false;
   }
 
-  for (DictionaryValue::Iterator it(*placeholders_tree); !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(*placeholders_tree); !it.IsAtEnd();
        it.Advance()) {
-    const DictionaryValue* placeholder;
+    const base::DictionaryValue* placeholder;
     const std::string& content_key(it.key());
     if (!IsValidName(content_key))
       return BadKeyMessage(content_key, error);

@@ -57,7 +57,7 @@ bool AppIsolationHandler::Parse(Extension* extension, string16* error) {
   // or is a platform app (which we already handled).
   DCHECK(extension->manifest()->HasPath(keys::kIsolation));
 
-  const ListValue* isolation_list = NULL;
+  const base::ListValue* isolation_list = NULL;
   if (!extension->manifest()->GetList(keys::kIsolation, &isolation_list)) {
     *error = ASCIIToUTF16(extension_manifest_errors::kInvalidIsolation);
     return false;

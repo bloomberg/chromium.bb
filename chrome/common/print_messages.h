@@ -291,7 +291,7 @@ IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
 // showing the print dialog. (This is the final step in the print preview
 // workflow.)
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintForPrintPreview,
-                    DictionaryValue /* settings */)
+                    base::DictionaryValue /* settings */)
 
 // Tells the render view to switch the CSS to print media type, renders every
 // requested pages and switch back the CSS to display media type.
@@ -309,7 +309,7 @@ IPC_MESSAGE_ROUTED1(PrintMsg_SetScriptedPrintingBlocked,
 // requested pages for print preview using the given |settings|. This gets
 // called multiple times as the user updates settings.
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
-                    DictionaryValue /* settings */)
+                    base::DictionaryValue /* settings */)
 
 // Like PrintMsg_PrintPages, but using the print preview document's frame/node.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintForSystemDialog)
@@ -358,7 +358,7 @@ IPC_SYNC_MESSAGE_ROUTED0_1(PrintHostMsg_GetDefaultPrintSettings,
 // |job_settings|.
 IPC_SYNC_MESSAGE_ROUTED2_1(PrintHostMsg_UpdatePrintSettings,
                            int /* document_cookie */,
-                           DictionaryValue /* job_settings */,
+                           base::DictionaryValue /* job_settings */,
                            PrintMsg_PrintPages_Params /* current_settings */)
 
 // It's the renderer that controls the printing process when it is generated

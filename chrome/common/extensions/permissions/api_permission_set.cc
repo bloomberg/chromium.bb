@@ -55,12 +55,12 @@ bool CreateAPIPermission(
 }
 
 bool ParseChildPermissions(const std::string& base_name,
-                           const Value* permission_value,
+                           const base::Value* permission_value,
                            APIPermissionSet* api_permissions,
                            string16* error,
                            std::vector<std::string>* unhandled_permissions) {
   if (permission_value) {
-    const ListValue* permissions;
+    const base::ListValue* permissions;
     if (!permission_value->GetAsList(&permissions)) {
       if (error) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -280,7 +280,7 @@ void APIPermissionSet::Union(
 
 // static
 bool APIPermissionSet::ParseFromJSON(
-    const ListValue* permissions,
+    const base::ListValue* permissions,
     APIPermissionSet* api_permissions,
     string16* error,
     std::vector<std::string>* unhandled_permissions) {

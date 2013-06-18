@@ -27,10 +27,6 @@
 #include "grit/extensions_api_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using base::DictionaryValue;
-using base::ListValue;
-using base::Value;
-
 namespace extensions {
 
 using api::GeneratedSchemas;
@@ -47,10 +43,10 @@ base::StringPiece ReadFromResource(int resource_id) {
       resource_id);
 }
 
-scoped_ptr<ListValue> LoadSchemaList(const std::string& name,
-                                     const base::StringPiece& schema) {
+scoped_ptr<base::ListValue> LoadSchemaList(const std::string& name,
+                                           const base::StringPiece& schema) {
   std::string error_message;
-  scoped_ptr<Value> result(
+  scoped_ptr<base::Value> result(
       base::JSONReader::ReadAndReturnError(
           schema,
           base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN,  // options
@@ -65,15 +61,16 @@ scoped_ptr<ListValue> LoadSchemaList(const std::string& name,
       error_message.c_str());
 
   CHECK(result.get()) << error_message << " for schema " << schema;
-  CHECK(result->IsType(Value::TYPE_LIST)) << " for schema " << schema;
-  return scoped_ptr<ListValue>(static_cast<ListValue*>(result.release()));
+  CHECK(result->IsType(base::Value::TYPE_LIST)) << " for schema " << schema;
+  return scoped_ptr<base::ListValue>(static_cast<base::ListValue*>(
+      result.release()));
 }
 
-const DictionaryValue* FindListItem(const ListValue* list,
-                                    const std::string& property_name,
-                                    const std::string& property_value) {
+const base::DictionaryValue* FindListItem(const base::ListValue* list,
+                                          const std::string& property_name,
+                                          const std::string& property_value) {
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    const DictionaryValue* item = NULL;
+    const base::DictionaryValue* item = NULL;
     CHECK(list->GetDictionary(i, &item))
         << property_value << "/" << property_name;
     std::string value;
@@ -84,11 +81,12 @@ const DictionaryValue* FindListItem(const ListValue* list,
   return NULL;
 }
 
-const DictionaryValue* GetSchemaChild(const DictionaryValue* schema_node,
-                                      const std::string& child_name) {
-  const DictionaryValue* child_node = NULL;
+const base::DictionaryValue* GetSchemaChild(
+    const base::DictionaryValue* schema_node,
+    const std::string& child_name) {
+  const base::DictionaryValue* child_node = NULL;
   for (size_t i = 0; i < arraysize(kChildKinds); ++i) {
-    const ListValue* list_node = NULL;
+    const base::ListValue* list_node = NULL;
     if (!schema_node->GetList(kChildKinds[i], &list_node))
       continue;
     child_node = FindListItem(list_node, "name", child_name);
@@ -112,7 +110,7 @@ base::LazyInstance<Static> g_lazy_instance = LAZY_INSTANCE_INITIALIZER;
 // with key |key| in |schema| will be updated to |schema_namespace| + "." +
 // |schema[key]|.
 void MaybePrefixFieldWithNamespace(const std::string& schema_namespace,
-                                   DictionaryValue* schema,
+                                   base::DictionaryValue* schema,
                                    const std::string& key) {
   if (!schema->HasKey(key))
     return;
@@ -126,17 +124,17 @@ void MaybePrefixFieldWithNamespace(const std::string& schema_namespace,
 // Modify all "$ref" keys anywhere in |schema| to be prefxied by
 // |schema_namespace| if they do not already specify a namespace.
 void PrefixRefsWithNamespace(const std::string& schema_namespace,
-                             Value* value) {
-  ListValue* list = NULL;
-  DictionaryValue* dict = NULL;
+                             base::Value* value) {
+  base::ListValue* list = NULL;
+  base::DictionaryValue* dict = NULL;
   if (value->GetAsList(&list)) {
-    for (ListValue::iterator i = list->begin(); i != list->end(); ++i) {
+    for (base::ListValue::iterator i = list->begin(); i != list->end(); ++i) {
       PrefixRefsWithNamespace(schema_namespace, *i);
     }
   } else if (value->GetAsDictionary(&dict)) {
     MaybePrefixFieldWithNamespace(schema_namespace, dict, "$ref");
-    for (DictionaryValue::Iterator i(*dict); !i.IsAtEnd(); i.Advance()) {
-      Value* value = NULL;
+    for (base::DictionaryValue::Iterator i(*dict); !i.IsAtEnd(); i.Advance()) {
+      base::Value* value = NULL;
       CHECK(dict->GetWithoutPathExpansion(i.key(), &value));
       PrefixRefsWithNamespace(schema_namespace, value);
     }
@@ -146,15 +144,15 @@ void PrefixRefsWithNamespace(const std::string& schema_namespace,
 // Modify all objects in the "types" section of the schema to be prefixed by
 // |schema_namespace| if they do not already specify a namespace.
 void PrefixTypesWithNamespace(const std::string& schema_namespace,
-                              DictionaryValue* schema) {
+                              base::DictionaryValue* schema) {
   if (!schema->HasKey("types"))
     return;
 
   // Add the namespace to all of the types defined in this schema
-  ListValue *types = NULL;
+  base::ListValue *types = NULL;
   CHECK(schema->GetList("types", &types));
   for (size_t i = 0; i < types->GetSize(); ++i) {
-    DictionaryValue *type = NULL;
+    base::DictionaryValue *type = NULL;
     CHECK(types->GetDictionary(i, &type));
     MaybePrefixFieldWithNamespace(schema_namespace, type, "id");
     MaybePrefixFieldWithNamespace(schema_namespace, type, "customBindings");
@@ -163,7 +161,7 @@ void PrefixTypesWithNamespace(const std::string& schema_namespace,
 
 // Modify the schema so that all types are fully qualified.
 void PrefixWithNamespace(const std::string& schema_namespace,
-                         DictionaryValue* schema) {
+                         base::DictionaryValue* schema) {
   PrefixTypesWithNamespace(schema_namespace, schema);
   PrefixRefsWithNamespace(schema_namespace, schema);
 }
@@ -200,16 +198,16 @@ void ExtensionAPI::SplitDependencyName(const std::string& full_name,
 
 void ExtensionAPI::LoadSchema(const std::string& name,
                               const base::StringPiece& schema) {
-  scoped_ptr<ListValue> schema_list(LoadSchemaList(name, schema));
+  scoped_ptr<base::ListValue> schema_list(LoadSchemaList(name, schema));
   std::string schema_namespace;
 
   while (!schema_list->empty()) {
-    DictionaryValue* schema = NULL;
+    base::DictionaryValue* schema = NULL;
     {
-      Value* value = NULL;
+      base::Value* value = NULL;
       schema_list->Remove(schema_list->GetSize() - 1, &value);
-      CHECK(value->IsType(Value::TYPE_DICTIONARY));
-      schema = static_cast<DictionaryValue*>(value);
+      CHECK(value->IsType(base::Value::TYPE_DICTIONARY));
+      schema = static_cast<base::DictionaryValue*>(value);
     }
 
     CHECK(schema->GetString("namespace", &schema_namespace));
@@ -343,11 +341,12 @@ bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
       feature->GetContexts()->count(Feature::BLESSED_EXTENSION_CONTEXT);
 }
 
-const DictionaryValue* ExtensionAPI::GetSchema(const std::string& full_name) {
+const base::DictionaryValue* ExtensionAPI::GetSchema(
+    const std::string& full_name) {
   std::string child_name;
   std::string api_name = GetAPINameFromFullName(full_name, &child_name);
 
-  const DictionaryValue* result = NULL;
+  const base::DictionaryValue* result = NULL;
   SchemaMap::iterator maybe_schema = schemas_.find(api_name);
   if (maybe_schema != schemas_.end()) {
     result = maybe_schema->second.get();

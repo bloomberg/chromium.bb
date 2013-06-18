@@ -197,7 +197,7 @@ void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,
 bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const Message* m,
                                                    PickleIterator* iter,
                                                    param_type* p) {
-  p->manifest.reset(new DictionaryValue());
+  p->manifest.reset(new base::DictionaryValue());
   return ReadParam(m, iter, &p->location) &&
          ReadParam(m, iter, &p->path) &&
          ReadParam(m, iter, p->manifest.get()) &&

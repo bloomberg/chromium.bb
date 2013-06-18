@@ -37,7 +37,7 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_APIActionOrEvent_Params)
   IPC_STRUCT_MEMBER(std::string, api_call)
 
   // List of arguments.
-  IPC_STRUCT_MEMBER(ListValue, arguments)
+  IPC_STRUCT_MEMBER(base::ListValue, arguments)
 
   // Extra logging information.
   IPC_STRUCT_MEMBER(std::string, extra)
@@ -55,7 +55,7 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_DOMAction_Params)
   IPC_STRUCT_MEMBER(std::string, api_call)
 
   // List of arguments.
-  IPC_STRUCT_MEMBER(ListValue, arguments)
+  IPC_STRUCT_MEMBER(base::ListValue, arguments)
 
   // Type of DOM API call.
   IPC_STRUCT_MEMBER(int, call_type)
@@ -67,7 +67,7 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   IPC_STRUCT_MEMBER(std::string, name)
 
   // List of message arguments.
-  IPC_STRUCT_MEMBER(ListValue, arguments)
+  IPC_STRUCT_MEMBER(base::ListValue, arguments)
 
   // Extension ID this request was sent from. This can be empty, in the case
   // where we expose APIs to normal web pages using the extension function
@@ -206,7 +206,7 @@ struct ExtensionMsg_Loaded_Params {
       std::string* error) const;
 
   // The subset of the extension manifest data we send to renderers.
-  linked_ptr<DictionaryValue> manifest;
+  linked_ptr<base::DictionaryValue> manifest;
 
   // The location the extension was installed from.
   extensions::Manifest::Location location;
@@ -287,7 +287,7 @@ struct ParamTraits<ExtensionMsg_Loaded_Params> {
 IPC_MESSAGE_ROUTED4(ExtensionMsg_Response,
                     int /* request_id */,
                     bool /* success */,
-                    ListValue /* response wrapper (see comment above) */,
+                    base::ListValue /* response wrapper (see comment above) */,
                     std::string /* error */)
 
 // This message is optionally routed.  If used as a control message, it will
@@ -302,7 +302,7 @@ IPC_MESSAGE_ROUTED5(ExtensionMsg_MessageInvoke,
                     std::string /* extension_id */,
                     std::string /* module_name */,
                     std::string /* function_name */,
-                    ListValue /* args */,
+                    base::ListValue /* args */,
                     bool /* delivered as part of a user gesture */)
 
 // Tell the renderer process all known extension function names.
@@ -420,13 +420,13 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_GetAppInstallStateResponse,
 IPC_MESSAGE_ROUTED4(ExtensionMsg_DispatchOnConnect,
                     int /* target_port_id */,
                     std::string /* channel_name */,
-                    DictionaryValue /* source_tab */,
+                    base::DictionaryValue /* source_tab */,
                     ExtensionMsg_ExternalConnectionInfo)
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
                     int /* target_port_id */,
-                    ListValue /* message arguments, a 0-or-1 length list */)
+                    base::ListValue /* message args, a 0-or-1 length list */)
 
 // Dispatch the Port.onDisconnect event for message channels.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
@@ -493,7 +493,7 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RemoveLazyListener,
 IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AddFilteredListener,
                      std::string /* extension_id */,
                      std::string /* name */,
-                     DictionaryValue /* filter */,
+                     base::DictionaryValue /* filter */,
                      bool /* lazy */)
 
 // Notify the browser that the given extension is no longer interested in
@@ -501,7 +501,7 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AddFilteredListener,
 IPC_MESSAGE_CONTROL4(ExtensionHostMsg_RemoveFilteredListener,
                      std::string /* extension_id */,
                      std::string /* name */,
-                     DictionaryValue /* filter */,
+                     base::DictionaryValue /* filter */,
                      bool /* lazy */)
 
 // Notify the browser that an event has finished being dispatched.
@@ -536,7 +536,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToTab,
 // by ViewHostMsg_OpenChannelTo*.
 IPC_MESSAGE_ROUTED2(ExtensionHostMsg_PostMessage,
                     int /* port_id */,
-                    ListValue /* message arguments, a 0-or-1 length list */)
+                    base::ListValue /* message args, a 0-or-1 length list */)
 
 // Send a message to an extension process.  The handle is the value returned
 // by ViewHostMsg_OpenChannelTo*.
@@ -556,7 +556,7 @@ IPC_MESSAGE_ROUTED5(
     std::string /* error; empty implies success */,
     int32 /* page_id the code executed on.  May be -1 if unsuccessful */,
     GURL /* URL of the code executed on. May be empty if unsuccessful. */,
-    ListValue /* result of the script */)
+    base::ListValue /* result of the script */)
 
 // Sent from the renderer to the browser to notify that content scripts are
 // running in the renderer that the IPC originated from.

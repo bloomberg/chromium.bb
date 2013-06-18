@@ -34,7 +34,7 @@ Feature::Availability ManifestFeature::IsAvailableToContext(
   return CreateAvailability(IS_AVAILABLE);
 }
 
-std::string ManifestFeature::Parse(const DictionaryValue* value) {
+std::string ManifestFeature::Parse(const base::DictionaryValue* value) {
   std::string error = SimpleFeature::Parse(value);
   if (!error.empty())
     return error;

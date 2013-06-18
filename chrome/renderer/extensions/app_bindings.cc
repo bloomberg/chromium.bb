@@ -126,7 +126,7 @@ v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
   if (!extension)
     return v8::Null();
 
-  scoped_ptr<DictionaryValue> manifest_copy(
+  scoped_ptr<base::DictionaryValue> manifest_copy(
       extension->manifest()->value()->DeepCopy());
   manifest_copy->SetString("id", extension->id());
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());

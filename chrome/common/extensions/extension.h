@@ -37,7 +37,6 @@ class SkBitmap;
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 class Version;
 }
 

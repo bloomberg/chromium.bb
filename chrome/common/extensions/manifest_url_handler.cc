@@ -262,7 +262,7 @@ URLOverridesHandler::~URLOverridesHandler() {
 }
 
 bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
-  const DictionaryValue* overrides = NULL;
+  const base::DictionaryValue* overrides = NULL;
   if (!extension->manifest()->GetDictionary(keys::kChromeURLOverrides,
                                             &overrides)) {
     *error = ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
@@ -270,7 +270,7 @@ bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
   }
   scoped_ptr<URLOverrides> url_overrides(new URLOverrides);
   // Validate that the overrides are all strings
-  for (DictionaryValue::Iterator iter(*overrides); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*overrides); !iter.IsAtEnd();
          iter.Advance()) {
     std::string page = iter.key();
     std::string val;

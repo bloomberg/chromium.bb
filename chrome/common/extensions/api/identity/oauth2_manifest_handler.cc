@@ -47,7 +47,7 @@ OAuth2ManifestHandler::~OAuth2ManifestHandler() {
 bool OAuth2ManifestHandler::Parse(Extension* extension,
                                   string16* error) {
   scoped_ptr<OAuth2Info> info(new OAuth2Info);
-  const DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kOAuth2, &dict) ||
       !dict->GetString(kClientId, &info->client_id) ||
       info->client_id.empty()) {
@@ -55,7 +55,7 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
     return false;
   }
 
-  const ListValue* list = NULL;
+  const base::ListValue* list = NULL;
   if (!dict->GetList(kScopes, &list)) {
     *error = ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
     return false;

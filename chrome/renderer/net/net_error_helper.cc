@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
-using base::DictionaryValue;
 using chrome_common_net::DnsProbeResult;
 using content::RenderThread;
 using content::RenderView;
@@ -181,7 +180,7 @@ void NetErrorHelper::UpdateErrorPage(DnsProbeResult dns_probe_result) {
 
   DVLOG(1) << "net error code is " << net_error;
 
-  DictionaryValue error_strings;
+  base::DictionaryValue error_strings;
   LocalizedError::GetStrings(NetErrorToWebURLError(net_error),
                              is_failed_post_,
                              RenderThread::Get()->GetLocale(),

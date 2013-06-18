@@ -99,7 +99,7 @@ Unpacker::Unpacker(const base::FilePath& extension_path,
 Unpacker::~Unpacker() {
 }
 
-DictionaryValue* Unpacker::ReadManifest() {
+base::DictionaryValue* Unpacker::ReadManifest() {
   base::FilePath manifest_path =
       temp_install_dir_.Append(kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
@@ -109,18 +109,18 @@ DictionaryValue* Unpacker::ReadManifest() {
 
   JSONFileValueSerializer serializer(manifest_path);
   std::string error;
-  scoped_ptr<Value> root(serializer.Deserialize(NULL, &error));
+  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
   if (!root.get()) {
     SetError(error);
     return NULL;
   }
 
-  if (!root->IsType(Value::TYPE_DICTIONARY)) {
+  if (!root->IsType(base::Value::TYPE_DICTIONARY)) {
     SetError(errors::kInvalidManifest);
     return NULL;
   }
 
-  return static_cast<DictionaryValue*>(root.release());
+  return static_cast<base::DictionaryValue*>(root.release());
 }
 
 bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
@@ -207,7 +207,7 @@ bool Unpacker::Run() {
   }
 
   // Parse all message catalogs (if any).
-  parsed_catalogs_.reset(new DictionaryValue);
+  parsed_catalogs_.reset(new base::DictionaryValue);
   if (!LocaleInfo::GetDefaultLocale(extension.get()).empty()) {
     if (!ReadAllMessageCatalogs(LocaleInfo::GetDefaultLocale(extension.get())))
       return false;  // Error was already reported.
@@ -262,7 +262,7 @@ bool Unpacker::ReadImagesFromFile(const base::FilePath& extension_path,
 
 // static
 bool Unpacker::ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
-                                           DictionaryValue* catalogs) {
+                                           base::DictionaryValue* catalogs) {
   base::FilePath path = extension_path.AppendASCII(
       filenames::kDecodedMessageCatalogsFilename);
   std::string file_str;
@@ -302,8 +302,8 @@ bool Unpacker::AddDecodedImage(const base::FilePath& path) {
 bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
   std::string error;
   JSONFileValueSerializer serializer(message_path);
-  scoped_ptr<DictionaryValue> root(
-      static_cast<DictionaryValue*>(serializer.Deserialize(NULL, &error)));
+  scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
+      serializer.Deserialize(NULL, &error)));
   if (!root.get()) {
     string16 messages_file = message_path.LossyDisplayName();
     if (error.empty()) {

@@ -36,7 +36,7 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesWhitelist) {
 
   // Rule: "extension", whitelist "foo".
   scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature());
-  scoped_ptr<DictionaryValue> rule(
+  scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
       .Set("whitelist", ListBuilder().Append(kIdFoo))
       .Set("extension_types", ListBuilder().Append("extension")).Build());
@@ -89,7 +89,7 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
 
   // Rule: "extension", channel trunk.
   scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature());
-  scoped_ptr<DictionaryValue> rule(
+  scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
       .Set("channel", "trunk")
       .Set("extension_types", ListBuilder().Append("extension")).Build());

@@ -32,13 +32,13 @@ class ExtensionSyncTypeTest : public testing::Test {
       int num_plugins,
       const base::FilePath& extension_path,
       int creation_flags) {
-    DictionaryValue source;
+    base::DictionaryValue source;
     source.SetString(keys::kName, "PossiblySyncableExtension");
     source.SetString(keys::kVersion, "0.0.0.0");
     if (type == APP)
       source.SetString(keys::kApp, "true");
     if (type == THEME)
-      source.Set(keys::kTheme, new DictionaryValue());
+      source.Set(keys::kTheme, new base::DictionaryValue());
     if (!update_url.is_empty()) {
       source.SetString(keys::kUpdateURL, update_url.spec());
     }
@@ -47,9 +47,9 @@ class ExtensionSyncTypeTest : public testing::Test {
     }
     if (type != THEME) {
       source.SetBoolean(keys::kConvertedFromUserScript, type == USER_SCRIPT);
-      ListValue* plugins = new ListValue();
+      base::ListValue* plugins = new base::ListValue();
       for (int i = 0; i < num_plugins; ++i) {
-        DictionaryValue* plugin = new DictionaryValue();
+        base::DictionaryValue* plugin = new base::DictionaryValue();
         plugin->SetString(keys::kPluginsPath, std::string());
         plugins->Set(i, plugin);
       }
@@ -148,7 +148,7 @@ TEST_F(ExtensionSyncTypeTest, OnlyDisplayAppsInLauncher) {
 }
 
 TEST_F(ExtensionSyncTypeTest, DisplayInXManifestProperties) {
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString(keys::kName, "TestComponentApp");
   manifest.SetString(keys::kVersion, "0.0.0.0");
   manifest.SetString(keys::kApp, "true");

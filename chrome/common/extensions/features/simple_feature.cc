@@ -68,10 +68,10 @@ std::string GetChannelName(VersionInfo::Channel channel) {
 
 // TODO(aa): Can we replace all this manual parsing with JSON schema stuff?
 
-void ParseSet(const DictionaryValue* value,
+void ParseSet(const base::DictionaryValue* value,
               const std::string& property,
               std::set<std::string>* set) {
-  const ListValue* list_value = NULL;
+  const base::ListValue* list_value = NULL;
   if (!value->GetList(property, &list_value))
     return;
 
@@ -94,7 +94,7 @@ void ParseEnum(const std::string& string_value,
 }
 
 template<typename T>
-void ParseEnum(const DictionaryValue* value,
+void ParseEnum(const base::DictionaryValue* value,
                const std::string& property,
                T* enum_value,
                const std::map<std::string, T>& mapping) {
@@ -106,7 +106,7 @@ void ParseEnum(const DictionaryValue* value,
 }
 
 template<typename T>
-void ParseEnumSet(const DictionaryValue* value,
+void ParseEnumSet(const base::DictionaryValue* value,
                   const std::string& property,
                   std::set<T>* enum_set,
                   const std::map<std::string, T>& mapping) {
@@ -136,10 +136,10 @@ void ParseEnumSet(const DictionaryValue* value,
   }
 }
 
-void ParseURLPatterns(const DictionaryValue* value,
+void ParseURLPatterns(const base::DictionaryValue* value,
                       const std::string& key,
                       URLPatternSet* set) {
-  const ListValue* matches = NULL;
+  const base::ListValue* matches = NULL;
   if (value->GetList(key, &matches)) {
     set->ClearPatterns();
     for (size_t i = 0; i < matches->GetSize(); ++i) {
@@ -224,7 +224,7 @@ bool SimpleFeature::Equals(const SimpleFeature& other) const {
       channel_has_been_set_ == other.channel_has_been_set_;
 }
 
-std::string SimpleFeature::Parse(const DictionaryValue* value) {
+std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
   ParseURLPatterns(value, "matches", &matches_);
   ParseSet(value, "whitelist", &whitelist_);
   ParseSet(value, "dependencies", &dependencies_);

@@ -49,13 +49,13 @@ InputComponentsHandler::~InputComponentsHandler() {
 bool InputComponentsHandler::Parse(Extension* extension,
                                    string16* error) {
   scoped_ptr<InputComponents> info(new InputComponents);
-  const ListValue* list_value = NULL;
+  const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kInputComponents, &list_value)) {
     *error = ASCIIToUTF16(errors::kInvalidInputComponents);
     return false;
   }
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    const DictionaryValue* module_value = NULL;
+    const base::DictionaryValue* module_value = NULL;
     std::string name_str;
     InputComponentType type;
     std::string id_str;
@@ -117,7 +117,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     }
 
     // Get input_components[i].layouts.
-    const ListValue* layouts_value = NULL;
+    const base::ListValue* layouts_value = NULL;
     if (module_value->GetList(keys::kLayouts, &layouts_value)) {
       for (size_t j = 0; j < layouts_value->GetSize(); ++j) {
         std::string layout_name_str;

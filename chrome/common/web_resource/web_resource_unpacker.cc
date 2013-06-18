@@ -24,7 +24,7 @@ WebResourceUnpacker::~WebResourceUnpacker() {
 // server.  Change so the format is based on a template, once we have
 // decided on final server format.
 bool WebResourceUnpacker::Run() {
-  scoped_ptr<Value> value;
+  scoped_ptr<base::Value> value;
   if (!resource_data_.empty()) {
     value.reset(base::JSONReader::Read(resource_data_));
     if (!value.get()) {
@@ -32,11 +32,11 @@ bool WebResourceUnpacker::Run() {
       error_message_ = kInvalidDataTypeError;
       return false;
     }
-    if (!value->IsType(Value::TYPE_DICTIONARY)) {
+    if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
       error_message_ = kUnexpectedJSONFormatError;
       return false;
     }
-    parsed_json_.reset(static_cast<DictionaryValue*>(value.release()));
+    parsed_json_.reset(static_cast<base::DictionaryValue*>(value.release()));
     return true;
   }
   error_message_ = kInvalidDataTypeError;

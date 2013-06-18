@@ -320,7 +320,7 @@ std::string Command::AcceleratorToString(const ui::Accelerator& accelerator) {
   return shortcut;
 }
 
-bool Command::Parse(const DictionaryValue* command,
+bool Command::Parse(const base::DictionaryValue* command,
                     const std::string& command_name,
                     int index,
                     string16* error) {
@@ -344,10 +344,10 @@ bool Command::Parse(const DictionaryValue* command,
   SuggestionMap suggestions;
 
   // First try to parse the |suggested_key| as a dictionary.
-  const DictionaryValue* suggested_key_dict;
+  const base::DictionaryValue* suggested_key_dict;
   if (command->GetDictionary(keys::kSuggestedKey, &suggested_key_dict)) {
-    for (DictionaryValue::Iterator iter(*suggested_key_dict); !iter.IsAtEnd();
-         iter.Advance()) {
+    for (base::DictionaryValue::Iterator iter(*suggested_key_dict);
+         !iter.IsAtEnd(); iter.Advance()) {
       // For each item in the dictionary, extract the platforms specified.
       std::string suggested_key_string;
       if (iter.value().GetAsString(&suggested_key_string) &&
@@ -441,9 +441,9 @@ bool Command::Parse(const DictionaryValue* command,
   return true;
 }
 
-DictionaryValue* Command::ToValue(const Extension* extension,
-                                  bool active) const {
-  DictionaryValue* extension_data = new DictionaryValue();
+base::DictionaryValue* Command::ToValue(const Extension* extension,
+                                        bool active) const {
+  base::DictionaryValue* extension_data = new base::DictionaryValue();
 
   string16 command_description;
   if (command_name() == values::kBrowserActionCommandEvent ||

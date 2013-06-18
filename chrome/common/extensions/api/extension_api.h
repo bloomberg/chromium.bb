@@ -21,7 +21,6 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 class Value;
 }
 
@@ -125,7 +124,8 @@ class ExtensionAPI {
   UnloadedSchemaMap unloaded_schemas_;
 
   // Schemas for each namespace.
-  typedef std::map<std::string, linked_ptr<const DictionaryValue> > SchemaMap;
+  typedef std::map<std::string, linked_ptr<const base::DictionaryValue> >
+        SchemaMap;
   SchemaMap schemas_;
 
   // FeatureProviders used for resolving dependencies.

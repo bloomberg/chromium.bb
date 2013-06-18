@@ -7,13 +7,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 
-using base::DictionaryValue;
-using base::Value;
-
 // static
 bool AutomationId::FromValue(
-    Value* value, AutomationId* id, std::string* error) {
-  DictionaryValue* dict;
+    base::Value* value, AutomationId* id, std::string* error) {
+  base::DictionaryValue* dict;
   if (!value->GetAsDictionary(&dict)) {
     *error = "automation ID must be a dictionary";
     return false;
@@ -34,11 +31,11 @@ bool AutomationId::FromValue(
 
 // static
 bool AutomationId::FromValueInDictionary(
-    DictionaryValue* dict,
+    base::DictionaryValue* dict,
     const std::string& key,
     AutomationId* id,
     std::string* error) {
-  Value* id_value;
+  base::Value* id_value;
   if (!dict->Get(key, &id_value)) {
     *error = base::StringPrintf("automation ID '%s' missing", key.c_str());
     return false;
@@ -55,8 +52,8 @@ bool AutomationId::operator==(const AutomationId& id) const {
   return type_ == id.type_ && id_ == id.id_;
 }
 
-DictionaryValue* AutomationId::ToValue() const {
-  DictionaryValue* dict = new DictionaryValue();
+base::DictionaryValue* AutomationId::ToValue() const {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("type", type_);
   dict->SetString("id", id_);
   return dict;

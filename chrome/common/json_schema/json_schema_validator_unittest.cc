@@ -15,8 +15,9 @@ class JSONSchemaValidatorCPPTest : public JSONSchemaValidatorTestBase {
 
  protected:
   virtual void ExpectValid(const std::string& test_source,
-                           Value* instance, DictionaryValue* schema,
-                           ListValue* types) OVERRIDE {
+                           base::Value* instance,
+                           base::DictionaryValue* schema,
+                           base::ListValue* types) OVERRIDE {
     JSONSchemaValidator validator(schema, types);
     if (validator.Validate(instance))
       return;
@@ -30,8 +31,8 @@ class JSONSchemaValidatorCPPTest : public JSONSchemaValidatorTestBase {
 
   virtual void ExpectNotValid(
       const std::string& test_source,
-      Value* instance, DictionaryValue* schema,
-      ListValue* types,
+      base::Value* instance, base::DictionaryValue* schema,
+      base::ListValue* types,
       const std::string& expected_error_path,
       const std::string& expected_error_message) OVERRIDE {
     JSONSchemaValidator validator(schema, types);

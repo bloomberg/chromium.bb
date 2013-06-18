@@ -38,7 +38,7 @@ ExtensionBuilder& ExtensionBuilder::SetLocation(Manifest::Location location) {
 }
 
 ExtensionBuilder& ExtensionBuilder::SetManifest(
-    scoped_ptr<DictionaryValue> manifest) {
+    scoped_ptr<base::DictionaryValue> manifest) {
   manifest_ = manifest.Pass();
   return *this;
 }

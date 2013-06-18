@@ -48,7 +48,7 @@ TtsEngineManifestHandler::~TtsEngineManifestHandler() {
 
 bool TtsEngineManifestHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<TtsVoices> info(new TtsVoices);
-  const DictionaryValue* tts_dict = NULL;
+  const base::DictionaryValue* tts_dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kTtsEngine, &tts_dict)) {
     *error = ASCIIToUTF16(errors::kInvalidTts);
     return false;
@@ -57,14 +57,14 @@ bool TtsEngineManifestHandler::Parse(Extension* extension, string16* error) {
   if (!tts_dict->HasKey(keys::kTtsVoices))
     return true;
 
-  const ListValue* tts_voices = NULL;
+  const base::ListValue* tts_voices = NULL;
   if (!tts_dict->GetList(keys::kTtsVoices, &tts_voices)) {
     *error = ASCIIToUTF16(errors::kInvalidTtsVoices);
     return false;
   }
 
   for (size_t i = 0; i < tts_voices->GetSize(); i++) {
-    const DictionaryValue* one_tts_voice = NULL;
+    const base::DictionaryValue* one_tts_voice = NULL;
     if (!tts_voices->GetDictionary(i, &one_tts_voice)) {
       *error = ASCIIToUTF16(errors::kInvalidTtsVoices);
       return false;
@@ -96,7 +96,7 @@ bool TtsEngineManifestHandler::Parse(Extension* extension, string16* error) {
       }
     }
     if (one_tts_voice->HasKey(keys::kTtsVoicesEventTypes)) {
-      const ListValue* event_types_list;
+      const base::ListValue* event_types_list;
       if (!one_tts_voice->GetList(
               keys::kTtsVoicesEventTypes,
               &event_types_list)) {
