@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/ini_parser.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -50,9 +50,12 @@ class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
 }  // namespace
 
 base::FilePath GetFirefoxProfilePath() {
-  DictionaryValue root;
   base::FilePath ini_file = GetProfilesINI();
-  ParseProfileINI(ini_file, &root);
+  std::string content;
+  file_util::ReadFileToString(ini_file, &content);
+  base::DictionaryValueINIParser ini_parser;
+  ini_parser.Parse(content);
+  const DictionaryValue& root = ini_parser.root();
 
   base::FilePath source_path;
   for (int i = 0; ; ++i) {
@@ -128,50 +131,6 @@ bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
     }
   }
   return ret;
-}
-
-void ParseProfileINI(const base::FilePath& file, DictionaryValue* root) {
-  // Reads the whole INI file.
-  std::string content;
-  file_util::ReadFileToString(file, &content);
-  ReplaceSubstringsAfterOffset(&content, 0, "\r\n", "\n");
-  std::vector<std::string> lines;
-  base::SplitString(content, '\n', &lines);
-
-  // Parses the file.
-  root->Clear();
-  std::string current_section;
-  for (size_t i = 0; i < lines.size(); ++i) {
-    std::string line = lines[i];
-    if (line.empty()) {
-      // Skips the empty line.
-      continue;
-    }
-    if (line[0] == '#' || line[0] == ';') {
-      // This line is a comment.
-      continue;
-    }
-    if (line[0] == '[') {
-      // It is a section header.
-      current_section = line.substr(1);
-      size_t end = current_section.rfind(']');
-      if (end != std::string::npos)
-        current_section.erase(end);
-    } else {
-      std::string key, value;
-      size_t equal = line.find('=');
-      if (equal != std::string::npos) {
-        key = line.substr(0, equal);
-        value = line.substr(equal + 1);
-        // Checks whether the section and key contain a '.' character.
-        // Those sections and keys break DictionaryValue's path format,
-        // so we discard them.
-        if (current_section.find('.') == std::string::npos &&
-            key.find('.') == std::string::npos)
-          root->SetString(current_section + "." + key, value);
-      }
-    }
-  }
 }
 
 bool CanImportURL(const GURL& url) {

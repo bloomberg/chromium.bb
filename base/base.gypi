@@ -201,6 +201,8 @@
           'hi_res_timer_manager_win.cc',
           'hi_res_timer_manager.h',
           'id_map.h',
+          'ini_parser.cc',
+          'ini_parser.h',
           'ios/device_util.h',
           'ios/device_util.mm',
           'ios/ios_util.h',
