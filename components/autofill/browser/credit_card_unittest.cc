@@ -8,6 +8,7 @@
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/common/form_field_data.h"
+#include "grit/webkit_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -153,6 +154,22 @@ TEST(CreditCardTest, Compare) {
   test::SetCreditCardInfo(&b, "Ringo", NULL, NULL, NULL);
   EXPECT_GT(0, a.Compare(b));
   EXPECT_LT(0, b.Compare(a));
+}
+
+// Test we get the correct icon for each card type.
+TEST(CreditCardTest, IconResourceId) {
+  EXPECT_EQ(IDR_AUTOFILL_CC_AMEX,
+            CreditCard::IconResourceId(kAmericanExpressCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_DINERS,
+            CreditCard::IconResourceId(kDinersCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_DISCOVER,
+            CreditCard::IconResourceId(kDiscoverCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_JCB,
+            CreditCard::IconResourceId(kJCBCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_MASTERCARD,
+            CreditCard::IconResourceId(kMasterCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_VISA,
+            CreditCard::IconResourceId(kVisaCard));
 }
 
 TEST(CreditCardTest, UpdateFromImportedCard) {

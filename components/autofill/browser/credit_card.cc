@@ -162,6 +162,29 @@ base::string16 CreditCard::TypeForDisplay(const std::string& type) {
 }
 
 // static
+int CreditCard::IconResourceId(const std::string& type) {
+  if (type == kAmericanExpressCard)
+    return IDR_AUTOFILL_CC_AMEX;
+  if (type == kDinersCard)
+    return IDR_AUTOFILL_CC_DINERS;
+  if (type == kDiscoverCard)
+    return IDR_AUTOFILL_CC_DISCOVER;
+  if (type == kJCBCard)
+    return IDR_AUTOFILL_CC_JCB;
+  if (type == kMasterCard)
+    return IDR_AUTOFILL_CC_MASTERCARD;
+  if (type == kSoloCard)
+    return IDR_AUTOFILL_CC_SOLO;
+  if (type == kVisaCard)
+    return IDR_AUTOFILL_CC_VISA;
+
+  // If you hit this DCHECK, the above list of cases needs to be updated to
+  // include a new card.
+  DCHECK_EQ(kGenericCard, type);
+  return IDR_AUTOFILL_CC_GENERIC;
+}
+
+// static
 std::string CreditCard::GetCreditCardType(const base::string16& number) {
   // Don't check for a specific type if this is not a credit card number.
   if (!autofill::IsValidCreditCardNumber(number))
@@ -453,28 +476,6 @@ base::string16 CreditCard::TypeAndLastFourDigits() const {
 
   // TODO(estade): i18n.
   return type + ASCIIToUTF16(" - ") + digits;
-}
-
-int CreditCard::IconResourceId() const {
-  if (type_ == kAmericanExpressCard)
-    return IDR_AUTOFILL_CC_AMEX;
-  if (type_ == kDinersCard)
-    return IDR_AUTOFILL_CC_DINERS;
-  if (type_ == kDiscoverCard)
-    return IDR_AUTOFILL_CC_DISCOVER;
-  if (type_ == kJCBCard)
-    return IDR_AUTOFILL_CC_JCB;
-  if (type_ == kMasterCard)
-    return IDR_AUTOFILL_CC_MASTERCARD;
-  if (type_ == kSoloCard)
-    return IDR_AUTOFILL_CC_SOLO;
-  if (type_ == kVisaCard)
-    return IDR_AUTOFILL_CC_VISA;
-
-  // If you hit this DCHECK, the above list of cases needs to be updated to
-  // include a new card.
-  DCHECK_EQ(kGenericCard, type_);
-  return IDR_AUTOFILL_CC_GENERIC;
 }
 
 void CreditCard::operator=(const CreditCard& credit_card) {

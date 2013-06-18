@@ -410,6 +410,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether the user has chosen to enter all new data in at least one section.
   bool IsManuallyEditingAnySection() const;
 
+  // Returns validity message for a given credit card number.
+  base::string16 CreditCardNumberValidityMessage(
+      const base::string16& number) const;
+
   // Whether a particular DetailInput in |section| should be edited or not.
   bool InputIsEditable(const DetailInput& input, DialogSection section) const;
 

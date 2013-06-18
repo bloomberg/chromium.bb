@@ -70,6 +70,14 @@ const char* kFieldsFromPage[] =
       "shipping tel",
     };
 const char kSettingsOrigin[] = "Chrome settings";
+const char kTestCCNumberAmex[] = "376200000000002";
+const char kTestCCNumberVisa[] = "4111111111111111";
+const char kTestCCNumberMaster[] = "5555555555554444";
+const char kTestCCNumberDiscover[] = "6011111111111117";
+const char kTestCCNumberIncomplete[] = "4111111111";
+// Credit card number fails Luhn check.
+const char kTestCCNumberInvalid[] = "4111111111111112";
+
 
 void SetOutputValue(const DetailInputs& inputs,
                     DetailOutputMap* outputs,
@@ -391,6 +399,19 @@ class AutofillDialogControllerTest : public testing::Test {
     controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(0);
   }
 
+  void ValidateCCNumber(DialogSection section,
+                        const std::string& cc_number,
+                        bool should_pass) {
+    DetailOutputMap outputs;
+    const DetailInputs& inputs =
+        controller()->RequestedFieldsForSection(section);
+
+    SetOutputValue(inputs, &outputs, CREDIT_CARD_NUMBER, cc_number);
+    ValidityData validity_data =
+        controller()->InputsAreValid(section, outputs, VALIDATE_FINAL);
+    EXPECT_EQ(should_pass ? 0U : 1U, validity_data.count(CREDIT_CARD_NUMBER));
+  }
+
   TestAutofillDialogController* controller() { return controller_.get(); }
 
   TestingProfile* profile() { return &profile_; }
@@ -518,10 +539,6 @@ TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
   // Construct DetailOutputMap from AutofillProfile data.
   SwitchToAutofill();
 
-  AutofillProfile full_profile(test::GetVerifiedProfile());
-  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-  controller()->EditClickedForSection(SECTION_SHIPPING);
-
   DetailOutputMap outputs;
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_CC);
@@ -549,11 +566,7 @@ TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
 
   // Setup some wallet state.
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
-
-  controller()->EditClickedForSection(SECTION_CC_BILLING);
 
   DetailOutputMap wallet_outputs;
   const DetailInputs& wallet_inputs =
@@ -604,6 +617,35 @@ TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
       controller()->InputsAreValid(
           SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
+}
+
+TEST_F(AutofillDialogControllerTest, CreditCardNumberValidation) {
+  // Construct DetailOutputMap from AutofillProfile data.
+  SwitchToAutofill();
+
+  // Should accept AMEX, Visa, Master and Discover.
+  ValidateCCNumber(SECTION_CC, kTestCCNumberVisa, true);
+  ValidateCCNumber(SECTION_CC, kTestCCNumberMaster, true);
+  ValidateCCNumber(SECTION_CC, kTestCCNumberDiscover, true);
+  ValidateCCNumber(SECTION_CC, kTestCCNumberAmex, true);
+
+  ValidateCCNumber(SECTION_CC, kTestCCNumberIncomplete, false);
+  ValidateCCNumber(SECTION_CC, kTestCCNumberInvalid, false);
+
+  // Switch to Wallet which will not accept AMEX.
+  SwitchToWallet();
+
+  // Setup some wallet state.
+  controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
+
+  // Should accept Visa, Master and Discover, but not AMEX.
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberVisa, true);
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberMaster, true);
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberDiscover, true);
+
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberAmex, false);
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberIncomplete, false);
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberInvalid, false);
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
