@@ -278,6 +278,8 @@ public:
 
     bool isSelectPopupVisible(Node*);
 
+    PassRefPtr<ClientRect> selectionBounds(ExceptionCode&);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

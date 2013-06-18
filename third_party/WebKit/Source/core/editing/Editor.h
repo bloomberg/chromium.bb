@@ -212,7 +212,7 @@ public:
     void markAndReplaceFor(PassRefPtr<SpellCheckRequest>, const Vector<TextCheckingResult>&);
 
     bool isOverwriteModeEnabled() const { return m_overwriteModeEnabled; }
-    void toggleOverwriteModeEnabled() { m_overwriteModeEnabled = !m_overwriteModeEnabled; }
+    void toggleOverwriteModeEnabled();
 
     void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask, Range* spellingRange, Range* grammarRange);
 

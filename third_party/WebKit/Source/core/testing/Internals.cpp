@@ -1908,6 +1908,17 @@ void Internals::forceReload(bool endToEnd)
     frame()->loader()->reload(endToEnd);
 }
 
+PassRefPtr<ClientRect> Internals::selectionBounds(ExceptionCode& ec)
+{
+    Document* document = contextDocument();
+    if (!document || !document->frame() || !document->frame()->selection()) {
+        ec = INVALID_ACCESS_ERR;
+        return 0;
+    }
+
+    return ClientRect::create(document->frame()->selection()->bounds());
+}
+
 String Internals::markerTextForListItem(Element* element, ExceptionCode& ec)
 {
     if (!element) {

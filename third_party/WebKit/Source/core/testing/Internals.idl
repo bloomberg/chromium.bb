@@ -245,4 +245,6 @@
     [RaisesException] DOMString getImageSourceURL(Element element);
 
     boolean isSelectPopupVisible(Node node);
+
+    [RaisesException] ClientRect selectionBounds();
 };
