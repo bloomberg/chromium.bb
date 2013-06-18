@@ -76,7 +76,7 @@ deps = {
     Var("webkit_trunk") + "@" + Var("webkit_revision"),
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@199252",
+    "/trunk/deps/third_party/icu46@205936",
 
   "src/third_party/libexif/sources":
     "/trunk/deps/third_party/libexif/sources@146817",
