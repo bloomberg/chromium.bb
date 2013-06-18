@@ -113,13 +113,11 @@
   if ([self respondsToSelector:(@selector(contentsScale))])
     window_scale_factor = [self contentsScale];
 
-  if (renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
+  if (!renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
         window_size,
         window_scale_factor,
         renderWidgetHostView_->frame_subscriber(),
         true)) {
-    renderWidgetHostView_->ThrottledAckPendingSwapBuffers();
-  } else {
     renderWidgetHostView_->GotAcceleratedCompositingError();
   }
 }

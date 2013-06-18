@@ -1514,8 +1514,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
                             params.size,
                             params.scale_factor,
                             params.latency_info)) {
-    if (!use_core_animation_)
-      ThrottledAckPendingSwapBuffers();
+    ThrottledAckPendingSwapBuffers();
   } else {
     GotAcceleratedCompositingError();
   }
@@ -1535,8 +1534,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
                             params.surface_size,
                             params.surface_scale_factor,
                             params.latency_info)) {
-    if (!use_core_animation_)
-      ThrottledAckPendingSwapBuffers();
+    ThrottledAckPendingSwapBuffers();
   } else {
     GotAcceleratedCompositingError();
   }

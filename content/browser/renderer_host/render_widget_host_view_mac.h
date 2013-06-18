@@ -335,13 +335,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
                              const gfx::Size& size,
                              float scale_factor,
                              const ui::LatencyInfo& latency_info);
-  // Ack pending SwapBuffers requests, if any, to unblock the GPU process. Has
-  // no effect if there are no pending requests.
-  void AckPendingSwapBuffers();
-
-  // Ack pending SwapBuffers requests, but no more frequently than the vsync
-  // rate if the renderer is not throttling the swap rate.
-  void ThrottledAckPendingSwapBuffers();
 
   // Called when a GPU error is detected. Deletes all compositing state.
   void GotAcceleratedCompositingError();
@@ -466,6 +459,14 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   void GotAcceleratedFrame();
   // Called when a software DIB is received.
   void GotSoftwareFrame();
+
+  // Ack pending SwapBuffers requests, if any, to unblock the GPU process. Has
+  // no effect if there are no pending requests.
+  void AckPendingSwapBuffers();
+
+  // Ack pending SwapBuffers requests, but no more frequently than the vsync
+  // rate if the renderer is not throttling the swap rate.
+  void ThrottledAckPendingSwapBuffers();
 
   void OnPluginFocusChanged(bool focused, int plugin_id);
   void OnStartPluginIme();
