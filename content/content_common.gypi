@@ -289,6 +289,7 @@
     'common/quota_messages.h',
     'common/resource_messages.cc',
     'common/resource_messages.h',
+    'common/sandbox_init_linux.cc',
     'common/sandbox_init_mac.cc',
     'common/sandbox_init_mac.h',
     'common/sandbox_init_win.cc',

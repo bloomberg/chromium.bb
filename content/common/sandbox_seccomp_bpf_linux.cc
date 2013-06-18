@@ -27,6 +27,8 @@
 #endif
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -1439,6 +1441,13 @@ ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
   return sandbox->Trap(CrashSIGSYS_Handler, NULL);
 }
 
+// The BaselinePolicy only takes two arguments. BaselinePolicyWithAux
+// allows us to conform to the BPF compiler's policy type.
+ErrorCode BaselinePolicyWithAux(Sandbox* sandbox, int sysno, void* aux) {
+  CHECK(!aux);
+  return BaselinePolicy(sandbox, sysno);
+}
+
 // Main policy for x86_64/i386. Extended by ArmMaliGpuProcessPolicy.
 ErrorCode GpuProcessPolicy(Sandbox* sandbox, int sysno,
                            void* broker_process) {
@@ -1942,5 +1951,23 @@ bool SandboxSeccompBpf::StartSandbox(const std::string& process_type) {
 #endif
   return false;
 }
+
+bool SandboxSeccompBpf::StartSandboxWithExternalPolicy(
+    playground2::BpfSandboxPolicy policy) {
+#if defined(SECCOMP_BPF_SANDBOX)
+  if (IsSeccompBpfDesired()) {
+    CHECK(policy);
+    StartSandboxWithPolicy(policy, NULL);
+    return true;
+  }
+#endif  // defined(SECCOMP_BPF_SANDBOX)
+  return false;
+}
+
+#if defined(SECCOMP_BPF_SANDBOX)
+playground2::BpfSandboxPolicyCallback SandboxSeccompBpf::GetBaselinePolicy() {
+  return base::Bind(&BaselinePolicyWithAux);
+}
+#endif  // defined(SECCOMP_BPF_SANDBOX)
 
 }  // namespace content
