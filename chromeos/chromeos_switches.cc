@@ -121,9 +121,6 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
-// Loads the File Manager with the legacy UI.
-const char kFileManagerLegacyUI[]           = "file-manager-legacy-ui";
-
 // Hides the selecting checkboxes in the Files.app.
 const char kFileManagerNoCheckboxes[]       = "file-manager-no-checkboxes";
 

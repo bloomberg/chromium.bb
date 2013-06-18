@@ -32,10 +32,8 @@ FileGrid.decorate = function(self, metadataCache) {
   self.__proto__ = FileGrid.prototype;
   self.metadataCache_ = metadataCache;
 
-  if (util.platform.newUI()) {
-    self.scrollBar_ = new MainPanelScrollBar();
-    self.scrollBar_.initialize(self.parentNode, self);
-  }
+  self.scrollBar_ = new MainPanelScrollBar();
+  self.scrollBar_.initialize(self.parentNode, self);
 
   self.itemConstructor = function(entry) {
     var item = self.ownerDocument.createElement('LI');
@@ -141,17 +139,13 @@ FileGrid.decorateThumbnailBox = function(
     metadataTypes += '|media';
   }
 
-  var useEmbedded = util.platform.newUI() ?
-      ThumbnailLoader.UseEmbedded.NO_EMBEDDED :
-      ThumbnailLoader.UseEmbedded.USE_EMBEDDED;
-
   metadataCache.get(imageUrl, metadataTypes,
       function(metadata) {
         new ThumbnailLoader(imageUrl,
                             ThumbnailLoader.LoaderType.IMAGE,
                             metadata,
                             undefined,
-                            useEmbedded).
+                            ThumbnailLoader.UseEmbedded.NO_EMBEDDED).
             load(box,
                 fillMode,
                 ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
@@ -187,15 +181,6 @@ FileGrid.Item.decorate = function(li, entry, grid) {
   li.__proto__ = FileGrid.Item.prototype;
   FileGrid.decorateThumbnail(li, entry, grid.metadataCache_, true);
 
-  if (!util.platform.newUI() && grid.selectionModel.multiple) {
-    var checkBox = li.ownerDocument.createElement('input');
-    filelist.decorateSelectionCheckbox(checkBox, entry, grid);
-    checkBox.classList.add('white');
-    var bottom = li.querySelector('.thumbnail-bottom');
-    bottom.appendChild(checkBox);
-    bottom.classList.add('show-checkbox');
-  }
-
   // Override the default role 'listitem' to 'option' to match the parent's
   // role (listbox).
   li.setAttribute('role', 'option');
@@ -206,9 +191,6 @@ FileGrid.Item.decorate = function(li, entry, grid) {
  * @param {number} margin Margin to be set in px.
  */
 FileGrid.prototype.setBottomMarginForPanel = function(margin) {
-  if (!util.platform.newUI())
-    return;
-
   this.style.paddingBottom = margin + 'px';
   this.scrollBar_.setBottomMarginForPanel(margin);
 };

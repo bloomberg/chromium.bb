@@ -51,7 +51,6 @@ CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerSwipe[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentInitialModulus[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentModulusLimit[];
-CHROMEOS_EXPORT extern const char kFileManagerLegacyUI[];
 CHROMEOS_EXPORT extern const char kFileManagerNoCheckboxes[];
 CHROMEOS_EXPORT extern const char kFirstBoot[];
 CHROMEOS_EXPORT extern const char kForceLoginManagerInTests[];

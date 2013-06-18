@@ -239,25 +239,15 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   columns[3].defaultOrder = 'desc';
 
   var tableColumnModelClass;
-  if (util.platform.newUI()) {
-    tableColumnModelClass = FileTableColumnModel;
-    if (!self.noCheckboxes) {
-      columns.push(new cr.ui.table.TableColumn('selection',
-                                               '',
-                                               50, true));
-      columns[4].renderFunction = self.renderSelection_.bind(self);
-      columns[4].headerRenderFunction =
-          self.renderSelectionColumnHeader_.bind(self);
-      columns[4].fixed = true;
-    }
-  } else {
-    tableColumnModelClass = cr.ui.table.TableColumnModel;
-    columns.push(new cr.ui.table.TableColumn('offline',
-                                             str('OFFLINE_COLUMN_LABEL'),
-                                             130));
-    columns[4].renderFunction = self.renderOffline_.bind(self);
-    columns[0].headerRenderFunction =
-        self.renderNameColumnHeader_.bind(self, columns[0].name);
+  tableColumnModelClass = FileTableColumnModel;
+  if (!self.noCheckboxes) {
+    columns.push(new cr.ui.table.TableColumn('selection',
+                                             '',
+                                             50, true));
+    columns[4].renderFunction = self.renderSelection_.bind(self);
+    columns[4].headerRenderFunction =
+        self.renderSelectionColumnHeader_.bind(self);
+    columns[4].fixed = true;
   }
 
   var columnModel = Object.create(tableColumnModelClass.prototype, {
@@ -267,9 +257,7 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
      */
     size: {
       get: function() {
-        if (util.platform.newUI())
-          return this.totalSize;
-        return this.showOfflineColumn ? this.totalSize : this.totalSize - 1;
+        return this.totalSize;
       }
     },
 
@@ -281,15 +269,6 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
       get: function() {
         return columns.length;
       }
-    },
-
-    /**
-     * Whether to show the offline column or not.
-     * @type {boolean}
-     */
-    showOfflineColumn: {
-      writable: true,
-      value: false
     },
 
     /**
@@ -316,15 +295,13 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   self.setRenderFunction(self.renderTableRow_.bind(self,
       self.getRenderFunction()));
 
-  if (util.platform.newUI()) {
-    self.scrollBar_ = MainPanelScrollBar();
-    self.scrollBar_.initialize(self, self.list);
-    // Keep focus on the file list when clicking on the header.
-    self.header.addEventListener('mousedown', function(e) {
-      self.list.focus();
-      e.preventDefault();
-    });
-  }
+  self.scrollBar_ = MainPanelScrollBar();
+  self.scrollBar_.initialize(self, self.list);
+  // Keep focus on the file list when clicking on the header.
+  self.header.addEventListener('mousedown', function(e) {
+    self.list.focus();
+    e.preventDefault();
+  });
 
   var handleSelectionChange = function() {
     var selectAll = self.querySelector('#select-all-checkbox');
@@ -369,17 +346,6 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   self.list.addEventListener('mousedown', function(e) {
     this.lastSelection_ = this.selectionModel.selectedIndexes;
   }.bind(self), true);
-};
-
-/**
- * Shows or hides 'Avaliable offline' column.
- * @param {boolean} show True to show.
- */
-FileTable.prototype.showOfflineColumn = function(show) {
-  if (show != this.columnModel.showOfflineColumn) {
-    this.columnModel.showOfflineColumn = show;
-    this.redraw();
-  }
 };
 
 /**
@@ -494,13 +460,6 @@ FileTable.prototype.setupCompareFunctions = function(dataModel) {
  */
 FileTable.prototype.renderName_ = function(entry, columnId, table) {
   var label = this.ownerDocument.createElement('div');
-  if (!util.platform.newUI()) {
-    if (this.selectionModel.multiple) {
-      var checkBox = this.ownerDocument.createElement('input');
-      filelist.decorateSelectionCheckbox(checkBox, entry, this.list);
-      label.appendChild(checkBox);
-    }
-  }
   label.appendChild(this.renderIconType_(entry, columnId, table));
   label.entry = entry;
   label.className = 'detail-name';
@@ -650,59 +609,6 @@ FileTable.prototype.updateFileMetadata = function(item, entry) {
   var props = this.metadataCache_.getCached(entry, 'filesystem');
   this.updateDate_(item.querySelector('.date'), props);
   this.updateSize_(item.querySelector('.size'), entry, props);
-};
-
-/**
- * Render the Available offline column of the detail table.
- *
- * @param {Entry} entry The Entry object to render.
- * @param {string} columnId The id of the column to be rendered.
- * @param {cr.ui.Table} table The table doing the rendering.
- * @return {HTMLDivElement} Created element.
- * @private
- */
-FileTable.prototype.renderOffline_ = function(entry, columnId, table) {
-  var div = this.ownerDocument.createElement('div');
-  div.className = 'offline';
-
-  if (entry.isDirectory)
-    return div;
-
-  var checkbox = this.ownerDocument.createElement('input');
-  filelist.decorateCheckbox(checkbox);
-  checkbox.classList.add('pin');
-
-  var command = this.ownerDocument.querySelector('command#toggle-pinned');
-  var onPinClick = function(event) {
-    command.canExecuteChange(checkbox);
-    command.execute(checkbox);
-    event.preventDefault();
-  };
-
-  checkbox.addEventListener('click', onPinClick);
-  checkbox.style.display = 'none';
-  checkbox.entry = entry;
-  div.appendChild(checkbox);
-
-  this.updateOffline_(
-      div, this.metadataCache_.getCached(entry, 'drive'));
-  return div;
-};
-
-/**
- * Sets up or updates the date cell.
- *
- * @param {HTMLDivElement} div The table cell.
- * @param {Object} drive Metadata.
- * @private
- */
-FileTable.prototype.updateOffline_ = function(div, drive) {
-  if (!drive) return;
-  if (drive.hosted) return;
-  var checkbox = div.querySelector('.pin');
-  if (!checkbox) return;
-  checkbox.style.display = '';
-  checkbox.checked = drive.pinned;
 };
 
 /**
@@ -914,9 +820,6 @@ FileTable.prototype.renderIconType_ = function(entry, columnId, table) {
  * @param {number} margin Margin to be set in px.
  */
 FileTable.prototype.setBottomMarginForPanel = function(margin) {
-  if (!util.platform.newUI())
-    return;
-
   this.list_.style.paddingBottom = margin + 'px';
   this.scrollBar_.setBottomMarginForPanel(margin);
 };
@@ -933,10 +836,8 @@ FileTable.prototype.relayout = function() {
  * @private
  */
 FileTable.prototype.relayoutImmediately_ = function() {
-  if (util.platform.newUI()) {
-    if (this.clientWidth > 0)
-      this.normalizeColumns();
-  }
+  if (this.clientWidth > 0)
+    this.normalizeColumns();
   this.redraw();
   cr.dispatchSimpleEvent(this.list, 'relayout');
 };

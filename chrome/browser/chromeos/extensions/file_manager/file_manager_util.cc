@@ -250,11 +250,6 @@ void OnCRXDownloadCallback(Browser* browser,
   InstallCRX(browser, file);
 }
 
-bool IsFileManagerNewUI() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(chromeos::switches::kFileManagerLegacyUI);
-}
-
 // Grants file system access to the file browser.
 bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
   // File browser always runs in the site for its extension id, so that is the
@@ -515,8 +510,7 @@ GURL GetFileBrowserExtensionUrl() {
 }
 
 GURL GetFileBrowserUrl() {
-  return IsFileManagerNewUI() ? GetFileManagerUrl("/main_new_ui.html") :
-                                GetFileManagerUrl("/main.html");
+  return GetFileManagerUrl("/main.html");
 }
 
 GURL GetMediaPlayerUrl() {

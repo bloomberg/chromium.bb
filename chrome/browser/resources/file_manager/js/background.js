@@ -273,7 +273,7 @@ function createFileManagerOptions() {
     defaultHeight: Math.round(window.screen.availHeight * 0.8),
     minWidth: 320,
     minHeight: 240,
-    frame: util.platform.newUI() ? 'none' : 'chrome',
+    frame: 'none',
     transparentBackground: true
   };
 }
@@ -350,7 +350,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
 
     var appWindow = new AppWindowWrapper(
         queue,
-        util.platform.newUI() ? 'main_new_ui.html' : 'main.html',
+        'main.html',
         appId,
         createFileManagerOptions);
     appWindow.enqueueLaunch(opt_appState || {});

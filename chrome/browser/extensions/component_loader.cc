@@ -238,21 +238,17 @@ bool ComponentLoader::Exists(const std::string& id) const {
 
 void ComponentLoader::AddFileManagerExtension() {
 #if defined(FILE_MANAGER_EXTENSION)
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  int manifest_id;
-  if (command_line->HasSwitch(chromeos::switches::kFileManagerLegacyUI))
-    manifest_id = IDR_FILEMANAGER_MANIFEST;
-  else
-    manifest_id = IDR_FILEMANAGER_MANIFEST_NEW_UI;
 #ifndef NDEBUG
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
     base::FilePath filemgr_extension_path(
         command_line->GetSwitchValuePath(switches::kFileManagerExtensionPath));
-    Add(manifest_id, filemgr_extension_path);
+    Add(IDR_FILEMANAGER_MANIFEST, filemgr_extension_path);
     return;
   }
 #endif  // NDEBUG
-  Add(manifest_id, base::FilePath(FILE_PATH_LITERAL("file_manager")));
+  Add(IDR_FILEMANAGER_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("file_manager")));
 #endif  // defined(FILE_MANAGER_EXTENSION)
 }
 

@@ -1069,15 +1069,6 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
     archives: null,
     removables: null
   };
-  if (!util.platform.newUI()) {
-    groups = {
-      drive: null,
-      driveSpecialSearchRoots: null,
-      downloads: null,
-      archives: null,
-      removables: null
-    };
-  }
   var self = this;
 
   metrics.startInterval('Load.Roots');
@@ -1123,16 +1114,10 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
                      append.bind(this, 'removables'));
 
   if (this.driveEnabled_) {
-    if (!util.platform.newUI()) {
-      groups.driveSpecialSearchRoots = this.showSpecialSearchRoots_ ?
-          DirectoryModel.FAKE_DRIVE_SPECIAL_SEARCH_ENTRIES : [];
-    }
     // Use a fake instead to return a list as fast as possible.
     groups.drive = [DirectoryModel.fakeDriveEntry_];
     done();
   } else {
-    if (!util.platform.newUI())
-      groups.driveSpecialSearchRoots = [];
     groups.drive = [];
     done();
   }

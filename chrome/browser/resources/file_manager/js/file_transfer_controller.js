@@ -97,22 +97,6 @@ FileTransferController.prototype = {
   },
 
   /**
-   * @this {FileTransferController}
-   * @param {HTMLElement} breadcrumbsContainer Element which contains target
-   *     breadcrumbs.
-   */
-  attachBreadcrumbsDropTarget: function(breadcrumbsController) {
-    var container = breadcrumbsController.getContainer();
-    container.addEventListener('dragover',
-        this.onDragOver_.bind(this, true, null));
-    container.addEventListener('dragenter',
-        this.onDragEnterBreadcrumbs_.bind(this, breadcrumbsController));
-    container.addEventListener('dragleave',
-        this.onDragLeave_.bind(this, null));
-    container.addEventListener('drop', this.onDrop_.bind(this, true));
-  },
-
-  /**
    * Attach handlers of copy, cut and paste operations to the document.
    *
    * @this {FileTransferController}

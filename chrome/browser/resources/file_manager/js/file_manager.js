@@ -447,55 +447,53 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     dm.addEventListener('rescan-completed',
                         this.refreshCurrentDirectoryMetadata_.bind(this));
 
-    if (util.platform.newUI()) {
-      /**
-       * If |item| in |parentView| is behind the preview panel, scrolls up the
-       * parent view and make the item visible.
-       *
-       * @param {HTMLElement} item Item to be visible in the parent.
-       * @param {HTMLElement} parentView View contains |selectedItem|.
-       */
-      var ensureItemNotBehindPreviewPanel = function(item, parentView) {
-        var itemRect = item.getBoundingClientRect();
-        if (!itemRect)
-          return;
-        var itemBottom = itemRect.bottom;
+    /**
+     * If |item| in |parentView| is behind the preview panel, scrolls up the
+     * parent view and make the item visible.
+     *
+     * @param {HTMLElement} item Item to be visible in the parent.
+     * @param {HTMLElement} parentView View contains |selectedItem|.
+     */
+    var ensureItemNotBehindPreviewPanel = function(item, parentView) {
+      var itemRect = item.getBoundingClientRect();
+      if (!itemRect)
+        return;
+      var itemBottom = itemRect.bottom;
 
-        var previewPanel = this.dialogDom_.querySelector('.preview-panel');
-        var previewPanelRects = previewPanel.getBoundingClientRect();
-        var panelHeight = previewPanelRects ? previewPanelRects.height : 0;
+      var previewPanel = this.dialogDom_.querySelector('.preview-panel');
+      var previewPanelRects = previewPanel.getBoundingClientRect();
+      var panelHeight = previewPanelRects ? previewPanelRects.height : 0;
 
-        var listRect = parentView.getBoundingClientRect();
-        if (!listRect)
-          return;
-        var listBottom = listRect.bottom - panelHeight;
+      var listRect = parentView.getBoundingClientRect();
+      if (!listRect)
+        return;
+      var listBottom = listRect.bottom - panelHeight;
 
-        if (itemBottom > listBottom) {
-          var scrollOffset = itemBottom - listBottom;
-          parentView.scrollTop += scrollOffset;
-        }
-      }.bind(this);
+      if (itemBottom > listBottom) {
+        var scrollOffset = itemBottom - listBottom;
+        parentView.scrollTop += scrollOffset;
+      }
+    }.bind(this);
 
-      var sm = this.directoryModel_.getFileListSelection();
-      sm.addEventListener('change', function() {
-        if (sm.selectedIndexes.length != 1)
-          return;
-        var view = (this.listType_ == FileManager.ListType.DETAIL) ?
-            this.table_.list : this.grid_;
-        var selectedItem = view.getListItemByIndex(sm.selectedIndex);
-        if (!selectedItem)
-          return;
-        ensureItemNotBehindPreviewPanel(selectedItem, view);
-      }.bind(this));
+    var sm = this.directoryModel_.getFileListSelection();
+    sm.addEventListener('change', function() {
+      if (sm.selectedIndexes.length != 1)
+        return;
+      var view = (this.listType_ == FileManager.ListType.DETAIL) ?
+          this.table_.list : this.grid_;
+      var selectedItem = view.getListItemByIndex(sm.selectedIndex);
+      if (!selectedItem)
+        return;
+      ensureItemNotBehindPreviewPanel(selectedItem, view);
+    }.bind(this));
 
-      this.directoryTree_.addEventListener('change', function() {
-        var selectedSubTree = this.directoryTree_.selectedItem;
-        if (!selectedSubTree)
-          return;
-        var selectedItem = selectedSubTree.rowElement;
-        ensureItemNotBehindPreviewPanel(selectedItem, this.directoryTree_);
-      }.bind(this));
-    }
+    this.directoryTree_.addEventListener('change', function() {
+      var selectedSubTree = this.directoryTree_.selectedItem;
+      if (!selectedSubTree)
+        return;
+      var selectedItem = selectedSubTree.rowElement;
+      ensureItemNotBehindPreviewPanel(selectedItem, this.directoryTree_);
+    }.bind(this));
 
     var stateChangeHandler =
         this.onPreferencesChanged_.bind(this);
@@ -519,10 +517,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.updateFileTypeFilter_();
 
     this.selectionHandler_.onFileSelectionChanged();
-
-    // Show the page now unless it's already delayed.
-    if (!util.platform.newUI())
-      this.delayShow_(0);
 
     this.table_.endBatchUpdates();
     this.grid_.endBatchUpdates();
@@ -566,10 +560,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     controller.attachDragSource(this.grid_);
     controller.attachDropTarget(this.grid_);
     controller.attachTreeDropTarget(this.directoryTree_);
-    if (!util.platform.newUI())
-      controller.attachBreadcrumbsDropTarget(this.breadcrumbs_);
-    else
-      controller.attachDropTarget(this.volumeList_, true);
+    controller.attachDropTarget(this.volumeList_, true);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));
@@ -596,10 +587,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.dialogDom_.querySelector('#roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
 
-    if (util.platform.newUI())
-      this.volumeList_.setContextMenu(this.rootsContextMenu_);
-    else
-      this.directoryTree_.setContextMenu(this.rootsContextMenu_);
+    this.volumeList_.setContextMenu(this.rootsContextMenu_);
 
     this.textContextMenu_ =
         this.dialogDom_.querySelector('#text-context-menu');
@@ -613,7 +601,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
       'menuitem, hr';
 
-    if (util.platform.newUI() && this.dialogType == DialogType.FULL_PAGE) {
+    if (this.dialogType == DialogType.FULL_PAGE) {
       var maximizeButton = this.dialogDom_.querySelector('#maximize-button');
       maximizeButton.addEventListener('click', this.onMaximize.bind(this));
 
@@ -623,10 +611,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
-    if (util.platform.newUI()) {
-      this.detailViewButton_.checkable = true;
-      this.thumbnailViewButton_.checkable = true;
-    }
+    this.detailViewButton_.checkable = true;
+    this.thumbnailViewButton_.checkable = true;
   };
 
   FileManager.prototype.onMaximize = function() {
@@ -679,27 +665,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     CommandUtil.registerCommand(doc, 'change-default-app',
         Commands.changeDefaultAppCommand, this);
 
-    if (!util.platform.newUI()) {
-      CommandUtil.registerCommand(this.directoryTree_, 'unmount',
-          Commands.unmountCommand, this.directoryTree_, this);
+    CommandUtil.registerCommand(this.volumeList_, 'unmount',
+        Commands.unmountCommand, this.volumeList_, this);
 
-      CommandUtil.registerCommand(this.directoryTree_, 'import-photos',
-          Commands.importCommand, this.directoryTree_);
+    CommandUtil.registerCommand(this.volumeList_, 'import-photos',
+        Commands.importCommand, this.volumeList_);
 
-      CommandUtil.registerCommand(doc, 'format',
-          Commands.formatCommand, this.directoryTree_, this,
-          this.directoryModel_);
-    } else {
-      CommandUtil.registerCommand(this.volumeList_, 'unmount',
-          Commands.unmountCommand, this.volumeList_, this);
-
-      CommandUtil.registerCommand(this.volumeList_, 'import-photos',
-          Commands.importCommand, this.volumeList_);
-
-      CommandUtil.registerCommand(doc, 'format',
-          Commands.formatCommand, this.volumeList_, this,
-          this.directoryModel_);
-    }
+    CommandUtil.registerCommand(doc, 'format',
+        Commands.formatCommand, this.volumeList_, this,
+        this.directoryModel_);
 
     CommandUtil.registerCommand(doc, 'delete',
         Commands.deleteFileCommand, this);
@@ -737,16 +711,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     CommandUtil.registerCommand(doc, 'search', Commands.searchCommand, this,
         this.dialogDom_.querySelector('#search-box'));
 
-    if (util.platform.newUI()) {
-      // Register commands with CTRL-1..9 shortcuts for switching between
-      // volumes.
-      for (var i = 1; i <= 9; i++) {
-        CommandUtil.registerCommand(doc,
-                                    'volume-switch-' + i,
-                                    Commands.volumeSwitchCommand,
-                                    this.volumeList_,
-                                    i);
-      }
+    // Register commands with CTRL-1..9 shortcuts for switching between
+    // volumes.
+    for (var i = 1; i <= 9; i++) {
+      CommandUtil.registerCommand(doc,
+                                  'volume-switch-' + i,
+                                  Commands.volumeSwitchCommand,
+                                  this.volumeList_,
+                                  i);
     }
 
     CommandUtil.registerCommand(doc, 'cut', Commands.defaultCommand, doc);
@@ -897,11 +869,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Pre-populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
 
-    // Initialize the new header.
-    if (util.platform.newUI()) {
-      this.dialogDom_.querySelector('#app-name').innerText =
-          chrome.runtime.getManifest().name;
-    }
+    // Initialize the header.
+    this.dialogDom_.querySelector('#app-name').innerText =
+        chrome.runtime.getManifest().name;
 
     this.initDialogType_();
 
@@ -959,20 +929,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.spinner_ = dom.querySelector('#spinner-with-text');
     this.showSpinner_(false);
 
-    if (!util.platform.newUI()) {
-      this.breadcrumbs_ = new BreadcrumbsController(
-          dom.querySelector('#dir-breadcrumbs'), this.metadataCache_);
-      this.breadcrumbs_.addEventListener(
-           'pathclick', this.onBreadcrumbClick_.bind(this));
-    }
     this.searchBreadcrumbs_ = new BreadcrumbsController(
          dom.querySelector('#search-breadcrumbs'), this.metadataCache_);
     this.searchBreadcrumbs_.addEventListener(
          'pathclick', this.onBreadcrumbClick_.bind(this));
-    if (!util.platform.newUI())
-      this.searchBreadcrumbs_.setHideLast(true);
-    else
-      this.searchBreadcrumbs_.setHideLast(false);
+    this.searchBreadcrumbs_.setHideLast(false);
 
     // Check the option to hide the selecting checkboxes.
     this.table_.noCheckboxes = this.noCheckboxes_;
@@ -1015,24 +976,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.onCancelBound_ = this.onCancel_.bind(this);
     this.cancelButton_.addEventListener('click', this.onCancelBound_);
 
-    if (util.platform.newUI()) {
-      this.decorateSplitter(
-          this.dialogDom_.querySelector('div#sidebar-splitter'));
-      this.decorateSplitter(
-          this.dialogDom_.querySelector('div#middlebar-splitter'));
-    } else {
-      this.decorateSplitter(
-          this.dialogDom_.querySelector('div.sidebar-splitter'));
-    }
+    this.decorateSplitter(
+        this.dialogDom_.querySelector('div#sidebar-splitter'));
+    this.decorateSplitter(
+        this.dialogDom_.querySelector('div#middlebar-splitter'));
 
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
-
-    if (!util.platform.newUI()) {
-      this.dialogDom_.querySelector('#detail-view').addEventListener(
-          'click', this.onDetailViewButtonClick_.bind(this));
-      this.dialogDom_.querySelector('#thumbnail-view').addEventListener(
-          'click', this.onThumbnailViewButtonClick_.bind(this));
-    }
 
     this.syncButton = this.dialogDom_.querySelector('#drive-sync-settings');
     this.syncButton.addEventListener('activate', this.onDrivePrefClick_.bind(
@@ -1042,17 +991,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.hostedButton.addEventListener('activate', this.onDrivePrefClick_.bind(
         this, 'hostedFilesDisabled', true /* inverted */));
 
-    if (util.platform.newUI()) {
-      this.detailViewButton_ =
-          this.dialogDom_.querySelector('#detail-view');
-      this.detailViewButton_.addEventListener('activate',
-          this.onDetailViewButtonClick_.bind(this));
+    this.detailViewButton_ =
+        this.dialogDom_.querySelector('#detail-view');
+    this.detailViewButton_.addEventListener('activate',
+        this.onDetailViewButtonClick_.bind(this));
 
-      this.thumbnailViewButton_ =
-          this.dialogDom_.querySelector('#thumbnail-view');
-      this.thumbnailViewButton_.addEventListener('activate',
-          this.onThumbnailViewButtonClick_.bind(this));
-    }
+    this.thumbnailViewButton_ =
+        this.dialogDom_.querySelector('#thumbnail-view');
+    this.thumbnailViewButton_.addEventListener('activate',
+        this.onThumbnailViewButtonClick_.bind(this));
 
     cr.ui.ComboButton.decorate(this.taskItems_);
     this.taskItems_.addEventListener('select',
@@ -1074,20 +1021,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.searchBox_.addEventListener(
         'keydown', this.onSearchBoxKeyDown_.bind(this));
     this.searchTextMeasure_ = new TextMeasure(this.searchBox_);
-    if (util.platform.newUI()) {
-      this.searchIcon_ = this.dialogDom_.querySelector('#search-icon');
-      this.searchIcon_.addEventListener(
-          'click',
-          function() { this.searchBox_.focus(); }.bind(this));
-      this.searchClearButton_ =
-          this.dialogDom_.querySelector('#search-clear-button');
-      this.searchClearButton_.addEventListener(
-          'click',
-          function() {
-            this.searchBox_.value = '';
-            this.onSearchBoxUpdate_();
-          }.bind(this));
-    }
+    this.searchIcon_ = this.dialogDom_.querySelector('#search-icon');
+    this.searchIcon_.addEventListener(
+        'click',
+        function() { this.searchBox_.focus(); }.bind(this));
+    this.searchClearButton_ =
+        this.dialogDom_.querySelector('#search-clear-button');
+    this.searchClearButton_.addEventListener(
+        'click',
+        function() {
+          this.searchBox_.value = '';
+          this.onSearchBoxUpdate_();
+        }.bind(this));
     this.lastSearchQuery_ = '';
 
     var autocompleteList = new cr.ui.AutocompleteList();
@@ -1161,10 +1106,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     i18nTemplate.process(this.document_, loadTimeData);
 
     // Arrange the file list.
-    if (util.platform.newUI()) {
-      this.table_.normalizeColumns();
-      this.table_.redraw();
-    }
+    this.table_.normalizeColumns();
+    this.table_.redraw();
 
     callback();
   };
@@ -1263,7 +1206,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.directoryModel_.sortFileList(
         this.viewOptions_.sortField || 'modificationTime',
         this.viewOptions_.sortDirection || 'desc');
-    if (!util.platform.newUI() && this.viewOptions_.columns) {
+    if (this.viewOptions_.columns) {
       var cm = this.table_.columnModel;
       for (var i = 0; i < cm.totalSize; i++) {
         if (this.viewOptions_.columns[i] > 0)
@@ -1273,13 +1216,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.setListType(this.viewOptions_.listType || FileManager.ListType.DETAIL);
 
     this.textSearchState_ = {text: '', date: new Date()};
-
     this.closeOnUnmount_ = (this.params_.action == 'auto-open');
 
     if (this.closeOnUnmount_) {
       this.volumeManager_.addEventListener('externally-unmounted',
          this.onExternallyUnmounted_.bind(this));
     }
+
     // Update metadata to change 'Today' and 'Yesterday' dates.
     var today = new Date();
     today.setHours(0);
@@ -1296,14 +1239,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.initSidebar_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
-    if (util.platform.newUI()) {
-      this.directoryTree_.addEventListener('content-updated', function() {
-        this.updateMiddleBarVisibility_(true);
-      }.bind(this));
+    this.directoryTree_.addEventListener('content-updated', function() {
+      this.updateMiddleBarVisibility_(true);
+    }.bind(this));
 
-      this.volumeList_ = this.dialogDom_.querySelector('#volume-list');
-      VolumeList.decorate(this.volumeList_, this.directoryModel_);
-    }
+    this.volumeList_ = this.dialogDom_.querySelector('#volume-list');
+    VolumeList.decorate(this.volumeList_, this.directoryModel_);
   };
 
   /**
@@ -1342,11 +1283,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       columns: [],
       listType: this.listType_
     };
-    if (!util.platform.newUI()) {
-      var cm = this.table_.columnModel;
-      for (var i = 0; i < cm.totalSize; i++) {
-        prefs.columns.push(cm.getWidth(i));
-      }
+    var cm = this.table_.columnModel;
+    for (var i = 0; i < cm.totalSize; i++) {
+      prefs.columns.push(cm.getWidth(i));
     }
     if (DialogType.isModal(this.dialogType))
       prefs.listType = this.listType;
@@ -1430,15 +1369,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.table_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.table_.list;
-      if (!util.platform.newUI()) {
-        this.dialogDom_.querySelector('#detail-view').disabled = true;
-        this.dialogDom_.querySelector('#thumbnail-view').disabled = false;
-      } else {
-        this.detailViewButton_.setAttribute('checked', '');
-        this.thumbnailViewButton_.removeAttribute('checked');
-        this.detailViewButton_.setAttribute('disabled', '');
-        this.thumbnailViewButton_.removeAttribute('disabled');
-      }
+      this.detailViewButton_.setAttribute('checked', '');
+      this.thumbnailViewButton_.removeAttribute('checked');
+      this.detailViewButton_.setAttribute('disabled', '');
+      this.thumbnailViewButton_.removeAttribute('disabled');
     } else if (type == FileManager.ListType.THUMBNAIL) {
       this.grid_.dataModel = this.directoryModel_.getFileList();
       this.grid_.selectionModel = this.directoryModel_.getFileListSelection();
@@ -1449,15 +1383,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.grid_.style.display = '';
       /** @type {cr.ui.List} */
       this.currentList_ = this.grid_;
-      if (!util.platform.newUI()) {
-        this.dialogDom_.querySelector('#thumbnail-view').disabled = true;
-        this.dialogDom_.querySelector('#detail-view').disabled = false;
-      } else {
-        this.thumbnailViewButton_.setAttribute('checked', '');
-        this.detailViewButton_.removeAttribute('checked');
-        this.thumbnailViewButton_.setAttribute('disabled', '');
-        this.detailViewButton_.removeAttribute('disabled');
-      }
+      this.thumbnailViewButton_.setAttribute('checked', '');
+      this.detailViewButton_.removeAttribute('checked');
+      this.thumbnailViewButton_.setAttribute('disabled', '');
+      this.detailViewButton_.removeAttribute('disabled');
     } else {
       throw new Error('Unknown list type: ' + type);
     }
@@ -1639,21 +1568,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.table_.relayout();
     this.directoryTree_.relayout();
 
-    if (!util.platform.newUI()) {
-      this.breadcrumbs_.truncate();
-    } else {
-      // TODO(mtomasz, yoshiki): Initialize volume list earlier, before
-      // file system is available.
-      if (this.volumeList_)
-        this.volumeList_.redraw();
-    }
+    // TODO(mtomasz, yoshiki): Initialize volume list earlier, before
+    // file system is available.
+    if (this.volumeList_)
+      this.volumeList_.redraw();
 
     // Hide the search box if there is not enough space.
-    if (util.platform.newUI()) {
-      this.searchBoxWrapper_.classList.toggle(
-          'too-short',
-          this.searchBoxWrapper_.clientWidth < 100);
-    }
+    this.searchBoxWrapper_.classList.toggle(
+        'too-short',
+        this.searchBoxWrapper_.clientWidth < 100);
 
     this.searchBreadcrumbs_.truncate();
   };
@@ -1663,9 +1586,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onPreviewPanelVisibilityChanged_ = function(visible) {
-    if (!util.platform.newUI())
-      return;
-
     var panelHeight = visible ? this.getPreviewPanelHeight_() : 0;
 
     if (this.listType_ == FileManager.ListType.THUMBNAIL)
@@ -2028,16 +1948,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @return {boolean} True if the "Available offline" column should be shown in
-   *     the table layout.
-   */
-  FileManager.prototype.shouldShowOfflineColumn = function() {
-    if (util.platform.newUI())
-      return false;
-    return this.directoryModel_.getCurrentRootType() === RootType.DRIVE;
-  };
-
-  /**
    * Overrides default handling for clicks on hyperlinks.
    * In a packaged apps links with targer='_blank' open in a new tab by
    * default, other links do not open at all.
@@ -2212,8 +2122,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.appendChild(this.filePopup_);
     this.filePopup_.focus();
     this.document_.body.setAttribute('overlay-visible', '');
-    if (util.platform.newUI())
-      this.document_.querySelector('#iframe-drag-area').hidden = false;
+    this.document_.querySelector('#iframe-drag-area').hidden = false;
   };
 
   /**
@@ -2222,8 +2131,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.closeFilePopup_ = function() {
     if (this.filePopup_) {
       this.document_.body.removeAttribute('overlay-visible');
-      if (util.platform.newUI())
-        this.document_.querySelector('#iframe-drag-area').hidden = true;
+      this.document_.querySelector('#iframe-drag-area').hidden = true;
       // The window resize would not be processed properly while the relevant
       // divs had 'display:none', force resize after the layout fired.
       setTimeout(this.onResize_.bind(this), 0);
@@ -2367,16 +2275,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    var clickNumber;
-    if (!util.platform.newUI() && this.dialogType == DialogType.FULL_PAGE &&
-        (event.target.parentElement.classList.contains('filename-label') ||
-         event.target.classList.contains('detail-icon'))) {
-      // If full page mode the file name and icon should react on single click.
-      clickNumber = 1;
-    } else if (this.lastClickedItem_ == listItem) {
-      // React on double click, but only if both clicks hit the same item.
-      clickNumber = 2;
-    }
+    // React on double click, but only if both clicks hit the same item.
+    // TODO(mtomasz): Simplify it, and use a double click handler if possible.
+    var clickNumber = (this.lastClickedItem_ == listItem) ? 2 : undefined;
     this.lastClickedItem_ = listItem;
 
     if (event.detail != clickNumber)
@@ -2511,9 +2412,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onDirectoryChanged_ = function(event) {
     this.selectionHandler_.onFileSelectionChanged();
     this.updateSearchBoxOnDirChange_();
-    if (this.dialogType == DialogType.FULL_PAGE)
-      this.table_.showOfflineColumn(this.shouldShowOfflineColumn());
-
     util.updateAppState(this.getCurrentDirectory());
 
     if (this.closeOnUnmount_ && !event.initial &&
@@ -2753,12 +2651,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.grid_.startBatchUpdates();
     this.scanInProgress_ = true;
 
-    if (!util.platform.newUI()) {
-      this.breadcrumbs_.update(
-          this.directoryModel_.getCurrentRootPath(),
-          this.directoryModel_.getCurrentDirPath());
-    }
-
     this.scanUpdatedAtLeastOnceOrCompleted_ = false;
     if (this.scanCompletedTimer_) {
       clearTimeout(this.scanCompletedTimer_);
@@ -2801,8 +2693,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
-      if (util.platform.newUI())
-        this.updateMiddleBarVisibility_();
+      this.updateMiddleBarVisibility_();
       this.scanCompletedTimer_ = null;
     }.bind(this), 50);
   };
@@ -2835,8 +2726,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.hideSpinnerLater_();
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
-      if (util.platform.newUI())
-        this.updateMiddleBarVisibility_();
+      this.updateMiddleBarVisibility_();
       this.scanUpdatedTimer_ = null;
     }.bind(this), 200);
   };
@@ -2865,8 +2755,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.scanInProgress_ = false;
       this.table_.list.endBatchUpdates();
       this.grid_.endBatchUpdates();
-      if (util.platform.newUI())
-        this.updateMiddleBarVisibility_();
+      this.updateMiddleBarVisibility_();
     }
   };
 
@@ -3562,8 +3451,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.updateSearchBoxStyles_ = function() {
-    if (!util.platform.newUI())
-      return;
     var TEXT_BOX_PADDING = 16; // in px.
     this.searchBoxWrapper_.classList.toggle('has-text',
                                             !!this.searchBox_.value);

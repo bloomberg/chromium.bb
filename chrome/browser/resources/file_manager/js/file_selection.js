@@ -223,13 +223,6 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function(event) {
     this.selectionUpdateTimer_ = null;
   }
 
-  if (!util.platform.newUI() && !indexes.length) {
-    this.updatePreviewPanelVisibility_();
-    this.updatePreviewPanelText_();
-    this.fileManager_.updateContextMenuActionItems(null, false);
-    return;
-  }
-
   this.hideCalculating_();
 
   // The rest of the selection properties are computed via (sometimes lengthy)
@@ -332,11 +325,8 @@ FileSelectionHandler.prototype.setPreviewPanelMustBeHidden = function(hidden) {
 FileSelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
   var panel = this.previewPanel_;
   var state = panel.getAttribute('visibility');
-  var mustBeVisible = (this.selection.totalCount > 0);
-  if (util.platform.newUI()) {
-    mustBeVisible = (this.selection.totalCount > 0 ||
-        !PathUtil.isRootPath(this.fileManager_.getCurrentDirectory()));
-  }
+  var mustBeVisible = (this.selection.totalCount > 0 ||
+      !PathUtil.isRootPath(this.fileManager_.getCurrentDirectory()));
 
   var stopHidingAndShow = function() {
     clearTimeout(this.hidingTimeout_);
@@ -395,19 +385,12 @@ FileSelectionHandler.prototype.isPreviewPanelVisibile_ = function() {
  */
 FileSelectionHandler.prototype.updatePreviewPanelText_ = function() {
   var selection = this.selection;
-  if (!util.platform.newUI()) {
-    if (selection.totalCount == 0) {
-      // We dont want to change the string during preview panel animating
-      return;
-    }
-  } else {
-    if (selection.totalCount <= 1) {
-      // Hides the preview text if zero or one file is selected. We shows a
-      // breadcrumb list instead on the preview panel.
-      this.hideCalculating_();
-      this.previewText_.textContent = '';
-      return;
-    }
+  if (selection.totalCount <= 1) {
+    // Hides the preview text if zero or one file is selected. We shows a
+    // breadcrumb list instead on the preview panel.
+    this.hideCalculating_();
+    this.previewText_.textContent = '';
+    return;
   }
 
   var text = '';
@@ -505,7 +488,7 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   // Update preview panels.
   var wasVisible = this.isPreviewPanelVisibile_();
   var thumbnailEntries;
-  if (util.platform.newUI() && selection.totalCount == 0) {
+  if (selection.totalCount == 0) {
     thumbnailEntries = [
       this.fileManager_.getCurrentDirectoryEntry()
     ];
@@ -525,16 +508,14 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
 
   // Update breadcrums.
   var updateTarget = null;
-  if (util.platform.newUI()) {
-    var path = this.fileManager_.getCurrentDirectory();
-    if (selection.totalCount == 1) {
-      // Shows the breadcrumb list when a file is selected.
-      updateTarget = selection.entries[0].fullPath;
-    } else if (selection.totalCount == 0 && !PathUtil.isRootPath(path)) {
-      // Shows the breadcrumb list when no file is selected and the current
-      // directory is non-root path.
-      updateTarget = path;
-    }
+  var path = this.fileManager_.getCurrentDirectory();
+  if (selection.totalCount == 1) {
+    // Shows the breadcrumb list when a file is selected.
+    updateTarget = selection.entries[0].fullPath;
+  } else if (selection.totalCount == 0 && !PathUtil.isRootPath(path)) {
+    // Shows the breadcrumb list when no file is selected and the current
+    // directory is non-root path.
+    updateTarget = path;
   }
   this.updatePreviewPanelBreadcrumbs_(updateTarget);
 

@@ -270,17 +270,15 @@ Gallery.prototype.initDom_ = function() {
   util.createChild(backButton);
   backButton.addEventListener('click', this.onBack_.bind(this));
 
-  if (util.platform.newUI()) {
-    var maximizeButton = util.createChild(this.header_,
-                                          'maximize-button tool dimmable',
-                                          'button');
-    maximizeButton.addEventListener('click', this.onMaximize_.bind(this));
+  var maximizeButton = util.createChild(this.header_,
+                                        'maximize-button tool dimmable',
+                                        'button');
+  maximizeButton.addEventListener('click', this.onMaximize_.bind(this));
 
-    var closeButton = util.createChild(this.header_,
-                                       'close-button tool dimmable',
-                                       'button');
-    closeButton.addEventListener('click', this.onClose_.bind(this));
-  }
+  var closeButton = util.createChild(this.header_,
+                                     'close-button tool dimmable',
+                                     'button');
+  closeButton.addEventListener('click', this.onClose_.bind(this));
 
   this.filenameSpacer_ = util.createChild(this.toolbar_, 'filename-spacer');
   this.filenameEdit_ = util.createChild(this.filenameSpacer_,
@@ -346,8 +344,7 @@ Gallery.prototype.initDom_ = function() {
 
   this.slideMode_.addEventListener('useraction', this.onUserAction_.bind(this));
 
-  if (util.platform.newUI())
-    document.body.setAttribute('new-ui', '');
+  document.body.setAttribute('new-ui', '');
 };
 
 /**

@@ -15,7 +15,7 @@ var CommandUtil = {};
  * @return {DirectoryEntry} Found root.
  */
 CommandUtil.getCommandRoot = function(event, list) {
-  if (util.platform.newUI() && list instanceof VolumeList) {
+  if (list instanceof VolumeList) {
     var result = list.dataModel.item(
                      list.getIndexOfListItem(event.target)) ||
                  list.selectedItem;
