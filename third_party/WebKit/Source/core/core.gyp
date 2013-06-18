@@ -776,7 +776,7 @@
             ['exclude', 'platform/graphics/FontPlatformData\\.cpp$'],
           ],
         }],
-        ['OS != "linux" and OS != "mac" and (OS != "win" or (OS == "win" and "ENABLE_GDI_FONTS_ON_WINDOWS=1"))', {
+        ['OS != "linux" and OS != "mac" and (OS != "win" or (OS == "win" and "ENABLE_GDI_FONTS_ON_WINDOWS=1" in feature_defines))', {
           'sources/': [
             ['exclude', 'VDMX[^/]+\\.(cpp|h)$'],
           ],
@@ -789,10 +789,7 @@
             ['include', '/SkiaFontWin\\.cpp$'],
             ['include', '/TransparencyWin\\.cpp$'],
 
-            # The Chromium Win currently uses GlyphPageTreeNodeChromiumWin.cpp from
-            # platform/graphics/chromium, included by regex above, instead.
             ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
-            ['exclude', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
 
             # SystemInfo.cpp is useful and we don't want to copy it.
             ['include', 'platform/win/SystemInfo\\.cpp$'],
@@ -806,11 +803,14 @@
             ['"ENABLE_GDI_FONTS_ON_WINDOWS=1" in feature_defines', {
               'sources/': [
                 ['exclude', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
+                ['exclude', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
               ],
             },{ # ENABLE_GDI_FONTS_ON_WINDOWS!=1
               'sources/': [
                 ['exclude', 'platform/graphics/chromium/SimpleFontDataChromiumWin\\.cpp$'],
                 ['include', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
+                ['include', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
+                ['exclude', 'platform/graphics/chromium/GlyphPageTreeNodeChromiumWin\\.cpp$'],
               ],
             }],
           ],
