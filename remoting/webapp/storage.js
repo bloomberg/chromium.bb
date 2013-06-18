@@ -59,7 +59,7 @@ remoting.MockStorage.prototype.get = function(items, callback) {
   } else if (typeof(items) == 'string') {
     // If the input is a string, return one or zero items, depending on
     // whether or not the value is stored in localStorage.
-    if (items in window.localStorage) {
+    if (window.localStorage.hasOwnProperty(items)) {
       result[items] = window.localStorage.getItem(items);
     }
 
@@ -69,7 +69,7 @@ remoting.MockStorage.prototype.get = function(items, callback) {
     for (var index in items) {
       /** @type {string} */
       var item = items[index];
-      if (item in window.localStorage) {
+      if (window.localStorage.hasOwnProperty(item)) {
         result[item] = window.localStorage.getItem(item);
       }
     }
@@ -78,7 +78,7 @@ remoting.MockStorage.prototype.get = function(items, callback) {
     // If the input is a dictionary, return the localStorage value for
     // items that are stored, and the dictionary value otherwise.
     for (var item in items) {
-      if (item in window.localStorage) {
+      if (window.localStorage.hasOwnProperty(item)) {
         result[item] = window.localStorage.getItem(item);
       } else {
         result[item] = items[item];

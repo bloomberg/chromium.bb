@@ -203,7 +203,7 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     this.onDebugMessageHandler(message.data['message']);
   } else if (message.method == 'onConnectionStatus') {
     if (typeof message.data['state'] != 'string' ||
-        !(message.data['state'] in remoting.ClientSession.State) ||
+        !remoting.ClientSession.State.hasOwnProperty(message.data['state']) ||
         typeof message.data['error'] != 'string') {
       console.error('Received invalid onConnectionState message: ' +
                     messageStr);
@@ -213,7 +213,8 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
     /** @type {remoting.ClientSession.State} */
     var state = remoting.ClientSession.State[message.data['state']];
     var error;
-    if (message.data['error'] in remoting.ClientSession.ConnectionError) {
+    if (remoting.ClientSession.ConnectionError.hasOwnProperty(
+        message.data['error'])) {
       error = /** @type {remoting.ClientSession.ConnectionError} */
           remoting.ClientSession.ConnectionError[message.data['error']];
     } else {

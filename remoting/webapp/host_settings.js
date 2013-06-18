@@ -85,16 +85,16 @@ remoting.HostSettings.loadInternal_ = function(hostId, callback) {
       if (typeof(result) != 'object') {
         console.error("Error loading host settings: Not an object");
         result = {};
-      } else if (hostId in result &&
+      } else if (/** @type {Object} */ (result).hasOwnProperty(hostId) &&
                  typeof(result[hostId]) == 'object') {
-        callback(result[hostId], /** @type {Object} */(result));
+        callback(result[hostId], result);
         return;
       }
     } catch (err) {
       var typedErr = /** @type {*} */ (err);
       console.error('Error loading host settings:', typedErr);
     }
-    callback({}, /** @type {Object} */(result));
+    callback({}, /** @type {Object} */ (result));
   };
   remoting.storage.local.get(remoting.HostSettings.KEY_, onDone);
 };
