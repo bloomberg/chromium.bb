@@ -718,6 +718,8 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(RenderObject* render
 
     RefPtr<Gradient> gradient = Gradient::create(firstPoint, secondPoint);
 
+    gradient->setDrawsInPMColorSpace(true);
+
     // Now add the stops.
     addStops(gradient.get(), renderer, rootStyle, 1);
 
@@ -1133,6 +1135,8 @@ PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(RenderObject* render
     }
 
     RefPtr<Gradient> gradient = Gradient::create(firstPoint, firstRadius, secondPoint, secondRadius, aspectRatio);
+
+    gradient->setDrawsInPMColorSpace(true);
 
     // addStops() only uses maxExtent for repeating gradients.
     float maxExtent = 0;

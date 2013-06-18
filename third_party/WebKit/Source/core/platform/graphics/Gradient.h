@@ -123,6 +123,8 @@ public:
 
     void setStopsSorted(bool s) { m_stopsSorted = s; }
 
+    void setDrawsInPMColorSpace(bool drawInPMColorSpace);
+
     void setSpreadMethod(GradientSpreadMethod);
     GradientSpreadMethod spreadMethod() { return m_spreadMethod; }
     void setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation);
@@ -152,6 +154,8 @@ private:
     mutable bool m_stopsSorted;
     GradientSpreadMethod m_spreadMethod;
     AffineTransform m_gradientSpaceTransformation;
+
+    bool m_drawInPMColorSpace;
 
     mutable unsigned m_cachedHash;
 

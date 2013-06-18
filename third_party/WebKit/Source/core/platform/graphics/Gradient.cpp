@@ -52,6 +52,7 @@ Gradient::Gradient(const FloatPoint& p0, const FloatPoint& p1)
     , m_stopsSorted(false)
     , m_spreadMethod(SpreadMethodPad)
     , m_cachedHash(0)
+    , m_drawInPMColorSpace(false)
     , m_gradient(0)
 {
 }
@@ -66,6 +67,7 @@ Gradient::Gradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r
     , m_stopsSorted(false)
     , m_spreadMethod(SpreadMethodPad)
     , m_cachedHash(0)
+    , m_drawInPMColorSpace(false)
     , m_gradient(0)
 {
 }
@@ -171,6 +173,19 @@ void Gradient::setSpreadMethod(GradientSpreadMethod spreadMethod)
     invalidateHash();
 }
 
+void Gradient::setDrawsInPMColorSpace(bool drawInPMColorSpace)
+{
+    if (drawInPMColorSpace == m_drawInPMColorSpace)
+        return;
+
+    m_drawInPMColorSpace = drawInPMColorSpace;
+
+    if (m_gradient)
+        destroyShader();
+
+    invalidateHash();
+}
+
 void Gradient::setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation)
 {
     if (m_gradientSpaceTransformation == gradientSpaceTransformation)
@@ -197,6 +212,7 @@ unsigned Gradient::hash() const
         float aspectRatio;
         GradientSpreadMethod spreadMethod;
         bool radial;
+        bool drawInPMColorSpace;
     } parameters;
 
     // StringHasher requires that the memory it hashes be a multiple of two in size.
@@ -214,6 +230,7 @@ unsigned Gradient::hash() const
     parameters.aspectRatio = m_aspectRatio;
     parameters.spreadMethod = m_spreadMethod;
     parameters.radial = m_radial;
+    parameters.drawInPMColorSpace = m_drawInPMColorSpace;
 
     unsigned parametersHash = StringHasher::hashMemory(&parameters, sizeof(parameters));
     unsigned stopHash = StringHasher::hashMemory(m_stops.data(), m_stops.size() * sizeof(ColorStop));
@@ -319,17 +336,18 @@ SkShader* Gradient::shader()
         break;
     }
 
+    uint32_t shouldDrawInPMColorSpace = m_drawInPMColorSpace ? SkGradientShader::kInterpolateColorsInPremul_Flag : 0;
     if (m_radial) {
         // Since the two-point radial gradient is slower than the plain radial,
         // only use it if we have to.
         if (m_p0 == m_p1 && m_r0 <= 0.0f)
-            m_gradient = SkGradientShader::CreateRadial(m_p1, m_r1, colors, pos, static_cast<int>(countUsed), tile);
+            m_gradient = SkGradientShader::CreateRadial(m_p1, m_r1, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace);
         else {
             // The radii we give to Skia must be positive. If we're given a
             // negative radius, ask for zero instead.
             SkScalar radius0 = m_r0 >= 0.0f ? WebCoreFloatToSkScalar(m_r0) : 0;
             SkScalar radius1 = m_r1 >= 0.0f ? WebCoreFloatToSkScalar(m_r1) : 0;
-            m_gradient = SkGradientShader::CreateTwoPointConical(m_p0, radius0, m_p1, radius1, colors, pos, static_cast<int>(countUsed), tile);
+            m_gradient = SkGradientShader::CreateTwoPointConical(m_p0, radius0, m_p1, radius1, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace);
         }
 
         if (aspectRatio() != 1) {
@@ -342,7 +360,7 @@ SkShader* Gradient::shader()
         }
     } else {
         SkPoint pts[2] = { m_p0, m_p1 };
-        m_gradient = SkGradientShader::CreateLinear(pts, colors, pos, static_cast<int>(countUsed), tile);
+        m_gradient = SkGradientShader::CreateLinear(pts, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace);
     }
 
     if (!m_gradient)
