@@ -131,15 +131,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
       FileSystemType type,
       bool create);
 
-  // Deletes the data on the origin and reports the amount of deleted data
-  // to the quota manager via |proxy|.
-  base::PlatformFileError DeleteOriginDataOnFileThread(
+  // FileSystemQuotaUtil overrides.
+  virtual base::PlatformFileError DeleteOriginDataOnFileThread(
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
-      FileSystemType type);
-
-  // FileSystemQuotaUtil overrides.
+      FileSystemType type) OVERRIDE;
   virtual void GetOriginsForTypeOnFileThread(
       FileSystemType type,
       std::set<GURL>* origins) OVERRIDE;

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -32,6 +33,14 @@ class FileSystemContext;
 class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemQuotaUtil {
  public:
   virtual ~FileSystemQuotaUtil() {}
+
+  // Deletes the data on the origin and reports the amount of deleted data
+  // to the quota manager via |proxy|.
+  virtual base::PlatformFileError DeleteOriginDataOnFileThread(
+      FileSystemContext* context,
+      quota::QuotaManagerProxy* proxy,
+      const GURL& origin_url,
+      FileSystemType type) = 0;
 
   virtual void GetOriginsForTypeOnFileThread(fileapi::FileSystemType type,
                                              std::set<GURL>* origins) = 0;

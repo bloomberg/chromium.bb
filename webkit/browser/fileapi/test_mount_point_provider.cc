@@ -33,6 +33,14 @@ class TestMountPointProvider::QuotaUtil
   virtual ~QuotaUtil() {}
 
   // FileSystemQuotaUtil overrides.
+  virtual base::PlatformFileError DeleteOriginDataOnFileThread(
+      FileSystemContext* context,
+      quota::QuotaManagerProxy* proxy,
+      const GURL& origin_url,
+      FileSystemType type) OVERRIDE {
+    NOTREACHED();
+    return base::PLATFORM_FILE_OK;
+  }
   virtual void GetOriginsForTypeOnFileThread(
       FileSystemType type,
       std::set<GURL>* origins) OVERRIDE {

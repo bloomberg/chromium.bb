@@ -284,8 +284,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // Registered mount point providers.
   // The map must be constructed in the constructor since it can be accessed
   // on multiple threads.
-  // The ownership of each provider is held by mount_point_providers_.
+  // This map itself doesn't retain each provider's ownership; ownerships
+  // of the providers are held by additional_providers_ or other scoped_ptr
+  // provider fields.
   MountPointProviderMap provider_map_;
+
   // External mount points visible in the file system context (excluding system
   // external mount points).
   scoped_refptr<ExternalMountPoints> external_mount_points_;

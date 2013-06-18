@@ -119,23 +119,24 @@ FileSystemContext::FileSystemContext(
 bool FileSystemContext::DeleteDataForOriginOnFileThread(
     const GURL& origin_url) {
   DCHECK(task_runners_->file_task_runner()->RunsTasksOnCurrentThread());
-  DCHECK(sandbox_provider());
   DCHECK(origin_url == origin_url.GetOrigin());
 
-  // Delete temporary and persistent data.
-  return
-      (sandbox_provider()->DeleteOriginDataOnFileThread(
-          this, quota_manager_proxy(), origin_url,
-          kFileSystemTypeTemporary) ==
-       base::PLATFORM_FILE_OK) &&
-      (sandbox_provider()->DeleteOriginDataOnFileThread(
-          this, quota_manager_proxy(), origin_url,
-          kFileSystemTypePersistent) ==
-       base::PLATFORM_FILE_OK) &&
-      (sandbox_provider()->DeleteOriginDataOnFileThread(
-          this, quota_manager_proxy(), origin_url,
-          kFileSystemTypeSyncable) ==
-       base::PLATFORM_FILE_OK);
+  bool success = true;
+  for (MountPointProviderMap::iterator iter = provider_map_.begin();
+       iter != provider_map_.end();
+       ++iter) {
+    FileSystemMountPointProvider* provider = iter->second;
+    if (!provider->GetQuotaUtil())
+      continue;
+    if (provider->GetQuotaUtil()->DeleteOriginDataOnFileThread(
+            this, quota_manager_proxy(), origin_url, iter->first)
+            != base::PLATFORM_FILE_OK) {
+      // Continue the loop, but record the failure.
+      success = false;
+    }
+  }
+
+  return success;
 }
 
 FileSystemQuotaUtil*
