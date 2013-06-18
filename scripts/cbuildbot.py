@@ -539,17 +539,21 @@ class DistributedBuilder(SimpleBuilder):
   def RunStages(self):
     """Runs simple builder logic and publishes information to overlays."""
     was_build_successful = False
-    try:
-      super(DistributedBuilder, self).RunStages()
-      was_build_successful = results_lib.Results.BuildSucceededSoFar()
-    except SystemExit as ex:
-      # If a stage calls sys.exit(0), it's exiting with success, so that means
-      # we should mark ourselves as successful.
-      if ex.code == 0:
-        was_build_successful = True
-      raise
-    finally:
-      self.Publish(was_build_successful)
+    with cleanup.EnforcedCleanupSection() as critical_section:
+      try:
+        # Mark everything between EnforcedCleanupSection and here as having to
+        # be rolled back via the contextmanager cleanup handlers.
+        critical_section.ForkWatchdog()
+        super(DistributedBuilder, self).RunStages()
+        was_build_successful = results_lib.Results.BuildSucceededSoFar()
+      except SystemExit as ex:
+        # If a stage calls sys.exit(0), it's exiting with success, so that means
+        # we should mark ourselves as successful.
+        if ex.code == 0:
+          was_build_successful = True
+        raise
+      finally:
+        self.Publish(was_build_successful)
 
 
 def _ConfirmBuildRoot(buildroot):
