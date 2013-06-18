@@ -116,14 +116,19 @@ class RebaselineTest(AbstractRebaseliningCommand):
                 pass
         return immediate_predecessors_in_fallback
 
+    def _port_for_primary_baseline(self, baseline):
+        for port in [self._tool.port_factory.get(port_name) for port_name in self._tool.port_factory.all_port_names()]:
+            if self._tool.filesystem.basename(port.baseline_version_dir()) == baseline:
+                return port
+        raise Exception("Failed to find port for primary baseline %s." % baseline)
+
     def _copy_existing_baseline(self, move_overwritten_baselines_to, test_name, suffix):
         old_baselines = []
         new_baselines = []
 
         # Need to gather all the baseline paths before modifying the filesystem since
         # the modifications can affect the results of port.expected_filename.
-        for platform in move_overwritten_baselines_to:
-            port = self._tool.port_factory.get(platform)
+        for port in [self._port_for_primary_baseline(baseline) for baseline in move_overwritten_baselines_to]:
             old_baseline = port.expected_filename(test_name, "." + suffix)
             if not self._tool.filesystem.exists(old_baseline):
                 _log.debug("No existing baseline for %s." % test_name)
