@@ -14,7 +14,8 @@
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -33,16 +34,12 @@ const char kTestUserAgent[] = "test-user-agent";
 class BaseRequestsServerTest : public testing::Test {
  protected:
   BaseRequestsServerTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE),
-        io_thread_(content::BrowserThread::IO),
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
         test_server_(content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO)) {
   }
 
   virtual void SetUp() OVERRIDE {
-    file_thread_.Start();
-    io_thread_.StartIOThread();
     profile_.reset(new TestingProfile);
 
     request_context_getter_ = new net::TestURLRequestContextGetter(
@@ -73,10 +70,7 @@ class BaseRequestsServerTest : public testing::Test {
     return profile_->GetPath().Append(file_name);
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<RequestSender> request_sender_;
