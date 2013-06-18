@@ -33,7 +33,6 @@ class CC_EXPORT WorkerPoolTask
   void DidRun();
   void DidComplete();
 
-  bool IsReadyToRun() const;
   bool HasFinishedRunning() const;
   bool HasCompleted() const;
 
@@ -84,21 +83,37 @@ class CC_EXPORT WorkerPool {
  protected:
   class CC_EXPORT GraphNode {
    public:
-    typedef std::vector<internal::WorkerPoolTask*> TaskVector;
+    typedef std::vector<GraphNode*> Vector;
 
-    GraphNode(internal::WorkerPoolTask* dependent, unsigned priority);
+    explicit GraphNode(internal::WorkerPoolTask* task);
     ~GraphNode();
 
-    void AddDependent(internal::WorkerPoolTask* dependent);
+    internal::WorkerPoolTask* task() { return task_; }
 
-    const TaskVector& dependents() const {
+    void add_dependent(GraphNode* dependent) {
+      dependents_.push_back(dependent);
+    }
+    const Vector& dependents() const {
       return dependents_;
     }
+
+    void set_priority(unsigned priority) { priority_ = priority; }
     unsigned priority() const { return priority_; }
 
+    unsigned num_dependencies() const {
+      return num_dependencies_;
+    }
+    void add_dependency() { ++num_dependencies_; }
+    void remove_dependency() {
+      DCHECK(num_dependencies_);
+      --num_dependencies_;
+    }
+
    private:
-    TaskVector dependents_;
+    internal::WorkerPoolTask* task_;
+    Vector dependents_;
     unsigned priority_;
+    unsigned num_dependencies_;
 
     DISALLOW_COPY_AND_ASSIGN(GraphNode);
   };
@@ -131,11 +146,11 @@ class CC_EXPORT WorkerPool {
   // "ready to run" tasks.
   static unsigned BuildTaskGraphRecursive(
       internal::WorkerPoolTask* task,
-      internal::WorkerPoolTask* dependent,
+      GraphNode* dependent,
       unsigned priority,
-      TaskGraph* tasks);
+      TaskGraph* graph);
   static void BuildTaskGraph(
-      internal::WorkerPoolTask* root, TaskGraph* tasks);
+      internal::WorkerPoolTask* root, TaskGraph* graph);
 
  private:
   class Inner;
