@@ -859,7 +859,7 @@ void RenderThreadImpl::UpdateHistograms(int sequence_number) {
   child_histogram_message_filter()->SendHistograms(sequence_number);
 }
 
-int RenderThreadImpl::PostTaskToAllWorkers(const base::Closure& closure) {
+int RenderThreadImpl::PostTaskToAllWebWorkers(const base::Closure& closure) {
   return webkit_glue::WorkerTaskRunner::Instance()->PostTaskToAllThreads(
       closure);
 }

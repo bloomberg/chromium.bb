@@ -185,7 +185,7 @@ void HeapStatisticsCollector::InitiateCollection() {
       base::Unretained(this),
       base::MessageLoopProxy::current(),
       round_id_);
-  workers_to_go_ = RenderThread::Get()->PostTaskToAllWorkers(collect);
+  workers_to_go_ = RenderThread::Get()->PostTaskToAllWebWorkers(collect);
   if (workers_to_go_) {
     // The guard task to send out partial stats
     // in case some workers are not responsive.
@@ -230,9 +230,8 @@ void HeapStatisticsCollector::ReceiveStats(int round_id,
     return;
   total_bytes_ += total_bytes;
   used_bytes_ += used_bytes;
-  if (!--workers_to_go_) {
+  if (!--workers_to_go_)
     SendStatsToBrowser(round_id);
-  }
 }
 
 void HeapStatisticsCollector::SendStatsToBrowser(int round_id) {

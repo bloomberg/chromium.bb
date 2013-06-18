@@ -182,7 +182,7 @@ void MockRenderThread::ToggleWebKitSharedTimer(bool suspend) {
 void MockRenderThread::UpdateHistograms(int sequence_number) {
 }
 
-int MockRenderThread::PostTaskToAllWorkers(const base::Closure& closure) {
+int MockRenderThread::PostTaskToAllWebWorkers(const base::Closure& closure) {
   return 0;
 }
 
