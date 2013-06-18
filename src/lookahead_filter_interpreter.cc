@@ -55,7 +55,7 @@ void LookaheadFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   }
   QState* node = free_list_.PopFront();
   node->set_state(*hwstate);
-  double delay = max(0.0, min(kMaxDelay, min_delay_.val_));
+  double delay = max(0.0, min<stime_t>(kMaxDelay, min_delay_.val_));
   node->due_ = hwstate->timestamp + delay;
   node->completed_ = false;
   if (queue_.Empty())
@@ -387,7 +387,7 @@ void LookaheadFilterInterpreter::AttemptInterpolation() {
   node->completed_ = false;
   Interpolate(prev->state_, new_node->state_, &node->state_);
 
-  double delay = max(0.0, min(kMaxDelay, min_delay_.val_));
+  double delay = max(0.0, min<stime_t>(kMaxDelay, min_delay_.val_));
   node->due_ = node->state_.timestamp + delay;
 
   if (node->state_.timestamp <= last_interpreted_time_) {
@@ -535,7 +535,7 @@ void LookaheadFilterInterpreter::Initialize(
 }
 
 stime_t LookaheadFilterInterpreter::ExtraVariableDelay() const {
-  return std::max(0.0, max_delay_.val_ - min_delay_.val_);
+  return std::max<stime_t>(0.0, max_delay_.val_ - min_delay_.val_);
 }
 
 LookaheadFilterInterpreter::QState::QState()

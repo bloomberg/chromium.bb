@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 #include <string>
@@ -365,7 +366,7 @@ typedef struct {
 struct GesturesProp;
 typedef struct GesturesProp GesturesProp;
 
-typedef int GesturesPropBool;
+typedef unsigned char GesturesPropBool;
 
 // These functions create a named property of given type.
 //   data - data used by PropProvider
@@ -376,21 +377,25 @@ typedef int GesturesPropBool;
 //          override this initial value, in which case *loc returns the
 //          value from the configuration source.
 typedef GesturesProp* (*GesturesPropCreateInt)(void* data, const char* name,
-                                               int* loc, const int init);
+                                               int* loc, size_t count,
+                                               const int* init);
 
 typedef GesturesProp* (*GesturesPropCreateShort)(void* data, const char* name,
-                                                 short* loc, const short init);
+                                                 short* loc, size_t count,
+                                                 const short* init);
 
 typedef GesturesProp* (*GesturesPropCreateBool)(void* data, const char* name,
                                                 GesturesPropBool* loc,
-                                                const GesturesPropBool init);
+                                                size_t count,
+                                                const GesturesPropBool* init);
 
 typedef GesturesProp* (*GesturesPropCreateString)(void* data, const char* name,
                                                   const char** loc,
                                                   const char* const init);
 
 typedef GesturesProp* (*GesturesPropCreateReal)(void* data, const char* name,
-                                                double* loc, const double init);
+                                                double* loc, size_t count,
+                                                const double* init);
 
 // A function to call just before a property is to be read.
 // |handler_data| is a local context pointer that can be used by the handler.

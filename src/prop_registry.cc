@@ -14,6 +14,7 @@
 #include "gestures/include/gestures.h"
 
 using base::FundamentalValue;
+using base::ListValue;
 using std::set;
 using std::string;
 
@@ -78,7 +79,8 @@ void BoolProperty::CreatePropImpl() {
       parent_->PropProviderData(),
       name(),
       &val_,
-      val_);
+      1,
+      &val_);
   if (delegate_ && orig_val != val_)
     delegate_->BoolWasWritten(this);
 }
@@ -111,13 +113,58 @@ void BoolProperty::HandleGesturesPropWritten() {
     delegate_->BoolWasWritten(this);
 }
 
+void BoolArrayProperty::CreatePropImpl() {
+  GesturesPropBool orig_vals[count_];
+  memcpy(orig_vals, vals_, sizeof(orig_vals));
+  gprop_ = parent_->PropProvider()->create_bool_fn(
+      parent_->PropProviderData(),
+      name(),
+      vals_,
+      count_,
+      vals_);
+  if (delegate_ && memcmp(orig_vals, vals_, sizeof(orig_vals)))
+    delegate_->BoolArrayWasWritten(this);
+}
+
+::Value* BoolArrayProperty::NewValue() const {
+  ListValue* list = new ListValue();
+  for (size_t i = 0; i < count_; i++)
+    list->Append(new FundamentalValue(vals_[i] != 0));
+  return list;
+}
+
+bool BoolArrayProperty::SetValue(::Value* value) {
+  AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
+  ListValue* list = static_cast<ListValue*>(value);
+  AssertWithReturnValue(list->GetSize() == count_, false);
+
+  for (size_t i = 0; i < count_; i++) {
+    Value* elt_value = NULL;
+    AssertWithReturnValue(list->Get(i, &elt_value), false);
+    AssertWithReturnValue(elt_value->GetType() == Value::TYPE_BOOLEAN, false);
+    FundamentalValue* type_value = static_cast<FundamentalValue*>(elt_value);
+    bool val;
+    AssertWithReturnValue(type_value->GetAsBoolean(&val), false);
+    vals_[i] = static_cast<GesturesPropBool>(val);
+  }
+
+  return true;
+}
+
+void BoolArrayProperty::HandleGesturesPropWritten() {
+  // TODO(adlr): Log array property changes
+  if (delegate_)
+    delegate_->BoolArrayWasWritten(this);
+}
+
 void DoubleProperty::CreatePropImpl() {
   double orig_val = val_;
   gprop_ = parent_->PropProvider()->create_real_fn(
       parent_->PropProviderData(),
       name(),
       &val_,
-      val_);
+      1,
+      &val_);
   if (delegate_ && orig_val != val_)
     delegate_->DoubleWasWritten(this);
 }
@@ -132,7 +179,11 @@ bool DoubleProperty::SetValue(::Value* value) {
     return false;
   }
   FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
-  return type_value->GetAsDouble(&val_);
+  double val;
+  if (!type_value->GetAsDouble(&val))
+    return false;
+  val_ = val;
+  return true;
 }
 
 void DoubleProperty::HandleGesturesPropWritten() {
@@ -147,13 +198,62 @@ void DoubleProperty::HandleGesturesPropWritten() {
     delegate_->DoubleWasWritten(this);
 }
 
+void DoubleArrayProperty::CreatePropImpl() {
+  float orig_vals[count_];
+  memcpy(orig_vals, vals_, sizeof(orig_vals));
+  gprop_ = parent_->PropProvider()->create_real_fn(
+      parent_->PropProviderData(),
+      name(),
+      vals_,
+      count_,
+      vals_);
+  if (delegate_ && memcmp(orig_vals, vals_, sizeof(orig_vals)))
+    delegate_->DoubleArrayWasWritten(this);
+}
+
+::Value* DoubleArrayProperty::NewValue() const {
+  ListValue* list = new ListValue();
+  for (size_t i = 0; i < count_; i++) {
+    // Avoid infinity
+    double log_val = std::max(-1e30, std::min(vals_[i], 1e30));
+    list->Append(new FundamentalValue(log_val));
+  }
+  return list;
+}
+
+bool DoubleArrayProperty::SetValue(::Value* value) {
+  AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
+  ListValue* list = static_cast<ListValue*>(value);
+  AssertWithReturnValue(list->GetSize() == count_, false);
+
+  for (size_t i = 0; i < count_; i++) {
+    Value* elt_value = NULL;
+    AssertWithReturnValue(list->Get(i, &elt_value), false);
+    AssertWithReturnValue(elt_value->GetType() == Value::TYPE_DOUBLE ||
+                          elt_value->GetType() == Value::TYPE_INTEGER, false);
+    FundamentalValue* type_value = static_cast<FundamentalValue*>(elt_value);
+    double val;
+    AssertWithReturnValue(type_value->GetAsDouble(&val), false);
+    vals_[i] = static_cast<float>(val);
+  }
+
+  return true;
+}
+
+void DoubleArrayProperty::HandleGesturesPropWritten() {
+  // TODO(adlr): Log array property changes
+  if (delegate_)
+    delegate_->DoubleArrayWasWritten(this);
+}
+
 void IntProperty::CreatePropImpl() {
   int orig_val = val_;
   gprop_ = parent_->PropProvider()->create_int_fn(
       parent_->PropProviderData(),
       name(),
       &val_,
-      val_);
+      1,
+      &val_);
   if (delegate_ && orig_val != val_)
     delegate_->IntWasWritten(this);
 }
@@ -182,13 +282,58 @@ void IntProperty::HandleGesturesPropWritten() {
     delegate_->IntWasWritten(this);
 }
 
+void IntArrayProperty::CreatePropImpl() {
+  int orig_vals[count_];
+  memcpy(orig_vals, vals_, sizeof(orig_vals));
+  gprop_ = parent_->PropProvider()->create_int_fn(
+      parent_->PropProviderData(),
+      name(),
+      vals_,
+      count_,
+      vals_);
+  if (delegate_ && memcmp(orig_vals, vals_, sizeof(orig_vals)))
+    delegate_->IntArrayWasWritten(this);
+}
+
+::Value* IntArrayProperty::NewValue() const {
+  ListValue* list = new ListValue();
+  for (size_t i = 0; i < count_; i++)
+    list->Append(new FundamentalValue(vals_[i]));
+  return list;
+}
+
+bool IntArrayProperty::SetValue(::Value* value) {
+  AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
+  ListValue* list = static_cast<ListValue*>(value);
+  AssertWithReturnValue(list->GetSize() == count_, false);
+
+  for (size_t i = 0; i < count_; i++) {
+    Value* elt_value = NULL;
+    AssertWithReturnValue(list->Get(i, &elt_value), false);
+    AssertWithReturnValue(elt_value->GetType() == Value::TYPE_INTEGER, false);
+    FundamentalValue* type_value = static_cast<FundamentalValue*>(elt_value);
+    int val;
+    AssertWithReturnValue(type_value->GetAsInteger(&val), false);
+    vals_[i] = static_cast<int>(val);
+  }
+
+  return true;
+}
+
+void IntArrayProperty::HandleGesturesPropWritten() {
+  // TODO(adlr): Log array property changes
+  if (delegate_)
+    delegate_->IntArrayWasWritten(this);
+}
+
 void ShortProperty::CreatePropImpl() {
   short orig_val = val_;
   gprop_ = parent_->PropProvider()->create_short_fn(
       parent_->PropProviderData(),
       name(),
       &val_,
-      val_);
+      1,
+      &val_);
   if (delegate_ && orig_val != val_)
     delegate_->ShortWasWritten(this);
 }
@@ -219,6 +364,50 @@ void ShortProperty::HandleGesturesPropWritten() {
   }
   if (delegate_)
     delegate_->ShortWasWritten(this);
+}
+
+void ShortArrayProperty::CreatePropImpl() {
+  short orig_vals[count_];
+  memcpy(orig_vals, vals_, sizeof(orig_vals));
+  gprop_ = parent_->PropProvider()->create_short_fn(
+      parent_->PropProviderData(),
+      name(),
+      vals_,
+      count_,
+      vals_);
+  if (delegate_ && memcmp(orig_vals, vals_, sizeof(orig_vals)))
+    delegate_->ShortArrayWasWritten(this);
+}
+
+::Value* ShortArrayProperty::NewValue() const {
+  ListValue* list = new ListValue();
+  for (size_t i = 0; i < count_; i++)
+    list->Append(new FundamentalValue(vals_[i]));
+  return list;
+}
+
+bool ShortArrayProperty::SetValue(::Value* value) {
+  AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
+  ListValue* list = static_cast<ListValue*>(value);
+  AssertWithReturnValue(list->GetSize() == count_, false);
+
+  for (size_t i = 0; i < count_; i++) {
+    Value* elt_value = NULL;
+    AssertWithReturnValue(list->Get(i, &elt_value), false);
+    AssertWithReturnValue(elt_value->GetType() == Value::TYPE_INTEGER, false);
+    FundamentalValue* type_value = static_cast<FundamentalValue*>(elt_value);
+    int val;
+    AssertWithReturnValue(type_value->GetAsInteger(&val), false);
+    vals_[i] = static_cast<short>(val);
+  }
+
+  return true;
+}
+
+void ShortArrayProperty::HandleGesturesPropWritten() {
+  // TODO(adlr): Log array property changes
+  if (delegate_)
+    delegate_->ShortArrayWasWritten(this);
 }
 
 void StringProperty::CreatePropImpl() {

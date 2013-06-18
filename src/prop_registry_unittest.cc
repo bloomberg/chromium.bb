@@ -113,29 +113,32 @@ TEST(PropRegistryTest, PropChangeTest) {
 // Mock GesturesPropProvider
 GesturesProp* MockGesturesPropCreateBool(void* data, const char* name,
                                          GesturesPropBool* loc,
-                                         const GesturesPropBool init) {
+                                         size_t count,
+                                         const GesturesPropBool* init) {
   GesturesProp *dummy = new GesturesProp();
   *loc = true;
   return dummy;
 }
 
 GesturesProp* MockGesturesPropCreateInt(void* data, const char* name,
-                                        int* loc, const int init) {
+                                        int* loc, size_t count,
+                                        const int* init) {
   GesturesProp *dummy = new GesturesProp();
   *loc = 1;
   return dummy;
 }
 
 GesturesProp* MockGesturesPropCreateReal(void* data, const char* name,
-                                         double* loc, const double init) {
+                                         double* loc, size_t count,
+                                         const double* init) {
   GesturesProp *dummy = new GesturesProp();
   *loc = 1.0;
   return dummy;
 }
 
 GesturesProp* MockGesturesPropCreateShort(void* data, const char* name,
-                                          short* loc,
-                                          const short init) {
+                                          short* loc, size_t count,
+                                          const short* init) {
   GesturesProp *dummy = new GesturesProp();
   *loc = 1;
   return dummy;

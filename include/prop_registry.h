@@ -109,6 +109,29 @@ class BoolProperty : public Property {
   GesturesPropBool val_;
 };
 
+class BoolArrayProperty : public Property {
+ public:
+  BoolArrayProperty(PropRegistry* reg, const char* name, GesturesPropBool* vals,
+                    size_t count)
+      : Property(reg, name), vals_(vals), count_(count) {
+    if (parent_)
+      parent_->Register(this);
+  }
+  BoolArrayProperty(PropRegistry* reg, const char* name, GesturesPropBool* vals,
+                    size_t count, PropertyDelegate* delegate)
+      : Property(reg, name, delegate), vals_(vals), count_(count) {
+    if (parent_)
+      parent_->Register(this);
+  }
+  virtual void CreatePropImpl();
+  virtual ::Value* NewValue() const;
+  virtual bool SetValue(::Value* value);
+  virtual void HandleGesturesPropWritten();
+
+  GesturesPropBool* vals_;
+  size_t count_;
+};
+
 class DoubleProperty : public Property {
  public:
   DoubleProperty(PropRegistry* reg, const char* name, double val)
@@ -128,6 +151,29 @@ class DoubleProperty : public Property {
   virtual void HandleGesturesPropWritten();
 
   double val_;
+};
+
+class DoubleArrayProperty : public Property {
+ public:
+  DoubleArrayProperty(PropRegistry* reg, const char* name, double* vals,
+                      size_t count)
+      : Property(reg, name), vals_(vals), count_(count) {
+    if (parent_)
+      parent_->Register(this);
+  }
+  DoubleArrayProperty(PropRegistry* reg, const char* name, double* vals,
+                      size_t count, PropertyDelegate* delegate)
+      : Property(reg, name, delegate), vals_(vals), count_(count) {
+    if (parent_)
+      parent_->Register(this);
+  }
+  virtual void CreatePropImpl();
+  virtual ::Value* NewValue() const;
+  virtual bool SetValue(::Value* value);
+  virtual void HandleGesturesPropWritten();
+
+  double* vals_;
+  size_t count_;
 };
 
 class IntProperty : public Property {
@@ -151,6 +197,28 @@ class IntProperty : public Property {
   int val_;
 };
 
+class IntArrayProperty : public Property {
+ public:
+  IntArrayProperty(PropRegistry* reg, const char* name, int* vals, size_t count)
+      : Property(reg, name), vals_(vals), count_(count) {
+    if (parent_)
+      parent_->Register(this);
+  }
+  IntArrayProperty(PropRegistry* reg, const char* name, int* vals, size_t count,
+                   PropertyDelegate* delegate)
+      : Property(reg, name, delegate), vals_(vals), count_(count) {
+    if (parent_)
+      parent_->Register(this);
+  }
+  virtual void CreatePropImpl();
+  virtual ::Value* NewValue() const;
+  virtual bool SetValue(::Value* value);
+  virtual void HandleGesturesPropWritten();
+
+  int* vals_;
+  size_t count_;
+};
+
 class ShortProperty : public Property {
  public:
   ShortProperty(PropRegistry* reg, const char* name, short val)
@@ -170,6 +238,29 @@ class ShortProperty : public Property {
   virtual void HandleGesturesPropWritten();
 
   short val_;
+};
+
+class ShortArrayProperty : public Property {
+ public:
+  ShortArrayProperty(PropRegistry* reg, const char* name, short* vals,
+                     size_t count)
+      : Property(reg, name), vals_(vals), count_(count) {
+    if (parent_)
+      parent_->Register(this);
+  }
+  ShortArrayProperty(PropRegistry* reg, const char* name, short* vals,
+                     size_t count, PropertyDelegate* delegate)
+      : Property(reg, name, delegate), vals_(vals), count_(count) {
+    if (parent_)
+      parent_->Register(this);
+  }
+  virtual void CreatePropImpl();
+  virtual ::Value* NewValue() const;
+  virtual bool SetValue(::Value* value);
+  virtual void HandleGesturesPropWritten();
+
+  short* vals_;
+  size_t count_;
 };
 
 class StringProperty : public Property {
@@ -197,9 +288,13 @@ class StringProperty : public Property {
 class PropertyDelegate {
  public:
   virtual void BoolWasWritten(BoolProperty* prop) {};
+  virtual void BoolArrayWasWritten(BoolArrayProperty* prop) {};
   virtual void DoubleWasWritten(DoubleProperty* prop) {};
+  virtual void DoubleArrayWasWritten(DoubleArrayProperty* prop) {};
   virtual void IntWasWritten(IntProperty* prop) {};
+  virtual void IntArrayWasWritten(IntArrayProperty* prop) {};
   virtual void ShortWasWritten(ShortProperty* prop) {};
+  virtual void ShortArrayWasWritten(ShortArrayProperty* prop) {};
   virtual void StringWasWritten(StringProperty* prop) {};
 };
 
