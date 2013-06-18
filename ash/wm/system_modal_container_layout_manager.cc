@@ -162,8 +162,10 @@ void SystemModalContainerLayoutManager::CreateModalBackground() {
     modal_background_->GetNativeView()->SetName(
         "SystemModalContainerLayoutManager.ModalBackground");
     views::View* contents_view = new views::View();
-    contents_view->set_background(views::Background::CreateSolidBackground(
-        switches::IsNewDialogStyleEnabled() ? SK_ColorWHITE : SK_ColorBLACK));
+    // TODO(jamescook): This could also be SK_ColorWHITE if using the new
+    // dialog style via switches::IsNewDialogStyleEnabled().
+    contents_view->set_background(
+        views::Background::CreateSolidBackground(SK_ColorBLACK));
     modal_background_->SetContentsView(contents_view);
     modal_background_->GetNativeView()->layer()->SetOpacity(0.0f);
   }
