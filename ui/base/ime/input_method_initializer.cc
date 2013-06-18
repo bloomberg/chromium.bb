@@ -4,6 +4,8 @@
 
 #include "ui/base/ime/input_method_initializer.h"
 
+#include "ui/base/ime/input_method_factory.h"
+
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
@@ -31,6 +33,7 @@ void InitializeInputMethod() {
 
 void ShutdownInputMethod() {
 #if defined(OS_WIN)
+  ui::internal::DestroySharedInputMethod();
   if (base::win::IsTSFAwareRequired())
     ui::TSFBridge::Shutdown();
 #endif
@@ -66,6 +69,7 @@ void ShutdownInputMethodForTesting() {
   if (chromeos::IBusDaemonController::GetInstance())
     chromeos::IBusDaemonController::Shutdown();
 #elif defined(OS_WIN)
+  ui::internal::DestroySharedInputMethod();
   if (base::win::IsTSFAwareRequired()) {
     ui::TSFBridge::Shutdown();
     CoUninitialize();

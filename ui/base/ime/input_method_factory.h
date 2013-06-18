@@ -25,6 +25,18 @@ UI_EXPORT InputMethod* CreateInputMethod(
 // With calling this function, CreateInputMethod will return MockInputMethod.
 UI_EXPORT void SetUpInputMethodFactoryForTesting();
 
+// Returns a shared input method object for the platform. Caller must not
+// delete the object. Currently supported only on Windows. This method is
+// for non-Aura environment, where only one input method object is created for
+// the browser process.
+UI_EXPORT InputMethod* GetSharedInputMethod();
+
+namespace internal {
+// Destroys the shared input method object returned by GetSharedInputMethod().
+// This function must be called only from input_method_initializer.cc.
+void DestroySharedInputMethod();
+}  // namespace internal
+
 }  // namespace ui;
 
 #endif  // UI_BASE_IME_INPUT_METHOD_FACTORY_H_

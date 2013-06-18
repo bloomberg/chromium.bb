@@ -21,6 +21,7 @@ namespace ui {
 namespace {
 
 bool g_input_method_set_for_testing = false;
+InputMethod* g_shared_input_method = NULL;
 
 #if defined(OS_WIN)
 // Returns a new instance of input method object for IMM32 or TSF.
@@ -53,4 +54,22 @@ void SetUpInputMethodFactoryForTesting() {
   g_input_method_set_for_testing = true;
 }
 
+InputMethod* GetSharedInputMethod() {
+#if defined(OS_WIN)
+  if (!g_shared_input_method)
+    g_shared_input_method = CreateInputMethod(NULL, NULL);
+#else
+  NOTREACHED();
+#endif
+  return g_shared_input_method;
+}
+
+namespace internal {
+
+void DestroySharedInputMethod() {
+  delete g_shared_input_method;
+  g_shared_input_method = NULL;
+}
+
+}  // namespace internal
 }  // namespace ui

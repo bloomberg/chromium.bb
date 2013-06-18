@@ -50,7 +50,7 @@
     '<@(tsf_files)',
   ],
   'conditions': [
-    ['use_aura==0', {
+    ['use_aura==0 and OS!="win"', {
       'sources!': [
         '<@(ime_files)',
       ],
