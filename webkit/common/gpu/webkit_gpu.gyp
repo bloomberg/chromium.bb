@@ -22,7 +22,7 @@
             '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
             '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
             '<(DEPTH)/skia/skia.gyp:skia',
-            '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+            '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
             '<(angle_path)/src/build_angle.gyp:translator_glsl',
             '<(DEPTH)/ui/gl/gl.gyp:gl',
             '<(DEPTH)/ui/ui.gyp:ui',

@@ -15,7 +15,7 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/cc/cc.gyp:cc',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',

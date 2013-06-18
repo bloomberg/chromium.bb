@@ -362,7 +362,7 @@
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink_minimal',
       ],
       'defines': [
         'CC_IMPLEMENTATION=1',
