@@ -1003,11 +1003,13 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
   // Add two Extension IMEs.
   std::vector<std::string> layouts;
   layouts.push_back("us");
+  std::vector<std::string> languages;
+  languages.push_back("en-US");
   manager_->AddInputMethodExtension(
       extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
       "deadbeef input method",
       layouts,
-      "en-US",
+      languages,
       GURL(),
       NULL);
 
@@ -1034,7 +1036,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       extension_ime_util::GetInputMethodID("cafebabe", "engine_id"),
       "cafebabe input method",
       layouts,
-      "en-US",
+      languages,
       GURL(),
       NULL);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
@@ -1083,11 +1085,13 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   // Add an Extension IME.
   std::vector<std::string> layouts;
   layouts.push_back("us(dvorak)");
+  std::vector<std::string> languages;
+  languages.push_back("en-US");
   manager_->AddInputMethodExtension(
       extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
       "deadbeef input method",
       layouts,
-      "en-US",
+      languages,
       GURL(),
       NULL);
   // Extension IME is not enabled by default.

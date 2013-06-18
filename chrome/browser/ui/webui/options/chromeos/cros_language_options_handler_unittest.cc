@@ -45,10 +45,12 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
                                 const std::string& language_code) {
     std::vector<std::string> layouts;
     layouts.push_back(raw_layout);
+    std::vector<std::string> languages;
+    languages.push_back(language_code);
     return InputMethodDescriptor(id,
                                  "",  // name
                                  layouts,
-                                 language_code,
+                                 languages,
                                  GURL());  // options page url
   }
 };

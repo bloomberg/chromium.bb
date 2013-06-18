@@ -110,7 +110,10 @@ void InputMethodEngineIBus::Initialize(
   engine_desc.author = ibus_id_;
 
   component_->mutable_engine_description()->push_back(engine_desc);
-  manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, language,
+
+  std::vector<std::string> languages;
+  languages.push_back(language);
+  manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, languages,
                                    options_page, this);
   // If connection is avaiable, register component. If there are no connection
   // to ibus-daemon, OnConnected callback will register component instead.

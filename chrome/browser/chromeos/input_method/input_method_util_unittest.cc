@@ -54,10 +54,12 @@ class InputMethodUtilTest : public testing::Test {
                                 const std::string& language_code) {
     std::vector<std::string> layouts;
     layouts.push_back(raw_layout);
+    std::vector<std::string> languages;
+    languages.push_back(language_code);
     return InputMethodDescriptor(id,
                                  "",
                                  layouts,
-                                 language_code,
+                                 languages,
                                  GURL());  // options page url
   }
 
@@ -329,7 +331,8 @@ TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromId) {
   EXPECT_EQ("us", descriptor->GetPreferredKeyboardLayout());
   // This used to be "zh" but now we have "zh-CN" in input_methods.h,
   // hence this should be zh-CN now.
-  EXPECT_EQ("zh-CN", descriptor->language_code());
+  ASSERT_TRUE(!descriptor->language_codes().empty());
+  EXPECT_EQ("zh-CN", descriptor->language_codes().at(0));
 }
 
 TEST_F(InputMethodUtilTest, TestGetInputMethodIdsForLanguageCode) {
@@ -465,7 +468,7 @@ TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {
 TEST_F(InputMethodUtilTest, TestIBusInputMethodText) {
   for (size_t i = 0; i < util_.supported_input_methods_->size(); ++i) {
     const std::string language_code =
-        util_.supported_input_methods_->at(i).language_code();
+        util_.supported_input_methods_->at(i).language_codes().at(0);
     const string16 display_name =
         l10n_util::GetDisplayNameForLocale(language_code, "en", false);
     // Only two formats, like "fr" (lower case) and "en-US" (lower-upper), are

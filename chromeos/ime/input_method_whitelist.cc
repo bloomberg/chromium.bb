@@ -34,11 +34,14 @@ InputMethodWhitelist::GetSupportedInputMethods() const {
     std::vector<std::string> layouts;
     layouts.push_back(kInputMethods[i].xkb_layout_id);
 
+    std::vector<std::string> languages;
+    languages.push_back(kInputMethods[i].language_code);
+
     input_methods->push_back(InputMethodDescriptor(
         kInputMethods[i].input_method_id,
         "",
         layouts,
-        kInputMethods[i].language_code,
+        languages,
         GURL()));  // options page url, not available for non-extension input
                    // method.
   }

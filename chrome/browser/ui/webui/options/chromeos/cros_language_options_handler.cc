@@ -161,7 +161,6 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor =
         descriptors[i];
-    const std::string language_code = descriptor.language_code();
     const std::string display_name =
         manager->GetInputMethodUtil()->GetInputMethodDisplayNameFromId(
             descriptor.id());
@@ -171,16 +170,18 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
 
     // One input method can be associated with multiple languages, hence
     // we use a dictionary here.
-    DictionaryValue* language_codes = new DictionaryValue();
-    language_codes->SetBoolean(language_code, true);
+    DictionaryValue* languages = new DictionaryValue();
+    for (size_t i = 0; i < descriptor.language_codes().size(); ++i) {
+      languages->SetBoolean(descriptor.language_codes().at(i), true);
+    }
     // Check extra languages to see if there are languages associated with
     // this input method. If these are present, add these.
     const std::vector<std::string> extra_language_codes =
         manager->GetInputMethodUtil()->GetExtraLanguageCodesFromId(
             descriptor.id());
     for (size_t j = 0; j < extra_language_codes.size(); ++j)
-      language_codes->SetBoolean(extra_language_codes[j], true);
-    dictionary->Set("languageCodeSet", language_codes);
+      languages->SetBoolean(extra_language_codes[j], true);
+    dictionary->Set("languageCodeSet", languages);
 
     input_method_list->Append(dictionary);
   }
@@ -198,8 +199,10 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
   // Collect the language codes from the supported input methods.
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor = descriptors[i];
-    const std::string language_code = descriptor.language_code();
-    language_codes.insert(language_code);
+    const std::vector<std::string>& languages =
+        descriptor.language_codes();
+    for (size_t i = 0; i < languages.size(); ++i)
+      language_codes.insert(languages[i]);
   }
   // Collect the language codes from extra languages.
   const std::vector<std::string> extra_language_codes =
@@ -316,7 +319,8 @@ base::ListValue*
     dictionary->SetString("displayName", descriptor.name());
     dictionary->SetString("optionsPage", descriptor.options_page_url().spec());
     scoped_ptr<DictionaryValue> language_codes(new DictionaryValue());
-    language_codes->SetBoolean(descriptor.language_code(), true);
+    for (size_t i = 0; i < descriptor.language_codes().size(); ++i)
+      language_codes->SetBoolean(descriptor.language_codes().at(i), true);
     dictionary->Set("languageCodeSet", language_codes.release());
     ime_ids_list->Append(dictionary.release());
   }

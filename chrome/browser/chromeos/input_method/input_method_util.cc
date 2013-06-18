@@ -402,7 +402,8 @@ string16 InputMethodUtil::GetInputMethodShortName(
 
   if (text.empty()) {
     const size_t kMaxLanguageNameLen = 2;
-    const std::string language_code = input_method.language_code();
+    DCHECK(!input_method.language_codes().empty());
+    const std::string language_code = input_method.language_codes().at(0);
     text = StringToUpperASCII(UTF8ToUTF16(language_code)).substr(
         0, kMaxLanguageNameLen);
   }
@@ -441,7 +442,8 @@ string16 InputMethodUtil::GetInputMethodLongName(
   // Indic languages: they share "Standard Input Method".
   const string16 standard_input_method_text = delegate_->GetLocalizedString(
       IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD);
-  const std::string language_code = input_method.language_code();
+  DCHECK(!input_method.language_codes().empty());
+  const std::string language_code = input_method.language_codes().at(0);
 
   string16 text = TranslateString(input_method.id());
   if (text == standard_input_method_text ||
@@ -591,7 +593,8 @@ void InputMethodUtil::GetLanguageCodesFromInputMethodIds(
       DVLOG(1) << "Unknown input method ID: " << input_method_ids[i];
       continue;
     }
-    const std::string language_code = input_method->language_code();
+    DCHECK(!input_method->language_codes().empty());
+    const std::string language_code = input_method->language_codes().at(0);
     // Add it if it's not already present.
     if (std::count(out_language_codes->begin(), out_language_codes->end(),
                    language_code) == 0) {
@@ -617,7 +620,8 @@ void InputMethodUtil::SetComponentExtensions(
   component_extension_ime_id_to_descriptor_.clear();
   for (size_t i = 0; i < imes.size(); ++i) {
     const InputMethodDescriptor& input_method = imes.at(i);
-    const std::string language_code = input_method.language_code();
+    DCHECK(!input_method.language_codes().empty());
+    const std::string language_code = input_method.language_codes().at(0);
     id_to_language_code_.insert(
         std::make_pair(input_method.id(), language_code));
     id_to_descriptor_.insert(
@@ -628,10 +632,12 @@ void InputMethodUtil::SetComponentExtensions(
 InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
   std::vector<std::string> layouts;
   layouts.push_back("us");
+  std::vector<std::string> languages;
+  languages.push_back("en-US");
   return InputMethodDescriptor("xkb:us::eng",
                                "",
                                layouts,
-                               "en-US",
+                               languages,
                                GURL());  // options page, not available.
 }
 
@@ -650,12 +656,15 @@ void InputMethodUtil::ReloadInternalMaps() {
   for (size_t i = 0; i < supported_input_methods_->size(); ++i) {
     const InputMethodDescriptor& input_method =
         supported_input_methods_->at(i);
-    const std::string language_code = input_method.language_code();
-    language_code_to_ids_.insert(
-        std::make_pair(language_code, input_method.id()));
-    // Remember the pairs.
-    id_to_language_code_.insert(
-        std::make_pair(input_method.id(), language_code));
+    const std::vector<std::string>& language_codes =
+        input_method.language_codes();
+    for (size_t i = 0; i < language_codes.size(); ++i) {
+      language_code_to_ids_.insert(
+          std::make_pair(language_codes[i], input_method.id()));
+      // Remember the pairs.
+      id_to_language_code_.insert(
+          std::make_pair(input_method.id(), language_codes[i]));
+    }
     id_to_descriptor_.insert(
         std::make_pair(input_method.id(), input_method));
     if (IsKeyboardLayout(input_method.id())) {

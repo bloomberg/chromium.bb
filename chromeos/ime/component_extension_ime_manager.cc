@@ -143,6 +143,9 @@ input_method::InputMethodDescriptors
   input_method::InputMethodDescriptors result;
   for (size_t i = 0; i < component_extension_imes_.size(); ++i) {
     for (size_t j = 0; j < component_extension_imes_[i].engines.size(); ++j) {
+      std::vector<std::string> languages;
+      languages.push_back(
+          component_extension_imes_[i].engines[j].language_code);
       result.push_back(
           input_method::InputMethodDescriptor(
               GetComponentExtensionIMEId(
@@ -150,7 +153,7 @@ input_method::InputMethodDescriptors
                   component_extension_imes_[i].engines[j].engine_id),
               component_extension_imes_[i].engines[j].display_name,
               component_extension_imes_[i].engines[j].layouts,
-              component_extension_imes_[i].engines[j].language_code,
+              languages,
               component_extension_imes_[i].options_page_url));
     }
   }

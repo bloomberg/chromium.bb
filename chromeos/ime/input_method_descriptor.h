@@ -22,14 +22,16 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
   InputMethodDescriptor(const std::string& id,
                         const std::string& name,
                         const std::vector<std::string>& keyboard_layouts,
-                        const std::string& language_code,
+                        const std::vector<std::string>& language_codes,
                         const GURL& options_page_url);
   ~InputMethodDescriptor();
 
   // Accessors
   const std::string& id() const { return id_; }
   const std::string& name() const { return name_; }
-  const std::string& language_code() const { return language_code_; }
+  const std::vector<std::string>& language_codes() const {
+    return language_codes_;
+  }
   const GURL& options_page_url() const { return options_page_url_; }
   const std::vector<std::string>& keyboard_layouts() const {
     return keyboard_layouts_;
@@ -52,7 +54,7 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
   std::vector<std::string> keyboard_layouts_;
 
   // Language code like "ko", "ja", "en-US", and "zh-CN".
-  std::string language_code_;
+  std::vector<std::string> language_codes_;
 
   // Options page URL e.g.
   // "chrome-extension://ceaajjmckiakobniehbjpdcidfpohlin/options.html".

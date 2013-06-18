@@ -87,7 +87,7 @@ void MockInputMethodManager::AddInputMethodExtension(
     const std::string& id,
     const std::string& name,
     const std::vector<std::string>& layouts,
-    const std::string& language,
+    const std::vector<std::string>& languages,
     const GURL& options_url,
     InputMethodEngine* instance) {
 }
@@ -123,7 +123,7 @@ InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
     return InputMethodDescriptor(current_input_method_id_,
                                  descriptor.name(),
                                  descriptor.keyboard_layouts(),
-                                 descriptor.language_code(),
+                                 descriptor.language_codes(),
                                  GURL());  // options page url.
   }
   return descriptor;

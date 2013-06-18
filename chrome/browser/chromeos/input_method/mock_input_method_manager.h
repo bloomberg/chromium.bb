@@ -48,7 +48,7 @@ class MockInputMethodManager : public InputMethodManager {
       const std::string& id,
       const std::string& name,
       const std::vector<std::string>& layouts,
-      const std::string& language,
+      const std::vector<std::string>& languages,
       const GURL& options_url,
       InputMethodEngine* instance) OVERRIDE;
   virtual void RemoveInputMethodExtension(const std::string& id) OVERRIDE;

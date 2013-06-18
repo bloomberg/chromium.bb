@@ -140,12 +140,13 @@ class CHROMEOS_EXPORT InputMethodManager {
 
   // Adds an input method extension. This function does not takes ownership of
   // |instance|.
-  virtual void AddInputMethodExtension(const std::string& id,
-                                       const std::string& name,
-                                       const std::vector<std::string>& layouts,
-                                       const std::string& language,
-                                       const GURL& options_url,
-                                       InputMethodEngine* instance) = 0;
+  virtual void AddInputMethodExtension(
+      const std::string& id,
+      const std::string& name,
+      const std::vector<std::string>& layouts,
+      const std::vector<std::string>& languages,
+      const GURL& options_url,
+      InputMethodEngine* instance) = 0;
 
   // Removes an input method extension.
   virtual void RemoveInputMethodExtension(const std::string& id) = 0;
