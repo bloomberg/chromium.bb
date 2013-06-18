@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-// Flaky on ChromeOS http://crbug.com/251199
-#if defined(OS_CHROMEOS)
+// Flaky on ChromeOS, times out on OSX Debug http://crbug.com/251199
+#if defined(OS_CHROMEOS) || (defined(OS_MACOSX) && !defined(NDEBUG))
 #define MAYBE_SessionRestoreApis DISABLED_SessionRestoreApis
 #else
 #define MAYBE_SessionRestoreApis SessionRestoreApis
