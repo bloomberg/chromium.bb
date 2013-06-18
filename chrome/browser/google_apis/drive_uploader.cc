@@ -141,8 +141,6 @@ CancelCallback DriveUploader::UploadNewFile(
                  weak_ptr_factory_.GetWeakPtr(),
                  parent_resource_id,
                  title));
-  // TODO(kinaba): crbug.com/250712 Return a proper CancelCallback.
-  return CancelCallback();
 }
 
 CancelCallback DriveUploader::UploadExistingFile(
@@ -170,8 +168,6 @@ CancelCallback DriveUploader::UploadExistingFile(
                  weak_ptr_factory_.GetWeakPtr(),
                  resource_id,
                  etag));
-  // TODO(kinaba): crbug.com/250712 Return a proper CancelCallback.
-  return CancelCallback();
 }
 
 CancelCallback DriveUploader::ResumeUploadFile(
@@ -196,8 +192,6 @@ CancelCallback DriveUploader::ResumeUploadFile(
       upload_file_info.Pass(),
       base::Bind(&DriveUploader::StartGetUploadStatus,
                  weak_ptr_factory_.GetWeakPtr()));
-  // TODO(kinaba): crbug.com/250712 Return a proper CancelCallback.
-  return CancelCallback();
 }
 
 CancelCallback DriveUploader::StartUploadFile(
