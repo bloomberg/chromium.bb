@@ -410,7 +410,7 @@
 									<object class="NSTextFieldCell" key="NSCell" id="867990145">
 										<int key="NSCellFlags">68157504</int>
 										<int key="NSCellFlags2">4195328</int>
-										<string key="NSContents">^IDS_BOOKMARK_ALL_TABS_MAC</string>
+										<string key="NSContents">^IDS_BOOKMARK_ALL_TABS_DIALOG_TITLE</string>
 										<reference key="NSSupport" ref="899171858"/>
 										<reference key="NSControlView" ref="457471564"/>
 										<reference key="NSBackgroundColor" ref="460527477"/>
