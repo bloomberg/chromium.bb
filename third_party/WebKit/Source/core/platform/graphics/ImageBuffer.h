@@ -47,117 +47,117 @@ namespace WebKit { class WebLayer; }
 
 namespace WebCore {
 
-    class Image;
-    class ImageData;
-    class IntPoint;
-    class IntRect;
-    class GraphicsContext3D;
+class Image;
+class ImageData;
+class IntPoint;
+class IntRect;
+class GraphicsContext3D;
 
-    enum Multiply {
-        Premultiplied,
-        Unmultiplied
-    };
+enum Multiply {
+    Premultiplied,
+    Unmultiplied
+};
 
-    enum RenderingMode {
-        Unaccelerated,
-        UnacceleratedNonPlatformBuffer, // Use plain memory allocation rather than platform API to allocate backing store.
-        Accelerated
-    };
+enum RenderingMode {
+    Unaccelerated,
+    UnacceleratedNonPlatformBuffer, // Use plain memory allocation rather than platform API to allocate backing store.
+    Accelerated
+};
 
-    enum BackingStoreCopy {
-        CopyBackingStore, // Guarantee subsequent draws don't affect the copy.
-        DontCopyBackingStore // Subsequent draws may affect the copy.
-    };
+enum BackingStoreCopy {
+    CopyBackingStore, // Guarantee subsequent draws don't affect the copy.
+    DontCopyBackingStore // Subsequent draws may affect the copy.
+};
 
-    enum ScaleBehavior {
-        Scaled,
-        Unscaled
-    };
+enum ScaleBehavior {
+    Scaled,
+    Unscaled
+};
 
-    enum OpacityMode {
-        NonOpaque,
-        Opaque,
-    };
+enum OpacityMode {
+    NonOpaque,
+    Opaque,
+};
 
-    class ImageBuffer {
-        WTF_MAKE_NONCOPYABLE(ImageBuffer); WTF_MAKE_FAST_ALLOCATED;
-    public:
-        // Will return a null pointer on allocation failure.
-        static PassOwnPtr<ImageBuffer> create(const IntSize& size, float resolutionScale = 1, RenderingMode renderingMode = Unaccelerated, OpacityMode opacityMode = NonOpaque)
-        {
-            bool success = false;
-            OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, renderingMode, opacityMode, success));
-            if (!success)
-                return nullptr;
-            return buf.release();
-        }
+class ImageBuffer {
+    WTF_MAKE_NONCOPYABLE(ImageBuffer); WTF_MAKE_FAST_ALLOCATED;
+public:
+    // Will return a null pointer on allocation failure.
+    static PassOwnPtr<ImageBuffer> create(const IntSize& size, float resolutionScale = 1, RenderingMode renderingMode = Unaccelerated, OpacityMode opacityMode = NonOpaque)
+    {
+        bool success = false;
+        OwnPtr<ImageBuffer> buf = adoptPtr(new ImageBuffer(size, resolutionScale, renderingMode, opacityMode, success));
+        if (!success)
+            return nullptr;
+        return buf.release();
+    }
 
-        static PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha);
+    static PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha);
 
-        ~ImageBuffer();
+    ~ImageBuffer();
 
-        // The actual resolution of the backing store
-        const IntSize& internalSize() const { return m_size; }
-        const IntSize& logicalSize() const { return m_logicalSize; }
+    // The actual resolution of the backing store
+    const IntSize& internalSize() const { return m_size; }
+    const IntSize& logicalSize() const { return m_logicalSize; }
 
-        GraphicsContext* context() const;
+    GraphicsContext* context() const;
 
-        PassRefPtr<Image> copyImage(BackingStoreCopy = CopyBackingStore, ScaleBehavior = Scaled) const;
-        // Give hints on the faster copyImage Mode, return DontCopyBackingStore if it supports the DontCopyBackingStore behavior
-        // or return CopyBackingStore if it doesn't.  
-        static BackingStoreCopy fastCopyImageMode();
+    PassRefPtr<Image> copyImage(BackingStoreCopy = CopyBackingStore, ScaleBehavior = Scaled) const;
+    // Give hints on the faster copyImage Mode, return DontCopyBackingStore if it supports the DontCopyBackingStore behavior
+    // or return CopyBackingStore if it doesn't.
+    static BackingStoreCopy fastCopyImageMode();
 
-        enum CoordinateSystem { LogicalCoordinateSystem, BackingStoreCoordinateSystem };
+    enum CoordinateSystem { LogicalCoordinateSystem, BackingStoreCoordinateSystem };
 
-        PassRefPtr<Uint8ClampedArray> getUnmultipliedImageData(const IntRect&, CoordinateSystem = LogicalCoordinateSystem) const;
-        PassRefPtr<Uint8ClampedArray> getPremultipliedImageData(const IntRect&, CoordinateSystem = LogicalCoordinateSystem) const;
+    PassRefPtr<Uint8ClampedArray> getUnmultipliedImageData(const IntRect&, CoordinateSystem = LogicalCoordinateSystem) const;
+    PassRefPtr<Uint8ClampedArray> getPremultipliedImageData(const IntRect&, CoordinateSystem = LogicalCoordinateSystem) const;
 
-        void putByteArray(Multiply multiplied, Uint8ClampedArray*, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint, CoordinateSystem = LogicalCoordinateSystem);
-        
-        void convertToLuminanceMask();
-        
-        String toDataURL(const String& mimeType, const double* quality = 0, CoordinateSystem = LogicalCoordinateSystem) const;
-        AffineTransform baseTransform() const { return AffineTransform(); }
-        void transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
-        void platformTransformColorSpace(const Vector<uint8_t>&);
-        static const Vector<uint8_t>& getLinearRgbLUT();
-        static const Vector<uint8_t>& getDeviceRgbLUT();
-        WebKit::WebLayer* platformLayer() const;
+    void putByteArray(Multiply multiplied, Uint8ClampedArray*, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint, CoordinateSystem = LogicalCoordinateSystem);
 
-        // FIXME: current implementations of this method have the restriction that they only work
-        // with textures that are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
-        // Extensions3D::canUseCopyTextureCHROMIUM().
-        bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject, GC3Denum, GC3Denum, GC3Dint, bool, bool);
+    void convertToLuminanceMask();
 
-        void reportMemoryUsage(MemoryObjectInfo*) const;
+    String toDataURL(const String& mimeType, const double* quality = 0, CoordinateSystem = LogicalCoordinateSystem) const;
+    AffineTransform baseTransform() const { return AffineTransform(); }
+    void transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
+    void platformTransformColorSpace(const Vector<uint8_t>&);
+    static const Vector<uint8_t>& getLinearRgbLUT();
+    static const Vector<uint8_t>& getDeviceRgbLUT();
+    WebKit::WebLayer* platformLayer() const;
 
-    private:
-        void clip(GraphicsContext*, const FloatRect&) const;
+    // FIXME: current implementations of this method have the restriction that they only work
+    // with textures that are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
+    // Extensions3D::canUseCopyTextureCHROMIUM().
+    bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject, GC3Denum, GC3Denum, GC3Dint, bool, bool);
 
-        void draw(GraphicsContext*, const FloatRect&, const FloatRect& = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
-        void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&);
+    void reportMemoryUsage(MemoryObjectInfo*) const;
 
-        inline void genericConvertToLuminanceMask();
+private:
+    void clip(GraphicsContext*, const FloatRect&) const;
 
-        friend class GraphicsContext;
-        friend class GeneratedImage;
-        friend class CrossfadeGeneratedImage;
-        friend class GeneratorGeneratedImage;
+    void draw(GraphicsContext*, const FloatRect&, const FloatRect& = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
+    void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&);
 
-    private:
-        ImageBufferData m_data;
-        IntSize m_size;
-        IntSize m_logicalSize;
-        float m_resolutionScale;
-        OwnPtr<GraphicsContext> m_context;
+    inline void genericConvertToLuminanceMask();
 
-        // This constructor will place its success into the given out-variable
-        // so that create() knows when it should return failure.
-        ImageBuffer(const IntSize&, float resolutionScale, RenderingMode, OpacityMode, bool& success);
-        ImageBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha, bool& success);
-    };
+    friend class GraphicsContext;
+    friend class GeneratedImage;
+    friend class CrossfadeGeneratedImage;
+    friend class GeneratorGeneratedImage;
 
-    String ImageDataToDataURL(const ImageData&, const String& mimeType, const double* quality);
+private:
+    ImageBufferData m_data;
+    IntSize m_size;
+    IntSize m_logicalSize;
+    float m_resolutionScale;
+    OwnPtr<GraphicsContext> m_context;
+
+    // This constructor will place its success into the given out-variable
+    // so that create() knows when it should return failure.
+    ImageBuffer(const IntSize&, float resolutionScale, RenderingMode, OpacityMode, bool& success);
+    ImageBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha, bool& success);
+};
+
+String ImageDataToDataURL(const ImageData&, const String& mimeType, const double* quality);
 
 } // namespace WebCore
 
