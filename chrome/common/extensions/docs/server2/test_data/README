@@ -1,0 +1,18 @@
+Test JSON Files:
+
+branch_utility/first.json
+  Downloaded from:
+     http://omahaproxy.appspot.com/json
+  - Contains data on all current releases of Chrome, as found on the main
+    omahaproxy page (http://omahaproxy.appspot.com) in JSON format.
+  - File has been formatted for readability.
+
+
+branch_utility/second.json
+  Downloaded from:
+      http://omahaproxy.appspot.com/history?channel=dev&os=win&json=1
+  - Contains a history of revision names for the dev channel on Windows.
+  - File has been formatted for readability. To view a readable version of the
+    data at the above URL, remove '&json=1'.
+
+These URLs can also be found within url_constants.py.

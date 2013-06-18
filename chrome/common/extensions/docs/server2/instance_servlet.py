@@ -38,7 +38,7 @@ class _OfflineRenderServletDelegate(RenderServlet.Delegate):
   def CreateServerInstanceForChannel(self, channel):
     object_store_creator = ObjectStoreCreator(channel, start_empty=False)
     branch = (self._delegate.CreateBranchUtility(object_store_creator)
-        .GetBranchForChannel(channel))
+        .GetChannelInfo(channel).branch)
     host_file_system = CachingFileSystem(
         OfflineFileSystem(self._delegate.CreateHostFileSystemForBranch(branch)),
         object_store_creator)

@@ -217,7 +217,7 @@ class CronServlet(Servlet):
   def _GetBranchForChannel(self, channel):
     object_store_creator = self._CreateObjectStoreCreator(channel)
     return (self._delegate.CreateBranchUtility(object_store_creator)
-        .GetBranchForChannel(channel))
+        .GetChannelInfo(channel).branch)
 
   def _CreateServerInstance(self, channel, revision):
     object_store_creator = self._CreateObjectStoreCreator(channel)

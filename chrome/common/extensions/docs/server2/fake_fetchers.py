@@ -37,6 +37,12 @@ class FakeOmahaProxy(_FakeFetcher):
                                        'test_data',
                                        'branch_utility',
                                        'first.json'))
+class FakeOmahaHistory(_FakeFetcher):
+  def fetch(self, url):
+    return self._ReadFile(os.path.join('server2',
+                                       'test_data',
+                                       'branch_utility',
+                                       'second.json'))
 
 class FakeSubversionServer(_FakeFetcher):
   def __init__(self, base_path):
@@ -144,6 +150,7 @@ def ConfigureFakeFetchers():
   docs = '/'.join((sys.path[0], os.pardir))
   appengine_wrappers.ConfigureFakeUrlFetch({
     url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(docs),
+    re.escape(url_constants.OMAHA_DEV_HISTORY): FakeOmahaHistory(docs),
     '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(docs),
     '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(docs),
     '%s/commits/.*' % url_constants.GITHUB_URL: FakeGithubStat(docs),

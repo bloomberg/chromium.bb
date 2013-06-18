@@ -2,11 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from branch_utility import BranchUtility
+from branch_utility import BranchUtility, ChannelInfo
 
 class TestBranchUtility(object):
   '''Mimics BranchUtility to return valid-ish data without needing omahaproxy
   data.
   '''
-  def GetBranchForChannel(self, channel_name):
-    return channel_name
+  def GetAllChannelInfo(self):
+    return [self.GetChannelInfo(channel)
+            for channel in BranchUtility.GetAllChannelNames()]
+
+  def GetChannelInfo(self, channel):
+    return ChannelInfo(channel,
+                       'fakebranch-%s' % channel,
+                       'fakeversion-%s' % channel)
+
+  def GetBranchForVersion(self, version):
+    return 'fakebranch-%s' % version
