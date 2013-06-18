@@ -1508,7 +1508,6 @@ crbug.com/243300 [ Debug ] http/tests/security/popup-allowed-by-sandbox-when-all
 crbug.com/168853 [ Debug ] fast/loader/stateobjects/replacestate-in-onunload.html [ Crash ]
 crbug.com/243302 [ Debug ] svg/custom/unicode-in-tspan-multi-svg-crash.html [ Pass Crash ]
 crbug.com/243303 fast/dom/shadow/transition-on-shadow-host-with-distributed-node.html [ Failure Pass ]
-crbug.com/243308 [ Win ] fast/text/international/danda-space.html [ Pass ImageOnlyFailure ]
 
 # Switching to content shell failures
 crbug.com/243353 [ Linux Win ] animations/dynamic-stylesheet-loading.html [ Failure Pass ]
@@ -1525,8 +1524,6 @@ crbug.com/243492 [ Win Mac Linux ] http/tests/inspector-enabled/injected-script-
 crbug.com/243515 [ Win ] fast/autoresize/basic.html [ Pass Timeout ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure Pass ]
 crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
-crbug.com/243538 [ Win ] fast/text/international/complex-character-based-fallback.html [ Pass ImageOnlyFailure ]
-crbug.com/243538 [ Win ] transforms/2d/hindi-rotated.html [ ImageOnlyFailure Pass ]
 crbug.com/243592 [ Win ] fast/dom/Window/window-screen-properties.html [ Failure ]
 crbug.com/243593 [ Win ] fast/media/color-does-not-include-alpha.html [ Failure ]
 crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Failure Pass ]
