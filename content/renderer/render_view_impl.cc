@@ -2876,6 +2876,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       new webkit_media::WebMediaPlayerAndroid(
           frame,
           client,
+          AsWeakPtr(),
           media_player_manager_.get(),
           media_player_proxy_,
           new StreamTextureFactoryImpl(

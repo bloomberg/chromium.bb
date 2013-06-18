@@ -28,6 +28,7 @@
 #include "webkit/renderer/media/android/webmediaplayer_manager_android.h"
 #include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "webkit/renderer/media/crypto/key_systems.h"
+#include "webkit/renderer/media/webmediaplayer_delegate.h"
 #include "webkit/renderer/media/webmediaplayer_util.h"
 
 #if defined(GOOGLE_TV)
@@ -59,12 +60,14 @@ namespace webkit_media {
 WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
+    base::WeakPtr<WebMediaPlayerDelegate> delegate,
     WebMediaPlayerManagerAndroid* manager,
     WebMediaPlayerProxyAndroid* proxy,
     StreamTextureFactory* factory,
     media::MediaLog* media_log)
     : frame_(frame),
       client_(client),
+      delegate_(delegate),
       buffered_(1u),
       main_loop_(base::MessageLoopProxy::current()),
       ignore_metadata_duration_change_(false),
@@ -134,6 +137,10 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
 
   if (base::MessageLoop::current())
     base::MessageLoop::current()->RemoveDestructionObserver(this);
+
+  if (source_type_ == MediaPlayerAndroid::SOURCE_TYPE_MSE && delegate_)
+    delegate_->PlayerGone(this);
+
 #if defined(GOOGLE_TV)
   if (audio_renderer_) {
     if (audio_renderer_->IsLocalRenderer()) {
@@ -252,7 +259,7 @@ void WebMediaPlayerAndroid::play() {
 
   if (paused())
     proxy_->Start(player_id_);
-  is_playing_ = true;
+  UpdatePlayingState(true);
 }
 
 void WebMediaPlayerAndroid::pause() {
@@ -261,7 +268,7 @@ void WebMediaPlayerAndroid::pause() {
     audio_renderer_->Pause();
 #endif
   proxy_->Pause(player_id_);
-  is_playing_ = false;
+  UpdatePlayingState(false);
 }
 
 void WebMediaPlayerAndroid::seek(double seconds) {
@@ -800,6 +807,12 @@ void WebMediaPlayerAndroid::SetNeedsEstablishPeer(bool needs_establish_peer) {
 
 void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
   is_playing_ = is_playing;
+  if (source_type_ != MediaPlayerAndroid::SOURCE_TYPE_MSE || !delegate_)
+    return;
+  if (is_playing)
+    delegate_->DidPlay(this);
+  else
+    delegate_->DidPause(this);
 }
 
 #if defined(GOOGLE_TV)

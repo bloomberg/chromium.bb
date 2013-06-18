@@ -43,6 +43,7 @@ class WebLayerImpl;
 namespace webkit_media {
 
 class MediaStreamClient;
+class WebMediaPlayerDelegate;
 class WebMediaPlayerManagerAndroid;
 class WebMediaPlayerProxyAndroid;
 
@@ -69,6 +70,7 @@ class WebMediaPlayerAndroid
   // already in fullscreen.
   WebMediaPlayerAndroid(WebKit::WebFrame* frame,
                         WebKit::WebMediaPlayerClient* client,
+                        base::WeakPtr<WebMediaPlayerDelegate> delegate,
                         WebMediaPlayerManagerAndroid* manager,
                         WebMediaPlayerProxyAndroid* proxy,
                         StreamTextureFactory* factory,
@@ -276,6 +278,13 @@ class WebMediaPlayerAndroid
   WebKit::WebFrame* const frame_;
 
   WebKit::WebMediaPlayerClient* const client_;
+
+  // |delegate_| is used to notify the browser process of the player status, so
+  // that the browser process can control screen locks.
+  // TODO(qinmin): Currently android mediaplayer takes care of the screen
+  // lock. So this is only used for media source. Will apply this to regular
+  // media tag once http://crbug.com/247892 is fixed.
+  base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
   // Save the list of buffered time ranges.
   WebKit::WebTimeRanges buffered_;
