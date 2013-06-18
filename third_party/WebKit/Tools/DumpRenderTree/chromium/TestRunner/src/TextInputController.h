@@ -54,15 +54,9 @@ public:
     void setMarkedText(const CppArgumentList&, CppVariant*);
     void unmarkText(const CppArgumentList&, CppVariant*);
     void hasMarkedText(const CppArgumentList&, CppVariant*);
-    void conversationIdentifier(const CppArgumentList&, CppVariant*);
-    void substringFromRange(const CppArgumentList&, CppVariant*);
-    void attributedSubstringFromRange(const CppArgumentList&, CppVariant*);
     void markedRange(const CppArgumentList&, CppVariant*);
     void selectedRange(const CppArgumentList&, CppVariant*);
     void firstRectForCharacterRange(const CppArgumentList&, CppVariant*);
-    void characterIndexForPoint(const CppArgumentList&, CppVariant*);
-    void validAttributesForMarkedText(const CppArgumentList&, CppVariant*);
-    void makeAttributedString(const CppArgumentList&, CppVariant*);
     void setComposition(const CppArgumentList&, CppVariant*);
 
 private:
