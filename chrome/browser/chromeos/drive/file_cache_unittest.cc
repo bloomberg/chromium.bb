@@ -165,7 +165,6 @@ class FileCacheTestOnUIThread : public testing::Test {
   }
 
   void TestPin(const std::string& resource_id,
-               const std::string& md5,
                FileError expected_error,
                int expected_cache_state) {
     expected_error_ = expected_error;
@@ -173,14 +172,13 @@ class FileCacheTestOnUIThread : public testing::Test {
 
     FileError error = FILE_ERROR_OK;
     cache_->PinOnUIThread(
-        resource_id, md5,
+        resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, resource_id, md5);
+    VerifyCacheFileState(error, resource_id, std::string());
   }
 
   void TestUnpin(const std::string& resource_id,
-                 const std::string& md5,
                  FileError expected_error,
                  int expected_cache_state) {
     expected_error_ = expected_error;
@@ -188,10 +186,10 @@ class FileCacheTestOnUIThread : public testing::Test {
 
     FileError error = FILE_ERROR_OK;
     cache_->UnpinOnUIThread(
-        resource_id, md5,
+        resource_id,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, resource_id, md5);
+    VerifyCacheFileState(error, resource_id, std::string());
   }
 
   void TestMarkDirty(const std::string& resource_id,
@@ -320,7 +318,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     // Verify actual cache file.
     base::FilePath dest_path = cache_->GetCacheFilePath(
         resource_id,
-        md5,
+        cache_entry.md5(),
         test_util::ToCacheEntry(expected_cache_state_).is_dirty() ?
             FileCache::CACHED_FILE_LOCALLY_MODIFIED :
         FileCache::CACHED_FILE_FROM_SERVER);
@@ -507,34 +505,31 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpin) {
                    FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT);
 
   // Pin the existing file in cache.
-  TestPin(resource_id, md5, FILE_ERROR_OK,
+  TestPin(resource_id, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED);
 
   // Unpin the existing file in cache.
-  TestUnpin(resource_id, md5, FILE_ERROR_OK,
-            test_util::TEST_CACHE_STATE_PRESENT);
+  TestUnpin(resource_id, FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT);
 
   // Pin back the same existing file in cache.
-  TestPin(resource_id, md5, FILE_ERROR_OK,
+  TestPin(resource_id, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED);
 
   // Pin a non-existent file in cache.
   resource_id = "document:1a2b";
 
-  TestPin(resource_id, md5, FILE_ERROR_OK,
-          test_util::TEST_CACHE_STATE_PINNED);
+  TestPin(resource_id, FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PINNED);
 
   // Unpin the previously pinned non-existent file in cache.
-  TestUnpin(resource_id, md5, FILE_ERROR_OK,
-            test_util::TEST_CACHE_STATE_NONE);
+  TestUnpin(resource_id, FILE_ERROR_OK, test_util::TEST_CACHE_STATE_NONE);
 
   // Unpin a file that doesn't exist in cache and is not pinned, i.e. cache
   // has zero knowledge of the file.
   resource_id = "not-in-cache:1a2b";
 
-  TestUnpin(resource_id, md5, FILE_ERROR_NOT_FOUND,
+  TestUnpin(resource_id, FILE_ERROR_NOT_FOUND,
             test_util::TEST_CACHE_STATE_NONE);
 }
 
@@ -543,8 +538,7 @@ TEST_F(FileCacheTestOnUIThread, StoreToCachePinned) {
   std::string md5("abcdef0123456789");
 
   // Pin a non-existent file.
-  TestPin(resource_id, md5, FILE_ERROR_OK,
-          test_util::TEST_CACHE_STATE_PINNED);
+  TestPin(resource_id, FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PINNED);
 
   // Store an existing file to a previously pinned file.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -565,8 +559,7 @@ TEST_F(FileCacheTestOnUIThread, GetFromCachePinned) {
   std::string md5("abcdef0123456789");
 
   // Pin a non-existent file.
-  TestPin(resource_id, md5, FILE_ERROR_OK,
-          test_util::TEST_CACHE_STATE_PINNED);
+  TestPin(resource_id, FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PINNED);
 
   // Get the non-existent pinned file from cache.
   TestGetFileFromCacheByResourceIdAndMd5(
@@ -591,7 +584,7 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromCachePinned) {
   // Store a file to cache, and pin it.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
                    FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT);
-  TestPin(resource_id, md5, FILE_ERROR_OK,
+  TestPin(resource_id, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED);
 
@@ -604,7 +597,7 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromCachePinned) {
 
   TestStoreToCache(resource_id, md5, dummy_file_path_,
                    FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT);
-  TestPin(resource_id, md5, FILE_ERROR_OK,
+  TestPin(resource_id, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED);
 
@@ -636,7 +629,7 @@ TEST_F(FileCacheTestOnUIThread, DirtyCachePinned) {
   // First store a file to cache and pin it.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
                    FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT);
-  TestPin(resource_id, md5, FILE_ERROR_OK,
+  TestPin(resource_id, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED);
 
@@ -674,7 +667,7 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
   EXPECT_TRUE(file_util::PathExists(dirty_path));
 
   // Pin the dirty file.
-  TestPin(resource_id, md5, FILE_ERROR_OK,
+  TestPin(resource_id, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_DIRTY |
           test_util::TEST_CACHE_STATE_PINNED);
@@ -683,7 +676,7 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
   EXPECT_TRUE(file_util::PathExists(dirty_path));
 
   // Unpin the dirty file.
-  TestUnpin(resource_id, md5, FILE_ERROR_OK,
+  TestUnpin(resource_id, FILE_ERROR_OK,
             test_util::TEST_CACHE_STATE_PRESENT |
             test_util::TEST_CACHE_STATE_DIRTY);
 
@@ -757,7 +750,7 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromDirtyCache) {
   // Store a file to cache, pin it, mark it dirty and commit it.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
                    FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT);
-  TestPin(resource_id, md5, FILE_ERROR_OK,
+  TestPin(resource_id, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED);
   TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
@@ -892,7 +885,7 @@ TEST_F(FileCacheTestOnUIThread, UpdatePinnedCache) {
                    test_util::TEST_CACHE_STATE_PRESENT);
 
   // Pin the file.
-  TestPin(resource_id, md5, FILE_ERROR_OK,
+  TestPin(resource_id, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED);
 
@@ -1005,7 +998,7 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   ASSERT_EQ(FILE_ERROR_OK,
             cache_->Store(resource_id_pinned, md5_pinned, src_file,
                           FileCache::FILE_OPERATION_COPY));
-  ASSERT_EQ(FILE_ERROR_OK, cache_->Pin(resource_id_pinned, md5_pinned));
+  ASSERT_EQ(FILE_ERROR_OK, cache_->Pin(resource_id_pinned));
   base::FilePath pinned_path;
   ASSERT_EQ(FILE_ERROR_OK,
             cache_->GetFile(resource_id_pinned, md5_pinned, &pinned_path));

@@ -367,7 +367,6 @@ void FileSystem::PinAfterGetResourceEntryByPath(
   DCHECK(entry);
 
   cache_->PinOnUIThread(entry->resource_id(),
-                        entry->file_specific_info().md5(),
                         base::Bind(&FileSystem::FinishPin,
                                    weak_ptr_factory_.GetWeakPtr(),
                                    callback,
@@ -415,7 +414,6 @@ void FileSystem::UnpinAfterGetResourceEntryByPath(
   DCHECK(entry);
 
   cache_->UnpinOnUIThread(entry->resource_id(),
-                          entry->file_specific_info().md5(),
                           base::Bind(&FileSystem::FinishUnpin,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      callback,

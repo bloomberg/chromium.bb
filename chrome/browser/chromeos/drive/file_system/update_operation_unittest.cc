@@ -45,7 +45,7 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_PersistentFile) {
   // Pin the file so it'll be store in "persistent" directory.
   FileError error = FILE_ERROR_FAILED;
   cache()->PinOnUIThread(
-      kResourceId, kMd5,
+      kResourceId,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

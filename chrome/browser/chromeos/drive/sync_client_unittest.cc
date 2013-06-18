@@ -141,13 +141,13 @@ class SyncClientTest : public testing::Test {
 
     // Prepare 3 pinned-but-not-present files.
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("foo"));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["foo"], std::string()));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["foo"]));
 
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("bar"));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["bar"], std::string()));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["bar"]));
 
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("baz"));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["baz"], std::string()));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["baz"]));
 
     // Prepare a pinned-and-fetched file.
     const std::string md5_fetched = "md5";
@@ -155,8 +155,7 @@ class SyncClientTest : public testing::Test {
     EXPECT_EQ(FILE_ERROR_OK,
               cache_->Store(resource_ids_["fetched"], md5_fetched,
                             temp_file, FileCache::FILE_OPERATION_COPY));
-    EXPECT_EQ(FILE_ERROR_OK,
-              cache_->Pin(resource_ids_["fetched"], md5_fetched));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["fetched"]));
 
     // Prepare a pinned-and-fetched-and-dirty file.
     const std::string md5_dirty = "";  // Don't care.
@@ -164,7 +163,7 @@ class SyncClientTest : public testing::Test {
     EXPECT_EQ(FILE_ERROR_OK,
               cache_->Store(resource_ids_["dirty"], md5_dirty,
                             temp_file, FileCache::FILE_OPERATION_COPY));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["dirty"], md5_dirty));
+    EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(resource_ids_["dirty"]));
     EXPECT_EQ(FILE_ERROR_OK,
               cache_->MarkDirty(resource_ids_["dirty"], md5_dirty));
 

@@ -190,23 +190,20 @@ class FileCache {
   // |callback| must not be null.
   // Must be called on the UI thread.
   void PinOnUIThread(const std::string& resource_id,
-                     const std::string& md5,
                      const FileOperationCallback& callback);
 
   // Pins the specified entry.
-  FileError Pin(const std::string& resource_id,
-                const std::string& md5);
+  FileError Pin(const std::string& resource_id);
 
   // Runs Unpin() on |blocking_task_runner_|, and calls |callback| with the
   // result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void UnpinOnUIThread(const std::string& resource_id,
-                       const std::string& md5,
                        const FileOperationCallback& callback);
 
   // Unpins the specified entry.
-  FileError Unpin(const std::string& resource_id, const std::string& md5);
+  FileError Unpin(const std::string& resource_id);
 
   // Sets the state of the cache entry corresponding to |resource_id| as
   // mounted.

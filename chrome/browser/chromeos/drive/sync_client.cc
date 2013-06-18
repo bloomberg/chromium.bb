@@ -263,7 +263,6 @@ void SyncClient::OnRemove(const std::string& resource_id,
   // Before fetching, we should pin this file again, so that the fetched file
   // is downloaded properly to the persistent directory and marked pinned.
   cache_->PinOnUIThread(resource_id,
-                        std::string(),
                         base::Bind(&SyncClient::OnPinned,
                                    weak_ptr_factory_.GetWeakPtr(),
                                    resource_id));
@@ -299,7 +298,6 @@ void SyncClient::OnFetchFileComplete(const std::string& resource_id,
         // If user cancels download, unpin the file so that we do not sync the
         // file again.
         cache_->UnpinOnUIThread(resource_id,
-                                std::string(),
                                 base::Bind(&util::EmptyFileOperationCallback));
         break;
       case FILE_ERROR_NO_CONNECTION:

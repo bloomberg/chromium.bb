@@ -419,7 +419,6 @@ FileError FileCache::Store(const std::string& resource_id,
 }
 
 void FileCache::PinOnUIThread(const std::string& resource_id,
-                              const std::string& md5,
                               const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -427,24 +426,21 @@ void FileCache::PinOnUIThread(const std::string& resource_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FileCache::Pin, base::Unretained(this), resource_id, md5),
+      base::Bind(&FileCache::Pin, base::Unretained(this), resource_id),
       callback);
 }
 
-FileError FileCache::Pin(const std::string& resource_id,
-                         const std::string& md5) {
+FileError FileCache::Pin(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
   FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, md5, &cache_entry))
-    cache_entry.set_md5(md5);
+  metadata_->GetCacheEntry(resource_id, &cache_entry);
   cache_entry.set_is_pinned(true);
   metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   return FILE_ERROR_OK;
 }
 
 void FileCache::UnpinOnUIThread(const std::string& resource_id,
-                                const std::string& md5,
                                 const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -452,26 +448,20 @@ void FileCache::UnpinOnUIThread(const std::string& resource_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FileCache::Unpin, base::Unretained(this), resource_id, md5),
+      base::Bind(&FileCache::Unpin, base::Unretained(this), resource_id),
       callback);
 }
 
-FileError FileCache::Unpin(const std::string& resource_id,
-                           const std::string& md5) {
+FileError FileCache::Unpin(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
   // Unpinning a file means its entry must exist in cache.
   FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, md5, &cache_entry)) {
-    LOG(WARNING) << "Can't unpin a file that wasn't pinned or cached: res_id="
-                 << resource_id
-                 << ", md5=" << md5;
+  if (!metadata_->GetCacheEntry(resource_id, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
-  }
 
   // Now that file operations have completed, update metadata.
   if (cache_entry.is_present()) {
-    cache_entry.set_md5(md5);
     cache_entry.set_is_pinned(false);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   } else {
