@@ -118,7 +118,7 @@ deps = {
     'src/third_party/usrsctp/usrsctplib':
         Var('git_url') + '/external/usrsctplib.git@062bff767b4ad4c70476e94c7d0e2a62f57306bb',
     'src/third_party/v8-i18n':
-        Var('git_url') + '/external/v8-i18n.git@58646c0bf34a8d0130448f59ca70d3ef0bcbe75c',
+        Var('git_url') + '/external/v8-i18n.git@187f18a63a53271fe3592fda90f385e0ca0a6d76',
     'src/third_party/webdriver/pylib':
         Var('git_url') + '/external/selenium/py.git@8212c8017c92a1ba740caf01c1acefb3674a6a44',
     'src/third_party/webgl_conformance':
