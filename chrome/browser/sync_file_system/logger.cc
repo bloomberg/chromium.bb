@@ -17,7 +17,7 @@ namespace {
 static base::LazyInstance<google_apis::EventLogger> g_logger =
     LAZY_INSTANCE_INITIALIZER;
 
-std::string LogSeverityToString(logging::LogSeverity level) {
+const char* LogSeverityToString(logging::LogSeverity level) {
   switch (level) {
     case logging::LOG_ERROR:
       return "ERROR";
@@ -25,6 +25,8 @@ std::string LogSeverityToString(logging::LogSeverity level) {
       return "WARNING";
     case logging::LOG_INFO:
       return "INFO";
+    case logging::LOG_VERBOSE:
+      return "VERBOSE";
   }
 
   NOTREACHED();
@@ -52,7 +54,7 @@ void Log(logging::LogSeverity severity,
   base::FilePath path = base::FilePath::FromUTF8Unsafe(location.file_name());
   std::string log_output = base::StringPrintf(
       "[%s: %s(%d)] %s",
-      LogSeverityToString(severity).c_str(),
+      LogSeverityToString(severity),
       path.BaseName().AsUTF8Unsafe().c_str(),
       location.line_number(),
       what.c_str());
@@ -63,10 +65,12 @@ void Log(logging::LogSeverity severity,
   google_apis::EventLogger* ptr = g_logger.Pointer();
   ptr->Log("%s", log_output.c_str());
 
-  // Log to console if the severity is at or above the min level. Need to do
-  // check manually here as using LogMessage directly instead of the LOG macro
-  // doesn't invoke the log severity check.
-  if (severity < logging::GetMinLogLevel())
+  // Log to console if the severity is at or above the min level.
+  // LOG_VERBOSE logs are also output if the verbosity of this module
+  // (sync_file_system/logger) is >= 1.
+  // TODO(kinuko,calvinlo): Reconsider this logging hack, it's not recommended
+  // to directly use LogMessage.
+  if (severity < logging::GetMinLogLevel() && !VLOG_IS_ON(1))
     return;
   logging::LogMessage(location.file_name(), location.line_number(), severity)
       .stream() << what;

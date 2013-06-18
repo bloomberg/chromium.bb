@@ -62,7 +62,7 @@ enum SyncStatusCode {
   SYNC_STATUS_ACCESS_FORBIDDEN = -111,
 };
 
-WEBKIT_STORAGE_BROWSER_EXPORT std::string SyncStatusCodeToString(
+WEBKIT_STORAGE_BROWSER_EXPORT const char* SyncStatusCodeToString(
     SyncStatusCode status);
 
 WEBKIT_STORAGE_BROWSER_EXPORT SyncStatusCode LevelDBStatusToSyncStatusCode(

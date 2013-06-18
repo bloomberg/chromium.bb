@@ -320,7 +320,7 @@ void DriveFileSyncService::ApplyLocalChange(
 void DriveFileSyncService::OnAuthenticated() {
   if (state_ == REMOTE_SERVICE_OK)
     return;
-  DVLOG(1) << "OnAuthenticated";
+  util::Log(logging::LOG_INFO, FROM_HERE, "OnAuthenticated");
 
   UpdateServiceState(REMOTE_SERVICE_OK, "Authenticated");
 
@@ -331,7 +331,7 @@ void DriveFileSyncService::OnAuthenticated() {
 void DriveFileSyncService::OnNetworkConnected() {
   if (state_ == REMOTE_SERVICE_OK)
     return;
-  DVLOG(1) << "OnNetworkConnected";
+  util::Log(logging::LOG_INFO, FROM_HERE, "OnNetworkConnected");
 
   UpdateServiceState(REMOTE_SERVICE_OK, "Network connected");
 
@@ -496,7 +496,9 @@ void DriveFileSyncService::UpdateServiceState(RemoteServiceState state,
 
   // Notify remote sync service state if the state has been changed.
   if (old_state != GetCurrentState()) {
-    DVLOG(1) << "Service state changed: " << state << ": " << description;
+    util::Log(logging::LOG_INFO, FROM_HERE,
+              "Service state changed: %d->%d: %s",
+              old_state, GetCurrentState(), description.c_str());
     FOR_EACH_OBSERVER(
         Observer, service_observers_,
         OnRemoteServiceStateUpdated(GetCurrentState(), description));
@@ -611,8 +613,10 @@ void DriveFileSyncService::DoProcessRemoteChange(
       remote_change_handler_.GetChange(&remote_change);
   DCHECK(has_remote_change);
 
-  DVLOG(1) << "ProcessRemoteChange for " << remote_change.url.DebugString()
-           << " remote_change:" << remote_change.change.DebugString();
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "ProcessRemoteChange for %s change:%s",
+            remote_change.url.DebugString().c_str(),
+            remote_change.change.DebugString().c_str());
 
   scoped_ptr<ProcessRemoteChangeParam> param(new ProcessRemoteChangeParam(
       remote_change, callback));
@@ -694,7 +698,8 @@ void DriveFileSyncService::StartBatchSync(
 
   DCHECK(!metadata_store_->IsOriginDisabled(origin));
 
-  DVLOG(1) << "Start batch sync for:" << origin.spec();
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "Start batch sync for: %s", origin.spec().c_str());
 
   api_util_->GetLargestChangeStamp(
       base::Bind(&DriveFileSyncService::DidGetLargestChangeStampForBatchSync,
@@ -906,11 +911,13 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
                                            param->local_metadata.file_type,
                                            param->drive_metadata.conflicted());
 
-  DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
-           << (param->drive_metadata.conflicted() ? " (conflicted)" : " ")
-           << (missing_local_file ? " (missing local file)" : " ")
-           << " remote_change: " << remote_file_change.DebugString()
-           << " ==> operation: " << SyncOperationTypeToString(operation);
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "ProcessRemoteChange for %s %s%sremote_change: %s ==> %s",
+            url.DebugString().c_str(),
+            param->drive_metadata.conflicted() ? " (conflicted)" : " ",
+            missing_local_file ? " (missing local file)" : " ",
+            remote_file_change.DebugString().c_str(),
+            SyncOperationTypeToString(operation));
   DCHECK_NE(SYNC_OPERATION_FAIL, operation);
 
   switch (operation) {
@@ -1230,16 +1237,18 @@ void DriveFileSyncService::HandleConflictForRemoteSync(
   }
   if (local_metadata.last_modified >= param->remote_change.updated_time) {
     // Local win case.
-    DVLOG(1) << "Resolving conflict for remote sync:"
-             << url.DebugString() << ": LOCAL WIN";
+    util::Log(logging::LOG_VERBOSE, FROM_HERE,
+              "Resolving conflict for remote sync: %s: LOCAL WIN",
+              url.DebugString().c_str());
     ResolveConflictToLocalForRemoteSync(param.Pass());
     return;
   }
   // Remote win case.
   // Make sure we reset the conflict flag and start over the remote sync
   // with empty local changes.
-  DVLOG(1) << "Resolving conflict for remote sync:"
-           << url.DebugString() << ": REMOTE WIN";
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "Resolving conflict for remote sync: %s: REMOTE WIN",
+            url.DebugString().c_str());
   drive_metadata.set_conflicted(false);
   drive_metadata.set_to_be_fetched(false);
   drive_metadata.set_type(

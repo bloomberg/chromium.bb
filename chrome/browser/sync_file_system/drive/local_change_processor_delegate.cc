@@ -9,6 +9,7 @@
 #include "chrome/browser/sync_file_system/drive/api_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
+#include "chrome/browser/sync_file_system/logger.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 namespace sync_file_system {
@@ -79,9 +80,11 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
       has_remote_change_ ? &remote_change_.change : NULL,
       has_drive_metadata_ ? &drive_metadata_ : NULL);
 
-  DVLOG(1) << "ApplyLocalChange for " << url_.DebugString()
-           << " local_change:" << local_change_.DebugString()
-           << " ==> operation:" << SyncOperationTypeToString(operation_);
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "ApplyLocalChange for %s local_change:%s ===> %s",
+            url_.DebugString().c_str(),
+            local_change_.DebugString().c_str(),
+            SyncOperationTypeToString(operation_));
 
   switch (operation_) {
     case SYNC_OPERATION_ADD_FILE:
@@ -532,8 +535,9 @@ void LocalChangeProcessorDelegate::HandleManualResolutionCase(
 
 void LocalChangeProcessorDelegate::HandleLocalWinCase(
     const SyncStatusCallback& callback) {
-  DVLOG(1) << "Resolving conflict for local sync:"
-           << url_.DebugString() << ": LOCAL WIN";
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "Resolving conflict for local sync: %s: LOCAL WIN",
+            url_.DebugString().c_str());
 
   DCHECK(!drive_metadata_.resource_id().empty());
   if (!has_drive_metadata_) {
@@ -548,8 +552,9 @@ void LocalChangeProcessorDelegate::HandleLocalWinCase(
 void LocalChangeProcessorDelegate::HandleRemoteWinCase(
     const SyncStatusCallback& callback,
     SyncFileType remote_file_type) {
-  DVLOG(1) << "Resolving conflict for local sync:"
-           << url_.DebugString() << ": REMOTE WIN";
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "Resolving conflict for local sync: %s: REMOTE WIN",
+            url_.DebugString().c_str());
   ResolveToRemote(callback, remote_file_type);
 }
 

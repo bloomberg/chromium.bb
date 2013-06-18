@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
@@ -159,7 +160,8 @@ void SyncFileSystemService::InitializeForApp(
   DCHECK(remote_file_service_);
   DCHECK(app_origin == app_origin.GetOrigin());
 
-  DVLOG(1) << "InitializeForApp: " << app_origin.spec();
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "Initializing for App: %s", app_origin.spec().c_str());
 
   local_file_service_->MaybeInitializeFileSystemContext(
       app_origin, file_system_context,
@@ -388,7 +390,8 @@ void SyncFileSystemService::StartRemoteSync() {
     return;
   DCHECK(sync_enabled_);
 
-  DVLOG(1) << "Calling ProcessRemoteChange";
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "Calling ProcessRemoteChange for RemoteSync");
   remote_sync_running_ = true;
   remote_file_service_->ProcessRemoteChange(
       base::Bind(&SyncFileSystemService::DidProcessRemoteChange,
@@ -401,7 +404,8 @@ void SyncFileSystemService::StartLocalSync() {
     return;
   DCHECK(sync_enabled_);
 
-  DVLOG(1) << "Calling ProcessLocalChange";
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "Calling ProcessLocalChange for LocalSync");
   local_sync_running_ = true;
   local_file_service_->ProcessLocalChange(
       base::Bind(&SyncFileSystemService::DidProcessLocalChange,
@@ -411,10 +415,9 @@ void SyncFileSystemService::StartLocalSync() {
 void SyncFileSystemService::DidProcessRemoteChange(
     SyncStatusCode status,
     const FileSystemURL& url) {
-  DVLOG(1) << "DidProcessRemoteChange: "
-           << " status=" << status
-           << " (" << SyncStatusCodeToString(status) << ")"
-           << " url=" << url.DebugString();
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "ProcessRemoteChange finished with status=%d (%s) for url=%s",
+            status, SyncStatusCodeToString(status), url.DebugString().c_str());
   DCHECK(remote_sync_running_);
   remote_sync_running_ = false;
 
@@ -444,10 +447,9 @@ void SyncFileSystemService::DidProcessRemoteChange(
 
 void SyncFileSystemService::DidProcessLocalChange(
     SyncStatusCode status, const FileSystemURL& url) {
-  DVLOG(1) << "DidProcessLocalChange:"
-           << " status=" << status
-           << " (" << SyncStatusCodeToString(status) << ")"
-           << " url=" << url.DebugString();
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "ProcessLocalChange finished with status=%d (%s) for url=%s",
+            status, SyncStatusCodeToString(status), url.DebugString().c_str());
   DCHECK(local_sync_running_);
   local_sync_running_ = false;
 
@@ -482,7 +484,10 @@ void SyncFileSystemService::OnSyncEnabledForRemoteSync() {
 void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(pending_changes, 0);
-  DVLOG(1) << "OnLocalChangeAvailable: " << pending_changes;
+  if (pending_local_changes_ != pending_changes) {
+    util::Log(logging::LOG_VERBOSE, FROM_HERE,
+              "OnLocalChangeAvailable: %" PRId64, pending_changes);
+  }
   pending_local_changes_ = pending_changes;
   if (pending_changes == 0)
     return;
@@ -495,7 +500,11 @@ void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
 void SyncFileSystemService::OnRemoteChangeQueueUpdated(int64 pending_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(pending_changes, 0);
-  DVLOG(1) << "OnRemoteChangeQueueUpdated: " << pending_changes;
+
+  if (pending_remote_changes_ != pending_changes) {
+    util::Log(logging::LOG_VERBOSE, FROM_HERE,
+              "OnRemoteChangeAvailable: %" PRId64, pending_changes);
+  }
   pending_remote_changes_ = pending_changes;
   if (pending_changes == 0)
     return;
@@ -513,8 +522,8 @@ void SyncFileSystemService::OnRemoteServiceStateUpdated(
     RemoteServiceState state,
     const std::string& description) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DVLOG(1) << "OnRemoteServiceStateUpdated: " << state
-           << " " << description;
+  util::Log(logging::LOG_INFO, FROM_HERE,
+            "OnRemoteServiceStateChanged: %d %s", state, description.c_str());
 
   if (state == REMOTE_SERVICE_OK) {
     base::MessageLoopProxy::current()->PostTask(

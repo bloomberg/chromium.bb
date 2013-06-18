@@ -666,7 +666,7 @@ void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {
     util::Log(logging::LOG_WARNING,
               FROM_HERE,
               "DriveMetadataStore turned to wrong state: %s",
-              SyncStatusCodeToString(status).c_str());
+              SyncStatusCodeToString(status));
     return;
   }
   db_status_ = SYNC_STATUS_OK;

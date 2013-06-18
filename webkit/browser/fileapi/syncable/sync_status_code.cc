@@ -9,7 +9,7 @@
 
 namespace sync_file_system {
 
-std::string SyncStatusCodeToString(SyncStatusCode status) {
+const char* SyncStatusCodeToString(SyncStatusCode status) {
   switch (status) {
     case SYNC_STATUS_OK:
       return "OK.";
