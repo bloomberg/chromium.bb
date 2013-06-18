@@ -76,6 +76,7 @@ using WebKit::WebCompositionUnderline;
 using WebKit::WebCursorInfo;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
+using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebPagePopup;
@@ -758,6 +759,12 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
     TRACE_EVENT2("renderer", "HandleMouseMove",
                  "x", mouse_event.x, "y", mouse_event.y);
     prevent_default = WillHandleMouseEvent(mouse_event);
+  }
+
+  if (WebInputEvent::isKeyboardEventType(input_event->type)) {
+    const WebKeyboardEvent& key_event =
+        *static_cast<const WebKeyboardEvent*>(input_event);
+    prevent_default = WillHandleKeyEvent(key_event);
   }
 
   if (WebInputEvent::isGestureEventType(input_event->type)) {
@@ -2388,6 +2395,10 @@ void RenderWidget::BeginSmoothScroll(
 }
 
 bool RenderWidget::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+  return false;
+}
+
+bool RenderWidget::WillHandleKeyEvent(const WebKit::WebKeyboardEvent& event) {
   return false;
 }
 

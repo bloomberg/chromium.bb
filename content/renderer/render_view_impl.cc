@@ -804,7 +804,8 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       decrement_shared_popup_at_destruction_(false),
       handling_select_range_(false),
       next_snapshot_id_(0),
-      allow_partial_swap_(params->allow_partial_swap) {
+      allow_partial_swap_(params->allow_partial_swap),
+      context_menu_source_type_(content::CONTEXT_MENU_SOURCE_MOUSE) {
 }
 
 void RenderViewImpl::Initialize(RenderViewImplParams* params) {
@@ -2450,6 +2451,11 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
 void RenderViewImpl::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
   ContextMenuParams params = ContextMenuParamsBuilder::Build(data);
+  params.source_type = context_menu_source_type_;
+  if (context_menu_source_type_ == CONTEXT_MENU_SOURCE_TOUCH_EDIT_MENU) {
+    params.x = touch_editing_context_menu_location_.x();
+    params.y = touch_editing_context_menu_location_.y();
+  }
 
   // Plugins, e.g. PDF, don't currently update the render view when their
   // selected text changes, but the context menu params do contain the updated
@@ -5942,6 +5948,7 @@ void RenderViewImpl::DidHandleKeyEvent() {
 }
 
 bool RenderViewImpl::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+  context_menu_source_type_ = CONTEXT_MENU_SOURCE_MOUSE;
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
   possible_drag_event_info_.event_location =
@@ -5953,8 +5960,14 @@ bool RenderViewImpl::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
   return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
 }
 
+bool RenderViewImpl::WillHandleKeyEvent(const WebKit::WebKeyboardEvent& event) {
+  context_menu_source_type_ = CONTEXT_MENU_SOURCE_KEYBOARD;
+  return false;
+}
+
 bool RenderViewImpl::WillHandleGestureEvent(
     const WebKit::WebGestureEvent& event) {
+  context_menu_source_type_ = CONTEXT_MENU_SOURCE_TOUCH;
   possible_drag_event_info_.event_source =
       ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
   possible_drag_event_info_.event_location =
@@ -6580,7 +6593,9 @@ void RenderViewImpl::OnContextMenuClosed(
   }
 }
 
-void RenderViewImpl::OnShowContextMenu() {
+void RenderViewImpl::OnShowContextMenu(const gfx::Point& location) {
+  context_menu_source_type_ = CONTEXT_MENU_SOURCE_TOUCH_EDIT_MENU;
+  touch_editing_context_menu_location_ = location;
   if (webview())
     webview()->showContextMenu();
 }

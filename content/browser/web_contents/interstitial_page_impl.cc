@@ -703,11 +703,6 @@ void InterstitialPageImpl::ShowCreatedFullscreenWidget(int route_id) {
       << "InterstitialPage does not support showing full screen popups.";
 }
 
-void InterstitialPageImpl::ShowContextMenu(
-    const ContextMenuParams& params,
-    ContextMenuSourceType type) {
-}
-
 void InterstitialPageImpl::Disable() {
   enabled_ = false;
 }

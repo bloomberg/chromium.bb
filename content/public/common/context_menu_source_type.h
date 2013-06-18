@@ -11,6 +11,10 @@ enum ContextMenuSourceType {
   CONTEXT_MENU_SOURCE_MOUSE,
   CONTEXT_MENU_SOURCE_KEYBOARD,
   CONTEXT_MENU_SOURCE_TOUCH,
+
+  // This source type is used when the context menu is summoned by pressing the
+  // context menu button in the touch editing menu.
+  CONTEXT_MENU_SOURCE_TOUCH_EDIT_MENU,
 };
 
 }  // namespace content

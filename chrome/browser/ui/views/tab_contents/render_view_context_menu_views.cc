@@ -45,7 +45,8 @@ void RenderViewContextMenuViews::RunMenuAt(
     const gfx::Point& point,
     content::ContextMenuSourceType type) {
   views::MenuItemView::AnchorPosition anchor_position =
-      type == content::CONTEXT_MENU_SOURCE_TOUCH ?
+      (type == content::CONTEXT_MENU_SOURCE_TOUCH ||
+          type == content::CONTEXT_MENU_SOURCE_TOUCH_EDIT_MENU) ?
           views::MenuItemView::BOTTOMCENTER : views::MenuItemView::TOPLEFT;
   if (menu_runner_->RunMenuAt(parent, NULL, gfx::Rect(point, gfx::Size()),
       anchor_position, views::MenuRunner::HAS_MNEMONICS |

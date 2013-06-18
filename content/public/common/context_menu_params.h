@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/common/context_menu_source_type.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
@@ -144,6 +145,8 @@ struct CONTENT_EXPORT ContextMenuParams {
 
   CustomContextMenuContext custom_context;
   std::vector<WebMenuItem> custom_items;
+
+  ContextMenuSourceType source_type;
 
 #if defined(OS_ANDROID)
   // Points representing the coordinates in the document space of the start and

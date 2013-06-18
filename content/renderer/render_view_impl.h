@@ -27,6 +27,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/view_message_enums.h"
+#include "content/public/common/context_menu_source_type.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
@@ -796,6 +797,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void DidHandleKeyEvent() OVERRIDE;
   virtual bool WillHandleMouseEvent(
       const WebKit::WebMouseEvent& event) OVERRIDE;
+  virtual bool WillHandleKeyEvent(
+      const WebKit::WebKeyboardEvent& event) OVERRIDE;
   virtual bool WillHandleGestureEvent(
       const WebKit::WebGestureEvent& event) OVERRIDE;
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) OVERRIDE;
@@ -962,7 +965,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnClearFocusedNode();
   void OnClosePage();
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
-  void OnShowContextMenu();
+  void OnShowContextMenu(const gfx::Point& location);
   void OnCopyImageAt(int x, int y);
   void OnCSSInsertRequest(const string16& frame_xpath,
                           const std::string& css);
@@ -1553,6 +1556,9 @@ class CONTENT_EXPORT RenderViewImpl
   // RenderViewImpl.
   scoped_ptr<RenderViewPepperHelper> pepper_helper_;
   scoped_ptr<StatsCollectionObserver> stats_collection_observer_;
+
+  ContextMenuSourceType context_menu_source_type_;
+  gfx::Point touch_editing_context_menu_location_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

@@ -1288,8 +1288,6 @@ void RenderWidgetHostImpl::ForwardInputEvent(
     return;
   }
 
-  in_process_event_types_.push(input_event.type);
-
   // Transmit any pending wheel events on a non-wheel event. This ensures that
   // the renderer receives the final PhaseEnded wheel event, which is necessary
   // to terminate rubber-banding, for example.
@@ -1916,10 +1914,6 @@ void RenderWidgetHostImpl::OnInputEventAck(
     WebInputEvent::Type event_type, InputEventAckState ack_result) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::OnInputEventAck");
   bool processed = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
-
-  if (!in_process_event_types_.empty() &&
-      in_process_event_types_.front() == event_type)
-    in_process_event_types_.pop();
 
   // Log the time delta for processing an input event.
   TimeDelta delta = TimeTicks::Now() - input_event_start_time_;

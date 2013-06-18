@@ -27,8 +27,7 @@ class AwWebContentsViewDelegate : public content::WebContentsViewDelegate {
   // content::WebContentsViewDelegate implementation.
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
   virtual void ShowContextMenu(
-      const content::ContextMenuParams& params,
-      content::ContextMenuSourceType type) OVERRIDE;
+      const content::ContextMenuParams& params) OVERRIDE;
 
  private:
   AwWebContentsViewDelegate(content::WebContents* web_contents);

@@ -24,8 +24,7 @@ class ChromeWebContentsViewDelegateAndroid
 
   // WebContentsViewDelegate:
   virtual void ShowContextMenu(
-      const content::ContextMenuParams& params,
-      content::ContextMenuSourceType type) OVERRIDE;
+      const content::ContextMenuParams& params) OVERRIDE;
 
   // WebContentsViewDelegate:
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;

@@ -32,8 +32,7 @@ class ChromeWebContentsViewDelegateMac
           content::RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
   virtual void ShowContextMenu(
-      const content::ContextMenuParams& params,
-      content::ContextMenuSourceType type) OVERRIDE;
+      const content::ContextMenuParams& params) OVERRIDE;
 
  private:
   // The context menu. Callbacks are asynchronous so we need to keep it around.

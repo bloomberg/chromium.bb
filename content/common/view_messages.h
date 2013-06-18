@@ -19,6 +19,7 @@
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/context_menu_source_type.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -76,6 +77,7 @@ IPC_ENUM_TRAITS(WebKit::WebPopupType)
 IPC_ENUM_TRAITS(WebKit::WebTextDirection)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
+IPC_ENUM_TRAITS(content::ContextMenuSourceType)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
 IPC_ENUM_TRAITS(content::JavaScriptMessageType)
@@ -184,6 +186,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
   IPC_STRUCT_TRAITS_MEMBER(referrer_policy)
   IPC_STRUCT_TRAITS_MEMBER(custom_context)
   IPC_STRUCT_TRAITS_MEMBER(custom_items)
+  IPC_STRUCT_TRAITS_MEMBER(source_type)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(selection_start)
   IPC_STRUCT_TRAITS_MEMBER(selection_end)
@@ -878,7 +881,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ContextMenuClosed,
                     content::CustomContextMenuContext /* custom_context */)
 
 // Sent to inform the renderer to invoke a context menu.
-IPC_MESSAGE_ROUTED0(ViewMsg_ShowContextMenu)
+// The parameter specifies the location in the render view's coordinates.
+IPC_MESSAGE_ROUTED1(ViewMsg_ShowContextMenu,
+                    gfx::Point /* location where menu should be shown */)
 
 // Tells the renderer to perform the specified navigation, interrupting any
 // existing navigation.

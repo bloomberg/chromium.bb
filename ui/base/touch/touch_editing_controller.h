@@ -49,7 +49,7 @@ class UI_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   virtual bool DrawsHandles() = 0;
 
   // Tells the editable to open context menu.
-  virtual void OpenContextMenu(const gfx::Point anchor) = 0;
+  virtual void OpenContextMenu(const gfx::Point& anchor) = 0;
 
  protected:
   virtual ~TouchEditable() {}

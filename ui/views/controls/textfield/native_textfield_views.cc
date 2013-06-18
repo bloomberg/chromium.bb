@@ -424,7 +424,7 @@ bool NativeTextfieldViews::DrawsHandles() {
   return false;
 }
 
-void NativeTextfieldViews::OpenContextMenu(const gfx::Point anchor) {
+void NativeTextfieldViews::OpenContextMenu(const gfx::Point& anchor) {
   touch_selection_controller_.reset();
   ShowContextMenu(anchor, false);
 }

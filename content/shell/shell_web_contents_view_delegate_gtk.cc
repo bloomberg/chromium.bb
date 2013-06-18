@@ -42,8 +42,7 @@ ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {
 }
 
 void ShellWebContentsViewDelegate::ShowContextMenu(
-    const ContextMenuParams& params,
-    ContextMenuSourceType type) {
+    const ContextMenuParams& params) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
 

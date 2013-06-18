@@ -1054,11 +1054,9 @@ void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, RenderViewHostDelegateView implementation:
 
-void WebContentsViewAura::ShowContextMenu(
-    const ContextMenuParams& params,
-    ContextMenuSourceType type) {
+void WebContentsViewAura::ShowContextMenu(const ContextMenuParams& params) {
   if (delegate_)
-    delegate_->ShowContextMenu(params, type);
+    delegate_->ShowContextMenu(params);
   if (touch_editable_)
     touch_editable_->EndTouchEditing();
 

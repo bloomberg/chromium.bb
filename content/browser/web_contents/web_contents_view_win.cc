@@ -243,11 +243,9 @@ void WebContentsViewWin::RenderViewSwappedIn(RenderViewHost* host) {
 void WebContentsViewWin::SetOverscrollControllerEnabled(bool enabled) {
 }
 
-void WebContentsViewWin::ShowContextMenu(
-    const ContextMenuParams& params,
-    ContextMenuSourceType type) {
+void WebContentsViewWin::ShowContextMenu(const ContextMenuParams& params) {
   if (delegate_)
-    delegate_->ShowContextMenu(params, type);
+    delegate_->ShowContextMenu(params);
 }
 
 void WebContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,

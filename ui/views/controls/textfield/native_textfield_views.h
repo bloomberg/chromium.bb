@@ -89,7 +89,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual void ConvertPointToScreen(gfx::Point* point) OVERRIDE;
   virtual void ConvertPointFromScreen(gfx::Point* point) OVERRIDE;
   virtual bool DrawsHandles() OVERRIDE;
-  virtual void OpenContextMenu(const gfx::Point anchor) OVERRIDE;
+  virtual void OpenContextMenu(const gfx::Point& anchor) OVERRIDE;
 
   // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,

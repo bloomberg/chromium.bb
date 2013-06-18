@@ -128,9 +128,6 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual void ShowCreatedWidget(int route_id,
                                  const gfx::Rect& initial_pos) OVERRIDE;
   virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
-  virtual void ShowContextMenu(
-      const ContextMenuParams& params,
-      ContextMenuSourceType type) OVERRIDE;
 
   // RenderWidgetHostDelegate implementation:
   virtual void RenderWidgetDeleted(

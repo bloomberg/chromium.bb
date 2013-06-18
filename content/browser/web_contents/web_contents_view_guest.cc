@@ -182,8 +182,7 @@ void WebContentsViewGuest::TakeFocus(bool reverse) {
 }
 
 void WebContentsViewGuest::ShowContextMenu(
-    const ContextMenuParams& params,
-    ContextMenuSourceType type) {
+    const ContextMenuParams& params) {
   NOTIMPLEMENTED();
 }
 

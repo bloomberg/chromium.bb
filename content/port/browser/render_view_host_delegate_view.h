@@ -34,8 +34,7 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
  public:
   // A context menu should be shown, to be built using the context information
   // provided in the supplied params.
-  virtual void ShowContextMenu(const ContextMenuParams& params,
-                               ContextMenuSourceType type) {}
+  virtual void ShowContextMenu(const ContextMenuParams& params) {}
 
   // Shows a popup menu with the specified items.
   // This method should call RenderViewHost::DidSelectPopupMenuItem[s]() or

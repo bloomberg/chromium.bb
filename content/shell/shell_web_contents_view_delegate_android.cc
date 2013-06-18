@@ -28,8 +28,7 @@ ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {
 }
 
 void ShellWebContentsViewDelegate::ShowContextMenu(
-    const ContextMenuParams& params,
-    ContextMenuSourceType type) {
+    const ContextMenuParams& params) {
   if (params.is_editable && params.selection_text.empty()) {
     content::ContentViewCore* content_view_core =
         ContentViewCore::FromWebContents(web_contents_);

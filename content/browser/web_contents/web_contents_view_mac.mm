@@ -227,8 +227,7 @@ void WebContentsViewMac::TakeFocus(bool reverse) {
   }
 }
 
-void WebContentsViewMac::ShowContextMenu(const ContextMenuParams& params,
-                                         ContextMenuSourceType type) {
+void WebContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
   // Allow delegates to handle the context menu operation first.
   if (web_contents_->GetDelegate() &&
       web_contents_->GetDelegate()->HandleContextMenu(params)) {
@@ -236,7 +235,7 @@ void WebContentsViewMac::ShowContextMenu(const ContextMenuParams& params,
   }
 
   if (delegate())
-    delegate()->ShowContextMenu(params, type);
+    delegate()->ShowContextMenu(params);
   else
     DLOG(ERROR) << "Cannot show context menus without a delegate.";
 }

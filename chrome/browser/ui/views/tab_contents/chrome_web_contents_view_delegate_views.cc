@@ -127,8 +127,7 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
 }
 
 void ChromeWebContentsViewDelegateViews::ShowContextMenu(
-    const content::ContextMenuParams& params,
-    content::ContextMenuSourceType type) {
+    const content::ContextMenuParams& params) {
   // Menus need a Widget to work. If we're not the active tab we won't
   // necessarily be in a widget.
   views::Widget* top_level_widget = GetTopLevelWidget();
@@ -166,7 +165,7 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
   // the context menu is being displayed.
   base::MessageLoop::ScopedNestableTaskAllower allow(
       base::MessageLoop::current());
-  context_menu_->RunMenuAt(top_level_widget, screen_point, type);
+  context_menu_->RunMenuAt(top_level_widget, screen_point, params.source_type);
 }
 
 void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {

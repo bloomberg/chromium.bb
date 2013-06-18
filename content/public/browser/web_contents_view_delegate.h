@@ -43,9 +43,7 @@ class CONTENT_EXPORT WebContentsViewDelegate {
   virtual WebDragDestDelegate* GetDragDestDelegate() = 0;
 
   // Shows a context menu.
-  virtual void ShowContextMenu(
-      const content::ContextMenuParams& params,
-      content::ContextMenuSourceType type) = 0;
+  virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
 
 #if defined(OS_WIN) || defined(USE_AURA)
   // These methods allow the embedder to intercept WebContentsViewWin's

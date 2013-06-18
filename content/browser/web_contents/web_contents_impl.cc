@@ -1690,14 +1690,12 @@ RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int route_id) {
   return widget_host_view;
 }
 
-void WebContentsImpl::ShowContextMenu(
-    const ContextMenuParams& params,
-    ContextMenuSourceType type) {
+void WebContentsImpl::ShowContextMenu(const ContextMenuParams& params) {
   // Allow WebContentsDelegates to handle the context menu operation first.
   if (delegate_ && delegate_->HandleContextMenu(params))
     return;
 
-  render_view_host_delegate_view_->ShowContextMenu(params, type);
+  render_view_host_delegate_view_->ShowContextMenu(params);
 }
 
 void WebContentsImpl::RequestMediaAccessPermission(

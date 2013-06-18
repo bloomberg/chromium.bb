@@ -72,9 +72,7 @@ class CONTENT_EXPORT WebContentsViewGuest
 #endif
 
   // Backend implementation of RenderViewHostDelegateView.
-  virtual void ShowContextMenu(
-      const ContextMenuParams& params,
-      ContextMenuSourceType type) OVERRIDE;
+  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,

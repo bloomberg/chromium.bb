@@ -235,11 +235,13 @@ bool TouchEditableImplAura::DrawsHandles() {
   return false;
 }
 
-void TouchEditableImplAura::OpenContextMenu(const gfx::Point anchor) {
+void TouchEditableImplAura::OpenContextMenu(const gfx::Point& anchor) {
   if (!rwhva_)
     return;
+  gfx::Point point = anchor;
+  ConvertPointFromScreen(&point);
   RenderWidgetHost* host = rwhva_->GetRenderWidgetHost();
-  host->Send(new ViewMsg_ShowContextMenu(host->GetRoutingID()));
+  host->Send(new ViewMsg_ShowContextMenu(host->GetRoutingID(), point));
   EndTouchEditing();
 }
 

@@ -12,10 +12,6 @@ TestWebContentsView::TestWebContentsView() {
 TestWebContentsView::~TestWebContentsView() {
 }
 
-void TestWebContentsView::ShowContextMenu(const ContextMenuParams& params,
-                                          ContextMenuSourceType type) {
-}
-
 void TestWebContentsView::ShowPopupMenu(const gfx::Rect& bounds,
                                         int item_height,
                                         double item_font_size,

@@ -49,6 +49,7 @@ class SyncMessage;
 namespace WebKit {
 class WebGestureEvent;
 class WebInputEvent;
+class WebKeyboardEvent;
 class WebMouseEvent;
 class WebTouchEvent;
 struct WebPoint;
@@ -469,6 +470,12 @@ class CONTENT_EXPORT RenderWidget
   // Returns true if no further handling is needed. In that case, the event
   // won't be sent to WebKit or trigger DidHandleMouseEvent().
   virtual bool WillHandleMouseEvent(const WebKit::WebMouseEvent& event);
+
+  // Called by OnHandleInputEvent() to notify subclasses that a key event is
+  // about to be handled.
+  // Returns true if no further handling is needed. In that case, the event
+  // won't be sent to WebKit or trigger DidHandleKeyEvent().
+  virtual bool WillHandleKeyEvent(const WebKit::WebKeyboardEvent& event);
 
   // Called by OnHandleInputEvent() to notify subclasses that a gesture event is
   // about to be handled.
