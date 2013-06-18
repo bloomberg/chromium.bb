@@ -4017,6 +4017,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Memory.ProcessLimit">
+  <summary>The current process limit.  Recorded once per UMA ping.</summary>
+</histogram>
+
 <histogram name="MemoryAndroid.DeviceMemoryClass">
   <summary>
     Value of getMemoryClass() recorded once upon startup. This is an integer,
@@ -10909,6 +10913,78 @@ other types of suffix sets.
 
 <histogram name="SimpleCache.WriteResult" enum="SimpleCacheWriteResult">
   <summary>The outcome of Entry::WriteData in the simple cache.</summary>
+</histogram>
+
+<histogram name="SiteIsolation.BrowsingInstanceCount">
+  <summary>
+    The count of all current BrowsingInstances.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.CurrentRendererProcessCount">
+  <summary>
+    The count of all renderer processes, including WebUI and extensions.
+    Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateAllSitesProcessCountEstimate">
+  <summary>
+    The upper bound of the predicted renderer process count if we isolated all
+    sites, subject to the process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateAllSitesProcessCountLowerBound">
+  <summary>
+    The lower bound of the predicted renderer process count if we isolated all
+    sites, subject to the process limit.  Happens to be the number of unique
+    sites.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateAllSitesProcessCountNoLimit">
+  <summary>
+    The predicted renderer process count if we isolated all sites and if there
+    were no process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateAllSitesTotalProcessCountEstimate">
+  <summary>
+    The predicted total process count if we isolated all sites, subject to the
+    process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateHttpsSitesProcessCountEstimate">
+  <summary>
+    The upper bound of the predicted renderer process count if we isolated only
+    HTTPS (not HTTP) sites, subject to the process limit.  Recorded once per UMA
+    ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateHttpsSitesProcessCountLowerBound">
+  <summary>
+    The lower bound of the predicted renderer process count if we isolated only
+    HTTPS (not HTTP) sites, subject to the process limit.  Happens to be the
+    number of isolated sites.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateHttpsSitesProcessCountNoLimit">
+  <summary>
+    The predicted renderer process count if we isolated only HTTPS (not HTTP)
+    sites and if there were no process limit.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.IsolateHttpsSitesTotalProcessCountEstimate">
+  <summary>
+    The predicted total process count if we isolated only HTTPS (not HTTP)
+    sites, subject to the process limit.  Recorded once per UMA ping.
+  </summary>
 </histogram>
 
 <histogram name="Sqlite.AppCache.Error" enum="SqliteErrorCode">
