@@ -65,7 +65,8 @@ void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar,
   // We only delete ourself after the menu completes, so we can safely ignore
   // the return value.
   ignore_result(menu_runner_->RunMenuAt(menu_delegate_->parent(), menu_button,
-      bounds, anchor, for_drop ? views::MenuRunner::FOR_DROP : 0));
+      bounds, anchor, ui::MENU_SOURCE_NONE,
+      for_drop ? views::MenuRunner::FOR_DROP : 0));
   if (!for_drop)
     delete this;
 }
@@ -140,8 +141,8 @@ int BookmarkMenuController::OnPerformDrop(MenuItemView* menu,
 bool BookmarkMenuController::ShowContextMenu(MenuItemView* source,
                                              int id,
                                              const gfx::Point& p,
-                                             bool is_mouse_gesture) {
-  return menu_delegate_->ShowContextMenu(source, id, p, is_mouse_gesture);
+                                             ui::MenuSourceType source_type) {
+  return menu_delegate_->ShowContextMenu(source, id, p, source_type);
 }
 
 void BookmarkMenuController::DropMenuClosed(MenuItemView* menu) {

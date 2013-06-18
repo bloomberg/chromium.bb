@@ -243,7 +243,8 @@ class TaskManagerView : public views::ButtonListener,
 
   // views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int id) const OVERRIDE;
@@ -683,7 +684,8 @@ void TaskManagerView::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void TaskManagerView::ShowContextMenuForView(views::View* source,
-                                             const gfx::Point& point) {
+                                             const gfx::Point& point,
+                                             ui::MenuSourceType source_type) {
   UpdateStatsCounters();
   ui::SimpleMenuModel menu_model(this);
   for (std::vector<ui::TableColumn>::iterator i(columns_.begin());
@@ -692,7 +694,7 @@ void TaskManagerView::ShowContextMenuForView(views::View* source,
   }
   menu_runner_.reset(new views::MenuRunner(&menu_model));
   if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-                              views::MenuItemView::TOPLEFT,
+                              views::MenuItemView::TOPLEFT, source_type,
                               views::MenuRunner::CONTEXT_MENU) ==
       views::MenuRunner::MENU_DELETED)
     return;

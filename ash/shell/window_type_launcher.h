@@ -61,7 +61,8 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
 
   // Override from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 #endif  // !defined(OS_MACOSX)
 
   views::LabelButton* create_button_;

@@ -122,7 +122,7 @@ class VIEWS_EXPORT TreeView : public View,
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
+                               ui::MenuSourceType source_type) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // TreeModelObserver overrides:

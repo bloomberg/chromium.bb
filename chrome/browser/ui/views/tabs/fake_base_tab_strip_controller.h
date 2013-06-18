@@ -36,7 +36,8 @@ class FakeBaseTabStripController : public TabStripController {
   virtual void AddSelectionFromAnchorTo(int index) OVERRIDE;
   virtual void CloseTab(int index, CloseTabSource source) OVERRIDE;
   virtual void ShowContextMenuForTab(Tab* tab,
-                                     const gfx::Point& p) OVERRIDE;
+                                     const gfx::Point& p,
+                                     ui::MenuSourceType source_type) OVERRIDE;
   virtual void UpdateLoadingAnimations() OVERRIDE;
   virtual int HasAvailableDragActions() const OVERRIDE;
   virtual void OnDropIndexUpdate(int index, bool drop_before) OVERRIDE;

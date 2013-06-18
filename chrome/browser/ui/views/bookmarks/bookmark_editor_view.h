@@ -121,7 +121,8 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
  private:
   friend class BookmarkEditorViewTest;

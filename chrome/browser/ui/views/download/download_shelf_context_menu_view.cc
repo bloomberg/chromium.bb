@@ -22,7 +22,8 @@ DownloadShelfContextMenuView::DownloadShelfContextMenuView(
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}
 
 void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
-                                       const gfx::Rect& rect) {
+                                       const gfx::Rect& rect,
+                                       ui::MenuSourceType source_type) {
   ui::MenuModel* menu_model = GetMenuModel();
   // Run() should not be getting called if the DownloadItem was destroyed.
   DCHECK(menu_model);
@@ -45,5 +46,6 @@ void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
       NULL,
       rect,
       position,
+      source_type,
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
 }

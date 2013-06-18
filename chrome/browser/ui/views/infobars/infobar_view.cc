@@ -310,7 +310,7 @@ void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
   // Ignore the result since we don't need to handle a deleted menu specially.
   ignore_result(menu_runner_->RunMenuAt(
       GetWidget(), button, gfx::Rect(screen_point, button->size()), anchor,
-      views::MenuRunner::HAS_MNEMONICS));
+      ui::MENU_SOURCE_NONE, views::MenuRunner::HAS_MNEMONICS));
 }
 
 void InfoBarView::PlatformSpecificShow(bool animate) {

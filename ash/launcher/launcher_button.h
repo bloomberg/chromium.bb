@@ -59,7 +59,7 @@ class ASH_EXPORT LauncherButton : public views::CustomButton {
 
   // Overrides to views::CustomButton:
   virtual void ShowContextMenu(const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
+                               ui::MenuSourceType source_type) OVERRIDE;
 
  protected:
   LauncherButton(views::ButtonListener* listener,

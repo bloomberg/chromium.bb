@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/base/events/event_target.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
@@ -211,7 +212,8 @@ class ASH_EXPORT Shell
 
   // Shows the context menu for the background and launcher at
   // |location_in_screen| (in screen coordinates).
-  void ShowContextMenu(const gfx::Point& location_in_screen);
+  void ShowContextMenu(const gfx::Point& location_in_screen,
+                       ui::MenuSourceType source_type);
 
   // Toggles the app list. |window| specifies in which display the app
   // list should be shown. If this is NULL, the active root window

@@ -136,6 +136,7 @@ void PermissionMenuButton::OnMenuButtonClicked(View* source,
           this,
           gfx::Rect(p, gfx::Size()),
           views::MenuItemView::TOPLEFT,
+          ui::MENU_SOURCE_NONE,
           views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
     return;
 }

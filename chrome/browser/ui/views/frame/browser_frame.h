@@ -88,7 +88,8 @@ class BrowserFrame
 
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& p) OVERRIDE;
+                                      const gfx::Point& p,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // Returns true if we should leave any offset at the frame caption. Typically
   // when the frame is maximized/full screen we want to leave no offset at the

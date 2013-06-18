@@ -22,6 +22,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_target.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/gfx/native_widget_types.h"
@@ -826,7 +827,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // to provide right-click menu display triggerd by the keyboard (i.e. for the
   // Chrome toolbar Back and Forward buttons). No source needs to be specified,
   // as it is always equal to the current View.
-  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
+  virtual void ShowContextMenu(const gfx::Point& p,
+                               ui::MenuSourceType source_type);
 
   // On some platforms, we show context menu on mouse press instead of release.
   // This method returns true for those platforms.

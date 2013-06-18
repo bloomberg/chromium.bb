@@ -170,9 +170,11 @@ bool DesktopBackgroundView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-void DesktopBackgroundView::ShowContextMenuForView(views::View* source,
-                                                   const gfx::Point& point) {
-  Shell::GetInstance()->ShowContextMenu(point);
+void DesktopBackgroundView::ShowContextMenuForView(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  Shell::GetInstance()->ShowContextMenu(point, source_type);
 }
 
 views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,

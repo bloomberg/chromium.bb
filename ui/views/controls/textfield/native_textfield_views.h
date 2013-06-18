@@ -93,7 +93,8 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
 
   // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // Overridden from DragController:
   virtual void WriteDragDataForView(View* sender,

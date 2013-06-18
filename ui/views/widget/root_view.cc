@@ -117,7 +117,8 @@ void RootView::DispatchKeyEvent(ui::KeyEvent* event) {
   // keyboard.
   if (v && v->enabled() && ((event->key_code() == ui::VKEY_APPS) ||
      (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
-    v->ShowContextMenu(v->GetKeyboardContextMenuLocation(), false);
+    v->ShowContextMenu(v->GetKeyboardContextMenuLocation(),
+                       ui::MENU_SOURCE_KEYBOARD);
     event->StopPropagation();
     return;
   }

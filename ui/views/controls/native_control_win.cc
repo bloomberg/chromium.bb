@@ -124,10 +124,12 @@ void NativeControlWin::ShowContextMenu(const gfx::Point& location) {
   if (!context_menu_controller())
     return;
 
-  if (location.x() == -1 && location.y() == -1)
-    View::ShowContextMenu(GetKeyboardContextMenuLocation(), false);
-  else
-    View::ShowContextMenu(location, true);
+  if (location.x() == -1 && location.y() == -1) {
+    View::ShowContextMenu(GetKeyboardContextMenuLocation(),
+                          ui::MENU_SOURCE_KEYBOARD);
+  } else {
+    View::ShowContextMenu(location, ui::MENU_SOURCE_MOUSE);
+  }
 }
 
 void NativeControlWin::NativeControlCreated(HWND native_control) {

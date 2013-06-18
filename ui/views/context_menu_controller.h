@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_
 #define UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_
 
+#include "ui/base/ui_base_types.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -30,7 +31,8 @@ class VIEWS_EXPORT ContextMenuController {
   // Invoked to show the context menu for |source|.
   // |point| is in screen coordinates.
   virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point) = 0;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) = 0;
 
  protected:
   virtual ~ContextMenuController() {}

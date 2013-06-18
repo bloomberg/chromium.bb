@@ -130,10 +130,6 @@ bool Launcher::IsShowingMenu() const {
   return launcher_view_->IsShowingMenu();
 }
 
-void Launcher::ShowContextMenu(const gfx::Point& location) {
-  launcher_view_->ShowContextMenu(location, false);
-}
-
 bool Launcher::IsShowingOverflowBubble() const {
   return launcher_view_->IsShowingOverflowBubble();
 }

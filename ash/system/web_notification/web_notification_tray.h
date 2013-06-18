@@ -126,7 +126,7 @@ class ASH_EXPORT WebNotificationTray
   bool ShouldShowQuietModeMenu(const ui::Event& event);
 
   // Shows the quiet mode menu.
-  void ShowQuietModeMenu();
+  void ShowQuietModeMenu(const ui::Event& event);
 
   internal::WebNotificationBubbleWrapper* message_center_bubble() const {
     return message_center_bubble_.get();

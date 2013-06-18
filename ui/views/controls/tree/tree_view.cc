@@ -380,10 +380,11 @@ void TreeView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void TreeView::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
+void TreeView::ShowContextMenu(const gfx::Point& p,
+                               ui::MenuSourceType source_type) {
   if (!model_)
     return;
-  if (is_mouse_gesture) {
+  if (source_type == ui::MENU_SOURCE_MOUSE) {
     // Only invoke View's implementation (which notifies the
     // ContextMenuController) if over a node.
     gfx::Point local_point(p);
@@ -397,7 +398,7 @@ void TreeView::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
     if (!bounds.Contains(local_point))
       return;
   }
-  View::ShowContextMenu(p, is_mouse_gesture);
+  View::ShowContextMenu(p, source_type);
 }
 
 void TreeView::GetAccessibleState(ui::AccessibleViewState* state) {

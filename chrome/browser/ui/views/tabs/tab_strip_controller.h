@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_
 
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "ui/base/ui_base_types.h"
 
 class GURL;
 class Tab;
@@ -66,7 +67,9 @@ class TabStripController {
   virtual void CloseTab(int index, CloseTabSource source) = 0;
 
   // Shows a context menu for the tab at the specified point in screen coords.
-  virtual void ShowContextMenuForTab(Tab* tab, const gfx::Point& p) = 0;
+  virtual void ShowContextMenuForTab(Tab* tab,
+                                     const gfx::Point& p,
+                                     ui::MenuSourceType source_type) = 0;
 
   // Updates the loading animations of all the tabs.
   virtual void UpdateLoadingAnimations() = 0;

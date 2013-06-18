@@ -1421,7 +1421,7 @@ void OmniboxViewWin::OnContextMenu(HWND window, const CPoint& point) {
 
   ignore_result(context_menu_runner_->RunMenuAt(native_view_host_->GetWidget(),
       NULL, gfx::Rect(location, gfx::Size()), views::MenuItemView::TOPLEFT,
-      views::MenuRunner::HAS_MNEMONICS));
+      ui::MENU_SOURCE_MOUSE, views::MenuRunner::HAS_MNEMONICS));
 }
 
 void OmniboxViewWin::OnCopy() {

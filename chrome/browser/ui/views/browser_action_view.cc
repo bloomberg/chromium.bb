@@ -175,8 +175,10 @@ void BrowserActionButton::ButtonPressed(views::Button* sender,
   delegate_->OnBrowserActionExecuted(this);
 }
 
-void BrowserActionButton::ShowContextMenuForView(View* source,
-                                                 const gfx::Point& point) {
+void BrowserActionButton::ShowContextMenuForView(
+    View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   if (!extension()->ShowConfigureContextMenus())
     return;
 
@@ -191,8 +193,8 @@ void BrowserActionButton::ShowContextMenuForView(View* source,
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
   if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
-          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS |
-          views::MenuRunner::CONTEXT_MENU) ==
+          views::MenuItemView::TOPLEFT, source_type,
+          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
       views::MenuRunner::MENU_DELETED) {
     return;
   }
@@ -316,7 +318,7 @@ bool BrowserActionButton::OnMousePressed(const ui::MouseEvent& event) {
     // See comments in MenuButton::Activate() as to why this is needed.
     SetMouseHandler(NULL);
 
-    ShowContextMenu(gfx::Point(), true);
+    ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
   }
   return false;
 }

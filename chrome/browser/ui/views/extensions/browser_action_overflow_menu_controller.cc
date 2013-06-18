@@ -76,7 +76,7 @@ bool BrowserActionOverflowMenuController::RunMenu(views::Widget* window,
   views::MenuItemView::AnchorPosition anchor = views::MenuItemView::TOPRIGHT;
   // As we maintain our own lifetime we can safely ignore the result.
   ignore_result(menu_runner_->RunMenuAt(window, menu_button_, bounds, anchor,
-      for_drop_ ? views::MenuRunner::FOR_DROP : 0));
+      ui::MENU_SOURCE_NONE, for_drop_ ? views::MenuRunner::FOR_DROP : 0));
   if (!for_drop_) {
     // Give the context menu (if any) a chance to execute the user-selected
     // command.
@@ -103,7 +103,7 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     views::MenuItemView* source,
     int id,
     const gfx::Point& p,
-    bool is_mouse_gesture) {
+    ui::MenuSourceType source_type) {
   const extensions::Extension* extension =
       (*views_)[start_index_ + id - 1]->button()->extension();
   if (!extension->ShowConfigureContextMenus())
@@ -117,6 +117,7 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
   // This blocks until the user choses something or dismisses the menu.
   ignore_result(context_menu_runner.RunMenuAt(menu_button_->GetWidget(),
       NULL, gfx::Rect(p, gfx::Size()), views::MenuItemView::TOPLEFT,
+      source_type,
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED |
       views::MenuRunner::CONTEXT_MENU));
 

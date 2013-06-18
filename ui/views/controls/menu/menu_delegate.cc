@@ -45,7 +45,7 @@ bool MenuDelegate::GetAccelerator(int id, ui::Accelerator* accelerator) {
 bool MenuDelegate::ShowContextMenu(MenuItemView* source,
                                    int id,
                                    const gfx::Point& p,
-                                   bool is_mouse_gesture) {
+                                   ui::MenuSourceType source_type) {
   return false;
 }
 

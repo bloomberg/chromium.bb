@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf_context_menu.h"
+#include "ui/base/ui_base_types.h"
 
 namespace content {
 class DownloadItem;
@@ -32,7 +33,9 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
 
   // |rect| is the bounding area for positioning the menu in screen coordinates.
   // The menu will be positioned above or below but not overlapping |rect|.
-  void Run(views::Widget* parent_widget, const gfx::Rect& rect);
+  void Run(views::Widget* parent_widget,
+           const gfx::Rect& rect,
+           ui::MenuSourceType source_type);
 
  private:
   scoped_ptr<views::MenuRunner> menu_runner_;

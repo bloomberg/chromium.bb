@@ -517,11 +517,12 @@ void DownloadItemView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void DownloadItemView::ShowContextMenuForView(View* source,
-                                              const gfx::Point& point) {
+                                              const gfx::Point& point,
+                                              ui::MenuSourceType source_type) {
   // |point| is in screen coordinates. So convert it to local coordinates first.
   gfx::Point local_point = point;
   ConvertPointFromScreen(this, &local_point);
-  ShowContextMenuImpl(local_point, true);
+  ShowContextMenuImpl(local_point, source_type);
 }
 
 void DownloadItemView::ButtonPressed(
@@ -889,7 +890,7 @@ void DownloadItemView::UpdateColorsFromTheme() {
 }
 
 void DownloadItemView::ShowContextMenuImpl(const gfx::Point& p,
-                                           bool is_mouse_gesture) {
+                                           ui::MenuSourceType source_type) {
   gfx::Point point = p;
   gfx::Size size;
 
@@ -906,7 +907,7 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Point& p,
 
   // If |is_mouse_gesture| is false, |p| is ignored. The menu is shown aligned
   // to drop down arrow button.
-  if (!is_mouse_gesture) {
+  if (!source_type == ui::MENU_SOURCE_MOUSE) {
     drop_down_pressed_ = true;
     SetState(NORMAL, PUSHED);
     point.SetPoint(drop_down_x_left_, box_y_);
@@ -926,7 +927,7 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Point& p,
         new DownloadShelfContextMenuView(download(), shelf_->GetNavigator()));
   }
   context_menu_->Run(GetWidget()->GetTopLevelWidget(),
-                     gfx::Rect(point, size));
+                     gfx::Rect(point, size), source_type);
   // We could be deleted now.
 }
 
@@ -948,7 +949,7 @@ void DownloadItemView::HandlePressEvent(const ui::LocatedEvent& event,
       // so that the positioning of the context menu will be similar to a
       // keyboard invocation.  I.e. we want the menu to always be positioned
       // next to the drop down button instead of the next to the pointer.
-      ShowContextMenuImpl(event.location(), false);
+      ShowContextMenuImpl(event.location(), ui::MENU_SOURCE_KEYBOARD);
       // Once called, it is possible that *this was deleted (e.g.: due to
       // invoking the 'Discard' action.)
     } else if (!IsShowingWarningDialog()) {

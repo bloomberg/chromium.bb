@@ -10,6 +10,7 @@
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/ui_base_types.h"
 
 class SkBitmap;
 
@@ -108,7 +109,8 @@ class ASH_EXPORT RootWindowController {
 
   // Shows context menu at the |location_in_screen|. This uses
   // |ShellDelegate::CreateContextMenu| to define the content of the menu.
-  void ShowContextMenu(const gfx::Point& location_in_screen);
+  void ShowContextMenu(const gfx::Point& location_in_screen,
+                       ui::MenuSourceType source_type);
 
   // Returns the layout-manager for the appropriate modal-container. If the
   // window is inside the lockscreen modal container, then the layout manager

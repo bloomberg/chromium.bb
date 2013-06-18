@@ -38,7 +38,7 @@ class ActionBoxMenu : public views::MenuDelegate {
   virtual bool ShowContextMenu(views::MenuItemView* source,
                                int id,
                                const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
+                               ui::MenuSourceType source_type) OVERRIDE;
 
   // Populates |root_| with all the child menu items from the |model_|.
   void PopulateMenu();

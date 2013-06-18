@@ -109,7 +109,8 @@ void BookmarkBarInstructionsView::LinkClicked(views::Link* source,
 
 void BookmarkBarInstructionsView::ShowContextMenuForView(
     views::View* source,
-    const gfx::Point& point) {
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   // Do nothing here, we don't want to show the Bookmarks context menu when
   // the user right clicks on the "Import bookmarks now" link.
 }

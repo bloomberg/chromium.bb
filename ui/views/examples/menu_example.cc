@@ -189,7 +189,8 @@ void ExampleMenuButton::OnMenuButtonClicked(View* source,
 
   if (menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(), this,
         gfx::Rect(point, gfx::Size()), MenuItemView::TOPRIGHT,
-        MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
+        ui::MENU_SOURCE_NONE, MenuRunner::HAS_MNEMONICS) ==
+      MenuRunner::MENU_DELETED)
     return;
 }
 

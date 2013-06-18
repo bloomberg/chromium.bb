@@ -60,7 +60,7 @@ void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
 
   ignore_result(menu_runner_->RunMenuAt(NULL, NULL,
       gfx::Rect(cursor_pos, gfx::Size()), views::MenuItemView::TOPLEFT,
-      views::MenuRunner::HAS_MNEMONICS));
+      ui::MENU_SOURCE_MOUSE, views::MenuRunner::HAS_MNEMONICS));
 }
 
 void StatusIconWin::ResetIcon() {

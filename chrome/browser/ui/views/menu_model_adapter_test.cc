@@ -240,6 +240,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
         button_,
         bounds,
         views::MenuItemView::TOPLEFT,
+        ui::MENU_SOURCE_NONE,
         views::MenuRunner::HAS_MNEMONICS));
   }
 

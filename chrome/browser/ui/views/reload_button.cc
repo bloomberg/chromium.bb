@@ -170,8 +170,8 @@ bool ReloadButton::ShouldShowMenu() {
   return menu_enabled_ && (visible_mode_ == MODE_RELOAD);
 }
 
-void ReloadButton::ShowDropDownMenu() {
-  ButtonDropDown::ShowDropDownMenu();  // Blocks.
+void ReloadButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
+  ButtonDropDown::ShowDropDownMenu(source_type);  // Blocks.
   ChangeMode(intended_mode_, true);
 }
 

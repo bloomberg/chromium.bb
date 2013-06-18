@@ -23,7 +23,8 @@ ActionBoxContextMenu::~ActionBoxContextMenu() {
 
 views::MenuRunner::RunResult ActionBoxContextMenu::RunMenuAt(
     const gfx::Point& p,
-    views::Widget* parent_widget) {
+    views::Widget* parent_widget,
+    ui::MenuSourceType source_type) {
   adapter_.reset(new views::MenuModelAdapter(controller_.menu_model()));
   menu_runner_.reset(new MenuRunner(adapter_->CreateMenu()));
   return menu_runner_->RunMenuAt(
@@ -31,6 +32,7 @@ views::MenuRunner::RunResult ActionBoxContextMenu::RunMenuAt(
       NULL,  // No menu button.
       gfx::Rect(p, gfx::Size()),
       views::MenuItemView::TOPLEFT,
+      source_type,
       (MenuRunner::CONTEXT_MENU | MenuRunner::IS_NESTED |
        MenuRunner::HAS_MNEMONICS));
 }

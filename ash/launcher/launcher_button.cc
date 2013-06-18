@@ -327,14 +327,14 @@ gfx::Rect LauncherButton::GetIconBounds() const {
 }
 
 void LauncherButton::ShowContextMenu(const gfx::Point& p,
-                                     bool is_mouse_gesture) {
+                                     ui::MenuSourceType source_type) {
   if (!context_menu_controller())
     return;
 
   bool destroyed = false;
   destroyed_flag_ = &destroyed;
 
-  CustomButton::ShowContextMenu(p, is_mouse_gesture);
+  CustomButton::ShowContextMenu(p, source_type);
 
   if (!destroyed) {
     destroyed_flag_ = NULL;

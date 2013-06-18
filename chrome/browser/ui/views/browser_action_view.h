@@ -138,7 +138,8 @@ class BrowserActionButton : public views::MenuButton,
 
   // Overridden from views::ContextMenuController.
   virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

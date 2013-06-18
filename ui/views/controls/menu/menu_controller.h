@@ -291,7 +291,8 @@ class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
   // button. Returns whether a context menu was shown.
   bool ShowContextMenu(MenuItemView* menu_item,
                        SubmenuView* source,
-                       const ui::LocatedEvent& event);
+                       const ui::LocatedEvent& event,
+                       ui::MenuSourceType source_type);
 
   // Closes all menus, including any menus of nested invocations of Run.
   void CloseAllNestedMenus();

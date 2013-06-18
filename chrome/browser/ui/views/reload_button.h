@@ -59,7 +59,7 @@ class ReloadButton : public views::ButtonDropDown,
 
   // Overridden from views::ButtonDropDown:
   virtual bool ShouldShowMenu() OVERRIDE;
-  virtual void ShowDropDownMenu() OVERRIDE;
+  virtual void ShowDropDownMenu(ui::MenuSourceType source_type) OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

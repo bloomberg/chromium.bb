@@ -25,7 +25,8 @@ class DesktopBackgroundView : public views::View,
 
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);
 };

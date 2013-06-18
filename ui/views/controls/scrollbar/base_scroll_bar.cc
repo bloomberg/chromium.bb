@@ -273,7 +273,9 @@ enum ScrollBarContextMenuCommands {
   ScrollBarContextMenuCommand_ScrollNext
 };
 
-void BaseScrollBar::ShowContextMenuForView(View* source, const gfx::Point& p) {
+void BaseScrollBar::ShowContextMenuForView(View* source,
+                                           const gfx::Point& p,
+                                           ui::MenuSourceType source_type) {
   Widget* widget = GetWidget();
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   gfx::Point temp_pt(p.x() - widget_bounds.x(), p.y() - widget_bounds.y());
@@ -294,7 +296,7 @@ void BaseScrollBar::ShowContextMenuForView(View* source, const gfx::Point& p) {
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPrev);
   menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollNext);
   if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(p, gfx::Size()),
-          MenuItemView::TOPLEFT, MenuRunner::HAS_MNEMONICS |
+          views::MenuItemView::TOPLEFT, source_type, MenuRunner::HAS_MNEMONICS |
           views::MenuRunner::CONTEXT_MENU) ==
       MenuRunner::MENU_DELETED)
     return;

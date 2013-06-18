@@ -138,7 +138,8 @@ void AppListMenuViews::RunMenuAt(views::MenuButton* button,
                                  const gfx::Point& point) {
   ignore_result(menu_runner_->RunMenuAt(button->GetWidget(), button,
                                         gfx::Rect(point, gfx::Size()),
-                                        MenuItemView::TOPRIGHT, 0));
+                                        MenuItemView::TOPRIGHT,
+                                        ui::MENU_SOURCE_NONE, 0));
 }
 
 void AppListMenuViews::Cancel() {

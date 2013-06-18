@@ -38,7 +38,8 @@ class ActionBoxContextMenu {
   // See comments in menu_runner.h on how the return value should be used.
   views::MenuRunner::RunResult RunMenuAt(
       const gfx::Point& p,
-      views::Widget* parent_widget) WARN_UNUSED_RESULT;
+      views::Widget* parent_widget,
+      ui::MenuSourceType source_type) WARN_UNUSED_RESULT;
 
  private:
   ActionBoxContextMenuController controller_;

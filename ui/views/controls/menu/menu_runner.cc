@@ -333,6 +333,7 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
                                             MenuButton* button,
                                             const gfx::Rect& bounds,
                                             MenuItemView::AnchorPosition anchor,
+                                            ui::MenuSourceType source_type,
                                             int32 types) {
   // The parent of the nested menu will have created a DisplayChangeListener, so
   // we avoid creating a DisplayChangeListener if nested. Drop menus are
@@ -341,12 +342,22 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
     display_change_listener_.reset(
         internal::DisplayChangeListener::Create(parent, this));
   }
-  if ((types & MenuRunner::CONTEXT_MENU) &&
-      parent &&
-      parent->GetCurrentEvent() &&
-      !MenuItemView::IsBubble(anchor))
-    anchor = parent->GetCurrentEvent()->IsGestureEvent() ?
-        MenuItemView::BOTTOMCENTER : MenuItemView::TOPLEFT;
+
+  if (types & CONTEXT_MENU) {
+    switch (source_type) {
+      case ui::MENU_SOURCE_NONE:
+      case ui::MENU_SOURCE_KEYBOARD:
+      case ui::MENU_SOURCE_MOUSE:
+        anchor = MenuItemView::TOPLEFT;
+        break;
+      case ui::MENU_SOURCE_TOUCH:
+      case ui::MENU_SOURCE_TOUCH_EDIT_MENU:
+        anchor = MenuItemView::BOTTOMCENTER;
+        break;
+      default:
+        break;
+    }
+  }
 
   return holder_->RunMenuAt(parent, button, bounds, anchor, types);
 }

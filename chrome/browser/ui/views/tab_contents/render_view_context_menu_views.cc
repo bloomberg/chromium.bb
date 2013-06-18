@@ -48,8 +48,25 @@ void RenderViewContextMenuViews::RunMenuAt(
       (type == content::CONTEXT_MENU_SOURCE_TOUCH ||
           type == content::CONTEXT_MENU_SOURCE_TOUCH_EDIT_MENU) ?
           views::MenuItemView::BOTTOMCENTER : views::MenuItemView::TOPLEFT;
+
+  // TODO(varunjain): remove this by consolidating ui::MenuSourceType and
+  // content::ContextMenuSourceType.
+  ui::MenuSourceType source_type = ui::MENU_SOURCE_NONE;
+  switch (type) {
+    case content::CONTEXT_MENU_SOURCE_MOUSE:
+      source_type = ui::MENU_SOURCE_MOUSE;
+      break;
+    case content::CONTEXT_MENU_SOURCE_KEYBOARD:
+      source_type = ui::MENU_SOURCE_KEYBOARD;
+      break;
+    case content::CONTEXT_MENU_SOURCE_TOUCH:
+      source_type = ui::MENU_SOURCE_TOUCH;
+      break;
+    default:
+      break;
+  }
   if (menu_runner_->RunMenuAt(parent, NULL, gfx::Rect(point, gfx::Size()),
-      anchor_position, views::MenuRunner::HAS_MNEMONICS |
+      anchor_position, source_type, views::MenuRunner::HAS_MNEMONICS |
           views::MenuRunner::CONTEXT_MENU) ==
       views::MenuRunner::MENU_DELETED)
     return;

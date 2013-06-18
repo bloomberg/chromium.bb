@@ -59,7 +59,8 @@ BookmarkContextMenu::BookmarkContextMenu(
 BookmarkContextMenu::~BookmarkContextMenu() {
 }
 
-void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
+void BookmarkContextMenu::RunMenuAt(const gfx::Point& point,
+                                    ui::MenuSourceType source_type) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BOOKMARK_CONTEXT_MENU_SHOWN,
       content::Source<BookmarkContextMenu>(this),
@@ -67,7 +68,7 @@ void BookmarkContextMenu::RunMenuAt(const gfx::Point& point) {
   // width/height don't matter here.
   if (menu_runner_->RunMenuAt(
           parent_widget_, NULL, gfx::Rect(point.x(), point.y(), 0, 0),
-          views::MenuItemView::TOPLEFT,
+          views::MenuItemView::TOPLEFT, source_type,
           (views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::IS_NESTED |
            views::MenuRunner::CONTEXT_MENU)) ==
       views::MenuRunner::MENU_DELETED)

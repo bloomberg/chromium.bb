@@ -137,7 +137,7 @@ class PostEventDispatchHandler : public ui::EventHandler {
          event->type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {
       gfx::Point location(event->location());
       View::ConvertPointToScreen(owner_, &location);
-      owner_->ShowContextMenu(location, true);
+      owner_->ShowContextMenu(location, ui::MENU_SOURCE_TOUCH);
       event->StopPropagation();
     }
   }
@@ -1148,11 +1148,12 @@ bool View::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) const {
 
 // Context menus ---------------------------------------------------------------
 
-void View::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
+void View::ShowContextMenu(const gfx::Point& p,
+                           ui::MenuSourceType source_type) {
   if (!context_menu_controller_)
     return;
 
-  context_menu_controller_->ShowContextMenuForView(this, p);
+  context_menu_controller_->ShowContextMenuForView(this, p, source_type);
 }
 
 // static
@@ -2117,7 +2118,7 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
     gfx::Point location(event.location());
     if (HitTestPoint(location)) {
       ConvertPointToScreen(this, &location);
-      ShowContextMenu(location, true);
+      ShowContextMenu(location, ui::MENU_SOURCE_MOUSE);
       return true;
     }
   }
@@ -2160,7 +2161,7 @@ void View::ProcessMouseReleased(const ui::MouseEvent& event) {
     OnMouseReleased(event);
     if (HitTestPoint(location)) {
       ConvertPointToScreen(this, &location);
-      ShowContextMenu(location, true);
+      ShowContextMenu(location, ui::MENU_SOURCE_MOUSE);
     }
   } else {
     OnMouseReleased(event);

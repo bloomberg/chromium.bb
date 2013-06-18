@@ -234,8 +234,10 @@ void BookmarkEditorView::Close() {
   GetWidget()->Close();
 }
 
-void BookmarkEditorView::ShowContextMenuForView(views::View* source,
-                                                const gfx::Point& point) {
+void BookmarkEditorView::ShowContextMenuForView(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   DCHECK_EQ(tree_view_, source);
   if (!tree_view_->GetSelectedNode())
     return;
@@ -247,6 +249,7 @@ void BookmarkEditorView::ShowContextMenuForView(views::View* source,
 
   if (context_menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
         NULL, gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPRIGHT,
+        source_type,
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
         views::MenuRunner::MENU_DELETED)
     return;

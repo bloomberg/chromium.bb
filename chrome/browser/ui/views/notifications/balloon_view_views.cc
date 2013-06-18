@@ -149,6 +149,7 @@ void BalloonViewImpl::OnMenuButtonClicked(views::View* source,
           options_menu_button_,
           gfx::Rect(screen_location, options_menu_button_->size()),
           views::MenuItemView::TOPRIGHT,
+          ui::MENU_SOURCE_NONE,
           views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
     return;
 }

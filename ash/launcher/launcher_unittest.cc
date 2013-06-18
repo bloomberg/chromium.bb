@@ -75,7 +75,7 @@ TEST_F(LauncherTest, checkHoverAfterMenu) {
   ASSERT_EQ(++button_count, test.GetButtonCount());
   LauncherButton* button = test.GetButton(index);
   button->AddState(LauncherButton::STATE_HOVERED);
-  button->ShowContextMenu(gfx::Point(), true);
+  button->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
   EXPECT_FALSE(button->state() & LauncherButton::STATE_HOVERED);
 
   // Remove it.

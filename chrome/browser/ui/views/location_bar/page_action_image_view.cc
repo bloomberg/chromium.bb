@@ -175,8 +175,10 @@ bool PageActionImageView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-void PageActionImageView::ShowContextMenuForView(View* source,
-                                                 const gfx::Point& point) {
+void PageActionImageView::ShowContextMenuForView(
+    View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   const Extension* extension = owner_->profile()->GetExtensionService()->
       GetExtensionById(page_action()->extension_id(), false);
   if (!extension->ShowConfigureContextMenus())
@@ -188,8 +190,8 @@ void PageActionImageView::ShowContextMenuForView(View* source,
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
   if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(screen_loc, size()),
-          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS |
-          views::MenuRunner::CONTEXT_MENU) ==
+          views::MenuItemView::TOPLEFT, source_type,
+          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
       views::MenuRunner::MENU_DELETED)
     return;
 }

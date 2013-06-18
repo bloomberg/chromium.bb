@@ -89,7 +89,8 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
   // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // Menu::Delegate overrides:
   virtual string16 GetLabel(int id) const OVERRIDE;

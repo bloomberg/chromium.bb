@@ -66,7 +66,8 @@ class SearchResultView : public views::CustomButton,
 
   // views::ContextMenuController overrides:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // SearchResultObserver overrides:
   virtual void OnIconChanged() OVERRIDE;

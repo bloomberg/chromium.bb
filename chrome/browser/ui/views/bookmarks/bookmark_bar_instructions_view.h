@@ -45,7 +45,8 @@ class BookmarkBarInstructionsView : public views::View,
 
  private:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   void UpdateColors();
 

@@ -426,8 +426,8 @@ SystemTray* RootWindowController::GetSystemTray() {
   return shelf_->status_area_widget()->system_tray();
 }
 
-void RootWindowController::ShowContextMenu(
-    const gfx::Point& location_in_screen) {
+void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
+                                           ui::MenuSourceType source_type) {
   DCHECK(Shell::GetInstance()->delegate());
   scoped_ptr<ui::MenuModel> menu_model(
       Shell::GetInstance()->delegate()->CreateContextMenu(root_window()));
@@ -444,7 +444,8 @@ void RootWindowController::ShowContextMenu(
   views::MenuRunner menu_runner(menu_model.get());
   if (menu_runner.RunMenuAt(background->widget(),
           NULL, gfx::Rect(location_in_screen, gfx::Size()),
-          views::MenuItemView::TOPLEFT, views::MenuRunner::CONTEXT_MENU) ==
+          views::MenuItemView::TOPLEFT, source_type,
+          views::MenuRunner::CONTEXT_MENU) ==
       views::MenuRunner::MENU_DELETED) {
     return;
   }

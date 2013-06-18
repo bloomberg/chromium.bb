@@ -302,7 +302,7 @@ bool WebNotificationTray::ShouldShowMessageCenter() {
         status_area_widget()->system_tray()->HasNotificationBubble());
 }
 
-void WebNotificationTray::ShowQuietModeMenu() {
+void WebNotificationTray::ShowQuietModeMenu(const ui::Event& event) {
   base::AutoReset<bool> reset(&should_block_shelf_auto_hide_, true);
   scoped_ptr<ui::MenuModel> menu_model(
       message_center_tray_->CreateQuietModeMenu());
@@ -314,6 +314,7 @@ void WebNotificationTray::ShowQuietModeMenu() {
       NULL,
       gfx::Rect(point, bounds().size()),
       views::MenuItemView::BUBBLE_ABOVE,
+      ui::GetMenuSourceTypeForEvent(event),
       views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
     return;
 
@@ -410,7 +411,7 @@ void WebNotificationTray::HideBubbleWithView(
 
 bool WebNotificationTray::PerformAction(const ui::Event& event) {
   if (ShouldShowQuietModeMenu(event)) {
-    ShowQuietModeMenu();
+    ShowQuietModeMenu(event);
     return true;
   }
 

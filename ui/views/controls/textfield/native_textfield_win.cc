@@ -613,7 +613,9 @@ void NativeTextfieldWin::OnChar(TCHAR ch, UINT repeat_count, UINT flags) {
 
 void NativeTextfieldWin::OnContextMenu(HWND window, const POINT& point) {
   POINT p(point);
+  ui::MenuSourceType source_type = ui::MENU_SOURCE_MOUSE;
   if (point.x == -1 || point.y == -1) {
+    source_type = ui::MENU_SOURCE_KEYBOARD;
     GetCaretPos(&p);
     MapWindowPoints(HWND_DESKTOP, &p, 1);
   }
@@ -624,7 +626,7 @@ void NativeTextfieldWin::OnContextMenu(HWND window, const POINT& point) {
 
   ignore_result(context_menu_runner_->RunMenuAt(textfield_->GetWidget(), NULL,
       gfx::Rect(gfx::Point(p), gfx::Size()), MenuItemView::TOPLEFT,
-      MenuRunner::HAS_MNEMONICS));
+      source_type, MenuRunner::HAS_MNEMONICS));
 }
 
 void NativeTextfieldWin::OnCopy() {

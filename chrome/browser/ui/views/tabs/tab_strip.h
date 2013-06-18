@@ -187,7 +187,8 @@ class TabStrip : public views::View,
   virtual void AddSelectionFromAnchorTo(Tab* tab) OVERRIDE;
   virtual void CloseTab(Tab* tab, CloseTabSource source) OVERRIDE;
   virtual void ShowContextMenuForTab(Tab* tab,
-                                     const gfx::Point& p) OVERRIDE;
+                                     const gfx::Point& p,
+                                     ui::MenuSourceType source_type) OVERRIDE;
   virtual bool IsActiveTab(const Tab* tab) const OVERRIDE;
   virtual bool IsTabSelected(const Tab* tab) const OVERRIDE;
   virtual bool IsTabPinned(const Tab* tab) const OVERRIDE;

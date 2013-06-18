@@ -247,7 +247,8 @@ bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-void CustomButton::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
+void CustomButton::ShowContextMenu(const gfx::Point& p,
+                                   ui::MenuSourceType source_type) {
   if (!context_menu_controller())
     return;
 
@@ -255,7 +256,7 @@ void CustomButton::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
   // we won't get a mouse exited and reset state. Reset it now to be sure.
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
-  View::ShowContextMenu(p, is_mouse_gesture);
+  View::ShowContextMenu(p, source_type);
 }
 
 void CustomButton::OnDragDone() {

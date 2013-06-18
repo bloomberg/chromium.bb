@@ -547,6 +547,7 @@ void AutofillDialogViews::AccountChooser::OnMouseReleased(
                               NULL,
                               GetBoundsInScreen(),
                               views::MenuItemView::TOPRIGHT,
+                              ui::MENU_SOURCE_MOUSE,
                               0));
 }
 
@@ -1300,6 +1301,7 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
                               NULL,
                               bounds,
                               views::MenuItemView::TOPRIGHT,
+                              ui::GetMenuSourceTypeForEvent(event),
                               0));
   group->container->SetActive(false);
   group->suggested_button->SetState(state);

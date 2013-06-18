@@ -55,7 +55,7 @@ const int kMinMultiLineContentsWidth = 250;
 // The minimum width of the media menu buttons.
 const int kMinMediaMenuButtonWidth = 100;
 
-}
+}  // namespace
 
 using content::PluginService;
 using content::WebContents;
@@ -464,6 +464,7 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
       i->first,
       gfx::Rect(screen_location, i->first->size()),
       views::MenuItemView::TOPLEFT,
+      ui::MENU_SOURCE_NONE,
       views::MenuRunner::HAS_MNEMONICS));
 }
 

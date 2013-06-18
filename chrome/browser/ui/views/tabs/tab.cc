@@ -717,9 +717,10 @@ void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
 // Tab, views::ContextMenuController overrides:
 
 void Tab::ShowContextMenuForView(views::View* source,
-                                     const gfx::Point& point) {
+                                 const gfx::Point& point,
+                                 ui::MenuSourceType source_type) {
   if (controller() && !closing())
-    controller()->ShowContextMenuForTab(this, point);
+    controller()->ShowContextMenuForTab(this, point, source_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

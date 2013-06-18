@@ -45,7 +45,8 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   virtual ~BookmarkContextMenu();
 
   // Shows the context menu at the specified point.
-  void RunMenuAt(const gfx::Point& point);
+  void RunMenuAt(const gfx::Point& point,
+                 ui::MenuSourceType source_type);
 
   views::MenuItemView* menu() const { return menu_; }
 

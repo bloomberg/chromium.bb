@@ -95,10 +95,11 @@ class BrowserTabStripController::TabContextMenuContents
     controller_ = NULL;
   }
 
-  void RunMenuAt(const gfx::Point& point) {
+  void RunMenuAt(const gfx::Point& point, ui::MenuSourceType source_type) {
     if (menu_runner_->RunMenuAt(
             tab_->GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-            views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS |
+            views::MenuItemView::TOPLEFT, source_type,
+            views::MenuRunner::HAS_MNEMONICS |
             views::MenuRunner::CONTEXT_MENU) ==
         views::MenuRunner::MENU_DELETED)
       return;
@@ -279,10 +280,12 @@ void BrowserTabStripController::CloseTab(int model_index,
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
-void BrowserTabStripController::ShowContextMenuForTab(Tab* tab,
-                                                      const gfx::Point& p) {
+void BrowserTabStripController::ShowContextMenuForTab(
+    Tab* tab,
+    const gfx::Point& p,
+    ui::MenuSourceType source_type) {
   context_menu_contents_.reset(new TabContextMenuContents(tab, this));
-  context_menu_contents_->RunMenuAt(p);
+  context_menu_contents_->RunMenuAt(p, source_type);
 }
 
 void BrowserTabStripController::UpdateLoadingAnimations() {

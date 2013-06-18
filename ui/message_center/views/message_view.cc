@@ -301,7 +301,8 @@ class MessageViewContextMenuController : public views::ContextMenuController {
  protected:
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   message_center::MessageCenter* message_center_;
   std::string notification_id_;
@@ -323,7 +324,8 @@ MessageViewContextMenuController::~MessageViewContextMenuController() {
 
 void MessageViewContextMenuController::ShowContextMenuForView(
     views::View* source,
-    const gfx::Point& point) {
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   MenuModel menu_model(message_center_, notification_id_,
                        display_source_, extension_id_);
   if (menu_model.GetItemCount() == 0)
@@ -336,6 +338,7 @@ void MessageViewContextMenuController::ShowContextMenuForView(
       NULL,
       gfx::Rect(point, gfx::Size()),
       views::MenuItemView::TOPRIGHT,
+      source_type,
       views::MenuRunner::HAS_MNEMONICS));
 }
 

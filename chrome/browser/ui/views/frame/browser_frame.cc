@@ -172,7 +172,8 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
 }
 
 void BrowserFrame::ShowContextMenuForView(views::View* source,
-                                          const gfx::Point& p) {
+                                          const gfx::Point& p,
+                                          ui::MenuSourceType source_type) {
   if (chrome::IsRunningInForcedAppMode())
     return;
 
@@ -187,6 +188,7 @@ void BrowserFrame::ShowContextMenuForView(views::View* source,
     menu_runner_.reset(new views::MenuRunner(GetSystemMenuModel()));
     if (menu_runner_->RunMenuAt(source->GetWidget(), NULL,
           gfx::Rect(p, gfx::Size(0,0)), views::MenuItemView::TOPLEFT,
+          source_type,
           views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
         views::MenuRunner::MENU_DELETED)
       return;

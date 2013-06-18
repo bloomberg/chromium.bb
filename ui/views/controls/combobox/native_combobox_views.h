@@ -73,7 +73,7 @@ class NativeComboboxViews : public views::View,
   void PaintText(gfx::Canvas* canvas);
 
   // Show the drop down list
-  void ShowDropDownMenu();
+  void ShowDropDownMenu(ui::MenuSourceType source_type);
 
   // The parent combobox, the owner of this object.
   Combobox* combobox_;

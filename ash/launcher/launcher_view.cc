@@ -1498,14 +1498,14 @@ void LauncherView::ButtonPressed(views::Button* sender,
   }
 
   if (model_->items()[view_index].type != TYPE_APP_LIST)
-    ShowListMenuForView(model_->items()[view_index], sender, event.flags());
+    ShowListMenuForView(model_->items()[view_index], sender, event);
 }
 
 bool LauncherView::ShowListMenuForView(const LauncherItem& item,
                                        views::View* source,
-                                       int event_flags) {
+                                       const ui::Event& event) {
   scoped_ptr<ash::LauncherMenuModel> menu_model;
-  menu_model.reset(delegate_->CreateApplicationMenu(item, event_flags));
+  menu_model.reset(delegate_->CreateApplicationMenu(item, event.flags()));
 
   // Make sure we have a menu and it has at least two items in addition to the
   // application title and the 3 spacing separators.
@@ -1516,12 +1516,14 @@ bool LauncherView::ShowListMenuForView(const LauncherItem& item,
                new LauncherMenuModelAdapter(menu_model.get())),
            source,
            gfx::Point(),
-           false);
+           false,
+           ui::GetMenuSourceTypeForEvent(event));
   return true;
 }
 
 void LauncherView::ShowContextMenuForView(views::View* source,
-                                          const gfx::Point& point) {
+                                          const gfx::Point& point,
+                                          ui:: MenuSourceType source_type) {
   int view_index = view_model_->GetIndexOfView(source);
   if (view_index != -1 &&
       model_->items()[view_index].type == TYPE_APP_LIST) {
@@ -1531,7 +1533,7 @@ void LauncherView::ShowContextMenuForView(views::View* source,
   tooltip_->Close();
 
   if (view_index == -1) {
-    Shell::GetInstance()->ShowContextMenu(point);
+    Shell::GetInstance()->ShowContextMenu(point, source_type);
     return;
   }
   scoped_ptr<ui::MenuModel> menu_model(delegate_->CreateContextMenu(
@@ -1547,14 +1549,16 @@ void LauncherView::ShowContextMenuForView(views::View* source,
                new views::MenuModelAdapter(menu_model.get())),
            source,
            point,
-           true);
+           true,
+           source_type);
 }
 
 void LauncherView::ShowMenu(
     scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
     views::View* source,
     const gfx::Point& click_point,
-    bool context_menu) {
+    bool context_menu,
+    ui::MenuSourceType source_type) {
   closing_event_time_ = base::TimeDelta();
   launcher_menu_runner_.reset(
       new views::MenuRunner(menu_model_adapter->CreateMenu()));
@@ -1612,7 +1616,9 @@ void LauncherView::ShowMenu(
           NULL,
           anchor_point,
           menu_alignment,
-          views::MenuRunner::CONTEXT_MENU) == views::MenuRunner::MENU_DELETED) {
+          source_type,
+          context_menu ? views::MenuRunner::CONTEXT_MENU : 0) ==
+      views::MenuRunner::MENU_DELETED) {
     if (!got_deleted) {
       got_deleted_ = NULL;
       shelf->ForceUndimming(false);

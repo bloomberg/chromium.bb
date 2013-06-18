@@ -95,6 +95,7 @@ class VIEWS_EXPORT MenuRunner {
                       MenuButton* button,
                       const gfx::Rect& bounds,
                       MenuItemView::AnchorPosition anchor,
+                      ui::MenuSourceType source_type,
                       int32 types) WARN_UNUSED_RESULT;
 
   // Returns true if we're in a nested message loop running the menu.

@@ -80,7 +80,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   // views::ContextMenuController overrides:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // views::CustomButton overrides:
   virtual void StateChanged() OVERRIDE;

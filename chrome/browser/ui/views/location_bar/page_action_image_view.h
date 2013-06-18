@@ -63,7 +63,8 @@ class PageActionImageView : public views::ImageView,
 
   // Overridden from views::ContextMenuController.
   virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // Overriden from ExtensionActionIconFactory::Observer.
   virtual void OnIconUpdated() OVERRIDE;

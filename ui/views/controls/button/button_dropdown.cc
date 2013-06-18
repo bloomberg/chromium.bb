@@ -70,7 +70,8 @@ bool ButtonDropDown::OnMousePressed(const ui::MouseEvent& event) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ButtonDropDown::ShowDropDownMenu,
-                   show_menu_factory_.GetWeakPtr()),
+                   show_menu_factory_.GetWeakPtr(),
+                   ui::GetMenuSourceTypeForEvent(event)),
         base::TimeDelta::FromMilliseconds(kMenuTimerDelay));
   }
   return ImageButton::OnMousePressed(event);
@@ -85,7 +86,7 @@ bool ButtonDropDown::OnMouseDragged(const ui::MouseEvent& event) {
     // it immediately.
     if (event.y() > y_position_on_lbuttondown_ + GetHorizontalDragThreshold()) {
       show_menu_factory_.InvalidateWeakPtrs();
-      ShowDropDownMenu();
+      ShowDropDownMenu(ui::GetMenuSourceTypeForEvent(event));
     }
   }
 
@@ -132,12 +133,13 @@ void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void ButtonDropDown::ShowContextMenuForView(View* source,
-                                            const gfx::Point& point) {
+                                            const gfx::Point& point,
+                                            ui::MenuSourceType source_type) {
   if (!enabled())
     return;
 
   show_menu_factory_.InvalidateWeakPtrs();
-  ShowDropDownMenu();
+  ShowDropDownMenu(source_type);
 }
 
 bool ButtonDropDown::ShouldEnterPushedState(const ui::Event& event) {
@@ -153,7 +155,7 @@ bool ButtonDropDown::ShouldShowMenu() {
   return true;
 }
 
-void ButtonDropDown::ShowDropDownMenu() {
+void ButtonDropDown::ShowDropDownMenu(ui::MenuSourceType source_type) {
   if (!ShouldShowMenu())
     return;
 
@@ -191,6 +193,7 @@ void ButtonDropDown::ShowDropDownMenu() {
         menu_runner_->RunMenuAt(GetWidget(), NULL,
                                 gfx::Rect(menu_position, gfx::Size(0, 0)),
                                 MenuItemView::TOPLEFT,
+                                source_type,
                                 MenuRunner::HAS_MNEMONICS);
     if (result == MenuRunner::MENU_DELETED)
       return;
@@ -202,6 +205,7 @@ void ButtonDropDown::ShowDropDownMenu() {
         menu_runner_->RunMenuAt(GetWidget(), NULL,
                                 gfx::Rect(menu_position, gfx::Size(0, 0)),
                                 MenuItemView::TOPLEFT,
+                                source_type,
                                 MenuRunner::HAS_MNEMONICS);
     if (result == MenuRunner::MENU_DELETED)
       return;

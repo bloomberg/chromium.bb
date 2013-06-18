@@ -269,10 +269,12 @@ void NativeControl::OnContextMenu(const POINT& location) {
   if (!context_menu_controller())
     return;
 
-  if (location.x == -1 && location.y == -1)
-    ShowContextMenu(GetKeyboardContextMenuLocation(), false);
-  else
-    ShowContextMenu(gfx::Point(location), true);
+  if (location.x == -1 && location.y == -1) {
+    ShowContextMenu(GetKeyboardContextMenuLocation(),
+                    ui::MENU_SOURCE_KEYBOARD);
+  } else {
+    ShowContextMenu(gfx::Point(location), ui::MENU_SOURCE_MOUSE);
+  }
 }
 
 void NativeControl::OnFocus() {

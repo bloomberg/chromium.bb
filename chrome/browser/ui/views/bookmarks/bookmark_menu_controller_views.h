@@ -99,7 +99,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   virtual bool ShowContextMenu(views::MenuItemView* source,
                                int id,
                                const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
+                               ui::MenuSourceType source_type) OVERRIDE;
   virtual void DropMenuClosed(views::MenuItemView* menu) OVERRIDE;
   virtual bool CanDrag(views::MenuItemView* menu) OVERRIDE;
   virtual void WriteDragData(views::MenuItemView* sender,

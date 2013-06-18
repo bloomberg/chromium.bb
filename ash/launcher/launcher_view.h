@@ -243,11 +243,12 @@ class ASH_EXPORT LauncherView : public views::View,
   // The |event_flags| are the flags of the event which triggered this menu.
   bool ShowListMenuForView(const LauncherItem& item,
                            views::View* source,
-                           int event_flags);
+                           const ui::Event& event);
 
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // Show either a context or normal click menu of given |menu_model_adapter|.
   // If |context_menu| is set, the displayed menu is a context menu and not
@@ -256,7 +257,8 @@ class ASH_EXPORT LauncherView : public views::View,
   void ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
                 views::View* source,
                 const gfx::Point& click_point,
-                bool context_menu);
+                bool context_menu,
+                ui::MenuSourceType source_type);
 
   // Overridden from views::BoundsAnimatorObserver:
   virtual void OnBoundsAnimatorProgressed(

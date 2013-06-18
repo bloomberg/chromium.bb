@@ -1021,8 +1021,10 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
     controller_->CloseTab(model_index, source);
 }
 
-void TabStrip::ShowContextMenuForTab(Tab* tab, const gfx::Point& p) {
-  controller_->ShowContextMenuForTab(tab, p);
+void TabStrip::ShowContextMenuForTab(Tab* tab,
+                                     const gfx::Point& p,
+                                     ui::MenuSourceType source_type) {
+  controller_->ShowContextMenuForTab(tab, p, source_type);
 }
 
 bool TabStrip::IsActiveTab(const Tab* tab) const {
@@ -1568,7 +1570,7 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
       Tab* tab = FindTabForEvent(local_point);
       if (tab) {
         ConvertPointToScreen(this, &local_point);
-        ShowContextMenuForTab(tab, local_point);
+        ShowContextMenuForTab(tab, local_point, ui::MENU_SOURCE_TOUCH);
       }
       break;
     }

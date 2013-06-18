@@ -4,6 +4,10 @@
 
 #include "ui/views/controls/menu/menu_controller.h"
 
+#if defined(OS_WIN)
+#include <windowsx.h>
+#endif
+
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/run_loop.h"
@@ -490,7 +494,8 @@ void MenuController::OnMouseReleased(SubmenuView* source,
            == views::MenuItemView::kEmptyMenuItemViewID)
       menu = part.parent;
 
-    if (menu != NULL && ShowContextMenu(menu, source, event))
+    if (menu != NULL && ShowContextMenu(menu, source, event,
+                                        ui::MENU_SOURCE_MOUSE))
       return;
   }
 
@@ -554,7 +559,7 @@ void MenuController::OnGestureEvent(SubmenuView* source,
     event->StopPropagation();
   } else if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
     if (part.type == MenuPart::MENU_ITEM && part.menu) {
-      if (ShowContextMenu(part.menu, source, *event))
+      if (ShowContextMenu(part.menu, source, *event, ui::MENU_SOURCE_TOUCH))
         event->StopPropagation();
     }
   } else if (event->type() == ui::ET_GESTURE_TAP) {
@@ -957,8 +962,11 @@ bool MenuController::Dispatch(const MSG& msg) {
       if (item && item->GetRootMenuItem() != item) {
         gfx::Point screen_loc(0, item->height());
         View::ConvertPointToScreen(item, &screen_loc);
+        ui::MenuSourceType source_type = ui::MENU_SOURCE_MOUSE;
+        if (GET_X_LPARAM(msg.lParam) == -1 && GET_Y_LPARAM(msg.lParam) == -1)
+          source_type = ui::MENU_SOURCE_KEYBOARD;
         item->GetDelegate()->ShowContextMenu(item, item->GetCommand(),
-                                             screen_loc, false);
+                                             screen_loc, source_type);
       }
       return true;
     }
@@ -1270,7 +1278,8 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
 
 bool MenuController::ShowContextMenu(MenuItemView* menu_item,
                                      SubmenuView* source,
-                                     const ui::LocatedEvent& event) {
+                                     const ui::LocatedEvent& event,
+                                     ui::MenuSourceType source_type) {
   // Set the selection immediately, making sure the submenu is only open
   // if it already was.
   int selection_types = SELECTION_UPDATE_IMMEDIATELY;
@@ -1281,7 +1290,7 @@ bool MenuController::ShowContextMenu(MenuItemView* menu_item,
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &loc);
 
   if (menu_item->GetDelegate()->ShowContextMenu(
-          menu_item, menu_item->GetCommand(), loc, true)) {
+          menu_item, menu_item->GetCommand(), loc, source_type)) {
     SendMouseCaptureLostToActiveView();
     return true;
   }

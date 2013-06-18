@@ -73,7 +73,7 @@ class WrenchMenu : public views::MenuDelegate,
   virtual bool ShowContextMenu(views::MenuItemView* source,
                                int id,
                                const gfx::Point& p,
-                               bool is_mouse_gesture) OVERRIDE;
+                               ui::MenuSourceType source_type) OVERRIDE;
   virtual bool CanDrag(views::MenuItemView* menu) OVERRIDE;
   virtual void WriteDragData(views::MenuItemView* sender,
                              ui::OSExchangeData* data) OVERRIDE;

@@ -908,11 +908,6 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
   return chrome::DropBookmarks(browser_->profile(), data, parent_node, index);
 }
 
-void BookmarkBarView::ShowContextMenu(const gfx::Point& p,
-                                      bool is_mouse_gesture) {
-  ShowContextMenuForView(this, p);
-}
-
 void BookmarkBarView::OnThemeChanged() {
   UpdateColors();
 }
@@ -1214,7 +1209,8 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
 }
 
 void BookmarkBarView::ShowContextMenuForView(views::View* source,
-                                             const gfx::Point& point) {
+                                             const gfx::Point& point,
+                                             ui::MenuSourceType source_type) {
   if (!model_->loaded()) {
     // Don't do anything if the model isn't loaded.
     return;
@@ -1250,7 +1246,7 @@ void BookmarkBarView::ShowContextMenuForView(views::View* source,
       GetWidget(), browser_, profile,
       browser_->tab_strip_model()->GetActiveWebContents(),
       parent, nodes, close_on_remove));
-  context_menu_->RunMenuAt(point);
+  context_menu_->RunMenuAt(point, source_type);
 }
 
 void BookmarkBarView::Init() {

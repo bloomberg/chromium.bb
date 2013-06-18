@@ -98,7 +98,8 @@ class DownloadItemView : public views::ButtonListener,
 
   // Overridden from views::ContextMenuController.
   virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& point) OVERRIDE;
+                                      const gfx::Point& point,
+                                      ui::MenuSourceType source_type) OVERRIDE;
 
   // ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
@@ -159,7 +160,8 @@ class DownloadItemView : public views::ButtonListener,
 
   // Shows the context menu at the specified location. |point| is in the view's
   // coordinate system.
-  void ShowContextMenuImpl(const gfx::Point& point, bool is_mouse_gesture);
+  void ShowContextMenuImpl(const gfx::Point& point,
+                           ui::MenuSourceType source_type);
 
   // Common code for handling pointer events (i.e. mouse or gesture).
   void HandlePressEvent(const ui::LocatedEvent& event, bool active_event);

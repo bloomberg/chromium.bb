@@ -813,7 +813,8 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   gfx::Rect bounds(screen_loc, host->size());
   content::RecordAction(UserMetricsAction("ShowAppMenu"));
   if (menu_runner_->RunMenuAt(host->GetWidget(), host, bounds,
-          MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
+          MenuItemView::TOPRIGHT, ui::MENU_SOURCE_NONE,
+          views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
   if (bookmark_menu_delegate_.get()) {
@@ -898,10 +899,10 @@ int WrenchMenu::OnPerformDrop(MenuItemView* menu,
 bool WrenchMenu::ShowContextMenu(MenuItemView* source,
                                  int id,
                                  const gfx::Point& p,
-                                 bool is_mouse_gesture) {
+                                 ui::MenuSourceType source_type) {
   return is_bookmark_command(id) ?
       bookmark_menu_delegate_->ShowContextMenu(source, id, p,
-                                               is_mouse_gesture) :
+                                               source_type) :
       false;
 }
 

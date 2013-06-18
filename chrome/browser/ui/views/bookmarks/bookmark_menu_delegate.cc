@@ -273,7 +273,7 @@ int BookmarkMenuDelegate::OnPerformDrop(
 bool BookmarkMenuDelegate::ShowContextMenu(MenuItemView* source,
                                            int id,
                                            const gfx::Point& p,
-                                           bool is_mouse_gesture) {
+                                           ui::MenuSourceType source_type) {
   DCHECK(menu_id_to_node_map_.find(id) != menu_id_to_node_map_.end());
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(menu_id_to_node_map_[id]);
@@ -291,7 +291,7 @@ bool BookmarkMenuDelegate::ShowContextMenu(MenuItemView* source,
           nodes,
           close_on_delete));
   context_menu_->set_observer(this);
-  context_menu_->RunMenuAt(p);
+  context_menu_->RunMenuAt(p, source_type);
   context_menu_.reset(NULL);
   return true;
 }

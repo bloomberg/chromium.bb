@@ -290,7 +290,8 @@ void SearchResultView::OnActionIconsChanged() {
 }
 
 void SearchResultView::ShowContextMenuForView(views::View* source,
-                                              const gfx::Point& point) {
+                                              const gfx::Point& point,
+                                              ui::MenuSourceType source_type) {
   ui::MenuModel* menu_model = result_->GetContextMenuModel();
   if (!menu_model)
     return;
@@ -298,7 +299,8 @@ void SearchResultView::ShowContextMenuForView(views::View* source,
   context_menu_runner_.reset(new views::MenuRunner(menu_model));
   if (context_menu_runner_->RunMenuAt(
           GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
+          views::MenuItemView::TOPLEFT, source_type,
+          views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
 }

@@ -71,6 +71,7 @@ void ActionBoxMenu::RunMenu(views::MenuButton* menu_button,
                               menu_button,
                               gfx::Rect(menu_offset, menu_button->size()),
                               views::MenuItemView::TOPRIGHT,
+                              ui::MENU_SOURCE_NONE,
                               views::MenuRunner::HAS_MNEMONICS));
 }
 
@@ -92,7 +93,7 @@ void ActionBoxMenu::ExecuteCommand(int id) {
 bool ActionBoxMenu::ShowContextMenu(views::MenuItemView* source,
                              int id,
                              const gfx::Point& p,
-                             bool is_mouse_gesture) {
+                             ui::MenuSourceType source_type) {
   DCHECK(menu_parent_);
 
   int index = model_->GetIndexOfCommandId(id);
@@ -101,7 +102,7 @@ bool ActionBoxMenu::ShowContextMenu(views::MenuItemView* source,
 
   context_menu_.reset(
       new ActionBoxContextMenu(browser_, model_->GetExtensionAt(index)));
-  if (context_menu_->RunMenuAt(p, menu_parent_) ==
+  if (context_menu_->RunMenuAt(p, menu_parent_, source_type) ==
       views::MenuRunner::MENU_DELETED)
     return true;
   context_menu_.reset();

@@ -184,7 +184,8 @@ void LanguageSwitchMenu::OnMenuButtonClicked(views::View* source,
 
   if (menu_runner_->RunMenuAt(button->GetWidget(), button,
           gfx::Rect(new_pt, gfx::Size()), views::MenuItemView::TOPLEFT,
-          views::MenuRunner::HAS_MNEMONICS) == views::MenuRunner::MENU_DELETED)
+          ui::MENU_SOURCE_NONE, views::MenuRunner::HAS_MNEMONICS) ==
+              views::MenuRunner::MENU_DELETED)
     return;
 }
 
