@@ -761,7 +761,10 @@ void LocationBarView::Layout() {
           item_padding, (*i)->GetBuiltInHorizontalPadding(), (*i));
     }
   }
-  if (!keyword.empty() && is_keyword_hint) {
+  // Because IMEs may eat the tab key, we don't show "press tab to search" while
+  // IME composition is in progress.
+  if (!keyword.empty() && is_keyword_hint &&
+      !location_entry_->IsImeComposing()) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
                                        location_height, true, 0, item_padding,
                                        item_padding, 0, keyword_hint_view_);
