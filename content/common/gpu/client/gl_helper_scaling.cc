@@ -557,8 +557,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
 
     vertex_program.append(
         "  gl_Position = vec4(a_position, 0.0, 1.0);\n"
-        "  vec2 texcoord = src_subrect.xy + a_texcoord * src_subrect.zw;\n"
-        "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n");
+        "  vec2 texcoord = src_subrect.xy + a_texcoord * src_subrect.zw;\n");
 
     switch (type) {
       case SHADER_BILINEAR:
@@ -575,6 +574,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords;\n");  // 2 texcoords packed in one quad
         vertex_program.append(
+            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 4.0;\n"
             "  v_texcoords.xy = texcoord + step;\n"
             "  v_texcoords.zw = texcoord - step;\n");
@@ -591,6 +591,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "varying vec4 v_texcoords1;\n"  // 2 texcoords packed in one quad
             "varying vec2 v_texcoords2;\n");
         vertex_program.append(
+            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 3.0;\n"
             "  v_texcoords1.xy = texcoord + step;\n"
             "  v_texcoords1.zw = texcoord;\n"
@@ -607,6 +608,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords[2];\n");
         vertex_program.append(
+            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 8.0;\n"
             "  v_texcoords[0].xy = texcoord - step * 3.0;\n"
             "  v_texcoords[0].zw = texcoord - step;\n"
@@ -628,7 +630,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords[2];\n");
         vertex_program.append(
-            "  step = src_subrect.zw / 4.0 / dst_pixelsize;\n"
+            "  vec2 step = src_subrect.zw / 4.0 / dst_pixelsize;\n"
             "  v_texcoords[0].xy = texcoord + vec2(step.x, step.y);\n"
             "  v_texcoords[0].zw = texcoord + vec2(step.x, -step.y);\n"
             "  v_texcoords[1].xy = texcoord + vec2(-step.x, step.y);\n"
@@ -652,7 +654,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "const float LobeWeight = -3.0 / 64.0;\n"
             "varying vec4 v_texcoords[2];\n");
         vertex_program.append(
-            "  step = src_subrect.zw * scaling_vector / src_pixelsize;\n"
+            "  vec2 step = src_subrect.zw * scaling_vector / src_pixelsize;\n"
             "  v_texcoords[0].xy = texcoord - LobeDist * step;\n"
             "  v_texcoords[0].zw = texcoord - CenterDist * step;\n"
             "  v_texcoords[1].xy = texcoord + CenterDist * step;\n"
@@ -719,6 +721,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "varying vec4 v_texcoords[2];\n"
             "uniform vec4 color_weights;\n");
         vertex_program.append(
+            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 4.0;\n"
             "  v_texcoords[0].xy = texcoord - step * 1.5;\n"
             "  v_texcoords[0].zw = texcoord - step * 0.5;\n"
@@ -763,6 +766,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords[2];\n");
         vertex_program.append(
+            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 4.0;\n"
             "  v_texcoords[0].xy = texcoord - step * 1.5;\n"
             "  v_texcoords[0].zw = texcoord - step * 0.5;\n"
@@ -803,6 +807,7 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
         shared_variables.append(
             "varying vec4 v_texcoords;\n");
         vertex_program.append(
+            "  vec2 step = scaling_vector * src_subrect.zw / dst_pixelsize;\n"
             "  step /= 2.0;\n"
             "  v_texcoords.xy = texcoord - step * 0.5;\n"
             "  v_texcoords.zw = texcoord + step * 0.5;\n");
