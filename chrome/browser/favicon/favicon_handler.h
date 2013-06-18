@@ -230,8 +230,6 @@ class FaviconHandler {
                      const GURL& icon_url,
                      const gfx::Image& image);
 
-  void FetchFaviconInternal();
-
   // Return the current candidate if any.
   content::FaviconURL* current_candidate() {
     return (image_urls_.size() > 0) ? &image_urls_[0] : NULL;
