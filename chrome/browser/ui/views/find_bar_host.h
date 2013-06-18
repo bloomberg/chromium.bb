@@ -117,6 +117,10 @@ class FindBarHost : public DropdownBarHost,
   virtual void RegisterAccelerators() OVERRIDE;
   virtual void UnregisterAccelerators() OVERRIDE;
 
+ protected:
+  // Overridden from DropdownBarHost:
+  virtual void OnVisibilityChanged() OVERRIDE;
+
  private:
   // Allows implementation to tweak widget position.
   void GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect);

@@ -275,6 +275,62 @@ TEST_F(ImmersiveModeControllerAshTest, OnMouseEvent) {
   EXPECT_FALSE(controller()->IsRevealed());
 }
 
+// Test that hovering the mouse over the find bar does not end a reveal.
+TEST_F(ImmersiveModeControllerAshTest, FindBar) {
+  // Set up initial state.
+  controller()->SetEnabled(true);
+  ASSERT_TRUE(controller()->IsEnabled());
+  ASSERT_FALSE(controller()->IsRevealed());
+
+  // Compute the find bar bounds relative to TopContainerView. The find
+  // bar is aligned with the bottom right of the TopContainerView.
+  gfx::Rect find_bar_bounds(top_container()->bounds().right() - 100,
+                            top_container()->bounds().bottom(),
+                            100,
+                            50);
+
+  gfx::Point find_bar_position_in_screen = find_bar_bounds.origin();
+  views::View::ConvertPointToScreen(top_container(),
+      &find_bar_position_in_screen);
+  gfx::Rect find_bar_bounds_in_screen(find_bar_position_in_screen,
+      find_bar_bounds.size());
+  controller()->OnFindBarVisibleBoundsChanged(find_bar_bounds_in_screen);
+
+  // Moving the mouse over the find bar does not end the reveal.
+  gfx::Point over_find_bar(find_bar_bounds.x() + 25, find_bar_bounds.y() + 25);
+  AttemptReveal(MODALITY_MOUSE);
+  EXPECT_TRUE(controller()->IsRevealed());
+  MoveMouse(over_find_bar.x(), over_find_bar.y());
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  // Moving the mouse off of the find bar horizontally ends the reveal.
+  MoveMouse(find_bar_bounds.x() - 25, find_bar_bounds.y() + 25);
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Moving the mouse off of the find bar vertically ends the reveal.
+  AttemptReveal(MODALITY_MOUSE);
+  EXPECT_TRUE(controller()->IsRevealed());
+  MoveMouse(find_bar_bounds.x() + 25, find_bar_bounds.bottom() + 25);
+
+  // Similar to the TopContainerView, moving the mouse slightly off vertically
+  // of the find bar does not end the reveal.
+  AttemptReveal(MODALITY_MOUSE);
+  MoveMouse(find_bar_bounds.x() + 25, find_bar_bounds.bottom() + 1);
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  // Similar to the TopContainerView, clicking the mouse even slightly off of
+  // the find bar ends the reveal.
+  event_generator()->ClickLeftButton();
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Set the find bar bounds to empty. Hovering over the position previously
+  // occupied by the find bar, |over_find_bar|, should end the reveal.
+  controller()->OnFindBarVisibleBoundsChanged(gfx::Rect());
+  AttemptReveal(MODALITY_MOUSE);
+  MoveMouse(over_find_bar.x(), over_find_bar.y());
+  EXPECT_FALSE(controller()->IsRevealed());
+}
+
 // Test revealing the top-of-window views using one modality and ending
 // the reveal via another. For instance, initiating the reveal via a SWIPE_OPEN
 // edge gesture, switching to using the mouse and ending the reveal by moving

@@ -113,6 +113,10 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   virtual void UnregisterAccelerators();
 
  protected:
+  // Called when the drop down bar visibility, aka the value of IsVisible(),
+  // changes.
+  virtual void OnVisibilityChanged();
+
   // Returns the dropdown bar view.
   views::View* view() const { return view_; }
 

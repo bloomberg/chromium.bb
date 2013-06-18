@@ -34,6 +34,8 @@ class ImmersiveModeControllerStub : public ImmersiveModeController {
                                           int y_offset) OVERRIDE;
   virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) OVERRIDE;
   virtual void OnTopContainerBoundsChanged() OVERRIDE;
+  virtual void OnFindBarVisibleBoundsChanged(
+      const gfx::Rect& new_visible_bounds_in_screen) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerStub);

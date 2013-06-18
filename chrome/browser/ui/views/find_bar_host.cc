@@ -312,6 +312,12 @@ void FindBarHost::SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) {
   UpdateWindowEdges(new_pos);
 
   SetWidgetPositionNative(new_pos, no_redraw);
+
+  // Tell the immersive mode controller about the find bar's new bounds. The
+  // immersive mode controller uses the bounds to keep the top-of-window views
+  // revealed when the mouse is hovered over the find bar.
+  browser_view()->immersive_mode_controller()->OnFindBarVisibleBoundsChanged(
+      host()->GetWindowBoundsInScreen());
 }
 
 void FindBarHost::GetWidgetBounds(gfx::Rect* bounds) {
@@ -336,6 +342,17 @@ void FindBarHost::UnregisterAccelerators() {
   focus_manager()->UnregisterAccelerator(escape, this);
 
   DropdownBarHost::UnregisterAccelerators();
+}
+
+void FindBarHost::OnVisibilityChanged() {
+  // Tell the immersive mode controller about the find bar's bounds. The
+  // immersive mode controller uses the bounds to keep the top-of-window views
+  // revealed when the mouse is hovered over the find bar.
+  gfx::Rect visible_bounds;
+  if (IsVisible())
+    visible_bounds = host()->GetWindowBoundsInScreen();
+  browser_view()->immersive_mode_controller()->OnFindBarVisibleBoundsChanged(
+      visible_bounds);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

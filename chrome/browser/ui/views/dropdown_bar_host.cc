@@ -99,18 +99,19 @@ void DropdownBarHost::Show(bool animate) {
   // restore focus when the dropdown widget is closed.
   focus_tracker_.reset(new views::ExternalFocusTracker(view_, focus_manager_));
 
+  bool was_visible = is_visible_;
+  is_visible_ = true;
   if (!animate || disable_animations_during_testing_) {
-    is_visible_ = true;
     animation_->Reset(1);
     AnimationProgressed(animation_.get());
-  } else {
-    if (!is_visible_) {
-      // Don't re-start the animation.
-      is_visible_ = true;
-      animation_->Reset();
-      animation_->Show();
-    }
+  } else if (!was_visible) {
+    // Don't re-start the animation.
+    animation_->Reset();
+    animation_->Show();
   }
+
+  if (!was_visible)
+    OnVisibilityChanged();
 }
 
 void DropdownBarHost::SetFocusAndSelection() {
@@ -209,6 +210,7 @@ void DropdownBarHost::AnimationEnded(const ui::Animation* animation) {
     // Animation has finished closing.
     host_->Hide();
     is_visible_ = false;
+    OnVisibilityChanged();
   } else {
     // Animation has finished opening.
   }
@@ -219,6 +221,9 @@ void DropdownBarHost::AnimationEnded(const ui::Animation* animation) {
 
 void DropdownBarHost::ResetFocusTracker() {
   focus_tracker_.reset(NULL);
+}
+
+void DropdownBarHost::OnVisibilityChanged() {
 }
 
 void DropdownBarHost::GetWidgetBounds(gfx::Rect* bounds) {

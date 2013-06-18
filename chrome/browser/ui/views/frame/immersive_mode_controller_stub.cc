@@ -59,3 +59,7 @@ void ImmersiveModeControllerStub::UnanchorWidgetFromTopContainer(
 
 void ImmersiveModeControllerStub::OnTopContainerBoundsChanged() {
 }
+
+void ImmersiveModeControllerStub::OnFindBarVisibleBoundsChanged(
+    const gfx::Rect& new_visible_bounds_in_screen) {
+}

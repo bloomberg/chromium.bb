@@ -11,6 +11,7 @@ class BookmarkBarView;
 class FullscreenController;
 
 namespace gfx {
+class Rect;
 class Size;
 }
 
@@ -120,6 +121,12 @@ class ImmersiveModeController {
 
   // Called by the TopContainerView to indicate that its bounds have changed.
   virtual void OnTopContainerBoundsChanged() = 0;
+
+  // Called by the find bar to indicate that its visible bounds have changed.
+  // |new_visible_bounds_in_screen| should be empty if the find bar is not
+  // visible.
+  virtual void OnFindBarVisibleBoundsChanged(
+      const gfx::Rect& new_visible_bounds_in_screen) = 0;
 };
 
 namespace chrome {

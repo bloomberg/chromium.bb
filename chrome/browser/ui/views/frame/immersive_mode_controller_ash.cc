@@ -440,6 +440,11 @@ void ImmersiveModeControllerAsh::OnTopContainerBoundsChanged() {
   anchored_widget_manager_->MaybeRepositionAnchoredWidgets();
 }
 
+void ImmersiveModeControllerAsh::OnFindBarVisibleBoundsChanged(
+    const gfx::Rect& new_visible_bounds_in_screen) {
+  find_bar_visible_bounds_in_screen_ = new_visible_bounds_in_screen;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Observers:
 
@@ -762,19 +767,23 @@ void ImmersiveModeControllerAsh::UpdateLocatedEventRevealedLock(
   }
 
   gfx::Rect hit_bounds_in_screen = top_container_->GetBoundsInScreen();
+  gfx::Rect find_bar_hit_bounds_in_screen = find_bar_visible_bounds_in_screen_;
 
-  // Allow the cursor to move slightly below the top container's bottom edge
-  // before sliding closed. This helps when the user is attempting to click on
-  // the bookmark bar and overshoots slightly.
+  // Allow the cursor to move slightly off the top-of-window views before
+  // sliding closed. This helps when the user is attempting to click on the
+  // bookmark bar and overshoots slightly.
   if (event && event->type() == ui::ET_MOUSE_MOVED) {
     const int kBoundsOffsetY = 8;
     hit_bounds_in_screen.Inset(0, 0, 0, -kBoundsOffsetY);
+    find_bar_hit_bounds_in_screen.Inset(0, 0, 0, -kBoundsOffsetY);
   }
 
-  if (hit_bounds_in_screen.Contains(location_in_screen))
+  if (hit_bounds_in_screen.Contains(location_in_screen) ||
+      find_bar_hit_bounds_in_screen.Contains(location_in_screen)) {
     AcquireLocatedEventRevealedLock();
-  else
+  } else {
     located_event_revealed_lock_.reset();
+  }
 }
 
 void ImmersiveModeControllerAsh::AcquireLocatedEventRevealedLock() {

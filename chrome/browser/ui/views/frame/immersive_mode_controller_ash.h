@@ -13,6 +13,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/events/event_handler.h"
+#include "ui/gfx/rect.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -75,6 +76,8 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
                                           int y_offset) OVERRIDE;
   virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) OVERRIDE;
   virtual void OnTopContainerBoundsChanged() OVERRIDE;
+  virtual void OnFindBarVisibleBoundsChanged(
+      const gfx::Rect& new_visible_bounds_in_screen) OVERRIDE;
 
   // content::NotificationObserver override:
   virtual void Observe(int type,
@@ -248,6 +251,10 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // The cursor x position in root coordinates when the cursor first hit
   // the top edge of the screen.
   int mouse_x_when_hit_top_;
+
+  // The current visible bounds of the find bar, in screen coordinates. This is
+  // an empty rect if the find bar is not visible.
+  gfx::Rect find_bar_visible_bounds_in_screen_;
 
   // Lock which keeps the top-of-window views revealed based on the current
   // mouse state and the current touch state. Acquiring the lock is used to
