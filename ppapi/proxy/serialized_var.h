@@ -80,24 +80,12 @@ class PPAPI_PROXY_EXPORT SerializedVar {
   void WriteToMessage(IPC::Message* m) const {
     inner_->WriteToMessage(m);
   }
-  // If ReadFromMessage has been called, WriteDataToMessage will write the var
-  // that has been read from ReadFromMessage back to a message. This is used
-  // when converting handles for use in NaCl.
-  void WriteDataToMessage(IPC::Message* m,
-                          const HandleWriter& handle_writer) const {
-    inner_->WriteDataToMessage(m, handle_writer);
-  }
   bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter) {
     return inner_->ReadFromMessage(m, iter);
   }
 
-  bool is_valid_var() const {
-    return inner_->is_valid_var();
-  }
-
-  // Returns the shared memory handles associated with this SerializedVar.
-  std::vector<SerializedHandle*> GetHandles() const {
-    return inner_->GetHandles();
+  RawVarDataGraph* raw_var_data() const {
+    return inner_->raw_var_data();
   }
 
  protected:
@@ -122,13 +110,8 @@ class PPAPI_PROXY_EXPORT SerializedVar {
       serialization_rules_ = serialization_rules;
     }
 
-    bool is_valid_var() const {
-      return is_valid_var_;
-    }
-
-    std::vector<SerializedHandle*> GetHandles() {
-      return (raw_var_data_ ? raw_var_data_->GetHandles() :
-          std::vector<SerializedHandle*>());
+    RawVarDataGraph* raw_var_data() {
+      return raw_var_data_.get();
     }
 
     // See outer class's declarations above.
@@ -141,8 +124,6 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     void ForceSetVarValueForTest(PP_Var value);
 
     void WriteToMessage(IPC::Message* m) const;
-    void WriteDataToMessage(IPC::Message* m,
-                            const HandleWriter& handle_writer) const;
     bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter);
 
     // Sets the cleanup mode. See the CleanupMode enum below.
@@ -180,9 +161,6 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     PP_Instance instance_;
 
     CleanupMode cleanup_mode_;
-
-    // If the var is not properly serialized, this will be false.
-    bool is_valid_var_;
 
 #ifndef NDEBUG
     // When being sent or received over IPC, we should only be serialized or
@@ -364,7 +342,6 @@ class PPAPI_PROXY_EXPORT SerializedVarReceiveInput {
 
   PP_Var Get(Dispatcher* dispatcher);
   PP_Var GetForInstance(Dispatcher* dispatcher, PP_Instance instance);
-  bool is_valid_var() { return serialized_.is_valid_var(); }
 
  private:
   const SerializedVar& serialized_;

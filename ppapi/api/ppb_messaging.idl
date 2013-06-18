@@ -36,8 +36,8 @@ interface PPB_Messaging {
    * JavaScript.
    *
    * When passing array or dictionary <code>PP_Var</code>s, the entire reference
-   * graph will be converted and transferred. If the reference graph has cycles,
-   * the message will not be sent and an error will be logged to the console.
+   * graph will be converted and transferred, including reference cycles if they
+   * exist.
    *
    * Listeners for message events in JavaScript code will receive an object
    * conforming to the HTML 5 <code>MessageEvent</code> interface.

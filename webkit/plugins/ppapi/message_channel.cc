@@ -45,12 +45,6 @@ namespace ppapi {
 namespace {
 
 const char kPostMessage[] = "postMessage";
-const char kV8ToVarConversionError[] = "Failed to convert a PostMessage "
-    "argument from a JavaScript value to a PP_Var. It may have cycles or be of "
-    "an unsupported type.";
-const char kVarToV8ConversionError[] = "Failed to convert a PostMessage "
-    "argument from a PP_Var to a Javascript value. It may have cycles or be of "
-    "an unsupported type.";
 
 // Helper function to get the MessageChannel that is associated with an
 // NPObject*.
@@ -91,16 +85,12 @@ bool NPVariantToPPVar(const NPVariant* variant, PP_Var* result) {
           NPVARIANT_TO_STRING(*variant).UTF8Characters,
           NPVARIANT_TO_STRING(*variant).UTF8Length);
       return true;
-    case NPVariantType_Object: {
+    case NPVariantType_Object:
+      V8VarConverter converter;
       // Calling WebBindings::toV8Value creates a wrapper around NPVariant so it
       // shouldn't result in a deep copy.
-      v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
-      if (!V8VarConverter::FromV8Value(v8_value, v8::Context::GetCurrent(),
-                                       result)) {
-        return false;
-      }
-      return true;
-    }
+      return converter.FromV8Value(WebBindings::toV8Value(variant),
+                                   v8::Context::GetCurrent(), result);
   }
   return false;
 }
@@ -192,9 +182,7 @@ bool MessageChannelInvoke(NPObject* np_obj, NPIdentifier name,
     if (message_channel) {
       PP_Var argument = PP_MakeUndefined();
       if (!NPVariantToPPVar(&args[0], &argument)) {
-        PpapiGlobals::Get()->LogWithSource(
-            message_channel->instance()->pp_instance(),
-            PP_LOGLEVEL_ERROR, std::string(), kV8ToVarConversionError);
+        NOTREACHED();
         return false;
       }
       message_channel->PostMessageToNative(argument);
@@ -358,10 +346,10 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
       container->element().document().frame()->mainWorldScriptContext();
   v8::Context::Scope context_scope(context);
 
-  v8::Handle<v8::Value> v8_val;
-  if (!V8VarConverter::ToV8Value(message_data, context, &v8_val)) {
-    PpapiGlobals::Get()->LogWithSource(instance_->pp_instance(),
-        PP_LOGLEVEL_ERROR, std::string(), kVarToV8ConversionError);
+  v8::Local<v8::Value> v8_val;
+  V8VarConverter converter;
+  if (!converter.ToV8Value(message_data, context, &v8_val)) {
+    NOTREACHED();
     return;
   }
 

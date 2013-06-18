@@ -27,14 +27,6 @@ using std::make_pair;
 
 namespace {
 
-template <class T>
-struct StackEntry {
-  StackEntry(T v) : val(v), sentinel(false) {}
-  T val;
-  // Used to track parent nodes on the stack while traversing the graph.
-  bool sentinel;
-};
-
 struct HashedHandle {
   HashedHandle(v8::Handle<v8::Object> h) : handle(h) {}
   size_t hash() const { return handle->GetIdentityHash(); }
@@ -62,17 +54,14 @@ inline size_t hash_value(const HashedHandle& handle) {
 
 namespace webkit {
 namespace ppapi {
-namespace V8VarConverter {
 
 namespace {
 
 // Maps PP_Var IDs to the V8 value handle they correspond to.
 typedef base::hash_map<int64_t, v8::Handle<v8::Value> > VarHandleMap;
-typedef base::hash_set<int64_t> ParentVarSet;
 
 // Maps V8 value handles to the PP_Var they correspond to.
 typedef base::hash_map<HashedHandle, ScopedPPVar> HandleVarMap;
-typedef base::hash_set<HashedHandle> ParentHandleSet;
 
 // Returns a V8 value which corresponds to a given PP_Var. If |var| is a
 // reference counted PP_Var type, and it exists in |visited_ids|, the V8 value
@@ -82,13 +71,10 @@ typedef base::hash_set<HashedHandle> ParentHandleSet;
 bool GetOrCreateV8Value(const PP_Var& var,
                         v8::Handle<v8::Value>* result,
                         bool* did_create,
-                        VarHandleMap* visited_ids,
-                        ParentVarSet* parent_ids) {
+                        VarHandleMap* visited_ids) {
   *did_create = false;
 
   if (::ppapi::VarTracker::IsVarTypeRefcounted(var.type)) {
-    if (parent_ids->count(var.value.as_id) != 0)
-      return false;
     VarHandleMap::iterator it = visited_ids->find(var.value.as_id);
     if (it != visited_ids->end()) {
       *result = it->second;
@@ -165,8 +151,7 @@ bool GetOrCreateV8Value(const PP_Var& var,
 bool GetOrCreateVar(v8::Handle<v8::Value> val,
                     PP_Var* result,
                     bool* did_create,
-                    HandleVarMap* visited_handles,
-                    ParentHandleSet* parent_handles) {
+                    HandleVarMap* visited_handles) {
   CHECK(!val.IsEmpty());
   *did_create = false;
 
@@ -174,9 +159,6 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
   // we still add them to |visited_handles| so that the corresponding string
   // PP_Var created will be properly refcounted.
   if (val->IsObject() || val->IsString()) {
-    if (parent_handles->count(HashedHandle(val->ToObject())) != 0)
-      return false;
-
     HandleVarMap::const_iterator it = visited_handles->find(
         HashedHandle(val->ToObject()));
     if (it != visited_handles->end()) {
@@ -211,10 +193,8 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
       *result = (new DictionaryVar())->GetPPVar();
     }
   } else {
-    // Silently ignore the case where we can't convert to a Var as we may
-    // be trying to convert a type that doesn't have a corresponding
-    // PP_Var type.
-    return true;
+    NOTREACHED();
+    return false;
   }
 
   *did_create = true;
@@ -226,52 +206,31 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
   return true;
 }
 
-bool CanHaveChildren(PP_Var var) {
-  return var.type == PP_VARTYPE_ARRAY || var.type == PP_VARTYPE_DICTIONARY;
-}
-
 }  // namespace
 
-// To/FromV8Value use a stack-based DFS search to traverse V8/Var graph. Each
-// iteration, the top node on the stack examined. If the node has not been
-// visited yet (i.e. sentinel == false) then it is added to the list of parents
-// which contains all of the nodes on the path from the start node to the
-// current node. Each of the current nodes children are examined. If they appear
-// in the list of parents it means we have a cycle and we return NULL.
-// Otherwise, if they can have children, we add them to the stack. If the
-// node at the top of the stack has already been visited, then we pop it off the
-// stack and erase it from the list of parents.
-// static
-bool ToV8Value(const PP_Var& var,
-               v8::Handle<v8::Context> context,
-               v8::Handle<v8::Value>* result) {
+V8VarConverter::V8VarConverter() {
+}
+
+bool V8VarConverter::ToV8Value(const PP_Var& var,
+                               v8::Handle<v8::Context> context,
+                               v8::Handle<v8::Value>* result) const {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
 
   VarHandleMap visited_ids;
-  ParentVarSet parent_ids;
 
-  std::stack<StackEntry<PP_Var> > stack;
-  stack.push(StackEntry<PP_Var>(var));
+  std::stack<PP_Var> stack;
+  stack.push(var);
   v8::Handle<v8::Value> root;
   bool is_root = true;
 
   while (!stack.empty()) {
-    const PP_Var& current_var = stack.top().val;
+    const PP_Var& current_var = stack.top();
     v8::Handle<v8::Value> current_v8;
-
-    if (stack.top().sentinel) {
-      stack.pop();
-      if (CanHaveChildren(current_var))
-        parent_ids.erase(current_var.value.as_id);
-      continue;
-    } else {
-      stack.top().sentinel = true;
-    }
-
+    stack.pop();
     bool did_create = false;
     if (!GetOrCreateV8Value(current_var, &current_v8, &did_create,
-                            &visited_ids, &parent_ids)) {
+                            &visited_ids)) {
       return false;
     }
 
@@ -282,7 +241,6 @@ bool ToV8Value(const PP_Var& var,
 
     // Add child nodes to the stack.
     if (current_var.type == PP_VARTYPE_ARRAY) {
-      parent_ids.insert(current_var.value.as_id);
       ArrayVar* array_var = ArrayVar::FromPPVar(current_var);
       if (!array_var) {
         NOTREACHED();
@@ -295,11 +253,14 @@ bool ToV8Value(const PP_Var& var,
         const PP_Var& child_var = array_var->elements()[i].get();
         v8::Handle<v8::Value> child_v8;
         if (!GetOrCreateV8Value(child_var, &child_v8, &did_create,
-                                &visited_ids, &parent_ids)) {
+                                &visited_ids)) {
           return false;
         }
-        if (did_create && CanHaveChildren(child_var))
+        if (did_create &&
+            (child_var.type == PP_VARTYPE_DICTIONARY ||
+             child_var.type == PP_VARTYPE_ARRAY)) {
           stack.push(child_var);
+        }
         v8::TryCatch try_catch;
         v8_array->Set(static_cast<uint32>(i), child_v8);
         if (try_catch.HasCaught()) {
@@ -308,7 +269,6 @@ bool ToV8Value(const PP_Var& var,
         }
       }
     } else if (current_var.type == PP_VARTYPE_DICTIONARY) {
-      parent_ids.insert(current_var.value.as_id);
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(current_var);
       if (!dict_var) {
         NOTREACHED();
@@ -325,11 +285,14 @@ bool ToV8Value(const PP_Var& var,
         const PP_Var& child_var = iter->second.get();
         v8::Handle<v8::Value> child_v8;
         if (!GetOrCreateV8Value(child_var, &child_v8, &did_create,
-                                &visited_ids, &parent_ids)) {
+                                &visited_ids)) {
           return false;
         }
-        if (did_create && CanHaveChildren(child_var))
+        if (did_create &&
+            (child_var.type == PP_VARTYPE_DICTIONARY ||
+             child_var.type == PP_VARTYPE_ARRAY)) {
           stack.push(child_var);
+        }
         v8::TryCatch try_catch;
         v8_object->Set(v8::String::New(key.c_str(), key.length()), child_v8);
         if (try_catch.HasCaught()) {
@@ -345,36 +308,26 @@ bool ToV8Value(const PP_Var& var,
   return true;
 }
 
-bool FromV8Value(v8::Handle<v8::Value> val,
-                 v8::Handle<v8::Context> context,
-                 PP_Var* result) {
+bool V8VarConverter::FromV8Value(v8::Handle<v8::Value> val,
+                                 v8::Handle<v8::Context> context,
+                                 PP_Var* result) const {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
 
   HandleVarMap visited_handles;
-  ParentHandleSet parent_handles;
 
-  std::stack<StackEntry<v8::Handle<v8::Value> > > stack;
-  stack.push(StackEntry<v8::Handle<v8::Value> >(val));
+  std::stack<v8::Handle<v8::Value> > stack;
+  stack.push(val);
   ScopedPPVar root;
   bool is_root = true;
 
   while (!stack.empty()) {
-    v8::Handle<v8::Value> current_v8 = stack.top().val;
+    v8::Handle<v8::Value> current_v8 = stack.top();
     PP_Var current_var;
-
-    if (stack.top().sentinel) {
-      stack.pop();
-      if (current_v8->IsObject())
-        parent_handles.erase(HashedHandle(current_v8->ToObject()));
-      continue;
-    } else {
-      stack.top().sentinel = true;
-    }
-
+    stack.pop();
     bool did_create = false;
     if (!GetOrCreateVar(current_v8, &current_var, &did_create,
-                        &visited_handles, &parent_handles)) {
+                        &visited_handles)) {
       return false;
     }
 
@@ -387,7 +340,6 @@ bool FromV8Value(v8::Handle<v8::Value> val,
     if (current_var.type == PP_VARTYPE_ARRAY) {
       DCHECK(current_v8->IsArray());
       v8::Handle<v8::Array> v8_array = current_v8.As<v8::Array>();
-      parent_handles.insert(HashedHandle(v8_array));
 
       ArrayVar* array_var = ArrayVar::FromPPVar(current_var);
       if (!array_var) {
@@ -406,8 +358,11 @@ bool FromV8Value(v8::Handle<v8::Value> val,
 
         PP_Var child_var;
         if (!GetOrCreateVar(child_v8, &child_var, &did_create,
-                            &visited_handles, &parent_handles)) {
-          return false;
+                            &visited_handles)) {
+          // Silently ignore the case where we can't convert to a Var as we may
+          // be trying to convert a type that doesn't have a corresponding
+          // PP_Var type.
+          continue;
         }
         if (did_create && child_v8->IsObject())
           stack.push(child_v8);
@@ -417,7 +372,6 @@ bool FromV8Value(v8::Handle<v8::Value> val,
     } else if (current_var.type == PP_VARTYPE_DICTIONARY) {
       DCHECK(current_v8->IsObject());
       v8::Handle<v8::Object> v8_object = current_v8->ToObject();
-      parent_handles.insert(HashedHandle(v8_object));
 
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(current_var);
       if (!dict_var) {
@@ -449,8 +403,8 @@ bool FromV8Value(v8::Handle<v8::Value> val,
 
         PP_Var child_var;
         if (!GetOrCreateVar(child_v8, &child_var, &did_create,
-                            &visited_handles, &parent_handles)) {
-          return false;
+                            &visited_handles)) {
+          continue;
         }
         if (did_create && child_v8->IsObject())
           stack.push(child_v8);
@@ -465,6 +419,5 @@ bool FromV8Value(v8::Handle<v8::Value> val,
   return true;
 }
 
-}  // namespace V8VarConverter
 }  // namespace ppapi
 }  // namespace webkit

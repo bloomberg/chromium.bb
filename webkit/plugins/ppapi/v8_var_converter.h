@@ -14,21 +14,27 @@
 
 namespace webkit {
 namespace ppapi {
-namespace V8VarConverter {
 
-// Converts the given PP_Var to a v8::Value. True is returned upon success.
-bool WEBKIT_PLUGINS_EXPORT ToV8Value(const PP_Var& var,
-                                     v8::Handle<v8::Context> context,
-                                     v8::Handle<v8::Value>* result);
-// Converts the given v8::Value to a PP_Var. True is returned upon success.
-// Every PP_Var in the reference graph of which |result| is apart will have
-// a refcount equal to the number of references to it in the graph. |result|
-// will have one additional reference.
-bool WEBKIT_PLUGINS_EXPORT FromV8Value(v8::Handle<v8::Value> val,
-                                       v8::Handle<v8::Context> context,
-                                       PP_Var* result);
+// Class to convert between PP_Vars and V8 values.
+class WEBKIT_PLUGINS_EXPORT V8VarConverter {
+ public:
+  V8VarConverter();
 
-}  // namespace V8VarConverter
+  // Converts the given PP_Var to a v8::Value. True is returned upon success.
+  bool ToV8Value(const PP_Var& var,
+                 v8::Handle<v8::Context> context,
+                 v8::Handle<v8::Value>* result) const;
+  // Converts the given v8::Value to a PP_Var. True is returned upon success.
+  // Every PP_Var in the reference graph of which |result| is apart will have
+  // a refcount equal to the number of references to it in the graph. |result|
+  // will have one additional reference.
+  bool FromV8Value(v8::Handle<v8::Value> val,
+                   v8::Handle<v8::Context> context,
+                   PP_Var* result) const;
+
+  DISALLOW_COPY_AND_ASSIGN(V8VarConverter);
+};
+
 }  // namespace ppapi
 }  // namespace webkit
 

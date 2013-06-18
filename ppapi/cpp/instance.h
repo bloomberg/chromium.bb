@@ -244,12 +244,6 @@ class Instance {
   /// JavaScript execution will not be blocked while HandleMessage() is
   /// processing the message.
   ///
-  /// When converting JavaScript arrays, any object properties whose name
-  /// is not an array index are ignored. When passing arrays and objects, the
-  /// entire reference graph will be converted and transferred. If the reference
-  /// graph has cycles, the message will not be sent and an error will be logged
-  /// to the console.
-  ///
   /// <strong>Example:</strong>
   ///
   /// The following JavaScript code invokes <code>HandleMessage</code>, passing
@@ -270,10 +264,9 @@ class Instance {
   ///
   /// Refer to PostMessage() for sending messages to JavaScript.
   ///
-  /// @param[in] message A <code>Var</code> which has been converted from a
-  /// JavaScript value. JavaScript array/object types are supported from Chrome
-  /// M29 onward. All JavaScript values are copied when passing them to the
-  /// plugin.
+  /// @param[in] message A <code>Var</code> containing the data sent from
+  /// JavaScript. Message can have an int32_t, double, bool, or string value
+  /// (objects are not supported).
   virtual void HandleMessage(const Var& message);
 
   /// @}
@@ -460,11 +453,6 @@ class Instance {
   ///
   /// The browser will pop-up an alert saying "Hello world!"
   ///
-  /// When passing array or dictionary <code>PP_Var</code>s, the entire
-  /// reference graph will be converted and transferred. If the reference graph
-  /// has cycles, the message will not be sent and an error will be logged to
-  /// the console.
-  ///
   /// Listeners for message events in JavaScript code will receive an object
   /// conforming to the HTML 5 <code>MessageEvent</code> interface.
   /// Specifically, the value of message will be contained as a property called
@@ -478,9 +466,9 @@ class Instance {
   /// Refer to HandleMessage() for receiving events from JavaScript.
   ///
   /// @param[in] message A <code>Var</code> containing the data to be sent to
-  /// JavaScript. Message can have a numeric, boolean, or string value.
-  /// Array/Dictionary types are supported from Chrome M29 onward.
-  /// All var types are copied when passing them to JavaScript.
+  /// JavaScript. Message can have a numeric, boolean, or string value; arrays
+  /// and dictionaries are not yet supported. Ref-counted var types are copied,
+  /// and are therefore not shared between the instance and the browser.
   void PostMessage(const Var& message);
 
   /// @}

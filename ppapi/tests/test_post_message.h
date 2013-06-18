@@ -34,10 +34,6 @@ class TestPostMessage : public TestCase {
   // Returns true on success, false on failure.
   bool AddEchoingListener(const std::string& expression);
 
-  // Posts a message from JavaScript to the plugin. |func| should be a
-  // JavaScript function which returns the variable to post.
-  bool PostMessageFromJavaScript(const std::string& func);
-
   // Clear any listeners that have been added using AddEchoingListener by
   // calling removeEventListener for each.
   // Returns true on success, false on failure.

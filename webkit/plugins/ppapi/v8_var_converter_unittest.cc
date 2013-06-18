@@ -152,16 +152,17 @@ class V8VarConverterTest : public testing::Test {
 
  protected:
   bool RoundTrip(const PP_Var& var, PP_Var* result) {
+    V8VarConverter converter;
     v8::HandleScope handle_scope(isolate_);
     v8::Context::Scope context_scope(isolate_, context_);
     v8::Local<v8::Context> context =
         v8::Local<v8::Context>::New(isolate_, context_);
     v8::Handle<v8::Value> v8_result;
-    if (!V8VarConverter::ToV8Value(var, context, &v8_result))
+    if (!converter.ToV8Value(var, context, &v8_result))
       return false;
     if (!Equals(var, v8_result))
       return false;
-    if (!V8VarConverter::FromV8Value(v8_result, context, result))
+    if (!converter.FromV8Value(v8_result, context, result))
       return false;
     return true;
   }
@@ -270,61 +271,29 @@ TEST_F(V8VarConverterTest, DictionaryArrayRoundTripTest) {
   array2->Set(0, PP_MakeInt32(100));
   dictionary->SetWithStringKey("9", release_array2.get());
   EXPECT_TRUE(RoundTripAndCompare(array->GetPPVar()));
-}
 
-TEST_F(V8VarConverterTest, Cycles) {
-  // Check that cycles aren't converted.
-  v8::Context::Scope context_scope(context_);
-  v8::HandleScope handle_scope;
+  // Array <-> dictionary cycle.
+  dictionary->SetWithStringKey("10", release_array.get());
+  PP_Var result_var;
+  EXPECT_TRUE(RoundTrip(release_dictionary.get(), &result_var));
+  ScopedPPVar result = ScopedPPVar(ScopedPPVar::PassRef(), result_var);
+  EXPECT_TRUE(TestEqual(release_dictionary.get(), result.get()));
+  // Break the cycle.
+  // TODO(raymes): We need some better machinery for releasing vars with
+  // cycles. Remove the code below once we have that.
+  dictionary->DeleteWithStringKey("10");
+  DictionaryVar* result_dictionary = DictionaryVar::FromPPVar(result.get());
+  result_dictionary->DeleteWithStringKey("10");
 
-  // Var->V8 conversion.
-  {
-    scoped_refptr<DictionaryVar> dictionary(new DictionaryVar);
-    ScopedPPVar release_dictionary(ScopedPPVar::PassRef(),
-                                   dictionary->GetPPVar());
-    scoped_refptr<ArrayVar> array(new ArrayVar);
-    ScopedPPVar release_array(ScopedPPVar::PassRef(), array->GetPPVar());
-
-    dictionary->SetWithStringKey("1", release_array.get());
-    array->Set(0, release_dictionary.get());
-
-    v8::Handle<v8::Value> v8_result;
-
-    // Array <-> dictionary cycle.
-    dictionary->SetWithStringKey("1", release_array.get());
-    ASSERT_FALSE(V8VarConverter::ToV8Value(release_dictionary.get(),
-                                           context_, &v8_result));
-    // Break the cycle.
-    // TODO(raymes): We need some better machinery for releasing vars with
-    // cycles. Remove the code below once we have that.
-    dictionary->DeleteWithStringKey("1");
-
-    // Array with self reference.
-    array->Set(0, release_array.get());
-    ASSERT_FALSE(V8VarConverter::ToV8Value(release_array.get(),
-                                           context_, &v8_result));
-    // Break the self reference.
-    array->Set(0, PP_MakeUndefined());
-  }
-
-  // V8->Var conversion.
-  {
-    v8::Handle<v8::Object> object = v8::Object::New();
-    v8::Handle<v8::Array> array = v8::Array::New();
-
-    PP_Var var_result;
-
-    // Array <-> dictionary cycle.
-    std::string key = "1";
-    object->Set(v8::String::New(key.c_str(), key.length()), array);
-    array->Set(0, object);
-
-    ASSERT_FALSE(V8VarConverter::FromV8Value(object, context_, &var_result));
-
-    // Array with self reference.
-    array->Set(0, array);
-    ASSERT_FALSE(V8VarConverter::FromV8Value(array, context_, &var_result));
-  }
+  // Array with self references.
+  array->Set(index, release_array.get());
+  EXPECT_TRUE(RoundTrip(release_array.get(), &result_var));
+  result = ScopedPPVar(ScopedPPVar::PassRef(), result_var);
+  EXPECT_TRUE(TestEqual(release_array.get(), result.get()));
+  // Break the self reference.
+  array->Set(index, PP_MakeUndefined());
+  ArrayVar* result_array = ArrayVar::FromPPVar(result.get());
+  result_array->Set(index, PP_MakeUndefined());
 }
 
 TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
@@ -356,9 +325,10 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
     v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
     ASSERT_FALSE(object.IsEmpty());
 
+    V8VarConverter converter;
     PP_Var actual;
-    ASSERT_TRUE(V8VarConverter::FromV8Value(object,
-        v8::Local<v8::Context>::New(isolate_, context_), &actual));
+    ASSERT_TRUE(converter.FromV8Value(
+        object, v8::Local<v8::Context>::New(isolate_, context_), &actual));
     ScopedPPVar release_actual(ScopedPPVar::PassRef(), actual);
 
     scoped_refptr<DictionaryVar> expected(new DictionaryVar);

@@ -238,16 +238,6 @@ bool TestPostMessage::AddEchoingListener(const std::string& expression) {
   return true;
 }
 
-bool TestPostMessage::PostMessageFromJavaScript(const std::string& func) {
-  std::string js_code;
-  js_code += "var plugin = document.getElementById('plugin');"
-             "plugin.postMessage(";
-  js_code += func + "()";
-  js_code += "                      );";
-  instance_->EvalScript(js_code);
-  return true;
-}
-
 bool TestPostMessage::ClearListeners() {
   std::string js_code;
   js_code += "var plugin = document.getElementById('plugin');"
@@ -533,7 +523,6 @@ std::string TestPostMessage::TestSendingComplexVar() {
   // if we didn't run the 'SendInInit' test. All tests other than 'SendInInit'
   // should start with these.
   WaitForMessages();
-  message_data_.clear();
   ASSERT_TRUE(ClearListeners());
 
   pp::Var string(kTestString);
@@ -542,6 +531,7 @@ std::string TestPostMessage::TestSendingComplexVar() {
   dictionary.Set(pp::Var("bar"), string);
   dictionary.Set(pp::Var("abc"), pp::Var(kTestInt));
   dictionary.Set(pp::Var("def"), pp::Var());
+  dictionary.Set(pp::Var("dictionary"), dictionary);  // Self-reference.
 
   // Reference to array.
   pp::VarArray_Dev array;
@@ -554,9 +544,15 @@ std::string TestPostMessage::TestSendingComplexVar() {
   dictionary.Set(pp::Var("array-ref1"), array);
   dictionary.Set(pp::Var("array-ref2"), array);
 
+  // Set up a (dictionary -> array -> dictionary) cycle.
+  pp::VarArray_Dev array2;
+  array2.Set(0, dictionary);
+  dictionary.Set(pp::Var("array2"), array2);
+
   // Set up the JavaScript message event listener to echo the data part of the
   // message event back to us.
   ASSERT_TRUE(AddEchoingListener("message_event.data"));
+  message_data_.clear();
   instance_->PostMessage(dictionary);
   // PostMessage is asynchronous, so we should not receive a response yet.
   ASSERT_EQ(message_data_.size(), 0);
@@ -565,36 +561,12 @@ std::string TestPostMessage::TestSendingComplexVar() {
   pp::VarDictionary_Dev result(message_data_.back());
   ASSERT_TRUE(VarsEqual(dictionary, message_data_.back()));
 
-  WaitForMessages();
-  message_data_.clear();
-  ASSERT_TRUE(ClearListeners());
-
-  // Set up a (dictionary -> array -> dictionary) cycle. Cycles shouldn't be
-  // transmitted.
-  pp::VarArray_Dev array2;
-  array2.Set(0, dictionary);
-  dictionary.Set(pp::Var("array2"), array2);
-
-  ASSERT_TRUE(AddEchoingListener("message_event.data"));
-  instance_->PostMessage(dictionary);
-  // PostMessage is asynchronous, so we should not receive a response yet.
-  ASSERT_EQ(message_data_.size(), 0);
-  ASSERT_EQ(WaitForMessages(), 0);
-
   // Break the cycles.
+  dictionary.Delete(pp::Var("dictionary"));
   dictionary.Delete(pp::Var("array2"));
+  result.Delete(pp::Var("dictionary"));
+  result.Delete(pp::Var("array2"));
 
-  WaitForMessages();
-  message_data_.clear();
-  ASSERT_TRUE(ClearListeners());
-
-  // Test sending a cycle from JavaScript to the plugin.
-  ASSERT_TRUE(AddEchoingListener("message_event.data"));
-  PostMessageFromJavaScript("function() { var x = []; x[0] = x; return x; }");
-  ASSERT_EQ(message_data_.size(), 0);
-  ASSERT_EQ(WaitForMessages(), 0);
-
-  WaitForMessages();
   message_data_.clear();
   ASSERT_TRUE(ClearListeners());
 

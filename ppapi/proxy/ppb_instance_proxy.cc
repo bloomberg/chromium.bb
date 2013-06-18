@@ -56,10 +56,6 @@ namespace proxy {
 
 namespace {
 
-const char kSerializationError[] = "Failed to convert a PostMessage "
-    "argument from a PP_Var to a Javascript value. It may have cycles or be of "
-    "an unsupported type.";
-
 InterfaceProxy* CreateInstanceProxy(Dispatcher* dispatcher) {
   return new PPB_Instance_Proxy(dispatcher);
 }
@@ -937,12 +933,6 @@ void PPB_Instance_Proxy::OnHostMsgPostMessage(
     PP_Instance instance,
     SerializedVarReceiveInput message) {
   EnterInstanceNoLock enter(instance);
-  if (!message.is_valid_var()) {
-    PpapiGlobals::Get()->LogWithSource(
-        instance, PP_LOGLEVEL_ERROR, std::string(), kSerializationError);
-    return;
-  }
-
   if (enter.succeeded())
     enter.functions()->PostMessage(instance,
                                    message.GetForInstance(dispatcher(),

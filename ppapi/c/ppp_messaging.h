@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_messaging.idl modified Wed Jun  5 10:32:43 2013. */
+/* From ppp_messaging.idl modified Tue May 21 09:01:17 2013. */
 
 #ifndef PPAPI_C_PPP_MESSAGING_H_
 #define PPAPI_C_PPP_MESSAGING_H_
@@ -52,9 +52,10 @@ struct PPP_Messaging_1_0 {
    *
    * When converting JavaScript arrays, any object properties whose name
    * is not an array index are ignored. When passing arrays and objects, the
-   * entire reference graph will be converted and transferred. If the reference
-   * graph has cycles, the message will not be sent and an error will be logged
-   * to the console.
+   * entire reference graph will be converted and transferred, including
+   * reference cycles if they exist. Since <code>PP_Var</code>s are ref-counted,
+   * the author of the plugin must take care if they expect to receive vars with
+   * cycles. Cycles must be manually broken to correctly release the vars.
    *
    * The following JavaScript code invokes <code>HandleMessage</code>, passing
    * the module instance on which it was invoked, with <code>message</code>
