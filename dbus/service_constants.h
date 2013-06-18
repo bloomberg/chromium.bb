@@ -773,6 +773,7 @@ const char kSavedIPNameServersProperty[] = "SavedIP.NameServers";
 const char kSavedIPPeerAddressProperty[] = "SavedIP.PeerAddress";
 const char kSavedIPPrefixlenProperty[] = "SavedIP.Prefixlen";
 const char kVPNMTUProperty[] = "VPN.MTU";
+const char kWifiFrequencyListProperty[] = "WiFi.FrequencyList";
 const char kWifiVendorInformationProperty[] = "WiFi.VendorInformation";
 const char kWifiProtectedManagementFrameRequiredProperty[] =
     "WiFi.ProtectedManagementFrameRequired";
