@@ -236,6 +236,10 @@ class RawTypes(object):
         get_setter_name = get_getter_name
 
         @staticmethod
+        def get_constructor_pattern():
+            return "InspectorString::create(%s)"
+
+        @staticmethod
         def get_c_initializer():
             return "\"\""
 
@@ -271,6 +275,10 @@ class RawTypes(object):
             return "Number"
 
         @staticmethod
+        def get_constructor_pattern():
+            return "InspectorBasicValue::create(%s)"
+
+        @staticmethod
         def get_c_initializer():
             return "0"
 
@@ -302,6 +310,10 @@ class RawTypes(object):
         @staticmethod
         def get_setter_name():
             return "Number"
+
+        @staticmethod
+        def get_constructor_pattern():
+            return "InspectorBasicValue::create(%s)"
 
         @staticmethod
         def get_c_initializer():
@@ -337,6 +349,10 @@ class RawTypes(object):
         get_setter_name = get_getter_name
 
         @staticmethod
+        def get_constructor_pattern():
+            return "InspectorBasicValue::create(%s)"
+
+        @staticmethod
         def get_c_initializer():
             return "false"
 
@@ -370,6 +386,10 @@ class RawTypes(object):
         @staticmethod
         def get_setter_name():
             return "Value"
+
+        @staticmethod
+        def get_constructor_pattern():
+            return "%s"
 
         @staticmethod
         def get_c_initializer():
@@ -413,6 +433,10 @@ class RawTypes(object):
             raise Exception("Unsupported")
 
         @staticmethod
+        def get_constructor_pattern():
+            raise Exception("Unsupported")
+
+        @staticmethod
         def get_raw_validator_call_text():
             return "RuntimeCastHelper::assertAny"
 
@@ -440,6 +464,10 @@ class RawTypes(object):
         @staticmethod
         def get_setter_name():
             return "Value"
+
+        @staticmethod
+        def get_constructor_pattern():
+            return "%s"
 
         @staticmethod
         def get_c_initializer():
@@ -1650,7 +1678,8 @@ class Templates:
     frontend_domain_class = string.Template(CodeGeneratorInspectorStrings.frontend_domain_class)
     backend_method = string.Template(CodeGeneratorInspectorStrings.backend_method)
     frontend_method = string.Template(CodeGeneratorInspectorStrings.frontend_method)
-    callback_method = string.Template(CodeGeneratorInspectorStrings.callback_method)
+    callback_main_methods = string.Template(CodeGeneratorInspectorStrings.callback_main_methods)
+    callback_failure_method = string.Template(CodeGeneratorInspectorStrings.callback_failure_method)
     frontend_h = string.Template(file_header_ + CodeGeneratorInspectorStrings.frontend_h)
     backend_h = string.Template(file_header_ + CodeGeneratorInspectorStrings.backend_h)
     backend_cpp = string.Template(file_header_ + CodeGeneratorInspectorStrings.backend_cpp)
@@ -1866,13 +1895,34 @@ class Generator:
         method_in_code = ""
         method_out_code = ""
         agent_call_param_list = []
-        response_cook_list = []
         request_message_param = ""
+        normal_response_cook_text = ""
+        error_response_cook_text = ""
+        error_type_binding = None
+        if "error" in json_command:
+            json_error = json_command["error"]
+            error_type_binding = Generator.resolve_type_and_generate_ad_hoc(json_error, json_command_name + "Error", json_command_name, domain_name, ad_hoc_type_writer, agent_interface_name + "::")
+            error_type_model = error_type_binding.get_type_model().get_optional()
+            error_annotated_type = error_type_model.get_command_return_pass_model().get_output_parameter_type()
+            agent_call_param_list.append(", %serrorData" % error_type_model.get_command_return_pass_model().get_output_argument_prefix())
+            Generator.backend_agent_interface_list.append(", %s errorData" % error_annotated_type)
+            method_in_code += "    %s errorData;\n" % error_type_model.get_command_return_pass_model().get_return_var_type()
+
+            setter_argument = error_type_model.get_command_return_pass_model().get_output_to_raw_expression() % "errorData"
+            if error_type_binding.get_setter_value_expression_pattern():
+                setter_argument = error_type_binding.get_setter_value_expression_pattern() % setter_argument
+            error_assigment_value = error_type_binding.reduce_to_raw_type().get_constructor_pattern() % setter_argument
+
+            cook = "            resultErrorData = %s;\n" % error_assigment_value
+
+            error_condition_pattern = error_type_model.get_command_return_pass_model().get_set_return_condition()
+            cook = ("            if (%s)\n    " % (error_condition_pattern % "errorData")) + cook
+            error_response_cook_text = "        if (error.length()) {\n" + cook + "        }\n"
+
         if "parameters" in json_command:
             json_params = json_command["parameters"]
             method_in_code += Templates.param_container_access_code
             request_message_param = " requestMessageObject"
-            js_param_list = []
 
             for json_parameter in json_params:
                 json_param_name = json_parameter["name"]
@@ -1909,7 +1959,6 @@ class Generator:
                 agent_call_param_list.append(param)
                 Generator.backend_agent_interface_list.append(", %s in_%s" % (formal_param_type_pattern % non_optional_type_model.get_command_return_pass_model().get_return_var_type(), json_param_name))
 
-        response_cook_text = ""
         if json_command.get("async") == True:
             callback_name = Capitalizer.lower_camel_case_to_upper(json_command_name) + "Callback"
 
@@ -1920,33 +1969,51 @@ class Generator:
             Generator.generate_send_method(json_command.get("returns"), json_command_name, domain_name, ad_hoc_type_writer,
                                            decl_parameter_list,
                                            Generator.CallbackMethodStructTemplate,
-                                           Generator.backend_method_implementation_list, Templates.callback_method,
+                                           Generator.backend_method_implementation_list, Templates.callback_main_methods,
                                            {"callbackName": callback_name, "agentName": agent_interface_name})
 
             callback_writer.newline("class " + callback_name + " : public CallbackBase {\n")
             callback_writer.newline("public:\n")
             callback_writer.newline("    " + callback_name + "(PassRefPtr<InspectorBackendDispatcherImpl>, int id);\n")
             callback_writer.newline("    void sendSuccess(" + ", ".join(decl_parameter_list) + ");\n")
+            error_part_writer = callback_writer.insert_writer("")
             callback_writer.newline("};\n")
+
+            if error_type_binding:
+                annotated_type = error_type_model.get_input_param_type_text()
+                error_part_writer.newline("    void sendFailure(const ErrorString&, %s);\n" % annotated_type)
+                error_part_writer.newline("    using CallbackBase::sendFailure;\n")
+
+                assigment_value = error_type_model.get_event_setter_expression_pattern() % "errorData"
+                assigment_value = error_type_binding.reduce_to_raw_type().get_constructor_pattern() % assigment_value
+
+                Generator.backend_method_implementation_list.append(Templates.callback_failure_method.substitute(None,
+                    agentName=agent_interface_name,
+                    callbackName=callback_name,
+                    parameter=annotated_type + " errorData",
+                    argument=assigment_value))
+
+
 
             ad_hoc_type_output.append(callback_output)
 
             method_out_code += "    RefPtr<" + agent_interface_name + "::" + callback_name + "> callback = adoptRef(new " + agent_interface_name + "::" + callback_name + "(this, callId));\n"
             agent_call_param_list.append(", callback")
-            response_cook_text += "        if (!error.length()) \n"
-            response_cook_text += "            return;\n"
-            response_cook_text += "        callback->disable();\n"
+            normal_response_cook_text += "        if (!error.length()) \n"
+            normal_response_cook_text += "            return;\n"
+            normal_response_cook_text += "        callback->disable();\n"
             Generator.backend_agent_interface_list.append(", PassRefPtr<%s> callback" % callback_name)
         else:
             if "returns" in json_command:
                 method_out_code += "\n"
+                response_cook_list = []
                 for json_return in json_command["returns"]:
 
                     json_return_name = json_return["name"]
 
                     optional = bool(json_return.get("optional"))
 
-                    return_type_binding = Generator.resolve_type_and_generate_ad_hoc(json_return, json_command_name, domain_name, ad_hoc_type_writer, agent_interface_name + "::")
+                    return_type_binding = Generator.resolve_param_type_and_generate_ad_hoc(json_return, json_command_name, domain_name, ad_hoc_type_writer, agent_interface_name + "::")
 
                     raw_type = return_type_binding.reduce_to_raw_type()
                     setter_type = raw_type.get_setter_name()
@@ -1971,7 +2038,7 @@ class Generator:
                         cook = ("            if (%s)\n    " % (set_condition_pattern % var_name)) + cook
                     annotated_type = type_model.get_command_return_pass_model().get_output_parameter_type()
 
-                    param_name = "out_%s" % json_return_name
+                    param_name = var_name
                     if optional:
                         param_name = "opt_" + param_name
 
@@ -1981,10 +2048,10 @@ class Generator:
                     method_out_code += code
                     agent_call_param_list.append(param)
 
-                response_cook_text = "".join(response_cook_list)
+                normal_response_cook_text += "".join(response_cook_list)
 
-                if len(response_cook_text) != 0:
-                    response_cook_text = "        if (!error.length()) {\n" + response_cook_text + "        }"
+                if len(normal_response_cook_text) != 0:
+                    normal_response_cook_text = "        if (!error.length()) {\n" + normal_response_cook_text + "        }"
 
         Generator.backend_method_implementation_list.append(Templates.backend_method.substitute(None,
             domainName=domain_name, methodName=json_command_name,
@@ -1993,7 +2060,8 @@ class Generator:
             methodOutCode=method_out_code,
             agentCallParams="".join(agent_call_param_list),
             requestMessageObject=request_message_param,
-            responseCook=response_cook_text,
+            responseCook=normal_response_cook_text,
+            errorCook=error_response_cook_text,
             commandNameIndex=cmd_enum_name))
         Generator.backend_method_name_declaration_list.append("    \"%s.%s\"," % (domain_name, json_command_name))
 
@@ -2021,7 +2089,7 @@ class Generator:
             for json_parameter in parameters:
                 parameter_name = json_parameter["name"]
 
-                param_type_binding = Generator.resolve_type_and_generate_ad_hoc(json_parameter, event_name, domain_name, ad_hoc_type_writer, "")
+                param_type_binding = Generator.resolve_param_type_and_generate_ad_hoc(json_parameter, event_name, domain_name, ad_hoc_type_writer, "")
 
                 raw_type = param_type_binding.reduce_to_raw_type()
                 raw_type_binding = RawTypeBinding(raw_type)
@@ -2057,9 +2125,13 @@ class Generator:
             parameters=", ".join(decl_parameter_list),
             code="".join(method_line_list), **template_params))
 
-    @staticmethod
-    def resolve_type_and_generate_ad_hoc(json_param, method_name, domain_name, ad_hoc_type_writer, container_relative_name_prefix_param):
+    @classmethod
+    def resolve_param_type_and_generate_ad_hoc(cls, json_param, method_name, domain_name, ad_hoc_type_writer, container_relative_name_prefix_param):
         param_name = json_param["name"]
+        return cls.resolve_type_and_generate_ad_hoc(json_param, param_name, method_name, domain_name, ad_hoc_type_writer, container_relative_name_prefix_param)
+
+    @staticmethod
+    def resolve_type_and_generate_ad_hoc(typable_element, element_name, method_name, domain_name, ad_hoc_type_writer, container_relative_name_prefix_param):
         ad_hoc_type_list = []
 
         class AdHocTypeContext:
@@ -2069,11 +2141,11 @@ class Generator:
             @staticmethod
             def get_type_name_fix():
                 class NameFix:
-                    class_name = Capitalizer.lower_camel_case_to_upper(param_name)
+                    class_name = Capitalizer.lower_camel_case_to_upper(element_name)
 
                     @staticmethod
                     def output_comment(writer):
-                        writer.newline("// Named after parameter '%s' while generating command/event %s.\n" % (param_name, method_name))
+                        writer.newline("// Named after parameter '%s' while generating command/event %s.\n" % (element_name, method_name))
 
                 return NameFix
 
@@ -2081,7 +2153,7 @@ class Generator:
             def add_type(binding):
                 ad_hoc_type_list.append(binding)
 
-        type_binding = resolve_param_type(json_param, domain_name, AdHocTypeContext)
+        type_binding = resolve_param_type(typable_element, domain_name, AdHocTypeContext)
 
         class InterfaceForwardListener:
             @staticmethod

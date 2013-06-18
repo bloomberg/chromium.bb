@@ -53,13 +53,14 @@ backend_method = (
 $methodOutCode
 $methodInCode
     RefPtr<InspectorObject> result = InspectorObject::create();
+    RefPtr<InspectorValue> resultErrorData;
     ErrorString error;
     if (!protocolErrors->length()) {
         $agentField->$methodName(&error$agentCallParams);
 
-${responseCook}
+$errorCook${responseCook}
     }
-    sendResponse(callId, result, commandNames[$commandNameIndex], protocolErrors, error);
+    sendResponse(callId, result, commandNames[$commandNameIndex], protocolErrors, error, resultErrorData);
 }
 """)
 
@@ -72,15 +73,28 @@ $code    if (m_inspectorFrontendChannel)
 }
 """)
 
-callback_method = (
+callback_main_methods = (
 """InspectorBackendDispatcher::$agentName::$callbackName::$callbackName(PassRefPtr<InspectorBackendDispatcherImpl> backendImpl, int id) : CallbackBase(backendImpl, id) {}
 
 void InspectorBackendDispatcher::$agentName::$callbackName::sendSuccess($parameters)
 {
     RefPtr<InspectorObject> jsonMessage = InspectorObject::create();
-$code    sendIfActive(jsonMessage, ErrorString());
+$code    sendIfActive(jsonMessage, ErrorString(), PassRefPtr<InspectorValue>());
 }
 """)
+
+callback_failure_method = (
+"""void InspectorBackendDispatcher::$agentName::$callbackName::sendFailure(const ErrorString& error, $parameter)
+{
+    ASSERT(error.length());
+    RefPtr<InspectorValue> errorDataValue;
+    if (error) {
+        errorDataValue = $argument;
+    }
+    sendIfActive(0, error, errorDataValue.release());
+}
+""")
+
 
 frontend_h = (
 """#ifndef InspectorFrontend_h
@@ -144,7 +158,7 @@ public:
         bool isActive();
 
     protected:
-        void sendIfActive(PassRefPtr<InspectorObject> partialMessage, const ErrorString& invocationError);
+        void sendIfActive(PassRefPtr<InspectorObject> partialMessage, const ErrorString& invocationError, PassRefPtr<InspectorValue> errorData);
 
     private:
         void disable() { m_alreadySent = true; }
@@ -172,7 +186,7 @@ $virtualSetters
     };
 
     void reportProtocolError(const long* const callId, CommonErrorCode, const String& errorMessage) const;
-    virtual void reportProtocolError(const long* const callId, CommonErrorCode, const String& errorMessage, PassRefPtr<InspectorArray> data) const = 0;
+    virtual void reportProtocolError(const long* const callId, CommonErrorCode, const String& errorMessage, PassRefPtr<InspectorValue> data) const = 0;
     virtual void dispatch(const String& message) = 0;
     static bool getCommandName(const String& message, String* result);
 
@@ -220,10 +234,10 @@ $constructorInit
 
     virtual void clearFrontend() { m_inspectorFrontendChannel = 0; }
     virtual void dispatch(const String& message);
-    virtual void reportProtocolError(const long* const callId, CommonErrorCode, const String& errorMessage, PassRefPtr<InspectorArray> data) const;
+    virtual void reportProtocolError(const long* const callId, CommonErrorCode, const String& errorMessage, PassRefPtr<InspectorValue> data) const;
     using InspectorBackendDispatcher::reportProtocolError;
 
-    void sendResponse(long callId, PassRefPtr<InspectorObject> result, const ErrorString& invocationError);
+    void sendResponse(long callId, PassRefPtr<InspectorObject> result, const ErrorString&invocationError, PassRefPtr<InspectorValue> errorData);
     bool isActive() { return m_inspectorFrontendChannel; }
 
 $setters
@@ -243,7 +257,7 @@ $fieldDeclarations
     static PassRefPtr<InspectorObject> getObject(InspectorObject* object, const String& name, bool* valueFound, InspectorArray* protocolErrors);
     static PassRefPtr<InspectorArray> getArray(InspectorObject* object, const String& name, bool* valueFound, InspectorArray* protocolErrors);
 
-    void sendResponse(long callId, PassRefPtr<InspectorObject> result, const char* commandName, PassRefPtr<InspectorArray> protocolErrors, ErrorString invocationError);
+    void sendResponse(long callId, PassRefPtr<InspectorObject> result, const char* commandName, PassRefPtr<InspectorArray> protocolErrors, ErrorString invocationError, PassRefPtr<InspectorValue> errorData);
 
 };
 
@@ -316,20 +330,20 @@ $messageHandlers
     ((*this).*it->value)(callId, messageObject.get());
 }
 
-void InspectorBackendDispatcherImpl::sendResponse(long callId, PassRefPtr<InspectorObject> result, const char* commandName, PassRefPtr<InspectorArray> protocolErrors, ErrorString invocationError)
+void InspectorBackendDispatcherImpl::sendResponse(long callId, PassRefPtr<InspectorObject> result, const char* commandName, PassRefPtr<InspectorArray> protocolErrors, ErrorString invocationError, PassRefPtr<InspectorValue> errorData)
 {
     if (protocolErrors->length()) {
         String errorMessage = String::format("Some arguments of method '%s' can't be processed", commandName);
         reportProtocolError(&callId, InvalidParams, errorMessage, protocolErrors);
         return;
     }
-    sendResponse(callId, result, invocationError);
+    sendResponse(callId, result, invocationError, errorData);
 }
 
-void InspectorBackendDispatcherImpl::sendResponse(long callId, PassRefPtr<InspectorObject> result, const ErrorString& invocationError)
+void InspectorBackendDispatcherImpl::sendResponse(long callId, PassRefPtr<InspectorObject> result, const ErrorString& invocationError, PassRefPtr<InspectorValue> errorData)
 {
     if (invocationError.length()) {
-        reportProtocolError(&callId, ServerError, invocationError);
+        reportProtocolError(&callId, ServerError, invocationError, errorData);
         return;
     }
 
@@ -342,10 +356,10 @@ void InspectorBackendDispatcherImpl::sendResponse(long callId, PassRefPtr<Inspec
 
 void InspectorBackendDispatcher::reportProtocolError(const long* const callId, CommonErrorCode code, const String& errorMessage) const
 {
-    reportProtocolError(callId, code, errorMessage, 0);
+    reportProtocolError(callId, code, errorMessage, PassRefPtr<InspectorValue>());
 }
 
-void InspectorBackendDispatcherImpl::reportProtocolError(const long* const callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<InspectorArray> data) const
+void InspectorBackendDispatcherImpl::reportProtocolError(const long* const callId, CommonErrorCode code, const String& errorMessage, PassRefPtr<InspectorValue> data) const
 {
     DEFINE_STATIC_LOCAL(Vector<int>,s_commonErrors,);
     if (!s_commonErrors.size()) {
@@ -364,7 +378,7 @@ void InspectorBackendDispatcherImpl::reportProtocolError(const long* const callI
     error->setString("message", errorMessage);
     ASSERT(error);
     if (data)
-        error->setArray("data", data);
+        error->setValue("data", data);
     RefPtr<InspectorObject> message = InspectorObject::create();
     message->setObject("error", error);
     if (callId)
@@ -473,7 +487,7 @@ InspectorBackendDispatcher::CallbackBase::~CallbackBase() {}
 void InspectorBackendDispatcher::CallbackBase::sendFailure(const ErrorString& error)
 {
     ASSERT(error.length());
-    sendIfActive(0, error);
+    sendIfActive(0, error, PassRefPtr<InspectorValue>());
 }
 
 bool InspectorBackendDispatcher::CallbackBase::isActive()
@@ -481,11 +495,11 @@ bool InspectorBackendDispatcher::CallbackBase::isActive()
     return !m_alreadySent && m_backendImpl->isActive();
 }
 
-void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<InspectorObject> partialMessage, const ErrorString& invocationError)
+void InspectorBackendDispatcher::CallbackBase::sendIfActive(PassRefPtr<InspectorObject> partialMessage, const ErrorString& invocationError, PassRefPtr<InspectorValue> errorData)
 {
     if (m_alreadySent)
         return;
-    m_backendImpl->sendResponse(m_id, partialMessage, invocationError);
+    m_backendImpl->sendResponse(m_id, partialMessage, invocationError, errorData);
     m_alreadySent = true;
 }
 
