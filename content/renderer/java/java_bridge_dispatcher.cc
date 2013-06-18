@@ -21,9 +21,9 @@ JavaBridgeDispatcher::JavaBridgeDispatcher(RenderView* render_view)
     : RenderViewObserver(render_view) {
 }
 
-bool JavaBridgeDispatcher::EnsureChannelIsSetUp() {
+void JavaBridgeDispatcher::EnsureChannelIsSetUp() {
   if (channel_.get()) {
-    return true;
+    return;
   }
 
   IPC::ChannelHandle channel_handle;
@@ -31,7 +31,6 @@ bool JavaBridgeDispatcher::EnsureChannelIsSetUp() {
 
   channel_ = JavaBridgeChannel::GetJavaBridgeChannel(
       channel_handle, ChildProcess::current()->io_message_loop_proxy());
-  return channel_.get();
 }
 
 JavaBridgeDispatcher::~JavaBridgeDispatcher() {
@@ -70,7 +69,8 @@ void JavaBridgeDispatcher::OnAddNamedObject(
     const NPVariant_Param& variant_param) {
   DCHECK_EQ(variant_param.type, NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID);
 
-  if (!EnsureChannelIsSetUp()) {
+  EnsureChannelIsSetUp();
+  if (!channel_.get()) {
     // It's possible for |channel_| to be NULL if the RenderView is going away.
     return;
   }
@@ -96,6 +96,11 @@ void JavaBridgeDispatcher::OnAddNamedObject(
 }
 
 void JavaBridgeDispatcher::OnRemoveNamedObject(const string16& name) {
+  if (!channel_.get()) {
+    DCHECK(objects_.empty());
+    return;
+  }
+
   // Removing an object does not unbind it from JavaScript until the window
   // object is next cleared. Note that the browser checks that the named object
   // is present.
