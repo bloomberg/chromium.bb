@@ -257,7 +257,7 @@ SimulatedMouseEvent::SimulatedMouseEvent(const AtomicString& eventType, PassRefP
     setUnderlyingEvent(underlyingEvent);
 
     if (this->underlyingEvent() && this->underlyingEvent()->isMouseEvent()) {
-        MouseEvent* mouseEvent = static_cast<MouseEvent*>(this->underlyingEvent());
+        MouseEvent* mouseEvent = toMouseEvent(this->underlyingEvent());
         m_screenLocation = mouseEvent->screenLocation();
         initCoordinates(mouseEvent->clientLocation());
     }
@@ -275,7 +275,7 @@ MouseEventDispatchMediator::MouseEventDispatchMediator(PassRefPtr<MouseEvent> mo
 
 MouseEvent* MouseEventDispatchMediator::event() const
 {
-    return static_cast<MouseEvent*>(EventDispatchMediator::event());
+    return toMouseEvent(EventDispatchMediator::event());
 }
 
 bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const

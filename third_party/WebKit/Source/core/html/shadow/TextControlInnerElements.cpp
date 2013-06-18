@@ -157,7 +157,7 @@ void SearchFieldDecorationElement::defaultEventHandler(Event* event)
 {
     // On mousedown, focus the search field
     HTMLInputElement* input = toHTMLInputElement(shadowHost());
-    if (input && event->type() == eventNames().mousedownEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton) {
+    if (input && event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         input->focus();
         input->select();
         RenderSearchField* renderer = toRenderSearchField(input->renderer());
@@ -208,7 +208,7 @@ void SearchFieldCancelButtonElement::defaultEventHandler(Event* event)
         return;
     }
 
-    if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton) {
+    if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (renderer() && renderer()->visibleToHitTesting()) {
             if (Frame* frame = document()->frame()) {
                 frame->eventHandler()->setCapturingMouseEventsNode(this);
@@ -219,7 +219,7 @@ void SearchFieldCancelButtonElement::defaultEventHandler(Event* event)
         input->select();
         event->setDefaultHandled();
     }
-    if (event->type() == eventNames().mouseupEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton) {
+    if (event->type() == eventNames().mouseupEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (m_capturing) {
             if (Frame* frame = document()->frame()) {
                 frame->eventHandler()->setCapturingMouseEventsNode(0);
@@ -296,7 +296,7 @@ void InputFieldSpeechButtonElement::defaultEventHandler(Event* event)
     }
 
     // On mouse down, select the text and set focus.
-    if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton) {
+    if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (renderer() && renderer()->visibleToHitTesting()) {
             if (Frame* frame = document()->frame()) {
                 frame->eventHandler()->setCapturingMouseEventsNode(this);
@@ -309,7 +309,7 @@ void InputFieldSpeechButtonElement::defaultEventHandler(Event* event)
         event->setDefaultHandled();
     }
     // On mouse up, release capture cleanly.
-    if (event->type() == eventNames().mouseupEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton) {
+    if (event->type() == eventNames().mouseupEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (m_capturing && renderer() && renderer()->visibleToHitTesting()) {
             if (Frame* frame = document()->frame()) {
                 frame->eventHandler()->setCapturingMouseEventsNode(0);

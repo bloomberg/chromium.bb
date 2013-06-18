@@ -348,7 +348,7 @@ void SliderThumbElement::defaultEventHandler(Event* event)
         return;
     }
 
-    MouseEvent* mouseEvent = static_cast<MouseEvent*>(event);
+    MouseEvent* mouseEvent = toMouseEvent(event);
     bool isLeftButton = mouseEvent->button() == LeftButton;
     const AtomicString& eventType = event->type();
 

@@ -1138,7 +1138,7 @@ void* HTMLInputElement::preDispatchEventHandler(Event* event)
     }
     if (event->type() != eventNames().clickEvent)
         return 0;
-    if (!event->isMouseEvent() || static_cast<MouseEvent*>(event)->button() != LeftButton)
+    if (!event->isMouseEvent() || toMouseEvent(event)->button() != LeftButton)
         return 0;
     // FIXME: Check whether there are any cases where this actually ends up leaking.
     return m_inputType->willDispatchClick().leakPtr();
@@ -1154,8 +1154,8 @@ void HTMLInputElement::postDispatchEventHandler(Event* event, void* dataFromPreD
 
 void HTMLInputElement::defaultEventHandler(Event* evt)
 {
-    if (evt->isMouseEvent() && evt->type() == eventNames().clickEvent && static_cast<MouseEvent*>(evt)->button() == LeftButton) {
-        m_inputType->handleClickEvent(static_cast<MouseEvent*>(evt));
+    if (evt->isMouseEvent() && evt->type() == eventNames().clickEvent && toMouseEvent(evt)->button() == LeftButton) {
+        m_inputType->handleClickEvent(toMouseEvent(evt));
         if (evt->defaultHandled())
             return;
     }
@@ -1226,7 +1226,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
         m_inputType->handleBeforeTextInsertedEvent(static_cast<BeforeTextInsertedEvent*>(evt));
 
     if (evt->isMouseEvent() && evt->type() == eventNames().mousedownEvent) {
-        m_inputType->handleMouseDownEvent(static_cast<MouseEvent*>(evt));
+        m_inputType->handleMouseDownEvent(toMouseEvent(evt));
         if (evt->defaultHandled())
             return;
     }
