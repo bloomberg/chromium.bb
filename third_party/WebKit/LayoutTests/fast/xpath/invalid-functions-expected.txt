@@ -1,12 +1,12 @@
-PASS document.createExpression("foobar()", null) threw exception INVALID_EXPRESSION_ERR: The expression had a syntax error or otherwise is not a legal expression according to the rules of the specific XPathEvaluator..
-PASS document.evaluate("foobar()", document, null, XPathResult.ANY_TYPE, null) threw exception INVALID_EXPRESSION_ERR: The expression had a syntax error or otherwise is not a legal expression according to the rules of the specific XPathEvaluator..
-PASS document.createExpression("position(//div)", null) threw exception INVALID_EXPRESSION_ERR: The expression had a syntax error or otherwise is not a legal expression according to the rules of the specific XPathEvaluator..
-PASS document.evaluate("position(//div)", document, null, XPathResult.ANY_TYPE, null) threw exception INVALID_EXPRESSION_ERR: The expression had a syntax error or otherwise is not a legal expression according to the rules of the specific XPathEvaluator..
-PASS document.createExpression("ceiling(1,2)", null) threw exception INVALID_EXPRESSION_ERR: The expression had a syntax error or otherwise is not a legal expression according to the rules of the specific XPathEvaluator..
-PASS document.evaluate("ceiling(1,2)", document, null, XPathResult.ANY_TYPE, null) threw exception INVALID_EXPRESSION_ERR: The expression had a syntax error or otherwise is not a legal expression according to the rules of the specific XPathEvaluator..
-PASS document.createExpression("ceiling(1,2)", null).evaluate(document, XPathResult.ANY_TYPE, null) threw exception INVALID_EXPRESSION_ERR: The expression had a syntax error or otherwise is not a legal expression according to the rules of the specific XPathEvaluator..
-PASS document.createExpression("boolean()", null) threw exception INVALID_EXPRESSION_ERR: The expression had a syntax error or otherwise is not a legal expression according to the rules of the specific XPathEvaluator..
-PASS document.evaluate("boolean()", document, null, XPathResult.ANY_TYPE, null) threw exception INVALID_EXPRESSION_ERR: The expression had a syntax error or otherwise is not a legal expression according to the rules of the specific XPathEvaluator..
+PASS document.createExpression("foobar()", null) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS document.evaluate("foobar()", document, null, XPathResult.ANY_TYPE, null) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS document.createExpression("position(//div)", null) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS document.evaluate("position(//div)", document, null, XPathResult.ANY_TYPE, null) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS document.createExpression("ceiling(1,2)", null) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS document.evaluate("ceiling(1,2)", document, null, XPathResult.ANY_TYPE, null) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS document.createExpression("ceiling(1,2)", null).evaluate(document, XPathResult.ANY_TYPE, null) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS document.createExpression("boolean()", null) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS document.evaluate("boolean()", document, null, XPathResult.ANY_TYPE, null) threw exception SyntaxError: An invalid or illegal string was specified..
 PASS successfullyParsed is true
 
 TEST COMPLETE

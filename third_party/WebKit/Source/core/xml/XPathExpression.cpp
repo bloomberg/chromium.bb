@@ -28,7 +28,6 @@
 #include "core/xml/XPathExpression.h"
 
 #include "core/dom/ExceptionCode.h"
-#include "core/xml/XPathException.h"
 #include "core/xml/XPathExpressionNode.h"
 #include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathParser.h"
@@ -73,9 +72,8 @@ PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned sh
     evaluationContext.node = 0; // Do not hold a reference to the context node, as this may prevent the whole document from being destroyed in time.
 
     if (evaluationContext.hadTypeConversionError) {
-        // It is not specified what to do if type conversion fails while evaluating an expression, and INVALID_EXPRESSION_ERR is not exactly right
-        // when the failure happens in an otherwise valid expression because of a variable. But XPathEvaluator does not support variables, so it's close enough.
-        ec = XPathException::INVALID_EXPRESSION_ERR;
+        // It is not specified what to do if type conversion fails while evaluating an expression.
+        ec = SYNTAX_ERR;
         return 0;
     }
 

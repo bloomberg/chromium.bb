@@ -17,12 +17,12 @@ NodeList[1]
     __proto__: NodeList console-dir.html:10
 
 XPathResult
-    booleanValue: [Exception: XPathException]
+    booleanValue: [Exception: TypeError]
     invalidIteratorState: false
-    numberValue: [Exception: XPathException]
+    numberValue: [Exception: TypeError]
     resultType: 4
-    singleNodeValue: [Exception: XPathException]
-    snapshotLength: [Exception: XPathException]
-    stringValue: [Exception: XPathException]
+    singleNodeValue: [Exception: TypeError]
+    snapshotLength: [Exception: TypeError]
+    stringValue: [Exception: TypeError]
     __proto__: XPathResult console-dir.html:11
 

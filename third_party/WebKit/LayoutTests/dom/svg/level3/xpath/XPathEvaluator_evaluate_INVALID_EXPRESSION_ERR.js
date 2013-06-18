@@ -105,7 +105,7 @@ root = doc.documentElement;
             result = xpEvaluator.evaluate("12a",root,nullNSResolver,0,nullResult);
         }
 		catch(ex) {            
-      success = (typeof(ex.code) != 'undefined' && ex.code == 51);
+      success = ex.name == 'SyntaxError';
 		}
 		assertTrue("throw_INVALID_EXPRESSION_ERR",success);
 	}

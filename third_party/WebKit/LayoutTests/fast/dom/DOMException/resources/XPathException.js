@@ -1,4 +1,4 @@
-description("Tests the properties of the XPathException object.")
+description("Tests the properties of the exception thrown when using XPath.")
 
 var e;
 try {
@@ -11,11 +11,8 @@ try {
     e = err;
 }
 
-shouldBeEqualToString("e.toString()", "TYPE_ERR: The expression could not be converted to return the specified type.");
-shouldBeEqualToString("Object.prototype.toString.call(e)", "[object XPathException]");
-shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object XPathExceptionPrototype]");
-shouldBeEqualToString("e.constructor.toString()", "function XPathException() { [native code] }");
-shouldBe("e.constructor", "window.XPathException");
-shouldBe("e.TYPE_ERR", "e.constructor.TYPE_ERR");
-shouldBe("e.INVALID_EXPRESSION_ERR", "51");
-shouldBe("e.TYPE_ERR", "52");
+shouldBeEqualToString("e.toString()", "TypeError: Type error");
+shouldBeEqualToString("Object.prototype.toString.call(e)", "[object Error]");
+shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object Error]");
+shouldBeEqualToString("e.constructor.toString()", "function TypeError() { [native code] }");
+shouldBe("e.constructor", "window.TypeError");

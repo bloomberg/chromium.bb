@@ -150,7 +150,6 @@ var propertyInfo = [
     ["XMLHttpRequest", "object"],
     ["XMLSerializer", "object"],
     ["XPathEvaluator", "object"],
-    ["XPathException", "object"],
     ["XPathResult", "object"],
     ["XSLTProcessor", "object"],
     ["onload", "object"],

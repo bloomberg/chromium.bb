@@ -79,7 +79,7 @@ function loadComplete() {
       'createExpression("12a", null)' method is
       invoked with the document element.  The method should fail to create
       pre-compiled expression and throws
-      XPathException.INVALID_EXPRESSION_ERR
+      SYNTAX_ERR
       since "12a" is not an XPath expression.
     
 * @author Philippe Le Hégaret
@@ -107,7 +107,7 @@ function XPathEvaluator_createExpression_INVALID_EXPRESSION_ERR() {
             exp = xpEvaluator.createExpression("12a",nullNSResolver);
         }
 		catch(ex) {            
-      success = (typeof(ex.code) != 'undefined' && ex.code == 51);
+      success = ex.name == 'SyntaxError';
 		}
 		assertTrue("throw_INVALID_EXPRESSION_ERR",success);
 	}

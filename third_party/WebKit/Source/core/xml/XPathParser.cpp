@@ -30,7 +30,6 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathEvaluator.h"
-#include "core/xml/XPathException.h"
 #include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathPath.h"
 #include "core/xml/XPathStep.h"
@@ -504,7 +503,7 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSRe
         if (m_gotNamespaceError)
             ec = NAMESPACE_ERR;
         else
-            ec = XPathException::INVALID_EXPRESSION_ERR;
+            ec = SYNTAX_ERR;
         return 0;
     }
 

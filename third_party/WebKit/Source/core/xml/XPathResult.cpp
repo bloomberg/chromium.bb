@@ -30,7 +30,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathEvaluator.h"
-#include "core/xml/XPathException.h"
 
 namespace WebCore {
 
@@ -89,14 +88,14 @@ void XPathResult::convertTo(unsigned short type, ExceptionCode& ec)
         case ANY_UNORDERED_NODE_TYPE:
         case FIRST_ORDERED_NODE_TYPE: // This is correct - singleNodeValue() will take care of ordering.
             if (!m_value.isNodeSet()) {
-                ec = XPathException::TYPE_ERR;
+                ec = TypeError;
                 return;
             }
             m_resultType = type;
             break;
         case ORDERED_NODE_ITERATOR_TYPE:
             if (!m_value.isNodeSet()) {
-                ec = XPathException::TYPE_ERR;
+                ec = TypeError;
                 return;
             }
             m_nodeSet.sort();
@@ -104,7 +103,7 @@ void XPathResult::convertTo(unsigned short type, ExceptionCode& ec)
             break;
         case ORDERED_NODE_SNAPSHOT_TYPE:
             if (!m_value.isNodeSet()) {
-                ec = XPathException::TYPE_ERR;
+                ec = TypeError;
                 return;
             }
             m_value.toNodeSet().sort();
@@ -121,7 +120,7 @@ unsigned short XPathResult::resultType() const
 double XPathResult::numberValue(ExceptionCode& ec) const
 {
     if (resultType() != NUMBER_TYPE) {
-        ec = XPathException::TYPE_ERR;
+        ec = TypeError;
         return 0.0;
     }
     return m_value.toNumber();
@@ -130,7 +129,7 @@ double XPathResult::numberValue(ExceptionCode& ec) const
 String XPathResult::stringValue(ExceptionCode& ec) const
 {
     if (resultType() != STRING_TYPE) {
-        ec = XPathException::TYPE_ERR;
+        ec = TypeError;
         return String();
     }
     return m_value.toString();
@@ -139,7 +138,7 @@ String XPathResult::stringValue(ExceptionCode& ec) const
 bool XPathResult::booleanValue(ExceptionCode& ec) const
 {
     if (resultType() != BOOLEAN_TYPE) {
-        ec = XPathException::TYPE_ERR;
+        ec = TypeError;
         return false;
     }
     return m_value.toBoolean();
@@ -148,7 +147,7 @@ bool XPathResult::booleanValue(ExceptionCode& ec) const
 Node* XPathResult::singleNodeValue(ExceptionCode& ec) const
 {
     if (resultType() != ANY_UNORDERED_NODE_TYPE && resultType() != FIRST_ORDERED_NODE_TYPE) {
-        ec = XPathException::TYPE_ERR;
+        ec = TypeError;
         return 0;
     }
   
@@ -171,7 +170,7 @@ bool XPathResult::invalidIteratorState() const
 unsigned long XPathResult::snapshotLength(ExceptionCode& ec) const
 {
     if (resultType() != UNORDERED_NODE_SNAPSHOT_TYPE && resultType() != ORDERED_NODE_SNAPSHOT_TYPE) {
-        ec = XPathException::TYPE_ERR;
+        ec = TypeError;
         return 0;
     }
 
@@ -181,7 +180,7 @@ unsigned long XPathResult::snapshotLength(ExceptionCode& ec) const
 Node* XPathResult::iterateNext(ExceptionCode& ec)
 {
     if (resultType() != UNORDERED_NODE_ITERATOR_TYPE && resultType() != ORDERED_NODE_ITERATOR_TYPE) {
-        ec = XPathException::TYPE_ERR;
+        ec = TypeError;
         return 0;
     }
     
@@ -203,7 +202,7 @@ Node* XPathResult::iterateNext(ExceptionCode& ec)
 Node* XPathResult::snapshotItem(unsigned long index, ExceptionCode& ec)
 {
     if (resultType() != UNORDERED_NODE_SNAPSHOT_TYPE && resultType() != ORDERED_NODE_SNAPSHOT_TYPE) {
-        ec = XPathException::TYPE_ERR;
+        ec = TypeError;
         return 0;
     }
     
