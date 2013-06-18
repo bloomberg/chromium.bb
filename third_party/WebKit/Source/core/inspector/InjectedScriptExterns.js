@@ -95,11 +95,21 @@ InjectedScriptHost.prototype.evaluate = function(expression) { }
 /**
  * @param {*} fn
  */
-InjectedScriptHost.prototype.setBreakpoint = function(fn) { }
+InjectedScriptHost.prototype.debugFunction = function(fn) { }
 /**
  * @param {*} fn
  */
-InjectedScriptHost.prototype.removeBreakpoint = function(fn) { }
+InjectedScriptHost.prototype.undebugFunction = function(fn) { }
+/**
+ * @param {*} fn
+ */
+InjectedScriptHost.prototype.monitorFunction = function(fn) { }
+/**
+ * @param {*} fn
+ */
+InjectedScriptHost.prototype.unmonitorFunction = function(fn) { }
+
+
 
 /**
  * @param {function(...)} fun
