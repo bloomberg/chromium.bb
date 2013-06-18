@@ -182,8 +182,10 @@ enum {
 
 - (void)notificationSwipeEnded:(BOOL)ended complete:(BOOL)isComplete {
   swipeGestureEnded_ |= ended;
-  if (swipeGestureEnded_ && isComplete)
+  if (swipeGestureEnded_ && isComplete) {
     messageCenter_->RemoveNotification([self notificationID], /*by_user=*/true);
+    [popupCollection_ onPopupAnimationEnded:[self notificationID]];
+  }
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
