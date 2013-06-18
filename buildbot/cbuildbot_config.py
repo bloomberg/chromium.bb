@@ -693,10 +693,8 @@ internal = _config(
   manifest_repo_url=constants.MANIFEST_INT_URL,
 )
 
-# This adds Chrome branding. It also adds extra official sources, which may
-# require elevated access to build.
+# This adds Chrome branding.
 official_chrome = _config(
-  manifest='official.xml',
   useflags=[constants.USE_CHROME_INTERNAL, constants.USE_CHROME_PDF],
 )
 
@@ -1089,7 +1087,7 @@ internal_incremental = internal.derive(
 )
 
 sonic = _config(
-  dev_manifest='sonic.xml',
+  manifest='sonic.xml',
   boards=['sonic'],
   # Until these are configured and ready, disable them.
   images=['base', 'dev',],
