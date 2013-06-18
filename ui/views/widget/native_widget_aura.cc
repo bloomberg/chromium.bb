@@ -563,6 +563,12 @@ void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
     cursor_client->SetCursor(cursor);
 }
 
+bool NativeWidgetAura::IsMouseEventsEnabled() const {
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(window_->GetRootWindow());
+  return cursor_client ? cursor_client->IsMouseEventsEnabled() : true;
+}
+
 void NativeWidgetAura::ClearNativeFocus() {
   aura::client::FocusClient* client = aura::client::GetFocusClient(window_);
   if (window_ && client && window_->Contains(client->GetFocusedWindow()))

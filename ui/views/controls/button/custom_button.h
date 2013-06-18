@@ -61,11 +61,6 @@ class VIEWS_EXPORT CustomButton : public Button,
     animate_on_state_change_ = value;
   }
 
-  // Returns true if the mouse pointer is over this control.  Note that this
-  // isn't the same as IsHotTracked() because the mouse may be over the control
-  // when it's disabled.
-  bool IsMouseHovered() const;
-
   void SetHotTracked(bool is_hot_tracked);
   bool IsHotTracked() const;
 

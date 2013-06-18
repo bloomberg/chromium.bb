@@ -28,6 +28,7 @@
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
@@ -904,6 +905,23 @@ bool View::HitTestRect(const gfx::Rect& rect) const {
   }
   // Outside our bounds.
   return false;
+}
+
+bool View::IsMouseHovered() {
+  // If we haven't yet been placed in an onscreen view hierarchy, we can't be
+  // hovered.
+  if (!GetWidget())
+    return false;
+
+  // If mouse events are disabled, then the mouse cursor is invisible and
+  // is therefore not hovering over this button.
+  if (!GetWidget()->IsMouseEventsEnabled())
+    return false;
+
+  gfx::Point cursor_pos(gfx::Screen::GetScreenFor(
+      GetWidget()->GetNativeView())->GetCursorScreenPoint());
+  ConvertPointToTarget(NULL, this, &cursor_pos);
+  return HitTestPoint(cursor_pos);
 }
 
 bool View::OnMousePressed(const ui::MouseEvent& event) {

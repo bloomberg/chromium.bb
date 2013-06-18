@@ -780,6 +780,10 @@ void Widget::SetCursor(gfx::NativeCursor cursor) {
   native_widget_->SetCursor(cursor);
 }
 
+bool Widget::IsMouseEventsEnabled() const {
+  return native_widget_->IsMouseEventsEnabled();
+}
+
 void Widget::SetNativeWindowProperty(const char* name, void* value) {
   native_widget_->SetNativeWindowProperty(name, value);
 }
@@ -1120,6 +1124,9 @@ void Widget::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void Widget::OnMouseEvent(ui::MouseEvent* event) {
+  if (!IsMouseEventsEnabled())
+    return;
+
   ScopedEvent scoped(this, *event);
   View* root_view = GetRootView();
   switch (event->type()) {

@@ -553,6 +553,10 @@ void DesktopNativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
   desktop_root_window_host_->AsRootWindowHost()->SetCursor(cursor);
 }
 
+bool DesktopNativeWidgetAura::IsMouseEventsEnabled() const {
+  return true;
+}
+
 void DesktopNativeWidgetAura::ClearNativeFocus() {
   desktop_root_window_host_->ClearNativeFocus();
 

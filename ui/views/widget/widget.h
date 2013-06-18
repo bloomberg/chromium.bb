@@ -502,6 +502,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // before the current is restored.
   void SetCursor(gfx::NativeCursor cursor);
 
+  // Returns true if and only if mouse events are enabled.
+  bool IsMouseEventsEnabled() const;
+
   // Sets/Gets a native window property on the underlying native window object.
   // Returns NULL if the property does not exist. Setting the property value to
   // NULL removes the property.

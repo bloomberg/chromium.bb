@@ -417,6 +417,10 @@ void NativeWidgetWin::SetCursor(gfx::NativeCursor cursor) {
   message_handler_->SetCursor(cursor);
 }
 
+bool NativeWidgetWin::IsMouseEventsEnabled() const {
+  return true;
+}
+
 void NativeWidgetWin::ClearNativeFocus() {
   message_handler_->ClearNativeFocus();
 }

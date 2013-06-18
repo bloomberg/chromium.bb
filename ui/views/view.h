@@ -574,6 +574,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Tests whether |rect| intersects this view's bounds.
   virtual bool HitTestRect(const gfx::Rect& rect) const;
 
+  // Returns true if the mouse cursor is over |view| and mouse events are
+  // enabled.
+  bool IsMouseHovered();
+
   // This method is invoked when the user clicks on this view.
   // The provided event is in the receiver's coordinate system.
   //

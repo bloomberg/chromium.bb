@@ -20,6 +20,8 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -1666,6 +1668,67 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
 
   widget->SynthesizeMouseMoveEvent();
   EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+}
+
+TEST_F(WidgetTest, MouseEventsHandled) {
+  Widget* widget = CreateTopLevelNativeWidget();
+  View* root_view = widget->GetRootView();
+
+#if defined(USE_AURA)
+  aura::test::TestCursorClient cursor_client;
+  aura::client::SetCursorClient(
+      widget->GetNativeView()->GetRootWindow(), &cursor_client);
+#endif
+
+  EventCountView* v1 = new EventCountView();
+  v1->SetBounds(0, 0, 10, 10);
+  root_view->AddChildView(v1);
+  EventCountView* v2 = new EventCountView();
+  v2->SetBounds(0, 10, 10, 10);
+  root_view->AddChildView(v2);
+
+  gfx::Point cursor_location1(5, 5);
+  ui::MouseEvent move1(ui::ET_MOUSE_MOVED, cursor_location1, cursor_location1,
+                       ui::EF_NONE);
+  widget->OnMouseEvent(&move1);
+  EXPECT_EQ(1, v1->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_EXITED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_EXITED));
+  v1->ResetCounts();
+  v2->ResetCounts();
+
+  gfx::Point cursor_location2(5, 15);
+  ui::MouseEvent move2(ui::ET_MOUSE_MOVED, cursor_location2, cursor_location2,
+                       ui::EF_NONE);
+  widget->OnMouseEvent(&move2);
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, v1->GetEventCount(ui::ET_MOUSE_EXITED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_EXITED));
+  v1->ResetCounts();
+  v2->ResetCounts();
+
+#if defined(USE_AURA)
+  // In Aura, we suppress mouse events if mouse events are disabled.
+  cursor_client.DisableMouseEvents();
+
+  widget->OnMouseEvent(&move1);
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_EXITED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_EXITED));
+  v1->ResetCounts();
+  v2->ResetCounts();
+
+  widget->OnMouseEvent(&move2);
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_EXITED));
+  EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_EXITED));
+
+  cursor_client.EnableMouseEvents();
+#endif
 }
 
 // Used by SingleWindowClosing to count number of times WindowClosing() has
