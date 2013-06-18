@@ -150,6 +150,46 @@
             'msvs_disabled_warnings': [ 4267, ],
         },
         {
+            # FIXME: This is only used by webkit_unit_tests now, move it to WebKitUnitTests.gyp.
+            'target_name': 'DumpRenderTree_resources',
+            'type': 'none',
+            'dependencies': [
+                '<(DEPTH)/net/net.gyp:net_resources',
+                '<(DEPTH)/ui/ui.gyp:ui_resources',
+                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
+                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+            ],
+            'actions': [{
+                'action_name': 'repack_local',
+                'variables': {
+                    'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
+                    'pak_inputs': [
+                        '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+                        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.pak',
+                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
+                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
+                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
+                ]},
+                'inputs': [
+                    '<(repack_path)',
+                    '<@(pak_inputs)',
+                ],
+                'outputs': [
+                    '<(PRODUCT_DIR)/DumpRenderTree.pak',
+                ],
+                'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
+            }],
+            'conditions': [
+                ['OS=="mac"', {
+                    'all_dependent_settings': {
+                        'mac_bundle_resources': [
+                            '<(PRODUCT_DIR)/DumpRenderTree.pak',
+                        ],
+                    },
+                }],
+            ]
+        },
+        {
             'target_name': 'TestRunner_resources',
             'type': 'none',
             'dependencies': [
@@ -225,176 +265,6 @@
                     ],
                 }],
             ],
-        },
-        {
-            'target_name': 'DumpRenderTree',
-            'type': 'executable',
-            'mac_bundle': 1,
-            'dependencies': [
-                '../../../public/blink.gyp:blink',
-                '<(DEPTH)/base/base.gyp:test_support_base',
-                '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-                '<(DEPTH)/third_party/mesa/mesa.gyp:osmesa',
-                '<(DEPTH)/url/url.gyp:url_lib',
-                '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
-                '<(source_dir)/devtools/devtools.gyp:devtools_frontend_resources',
-                '<(source_dir)/wtf/wtf.gyp:wtf',
-                'DumpRenderTree_resources',
-                'TestRunner',
-            ],
-            'include_dirs': [
-                '<(DEPTH)',
-                '<(source_dir)/WebKit/chromium/public',
-                '<(tools_dir)/DumpRenderTree',
-            ],
-            'defines': [
-                # Technically not a unit test but require functions available only to
-                # unit tests.
-                'UNIT_TEST',
-            ],
-            'sources': [
-                '<@(drt_files)',
-            ],
-            'conditions': [
-                ['OS=="mac" or OS=="win" or toolkit_uses_gtk==1', {
-                    # These platforms have their own implementations of
-                    # checkLayoutTestSystemDependencies() and openStartupDialog().
-                    'sources/': [
-                        ['exclude', 'TestShellStub\\.cpp$'],
-                    ],
-                }],
-                ['OS=="win"', {
-                    'dependencies': [
-                        '<(angle_path)/src/build_angle.gyp:libEGL',
-                        '<(angle_path)/src/build_angle.gyp:libGLESv2',
-                    ],
-                    'resource_include_dirs': ['<(SHARED_INTERMEDIATE_DIR)/webkit'],
-                    'sources': [
-                        # FIXME: We should just use the resources in the .pak file.
-                        '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
-                    ],
-                    'configurations': {
-                        'Debug_Base': {
-                            'msvs_settings': {
-                                'VCLinkerTool': {
-                                    'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                                },
-                            },
-                        },
-                    },
-                },{ # OS!="win"
-                    'sources/': [
-                        ['exclude', 'Win\\.cpp$'],
-                    ],
-                }],
-                ['OS=="mac"', {
-                    'dependencies': [
-                        '<(source_dir)/WebKit/chromium/WebKit.gyp:copy_mesa',
-                    ],
-                },{ # OS!="mac"
-                    'sources/': [
-                        # .mm is already excluded by common.gypi
-                        ['exclude', 'Mac\\.cpp$'],
-                    ],
-                }],
-                ['os_posix!=1 or OS=="mac"', {
-                    'sources/': [
-                        ['exclude', 'Posix\\.cpp$'],
-                    ],
-                }],
-                ['use_x11 == 1', {
-                    'dependencies': [
-                        '<(DEPTH)/build/linux/system.gyp:fontconfig',
-                    ],
-                    'variables': {
-                        # FIXME: Enable warnings on other platforms.
-                        'chromium_code': 1,
-                    },
-                    'conditions': [
-                        ['linux_use_tcmalloc == 1', {
-                            'dependencies': [
-                                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-                            ],
-                        }],
-                    ],
-                },{ # use_x11 != 1
-                    'sources/': [
-                        ['exclude', 'X11\\.cpp$'],
-                    ]
-                }],
-                ['toolkit_uses_gtk == 1', {
-                    'defines': [
-                        'WTF_USE_GTK=1',
-                    ],
-                    'dependencies': [
-                        '<(DEPTH)/build/linux/system.gyp:gtk',
-                    ],
-                    'include_dirs': [
-                        '<(source_dir)/WebKit/chromium/public/gtk',
-                    ],
-                }],
-                ['OS=="android"', {
-                    'type': 'shared_library',
-                    'dependencies': [
-                        '<(DEPTH)/base/base.gyp:test_support_base',
-                        '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
-                        '<(DEPTH)/tools/android/forwarder/forwarder.gyp:forwarder',
-                        '<(DEPTH)/tools/android/md5sum/md5sum.gyp:md5sum',
-                    ],
-                }, { # OS!="android"
-                    'sources/': [
-                        ['exclude', 'Android\\.cpp$'],
-                    ],
-                }],
-                ['use_custom_freetype==1', {
-                   'dependencies': [
-                       '<(DEPTH)/third_party/freetype2/freetype2.gyp:freetype2',
-                   ],
-                }],
-            ],
-        },
-        {
-            'target_name': 'DumpRenderTree_resources',
-            'type': 'none',
-            'dependencies': [
-                '<(DEPTH)/net/net.gyp:net_resources',
-                '<(DEPTH)/ui/ui.gyp:ui_resources',
-                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
-                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
-            ],
-            'actions': [{
-                'action_name': 'repack_local',
-                'variables': {
-                    'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
-                    'pak_inputs': [
-                        '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
-                ]},
-                'inputs': [
-                    '<(repack_path)',
-                    '<@(pak_inputs)',
-                ],
-                'outputs': [
-                    '<(PRODUCT_DIR)/DumpRenderTree.pak',
-                ],
-                'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
-            }],
-            'conditions': [
-                ['OS=="mac"', {
-                    'all_dependent_settings': {
-                        'mac_bundle_resources': [
-                            '<(PRODUCT_DIR)/DumpRenderTree.pak',
-                        ],
-                    },
-                }],
-            ]
         },
         {
             'target_name': 'TestNetscapePlugIn',
@@ -500,24 +370,6 @@
                 # as nullptr) conflict with upcoming c++0x types.
                 'cflags_cc': ['-Wno-c++0x-compat'],
             },
-        }],
-        ['OS=="android"', {
-            # Wrap libDumpRenderTree.so into an android apk for execution.
-            'targets': [{
-                'target_name': 'DumpRenderTree_apk',
-                'type': 'none',
-                'dependencies': [
-                    '<(DEPTH)/base/base.gyp:base_java',
-                    '<(DEPTH)/media/media.gyp:media_java',
-                    '<(DEPTH)/net/net.gyp:net_java',
-                    'DumpRenderTree',
-                ],
-                'variables': {
-                    'test_suite_name': 'DumpRenderTree',
-                    'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)DumpRenderTree<(SHARED_LIB_SUFFIX)',
-                },
-                'includes': [ '../../../../../build/apk_test.gypi' ],
-            }],
         }],
         ['clang==1', {
             'target_defaults': {

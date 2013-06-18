@@ -42,14 +42,9 @@
                 '../Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
                 '../Source/weborigin/weborigin_tests.gyp:weborigin_unittests',
                 '../Source/wtf/wtf_tests.gyp:wtf_unittests',
-                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree',
+                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
             ],
             'conditions': [
-                ['OS=="android"', {
-                    'dependencies': [
-                        '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree_apk',
-                    ],
-                }],
                 # Special target to wrap a gtest_target_type==shared_library
                 # webkit_unit_tests into an android apk for execution. See
                 # base.gyp for TODO(jrg)s about this strategy.
