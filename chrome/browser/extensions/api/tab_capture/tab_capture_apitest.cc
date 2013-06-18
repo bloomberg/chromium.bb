@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -70,12 +74,30 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
                                   "api_tests_audio.html")) << message_;
 }
 
-// TODO(miu): Disabled until the two most-likely sources of the "flaky timeouts"
-// are resolved: 1) http://crbug.com/177163 and 2) http://crbug.com/174519.
-// See http://crbug.com/174640.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_EndToEnd) {
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_EndToEnd DISABLED_EndToEnd
+#else
+#define MAYBE_EndToEnd EndToEnd
+#endif
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_EndToEnd) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
+
+#if defined(OS_WIN)
+  // TODO(justinlin): Disabled for WinXP due to timeout issues.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    return;
+  }
+#endif
+#if defined(OS_MACOSX)
+  // TODO(miu): Disabled for Mac OS X 10.6 due to timeout issues.
+  // http://crbug.com/174640
+  if (base::mac::IsOSSnowLeopard())
+    return;
+#endif
+
+  AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
                                   "end_to_end.html")) << message_;
 }
