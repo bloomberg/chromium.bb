@@ -30,10 +30,6 @@ if asm_env.Bit('bitcode'):
   asm_env.PNaClForceNative()
   # Allow use of native object file
   use_obj_env.Append(LINKFLAGS=['--pnacl-allow-native'])
-  # With the new linker this test crashes in untrusted code
-  # TODO(dschuff): figure out why this test doesn't work with the new linker
-  if env.Bit('target_x86_64'):
-    use_obj_env.Append(LINKFLAGS=['-Wn,--pnacl-nativeld=old'])
 
 asm_obj = asm_env.ComponentObject(GetAssemblerFile(env))
 
