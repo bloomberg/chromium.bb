@@ -72,7 +72,7 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 			  "-terminate",
 			  NULL) < 0)
 			weston_log("exec failed: %m\n");
-		exit(-1);
+		_exit(EXIT_FAILURE);
 
 	default:
 		weston_log("forked X server, pid %d\n", wxs->process.pid);
