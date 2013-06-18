@@ -37,7 +37,6 @@ libgdk_pixbuf-2.0.so.0
 libgdk-x11-2.0.so.0
 libglib-2.0.so.0
 libgobject-2.0.so.0
-libgthread-2.0.so.0
 libgtk-x11-2.0.so.0
 libm.so.6
 libm.so.6(GLIBC_2.0)
@@ -61,6 +60,8 @@ libstdc++.so.6
 libstdc++.so.6(GLIBCXX_3.4)
 libstdc++.so.6(GLIBCXX_3.4.10)
 libstdc++.so.6(GLIBCXX_3.4.11)
+libstdc++.so.6(GLIBCXX_3.4.15)
+libstdc++.so.6(GLIBCXX_3.4.5)
 libstdc++.so.6(GLIBCXX_3.4.9)
 libX11.so.6
 libXcomposite.so.1
