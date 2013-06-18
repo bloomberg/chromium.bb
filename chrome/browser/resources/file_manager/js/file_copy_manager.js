@@ -90,19 +90,11 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   this.originalEntries = entries;
   // When moving directories, FileEntry.moveTo() is used if both source
   // and target are on Drive. There is no need to recurse into directories.
-  var recurse = !this.move;
-  util.recurseAndResolveEntries(entries, recurse, function(result) {
-    if (self.move) {
-      // When moving, deeper directory is moved earier.
-      self.pendingDirectories = result.dirEntries.sort(
-          function(a, b) { return a.fullPath < b.fullPath; });
-    } else {
-      // When copying, upper directory is copied earier.
-      self.pendingDirectories = result.dirEntries.sort(
-          function(a, b) { return a.fullPath > b.fullPath; });
-    }
+  util.recurseAndResolveEntries(entries, !this.move, function(result) {
+    self.pendingDirectories = result.dirEntries;
     self.pendingFiles = result.fileEntries;
     self.pendingBytes = result.fileBytes;
+
     callback();
   });
 };
@@ -114,38 +106,55 @@ FileCopyManager.Task.prototype.getNextEntry = function() {
   // We should keep the file in pending list and remove it after complete.
   // Otherwise, if we try to get status in the middle of copying. The returned
   // status is wrong (miss count the pasting item in totalItems).
-  if (this.pendingFiles.length) {
-    this.pendingFiles[0].inProgress = true;
-    return this.pendingFiles[0];
+  var nextEntry = null;
+  if (this.move) {
+    // This may be moving from search results, where it fails if we move parent
+    // entries earlier than child entries. We should process the deepest entry
+    // first. Since move of each entry is done by a single .MoveTo() call, we
+    // don't need to care about the recursive traversal order.
+    nextEntry = this.getDeepestEntry_();
+  } else {
+    // Copying tasks are recursively processed. So, directories must be
+    // processed earlier than their child files. Since
+    // util.recurseAndResolveEntries is already listing entries in the recursive
+    // traversal order, we just keep the ordering.
+    if (this.pendingDirectories.length)
+      nextEntry = this.pendingDirectories[0];
+    if (this.pendingFiles.length)
+      nextEntry = this.pendingFiles[0];
   }
-  if (this.pendingDirectories.length) {
-    this.pendingDirectories[0].inProgress = true;
-    return this.pendingDirectories[0];
-  }
-  return null;
+  if (nextEntry)
+    nextEntry.inProgress = true;
+  return nextEntry;
 };
 
 /**
+ * Remove the completed entry from the pending lists.
  * @param {Entry} entry Entry.
  * @param {number} size Bytes completed.
  */
 FileCopyManager.Task.prototype.markEntryComplete = function(entry, size) {
-  // It is probably not safe to directly remove the first entry in pending list.
-  // We need to check if the removed entry (srcEntry) corresponding to the added
-  // entry (target entry).
-  if (entry.isDirectory && this.pendingDirectories &&
-      this.pendingDirectories[0].inProgress) {
-    this.completedDirectories.push(entry);
-    this.pendingDirectories.shift();
-  } else if (this.pendingFiles && this.pendingFiles[0].inProgress) {
-    this.completedFiles.push(entry);
-    this.completedBytes += size;
-    this.pendingBytes -= size;
-    this.pendingFiles.shift();
-  } else {
-    throw new Error('Try to remove a source entry which is not correspond to' +
-                    ' the finished target entry');
+  if (entry.isDirectory && this.pendingDirectories) {
+    for (var i = 0; i < this.pendingDirectories.length; i++) {
+      if (this.pendingDirectories[i].inProgress) {
+        this.completedDirectories.push(entry);
+        this.pendingDirectories.splice(i, 1);
+        return;
+      }
+    }
+  } else if (this.pendingFiles) {
+    for (var i = 0; i < this.pendingFiles.length; i++) {
+      if (this.pendingFiles[i].inProgress) {
+        this.completedFiles.push(entry);
+        this.completedBytes += size;
+        this.pendingBytes -= size;
+        this.pendingFiles.splice(i, 1);
+        return;
+      }
+    }
   }
+  throw new Error('Try to remove a source entry which is not correspond to' +
+                  ' the finished target entry');
 };
 
 /**
@@ -187,6 +196,26 @@ FileCopyManager.Task.prototype.applyRenames = function(path) {
     }
   }
   return path;
+};
+
+/**
+ * Obtains the deepest entry by referring to its full path.
+ * @return {Entry} The deepest entry.
+ * @private
+ */
+FileCopyManager.Task.prototype.getDeepestEntry_ = function() {
+  var result = null;
+  for (var i = 0; i < this.pendingDirectories.length; i++) {
+    if (!result ||
+        this.pendingDirectories[i].fullPath.length > result.fullPath.length)
+    result = this.pendingDirectories[i];
+  }
+  for (var i = 0; i < this.pendingFiles.length; i++) {
+    if (!result ||
+        this.pendingFiles[i].fullPath.length > result.fullPath.length)
+    result = this.pendingFiles[i];
+  }
+  return result;
 };
 
 /**
