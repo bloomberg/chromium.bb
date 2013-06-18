@@ -108,14 +108,39 @@ class NetworkIconImpl {
 
 typedef std::map<std::string, NetworkIconImpl*> NetworkIconMap;
 
-NetworkIconMap* GetIconMap(IconType icon_type) {
+NetworkIconMap* GetIconMapInstance(IconType icon_type, bool create) {
   typedef std::map<IconType, NetworkIconMap*> IconTypeMap;
   static IconTypeMap* s_icon_map = NULL;
-  if (s_icon_map == NULL)
+  if (s_icon_map == NULL) {
+    if (!create)
+      return NULL;
     s_icon_map = new IconTypeMap;
-  if (s_icon_map->count(icon_type) == 0)
+  }
+  if (s_icon_map->count(icon_type) == 0) {
+    if (!create)
+      return NULL;
     (*s_icon_map)[icon_type] = new NetworkIconMap;
+  }
   return (*s_icon_map)[icon_type];
+}
+
+NetworkIconMap* GetIconMap(IconType icon_type) {
+  return GetIconMapInstance(icon_type, true);
+}
+
+void PurgeIconMap(IconType icon_type,
+                  const std::set<std::string>& network_paths) {
+  NetworkIconMap* icon_map = GetIconMapInstance(icon_type, false);
+  if (!icon_map)
+    return;
+  for (NetworkIconMap::iterator loop_iter = icon_map->begin();
+       loop_iter != icon_map->end(); ) {
+    NetworkIconMap::iterator cur_iter = loop_iter++;
+    if (network_paths.count(cur_iter->first) == 0) {
+      delete cur_iter->second;
+      icon_map->erase(cur_iter);
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -805,6 +830,19 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
   *image = GetImageForNetwork(network, icon_type);
   if (label)
     *label = GetLabelForNetwork(network, icon_type);
+}
+
+void PurgeNetworkIconCache() {
+  NetworkStateHandler::NetworkStateList networks;
+  NetworkHandler::Get()->network_state_handler()->GetNetworkList(&networks);
+  std::set<std::string> network_paths;
+  for (NetworkStateHandler::NetworkStateList::iterator iter = networks.begin();
+       iter != networks.end(); ++iter) {
+    network_paths.insert((*iter)->path());
+  }
+  PurgeIconMap(ICON_TYPE_TRAY, network_paths);
+  PurgeIconMap(ICON_TYPE_DEFAULT_VIEW, network_paths);
+  PurgeIconMap(ICON_TYPE_LIST, network_paths);
 }
 
 }  // namespace network_icon

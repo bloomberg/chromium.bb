@@ -17,8 +17,6 @@ namespace tray {
 // which includes NetworkWifiDetailedView and NetworkStateListDetailedView.
 class NetworkDetailedView : public TrayDetailsView {
  public:
-  typedef chromeos::NetworkStateHandler::NetworkStateList NetworkStateList;
-
   enum DetailedViewType {
     LIST_VIEW,
     STATE_LIST_VIEW,

@@ -168,7 +168,7 @@ void NetworkStateListDetailedView::ManagerChanged() {
 }
 
 void NetworkStateListDetailedView::NetworkListChanged() {
-  NetworkStateList network_list;
+  NetworkStateHandler::NetworkStateList network_list;
   NetworkHandler::Get()->network_state_handler()->GetNetworkList(&network_list);
   UpdateNetworks(network_list);
   UpdateNetworkList();
@@ -196,7 +196,7 @@ void NetworkStateListDetailedView::Init() {
   CreateHeaderEntry();
   CreateHeaderButtons();
 
-  NetworkStateList network_list;
+  NetworkStateHandler::NetworkStateList network_list;
   NetworkHandler::Get()->network_state_handler()->GetNetworkList(&network_list);
   UpdateNetworks(network_list);
   UpdateNetworkList();
@@ -418,10 +418,10 @@ void NetworkStateListDetailedView::UpdateTechnologyButton(
 }
 
 void NetworkStateListDetailedView::UpdateNetworks(
-    const NetworkStateList& networks) {
+    const NetworkStateHandler::NetworkStateList& networks) {
   network_list_.clear();
-  for (NetworkStateList::const_iterator iter = networks.begin();
-       iter != networks.end(); ++iter) {
+  for (NetworkStateHandler::NetworkStateList::const_iterator iter =
+           networks.begin(); iter != networks.end(); ++iter) {
     const NetworkState* network = *iter;
     if ((list_type_ == LIST_TYPE_NETWORK &&
         network->type() != flimflam::kTypeVPN) ||

@@ -65,6 +65,11 @@ ASH_EXPORT void GetDefaultNetworkImageAndLabel(IconType icon_type,
                                                base::string16* label,
                                                bool* animating);
 
+// Called when the list of networks changes. Retreives the list of networks
+// from the global NetworkStateHandler instance and removes cached entries
+// that are no longer in the list.
+ASH_EXPORT void PurgeNetworkIconCache();
+
 }  // namespace network_icon
 }  // namespace ash
 

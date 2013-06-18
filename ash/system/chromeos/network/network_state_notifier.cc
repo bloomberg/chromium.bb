@@ -249,12 +249,12 @@ void NetworkStateNotifier::ShowConnectError(const std::string& error_name,
 }
 
 void NetworkStateNotifier::InitializeNetworks() {
-  NetworkStateList network_list;
+  NetworkStateHandler::NetworkStateList network_list;
   NetworkHandler::Get()->network_state_handler()->GetNetworkList(&network_list);
   VLOG(1) << "NetworkStateNotifier:InitializeNetworks: "
           << network_list.size();
-  for (NetworkStateList::iterator iter = network_list.begin();
-       iter != network_list.end(); ++iter) {
+  for (NetworkStateHandler::NetworkStateList::iterator iter =
+           network_list.begin(); iter != network_list.end(); ++iter) {
     const NetworkState* network = *iter;
     VLOG(2) << " Network: " << network->path();
     cached_state_[network->path()] = network->connection_state();

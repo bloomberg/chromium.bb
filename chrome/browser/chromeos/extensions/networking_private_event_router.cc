@@ -94,14 +94,14 @@ void NetworkingPrivateEventRouter::StartOrStopListeningForNetworkChanges() {
 
 void NetworkingPrivateEventRouter::NetworkListChanged() {
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
-  NetworkStateList networks;
+  NetworkStateHandler::NetworkStateList networks;
   NetworkHandler::Get()->network_state_handler()->GetNetworkList(&networks);
   if (!event_router->HasEventListener(kOnNetworkListChanged))
     return;
 
   std::vector<std::string> changes;
-  for (NetworkStateList::const_iterator iter = networks.begin();
-      iter != networks.end(); ++iter) {
+  for (NetworkStateHandler::NetworkStateList::const_iterator iter =
+           networks.begin(); iter != networks.end(); ++iter) {
     // TODO(gspencer): Currently the "GUID" is actually the service path. Fix
     // this to be the real GUID once we're using
     // ManagedNetworkConfigurationManager.

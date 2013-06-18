@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "ash/system/chromeos/network/network_icon.h"
 #include "base/location.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -38,6 +39,7 @@ void TrayNetworkStateObserver::NetworkManagerChanged() {
 
 void TrayNetworkStateObserver::NetworkListChanged() {
   delegate_->NetworkStateChanged(true);
+  network_icon::PurgeNetworkIconCache();
 }
 
 void TrayNetworkStateObserver::DeviceListChanged() {

@@ -18,10 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
 
-namespace chromeos {
-class NetworkStateList;
-}
-
 namespace views {
 class BubbleDelegateView;
 }
@@ -89,7 +85,8 @@ class NetworkStateListDetailedView
   void UpdateTechnologyButton(TrayPopupHeaderButton* button,
                               const std::string& technology);
 
-  void UpdateNetworks(const NetworkStateList& networks);
+  void UpdateNetworks(
+      const chromeos::NetworkStateHandler::NetworkStateList& networks);
   void UpdateNetworkList();
   bool CreateOrUpdateInfoLabel(
       int index, const base::string16& text, views::Label** label);

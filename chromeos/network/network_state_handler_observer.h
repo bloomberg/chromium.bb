@@ -19,8 +19,6 @@ class NetworkState;
 // active (connecting or connected) services.
 class CHROMEOS_EXPORT NetworkStateHandlerObserver {
  public:
-  typedef std::vector<const NetworkState*> NetworkStateList;
-
   NetworkStateHandlerObserver();
   virtual ~NetworkStateHandlerObserver();
 
