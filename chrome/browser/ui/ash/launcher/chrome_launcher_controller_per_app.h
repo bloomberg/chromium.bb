@@ -456,6 +456,11 @@ class ChromeLauncherControllerPerApp
   // deleted.
   void CloseWindowedAppsFromRemovedExtension(const std::string& app_id);
 
+  // Move a launcher item ignoring the pinned state changes from |index| to
+  // |target_index|.
+  void MoveItemWithoutPinnedStateChangeNotification(int source_index,
+                                                    int target_index);
+
   ash::LauncherModel* model_;
 
   // Profile used for prefs and loading extensions. This is NOT necessarily the
@@ -492,6 +497,9 @@ class ChromeLauncherControllerPerApp
 
   // The owned browser shortcut item.
   scoped_ptr<BrowserShortcutLauncherItemController> browser_item_controller_;
+
+  // If true, incoming pinned state changes should be ignored.
+  bool ignore_persist_pinned_state_change_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPerApp);
 };

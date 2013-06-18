@@ -245,6 +245,42 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
     }
   }
 
+  std::string GetPinnedAppStatus() {
+    std::string result;
+    for (int i = 0; i < model_->item_count(); i++) {
+      switch (model_->items()[i].type) {
+        case ash::TYPE_APP_SHORTCUT: {
+          const std::string& app =
+              launcher_controller_->GetAppIDForLauncherID(
+                  model_->items()[i].id);
+          if (app == extension1_->id()) {
+            result += "App1, ";
+            EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+          } else if (app == extension2_->id()) {
+            result += "App2, ";
+            EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
+          } else if (app == extension3_->id()) {
+            result += "App3, ";
+            EXPECT_TRUE(launcher_controller_->IsAppPinned(extension3_->id()));
+          } else {
+            result += "unknown";
+          }
+          break;
+          }
+        case ash::TYPE_BROWSER_SHORTCUT:
+          result += "Chrome, ";
+          break;
+        case ash::TYPE_APP_LIST:
+          result += "AppList";
+          break;
+        default:
+          result += "Unknown";
+          break;
+      }
+    }
+    return result;
+  }
+
   // Needed for extension service & friends to work.
   scoped_refptr<Extension> extension1_;
   scoped_refptr<Extension> extension2_;
@@ -267,13 +303,166 @@ TEST_F(ChromeLauncherControllerPerAppTest, DefaultApps) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
 
-  // Installing |extension3_| should add it to the launcher.
+  // Installing |extension3_| should add it to the launcher - behind the
+  // chrome icon.
   extension_service_->AddExtension(extension3_.get());
-  EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[0].type);
+  EXPECT_EQ("Chrome, App3, AppList", GetPinnedAppStatus());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
-  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension3_->id()));
+}
+
+// Check that the restauration of launcher items is happening in the same order
+// as the user has pinned them (on another system) when they are synced reverse
+// order.
+TEST_F(ChromeLauncherControllerPerAppTest, RestoreDefaultAppsReverseOrder) {
+  InitLauncherController();
+
+  base::ListValue policy_value;
+  InsertPrefValue(&policy_value, 0, extension1_->id());
+  InsertPrefValue(&policy_value, 1, extension2_->id());
+  InsertPrefValue(&policy_value, 2, extension3_->id());
+  profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                  policy_value.DeepCopy());
+  EXPECT_EQ(0, profile()->GetPrefs()->GetInteger(prefs::kShelfChromeIconIndex));
+  // Model should only contain the browser shortcut and app list items.
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
+  EXPECT_EQ("Chrome, AppList", GetPinnedAppStatus());
+
+  // Installing |extension3_| should add it to the launcher - behind the
+  // chrome icon.
+  ash::LauncherItem item;
+  extension_service_->AddExtension(extension3_.get());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
+  EXPECT_EQ("Chrome, App3, AppList", GetPinnedAppStatus());
+
+  // Installing |extension2_| should add it to the launcher - behind the
+  // chrome icon, but in first location.
+  extension_service_->AddExtension(extension2_.get());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_EQ("Chrome, App2, App3, AppList", GetPinnedAppStatus());
+
+  // Installing |extension1_| should add it to the launcher - behind the
+  // chrome icon, but in first location.
+  extension_service_->AddExtension(extension1_.get());
+  EXPECT_EQ("Chrome, App1, App2, App3, AppList", GetPinnedAppStatus());
+}
+
+// Check that the restauration of launcher items is happening in the same order
+// as the user has pinned them (on another system) when they are synced random
+// order.
+TEST_F(ChromeLauncherControllerPerAppTest, RestoreDefaultAppsRandomOrder) {
+  InitLauncherController();
+
+  base::ListValue policy_value;
+  InsertPrefValue(&policy_value, 0, extension1_->id());
+  InsertPrefValue(&policy_value, 1, extension2_->id());
+  InsertPrefValue(&policy_value, 2, extension3_->id());
+  profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                  policy_value.DeepCopy());
+  EXPECT_EQ(0, profile()->GetPrefs()->GetInteger(prefs::kShelfChromeIconIndex));
+  // Model should only contain the browser shortcut and app list items.
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
+  EXPECT_EQ("Chrome, AppList", GetPinnedAppStatus());
+
+  // Installing |extension2_| should add it to the launcher - behind the
+  // chrome icon.
+  extension_service_->AddExtension(extension2_.get());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
+  EXPECT_EQ("Chrome, App2, AppList", GetPinnedAppStatus());
+
+  // Installing |extension1_| should add it to the launcher - behind the
+  // chrome icon, but in first location.
+  extension_service_->AddExtension(extension1_.get());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
+  EXPECT_EQ("Chrome, App1, App2, AppList", GetPinnedAppStatus());
+
+  // Installing |extension3_| should add it to the launcher - behind the
+  // chrome icon, but in first location.
+  extension_service_->AddExtension(extension3_.get());
+  EXPECT_EQ("Chrome, App1, App2, App3, AppList", GetPinnedAppStatus());
+}
+
+// Check that the restauration of launcher items is happening in the same order
+// as the user has pinned / moved them (on another system) when they are synced
+// random order - including the chrome icon.
+TEST_F(ChromeLauncherControllerPerAppTest,
+    RestoreDefaultAppsRandomOrderChromeMoved) {
+  InitLauncherController();
+
+  base::ListValue policy_value;
+  InsertPrefValue(&policy_value, 0, extension1_->id());
+  InsertPrefValue(&policy_value, 1, extension2_->id());
+  InsertPrefValue(&policy_value, 2, extension3_->id());
+  profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                  policy_value.DeepCopy());
+  profile()->GetTestingPrefService()->SetInteger(prefs::kShelfChromeIconIndex,
+                                                 1);
+  // Model should only contain the browser shortcut and app list items.
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
+  EXPECT_EQ("Chrome, AppList", GetPinnedAppStatus());
+
+  // Installing |extension2_| should add it to the launcher - behind the
+  // chrome icon.
+  ash::LauncherItem item;
+  extension_service_->AddExtension(extension2_.get());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
+  EXPECT_EQ("Chrome, App2, AppList", GetPinnedAppStatus());
+
+  // Installing |extension1_| should add it to the launcher - behind the
+  // chrome icon, but in first location.
+  extension_service_->AddExtension(extension1_.get());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
+  EXPECT_EQ("App1, Chrome, App2, AppList", GetPinnedAppStatus());
+
+  // Installing |extension3_| should add it to the launcher - behind the
+  // chrome icon, but in first location.
+  extension_service_->AddExtension(extension3_.get());
+  EXPECT_EQ("App1, Chrome, App2, App3, AppList", GetPinnedAppStatus());
+}
+
+// Check that syncing to a different state does the correct thing.
+TEST_F(ChromeLauncherControllerPerAppTest, RestoreDefaultAppsResyncOrder) {
+  InitLauncherController();
+  base::ListValue policy_value;
+  InsertPrefValue(&policy_value, 0, extension1_->id());
+  InsertPrefValue(&policy_value, 1, extension2_->id());
+  InsertPrefValue(&policy_value, 2, extension3_->id());
+  profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                  policy_value.DeepCopy());
+  EXPECT_EQ(0, profile()->GetPrefs()->GetInteger(prefs::kShelfChromeIconIndex));
+  extension_service_->AddExtension(extension2_.get());
+  extension_service_->AddExtension(extension1_.get());
+  extension_service_->AddExtension(extension3_.get());
+  EXPECT_EQ("Chrome, App1, App2, App3, AppList", GetPinnedAppStatus());
+
+  // Change the order with increasing chrome position and decreasing position.
+  base::ListValue policy_value1;
+  InsertPrefValue(&policy_value1, 0, extension3_->id());
+  InsertPrefValue(&policy_value1, 1, extension1_->id());
+  InsertPrefValue(&policy_value1, 2, extension2_->id());
+  profile()->GetTestingPrefService()->SetInteger(prefs::kShelfChromeIconIndex,
+                                                 2);
+  profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                  policy_value1.DeepCopy());
+  EXPECT_EQ("App3, App1, Chrome, App2, AppList", GetPinnedAppStatus());
+  base::ListValue policy_value2;
+  InsertPrefValue(&policy_value2, 0, extension2_->id());
+  InsertPrefValue(&policy_value2, 1, extension3_->id());
+  InsertPrefValue(&policy_value2, 2, extension1_->id());
+  profile()->GetTestingPrefService()->SetInteger(prefs::kShelfChromeIconIndex,
+                                                 1);
+  profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
+                                                  policy_value2.DeepCopy());
+  EXPECT_EQ("App2, Chrome, App3, App1, AppList", GetPinnedAppStatus());
 }
 
 // Check that simple locking of an application will 'create' a launcher item.

@@ -381,6 +381,11 @@ class ChromeLauncherControllerPerBrowser
   // Invoked when browser shortcut is clicked.
   void BrowserShortcutClicked(int event_flags);
 
+  // Move an item internally (ignoring pinned state changes) from |index| to
+  // |target_index|.
+  void MoveItemWithoutPinnedStateChangeNotification(int source_index,
+                                                    int target_index);
+
   ash::LauncherModel* model_;
 
   // Profile used for prefs and loading extensions. This is NOT necessarily the
@@ -414,6 +419,9 @@ class ChromeLauncherControllerPerBrowser
 
   // Launchers that are currently being observed.
   std::set<ash::Launcher*> launchers_;
+
+  // If true, incoming pinned state changes should be ignored.
+  bool ignore_persist_pinned_state_change_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPerBrowser);
 };
