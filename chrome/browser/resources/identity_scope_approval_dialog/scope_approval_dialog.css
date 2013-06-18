@@ -10,10 +10,13 @@ body {
 .titlebar {
   -webkit-app-region: drag;
   background-color: white;
-  border-bottom: 1px solid #e5e5e5;
   height: 26px;
   white-space: nowrap;
   width: 100%;
+}
+
+.titlebar-border {
+  border-bottom: 1px solid #e5e5e5;
 }
 
 .titlebar-close-button {

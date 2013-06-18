@@ -29,6 +29,9 @@ function loadAuthUrlAndShowWindow(url, win) {
     urls: ['https://accounts.google.com/*'],
   }, ['blocking', 'requestHeaders']);
 
+  if (url.toLowerCase().indexOf('https://accounts.google.com/') != 0)
+    document.querySelector('.titlebar').classList.add('titlebar-border');
+
   webview.src = url;
   if (win) {
     webview.addEventListener('loadstop', function() {
