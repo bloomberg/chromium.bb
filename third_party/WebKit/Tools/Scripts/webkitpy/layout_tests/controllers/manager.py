@@ -234,18 +234,17 @@ class Manager(object):
         summarized_failing_results = test_run_results.summarize_results(self._port, self._expectations, initial_results, retry_results, enabled_pixel_tests_in_retry, only_include_failing=True)
         self._printer.print_results(end_time - start_time, initial_results, summarized_failing_results)
 
+        exit_code = self._port.exit_code_from_summarized_results(summarized_failing_results)
         if not self._options.dry_run:
             self._write_json_files(summarized_full_results, summarized_failing_results, initial_results)
             self._upload_json_files()
 
             results_path = self._filesystem.join(self._results_directory, "results.html")
             self._copy_results_html_file(results_path)
-            if self._options.show_results and (initial_results.unexpected_results_by_name or
-                                               (self._options.full_results_html and initial_results.total_failures)):
+            if self._options.show_results and (exit_code or (self._options.full_results_html and initial_results.total_failures)):
                 self._port.show_results_html_file(results_path)
 
-        return test_run_results.RunDetails(self._port.exit_code_from_summarized_results(summarized_failing_results),
-                                           summarized_full_results, summarized_failing_results, initial_results, retry_results, enabled_pixel_tests_in_retry)
+        return test_run_results.RunDetails(exit_code, summarized_full_results, summarized_failing_results, initial_results, retry_results, enabled_pixel_tests_in_retry)
 
     def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations, num_workers, retrying):
         needs_http = self._port.requires_http_server() or any(self._is_http_test(test) for test in tests_to_run)

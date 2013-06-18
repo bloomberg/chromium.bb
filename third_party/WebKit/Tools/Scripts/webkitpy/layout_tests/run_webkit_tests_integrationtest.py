@@ -280,9 +280,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                 ['--child-processes', '2', '--force', 'failures/expected/exception.html', 'passes/text.html'], tests_included=True, shared_port=False)
 
     def test_full_results_html(self):
-        # FIXME: verify html?
-        details, _, _ = logging_run(['--full-results-html'])
+        host = MockHost()
+        details, _, _ = logging_run(['--full-results-html'], host=host)
         self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(host.user.opened_urls), 1)
 
     def test_hung_thread(self):
         details, err, _ = logging_run(['--run-singly', '--time-out-ms=50', 'failures/expected/hang.html'], tests_included=True)
@@ -641,6 +642,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue('Retrying' in err.getvalue())
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/flaky/text-actual.txt'))
         self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/retries/failures/flaky/text-actual.txt'))
+        self.assertEqual(len(host.user.opened_urls), 0)
 
         # Now we test that --clobber-old-results does remove the old entries and the old retries,
         # and that we don't retry again.
@@ -651,6 +653,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue('flaky/text.html' in err.getvalue())
         self.assertTrue(host.filesystem.exists('/tmp/layout-test-results/failures/flaky/text-actual.txt'))
         self.assertFalse(host.filesystem.exists('retries'))
+        self.assertEqual(len(host.user.opened_urls), 1)
 
     def test_retrying_chrashed_tests(self):
         host = MockHost()
