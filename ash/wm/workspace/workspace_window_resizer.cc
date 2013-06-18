@@ -16,6 +16,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/default_window_resizer.h"
+#include "ash/wm/dock/docked_window_resizer.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
 #include "ash/wm/property_util.h"
@@ -46,6 +47,17 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   if (!wm::CanResizeWindow(window) && window_component != HTCAPTION)
     return scoped_ptr<WindowResizer>();
 
+  // TODO(varkha): The chaining of window resizers causes some of the logic
+  // to be repeated and the logic flow difficult to control. With some windows
+  // classes using reparenting during drag operations it becomes challenging to
+  // implement proper transition from one resizer to another during or at the
+  // end of the drag. This also causes http://crbug.com/247085.
+  // It seems the only thing the panel or dock resizer needs to do is notify the
+  // layout manager when a docked window is being dragged. We should have a
+  // better way of doing this, perhaps by having a way of observing drags or
+  // having a generic drag window wrapper which informs a layout manager that a
+  // drag has started or stopped.
+  // It may be possible to refactor and eliminate chaining.
   WindowResizer* window_resizer = NULL;
   if (window->parent() &&
       window->parent()->id() == internal::kShellWindowId_WorkspaceContainer) {
@@ -70,6 +82,10 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   }
   if (window_resizer && window->type() == aura::client::WINDOW_TYPE_PANEL) {
     window_resizer = PanelWindowResizer::Create(
+        window_resizer, window, point_in_parent, window_component, source);
+  }
+  if (window_resizer) {
+    window_resizer = DockedWindowResizer::Create(
         window_resizer, window, point_in_parent, window_component, source);
   }
   return make_scoped_ptr<WindowResizer>(window_resizer);
@@ -379,7 +395,7 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
-  // When the window is not in the normal show state, we do not snap thw window.
+  // When the window is not in the normal show state, we do not snap the window.
   // This happens when the user minimizes or maximizes the window by keyboard
   // shortcut while dragging it. If the window is the result of dragging a tab
   // out of a maximized window, it's already in the normal show state when this
@@ -433,6 +449,10 @@ void WorkspaceWindowResizer::RevertDrag() {
 
 aura::Window* WorkspaceWindowResizer::GetTarget() {
   return details_.window;
+}
+
+const gfx::Point& WorkspaceWindowResizer::GetInitialLocation() const {
+  return details_.initial_location_in_parent;
 }
 
 WorkspaceWindowResizer::WorkspaceWindowResizer(

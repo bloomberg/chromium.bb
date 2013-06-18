@@ -57,6 +57,10 @@ aura::Window* DefaultWindowResizer::GetTarget() {
   return details_.window;
 }
 
+const gfx::Point& DefaultWindowResizer::GetInitialLocation() const {
+  return details_.initial_location_in_parent;
+}
+
 DefaultWindowResizer::DefaultWindowResizer(const Details& details)
     : details_(details),
       did_move_or_resize_(false) {

@@ -48,7 +48,7 @@ void BuildWindowBoundsMap(const aura::Window* window, BoundsMap* bounds_map) {
     BuildWindowBoundsMap(window->children()[i], bounds_map);
 }
 
-// Resets |window|s bounds from |bounds_map| if currently empty. Recusively
+// Resets |window|s bounds from |bounds_map| if currently empty. Recursively
 // invokes this for all children.
 void ResetBoundsIfNecessary(const BoundsMap& bounds_map, aura::Window* window) {
   if (window->bounds().IsEmpty() && window->GetTargetBounds().IsEmpty()) {
@@ -61,7 +61,7 @@ void ResetBoundsIfNecessary(const BoundsMap& bounds_map, aura::Window* window) {
 }
 
 // Resets |window|s bounds from |bounds_map| if |window| is marked as a
-// constrained window. Recusively invokes this for all children.
+// constrained window. Recursively invokes this for all children.
 // TODO(sky): this should key off window type.
 void ResetConstrainedWindowBoundsIfNecessary(const BoundsMap& bounds_map,
                                              aura::Window* window) {

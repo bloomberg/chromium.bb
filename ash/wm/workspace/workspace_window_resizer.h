@@ -50,16 +50,13 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
       aura::client::WindowMoveSource source,
       const std::vector<aura::Window*>& attached_windows);
 
-  // Overridden from WindowResizer:
+  // WindowResizer:
   virtual void Drag(const gfx::Point& location_in_parent,
                     int event_flags) OVERRIDE;
   virtual void CompleteDrag(int event_flags) OVERRIDE;
   virtual void RevertDrag() OVERRIDE;
   virtual aura::Window* GetTarget() OVERRIDE;
-
-  const gfx::Point& GetInitialLocationInParentForTest() const {
-    return details_.initial_location_in_parent;
-  }
+  virtual const gfx::Point& GetInitialLocation() const OVERRIDE;
 
  private:
   WorkspaceWindowResizer(const Details& details,

@@ -44,13 +44,18 @@ aura::RootWindow* GetAnotherRootWindow(aura::RootWindow* root_window) {
   return root_windows[0];
 }
 
-}
+}  // namespace
+
+// static
+DragWindowResizer* DragWindowResizer::instance_ = NULL;
 
 DragWindowResizer::~DragWindowResizer() {
   Shell* shell = Shell::GetInstance();
   shell->mouse_cursor_filter()->set_mouse_warp_mode(
       MouseCursorEventFilter::WARP_ALWAYS);
   shell->mouse_cursor_filter()->HideSharedEdgeIndicator();
+  if (instance_ == this)
+    instance_ = NULL;
 
   if (destroyed_)
     *destroyed_ = true;
@@ -127,6 +132,10 @@ aura::Window* DragWindowResizer::GetTarget() {
   return next_window_resizer_->GetTarget();
 }
 
+const gfx::Point& DragWindowResizer::GetInitialLocation() const {
+  return details_.initial_location_in_parent;
+}
+
 DragWindowResizer::DragWindowResizer(WindowResizer* next_window_resizer,
                                      const Details& details)
     : next_window_resizer_(next_window_resizer),
@@ -146,6 +155,7 @@ DragWindowResizer::DragWindowResizer(WindowResizer* next_window_resizer,
     mouse_cursor_filter->ShowSharedEdgeIndicator(
         details.window->GetRootWindow());
   }
+  instance_ = this;
 }
 
 void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,

@@ -37,6 +37,7 @@ ASH_EXPORT extern const char kAshDisableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
+ASH_EXPORT extern const char kAshEnableDockedWindows[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif

@@ -39,9 +39,10 @@ const int kWindowContainerIds[] = {
     kShellWindowId_AppListContainer,
     kShellWindowId_DefaultContainer,
 
-    // Panel, launcher and status are intentionally checked after other
+    // Docked, panel, launcher and status are intentionally checked after other
     // containers even though these layers are higher. The user expects their
     // windows to be focused before these elements.
+    kShellWindowId_DockedContainer,
     kShellWindowId_PanelContainer,
     kShellWindowId_ShelfContainer,
     kShellWindowId_StatusContainer,

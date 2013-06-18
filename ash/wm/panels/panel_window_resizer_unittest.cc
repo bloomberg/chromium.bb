@@ -46,10 +46,10 @@ class PanelWindowResizerTest : public test::AshTestBase {
   }
 
  protected:
-  gfx::Point CalculateDragPoint(const PanelWindowResizer& resizer,
+  gfx::Point CalculateDragPoint(const WindowResizer& resizer,
                                 int delta_x,
                                 int delta_y) const {
-    gfx::Point location = resizer.GetInitialLocationInParentForTest();
+    gfx::Point location = resizer.GetInitialLocation();
     location.set_x(location.x() + delta_x);
     location.set_y(location.y() + delta_y);
     return location;
@@ -73,18 +73,12 @@ class PanelWindowResizerTest : public test::AshTestBase {
     return window;
   }
 
-  static PanelWindowResizer* CreatePanelWindowResizer(
-      aura::Window* window,
-      const gfx::Point& point_in_parent,
-      int window_component) {
-    return static_cast<PanelWindowResizer*>(CreateWindowResizer(
-        window, point_in_parent, window_component,
-        aura::client::WINDOW_MOVE_SOURCE_MOUSE).release());
-  }
-
   void DragStart(aura::Window* window) {
-    resizer_.reset(CreatePanelWindowResizer(window, window->bounds().origin(),
-                                            HTCAPTION));
+    resizer_.reset(CreateWindowResizer(
+        window,
+        window->bounds().origin(),
+        HTCAPTION,
+        aura::client::WINDOW_MOVE_SOURCE_MOUSE).release());
     ASSERT_TRUE(resizer_.get());
   }
 
@@ -189,7 +183,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   }
 
  private:
-  scoped_ptr<PanelWindowResizer> resizer_;
+  scoped_ptr<WindowResizer> resizer_;
   internal::PanelLayoutManager* panel_layout_manager_;
   LauncherModel* model_;
 

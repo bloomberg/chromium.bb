@@ -30,15 +30,12 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
                                    int window_component,
                                    aura::client::WindowMoveSource source);
 
-  // WindowResizer overides:
+  // WindowResizer:
   virtual void Drag(const gfx::Point& location, int event_flags) OVERRIDE;
   virtual void CompleteDrag(int event_flags) OVERRIDE;
   virtual void RevertDrag() OVERRIDE;
   virtual aura::Window* GetTarget() OVERRIDE;
-
-  const gfx::Point& GetInitialLocationInParentForTest() const {
-    return details_.initial_location_in_parent;
-  }
+  virtual const gfx::Point& GetInitialLocation() const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, DragWindowController);
@@ -68,6 +65,9 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   // If non-NULL the destructor sets this to true. Used to determine if this has
   // been deleted.
   bool* destroyed_;
+
+  // Current instance for use by the DragWindowResizerTest.
+  static DragWindowResizer* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowResizer);
 };

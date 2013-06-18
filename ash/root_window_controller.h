@@ -43,6 +43,7 @@ class ToplevelWindowEventHandler;
 namespace internal {
 
 class BootSplashScreen;
+class DockedWindowLayoutManager;
 class PanelLayoutManager;
 class RootWindowLayoutManager;
 class ScreenDimmer;
@@ -192,6 +193,9 @@ class ASH_EXPORT RootWindowController {
   // The shelf for managing the launcher and the status widget.
   scoped_ptr<ShelfWidget> shelf_;
 
+  // Manages layout of docked windows. Owned by DockedContainer.
+  DockedWindowLayoutManager* docked_layout_manager_;
+
   // Manages layout of panels. Owned by PanelContainer.
   PanelLayoutManager* panel_layout_manager_;
 
@@ -211,6 +215,7 @@ class ASH_EXPORT RootWindowController {
   scoped_ptr<ToplevelWindowEventHandler> modal_container_handler_;
   scoped_ptr<ToplevelWindowEventHandler> lock_modal_container_handler_;
   scoped_ptr<ToplevelWindowEventHandler> panel_container_handler_;
+  scoped_ptr<ToplevelWindowEventHandler> docked_container_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

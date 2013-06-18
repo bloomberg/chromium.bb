@@ -32,11 +32,12 @@ class ASH_EXPORT DefaultWindowResizer : public WindowResizer {
   }
   aura::Window* target_window() const { return details_.window; }
 
-  // WindowResizer overides:
+  // WindowResizer:
   virtual void Drag(const gfx::Point& location, int event_flags) OVERRIDE;
   virtual void CompleteDrag(int event_flags) OVERRIDE;
   virtual void RevertDrag() OVERRIDE;
   virtual aura::Window* GetTarget() OVERRIDE;
+  virtual const gfx::Point& GetInitialLocation() const OVERRIDE;
 
  private:
   explicit DefaultWindowResizer(const Details& details);

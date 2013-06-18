@@ -52,6 +52,9 @@ class ASH_EXPORT WindowResizer {
   // Returns the target window the resizer was created for.
   virtual aura::Window* GetTarget() = 0;
 
+  // See comment for |Details::initial_location_in_parent|.
+  virtual const gfx::Point& GetInitialLocation() const = 0;
+
  protected:
   struct Details {
     Details();
@@ -141,6 +144,6 @@ ASH_EXPORT scoped_ptr<WindowResizer> CreateWindowResizer(
     int window_component,
     aura::client::WindowMoveSource source);
 
-}  // namespace aura
+}  // namespace ash
 
 #endif  // ASH_WM_WINDOW_RESIZER_H_

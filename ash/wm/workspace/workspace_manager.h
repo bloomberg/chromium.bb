@@ -105,7 +105,7 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
 
   typedef std::vector<Workspace*> Workspaces;
 
-  // Reason for the workspace switch. Used to determine the characterstics of
+  // Reason for the workspace switch. Used to determine the characteristics of
   // the animation.
   enum SwitchReason {
     SWITCH_WINDOW_MADE_ACTIVE,
