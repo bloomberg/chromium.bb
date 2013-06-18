@@ -26,6 +26,7 @@
 #define MediaStreamRegistry_h
 
 #include "core/html/URLRegistry.h"
+#include "public/platform/WebMediaStream.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/StringHash.h"
@@ -34,7 +35,6 @@ namespace WebCore {
 
 class KURL;
 class MediaStream;
-class MediaStreamDescriptor;
 
 class MediaStreamRegistry : public URLRegistry {
 public:
@@ -45,10 +45,10 @@ public:
     virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) OVERRIDE;
     virtual void unregisterURL(const KURL&) OVERRIDE;
 
-    MediaStreamDescriptor* lookupMediaStreamDescriptor(const String& url);
+    WebKit::WebMediaStream lookupWebMediaStream(const String& url);
 
 private:
-    HashMap<String, RefPtr<MediaStreamDescriptor> > m_streamDescriptors;
+    HashMap<String, WebKit::WebMediaStream > m_webMediaStreams;
 };
 
 } // namespace WebCore

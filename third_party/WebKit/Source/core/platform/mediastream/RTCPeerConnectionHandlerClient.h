@@ -35,11 +35,11 @@
 
 namespace WebKit {
 class WebRTCICECandidate;
+class WebMediaStream;
 }
 
 namespace WebCore {
 
-class MediaStreamDescriptor;
 class RTCDataChannelHandler;
 
 class RTCPeerConnectionHandlerClient {
@@ -76,8 +76,8 @@ public:
     virtual void didChangeSignalingState(SignalingState) = 0;
     virtual void didChangeIceGatheringState(IceGatheringState) = 0;
     virtual void didChangeIceConnectionState(IceConnectionState) = 0;
-    virtual void didAddRemoteStream(PassRefPtr<MediaStreamDescriptor>) = 0;
-    virtual void didRemoveRemoteStream(MediaStreamDescriptor*) = 0;
+    virtual void didAddRemoteStream(WebKit::WebMediaStream) = 0;
+    virtual void didRemoveRemoteStream(WebKit::WebMediaStream) = 0;
     virtual void didAddRemoteDataChannel(PassOwnPtr<RTCDataChannelHandler>) = 0;
 };
 

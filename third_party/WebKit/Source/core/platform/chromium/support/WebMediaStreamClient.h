@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2011 Ericsson AB. All rights reserved.
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,45 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaStreamComponent_h
-#define MediaStreamComponent_h
+#ifndef WebMediaStreamClient_h
+#define WebMediaStreamClient_h
 
-#include "public/platform/WebMediaStream.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/mediastream/MediaStreamComponent.h"
 
-namespace WebCore {
+namespace WebKit {
 
-class MediaStreamSource;
-
-class MediaStreamComponent : public RefCounted<MediaStreamComponent> {
+class WebMediaStreamClient {
 public:
-    static PassRefPtr<MediaStreamComponent> create(PassRefPtr<MediaStreamSource>);
-    static PassRefPtr<MediaStreamComponent> create(const String& id, PassRefPtr<MediaStreamSource>);
-    static PassRefPtr<MediaStreamComponent> create(WebKit::WebMediaStream, PassRefPtr<MediaStreamSource>);
+    virtual ~WebMediaStreamClient() { }
 
-    WebKit::WebMediaStream stream() const { return m_stream; }
-    void setStream(WebKit::WebMediaStream stream) { m_stream = stream; }
-
-    MediaStreamSource* source() const { return m_source.get(); }
-
-    String id() const { return m_id; }
-    bool enabled() const { return m_enabled; }
-    void setEnabled(bool enabled) { m_enabled = enabled; }
-
-private:
-    MediaStreamComponent(const String& id, WebKit::WebMediaStream, PassRefPtr<MediaStreamSource>);
-    MediaStreamComponent(const String& id, PassRefPtr<MediaStreamSource>);
-
-    WebKit::WebMediaStream m_stream;
-    RefPtr<MediaStreamSource> m_source;
-    String m_id;
-    bool m_enabled;
+    virtual void trackEnded() = 0;
+    virtual void streamEnded() = 0;
+    virtual void addRemoteTrack(WebCore::MediaStreamComponent*) = 0;
+    virtual void removeRemoteTrack(WebCore::MediaStreamComponent*) = 0;
 };
 
-typedef Vector<RefPtr<MediaStreamComponent> > MediaStreamComponentVector;
+} // namespace WebKit
 
-} // namespace WebCore
-
-#endif // MediaStreamComponent_h
+#endif // WebMediaStreamClient_h
