@@ -30,7 +30,6 @@
 #include "webkit/browser/fileapi/isolated_file_util.h"
 #include "webkit/browser/fileapi/local_file_stream_writer.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
-#include "webkit/glue/webkit_glue.h"
 
 namespace {
 

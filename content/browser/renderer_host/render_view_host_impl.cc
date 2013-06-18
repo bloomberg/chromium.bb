@@ -70,7 +70,6 @@
 #include "ui/snapshot/snapshot.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/webdropdata.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"

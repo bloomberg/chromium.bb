@@ -65,7 +65,6 @@ include_rules = [
   # webkit/glue files are listed individually since they aren't conceptually
   # grouped like the other webkit/ files, and can therefore be tackled one at
   # a time.
-  "+webkit/glue/glue_serialize.h",
   "+webkit/glue/image_decoder.h",
   "+webkit/glue/resource_type.h",
   "+webkit/glue/webkit_glue.h",

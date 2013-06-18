@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/referrer.h"
-#include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;
 using content::NavigationEntry;

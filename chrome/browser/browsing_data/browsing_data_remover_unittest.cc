@@ -48,7 +48,6 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;
 

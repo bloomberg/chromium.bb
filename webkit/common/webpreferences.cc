@@ -10,7 +10,6 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/icu/public/common/unicode/uchar.h"
-#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebSettings;
 

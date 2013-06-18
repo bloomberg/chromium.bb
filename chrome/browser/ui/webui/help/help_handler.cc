@@ -36,7 +36,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/files/file_util_proxy.h"
