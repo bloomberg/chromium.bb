@@ -220,6 +220,7 @@ void CommandLine::InitFromArgv(int argc,
 
 void CommandLine::InitFromArgv(const StringVector& argv) {
   argv_ = StringVector(1);
+  switches_.clear();
   begin_args_ = 1;
   SetProgram(argv.empty() ? FilePath() : FilePath(argv[0]));
   AppendSwitchesAndArguments(*this, argv);

@@ -272,30 +272,6 @@ bool IsNewTabURL(Profile* profile, const GURL& url) {
          (url.is_empty() && profile->GetHomePage() == ntp_url);
 }
 
-void AddSyncPromoTab(Profile* profile, StartupTabs* tabs) {
-  SyncPromoUI::DidShowSyncPromoAtStartup(profile);
-
-  StartupTab sync_promo_tab;
-  sync_promo_tab.url = SyncPromoUI::GetSyncPromoURL(
-      SyncPromoUI::SOURCE_START_PAGE, false);
-  sync_promo_tab.is_pinned = false;
-
-  // No need to add if the sync promo is already in the startup list.
-  for (StartupTabs::const_iterator it = tabs->begin(); it != tabs->end();
-       ++it) {
-    if (it->url == sync_promo_tab.url)
-      return;
-  }
-
-  tabs->insert(tabs->begin(), sync_promo_tab);
-
-  // If the next URL is the NTP then remove it, effectively replacing the NTP
-  // with the sync promo. This behavior is desired because completing or
-  // skipping the sync promo causes a redirect to the NTP.
-  if (tabs->size() > 1 && IsNewTabURL(profile, tabs->at(1).url))
-    tabs->erase(tabs->begin() + 1);
-}
-
 class WebContentsCloseObserver : public content::NotificationObserver {
  public:
   WebContentsCloseObserver() : contents_(NULL) {}
@@ -763,11 +739,6 @@ Browser* StartupBrowserCreatorImpl::ProcessSpecifiedURLs(
     NOTREACHED() << "SessionStartupPref has deprecated type HOMEPAGE";
   }
 
-  if (pref.type != SessionStartupPref::LAST &&
-      SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
-    AddSyncPromoTab(profile_, &tabs);
-  }
-
   if (tabs.empty())
     return NULL;
 
@@ -930,9 +901,11 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   }
 }
 
-
 void StartupBrowserCreatorImpl::AddStartupURLs(
     std::vector<GURL>* startup_urls) const {
+  // TODO(atwilson): Simplify the logic that decides which tabs to open on
+  // start-up and make it more consistent. http://crbug.com/248883
+
   // If we have urls specified by the first run master preferences use them
   // and nothing else.
   if (browser_creator_ && startup_urls->empty()) {
@@ -961,6 +934,33 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
     startup_urls->push_back(GURL(chrome::kChromeUINewTabURL));
     if (first_run::ShouldShowWelcomePage())
       startup_urls->push_back(internals::GetWelcomePageURL());
+  }
+
+  if (SyncPromoUI::ShouldShowSyncPromoAtStartup(profile_, is_first_run_)) {
+    SyncPromoUI::DidShowSyncPromoAtStartup(profile_);
+
+    const GURL sync_promo_url = SyncPromoUI::GetSyncPromoURL(
+        SyncPromoUI::SOURCE_START_PAGE, false);
+
+    // No need to add if the sync promo is already in the startup list.
+    bool add_promo = true;
+    for (std::vector<GURL>::const_iterator it = startup_urls->begin();
+         it != startup_urls->end(); ++it) {
+      if (*it == sync_promo_url) {
+        add_promo = false;
+        break;
+      }
+    }
+
+    if (add_promo) {
+      // If the first URL is the NTP, replace it with the sync promo. This
+      // behavior is desired because completing or skipping the sync promo
+      // causes a redirect to the NTP.
+      if (!startup_urls->empty() && IsNewTabURL(profile_, startup_urls->at(0)))
+        startup_urls->at(0) = sync_promo_url;
+      else
+        startup_urls->insert(startup_urls->begin(), sync_promo_url);
+    }
   }
 }
 
