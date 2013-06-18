@@ -11651,9 +11651,23 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.LevelDBOpenErrors.EnvMethod"
+    enum="LevelDBIOErrorMethods">
+  <summary>
+    LevelDBEnv methods that generated IO errors when opening a database.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.LevelDBWriteErrors" enum="LevelDBErrorTypes">
   <summary>
     Error classes returned by LevelDB when it failed to write to a database.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.LevelDBWriteErrors.EnvMethod"
+    enum="LevelDBIOErrorMethods">
+  <summary>
+    LevelDBEnv methods that generated IO errors when writing to a database.
   </summary>
 </histogram>
 

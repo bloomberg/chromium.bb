@@ -14,9 +14,10 @@ using namespace leveldb;
 TEST(ErrorEncoding, OnlyAMethod) {
   const MethodID in_method = kSequentialFileRead;
   const Status s = MakeIOError("Somefile.txt", "message", in_method);
-  int method = -50;
+  MethodID method;
   int error = -75;
-  EXPECT_TRUE(ParseMethodAndError(s.ToString().c_str(), &method, &error));
+  EXPECT_EQ(METHOD_ONLY,
+            ParseMethodAndError(s.ToString().c_str(), &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(-75, error);
 }
@@ -26,9 +27,10 @@ TEST(ErrorEncoding, PlatformFileError) {
   const base::PlatformFileError pfe =
       base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   const Status s = MakeIOError("Somefile.txt", "message", in_method, pfe);
-  int method;
+  MethodID method;
   int error;
-  EXPECT_TRUE(ParseMethodAndError(s.ToString().c_str(), &method, &error));
+  EXPECT_EQ(METHOD_AND_PFE,
+            ParseMethodAndError(s.ToString().c_str(), &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(pfe, error);
 }
@@ -38,19 +40,20 @@ TEST(ErrorEncoding, Errno) {
   const int some_errno = ENOENT;
   const Status s =
       MakeIOError("Somefile.txt", "message", in_method, some_errno);
-  int method;
+  MethodID method;
   int error;
-  EXPECT_TRUE(ParseMethodAndError(s.ToString().c_str(), &method, &error));
+  EXPECT_EQ(METHOD_AND_ERRNO,
+            ParseMethodAndError(s.ToString().c_str(), &method, &error));
   EXPECT_EQ(in_method, method);
   EXPECT_EQ(some_errno, error);
 }
 
 TEST(ErrorEncoding, NoEncodedMessage) {
   Status s = Status::IOError("Some message", "from leveldb itself");
-  int method = 3;
+  MethodID method = kRandomAccessFileRead;
   int error = 4;
-  EXPECT_FALSE(ParseMethodAndError(s.ToString().c_str(), &method, &error));
-  EXPECT_EQ(3, method);
+  EXPECT_EQ(NONE, ParseMethodAndError(s.ToString().c_str(), &method, &error));
+  EXPECT_EQ(kRandomAccessFileRead, method);
   EXPECT_EQ(4, error);
 }
 

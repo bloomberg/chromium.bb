@@ -17,6 +17,7 @@
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_slice.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/env_idb.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
@@ -138,7 +139,7 @@ static int CheckFreeSpace(const char* type, const base::FilePath& file_name) {
   return clamped_disk_space_k_bytes;
 }
 
-static void HistogramLevelDBError(const char* histogram_name,
+static void HistogramLevelDBError(const std::string& histogram_name,
                                   const leveldb::Status& s) {
   DCHECK(!s.ok());
   enum {
@@ -161,6 +162,24 @@ static void HistogramLevelDBError(const char* histogram_name,
                               LEVEL_DB_MAX_ERROR + 1,
                               base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(leveldb_error);
+
+  // The code above histograms the type of error. The code below tries to
+  // histogram the method where the error occurred in ChromiumEnv and, in most
+  // cases, the exact error encountered.
+  leveldb_env::MethodID method;
+  int error = -1;
+  leveldb_env::ErrorParsingResult result =
+      leveldb_env::ParseMethodAndError(s.ToString().c_str(), &method, &error);
+  if (result == leveldb_env::NONE)
+    return;
+  std::string method_histogram_name(histogram_name);
+  method_histogram_name.append(".EnvMethod");
+  base::LinearHistogram::FactoryGet(
+      method_histogram_name,
+      1,
+      leveldb_env::kNumEntries,
+      leveldb_env::kNumEntries + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag)->Add(method);
 }
 
 scoped_ptr<LevelDBDatabase> LevelDBDatabase::Open(

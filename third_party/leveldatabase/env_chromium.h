@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 #define THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 
+#include <deque>
 #include <map>
 
 #include "base/metrics/histogram.h"
@@ -40,6 +41,8 @@ enum MethodID {
   kNumEntries
 };
 
+const char* MethodIDToString(MethodID method);
+
 leveldb::Status MakeIOError(leveldb::Slice filename,
                             const char* message,
                             MethodID method,
@@ -52,7 +55,16 @@ leveldb::Status MakeIOError(leveldb::Slice filename,
                             const char* message,
                             MethodID method);
 
-bool ParseMethodAndError(const char* string, int* method, int* error);
+enum ErrorParsingResult {
+  METHOD_ONLY,
+  METHOD_AND_PFE,
+  METHOD_AND_ERRNO,
+  NONE,
+};
+
+ErrorParsingResult ParseMethodAndError(const char* string,
+                                       MethodID* method,
+                                       int* error);
 std::string FilePathToString(const base::FilePath& file_path);
 
 class UMALogger {

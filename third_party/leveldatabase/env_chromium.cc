@@ -129,56 +129,6 @@ base::FilePath CreateFilePath(const std::string& file_path) {
 #endif
 }
 
-const char* MethodIDToString(MethodID method) {
-  switch (method) {
-    case kSequentialFileRead:
-      return "SequentialFileRead";
-    case kSequentialFileSkip:
-      return "SequentialFileSkip";
-    case kRandomAccessFileRead:
-      return "RandomAccessFileRead";
-    case kWritableFileAppend:
-      return "WritableFileAppend";
-    case kWritableFileClose:
-      return "WritableFileClose";
-    case kWritableFileFlush:
-      return "WritableFileFlush";
-    case kWritableFileSync:
-      return "WritableFileSync";
-    case kNewSequentialFile:
-      return "NewSequentialFile";
-    case kNewRandomAccessFile:
-      return "NewRandomAccessFile";
-    case kNewWritableFile:
-      return "NewWritableFile";
-    case kDeleteFile:
-      return "DeleteFile";
-    case kCreateDir:
-      return "CreateDir";
-    case kDeleteDir:
-      return "DeleteDir";
-    case kGetFileSize:
-      return "GetFileSize";
-    case kRenameFile:
-      return "RenameFile";
-    case kLockFile:
-      return "LockFile";
-    case kUnlockFile:
-      return "UnlockFile";
-    case kGetTestDirectory:
-      return "GetTestDirectory";
-    case kNewLogger:
-      return "NewLogger";
-    case kSyncParent:
-      return "SyncParent";
-    case kNumEntries:
-      NOTREACHED();
-      return "kNumEntries";
-  }
-  NOTREACHED();
-  return "Unknown";
-}
-
 static const base::FilePath::CharType kLevelDBTestDirectoryPrefix[]
     = FILE_PATH_LITERAL("leveldb-test-");
 
@@ -351,6 +301,56 @@ class IDBEnv : public ChromiumEnv {
 
 }  // unnamed namespace
 
+const char* MethodIDToString(MethodID method) {
+  switch (method) {
+    case kSequentialFileRead:
+      return "SequentialFileRead";
+    case kSequentialFileSkip:
+      return "SequentialFileSkip";
+    case kRandomAccessFileRead:
+      return "RandomAccessFileRead";
+    case kWritableFileAppend:
+      return "WritableFileAppend";
+    case kWritableFileClose:
+      return "WritableFileClose";
+    case kWritableFileFlush:
+      return "WritableFileFlush";
+    case kWritableFileSync:
+      return "WritableFileSync";
+    case kNewSequentialFile:
+      return "NewSequentialFile";
+    case kNewRandomAccessFile:
+      return "NewRandomAccessFile";
+    case kNewWritableFile:
+      return "NewWritableFile";
+    case kDeleteFile:
+      return "DeleteFile";
+    case kCreateDir:
+      return "CreateDir";
+    case kDeleteDir:
+      return "DeleteDir";
+    case kGetFileSize:
+      return "GetFileSize";
+    case kRenameFile:
+      return "RenameFile";
+    case kLockFile:
+      return "LockFile";
+    case kUnlockFile:
+      return "UnlockFile";
+    case kGetTestDirectory:
+      return "GetTestDirectory";
+    case kNewLogger:
+      return "NewLogger";
+    case kSyncParent:
+      return "SyncParent";
+    case kNumEntries:
+      NOTREACHED();
+      return "kNumEntries";
+  }
+  NOTREACHED();
+  return "Unknown";
+}
+
 Status MakeIOError(Slice filename,
                    const char* message,
                    MethodID method,
@@ -393,19 +393,26 @@ Status MakeIOError(Slice filename, const char* message, MethodID method) {
   return Status::IOError(filename, buf);
 }
 
-bool ParseMethodAndError(const char* string, int* method, int* error) {
-  if (RE2::PartialMatch(string, "ChromeMethodOnly: (\\d+)", method))
-    return true;
+ErrorParsingResult ParseMethodAndError(const char* string,
+                                       MethodID* method_param,
+                                       int* error) {
+  int method;
+  if (RE2::PartialMatch(string, "ChromeMethodOnly: (\\d+)", &method)) {
+    *method_param = static_cast<MethodID>(method);
+    return METHOD_ONLY;
+  }
   if (RE2::PartialMatch(
-          string, "ChromeMethodPFE: (\\d+)::.*::(\\d+)", method, error)) {
+          string, "ChromeMethodPFE: (\\d+)::.*::(\\d+)", &method, error)) {
     *error = -*error;
-    return true;
+    *method_param = static_cast<MethodID>(method);
+    return METHOD_AND_PFE;
   }
   if (RE2::PartialMatch(
-          string, "ChromeMethodErrno: (\\d+)::.*::(\\d+)", method, error)) {
-    return true;
+          string, "ChromeMethodErrno: (\\d+)::.*::(\\d+)", &method, error)) {
+    *method_param = static_cast<MethodID>(method);
+    return METHOD_AND_ERRNO;
   }
-  return false;
+  return NONE;
 }
 
 std::string FilePathToString(const base::FilePath& file_path) {
