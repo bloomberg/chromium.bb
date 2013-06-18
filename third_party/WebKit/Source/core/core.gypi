@@ -85,6 +85,7 @@
             'dom/Notation.idl',
             'dom/OverflowEvent.idl',
             'dom/PageTransitionEvent.idl',
+            'dom/ParentNode.idl',
             'dom/PopStateEvent.idl',
             'dom/ProcessingInstruction.idl',
             'dom/ProgressEvent.idl',

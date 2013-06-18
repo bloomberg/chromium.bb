@@ -70,6 +70,16 @@ def get_partial_interface_name_from_idl(file_contents):
     return None
 
 
+# identifier-A implements identifier-B;
+# http://www.w3.org/TR/WebIDL/#idl-implements-statements
+def get_implementers_from_idl(file_contents, interface_name):
+    implementers = []
+    for match in re.finditer(r'(\w+)\s+implements\s+(\w+)\s*;', file_contents):
+        # identifier-B must be the current interface
+        assert match.group(2) == interface_name
+        implementers.append(match.group(1))
+    return implementers
+
 def is_callback_interface_from_idl(file_contents):
     match = re.search(r'callback\s+interface\s+\w+', file_contents)
     return match is not None
@@ -142,11 +152,17 @@ def parse_idl_files(idl_files, window_constructors_filename, workercontext_const
     for idl_file_name in idl_files:
         full_path = os.path.realpath(idl_file_name)
         idl_file_contents = get_file_contents(full_path)
+        # Handle partial interfaces
         partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
         if partial_interface_name:
-            supplemental_dependencies[full_path] = partial_interface_name
+            supplemental_dependencies[full_path] = [partial_interface_name]
             continue
         interface_name, _ = os.path.splitext(os.path.basename(idl_file_name))
+        # Parse 'identifier-A implements identifier-B; statements
+        implementers = get_implementers_from_idl(idl_file_contents, interface_name)
+        for implementer in implementers:
+            supplemental_dependencies.setdefault(full_path, []).append(implementer)
+        # Handle [NoInterfaceObject]
         if not is_callback_interface_from_idl(idl_file_contents):
             extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
             if 'NoInterfaceObject' not in extended_attributes:
@@ -163,18 +179,19 @@ def parse_idl_files(idl_files, window_constructors_filename, workercontext_const
     # Generate Global constructors
     generate_global_constructors_partial_interface("Window", window_constructors_filename, window_constructor_attributes_list)
     if 'Window' in interface_name_to_idl_file:
-        supplemental_dependencies[window_constructors_filename] = 'Window'
+        supplemental_dependencies[window_constructors_filename] = ['Window']
     generate_global_constructors_partial_interface("WorkerContext", workercontext_constructors_filename, workercontext_constructor_attributes_list)
     if 'WorkerContext' in interface_name_to_idl_file:
-        supplemental_dependencies[workercontext_constructors_filename] = 'WorkerContext'
+        supplemental_dependencies[workercontext_constructors_filename] = ['WorkerContext']
 
     # Resolve partial interfaces dependencies
-    for idl_file, base_file in supplemental_dependencies.iteritems():
-        target_idl_file = interface_name_to_idl_file[base_file]
-        supplementals[target_idl_file].append(idl_file)
-        if idl_file in supplementals:
-            # Should never occur. Might be needed in corner cases.
-            del supplementals[idl_file]
+    for idl_file, base_files in supplemental_dependencies.iteritems():
+        for base_file in base_files:
+            target_idl_file = interface_name_to_idl_file[base_file]
+            supplementals[target_idl_file].append(idl_file)
+            if idl_file in supplementals:
+                # Should never occur. Might be needed in corner cases.
+                del supplementals[idl_file]
     return supplementals
 
 

@@ -100,12 +100,6 @@
     // WebKit extension, pending specification.
     [RaisesException] boolean webkitMatchesSelector([Default=Undefined] optional DOMString selectors);
 
-    // ParentNode interface API
-    [PerWorldBindings] readonly attribute HTMLCollection children;
-    [PerWorldBindings] readonly attribute Element firstElementChild;
-    [PerWorldBindings] readonly attribute Element lastElementChild;
-    [PerWorldBindings] readonly attribute unsigned long childElementCount;
-
     // ShadowAware API
     [Reflect=pseudo, ImplementedAs=pseudo, PerWorldBindings] attribute DOMString webkitPseudo;
     [ImplementedAs=createShadowRoot, RaisesException] ShadowRoot webkitCreateShadowRoot();
