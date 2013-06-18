@@ -372,9 +372,6 @@ MessageView::MessageView(const Notification& notification,
   expand->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_MESSAGE_CENTER_EXPAND_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
   expand_button_.reset(expand);
-
-  if (IsRichNotificationEnabled())
-    set_border(new ShadowBorder());
 }
 
 MessageView::MessageView() {
@@ -389,6 +386,10 @@ gfx::Insets MessageView::GetShadowInsets() {
                      kShadowBlur / 2,
                      kShadowBlur / 2 + kShadowOffset,
                      kShadowBlur / 2);
+}
+
+void MessageView::CreateShadowBorder() {
+  set_border(new ShadowBorder());
 }
 
 bool MessageView::IsCloseButtonFocused() {

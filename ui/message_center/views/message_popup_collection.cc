@@ -96,7 +96,10 @@ void MessagePopupCollection::UpdateWidgets() {
       continue;
 
     MessageView* view =
-        NotificationView::Create(*(*iter), message_center_, true);
+        NotificationView::Create(*(*iter),
+                                 message_center_,
+                                 true,  // Create expanded.
+                                 true); // Create top-level notification.
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
     if (bottom - view_height - kToastMargin < 0) {
       delete view;
@@ -286,8 +289,11 @@ void MessagePopupCollection::OnNotificationUpdated(
     if ((*iter)->id() != notification_id)
       continue;
 
-    MessageView* view = NotificationView::Create(
-        *(*iter), message_center_, true);
+    MessageView* view =
+        NotificationView::Create(*(*iter),
+                                 message_center_,
+                                 true,  // Create expanded.
+                                 true); // Create top-level notification.
     (*toast_iter)->SetContents(view);
     updated = true;
   }

@@ -40,6 +40,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   // Returns the insets for the shadow it will have for rich notification.
   static gfx::Insets GetShadowInsets();
 
+  // Creates a shadow around the notification.
+  void CreateShadowBorder();
+
   bool IsCloseButtonFocused();
   void RequestFocusOnCloseButton();
 

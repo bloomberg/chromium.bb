@@ -879,8 +879,12 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
        ++iter, ++index) {
     DCHECK((*iter)->id() == message_views_[index]->notification_id());
     if ((*iter)->id() == id) {
-      MessageView* view = NotificationView::Create(
-          *(*iter), message_center_, true);
+      MessageView* view =
+          NotificationView::Create(*(*iter),
+                                   message_center_,
+                                   true,   // Create expanded.
+                                   false); // Not creating a top-level
+                                           // notification.
       view->set_scroller(scroller_);
       message_list_view_->UpdateNotificationAt(view, index);
       message_views_[index] = view;
@@ -894,8 +898,12 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
                                           int index) {
   // NotificationViews are expanded by default here until
   // http://crbug.com/217902 is fixed. TODO(dharcourt): Fix.
-  MessageView* view = NotificationView::Create(
-      notification, message_center_, true);
+  MessageView* view =
+      NotificationView::Create(notification,
+                               message_center_,
+                               true,    // Create expanded.
+                               false);  // Not creating a top-level
+                                        // notification.
   view->set_scroller(scroller_);
   message_views_.insert(message_views_.begin() + index, view);
   message_list_view_->AddNotificationAt(view, index);

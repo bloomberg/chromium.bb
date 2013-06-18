@@ -178,13 +178,15 @@ void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
     const ui::Animation* animation) {
   if (is_closing_ && closing_animation_ == animation && GetWidget()) {
     views::Widget* widget = GetWidget();
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(USE_AURA)
     // TODO(dewittj): This is a workaround to prevent a nasty bug where
     // closing a transparent widget doesn't actually remove the window,
     // causing entire areas of the screen to become unresponsive to clicks.
     // See crbug.com/243469
     widget->Hide();
+# if defined(OS_WIN)
     widget->SetOpacity(0xFF);
+# endif
 #endif
     widget->Close();
   }

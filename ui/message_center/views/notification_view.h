@@ -24,10 +24,13 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   // Creates appropriate MessageViews for notifications. Those currently are
   // always NotificationView or MessageSimpleView instances but in the future
   // may be instances of other classes, with the class depending on the
-  // notification type.
+  // notification type. A notification is top level if it needs to be rendered
+  // outside the browser window. No custom shadows are created for top level
+  // notifications on Linux with Aura.
   static MessageView* Create(const Notification& notification,
                              MessageCenter* message_center,
-                             bool expanded);
+                             bool expanded,
+                             bool top_level);
 
   virtual ~NotificationView();
 

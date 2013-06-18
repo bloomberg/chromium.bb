@@ -65,7 +65,11 @@ void PopupBubbleContentsView::Update(
     // could come if those subviews were initially collapsed and allowed to be
     // expanded by users. TODO(dharcourt): Fix.
     content_->AddChildView(
-        NotificationView::Create(*(*iter), message_center_, true));
+        NotificationView::Create(*(*iter),
+                                 message_center_,
+                                 true,    // Create expanded.
+                                 false)); // Not creating a top-level
+                                          // notification.
   }
   content_->SizeToPreferredSize();
   content_->InvalidateLayout();
