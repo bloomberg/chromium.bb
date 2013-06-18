@@ -37,6 +37,28 @@ test.util.async = {};
 test.util.TESTING_EXTENSION_ID = 'oobinhbdbiehknkpbpejbbpdbkdjmoco';
 
 /**
+ * Interval of checking a condition in milliseconds.
+ * @type {number}
+ * @const
+ * @private
+ */
+test.util.WAITTING_INTERVAL_ = 50;
+
+/**
+ * Repeats the function until it returns true.
+ * @param {function()} closure Function expected to return true.
+ * @private
+ */
+test.util.repeatUntilTrue_ = function(closure) {
+  var step = function() {
+    if (closure())
+      return;
+    setTimeout(step, test.util.WAITTING_INTERVAL_);
+  };
+  step();
+};
+
+/**
  * Opens the main Files.app's window and waits until it is ready.
  *
  * @param {string} path Path of the directory to be opened.
@@ -44,25 +66,27 @@ test.util.TESTING_EXTENSION_ID = 'oobinhbdbiehknkpbpejbbpdbkdjmoco';
  *     App ID.
  */
 test.util.async.openMainWindow = function(path, callback) {
-  var appId;
-  function helper() {
-    if (appWindows[appId]) {
-      var contentWindow = appWindows[appId].contentWindow;
-      var table = contentWindow.document.querySelector('#detail-table');
-      if (table) {
+  var steps = [
+    function() {
+      launchFileManager({defaultPath: path},
+                        undefined,  // opt_type
+                        undefined,  // opt_id
+                        steps.shift());
+    },
+    function(appId) {
+      test.util.repeatUntilTrue_(function() {
+        if (!appWindows[appId])
+          return false;
+        var contentWindow = appWindows[appId].contentWindow;
+        var table = contentWindow.document.querySelector('#detail-table');
+        if (!table)
+          return false;
         callback(appId);
-        return;
-      }
+        return true;
+      });
     }
-    window.setTimeout(helper, 50);
-  }
-  launchFileManager({defaultPath: path},
-                    undefined,  // opt_type
-                    undefined,  // opt_id
-                    function(id) {
-                      appId = id;
-                      helper();
-                    });
+  ];
+  steps.shift()();
 };
 
 /**
@@ -74,17 +98,16 @@ test.util.async.openMainWindow = function(path, callback) {
  *     App ID.
  */
 test.util.async.waitForWindow = function(appIdPrefix, callback) {
-  var appId;
-  function helper() {
+  test.util.repeatUntilTrue_(function() {
     for (var appId in appWindows) {
-      if (appId.indexOf(appIdPrefix) == 0) {
+      if (appId.indexOf(appIdPrefix) == 0 &&
+          appWindows[appId].contentWindow) {
         callback(appId);
-        return;
+        return true;
       }
     }
-    window.setTimeout(helper, 50);
-  }
-  helper();
+    return false;
+  });
 };
 
 /**
@@ -182,15 +205,14 @@ test.util.sync.getFileList = function(contentWindow) {
  */
 test.util.async.waitForWindowGeometry = function(
     contentWindow, width, height, callback) {
-  function helper() {
+  test.util.repeatUntilTrue_(function() {
     if (contentWindow.innerWidth == width &&
         contentWindow.innerHeight == height) {
-       callback({width: width, height: height});
-       return;
+      callback({width: width, height: height});
+      return true;
     }
-    window.setTimeout(helper, 50);
-  }
-  helper();
+    return false;
+  });
 };
 
 /**
@@ -204,24 +226,22 @@ test.util.async.waitForWindowGeometry = function(
  */
 test.util.async.waitForElement = function(
     contentWindow, targetQuery, iframeQuery, callback) {
-  function helper() {
+  test.util.repeatUntilTrue_(function() {
     var doc = test.util.sync.getDocument_(contentWindow, iframeQuery);
-    if (doc) {
-      var element = doc.querySelector(targetQuery);
-      if (element) {
-        var attributes = {};
-        for (var i = 0; i < element.attributes.length; i++) {
-          attributes[element.attributes[i].nodeName] =
-              element.attributes[i].nodeValue;
-        }
-        var text = element.textContent;
-        callback({attributes: attributes, text: text});
-        return;
-      }
+    if (!doc)
+      return false;
+    var element = doc.querySelector(targetQuery);
+    if (!element)
+      return false;
+    var attributes = {};
+    for (var i = 0; i < element.attributes.length; i++) {
+      attributes[element.attributes[i].nodeName] =
+          element.attributes[i].nodeValue;
     }
-    window.setTimeout(helper, 50);
-  }
-  helper();
+    var text = element.textContent;
+    callback({attributes: attributes, text: text});
+    return true;
+  });
 };
 
 /**
@@ -234,7 +254,7 @@ test.util.async.waitForElement = function(
  */
 test.util.async.waitForFileListChange = function(
     contentWindow, lengthBefore, callback) {
-  function helper() {
+  test.util.repeatUntilTrue_(function() {
     var files = test.util.sync.getFileList(contentWindow);
     files.sort();
     var notReadyRows = files.filter(function(row) {
@@ -242,12 +262,13 @@ test.util.async.waitForFileListChange = function(
     });
     if (notReadyRows.length === 0 &&
         files.length !== lengthBefore &&
-        files.length !== 0)
+        files.length !== 0) {
       callback(files);
-    else
-      window.setTimeout(helper, 50);
-  }
-  helper();
+      return true;
+    } else {
+      return false;
+    }
+  });
 };
 
 /**
@@ -294,14 +315,15 @@ test.util.async.performAutocompleteAndWait = function(
   inputEvent.initEvent('input', true /* bubbles */, true /* cancelable */);
   searchBox.dispatchEvent(inputEvent);
 
-  function helper() {
+  test.util.repeatUntilTrue_(function() {
     var items = test.util.sync.getAutocompleteList(contentWindow);
-    if (items.length >= numExpectedItems)
+    if (items.length >= numExpectedItems) {
       callback(items);
-    else
-      window.setTimeout(helper, 50);
-  }
-  helper();
+      return true;
+    } else {
+      return false;
+    }
+  });
 };
 
 /**
@@ -311,16 +333,14 @@ test.util.async.performAutocompleteAndWait = function(
  * @param {function()} callback Success callback.
  */
 test.util.async.waitAndAcceptDialog = function(contentWindow, callback) {
-  var tryAccept = function() {
+  test.util.repeatUntilTrue_(function() {
     var button = contentWindow.document.querySelector('.cr-dialog-ok');
-    if (button) {
-      button.click();
-      callback();
-      return;
-    }
-    window.setTimeout(tryAccept, 50);
-  };
-  tryAccept();
+    if (!button)
+      return false;
+    button.click();
+    callback();
+    return true;
+  });
 };
 
 /**
@@ -402,17 +422,16 @@ test.util.async.selectVolume = function(contentWindow, iconName, callback) {
  */
 test.util.async.waitForFiles = function(
     contentWindow, expected, opt_orderCheck, callback) {
-  var step = function() {
-    var fileList = test.util.sync.getFileList(contentWindow);
+  test.util.repeatUntilTrue_(function() {
+    var files = test.util.sync.getFileList(contentWindow);
     if (!opt_orderCheck)
-      fileList.sort();
-    if (chrome.test.checkDeepEq(expected, fileList)) {
-      callback();
-      return;
+      files.sort();
+    if (chrome.test.checkDeepEq(expected, files)) {
+      callback(true);
+      return true;
     }
-    setTimeout(step, 50);
-  };
-  step();
+    return false;
+  });
 };
 
 /**
