@@ -68,8 +68,8 @@ GpuMemoryManager::GpuMemoryManager(
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
 #if defined(OS_ANDROID)
-  bytes_default_per_client_ = 32 * 1024 * 1024;
-  bytes_minimum_per_client_ = 32 * 1024 * 1024;
+  bytes_default_per_client_ = 16 * 1024 * 1024;
+  bytes_minimum_per_client_ = 16 * 1024 * 1024;
 #else
   bytes_default_per_client_ = 64 * 1024 * 1024;
   bytes_minimum_per_client_ = 64 * 1024 * 1024;
@@ -114,7 +114,7 @@ uint64 GpuMemoryManager::GetAvailableGpuMemory() const {
 
 uint64 GpuMemoryManager::GetDefaultAvailableGpuMemory() const {
 #if defined(OS_ANDROID)
-  return 32 * 1024 * 1024;
+  return 16 * 1024 * 1024;
 #elif defined(OS_CHROMEOS)
   return 1024 * 1024 * 1024;
 #else
