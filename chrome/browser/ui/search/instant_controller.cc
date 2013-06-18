@@ -984,7 +984,11 @@ void InstantController::OmniboxFocusChanged(
 
     if (instant_tab_) {
       instant_tab_->FocusChanged(omnibox_focus_state_, reason);
-      instant_tab_->SetInputInProgress(IsInputInProgress());
+      // Don't send oninputstart/oninputend updates in response to focus changes
+      // if there's a navigation in progress. This prevents Chrome from sending
+      // a spurious oninputend when the user accepts a match in the omnibox.
+      if (instant_tab_->contents()->GetController().GetPendingEntry() == NULL)
+        instant_tab_->SetInputInProgress(IsInputInProgress());
     }
   }
 
@@ -1017,8 +1021,7 @@ void InstantController::SearchModeChanged(const SearchMode& old_mode,
 
   ResetInstantTab();
 
-  if (instant_tab_ &&
-      old_mode.is_search_suggestions() != new_mode.is_search_suggestions())
+  if (instant_tab_ && old_mode.is_ntp() != new_mode.is_ntp())
     instant_tab_->SetInputInProgress(IsInputInProgress());
 }
 
@@ -1672,7 +1675,7 @@ void InstantController::UpdateInfoForInstantTab() {
 }
 
 bool InstantController::IsInputInProgress() const {
-  return search_mode_.is_search_suggestions() &&
+  return !search_mode_.is_ntp() &&
       omnibox_focus_state_ == OMNIBOX_FOCUS_VISIBLE;
 }
 
