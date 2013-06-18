@@ -99,7 +99,7 @@ NaClSymbolTable* NaClSymbolTableCreate(
   st->size = 0;
   st->capacity = capacity;
   st->values = (NaClSymbolTablePair*)
-      calloc(sizeof(NaClSymbolTablePair), capacity);
+      calloc(capacity, sizeof(NaClSymbolTablePair));
   assert(NULL != st->values);
   DEBUG(NaClLog(LOG_INFO,
                 "NaClSymbolTableCreate(%"NACL_PRIdS") = %p\n",

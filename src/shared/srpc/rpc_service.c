@@ -159,7 +159,7 @@ static NaClSrpcMethodDesc* BuildMethods(
   ++*method_count;
   /* Allocate the method descriptors. One extra for NULL termination. */
   complete_methods = (NaClSrpcMethodDesc*)
-      calloc((*method_count + 1) * sizeof(*complete_methods), 1);
+      calloc(*method_count + 1, sizeof(*complete_methods));
   if (NULL == complete_methods) {
     return NULL;
   }

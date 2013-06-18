@@ -25,7 +25,7 @@ typedef NACL_CONCAT(NACL_CONCAT(uint, NACL_HOST_WORDSIZE), _t) bitmap_word;
 static INLINE bitmap_word *BitmapAllocate(size_t indexes) {
   size_t word_count = ((indexes + NACL_HOST_WORDSIZE - 1) / NACL_HOST_WORDSIZE);
   NACL_COMPILE_TIME_ASSERT((NACL_HOST_WORDSIZE / 8) == sizeof(bitmap_word));
-  return calloc(sizeof(bitmap_word), word_count);
+  return calloc(word_count, sizeof(bitmap_word));
 }
 
 static FORCEINLINE int BitmapIsBitSet(bitmap_word *bitmap, size_t index) {
