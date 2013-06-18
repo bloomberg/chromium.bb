@@ -27,13 +27,13 @@ void VariationsRequestScheduler::Reset() {
 }
 
 void VariationsRequestScheduler::ScheduleFetchShortly() {
+  // Reset the regular timer to avoid it triggering soon after.
+  Reset();
   // The delay before attempting a fetch shortly, in minutes.
   const int kFetchShortlyDelayMinutes = 5;
   one_shot_timer_.Start(FROM_HERE,
                         base::TimeDelta::FromMinutes(kFetchShortlyDelayMinutes),
                         task_);
-  // Reset the regular timer to avoid it triggering soon after.
-  Reset();
 }
 
 base::Closure VariationsRequestScheduler::task() const {
