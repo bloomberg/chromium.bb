@@ -23,6 +23,7 @@
           'shared_impl/file_io_state_manager.h',
           'shared_impl/file_path.cc',
           'shared_impl/file_path.h',
+          'shared_impl/file_ref_create_info.h',
           'shared_impl/file_ref_util.cc',
           'shared_impl/file_ref_util.h',
           'shared_impl/file_type_conversion.cc',

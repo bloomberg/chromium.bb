@@ -15,6 +15,8 @@
 #include "ppapi/shared_impl/host_resource.h"
 
 namespace content {
+class PepperFileRefHost;
+class PepperFileSystemBrowserHost;
 class PepperFileSystemHost;
 class PepperGraphics2DHost;
 }
@@ -60,6 +62,8 @@ class PPAPI_HOST_EXPORT ResourceHost : public ResourceMessageHandler {
                          const IPC::Message& msg) OVERRIDE;
 
   // Simple RTTI. Overidden by subclasses that implement the interface.
+  virtual content::PepperFileRefHost* AsPepperFileRefHost();
+  virtual content::PepperFileSystemBrowserHost* AsPepperFileSystemBrowserHost();
   virtual content::PepperFileSystemHost* AsPepperFileSystemHost();
   virtual content::PepperGraphics2DHost* AsPepperGraphics2DHost();
 

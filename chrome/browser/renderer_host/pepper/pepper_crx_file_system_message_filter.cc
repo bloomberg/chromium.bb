@@ -130,6 +130,9 @@ int32_t PepperCrxFileSystemMessageFilter::OnOpenFileSystem(
     return PP_ERROR_NOACCESS;
   }
 
+  // TODO(raymes): When we remove FileSystem from the renderer, we should create
+  // a pending PepperFileSystemBrowserHost here with the fsid and send the
+  // pending host ID back to the plugin.
   const std::string fsid = CreateIsolatedFileSystem(profile);
   if (fsid.empty()) {
     context->reply_msg =

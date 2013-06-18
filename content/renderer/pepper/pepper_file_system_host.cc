@@ -142,6 +142,7 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
 int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
     ppapi::host::HostMessageContext* context,
     const std::string& fsid) {
+  called_open_ = true;
   // Do a sanity check.
   if (!LooksLikeAGuid(fsid))
     return PP_ERROR_BADARGUMENT;

@@ -175,6 +175,7 @@ void ParamTraits<PP_NetAddress_Private>::Log(const param_type& p,
   l->append(" bytes)>");
 }
 
+// TODO(teravest): Remove this when FileRef is moved to the "new" proxy.
 // PPB_FileRef_CreateInfo ------------------------------------------------------
 
 // static

@@ -48,6 +48,15 @@ void ResourceHost::SendReply(const ReplyMessageContext& context,
   host_->SendReply(context, msg);
 }
 
+content::PepperFileRefHost* ResourceHost::AsPepperFileRefHost() {
+  return NULL;
+}
+
+content::PepperFileSystemBrowserHost*
+ResourceHost::AsPepperFileSystemBrowserHost() {
+  return NULL;
+}
+
 content::PepperFileSystemHost* ResourceHost::AsPepperFileSystemHost() {
   return NULL;
 }

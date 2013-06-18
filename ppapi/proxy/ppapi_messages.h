@@ -195,6 +195,15 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::DirEntry)
   IPC_STRUCT_TRAITS_MEMBER(is_dir)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(ppapi::FileRef_CreateInfo)
+  IPC_STRUCT_TRAITS_MEMBER(file_system_type)
+  IPC_STRUCT_TRAITS_MEMBER(internal_path)
+  IPC_STRUCT_TRAITS_MEMBER(external_path)
+  IPC_STRUCT_TRAITS_MEMBER(display_name)
+  IPC_STRUCT_TRAITS_MEMBER(pending_host_resource_id)
+  IPC_STRUCT_TRAITS_MEMBER(file_system_plugin_resource)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(ppapi::FlashSiteSetting)
   IPC_STRUCT_TRAITS_MEMBER(site)
   IPC_STRUCT_TRAITS_MEMBER(permission)
@@ -472,6 +481,8 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
                     ppapi::proxy::SerializedHandle /* handle */)
 
 // PPB_FileRef.
+// TODO(teravest): Remove these messages when we've switched over to the "new"
+// proxy.
 IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPBFileRef_CallbackComplete,
     ppapi::HostResource /* resource */,
@@ -806,6 +817,8 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
                     ppapi::HostResource)
 
 // PPB_FileRef.
+// TODO(teravest): Remove these messages when we've switched over to the "new"
+// proxy.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileRef_Create,
                            PP_Instance /* instance */,
                            PP_Resource /* file_system */,
@@ -1399,6 +1412,57 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileIO_GetOSFileDescriptorReply,
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileIO_RequestOSFileHandle)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileIO_RequestOSFileHandleReply)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileIO_GeneralReply)
+
+// FileRef
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileRef_CreateInternal,
+                     PP_Resource /* file_system */,
+                     std::string /* internal_path */)
+
+// Requests that the browser create a directory at the location indicated by
+// the FileRef.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileRef_MakeDirectory,
+                     bool /* make_ancestors */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileRef_MakeDirectoryReply)
+
+// Requests that the browser update the last accessed and last modified times
+// at the location indicated by the FileRef.
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileRef_Touch,
+                     PP_Time /* last_accessed */,
+                     PP_Time /* last_modified */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileRef_TouchReply)
+
+// Requests that the browser delete a file or directory at the location
+// indicated by the FileRef.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileRef_Delete)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileRef_DeleteReply)
+
+// Requests that the browser rename a file or directory at the location
+// indicated by the FileRef.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileRef_Rename,
+                     PP_Resource /* new_file_ref */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileRef_RenameReply)
+
+// Requests that the browser retrieve metadata information for a file or
+// directory at the location indicated by the FileRef.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileRef_Query)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileRef_QueryReply,
+                     PP_FileInfo /* file_info */)
+
+// Requests that the browser retrieve then entries in a directory at the
+// location indicated by the FileRef.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileRef_ReadDirectoryEntries)
+
+// FileRef_CreateInfo does not provide file type information, so two
+// corresponding vectors are returned.
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_FileRef_ReadDirectoryEntriesReply,
+                     std::vector<ppapi::FileRef_CreateInfo> /* files */,
+                     std::vector<PP_FileType> /* file_types */)
+
+// Requests that the browser reply with the absolute path to the indicated
+// file.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileRef_GetAbsolutePath)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileRef_GetAbsolutePathReply,
+                     std::string /* absolute_path */)
 
 // FileSystem
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_Create,

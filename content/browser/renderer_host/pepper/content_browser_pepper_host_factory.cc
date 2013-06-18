@@ -6,6 +6,8 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_browser_font_singleton_host.h"
+#include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
+#include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
 #include "content/browser/renderer_host/pepper/pepper_host_resolver_private_message_filter.h"
@@ -22,6 +24,7 @@
 using ppapi::host::MessageFilterHost;
 using ppapi::host::ResourceHost;
 using ppapi::host::ResourceMessageFilter;
+using ppapi::UnpackMessage;
 
 namespace content {
 
@@ -46,9 +49,30 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
 
   // Public interfaces.
   switch (message.type()) {
+    case PpapiHostMsg_FileSystem_Create::ID: {
+      PP_FileSystemType file_system_type;
+      if (!ppapi::UnpackMessage<PpapiHostMsg_FileSystem_Create>(message,
+          &file_system_type)) {
+        NOTREACHED();
+        return scoped_ptr<ResourceHost>();
+      }
+      return scoped_ptr<ResourceHost>(new PepperFileSystemBrowserHost(
+          host_, instance, params.pp_resource(), file_system_type));
+    }
     case PpapiHostMsg_Gamepad_Create::ID:
       return scoped_ptr<ResourceHost>(new PepperGamepadHost(
           host_, instance, params.pp_resource()));
+    case PpapiHostMsg_FileRef_CreateInternal::ID: {
+      PP_Resource file_system;
+      std::string internal_path;
+      if (!UnpackMessage<PpapiHostMsg_FileRef_CreateInternal>(
+          message, &file_system, &internal_path)) {
+        NOTREACHED();
+        return scoped_ptr<ResourceHost>();
+      }
+      return scoped_ptr<ResourceHost>(new PepperFileRefHost(
+          host_, instance, params.pp_resource(), file_system, internal_path));
+    }
   }
 
   // Dev interfaces.

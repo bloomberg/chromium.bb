@@ -8,18 +8,21 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
 
 namespace ppapi {
 
 // Routines to generate display names for internal and external file paths.
-std::string GetNameForInternalFilePath(const std::string& path);
-std::string GetNameForExternalFilePath(const base::FilePath& path);
+PPAPI_SHARED_EXPORT std::string GetNameForInternalFilePath(
+    const std::string& path);
+PPAPI_SHARED_EXPORT std::string GetNameForExternalFilePath(
+    const base::FilePath& path);
 
 // Determines whether an internal file path is valid.
-bool IsValidInternalPath(const std::string& path);
+PPAPI_SHARED_EXPORT bool IsValidInternalPath(const std::string& path);
 
 // If path ends with a slash, normalize it away unless it's the root path.
-void NormalizeInternalPath(std::string* path);
+PPAPI_SHARED_EXPORT void NormalizeInternalPath(std::string* path);
 
 }  // namespace ppapi
 
