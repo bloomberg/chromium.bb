@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -17,8 +16,6 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/power_save_blocker.h"
-#include "net/base/file_stream.h"
-#include "net/base/net_errors.h"
 
 using content::BrowserThread;
 
@@ -289,17 +286,7 @@ void DriveUploader::OnUploadLocationReceived(
   }
 
   upload_file_info->upload_location = upload_location;
-
-  // Start the upload from the beginning of the file.
-  // PostTask is necessary because we have to finish
-  // InitiateUpload's callback before calling ResumeUpload, due to the
-  // implementation of RequestRegistry. (http://crbug.com/134814)
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DriveUploader::UploadNextChunk,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&upload_file_info),
-                 0));  // Upload from the beginning of the file.
+  UploadNextChunk(upload_file_info.Pass(), 0);  // start_position
 }
 
 void DriveUploader::StartGetUploadStatus(
@@ -325,9 +312,6 @@ void DriveUploader::UploadNextChunk(
   DCHECK_GE(start_position, 0);
   DCHECK_LE(start_position, upload_file_info->content_length);
 
-  // TODO(kinaba) this will become not needed if the redundant workaround
-  // base::MessageLoop::current()->PostTask for calling UploadNextChunk is
-  // removed.
   if (upload_file_info->cancelled) {
     UploadFailed(upload_file_info.Pass(), GDATA_CANCELLED);
     return;
@@ -402,17 +386,7 @@ void DriveUploader::OnUploadRangeResponseReceived(
            << "-" << response.end_position_received
            << " for [" << upload_file_info->drive_path.value() << "]";
 
-  // Continue uploading the remaining chunk. The start position of the
-  // remaining data is |response.end_position_received|.
-  // PostTask is necessary because we have to finish previous ResumeUpload's
-  // callback before calling ResumeUpload again, due to the implementation of
-  // RequestRegistry. (http://crbug.com/134814)
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DriveUploader::UploadNextChunk,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&upload_file_info),
-                 response.end_position_received));
+  UploadNextChunk(upload_file_info.Pass(), response.end_position_received);
 }
 
 void DriveUploader::OnUploadProgress(const ProgressCallback& callback,

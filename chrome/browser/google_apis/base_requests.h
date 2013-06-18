@@ -142,12 +142,6 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   // authentication error. Must be implemented by a derived class.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) = 0;
 
-  // Invoked when it needs to notify the status. Chunked requests that
-  // constructs a logically single request from multiple physical requests
-  // should notify resume/suspend instead of start/finish.
-  virtual void NotifyStartToRequestRegistry();
-  virtual void NotifySuccessToRequestRegistry();
-
   // Invoked by this base class upon an authentication error or cancel by
   // a user request. Must be implemented by a derived class.
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) = 0;
@@ -308,7 +302,6 @@ class InitiateUploadRequestBase : public UrlFetchRequestBase {
 
   // UrlFetchRequestBase overrides.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void NotifySuccessToRequestRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
@@ -362,7 +355,6 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
   virtual GURL GetURL() const OVERRIDE;
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
-  virtual void NotifySuccessToRequestRegistry() OVERRIDE;
   virtual void RunCallbackOnPrematureFailure(GDataErrorCode code) OVERRIDE;
 
   // This method will be called when the request is done, regardless of
@@ -390,8 +382,6 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
 
   const base::FilePath drive_file_path_;
   const GURL upload_url_;
-
-  bool last_chunk_completed_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
@@ -437,7 +427,6 @@ class ResumeUploadRequestBase : public UploadRangeRequestBase {
                               int64* range_offset,
                               int64* range_length,
                               std::string* upload_content_type) OVERRIDE;
-  virtual void NotifyStartToRequestRegistry() OVERRIDE;
 
  private:
   // The parameters for the request. See ResumeUploadParams for the details.

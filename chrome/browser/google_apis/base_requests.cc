@@ -205,7 +205,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   }
 
   // Register to request registry.
-  NotifyStartToRequestRegistry();
+  NotifyStart();
 
   url_fetcher_->Start();
   started_ = true;
@@ -252,10 +252,7 @@ GDataErrorCode UrlFetchRequestBase::GetErrorCode(const URLFetcher* source) {
 }
 
 void UrlFetchRequestBase::OnProcessURLFetchResultsComplete(bool result) {
-  if (result)
-    NotifySuccessToRequestRegistry();
-  else
-    NotifyFinish(REQUEST_FAILED);
+  NotifyFinish(result ? REQUEST_COMPLETED : REQUEST_FAILED);
 }
 
 void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
@@ -277,14 +274,6 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
 
   // Overridden by each specialization
   ProcessURLFetchResults(source);
-}
-
-void UrlFetchRequestBase::NotifySuccessToRequestRegistry() {
-  NotifyFinish(REQUEST_COMPLETED);
-}
-
-void UrlFetchRequestBase::NotifyStartToRequestRegistry() {
-  NotifyStart();
 }
 
 void UrlFetchRequestBase::OnAuthFailed(GDataErrorCode code) {
@@ -449,10 +438,6 @@ void InitiateUploadRequestBase::ProcessURLFetchResults(
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
 }
 
-void InitiateUploadRequestBase::NotifySuccessToRequestRegistry() {
-  NotifySuspend();
-}
-
 void InitiateUploadRequestBase::RunCallbackOnPrematureFailure(
     GDataErrorCode code) {
   callback_.Run(code, GURL());
@@ -498,7 +483,6 @@ UploadRangeRequestBase::UploadRangeRequestBase(
                           drive_file_path),
       drive_file_path_(drive_file_path),
       upload_url_(upload_url),
-      last_chunk_completed_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -575,20 +559,9 @@ void UploadRangeRequestBase::OnDataParsed(GDataErrorCode code,
                                           scoped_ptr<base::Value> value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // For a new file, HTTP_CREATED is returned.
-  // For an existing file, HTTP_SUCCESS is returned.
-  if (code == HTTP_CREATED || code == HTTP_SUCCESS)
-    last_chunk_completed_ = true;
-
   OnRangeRequestComplete(UploadRangeResponse(code, -1, -1), value.Pass());
-  OnProcessURLFetchResultsComplete(last_chunk_completed_);
-}
-
-void UploadRangeRequestBase::NotifySuccessToRequestRegistry() {
-  if (last_chunk_completed_)
-    NotifyFinish(REQUEST_COMPLETED);
-  else
-    NotifySuspend();
+  OnProcessURLFetchResultsComplete(
+      code == HTTP_CREATED || code == HTTP_SUCCESS);
 }
 
 void UploadRangeRequestBase::RunCallbackOnPrematureFailure(
@@ -665,10 +638,6 @@ bool ResumeUploadRequestBase::GetContentFile(
   *range_length = end_position_ - start_position_;
   *upload_content_type = content_type_;
   return true;
-}
-
-void ResumeUploadRequestBase::NotifyStartToRequestRegistry() {
-  NotifyResume();
 }
 
 //======================== GetUploadStatusRequestBase ========================

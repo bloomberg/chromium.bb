@@ -22,7 +22,6 @@ enum RequestTransferState {
   REQUEST_IN_PROGRESS,
   REQUEST_COMPLETED,
   REQUEST_FAILED,
-  REQUEST_SUSPENDED,
 };
 
 // Returns string representations of the request state.
@@ -70,15 +69,6 @@ class RequestRegistry {
     // Notifies the registry about current status.
     void NotifyStart();
     void NotifyFinish(RequestTransferState status);
-    // Notifies suspend/resume, used for chunked upload requests.
-    // The initial upload request should issue "start" "progress"* "suspend".
-    // The subsequent requests will call "resume" "progress"* "suspend",
-    // and the last one will do "resume" "progress"* "finish".
-    // In other words, "suspend" is similar to "finish" except it lasts to live
-    // until the next "resume" comes. "Resume" is similar to "start", except
-    // that it removes the existing "suspend" request.
-    void NotifySuspend();
-    void NotifyResume();
 
    private:
     // Does the cancellation.
@@ -105,9 +95,6 @@ class RequestRegistry {
   // the request to the registry. A fresh request ID is returned to *id.
   void OnRequestStart(Request* request, RequestID* id);
   void OnRequestFinish(RequestID request_id);
-  void OnRequestSuspend(RequestID request_id);
-  void OnRequestResume(Request* request,
-                       RequestProgressStatus* new_status);
 
   typedef IDMap<Request, IDMapOwnPointer> RequestIDMap;
   RequestIDMap in_flight_requests_;

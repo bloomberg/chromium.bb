@@ -863,7 +863,6 @@
         'browser/google_apis/fake_drive_service_unittest.cc',
         'browser/google_apis/mock_drive_service.cc',
         'browser/google_apis/mock_drive_service.h',
-        'browser/google_apis/request_registry_unittest.cc',
         'browser/google_apis/request_util_unittest.cc',
         'browser/google_apis/time_util_unittest.cc',
         'browser/history/android/android_cache_database_unittest.cc',
