@@ -124,6 +124,41 @@ get_wm_window(struct weston_surface *surface);
 static void
 weston_wm_window_schedule_repaint(struct weston_wm_window *window);
 
+static int __attribute__ ((format (printf, 1, 2)))
+wm_log(const char *fmt, ...)
+{
+#ifdef WM_DEBUG
+	int l;
+	va_list argp;
+
+	va_start(argp, fmt);
+	l = weston_vlog(fmt, argp);
+	va_end(argp);
+
+	return l;
+#else
+	return 0;
+#endif
+}
+
+static int __attribute__ ((format (printf, 1, 2)))
+wm_log_continue(const char *fmt, ...)
+{
+#ifdef WM_DEBUG
+	int l;
+	va_list argp;
+
+	va_start(argp, fmt);
+	l = weston_vlog_continue(fmt, argp);
+	va_end(argp);
+
+	return l;
+#else
+	return 0;
+#endif
+}
+
+
 const char *
 get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
 {
@@ -234,22 +269,21 @@ dump_property(struct weston_wm *wm,
 	int width, len;
 	uint32_t i;
 
-	width = weston_log_continue("%s: ", get_atom_name(wm->conn, property));
+	width = wm_log_continue("%s: ", get_atom_name(wm->conn, property));
 	if (reply == NULL) {
-		weston_log_continue("(no reply)\n");
+		wm_log_continue("(no reply)\n");
 		return;
 	}
 
-	width += weston_log_continue(
-			 "%s/%d, length %d (value_len %d): ",
-			 get_atom_name(wm->conn, reply->type),
-			 reply->format,
-			 xcb_get_property_value_length(reply),
-			 reply->value_len);
+	width += wm_log_continue("%s/%d, length %d (value_len %d): ",
+				 get_atom_name(wm->conn, reply->type),
+				 reply->format,
+				 xcb_get_property_value_length(reply),
+				 reply->value_len);
 
 	if (reply->type == wm->atom.incr) {
 		incr_value = xcb_get_property_value(reply);
-		weston_log_continue("%d\n", *incr_value);
+		wm_log_continue("%d\n", *incr_value);
 	} else if (reply->type == wm->atom.utf8_string ||
 	      reply->type == wm->atom.string) {
 		text_value = xcb_get_property_value(reply);
@@ -257,23 +291,23 @@ dump_property(struct weston_wm *wm,
 			len = 40;
 		else
 			len = reply->value_len;
-		weston_log_continue("\"%.*s\"\n", len, text_value);
+		wm_log_continue("\"%.*s\"\n", len, text_value);
 	} else if (reply->type == XCB_ATOM_ATOM) {
 		atom_value = xcb_get_property_value(reply);
 		for (i = 0; i < reply->value_len; i++) {
 			name = get_atom_name(wm->conn, atom_value[i]);
 			if (width + strlen(name) + 2 > 78) {
-				weston_log_continue("\n    ");
+				wm_log_continue("\n    ");
 				width = 4;
 			} else if (i > 0) {
-				width +=  weston_log_continue(", ");
+				width +=  wm_log_continue(", ");
 			}
 
-			width +=  weston_log_continue("%s", name);
+			width +=  wm_log_continue("%s", name);
 		}
-		weston_log_continue("\n");
+		wm_log_continue("\n");
 	} else {
-		weston_log_continue("huh?\n");
+		wm_log_continue("huh?\n");
 	}
 }
 
@@ -470,10 +504,10 @@ weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *ev
 	uint32_t mask, values[16];
 	int x, y, width, height, i = 0;
 
-	weston_log("XCB_CONFIGURE_REQUEST (window %d) %d,%d @ %dx%d\n",
-		configure_request->window,
-		configure_request->x, configure_request->y,
-		configure_request->width, configure_request->height);
+	wm_log("XCB_CONFIGURE_REQUEST (window %d) %d,%d @ %dx%d\n",
+	       configure_request->window,
+	       configure_request->x, configure_request->y,
+	       configure_request->width, configure_request->height);
 
 	window = hash_table_lookup(wm->window_hash, configure_request->window);
 
@@ -526,11 +560,11 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 
 	window = hash_table_lookup(wm->window_hash, configure_notify->window);
 
-	weston_log("XCB_CONFIGURE_NOTIFY (%s window %d) %d,%d @ %dx%d\n",
-		configure_notify->window == window->id ? "client" : "frame",
-		configure_notify->window,
-		configure_notify->x, configure_notify->y,
-		configure_notify->width, configure_notify->height);
+	wm_log("XCB_CONFIGURE_NOTIFY (%s window %d) %d,%d @ %dx%d\n",
+	       configure_notify->window == window->id ? "client" : "frame",
+	       configure_notify->window,
+	       configure_notify->x, configure_notify->y,
+	       configure_notify->width, configure_notify->height);
 
 	/* resize falls here */
 	if (configure_notify->window != window->id)
@@ -698,8 +732,8 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	int x, y, width, height;
 
 	if (our_resource(wm, map_request->window)) {
-		weston_log("XCB_MAP_REQUEST (window %d, ours)\n",
-			map_request->window);
+		wm_log("XCB_MAP_REQUEST (window %d, ours)\n",
+		       map_request->window);
 		return;
 	}
 
@@ -746,8 +780,8 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_configure_window(wm->conn, window->id,
 			     XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
 
-	weston_log("XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
-		window->id, window, window->frame_id);
+	wm_log("XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
+	       window->id, window, window->frame_id);
 
 	weston_wm_window_set_wm_state(window, ICCCM_NORMAL_STATE);
 	weston_wm_window_set_net_wm_state(window);
@@ -771,12 +805,12 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_map_notify_event_t *map_notify = (xcb_map_notify_event_t *) event;
 
 	if (our_resource(wm, map_notify->window)) {
-			weston_log("XCB_MAP_NOTIFY (window %d, ours)\n",
-				map_notify->window);
+		wm_log("XCB_MAP_NOTIFY (window %d, ours)\n",
+		       map_notify->window);
 			return;
 	}
 
-	weston_log("XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
+	wm_log("XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
 }
 
 static void
@@ -786,10 +820,10 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 		(xcb_unmap_notify_event_t *) event;
 	struct weston_wm_window *window;
 
-	weston_log("XCB_UNMAP_NOTIFY (window %d, event %d%s)\n",
-		unmap_notify->window,
-		unmap_notify->event,
-		our_resource(wm, unmap_notify->window) ? ", ours" : "");
+	wm_log("XCB_UNMAP_NOTIFY (window %d, event %d%s)\n",
+	       unmap_notify->window,
+	       unmap_notify->event,
+	       our_resource(wm, unmap_notify->window) ? ", ours" : "");
 
 	if (our_resource(wm, unmap_notify->window))
 		return;
@@ -925,10 +959,9 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 
 	window->properties_dirty = 1;
 
-	weston_log("XCB_PROPERTY_NOTIFY: window %d, ",
-		property_notify->window);
+	wm_log("XCB_PROPERTY_NOTIFY: window %d, ", property_notify->window);
 	if (property_notify->state == XCB_PROPERTY_DELETE)
-		weston_log("deleted\n");
+		wm_log("deleted\n");
 	else
 		read_and_dump_property(wm, property_notify->window,
 				       property_notify->atom);
@@ -947,7 +980,7 @@ weston_wm_window_create(struct weston_wm *wm,
 
 	window = malloc(sizeof *window);
 	if (window == NULL) {
-		weston_log("failed to allocate window\n");
+		wm_log("failed to allocate window\n");
 		return;
 	}
 
@@ -978,11 +1011,11 @@ weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_create_notify_event_t *create_notify =
 		(xcb_create_notify_event_t *) event;
 
-	weston_log("XCB_CREATE_NOTIFY (window %d, width %d, height %d%s%s)\n",
-		create_notify->window,
-		create_notify->width, create_notify->height,
-		create_notify->override_redirect ? ", override" : "",
-		our_resource(wm, create_notify->window) ? ", ours" : "");
+	wm_log("XCB_CREATE_NOTIFY (window %d, width %d, height %d%s%s)\n",
+	       create_notify->window,
+	       create_notify->width, create_notify->height,
+	       create_notify->override_redirect ? ", override" : "",
+	       our_resource(wm, create_notify->window) ? ", ours" : "");
 
 	if (our_resource(wm, create_notify->window))
 		return;
@@ -999,10 +1032,10 @@ weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event
 		(xcb_destroy_notify_event_t *) event;
 	struct weston_wm_window *window;
 
-	weston_log("XCB_DESTROY_NOTIFY, win %d, event %d%s\n",
-		destroy_notify->window,
-		destroy_notify->event,
-		our_resource(wm, destroy_notify->window) ? ", ours" : "");
+	wm_log("XCB_DESTROY_NOTIFY, win %d, event %d%s\n",
+	       destroy_notify->window,
+	       destroy_notify->event,
+	       our_resource(wm, destroy_notify->window) ? ", ours" : "");
 
 	if (our_resource(wm, destroy_notify->window))
 		return;
@@ -1018,10 +1051,10 @@ weston_wm_handle_reparent_notify(struct weston_wm *wm, xcb_generic_event_t *even
 		(xcb_reparent_notify_event_t *) event;
 	struct weston_wm_window *window;
 
-	weston_log("XCB_REPARENT_NOTIFY (window %d, parent %d, event %d)\n",
-		reparent_notify->window,
-		reparent_notify->parent,
-		reparent_notify->event);
+	wm_log("XCB_REPARENT_NOTIFY (window %d, parent %d, event %d)\n",
+	       reparent_notify->window,
+	       reparent_notify->parent,
+	       reparent_notify->event);
 
 	if (reparent_notify->parent == wm->screen->root) {
 		weston_wm_window_create(wm, reparent_notify->window, 10, 10,
@@ -1159,14 +1192,14 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 
 	window = hash_table_lookup(wm->window_hash, client_message->window);
 
-	weston_log("XCB_CLIENT_MESSAGE (%s %d %d %d %d %d win %d)\n",
-		   get_atom_name(wm->conn, client_message->type),
-		   client_message->data.data32[0],
-		   client_message->data.data32[1],
-		   client_message->data.data32[2],
-		   client_message->data.data32[3],
-		   client_message->data.data32[4],
-		   client_message->window);
+	wm_log("XCB_CLIENT_MESSAGE (%s %d %d %d %d %d win %d)\n",
+	       get_atom_name(wm->conn, client_message->type),
+	       client_message->data.data32[0],
+	       client_message->data.data32[1],
+	       client_message->data.data32[2],
+	       client_message->data.data32[3],
+	       client_message->data.data32[4],
+	       client_message->window);
 
 	if (client_message->type == wm->atom.net_wm_moveresize)
 		weston_wm_window_handle_moveresize(window, client_message);
@@ -1281,9 +1314,9 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	struct theme *t = wm->theme;
 	int width, height;
 
-	weston_log("XCB_BUTTON_%s (detail %d)\n",
-		button->response_type == XCB_BUTTON_PRESS ?
-		"PRESS" : "RELEASE", button->detail);
+	wm_log("XCB_BUTTON_%s (detail %d)\n",
+	       button->response_type == XCB_BUTTON_PRESS ?
+	       "PRESS" : "RELEASE", button->detail);
 
 	window = hash_table_lookup(wm->window_hash, button->event);
 	weston_wm_window_get_frame_size(window, &width, &height);
@@ -1418,7 +1451,7 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 			weston_wm_handle_destroy_notify(wm, event);
 			break;
 		case XCB_MAPPING_NOTIFY:
-			weston_log("XCB_MAPPING_NOTIFY\n");
+			wm_log("XCB_MAPPING_NOTIFY\n");
 			break;
 		case XCB_PROPERTY_NOTIFY:
 			weston_wm_handle_property_notify(wm, event);
@@ -1758,7 +1791,7 @@ surface_destroy(struct wl_listener *listener, void *data)
 		container_of(listener,
 			     struct weston_wm_window, surface_destroy_listener);
 
-	weston_log("surface for xid %d destroyed\n", window->id);
+	wm_log("surface for xid %d destroyed\n", window->id);
 }
 
 static struct weston_wm_window *
@@ -1894,7 +1927,7 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
-	weston_log("set_window_id %d for surface %p\n", id, surface);
+	wm_log("set_window_id %d for surface %p\n", id, surface);
 
 	weston_wm_window_read_properties(window);
 

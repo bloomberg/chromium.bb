@@ -93,15 +93,33 @@ weston_log_file_close()
 }
 
 WL_EXPORT int
+weston_vlog(const char *fmt, va_list ap)
+{
+	int l;
+
+	l = weston_log_timestamp();
+	l += vfprintf(weston_logfile, fmt, ap);
+
+	return l;
+}
+
+WL_EXPORT int
 weston_log(const char *fmt, ...)
 {
 	int l;
 	va_list argp;
+
 	va_start(argp, fmt);
-	l = weston_log_timestamp();
-	l += vfprintf(weston_logfile, fmt, argp);
+	l = weston_vlog(fmt, argp);
 	va_end(argp);
+
 	return l;
+}
+
+WL_EXPORT int
+weston_vlog_continue(const char *fmt, va_list argp)
+{
+	return vfprintf(weston_logfile, fmt, argp);
 }
 
 WL_EXPORT int
@@ -109,8 +127,10 @@ weston_log_continue(const char *fmt, ...)
 {
 	int l;
 	va_list argp;
+
 	va_start(argp, fmt);
-	l = vfprintf(weston_logfile, fmt, argp);
+	l = weston_vlog_continue(fmt, argp);
 	va_end(argp);
+
 	return l;
 }

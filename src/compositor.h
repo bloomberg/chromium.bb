@@ -1073,6 +1073,10 @@ weston_log_file_open(const char *filename);
 void
 weston_log_file_close(void);
 int
+weston_vlog(const char *fmt, va_list ap);
+int
+weston_vlog_continue(const char *fmt, va_list ap);
+int
 weston_log(const char *fmt, ...)
 	__attribute__ ((format (printf, 1, 2)));
 int
