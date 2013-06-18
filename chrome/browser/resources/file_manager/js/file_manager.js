@@ -355,6 +355,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
               this.viewOptions_[key] = window.appState.viewOptions[key];
           }
         }
+        // TODO(hirono): Remove this line after the user test.
+        // crbug.com/249242
+        this.noCheckboxes_ = !!this.viewOptions_.noCheckboxes;
         done();
       }.bind(this));
     }.bind(this));
@@ -363,7 +366,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     group.add(function(done) {
       chrome.commandLinePrivate.hasSwitch(
           'file-manager-no-checkboxes', function(flag) {
-        this.noCheckboxes_ = flag;
+        // TODO(hirono): Update this line after the user test.
+        // crbug.com/249242
+        this.noCheckboxes_ = this.noCheckboxes_ || flag;
         done();
       }.bind(this));
     }.bind(this));
@@ -1281,7 +1286,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       sortField: sortStatus.field,
       sortDirection: sortStatus.direction,
       columns: [],
-      listType: this.listType_
+      listType: this.listType_,
+      // TODO(hirono): Remove this line after the user test. crbug.com/249242
+      noCheckboxes: !!this.noCheckboxes_
     };
     var cm = this.table_.columnModel;
     for (var i = 0; i < cm.totalSize; i++) {
@@ -3842,5 +3849,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.ctrlKeyPressed_ = flag;
     this.document_.querySelector('#drive-clear-local-cache').canExecuteChange();
     this.document_.querySelector('#drive-reload').canExecuteChange();
+  };
+
+  /**
+   * Set the flag to hide the selecting checkboxes.
+   * This is the alternative for about:flags and to be removed.
+   * TODO(hirono): Remove this function after the user test.
+   * @param {boolean} flag If it's true, the selecting checkboxes are hidden.
+   */
+  window.setNoCheckboxesFlag = function(flag) {
+    fileManager.noCheckboxes_ = flag;
+    fileManager.updateStartupPrefs_();
   };
 })();
