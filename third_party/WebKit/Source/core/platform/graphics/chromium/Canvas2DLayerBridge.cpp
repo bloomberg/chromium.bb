@@ -208,11 +208,6 @@ bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outM
     ASSERT(mailboxInfo->m_image.get());
     ASSERT(mailboxInfo->m_image->getTexture());
 
-    // Because we are changing the texture binding without going through skia,
-    // we must restore it to its previous value to keep skia's state cache in
-    // sync.
-    GC3Dint savedTexBinding = 0;
-    m_context->getIntegerv(GraphicsContext3D::TEXTURE_BINDING_2D, &savedTexBinding);
     m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, mailboxInfo->m_image->getTexture()->getTextureHandle());
     m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR);
     m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR);
@@ -221,7 +216,12 @@ bool Canvas2DLayerBridge::prepareMailbox(WebKit::WebExternalTextureMailbox* outM
     context()->produceTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, mailboxInfo->m_mailbox.name);
     context()->flush();
     mailboxInfo->m_mailbox.syncPoint = context()->insertSyncPoint();
-    m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, savedTexBinding);
+    m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, 0);
+    // Because we are changing the texture binding without going through skia,
+    // we must dirty the context.
+    // TODO(piman): expose finer granularity reset. We only really want to
+    // 'dirty' the current texture binding.
+    m_context->grContext()->resetContext();
 
     *outMailbox = mailboxInfo->m_mailbox;
     return true;
