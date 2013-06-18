@@ -47,15 +47,15 @@ bool SocketStreamDispatcherHost::OnMessageReceived(const IPC::Message& message,
 void SocketStreamDispatcherHost::OnConnected(net::SocketStream* socket,
                                              int max_pending_send_allowed) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
-  DVLOG(1) << "SocketStreamDispatcherHost::OnConnected socket_id=" << socket_id
+  DVLOG(2) << "SocketStreamDispatcherHost::OnConnected socket_id=" << socket_id
            << " max_pending_send_allowed=" << max_pending_send_allowed;
   if (socket_id == kNoSocketId) {
-    LOG(ERROR) << "NoSocketId in OnConnected";
+    DVLOG(1) << "NoSocketId in OnConnected";
     return;
   }
   if (!Send(new SocketStreamMsg_Connected(
           socket_id, max_pending_send_allowed))) {
-    LOG(ERROR) << "SocketStreamMsg_Connected failed.";
+    DVLOG(1) << "SocketStreamMsg_Connected failed.";
     DeleteSocketStreamHost(socket_id);
   }
 }
@@ -63,14 +63,14 @@ void SocketStreamDispatcherHost::OnConnected(net::SocketStream* socket,
 void SocketStreamDispatcherHost::OnSentData(net::SocketStream* socket,
                                             int amount_sent) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
-  DVLOG(1) << "SocketStreamDispatcherHost::OnSentData socket_id=" << socket_id
+  DVLOG(2) << "SocketStreamDispatcherHost::OnSentData socket_id=" << socket_id
            << " amount_sent=" << amount_sent;
   if (socket_id == kNoSocketId) {
-    LOG(ERROR) << "NoSocketId in OnSentData";
+    DVLOG(1) << "NoSocketId in OnSentData";
     return;
   }
   if (!Send(new SocketStreamMsg_SentData(socket_id, amount_sent))) {
-    LOG(ERROR) << "SocketStreamMsg_SentData failed.";
+    DVLOG(1) << "SocketStreamMsg_SentData failed.";
     DeleteSocketStreamHost(socket_id);
   }
 }
@@ -78,24 +78,24 @@ void SocketStreamDispatcherHost::OnSentData(net::SocketStream* socket,
 void SocketStreamDispatcherHost::OnReceivedData(
     net::SocketStream* socket, const char* data, int len) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
-  DVLOG(1) << "SocketStreamDispatcherHost::OnReceiveData socket_id="
+  DVLOG(2) << "SocketStreamDispatcherHost::OnReceiveData socket_id="
            << socket_id;
   if (socket_id == kNoSocketId) {
-    LOG(ERROR) << "NoSocketId in OnReceivedData";
+    DVLOG(1) << "NoSocketId in OnReceivedData";
     return;
   }
   if (!Send(new SocketStreamMsg_ReceivedData(
           socket_id, std::vector<char>(data, data + len)))) {
-    LOG(ERROR) << "SocketStreamMsg_ReceivedData failed.";
+    DVLOG(1) << "SocketStreamMsg_ReceivedData failed.";
     DeleteSocketStreamHost(socket_id);
   }
 }
 
 void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
-  DVLOG(1) << "SocketStreamDispatcherHost::OnClosed socket_id=" << socket_id;
+  DVLOG(2) << "SocketStreamDispatcherHost::OnClosed socket_id=" << socket_id;
   if (socket_id == kNoSocketId) {
-    LOG(ERROR) << "NoSocketId in OnClose";
+    DVLOG(1) << "NoSocketId in OnClose";
     return;
   }
   DeleteSocketStreamHost(socket_id);
@@ -104,16 +104,16 @@ void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
 void SocketStreamDispatcherHost::OnError(const net::SocketStream* socket,
                                          int error) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
-  DVLOG(1) << "SocketStreamDispatcherHost::OnError socket_id=" << socket_id;
+  DVLOG(2) << "SocketStreamDispatcherHost::OnError socket_id=" << socket_id;
   if (socket_id == content::kNoSocketId) {
-    LOG(ERROR) << "NoSocketId in OnError";
+    DVLOG(1) << "NoSocketId in OnError";
     return;
   }
   // SocketStream::Delegate::OnError() events are handled as WebSocket error
   // event when user agent was required to fail WebSocket connection or the
   // WebSocket connection is closed with prejudice.
   if (!Send(new SocketStreamMsg_Failed(socket_id, error))) {
-    LOG(ERROR) << "SocketStreamMsg_Failed failed.";
+    DVLOG(1) << "SocketStreamMsg_Failed failed.";
     DeleteSocketStreamHost(socket_id);
   }
 }
@@ -121,10 +121,10 @@ void SocketStreamDispatcherHost::OnError(const net::SocketStream* socket,
 void SocketStreamDispatcherHost::OnSSLCertificateError(
     net::SocketStream* socket, const net::SSLInfo& ssl_info, bool fatal) {
   int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
-  DVLOG(1) << "SocketStreamDispatcherHost::OnSSLCertificateError socket_id="
+  DVLOG(2) << "SocketStreamDispatcherHost::OnSSLCertificateError socket_id="
            << socket_id;
   if (socket_id == kNoSocketId) {
-    LOG(ERROR) << "NoSocketId in OnSSLCertificateError";
+    DVLOG(1) << "NoSocketId in OnSSLCertificateError";
     return;
   }
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
@@ -155,7 +155,7 @@ void SocketStreamDispatcherHost::CancelSSLRequest(
     int error,
     const net::SSLInfo* ssl_info) {
   int socket_id = id.request_id;
-  DVLOG(1) << "SocketStreamDispatcherHost::CancelSSLRequest socket_id="
+  DVLOG(2) << "SocketStreamDispatcherHost::CancelSSLRequest socket_id="
            << socket_id;
   DCHECK_NE(kNoSocketId, socket_id);
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
@@ -169,7 +169,7 @@ void SocketStreamDispatcherHost::CancelSSLRequest(
 void SocketStreamDispatcherHost::ContinueSSLRequest(
     const GlobalRequestID& id) {
   int socket_id = id.request_id;
-  DVLOG(1) << "SocketStreamDispatcherHost::ContinueSSLRequest socket_id="
+  DVLOG(2) << "SocketStreamDispatcherHost::ContinueSSLRequest socket_id="
            << socket_id;
   DCHECK_NE(kNoSocketId, socket_id);
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
@@ -193,13 +193,13 @@ SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
 void SocketStreamDispatcherHost::OnConnect(int render_view_id,
                                            const GURL& url,
                                            int socket_id) {
-  DVLOG(1) << "SocketStreamDispatcherHost::OnConnect"
+  DVLOG(2) << "SocketStreamDispatcherHost::OnConnect"
            << " render_view_id=" << render_view_id
            << " url=" << url
            << " socket_id=" << socket_id;
   DCHECK_NE(kNoSocketId, socket_id);
   if (hosts_.Lookup(socket_id)) {
-    LOG(ERROR) << "socket_id=" << socket_id << " already registered.";
+    DVLOG(1) << "socket_id=" << socket_id << " already registered.";
     return;
   }
 
@@ -209,15 +209,15 @@ void SocketStreamDispatcherHost::OnConnect(int render_view_id,
       new SocketStreamHost(this, render_view_id, socket_id);
   hosts_.AddWithID(socket_stream_host, socket_id);
   socket_stream_host->Connect(url, GetURLRequestContext());
-  DVLOG(1) << "SocketStreamDispatcherHost::OnConnect -> " << socket_id;
+  DVLOG(2) << "SocketStreamDispatcherHost::OnConnect -> " << socket_id;
 }
 
 void SocketStreamDispatcherHost::OnSendData(
     int socket_id, const std::vector<char>& data) {
-  DVLOG(1) << "SocketStreamDispatcherHost::OnSendData socket_id=" << socket_id;
+  DVLOG(2) << "SocketStreamDispatcherHost::OnSendData socket_id=" << socket_id;
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
   if (!socket_stream_host) {
-    LOG(ERROR) << "socket_id=" << socket_id << " already closed.";
+    DVLOG(1) << "socket_id=" << socket_id << " already closed.";
     return;
   }
   if (!socket_stream_host->SendData(data)) {
@@ -227,7 +227,7 @@ void SocketStreamDispatcherHost::OnSendData(
 }
 
 void SocketStreamDispatcherHost::OnCloseReq(int socket_id) {
-  DVLOG(1) << "SocketStreamDispatcherHost::OnCloseReq socket_id=" << socket_id;
+  DVLOG(2) << "SocketStreamDispatcherHost::OnCloseReq socket_id=" << socket_id;
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
   if (!socket_stream_host)
     return;
@@ -240,7 +240,7 @@ void SocketStreamDispatcherHost::DeleteSocketStreamHost(int socket_id) {
   delete socket_stream_host;
   hosts_.Remove(socket_id);
   if (!Send(new SocketStreamMsg_Closed(socket_id))) {
-    LOG(ERROR) << "SocketStreamMsg_Closed failed.";
+    DVLOG(1) << "SocketStreamMsg_Closed failed.";
   }
 }
 
