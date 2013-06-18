@@ -15,7 +15,14 @@
 namespace ui {
 
 enum LatencyComponentType {
-  INPUT_EVENT_LATENCY_COMPONENT,
+  // Timestamp when the input event is sent from RenderWidgetHost to renderer.
+  INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  // Original timestamp for input event (e.g. timestamp from kernel).
+  INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+  // Timestamp when the UI event is created.
+  INPUT_EVENT_LATENCY_UI_COMPONENT,
+  // Timestamp when the event is acked from renderer.
+  INPUT_EVENT_LATENCY_ACKED_COMPONENT
 };
 
 struct UI_EXPORT LatencyInfo {
@@ -67,4 +74,3 @@ struct UI_EXPORT LatencyInfo {
 }  // namespace ui
 
 #endif  // UI_BASE_LATENCY_INFO_H_
-

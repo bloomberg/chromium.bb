@@ -221,7 +221,7 @@ class RenderWidgetHostViewAura
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual void GestureEventAck(int gesture_event_type) OVERRIDE;
   virtual void ProcessAckedTouchEvent(
-      const WebKit::WebTouchEvent& touch,
+      const TouchEventWithLatencyInfo& touch,
       InputEventAckState ack_result) OVERRIDE;
   virtual SmoothScrollGesture* CreateSmoothScrollGesture(
       bool scroll_down,

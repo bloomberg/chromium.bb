@@ -477,7 +477,7 @@ SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
 }
 
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
-    const WebKit::WebTouchEvent& touch, InputEventAckState ack_result) {
+    const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
 }
 
 // Platform implementation should override this method to allow frame

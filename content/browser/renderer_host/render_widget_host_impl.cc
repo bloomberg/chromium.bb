@@ -1123,13 +1123,13 @@ void RenderWidgetHostImpl::ForwardMouseEventImmediately(
 }
 
 void RenderWidgetHostImpl::ForwardTouchEventImmediately(
-    const WebKit::WebTouchEvent& touch_event) {
+    const TouchEventWithLatencyInfo& touch_event) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardTouchEvent");
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
-  ForwardInputEvent(touch_event, sizeof(WebKit::WebTouchEvent),
-                    NewInputLatencyInfo(), false);
+  ForwardInputEvent(touch_event.event, sizeof(WebKit::WebTouchEvent),
+                    touch_event.latency, false);
 }
 
 void RenderWidgetHostImpl::ForwardGestureEventImmediately(
@@ -1229,7 +1229,7 @@ void RenderWidgetHostImpl::DisableResizeAckCheckForTesting() {
 
 ui::LatencyInfo RenderWidgetHostImpl::NewInputLatencyInfo() {
   ui::LatencyInfo info;
-  info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_COMPONENT,
+  info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
                         GetLatencyComponentId(),
                         ++last_input_number_);
   return info;
@@ -1330,9 +1330,13 @@ void RenderWidgetHostImpl::ForwardInputEvent(
       TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
 }
 
-void RenderWidgetHostImpl::ForwardTouchEvent(
-    const WebKit::WebTouchEvent& touch_event) {
-  touch_event_queue_->QueueEvent(touch_event);
+void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
+    const WebKit::WebTouchEvent& touch_event,
+    const ui::LatencyInfo& ui_latency) {
+  ui::LatencyInfo latency_info = NewInputLatencyInfo();
+  latency_info.MergeWith(ui_latency);
+  TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
+  touch_event_queue_->QueueEvent(touch_with_latency);
 }
 
 void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
@@ -2524,7 +2528,7 @@ void RenderWidgetHostImpl::DetachDelegate() {
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
   ui::LatencyInfo::LatencyMap::const_iterator l =
       latency_info.latency_components.find(std::make_pair(
-          ui::INPUT_EVENT_LATENCY_COMPONENT, GetLatencyComponentId()));
+          ui::INPUT_EVENT_LATENCY_RWH_COMPONENT, GetLatencyComponentId()));
   if (l == latency_info.latency_components.end())
     return;
 
@@ -2545,7 +2549,7 @@ void RenderWidgetHostImpl::CompositorFrameDrawn(
            latency_info.latency_components.begin();
        b != latency_info.latency_components.end();
        ++b) {
-    if (b->first.first != ui::INPUT_EVENT_LATENCY_COMPONENT)
+    if (b->first.first != ui::INPUT_EVENT_LATENCY_RWH_COMPONENT)
       continue;
     // Matches with GetLatencyComponentId
     int routing_id = b->first.second & 0xffffffff;

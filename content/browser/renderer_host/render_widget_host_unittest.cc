@@ -206,7 +206,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   const WebTouchEvent& latest_event() const {
-    return touch_event_queue_->GetLatestEvent();
+    return touch_event_queue_->GetLatestEvent().event;
   }
 
   OverscrollMode overscroll_mode() const {
@@ -540,9 +540,9 @@ class TestView : public TestRenderWidgetHostView {
   virtual gfx::Rect GetViewBounds() const OVERRIDE {
     return bounds_;
   }
-  virtual void ProcessAckedTouchEvent(const WebTouchEvent& touch,
+  virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                                       InputEventAckState ack_result) OVERRIDE {
-    acked_event_ = touch;
+    acked_event_ = touch.event;
     ++acked_event_count_;
   }
   virtual void UnhandledWheelEvent(const WebMouseWheelEvent& event) OVERRIDE {
@@ -805,7 +805,7 @@ class RenderWidgetHostTest : public testing::Test {
   // Sends a touch event (irrespective of whether the page has a touch-event
   // handler or not).
   void SendTouchEvent() {
-    host_->ForwardTouchEvent(touch_event_);
+    host_->ForwardTouchEventWithLatencyInfo(touch_event_, ui::LatencyInfo());
 
     // Mark all the points as stationary. And remove the points that have been
     // released.
@@ -3016,8 +3016,10 @@ TEST_F(RenderWidgetHostTest, AckedTouchEventState) {
     EXPECT_EQ(acks[i], view_->acked_event().type);
     ScopedVector<ui::TouchEvent> acked;
 
+    TouchEventWithLatencyInfo acked_event(view_->acked_event(),
+                                          ui::LatencyInfo());
     MakeUITouchEventsFromWebTouchEvents(
-        view_->acked_event(), &acked, coordinate_system);
+        acked_event, &acked, coordinate_system);
     bool success = EventListIsSubset(acked, expected_events);
     EXPECT_TRUE(success) << "Failed on step: " << i;
     if (!success)

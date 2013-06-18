@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
+#include "content/port/browser/event_with_latency_info.h"
 
 namespace WebKit {
 class WebGestureEvent;
@@ -30,9 +31,10 @@ enum TouchEventCoordinateSystem {
 // A WebTouchEvent can contain information about a number of WebTouchPoints,
 // whereas a ui::TouchEvent contains information about a single touch-point. So
 // it is possible to create more than one ui::TouchEvents out of a single
-// WebTouchEvent.
+// WebTouchEvent. All the ui::TouchEvent in the list will carry the same
+// LatencyInfo the WebTouchEvent carries.
 CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
-    const WebKit::WebTouchEvent& touch,
+    const TouchEventWithLatencyInfo& touch,
     ScopedVector<ui::TouchEvent>* list,
     TouchEventCoordinateSystem coordinate_system);
 

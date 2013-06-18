@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "content/port/browser/event_with_latency_info.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -29,7 +30,7 @@ class TouchEventQueue {
   // queued events (e.g. consecutive touch-move events can be coalesced into a
   // single touch-move event). The event may also be immediately forwarded to
   // the renderer (e.g. when there are no other queued touch event).
-  void QueueEvent(const WebKit::WebTouchEvent& event);
+  void QueueEvent(const TouchEventWithLatencyInfo& event);
 
   // Notifies the queue that a touch-event has been processed by the renderer.
   // At this point, the queue may send one or more gesture events and/or
@@ -53,7 +54,7 @@ class TouchEventQueue {
   friend class MockRenderWidgetHost;
 
   CONTENT_EXPORT size_t GetQueueSize() const;
-  CONTENT_EXPORT const WebKit::WebTouchEvent& GetLatestEvent() const;
+  CONTENT_EXPORT const TouchEventWithLatencyInfo& GetLatestEvent() const;
 
   // Pops the touch-event from the top of the queue and sends it to the
   // RenderWidgetHostView. This reduces the size of the queue by one.

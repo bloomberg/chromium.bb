@@ -199,6 +199,7 @@ Event::Event(const base::NativeEvent& native_event,
 Event::Event(const Event& copy)
     : type_(copy.type_),
       time_stamp_(copy.time_stamp_),
+      latency_(copy.latency_),
       flags_(copy.flags_),
       dispatch_to_hidden_targets_(false),
       native_event_(::CopyNativeEvent(copy.native_event_)),
@@ -229,6 +230,16 @@ void Event::Init() {
 
 void Event::InitWithNativeEvent(const base::NativeEvent& native_event) {
   native_event_ = native_event;
+}
+
+void Event::InitLatencyInfo() {
+  latency_.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+                                         0,
+                                         0,
+                                         base::TimeTicks::FromInternalValue(
+                                             time_stamp_.ToInternalValue()),
+                                         1);
+  latency_.AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -424,6 +435,7 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       radius_y_(GetTouchRadiusY(native_event)),
       rotation_angle_(GetTouchAngle(native_event)),
       force_(GetTouchForce(native_event)) {
+  InitLatencyInfo();
 }
 
 TouchEvent::TouchEvent(EventType type,
@@ -436,6 +448,7 @@ TouchEvent::TouchEvent(EventType type,
       radius_y_(0.0f),
       rotation_angle_(0.0f),
       force_(0.0f) {
+  InitLatencyInfo();
 }
 
 TouchEvent::TouchEvent(EventType type,
@@ -453,6 +466,7 @@ TouchEvent::TouchEvent(EventType type,
       radius_y_(radius_y),
       rotation_angle_(angle),
       force_(force) {
+  InitLatencyInfo();
 }
 
 TouchEvent::~TouchEvent() {

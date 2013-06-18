@@ -833,7 +833,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
 }
 
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
-    const WebKit::WebTouchEvent& touch_event, InputEventAckState ack_result) {
+    const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
   if (content_view_core_)
     content_view_core_->ConfirmTouchEvent(ack_result);
 }
@@ -950,7 +950,7 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
 void RenderWidgetHostViewAndroid::SendTouchEvent(
     const WebKit::WebTouchEvent& event) {
   if (host_)
-    host_->ForwardTouchEvent(event);
+    host_->ForwardTouchEventWithLatencyInfo(event, ui::LatencyInfo());
 }
 
 

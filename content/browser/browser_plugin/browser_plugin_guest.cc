@@ -1205,8 +1205,9 @@ void BrowserPluginGuest::OnHandleInputEvent(
   }
 
   if (WebKit::WebInputEvent::isTouchEventType(event->type)) {
-    guest_rvh->ForwardTouchEvent(
-        *static_cast<const WebKit::WebTouchEvent*>(event));
+    guest_rvh->ForwardTouchEventWithLatencyInfo(
+        *static_cast<const WebKit::WebTouchEvent*>(event),
+        ui::LatencyInfo());
     return;
   }
 

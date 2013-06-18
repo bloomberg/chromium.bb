@@ -1803,9 +1803,9 @@ void RenderWidgetHostViewAura::GestureEventAck(int gesture_event_type) {
 }
 
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
-    const WebKit::WebTouchEvent& touch_event, InputEventAckState ack_result) {
+    const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
   ScopedVector<ui::TouchEvent> events;
-  if (!MakeUITouchEventsFromWebTouchEvents(touch_event, &events,
+  if (!MakeUITouchEventsFromWebTouchEvents(touch, &events,
                                            SCREEN_COORDINATES))
     return;
 
@@ -1818,6 +1818,10 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
       INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter) {
+    (*iter)->latency()->AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT,
+        static_cast<int64>(ack_result),
+        0);
     root->ProcessedTouchEvent((*iter), window_, result);
   }
 }
@@ -2505,7 +2509,7 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
 
   if (point) {
     if (host_->ShouldForwardTouchEvent())
-      host_->ForwardTouchEvent(touch_event_);
+      host_->ForwardTouchEventWithLatencyInfo(touch_event_, *event->latency());
     UpdateWebTouchEventAfterDispatch(&touch_event_, point);
   }
 }

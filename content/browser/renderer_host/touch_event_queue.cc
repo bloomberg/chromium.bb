@@ -12,7 +12,7 @@
 
 namespace content {
 
-typedef std::vector<WebKit::WebTouchEvent> WebTouchEventList;
+typedef std::vector<TouchEventWithLatencyInfo> WebTouchEventWithLatencyList;
 
 // This class represents a single coalesced touch event. However, it also keeps
 // track of all the original touch-events that were coalesced into a single
@@ -21,7 +21,7 @@ typedef std::vector<WebKit::WebTouchEvent> WebTouchEventList;
 // the View receives the event with their original timestamp.
 class CoalescedWebTouchEvent {
  public:
-  explicit CoalescedWebTouchEvent(const WebKit::WebTouchEvent& event)
+  explicit CoalescedWebTouchEvent(const TouchEventWithLatencyInfo& event)
       : coalesced_event_(event) {
     events_.push_back(event);
     TRACE_EVENT_ASYNC_BEGIN0(
@@ -35,23 +35,29 @@ class CoalescedWebTouchEvent {
 
   // Coalesces the event with the existing event if possible. Returns whether
   // the event was coalesced.
-  bool CoalesceEventIfPossible(const WebKit::WebTouchEvent& event) {
-    if (coalesced_event_.type == WebKit::WebInputEvent::TouchMove &&
-        event.type == WebKit::WebInputEvent::TouchMove &&
-        coalesced_event_.modifiers == event.modifiers &&
-        coalesced_event_.touchesLength == event.touchesLength) {
-      events_.push_back(event);
+  bool CoalesceEventIfPossible(
+      const TouchEventWithLatencyInfo& event_with_latency) {
+    if (coalesced_event_.event.type == WebKit::WebInputEvent::TouchMove &&
+        event_with_latency.event.type == WebKit::WebInputEvent::TouchMove &&
+        coalesced_event_.event.modifiers ==
+        event_with_latency.event.modifiers &&
+        coalesced_event_.event.touchesLength ==
+        event_with_latency.event.touchesLength) {
+      events_.push_back(event_with_latency);
       // The WebTouchPoints include absolute position information. So it is
       // sufficient to simply replace the previous event with the new event.
       // However, it is necessary to make sure that all the points have the
       // correct state, i.e. the touch-points that moved in the last event, but
       // didn't change in the current event, will have Stationary state. It is
       // necessary to change them back to Moved state.
-      const WebKit::WebTouchEvent last_event = coalesced_event_;
-      coalesced_event_ = event;
+      const WebKit::WebTouchEvent last_event = coalesced_event_.event;
+      const ui::LatencyInfo last_latency = coalesced_event_.latency;
+      coalesced_event_ = event_with_latency;
+      coalesced_event_.latency.MergeWith(last_latency);
       for (unsigned i = 0; i < last_event.touchesLength; ++i) {
         if (last_event.touches[i].state == WebKit::WebTouchPoint::StateMoved)
-          coalesced_event_.touches[i].state = WebKit::WebTouchPoint::StateMoved;
+          coalesced_event_.event.touches[i].state =
+              WebKit::WebTouchPoint::StateMoved;
       }
       return true;
     }
@@ -59,15 +65,15 @@ class CoalescedWebTouchEvent {
     return false;
   }
 
-  const WebKit::WebTouchEvent& coalesced_event() const {
+  const TouchEventWithLatencyInfo& coalesced_event() const {
     return coalesced_event_;
   }
 
-  WebTouchEventList::const_iterator begin() const {
+  WebTouchEventWithLatencyList::const_iterator begin() const {
     return events_.begin();
   }
 
-  WebTouchEventList::const_iterator end() const {
+  WebTouchEventWithLatencyList::const_iterator end() const {
     return events_.end();
   }
 
@@ -75,10 +81,10 @@ class CoalescedWebTouchEvent {
 
  private:
   // This is the event that is forwarded to the renderer.
-  WebKit::WebTouchEvent coalesced_event_;
+  TouchEventWithLatencyInfo coalesced_event_;
 
   // This is the list of the original events that were coalesced.
-  WebTouchEventList events_;
+  WebTouchEventWithLatencyList events_;
 
   DISALLOW_COPY_AND_ASSIGN(CoalescedWebTouchEvent);
 };
@@ -92,12 +98,12 @@ TouchEventQueue::~TouchEventQueue() {
     STLDeleteElements(&touch_queue_);
 }
 
-void TouchEventQueue::QueueEvent(const WebKit::WebTouchEvent& event) {
+void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
   if (touch_queue_.empty()) {
     // There is no touch event in the queue. Forward it to the renderer
     // immediately.
     touch_queue_.push_back(new CoalescedWebTouchEvent(event));
-    if (ShouldForwardToRenderer(event))
+    if (ShouldForwardToRenderer(event.event))
       render_widget_host_->ForwardTouchEventImmediately(event);
     else
       PopTouchEventToView(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
@@ -119,7 +125,8 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
     return;
 
   // Update the ACK status for each touch point in the ACKed event.
-  const WebKit::WebTouchEvent& event = touch_queue_.front()->coalesced_event();
+  const WebKit::WebTouchEvent& event =
+      touch_queue_.front()->coalesced_event().event;
   if (event.type == WebKit::WebInputEvent::TouchEnd ||
       event.type == WebKit::WebInputEvent::TouchCancel) {
     // The points have been released. Erase the ACK states.
@@ -142,9 +149,9 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
   // If there are queued touch events, then try to forward them to the renderer
   // immediately, or ACK the events back to the view if appropriate.
   while (!touch_queue_.empty()) {
-    const WebKit::WebTouchEvent& touch =
+    const TouchEventWithLatencyInfo& touch =
         touch_queue_.front()->coalesced_event();
-    if (ShouldForwardToRenderer(touch)) {
+    if (ShouldForwardToRenderer(touch.event)) {
       render_widget_host_->ForwardTouchEventImmediately(touch);
       break;
     }
@@ -158,14 +165,15 @@ void TouchEventQueue::FlushQueue() {
 }
 
 void TouchEventQueue::Reset() {
-  touch_queue_.clear();
+  if (!touch_queue_.empty())
+    STLDeleteElements(&touch_queue_);
 }
 
 size_t TouchEventQueue::GetQueueSize() const {
   return touch_queue_.size();
 }
 
-const WebKit::WebTouchEvent& TouchEventQueue::GetLatestEvent() const {
+const TouchEventWithLatencyInfo& TouchEventQueue::GetLatestEvent() const {
   return touch_queue_.back()->coalesced_event();
 }
 
@@ -179,7 +187,7 @@ void TouchEventQueue::PopTouchEventToView(InputEventAckState ack_result) {
   // to the renderer.
   RenderWidgetHostViewPort* view = RenderWidgetHostViewPort::FromRWHV(
       render_widget_host_->GetView());
-  for (WebTouchEventList::const_iterator iter = acked_event->begin(),
+  for (WebTouchEventWithLatencyList::const_iterator iter = acked_event->begin(),
        end = acked_event->end();
        iter != end; ++iter) {
     view->ProcessAckedTouchEvent((*iter), ack_result);

@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_EVENT_WITH_LATENCY_INFO_H_
-#define CONTENT_BROWSER_RENDERER_HOST_EVENT_WITH_LATENCY_INFO_H_
+#ifndef CONTENT_PORT_BROWSER_EVENT_WITH_LATENCY_INFO_H_
+#define CONTENT_PORT_BROWSER_EVENT_WITH_LATENCY_INFO_H_
 
 #include "ui/base/latency_info.h"
 
@@ -11,6 +11,7 @@ namespace WebKit {
 class WebGestureEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
+class WebTouchEvent;
 }
 
 namespace content {
@@ -33,7 +34,9 @@ typedef EventWithLatencyInfo<WebKit::WebMouseWheelEvent>
     MouseWheelEventWithLatencyInfo;
 typedef EventWithLatencyInfo<WebKit::WebMouseEvent>
     MouseEventWithLatencyInfo;
+typedef EventWithLatencyInfo<WebKit::WebTouchEvent>
+    TouchEventWithLatencyInfo;
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_EVENT_WITH_LATENCY_INFO_H_
+#endif  // CONTENT_PORT_BROWSER_EVENT_WITH_LATENCY_INFO_H_

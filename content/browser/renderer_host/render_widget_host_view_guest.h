@@ -132,8 +132,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 #if defined(OS_WIN) || defined(USE_AURA)
-  virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
-                                      InputEventAckState ack_result) OVERRIDE;
+  virtual void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      InputEventAckState ack_result) OVERRIDE;
 #endif  // defined(OS_WIN) || defined(USE_AURA)
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;

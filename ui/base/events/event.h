@@ -14,6 +14,7 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/latency_info.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/point.h"
 
@@ -79,6 +80,9 @@ class UI_EXPORT Event {
   bool dispatch_to_hidden_targets() const {
     return dispatch_to_hidden_targets_;
   }
+
+  LatencyInfo* latency() { return &latency_; }
+  void set_latency(const LatencyInfo& latency) { latency_ = latency; }
 
   // By default, events are "cancelable", this means any default processing that
   // the containing abstraction layer may perform can be prevented by calling
@@ -207,6 +211,8 @@ class UI_EXPORT Event {
 
   void set_name(const std::string& name) { name_ = name; }
 
+  void InitLatencyInfo();
+
  private:
   void operator=(const Event&);
 
@@ -217,6 +223,7 @@ class UI_EXPORT Event {
   EventType type_;
   std::string name_;
   base::TimeDelta time_stamp_;
+  LatencyInfo latency_;
   int flags_;
   bool dispatch_to_hidden_targets_;
   base::NativeEvent native_event_;

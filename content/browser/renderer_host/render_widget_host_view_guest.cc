@@ -91,7 +91,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewGuest::GetCompositingSurface() {
 
 #if defined(OS_WIN) || defined(USE_AURA)
 void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
-    const WebKit::WebTouchEvent& touch, InputEventAckState ack_result) {
+    const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
   // TODO(fsamuel): Currently we will only take this codepath if the guest has
   // requested touch events. A better solution is to always forward touchpresses
   // to the embedder process to target a BrowserPlugin, and then route all
@@ -481,7 +481,7 @@ bool RenderWidgetHostViewGuest::DispatchCancelTouchEvent(
   WebKit::WebTouchEvent cancel_event;
   cancel_event.type = WebKit::WebInputEvent::TouchCancel;
   cancel_event.timeStampSeconds = event->time_stamp().InSecondsF();
-  host_->ForwardTouchEvent(cancel_event);
+  host_->ForwardTouchEventWithLatencyInfo(cancel_event, *event->latency());
   return true;
 }
 

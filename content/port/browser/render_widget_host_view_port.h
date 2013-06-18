@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "cc/output/compositor_frame.h"
 #include "content/common/content_export.h"
+#include "content/port/browser/event_with_latency_info.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ipc/ipc_listener.h"
@@ -258,7 +259,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // the GestureRecognizer until invocation of ProcessAckedTouchEvent releases
   // it to be consumed (when |ack_result| is NOT_CONSUMED OR NO_CONSUMER_EXISTS)
   // or ignored (when |ack_result| is CONSUMED).
-  virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
+  virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                                       InputEventAckState ack_result) = 0;
 
   // Asks the view to create a smooth scroll gesture that will be used to

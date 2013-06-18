@@ -23,6 +23,7 @@
     '<(INTERMEDIATE_DIR)',
   ],
   'sources': [
+    'port/browser/event_with_latency_info.h',
     'port/browser/render_view_host_delegate_view.h',
     'port/browser/render_widget_host_view_port.h',
     'port/browser/smooth_scroll_gesture.h',
@@ -737,7 +738,6 @@
     'browser/renderer_host/database_message_filter.h',
     'browser/renderer_host/dip_util.cc',
     'browser/renderer_host/dip_util.h',
-    'browser/renderer_host/event_with_latency_info.h',
     'browser/renderer_host/file_utilities_message_filter.cc',
     'browser/renderer_host/file_utilities_message_filter.h',
     'browser/renderer_host/gamepad_browser_message_filter.cc',

@@ -905,7 +905,7 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
 }
 
 void RenderWidgetHostViewWin::ProcessAckedTouchEvent(
-    const WebKit::WebTouchEvent& touch, InputEventAckState ack_result) {
+    const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
   DCHECK(touch_events_enabled_);
 
   ScopedVector<ui::TouchEvent> events;
@@ -916,6 +916,10 @@ void RenderWidgetHostViewWin::ProcessAckedTouchEvent(
       INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter)  {
+    (*iter)->latency()->AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT,
+        static_cast<int64>(ack_result),
+        0);
     scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
     gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
         *(*iter), result, this));
@@ -972,7 +976,8 @@ bool RenderWidgetHostViewWin::DispatchCancelTouchEvent(
   WebKit::WebTouchEvent cancel_event;
   cancel_event.type = WebKit::WebInputEvent::TouchCancel;
   cancel_event.timeStampSeconds = event->time_stamp().InSecondsF();
-  render_widget_host_->ForwardTouchEvent(cancel_event);
+  render_widget_host_->ForwardTouchEventWithLatencyInfo(
+      cancel_event, *event->latency());
   return true;
 }
 
@@ -2217,7 +2222,8 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
     start += touch_state_->UpdateTouchPoints(points + start, total - start);
     if (should_forward) {
       if (touch_state_->is_changed())
-        render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
+        render_widget_host_->ForwardTouchEventWithLatencyInfo(
+            touch_state_->touch_event(), ui::LatencyInfo());
     } else {
       const WebKit::WebTouchEvent& touch_event = touch_state_->touch_event();
       base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(
