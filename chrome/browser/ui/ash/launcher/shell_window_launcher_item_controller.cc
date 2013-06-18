@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
 
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h"
@@ -142,16 +143,15 @@ void ShellWindowLauncherItemController::Clicked(const ui::Event& event) {
   if (type() == TYPE_APP_PANEL) {
     DCHECK(shell_windows_.size() == 1);
     ShellWindow* panel = shell_windows_.front();
-    // If the panel is on another display, move it to the current display and
-    // activate it.
-    if (ash::wm::MoveWindowToEventRoot(panel->GetNativeWindow(), event)) {
+    aura::Window* panel_window = panel->GetNativeWindow();
+    // If the panel is attached on another display, move it to the current
+    // display and activate it.
+    if (panel_window->GetProperty(ash::internal::kPanelAttachedKey) &&
+        ash::wm::MoveWindowToEventRoot(panel_window, event)) {
       if (!panel->GetBaseWindow()->IsActive())
         ShowAndActivateOrMinimize(panel);
     } else {
-      if (panel->GetBaseWindow()->IsActive())
-        panel->GetBaseWindow()->Minimize();
-      else
-        ShowAndActivateOrMinimize(panel);
+      ShowAndActivateOrMinimize(panel);
     }
   } else if (launcher_controller()->GetPerAppInterface() ||
       shell_windows_.size() == 1) {
