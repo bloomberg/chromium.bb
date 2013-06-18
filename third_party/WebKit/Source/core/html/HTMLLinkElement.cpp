@@ -173,10 +173,10 @@ LinkImport* HTMLLinkElement::linkImport() const
     return static_cast<LinkImport*>(m_link.get());
 }
 
-DocumentFragment* HTMLLinkElement::import() const
+Document* HTMLLinkElement::import() const
 {
     if (LinkImport* link = linkImport())
-        return linkImport()->importedFragment();
+        return linkImport()->importedDocument();
     return 0;
 }
 

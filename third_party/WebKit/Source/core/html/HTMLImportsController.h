@@ -66,7 +66,7 @@ public:
     virtual Type type() const OVERRIDE { return Import; }
     virtual void ownerRemoved() OVERRIDE;
 
-    DocumentFragment* importedFragment() const;
+    Document* importedDocument() const;
     const KURL& url() const { return m_url; }
     void importDestroyed();
     bool isDone() const { return m_state == StateReady || m_state == StateError; }
@@ -84,7 +84,7 @@ private:
     KURL m_url;
     State m_state;
     CachedResourceHandle<CachedScript> m_resource;
-    RefPtr<DocumentFragment> m_importedFragment;
+    RefPtr<Document> m_importedDocument;
 };
 
 
@@ -98,7 +98,6 @@ public:
 
     void addImport(PassRefPtr<LinkImport>);
     void showSecurityErrorMessage(const String&);
-    PassRefPtr<DocumentFragment> createDocumentFragment() const;
     PassRefPtr<LinkImport> findLinkFor(const KURL&) const;
     SecurityOrigin* securityOrigin() const;
     bool haveLoaded() const;
@@ -107,7 +106,6 @@ public:
 private:
 
     Document* m_master;
-    RefPtr<Document> m_importedFragmentOwner;
 
     // List of import which has been loaded or being loaded.
     typedef Vector<RefPtr<LinkImport> > ImportList;

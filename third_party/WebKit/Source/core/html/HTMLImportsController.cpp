@@ -32,7 +32,6 @@
 #include "core/html/HTMLImportsController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Range.h"
 #include "core/html/HTMLDocument.h"
@@ -78,13 +77,8 @@ LinkImport::State LinkImport::finish()
     }
 
     // FIXME(morrita): This should be done in incremental way.
-    RefPtr<Document> parsingPlaceholder = HTMLDocument::create(0, KURL());
-    parsingPlaceholder->setContent(m_resource->script());
-
-    // Doctypes cannot be moved between documents. So we remove it before the migration.
-    if (RefPtr<Node> doctype = parsingPlaceholder->doctype())
-        parsingPlaceholder->removeChild(doctype.get());
-    m_importedFragment->takeAllChildrenFrom(parsingPlaceholder.get());
+    m_importedDocument = HTMLDocument::create(0, m_resource->response().url());
+    m_importedDocument->setContent(m_resource->script());
 
     return StateReady;
 }
@@ -132,12 +126,11 @@ LinkImport::State LinkImport::startRequest()
     m_resource->addClient(this);
     m_url = builder.url();
     m_controller->addImport(this);
-    m_importedFragment = m_controller->createDocumentFragment();
 
     return StateStarted;
 }
 
-DocumentFragment* LinkImport::importedFragment() const
+Document* LinkImport::importedDocument() const
 {
     if (!m_owner)
         return 0;
@@ -145,11 +138,11 @@ DocumentFragment* LinkImport::importedFragment() const
         return 0;
 
     if (m_ofSameLocation) {
-        ASSERT(!m_importedFragment);
-        return m_ofSameLocation->importedFragment();
+        ASSERT(!m_importedDocument);
+        return m_ofSameLocation->importedDocument();
     }
 
-    return m_importedFragment.get();
+    return m_importedDocument.get();
 }
 
 void LinkImport::process()
@@ -167,7 +160,7 @@ void LinkImport::ownerRemoved()
 void LinkImport::importDestroyed()
 {
     m_controller = 0;
-    m_importedFragment.clear();
+    m_importedDocument.clear();
 }
 
 PassOwnPtr<HTMLImportsController> HTMLImportsController::create(Document* master)
@@ -177,7 +170,6 @@ PassOwnPtr<HTMLImportsController> HTMLImportsController::create(Document* master
 
 HTMLImportsController::HTMLImportsController(Document* master)
     : m_master(master)
-    , m_importedFragmentOwner(HTMLDocument::create(0, KURL()))
 {
 }
 
@@ -202,11 +194,6 @@ void HTMLImportsController::didLoad()
 {
     if (haveLoaded())
         m_master->didLoadAllImports();
-}
-
-PassRefPtr<DocumentFragment> HTMLImportsController::createDocumentFragment() const
-{
-    return m_importedFragmentOwner->createDocumentFragment();
 }
 
 PassRefPtr<LinkImport> HTMLImportsController::findLinkFor(const KURL& url) const

@@ -140,7 +140,7 @@ public:
     String iconSizes() const;
 
     CSSStyleSheet* sheet() const { return linkStyle() ? linkStyle()->sheet() : 0; }
-    DocumentFragment* import() const;
+    Document* import() const;
 
     bool styleSheetIsLoading() const;
 
