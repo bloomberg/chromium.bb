@@ -101,13 +101,44 @@ Error MountHttp::Open(const Path& path, int mode, MountNode** out_node) {
   return 0;
 }
 
-Error MountHttp::Unlink(const Path& path) { return ENOSYS; }
+Error MountHttp::Unlink(const Path& path) {
+  NodeMap_t::iterator iter = node_cache_.find(path.Join());
+  if (iter == node_cache_.end())
+    return ENOENT;
 
-Error MountHttp::Mkdir(const Path& path, int permissions) { return ENOSYS; }
+  if (iter->second->IsaDir())
+    return EISDIR;
 
-Error MountHttp::Rmdir(const Path& path) { return ENOSYS; }
+  return EACCES;
+}
 
-Error MountHttp::Remove(const Path& path) { return ENOSYS; }
+Error MountHttp::Mkdir(const Path& path, int permissions) {
+  NodeMap_t::iterator iter = node_cache_.find(path.Join());
+  if (iter != node_cache_.end()) {
+    if (iter->second->IsaDir())
+      return EEXIST;
+  }
+  return EACCES;
+}
+
+Error MountHttp::Rmdir(const Path& path) {
+  NodeMap_t::iterator iter = node_cache_.find(path.Join());
+  if (iter == node_cache_.end())
+    return ENOENT;
+
+  if (!iter->second->IsaDir())
+    return ENOTDIR;
+
+  return EACCES;
+}
+
+Error MountHttp::Remove(const Path& path) {
+  NodeMap_t::iterator iter = node_cache_.find(path.Join());
+  if (iter == node_cache_.end())
+    return ENOENT;
+
+  return EACCES;
+}
 
 PP_Resource MountHttp::MakeUrlRequestInfo(const std::string& url,
                                           const char* method,

@@ -69,6 +69,58 @@ TEST_F(MountHttpTest, MountEmpty) {
   mnt_ = new MountHttpMock(args, &ppapi_);
 }
 
+TEST_F(MountHttpTest, Mkdir) {
+  StringMap_t args;
+  mnt_ = new MountHttpMock(args, &ppapi_);
+  char manifest[] = "-r-- 123 /mydir/foo\n-rw- 234 /thatdir/bar\n";
+  EXPECT_EQ(0, mnt_->ParseManifest(manifest));
+  // mkdir of existing directories should give "File exists".
+  EXPECT_EQ(EEXIST, mnt_->Mkdir(Path("/"), 0));
+  EXPECT_EQ(EEXIST, mnt_->Mkdir(Path("/mydir"), 0));
+  // mkdir of non-existent directories should give "Permission denied".
+  EXPECT_EQ(EACCES, mnt_->Mkdir(Path("/non_existent"), 0));
+}
+
+TEST_F(MountHttpTest, Rmdir) {
+  StringMap_t args;
+  mnt_ = new MountHttpMock(args, &ppapi_);
+  char manifest[] = "-r-- 123 /mydir/foo\n-rw- 234 /thatdir/bar\n";
+  EXPECT_EQ(0, mnt_->ParseManifest(manifest));
+  // Rmdir on existing dirs should give "Permission Denied"
+  EXPECT_EQ(EACCES, mnt_->Rmdir(Path("/")));
+  EXPECT_EQ(EACCES, mnt_->Rmdir(Path("/mydir")));
+  // Rmdir on existing files should give "Not a direcotory"
+  EXPECT_EQ(ENOTDIR, mnt_->Rmdir(Path("/mydir/foo")));
+  // Rmdir on non-existent files should give "No such file or directory"
+  EXPECT_EQ(ENOENT, mnt_->Rmdir(Path("/non_existent")));
+}
+
+TEST_F(MountHttpTest, Unlink) {
+  StringMap_t args;
+  mnt_ = new MountHttpMock(args, &ppapi_);
+  char manifest[] = "-r-- 123 /mydir/foo\n-rw- 234 /thatdir/bar\n";
+  EXPECT_EQ(0, mnt_->ParseManifest(manifest));
+  // Unlink of existing files should give "Permission Denied"
+  EXPECT_EQ(EACCES, mnt_->Unlink(Path("/mydir/foo")));
+  // Unlink of existing directory should give "Is a directory"
+  EXPECT_EQ(EISDIR, mnt_->Unlink(Path("/mydir")));
+  // Unlink of non-existent files should give "No such file or directory"
+  EXPECT_EQ(ENOENT, mnt_->Unlink(Path("/non_existent")));
+}
+
+TEST_F(MountHttpTest, Remove) {
+  StringMap_t args;
+  mnt_ = new MountHttpMock(args, &ppapi_);
+  char manifest[] = "-r-- 123 /mydir/foo\n-rw- 234 /thatdir/bar\n";
+  EXPECT_EQ(0, mnt_->ParseManifest(manifest));
+  // Remove of existing files should give "Permission Denied"
+  EXPECT_EQ(EACCES, mnt_->Remove(Path("/mydir/foo")));
+  // Remove of existing directory should give "Permission Denied"
+  EXPECT_EQ(EACCES, mnt_->Remove(Path("/mydir")));
+  // Unlink of non-existent files should give "No such file or directory"
+  EXPECT_EQ(ENOENT, mnt_->Remove(Path("/non_existent")));
+}
+
 TEST_F(MountHttpTest, ParseManifest) {
   StringMap_t args;
   size_t result_size = 0;
