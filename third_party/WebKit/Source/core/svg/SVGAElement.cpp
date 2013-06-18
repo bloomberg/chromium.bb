@@ -202,12 +202,12 @@ bool SVGAElement::supportsFocus() const
     return true;
 }
 
-bool SVGAElement::isFocusable() const
+bool SVGAElement::rendererIsFocusable() const
 {
     if (renderer() && renderer()->absoluteClippedOverflowRect().isEmpty())
         return false;
-    
-    return SVGElement::isFocusable();
+
+    return SVGElement::rendererIsFocusable();
 }
 
 bool SVGAElement::isURLAttribute(const Attribute& attribute) const

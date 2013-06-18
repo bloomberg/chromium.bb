@@ -621,6 +621,7 @@ protected:
     void setTabIndexExplicitly(short);
     virtual bool supportsFocus() const OVERRIDE;
     virtual short tabIndex() const OVERRIDE;
+    virtual bool rendererIsFocusable() const OVERRIDE;
 
     PassRefPtr<HTMLCollection> ensureCachedHTMLCollection(CollectionType);
     HTMLCollection* cachedHTMLCollection(CollectionType);

@@ -239,6 +239,38 @@ short Element::tabIndex() const
     return hasRareData() ? elementRareData()->tabIndex() : 0;
 }
 
+bool Element::rendererIsFocusable() const
+{
+    // Elements in canvas fallback content are not rendered, but they are allowed to be
+    // focusable as long as their canvas is displayed and visible.
+    if (isInCanvasSubtree()) {
+        const Element* e = this;
+        while (e && !e->hasLocalName(canvasTag))
+            e = e->parentElement();
+        ASSERT(e);
+        return e->renderer() && e->renderer()->style()->visibility() == VISIBLE;
+    }
+
+    // FIXME: These asserts should be in Node::isFocusable, but there are some
+    // callsites like Document::setFocusedNode that would currently fail on
+    // them. See crbug.com/251163
+    if (renderer()) {
+        ASSERT(!renderer()->needsLayout());
+    } else {
+        // We can't just use needsStyleRecalc() because if the node is in a
+        // display:none tree it might say it needs style recalc but the whole
+        // document is actually up to date.
+        ASSERT(!document()->childNeedsStyleRecalc());
+    }
+
+    // FIXME: Even if we are not visible, we might have a child that is visible.
+    // Hyatt wants to fix that some day with a "has visible content" flag or the like.
+    if (!renderer() || renderer()->style()->visibility() != VISIBLE)
+        return false;
+
+    return true;
+}
+
 DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(Element, blur);
 DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(Element, error);
 DEFINE_VIRTUAL_ATTRIBUTE_EVENT_LISTENER(Element, focus);

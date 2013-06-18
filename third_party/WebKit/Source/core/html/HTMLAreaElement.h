@@ -55,7 +55,7 @@ private:
     virtual String target() const;
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;
     virtual bool isMouseFocusable() const;
-    virtual bool isFocusable() const;
+    virtual bool rendererIsFocusable() const OVERRIDE;
     virtual void updateFocusAppearance(bool /*restorePreviousSelection*/);
     virtual void setFocus(bool) OVERRIDE;
 

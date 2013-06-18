@@ -64,7 +64,6 @@ public:
     virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual bool hasValue() const = 0;
     bool isDisabled() const;
-    virtual bool isFocusable() const OVERRIDE FINAL;
     virtual float maximumWidth(const Font&);
     virtual void populateDateTimeFieldsState(DateTimeFieldsState&) = 0;
     void removeEventHandler() { m_fieldOwner = 0; }

@@ -172,15 +172,6 @@ bool DateTimeFieldElement::isFieldOwnerReadOnly() const
     return m_fieldOwner && m_fieldOwner->isFieldOwnerReadOnly();
 }
 
-bool DateTimeFieldElement::isFocusable() const
-{
-    if (isDisabled())
-        return false;
-    if (isFieldOwnerDisabled())
-        return false;
-    return HTMLElement::isFocusable();
-}
-
 bool DateTimeFieldElement::isDisabled() const
 {
     return fastHasAttribute(disabledAttr);
@@ -211,7 +202,7 @@ void DateTimeFieldElement::setDisabled()
 
 bool DateTimeFieldElement::supportsFocus() const
 {
-    return true;
+    return !isDisabled() && !isFieldOwnerDisabled();
 }
 
 void DateTimeFieldElement::updateVisibleValue(EventBehavior eventBehavior)

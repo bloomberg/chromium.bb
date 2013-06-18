@@ -387,7 +387,7 @@ bool HTMLMediaElement::supportsFocus() const
         return false;
 
     // If no controls specified, we should still be able to focus the element if it has tabIndex.
-    return controls() ||  HTMLElement::supportsFocus();
+    return controls() || HTMLElement::supportsFocus();
 }
 
 bool HTMLMediaElement::isMouseFocusable() const

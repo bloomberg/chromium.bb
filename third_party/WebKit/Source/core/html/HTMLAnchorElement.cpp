@@ -149,12 +149,11 @@ bool HTMLAnchorElement::supportsFocus() const
 
 bool HTMLAnchorElement::isMouseFocusable() const
 {
-    // Anchor elements should be mouse focusable, https://bugs.webkit.org/show_bug.cgi?id=26856
+    // Links are focusable by default, but only allow links with tabindex or contenteditable to be mouse focusable.
+    // https://bugs.webkit.org/show_bug.cgi?id=26856
     if (isLink())
-        // Only allow links with tabIndex or contentEditable to be mouse focusable.
         return HTMLElement::supportsFocus();
 
-    // Allow tab index etc to control focus.
     return HTMLElement::isMouseFocusable();
 }
 

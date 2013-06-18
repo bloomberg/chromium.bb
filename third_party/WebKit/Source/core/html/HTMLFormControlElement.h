@@ -66,7 +66,6 @@ public:
 
     virtual bool isDisabledFormControl() const OVERRIDE;
 
-    virtual bool isFocusable() const;
     virtual bool isEnumeratable() const { return false; }
 
     bool isRequired() const;
@@ -117,7 +116,8 @@ protected:
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
 
-    virtual bool supportsFocus() const;
+    virtual bool supportsFocus() const OVERRIDE;
+    virtual bool rendererIsFocusable() const OVERRIDE;
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;
     virtual bool isMouseFocusable() const;
 

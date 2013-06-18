@@ -202,7 +202,7 @@ bool HTMLAreaElement::isMouseFocusable() const
     return isFocusable();
 }
 
-bool HTMLAreaElement::isFocusable() const
+bool HTMLAreaElement::rendererIsFocusable() const
 {
     HTMLImageElement* image = imageElement();
     if (!image || !image->renderer() || image->renderer()->style()->visibility() != VISIBLE)
@@ -244,8 +244,7 @@ void HTMLAreaElement::updateFocusAppearance(bool restorePreviousSelection)
 bool HTMLAreaElement::supportsFocus() const
 {
     // If the AREA element was a link, it should support focus.
-    // The inherited method is not used because it assumes that a render object must exist 
-    // for the element to support focus. AREA elements do not have render objects.
+    // FIXME: This means that an AREA that is not a link cannot be made focusable through contenteditable or tabindex. Is it correct?
     return isLink();
 }
 
