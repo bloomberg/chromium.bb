@@ -16,10 +16,10 @@
 
 namespace cc {
 
-bool PictureLayerTilingClient::TileHasText(Tile* tile) {
+bool PictureLayerTilingClient::TileMayHaveLCDText(Tile* tile) {
   RasterMode raster_mode = HIGH_QUALITY_RASTER_MODE;
   if (!tile->IsReadyToDraw(&raster_mode))
-    return false;
+    return true;
   return tile->has_text(raster_mode);
 }
 
@@ -117,7 +117,7 @@ Region PictureLayerTiling::OpaqueRegionInContentRect(
 void PictureLayerTiling::DestroyAndRecreateTilesWithText() {
   std::vector<TileMapKey> new_tiles;
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    if (client_->TileHasText(it->second.get()))
+    if (client_->TileMayHaveLCDText(it->second.get()))
       new_tiles.push_back(it->first);
   }
 

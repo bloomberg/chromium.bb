@@ -38,7 +38,7 @@ class CC_EXPORT PictureLayerTilingClient {
       const PictureLayerTiling* tiling) = 0;
 
   // This is on the client so tests can override behaviour.
-  virtual bool TileHasText(Tile* tile);
+  virtual bool TileMayHaveLCDText(Tile* tile);
 
  protected:
   virtual ~PictureLayerTilingClient() {}

@@ -66,7 +66,7 @@ const PictureLayerTiling* FakePictureLayerTilingClient::GetTwinTiling(
   return twin_tiling_;
 }
 
-bool FakePictureLayerTilingClient::TileHasText(Tile* tile) {
+bool FakePictureLayerTilingClient::TileMayHaveLCDText(Tile* tile) {
   if (text_rect_.IsEmpty())
     return false;
   return tile->content_rect().Intersects(text_rect_);
