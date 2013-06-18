@@ -6,6 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -15,19 +16,15 @@ namespace views {
 class TestDialogClientView : public DialogClientView {
  public:
   TestDialogClientView(View* contents_view,
-                       DialogDelegate* delegate)
+                       DialogDelegate* dialog_delegate)
       : DialogClientView(contents_view),
-        delegate_(delegate) {}
+        dialog_(dialog_delegate) {}
   virtual ~TestDialogClientView() {}
 
   // DialogClientView implementation.
-  virtual DialogDelegate* GetDialogDelegate() const OVERRIDE {
-    return delegate_;
-  }
+  virtual DialogDelegate* GetDialogDelegate() const OVERRIDE { return dialog_; }
 
-  View* GetContentsView() {
-    return contents_view();
-  }
+  View* GetContentsView() { return contents_view(); }
 
   void CreateExtraViews() {
     CreateExtraView();
@@ -35,7 +32,7 @@ class TestDialogClientView : public DialogClientView {
   }
 
  private:
-  DialogDelegate* delegate_;
+  DialogDelegate* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDialogClientView);
 };
@@ -57,35 +54,27 @@ class DialogClientViewTest : public testing::Test,
   }
 
   // DialogDelegateView implementation.
-  virtual View* GetContentsView() OVERRIDE {
-    return contents_.get();
-  }
-  virtual View* CreateExtraView() OVERRIDE {
-    return extra_view_;
-  }
-  virtual View* CreateFootnoteView() OVERRIDE {
-    return footnote_view_;
-  }
-  virtual int GetDialogButtons() const OVERRIDE {
-    return dialog_buttons_;
-  }
+  virtual View* GetContentsView() OVERRIDE { return contents_.get(); }
+  virtual View* CreateExtraView() OVERRIDE { return extra_view_; }
+  virtual View* CreateFootnoteView() OVERRIDE { return footnote_view_; }
+  virtual int GetDialogButtons() const OVERRIDE { return dialog_buttons_; }
 
  protected:
-  void ResizeAndLayoutClientView() {
+  gfx::Rect GetUpdatedClientBounds() {
     client_view_->SizeToPreferredSize();
     client_view_->Layout();
+    return client_view_->bounds();
   }
 
-  // Maes sure that the content view is sized correctly. Width must be at least
+  // Makes sure that the content view is sized correctly. Width must be at least
   // the requested amount, but height should always match exactly.
   void CheckContentsIsSetToPreferredSize() {
-    ResizeAndLayoutClientView();
-    gfx::Size preferred_size = contents_->GetPreferredSize();
+    const gfx::Rect client_bounds = GetUpdatedClientBounds();
+    const gfx::Size preferred_size = contents_->GetPreferredSize();
     EXPECT_EQ(preferred_size.height(), contents_->bounds().height());
     EXPECT_LE(preferred_size.width(), contents_->bounds().width());
-    EXPECT_EQ(contents_->bounds().x(), client_view()->bounds().x());
-    EXPECT_EQ(contents_->bounds().y(), client_view()->bounds().y());
-    EXPECT_EQ(contents_->bounds().right(), client_view()->bounds().right());
+    EXPECT_EQ(contents_->bounds().origin(), client_bounds.origin());
+    EXPECT_EQ(contents_->bounds().right(), client_bounds.right());
   }
 
   // Sets the buttons to show in the dialog and refreshes the dialog.
@@ -123,13 +112,51 @@ class DialogClientViewTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(DialogClientViewTest);
 };
 
-TEST_F(DialogClientViewTest, ButtonStateCanChange) {
-  ResizeAndLayoutClientView();
-  int no_button_height = client_view()->bounds().height();
+TEST_F(DialogClientViewTest, UpdateButtons) {
+  // This dialog should start with no buttons.
+  EXPECT_EQ(GetDialogButtons(), ui::DIALOG_BUTTON_NONE);
+  EXPECT_EQ(NULL, client_view()->ok_button());
+  EXPECT_EQ(NULL, client_view()->cancel_button());
+  const int height_without_buttons = GetUpdatedClientBounds().height();
 
+  // Update to use both buttons.
   SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-  ResizeAndLayoutClientView();
-  EXPECT_GT(client_view()->bounds().height(), no_button_height);
+  EXPECT_TRUE(client_view()->ok_button()->is_default());
+  EXPECT_FALSE(client_view()->cancel_button()->is_default());
+  const int height_with_buttons = GetUpdatedClientBounds().height();
+  EXPECT_GT(height_with_buttons, height_without_buttons);
+
+  // Remove the dialog buttons.
+  SetDialogButtons(ui::DIALOG_BUTTON_NONE);
+  EXPECT_EQ(NULL, client_view()->ok_button());
+  EXPECT_EQ(NULL, client_view()->cancel_button());
+  EXPECT_EQ(GetUpdatedClientBounds().height(), height_without_buttons);
+
+  // Reset with just an ok button.
+  SetDialogButtons(ui::DIALOG_BUTTON_OK);
+  EXPECT_TRUE(client_view()->ok_button()->is_default());
+  EXPECT_EQ(NULL, client_view()->cancel_button());
+  EXPECT_EQ(GetUpdatedClientBounds().height(), height_with_buttons);
+
+  // Reset with just a cancel button.
+  SetDialogButtons(ui::DIALOG_BUTTON_CANCEL);
+  EXPECT_EQ(NULL, client_view()->ok_button());
+  EXPECT_TRUE(client_view()->cancel_button()->is_default());
+  EXPECT_EQ(GetUpdatedClientBounds().height(), height_with_buttons);
+}
+
+TEST_F(DialogClientViewTest, RemoveAndUpdateButtons) {
+  // Removing buttons from another context should clear the local pointer.
+  SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  delete client_view()->ok_button();
+  EXPECT_EQ(NULL, client_view()->ok_button());
+  delete client_view()->cancel_button();
+  EXPECT_EQ(NULL, client_view()->cancel_button());
+
+  // Updating should restore the requested buttons properly.
+  SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  EXPECT_TRUE(client_view()->ok_button()->is_default());
+  EXPECT_FALSE(client_view()->cancel_button()->is_default());
 }
 
 // Test that the contents view gets its preferred size in the basic dialog

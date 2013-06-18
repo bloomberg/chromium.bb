@@ -43,9 +43,6 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
 }
 
 DialogClientView::~DialogClientView() {
-  if (focus_manager_)
-    focus_manager_->RemoveFocusChangeListener(this);
-  focus_manager_ = NULL;
 }
 
 void DialogClientView::AcceptWindow() {
@@ -73,7 +70,7 @@ void DialogClientView::UpdateDialogButtons() {
   if (buttons & ui::DIALOG_BUTTON_OK) {
     if (!ok_button_) {
       ok_button_ = CreateDialogButton(ui::DIALOG_BUTTON_OK);
-      if (buttons & ui::DIALOG_BUTTON_CANCEL)
+      if (!(buttons & ui::DIALOG_BUTTON_CANCEL))
         ok_button_->AddAccelerator(escape);
       AddChildView(ok_button_);
     }
@@ -272,6 +269,17 @@ void DialogClientView::ViewHierarchyChanged(
     UpdateDialogButtons();
     CreateExtraView();
     CreateFootnoteView();
+  } else if (!details.is_add && details.child == this) {
+    if (focus_manager_)
+      focus_manager_->RemoveFocusChangeListener(this);
+    focus_manager_ = NULL;
+  } else if (!details.is_add) {
+    if (details.child == default_button_)
+      default_button_ = NULL;
+    if (details.child == ok_button_)
+      ok_button_ = NULL;
+    if (details.child == cancel_button_)
+      cancel_button_ = NULL;
   }
 }
 
