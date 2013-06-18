@@ -460,6 +460,8 @@
             'host/video_scheduler.h',
             'host/vlog_net_log.cc',
             'host/vlog_net_log.h',
+            'host/win/com_security.cc',
+            'host/win/com_security.h',
             'host/win/launch_process_with_token.cc',
             'host/win/launch_process_with_token.h',
             'host/win/message_window.cc',

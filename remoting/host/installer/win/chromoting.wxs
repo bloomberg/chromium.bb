@@ -41,22 +41,13 @@
       "{987bca97-9d40-42fc-a00d-e6a701261af5}" ?>
 
   <!--
-    The long hex values below are security descriptors generated from SDDL
+    The long hex value(s) below are security descriptors generated from SDDL
     definition using the PowerShell script below:
 
     $sddl = "<SDDL definition goes here>"
     $i = ([wmiclass]"Win32_SecurityDescriptorHelper").SDDLToBinarySD($sddl).BinarySD
     -join ($i | foreach {$_.ToString("X2")})
   -->
-
-  <!--
-    A security descriptor that allows SYSTEM, built-in administrators and
-    interactive users COM_RIGHTS_EXECUTE and COM_RIGHTS_EXECUTE_LOCAL rights.
-    The SDDL definition:
-
-    $sddl = "O:BAG:BAD:(A;;0x3;;;IU)(A;;0x3;;;SY)(A;;0x3;;;BA)"
-  -->
-  <?define ControllerSd = "010004805C0000006C00000000000000140000000200480003000000000014000300000001010000000000050400000000001400030000000101000000000005120000000000180003000000010200000000000520000000200200000102000000000005200000002002000001020000000000052000000020020000" ?>
 
   <!--
     A security descriptor that gives SYSTEM, built-in administrators and
@@ -259,9 +250,6 @@
             <RegistryKey Key="$(var.ControllerAppid)" Action="create">
               <RegistryValue Type="string"
                              Value="ChromotingElevatedController"/>
-              <RegistryValue Name="AccessPermission"
-                             Type="binary"
-                             Value="$(var.ControllerSd)"/>
             </RegistryKey>
 
             <RegistryKey Key="$(var.RdpAppid)" Action="create">

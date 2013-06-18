@@ -22,15 +22,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/windows_version.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/daemon_process.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
+#include "remoting/host/win/com_security.h"
 #include "remoting/host/win/core_resource.h"
-#include "remoting/host/win/security_descriptor.h"
 #include "remoting/host/win/wts_terminal_observer.h"
 
 namespace remoting {
@@ -43,15 +42,6 @@ const char kIoThreadName[] = "I/O thread";
 
 // "--console" runs the service interactively for debugging purposes.
 const char kConsoleSwitchName[] = "console";
-
-// Concatenates ACE type, permissions and sid given as SDDL strings into an ACE
-// definition in SDDL form.
-#define SDDL_ACE(type, permissions, sid) \
-    L"(" type L";;" permissions L";;;" sid L")"
-
-// Text representation of COM_RIGHTS_EXECUTE and COM_RIGHTS_EXECUTE_LOCAL
-// permission bits that is used in the SDDL definition below.
-#define SDDL_COM_EXECUTE_LOCAL L"0x3"
 
 // Security descriptor allowing local processes running under SYSTEM or
 // LocalService accounts to call COM methods exposed by the daemon.
@@ -67,61 +57,6 @@ const wchar_t kComProcessSd[] =
 const wchar_t kComProcessMandatoryLabel[] =
     SDDL_SACL L":"
     SDDL_ACE(SDDL_MANDATORY_LABEL, SDDL_NO_EXECUTE_UP, SDDL_ML_MEDIUM);
-
-#undef SDDL_ACE
-#undef SDDL_COM_EXECUTE_LOCAL
-
-// Allows incoming calls from clients running under SYSTEM or LocalService at
-// medium integrity level.
-bool InitializeComSecurity() {
-  std::string sddl = WideToUTF8(kComProcessSd);
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    sddl += WideToUTF8(kComProcessMandatoryLabel);
-  }
-
-  // Convert the SDDL description into a security descriptor in absolute format.
-  ScopedSd relative_sd = ConvertSddlToSd(sddl);
-  if (!relative_sd) {
-    LOG_GETLASTERROR(ERROR) << "Failed to create a security descriptor";
-    return false;
-  }
-  ScopedSd absolute_sd;
-  ScopedAcl dacl;
-  ScopedSid group;
-  ScopedSid owner;
-  ScopedAcl sacl;
-  if (!MakeScopedAbsoluteSd(relative_sd, &absolute_sd, &dacl, &group, &owner,
-                            &sacl)) {
-    LOG_GETLASTERROR(ERROR) << "MakeScopedAbsoluteSd() failed";
-    return false;
-  }
-
-  // Apply the security descriptor and the following settings:
-  //   - The daemon authenticates that all data received is from the expected
-  //     client.
-  //   - The daemon can impersonate clients to check their identity but cannot
-  //     act on their behalf.
-  //   - The caller's identity on every call (Dynamic cloaking).
-  //   - Activations where the activated COM server would run under the daemon's
-  //     identity are prohibited.
-  HRESULT result = CoInitializeSecurity(
-      absolute_sd.get(),
-      -1,       // Let COM choose which authentication services to register.
-      NULL,     // See above.
-      NULL,     // Reserved, must be NULL.
-      RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
-      RPC_C_IMP_LEVEL_IDENTIFY,
-      NULL,     // Default authentication information is not provided.
-      EOAC_DYNAMIC_CLOAKING | EOAC_DISABLE_AAA,
-      NULL);    /// Reserved, must be NULL
-  if (FAILED(result)) {
-    LOG(ERROR) << "CoInitializeSecurity() failed, result=0x"
-               << std::hex << result << std::dec << ".";
-    return false;
-  }
-
-  return true;
-}
 
 }  // namespace
 
@@ -336,8 +271,10 @@ void HostService::RunAsServiceImpl() {
   if (!com_initializer.succeeded())
     return;
 
-  if (!InitializeComSecurity())
+  if (!InitializeComSecurity(WideToUTF8(kComProcessSd),
+                             WideToUTF8(kComProcessMandatoryLabel), false)) {
     return;
+  }
 
   CreateLauncher(scoped_refptr<AutoThreadTaskRunner>(
       new AutoThreadTaskRunner(main_task_runner_,
@@ -370,8 +307,10 @@ int HostService::RunInConsole() {
   if (!com_initializer.succeeded())
     return result;
 
-  if (!InitializeComSecurity())
+  if (!InitializeComSecurity(WideToUTF8(kComProcessSd),
+                             WideToUTF8(kComProcessMandatoryLabel), false)) {
     return result;
+  }
 
   // Subscribe to Ctrl-C and other console events.
   if (!SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, TRUE)) {
