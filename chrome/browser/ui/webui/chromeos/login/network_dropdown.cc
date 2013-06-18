@@ -126,6 +126,7 @@ NetworkDropdown::NetworkDropdown(content::WebUI* web_ui,
 }
 
 NetworkDropdown::~NetworkDropdown() {
+  ash::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
   if (NetworkHandler::IsInitialized()) {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(
         this, FROM_HERE);
