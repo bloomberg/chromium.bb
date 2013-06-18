@@ -20,10 +20,6 @@ namespace webkit_media {
   mismatching_enums)
 COMPILE_ASSERT_MATCHING_ENUM(Unknown);
 COMPILE_ASSERT_MATCHING_ENUM(Client);
-COMPILE_ASSERT_MATCHING_ENUM(Service);
-COMPILE_ASSERT_MATCHING_ENUM(Output);
-COMPILE_ASSERT_MATCHING_ENUM(HardwareChange);
-COMPILE_ASSERT_MATCHING_ENUM(Domain);
 #undef COMPILE_ASSERT_MATCHING_ENUM
 
 base::TimeDelta ConvertSecondsToTimestamp(double seconds) {

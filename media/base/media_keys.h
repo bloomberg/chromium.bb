@@ -26,10 +26,11 @@ class MEDIA_EXPORT MediaKeys {
   enum KeyError {
     kUnknownError = 1,
     kClientError,
-    kServiceError,
-    kOutputError,
-    kHardwareChangeError,
-    kDomainError,
+    // The following v0.1b values have never been used.
+    // kServiceError,
+    // kOutputError,
+    // kHardwareChangeError,
+    // kDomainError,
     kMaxKeyError  // Must be last and greater than any legit value.
   };
 
