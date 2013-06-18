@@ -249,8 +249,7 @@ TEST_F(QuicCryptoServerStreamTest, WithoutCertificates) {
   EXPECT_TRUE(stream_.handshake_confirmed());
 }
 
-// TODO(rtenneti): Enable testing of ChannelID.
-TEST_F(QuicCryptoServerStreamTest, DISABLED_ChannelID) {
+TEST_F(QuicCryptoServerStreamTest, ChannelID) {
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;
@@ -258,11 +257,11 @@ TEST_F(QuicCryptoServerStreamTest, DISABLED_ChannelID) {
 
   client_options_.channel_id_enabled = true;
   // TODO(rtenneti): Enable testing of ProofVerifier.
+  // CompleteCryptoHandshake verifies
+  // stream_.crypto_negotiated_params().channel_id is correct.
   EXPECT_EQ(2, CompleteCryptoHandshake());
   EXPECT_TRUE(stream_.encryption_established());
   EXPECT_TRUE(stream_.handshake_confirmed());
-  EXPECT_EQ(CryptoTestUtils::ChannelIDKeyForHostname("test.example.com"),
-            stream_.crypto_negotiated_params().channel_id);
 }
 
 }  // namespace

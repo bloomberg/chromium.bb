@@ -25,6 +25,10 @@ class NET_EXPORT_PRIVATE ChannelIDSigner {
                     base::StringPiece signed_data,
                     std::string* out_key,
                     std::string* out_signature) = 0;
+
+  // GetKeyForHostname returns the ChannelID key that |ChannelIDSigner| will use
+  // for the given hostname.
+  virtual std::string GetKeyForHostname(const std::string& hostname) = 0;
 };
 
 // ChannelIDVerifier verifies ChannelID signatures.

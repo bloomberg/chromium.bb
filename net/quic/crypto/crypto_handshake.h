@@ -356,6 +356,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // the server.
   void SetProofVerifier(ProofVerifier* verifier);
 
+  ChannelIDSigner* channel_id_signer() const;
+
   // SetChannelIDSigner sets a ChannelIDSigner that will be called when the
   // server supports channel IDs to sign a message proving possession of the
   // given ChannelID. This object takes ownership of |signer|.

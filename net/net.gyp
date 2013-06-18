@@ -2732,6 +2732,12 @@
             'tools/quic/test_tools/run_all_unittests.cc',
           ],
 	  'conditions': [
+	    [ 'use_glib == 1', {
+		'dependencies': [
+		  '../build/linux/system.gyp:ssl',
+		],
+	      },
+	    ],
 	    [ 'use_openssl==1', {
 		# When building for OpenSSL, we need to exclude NSS specific tests.
 		'sources!': [

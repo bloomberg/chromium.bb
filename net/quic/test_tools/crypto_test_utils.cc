@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/crypto_test_utils.h"
 
+#include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/common_cert_set.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_server_config.h"
@@ -190,6 +191,12 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   CommunicateHandshakeMessages(client_conn, &client, server_conn, server);
 
   CompareClientAndServerKeys(&client, server);
+
+  if (options.channel_id_enabled) {
+    EXPECT_EQ(crypto_config.channel_id_signer()->GetKeyForHostname(
+                  "test.example.com"),
+              server->crypto_negotiated_params().channel_id);
+  }
 
   return client.num_sent_client_hellos();
 }

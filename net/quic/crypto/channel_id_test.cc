@@ -267,8 +267,7 @@ TEST(ChannelIDTest, VerifyKnownAnswerTest) {
   }
 }
 
-// TODO(rtenneti): Enable testing of ChannelID.
-TEST(ChannelIDTest, DISABLED_SignAndVerify) {
+TEST(ChannelIDTest, SignAndVerify) {
   scoped_ptr<ChannelIDSigner> signer(
       CryptoTestUtils::ChannelIDSignerForTesting());
 
@@ -277,7 +276,7 @@ TEST(ChannelIDTest, DISABLED_SignAndVerify) {
   string key, signature;
   ASSERT_TRUE(signer->Sign(hostname, signed_data, &key, &signature));
 
-  EXPECT_EQ(key, CryptoTestUtils::ChannelIDKeyForHostname(hostname));
+  EXPECT_EQ(key, signer->GetKeyForHostname(hostname));
 
   EXPECT_TRUE(ChannelIDVerifier::Verify(key, signed_data, signature));
 

@@ -94,7 +94,7 @@ class TestChannelIDSigner : public ChannelIDSigner {
     return true;
   }
 
-  static string KeyForHostname(const string& hostname) {
+  virtual string GetKeyForHostname(const string& hostname) OVERRIDE {
     crypto::ScopedOpenSSL<EVP_PKEY, EVP_PKEY_free> ecdsa_key(
         HostnameToKey(hostname));
     return SerializeKey(ecdsa_key.get());
@@ -166,11 +166,6 @@ class TestChannelIDSigner : public ChannelIDSigner {
 // static
 ChannelIDSigner* CryptoTestUtils::ChannelIDSignerForTesting() {
   return new TestChannelIDSigner();
-}
-
-// static
-string CryptoTestUtils::ChannelIDKeyForHostname(const string& hostname) {
-  return TestChannelIDSigner::KeyForHostname(hostname);
 }
 
 }  // namespace test

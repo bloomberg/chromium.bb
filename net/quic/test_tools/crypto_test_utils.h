@@ -46,7 +46,7 @@ class CryptoTestUtils {
 
     // If channel_id_enabled is true then the client will attempt to send a
     // ChannelID. The key will be the same as is returned by
-    // |ChannelIDKeyForHostname|.
+    // ChannelIDSigner's |GetKeyForHostname|.
     bool channel_id_enabled;
   };
 
@@ -119,10 +119,6 @@ class CryptoTestUtils {
   // ChannelIDSignerForTesting returns a ChannelIDSigner that generates keys
   // deterministically based on the hostname given in the Sign call.
   static ChannelIDSigner* ChannelIDSignerForTesting();
-
-  // ChannelIDKeyForHostname returns the ChannelID key that
-  // |ChannelIDSignerForTesting| will use for the given hostname.
-  static std::string ChannelIDKeyForHostname(const std::string& hostname);
 
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,

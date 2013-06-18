@@ -844,6 +844,10 @@ void QuicCryptoClientConfig::SetProofVerifier(ProofVerifier* verifier) {
   proof_verifier_.reset(verifier);
 }
 
+ChannelIDSigner* QuicCryptoClientConfig::channel_id_signer() const {
+  return channel_id_signer_.get();
+}
+
 void QuicCryptoClientConfig::SetChannelIDSigner(ChannelIDSigner* signer) {
   channel_id_signer_.reset(signer);
 }
