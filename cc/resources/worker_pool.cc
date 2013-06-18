@@ -262,6 +262,11 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
     running_tasks_.swap(new_running_tasks);
     ready_to_run_tasks_.swap(new_ready_to_run_tasks);
 
+    // If |ready_to_run_tasks_| is empty, it means we either have
+    // running tasks, or we have no pending tasks.
+    DCHECK(!ready_to_run_tasks_.empty() ||
+           (pending_tasks_.empty() || !running_tasks_.empty()));
+
     // If there is more work available, wake up worker thread.
     if (!ready_to_run_tasks_.empty())
       has_ready_to_run_tasks_cv_.Signal();

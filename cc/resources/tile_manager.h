@@ -115,6 +115,10 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   virtual void ScheduleTasks();
 
  private:
+  void OnImageDecodeTaskCompleted(
+      int layer_id,
+      skia::LazyPixelRef* pixel_ref,
+      bool was_canceled);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,

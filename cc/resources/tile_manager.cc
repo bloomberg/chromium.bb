@@ -646,7 +646,11 @@ RasterWorkerPool::Task TileManager::CreateImageDecodeTask(
   return RasterWorkerPool::CreateImageDecodeTask(
       pixel_ref,
       tile->layer_id(),
-      rendering_stats_instrumentation_);
+      rendering_stats_instrumentation_,
+      base::Bind(&TileManager::OnImageDecodeTaskCompleted,
+                 base::Unretained(this),
+                 tile->layer_id(),
+                 base::Unretained(pixel_ref)));
 }
 
 RasterTaskMetadata TileManager::GetRasterTaskMetadata(
@@ -712,6 +716,29 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
                  base::Passed(&resource),
                  mts.raster_mode),
       decode_tasks);
+}
+
+void TileManager::OnImageDecodeTaskCompleted(
+    int layer_id,
+    skia::LazyPixelRef* pixel_ref,
+    bool was_canceled) {
+  // If the task was canceled, we need to clean it up
+  // from |image_decode_tasks_|.
+  if (!was_canceled)
+    return;
+
+  LayerPixelRefTaskMap::iterator layer_it =
+      image_decode_tasks_.find(layer_id);
+
+  if (layer_it == image_decode_tasks_.end())
+    return;
+
+  PixelRefTaskMap& pixel_ref_tasks = layer_it->second;
+  PixelRefTaskMap::iterator task_it =
+      pixel_ref_tasks.find(pixel_ref->getGenerationID());
+
+  if (task_it != pixel_ref_tasks.end())
+    pixel_ref_tasks.erase(task_it);
 }
 
 void TileManager::OnRasterTaskCompleted(

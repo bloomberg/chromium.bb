@@ -115,7 +115,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
  public:
   class CC_EXPORT Task {
    public:
-    typedef base::Callback<void()> Reply;
+    typedef base::Callback<void(bool was_canceled)> Reply;
 
     class CC_EXPORT Set {
      public:
@@ -222,7 +222,8 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   static Task CreateImageDecodeTask(
       skia::LazyPixelRef* pixel_ref,
       int layer_id,
-      RenderingStatsInstrumentation* stats_instrumentation);
+      RenderingStatsInstrumentation* stats_instrumentation,
+      const Task::Reply& reply);
 
  protected:
   class RootTask {
