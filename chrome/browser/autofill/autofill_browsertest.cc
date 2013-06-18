@@ -229,12 +229,13 @@ class AutofillTest : public InProcessBrowserTest {
     // allows us to forward keyboard events to the popup directly.
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    AutofillManager* autofill_manager =
-        AutofillDriverImpl::FromWebContents(web_contents)->autofill_manager();
+    AutofillDriverImpl* autofill_driver =
+        AutofillDriverImpl::FromWebContents(web_contents);
+    AutofillManager* autofill_manager = autofill_driver->autofill_manager();
     if (autofill_manager->IsNativeUiEnabled()) {
-      external_delegate_.reset(
+      scoped_ptr<AutofillExternalDelegate> external_delegate(
           new TestAutofillExternalDelegate(web_contents, autofill_manager));
-      autofill_manager->SetExternalDelegate(external_delegate_.get());
+      autofill_driver->SetAutofillExternalDelegate(external_delegate.Pass());
     }
     autofill_manager->SetTestDelegate(&test_delegate_);
   }
@@ -472,7 +473,7 @@ class AutofillTest : public InProcessBrowserTest {
   void SendKeyToPopupAndWait(ui::KeyboardCode key) {
     // TODO(isherman): Remove this condition once the WebKit popup UI code is
     // removed.
-    if (!external_delegate_) {
+    if (!external_delegate()) {
       // When testing the WebKit-based UI, route all keys to the page.
       SendKeyToPageAndWait(key);
       return;
@@ -483,7 +484,7 @@ class AutofillTest : public InProcessBrowserTest {
     content::NativeWebKeyboardEvent event;
     event.windowsKeyCode = key;
     test_delegate_.Reset();
-    external_delegate_->keyboard_listener()->HandleKeyPressEvent(event);
+    external_delegate()->keyboard_listener()->HandleKeyPressEvent(event);
     test_delegate_.Wait();
   }
 
@@ -522,14 +523,18 @@ class AutofillTest : public InProcessBrowserTest {
   }
 
   TestAutofillExternalDelegate* external_delegate() {
-    return external_delegate_.get();
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    AutofillDriverImpl* autofill_driver =
+        AutofillDriverImpl::FromWebContents(web_contents);
+    return static_cast<TestAutofillExternalDelegate*>(
+        autofill_driver->autofill_external_delegate());
   }
 
   AutofillManagerTestDelegateImpl test_delegate_;
 
  private:
   net::TestURLFetcherFactory url_fetcher_factory_;
-  scoped_ptr<TestAutofillExternalDelegate> external_delegate_;
 };
 
 // http://crbug.com/150084

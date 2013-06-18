@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/browser/autofill_driver.h"
+#include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -23,7 +25,6 @@ class Message;
 namespace autofill {
 
 class AutofillContext;
-class AutofillExternalDelegate;
 class AutofillManagerDelegate;
 
 // Class that drives autofill flow in the browser process based on
@@ -44,6 +45,15 @@ class AutofillDriverImpl : public AutofillDriver,
   // AutofillDriver:
   virtual content::WebContents* GetWebContents() OVERRIDE;
 
+  AutofillExternalDelegate* autofill_external_delegate() {
+    return autofill_external_delegate_.get();
+  }
+
+  // Sets the external delegate to |delegate| both within this class and in the
+  // shared Autofill code. Takes ownership of |delegate|.
+  void SetAutofillExternalDelegate(
+      scoped_ptr<AutofillExternalDelegate> delegate);
+
   AutofillManager* autofill_manager() { return &autofill_manager_; }
 
  private:
@@ -60,6 +70,10 @@ class AutofillDriverImpl : public AutofillDriver,
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // AutofillExternalDelegate instance that this object instantiates in the
+  // case where the autofill native UI is enabled.
+  scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
 
   // AutofillManager instance via which this object drives the shared Autofill
   // code.

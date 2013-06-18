@@ -24,20 +24,7 @@
 using content::RenderViewHost;
 using WebKit::WebAutofillClient;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::AutofillExternalDelegate);
-
 namespace autofill {
-
-void AutofillExternalDelegate::CreateForWebContentsAndManager(
-    content::WebContents* web_contents,
-    AutofillManager* autofill_manager) {
-  if (FromWebContents(web_contents))
-    return;
-
-  web_contents->SetUserData(
-      UserDataKey(),
-      new AutofillExternalDelegate(web_contents, autofill_manager));
-}
 
 AutofillExternalDelegate::AutofillExternalDelegate(
     content::WebContents* web_contents,

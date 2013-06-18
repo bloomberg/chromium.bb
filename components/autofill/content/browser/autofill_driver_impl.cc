@@ -57,12 +57,8 @@ AutofillDriverImpl::AutofillDriverImpl(
     : content::WebContentsObserver(web_contents),
       autofill_manager_(this, delegate, app_locale, enable_download_manager) {
   if (enable_native_ui) {
-    // TODO(blundell): Eliminate AutofillExternalDelegate being a WCUD and
-    // transfer ownership of it to this class.
-    AutofillExternalDelegate::CreateForWebContentsAndManager(
-        web_contents, &autofill_manager_);
-    autofill_manager_.SetExternalDelegate(
-        AutofillExternalDelegate::FromWebContents(web_contents));
+    SetAutofillExternalDelegate(scoped_ptr<AutofillExternalDelegate>(
+        new AutofillExternalDelegate(web_contents, &autofill_manager_)));
   }
 }
 
@@ -82,6 +78,12 @@ void AutofillDriverImpl::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   // TODO(blundell): Move the logic of this method into this class.
   autofill_manager_.DidNavigateMainFrame(details, params);
+}
+
+void AutofillDriverImpl::SetAutofillExternalDelegate(
+    scoped_ptr<AutofillExternalDelegate> delegate) {
+  autofill_external_delegate_.reset(delegate.release());
+  autofill_manager_.SetExternalDelegate(autofill_external_delegate_.get());
 }
 
 }  // namespace autofill
