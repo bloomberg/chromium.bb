@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_toStartOf="@+id/selected_color_view_border"
         android:layout_centerVertical="true"
+        android:textColor="#33B5E5"
         android:ellipsize="end"
         android:singleLine="true" />
 
