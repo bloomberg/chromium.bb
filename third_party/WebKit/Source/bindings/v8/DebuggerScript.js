@@ -88,7 +88,7 @@ DebuggerScript.getInternalProperties = function(value)
         result.push({
             name: mirror.name(),
             value: mirror.value().value()
-        }); 
+        });
     }
     return result;
 }
@@ -227,6 +227,10 @@ DebuggerScript.stepOutOfFunction = function(execState)
     execState.prepareStep(Debug.StepAction.StepOut, 1);
 }
 
+// Returns array in form:
+//      [ 0, <v8_result_report> ] in case of success
+//   or [ 1, <general_error_message>, <compiler_message>, <line_number>, <column_number> ] in case of compile error, numbers are 1-based.
+// or throws exception with message.
 DebuggerScript.liveEditScriptSource = function(scriptId, newSource, preview)
 {
     var scripts = Debug.scripts();
@@ -241,7 +245,19 @@ DebuggerScript.liveEditScriptSource = function(scriptId, newSource, preview)
         throw("Script not found");
 
     var changeLog = [];
-    return Debug.LiveEdit.SetScriptSource(scriptToEdit, newSource, preview, changeLog);
+    try {
+        var result = Debug.LiveEdit.SetScriptSource(scriptToEdit, newSource, preview, changeLog);
+        return [0, result];
+    } catch (e) {
+        if (e instanceof Debug.LiveEdit.Failure && "details" in e) {
+            var details = e.details;
+            if (details.type === "liveedit_compile_error") {
+                var startPosition = details.position.start;
+                return [1, String(e), String(details.syntaxErrorMessage), Number(startPosition.line), Number(startPosition.column)];
+            }
+        }
+        throw e;
+    }
 }
 
 DebuggerScript.clearBreakpoints = function(execState, args)

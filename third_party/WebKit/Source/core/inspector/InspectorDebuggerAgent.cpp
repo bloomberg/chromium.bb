@@ -396,11 +396,11 @@ void InspectorDebuggerAgent::searchInContent(ErrorString* error, const String& s
         *error = "No script for id: " + scriptId;
 }
 
-void InspectorDebuggerAgent::setScriptSource(ErrorString* error, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<InspectorObject>& result)
+void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<InspectorObject>& result)
 {
     bool previewOnly = preview && *preview;
     ScriptObject resultObject;
-    if (!scriptDebugServer().setScriptSource(scriptId, newContent, previewOnly, error, &m_currentCallStack, &resultObject))
+    if (!scriptDebugServer().setScriptSource(scriptId, newContent, previewOnly, error, errorData, &m_currentCallStack, &resultObject))
         return;
     newCallFrames = currentCallFrames();
     RefPtr<InspectorObject> object = scriptToInspectorObject(resultObject);
