@@ -26,8 +26,7 @@ void FileStatusCallbackAdapter(
 
 void ReadMetadataCallbackAdapter(
     WebKit::WebFileSystemCallbacks* callbacks,
-    const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path);
+    const base::PlatformFileInfo& file_info);
 
 void CreateSnapshotFileCallbackAdapter(
     WebKit::WebFileSystemCallbacks* callbacks,

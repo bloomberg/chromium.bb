@@ -505,8 +505,7 @@ class PluginDelegate {
       const std::vector<fileapi::DirectoryEntry>& entries,
       bool has_more)> ReadDirectoryCallback;
   typedef base::Callback<void(
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path)> MetadataCallback;
+      const base::PlatformFileInfo& file_info)> MetadataCallback;
 
   virtual bool MakeDirectory(
       const GURL& path,

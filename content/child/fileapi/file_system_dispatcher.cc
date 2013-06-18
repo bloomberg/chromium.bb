@@ -35,6 +35,13 @@ class FileSystemDispatcher::CallbackDispatcher {
     dispatcher->error_callback_ = error_callback;
     return dispatcher;
   }
+  static CallbackDispatcher* Create(const CreateSnapshotFileCallback& callback,
+                                    const StatusCallback& error_callback) {
+    CallbackDispatcher* dispatcher = new CallbackDispatcher;
+    dispatcher->snapshot_callback_ = callback;
+    dispatcher->error_callback_ = error_callback;
+    return dispatcher;
+  }
   static CallbackDispatcher* Create(const ReadDirectoryCallback& callback,
                                     const StatusCallback& error_callback) {
     CallbackDispatcher* dispatcher = new CallbackDispatcher;
@@ -75,15 +82,14 @@ class FileSystemDispatcher::CallbackDispatcher {
   }
 
   void DidReadMetadata(
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path) {
-    metadata_callback_.Run(file_info, platform_path);
+      const base::PlatformFileInfo& file_info) {
+    metadata_callback_.Run(file_info);
   }
 
   void DidCreateSnapshotFile(
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path) {
-    metadata_callback_.Run(file_info, platform_path);
+    snapshot_callback_.Run(file_info, platform_path);
   }
 
   void DidReadDirectory(
@@ -112,6 +118,7 @@ class FileSystemDispatcher::CallbackDispatcher {
 
   StatusCallback status_callback_;
   MetadataCallback metadata_callback_;
+  CreateSnapshotFileCallback snapshot_callback_;
   ReadDirectoryCallback directory_callback_;
   OpenFileSystemCallback filesystem_callback_;
   WriteCallback write_callback_;
@@ -406,11 +413,10 @@ void FileSystemDispatcher::OnDidSucceed(int request_id) {
 }
 
 void FileSystemDispatcher::OnDidReadMetadata(
-    int request_id, const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path) {
+    int request_id, const base::PlatformFileInfo& file_info) {
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
-  dispatcher->DidReadMetadata(file_info, platform_path);
+  dispatcher->DidReadMetadata(file_info);
   dispatchers_.Remove(request_id);
 }
 

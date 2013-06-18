@@ -37,9 +37,10 @@ class FileSystemDispatcher : public IPC::Listener {
  public:
   typedef base::Callback<void(base::PlatformFileError error)> StatusCallback;
   typedef base::Callback<void(
+      const base::PlatformFileInfo& file_info)> MetadataCallback;
+  typedef base::Callback<void(
       const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path)> MetadataCallback;
-  typedef MetadataCallback CreateSnapshotFileCallback;
+      const base::FilePath& platform_path)> CreateSnapshotFileCallback;
   typedef base::Callback<void(
       const std::vector<fileapi::DirectoryEntry>& entries,
       bool has_more)> ReadDirectoryCallback;
@@ -132,8 +133,7 @@ class FileSystemDispatcher : public IPC::Listener {
                            const GURL& root);
   void OnDidSucceed(int request_id);
   void OnDidReadMetadata(int request_id,
-                         const base::PlatformFileInfo& file_info,
-                         const base::FilePath& platform_path);
+                         const base::PlatformFileInfo& file_info);
   void OnDidCreateSnapshotFile(int request_id,
                                const base::PlatformFileInfo& file_info,
                                const base::FilePath& platform_path);

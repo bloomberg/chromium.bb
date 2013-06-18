@@ -33,10 +33,9 @@ IPC_MESSAGE_CONTROL3(FileSystemMsg_DidOpenFileSystem,
 // WebFileSystem response messages.
 IPC_MESSAGE_CONTROL1(FileSystemMsg_DidSucceed,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL3(FileSystemMsg_DidReadMetadata,
+IPC_MESSAGE_CONTROL2(FileSystemMsg_DidReadMetadata,
                      int /* request_id */,
-                     base::PlatformFileInfo,
-                     base::FilePath /* true platform path, where possible */)
+                     base::PlatformFileInfo)
 IPC_MESSAGE_CONTROL3(FileSystemMsg_DidCreateSnapshotFile,
                      int /* request_id */,
                      base::PlatformFileInfo,

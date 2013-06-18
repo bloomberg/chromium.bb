@@ -155,8 +155,7 @@ void DidReadMetadata(
     scoped_refptr< ::ppapi::TrackedCallback> callback,
     linked_ptr<PP_FileInfo> info,
     PP_FileSystemType file_system_type,
-    const base::PlatformFileInfo& file_info,
-    const base::FilePath& unused) {
+    const base::PlatformFileInfo& file_info) {
   if (!TrackedCallback::IsPending(callback))
     return;
 
