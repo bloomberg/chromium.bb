@@ -203,6 +203,10 @@ bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorTyp
 
 } // namespace InspectorInstrumentation
 
+InstrumentingAgents* instrumentationForPage(Page*);
+
+InstrumentingAgents* instrumentationForWorkerContext(WorkerContext*);
+
 } // namespace WebCore
 
 // This file will soon be generated

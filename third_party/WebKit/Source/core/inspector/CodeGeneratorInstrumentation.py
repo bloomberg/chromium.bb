@@ -83,6 +83,7 @@ template_cpp = string.Template("""// Code generated from InspectorInstrumentatio
 ${includes}
 
 namespace WebCore {
+${extra_definitions}
 
 namespace InspectorInstrumentation {
 $methods
@@ -107,6 +108,61 @@ template_agent_call_timeline_returns_cookie = string.Template("""
         if (agent->${name}(${params_agent}))
             timelineAgentId = agent->id();
     }""")
+
+
+template_instrumenting_agents_h = string.Template("""// Code generated from InspectorInstrumentation.idl
+
+#ifndef InstrumentingAgentsInl_h
+#define InstrumentingAgentsInl_h
+
+#include <wtf/FastAllocBase.h>
+#include <wtf/Noncopyable.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
+
+namespace WebCore {
+
+${forward_list}
+
+class InstrumentingAgents : public RefCounted<InstrumentingAgents> {
+    WTF_MAKE_NONCOPYABLE(InstrumentingAgents);
+    WTF_MAKE_FAST_ALLOCATED;
+public:
+    static PassRefPtr<InstrumentingAgents> create()
+    {
+        return adoptRef(new InstrumentingAgents());
+    }
+    ~InstrumentingAgents() { }
+    void reset();
+
+${accessor_list}
+
+private:
+    InstrumentingAgents();
+
+${member_list}
+};
+
+}
+
+#endif // !defined(InstrumentingAgentsInl_h)
+""")
+
+template_instrumenting_agent_accessor = string.Template("""
+    ${class_name}* ${getter_name}() const { return ${member_name}; }
+    void set${class_name}(${class_name}* agent) { ${member_name} = agent; }""")
+
+template_instrumenting_agents_cpp = string.Template("""
+InstrumentingAgents::InstrumentingAgents()
+    : $init_list
+{
+}
+
+void InstrumentingAgents::reset()
+{
+    $reset_list
+}""")
+
 
 
 def match_and_consume(pattern, source):
@@ -269,8 +325,7 @@ class Method:
             impl_lines="".join(body_lines)))
 
     def generate_agent_call(self, agent):
-        agent_class = agent_class_name(agent)
-        agent_getter = agent_class[0].lower() + agent_class[1:]
+        agent_class, agent_getter = agent_getter_signature(agent)
 
         leading_param_name = self.params_impl[0].name
         if not self.accepts_cookie:
@@ -354,8 +409,60 @@ def agent_class_name(agent):
     return "Inspector%sAgent" % agent
 
 
+def agent_getter_signature(agent):
+    agent_class = agent_class_name(agent)
+    return agent_class, agent_class[0].lower() + agent_class[1:]
+
+
+def include_header(name):
+    return "#include \"%s.h\"" % name
+
+
 def include_inspector_header(name):
-    return "#include \"core/inspector/%s.h\"" % name
+    return include_header("core/inspector/" + name)
+
+
+def generate_instrumenting_agents(used_agents):
+    agents = list(used_agents)
+
+    forward_list = []
+    accessor_list = []
+    member_list = []
+    init_list = []
+    reset_list = []
+
+    for agent in agents:
+        class_name, getter_name = agent_getter_signature(agent)
+        member_name = "m_" + getter_name
+
+        forward_list.append("class %s;" % class_name)
+        accessor_list.append(template_instrumenting_agent_accessor.substitute(
+            None,
+            class_name=class_name,
+            getter_name=getter_name,
+            member_name=member_name))
+        member_list.append("    %s* %s;" % (class_name, member_name))
+        init_list.append("%s(0)" % member_name)
+        reset_list.append("%s = 0;" % member_name)
+
+    forward_list.sort()
+    accessor_list.sort()
+    member_list.sort()
+    init_list.sort()
+    reset_list.sort()
+
+    header_lines = template_instrumenting_agents_h.substitute(
+        None,
+        forward_list="\n".join(forward_list),
+        accessor_list="\n".join(accessor_list),
+        member_list="\n".join(member_list))
+
+    cpp_lines = template_instrumenting_agents_cpp.substitute(
+        None,
+        init_list="\n    , ".join(init_list),
+        reset_list="\n    ".join(reset_list))
+
+    return header_lines, cpp_lines
 
 
 def generate(input_path, output_h_dir, output_cpp_dir):
@@ -367,21 +474,27 @@ def generate(input_path, output_h_dir, output_cpp_dir):
     cpp_lines = []
     used_agents = set()
     for f in files:
-        file_name = f.header_name + ".h"
-        cpp_includes.append("#include \"%s\"" % file_name)
+        cpp_includes.append(include_header(f.header_name))
 
-        fout = open(output_h_dir + "/" + file_name, "w")
+        fout = open(output_h_dir + "/" + f.header_name + ".h", "w")
         fout.write(f.generate(cpp_lines, used_agents))
         fout.close()
 
     for agent in used_agents:
         cpp_includes.append(include_inspector_header(agent_class_name(agent)))
-    cpp_includes.append(include_inspector_header("InstrumentingAgents"))
+    cpp_includes.append(include_header("InstrumentingAgentsInl"))
     cpp_includes.sort()
+
+    instrumenting_agents_header, instrumenting_agents_cpp = generate_instrumenting_agents(used_agents)
+
+    fout = open(output_h_dir + "/" + "InstrumentingAgentsInl.h", "w")
+    fout.write(instrumenting_agents_header)
+    fout.close()
 
     fout = open(output_cpp_dir + "/InspectorInstrumentationImpl.cpp", "w")
     fout.write(template_cpp.substitute(None,
                                        includes="\n".join(cpp_includes),
+                                       extra_definitions=instrumenting_agents_cpp,
                                        methods="\n".join(cpp_lines)))
     fout.close()
 

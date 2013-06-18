@@ -34,6 +34,7 @@
 #include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorConsoleAgent.h"
+#include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
@@ -41,6 +42,7 @@
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/cache/CachedResourceInitiatorInfo.h"
 #include "core/workers/WorkerContext.h"
 
@@ -241,6 +243,21 @@ const char LayerId[] = "layerId";
 const char PageId[] = "pageId";
 const char NodeId[] = "nodeId";
 };
+
+InstrumentingAgents* instrumentationForPage(Page* page)
+{
+    ASSERT(isMainThread());
+    if (InspectorController* controller = page->inspectorController())
+        return controller->m_instrumentingAgents.get();
+    return 0;
+}
+
+InstrumentingAgents* instrumentationForWorkerContext(WorkerContext* workerContext)
+{
+    if (WorkerInspectorController* controller = workerContext->workerInspectorController())
+        return controller->m_instrumentingAgents.get();
+    return 0;
+}
 
 } // namespace WebCore
 

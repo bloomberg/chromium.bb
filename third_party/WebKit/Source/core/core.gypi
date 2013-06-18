@@ -986,7 +986,6 @@
             'inspector/InspectorWorkerResource.h',
             'inspector/InspectorWorkerAgent.cpp',
             'inspector/InspectorWorkerAgent.h',
-            'inspector/InstrumentingAgents.cpp',
             'inspector/InstrumentingAgents.h',
             'inspector/JavaScriptCallFrame.cpp',
             'inspector/JavaScriptCallFrame.h',

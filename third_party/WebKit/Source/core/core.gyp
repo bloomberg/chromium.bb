@@ -123,6 +123,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorDatabaseInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverridesInl.h',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/InstrumentingAgentsInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorInstrumentationImpl.cpp',
           ],
           'action': [
@@ -309,6 +310,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorDatabaseInstrumentationInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorOverridesInl.h',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/InstrumentingAgentsInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorInstrumentationImpl.cpp',
 
         # Additional .cpp files for SVG.
