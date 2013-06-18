@@ -284,9 +284,10 @@ InjectedScript.prototype = {
     /**
      * @param {string} objectId
      * @param {boolean} ownProperties
+     * @param {boolean} accessorPropertiesOnly
      * @return {Array.<RuntimeAgent.PropertyDescriptor>|boolean}
      */
-    getProperties: function(objectId, ownProperties)
+    getProperties: function(objectId, ownProperties, accessorPropertiesOnly)
     {
         var parsedObjectId = this._parseObjectId(objectId);
         var object = this._objectForId(parsedObjectId);
@@ -294,7 +295,7 @@ InjectedScript.prototype = {
 
         if (!this._isDefined(object))
             return false;
-        var descriptors = this._propertyDescriptors(object, ownProperties);
+        var descriptors = this._propertyDescriptors(object, ownProperties, accessorPropertiesOnly);
 
         // Go over properties, wrap object values.
         for (var i = 0; i < descriptors.length; ++i) {
@@ -383,9 +384,10 @@ InjectedScript.prototype = {
     /**
      * @param {Object} object
      * @param {boolean} ownProperties
+     * @param {boolean} accessorPropertiesOnly
      * @return {Array.<Object>}
      */
-    _propertyDescriptors: function(object, ownProperties)
+    _propertyDescriptors: function(object, ownProperties, accessorPropertiesOnly)
     {
         var descriptors = [];
         var nameProcessed = {};
@@ -400,7 +402,10 @@ InjectedScript.prototype = {
                 try {
                     nameProcessed[name] = true;
                     var descriptor = Object.getOwnPropertyDescriptor(/** @type {!Object} */ (o), name);
-                    if (!descriptor) {
+                    if (descriptor) {
+                        if (accessorPropertiesOnly && !("get" in descriptor || "set" in descriptor))
+                            continue;
+                    } else {
                         // Not all bindings provide proper descriptors. Fall back to the writable, configurable property.
                         try {
                             descriptor = { name: name, value: o[name], writable: false, configurable: false, enumerable: false};

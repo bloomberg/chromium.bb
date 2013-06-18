@@ -13,13 +13,17 @@ Properties of Not own properties
   b own no value, getter, setter
   c inherited number 4
   constructor inherited function undefined
-  d inherited no value, getter, setter
+  d inherited no value, getter
   hasOwnProperty inherited function undefined
   isPrototypeOf inherited function undefined
   propertyIsEnumerable inherited function undefined
   toLocaleString inherited function undefined
   toString inherited function undefined
   valueOf inherited function undefined
+Properties of Accessor only properties
+  __proto__ own object undefined
+  b own no value, getter, setter
+  d own no value, setter
 Properties of array
   __proto__ own object undefined
   0 own string red
