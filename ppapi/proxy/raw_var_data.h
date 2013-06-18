@@ -65,8 +65,6 @@ class PPAPI_PROXY_EXPORT RawVarDataGraph {
 
   // Write the graph to a message using the given HandleWriter.
   void Write(IPC::Message* m, const HandleWriter& handle_writer);
-  // Write the graph to a message using the default handle writer.
-  void Write(IPC::Message* m);
 
   // Create a RawVarDataGraph from the given message.
   static scoped_ptr<RawVarDataGraph> Read(const IPC::Message* m,

@@ -18,13 +18,20 @@
 namespace ppapi {
 namespace proxy {
 
+namespace {
+void DefaultHandleWriter(IPC::Message* m, const SerializedHandle& handle) {
+  IPC::ParamTraits<SerializedHandle>::Write(m, handle);
+}
+}  // namespace
+
 // SerializedVar::Inner --------------------------------------------------------
 
 SerializedVar::Inner::Inner()
     : serialization_rules_(NULL),
       var_(PP_MakeUndefined()),
       instance_(0),
-      cleanup_mode_(CLEANUP_NONE) {
+      cleanup_mode_(CLEANUP_NONE),
+      is_valid_var_(true) {
 #ifndef NDEBUG
   has_been_serialized_ = false;
   has_been_deserialized_ = false;
@@ -107,7 +114,24 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
   DCHECK(!has_been_serialized_);
   has_been_serialized_ = true;
 #endif
-  RawVarDataGraph::Create(var_, instance_)->Write(m);
+  scoped_ptr<RawVarDataGraph> data = RawVarDataGraph::Create(var_, instance_);
+  if (data) {
+    m->WriteBool(true);  // Success.
+    data->Write(m, base::Bind(&DefaultHandleWriter));
+  } else {
+    m->WriteBool(false);  // Failure.
+  }
+}
+
+void SerializedVar::Inner::WriteDataToMessage(
+    IPC::Message* m,
+    const HandleWriter& handle_writer) const {
+  if (raw_var_data_) {
+    m->WriteBool(true);  // Success.
+    raw_var_data_->Write(m, handle_writer);
+  } else {
+    m->WriteBool(false);  // Failure.
+  }
 }
 
 bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
@@ -125,8 +149,15 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
 #endif
   // When reading, the dispatcher should be set when we get a Deserialize
   // call (which will supply a dispatcher).
-  raw_var_data_ = RawVarDataGraph::Read(m, iter);
-  return raw_var_data_.get() != NULL;
+  if (!m->ReadBool(iter, &is_valid_var_))
+      return false;
+  if (is_valid_var_) {
+    raw_var_data_ = RawVarDataGraph::Read(m, iter);
+    if (!raw_var_data_)
+      return false;
+  }
+
+  return true;
 }
 
 void SerializedVar::Inner::SetCleanupModeToEndSendPassRef() {
