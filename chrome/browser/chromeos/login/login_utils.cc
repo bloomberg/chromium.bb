@@ -246,6 +246,11 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
   if (browser_shutdown::IsTryingToQuit())
     return;
 
+  if (!UserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
+    UserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(profile);
+    return;
+  }
+
   CommandLine user_flags(CommandLine::NO_PROGRAM);
   about_flags::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
   about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags);
@@ -258,11 +263,6 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
     DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
         UserManager::Get()->GetActiveUser()->email(), flags);
     chrome::ExitCleanly();
-    return;
-  }
-
-  if (!UserManager::Get()->GetCurrentUserFlow()->ShouldLaunchBrowser()) {
-    UserManager::Get()->GetCurrentUserFlow()->LaunchExtraSteps(profile);
     return;
   }
 
