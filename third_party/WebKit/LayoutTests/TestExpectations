@@ -1817,3 +1817,5 @@ crbug.com/250895 svg/dom/SVGLengthList-removeItem.xhtml [ Failure ImageOnlyFailu
 crbug.com/250895 svg/dom/SVGLengthList-replaceItem.xhtml [ Failure ImageOnlyFailure ]
 crbug.com/250895 svg/dom/SVGPathSegList-clear-and-initialize.xhtml [ Failure ImageOnlyFailure ]
 crbug.com/250895 fast/dynamic/015.html [ Failure ]
+
+crbug.com/251079 [ Debug ] fast/parser/fragment-parser.html [ Pass Timeout ]
