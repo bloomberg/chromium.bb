@@ -112,7 +112,13 @@ TEST_F(NotificationAudioControllerTest, PlaySoundTwice) {
   EXPECT_EQ(1u, GetHandlersSize());
 }
 
-TEST_F(NotificationAudioControllerTest, MultiProfiles) {
+#if defined(THREAD_SANITIZER)
+// This test fails under ThreadSanitizer v2, see http://crbug.com/247440.
+#define MAYBE_MultiProfiles DISABLED_MultiProfiles
+#else
+#define MAYBE_MultiProfiles MultiProfiles
+#endif
+TEST_F(NotificationAudioControllerTest, MAYBE_MultiProfiles) {
   TestingProfile profile2;
 
   notification_audio_controller()->RequestPlayNotificationSound(
