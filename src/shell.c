@@ -402,8 +402,10 @@ shell_configuration(struct desktop_shell *shell)
 	weston_config_section_get_string(section,
 					 "binding-modifier", &s, "super");
 	shell->binding_modifier = get_modifier(s);
+	free(s);
 	weston_config_section_get_string(section, "animation", &s, "none");
 	shell->win_animation_type = get_animation_type(s);
+	free(s);
 	weston_config_section_get_uint(section, "num-workspaces",
 				       &shell->workspaces.num,
 				       DEFAULT_NUM_WORKSPACES);
