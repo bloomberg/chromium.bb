@@ -324,6 +324,11 @@
             'test/base/view_event_test_base.h',
           ],
         }],
+        ['use_ash==1', {
+          'sources': [
+            '../ash/drag_drop/drag_drop_interactive_uitest.cc',
+          ],
+        }],
         ['OS=="linux" and toolkit_views==1', {
           'sources!': [
             # TODO(port)
