@@ -2884,7 +2884,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(UpdateSearchState(active_tab));
-  EXPECT_EQ(1, on_most_visited_change_calls_);
+  EXPECT_EQ(2, on_most_visited_change_calls_);
 
   // Activate the previous tab.
   browser()->tab_strip_model()->ActivateTabAt(0, false);
@@ -2895,5 +2895,5 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
   // Confirm that new tab got no onmostvisitedchanged event.
   active_tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(UpdateSearchState(active_tab));
-  EXPECT_EQ(1, on_most_visited_change_calls_);
+  EXPECT_EQ(2, on_most_visited_change_calls_);
 }

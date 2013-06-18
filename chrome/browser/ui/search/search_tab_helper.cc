@@ -90,6 +90,7 @@ void SearchTabHelper::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
   UpdateMode();
+  last_known_most_visited_items_.clear();
 }
 
 bool SearchTabHelper::OnMessageReceived(const IPC::Message& message) {
