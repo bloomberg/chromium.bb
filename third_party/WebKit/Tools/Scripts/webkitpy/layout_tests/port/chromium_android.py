@@ -139,6 +139,7 @@ WEBKIT_PLATFORM_RESOURCES_TO_PUSH = [
 ]
 
 MD5SUM_DEVICE_FILE_NAME = 'md5sum_bin'
+MD5SUM_HOST_FILE_NAME = 'md5sum_bin_host'
 MD5SUM_DEVICE_PATH = '/data/local/tmp/' + MD5SUM_DEVICE_FILE_NAME
 
 # Shared pieces of information for the two supported test runners.
@@ -353,6 +354,9 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
     def path_to_md5sum(self):
         return self._build_path(MD5SUM_DEVICE_FILE_NAME)
 
+    def path_to_md5sum_host(self):
+        return self._build_path(MD5SUM_HOST_FILE_NAME)
+
     # Overridden public methods.
     def buildbot_archives_baselines(self):
         return False
@@ -397,6 +401,7 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
     def check_build(self, needs_http):
         result = super(ChromiumAndroidPort, self).check_build(needs_http)
         result = self._check_file_exists(self.path_to_md5sum(), 'md5sum utility') and result
+        result = self._check_file_exists(self.path_to_md5sum_host(), 'md5sum host utility') and result
         result = self._check_file_exists(self.path_to_forwarder(), 'forwarder utility') and result
         if not result:
             _log.error('For complete Android build requirements, please see:')
