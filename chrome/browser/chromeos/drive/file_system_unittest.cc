@@ -11,9 +11,11 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
@@ -26,8 +28,7 @@
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,32 +43,29 @@ namespace {
 const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
 
 // Counts the number of invocation, and if it increased up to |expected_counter|
-// quits the current message loop.
+// quits the current message loop by calling |quit|.
 void AsyncInitializationCallback(
-    int* counter, int expected_counter, base::MessageLoop* message_loop,
+    int* counter, int expected_counter, const base::Closure& quit,
     FileError error, scoped_ptr<ResourceEntry> entry) {
   if (error != FILE_ERROR_OK || !entry) {
     // If we hit an error case, quit the message loop immediately.
     // Then the expectation in the test case can find it because the actual
     // value of |counter| is different from the expected one.
-    message_loop->Quit();
+    quit.Run();
     return;
   }
 
   (*counter)++;
   if (*counter >= expected_counter)
-    message_loop->Quit();
+    quit.Run();
 }
 
 }  // namespace
 
 class FileSystemTest : public testing::Test {
  protected:
-  FileSystemTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
+    blocking_task_runner_ = base::MessageLoopProxy::current();
     profile_.reset(new TestingProfile);
 
     // The fake object will be manually deleted in TearDown().
@@ -81,11 +79,6 @@ class FileSystemTest : public testing::Test {
 
     scheduler_.reset(new JobScheduler(profile_.get(),
                                       fake_drive_service_.get()));
-
-    scoped_refptr<base::SequencedWorkerPool> pool =
-        content::BrowserThread::GetBlockingPool();
-    blocking_task_runner_ =
-        pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
     cache_.reset(new internal::FileCache(util::GetCacheRootPath(profile_.get()),
                                          blocking_task_runner_.get(),
@@ -337,8 +330,7 @@ class FileSystemTest : public testing::Test {
     return true;
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
 
@@ -357,15 +349,17 @@ TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
+  base::RunLoop loop;
+
   int counter = 0;
   const GetResourceEntryCallback& callback = base::Bind(
-      &AsyncInitializationCallback, &counter, 2, &message_loop_);
+      &AsyncInitializationCallback, &counter, 2, loop.QuitClosure());
 
   file_system_->GetResourceEntryByPath(
       base::FilePath(FILE_PATH_LITERAL("drive/root")), callback);
   file_system_->GetResourceEntryByPath(
       base::FilePath(FILE_PATH_LITERAL("drive/root")), callback);
-  message_loop_.Run();  // Wait to get our result
+  loop.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 
   // Although GetResourceEntryByPath() was called twice, the resource list

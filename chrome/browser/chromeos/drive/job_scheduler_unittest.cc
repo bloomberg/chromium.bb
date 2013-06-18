@@ -17,7 +17,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -101,8 +101,7 @@ class JobListLogger : public JobListObserver {
 class JobSchedulerTest : public testing::Test {
  public:
   JobSchedulerTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        profile_(new TestingProfile) {
+      : profile_(new TestingProfile) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -161,8 +160,7 @@ class JobSchedulerTest : public testing::Test {
     ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<FakeNetworkChangeNotifier> fake_network_change_notifier_;

@@ -6,9 +6,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
 #include "chrome/browser/google_apis/request_registry.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,11 +37,7 @@ class MockRequest : public RequestRegistry::Request,
 
 class RequestRegistryTest : public testing::Test {
  protected:
-  RequestRegistryTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(RequestRegistryTest, OneSuccess) {

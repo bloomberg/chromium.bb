@@ -5,12 +5,9 @@
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/dummy_file_system.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -72,13 +69,11 @@ class TestFileSystem : public DummyFileSystem {
 class FileWriteHelperTest : public testing::Test {
  public:
   FileWriteHelperTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        test_file_system_(new TestFileSystem) {
+      : test_file_system_(new TestFileSystem) {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestFileSystem> test_file_system_;
 };
 

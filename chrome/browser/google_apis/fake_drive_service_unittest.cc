@@ -9,7 +9,7 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,8 +17,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_requests.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -27,10 +26,6 @@ namespace {
 
 class FakeDriveServiceTest : public testing::Test {
  protected:
-  FakeDriveServiceTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   // Returns the resource entry that matches |resource_id|.
   scoped_ptr<ResourceEntry> FindEntry(const std::string& resource_id) {
     GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -38,7 +33,7 @@ class FakeDriveServiceTest : public testing::Test {
     fake_service_.GetResourceEntry(
         resource_id,
         test_util::CreateCopyResultCallback(&error, &resource_entry));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return resource_entry.Pass();
   }
 
@@ -58,7 +53,7 @@ class FakeDriveServiceTest : public testing::Test {
         parent_resource_id,
         directory_name,
         test_util::CreateCopyResultCallback(&error, &resource_entry));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return error == HTTP_CREATED;
   }
 
@@ -82,12 +77,11 @@ class FakeDriveServiceTest : public testing::Test {
     scoped_ptr<AboutResource> about_resource;
     fake_service_.GetAboutResource(
         test_util::CreateCopyResultCallback(&error, &about_resource));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     return about_resource->largest_change_id();
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   FakeDriveService fake_service_;
 };
 
@@ -103,7 +97,7 @@ TEST_F(FakeDriveServiceTest, GetAllResourceList) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetAllResourceList(
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -121,7 +115,7 @@ TEST_F(FakeDriveServiceTest, GetAllResourceList_Offline) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetAllResourceList(
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_list);
@@ -136,7 +130,7 @@ TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InRootDirectory) {
   fake_service_.GetResourceListInDirectory(
       fake_service_.GetRootResourceId(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -154,7 +148,7 @@ TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_InNonRootDirectory) {
   fake_service_.GetResourceListInDirectory(
       "folder:1_folder_resource_id",
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -174,7 +168,7 @@ TEST_F(FakeDriveServiceTest, GetResourceListInDirectory_Offline) {
   fake_service_.GetResourceListInDirectory(
       fake_service_.GetRootResourceId(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_list);
@@ -189,7 +183,7 @@ TEST_F(FakeDriveServiceTest, Search) {
   fake_service_.Search(
       "File",  // search_query
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -207,7 +201,7 @@ TEST_F(FakeDriveServiceTest, Search_WithAttribute) {
   fake_service_.Search(
       "title:1.txt",  // search_query
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -225,7 +219,7 @@ TEST_F(FakeDriveServiceTest, Search_MultipleQueries) {
   fake_service_.Search(
       "Directory 1",  // search_query
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -235,7 +229,7 @@ TEST_F(FakeDriveServiceTest, Search_MultipleQueries) {
   fake_service_.Search(
       "\"Directory 1\"",  // search_query
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -253,7 +247,7 @@ TEST_F(FakeDriveServiceTest, Search_Offline) {
   fake_service_.Search(
       "Directory 1",  // search_query
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_list);
@@ -269,7 +263,7 @@ TEST_F(FakeDriveServiceTest, SearchByTitle) {
       "1.txt",  // title
       fake_service_.GetRootResourceId(),  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -288,7 +282,7 @@ TEST_F(FakeDriveServiceTest, SearchByTitle_EmptyDirectoryResourceId) {
       "1.txt",  // title
       "",  // directory resource id
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -308,7 +302,7 @@ TEST_F(FakeDriveServiceTest, SearchByTitle_Offline) {
       "Directory 1",  // title
       fake_service_.GetRootResourceId(),  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_list);
@@ -327,7 +321,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_NoNewEntries) {
   fake_service_.GetChangeList(
       654321 + 1,  // start_changestamp
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -356,7 +350,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_WithNewEntry) {
   fake_service_.GetChangeList(
       654321 + 1,  // start_changestamp
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -376,7 +370,7 @@ TEST_F(FakeDriveServiceTest, GetChangeList_Offline) {
   fake_service_.GetChangeList(
       654321,  // start_changestamp
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_list);
@@ -391,7 +385,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
   scoped_ptr<ResourceList> resource_list;
   fake_service_.GetAllResourceList(
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
 
@@ -413,7 +407,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
   fake_service_.ContinueGetResourceList(
       next_url,
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -431,7 +425,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetAllResourceList) {
   fake_service_.ContinueGetResourceList(
       next_url,
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -451,7 +445,7 @@ TEST_F(FakeDriveServiceTest,
   fake_service_.GetResourceListInDirectory(
       fake_service_.GetRootResourceId(),
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
 
@@ -473,7 +467,7 @@ TEST_F(FakeDriveServiceTest,
   fake_service_.ContinueGetResourceList(
       next_url,
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -491,7 +485,7 @@ TEST_F(FakeDriveServiceTest,
   fake_service_.ContinueGetResourceList(
       next_url,
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -510,7 +504,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_Search) {
   fake_service_.Search(
       "File",  // search_query
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
 
@@ -531,7 +525,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_Search) {
   fake_service_.ContinueGetResourceList(
       next_url,
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -561,7 +555,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
   fake_service_.GetChangeList(
       654321 + 1,  // start_changestamp
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
 
@@ -583,7 +577,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
   fake_service_.ContinueGetResourceList(
       next_url,
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -601,7 +595,7 @@ TEST_F(FakeDriveServiceTest, ContinueGetResourceList_GetChangeList) {
   fake_service_.ContinueGetResourceList(
       next_url,
       test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -618,7 +612,7 @@ TEST_F(FakeDriveServiceTest, GetAboutResource) {
   scoped_ptr<AboutResource> about_resource;
   fake_service_.GetAboutResource(
       test_util::CreateCopyResultCallback(&error, &about_resource));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
@@ -638,7 +632,7 @@ TEST_F(FakeDriveServiceTest, GetAboutResource_Offline) {
   scoped_ptr<AboutResource> about_resource;
   fake_service_.GetAboutResource(
       test_util::CreateCopyResultCallback(&error, &about_resource));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(about_resource);
@@ -652,7 +646,7 @@ TEST_F(FakeDriveServiceTest, GetAppList) {
   scoped_ptr<AppList> app_list;
   fake_service_.GetAppList(
       test_util::CreateCopyResultCallback(&error, &app_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
@@ -668,7 +662,7 @@ TEST_F(FakeDriveServiceTest, GetAppList_Offline) {
   scoped_ptr<AppList> app_list;
   fake_service_.GetAppList(
       test_util::CreateCopyResultCallback(&error, &app_list));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(app_list);
@@ -684,7 +678,7 @@ TEST_F(FakeDriveServiceTest, GetResourceEntry_ExistingFile) {
   fake_service_.GetResourceEntry(
       kResourceId,
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_entry);
@@ -702,7 +696,7 @@ TEST_F(FakeDriveServiceTest, GetResourceEntry_NonexistingFile) {
   fake_service_.GetResourceEntry(
       kResourceId,
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
   ASSERT_FALSE(resource_entry);
@@ -719,7 +713,7 @@ TEST_F(FakeDriveServiceTest, GetResourceEntry_Offline) {
   fake_service_.GetResourceEntry(
       kResourceId,
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_entry);
@@ -736,7 +730,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   fake_service_.DeleteResource("file:2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   // Resource "file:2_file_resource_id" should be gone now.
@@ -751,7 +745,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
   fake_service_.DeleteResource("file:nonexisting_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
@@ -765,7 +759,7 @@ TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
   fake_service_.DeleteResource("file:2_file_resource_id",
                                std::string(),  // etag
                                test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
@@ -793,7 +787,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
       get_content_callback.callback(),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &download_progress_values));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(output_file_path, kOutputFilePath);
@@ -827,7 +821,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
       test_util::CreateCopyResultCallback(&error, &output_file_path),
       GetContentCallback(),
       ProgressCallback());
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
@@ -852,7 +846,7 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
       test_util::CreateCopyResultCallback(&error, &output_file_path),
       GetContentCallback(),
       ProgressCallback());
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
@@ -874,7 +868,7 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
       kParentResourceId,
       "new name",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_entry);
@@ -899,7 +893,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_NonExisting) {
       "folder:1_folder_resource_id",
       "new name",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
@@ -920,7 +914,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_EmptyParentResourceId) {
       std::string(),
       "new name",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_entry);
@@ -946,7 +940,7 @@ TEST_F(FakeDriveServiceTest, CopyResource_Offline) {
       "folder:1_folder_resource_id",
       "new name",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_entry);
@@ -967,7 +961,7 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_Existing) {
       kResourceId,
       "new name",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_entry);
@@ -990,7 +984,7 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_NonExisting) {
       kResourceId,
       "new name",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
@@ -1007,7 +1001,7 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_Offline) {
       kResourceId,
       "new name",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_entry);
@@ -1027,7 +1021,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
   fake_service_.RenameResource(kResourceId,
                                "new name",
                                test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
@@ -1049,7 +1043,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
   fake_service_.RenameResource(kResourceId,
                                "new name",
                                test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
@@ -1065,7 +1059,7 @@ TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
   fake_service_.RenameResource(kResourceId,
                                "new name",
                                test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
@@ -1090,7 +1084,7 @@ TEST_F(FakeDriveServiceTest, TouchResource_ExistingFile) {
       base::Time::FromUTCExploded(kModifiedDate),
       base::Time::FromUTCExploded(kLastViewedByMeDate),
       test_util::CreateCopyResultCallback(&error, &entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
@@ -1121,7 +1115,7 @@ TEST_F(FakeDriveServiceTest, TouchResource_NonexistingFile) {
       base::Time::FromUTCExploded(kModifiedDate),
       base::Time::FromUTCExploded(kLastViewedByMeDate),
       test_util::CreateCopyResultCallback(&error, &entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
@@ -1143,7 +1137,7 @@ TEST_F(FakeDriveServiceTest, TouchResource_Offline) {
       base::Time::FromUTCExploded(kModifiedDate),
       base::Time::FromUTCExploded(kLastViewedByMeDate),
       test_util::CreateCopyResultCallback(&error, &entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
@@ -1169,7 +1163,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
       kNewParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
@@ -1202,7 +1196,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
       kNewParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
@@ -1226,7 +1220,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
       kNewParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
@@ -1251,7 +1245,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_OrphanFile) {
       kNewParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
@@ -1276,7 +1270,7 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
       kNewParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
@@ -1304,7 +1298,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
       kParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
@@ -1330,7 +1324,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
       kParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
@@ -1347,7 +1341,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_OrphanFile) {
       kParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
@@ -1365,7 +1359,7 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
       kParentResourceId,
       kResourceId,
       test_util::CreateCopyResultCallback(&error));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
@@ -1384,7 +1378,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
       fake_service_.GetRootResourceId(),
       "new directory",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
@@ -1412,7 +1406,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectoryOnEmptyFileSystem) {
       fake_service_.GetRootResourceId(),
       "new directory",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
@@ -1442,7 +1436,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
       kParentResourceId,
       "new directory",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
@@ -1467,7 +1461,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
       kParentResourceId,
       "new directory",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
   EXPECT_FALSE(resource_entry);
@@ -1484,7 +1478,7 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
       fake_service_.GetRootResourceId(),
       "new directory",
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_entry);
@@ -1504,7 +1498,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
       "folder:1_folder_resource_id",
       "new file.foo",
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_TRUE(upload_location.is_empty());
@@ -1523,7 +1517,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
       "non_existent",
       "new file.foo",
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
   EXPECT_TRUE(upload_location.is_empty());
@@ -1542,7 +1536,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
       "folder:1_folder_resource_id",
       "new file.foo",
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_FALSE(upload_location.is_empty());
@@ -1564,7 +1558,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
       "file:2_file_resource_id",
       std::string(),  // etag
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_TRUE(upload_location.is_empty());
@@ -1583,7 +1577,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
       "non_existent",
       std::string(),  // etag
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
   EXPECT_TRUE(upload_location.is_empty());
@@ -1602,7 +1596,7 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
       "file:2_file_resource_id",
       "invalid_etag",
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_PRECONDITION, error);
   EXPECT_TRUE(upload_location.is_empty());
@@ -1621,7 +1615,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
       "file:2_file_resource_id",
       "\"HhMOFgxXHit7ImBr\"",
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(GURL("https://2_file_link_resumable_create_media?mode=existing"),
@@ -1641,7 +1635,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
       "folder:1_folder_resource_id",
       "new file.foo",
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_FALSE(upload_location.is_empty());
@@ -1659,7 +1653,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
       base::FilePath(),
       test_util::CreateCopyResultCallback(&response, &entry),
       ProgressCallback());
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, response.code);
   EXPECT_FALSE(entry.get());
@@ -1678,7 +1672,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
       "folder:1_folder_resource_id",
       "new file.foo",
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(HTTP_SUCCESS, error);
 
@@ -1691,7 +1685,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
       base::FilePath(),
       test_util::CreateCopyResultCallback(&response, &entry),
       ProgressCallback());
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, response.code);
   EXPECT_FALSE(entry.get());
@@ -1710,7 +1704,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       "file:2_file_resource_id",
       "\"HhMOFgxXHit7ImBr\"",
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(HTTP_SUCCESS, error);
 
@@ -1725,7 +1719,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
   EXPECT_FALSE(entry.get());
@@ -1743,7 +1737,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, response.code);
   EXPECT_TRUE(entry.get());
@@ -1768,7 +1762,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       "folder:1_folder_resource_id",
       "new file.foo",
       test_util::CreateCopyResultCallback(&error, &upload_location));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_FALSE(upload_location.is_empty());
@@ -1786,7 +1780,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_RESUME_INCOMPLETE, response.code);
   EXPECT_FALSE(entry.get());
@@ -1804,7 +1798,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, response.code);
   EXPECT_TRUE(entry.get());
@@ -1837,7 +1831,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
       kTitle,
       false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
@@ -1875,7 +1869,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
       kTitle,
       false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
@@ -1914,7 +1908,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
       kTitle,
       false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
@@ -1948,7 +1942,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonexistingDirectory) {
       kTitle,
       false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
   EXPECT_FALSE(resource_entry);
@@ -1972,7 +1966,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_Offline) {
       kTitle,
       false,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_entry);
@@ -1999,7 +1993,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
       kTitle,
       true,  // shared_with_me
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_CREATED, error);
   ASSERT_TRUE(resource_entry);
@@ -2032,7 +2026,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_ExistingFile) {
       kResourceId,
       time,
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_entry);
@@ -2053,7 +2047,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_NonexistingFile) {
       kResourceId,
       time,
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
   EXPECT_FALSE(resource_entry);
@@ -2074,7 +2068,7 @@ TEST_F(FakeDriveServiceTest, SetLastModifiedTime_Offline) {
       kResourceId,
       time,
       test_util::CreateCopyResultCallback(&error, &resource_entry));
-  message_loop_.RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_entry);

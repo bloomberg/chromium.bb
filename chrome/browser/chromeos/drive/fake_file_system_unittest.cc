@@ -5,12 +5,10 @@
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
 
 #include "base/file_util.h"
-#include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -18,10 +16,6 @@ namespace test_util {
 
 class FakeFileSystemTest : public ::testing::Test {
  protected:
-  FakeFileSystemTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
     // Initialize FakeDriveService.
     fake_drive_service_.reset(new google_apis::FakeDriveService);
@@ -36,9 +30,7 @@ class FakeFileSystemTest : public ::testing::Test {
     ASSERT_TRUE(fake_file_system_->InitializeForTesting());
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<FakeFileSystem> fake_file_system_;
 };

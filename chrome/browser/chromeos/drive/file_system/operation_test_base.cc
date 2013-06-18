@@ -15,6 +15,7 @@
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace drive {
 namespace file_system {
@@ -35,8 +36,7 @@ void OperationTestBase::LoggingObserver::OnCacheFileUploadNeededByOperation(
   upload_needed_resource_ids_.insert(resource_id);
 }
 
-OperationTestBase::OperationTestBase()
-    : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+OperationTestBase::OperationTestBase() {
 }
 
 OperationTestBase::~OperationTestBase() {

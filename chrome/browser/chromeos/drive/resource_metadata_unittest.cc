@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -17,7 +16,8 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -115,10 +115,6 @@ void SetUpEntries(ResourceMetadata* resource_metadata) {
 // Tests for methods invoked from the UI thread.
 class ResourceMetadataTestOnUIThread : public testing::Test {
  protected:
-  ResourceMetadataTestOnUIThread()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -185,8 +181,7 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
       resource_metadata_;
 
  private:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(ResourceMetadataTestOnUIThread, LargestChangestamp) {
@@ -871,15 +866,12 @@ TEST_F(ResourceMetadataTestOnUIThread, Reset) {
 // Tests for methods running on the blocking task runner.
 class ResourceMetadataTest : public testing::Test {
  protected:
-  ResourceMetadataTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
-
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Use the main thread as the blocking task runner.
     resource_metadata_.reset(new ResourceMetadata(
-        temp_dir_.path(), message_loop_.message_loop_proxy()));
+        temp_dir_.path(), base::MessageLoopProxy::current()));
 
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
@@ -890,8 +882,7 @@ class ResourceMetadataTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
 };

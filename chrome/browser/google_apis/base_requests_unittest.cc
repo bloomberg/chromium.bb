@@ -6,12 +6,11 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -47,8 +46,7 @@ class FakeGetDataRequest : public GetDataRequest {
 class BaseRequestsTest : public testing::Test {
  public:
   BaseRequestsTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        parse_json_callback_called_(false),
+      : parse_json_callback_called_(false),
         get_data_callback_called_(false) {
   }
 
@@ -73,8 +71,7 @@ class BaseRequestsTest : public testing::Test {
     LOG(ERROR) << "Initialized.";
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<RequestSender> runner_;
 

@@ -5,8 +5,9 @@
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -15,7 +16,7 @@
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -40,15 +41,8 @@ struct EntryExpectation {
 
 class ChangeListProcessorTest : public testing::Test {
  protected:
-  ChangeListProcessorTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
-    scoped_refptr<base::SequencedWorkerPool> pool =
-        content::BrowserThread::GetBlockingPool();
-    blocking_task_runner_ =
-        pool->GetSequencedTaskRunner(pool->GetSequenceToken());
+    blocking_task_runner_ = base::MessageLoopProxy::current();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     metadata_.reset(new internal::ResourceMetadata(temp_dir_.path(),
                                                    blocking_task_runner_));
@@ -66,7 +60,6 @@ class ChangeListProcessorTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     metadata_.reset();
-    blocking_task_runner_ = NULL;
   }
 
   // Parses a json file at |test_data_path| relative to Chrome test directory
@@ -150,8 +143,7 @@ class ChangeListProcessorTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>

@@ -17,7 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -284,10 +284,6 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
 
 class DriveUploaderTest : public testing::Test {
  public:
-  DriveUploaderTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
@@ -297,8 +293,7 @@ class DriveUploaderTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
 };
 

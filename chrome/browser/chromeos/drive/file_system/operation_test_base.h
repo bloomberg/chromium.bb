@@ -8,11 +8,10 @@
 #include <set>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestingProfile;
@@ -100,8 +99,7 @@ class OperationTestBase : public testing::Test {
   internal::FileCache* cache() { return cache_.get(); }
 
  private:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;

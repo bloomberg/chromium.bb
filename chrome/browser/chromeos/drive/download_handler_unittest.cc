@@ -5,14 +5,13 @@
 #include "chrome/browser/chromeos/drive/download_handler.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/dummy_file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,8 +69,7 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
 class DownloadHandlerTest : public testing::Test {
  public:
   DownloadHandlerTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        download_manager_(new content::MockDownloadManager) {}
+      : download_manager_(new content::MockDownloadManager) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -88,8 +86,7 @@ class DownloadHandlerTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<content::MockDownloadManager> download_manager_;
   DownloadHandlerTestFileSystem test_file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;

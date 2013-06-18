@@ -5,14 +5,15 @@
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -63,18 +64,11 @@ class MetadataInfoGenerator {
 
 class SearchMetadataTest : public testing::Test {
  protected:
-  SearchMetadataTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    blocking_task_runner_ = base::MessageLoopProxy::current();
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
-    scoped_refptr<base::SequencedWorkerPool> pool =
-        content::BrowserThread::GetBlockingPool();
-    blocking_task_runner_ =
-        pool->GetSequencedTaskRunner(pool->GetSequenceToken());
     cache_.reset(new internal::FileCache(temp_dir_.path(),
                                          blocking_task_runner_.get(),
                                          fake_free_disk_space_getter_.get()));
@@ -223,8 +217,7 @@ class SearchMetadataTest : public testing::Test {
     EXPECT_EQ(FILE_ERROR_OK, error);
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
