@@ -30,6 +30,7 @@ const char* const kPaths[] = {
   chrome::kChromeUIHistoryHost,
   chrome::kChromeUIIPCHost,
   chrome::kChromeUIMemoryHost,
+  chrome::kChromeUIMemoryInternalsHost,
 #if defined(OS_ANDROID) || defined(OS_IOS)
   chrome::kChromeUINetExportHost,
 #endif

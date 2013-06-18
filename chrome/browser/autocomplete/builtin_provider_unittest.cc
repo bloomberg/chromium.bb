@@ -146,8 +146,10 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
   // Currently they are derived from ChromePaths() in browser_about_handler.cc.
   const string16 kHostM1 = ASCIIToUTF16(content::kChromeUIMediaInternalsHost);
   const string16 kHostM2 = ASCIIToUTF16(chrome::kChromeUIMemoryHost);
+  const string16 kHostM3 = ASCIIToUTF16(chrome::kChromeUIMemoryInternalsHost);
   const GURL kURLM1 = GURL(kChrome + kSeparator3 + kHostM1);
   const GURL kURLM2 = GURL(kChrome + kSeparator3 + kHostM2);
+  const GURL kURLM3 = GURL(kChrome + kSeparator3 + kHostM3);
 
   test_data<GURL> chrome_url_cases[] = {
     // Typing an about URL with an unknown host should give nothing.
@@ -161,20 +163,22 @@ TEST_F(BuiltinProviderTest, ChromeURLs) {
     {kChrome + kSeparator3 + ASCIIToUTF16("host"), 0, {}},
 
     // Typing an about URL should provide matching URLs.
-    {kAbout + kSeparator1 + kHostM1.substr(0, 1), 2, {kURLM1, kURLM2}},
-    {kAbout + kSeparator2 + kHostM1.substr(0, 2), 2, {kURLM1, kURLM2}},
+    {kAbout + kSeparator1 + kHostM1.substr(0, 1), 3, {kURLM1, kURLM2, kURLM3}},
+    {kAbout + kSeparator2 + kHostM1.substr(0, 2), 3, {kURLM1, kURLM2, kURLM3}},
     {kAbout + kSeparator3 + kHostM1.substr(0, 3), 1, {kURLM1}},
-    {kAbout + kSeparator3 + kHostM2.substr(0, 3), 1, {kURLM2}},
+    {kAbout + kSeparator3 + kHostM2.substr(0, 3), 2, {kURLM2, kURLM3}},
     {kAbout + kSeparator3 + kHostM1,              1, {kURLM1}},
-    {kAbout + kSeparator2 + kHostM2,              1, {kURLM2}},
+    {kAbout + kSeparator2 + kHostM2,              2, {kURLM2, kURLM3}},
+    {kAbout + kSeparator2 + kHostM3,              1, {kURLM3}},
 
     // Typing a chrome URL should provide matching URLs.
-    {kChrome + kSeparator1 + kHostM1.substr(0, 1), 2, {kURLM1, kURLM2}},
-    {kChrome + kSeparator2 + kHostM1.substr(0, 2), 2, {kURLM1, kURLM2}},
+    {kChrome + kSeparator1 + kHostM1.substr(0, 1), 3, {kURLM1, kURLM2, kURLM3}},
+    {kChrome + kSeparator2 + kHostM1.substr(0, 2), 3, {kURLM1, kURLM2, kURLM3}},
     {kChrome + kSeparator3 + kHostM1.substr(0, 3), 1, {kURLM1}},
-    {kChrome + kSeparator3 + kHostM2.substr(0, 3), 1, {kURLM2}},
+    {kChrome + kSeparator3 + kHostM2.substr(0, 3), 2, {kURLM2, kURLM3}},
     {kChrome + kSeparator3 + kHostM1,              1, {kURLM1}},
-    {kChrome + kSeparator2 + kHostM2,              1, {kURLM2}},
+    {kChrome + kSeparator2 + kHostM2,              2, {kURLM2, kURLM3}},
+    {kChrome + kSeparator2 + kHostM3,              1, {kURLM3}},
   };
 
   RunTest<GURL>(chrome_url_cases, arraysize(chrome_url_cases),
