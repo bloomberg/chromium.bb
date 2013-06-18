@@ -47,16 +47,17 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/mac/WebInputEventFactory.h"
-#include "third_party/WebKit/public/web/mac/WebScreenInfoFactory.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
 #include "ui/base/cocoa/animation_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/layout.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/surface/io_surface_support_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -343,6 +344,24 @@ NSWindow* ApparentWindowForView(NSView* view) {
   return enclosing_window;
 }
 
+WebKit::WebScreenInfo GetWebScreenInfo(NSView* view) {
+  gfx::Display display =
+      gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(view);
+
+  NSScreen* screen = [NSScreen deepestScreen];
+
+  WebKit::WebScreenInfo results;
+
+  results.deviceScaleFactor = static_cast<int>(display.device_scale_factor());
+  results.depth = NSBitsPerPixelFromDepth([screen depth]);
+  results.depthPerComponent = NSBitsPerSampleFromDepth([screen depth]);
+  results.isMonochrome =
+      [[screen colorSpace] colorSpaceModel] == NSGrayColorSpaceModel;
+  results.rect = display.bounds();
+  results.availableRect = display.work_area();
+  return results;
+}
+
 }  // namespace
 
 namespace content {
@@ -359,7 +378,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 // static
 void RenderWidgetHostViewPort::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
-  *results = WebKit::WebScreenInfoFactory::screenInfo(NULL);
+  *results = GetWebScreenInfo(NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1549,7 +1568,7 @@ void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
 }
 
 void RenderWidgetHostViewMac::GetScreenInfo(WebKit::WebScreenInfo* results) {
-  *results = WebKit::WebScreenInfoFactory::screenInfo(GetNativeView());
+  *results = GetWebScreenInfo(GetNativeView());
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
