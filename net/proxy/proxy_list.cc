@@ -195,7 +195,7 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
 void ProxyList::UpdateRetryInfoOnFallback(
     ProxyRetryInfoMap* proxy_retry_info, const BoundNetLog& net_log) const {
   // Time to wait before retrying a bad proxy server.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   // Randomize the timeout over a range from one to five minutes.
   const TimeDelta proxy_retry_delay =
       TimeDelta::FromMilliseconds(base::RandInt(1 * 60 * 1000, 5 * 60 * 1000));
