@@ -45,6 +45,14 @@ function isMobileVersion() {
   return !document.body.classList.contains('uber-frame');
 }
 
+/**
+ * Record an action in UMA.
+ * @param {string} actionDesc The name of the action to be logged.
+ */
+function recordUmaAction(actionDesc) {
+  chrome.send('metricsHandler:recordAction', [actionDesc]);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Visit:
 
@@ -156,6 +164,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   if (this.starred_) {
     bookmarkSection.classList.add('starred');
     bookmarkSection.addEventListener('click', function f(e) {
+      recordUmaAction('BookmarkStarClicked_HistoryPage');
       bookmarkSection.classList.remove('starred');
       chrome.send('removeBookmark', [self.url_]);
       bookmarkSection.removeEventListener('click', f);
@@ -243,6 +252,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
  * Remove this visit from the history.
  */
 Visit.prototype.removeFromHistory = function() {
+  recordUmaAction('EntryMenuRemoveFromHistory_HistoryPage');
   var self = this;
   this.model_.removeVisitsFromHistory([this], function() {
     removeEntryFromView(self.domNode_);
@@ -307,6 +317,12 @@ Visit.prototype.getTitleDOM_ = function() {
   link.href = this.url_;
   link.id = 'id-' + this.id_;
   link.target = '_top';
+  link.addEventListener('click', function() {
+    recordUmaAction('EntryLinkClick_HistoryPage');
+  });
+  link.addEventListener('contextmenu', function() {
+    recordUmaAction('EntryLinkRightClick_HistoryPage');
+  });
 
   // Add a tooltip, since it might be ellipsized.
   // TODO(dubroy): Find a way to show the tooltip only when necessary.
@@ -349,6 +365,7 @@ Visit.prototype.addFaviconToElement_ = function(el) {
  * @private
  */
 Visit.prototype.showMoreFromSite_ = function() {
+  recordUmaAction('EntryMenuShowMoreFromSite_HistoryPage');
   historyView.setSearch(this.getDomainFromURL_(this.url_));
 };
 
@@ -714,12 +731,15 @@ function HistoryView(model) {
 
   // Add handlers for the page navigation buttons at the bottom.
   $('newest-button').addEventListener('click', function() {
+    recordUmaAction('NewestHistoryClick_HistoryPage');
     self.setPage(0);
   });
   $('newer-button').addEventListener('click', function() {
+    recordUmaAction('NewerHistoryClick_HistoryPage');
     self.setPage(self.pageIndex_ - 1);
   });
   $('older-button').addEventListener('click', function() {
+    recordUmaAction('OlderHistoryClick_HistoryPage');
     self.setPage(self.pageIndex_ + 1);
   });
 
@@ -1437,6 +1457,7 @@ function load() {
     cr.ui.overlay.setupOverlay($('overlay'));
 
   var doSearch = function(e) {
+    recordUmaAction('Search_HistoryPage');
     historyView.setSearch(searchField.value);
 
     if (isMobileVersion())
@@ -1532,6 +1553,7 @@ function updateHostStatus(statusElement, newStatus) {
  * @param {Event} e The click event.
  */
 function openClearBrowsingData(e) {
+  recordUmaAction('InitClearBrowsingData_HistoryPage');
   chrome.send('clearBrowsingData');
 }
 
@@ -1577,6 +1599,7 @@ function confirmDeletion(okCallback, cancelCallback) {
  * Confirms the deletion with the user, and then deletes the selected visits.
  */
 function removeItems() {
+  recordUmaAction('RemoveSelected_HistoryPage');
   if (!loadTimeData.getBoolean('allowDeletingHistory'))
     return;
 
@@ -1599,6 +1622,7 @@ function removeItems() {
   }
 
   function onConfirmRemove() {
+    recordUmaAction('ConfirmRemoveSelected_HistoryPage');
     historyModel.removeVisitsFromHistory(toBeRemoved,
         historyView.reload.bind(historyView));
     $('overlay').removeEventListener('cancelOverlay', onCancelRemove);
@@ -1606,6 +1630,7 @@ function removeItems() {
   }
 
   function onCancelRemove() {
+    recordUmaAction('CancelRemoveSelected_HistoryPage');
     // Return everything to its previous state.
     for (var i = 0; i < disabledItems.length; i++) {
       var checkbox = disabledItems[i];
