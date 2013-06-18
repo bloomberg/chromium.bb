@@ -135,6 +135,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool css_variables_enabled;
   bool css_grid_layout_enabled;
   bool lazy_layout_enabled;
+  bool region_based_columns_enabled;
   bool touch_enabled;
   bool device_supports_touch;
   bool device_supports_mouse;

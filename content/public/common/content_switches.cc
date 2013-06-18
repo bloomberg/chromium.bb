@@ -322,6 +322,10 @@ const char kEnableDownloadResumption[]      = "enable-download-resumption";
 const char kEnableExperimentalWebKitFeatures[] =
     "enable-experimental-webkit-features";
 
+// Enables the CSS multicol implementation that uses the regions implementation.
+const char kEnableRegionBasedColumns[] =
+    "enable-region-based-columns";
+
 // Disables the threaded HTML parser in WebKit
 const char kDisableThreadedHTMLParser[]     = "disable-threaded-html-parser";
 

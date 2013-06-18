@@ -87,6 +87,7 @@ WebPreferences::WebPreferences()
       css_shaders_enabled(false),
       css_grid_layout_enabled(false),
       lazy_layout_enabled(false),
+      region_based_columns_enabled(false),
       touch_enabled(false),
       device_supports_touch(false),
       device_supports_mouse(true),
