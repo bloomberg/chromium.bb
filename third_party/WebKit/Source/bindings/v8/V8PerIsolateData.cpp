@@ -103,7 +103,7 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
 {
     if (m_toStringTemplate.isEmpty())
         m_toStringTemplate.set(m_isolate, v8::FunctionTemplate::New(constructorOfToString));
-    return v8::Local<v8::FunctionTemplate>::New(m_toStringTemplate.get());
+    return m_toStringTemplate.newLocal(m_isolate);
 }
 
 void V8PerIsolateData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
@@ -166,7 +166,7 @@ v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
         v8::HandleScope handleScope(m_isolate);
         m_regexContext.set(m_isolate, v8::Context::New(m_isolate));
     }
-    return v8::Local<v8::Context>::New(m_regexContext.get());
+    return m_regexContext.newLocal(m_isolate);
 }
 
 bool V8PerIsolateData::hasInstance(WrapperTypeInfo* info, v8::Handle<v8::Value> value, WrapperWorldType currentWorldType)

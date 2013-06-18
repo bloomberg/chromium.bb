@@ -56,14 +56,14 @@ ScriptState::~ScriptState()
 
 DOMWindow* ScriptState::domWindow() const
 {
-    v8::HandleScope handleScope;
-    return toDOMWindow(m_context.get());
+    v8::HandleScope handleScope(m_isolate);
+    return toDOMWindow(m_context.newLocal(m_isolate));
 }
 
 ScriptExecutionContext* ScriptState::scriptExecutionContext() const
 {
-    v8::HandleScope handleScope;
-    return toScriptExecutionContext(m_context.get());
+    v8::HandleScope handleScope(m_isolate);
+    return toScriptExecutionContext(m_context.newLocal(m_isolate));
 }
 
 ScriptState* ScriptState::forContext(v8::Handle<v8::Context> context)

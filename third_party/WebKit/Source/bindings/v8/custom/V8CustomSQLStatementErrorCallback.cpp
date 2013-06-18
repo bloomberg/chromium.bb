@@ -45,7 +45,8 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     if (!canInvokeCallback())
         return true;
 
-    v8::HandleScope handleScope;
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
 
     v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_world.get());
     if (v8Context.IsEmpty())
@@ -54,7 +55,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     v8::Context::Scope scope(v8Context);
 
     v8::Handle<v8::Value> transactionHandle = toV8(transaction, v8::Handle<v8::Object>(), v8Context->GetIsolate());
-    v8::Handle<v8::Value> errorHandle = toV8(error, v8::Handle<v8::Object>(), v8Context->GetIsolate());
+    v8::Handle<v8::Value> errorHandle = toV8(error, v8::Handle<v8::Object>(), isolate);
     if (transactionHandle.IsEmpty() || errorHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
@@ -71,7 +72,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     // statement, if any, or onto the next overall step otherwise. Otherwise,
     // the error callback did not return false, or there was no error callback.
     // Jump to the last step in the overall steps.
-    return invokeCallback(m_callback.get(), 2, argv, callbackReturnValue, scriptExecutionContext()) || callbackReturnValue;
+    return invokeCallback(m_callback.newLocal(isolate), 2, argv, callbackReturnValue, scriptExecutionContext()) || callbackReturnValue;
 }
 
 } // namespace WebCore

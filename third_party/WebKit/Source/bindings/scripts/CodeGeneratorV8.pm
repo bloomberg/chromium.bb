@@ -4506,7 +4506,8 @@ END
             $code .= join "", @argsCheck if @argsCheck;
             $code .= "    if (!canInvokeCallback())\n";
             $code .= "        return true;\n\n";
-            $code .= "    v8::HandleScope handleScope;\n\n";
+            $code .= "    v8::Isolate* isolate = v8::Isolate::GetCurrent();\n";
+            $code .= "    v8::HandleScope handleScope(isolate);\n\n";
             $code .= "    v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_world.get());\n";
             $code .= "    if (v8Context.IsEmpty())\n";
             $code .= "        return true;\n\n";
@@ -4515,7 +4516,7 @@ END
             @args = ();
             foreach my $param (@params) {
                 my $paramName = $param->name;
-                $code .= NativeToJSValue($param->type, $param->extendedAttributes, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "v8::Handle<v8::Object>()", "v8Context->GetIsolate()", "") . "\n";
+                $code .= NativeToJSValue($param->type, $param->extendedAttributes, $paramName, "    ", "v8::Handle<v8::Value> ${paramName}Handle =", "v8::Handle<v8::Object>()", "isolate", "") . "\n";
                 $code .= "    if (${paramName}Handle.IsEmpty()) {\n";
                 $code .= "        if (!isScriptControllerTerminating())\n";
                 $code .= "            CRASH();\n";
@@ -4532,7 +4533,7 @@ END
                 $code .= "\n    v8::Handle<v8::Value> *argv = 0;\n\n";
             }
             $code .= "    bool callbackReturnValue = false;\n";
-            $code .= "    return !invokeCallback(m_callback.get(), " . scalar(@params) . ", argv, callbackReturnValue, scriptExecutionContext());\n";
+            $code .= "    return !invokeCallback(m_callback.newLocal(isolate), " . scalar(@params) . ", argv, callbackReturnValue, scriptExecutionContext());\n";
             $code .= "}\n";
             $implementation{nameSpaceWebCore}->add($code);
         }

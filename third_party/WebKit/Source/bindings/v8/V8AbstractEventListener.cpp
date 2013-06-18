@@ -58,8 +58,8 @@ V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, PassRefPtr<DO
 V8AbstractEventListener::~V8AbstractEventListener()
 {
     if (!m_listener.isEmpty()) {
-        v8::HandleScope scope;
-        V8EventListenerList::clearWrapper(v8::Local<v8::Object>::New(m_listener.get()), m_isAttribute);
+        v8::HandleScope scope(m_isolate);
+        V8EventListenerList::clearWrapper(m_listener.newLocal(m_isolate), m_isAttribute);
     }
     ThreadLocalInspectorCounters::current().decrementCounter(ThreadLocalInspectorCounters::JSEventListenerCounter);
 }

@@ -88,7 +88,7 @@ void ScheduledAction::execute(Frame* frame)
 {
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> context = v8::Local<v8::Context>::New(m_context.get());
+    v8::Handle<v8::Context> context = m_context.newLocal(m_isolate);
     if (context.IsEmpty())
         return;
     v8::Context::Scope scope(context);
@@ -98,7 +98,7 @@ void ScheduledAction::execute(Frame* frame)
     if (!m_function.isEmpty()) {
         Vector<v8::Handle<v8::Value> > args;
         createLocalHandlesForArgs(&args);
-        frame->script()->callFunction(m_function.get(), context->Global(), args.size(), args.data());
+        frame->script()->callFunction(m_function.newLocal(m_isolate), context->Global(), args.size(), args.data());
     } else
         frame->script()->compileAndRunScript(m_code);
 
@@ -109,7 +109,7 @@ void ScheduledAction::execute(WorkerContext* worker)
 {
     ASSERT(worker->thread()->isCurrentThread());
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> context = v8::Local<v8::Context>::New(m_context.get());
+    v8::Handle<v8::Context> context = m_context.newLocal(m_isolate);
     ASSERT(!context.IsEmpty());
     v8::Context::Scope scope(context);
     if (!m_function.isEmpty()) {

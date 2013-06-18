@@ -60,7 +60,7 @@ void V8PerContextData::dispose()
 
 #define V8_STORE_PRIMORDIAL(name, Name) \
 { \
-    ASSERT(m_##name##Prototype.get().IsEmpty()); \
+    ASSERT(m_##name##Prototype.isEmpty()); \
     v8::Handle<v8::String> symbol = v8::String::NewSymbol(#Name); \
     if (symbol.IsEmpty()) \
         return false; \
@@ -123,7 +123,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(WrapperType
             prototypeObject->SetAlignedPointerInInternalField(v8PrototypeTypeIndex, type);
         type->installPerContextPrototypeProperties(prototypeObject, m_isolate);
         if (type->wrapperTypePrototype == WrapperTypeErrorPrototype)
-            prototypeObject->SetPrototype(m_errorPrototype.get());
+            prototypeObject->SetPrototype(m_errorPrototype.newLocal(m_isolate));
     }
 
     m_constructorMap.set(type, UnsafePersistent<v8::Function>(m_isolate, function));

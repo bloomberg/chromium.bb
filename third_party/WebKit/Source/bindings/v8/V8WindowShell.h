@@ -56,7 +56,7 @@ class V8WindowShell {
 public:
     static PassOwnPtr<V8WindowShell> create(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 
-    v8::Local<v8::Context> context() const { return v8::Local<v8::Context>::New(m_context.get()); }
+    v8::Local<v8::Context> context() const { return m_context.newLocal(m_isolate); }
 
     // Update document object of the frame.
     void updateDocument();

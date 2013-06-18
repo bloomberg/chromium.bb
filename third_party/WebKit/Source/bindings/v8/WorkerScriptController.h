@@ -91,7 +91,7 @@ namespace WebCore {
         ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerContextExecutionState*);
 
         // Returns a local handle of the context.
-        v8::Local<v8::Context> context() { return v8::Local<v8::Context>::New(m_context.get()); }
+        v8::Local<v8::Context> context() { return m_context.newLocal(v8::Isolate::GetCurrent()); }
 
     private:
         bool initializeContextIfNeeded();

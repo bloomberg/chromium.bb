@@ -473,7 +473,7 @@ void V8WindowShell::namedItemAdded(HTMLDocument* document, const AtomicString& n
         return;
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Context::Scope contextScope(m_context.get());
+    v8::Context::Scope contextScope(m_context.newLocal(m_isolate));
 
     ASSERT(!m_document.isEmpty());
     v8::Handle<v8::Object> documentHandle = m_document.newLocal(m_isolate);
@@ -492,7 +492,7 @@ void V8WindowShell::namedItemRemoved(HTMLDocument* document, const AtomicString&
         return;
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Context::Scope contextScope(m_context.get());
+    v8::Context::Scope contextScope(m_context.newLocal(m_isolate));
 
     ASSERT(!m_document.isEmpty());
     v8::Handle<v8::Object> documentHandle = m_document.newLocal(m_isolate);

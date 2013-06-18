@@ -80,10 +80,11 @@ int RegularExpression::match(const String& string, int startFrom, int* matchLeng
 
     V8RecursionScope::MicrotaskSuppression microtaskScope;
 
-    v8::Local<v8::Function> exec = m_regex.newLocal(isolate)->Get(v8::String::NewSymbol("exec")).As<v8::Function>();
+    v8::Local<v8::RegExp> regex = m_regex.newLocal(isolate);
+    v8::Local<v8::Function> exec = regex->Get(v8::String::NewSymbol("exec")).As<v8::Function>();
 
     v8::Handle<v8::Value> argv[] = { v8String(string.substringSharingImpl(startFrom), context->GetIsolate()) };
-    v8::Local<v8::Value> returnValue = exec->Call(m_regex.get(), 1, argv);
+    v8::Local<v8::Value> returnValue = exec->Call(regex, 1, argv);
 
     // RegExp#exec returns null if there's no match, otherwise it returns an
     // Array of strings with the first being the whole match string and others
