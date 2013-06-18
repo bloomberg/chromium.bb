@@ -595,6 +595,9 @@ void BrowserPluginGuest::HandleKeyboardEvent(
   if (!attached())
     return;
 
+  if (UnlockMouseIfNecessary(event))
+    return;
+
   // Send the unhandled keyboard events back to the embedder to reprocess them.
   // TODO(fsamuel): This introduces the possibility of out-of-order keyboard
   // events because the guest may be arbitrarily delayed when responding to
@@ -750,6 +753,15 @@ void BrowserPluginGuest::RequestNewWindowPermission(
   SendMessageToEmbedder(new BrowserPluginMsg_RequestPermission(
       instance_id(), BrowserPluginPermissionTypeNewWindow,
       request_id, request_info));
+}
+
+bool BrowserPluginGuest::UnlockMouseIfNecessary(
+    const NativeWebKeyboardEvent& event) {
+  if (!mouse_locked_)
+    return false;
+
+  embedder_web_contents()->GotResponseToLockMouseRequest(false);
+  return true;
 }
 
 void BrowserPluginGuest::DidStartProvisionalLoadForFrame(

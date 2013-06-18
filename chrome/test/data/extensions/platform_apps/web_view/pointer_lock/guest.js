@@ -61,9 +61,3 @@ document.getElementById('button2').addEventListener('click', function (e) {
   console.log('clicked button 2');
   embedder.postMessage('clicked', '*');
 }, false);
-
-document.onkeydown = function (e) {
-  console.log('key handled, unlocking');
-  document.webkitExitPointerLock();
-};
-

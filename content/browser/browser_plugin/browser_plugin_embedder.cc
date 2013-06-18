@@ -14,6 +14,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -79,6 +80,12 @@ void BrowserPluginEmbedder::GetRenderViewHostAtPosition(
 void BrowserPluginEmbedder::DidSendScreenRects() {
   GetBrowserPluginGuestManager()->DidSendScreenRects(
       static_cast<WebContentsImpl*>(web_contents()));
+}
+
+bool BrowserPluginEmbedder::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  return GetBrowserPluginGuestManager()->UnlockMouseIfNecessary(
+      static_cast<WebContentsImpl*>(web_contents()), event);
 }
 
 void BrowserPluginEmbedder::RenderViewGone(base::TerminationStatus status) {

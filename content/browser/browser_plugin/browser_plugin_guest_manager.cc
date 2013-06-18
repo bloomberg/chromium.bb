@@ -17,6 +17,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace content {
 
@@ -243,6 +244,29 @@ void BrowserPluginGuestManager::DidSendScreenRects(
           guest->GetWebContents()->GetRenderViewHost())->SendScreenRects();
     }
   }
+}
+
+bool BrowserPluginGuestManager::UnlockMouseIfNecessary(
+    WebContentsImpl* embedder_web_contents,
+    const NativeWebKeyboardEvent& event) {
+  if ((event.type != WebKit::WebInputEvent::RawKeyDown) ||
+      (event.windowsKeyCode != ui::VKEY_ESCAPE) ||
+      (event.modifiers & WebKit::WebInputEvent::InputModifiers)) {
+    return false;
+  }
+
+  // TODO(lazyboy): Generalize iterating over guest instances and performing
+  // actions on the guests.
+  for (GuestInstanceMap::iterator it =
+           guest_web_contents_by_instance_id_.begin();
+               it != guest_web_contents_by_instance_id_.end(); ++it) {
+    BrowserPluginGuest* guest = it->second->GetBrowserPluginGuest();
+    if (embedder_web_contents == guest->embedder_web_contents()) {
+      if (guest->UnlockMouseIfNecessary(event))
+        return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace content

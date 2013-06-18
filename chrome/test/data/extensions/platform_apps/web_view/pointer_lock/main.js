@@ -46,16 +46,12 @@ var startTest = function() {
         }
       }
     } else if (requestCount == 3) {
-      if (e.permission == 'pointerLock' && e.lastUnlockedBySelf &&
-          e.url == guestURL && e.userGesture) {
+      if (e.permission == 'pointerLock' && e.url == guestURL && e.userGesture) {
         e.request.allow();
       } else {
         if (e.permission != 'pointerLock') {
           console.log('Permission was, "' + e.permission + '" when it ' +
                       'should have been "pointerLock"');
-        }
-        if (!e.lastUnlockedBySelf) {
-          console.log('e.lastUnlockedBySelf should have been true.');
         }
         if (e.url == guestURL) {
           console.log('e.url was, "' + e.url + '" when it ' +

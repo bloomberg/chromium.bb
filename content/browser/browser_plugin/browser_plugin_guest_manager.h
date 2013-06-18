@@ -35,6 +35,7 @@ class RenderWidgetHostImpl;
 class SiteInstance;
 class WebContents;
 class WebContentsImpl;
+struct NativeWebKeyboardEvent;
 
 class CONTENT_EXPORT BrowserPluginGuestManager :
     public base::SupportsUserData::Data {
@@ -81,6 +82,9 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
                                             int instance_id) const;
 
   void DidSendScreenRects(WebContentsImpl* embedder_web_contents);
+
+  bool UnlockMouseIfNecessary(WebContentsImpl* embedder_web_contents_,
+                              const NativeWebKeyboardEvent& event);
 
   void OnMessageReceived(const IPC::Message& message, int render_process_id);
 
