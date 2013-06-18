@@ -60,7 +60,7 @@
             'include_dirs': [
                 'public',
                 'src',
-                '<(DEPTH)/third_party/angle/include',
+                '<(angle_path)/include',
                 '<(DEPTH)/third_party/skia/include/utils',
             ],
             'defines': [
