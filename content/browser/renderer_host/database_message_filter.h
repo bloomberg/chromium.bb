@@ -53,7 +53,7 @@ class DatabaseMessageFilter
                              IPC::Message* reply_msg);
 
   // Quota message handler (io thread)
-  void OnDatabaseGetSpaceAvailable(const string16& origin_identifier,
+  void OnDatabaseGetSpaceAvailable(const std::string& origin_identifier,
                                    IPC::Message* reply_msg);
   void OnDatabaseGetUsageAndQuota(IPC::Message* reply_msg,
                                   quota::QuotaStatusCode status,
@@ -61,24 +61,24 @@ class DatabaseMessageFilter
                                   int64 quota);
 
   // Database tracker message handlers (file thread)
-  void OnDatabaseOpened(const string16& origin_identifier,
+  void OnDatabaseOpened(const std::string& origin_identifier,
                         const string16& database_name,
                         const string16& description,
                         int64 estimated_size);
-  void OnDatabaseModified(const string16& origin_identifier,
+  void OnDatabaseModified(const std::string& origin_identifier,
                           const string16& database_name);
-  void OnDatabaseClosed(const string16& origin_identifier,
+  void OnDatabaseClosed(const std::string& origin_identifier,
                         const string16& database_name);
-  void OnHandleSqliteError(const string16& origin_identifier,
+  void OnHandleSqliteError(const std::string& origin_identifier,
                            const string16& database_name,
                            int error);
 
   // DatabaseTracker::Observer callbacks (file thread)
-  virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
+  virtual void OnDatabaseSizeChanged(const std::string& origin_identifier,
                                      const string16& database_name,
                                      int64 database_size) OVERRIDE;
   virtual void OnDatabaseScheduledForDeletion(
-      const string16& origin_identifier,
+      const std::string& origin_identifier,
       const string16& database_name) OVERRIDE;
 
   void DatabaseDeleteFile(const string16& vfs_file_name,

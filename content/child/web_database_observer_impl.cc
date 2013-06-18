@@ -7,8 +7,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "content/common/database_messages.h"
-#include "third_party/WebKit/public/web/WebDatabase.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using WebKit::WebDatabase;
@@ -73,7 +74,8 @@ WebDatabaseObserverImpl::~WebDatabaseObserverImpl() {
 
 void WebDatabaseObserverImpl::databaseOpened(
     const WebDatabase& database) {
-  string16 origin_identifier = database.securityOrigin().databaseIdentifier();
+  std::string origin_identifier =
+      database.securityOrigin().databaseIdentifier().utf8();
   string16 database_name = database.name();
   open_connections_->AddOpenConnection(origin_identifier, database_name);
   sender_->Send(new DatabaseHostMsg_Opened(
@@ -84,12 +86,13 @@ void WebDatabaseObserverImpl::databaseOpened(
 void WebDatabaseObserverImpl::databaseModified(
     const WebDatabase& database) {
   sender_->Send(new DatabaseHostMsg_Modified(
-      database.securityOrigin().databaseIdentifier(), database.name()));
+      database.securityOrigin().databaseIdentifier().utf8(), database.name()));
 }
 
 void WebDatabaseObserverImpl::databaseClosed(
     const WebDatabase& database) {
-  string16 origin_identifier = database.securityOrigin().databaseIdentifier();
+  std::string origin_identifier =
+      database.securityOrigin().databaseIdentifier().utf8();
   string16 database_name = database.name();
   sender_->Send(new DatabaseHostMsg_Closed(
       origin_identifier, database_name));
@@ -160,7 +163,7 @@ void WebDatabaseObserverImpl::HandleSqliteError(
   // high frequency (per-sqlstatement).
   if (error == SQLITE_CORRUPT || error == SQLITE_NOTADB) {
     sender_->Send(new DatabaseHostMsg_HandleSqliteError(
-        database.securityOrigin().databaseIdentifier(),
+        database.securityOrigin().databaseIdentifier().utf8(),
         database.name(),
         error));
   }

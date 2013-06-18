@@ -226,7 +226,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
     int64 transaction_id,
     WebIDBCallbacks* callbacks_ptr,
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
-    const string16& database_identifier) {
+    const std::string& database_identifier) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   scoped_ptr<WebIDBDatabaseCallbacks> database_callbacks(
@@ -246,7 +246,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
 
 void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
     WebIDBCallbacks* callbacks_ptr,
-    const string16& database_identifier) {
+    const std::string& database_identifier) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
@@ -260,7 +260,7 @@ void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
 void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
     const string16& name,
     WebIDBCallbacks* callbacks_ptr,
-    const string16& database_identifier) {
+    const std::string& database_identifier) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 

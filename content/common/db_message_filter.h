@@ -22,13 +22,13 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   virtual ~DBMessageFilter() {}
 
  private:
-  void OnDatabaseUpdateSize(const string16& origin_identifier,
+  void OnDatabaseUpdateSize(const std::string& origin_identifier,
                             const string16& database_name,
                             int64 database_size);
-  void OnDatabaseUpdateSpaceAvailable(const string16& origin_identifier,
+  void OnDatabaseUpdateSpaceAvailable(const std::string& origin_identifier,
                                       int64 space_available);
-  void OnDatabaseResetSpaceAvailable(const string16& origin_identifier);
-  void OnDatabaseCloseImmediately(const string16& origin_identifier,
+  void OnDatabaseResetSpaceAvailable(const std::string& origin_identifier);
+  void OnDatabaseCloseImmediately(const std::string& origin_identifier,
                                   const string16& database_name);
 };
 

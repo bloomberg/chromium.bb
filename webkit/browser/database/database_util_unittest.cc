@@ -15,7 +15,7 @@ static void TestVfsFilePath(bool expected_result,
                             const char* expected_origin_identifier = "",
                             const char* expected_database_name = "",
                             const char* expected_sqlite_suffix = "") {
-  base::string16 origin_identifier;
+  std::string origin_identifier;
   base::string16 database_name;
   base::string16 sqlite_suffix;
   EXPECT_EQ(expected_result,
@@ -23,20 +23,20 @@ static void TestVfsFilePath(bool expected_result,
                                            &origin_identifier,
                                            &database_name,
                                            &sqlite_suffix));
-  EXPECT_EQ(ASCIIToUTF16(expected_origin_identifier), origin_identifier);
+  EXPECT_EQ(expected_origin_identifier, origin_identifier);
   EXPECT_EQ(ASCIIToUTF16(expected_database_name), database_name);
   EXPECT_EQ(ASCIIToUTF16(expected_sqlite_suffix), sqlite_suffix);
 }
 
 static GURL ToAndFromOriginIdentifier(const GURL origin_url) {
-  base::string16 id = webkit_base::GetOriginIdentifierFromURL(origin_url);
+  std::string id = webkit_base::GetOriginIdentifierFromURL(origin_url);
   return webkit_base::GetOriginURLFromIdentifier(id);
 }
 
 static void TestValidOriginIdentifier(bool expected_result,
-                                      const base::StringPiece id) {
+                                      const std::string& id) {
   EXPECT_EQ(expected_result,
-            DatabaseUtil::IsValidOriginIdentifier(ASCIIToUTF16(id)));
+            DatabaseUtil::IsValidOriginIdentifier(id));
 }
 
 namespace webkit_database {
@@ -68,7 +68,7 @@ TEST(DatabaseUtilTest, IsValidOriginIdentifier) {
   TestValidOriginIdentifier(false, "bad..id");
   TestValidOriginIdentifier(false, "bad/id");
   TestValidOriginIdentifier(false, "bad\\id");
-  TestValidOriginIdentifier(false, base::StringPiece("bad\0id", 6));
+  TestValidOriginIdentifier(false, std::string("bad\0id", 6));
 }
 
 }  // namespace webkit_database

@@ -52,7 +52,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT OriginInfo {
   OriginInfo(const OriginInfo& origin_info);
   ~OriginInfo();
 
-  const base::string16& GetOrigin() const { return origin_; }
+  const std::string& GetOriginIdentifier() const { return origin_identifier_; }
   int64 TotalSize() const { return total_size_; }
   void GetAllDatabaseNames(std::vector<base::string16>* databases) const;
   int64 GetDatabaseSize(const base::string16& database_name) const;
@@ -63,9 +63,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT OriginInfo {
   typedef std::map<base::string16, std::pair<int64, base::string16> >
       DatabaseInfoMap;
 
-  OriginInfo(const base::string16& origin, int64 total_size);
+  OriginInfo(const std::string& origin_identifier, int64 total_size);
 
-  base::string16 origin_;
+  std::string origin_identifier_;
   int64 total_size_;
   DatabaseInfoMap database_info_;
 };
@@ -85,11 +85,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
  public:
   class Observer {
    public:
-    virtual void OnDatabaseSizeChanged(const base::string16& origin_identifier,
+    virtual void OnDatabaseSizeChanged(const std::string& origin_identifier,
                                        const base::string16& database_name,
                                        int64 database_size) = 0;
     virtual void OnDatabaseScheduledForDeletion(
-        const base::string16& origin_identifier,
+        const std::string& origin_identifier,
         const base::string16& database_name) = 0;
 
    protected:
@@ -102,16 +102,16 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
                   quota::QuotaManagerProxy* quota_manager_proxy,
                   base::MessageLoopProxy* db_tracker_thread);
 
-  void DatabaseOpened(const base::string16& origin_identifier,
+  void DatabaseOpened(const std::string& origin_identifier,
                       const base::string16& database_name,
                       const base::string16& database_details,
                       int64 estimated_size,
                       int64* database_size);
-  void DatabaseModified(const base::string16& origin_identifier,
+  void DatabaseModified(const std::string& origin_identifier,
                         const base::string16& database_name);
-  void DatabaseClosed(const base::string16& origin_identifier,
+  void DatabaseClosed(const std::string& origin_identifier,
                       const base::string16& database_name);
-  void HandleSqliteError(const base::string16& origin_identifier,
+  void HandleSqliteError(const std::string& origin_identifier,
                          const base::string16& database_name,
                          int error);
 
@@ -123,12 +123,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
   void CloseTrackerDatabaseAndClearCaches();
 
   const base::FilePath& DatabaseDirectory() const { return db_dir_; }
-  base::FilePath GetFullDBFilePath(const base::string16& origin_identifier,
-                             const base::string16& database_name);
+  base::FilePath GetFullDBFilePath(const std::string& origin_identifier,
+                                   const base::string16& database_name);
 
   // virtual for unit-testing only
-  virtual bool GetOriginInfo(const base::string16& origin_id, OriginInfo* info);
-  virtual bool GetAllOriginIdentifiers(std::vector<base::string16>* origin_ids);
+  virtual bool GetOriginInfo(const std::string& origin_id, OriginInfo* info);
+  virtual bool GetAllOriginIdentifiers(std::vector<std::string>* origin_ids);
   virtual bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
 
   // Safe to call on any thread.
@@ -136,13 +136,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
     return quota_manager_proxy_.get();
   }
 
-  bool IsDatabaseScheduledForDeletion(const base::string16& origin_identifier,
+  bool IsDatabaseScheduledForDeletion(const std::string& origin_identifier,
                                       const base::string16& database_name);
 
   // Deletes a single database. Returns net::OK on success, net::FAILED on
   // failure, or net::ERR_IO_PENDING and |callback| is invoked upon completion,
   // if non-NULL.
-  int DeleteDatabase(const base::string16& origin_identifier,
+  int DeleteDatabase(const std::string& origin_identifier,
                      const base::string16& database_name,
                      const net::CompletionCallback& callback);
 
@@ -159,7 +159,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
   // success, net::FAILED if not all databases could be deleted, and
   // net::ERR_IO_PENDING and |callback| is invoked upon completion, if non-NULL.
   // virtual for unit testing only
-  virtual int DeleteDataForOrigin(const base::string16& origin_identifier,
+  virtual int DeleteDataForOrigin(const std::string& origin_identifier,
                                   const net::CompletionCallback& callback);
 
   bool IsIncognitoProfile() const { return is_incognito_; }
@@ -181,16 +181,18 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
   friend class base::RefCountedThreadSafe<DatabaseTracker>;
   friend class MockDatabaseTracker;  // for testing
 
-  typedef std::map<base::string16, std::set<base::string16> > DatabaseSet;
+  typedef std::map<std::string, std::set<base::string16> > DatabaseSet;
   typedef std::vector<std::pair<net::CompletionCallback, DatabaseSet> >
       PendingDeletionCallbacks;
   typedef std::map<base::string16, base::PlatformFile> FileHandlesMap;
-  typedef std::map<base::string16, base::string16> OriginDirectoriesMap;
+  typedef std::map<std::string, base::string16> OriginDirectoriesMap;
 
   class CachedOriginInfo : public OriginInfo {
    public:
-    CachedOriginInfo() : OriginInfo(base::string16(), 0) {}
-    void SetOrigin(const base::string16& origin) { origin_ = origin; }
+    CachedOriginInfo() : OriginInfo(std::string(), 0) {}
+    void SetOriginIdentifier(const std::string& origin_identifier) {
+      origin_identifier_ = origin_identifier;
+    }
     void SetDatabaseSize(const base::string16& database_name, int64 new_size) {
       int64 old_size = 0;
       if (database_info_.find(database_name) != database_info_.end())
@@ -214,48 +216,48 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
   // Deletes session-only databases. Blocks databases from being created/opened.
   void ClearSessionOnlyOrigins();
 
-  bool DeleteClosedDatabase(const base::string16& origin_identifier,
+  bool DeleteClosedDatabase(const std::string& origin_identifier,
                             const base::string16& database_name);
 
   // Delete all files belonging to the given origin given that no database
   // connections within this origin are open, or if |force| is true, delete
   // the meta data and rename the associated directory.
-  bool DeleteOrigin(const base::string16& origin_identifier, bool force);
-  void DeleteDatabaseIfNeeded(const base::string16& origin_identifier,
+  bool DeleteOrigin(const std::string& origin_identifier, bool force);
+  void DeleteDatabaseIfNeeded(const std::string& origin_identifier,
                               const base::string16& database_name);
 
   bool LazyInit();
   bool UpgradeToCurrentVersion();
-  void InsertOrUpdateDatabaseDetails(const base::string16& origin_identifier,
+  void InsertOrUpdateDatabaseDetails(const std::string& origin_identifier,
                                      const base::string16& database_name,
                                      const base::string16& database_details,
                                      int64 estimated_size);
 
   void ClearAllCachedOriginInfo();
   CachedOriginInfo* MaybeGetCachedOriginInfo(
-      const base::string16& origin_identifier,
+      const std::string& origin_identifier,
       bool create_if_needed);
   CachedOriginInfo* GetCachedOriginInfo(
-      const base::string16& origin_identifier) {
+      const std::string& origin_identifier) {
     return MaybeGetCachedOriginInfo(origin_identifier, true);
   }
 
-  int64 GetDBFileSize(const base::string16& origin_identifier,
+  int64 GetDBFileSize(const std::string& origin_identifier,
                       const base::string16& database_name);
-  int64 SeedOpenDatabaseInfo(const base::string16& origin_identifier,
+  int64 SeedOpenDatabaseInfo(const std::string& origin_identifier,
                              const base::string16& database_name,
                              const base::string16& description);
-  int64 UpdateOpenDatabaseInfoAndNotify(const base::string16& origin_identifier,
+  int64 UpdateOpenDatabaseInfoAndNotify(const std::string& origin_identifier,
                                         const base::string16& database_name,
                                         const base::string16* opt_description);
-  int64 UpdateOpenDatabaseSizeAndNotify(const base::string16& origin_identifier,
+  int64 UpdateOpenDatabaseSizeAndNotify(const std::string& origin_identifier,
                                         const base::string16& database_name) {
     return UpdateOpenDatabaseInfoAndNotify(
         origin_identifier, database_name, NULL);
   }
 
 
-  void ScheduleDatabaseForDeletion(const base::string16& origin_identifier,
+  void ScheduleDatabaseForDeletion(const std::string& origin_identifier,
                                    const base::string16& database_name);
   // Schedule a set of open databases for deletion. If non-null, callback is
   // invoked upon completion.
@@ -263,7 +265,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
                                     const net::CompletionCallback& callback);
 
   // Returns the directory where all DB files for the given origin are stored.
-  base::string16 GetOriginDirectory(const base::string16& origin_identifier);
+  base::string16 GetOriginDirectory(const std::string& origin_identifier);
 
   bool is_initialized_;
   const bool is_incognito_;
@@ -275,7 +277,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
   scoped_ptr<DatabasesTable> databases_table_;
   scoped_ptr<sql::MetaTable> meta_table_;
   ObserverList<Observer, true> observers_;
-  std::map<base::string16, CachedOriginInfo> origins_info_map_;
+  std::map<std::string, CachedOriginInfo> origins_info_map_;
   DatabaseConnections database_connections_;
 
   // The set of databases that should be deleted but are still opened

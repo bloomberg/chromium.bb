@@ -82,7 +82,8 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
          origins_info.begin(); ori != origins_info.end(); ++ori) {
       WebSecurityOrigin web_security_origin =
-          WebSecurityOrigin::createFromDatabaseIdentifier(ori->GetOrigin());
+          WebSecurityOrigin::createFromDatabaseIdentifier(
+              WebKit::WebString::fromUTF8(ori->GetOriginIdentifier()));
       GURL origin_url(web_security_origin.toString().utf8());
       if (!BrowsingDataHelper::HasWebScheme(origin_url)) {
         // Non-websafe state is not considered browsing data.
@@ -93,13 +94,13 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
       for (std::vector<string16>::const_iterator db = databases.begin();
            db != databases.end(); ++db) {
         base::FilePath file_path =
-            tracker_->GetFullDBFilePath(ori->GetOrigin(), *db);
+            tracker_->GetFullDBFilePath(ori->GetOriginIdentifier(), *db);
         base::PlatformFileInfo file_info;
         if (file_util::GetFileInfo(file_path, &file_info)) {
           database_info_.push_back(DatabaseInfo(
                 web_security_origin.host().utf8(),
                 UTF16ToUTF8(*db),
-                UTF16ToUTF8(ori->GetOrigin()),
+                ori->GetOriginIdentifier(),
                 UTF16ToUTF8(ori->GetDatabaseDescription(*db)),
                 origin_url.spec(),
                 file_info.size,
@@ -129,7 +130,7 @@ void BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!tracker_.get())
     return;
-  tracker_->DeleteDatabase(UTF8ToUTF16(origin), UTF8ToUTF16(name),
+  tracker_->DeleteDatabase(origin, UTF8ToUTF16(name),
                            net::CompletionCallback());
 }
 

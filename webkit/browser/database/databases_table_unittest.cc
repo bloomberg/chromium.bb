@@ -53,7 +53,7 @@ TEST(DatabasesTableTest, TestIt) {
   // Create the details for a databases.
   DatabaseDetails details_in1;
   DatabaseDetails details_out1;
-  details_in1.origin_identifier = ASCIIToUTF16("origin1");
+  details_in1.origin_identifier = "origin1";
   details_in1.database_name = ASCIIToUTF16("db1");
   details_in1.description = ASCIIToUTF16("description_db1");
   details_in1.estimated_size = 100;
@@ -82,7 +82,7 @@ TEST(DatabasesTableTest, TestIt) {
 
   // Insert details for another database with the same origin.
   DatabaseDetails details_in2;
-  details_in2.origin_identifier = ASCIIToUTF16("origin1");
+  details_in2.origin_identifier = "origin1";
   details_in2.database_name = ASCIIToUTF16("db2");
   details_in2.description = ASCIIToUTF16("description_db2");
   details_in2.estimated_size = 200;
@@ -92,7 +92,7 @@ TEST(DatabasesTableTest, TestIt) {
 
   // Insert details for a third database with a different origin.
   DatabaseDetails details_in3;
-  details_in3.origin_identifier = ASCIIToUTF16("origin2");
+  details_in3.origin_identifier = "origin2";
   details_in3.database_name = ASCIIToUTF16("db3");
   details_in3.description = ASCIIToUTF16("description_db3");
   details_in3.estimated_size = 300;
@@ -102,34 +102,35 @@ TEST(DatabasesTableTest, TestIt) {
 
   // There should be no database with origin "origin3".
   std::vector<DatabaseDetails> details_out_origin3;
-  EXPECT_TRUE(databases_table.GetAllDatabaseDetailsForOrigin(
-      ASCIIToUTF16("origin3"), &details_out_origin3));
+  EXPECT_TRUE(databases_table.GetAllDatabaseDetailsForOriginIdentifier(
+      "origin3", &details_out_origin3));
   EXPECT_TRUE(details_out_origin3.empty());
 
   // There should be only two databases with origin "origin1".
   std::vector<DatabaseDetails> details_out_origin1;
-  EXPECT_TRUE(databases_table.GetAllDatabaseDetailsForOrigin(
+  EXPECT_TRUE(databases_table.GetAllDatabaseDetailsForOriginIdentifier(
       details_in1.origin_identifier, &details_out_origin1));
   EXPECT_EQ(size_t(2), details_out_origin1.size());
   CheckDetailsAreEqual(details_in1, details_out_origin1[0]);
   CheckDetailsAreEqual(details_in2, details_out_origin1[1]);
 
   // Get the list of all origins: should be "origin1" and "origin2".
-  std::vector<base::string16> origins_out;
-  EXPECT_TRUE(databases_table.GetAllOrigins(&origins_out));
+  std::vector<std::string> origins_out;
+  EXPECT_TRUE(databases_table.GetAllOriginIdentifiers(&origins_out));
   EXPECT_EQ(size_t(2), origins_out.size());
   EXPECT_EQ(details_in1.origin_identifier, origins_out[0]);
   EXPECT_EQ(details_in3.origin_identifier, origins_out[1]);
 
   // Delete an origin and check that it's no longer in the table.
   origins_out.clear();
-  EXPECT_TRUE(databases_table.DeleteOrigin(details_in3.origin_identifier));
-  EXPECT_TRUE(databases_table.GetAllOrigins(&origins_out));
+  EXPECT_TRUE(databases_table.DeleteOriginIdentifier(
+      details_in3.origin_identifier));
+  EXPECT_TRUE(databases_table.GetAllOriginIdentifiers(&origins_out));
   EXPECT_EQ(size_t(1), origins_out.size());
   EXPECT_EQ(details_in1.origin_identifier, origins_out[0]);
 
   // Deleting an origin that doesn't have any record in this table should fail.
-  EXPECT_FALSE(databases_table.DeleteOrigin(ASCIIToUTF16("unknown_origin")));
+  EXPECT_FALSE(databases_table.DeleteOriginIdentifier("unknown_origin"));
 
   // Delete the details for 'db1' and check that they're no longer there.
   EXPECT_TRUE(databases_table.DeleteDatabaseDetails(
@@ -141,7 +142,7 @@ TEST(DatabasesTableTest, TestIt) {
 
   // Check that trying to delete a record that doesn't exist fails.
   EXPECT_FALSE(databases_table.DeleteDatabaseDetails(
-      ASCIIToUTF16("unknown_origin"), ASCIIToUTF16("unknown_database")));
+      "unknown_origin", ASCIIToUTF16("unknown_database")));
 }
 
 }  // namespace webkit_database

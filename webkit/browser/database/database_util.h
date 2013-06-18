@@ -5,6 +5,7 @@
 #ifndef WEBKIT_BROWSER_DATABASE_DATABASE_UTIL_H_
 #define WEBKIT_BROWSER_DATABASE_DATABASE_UTIL_H_
 
+#include <string>
 #include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
@@ -24,13 +25,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseUtil {
   // Extract various information from a database vfs_file_name.  All return
   // parameters are optional.
   static bool CrackVfsFileName(const base::string16& vfs_file_name,
-                               base::string16* origin_identifier,
+                               std::string* origin_identifier,
                                base::string16* database_name,
                                base::string16* sqlite_suffix);
   static base::FilePath GetFullFilePathForVfsFile(
       DatabaseTracker* db_tracker,
       const base::string16& vfs_file_name);
-  static bool IsValidOriginIdentifier(const base::string16& origin_identifier);
+  static bool IsValidOriginIdentifier(const std::string& origin_identifier);
 };
 
 }  // namespace webkit_database

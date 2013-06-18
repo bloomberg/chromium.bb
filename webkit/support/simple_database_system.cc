@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -56,8 +57,8 @@ SimpleDatabaseSystem::~SimpleDatabaseSystem() {
 }
 
 void SimpleDatabaseSystem::databaseOpened(const WebKit::WebDatabase& database) {
-  base::string16 origin_identifier =
-      database.securityOrigin().databaseIdentifier();
+  std::string origin_identifier =
+      database.securityOrigin().databaseIdentifier().utf8();
   base::string16 database_name = database.name();
   open_connections_->AddOpenConnection(origin_identifier, database_name);
   db_thread_proxy_->PostTask(
@@ -75,13 +76,13 @@ void SimpleDatabaseSystem::databaseModified(
       FROM_HERE,
       base::Bind(&SimpleDatabaseSystem::DatabaseModified,
                  base::Unretained(this),
-                 database.securityOrigin().databaseIdentifier(),
+                 database.securityOrigin().databaseIdentifier().utf8(),
                  database.name()));
 }
 
 void SimpleDatabaseSystem::databaseClosed(const WebKit::WebDatabase& database) {
-  base::string16 origin_identifier =
-      database.securityOrigin().databaseIdentifier();
+  std::string origin_identifier =
+      database.securityOrigin().databaseIdentifier().utf8();
   base::string16 database_name = database.name();
   db_thread_proxy_->PostTask(
       FROM_HERE,
@@ -141,7 +142,7 @@ int64 SimpleDatabaseSystem::GetFileSize(const base::string16& vfs_file_name) {
 }
 
 int64 SimpleDatabaseSystem::GetSpaceAvailable(
-    const base::string16& origin_identifier) {
+    const std::string& origin_identifier) {
   int64 result = 0;
   base::WaitableEvent done_event(false, false);
   db_thread_proxy_->PostTask(
@@ -172,7 +173,7 @@ void SimpleDatabaseSystem::SetDatabaseQuota(int64 quota) {
 }
 
 void SimpleDatabaseSystem::DatabaseOpened(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name,
     const base::string16& description,
     int64 estimated_size) {
@@ -186,14 +187,14 @@ void SimpleDatabaseSystem::DatabaseOpened(
 }
 
 void SimpleDatabaseSystem::DatabaseModified(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   db_tracker_->DatabaseModified(origin_identifier, database_name);
 }
 
 void SimpleDatabaseSystem::DatabaseClosed(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   db_tracker_->DatabaseClosed(origin_identifier, database_name);
@@ -201,7 +202,7 @@ void SimpleDatabaseSystem::DatabaseClosed(
 }
 
 void SimpleDatabaseSystem::OnDatabaseSizeChanged(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name,
     int64 database_size) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
@@ -209,18 +210,19 @@ void SimpleDatabaseSystem::OnDatabaseSizeChanged(
   // to better emulate what happens in chrome where this method is
   // invoked on the background ipc thread.
   WebKit::WebDatabase::updateDatabaseSize(
-      origin_identifier, database_name, database_size);
+      WebKit::WebString::fromUTF8(origin_identifier),
+      database_name, database_size);
 }
 
 void SimpleDatabaseSystem::OnDatabaseScheduledForDeletion(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   // We intentionally call into webkit on our background db_thread_
   // to better emulate what happens in chrome where this method is
   // invoked on the background ipc thread.
   WebKit::WebDatabase::closeDatabaseImmediately(
-      origin_identifier, database_name);
+      WebKit::WebString::fromUTF8(origin_identifier), database_name);
 }
 
 void SimpleDatabaseSystem::VfsOpenFile(
@@ -277,7 +279,7 @@ void SimpleDatabaseSystem::VfsGetFileSize(
 }
 
 void SimpleDatabaseSystem::VfsGetSpaceAvailable(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     int64* result, base::WaitableEvent* done_event) {
   DCHECK(db_thread_proxy_->BelongsToCurrentThread());
   // This method isn't actually part of the "vfs" interface, but it is

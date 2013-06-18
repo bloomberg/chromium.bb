@@ -168,11 +168,11 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
 }
 
 std::string GetFileSystemName(const GURL& origin_url, FileSystemType type) {
-  base::string16 origin_identifier =
+  std::string origin_identifier =
       webkit_base::GetOriginIdentifierFromURL(origin_url);
   std::string type_string = GetFileSystemTypeString(type);
   DCHECK(!type_string.empty());
-  return UTF16ToUTF8(origin_identifier) + ":" + type_string;
+  return origin_identifier + ":" + type_string;
 }
 
 FileSystemType QuotaStorageTypeToFileSystemType(

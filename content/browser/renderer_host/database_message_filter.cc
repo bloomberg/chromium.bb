@@ -120,7 +120,7 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
                                                IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
-  string16 origin_identifier;
+  std::string origin_identifier;
   string16 database_name;
 
   // When in incognito mode, we want to make sure that all DB files are
@@ -245,7 +245,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileSize(
 }
 
 void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
-    const string16& origin_identifier, IPC::Message* reply_msg) {
+    const std::string& origin_identifier, IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(db_tracker_->quota_manager_proxy());
 
@@ -278,10 +278,11 @@ void DatabaseMessageFilter::OnDatabaseGetUsageAndQuota(
   Send(reply_msg);
 }
 
-void DatabaseMessageFilter::OnDatabaseOpened(const string16& origin_identifier,
-                                             const string16& database_name,
-                                             const string16& description,
-                                             int64 estimated_size) {
+void DatabaseMessageFilter::OnDatabaseOpened(
+    const std::string& origin_identifier,
+    const string16& database_name,
+    const string16& description,
+    int64 estimated_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
@@ -299,7 +300,7 @@ void DatabaseMessageFilter::OnDatabaseOpened(const string16& origin_identifier,
 }
 
 void DatabaseMessageFilter::OnDatabaseModified(
-    const string16& origin_identifier,
+    const std::string& origin_identifier,
     const string16& database_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
@@ -312,8 +313,9 @@ void DatabaseMessageFilter::OnDatabaseModified(
   db_tracker_->DatabaseModified(origin_identifier, database_name);
 }
 
-void DatabaseMessageFilter::OnDatabaseClosed(const string16& origin_identifier,
-                                             const string16& database_name) {
+void DatabaseMessageFilter::OnDatabaseClosed(
+    const std::string& origin_identifier,
+    const string16& database_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
@@ -327,7 +329,7 @@ void DatabaseMessageFilter::OnDatabaseClosed(const string16& origin_identifier,
 }
 
 void DatabaseMessageFilter::OnHandleSqliteError(
-    const string16& origin_identifier,
+    const std::string& origin_identifier,
     const string16& database_name,
     int error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -341,7 +343,7 @@ void DatabaseMessageFilter::OnHandleSqliteError(
 }
 
 void DatabaseMessageFilter::OnDatabaseSizeChanged(
-    const string16& origin_identifier,
+    const std::string& origin_identifier,
     const string16& database_name,
     int64 database_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -352,7 +354,7 @@ void DatabaseMessageFilter::OnDatabaseSizeChanged(
 }
 
 void DatabaseMessageFilter::OnDatabaseScheduledForDeletion(
-    const string16& origin_identifier,
+    const std::string& origin_identifier,
     const string16& database_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Send(new DatabaseMsg_CloseImmediately(origin_identifier, database_name));

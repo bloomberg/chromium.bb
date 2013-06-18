@@ -223,7 +223,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   Context()->GetIDBFactory()->getDatabaseNames(
       new IndexedDBCallbacks<std::vector<string16> >(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
-      params.database_identifier,
+      WebKit::WebString::fromUTF8(params.database_identifier),
       webkit_base::FilePathToWebString(indexed_db_path));
 }
 
@@ -253,7 +253,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
                                             origin_url),
              new IndexedDBDatabaseCallbacks(
                  this, params.ipc_thread_id, params.ipc_database_callbacks_id),
-             params.database_identifier,
+             WebKit::WebString::fromUTF8(params.database_identifier),
              webkit_base::FilePathToWebString(indexed_db_path));
 }
 
@@ -266,7 +266,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
       ->deleteDatabase(params.name,
                        new IndexedDBCallbacks<std::vector<char> >(
                            this, params.ipc_thread_id, params.ipc_callbacks_id),
-                       params.database_identifier,
+                       WebKit::WebString::fromUTF8(params.database_identifier),
                        webkit_base::FilePathToWebString(indexed_db_path));
 }
 

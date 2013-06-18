@@ -24,7 +24,7 @@ bool DatabaseConnections::IsEmpty() const {
 }
 
 bool DatabaseConnections::IsDatabaseOpened(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name) const {
   OriginConnections::const_iterator origin_it =
       connections_.find(origin_identifier);
@@ -35,19 +35,19 @@ bool DatabaseConnections::IsDatabaseOpened(
 }
 
 bool DatabaseConnections::IsOriginUsed(
-    const base::string16& origin_identifier) const {
+    const std::string& origin_identifier) const {
   return (connections_.find(origin_identifier) != connections_.end());
 }
 
 bool DatabaseConnections::AddConnection(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name) {
   int& count = connections_[origin_identifier][database_name].first;
   return ++count == 1;
 }
 
 bool DatabaseConnections::RemoveConnection(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name) {
   return RemoveConnectionsHelper(origin_identifier, database_name, 1);
 }
@@ -58,7 +58,7 @@ void DatabaseConnections::RemoveAllConnections() {
 
 void DatabaseConnections::RemoveConnections(
     const DatabaseConnections& connections,
-    std::vector<std::pair<base::string16, base::string16> >* closed_dbs) {
+    std::vector<std::pair<std::string, base::string16> >* closed_dbs) {
   for (OriginConnections::const_iterator origin_it =
            connections.connections_.begin();
        origin_it != connections.connections_.end();
@@ -74,14 +74,14 @@ void DatabaseConnections::RemoveConnections(
 }
 
 int64 DatabaseConnections::GetOpenDatabaseSize(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name) const {
   DCHECK(IsDatabaseOpened(origin_identifier, database_name));
   return connections_[origin_identifier][database_name].second;
 }
 
 void DatabaseConnections::SetOpenDatabaseSize(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name,
     int64 size) {
   DCHECK(IsDatabaseOpened(origin_identifier, database_name));
@@ -89,7 +89,7 @@ void DatabaseConnections::SetOpenDatabaseSize(
 }
 
 void DatabaseConnections::ListConnections(
-    std::vector<std::pair<base::string16, base::string16> > *list) const {
+    std::vector<std::pair<std::string, base::string16> > *list) const {
   for (OriginConnections::const_iterator origin_it =
            connections_.begin();
        origin_it != connections_.end();
@@ -103,7 +103,7 @@ void DatabaseConnections::ListConnections(
 }
 
 bool DatabaseConnections::RemoveConnectionsHelper(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name,
     int num_connections) {
   OriginConnections::iterator origin_iterator =
@@ -147,7 +147,7 @@ bool DatabaseConnectionsWrapper::HasOpenConnections() {
 }
 
 void DatabaseConnectionsWrapper::AddOpenConnection(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name) {
   // We add to the collection immediately on any thread.
   base::AutoLock auto_lock(open_connections_lock_);
@@ -155,7 +155,7 @@ void DatabaseConnectionsWrapper::AddOpenConnection(
 }
 
 void DatabaseConnectionsWrapper::RemoveOpenConnection(
-    const base::string16& origin_identifier,
+    const std::string& origin_identifier,
     const base::string16& database_name) {
   // But only remove from the collection on the main thread
   // so we can handle the waiting_for_dbs_to_close_ case.

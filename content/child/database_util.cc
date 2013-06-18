@@ -59,7 +59,8 @@ long long DatabaseUtil::DatabaseGetSpaceAvailable(
   int64 rv = 0LL;
   scoped_refptr<IPC::SyncMessageFilter> filter(
       ChildThread::current()->sync_message_filter());
-  filter->Send(new DatabaseHostMsg_GetSpaceAvailable(origin_identifier, &rv));
+  filter->Send(new DatabaseHostMsg_GetSpaceAvailable(origin_identifier.utf8(),
+                                                     &rv));
   return rv;
 }
 

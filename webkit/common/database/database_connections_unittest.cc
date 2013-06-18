@@ -14,7 +14,7 @@ namespace webkit_database {
 namespace {
 
 void RemoveConnectionTask(
-    const base::string16& origin_id, const base::string16& database_name,
+    const std::string& origin_id, const base::string16& database_name,
     scoped_refptr<DatabaseConnectionsWrapper> obj,
     bool* did_task_execute) {
   *did_task_execute = true;
@@ -22,7 +22,7 @@ void RemoveConnectionTask(
 }
 
 void ScheduleRemoveConnectionTask(
-    base::Thread* thread,  const base::string16& origin_id,
+    base::Thread* thread,  const std::string& origin_id,
     const base::string16& database_name,
     scoped_refptr<DatabaseConnectionsWrapper> obj,
     bool* did_task_execute) {
@@ -35,7 +35,7 @@ void ScheduleRemoveConnectionTask(
 }  // anonymous namespace
 
 TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
-  const base::string16 kOriginId(ASCIIToUTF16("origin_id"));
+  const std::string kOriginId("origin_id");
   const base::string16 kName(ASCIIToUTF16("database_name"));
   const base::string16 kName2(ASCIIToUTF16("database_name2"));
   const int64 kSize = 1000;
@@ -74,7 +74,7 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
   another.AddConnection(kOriginId, kName);
   another.AddConnection(kOriginId, kName2);
 
-  std::vector<std::pair<base::string16, base::string16> > closed_dbs;
+  std::vector<std::pair<std::string, base::string16> > closed_dbs;
   connections.RemoveConnections(another, &closed_dbs);
   EXPECT_EQ(1u, closed_dbs.size());
   EXPECT_EQ(kOriginId, closed_dbs[0].first);
@@ -97,7 +97,7 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsTest) {
 }
 
 TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
-  const base::string16 kOriginId(ASCIIToUTF16("origin_id"));
+  const std::string kOriginId("origin_id");
   const base::string16 kName(ASCIIToUTF16("database_name"));
 
   base::MessageLoop message_loop;

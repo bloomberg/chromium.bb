@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BASE_ORIGIN_URL_CONVERSIONS_H_
 #define WEBKIT_BASE_ORIGIN_URL_CONVERSIONS_H_
 
-#include "base/strings/string16.h"
+#include <string>
 #include "webkit/base/webkit_base_export.h"
 
 class GURL;
@@ -21,9 +21,9 @@ namespace webkit_base {
 //   "http://www.example.com:80/"'s identifier should look like:
 //   "http_www.example.host_80"
 WEBKIT_BASE_EXPORT GURL GetOriginURLFromIdentifier(
-    const base::string16& identifier);
+    const std::string& identifier);
 
-WEBKIT_BASE_EXPORT base::string16 GetOriginIdentifierFromURL(const GURL& url);
+WEBKIT_BASE_EXPORT std::string GetOriginIdentifierFromURL(const GURL& url);
 
 }  // namespace webkit_base
 

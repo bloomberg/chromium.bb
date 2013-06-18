@@ -8,6 +8,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 
+using WebKit::WebString;
+
 namespace content {
 
 DBMessageFilter::DBMessageFilter() {
@@ -28,30 +30,31 @@ bool DBMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DBMessageFilter::OnDatabaseUpdateSize(const string16& origin_identifier,
+void DBMessageFilter::OnDatabaseUpdateSize(const std::string& origin_identifier,
                                            const string16& database_name,
                                            int64 database_size) {
   WebKit::WebDatabase::updateDatabaseSize(
-      origin_identifier, database_name, database_size);
+      WebString::fromUTF8(origin_identifier), database_name, database_size);
 }
 
 void DBMessageFilter::OnDatabaseUpdateSpaceAvailable(
-    const string16& origin_identifier,
+    const std::string& origin_identifier,
     int64 space_available) {
   WebKit::WebDatabase::updateSpaceAvailable(
-      origin_identifier, space_available);
+      WebString::fromUTF8(origin_identifier), space_available);
 }
 
 void DBMessageFilter::OnDatabaseResetSpaceAvailable(
-    const string16& origin_identifier) {
-  WebKit::WebDatabase::resetSpaceAvailable(origin_identifier);
+    const std::string& origin_identifier) {
+  WebKit::WebDatabase::resetSpaceAvailable(
+      WebString::fromUTF8(origin_identifier));
 }
 
 void DBMessageFilter::OnDatabaseCloseImmediately(
-    const string16& origin_identifier,
+    const std::string& origin_identifier,
     const string16& database_name) {
   WebKit::WebDatabase::closeDatabaseImmediately(
-      origin_identifier, database_name);
+      WebString::fromUTF8(origin_identifier), database_name);
 }
 
 }  // namespace content

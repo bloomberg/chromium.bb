@@ -41,19 +41,19 @@ const base::FilePath::CharType DomStorageArea::kDatabaseFileExtension[] =
 
 // static
 base::FilePath DomStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
-  base::string16 filename = webkit_base::GetOriginIdentifierFromURL(origin);
+  std::string filename = webkit_base::GetOriginIdentifierFromURL(origin);
   // There is no base::FilePath.AppendExtension() method, so start with just the
   // extension as the filename, and then InsertBeforeExtension the desired
   // name.
   return base::FilePath().Append(kDatabaseFileExtension).
-      InsertBeforeExtensionASCII(UTF16ToUTF8(filename));
+      InsertBeforeExtensionASCII(filename);
 }
 
 // static
 GURL DomStorageArea::OriginFromDatabaseFileName(const base::FilePath& name) {
   DCHECK(name.MatchesExtension(kDatabaseFileExtension));
-  WebKit::WebString origin_id = webkit_base::FilePathToWebString(
-      name.BaseName().RemoveExtension());
+  std::string origin_id =
+      name.BaseName().RemoveExtension().MaybeAsASCII();
   return webkit_base::GetOriginURLFromIdentifier(origin_id);
 }
 

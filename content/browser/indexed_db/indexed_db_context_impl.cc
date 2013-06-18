@@ -49,10 +49,8 @@ void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
   for (base::FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == IndexedDBContextImpl::kIndexedDBExtension) {
-      WebKit::WebString origin_id_webstring =
-          webkit_base::FilePathToWebString(file_path.BaseName());
-      origins->push_back(
-          webkit_base::GetOriginURLFromIdentifier(origin_id_webstring));
+      std::string origin_id = file_path.BaseName().MaybeAsASCII();
+      origins->push_back(webkit_base::GetOriginURLFromIdentifier(origin_id));
       if (file_paths)
         file_paths->push_back(file_path);
     }
@@ -196,13 +194,13 @@ void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePath(const GURL& origin_url) {
-  base::string16 origin_id =
+  std::string origin_id =
       webkit_base::GetOriginIdentifierFromURL(origin_url);
   return GetIndexedDBFilePath(origin_id);
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
-    const string16& origin_id) const {
+    const std::string& origin_id) const {
   return GetIndexedDBFilePath(origin_id);
 }
 
@@ -302,17 +300,17 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
 }
 
 base::FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
-    const string16& origin_id) const {
+    const std::string& origin_id) const {
   DCHECK(!data_path_.empty());
-  base::FilePath::StringType id = webkit_base::WebStringToFilePathString(
-      origin_id).append(FILE_PATH_LITERAL(".indexeddb"));
-  return data_path_.Append(id.append(kIndexedDBExtension));
+  return data_path_.AppendASCII(origin_id).
+      AddExtension(FILE_PATH_LITERAL(".indexeddb")).
+      AddExtension(kIndexedDBExtension);
 }
 
 int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   if (data_path_.empty())
     return 0;
-  base::string16 origin_id =
+  std::string origin_id =
       webkit_base::GetOriginIdentifierFromURL(origin_url);
   base::FilePath file_path = GetIndexedDBFilePath(origin_id);
   return file_util::ComputeDirectorySize(file_path);

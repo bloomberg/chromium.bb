@@ -30,7 +30,7 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
 
   // Get the file name of the local storage file for the given origin.
   virtual base::FilePath GetFilePathForTesting(
-      const string16& origin_id) const = 0;
+      const std::string& origin_id) const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<IndexedDBContext>;

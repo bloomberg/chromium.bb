@@ -3892,7 +3892,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   const Extension* extension = InstallCRX(path, INSTALL_NEW);
   ASSERT_TRUE(extension);
   GURL ext_url(extension->url());
-  base::string16 origin_id = webkit_base::GetOriginIdentifierFromURL(ext_url);
+  std::string origin_id = webkit_base::GetOriginIdentifierFromURL(ext_url);
 
   // Set a cookie for the extension.
   net::CookieMonster* cookie_monster =
@@ -3926,15 +3926,15 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   std::vector<webkit_database::OriginInfo> origins;
   db_tracker->GetAllOriginsInfo(&origins);
   EXPECT_EQ(1U, origins.size());
-  EXPECT_EQ(origin_id, origins[0].GetOrigin());
+  EXPECT_EQ(origin_id, origins[0].GetOriginIdentifier());
 
   // Create local storage. We only simulate this by creating the backing files.
   // Note: This test depends on details of how the dom_storage library
   // stores data in the host file system.
   base::FilePath lso_dir_path =
       profile_->GetPath().AppendASCII("Local Storage");
-  base::FilePath lso_file_path = lso_dir_path.AppendASCII(
-      UTF16ToUTF8(origin_id) + ".localstorage");
+  base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
+      .AddExtension(FILE_PATH_LITERAL(".localstorage"));
   EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
   EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
   EXPECT_TRUE(file_util::PathExists(lso_file_path));
@@ -3992,7 +3992,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin1));
-  base::string16 origin_id = webkit_base::GetOriginIdentifierFromURL(origin1);
+  std::string origin_id = webkit_base::GetOriginIdentifierFromURL(origin1);
 
   // Install app2 from the same origin with unlimited storage.
   extension = PackAndInstallCRX(data_dir_.AppendASCII("app2"), INSTALL_NEW);
@@ -4041,15 +4041,15 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   std::vector<webkit_database::OriginInfo> origins;
   db_tracker->GetAllOriginsInfo(&origins);
   EXPECT_EQ(1U, origins.size());
-  EXPECT_EQ(origin_id, origins[0].GetOrigin());
+  EXPECT_EQ(origin_id, origins[0].GetOriginIdentifier());
 
   // Create local storage. We only simulate this by creating the backing files.
   // Note: This test depends on details of how the dom_storage library
   // stores data in the host file system.
   base::FilePath lso_dir_path =
       profile_->GetPath().AppendASCII("Local Storage");
-  base::FilePath lso_file_path = lso_dir_path.AppendASCII(
-      UTF16ToUTF8(origin_id) + ".localstorage");
+  base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
+      .AddExtension(FILE_PATH_LITERAL(".localstorage"));
   EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
   EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
   EXPECT_TRUE(file_util::PathExists(lso_file_path));
@@ -4467,7 +4467,7 @@ namespace {
    private:
     std::string old_locale_;
   };
-}
+}  // namespace
 
 TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
   InitializeEmptyExtensionService();

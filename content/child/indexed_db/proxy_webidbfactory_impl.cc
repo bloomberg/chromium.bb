@@ -28,7 +28,7 @@ void RendererWebIDBFactoryImpl::getDatabaseNames(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBFactoryGetDatabaseNames(
-      callbacks, database_identifier);
+      callbacks, database_identifier.utf8());
 }
 
 void RendererWebIDBFactoryImpl::open(
@@ -45,7 +45,7 @@ void RendererWebIDBFactoryImpl::open(
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBFactoryOpen(
       name, version, transaction_id, callbacks, database_callbacks,
-      database_identifier);
+      database_identifier.utf8());
 }
 
 void RendererWebIDBFactoryImpl::deleteDatabase(
@@ -58,7 +58,7 @@ void RendererWebIDBFactoryImpl::deleteDatabase(
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBFactoryDeleteDatabase(
-      name, callbacks, database_identifier);
+      name, callbacks, database_identifier.utf8());
 }
 
 }  // namespace content

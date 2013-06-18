@@ -30,7 +30,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
   IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // The string id of the origin doing the initiating.
-  IPC_STRUCT_MEMBER(string16, database_identifier)
+  IPC_STRUCT_MEMBER(std::string, database_identifier)
 IPC_STRUCT_END()
 
 // Used to open an indexed database.
@@ -42,7 +42,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   // Identifier for database callbacks
   IPC_STRUCT_MEMBER(int32, ipc_database_callbacks_id)
   // The string id of the origin doing the initiating.
-  IPC_STRUCT_MEMBER(string16, database_identifier)
+  IPC_STRUCT_MEMBER(std::string, database_identifier)
   // The name of the database.
   IPC_STRUCT_MEMBER(string16, name)
   // The transaction id used if a database upgrade is needed.
@@ -57,7 +57,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryDeleteDatabase_Params)
   IPC_STRUCT_MEMBER(int32, ipc_thread_id)
   IPC_STRUCT_MEMBER(int32, ipc_callbacks_id)
   // The string id of the origin doing the initiating.
-  IPC_STRUCT_MEMBER(string16, database_identifier)
+  IPC_STRUCT_MEMBER(std::string, database_identifier)
   // The name of the database.
   IPC_STRUCT_MEMBER(string16, name)
 IPC_STRUCT_END()

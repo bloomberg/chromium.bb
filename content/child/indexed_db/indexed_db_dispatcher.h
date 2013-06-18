@@ -60,8 +60,9 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void OnMessageReceived(const IPC::Message& msg);
   static bool Send(IPC::Message* msg);
 
-  void RequestIDBFactoryGetDatabaseNames(WebKit::WebIDBCallbacks* callbacks,
-                                         const string16& database_identifier);
+  void RequestIDBFactoryGetDatabaseNames(
+      WebKit::WebIDBCallbacks* callbacks,
+      const std::string& database_identifier);
 
   void RequestIDBFactoryOpen(
       const string16& name,
@@ -69,11 +70,11 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int64 transaction_id,
       WebKit::WebIDBCallbacks* callbacks,
       WebKit::WebIDBDatabaseCallbacks* database_callbacks,
-      const string16& database_identifier);
+      const std::string& database_identifier);
 
   void RequestIDBFactoryDeleteDatabase(const string16& name,
                                        WebKit::WebIDBCallbacks* callbacks,
-                                       const string16& database_identifier);
+                                       const std::string& database_identifier);
 
   void RequestIDBCursorAdvance(unsigned long count,
                                WebKit::WebIDBCallbacks* callbacks_ptr,

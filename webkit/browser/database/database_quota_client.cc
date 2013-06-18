@@ -37,9 +37,9 @@ int64 GetOriginUsageOnDBThread(
 void GetOriginsOnDBThread(
     DatabaseTracker* db_tracker,
     std::set<GURL>* origins_ptr) {
-  std::vector<base::string16> origin_identifiers;
+  std::vector<std::string> origin_identifiers;
   if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
-    for (std::vector<base::string16>::const_iterator iter =
+    for (std::vector<std::string>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
       GURL origin = webkit_base::GetOriginURLFromIdentifier(*iter);
@@ -52,9 +52,9 @@ void GetOriginsForHostOnDBThread(
     DatabaseTracker* db_tracker,
     std::set<GURL>* origins_ptr,
     const std::string& host) {
-  std::vector<base::string16> origin_identifiers;
+  std::vector<std::string> origin_identifiers;
   if (db_tracker->GetAllOriginIdentifiers(&origin_identifiers)) {
-    for (std::vector<base::string16>::const_iterator iter =
+    for (std::vector<std::string>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
       GURL origin = webkit_base::GetOriginURLFromIdentifier(*iter);

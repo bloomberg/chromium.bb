@@ -6,19 +6,21 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 namespace webkit_base {
 
-GURL GetOriginURLFromIdentifier(const base::string16& identifier) {
+GURL GetOriginURLFromIdentifier(const std::string& identifier) {
   WebKit::WebSecurityOrigin web_security_origin =
-      WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(identifier);
+      WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+          WebKit::WebString::fromUTF8(identifier));
 
   // We need this work-around for file:/// URIs as
   // createFromDatabaseIdentifier returns null origin_url for them.
   if (web_security_origin.isUnique()) {
-    if (identifier.find(UTF8ToUTF16("file__")) == 0)
+    if (identifier.find("file__") == 0)
       return GURL("file:///");
     return GURL();
   }
@@ -26,9 +28,9 @@ GURL GetOriginURLFromIdentifier(const base::string16& identifier) {
   return GURL(web_security_origin.toString());
 }
 
-base::string16 GetOriginIdentifierFromURL(const GURL& url) {
+std::string GetOriginIdentifierFromURL(const GURL& url) {
   return WebKit::WebSecurityOrigin::createFromString(
-      UTF8ToUTF16(url.spec())).databaseIdentifier();
+      UTF8ToUTF16(url.spec())).databaseIdentifier().utf8();
 }
 
 }  // namespace webkit_base

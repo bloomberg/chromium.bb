@@ -205,12 +205,10 @@ void IndexedDBInternalsUI::DownloadOriginDataOnWebkitThread(
   // has completed.
   base::FilePath temp_path = temp_dir.Take();
 
-  base::string16 origin_id =
+  std::string origin_id =
       webkit_base::GetOriginIdentifierFromURL(origin_url);
-  base::FilePath::StringType zip_name =
-      webkit_base::WebStringToFilePathString(origin_id);
   base::FilePath zip_path =
-      temp_path.Append(zip_name).AddExtension(FILE_PATH_LITERAL("zip"));
+      temp_path.AppendASCII(origin_id).AddExtension(FILE_PATH_LITERAL("zip"));
 
   // This happens on the "webkit" thread (which is really just the IndexedDB
   // thread) as a simple way to avoid another script reopening the origin
