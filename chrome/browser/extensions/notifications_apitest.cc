@@ -40,6 +40,7 @@ class NotificationIdleTest : public ExtensionApiTest {
 #import "base/mac/mac_util.h"
 #endif
 
+// TODO(kbr): http://crbug.com/251058
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_NotificationsNoPermission) {
   ASSERT_TRUE(RunExtensionTest("notifications/has_not_permission")) << message_;
 }
