@@ -42,6 +42,10 @@ void CacheTestFillBuffer(char* buffer, size_t len, bool no_nulls) {
 }
 
 bool CreateCacheTestFile(const base::FilePath& name) {
+  return CreateCacheTestFileWithSize(name, 4 * 1024 * 1024);
+}
+
+bool CreateCacheTestFileWithSize(const base::FilePath& name, size_t size){
   int flags = base::PLATFORM_FILE_CREATE_ALWAYS |
               base::PLATFORM_FILE_READ |
               base::PLATFORM_FILE_WRITE;
@@ -51,7 +55,7 @@ bool CreateCacheTestFile(const base::FilePath& name) {
   if (!file->IsValid())
     return false;
 
-  file->SetLength(4 * 1024 * 1024);
+  file->SetLength(size);
   return true;
 }
 
