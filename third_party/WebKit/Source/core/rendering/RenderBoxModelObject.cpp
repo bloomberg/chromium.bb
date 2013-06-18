@@ -36,6 +36,7 @@
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
@@ -2662,6 +2663,43 @@ void RenderBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
         transformState.applyTransform(t, preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
     } else
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+}
+
+const RenderObject* RenderBoxModelObject::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+{
+    ASSERT(ancestorToStopAt != this);
+
+    bool ancestorSkipped;
+    RenderObject* container = this->container(ancestorToStopAt, &ancestorSkipped);
+    if (!container)
+        return 0;
+
+    bool isInline = isRenderInline();
+    bool isFixedPos = !isInline && style()->position() == FixedPosition;
+    bool hasTransform = !isInline && hasLayer() && layer()->transform();
+
+    LayoutSize adjustmentForSkippedAncestor;
+    if (ancestorSkipped) {
+        // There can't be a transform between repaintContainer and o, because transforms create containers, so it should be safe
+        // to just subtract the delta between the ancestor and o.
+        adjustmentForSkippedAncestor = -ancestorToStopAt->offsetFromAncestorContainer(container);
+    }
+
+    bool offsetDependsOnPoint = false;
+    LayoutSize containerOffset = offsetFromContainer(container, LayoutPoint(), &offsetDependsOnPoint);
+
+    bool preserve3D = container->style()->preserves3D() || style()->preserves3D();
+    if (shouldUseTransformFromContainer(container)) {
+        TransformationMatrix t;
+        getTransformFromContainer(container, containerOffset, t);
+        t.translateRight(adjustmentForSkippedAncestor.width(), adjustmentForSkippedAncestor.height());
+        geometryMap.push(this, t, preserve3D, offsetDependsOnPoint, isFixedPos, hasTransform);
+    } else {
+        containerOffset += adjustmentForSkippedAncestor;
+        geometryMap.push(this, containerOffset, preserve3D, offsetDependsOnPoint, isFixedPos, hasTransform);
+    }
+
+    return ancestorSkipped ? ancestorToStopAt : container;
 }
 
 void RenderBoxModelObject::moveChildTo(RenderBoxModelObject* toBoxModelObject, RenderObject* child, RenderObject* beforeChild, bool fullRemoveInsert)
