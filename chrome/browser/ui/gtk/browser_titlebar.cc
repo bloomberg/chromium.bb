@@ -777,9 +777,9 @@ void BrowserTitlebar::UpdateTextColor() {
 void BrowserTitlebar::UpdateAvatarLabel() {
   if (theme_service_ && avatar_label_) {
     GdkColor text_color =
-        theme_service_->GetGdkColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
+        theme_service_->GetGdkColor(ThemeProperties::COLOR_MANAGED_USER_LABEL);
     GdkColor label_background = theme_service_->GetGdkColor(
-        ThemeProperties::COLOR_TOOLBAR);
+        ThemeProperties::COLOR_MANAGED_USER_LABEL_BACKGROUND);
     gtk_util::SetLabelColor(avatar_label_, &text_color);
     gtk_widget_modify_bg(
         GTK_WIDGET(avatar_label_bg_), GTK_STATE_NORMAL, &label_background);

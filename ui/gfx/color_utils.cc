@@ -235,6 +235,14 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
                         static_cast<int>(b));
 }
 
+SkColor BlendTowardOppositeLuminance(SkColor color, SkAlpha alpha) {
+  unsigned char background_luminance =
+      color_utils::GetLuminanceForColor(color);
+  const SkColor blend_color =
+      (background_luminance < 128) ? SK_ColorWHITE : SK_ColorBLACK;
+  return color_utils::AlphaBlend(blend_color, color, alpha);
+}
+
 SkColor GetReadableColor(SkColor foreground, SkColor background) {
   const SkColor foreground2 = LumaInvertColor(foreground);
   const double background_luminance = RelativeLuminance(background);

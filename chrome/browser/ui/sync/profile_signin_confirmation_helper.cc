@@ -207,11 +207,7 @@ SkColor GetSigninConfirmationPromptBarColor(SkAlpha alpha) {
   static const SkColor kBackgroundColor =
       ui::NativeTheme::instance()->GetSystemColor(
           ui::NativeTheme::kColorId_DialogBackground);
-  unsigned char background_luminance =
-      color_utils::GetLuminanceForColor(kBackgroundColor);
-  const SkColor blend_color =
-      background_luminance < 128 ? SK_ColorWHITE : SK_ColorBLACK;
-  return color_utils::AlphaBlend(blend_color, kBackgroundColor, alpha);
+  return color_utils::BlendTowardOppositeLuminance(kBackgroundColor, alpha);
 }
 
 bool HasBeenShutdown(Profile* profile) {

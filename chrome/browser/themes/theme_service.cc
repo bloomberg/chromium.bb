@@ -155,6 +155,13 @@ SkColor ThemeService::GetColor(int id) const {
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.86);
     case Properties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
+    case Properties::COLOR_MANAGED_USER_LABEL:
+      return color_utils::GetReadableColor(
+          SK_ColorWHITE,
+          GetColor(Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND));
+    case Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND:
+      return color_utils::BlendTowardOppositeLuminance(
+          GetColor(Properties::COLOR_FRAME), 0x80);
   }
 
   return Properties::GetDefaultColor(id);

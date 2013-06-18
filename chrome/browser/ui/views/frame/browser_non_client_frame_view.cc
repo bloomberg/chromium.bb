@@ -57,12 +57,12 @@ void BrowserNonClientFrameView::UpdateAvatarLabelStyle() {
 
   ui::ThemeProvider* tp = frame_->GetThemeProvider();
   SkColor color_background = tp->GetColor(
-      ThemeProperties::COLOR_TOOLBAR);
+      ThemeProperties::COLOR_MANAGED_USER_LABEL_BACKGROUND);
   avatar_label_->set_background(
       views::Background::CreateSolidBackground(color_background));
   avatar_label_->SetBackgroundColor(color_background);
   SkColor color_label = tp->GetColor(
-      ThemeProperties::COLOR_BOOKMARK_TEXT);
+      ThemeProperties::COLOR_MANAGED_USER_LABEL);
   avatar_label_->SetEnabledColor(color_label);
 }
 
