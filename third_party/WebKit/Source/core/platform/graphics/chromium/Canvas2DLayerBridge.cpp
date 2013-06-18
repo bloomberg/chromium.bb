@@ -79,10 +79,11 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     GraphicsLayer::unregisterContentsLayer(m_layer->layer());
     Canvas2DLayerManager::get().layerToBeDestroyed(this);
     m_canvas->setNotificationClient(0);
+    m_layer->clearTexture();
+    m_layer.clear();
 #if ENABLE(CANVAS_USES_MAILBOX)
     m_mailboxes.clear();
 #endif
-    m_layer->clearTexture();
 }
 
 void Canvas2DLayerBridge::limitPendingFrames()
