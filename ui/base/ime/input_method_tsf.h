@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,10 @@ class UI_EXPORT InputMethodTSF : public InputMethodWin {
  private:
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
+
+  // Returns true if the Win32 native window bound to |client| has Win32 input
+  // focus.
+  bool IsWindowFocused(const TextInputClient* client) const;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodTSF);
 };
