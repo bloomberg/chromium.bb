@@ -40,6 +40,8 @@
           'android/build_info.cc',
           'android/build_info.h',
           'android/cpu_features.cc',
+          'android/fifo_utils.cc',
+          'android/fifo_utils.h',
           'android/important_file_writer_android.cc',
           'android/important_file_writer_android.h',
           'android/scoped_java_ref.cc',

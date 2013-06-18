@@ -13,12 +13,14 @@
 #include <signal.h>
 
 #include "base/android/base_jni_registrar.h"
+#include "base/android/fifo_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -27,9 +29,7 @@
 #include "testing/jni/ChromeNativeTestActivity_jni.h"
 
 using testing::native_test_util::ArgsToArgv;
-using testing::native_test_util::CreateFIFO;
 using testing::native_test_util::ParseArgsFromCommandLineFile;
-using testing::native_test_util::RedirectStream;
 using testing::native_test_util::ScopedMainEntryLogger;
 
 // The main function of the program to be wrapped as a test apk.
@@ -78,6 +78,41 @@ void InstallHandlers() {
   }
 }
 
+// Writes printf() style string to Android's logger where |priority| is one of
+// the levels defined in <android/log.h>.
+void AndroidLog(int priority, const char* format, ...) {
+  va_list args;
+  va_start(args, format);
+  __android_log_vprint(priority, kLogTag, format, args);
+  va_end(args);
+}
+
+// Ensures that the fifo at |path| is created by deleting whatever is at |path|
+// prior to (re)creating the fifo, otherwise logs the error and terminates the
+// program.
+void EnsureCreateFIFO(const base::FilePath& path) {
+  unlink(path.value().c_str());
+  if (base::android::CreateFIFO(path, 0666))
+    return;
+
+  AndroidLog(ANDROID_LOG_ERROR, "Failed to create fifo %s: %s\n",
+             path.value().c_str(), strerror(errno));
+  exit(EXIT_FAILURE);
+}
+
+// Ensures that |stream| is redirected to |path|, otherwise logs the error and
+// terminates the program.
+void EnsureRedirectStream(FILE* stream,
+                          const base::FilePath& path,
+                          const char* mode) {
+  if (base::android::RedirectStream(stream, path, mode))
+    return;
+
+  AndroidLog(ANDROID_LOG_ERROR, "Failed to redirect stream to file: %s: %s\n",
+             path.value().c_str(), strerror(errno));
+  exit(EXIT_FAILURE);
+}
+
 }  // namespace
 
 // This method is called on a separate java thread so that we won't trigger
@@ -115,7 +150,7 @@ static void RunTests(JNIEnv* env,
   // A few options, such "--gtest_list_tests", will just use printf directly
   // Always redirect stdout to a known file.
   base::FilePath fifo_path(files_dir.Append(base::FilePath("test.fifo")));
-  CreateFIFO(fifo_path.value().c_str());
+  EnsureCreateFIFO(fifo_path);
 
   base::FilePath stderr_fifo_path, stdin_fifo_path;
 
@@ -123,29 +158,28 @@ static void RunTests(JNIEnv* env,
   // other tests, insert stderr content to the same fifo we use for stdout.
   if (command_line.HasSwitch(kSeparateStderrFifo)) {
     stderr_fifo_path = files_dir.Append(base::FilePath("stderr.fifo"));
-    CreateFIFO(stderr_fifo_path.value().c_str());
+    EnsureCreateFIFO(stderr_fifo_path);
   }
 
   // DumpRenderTree uses stdin to receive input about which test to run.
   if (command_line.HasSwitch(kCreateStdinFifo)) {
     stdin_fifo_path = files_dir.Append(base::FilePath("stdin.fifo"));
-    CreateFIFO(stdin_fifo_path.value().c_str());
+    EnsureCreateFIFO(stdin_fifo_path);
   }
 
   // Only redirect the streams after all fifos have been created.
-  RedirectStream(stdout, fifo_path.value().c_str(), "w");
+  EnsureRedirectStream(stdout, fifo_path, "w");
   if (!stdin_fifo_path.empty())
-    RedirectStream(stdin, stdin_fifo_path.value().c_str(), "r");
+    EnsureRedirectStream(stdin, stdin_fifo_path, "r");
   if (!stderr_fifo_path.empty())
-    RedirectStream(stderr, stderr_fifo_path.value().c_str(), "w");
+    EnsureRedirectStream(stderr, stderr_fifo_path, "w");
   else
     dup2(STDOUT_FILENO, STDERR_FILENO);
 
   if (command_line.HasSwitch(switches::kWaitForDebugger)) {
-    std::string msg = base::StringPrintf("Native test waiting for GDB because "
-                                         "flag %s was supplied",
-                                         switches::kWaitForDebugger);
-    __android_log_write(ANDROID_LOG_VERBOSE, kLogTag, msg.c_str());
+    AndroidLog(ANDROID_LOG_VERBOSE,
+               "Native test waiting for GDB because flag %s was supplied",
+               switches::kWaitForDebugger);
     base::debug::WaitForDebugger(24 * 60 * 60, false);
   }
 

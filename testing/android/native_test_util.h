@@ -27,10 +27,6 @@ class ScopedMainEntryLogger {
   }
 };
 
-// Creates a fifo at the given |fifo_path|.
-void CreateFIFO(const char* fifo_path);
-// Redirects the |stream| to the file provided by |path|.
-void RedirectStream(FILE* stream, const char* path, const char* mode);
 void ParseArgsFromCommandLineFile(
     const char* path, std::vector<std::string>* args);
 int ArgsToArgv(const std::vector<std::string>& args, std::vector<char*>* argv);

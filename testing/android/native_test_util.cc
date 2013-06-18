@@ -4,29 +4,12 @@
 
 #include "testing/android/native_test_util.h"
 
-#include <android/log.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 
 namespace {
-
-const char kLogTag[] = "chromium";
-
-void AndroidLogError(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  __android_log_vprint(ANDROID_LOG_ERROR, kLogTag, format, args);
-  va_end(args);
-}
 
 void ParseArgsFromString(const std::string& command_line,
                          std::vector<std::string>* args) {
@@ -43,25 +26,6 @@ void ParseArgsFromString(const std::string& command_line,
 
 namespace testing {
 namespace native_test_util {
-
-void CreateFIFO(const char* fifo_path) {
-  unlink(fifo_path);
-  // Default permissions for mkfifo is ignored, chmod is required.
-  if (mkfifo(fifo_path, 0666) || chmod(fifo_path, 0666)) {
-    AndroidLogError("Failed to create fifo %s: %s\n",
-                    fifo_path, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-}
-
-void RedirectStream(
-    FILE* stream, const char* path, const char* mode) {
-  if (!freopen(path, mode, stream)) {
-    AndroidLogError("Failed to redirect stream to file: %s: %s\n",
-                    path, strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-}
 
 void ParseArgsFromCommandLineFile(
     const char* path, std::vector<std::string>* args) {

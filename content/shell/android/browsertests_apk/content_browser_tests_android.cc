@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include "base/android/base_jni_registrar.h"
+#include "base/android/fifo_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -30,9 +31,7 @@
 #include "testing/android/native_test_util.h"
 
 using testing::native_test_util::ArgsToArgv;
-using testing::native_test_util::CreateFIFO;
 using testing::native_test_util::ParseArgsFromCommandLineFile;
-using testing::native_test_util::RedirectStream;
 using testing::native_test_util::ScopedMainEntryLogger;
 
 // The main function of the program to be wrapped as an apk.
@@ -49,6 +48,8 @@ static const char kCommandLineFilePath[] =
 
 namespace content {
 
+// TODO(nileshagrawal): Refactor and deduplicate with
+// testing/android/native_test_launcher.cc
 static void RunTests(JNIEnv* env,
                      jobject obj,
                      jstring jfiles_dir,
@@ -85,8 +86,8 @@ static void RunTests(JNIEnv* env,
   base::FilePath files_dir(
       base::android::ConvertJavaStringToUTF8(env, jfiles_dir));
   base::FilePath fifo_path(files_dir.Append(base::FilePath("test.fifo")));
-  CreateFIFO(fifo_path.value().c_str());
-  RedirectStream(stdout, fifo_path.value().c_str(), "w");
+  base::android::CreateFIFO(fifo_path, 0666);
+  base::android::RedirectStream(stdout, fifo_path, "w");
   dup2(STDOUT_FILENO, STDERR_FILENO);
 
   ScopedMainEntryLogger scoped_main_entry_logger;
