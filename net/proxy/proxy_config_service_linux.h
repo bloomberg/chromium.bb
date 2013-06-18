@@ -251,13 +251,14 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     ProxyConfig reference_config_;
 
     // The task runner for the glib thread, aka main browser thread. This thread
-    // is where we run the glib main loop (see base/message_pump_glib.h). It is
-    // the glib default loop in the sense that it runs the glib default context:
-    // as in the context where sources are added by g_timeout_add and
-    // g_idle_add, and returned by g_main_context_default. gconf uses glib
-    // timeouts and idles and possibly other callbacks that will all be
-    // dispatched on this thread. Since gconf is not thread safe, any use of
-    // gconf must be done on the thread running this loop.
+    // is where we run the glib main loop (see
+    // base/message_loop/message_pump_glib.h). It is the glib default loop in
+    // the sense that it runs the glib default context: as in the context where
+    // sources are added by g_timeout_add and g_idle_add, and returned by
+    // g_main_context_default. gconf uses glib timeouts and idles and possibly
+    // other callbacks that will all be dispatched on this thread. Since gconf
+    // is not thread safe, any use of gconf must be done on the thread running
+    // this loop.
     scoped_refptr<base::SingleThreadTaskRunner> glib_thread_task_runner_;
     // Task runner for the IO thread. GetLatestProxyConfig() is called from
     // the thread running this loop.

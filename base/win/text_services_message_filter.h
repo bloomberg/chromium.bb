@@ -9,7 +9,7 @@
 #include <Windows.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_pump_win.h"
+#include "base/message_loop/message_pump_win.h"
 #include "base/win/metro.h"
 #include "base/win/scoped_comptr.h"
 

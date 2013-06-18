@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_pump_ozone.h"
+#include "base/message_loop/message_pump_ozone.h"
 
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -43,7 +43,7 @@ void MessagePumpOzone::RemoveDispatcherForRootWindow(
   dispatcher_.pop_back();
 }
 
-bool MessagePumpOzone::Dispatch(const base::NativeEvent& dev) {
+bool MessagePumpOzone::Dispatch(const NativeEvent& dev) {
   if (dispatcher_.size() > 0)
     return dispatcher_[0]->Dispatch(dev);
   else

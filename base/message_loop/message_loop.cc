@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy_impl.h"
-#include "base/message_pump_default.h"
+#include "base/message_loop/message_pump_default.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
@@ -25,13 +25,13 @@
 #include "base/tracked_objects.h"
 
 #if defined(OS_MACOSX)
-#include "base/message_pump_mac.h"
+#include "base/message_loop/message_pump_mac.h"
 #endif
 #if defined(OS_POSIX) && !defined(OS_IOS)
-#include "base/message_pump_libevent.h"
+#include "base/message_loop/message_pump_libevent.h"
 #endif
 #if defined(OS_ANDROID)
-#include "base/message_pump_android.h"
+#include "base/message_loop/message_pump_android.h"
 #endif
 
 #if defined(TOOLKIT_GTK)

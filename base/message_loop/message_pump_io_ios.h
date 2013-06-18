@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_PUMP_IO_IOS_H_
-#define BASE_MESSAGE_PUMP_IO_IOS_H_
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_IO_IOS_H_
+#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_IO_IOS_H_
 
 #include "base/base_export.h"
 #include "base/mac/scoped_cffiledescriptorref.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_pump_mac.h"
+#include "base/message_loop/message_pump_mac.h"
 #include "base/observer_list.h"
 
 namespace base {
@@ -139,4 +139,4 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop {
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_IO_IOS_H_
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_IO_IOS_H_

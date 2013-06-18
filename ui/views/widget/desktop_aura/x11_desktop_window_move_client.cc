@@ -9,8 +9,8 @@
 #undef RootWindow
 
 #include "base/debug/stack_trace.h"
-#include "base/message_loop.h"
-#include "base/message_pump_aurax11.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_aurax11.h"
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"

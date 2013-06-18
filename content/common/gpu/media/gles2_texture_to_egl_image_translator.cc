@@ -5,10 +5,11 @@
 #include "content/common/gpu/media/gles2_texture_to_egl_image_translator.h"
 
 #include "base/logging.h"
+
 #if defined(TOOLKIT_USES_GTK)
-#include "base/message_pump_gtk.h"
+#include "base/message_loop/message_pump_gtk.h"
 #elif defined(USE_AURA)
-#include "base/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_aurax11.h"
 #endif
 
 namespace content {

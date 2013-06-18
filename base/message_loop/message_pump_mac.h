@@ -27,10 +27,10 @@
 // or NSRunLoop-based MessagePump subclass depending on which thread it is
 // called on.
 
-#ifndef BASE_MESSAGE_PUMP_MAC_H_
-#define BASE_MESSAGE_PUMP_MAC_H_
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_MAC_H_
+#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_MAC_H_
 
-#include "base/message_pump.h"
+#include "base/message_loop/message_pump.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -257,7 +257,7 @@ class MessagePumpUIApplication : public MessagePumpCFRunLoopBase {
   virtual ~MessagePumpUIApplication();
 
  private:
-  base::RunLoop* run_loop_;
+  RunLoop* run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpUIApplication);
 };
@@ -334,4 +334,4 @@ class MessagePumpMac {
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_MAC_H_
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_MAC_H_

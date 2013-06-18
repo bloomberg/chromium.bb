@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_aurax11.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/x/device_list_cache_x.h"

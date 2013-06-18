@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_PUMP_GLIB_H_
-#define BASE_MESSAGE_PUMP_GLIB_H_
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_GLIB_H_
+#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_GLIB_H_
 
 #include "base/base_export.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_pump.h"
+#include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 
@@ -107,4 +107,4 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump {
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_GLIB_H_
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_GLIB_H_

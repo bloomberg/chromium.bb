@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_PUMP_WIN_H_
-#define BASE_MESSAGE_PUMP_WIN_H_
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_WIN_H_
+#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_WIN_H_
 
 #include <windows.h>
 
@@ -12,9 +12,9 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_pump.h"
-#include "base/message_pump_dispatcher.h"
-#include "base/message_pump_observer.h"
+#include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/message_loop/message_pump_observer.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "base/win/scoped_handle.h"
@@ -393,4 +393,4 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_WIN_H_
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_WIN_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_PUMP_OZONE_H_
-#define BASE_MESSAGE_PUMP_OZONE_H_
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_OZONE_H_
+#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_OZONE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_pump_dispatcher.h"
-#include "base/message_pump_libevent.h"
-#include "base/message_pump_observer.h"
+#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/message_loop/message_pump_libevent.h"
+#include "base/message_loop/message_pump_observer.h"
 #include "base/observer_list.h"
 
 namespace base {
@@ -36,7 +36,7 @@ class BASE_EXPORT MessagePumpOzone : public MessagePumpLibevent,
   void RemoveObserver(MessagePumpObserver* observer);
 
   // Overridden from MessagePumpDispatcher.
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+  virtual bool Dispatch(const NativeEvent& event) OVERRIDE;
 
  private:
   virtual ~MessagePumpOzone();
@@ -49,4 +49,4 @@ typedef MessagePumpOzone MessagePumpForUI;
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_OZONE_H_
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_OZONE_H_

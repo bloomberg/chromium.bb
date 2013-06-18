@@ -4,7 +4,7 @@
 
 #include "ui/base/x/selection_requestor.h"
 
-#include "base/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_aurax11.h"
 #include "base/run_loop.h"
 #include "ui/base/x/selection_utils.h"
 
