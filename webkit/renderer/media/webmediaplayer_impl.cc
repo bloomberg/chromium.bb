@@ -927,19 +927,6 @@ WebMediaPlayerImpl::OnTextTrack(media::TextKind kind,
   return scoped_ptr<media::TextTrack>(new TextTrackImpl(text_track));
 }
 
-#define COMPILE_ASSERT_MATCHING_ENUM(name) \
-  COMPILE_ASSERT( \
-  static_cast<int>(WebKit::WebMediaPlayerClient::MediaKeyErrorCode ## name) == \
-  static_cast<int>(media::MediaKeys::k ## name ## Error), \
-  mismatching_enums)
-COMPILE_ASSERT_MATCHING_ENUM(Unknown);
-COMPILE_ASSERT_MATCHING_ENUM(Client);
-COMPILE_ASSERT_MATCHING_ENUM(Service);
-COMPILE_ASSERT_MATCHING_ENUM(Output);
-COMPILE_ASSERT_MATCHING_ENUM(HardwareChange);
-COMPILE_ASSERT_MATCHING_ENUM(Domain);
-#undef COMPILE_ASSERT_MATCHING_ENUM
-
 void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
                                     const std::string& session_id,
                                     media::MediaKeys::KeyError error_code,

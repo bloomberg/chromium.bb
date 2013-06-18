@@ -1027,18 +1027,6 @@ void WebMediaPlayerAndroid::OnKeyAdded(const std::string& key_system,
                     WebString::fromUTF8(session_id));
 }
 
-#define COMPILE_ASSERT_MATCHING_ENUM(name) \
-  COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayerClient::name) == \
-                 static_cast<int>(media::MediaKeys::k ## name), \
-                 mismatching_enums)
-COMPILE_ASSERT_MATCHING_ENUM(UnknownError);
-COMPILE_ASSERT_MATCHING_ENUM(ClientError);
-COMPILE_ASSERT_MATCHING_ENUM(ServiceError);
-COMPILE_ASSERT_MATCHING_ENUM(OutputError);
-COMPILE_ASSERT_MATCHING_ENUM(HardwareChangeError);
-COMPILE_ASSERT_MATCHING_ENUM(DomainError);
-#undef COMPILE_ASSERT_MATCHING_ENUM
-
 void WebMediaPlayerAndroid::OnKeyError(const std::string& key_system,
                                        const std::string& session_id,
                                        media::MediaKeys::KeyError error_code,

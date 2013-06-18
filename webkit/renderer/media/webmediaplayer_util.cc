@@ -6,7 +6,25 @@
 
 #include <math.h>
 
+#include "media/base/media_keys.h"
+#include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
+
 namespace webkit_media {
+
+// Compile asserts shared by all platforms.
+
+#define COMPILE_ASSERT_MATCHING_ENUM(name) \
+  COMPILE_ASSERT( \
+  static_cast<int>(WebKit::WebMediaPlayerClient::MediaKeyErrorCode ## name) == \
+  static_cast<int>(media::MediaKeys::k ## name ## Error), \
+  mismatching_enums)
+COMPILE_ASSERT_MATCHING_ENUM(Unknown);
+COMPILE_ASSERT_MATCHING_ENUM(Client);
+COMPILE_ASSERT_MATCHING_ENUM(Service);
+COMPILE_ASSERT_MATCHING_ENUM(Output);
+COMPILE_ASSERT_MATCHING_ENUM(HardwareChange);
+COMPILE_ASSERT_MATCHING_ENUM(Domain);
+#undef COMPILE_ASSERT_MATCHING_ENUM
 
 base::TimeDelta ConvertSecondsToTimestamp(double seconds) {
   double microseconds = seconds * base::Time::kMicrosecondsPerSecond;
