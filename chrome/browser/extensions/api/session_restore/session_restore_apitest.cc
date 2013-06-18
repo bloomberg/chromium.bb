@@ -4,7 +4,13 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SessionRestoreApis) {
+// Flaky on ChromeOS http://crbug.com/251199
+#if defined(OS_CHROMEOS)
+#define MAYBE_SessionRestoreApis DISABLED_SessionRestoreApis
+#else
+#define MAYBE_SessionRestoreApis SessionRestoreApis
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_SessionRestoreApis) {
   ASSERT_TRUE(RunExtensionSubtest("session_restore",
                                   "session_restore.html")) << message_;
 }
