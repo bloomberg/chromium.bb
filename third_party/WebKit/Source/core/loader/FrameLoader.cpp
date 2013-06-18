@@ -1170,9 +1170,6 @@ void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const Str
     frame()->loader()->history()->saveDocumentAndScrollState();
 
     ResourceRequest request = documentLoader->request();
-    // FIXME: We need to reset cache policy to prevent it from being incorrectly propagted to the reload.
-    // Do we need to propagate anything other than the url?
-    request.setCachePolicy(UseProtocolCachePolicy);
     if (!overrideURL.isEmpty())
         request.setURL(overrideURL);
     else if (!documentLoader->unreachableURL().isEmpty())

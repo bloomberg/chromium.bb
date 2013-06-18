@@ -3382,32 +3382,5 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
     m_webView = 0;
 }
 
-TEST_F(WebFrameTest, BackToReload)
-{
-    registerMockedHttpURLLoad("fragment_middle_click.html");
-    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "fragment_middle_click.html", true);
-    WebFrame* frame = m_webView->mainFrame();
-    WebHistoryItem firstItem = frame->currentHistoryItem();
-    EXPECT_FALSE(firstItem.isNull());
-
-    registerMockedHttpURLLoad("white-1x1.png");
-    FrameTestHelpers::loadFrame(frame, m_baseURL + "white-1x1.png");
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    EXPECT_FALSE(frame->previousHistoryItem().isNull());
-    EXPECT_EQ(firstItem.urlString(), frame->previousHistoryItem().urlString());
-
-    registerMockedHttpURLLoad("fragment_middle_click.html");
-    frame->loadHistoryItem(frame->previousHistoryItem());
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    EXPECT_EQ(firstItem.urlString(), frame->currentHistoryItem().urlString());
-
-    frame->reload();
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-    EXPECT_EQ(WebURLRequest::ReloadIgnoringCacheData, frame->dataSource()->request().cachePolicy());
-
-    m_webView->close();
-    m_webView = 0;
-}
-
 
 } // namespace
