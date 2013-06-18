@@ -80,6 +80,7 @@
 #include "grit/renderer_resources.h"
 #include "ipc/ipc_sync_channel.h"
 #include "net/base/net_errors.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -1259,5 +1260,26 @@ bool ChromeContentRendererClient::AllowBrowserPlugin(
   return tag_name.equals(WebString::fromUTF8(kWebViewTagName)) ||
     tag_name.equals(WebString::fromUTF8(kAdViewTagName));
 }
+
+bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
+    const GURL& url) const {
+#if !defined(OS_ANDROID)
+  std::string host = url.host();
+  // Allow only the Hangouts app to use the MediaStream APIs. It's OK to check
+  // the whitelist in the renderer, since we're only preventing access until
+  // these APIs are public and stable.
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      !host.compare("hpcogiolnobbkijnnkdahioejpdcdoph")) {
+    return true;
+  }
+  // Allow access for tests.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePepperTesting)) {
+    return true;
+  }
+#endif  // !defined(OS_ANDROID)
+  return false;
+}
+
 
 }  // namespace chrome

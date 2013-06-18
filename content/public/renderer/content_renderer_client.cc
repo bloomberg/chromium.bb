@@ -165,4 +165,8 @@ bool ContentRendererClient::AllowBrowserPlugin(
   return false;
 }
 
+bool ContentRendererClient::AllowPepperMediaStreamAPI(const GURL& url) const {
+  return false;
+}
+
 }  // namespace content

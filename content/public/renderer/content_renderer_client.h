@@ -245,6 +245,8 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns whether BrowserPlugin should be allowed within the |container|.
   virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const;
 
+  // Returns true if the page at |url| can use Pepper MediaStream APIs.
+  virtual bool AllowPepperMediaStreamAPI(const GURL& url) const;
 };
 
 }  // namespace content
