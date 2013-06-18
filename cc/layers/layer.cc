@@ -13,6 +13,7 @@
 #include "cc/base/thread.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/WebKit/public/platform/WebAnimationDelegate.h"
@@ -652,17 +653,16 @@ void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
 }
 
 static void RunCopyCallbackOnMainThread(scoped_ptr<CopyOutputRequest> request,
-                                        scoped_ptr<SkBitmap> bitmap) {
-  if (request->HasBitmapRequest())
-    request->SendBitmapResult(bitmap.Pass());
+                                        scoped_ptr<CopyOutputResult> result) {
+  request->SendResult(result.Pass());
 }
 
 static void PostCopyCallbackToMainThread(Thread* main_thread,
                                          scoped_ptr<CopyOutputRequest> request,
-                                         scoped_ptr<SkBitmap> bitmap) {
+                                         scoped_ptr<CopyOutputResult> result) {
   main_thread->PostTask(base::Bind(&RunCopyCallbackOnMainThread,
                                    base::Passed(&request),
-                                   base::Passed(&bitmap)));
+                                   base::Passed(&result)));
 }
 
 void Layer::PushPropertiesTo(LayerImpl* layer) {
@@ -713,11 +713,13 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
        it != copy_requests_.end();
        ++it) {
     scoped_ptr<CopyOutputRequest> original_request = copy_requests_.take(it);
+    const CopyOutputRequest& original_request_ref = *original_request;
     scoped_ptr<CopyOutputRequest> main_thread_request =
-        CopyOutputRequest::CreateBitmapRequest(base::Bind(
-            &PostCopyCallbackToMainThread,
-            layer_tree_host()->proxy()->MainThread(),
-            base::Passed(&original_request)));
+        CopyOutputRequest::CreateRelayRequest(
+            original_request_ref,
+            base::Bind(&PostCopyCallbackToMainThread,
+                       layer_tree_host()->proxy()->MainThread(),
+                       base::Passed(&original_request)));
     main_thread_copy_requests.push_back(main_thread_request.Pass());
   }
   copy_requests_.clear();

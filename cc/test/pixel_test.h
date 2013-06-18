@@ -14,6 +14,7 @@
 #define CC_TEST_PIXEL_TEST_H_
 
 namespace cc {
+class CopyOutputResult;
 class DirectRenderer;
 class SoftwareRenderer;
 class OutputSurface;
@@ -34,7 +35,6 @@ class PixelTest : public testing::Test {
                                       const PixelComparator& comparator);
 
   gfx::Size device_viewport_size_;
-  class PixelTestOutputSurface;
   class PixelTestRendererClient;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
@@ -49,7 +49,8 @@ class PixelTest : public testing::Test {
                              gfx::Vector2d viewport_offset);
 
  private:
-  void ReadbackResult(base::Closure quit_run_loop, scoped_ptr<SkBitmap> bitmap);
+  void ReadbackResult(base::Closure quit_run_loop,
+                      scoped_ptr<CopyOutputResult> result);
 
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);

@@ -11,9 +11,14 @@
 #ifndef CC_TEST_LAYER_TREE_PIXEL_TEST_H_
 #define CC_TEST_LAYER_TREE_PIXEL_TEST_H_
 
+class SkBitmap;
+
 namespace cc {
+class CopyOutputRequest;
+class CopyOutputResult;
 class LayerTreeHost;
 class PixelComparator;
+class TextureMailbox;
 
 class LayerTreePixelTest : public LayerTreeTest {
  protected:
@@ -26,7 +31,9 @@ class LayerTreePixelTest : public LayerTreeTest {
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread() OVERRIDE;
 
-  void ReadbackResult(scoped_ptr<SkBitmap> bitmap);
+  virtual scoped_ptr<CopyOutputRequest> CreateCopyOutputRequest();
+
+  void ReadbackResult(scoped_ptr<CopyOutputResult> result);
 
   virtual void BeginTest() OVERRIDE;
   virtual void SetupTree() OVERRIDE;
@@ -47,6 +54,10 @@ class LayerTreePixelTest : public LayerTreeTest {
                                       Layer* target,
                                       base::FilePath file_name);
 
+  scoped_ptr<SkBitmap> CopyTextureMailboxToBitmap(
+      gfx::Size size,
+      const TextureMailbox& texture_mailbox);
+
   // Common CSS colors defined for tests to use.
   enum Colors {
     kCSSOrange = 0xffffa500,
@@ -56,10 +67,12 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   scoped_ptr<PixelComparator> pixel_comparator_;
 
- private:
+ protected:
+  bool use_gl_;
   scoped_refptr<Layer> content_root_;
   Layer* readback_target_;
   base::FilePath ref_file_;
+  scoped_ptr<SkBitmap> result_bitmap_;
 };
 
 }  // namespace cc

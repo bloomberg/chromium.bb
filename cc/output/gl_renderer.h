@@ -96,7 +96,9 @@ class CC_EXPORT GLRenderer
 
   void GetFramebufferPixelsAsync(gfx::Rect rect,
                                  scoped_ptr<CopyOutputRequest> request);
-  bool GetFramebufferTexture(ScopedResource* resource, gfx::Rect device_rect);
+  void GetFramebufferTexture(unsigned texture_id,
+                             unsigned texture_format,
+                             gfx::Rect device_rect);
   void ReleaseRenderPassTextures();
 
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) OVERRIDE;
@@ -197,18 +199,20 @@ class CC_EXPORT GLRenderer
       AsyncGetFramebufferPixelsCleanupCallback;
   void DoGetFramebufferPixels(
       uint8* pixels,
-      gfx::Rect rect,
+      gfx::Rect window_rect,
       const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback);
   void FinishedReadback(
       const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback,
       unsigned source_buffer,
       uint8_t* dest_pixels,
       gfx::Size size);
-  void PassOnSkBitmap(
-      scoped_ptr<SkBitmap> bitmap,
-      scoped_ptr<SkAutoLockPixels> lock,
-      scoped_ptr<CopyOutputRequest> request,
-      bool success);
+  void PassOnSkBitmap(scoped_ptr<SkBitmap> bitmap,
+                      scoped_ptr<SkAutoLockPixels> lock,
+                      scoped_ptr<CopyOutputRequest> request,
+                      bool success);
+  void DeleteTextureReleaseCallback(unsigned texture_id,
+                                    unsigned sync_point,
+                                    bool lost_resource);
 
   void ReinitializeGrCanvas();
   void ReinitializeGLState();
@@ -430,6 +434,8 @@ class CC_EXPORT GLRenderer
 
   SkBitmap on_demand_tile_raster_bitmap_;
   ResourceProvider::ResourceId on_demand_tile_raster_resource_id_;
+
+  base::WeakPtrFactory<GLRenderer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };

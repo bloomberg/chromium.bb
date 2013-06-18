@@ -50,8 +50,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
                transform_to_root,
                has_transparent_background,
                has_occlusion_from_outside_target_surface);
-  pass->copy_requests.push_back(CopyOutputRequest::CreateBitmapRequest(
-      CopyOutputRequest::CopyAsBitmapCallback()));
+  pass->copy_requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
   // Stick a quad in the pass, this should not get copied.
   scoped_ptr<SharedQuadState> shared_state = SharedQuadState::Create();

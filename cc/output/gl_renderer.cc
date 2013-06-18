@@ -21,6 +21,7 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/output/geometry_binding.h"
 #include "cc/output/gl_frame_data.h"
 #include "cc/output/output_surface.h"
@@ -136,7 +137,8 @@ GLRenderer::GLRenderer(RendererClient* client,
       is_scissor_enabled_(false),
       highp_threshold_min_(highp_threshold_min),
       highp_threshold_cache_(0),
-      on_demand_tile_raster_resource_id_(0) {
+      on_demand_tile_raster_resource_id_(0),
+      weak_factory_(this) {
   DCHECK(context_);
 }
 
@@ -599,19 +601,29 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
 
   // FIXME: Do a single readback for both the surface and replica and cache the
   // filtered results (once filter textures are not reused).
-  gfx::Rect device_rect = gfx::ToEnclosingRect(MathUtil::MapClippedRect(
+  gfx::Rect window_rect = gfx::ToEnclosingRect(MathUtil::MapClippedRect(
       contents_device_transform, SharedGeometryQuad().BoundingBox()));
 
   int top, right, bottom, left;
   filters.getOutsets(top, right, bottom, left);
-  device_rect.Inset(-left, -top, -right, -bottom);
+  window_rect.Inset(-left, -top, -right, -bottom);
 
-  device_rect.Intersect(frame->current_render_pass->output_rect);
+  window_rect.Intersect(
+      MoveFromDrawToWindowSpace(frame->current_render_pass->output_rect));
 
   scoped_ptr<ScopedResource> device_background_texture =
       ScopedResource::create(resource_provider_);
-  if (!GetFramebufferTexture(device_background_texture.get(), device_rect))
+  if (!device_background_texture->Allocate(window_rect.size(),
+                                           GL_RGB,
+                                           ResourceProvider::TextureUsageAny)) {
     return scoped_ptr<ScopedResource>();
+  } else {
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
+                                             device_background_texture->id());
+    GetFramebufferTexture(lock.texture_id(),
+                          device_background_texture->format(),
+                          window_rect);
+  }
 
   SkBitmap filtered_device_background =
       ApplyFilters(this, filters, device_background_texture.get());
@@ -658,7 +670,7 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
 
     CopyTextureToFramebuffer(frame,
                              filtered_device_background_texture_id,
-                             device_rect,
+                             window_rect,
                              device_to_framebuffer_transform,
                              flip_vertically);
   }
@@ -2135,9 +2147,18 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
                                     pending_read.Pass());
 
   // This is a syncronous call since the callback is null.
+  gfx::Rect window_rect = MoveFromDrawToWindowSpace(rect);
   DoGetFramebufferPixels(static_cast<uint8*>(pixels),
-                         rect,
+                         window_rect,
                          AsyncGetFramebufferPixelsCleanupCallback());
+}
+
+void GLRenderer::DeleteTextureReleaseCallback(unsigned texture_id,
+                                              unsigned sync_point,
+                                              bool lost_resource) {
+  if (sync_point)
+    context_->waitSyncPoint(sync_point);
+  context_->deleteTexture(texture_id);
 }
 
 void GLRenderer::GetFramebufferPixelsAsync(
@@ -2148,8 +2169,56 @@ void GLRenderer::GetFramebufferPixelsAsync(
   if (rect.IsEmpty())
     return;
 
+  DCHECK(gfx::Rect(current_surface_size_).Contains(rect)) <<
+      "current_surface_size_: " << current_surface_size_.ToString() <<
+      " rect: " << rect.ToString();
+
+  gfx::Rect window_rect = MoveFromDrawToWindowSpace(rect);
+
+  if (!request->force_bitmap_result()) {
+    unsigned int texture_id = context_->createTexture();
+    GLC(context_, context_->bindTexture(GL_TEXTURE_2D, texture_id));
+    GLC(context_, context_->texParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLC(context_, context_->texParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    GLC(context_, context_->texParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GLC(context_, context_->texParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    GetFramebufferTexture(texture_id, GL_RGBA, window_rect);
+
+    gpu::Mailbox mailbox;
+    unsigned sync_point = 0;
+    GLC(context_, context_->genMailboxCHROMIUM(mailbox.name));
+    if (mailbox.IsZero()) {
+      context_->deleteTexture(texture_id);
+      request->SendResult(CopyOutputResult::CreateEmptyResult());
+      return;
+    }
+
+    GLC(context_, context_->bindTexture(GL_TEXTURE_2D, texture_id));
+    GLC(context_, context_->produceTextureCHROMIUM(
+        GL_TEXTURE_2D, mailbox.name));
+    GLC(context_, context_->bindTexture(GL_TEXTURE_2D, 0));
+    sync_point = context_->insertSyncPoint();
+    scoped_ptr<TextureMailbox> texture_mailbox = make_scoped_ptr(
+        new TextureMailbox(mailbox,
+                           base::Bind(&GLRenderer::DeleteTextureReleaseCallback,
+                                      weak_factory_.GetWeakPtr(),
+                                      texture_id),
+                           GL_TEXTURE_2D,
+                           sync_point));
+    request->SendTextureResult(window_rect.size(), texture_mailbox.Pass());
+    return;
+  }
+
+  DCHECK(request->force_bitmap_result());
+
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config, rect.width(), rect.height());
+  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                    window_rect.width(),
+                    window_rect.height());
   bitmap->allocPixels();
 
   scoped_ptr<SkAutoLockPixels> lock(new SkAutoLockPixels(*bitmap));
@@ -2169,14 +2238,15 @@ void GLRenderer::GetFramebufferPixelsAsync(
                                     pending_read.Pass());
 
   // This is an asyncronous call since the callback is not null.
-  DoGetFramebufferPixels(pixels, rect, cleanup_callback);
+  DoGetFramebufferPixels(pixels, window_rect, cleanup_callback);
 }
 
 void GLRenderer::DoGetFramebufferPixels(
     uint8* dest_pixels,
-    gfx::Rect rect,
+    gfx::Rect window_rect,
     const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback) {
-  gfx::Rect window_rect = MoveFromDrawToWindowSpace(rect);
+  DCHECK_GE(window_rect.x(), 0);
+  DCHECK_GE(window_rect.y(), 0);
   DCHECK_LE(window_rect.right(), current_surface_size_.width());
   DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
 
@@ -2198,48 +2268,37 @@ void GLRenderer::DoGetFramebufferPixels(
 
     temporary_texture = context_->createTexture();
     GLC(context_, context_->bindTexture(GL_TEXTURE_2D, temporary_texture));
-    GLC(context_,
-        context_->texParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GLC(context_,
-        context_->texParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    GLC(context_,
-        context_->texParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    GLC(context_,
-        context_->texParameteri(
-            GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    GLC(context_, context_->texParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLC(context_, context_->texParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    GLC(context_, context_->texParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GLC(context_, context_->texParameteri(
+        GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     // Copy the contents of the current (IOSurface-backed) framebuffer into a
     // temporary texture.
-    GLC(context_,
-        context_->copyTexImage2D(GL_TEXTURE_2D,
-                                 0,
-                                 GL_RGBA,
-                                 0,
-                                 0,
-                                 current_surface_size_.width(),
-                                 current_surface_size_.height(),
-                                 0));
+    GetFramebufferTexture(temporary_texture,
+                          GL_RGBA,
+                          gfx::Rect(current_surface_size_));
     temporary_fbo = context_->createFramebuffer();
     // Attach this texture to an FBO, and perform the readback from that FBO.
     GLC(context_, context_->bindFramebuffer(GL_FRAMEBUFFER, temporary_fbo));
-    GLC(context_,
-        context_->framebufferTexture2D(GL_FRAMEBUFFER,
-                                       GL_COLOR_ATTACHMENT0,
-                                       GL_TEXTURE_2D,
-                                       temporary_texture,
-                                       0));
+    GLC(context_, context_->framebufferTexture2D(GL_FRAMEBUFFER,
+                                                 GL_COLOR_ATTACHMENT0,
+                                                 GL_TEXTURE_2D,
+                                                 temporary_texture,
+                                                 0));
 
-    DCHECK(context_->checkFramebufferStatus(GL_FRAMEBUFFER) ==
-           GL_FRAMEBUFFER_COMPLETE);
+    DCHECK_EQ(static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE),
+              context_->checkFramebufferStatus(GL_FRAMEBUFFER));
   }
 
   unsigned buffer = context_->createBuffer();
   GLC(context_, context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
                                      buffer));
   GLC(context_, context_->bufferData(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
-                                     4 * rect.size().GetArea(),
+                                     4 * window_rect.size().GetArea(),
                                      NULL,
                                      GL_STREAM_READ));
 
@@ -2269,7 +2328,7 @@ void GLRenderer::DoGetFramebufferPixels(
                  cleanup_callback,
                  buffer,
                  dest_pixels,
-                 rect.size());
+                 window_rect.size());
   // Save the finished_callback so it can be cancelled.
   pending_async_read_pixels_.front()->finished_read_pixels_callback.Reset(
       finished_callback);
@@ -2348,35 +2407,33 @@ void GLRenderer::PassOnSkBitmap(
     scoped_ptr<SkAutoLockPixels> lock,
     scoped_ptr<CopyOutputRequest> request,
     bool success) {
-  DCHECK(request->HasBitmapRequest());
+  DCHECK(request->force_bitmap_result());
 
   lock.reset();
   if (success)
     request->SendBitmapResult(bitmap.Pass());
 }
 
-bool GLRenderer::GetFramebufferTexture(ScopedResource* texture,
-                                       gfx::Rect device_rect) {
-  DCHECK(!texture->id() || (texture->size() == device_rect.size() &&
-                            texture->format() == GL_RGB));
+void GLRenderer::GetFramebufferTexture(unsigned texture_id,
+                                       unsigned texture_format,
+                                       gfx::Rect window_rect) {
+  DCHECK(texture_id);
+  DCHECK_GE(window_rect.x(), 0);
+  DCHECK_GE(window_rect.y(), 0);
+  DCHECK_LE(window_rect.right(), current_surface_size_.width());
+  DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
 
-  if (!texture->id() && !texture->Allocate(device_rect.size(),
-                                           GL_RGB,
-                                           ResourceProvider::TextureUsageAny))
-    return false;
-
-  ResourceProvider::ScopedWriteLockGL lock(resource_provider_, texture->id());
-  GLC(context_, context_->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
+  GLC(context_, context_->bindTexture(GL_TEXTURE_2D, texture_id));
   GLC(context_,
       context_->copyTexImage2D(GL_TEXTURE_2D,
                                0,
-                               texture->format(),
-                               device_rect.x(),
-                               device_rect.y(),
-                               device_rect.width(),
-                               device_rect.height(),
+                               texture_format,
+                               window_rect.x(),
+                               window_rect.y(),
+                               window_rect.width(),
+                               window_rect.height(),
                                0));
-  return true;
+  GLC(context_, context_->bindTexture(GL_TEXTURE_2D, 0));
 }
 
 bool GLRenderer::UseScopedTexture(DrawingFrame* frame,

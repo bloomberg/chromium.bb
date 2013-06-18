@@ -16,6 +16,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer.h"
 #include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/prioritized_resource_manager.h"
@@ -2526,7 +2527,7 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
     switch (frame) {
       case 1:
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(&LayerTreeHostTestAsyncReadback::BitmapCallback,
+            base::Bind(&LayerTreeHostTestAsyncReadback::CopyOutputCallback,
                        base::Unretained(this))));
         EXPECT_EQ(0u, callbacks_.size());
         break;
@@ -2539,13 +2540,13 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
         EXPECT_EQ(gfx::Size(10, 10).ToString(), callbacks_[0].ToString());
 
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(&LayerTreeHostTestAsyncReadback::BitmapCallback,
+            base::Bind(&LayerTreeHostTestAsyncReadback::CopyOutputCallback,
                        base::Unretained(this))));
         root->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(&LayerTreeHostTestAsyncReadback::BitmapCallback,
+            base::Bind(&LayerTreeHostTestAsyncReadback::CopyOutputCallback,
                        base::Unretained(this))));
         child->RequestCopyOfOutput(CopyOutputRequest::CreateBitmapRequest(
-            base::Bind(&LayerTreeHostTestAsyncReadback::BitmapCallback,
+            base::Bind(&LayerTreeHostTestAsyncReadback::CopyOutputCallback,
                        base::Unretained(this))));
         EXPECT_EQ(1u, callbacks_.size());
         break;
@@ -2565,10 +2566,13 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
     }
   }
 
-  void BitmapCallback(scoped_ptr<SkBitmap> bitmap) {
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
     EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
-    EXPECT_TRUE(bitmap);
-    callbacks_.push_back(gfx::Size(bitmap->width(), bitmap->height()));
+    EXPECT_TRUE(result->HasBitmap());
+    scoped_ptr<SkBitmap> bitmap = result->TakeBitmap().Pass();
+    EXPECT_EQ(result->size().ToString(),
+              gfx::Size(bitmap->width(), bitmap->height()).ToString());
+    callbacks_.push_back(result->size());
   }
 
   virtual void AfterTest() OVERRIDE {
@@ -2653,11 +2657,13 @@ class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
       case 1:
         main_destroyed_->RequestCopyOfOutput(
             CopyOutputRequest::CreateBitmapRequest(base::Bind(
-                &LayerTreeHostTestAsyncReadbackLayerDestroyed::BitmapCallback,
+                &LayerTreeHostTestAsyncReadbackLayerDestroyed::
+                    CopyOutputCallback,
                 base::Unretained(this))));
         impl_destroyed_->RequestCopyOfOutput(
             CopyOutputRequest::CreateBitmapRequest(base::Bind(
-                &LayerTreeHostTestAsyncReadbackLayerDestroyed::BitmapCallback,
+                &LayerTreeHostTestAsyncReadbackLayerDestroyed::
+                    CopyOutputCallback,
                 base::Unretained(this))));
         EXPECT_EQ(0, callback_count_);
 
@@ -2698,9 +2704,9 @@ class LayerTreeHostTestAsyncReadbackLayerDestroyed : public LayerTreeHostTest {
     }
   }
 
-  void BitmapCallback(scoped_ptr<SkBitmap> bitmap) {
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
     EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
-    EXPECT_FALSE(bitmap);
+    EXPECT_TRUE(result->IsEmpty());
     ++callback_count_;
   }
 
