@@ -19,8 +19,7 @@ QuicStreamSequencer::QuicStreamSequencer(ReliableQuicStream* quic_stream)
     : stream_(quic_stream),
       num_bytes_consumed_(0),
       max_frame_memory_(numeric_limits<size_t>::max()),
-      close_offset_(numeric_limits<QuicStreamOffset>::max()),
-      half_close_(true) {
+      close_offset_(numeric_limits<QuicStreamOffset>::max()) {
 }
 
 QuicStreamSequencer::QuicStreamSequencer(size_t max_frame_memory,
@@ -28,8 +27,7 @@ QuicStreamSequencer::QuicStreamSequencer(size_t max_frame_memory,
     : stream_(quic_stream),
       num_bytes_consumed_(0),
       max_frame_memory_(max_frame_memory),
-      close_offset_(numeric_limits<QuicStreamOffset>::max()),
-      half_close_(true) {
+      close_offset_(numeric_limits<QuicStreamOffset>::max()) {
   if (max_frame_memory < kMaxPacketSize) {
     LOG(DFATAL) << "Setting max frame memory to " << max_frame_memory
                 << ".  Some frames will be impossible to handle.";
@@ -106,22 +104,17 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   return true;
 }
 
-void QuicStreamSequencer::CloseStreamAtOffset(QuicStreamOffset offset,
-                                              bool half_close) {
+void QuicStreamSequencer::CloseStreamAtOffset(QuicStreamOffset offset) {
   const QuicStreamOffset kMaxOffset = numeric_limits<QuicStreamOffset>::max();
 
   // If we have a scheduled termination or close, any new offset should match
   // it.
   if (close_offset_ != kMaxOffset && offset != close_offset_) {
-      stream_->Close(QUIC_MULTIPLE_TERMINATION_OFFSETS);
-      return;
+    stream_->Close(QUIC_MULTIPLE_TERMINATION_OFFSETS);
+    return;
   }
 
   close_offset_ = offset;
-  // Full close overrides half close.
-  if (half_close == false) {
-    half_close_ = false;
-  }
 
   MaybeCloseStream();
 }
@@ -133,7 +126,7 @@ bool QuicStreamSequencer::MaybeCloseStream() {
              << " bytes.";
     // Technically it's an error if num_bytes_consumed isn't exactly
     // equal, but error handling seems silly at this point.
-    stream_->TerminateFromPeer(half_close_);
+    stream_->TerminateFromPeer(true);
     return true;
   }
   return false;
@@ -228,10 +221,6 @@ bool QuicStreamSequencer::HasBytesToRead() const {
 
 bool QuicStreamSequencer::IsHalfClosed() const {
   return num_bytes_consumed_ >= close_offset_;
-}
-
-bool QuicStreamSequencer::IsClosed() const {
-  return num_bytes_consumed_ >= close_offset_ && half_close_ == false;
 }
 
 bool QuicStreamSequencer::IsDuplicate(const QuicStreamFrame& frame) const {

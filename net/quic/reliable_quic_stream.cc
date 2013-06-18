@@ -58,7 +58,7 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   bool accepted = sequencer_.OnStreamFrame(frame);
 
   if (frame.fin) {
-    sequencer_.CloseStreamAtOffset(frame.offset + frame.data.size(), true);
+    sequencer_.CloseStreamAtOffset(frame.offset + frame.data.size());
   }
 
   return accepted;
@@ -70,7 +70,7 @@ void ReliableQuicStream::OnStreamReset(QuicRstStreamErrorCode error) {
 }
 
 void ReliableQuicStream::ConnectionClose(QuicErrorCode error, bool from_peer) {
-  if (IsClosed()) {
+  if (read_side_closed_ && write_side_closed_) {
     return;
   }
   if (error != QUIC_NO_ERROR) {
@@ -141,10 +141,6 @@ bool ReliableQuicStream::IsHalfClosed() const {
     return false;
   }
   return sequencer_.IsHalfClosed();
-}
-
-bool ReliableQuicStream::IsClosed() const {
-  return write_side_closed_ && (read_side_closed_ || IsHalfClosed());
 }
 
 bool ReliableQuicStream::HasBytesToRead() const {
@@ -364,10 +360,10 @@ void ReliableQuicStream::OnDecompressorAvailable() {
 
   // Either the headers are complete, or the all data as been consumed.
   sequencer_.MarkConsumed(total_bytes_consumed);
-
   ProcessHeaderData();  // Unprocessed headers remain in decompressed_headers_.
-
-  if (headers_decompressed_ && decompressed_headers_.empty()) {
+  if (IsHalfClosed()) {
+    TerminateFromPeer(true);
+  } else if (headers_decompressed_ && decompressed_headers_.empty()) {
     sequencer_.FlushBufferedFrames();
   }
 }

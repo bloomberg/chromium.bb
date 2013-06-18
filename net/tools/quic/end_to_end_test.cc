@@ -539,6 +539,7 @@ TEST_F(EndToEndTest, LimitMaxOpenStreams) {
   client_config_.set_max_streams_per_connection(10, 5);
 
   ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
   EXPECT_EQ(2u, client_negotiated_config->max_streams_per_connection());
 }

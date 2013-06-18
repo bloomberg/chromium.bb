@@ -199,6 +199,14 @@ void QuicClient::WaitForStreamToClose(QuicStreamId id) {
   }
 }
 
+void QuicClient::WaitForCryptoHandshakeConfirmed() {
+  DCHECK(connected());
+
+  while (!session_->IsCryptoHandshakeConfirmed()) {
+    epoll_server_.WaitForEventsAndExecuteCallbacks();
+  }
+}
+
 bool QuicClient::WaitForEvents() {
   DCHECK(connected());
 

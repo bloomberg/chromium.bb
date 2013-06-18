@@ -53,6 +53,10 @@ const size_t kMaxPacketsPerRetransmissionAlarm = 10;
 // that this becomes limiting, we can revisit.
 const size_t kMaxFecGroups = 2;
 
+// Limit the number of undecryptable packets we buffer in
+// expectation of the CHLO/SHLO arriving.
+const size_t kMaxUndecryptablePackets = 10;
+
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
   return delta <= kMaxPacketGap;
@@ -119,6 +123,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
 }
 
 QuicConnection::~QuicConnection() {
+  STLDeleteElements(&undecryptable_packets_);
   STLDeleteValues(&unacked_packets_);
   STLDeleteValues(&group_map_);
   for (QueuedPacketList::iterator it = queued_packets_.begin();
@@ -757,8 +762,18 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   ++stats_.packets_received;
 
   if (!framer_.ProcessPacket(packet)) {
+    // If we are unable to decrypt this packet, it might be
+    // because the CHLO or SHLO packet was lost.
+    if (encryption_level_ != ENCRYPTION_FORWARD_SECURE &&
+        framer_.error() == QUIC_DECRYPTION_FAILURE &&
+        undecryptable_packets_.size() < kMaxUndecryptablePackets) {
+      QueueUndecryptablePacket(packet);
+    }
+    DVLOG(1) << ENDPOINT << "Unable to process packet.  Last packet processed: "
+             << last_header_.packet_sequence_number;
     return;
   }
+  MaybeProcessUndecryptablePackets();
   MaybeProcessRevivedPacket();
 }
 
@@ -985,7 +1000,8 @@ bool QuicConnection::IsRetransmission(
 }
 
 void QuicConnection::SetupRetransmission(
-    QuicPacketSequenceNumber sequence_number) {
+    QuicPacketSequenceNumber sequence_number,
+    EncryptionLevel level) {
   RetransmissionMap::iterator it = retransmission_map_.find(sequence_number);
   if (it == retransmission_map_.end()) {
     DVLOG(1) << ENDPOINT << "Will not retransmit packet " << sequence_number;
@@ -993,10 +1009,14 @@ void QuicConnection::SetupRetransmission(
   }
 
   RetransmissionInfo retransmission_info = it->second;
+  // TODO(rch): consider using a much smaller retransmisison_delay
+  // for the ENCRYPTION_NONE packets.
+  size_t effective_retransmission_count =
+      level == ENCRYPTION_NONE ? 0 : retransmission_info.number_retransmissions;
   QuicTime::Delta retransmission_delay =
       congestion_manager_.GetRetransmissionDelay(
           unacked_packets_.size(),
-          retransmission_info.number_retransmissions);
+          effective_retransmission_count);
 
   retransmission_timeouts_.push(RetransmissionTime(
       sequence_number,
@@ -1116,7 +1136,7 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
   // and not when it goes to the pending queue, otherwise we will end up adding
   // an entry to retransmission_timeout_ every time we attempt a write.
   if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
-    SetupRetransmission(sequence_number);
+    SetupRetransmission(sequence_number, level);
   } else if (packet->is_fec_packet()) {
     SetupAbandonFecTimer(sequence_number);
   }
@@ -1310,6 +1330,42 @@ const QuicDecrypter* QuicConnection::decrypter() const {
 
 const QuicDecrypter* QuicConnection::alternative_decrypter() const {
   return framer_.alternative_decrypter();
+}
+
+void QuicConnection::QueueUndecryptablePacket(
+    const QuicEncryptedPacket& packet) {
+  DVLOG(1) << ENDPOINT << "Queueing undecryptable packet.";
+  char* data = new char[packet.length()];
+  memcpy(data, packet.data(), packet.length());
+  undecryptable_packets_.push_back(
+      new QuicEncryptedPacket(data, packet.length(), true));
+}
+
+void QuicConnection::MaybeProcessUndecryptablePackets() {
+  if (undecryptable_packets_.empty() ||
+      encryption_level_ == ENCRYPTION_NONE) {
+    return;
+  }
+
+  while (!undecryptable_packets_.empty()) {
+    DVLOG(1) << ENDPOINT << "Attempting to process undecryptable packet";
+    QuicEncryptedPacket* packet = undecryptable_packets_.front();
+    if (!framer_.ProcessPacket(*packet) &&
+        framer_.error() == QUIC_DECRYPTION_FAILURE) {
+      DVLOG(1) << ENDPOINT << "Unable to process undecryptable packet...";
+      break;
+    }
+    DVLOG(1) << ENDPOINT << "Processed undecryptable packet!";
+    delete packet;
+    undecryptable_packets_.pop_front();
+  }
+
+  // Once forward secure encryption is in use, there will be no
+  // new keys installed and hence any undecryptable packets will
+  // never be able to be decrypted.
+  if (encryption_level_ == ENCRYPTION_FORWARD_SECURE) {
+    STLDeleteElements(&undecryptable_packets_);
+  }
 }
 
 void QuicConnection::MaybeProcessRevivedPacket() {

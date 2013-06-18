@@ -142,6 +142,13 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // per-connection.
   void SetEphemeralKeySource(EphemeralKeySource* ephemeral_key_source);
 
+  // set_replay_protection controls whether replay protection is enabled. If
+  // replay protection is disabled then no strike registers are needed and
+  // frontends can share an orbit value without a shared strike-register.
+  // However, an attacker can duplicate a handshake and cause a client's
+  // request to be processed twice.
+  void set_replay_protection(bool on);
+
   // set_strike_register_max_entries sets the maximum number of entries that
   // the internal strike register will hold. If the strike register fills up
   // then the oldest entries (by the client's clock) will be dropped.
@@ -225,6 +232,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     DISALLOW_COPY_AND_ASSIGN(Config);
   };
 
+  typedef std::map<ServerConfigID, scoped_refptr<Config> > ConfigMap;
+
   // ConfigPrimaryTimeLessThan returns true if a->primary_time <
   // b->primary_time.
   static bool ConfigPrimaryTimeLessThan(const scoped_refptr<Config>& a,
@@ -280,6 +289,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   bool ValidateServerNonce(base::StringPiece echoed_server_nonce,
                            QuicWallTime now) const;
 
+  // replay_protection_ controls whether the server enforces that handshakes
+  // aren't replays.
+  bool replay_protection_;
+
   // configs_ satisfies the following invariants:
   //   1) configs_.empty() <-> primary_config_ == NULL
   //   2) primary_config_ != NULL -> primary_config_->is_primary
@@ -287,7 +300,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   mutable base::Lock configs_lock_;
   // configs_ contains all active server configs. It's expected that there are
   // about half-a-dozen configs active at any one time.
-  typedef std::map<ServerConfigID, scoped_refptr<Config> > ConfigMap;
   ConfigMap configs_;
   // primary_config_ points to a Config (which is also in |configs_|) which is
   // the primary config - i.e. the one that we'll give out to new clients.

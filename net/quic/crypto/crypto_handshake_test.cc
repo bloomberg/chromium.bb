@@ -89,8 +89,8 @@ class QuicCryptoServerConfigPeer {
     ASSERT_EQ(expected.size(), server_config_->configs_.size())
         << ConfigsDebug();
 
-    for (QuicCryptoServerConfig::ConfigMap::const_iterator i =
-             server_config_->configs_.begin();
+    for (QuicCryptoServerConfig::ConfigMap::const_iterator
+             i = server_config_->configs_.begin();
          i != server_config_->configs_.end(); ++i) {
       bool found = false;
       for (vector<pair<ServerConfigID, bool> >::iterator j = expected.begin();
@@ -118,8 +118,8 @@ class QuicCryptoServerConfigPeer {
 
     string s;
 
-    for (QuicCryptoServerConfig::ConfigMap::const_iterator i =
-             server_config_->configs_.begin();
+    for (QuicCryptoServerConfig::ConfigMap::const_iterator
+             i = server_config_->configs_.begin();
          i != server_config_->configs_.end(); ++i) {
       const scoped_refptr<QuicCryptoServerConfig::Config> config = i->second;
       if (config->is_primary) {

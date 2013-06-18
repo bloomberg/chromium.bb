@@ -20,7 +20,7 @@ using std::string;
 
 namespace {
 
-void EvpMdCtxCleanUp(EVP_MD_CTX *ctx) {
+void EvpMdCtxCleanUp(EVP_MD_CTX* ctx) {
   (void)EVP_MD_CTX_cleanup(ctx);
 }
 

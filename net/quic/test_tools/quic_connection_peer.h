@@ -6,6 +6,7 @@
 #define NET_QUIC_TEST_TOOLS_QUIC_CONNECTION_PEER_H_
 
 #include "base/basictypes.h"
+#include "net/base/ip_endpoint.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_stats.h"
 
@@ -72,6 +73,9 @@ class QuicConnectionPeer {
   static bool IsServer(QuicConnection* connection);
 
   static void SetIsServer(QuicConnection* connection, bool is_server);
+
+  static void SetSelfAddress(QuicConnection* connection,
+                             const IPEndPoint& self_address);
 
   static void SwapCrypters(QuicConnection* connection, QuicFramer* framer);
 

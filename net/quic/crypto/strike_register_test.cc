@@ -18,8 +18,9 @@ using std::string;
 
 const uint8 kOrbit[8] = { 1, 2, 3, 4, 5, 6, 7, 8 };
 
-void
-NonceSetTimeAndOrbit(uint8 nonce[32], unsigned time, const uint8 orbit[8]) {
+// StrikeRegisterTests don't look at the random bytes so this function can
+// simply set the random bytes to 0.
+void SetNonce(uint8 nonce[32], unsigned time, const uint8 orbit[8]) {
   nonce[0] = time >> 24;
   nonce[1] = time >> 16;
   nonce[2] = time >> 8;
@@ -34,9 +35,9 @@ TEST(StrikeRegisterTest, SimpleHorizon) {
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
-  NonceSetTimeAndOrbit(nonce, 999, kOrbit);
+  SetNonce(nonce, 999, kOrbit);
   ASSERT_FALSE(set.Insert(nonce, 1000));
-  NonceSetTimeAndOrbit(nonce, 1000, kOrbit);
+  SetNonce(nonce, 1000, kOrbit);
   ASSERT_FALSE(set.Insert(nonce, 1000));
 }
 
@@ -47,7 +48,7 @@ TEST(StrikeRegisterTest, NoStartupMode) {
                      100 /* window secs */, kOrbit,
                      StrikeRegister::NO_STARTUP_PERIOD_NEEDED);
   uint8 nonce[32];
-  NonceSetTimeAndOrbit(nonce, 0, kOrbit);
+  SetNonce(nonce, 0, kOrbit);
   ASSERT_TRUE(set.Insert(nonce, 0));
   ASSERT_FALSE(set.Insert(nonce, 0));
 }
@@ -58,9 +59,9 @@ TEST(StrikeRegisterTest, WindowFuture) {
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
-  NonceSetTimeAndOrbit(nonce, 1101, kOrbit);
+  SetNonce(nonce, 1101, kOrbit);
   ASSERT_FALSE(set.Insert(nonce, 1000));
-  NonceSetTimeAndOrbit(nonce, 999, kOrbit);
+  SetNonce(nonce, 999, kOrbit);
   ASSERT_FALSE(set.Insert(nonce, 1100));
 }
 
@@ -71,7 +72,7 @@ TEST(StrikeRegisterTest, BadOrbit) {
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
   static const uint8 kBadOrbit[8] = { 0, 0, 0, 0, 1, 1, 1, 1 };
-  NonceSetTimeAndOrbit(nonce, 1101, kBadOrbit);
+  SetNonce(nonce, 1101, kBadOrbit);
   ASSERT_FALSE(set.Insert(nonce, 1100));
 }
 
@@ -80,7 +81,7 @@ TEST(StrikeRegisterTest, OneValue) {
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
-  NonceSetTimeAndOrbit(nonce, 1101, kOrbit);
+  SetNonce(nonce, 1101, kOrbit);
   ASSERT_TRUE(set.Insert(nonce, 1100));
 }
 
@@ -90,8 +91,7 @@ TEST(StrikeRegisterTest, RejectDuplicate) {
                      100 /* window secs */, kOrbit,
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
-  memset(nonce, 0, sizeof(nonce));
-  NonceSetTimeAndOrbit(nonce, 1101, kOrbit);
+  SetNonce(nonce, 1101, kOrbit);
   ASSERT_TRUE(set.Insert(nonce, 1100));
   ASSERT_FALSE(set.Insert(nonce, 1100));
 }
@@ -102,20 +102,17 @@ TEST(StrikeRegisterTest, HorizonUpdating) {
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[6][32];
   for (unsigned i = 0; i < 5; i++) {
-    NonceSetTimeAndOrbit(nonce[i], 1101, kOrbit);
-    memset(nonce[i] + 12, 0, 20);
+    SetNonce(nonce[i], 1101, kOrbit);
     nonce[i][31] = i;
     ASSERT_TRUE(set.Insert(nonce[i], 1100));
   }
 
   // This should push the oldest value out and force the horizon to be updated.
-  NonceSetTimeAndOrbit(nonce[5], 1102, kOrbit);
-  memset(nonce[5] + 12, 0, 20);
+  SetNonce(nonce[5], 1102, kOrbit);
   ASSERT_TRUE(set.Insert(nonce[5], 1100));
 
   // This should be behind the horizon now:
-  NonceSetTimeAndOrbit(nonce[5], 1101, kOrbit);
-  memset(nonce[5] + 12, 0, 20);
+  SetNonce(nonce[5], 1101, kOrbit);
   nonce[5][31] = 10;
   ASSERT_FALSE(set.Insert(nonce[5], 1100));
 }
@@ -126,9 +123,9 @@ TEST(StrikeRegisterTest, InsertMany) {
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
 
   uint8 nonce[32];
-  NonceSetTimeAndOrbit(nonce, 1101, kOrbit);
+  SetNonce(nonce, 1101, kOrbit);
   for (unsigned i = 0; i < 100000; i++) {
-    NonceSetTimeAndOrbit(nonce, 1101 + i/500, kOrbit);
+    SetNonce(nonce, 1101 + i/500, kOrbit);
     memcpy(nonce + 12, &i, sizeof(i));
     set.Insert(nonce, 1100);
   }
@@ -279,8 +276,7 @@ TEST(StrikeRegisterStressTest, Stress) {
     }
 
     uint8 nonce[32];
-    NonceSetTimeAndOrbit(nonce, time, kOrbit);
-    memset(nonce + 12, 0, 20);
+    SetNonce(nonce, time, kOrbit);
 
     // There are 2048 possible nonce values:
     const uint32 v = rand() % 2048;

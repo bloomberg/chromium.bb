@@ -71,6 +71,9 @@ class QuicClient : public EpollCallbackInterface {
   // Wait for events until the stream with the given ID is closed.
   void WaitForStreamToClose(QuicStreamId id);
 
+  // Wait for events until the handshake is confirmed.
+  void WaitForCryptoHandshakeConfirmed();
+
   // Wait up to 50ms, and handle any events which occur.
   // Returns true if there are any outstanding requests.
   bool WaitForEvents();

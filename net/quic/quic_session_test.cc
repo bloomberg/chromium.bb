@@ -5,6 +5,7 @@
 #include "net/quic/quic_session.h"
 
 #include <set>
+#include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "net/quic/crypto/crypto_handshake.h"
@@ -12,11 +13,13 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/spdy/spdy_framer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::hash_map;
 using std::set;
+using std::vector;
 using testing::_;
 using testing::InSequence;
 
@@ -49,6 +52,8 @@ class TestStream : public ReliableQuicStream {
   TestStream(QuicStreamId id, QuicSession* session)
       : ReliableQuicStream(id, session) {
   }
+
+  using ReliableQuicStream::CloseWriteSide;
 
   virtual uint32 ProcessData(const char* data, uint32 data_len) {
     return data_len;
@@ -217,6 +222,43 @@ TEST_F(QuicSessionTest, OnCanWriteWithClosedStream) {
   EXPECT_CALL(*stream2, OnCanWrite());
   EXPECT_CALL(*stream4, OnCanWrite());
   EXPECT_TRUE(session_.OnCanWrite());
+}
+
+// Regression test for http://crbug.com/248737
+TEST_F(QuicSessionTest, OutOfOrderHeaders) {
+  QuicSpdyCompressor compressor;
+  SpdyHeaderBlock headers;
+  headers[":host"] = "www.google.com";
+  headers[":path"] = "/index.hml";
+  headers[":scheme"] = "http";
+  vector<QuicStreamFrame> frames;
+  QuicPacketHeader header;
+  header.public_header.guid = session_.guid();
+
+  TestStream* stream2 = session_.CreateOutgoingReliableStream();
+  TestStream* stream4 = session_.CreateOutgoingReliableStream();
+  stream2->CloseWriteSide();
+  stream4->CloseWriteSide();
+
+  // Create frame with headers for stream2.
+  string compressed_headers1 = compressor.CompressHeaders(headers);
+  QuicStreamFrame frame1(stream2->id(), false, 0, compressed_headers1);
+
+  // Create frame with headers for stream4.
+  string compressed_headers2 = compressor.CompressHeaders(headers);
+  QuicStreamFrame frame2(stream4->id(), true, 0, compressed_headers2);
+
+  // Process the second frame first.  This will cause the headers to
+  // be queued up and processed after the first frame is processed.
+  frames.push_back(frame2);
+  session_.OnPacket(IPEndPoint(), IPEndPoint(), header, frames);
+
+  // Process the first frame, and un-cork the buffered headers.
+  frames[0] = frame1;
+  session_.OnPacket(IPEndPoint(), IPEndPoint(), header, frames);
+
+  // Ensure that the streams actually close and we don't DCHECK.
+  session_.ConnectionClose(QUIC_CONNECTION_TIMED_OUT, true);
 }
 
 TEST_F(QuicSessionTest, SendGoAway) {

@@ -154,7 +154,7 @@ class TaggingDecrypter : public QuicDecrypter {
     if (ciphertext.size() < kTagSize) {
       return false;
     }
-    if (!CheckTag(ciphertext)) {
+    if (!CheckTag(ciphertext, GetTag(ciphertext))) {
       return false;
     }
     *output_length = ciphertext.size() - kTagSize;
@@ -168,7 +168,7 @@ class TaggingDecrypter : public QuicDecrypter {
     if (ciphertext.size() < kTagSize) {
       return NULL;
     }
-    if (!CheckTag(ciphertext)) {
+    if (!CheckTag(ciphertext, GetTag(ciphertext))) {
       return NULL;
     }
     const size_t len = ciphertext.size() - kTagSize;
@@ -181,13 +181,17 @@ class TaggingDecrypter : public QuicDecrypter {
   virtual StringPiece GetKey() const OVERRIDE { return StringPiece(); }
   virtual StringPiece GetNoncePrefix() const OVERRIDE { return StringPiece(); }
 
+ protected:
+  virtual uint8 GetTag(StringPiece ciphertext) {
+    return ciphertext.data()[ciphertext.size()-1];
+  }
+
  private:
   enum {
     kTagSize = 12,
   };
 
-  bool CheckTag(StringPiece ciphertext) {
-    uint8 tag = ciphertext.data()[ciphertext.size()-1];
+  bool CheckTag(StringPiece ciphertext, uint8 tag) {
     for (size_t i = ciphertext.size() - kTagSize; i < ciphertext.size(); i++) {
       if (ciphertext.data()[i] != tag) {
         return false;
@@ -196,6 +200,22 @@ class TaggingDecrypter : public QuicDecrypter {
 
     return true;
   }
+};
+
+// StringTaggingDecrypter ensures that the final kTagSize bytes of the message
+// match the expected value.
+class StrictTaggingDecrypter : public TaggingDecrypter {
+ public:
+  explicit StrictTaggingDecrypter(uint8 tag) : tag_(tag) {}
+  virtual ~StrictTaggingDecrypter() {}
+
+  // TaggingQuicDecrypter
+  virtual uint8 GetTag(StringPiece ciphertext) OVERRIDE {
+    return tag_;
+  }
+
+ private:
+  const uint8 tag_;
 };
 
 class TestConnectionHelper : public QuicConnectionHelperInterface {
@@ -489,12 +509,20 @@ class QuicConnectionTest : public ::testing::Test {
   }
 
   size_t ProcessDataPacket(QuicPacketSequenceNumber number,
-                         QuicFecGroupNumber fec_group,
-                         bool entropy_flag) {
+                           QuicFecGroupNumber fec_group,
+                           bool entropy_flag) {
+    return ProcessDataPacketAtLevel(number, fec_group, entropy_flag,
+                                    ENCRYPTION_NONE);
+  }
+
+  size_t ProcessDataPacketAtLevel(QuicPacketSequenceNumber number,
+                                  QuicFecGroupNumber fec_group,
+                                  bool entropy_flag,
+                                  EncryptionLevel level) {
     scoped_ptr<QuicPacket> packet(ConstructDataPacket(number, fec_group,
                                                       entropy_flag));
     scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(
-        ENCRYPTION_NONE, number, *packet));
+        level, number, *packet));
     connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
     return encrypted->length();
   }
@@ -1470,6 +1498,32 @@ TEST_F(QuicConnectionTest, RetransmitPacketsWithInitialEncryption) {
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(1);
 
   connection_.RetransmitUnackedPackets(QuicConnection::INITIAL_ENCRYPTION_ONLY);
+}
+
+TEST_F(QuicConnectionTest, BufferNonDecryptablePackets) {
+  use_tagging_decrypter();
+
+  const uint8 tag = 0x07;
+  framer_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
+
+  // Process an encrypted packet which can not yet be decrypted
+  // which should result in the packet being buffered.
+  ProcessDataPacketAtLevel(1, false, kEntropyFlag, ENCRYPTION_INITIAL);
+
+  // Transition to the new encryption state and process another
+  // encrypted packet which should result in the original packet being
+  // processed.
+  connection_.SetDecrypter(new StrictTaggingDecrypter(tag));
+  connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
+  connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(tag));
+  EXPECT_CALL(visitor_, OnPacket(_, _, _, _)).Times(2).WillRepeatedly(
+      Return(true));
+  ProcessDataPacketAtLevel(2, false, kEntropyFlag, ENCRYPTION_INITIAL);
+
+  // Finally, process a third packet and note that we do not
+  // reprocess the buffered packet.
+  EXPECT_CALL(visitor_, OnPacket(_, _, _, _)).WillOnce(Return(true));
+  ProcessDataPacketAtLevel(3, false, kEntropyFlag, ENCRYPTION_INITIAL);
 }
 
 TEST_F(QuicConnectionTest, TestRetransmitOrder) {

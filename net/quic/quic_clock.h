@@ -27,7 +27,7 @@ class NET_EXPORT_PRIVATE QuicClock {
   // Note: this use significant resources please use only if needed.
   virtual QuicTime Now() const;
 
-  // WallNow returns the current wall-time - a time is consistent across
+  // WallNow returns the current wall-time - a time that is consistent across
   // different clocks.
   virtual QuicWallTime WallNow() const;
 };

@@ -50,7 +50,8 @@ QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
 QuicCryptoServerConfig::QuicCryptoServerConfig(
     StringPiece source_address_token_secret,
     QuicRandom* rand)
-    : configs_lock_(),
+    : replay_protection_(true),
+      configs_lock_(),
       primary_config_(NULL),
       next_config_promotion_time_(QuicWallTime::Zero()),
       strike_register_lock_(),
@@ -619,19 +620,22 @@ QuicErrorCode QuicCryptoServerConfig::EvaluateClientHello(
   if (client_hello.GetStringPiece(kNONC, &info->client_nonce) &&
       info->client_nonce.size() == kNonceSize) {
     info->client_nonce_well_formed = true;
-    base::AutoLock auto_lock(strike_register_lock_);
+    if (replay_protection_) {
+      base::AutoLock auto_lock(strike_register_lock_);
 
-    if (strike_register_.get() == NULL) {
-      strike_register_.reset(new StrikeRegister(
-          strike_register_max_entries_,
-          static_cast<uint32>(info->now.ToUNIXSeconds()),
-          strike_register_window_secs_,
-          orbit,
-          StrikeRegister::DENY_REQUESTS_AT_STARTUP));
+      if (strike_register_.get() == NULL) {
+        strike_register_.reset(new StrikeRegister(
+            strike_register_max_entries_,
+            static_cast<uint32>(info->now.ToUNIXSeconds()),
+            strike_register_window_secs_,
+            orbit,
+            StrikeRegister::DENY_REQUESTS_AT_STARTUP));
+      }
+
+      unique_by_strike_register = strike_register_->Insert(
+          reinterpret_cast<const uint8*>(info->client_nonce.data()),
+          static_cast<uint32>(info->now.ToUNIXSeconds()));
     }
-    unique_by_strike_register = strike_register_->Insert(
-        reinterpret_cast<const uint8*>(info->client_nonce.data()),
-        static_cast<uint32>(info->now.ToUNIXSeconds()));
   }
 
   client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
@@ -639,11 +643,15 @@ QuicErrorCode QuicCryptoServerConfig::EvaluateClientHello(
   // If the client nonce didn't establish uniqueness then an echoed server
   // nonce may.
   bool unique_by_server_nonce = false;
-  if (!unique_by_strike_register && !info->server_nonce.empty()) {
+  if (replay_protection_ &&
+      !unique_by_strike_register &&
+      !info->server_nonce.empty()) {
     unique_by_server_nonce = ValidateServerNonce(info->server_nonce, info->now);
   }
 
-  info->unique = unique_by_strike_register || unique_by_server_nonce;
+  info->unique = !replay_protection_ ||
+                 unique_by_strike_register ||
+                 unique_by_server_nonce;
 
   return QUIC_NO_ERROR;
 }
@@ -658,7 +666,9 @@ void QuicCryptoServerConfig::BuildRejection(
   out->SetStringPiece(kSCFG, config->serialized);
   out->SetStringPiece(kSourceAddressTokenTag,
                       NewSourceAddressToken(info.client_ip, rand, info.now));
-  out->SetStringPiece(kServerNonceTag, NewServerNonce(rand, info.now));
+  if (replay_protection_) {
+    out->SetStringPiece(kServerNonceTag, NewServerNonce(rand, info.now));
+  }
 
   // The client may have requested a certificate chain.
   const QuicTag* their_proof_demands;
@@ -867,6 +877,10 @@ void QuicCryptoServerConfig::SetProofSource(ProofSource* proof_source) {
 void QuicCryptoServerConfig::SetEphemeralKeySource(
     EphemeralKeySource* ephemeral_key_source) {
   ephemeral_key_source_.reset(ephemeral_key_source);
+}
+
+void QuicCryptoServerConfig::set_replay_protection(bool on) {
+  replay_protection_ = on;
 }
 
 void QuicCryptoServerConfig::set_strike_register_max_entries(

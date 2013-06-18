@@ -451,6 +451,19 @@ CryptoHandshakeMessage CryptoTestUtils::BuildMessage(const char* message_tag,
       break;
     }
 
+    if (tagstr[0] == '$') {
+      // Special value.
+      const char* const special = tagstr + 1;
+      if (strcmp(special, "padding") == 0) {
+        const int min_bytes = va_arg(ap, int);
+        msg.set_minimum_size(min_bytes);
+      } else {
+        CHECK(false) << "Unknown special value: " << special;
+      }
+
+      continue;
+    }
+
     const QuicTag tag = ParseTag(tagstr);
     const char* valuestr = va_arg(ap, const char*);
 
@@ -478,7 +491,14 @@ CryptoHandshakeMessage CryptoTestUtils::BuildMessage(const char* message_tag,
     msg.SetStringPiece(tag, valuestr);
   }
 
-  return msg;
+  // The CryptoHandshakeMessage needs to be serialized and parsed to ensure
+  // that any padding is included.
+  scoped_ptr<QuicData> bytes(CryptoFramer::ConstructHandshakeMessage(msg));
+  scoped_ptr<CryptoHandshakeMessage> parsed(
+      CryptoFramer::ParseMessage(bytes->AsStringPiece()));
+  CHECK(parsed.get());
+
+  return *parsed;
 }
 
 }  // namespace test

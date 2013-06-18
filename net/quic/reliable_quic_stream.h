@@ -67,7 +67,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // but is handled immediately.
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer);
 
-  // Called by the sequencer, when we should process a stream termination or
+  // Called when we should process a stream termination or
   // stream close from the peer.
   virtual void TerminateFromPeer(bool half_close);
 
@@ -88,7 +88,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   virtual size_t Readv(const struct iovec* iov, size_t iov_len);
   virtual int GetReadableRegions(iovec* iov, size_t iov_len);
   virtual bool IsHalfClosed() const;
-  virtual bool IsClosed() const;
   virtual bool HasBytesToRead() const;
 
   // Called by the session when a decompression blocked stream

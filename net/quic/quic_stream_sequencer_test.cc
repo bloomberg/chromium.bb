@@ -362,65 +362,31 @@ TEST_F(QuicStreamSequencerTest, MarkConsumed) {
   ASSERT_TRUE(VerifyReadableRegions(expected4, arraysize(expected4)));
 }
 
-TEST_F(QuicStreamSequencerTest, BasicCloseOrdered) {
-  InSequence s;
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-
-  EXPECT_CALL(stream_, TerminateFromPeer(false));
-  sequencer_->CloseStreamAtOffset(3, false);
-  EXPECT_EQ(3u, sequencer_->close_offset());
-}
-
-TEST_F(QuicStreamSequencerTest, BasicHalfOrdered) {
+TEST_F(QuicStreamSequencerTest, BasicHalfCloseOrdered) {
   InSequence s;
 
   EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
   EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
 
   EXPECT_CALL(stream_, TerminateFromPeer(true));
-  sequencer_->CloseStreamAtOffset(3, true);
+  sequencer_->CloseStreamAtOffset(3);
   EXPECT_EQ(3u, sequencer_->close_offset());
 }
 
-TEST_F(QuicStreamSequencerTest, BasicCloseUnordered) {
-  sequencer_->CloseStreamAtOffset(3, false);
-  EXPECT_EQ(3u, sequencer_->close_offset());
-
-  InSequence s;
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
-  EXPECT_CALL(stream_, TerminateFromPeer(false));
-
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-}
-
-TEST_F(QuicStreamSequencerTest, BasicHalfUnorderedWithFlush) {
-  sequencer_->CloseStreamAtOffset(6, true);
+TEST_F(QuicStreamSequencerTest, BasicHalfCloseUnorderedWithFlush) {
+  sequencer_->CloseStreamAtOffset(6);
   EXPECT_EQ(6u, sequencer_->close_offset());
   InSequence s;
   EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
   EXPECT_CALL(stream_, ProcessData(StrEq("def"), 3)).WillOnce(Return(3));
   EXPECT_CALL(stream_, TerminateFromPeer(true));
-
-  EXPECT_TRUE(sequencer_->OnFrame(3, "def", 3));
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-}
-
-TEST_F(QuicStreamSequencerTest, BasicCloseUnorderedWithFlush) {
-  sequencer_->CloseStreamAtOffset(6, false);
-  EXPECT_EQ(6u, sequencer_->close_offset());
-
-  InSequence s;
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
-  EXPECT_CALL(stream_, ProcessData(StrEq("def"), 3)).WillOnce(Return(3));
-  EXPECT_CALL(stream_, TerminateFromPeer(false));
 
   EXPECT_TRUE(sequencer_->OnFrame(3, "def", 3));
   EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
 }
 
 TEST_F(QuicStreamSequencerTest, BasicHalfUnordered) {
-  sequencer_->CloseStreamAtOffset(3, true);
+  sequencer_->CloseStreamAtOffset(3);
   EXPECT_EQ(3u, sequencer_->close_offset());
   InSequence s;
   EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
@@ -429,36 +395,10 @@ TEST_F(QuicStreamSequencerTest, BasicHalfUnordered) {
   EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
 }
 
-TEST_F(QuicStreamSequencerTest, TerminateStreamBeforeCloseEqual) {
-  sequencer_->CloseStreamAtOffset(3, true);
-  EXPECT_EQ(3u, sequencer_->close_offset());
-
-  sequencer_->CloseStreamAtOffset(3, false);
-  EXPECT_EQ(3u, sequencer_->close_offset());
-
-  InSequence s;
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
-  EXPECT_CALL(stream_, TerminateFromPeer(false));
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-}
-
-TEST_F(QuicStreamSequencerTest, CloseBeforeTermianteEqual) {
-  sequencer_->CloseStreamAtOffset(3, false);
-  EXPECT_EQ(3u, sequencer_->close_offset());
-
-  sequencer_->CloseStreamAtOffset(3, true);
-  EXPECT_EQ(3u, sequencer_->close_offset());
-
-  InSequence s;
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(3));
-  EXPECT_CALL(stream_, TerminateFromPeer(false));
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-}
-
 TEST_F(QuicStreamSequencerTest, TerminateWithReadv) {
   char buffer[3];
 
-  sequencer_->CloseStreamAtOffset(3, true);
+  sequencer_->CloseStreamAtOffset(3);
   EXPECT_EQ(3u, sequencer_->close_offset());
 
   EXPECT_FALSE(sequencer_->IsHalfClosed());
@@ -470,40 +410,21 @@ TEST_F(QuicStreamSequencerTest, TerminateWithReadv) {
   int bytes_read = sequencer_->Readv(&iov, 1);
   EXPECT_EQ(3, bytes_read);
   EXPECT_TRUE(sequencer_->IsHalfClosed());
-  EXPECT_FALSE(sequencer_->IsClosed());
-}
-
-TEST_F(QuicStreamSequencerTest, CloseWithReadv) {
-  char buffer[3];
-
-  sequencer_->CloseStreamAtOffset(3, false);
-  EXPECT_EQ(3u, sequencer_->close_offset());
-
-  EXPECT_FALSE(sequencer_->IsClosed());
-
-  EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(0));
-  EXPECT_TRUE(sequencer_->OnFrame(0, "abc", 3));
-
-  iovec iov = { &buffer[0], 3 };
-  int bytes_read = sequencer_->Readv(&iov, 1);
-  EXPECT_EQ(3, bytes_read);
-  EXPECT_TRUE(sequencer_->IsHalfClosed());
-  EXPECT_TRUE(sequencer_->IsClosed());
 }
 
 TEST_F(QuicStreamSequencerTest, MutipleOffsets) {
-  sequencer_->CloseStreamAtOffset(3, false);
+  sequencer_->CloseStreamAtOffset(3);
   EXPECT_EQ(3u, sequencer_->close_offset());
 
   EXPECT_CALL(stream_, Close(QUIC_MULTIPLE_TERMINATION_OFFSETS));
-  sequencer_->CloseStreamAtOffset(5, false);
+  sequencer_->CloseStreamAtOffset(5);
   EXPECT_EQ(3u, sequencer_->close_offset());
 
   EXPECT_CALL(stream_, Close(QUIC_MULTIPLE_TERMINATION_OFFSETS));
-  sequencer_->CloseStreamAtOffset(1, false);
+  sequencer_->CloseStreamAtOffset(1);
   EXPECT_EQ(3u, sequencer_->close_offset());
 
-  sequencer_->CloseStreamAtOffset(3, false);
+  sequencer_->CloseStreamAtOffset(3);
   EXPECT_EQ(3u, sequencer_->close_offset());
 }
 

@@ -16,6 +16,7 @@
 #ifndef NET_QUIC_QUIC_CONNECTION_H_
 #define NET_QUIC_QUIC_CONNECTION_H_
 
+#include <deque>
 #include <list>
 #include <map>
 #include <queue>
@@ -511,7 +512,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
 
-  void SetupRetransmission(QuicPacketSequenceNumber sequence_number);
+  void SetupRetransmission(QuicPacketSequenceNumber sequence_number,
+                           EncryptionLevel level);
   bool IsRetransmission(QuicPacketSequenceNumber sequence_number);
 
   void SetupAbandonFecTimer(QuicPacketSequenceNumber sequence_number);
@@ -525,6 +527,13 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Writes as many queued packets as possible.  The connection must not be
   // blocked when this is called.
   bool WriteQueuedPackets();
+
+  // Queues |packet| in the hopes that it can be decrypted in the
+  // future, when a new key is installed.
+  void QueueUndecryptablePacket(const QuicEncryptedPacket& packet);
+
+  // Attempts to process any queued undecryptable packets.
+  void MaybeProcessUndecryptablePackets();
 
   // If a packet can be revived from the current FEC group, then
   // revive and process the packet.
@@ -596,6 +605,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   // retransmitted.
   // Ask: What should be the timeout for these packets?
   UnackedPacketMap unacked_fec_packets_;
+
+  // Collection of packets which were received before encryption was
+  // established, but which could not be decrypted.  We buffer these on
+  // the assumption that they could not be processed because they were
+  // sent with the INITIAL encryption and the CHLO message was lost.
+  std::deque<QuicEncryptedPacket*> undecryptable_packets_;
 
   // Heap of packets that we might need to retransmit, and the time at
   // which we should retransmit them. Every time a packet is sent it is added

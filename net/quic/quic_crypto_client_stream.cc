@@ -112,15 +112,9 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         session()->connection()->SetDefaultEncryptionLevel(
             ENCRYPTION_INITIAL);
         if (!encryption_established_) {
-          // TODO(agl): the following, commented code should live here and not
-          // down when the handshake is confirmed. However, it causes
-          // EndToEndTest.LargePost to be flaky (b/8074678), seemingly because
-          // the packets dropped when the client hello is dropped cause the
-          // congestion control to be too conservative and the server times
-          // out.
-          //   encryption_established_ = true;
-          //   session()->OnCryptoHandshakeEvent(
-          //       QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
+          encryption_established_ = true;
+          session()->OnCryptoHandshakeEvent(
+              QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
         } else {
           session()->OnCryptoHandshakeEvent(
               QuicSession::ENCRYPTION_REESTABLISHED);
@@ -225,12 +219,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             ENCRYPTION_FORWARD_SECURE, crypters->encrypter.release());
         session()->connection()->SetDefaultEncryptionLevel(
             ENCRYPTION_FORWARD_SECURE);
-
-        // TODO(agl): this code shouldn't be here. See the TODO further up
-        // about it.
-        encryption_established_ = true;
-        session()->OnCryptoHandshakeEvent(
-            QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
 
         handshake_confirmed_ = true;
         session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
