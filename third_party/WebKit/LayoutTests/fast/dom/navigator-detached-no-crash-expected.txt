@@ -19,6 +19,7 @@ navigator.requestMIDIAccess() is OK
 navigator.userAgent is OK
 navigator.vendor is OK
 navigator.vendorSub is OK
+navigator.vibrate() threw err TypeError: Not enough arguments
 navigator.webkitGetGamepads() is OK
 navigator.webkitPersistentStorage is OK
 navigator.webkitTemporaryStorage is OK
@@ -41,6 +42,7 @@ navigator.requestMIDIAccess() is OK
 navigator.userAgent is OK
 navigator.vendor is OK
 navigator.vendorSub is OK
+navigator.vibrate() threw err TypeError: Not enough arguments
 navigator.webkitGetGamepads() is OK
 navigator.webkitPersistentStorage is OK
 navigator.webkitTemporaryStorage is OK

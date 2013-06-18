@@ -386,6 +386,16 @@ public:
     virtual void callOnMainThread(void (*func)(void*), void* context) { }
 
 
+    // Vibration -----------------------------------------------------------
+
+    // Starts a vibration for the given duration in milliseconds. If there is currently an active
+    // vibration it will be cancelled before the new one is started.
+    virtual void vibrate(unsigned time) { }
+
+    // Cancels the current vibration, if there is one.
+    virtual void cancelVibration() { }
+
+
     // Testing -------------------------------------------------------------
 
 #define HAVE_WEBUNITTESTSUPPORT 1

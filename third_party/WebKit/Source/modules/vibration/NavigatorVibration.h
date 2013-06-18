@@ -20,31 +20,42 @@
 #ifndef NavigatorVibration_h
 #define NavigatorVibration_h
 
-#if ENABLE(VIBRATION)
-
-#include "core/dom/ExceptionCode.h"
+#include "core/page/Navigator.h"
+#include "core/platform/Timer.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class Navigator;
-class Uint32Array;
-
-class NavigatorVibration {
+class NavigatorVibration : public Supplement<Navigator> {
 public:
     typedef Vector<unsigned> VibrationPattern;
 
-    static void vibrate(Navigator*, unsigned time, ExceptionCode&);
-    static void vibrate(Navigator*, const VibrationPattern&, ExceptionCode&);
+    ~NavigatorVibration();
+
+    bool vibrate(const VibrationPattern&);
+    void cancelVibration();
+    // FIXME : Hook suspendVibration() and resumeVibration() into the page
+    // visibility feature, when the document.hidden attribute is changed.
+    void suspendVibration();
+    void resumeVibration();
+    void timerStartFired(Timer<NavigatorVibration>*);
+    void timerStopFired(Timer<NavigatorVibration>*);
+
+    static bool vibrate(Navigator*, unsigned time);
+    static bool vibrate(Navigator*, const VibrationPattern&);
+    static NavigatorVibration* from(Navigator*);
 
 private:
     NavigatorVibration();
-    ~NavigatorVibration();
+    static const char* supplementName();
+
+    Timer<NavigatorVibration> m_timerStart;
+    Timer<NavigatorVibration> m_timerStop;
+    bool m_isVibrating;
+    VibrationPattern m_pattern;
 };
 
 } // namespace WebCore
 
-#endif // ENABLE(VIBRATION)
-
 #endif // NavigatorVibration_h
-

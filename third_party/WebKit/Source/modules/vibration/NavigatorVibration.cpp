@@ -20,58 +20,155 @@
 #include "config.h"
 #include "modules/vibration/NavigatorVibration.h"
 
-#if ENABLE(VIBRATION)
-
-#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
-#include "core/page/Navigator.h"
 #include "core/page/Page.h"
-#include "modules/vibration/Vibration.h"
-#include "wtf/Uint32Array.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
 
+// Maximum duration of a vibration is 10 seconds.
+const unsigned kVibrationDurationMax = 10000;
+
+// Maximum number of entries in a vibration pattern.
+const unsigned kVibrationPatternLengthMax = 99;
+
 NavigatorVibration::NavigatorVibration()
+    : m_timerStart(this, &NavigatorVibration::timerStartFired)
+    , m_timerStop(this, &NavigatorVibration::timerStopFired)
+    , m_isVibrating(false)
 {
 }
 
 NavigatorVibration::~NavigatorVibration()
 {
+    if (m_isVibrating)
+        cancelVibration();
 }
 
-void NavigatorVibration::vibrate(Navigator* navigator, unsigned time, ExceptionCode& ec)
+bool NavigatorVibration::vibrate(const VibrationPattern& pattern)
 {
-    if (!navigator->frame()->page())
-        return;
+    size_t length = pattern.size();
 
-    if (navigator->frame()->page()->visibilityState() == PageVisibilityStateHidden)
-        return;
+    // If the pattern is too long then abort.
+    if (length > kVibrationPatternLengthMax)
+        return false;
 
-    if (!Vibration::isActive(navigator->frame()->page())) {
-        ec = NOT_SUPPORTED_ERR;
-        return;
+    // If any pattern entry is too long then abort.
+    for (size_t i = 0; i < length; ++i) {
+        if (pattern[i] > kVibrationDurationMax)
+            return false;
     }
 
-    Vibration::from(navigator->frame()->page())->vibrate(time);
+    // Cancelling clears the pattern so do this before setting the new pattern.
+    if (m_isVibrating)
+        cancelVibration();
+
+    // If the last item in the pattern is a pause then discard it.
+    if (length && !(length % 2)) {
+        VibrationPattern tempPattern = pattern;
+        tempPattern.removeLast();
+        m_pattern = tempPattern;
+    } else {
+        m_pattern = pattern;
+    }
+
+    if (m_timerStart.isActive())
+        m_timerStart.stop();
+
+    if (!m_pattern.size())
+        return true;
+
+    if (m_pattern.size() == 1 && !m_pattern[0]) {
+        m_pattern.clear();
+        return true;
+    }
+
+    m_timerStart.startOneShot(0);
+    return true;
 }
 
-void NavigatorVibration::vibrate(Navigator* navigator, const VibrationPattern& pattern, ExceptionCode& ec)
+void NavigatorVibration::cancelVibration()
+{
+    m_pattern.clear();
+    if (m_isVibrating) {
+        WebKit::Platform::current()->cancelVibration();
+        m_isVibrating = false;
+        m_timerStop.stop();
+    }
+}
+
+void NavigatorVibration::suspendVibration()
+{
+    if (!m_isVibrating)
+        return;
+
+    m_pattern.insert(0, m_timerStop.nextFireInterval());
+    m_timerStop.stop();
+    cancelVibration();
+}
+
+void NavigatorVibration::resumeVibration()
+{
+    ASSERT(!m_timerStart.isActive());
+
+    m_timerStart.startOneShot(0);
+}
+
+void NavigatorVibration::timerStartFired(Timer<NavigatorVibration>* timer)
+{
+    ASSERT_UNUSED(timer, timer == &m_timerStart);
+
+    if (m_pattern.size()) {
+        m_isVibrating = true;
+        WebKit::Platform::current()->vibrate(m_pattern[0]);
+        m_timerStop.startOneShot(m_pattern[0] / 1000.0);
+        m_pattern.remove(0);
+    }
+}
+
+void NavigatorVibration::timerStopFired(Timer<NavigatorVibration>* timer)
+{
+    ASSERT_UNUSED(timer, timer == &m_timerStop);
+
+    m_isVibrating = false;
+
+    if (m_pattern.size()) {
+        m_timerStart.startOneShot(m_pattern[0] / 1000.0);
+        m_pattern.remove(0);
+    }
+}
+
+bool NavigatorVibration::vibrate(Navigator* navigator, unsigned time)
+{
+    VibrationPattern pattern;
+    pattern.append(time);
+    return NavigatorVibration::vibrate(navigator, pattern);
+}
+
+bool NavigatorVibration::vibrate(Navigator* navigator, const VibrationPattern& pattern)
 {
     if (!navigator->frame()->page())
-        return;
+        return false;
 
-    if (navigator->frame()->page()->visibilityState() == PageVisibilityStateHidden)
-        return;
+    if (navigator->frame()->page()->visibilityState() != PageVisibilityStateVisible)
+        return false;
 
-    if (!Vibration::isActive(navigator->frame()->page())) {
-        ec = NOT_SUPPORTED_ERR;
-        return;
+    return NavigatorVibration::from(navigator)->vibrate(pattern);
+}
+
+NavigatorVibration* NavigatorVibration::from(Navigator* navigator)
+{
+    NavigatorVibration* navigatorVibration = static_cast<NavigatorVibration*>(Supplement<Navigator>::from(navigator, supplementName()));
+    if (!navigatorVibration) {
+        navigatorVibration = new NavigatorVibration();
+        Supplement<Navigator>::provideTo(navigator, supplementName(), adoptPtr(navigatorVibration));
     }
+    return navigatorVibration;
+}
 
-    Vibration::from(navigator->frame()->page())->vibrate(pattern);
+const char* NavigatorVibration::supplementName()
+{
+    return "NavigatorVibration";
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(VIBRATION)
-
