@@ -35,7 +35,8 @@ class ScreenAndroid : public Screen {
         gfx::Rect(gfx::ToCeiledSize(gfx::ScaleSize(
             bounds_in_pixels.size(), 1.0f / device_scale_factor)));
     gfx::Display display(0, bounds_in_dip);
-    display.set_device_scale_factor(device_scale_factor);
+    if (!gfx::Display::HasForceDeviceScaleFactor())
+      display.set_device_scale_factor(device_scale_factor);
     return display;
   }
 

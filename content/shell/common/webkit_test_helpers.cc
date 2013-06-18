@@ -106,6 +106,9 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->fixed_position_creates_stacking_context = false;
   prefs->smart_insert_delete_enabled = true;
   prefs->minimum_accelerated_2d_canvas_size = 0;
+#if defined(OS_ANDROID)
+  prefs->text_autosizing_enabled = false;
+#endif
 }
 
 base::FilePath GetWebKitRootDirFilePath() {
