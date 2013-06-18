@@ -38,22 +38,24 @@ class FailsOnException : public ModuleSystem::ExceptionHandler {
 class V8ExtensionConfigurator {
  public:
   V8ExtensionConfigurator()
-      : safe_builtins_(extensions::SafeBuiltins::CreateV8Extension()) {
-    v8::RegisterExtension(safe_builtins_);
-    names_.push_back(safe_builtins_->name());
+      : safe_builtins_(extensions::SafeBuiltins::CreateV8Extension()),
+        names_(1, safe_builtins_->name()),
+        configuration_(new v8::ExtensionConfiguration(
+            names_.size(), vector_as_array(&names_))) {
+    v8::RegisterExtension(safe_builtins_.get());
   }
 
-  v8::ExtensionConfiguration* NewConfiguration() {
-    return new v8::ExtensionConfiguration(names_.size(),
-                                          vector_as_array(&names_));
+  v8::ExtensionConfiguration* GetConfiguration() {
+    return configuration_.get();
   }
 
  private:
-  v8::Extension* safe_builtins_;
+  scoped_ptr<v8::Extension> safe_builtins_;
   std::vector<const char*> names_;
+  scoped_ptr<v8::ExtensionConfiguration> configuration_;
 };
 
-base::LazyInstance<V8ExtensionConfigurator> g_v8_extension_configurator =
+base::LazyInstance<V8ExtensionConfigurator>::Leaky g_v8_extension_configurator =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -123,7 +125,7 @@ ModuleSystemTest::ModuleSystemTest()
           new extensions::ChromeV8Context(
               v8::Context::New(
                   isolate_,
-                  g_v8_extension_configurator.Get().NewConfiguration()),
+                  g_v8_extension_configurator.Get().GetConfiguration()),
               NULL,  // WebFrame
               NULL,  // Extension
               extensions::Feature::UNSPECIFIED_CONTEXT)),

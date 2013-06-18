@@ -7179,13 +7179,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN30ProfileSyncServicePasswordTest5SetUpEv
 }
 {
-   bug_250531
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12_GLOBAL__N_123V8ExtensionConfigurator16NewConfigurationEv
-   fun:_ZN16ModuleSystemTest*
-}
-{
    bug_250533
    Memcheck:Leak
    fun:_Znw*

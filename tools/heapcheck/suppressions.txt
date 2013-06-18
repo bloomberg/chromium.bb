@@ -856,12 +856,6 @@
    fun:content::ChromeAppCacheService::InitializeOnIOThread
 }
 {
-   bug_250531
-   Heapcheck:Leak
-   fun:NewConfiguration
-   fun:ModuleSystemTest::ModuleSystemTest
-}
-{
    bug_250533
    Heapcheck:Leak
    ...
