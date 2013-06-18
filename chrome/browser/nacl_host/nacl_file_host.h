@@ -9,9 +9,9 @@
 
 #include "base/memory/ref_counted.h"
 
-class ChromeRenderMessageFilter;
 class ExtensionInfoMap;
 class GURL;
+class NaClHostMessageFilter;
 
 namespace base {
 class FilePath;
@@ -27,7 +27,7 @@ namespace nacl_file_host {
 
 // Open a Pnacl file (readonly) on behalf of the NaCl plugin.
 void GetReadonlyPnaclFd(
-    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
+    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
     const std::string& filename,
     IPC::Message* reply_msg);
 
@@ -39,12 +39,12 @@ bool PnaclCanOpenFile(const std::string& filename,
 // Creates a temporary file that will be deleted when the last handle
 // is closed, or earlier.
 void CreateTemporaryFile(
-    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
+    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
     IPC::Message* reply_msg);
 
 // Opens a NaCl executable file for reading and executing.
 void OpenNaClExecutable(
-    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
+    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
     scoped_refptr<ExtensionInfoMap> extension_info_map,
     int render_view_id,
     const GURL& file_url,

@@ -2484,6 +2484,8 @@
             'browser/nacl_host/nacl_browser.h',
             'browser/nacl_host/nacl_file_host.cc',
             'browser/nacl_host/nacl_file_host.h',
+            'browser/nacl_host/nacl_host_message_filter.cc',
+            'browser/nacl_host/nacl_host_message_filter.h',
             'browser/nacl_host/nacl_infobar.cc',
             'browser/nacl_host/nacl_infobar.h',
             'browser/nacl_host/nacl_process_host.cc',

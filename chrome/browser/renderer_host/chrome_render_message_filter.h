@@ -24,10 +24,6 @@ struct ExtensionMsg_ExternalConnectionInfo;
 class ExtensionInfoMap;
 class GURL;
 
-namespace nacl {
-struct NaClLaunchParams;
-}
-
 namespace net {
 class HostResolver;
 class URLRequestContextGetter;
@@ -84,17 +80,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   virtual ~ChromeRenderMessageFilter();
 
-#if !defined(DISABLE_NACL)
-  void OnLaunchNaCl(const nacl::NaClLaunchParams& launch_params,
-                    IPC::Message* reply_msg);
-  void OnGetReadonlyPnaclFd(const std::string& filename,
-                            IPC::Message* reply_msg);
-  void OnNaClCreateTemporaryFile(IPC::Message* reply_msg);
-  void OnNaClErrorStatus(int render_view_id, int error_id);
-  void OnOpenNaClExecutable(int render_view_id,
-                            const GURL& file_url,
-                            IPC::Message* reply_msg);
-#endif
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
   void OnPreconnect(const GURL& url);
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);

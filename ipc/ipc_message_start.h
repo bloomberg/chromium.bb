@@ -83,6 +83,7 @@ enum IPCMessageStart {
   TtsMsgStart,
   MemoryBenchmarkMsgStart,
   WebSocketMsgStart,
+  NaClHostMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

@@ -46,6 +46,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
+#include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -745,6 +746,10 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->GetChannel()->AddFilter(new TtsMessageFilter(id, profile));
 #if defined(ENABLE_WEBRTC)
   host->GetChannel()->AddFilter(new WebRtcLoggingHandlerHost());
+#endif
+#if !defined(DISABLE_NACL)
+  host->GetChannel()->AddFilter(new NaClHostMessageFilter(id, profile,
+    context));
 #endif
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(

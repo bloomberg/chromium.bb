@@ -25,7 +25,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
-#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
+#include "chrome/common/nacl_host_messages.h"
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -247,7 +248,7 @@ NaClProcessHost::~NaClProcessHost() {
     // The process failed to launch for some reason.
     // Don't keep the renderer hanging.
     reply_msg_->set_reply_error();
-    chrome_render_message_filter_->Send(reply_msg_);
+    nacl_host_message_filter_->Send(reply_msg_);
   }
 #if defined(OS_WIN)
   if (process_launched_by_broker_) {
@@ -279,10 +280,10 @@ void NaClProcessHost::EarlyStartup() {
 }
 
 void NaClProcessHost::Launch(
-    ChromeRenderMessageFilter* chrome_render_message_filter,
+    NaClHostMessageFilter* nacl_host_message_filter,
     IPC::Message* reply_msg,
     scoped_refptr<ExtensionInfoMap> extension_info_map) {
-  chrome_render_message_filter_ = chrome_render_message_filter;
+  nacl_host_message_filter_ = nacl_host_message_filter;
   reply_msg_ = reply_msg;
   extension_info_map_ = extension_info_map;
 
@@ -531,7 +532,7 @@ bool NaClProcessHost::ReplyToRenderer(
   if (!DuplicateHandle(base::GetCurrentProcessHandle(),
                        reinterpret_cast<HANDLE>(
                            internal_->socket_for_renderer),
-                       chrome_render_message_filter_->peer_handle(),
+                       nacl_host_message_filter_->peer_handle(),
                        &handle_in_renderer,
                        0,  // Unused given DUPLICATE_SAME_ACCESS.
                        FALSE,
@@ -565,11 +566,11 @@ bool NaClProcessHost::ReplyToRenderer(
 #endif
 
   const ChildProcessData& data = process_->GetData();
-  ChromeViewHostMsg_LaunchNaCl::WriteReplyParams(
+  NaClHostMsg_LaunchNaCl::WriteReplyParams(
       reply_msg_, handle_for_renderer,
       channel_handle, base::GetProcId(data.handle), data.id);
-  chrome_render_message_filter_->Send(reply_msg_);
-  chrome_render_message_filter_ = NULL;
+  nacl_host_message_filter_->Send(reply_msg_);
+  nacl_host_message_filter_ = NULL;
   reply_msg_ = NULL;
   internal_->socket_for_renderer = NACL_INVALID_HANDLE;
   return true;
@@ -708,13 +709,13 @@ void NaClProcessHost::OnPpapiChannelCreated(
         permissions_,
         process_->GetData().handle,
         ipc_proxy_channel_.get(),
-        chrome_render_message_filter_->GetHostResolver(),
-        chrome_render_message_filter_->render_process_id(),
+        nacl_host_message_filter_->GetHostResolver(),
+        nacl_host_message_filter_->render_process_id(),
         render_view_id_,
         profile_directory_));
 
     ppapi::PpapiNaClChannelArgs args;
-    args.off_the_record = chrome_render_message_filter_->off_the_record();
+    args.off_the_record = nacl_host_message_filter_->off_the_record();
     args.permissions = permissions_;
     CommandLine* cmdline = CommandLine::ForCurrentProcess();
     DCHECK(cmdline);
@@ -735,7 +736,7 @@ void NaClProcessHost::OnPpapiChannelCreated(
     // a place holder.
     ipc_proxy_channel_->Send(
         new PpapiMsg_CreateNaClChannel(
-            chrome_render_message_filter_->render_process_id(),
+            nacl_host_message_filter_->render_process_id(),
             args,
             SerializedHandle(SerializedHandle::CHANNEL_HANDLE,
                              IPC::InvalidPlatformFileForTransit())));

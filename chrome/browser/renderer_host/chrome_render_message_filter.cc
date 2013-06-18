@@ -177,16 +177,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                                   bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(ChromeRenderMessageFilter, message, *message_was_ok)
-#if !defined(DISABLE_NACL)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_LaunchNaCl, OnLaunchNaCl)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_GetReadonlyPnaclFD,
-                                    OnGetReadonlyPnaclFd)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_NaClCreateTemporaryFile,
-                                    OnNaClCreateTemporaryFile)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NaClErrorStatus, OnNaClErrorStatus)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_OpenNaClExecutable,
-                                    OnOpenNaClExecutable)
-#endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Preconnect, OnPreconnect)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
@@ -285,49 +275,6 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 net::HostResolver* ChromeRenderMessageFilter::GetHostResolver() {
   return request_context_->GetURLRequestContext()->host_resolver();
 }
-
-#if !defined(DISABLE_NACL)
-void ChromeRenderMessageFilter::OnLaunchNaCl(
-    const nacl::NaClLaunchParams& launch_params,
-    IPC::Message* reply_msg) {
-  NaClProcessHost* host = new NaClProcessHost(
-      GURL(launch_params.manifest_url),
-      launch_params.render_view_id,
-      launch_params.permission_bits,
-      launch_params.uses_irt,
-      launch_params.enable_dyncode_syscalls,
-      launch_params.enable_exception_handling,
-      off_the_record_,
-      profile_->GetPath());
-  host->Launch(this, reply_msg, extension_info_map_);
-}
-
-void ChromeRenderMessageFilter::OnGetReadonlyPnaclFd(
-    const std::string& filename, IPC::Message* reply_msg) {
-  // This posts a task to another thread, but the renderer will
-  // block until the reply is sent.
-  nacl_file_host::GetReadonlyPnaclFd(this, filename, reply_msg);
-}
-
-void ChromeRenderMessageFilter::OnNaClCreateTemporaryFile(
-    IPC::Message* reply_msg) {
-  nacl_file_host::CreateTemporaryFile(this, reply_msg);
-}
-
-void ChromeRenderMessageFilter::OnNaClErrorStatus(int render_view_id,
-                                                  int error_id) {
-  // Currently there is only one kind of error status, for which
-  // we want to show the user an infobar.
-  ShowNaClInfobar(render_process_id_, render_view_id, error_id);
-}
-
-void ChromeRenderMessageFilter::OnOpenNaClExecutable(int render_view_id,
-                                                     const GURL& file_url,
-                                                     IPC::Message* reply_msg) {
-  nacl_file_host::OpenNaClExecutable(this, extension_info_map_,
-                                     render_view_id, file_url, reply_msg);
-}
-#endif
 
 void ChromeRenderMessageFilter::OnDnsPrefetch(
     const std::vector<std::string>& hostnames) {

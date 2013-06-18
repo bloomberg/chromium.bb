@@ -196,15 +196,6 @@ IPC_STRUCT_TRAITS_BEGIN(SearchMode)
   IPC_STRUCT_TRAITS_MEMBER(origin)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchParams)
-  IPC_STRUCT_TRAITS_MEMBER(manifest_url)
-  IPC_STRUCT_TRAITS_MEMBER(render_view_id)
-  IPC_STRUCT_TRAITS_MEMBER(permission_bits)
-  IPC_STRUCT_TRAITS_MEMBER(uses_irt)
-  IPC_STRUCT_TRAITS_MEMBER(enable_dyncode_syscalls)
-  IPC_STRUCT_TRAITS_MEMBER(enable_exception_handling)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)
   IPC_STRUCT_TRAITS_MEMBER(image_rules)
   IPC_STRUCT_TRAITS_MEMBER(script_rules)
@@ -597,42 +588,6 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,
                     std::string  /* message */,
                     std::string  /* origin */,
                     std::string  /* target */)
-
-// A renderer sends this to the browser process when it wants to start
-// a new instance of the Native Client process. The browser will launch
-// the process and return an IPC channel handle. This handle will only
-// be valid if the NaCl IPC proxy is enabled.
-IPC_SYNC_MESSAGE_CONTROL1_4(ChromeViewHostMsg_LaunchNaCl,
-                            nacl::NaClLaunchParams /* launch_params */,
-                            nacl::FileDescriptor /* imc channel handle */,
-                            IPC::ChannelHandle /* ipc_channel_handle */,
-                            base::ProcessId /* plugin_pid */,
-                            int /* plugin_child_id */)
-
-// A renderer sends this to the browser process when it wants to
-// open a file for from the Pnacl component directory.
-IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_GetReadonlyPnaclFD,
-                            std::string /* name of requested PNaCl file */,
-                            IPC::PlatformFileForTransit /* output file */)
-
-// A renderer sends this to the browser process when it wants to
-// create a temporary file.
-IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_NaClCreateTemporaryFile,
-                            IPC::PlatformFileForTransit /* out file */)
-
-// A renderer sends this to the browser process to display infobar
-IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_NaClErrorStatus,
-                     int /* render_view_id */,
-                     int /* Error ID */)
-
-// A renderer sends this to the browser process when it wants to
-// open a NaCl executable file from an installed application directory.
-IPC_SYNC_MESSAGE_CONTROL2_3(ChromeViewHostMsg_OpenNaClExecutable,
-                            int /* render_view_id */,
-                            GURL /* URL of NaCl executable file */,
-                            IPC::PlatformFileForTransit /* output file */,
-                            uint64_t /* file_token_lo */,
-                            uint64_t /* file_token_hi */)
 
 // Notification that the page has an OpenSearch description document
 // associated with it.

@@ -375,6 +375,7 @@
         'common/multi_process_lock_win.cc',
         'common/nacl_cmd_line.cc',
         'common/nacl_cmd_line.h',
+        'common/nacl_host_messages.h',
         'common/nacl_messages.cc',
         'common/nacl_messages.h',
         'common/nacl_types.cc',

@@ -21,7 +21,7 @@
 #include "net/socket/tcp_listen_socket.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-class ChromeRenderMessageFilter;
+class NaClHostMessageFilter;
 class CommandLine;
 class ExtensionInfoMap;
 
@@ -63,7 +63,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Initialize the new NaCl process. Result is returned by sending ipc
   // message reply_msg.
-  void Launch(ChromeRenderMessageFilter* chrome_render_message_filter,
+  void Launch(NaClHostMessageFilter* nacl_host_message_filter,
               IPC::Message* reply_msg,
               scoped_refptr<ExtensionInfoMap> extension_info_map);
 
@@ -168,9 +168,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // the NaCl loader.
   bool process_launched_by_broker_;
 #endif
-  // The ChromeRenderMessageFilter that requested this NaCl process.  We use
+  // The NaClHostMessageFilter that requested this NaCl process.  We use
   // this for sending the reply once the process has started.
-  scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter_;
+  scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter_;
 
   // The reply message to send. We must always send this message when the
   // sub-process either succeeds or fails to unblock the renderer waiting for
