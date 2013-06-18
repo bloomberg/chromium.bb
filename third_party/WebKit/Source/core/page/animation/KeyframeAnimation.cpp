@@ -71,7 +71,8 @@ static const CSSAnimationData* getAnimationFromStyleByName(const RenderStyle* st
     if (!style->animations())
         return 0;
 
-    for (size_t i = 0; i < style->animations()->size(); i++) {
+    size_t animationCount = style->animations()->size();
+    for (size_t i = 0; i < animationCount; i++) {
         if (name == style->animations()->animation(i)->name())
             return style->animations()->animation(i);
     }
@@ -94,23 +95,46 @@ void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property
     
     ASSERT(!m_keyframes[0].key());
     ASSERT(m_keyframes[m_keyframes.size() - 1].key() == 1);
-    
+
+    size_t currentIndex = 0;
+    size_t firstIndex = 0;
+    size_t lastIndex = numKeyframes - 1;
+    size_t distance = numKeyframes;
+
+    // Find keyframe that is closest to elapsed time.
+    while (distance > 1) {
+        currentIndex = (lastIndex + firstIndex) >> 1;
+        float key = m_keyframes[currentIndex].key();
+        distance = lastIndex - currentIndex;
+
+        if (key < fractionalTime) {
+            if (distance < 2)
+                currentIndex++;
+            firstIndex = currentIndex;
+        } else {
+            lastIndex = currentIndex;
+        }
+    }
+
     int prevIndex = -1;
     int nextIndex = -1;
-    
-    // FIXME: with a lot of keys, this linear search will be slow. We could binary search.
-    for (size_t i = 0; i < numKeyframes; ++i) {
-        const KeyframeValue& currKeyFrame = m_keyframes[i];
 
-        if (!currKeyFrame.containsProperty(property))
-            continue;
-
-        if (fractionalTime < currKeyFrame.key()) {
+    // Iterate forward to find next keyframe that is used to animate CSS property.
+    for (size_t i = currentIndex; i < numKeyframes; ++i) {
+        const KeyframeValue& keyFrame = m_keyframes[i];
+        if (keyFrame.key() > fractionalTime && keyFrame.containsProperty(property)) {
             nextIndex = i;
             break;
         }
-        
-        prevIndex = i;
+    }
+
+    // Iterate backward to find previous keyframe.
+    for (size_t i = currentIndex; i < numKeyframes; --i) {
+        const KeyframeValue& keyFrame = m_keyframes[i];
+        if (keyFrame.key() <= fractionalTime && keyFrame.containsProperty(property)) {
+            prevIndex = i;
+            break;
+        }
     }
 
     double scale = 1;
@@ -120,7 +144,7 @@ void KeyframeAnimation::fetchIntervalEndpointsForProperty(CSSPropertyID property
         prevIndex = 0;
 
     if (nextIndex == -1)
-        nextIndex = m_keyframes.size() - 1;
+        nextIndex = numKeyframes - 1;
 
     const KeyframeValue& prevKeyframe = m_keyframes[prevIndex];
     const KeyframeValue& nextKeyframe = m_keyframes[nextIndex];
