@@ -33,7 +33,6 @@ class FakeLoginUtils : public LoginUtils {
   virtual void SetFirstLoginPrefs(PrefService* prefs) OVERRIDE;
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
-  virtual void PrewarmAuthentication() OVERRIDE;
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE;
   virtual void StopBackgroundFetchers() OVERRIDE;
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;

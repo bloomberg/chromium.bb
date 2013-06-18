@@ -41,6 +41,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(StartSignInScreen, void(void));
   MOCK_METHOD0(ResumeSignInScreen, void(void));
   MOCK_METHOD0(OnPreferencesChanged, void(void));
+  MOCK_METHOD0(PrewarmAuthentication, void(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

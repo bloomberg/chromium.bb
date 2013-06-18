@@ -383,6 +383,8 @@
         'browser/chromeos/login/auth_attempt_state.h',
         'browser/chromeos/login/auth_attempt_state_resolver.cc',
         'browser/chromeos/login/auth_attempt_state_resolver.h',
+        'browser/chromeos/login/auth_prewarmer.cc',
+        'browser/chromeos/login/auth_prewarmer.h',
         'browser/chromeos/login/authentication_notification_details.h',
         'browser/chromeos/login/authenticator.cc',
         'browser/chromeos/login/authenticator.h',

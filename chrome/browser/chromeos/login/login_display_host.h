@@ -95,6 +95,9 @@ class LoginDisplayHost {
 
   // Invoked when system preferences that affect the signin screen have changed.
   virtual void OnPreferencesChanged() = 0;
+
+  // Initiates authentication network prewarming.
+  virtual void PrewarmAuthentication() = 0;
 };
 
 }  // namespace chromeos

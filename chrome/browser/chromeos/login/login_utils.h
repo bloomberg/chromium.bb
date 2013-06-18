@@ -99,9 +99,6 @@ class LoginUtils {
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) = 0;
 
-  // Prewarms the authentication network connection.
-  virtual void PrewarmAuthentication() = 0;
-
   // Restores authentication session after crash.
   virtual void RestoreAuthenticationSession(Profile* profile) = 0;
 

@@ -39,7 +39,6 @@ class MockLoginUtils : public LoginUtils {
   MOCK_METHOD1(SetFirstLoginPrefs, void(PrefService*));
   MOCK_METHOD1(CreateAuthenticator,
                scoped_refptr<Authenticator>(LoginStatusConsumer*));
-  MOCK_METHOD0(PrewarmAuthentication, void(void));
   MOCK_METHOD1(RestoreAuthenticationSession, void(Profile*));
   MOCK_METHOD1(StartTokenServices, void(Profile*));
   MOCK_METHOD2(TransferDefaultCookiesAndServerBoundCerts,

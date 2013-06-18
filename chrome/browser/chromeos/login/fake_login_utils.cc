@@ -81,10 +81,6 @@ scoped_refptr<Authenticator> FakeLoginUtils::CreateAuthenticator(
   return authenticator_;
 }
 
-void FakeLoginUtils::PrewarmAuthentication() {
-  NOTREACHED() << "Method not implemented.";
-}
-
 void FakeLoginUtils::RestoreAuthenticationSession(Profile* profile) {
   NOTREACHED() << "Method not implemented.";
 }

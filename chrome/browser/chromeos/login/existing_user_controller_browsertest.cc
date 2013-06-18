@@ -102,8 +102,6 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest,
 
     mock_login_utils_ = new MockLoginUtils();
     LoginUtils::Set(mock_login_utils_);
-    EXPECT_CALL(*mock_login_utils_, PrewarmAuthentication())
-        .Times(AnyNumber());
     EXPECT_CALL(*mock_login_utils_, StopBackgroundFetchers())
         .Times(AnyNumber());
     EXPECT_CALL(*mock_login_utils_, DelegateDeleted(_))

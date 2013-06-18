@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/login/auth_prewarmer.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
@@ -69,6 +70,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   virtual void StartSignInScreen() OVERRIDE;
   virtual void ResumeSignInScreen() OVERRIDE;
   virtual void OnPreferencesChanged() OVERRIDE;
+  virtual void PrewarmAuthentication() OVERRIDE;
 
   // Creates WizardController instance.
   WizardController* CreateWizardController();
@@ -126,6 +128,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Returns true if hosr running UI for adding users into session.
   bool IsRunningUserAdding();
+
+  // Deletes |auth_prewarmer_|.
+  void OnAuthPrewarmDone();
 
   // Used to calculate position of the screens and background.
   gfx::Rect background_bounds_;
@@ -212,6 +217,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Called before host deletion.
   base::Closure completion_callback_;
+
+  // Active instance of authentication prewarmer.
+  scoped_ptr<AuthPrewarmer> auth_prewarmer_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostImpl);
 };

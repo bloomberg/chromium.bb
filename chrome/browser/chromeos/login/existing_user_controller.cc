@@ -169,7 +169,6 @@ void ExistingUserController::Init(const UserList& users) {
   UpdateLoginDisplay(users);
   ConfigurePublicSessionAutoLogin();
 
-  LoginUtils::Get()->PrewarmAuthentication();
   DBusThreadManager::Get()->GetSessionManagerClient()->EmitLoginPromptReady();
 }
 

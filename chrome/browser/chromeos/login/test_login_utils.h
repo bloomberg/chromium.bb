@@ -43,8 +43,6 @@ class TestLoginUtils : public LoginUtils {
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       LoginStatusConsumer* consumer) OVERRIDE;
 
-  virtual void PrewarmAuthentication() OVERRIDE {}
-
   virtual void RestoreAuthenticationSession(Profile* profile) OVERRIDE {}
 
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;

@@ -171,7 +171,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       crash_count_(0),
       restore_path_(RESTORE_UNKNOWN),
       old_ignore_solo_window_frame_painter_policy_value_(false) {
-  // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATIN
+  // We need to listen to CLOSE_ALL_BROWSERS_REQUEST but not APP_TERMINATING
   // because/ APP_TERMINATING will never be fired as long as this keeps
   // ref-count. CLOSE_ALL_BROWSERS_REQUEST is safe here because there will be no
   // browser instance that will block the shutdown.
@@ -431,6 +431,8 @@ void LoginDisplayHostImpl::StartSignInScreen() {
   restore_path_ = RESTORE_SIGN_IN;
   is_showing_login_ = true;
 
+  PrewarmAuthentication();
+
   if (waiting_for_wallpaper_load_ && !initialize_webui_hidden_) {
     LOG(WARNING) << "Login WebUI >> sign in postponed";
     return;
@@ -497,6 +499,13 @@ void LoginDisplayHostImpl::ResumeSignInScreen() {
 void LoginDisplayHostImpl::OnPreferencesChanged() {
   if (is_showing_login_)
     webui_login_display_->OnPreferencesChanged();
+}
+
+void LoginDisplayHostImpl::PrewarmAuthentication() {
+  auth_prewarmer_.reset(new AuthPrewarmer());
+  auth_prewarmer_->PrewarmAuthentication(
+      base::Bind(&LoginDisplayHostImpl::OnAuthPrewarmDone,
+                 pointer_factory_.GetWeakPtr()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -810,6 +819,10 @@ bool LoginDisplayHostImpl::IsRunningUserAdding() {
   return restore_path_ == RESTORE_ADD_USER_INTO_SESSION;
 }
 
+void LoginDisplayHostImpl::OnAuthPrewarmDone() {
+  auth_prewarmer_.reset();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // external
 
@@ -937,7 +950,6 @@ void ShowLoginWizard(const std::string& first_screen_name) {
   scoped_ptr<DictionaryValue> params;
   display_host->StartWizard(first_screen_name, params.Pass());
 
-  chromeos::LoginUtils::Get()->PrewarmAuthentication();
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
       ->EmitLoginPromptReady();
   TRACE_EVENT0("chromeos", "ShowLoginWizard::EmitLoginPromptReady");
