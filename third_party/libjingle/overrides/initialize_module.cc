@@ -49,6 +49,8 @@ bool InitializeModule(const CommandLine& command_line,
                       DellocateFunction dealloc,
 #endif
                       logging::LogMessageHandlerFunction log_handler,
+                      webrtc::GetCategoryEnabledPtr trace_get_category_enabled,
+                      webrtc::AddTraceEventPtr trace_add_trace_event,
                       CreateWebRtcMediaEngineFunction* create_media_engine,
                       DestroyWebRtcMediaEngineFunction* destroy_media_engine) {
 #if !defined(OS_MACOSX)
@@ -74,6 +76,8 @@ bool InitializeModule(const CommandLine& command_line,
 
     // Override the log message handler to forward logs to chrome's handler.
     logging::SetLogMessageHandler(log_handler);
+    webrtc::SetupEventTracer(trace_get_category_enabled,
+                             trace_add_trace_event);
   }
 
   return true;

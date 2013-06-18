@@ -7,6 +7,7 @@
 
 #include "allocator_shim/allocator_stub.h"
 #include "base/logging.h"
+#include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
 
 class CommandLine;
 
@@ -41,6 +42,8 @@ typedef bool (*InitializeModuleFunction)(
     DellocateFunction dealloc,
 #endif
     logging::LogMessageHandlerFunction log_handler,
+    webrtc::GetCategoryEnabledPtr trace_get_category_enabled,
+    webrtc::AddTraceEventPtr trace_add_trace_event,
     CreateWebRtcMediaEngineFunction* create_media_engine,
     DestroyWebRtcMediaEngineFunction* destroy_media_engine);
 

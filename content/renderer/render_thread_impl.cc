@@ -116,10 +116,6 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-#if defined(ENABLE_WEBRTC)
-#include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 #include "content/renderer/android/synchronous_compositor_factory.h"
@@ -215,26 +211,6 @@ void AddHistogramSample(void* hist, int sample) {
   base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
 }
-
-#if defined(ENABLE_WEBRTC)
-const unsigned char* GetCategoryGroupEnabled(const char* category_group) {
-  return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
-}
-
-void AddTraceEvent(char phase,
-                   const unsigned char* category_group_enabled,
-                   const char* name,
-                   unsigned long long id,
-                   int num_args,
-                   const char** arg_names,
-                   const unsigned char* arg_types,
-                   const unsigned long long* arg_values,
-                   unsigned char flags) {
-  TRACE_EVENT_API_ADD_TRACE_EVENT(phase, category_group_enabled, name, id,
-                                  num_args, arg_names, arg_types, arg_values,
-                                  NULL, flags);
-}
-#endif
 
 }  // namespace
 
@@ -373,8 +349,6 @@ void RenderThreadImpl::Init() {
   AddFilter(db_message_filter_.get());
 
 #if defined(ENABLE_WEBRTC)
-  webrtc::SetupEventTracer(&GetCategoryGroupEnabled, &AddTraceEvent);
-
   peer_connection_tracker_.reset(new PeerConnectionTracker());
   AddObserver(peer_connection_tracker_.get());
 
