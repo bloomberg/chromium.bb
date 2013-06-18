@@ -155,8 +155,8 @@ class TestPackage(object):
           break
         else:  # re_run
           full_test_name = p.match.group(1).replace('\r', '')
-          log = p.before.replace('\r', '')
           found = p.expect([re_ok, re_fail, re_crash], timeout=self.timeout)
+          log = p.before.replace('\r', '')
           if found == 0:  # re_ok
             if full_test_name == p.match.group(1).replace('\r', ''):
               results.AddResult(base_test_result.BaseTestResult(
