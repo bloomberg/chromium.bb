@@ -51,6 +51,7 @@ TestInputEvent::TestInputEvent(TestingInstance* instance)
       wheel_input_event_interface_(NULL),
       keyboard_input_event_interface_(NULL),
       touch_input_event_interface_(NULL),
+      nested_event_(instance->pp_instance()),
       view_rect_(),
       expected_input_event_(0),
       received_expected_event_(false),
@@ -173,18 +174,23 @@ pp::InputEvent TestInputEvent::CreateTouchEvent(PP_InputEvent_Type type,
   return touch_event;
 }
 
+void TestInputEvent::PostMessageBarrier() {
+  received_finish_message_ = false;
+  instance_->PostMessage(pp::Var(FINISHED_WAITING_MESSAGE));
+  testing_interface_->RunMessageLoop(instance_->pp_instance());
+  nested_event_.Wait();
+}
+
 // Simulates the input event and calls PostMessage to let us know when
 // we have received all resulting events from the browser.
 bool TestInputEvent::SimulateInputEvent(
     const pp::InputEvent& input_event) {
   expected_input_event_ = pp::InputEvent(input_event.pp_resource());
   received_expected_event_ = false;
-  received_finish_message_ = false;
   testing_interface_->SimulateInputEvent(instance_->pp_instance(),
                                          input_event.pp_resource());
-  instance_->PostMessage(pp::Var(FINISHED_WAITING_MESSAGE));
-  testing_interface_->RunMessageLoop(instance_->pp_instance());
-  return received_finish_message_ && received_expected_event_;
+  PostMessageBarrier();
+  return received_expected_event_;
 }
 
 bool TestInputEvent::AreEquivalentEvents(PP_Resource received,
@@ -304,6 +310,7 @@ void TestInputEvent::HandleMessage(const pp::Var& message_data) {
       (message_data.AsString() == FINISHED_WAITING_MESSAGE)) {
     testing_interface_->QuitMessageLoop(instance_->pp_instance());
     received_finish_message_ = true;
+    nested_event_.Signal();
   }
 }
 
@@ -318,6 +325,8 @@ std::string TestInputEvent::TestEvents() {
                                              PP_INPUTEVENT_CLASS_WHEEL |
                                              PP_INPUTEVENT_CLASS_KEYBOARD |
                                              PP_INPUTEVENT_CLASS_TOUCH);
+  PostMessageBarrier();
+
   // Send the events and check that we received them.
   ASSERT_TRUE(
       SimulateInputEvent(CreateMouseEvent(PP_INPUTEVENT_TYPE_MOUSEDOWN,
@@ -335,6 +344,8 @@ std::string TestInputEvent::TestEvents() {
   input_event_interface_->ClearInputEventRequest(instance_->pp_instance(),
                                                  PP_INPUTEVENT_CLASS_WHEEL |
                                                  PP_INPUTEVENT_CLASS_KEYBOARD);
+  PostMessageBarrier();
+
   // Check that we only receive mouse events.
   ASSERT_TRUE(
       SimulateInputEvent(CreateMouseEvent(PP_INPUTEVENT_TYPE_MOUSEDOWN,
