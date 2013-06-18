@@ -801,7 +801,7 @@ void ThreadProxy::StartCommitOnImplThread(
     current_resource_update_controller_on_impl_thread_ =
         ResourceUpdateController::Create(
             this,
-            Proxy::ImplThread(),
+            Proxy::ImplThread()->TaskRunner(),
             queue.Pass(),
             layer_tree_host_impl_->resource_provider());
     current_resource_update_controller_on_impl_thread_->PerformMoreUpdates(

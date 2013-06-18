@@ -11,9 +11,10 @@
 #include "base/time.h"
 #include "cc/base/cc_export.h"
 
+namespace base { class SingleThreadTaskRunner; }
+
 namespace cc {
 
-class Thread;
 class TimeSource;
 class FrameRateController;
 
@@ -38,7 +39,7 @@ class CC_EXPORT FrameRateController {
 
   explicit FrameRateController(scoped_refptr<TimeSource> timer);
   // Alternate form of FrameRateController with unthrottled frame-rate.
-  explicit FrameRateController(Thread* thread);
+  explicit FrameRateController(base::SingleThreadTaskRunner* task_runner);
   virtual ~FrameRateController();
 
   void SetClient(FrameRateControllerClient* client) { client_ = client; }
@@ -85,7 +86,7 @@ class CC_EXPORT FrameRateController {
   // Members for unthrottled frame-rate.
   bool is_time_source_throttling_;
   base::WeakPtrFactory<FrameRateController> weak_factory_;
-  Thread* thread_;
+  base::SingleThreadTaskRunner* task_runner_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameRateController);

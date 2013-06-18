@@ -4,6 +4,7 @@
 
 #include "cc/scheduler/frame_rate_controller.h"
 
+#include "base/test/test_simple_task_runner.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,12 +27,13 @@ class FakeFrameRateControllerClient : public cc::FrameRateControllerClient {
 };
 
 TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeFrameRateControllerClient client;
   base::TimeDelta interval = base::TimeDelta::FromMicroseconds(
       base::Time::kMicrosecondsPerSecond / 60);
   scoped_refptr<FakeDelayBasedTimeSource> time_source =
-      FakeDelayBasedTimeSource::Create(interval, &thread);
+      FakeDelayBasedTimeSource::Create(interval, task_runner.get());
   FrameRateController controller(time_source);
 
   controller.SetClient(&client);
@@ -40,9 +42,9 @@ TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck) {
   base::TimeTicks elapsed;  // Muck around with time a bit
 
   // Trigger one frame, make sure the BeginFrame callback is called
-  elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
+  elapsed += task_runner->NextPendingTaskDelay();
   time_source->SetNow(elapsed);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
@@ -55,21 +57,22 @@ TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck) {
   controller.DidSwapBuffersComplete();
 
   // Trigger another frame, make sure BeginFrame runs again
-  elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
+  elapsed += task_runner->NextPendingTaskDelay();
   // Sanity check that previous code didn't move time backward.
   EXPECT_GE(elapsed, time_source->Now());
   time_source->SetNow(elapsed);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
 }
 
 TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeFrameRateControllerClient client;
   base::TimeDelta interval = base::TimeDelta::FromMicroseconds(
       base::Time::kMicrosecondsPerSecond / 60);
   scoped_refptr<FakeDelayBasedTimeSource> time_source =
-      FakeDelayBasedTimeSource::Create(interval, &thread);
+      FakeDelayBasedTimeSource::Create(interval, task_runner.get());
   FrameRateController controller(time_source);
 
   controller.SetClient(&client);
@@ -79,9 +82,9 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight) {
   base::TimeTicks elapsed;  // Muck around with time a bit
 
   // Trigger one frame, make sure the BeginFrame callback is called
-  elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
+  elapsed += task_runner->NextPendingTaskDelay();
   time_source->SetNow(elapsed);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
@@ -89,11 +92,11 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight) {
   controller.DidSwapBuffers();
 
   // Trigger another frame, make sure BeginFrame callback runs again
-  elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
+  elapsed += task_runner->NextPendingTaskDelay();
   // Sanity check that previous code didn't move time backward.
   EXPECT_GE(elapsed, time_source->Now());
   time_source->SetNow(elapsed);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
@@ -101,11 +104,11 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight) {
   controller.DidSwapBuffers();
 
   // Trigger another frame. Since two frames are pending, we should not draw.
-  elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
+  elapsed += task_runner->NextPendingTaskDelay();
   // Sanity check that previous code didn't move time backward.
   EXPECT_GE(elapsed, time_source->Now());
   time_source->SetNow(elapsed);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_FALSE(client.BeganFrame());
 
   // Tell the controller the first frame ended 5ms later
@@ -118,18 +121,19 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight) {
 
   // Trigger yet another frame. Since one frames is pending, another
   // BeginFrame callback should run.
-  elapsed += base::TimeDelta::FromMilliseconds(thread.PendingDelayMs());
+  elapsed += task_runner->NextPendingTaskDelay();
   // Sanity check that previous code didn't move time backward.
   EXPECT_GE(elapsed, time_source->Now());
   time_source->SetNow(elapsed);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
 }
 
 TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeFrameRateControllerClient client;
-  FrameRateController controller(&thread);
+  FrameRateController controller(task_runner.get());
 
   controller.SetClient(&client);
   controller.SetMaxSwapsPending(2);
@@ -137,43 +141,43 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled) {
   // SetActive triggers 1st frame, make sure the BeginFrame callback
   // is called
   controller.SetActive(true);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
   // Even if we don't call DidSwapBuffers, FrameRateController should
   // still attempt to tick multiple times until it does result in
   // a DidSwapBuffers.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
   // DidSwapBuffers triggers 2nd frame, make sure the BeginFrame callback is
   // called
   controller.DidSwapBuffers();
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
   client.Reset();
 
   // DidSwapBuffers triggers 3rd frame (> max_frames_pending),
   // make sure the BeginFrame callback is NOT called
   controller.DidSwapBuffers();
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_FALSE(client.BeganFrame());
   client.Reset();
 
   // Make sure there is no pending task since we can't do anything until we
   // receive a DidSwapBuffersComplete anyway.
-  EXPECT_FALSE(thread.HasPendingTask());
+  EXPECT_FALSE(task_runner->HasPendingTask());
 
   // DidSwapBuffersComplete triggers a frame, make sure the BeginFrame
   // callback is called
   controller.DidSwapBuffersComplete();
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
 }
 

@@ -91,15 +91,15 @@ OutputSurface::OutputSurface(
 }
 
 void OutputSurface::InitializeBeginFrameEmulation(
-    Thread* thread,
+    base::SingleThreadTaskRunner* task_runner,
     bool throttle_frame_production,
     base::TimeDelta interval) {
   if (throttle_frame_production){
     frame_rate_controller_.reset(
         new FrameRateController(
-            DelayBasedTimeSource::Create(interval, thread)));
+            DelayBasedTimeSource::Create(interval, task_runner)));
   } else {
-    frame_rate_controller_.reset(new FrameRateController(thread));
+    frame_rate_controller_.reset(new FrameRateController(task_runner));
   }
 
   frame_rate_controller_->SetClient(this);

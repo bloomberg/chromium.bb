@@ -10,6 +10,8 @@
 #include "base/time.h"
 #include "cc/base/cc_export.h"
 
+namespace base { class SingleThreadTaskRunner; }
+
 namespace cc {
 
 // Thread provides basic infrastructure for messaging with the compositor in a
@@ -25,6 +27,8 @@ class CC_EXPORT Thread {
   virtual void PostDelayedTask(base::Closure cb, base::TimeDelta delay) = 0;
 
   virtual bool BelongsToCurrentThread() const = 0;
+
+  virtual base::SingleThreadTaskRunner* TaskRunner() = 0;
 };
 
 }  // namespace cc

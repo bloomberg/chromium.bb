@@ -29,6 +29,7 @@ class CC_EXPORT ThreadImpl : public Thread {
   virtual void PostDelayedTask(base::Closure cb, base::TimeDelta delay)
       OVERRIDE;
   virtual bool BelongsToCurrentThread() const OVERRIDE;
+  virtual base::SingleThreadTaskRunner* TaskRunner() OVERRIDE;
 
  private:
   explicit ThreadImpl(scoped_refptr<base::MessageLoopProxy> thread);

@@ -32,6 +32,10 @@ bool ThreadImpl::BelongsToCurrentThread() const {
   return thread_->BelongsToCurrentThread();
 }
 
+base::SingleThreadTaskRunner* ThreadImpl::TaskRunner() {
+  return thread_.get();
+}
+
 ThreadImpl::ThreadImpl(scoped_refptr<base::MessageLoopProxy> thread)
     : thread_(thread) {}
 

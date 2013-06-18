@@ -5,7 +5,8 @@
 #include "cc/resources/resource_update_controller.h"
 
 #include "base/bind.h"
-#include "cc/base/thread.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/output/texture_copier.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/resource_provider.h"
@@ -42,7 +43,7 @@ size_t ResourceUpdateController::MaxFullUpdatesPerTick(
 
 ResourceUpdateController::ResourceUpdateController(
     ResourceUpdateControllerClient* client,
-    Thread* thread,
+    base::SingleThreadTaskRunner* task_runner,
     scoped_ptr<ResourceUpdateQueue> queue,
     ResourceProvider* resource_provider)
     : client_(client),
@@ -50,7 +51,7 @@ ResourceUpdateController::ResourceUpdateController(
       resource_provider_(resource_provider),
       texture_updates_per_tick_(MaxFullUpdatesPerTick(resource_provider)),
       first_update_attempt_(true),
-      thread_(thread),
+      task_runner_(task_runner),
       weak_factory_(this),
       task_posted_(false) {}
 
@@ -74,7 +75,8 @@ void ResourceUpdateController::PerformMoreUpdates(
   // ReadyToFinalizeTextureUpdates() will be called.
   if (!UpdateMoreTexturesIfEnoughTimeRemaining()) {
     task_posted_ = true;
-    thread_->PostTask(
+    task_runner_->PostTask(
+        FROM_HERE,
         base::Bind(&ResourceUpdateController::OnTimerFired,
                    weak_factory_.GetWeakPtr()));
   }
@@ -167,7 +169,8 @@ bool ResourceUpdateController::UpdateMoreTexturesIfEnoughTimeRemaining() {
   }
 
   task_posted_ = true;
-  thread_->PostDelayedTask(
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&ResourceUpdateController::OnTimerFired,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kUploaderBusyTickRate * 1000));

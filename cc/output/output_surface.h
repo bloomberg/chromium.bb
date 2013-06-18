@@ -15,6 +15,8 @@
 #include "cc/scheduler/frame_rate_controller.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
+namespace base { class SingleThreadTaskRunner; }
+
 namespace ui { struct LatencyInfo; }
 
 namespace gfx {
@@ -29,7 +31,6 @@ class CompositorFrame;
 class CompositorFrameAck;
 class OutputSurfaceClient;
 class OutputSurfaceCallbacks;
-class Thread;
 
 // Represents the output surface for a compositor. The compositor owns
 // and manages its destruction. Its lifetime is:
@@ -88,9 +89,9 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   virtual bool BindToClient(OutputSurfaceClient* client);
 
   void InitializeBeginFrameEmulation(
-    Thread* thread,
-    bool throttle_frame_production,
-    base::TimeDelta interval);
+      base::SingleThreadTaskRunner* task_runner,
+      bool throttle_frame_production,
+      base::TimeDelta interval);
 
   void SetMaxFramesPending(int max_frames_pending);
 

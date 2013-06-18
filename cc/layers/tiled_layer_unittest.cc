@@ -97,7 +97,7 @@ class TiledLayerTest : public testing::Test {
     DCHECK(queue_);
     scoped_ptr<ResourceUpdateController> update_controller =
         ResourceUpdateController::Create(NULL,
-                                         proxy_->ImplThread(),
+                                         NULL,
                                          queue_.Pass(),
                                          resource_provider_.get());
     update_controller->Finalize();

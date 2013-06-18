@@ -194,7 +194,7 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
     scoped_ptr<ResourceUpdateController> update_controller =
         ResourceUpdateController::Create(
             NULL,
-            Proxy::MainThread(),
+            Proxy::MainThread()->TaskRunner(),
             queue.Pass(),
             layer_tree_host_impl_->resource_provider());
     update_controller->Finalize();

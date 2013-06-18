@@ -28,53 +28,21 @@ class FakeTimeSourceClient : public cc::TimeSourceClient {
   bool tick_called_;
 };
 
-class FakeThread : public cc::Thread {
- public:
-  FakeThread();
-  virtual ~FakeThread();
-
-  void Reset() {
-    pending_task_delay_ = 0;
-    pending_task_.reset();
-    run_pending_task_on_overwrite_ = false;
-  }
-
-  void RunPendingTaskOnOverwrite(bool enable) {
-    run_pending_task_on_overwrite_ = enable;
-  }
-
-  bool HasPendingTask() const { return pending_task_; }
-  void RunPendingTask();
-
-  int64 PendingDelayMs() const {
-    EXPECT_TRUE(HasPendingTask());
-    return pending_task_delay_;
-  }
-
-  virtual void PostTask(base::Closure cb) OVERRIDE;
-  virtual void PostDelayedTask(base::Closure cb, base::TimeDelta delay)
-      OVERRIDE;
-  virtual bool BelongsToCurrentThread() const OVERRIDE;
-
- protected:
-  scoped_ptr<base::Closure> pending_task_;
-  int64 pending_task_delay_;
-  bool run_pending_task_on_overwrite_;
-};
-
 class FakeDelayBasedTimeSource : public cc::DelayBasedTimeSource {
  public:
   static scoped_refptr<FakeDelayBasedTimeSource> Create(
-      base::TimeDelta interval, cc::Thread* thread) {
-    return make_scoped_refptr(new FakeDelayBasedTimeSource(interval, thread));
+      base::TimeDelta interval, base::SingleThreadTaskRunner* task_runner) {
+    return make_scoped_refptr(new FakeDelayBasedTimeSource(interval,
+                                                           task_runner));
   }
 
   void SetNow(base::TimeTicks time) { now_ = time; }
   virtual base::TimeTicks Now() const OVERRIDE;
 
  protected:
-  FakeDelayBasedTimeSource(base::TimeDelta interval, cc::Thread* thread)
-      : DelayBasedTimeSource(interval, thread) {}
+  FakeDelayBasedTimeSource(base::TimeDelta interval,
+                           base::SingleThreadTaskRunner* task_runner)
+      : DelayBasedTimeSource(interval, task_runner) {}
   virtual ~FakeDelayBasedTimeSource() {}
 
   base::TimeTicks now_;

@@ -12,10 +12,11 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_update_queue.h"
 
+namespace base { class SingleThreadTaskRunner; }
+
 namespace cc {
 
 class ResourceProvider;
-class Thread;
 
 class ResourceUpdateControllerClient {
  public:
@@ -29,11 +30,11 @@ class CC_EXPORT ResourceUpdateController {
  public:
   static scoped_ptr<ResourceUpdateController> Create(
       ResourceUpdateControllerClient* client,
-      Thread* thread,
+      base::SingleThreadTaskRunner* task_runner,
       scoped_ptr<ResourceUpdateQueue> queue,
       ResourceProvider* resource_provider) {
     return make_scoped_ptr(new ResourceUpdateController(
-        client, thread, queue.Pass(), resource_provider));
+        client, task_runner, queue.Pass(), resource_provider));
   }
   static size_t MaxPartialTextureUpdates();
 
@@ -53,7 +54,7 @@ class CC_EXPORT ResourceUpdateController {
 
  protected:
   ResourceUpdateController(ResourceUpdateControllerClient* client,
-                           Thread* thread,
+                           base::SingleThreadTaskRunner* task_runner,
                            scoped_ptr<ResourceUpdateQueue> queue,
                            ResourceProvider* resource_provider);
 
@@ -77,7 +78,7 @@ class CC_EXPORT ResourceUpdateController {
   base::TimeTicks time_limit_;
   size_t texture_updates_per_tick_;
   bool first_update_attempt_;
-  Thread* thread_;
+  base::SingleThreadTaskRunner* task_runner_;
   base::WeakPtrFactory<ResourceUpdateController> weak_factory_;
   bool task_posted_;
 

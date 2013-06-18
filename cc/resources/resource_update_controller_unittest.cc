@@ -4,6 +4,7 @@
 
 #include "cc/resources/resource_update_controller.h"
 
+#include "base/test/test_simple_task_runner.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
@@ -180,8 +181,10 @@ class ResourceUpdateControllerTest : public Test {
     DebugScopedSetImplThreadAndMainThreadBlocked
     impl_thread_and_main_thread_blocked(&proxy_);
     scoped_ptr<ResourceUpdateController> update_controller =
-        ResourceUpdateController::Create(
-            NULL, proxy_.ImplThread(), queue_.Pass(), resource_provider_.get());
+        ResourceUpdateController::Create(NULL,
+                                         NULL,
+                                         queue_.Pass(),
+                                         resource_provider_.get());
     update_controller->Finalize();
   }
 
@@ -326,7 +329,7 @@ TEST_F(ResourceUpdateControllerTest, ManyFullManyPartialUploads) {
 }
 
 class FakeResourceUpdateControllerClient
-    : public cc::ResourceUpdateControllerClient {
+    : public ResourceUpdateControllerClient {
  public:
   FakeResourceUpdateControllerClient() { Reset(); }
   void Reset() { ready_to_finalize_called_ = false; }
@@ -340,14 +343,15 @@ class FakeResourceUpdateControllerClient
   bool ready_to_finalize_called_;
 };
 
-class FakeResourceUpdateController : public cc::ResourceUpdateController {
+class FakeResourceUpdateController : public ResourceUpdateController {
  public:
   static scoped_ptr<FakeResourceUpdateController> Create(
-      cc::ResourceUpdateControllerClient* client, cc::Thread* thread,
+      ResourceUpdateControllerClient* client,
+      base::TestSimpleTaskRunner* task_runner,
       scoped_ptr<ResourceUpdateQueue> queue,
       ResourceProvider* resource_provider) {
     return make_scoped_ptr(new FakeResourceUpdateController(
-        client, thread, queue.Pass(), resource_provider));
+        client, task_runner, queue.Pass(), resource_provider));
   }
 
   void SetNow(base::TimeTicks time) { now_ = time; }
@@ -366,12 +370,12 @@ class FakeResourceUpdateController : public cc::ResourceUpdateController {
   }
 
  protected:
-  FakeResourceUpdateController(cc::ResourceUpdateControllerClient* client,
-                               cc::Thread* thread,
+  FakeResourceUpdateController(ResourceUpdateControllerClient* client,
+                               base::TestSimpleTaskRunner* task_runner,
                                scoped_ptr<ResourceUpdateQueue> queue,
                                ResourceProvider* resource_provider)
-      : cc::ResourceUpdateController(
-            client, thread, queue.Pass(), resource_provider),
+      : ResourceUpdateController(
+          client, task_runner, queue.Pass(), resource_provider),
         update_more_textures_size_(0) {}
 
   base::TimeTicks now_;
@@ -379,17 +383,17 @@ class FakeResourceUpdateController : public cc::ResourceUpdateController {
   size_t update_more_textures_size_;
 };
 
-static void RunPendingTask(FakeThread* thread,
+static void RunPendingTask(base::TestSimpleTaskRunner* task_runner,
                            FakeResourceUpdateController* controller) {
-  EXPECT_TRUE(thread->HasPendingTask());
-  controller->SetNow(controller->Now() + base::TimeDelta::FromMilliseconds(
-                                             thread->PendingDelayMs()));
-  thread->RunPendingTask();
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  controller->SetNow(controller->Now() + task_runner->NextPendingTaskDelay());
+  task_runner->RunPendingTasks();
 }
 
 TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures) {
   FakeResourceUpdateControllerClient client;
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
 
   SetMaxUploadCountPerUpdate(1);
   AppendFullUploadsToUpdateQueue(3);
@@ -398,7 +402,9 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures) {
   DebugScopedSetImplThreadAndMainThreadBlocked
   impl_thread_and_main_thread_blocked(&proxy_);
   scoped_ptr<FakeResourceUpdateController> controller(
-      FakeResourceUpdateController::Create(&client, &thread, queue_.Pass(),
+      FakeResourceUpdateController::Create(&client,
+                                           task_runner.get(),
+                                           queue_.Pass(),
                                            resource_provider_.get()));
 
   controller->SetNow(controller->Now() + base::TimeDelta::FromMilliseconds(1));
@@ -407,14 +413,14 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures) {
   // Not enough time for any updates.
   controller->PerformMoreUpdates(controller->Now() +
                                  base::TimeDelta::FromMilliseconds(90));
-  EXPECT_FALSE(thread.HasPendingTask());
+  EXPECT_FALSE(task_runner->HasPendingTask());
 
   controller->SetUpdateMoreTexturesTime(base::TimeDelta::FromMilliseconds(100));
   controller->SetUpdateMoreTexturesSize(1);
   // Only enough time for 1 update.
   controller->PerformMoreUpdates(controller->Now() +
                                  base::TimeDelta::FromMilliseconds(120));
-  EXPECT_FALSE(thread.HasPendingTask());
+  EXPECT_FALSE(task_runner->HasPendingTask());
   EXPECT_EQ(1, num_total_uploads_);
 
   // Complete one upload.
@@ -425,15 +431,16 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures) {
   // Enough time for 2 updates.
   controller->PerformMoreUpdates(controller->Now() +
                                  base::TimeDelta::FromMilliseconds(220));
-  RunPendingTask(&thread, controller.get());
-  EXPECT_FALSE(thread.HasPendingTask());
+  RunPendingTask(task_runner.get(), controller.get());
+  EXPECT_FALSE(task_runner->HasPendingTask());
   EXPECT_TRUE(client.ReadyToFinalizeCalled());
   EXPECT_EQ(3, num_total_uploads_);
 }
 
 TEST_F(ResourceUpdateControllerTest, NoMoreUpdates) {
   FakeResourceUpdateControllerClient client;
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
 
   SetMaxUploadCountPerUpdate(1);
   AppendFullUploadsToUpdateQueue(2);
@@ -442,7 +449,9 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates) {
   DebugScopedSetImplThreadAndMainThreadBlocked
   impl_thread_and_main_thread_blocked(&proxy_);
   scoped_ptr<FakeResourceUpdateController> controller(
-      FakeResourceUpdateController::Create(&client, &thread, queue_.Pass(),
+      FakeResourceUpdateController::Create(&client,
+                                           task_runner.get(),
+                                           queue_.Pass(),
                                            resource_provider_.get()));
 
   controller->SetNow(controller->Now() + base::TimeDelta::FromMilliseconds(1));
@@ -451,8 +460,8 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates) {
   // Enough time for 3 updates but only 2 necessary.
   controller->PerformMoreUpdates(controller->Now() +
                                  base::TimeDelta::FromMilliseconds(310));
-  RunPendingTask(&thread, controller.get());
-  EXPECT_FALSE(thread.HasPendingTask());
+  RunPendingTask(task_runner.get(), controller.get());
+  EXPECT_FALSE(task_runner->HasPendingTask());
   EXPECT_TRUE(client.ReadyToFinalizeCalled());
   EXPECT_EQ(2, num_total_uploads_);
 
@@ -462,15 +471,16 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates) {
   controller->PerformMoreUpdates(controller->Now() +
                                  base::TimeDelta::FromMilliseconds(310));
   // 0-delay task used to call ReadyToFinalizeTextureUpdates().
-  RunPendingTask(&thread, controller.get());
-  EXPECT_FALSE(thread.HasPendingTask());
+  RunPendingTask(task_runner.get(), controller.get());
+  EXPECT_FALSE(task_runner->HasPendingTask());
   EXPECT_TRUE(client.ReadyToFinalizeCalled());
   EXPECT_EQ(2, num_total_uploads_);
 }
 
 TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime) {
   FakeResourceUpdateControllerClient client;
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
 
   SetMaxUploadCountPerUpdate(1);
   AppendFullUploadsToUpdateQueue(2);
@@ -479,7 +489,9 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime) {
   DebugScopedSetImplThreadAndMainThreadBlocked
   impl_thread_and_main_thread_blocked(&proxy_);
   scoped_ptr<FakeResourceUpdateController> controller(
-      FakeResourceUpdateController::Create(&client, &thread, queue_.Pass(),
+      FakeResourceUpdateController::Create(&client,
+                                           task_runner.get(),
+                                           queue_.Pass(),
                                            resource_provider_.get()));
 
   controller->SetNow(controller->Now() + base::TimeDelta::FromMilliseconds(1));
@@ -494,11 +506,11 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime) {
     controller->PerformMoreUpdates(controller->Now() +
                                    base::TimeDelta::FromMilliseconds(400));
 
-    if (thread.HasPendingTask())
-      RunPendingTask(&thread, controller.get());
+    if (task_runner->HasPendingTask())
+      RunPendingTask(task_runner.get(), controller.get());
   }
 
-  EXPECT_FALSE(thread.HasPendingTask());
+  EXPECT_FALSE(task_runner->HasPendingTask());
   EXPECT_TRUE(client.ReadyToFinalizeCalled());
   EXPECT_EQ(2, num_total_uploads_);
 }

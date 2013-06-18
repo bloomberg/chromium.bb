@@ -9,8 +9,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
-#include "cc/base/thread.h"
+#include "base/single_thread_task_runner.h"
 
 namespace cc {
 
@@ -34,18 +33,18 @@ static const double kPhaseChangeThreshold = 0.25;
 
 scoped_refptr<DelayBasedTimeSource> DelayBasedTimeSource::Create(
     base::TimeDelta interval,
-    Thread* thread) {
-  return make_scoped_refptr(new DelayBasedTimeSource(interval, thread));
+    base::SingleThreadTaskRunner* task_runner) {
+  return make_scoped_refptr(new DelayBasedTimeSource(interval, task_runner));
 }
 
-DelayBasedTimeSource::DelayBasedTimeSource(base::TimeDelta interval,
-                                           Thread* thread)
+DelayBasedTimeSource::DelayBasedTimeSource(
+    base::TimeDelta interval, base::SingleThreadTaskRunner* task_runner)
     : client_(NULL),
       has_tick_target_(false),
       current_parameters_(interval, base::TimeTicks()),
       next_parameters_(interval, base::TimeTicks()),
       state_(STATE_INACTIVE),
-      thread_(thread),
+      task_runner_(task_runner),
       weak_factory_(this) {}
 
 DelayBasedTimeSource::~DelayBasedTimeSource() {}
@@ -66,8 +65,9 @@ void DelayBasedTimeSource::SetActive(bool active) {
     // When it runs, we use that to establish the timebase, become truly
     // active, and fire the first tick.
     state_ = STATE_STARTING;
-    thread_->PostTask(base::Bind(&DelayBasedTimeSource::OnTimerFired,
-                                 weak_factory_.GetWeakPtr()));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&DelayBasedTimeSource::OnTimerFired,
+                                      weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -238,9 +238,10 @@ void DelayBasedTimeSource::PostNextTickTask(base::TimeTicks now) {
   DCHECK(delay.InMillisecondsF() <=
          next_parameters_.interval.InMillisecondsF() *
          (1.0 + kDoubleTickThreshold));
-  thread_->PostDelayedTask(base::Bind(&DelayBasedTimeSource::OnTimerFired,
-                                      weak_factory_.GetWeakPtr()),
-                           delay);
+  task_runner_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&DelayBasedTimeSource::OnTimerFired,
+                                           weak_factory_.GetWeakPtr()),
+                                delay);
 
   next_parameters_.tick_target = new_tick_target;
   current_parameters_ = next_parameters_;

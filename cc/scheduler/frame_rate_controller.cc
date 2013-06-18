@@ -5,8 +5,9 @@
 #include "cc/scheduler/frame_rate_controller.h"
 
 #include "base/debug/trace_event.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "cc/base/thread.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/time_source.h"
 
@@ -41,20 +42,21 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
       active_(false),
       is_time_source_throttling_(true),
       weak_factory_(this),
-      thread_(NULL) {
+      task_runner_(NULL) {
   time_source_client_adapter_ =
       FrameRateControllerTimeSourceAdapter::Create(this);
   time_source_->SetClient(time_source_client_adapter_.get());
 }
 
-FrameRateController::FrameRateController(Thread* thread)
+FrameRateController::FrameRateController(
+    base::SingleThreadTaskRunner* task_runner)
     : client_(NULL),
       num_frames_pending_(0),
       max_swaps_pending_(0),
       active_(false),
       is_time_source_throttling_(false),
       weak_factory_(this),
-      thread_(thread) {}
+      task_runner_(task_runner) {}
 
 FrameRateController::~FrameRateController() {
   if (is_time_source_throttling_)
@@ -95,7 +97,7 @@ void FrameRateController::OnTimerTick() {
   // Check if we have too many frames in flight.
   bool throttled =
       max_swaps_pending_ && num_frames_pending_ >= max_swaps_pending_;
-  TRACE_COUNTER_ID1("cc", "ThrottledCompositor", thread_, throttled);
+  TRACE_COUNTER_ID1("cc", "ThrottledCompositor", task_runner_, throttled);
 
   if (client_) {
     client_->FrameRateControllerTick(throttled);
@@ -107,8 +109,9 @@ void FrameRateController::OnTimerTick() {
 
 void FrameRateController::PostManualTick() {
   if (active_) {
-    thread_->PostTask(base::Bind(&FrameRateController::ManualTick,
-                                 weak_factory_.GetWeakPtr()));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&FrameRateController::ManualTick,
+                                      weak_factory_.GetWeakPtr()));
   }
 }
 

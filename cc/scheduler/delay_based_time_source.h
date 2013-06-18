@@ -9,17 +9,17 @@
 #include "cc/base/cc_export.h"
 #include "cc/scheduler/time_source.h"
 
-namespace cc {
+namespace base { class SingleThreadTaskRunner; }
 
-class Thread;
+namespace cc {
 
 // This timer implements a time source that achieves the specified interval
 // in face of millisecond-precision delayed callbacks and random queueing
 // delays.
 class CC_EXPORT DelayBasedTimeSource : public TimeSource {
  public:
-  static scoped_refptr<DelayBasedTimeSource> Create(base::TimeDelta interval,
-                                                    Thread* thread);
+  static scoped_refptr<DelayBasedTimeSource> Create(
+      base::TimeDelta interval, base::SingleThreadTaskRunner* task_runner);
 
   virtual void SetClient(TimeSourceClient* client) OVERRIDE;
 
@@ -39,7 +39,8 @@ class CC_EXPORT DelayBasedTimeSource : public TimeSource {
   virtual base::TimeTicks Now() const;
 
  protected:
-  DelayBasedTimeSource(base::TimeDelta interval, Thread* thread);
+  DelayBasedTimeSource(base::TimeDelta interval,
+                       base::SingleThreadTaskRunner* task_runner);
   virtual ~DelayBasedTimeSource();
 
   base::TimeTicks NextTickTarget(base::TimeTicks now);
@@ -72,8 +73,10 @@ class CC_EXPORT DelayBasedTimeSource : public TimeSource {
 
   State state_;
 
-  Thread* thread_;
+  base::SingleThreadTaskRunner* task_runner_;
   base::WeakPtrFactory<DelayBasedTimeSource> weak_factory_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(DelayBasedTimeSource);
 };
 

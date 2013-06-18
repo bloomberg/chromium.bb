@@ -47,6 +47,16 @@ TestSimpleTaskRunner::GetPendingTasks() const {
   return pending_tasks_;
 }
 
+bool TestSimpleTaskRunner::HasPendingTask() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return !pending_tasks_.empty();
+}
+
+base::TimeDelta TestSimpleTaskRunner::NextPendingTaskDelay() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return pending_tasks_.front().GetTimeToRun() - base::TimeTicks();
+}
+
 void TestSimpleTaskRunner::ClearPendingTasks() {
   DCHECK(thread_checker_.CalledOnValidThread());
   pending_tasks_.clear();

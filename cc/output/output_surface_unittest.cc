@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/test_simple_task_runner.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
@@ -208,13 +209,14 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   EXPECT_FALSE(client.deferred_initialize_called());
 
   // Initialize BeginFrame emulation
-  FakeThread impl_thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   bool throttle_frame_production = true;
   const base::TimeDelta display_refresh_interval =
       base::TimeDelta::FromMicroseconds(16666);
 
   output_surface.InitializeBeginFrameEmulation(
-      &impl_thread,
+      task_runner.get(),
       throttle_frame_production,
       display_refresh_interval);
 
@@ -225,17 +227,17 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
 
   // We should not have a pending task until a BeginFrame has been requested.
-  EXPECT_FALSE(impl_thread.HasPendingTask());
+  EXPECT_FALSE(task_runner->HasPendingTask());
   output_surface.SetNeedsBeginFrame(true);
-  EXPECT_TRUE(impl_thread.HasPendingTask());
+  EXPECT_TRUE(task_runner->HasPendingTask());
 
   // BeginFrame should be called on the first tick.
-  impl_thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_EQ(client.begin_frame_count(), 1);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
 
   // BeginFrame should not be called when there is a pending BeginFrame.
-  impl_thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_EQ(client.begin_frame_count(), 1);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
 
@@ -243,7 +245,7 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   output_surface.DidSwapBuffersForTesting();
   EXPECT_EQ(client.begin_frame_count(), 1);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
-  impl_thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_EQ(client.begin_frame_count(), 2);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
 
@@ -251,7 +253,7 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   output_surface.DidSwapBuffersForTesting();
   EXPECT_EQ(client.begin_frame_count(), 2);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
-  impl_thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_EQ(client.begin_frame_count(), 2);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
 
@@ -259,21 +261,21 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   output_surface.OnSwapBuffersCompleteForTesting();
   EXPECT_EQ(client.begin_frame_count(), 2);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
-  impl_thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_EQ(client.begin_frame_count(), 3);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
 
   // Calling SetNeedsBeginFrame again indicates a swap did not occur but
   // the client still wants another BeginFrame.
   output_surface.SetNeedsBeginFrame(true);
-  impl_thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_EQ(client.begin_frame_count(), 4);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
 
   // Disabling SetNeedsBeginFrame should prevent further BeginFrames.
   output_surface.SetNeedsBeginFrame(false);
-  impl_thread.RunPendingTask();
-  EXPECT_FALSE(impl_thread.HasPendingTask());
+  task_runner->RunPendingTasks();
+  EXPECT_FALSE(task_runner->HasPendingTask());
   EXPECT_EQ(client.begin_frame_count(), 4);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
 

@@ -14,6 +14,7 @@
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/math_util.h"
+#include "cc/base/thread.h"
 #include "cc/base/util.h"
 #include "cc/debug/debug_rect_history.h"
 #include "cc/debug/frame_rate_counter.h"
@@ -775,7 +776,7 @@ void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
     time_source_client_adapter_ = LayerTreeHostImplTimeSourceAdapter::Create(
         this,
         DelayBasedTimeSource::Create(LowFrequencyAnimationInterval(),
-                                     proxy_->CurrentThread()));
+                                     proxy_->CurrentThread()->TaskRunner()));
   }
 
   time_source_client_adapter_->SetActive(enabled);
@@ -1517,7 +1518,7 @@ bool LayerTreeHostImpl::DoInitializeRenderer(
           settings_.refresh_rate);
 
     output_surface->InitializeBeginFrameEmulation(
-        proxy_->ImplThread(),
+        proxy_->ImplThread() ? proxy_->ImplThread()->TaskRunner() : NULL,
         settings_.throttle_frame_production,
         display_refresh_interval);
   }

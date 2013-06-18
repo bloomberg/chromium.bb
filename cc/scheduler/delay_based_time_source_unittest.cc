@@ -5,7 +5,7 @@
 #include "cc/scheduler/delay_based_time_source.h"
 
 #include "base/basictypes.h"
-#include "cc/base/thread.h"
+#include "base/test/test_simple_task_runner.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,300 +18,314 @@ base::TimeDelta Interval() {
 }
 
 TEST(DelayBasedTimeSourceTest, TaskPostedAndTickCalled) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
 
   timer->SetActive(true);
   EXPECT_TRUE(timer->Active());
-  EXPECT_TRUE(thread.HasPendingTask());
+  EXPECT_TRUE(task_runner->HasPendingTask());
 
   timer->SetNow(timer->Now() + base::TimeDelta::FromMilliseconds(16));
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_TRUE(timer->Active());
   EXPECT_TRUE(client.TickCalled());
 }
 
 TEST(DelayBasedTimeSource, TickNotCalledWithTaskPosted) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  EXPECT_TRUE(thread.HasPendingTask());
+  EXPECT_TRUE(task_runner->HasPendingTask());
   timer->SetActive(false);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
   EXPECT_FALSE(client.TickCalled());
 }
 
 TEST(DelayBasedTimeSource, StartTwiceEnqueuesOneTask) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  EXPECT_TRUE(thread.HasPendingTask());
-  thread.Reset();
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  task_runner->ClearPendingTasks();
   timer->SetActive(true);
-  EXPECT_FALSE(thread.HasPendingTask());
+  EXPECT_FALSE(task_runner->HasPendingTask());
 }
 
 TEST(DelayBasedTimeSource, StartWhenRunningDoesntTick) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
-  thread.RunPendingTask();
-  thread.Reset();
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  task_runner->RunPendingTasks();
+  task_runner->ClearPendingTasks();
   timer->SetActive(true);
-  EXPECT_FALSE(thread.HasPendingTask());
+  EXPECT_FALSE(task_runner->HasPendingTask());
 }
 
 // At 60Hz, when the tick returns at exactly the requested next time, make sure
 // a 16ms next delay is posted.
 TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyOnRequestedTime) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
   // Run the first task, as that activates the timer and picks up a timebase.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   timer->SetNow(timer->Now() + Interval());
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 // At 60Hz, when the tick returns at slightly after the requested next time,
 // make sure a 16ms next delay is posted.
 TEST(DelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterRequestedTime) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
   // Run the first task, as that activates the timer and picks up a timebase.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   timer->SetNow(timer->Now() + Interval() +
                 base::TimeDelta::FromMicroseconds(1));
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 // At 60Hz, when the tick returns at exactly 2*interval after the requested next
 // time, make sure a 16ms next delay is posted.
 TEST(DelayBasedTimeSource, NextDelaySaneWhenExactlyTwiceAfterRequestedTime) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
   // Run the first task, as that activates the timer and picks up a timebase.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   timer->SetNow(timer->Now() + 2 * Interval());
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 // At 60Hz, when the tick returns at 2*interval and a bit after the requested
 // next time, make sure a 16ms next delay is posted.
 TEST(DelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterTwiceRequestedTime) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
   // Run the first task, as that activates the timer and picks up a timebase.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   timer->SetNow(timer->Now() + 2 * Interval() +
                 base::TimeDelta::FromMicroseconds(1));
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 // At 60Hz, when the tick returns halfway to the next frame time, make sure
 // a correct next delay value is posted.
 TEST(DelayBasedTimeSource, NextDelaySaneWhenHalfAfterRequestedTime) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
   // Run the first task, as that activates the timer and picks up a timebase.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   timer->SetNow(timer->Now() + Interval() +
                 base::TimeDelta::FromMilliseconds(8));
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(8, thread.PendingDelayMs());
+  EXPECT_EQ(8, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 // If the timebase and interval are updated with a jittery source, we want to
 // make sure we do not double tick.
 TEST(DelayBasedTimeSource, SaneHandlingOfJitteryTimebase) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
   // Run the first task, as that activates the timer and picks up a timebase.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   // Jitter timebase ~1ms late
   timer->SetNow(timer->Now() + Interval());
   timer->SetTimebaseAndInterval(
       timer->Now() + base::TimeDelta::FromMilliseconds(1), Interval());
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  // Without double tick prevention, PendingDelayMs would be 1.
-  EXPECT_EQ(17, thread.PendingDelayMs());
+  // Without double tick prevention, NextPendingTaskDelay would be 1.
+  EXPECT_EQ(17, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   // Jitter timebase ~1ms early
   timer->SetNow(timer->Now() + Interval());
   timer->SetTimebaseAndInterval(
       timer->Now() - base::TimeDelta::FromMilliseconds(1), Interval());
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(15, thread.PendingDelayMs());
+  EXPECT_EQ(15, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 TEST(DelayBasedTimeSource, HandlesSignificantTimebaseChangesImmediately) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
   // Run the first task, as that activates the timer and picks up a timebase.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   // Tick, then shift timebase by +7ms.
   timer->SetNow(timer->Now() + Interval());
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   client.Reset();
-  thread.RunPendingTaskOnOverwrite(true);
+  task_runner->ClearPendingTasks();
+  task_runner->RunPendingTasks();
   base::TimeDelta jitter = base::TimeDelta::FromMilliseconds(7) +
                            base::TimeDelta::FromMicroseconds(1);
   timer->SetTimebaseAndInterval(timer->Now() + jitter, Interval());
-  thread.RunPendingTaskOnOverwrite(false);
 
   EXPECT_FALSE(client.TickCalled());  // Make sure pending tasks were canceled.
-  EXPECT_EQ(7, thread.PendingDelayMs());
+  EXPECT_EQ(7, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   // Tick, then shift timebase by -7ms.
   timer->SetNow(timer->Now() + jitter);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   client.Reset();
-  thread.RunPendingTaskOnOverwrite(true);
+  task_runner->ClearPendingTasks();
+  task_runner->RunPendingTasks();
   timer->SetTimebaseAndInterval(base::TimeTicks() + Interval(), Interval());
-  thread.RunPendingTaskOnOverwrite(false);
 
   EXPECT_FALSE(client.TickCalled());  // Make sure pending tasks were canceled.
-  EXPECT_EQ(16 - 7, thread.PendingDelayMs());
+  EXPECT_EQ(16 - 7, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 TEST(DelayBasedTimeSource, HanldlesSignificantIntervalChangesImmediately) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
   // Run the first task, as that activates the timer and picks up a timebase.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   // Tick, then double the interval.
   timer->SetNow(timer->Now() + Interval());
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   client.Reset();
-  thread.RunPendingTaskOnOverwrite(true);
+  task_runner->ClearPendingTasks();
+  task_runner->RunPendingTasks();
   timer->SetTimebaseAndInterval(base::TimeTicks() + Interval(), Interval() * 2);
-  thread.RunPendingTaskOnOverwrite(false);
 
   EXPECT_FALSE(client.TickCalled());  // Make sure pending tasks were canceled.
-  EXPECT_EQ(33, thread.PendingDelayMs());
+  EXPECT_EQ(33, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   // Tick, then halve the interval.
   timer->SetNow(timer->Now() + Interval() * 2);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
-  EXPECT_EQ(33, thread.PendingDelayMs());
+  EXPECT_EQ(33, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   client.Reset();
-  thread.RunPendingTaskOnOverwrite(true);
+  task_runner->ClearPendingTasks();
+  task_runner->RunPendingTasks();
   timer->SetTimebaseAndInterval(base::TimeTicks() + Interval() * 3, Interval());
-  thread.RunPendingTaskOnOverwrite(false);
 
   EXPECT_FALSE(client.TickCalled());  // Make sure pending tasks were canceled.
-  EXPECT_EQ(16, thread.PendingDelayMs());
+  EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 TEST(DelayBasedTimeSourceTest, AchievesTargetRateWithNoNoise) {
   int num_iterations = 10;
 
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);
 
   double total_frame_time = 0.0;
   for (int i = 0; i < num_iterations; ++i) {
-    int64 delay_ms = thread.PendingDelayMs();
+    int64 delay_ms = task_runner->NextPendingTaskDelay().InMilliseconds();
 
     // accumulate the "delay"
     total_frame_time += delay_ms / 1000.0;
 
     // Run the callback exactly when asked
     timer->SetNow(timer->Now() + base::TimeDelta::FromMilliseconds(delay_ms));
-    thread.RunPendingTask();
+    task_runner->RunPendingTasks();
   }
   double average_interval =
       total_frame_time / static_cast<double>(num_iterations);
@@ -319,63 +333,68 @@ TEST(DelayBasedTimeSourceTest, AchievesTargetRateWithNoNoise) {
 }
 
 TEST(DelayBasedTimeSource, TestDeactivateWhilePending) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
   timer->SetActive(true);  // Should post a task.
   timer->SetActive(false);
   timer = NULL;
-  thread.RunPendingTask();  // Should run the posted task without crashing.
+  // Should run the posted task without crashing.
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  task_runner->RunPendingTasks();
 }
 
 TEST(DelayBasedTimeSource, TestDeactivateAndReactivateBeforeNextTickTime) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
 
   // Should run the activate task, and pick up a new timebase.
   timer->SetActive(true);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
   // Stop the timer
   timer->SetActive(false);
 
   // Task will be pending anyway, run it
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
   // Start the timer again, but before the next tick time the timer previously
   // planned on using. That same tick time should still be targeted.
   timer->SetNow(timer->Now() + base::TimeDelta::FromMilliseconds(4));
   timer->SetActive(true);
-  EXPECT_EQ(12, thread.PendingDelayMs());
+  EXPECT_EQ(12, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 TEST(DelayBasedTimeSource, TestDeactivateAndReactivateAfterNextTickTime) {
-  FakeThread thread;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
   FakeTimeSourceClient client;
   scoped_refptr<FakeDelayBasedTimeSource> timer =
-      FakeDelayBasedTimeSource::Create(Interval(), &thread);
+      FakeDelayBasedTimeSource::Create(Interval(), task_runner.get());
   timer->SetClient(&client);
 
   // Should run the activate task, and pick up a new timebase.
   timer->SetActive(true);
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
   // Stop the timer.
   timer->SetActive(false);
 
   // Task will be pending anyway, run it.
-  thread.RunPendingTask();
+  task_runner->RunPendingTasks();
 
   // Start the timer again, but before the next tick time the timer previously
   // planned on using. That same tick time should still be targeted.
   timer->SetNow(timer->Now() + base::TimeDelta::FromMilliseconds(20));
   timer->SetActive(true);
-  EXPECT_EQ(13, thread.PendingDelayMs());
+  EXPECT_EQ(13, task_runner->NextPendingTaskDelay().InMilliseconds());
 }
 
 }  // namespace

@@ -15,6 +15,8 @@
 
 namespace base {
 
+class TimeDelta;
+
 // TestSimpleTaskRunner is a simple TaskRunner implementation that can
 // be used for testing.  It implements SingleThreadTaskRunner as that
 // interface implements SequencedTaskRunner, which in turn implements
@@ -56,6 +58,8 @@ class TestSimpleTaskRunner : public SingleThreadTaskRunner {
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
 
   const std::deque<TestPendingTask>& GetPendingTasks() const;
+  bool HasPendingTask() const;
+  base::TimeDelta NextPendingTaskDelay() const;
 
   // Clears the queue of pending tasks without running them.
   void ClearPendingTasks();
