@@ -126,6 +126,7 @@ private:
     const GridTrackSize& gridTrackSize(TrackSizingDirection, size_t) const;
     size_t explicitGridColumnCount() const;
     size_t explicitGridRowCount() const;
+    size_t explicitGridSizeForSide(GridPositionSide) const;
     size_t maximumIndexInDirection(TrackSizingDirection) const;
 
     LayoutUnit logicalContentHeightForChild(RenderBox*, Vector<GridTrack>&);
@@ -136,6 +137,7 @@ private:
 
     GridSpan resolveGridPositionsFromAutoPlacementPosition(const RenderBox*, TrackSizingDirection, size_t) const;
     PassOwnPtr<GridSpan> resolveGridPositionsFromStyle(const RenderBox*, TrackSizingDirection) const;
+    size_t resolveNamedGridLinePositionFromStyle(const GridPosition&, GridPositionSide) const;
     size_t resolveGridPositionFromStyle(const GridPosition&, GridPositionSide) const;
     PassOwnPtr<GridSpan> resolveGridPositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, GridPositionSide) const;
 

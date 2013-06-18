@@ -438,6 +438,11 @@ size_t RenderGrid::explicitGridRowCount() const
     return style()->gridRows().size();
 }
 
+size_t RenderGrid::explicitGridSizeForSide(GridPositionSide side) const
+{
+    return (side == StartSide || side == EndSide) ? explicitGridColumnCount() : explicitGridRowCount();
+}
+
 size_t RenderGrid::maximumIndexInDirection(TrackSizingDirection direction) const
 {
     size_t maximumIndex = std::max<size_t>(1, (direction == ForColumns) ? explicitGridColumnCount() : explicitGridRowCount());
@@ -865,17 +870,43 @@ static size_t adjustGridPositionForSide(size_t resolvedPosition, GridPositionSid
     return resolvedPosition;
 }
 
+size_t RenderGrid::resolveNamedGridLinePositionFromStyle(const GridPosition& position, GridPositionSide side) const
+{
+    ASSERT(!position.namedGridLine().isNull());
+
+    const NamedGridLinesMap& gridLinesNames = (side == StartSide || side == EndSide) ? style()->namedGridColumnLines() : style()->namedGridRowLines();
+    NamedGridLinesMap::const_iterator it = gridLinesNames.find(position.namedGridLine());
+    if (it == gridLinesNames.end()) {
+        if (position.isPositive())
+            return 0;
+        const size_t lastLine = explicitGridSizeForSide(side);
+        return adjustGridPositionForSide(lastLine, side);
+    }
+
+    size_t namedGridLineIndex;
+    if (position.isPositive())
+        namedGridLineIndex = std::min<size_t>(position.integerPosition(), it->value.size()) - 1;
+    else
+        namedGridLineIndex = std::max<int>(it->value.size() - abs(position.integerPosition()), 0);
+    return adjustGridPositionForSide(it->value[namedGridLineIndex], side);
+}
+
 size_t RenderGrid::resolveGridPositionFromStyle(const GridPosition& position, GridPositionSide side) const
 {
     // FIXME: Handle other values for grid-{row,column} like ranges or line names.
     switch (position.type()) {
     case ExplicitPosition: {
         ASSERT(position.integerPosition());
+
+        if (!position.namedGridLine().isNull())
+            return resolveNamedGridLinePositionFromStyle(position, side);
+
+        // Handle <integer> explicit position.
         if (position.isPositive())
             return adjustGridPositionForSide(position.integerPosition() - 1, side);
 
         size_t resolvedPosition = abs(position.integerPosition()) - 1;
-        const size_t endOfTrack = (side == StartSide || side == EndSide) ? explicitGridColumnCount() : explicitGridRowCount();
+        const size_t endOfTrack = explicitGridSizeForSide(side);
 
         // Per http://lists.w3.org/Archives/Public/www-style/2013Mar/0589.html, we clamp negative value to the first line.
         if (endOfTrack < resolvedPosition)
