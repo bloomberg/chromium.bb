@@ -1076,7 +1076,8 @@ public:
     virtual const SecurityOrigin* topOrigin() const OVERRIDE;
 
     PassRefPtr<FontLoader> fontloader();
-    DocumentLifecycleNotifier* lifecycleNotifier();
+
+    void addLifecycleObserver(DocumentLifecycleObserver*);
 
 protected:
     Document(Frame*, const KURL&, DocumentClassFlags = DefaultDocumentClass);
@@ -1107,7 +1108,6 @@ private:
 
     virtual void refScriptExecutionContext() { ref(); }
     virtual void derefScriptExecutionContext() { deref(); }
-    virtual PassOwnPtr<ContextLifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
     virtual const KURL& virtualURL() const; // Same as url(), but needed for ScriptExecutionContext to implement it without a performance loss for direct calls.
     virtual KURL virtualCompleteURL(const String&) const; // Same as completeURL() for the same reason as above.
@@ -1400,6 +1400,8 @@ private:
 
     Timer<Document> m_didAssociateFormControlsTimer;
     HashSet<RefPtr<Element> > m_associatedFormControls;
+
+    OwnPtr<DocumentLifecycleNotifier> m_lifecycleNotifier;
 };
 
 inline void Document::notifyRemovePendingSheetIfNeeded()

@@ -35,7 +35,6 @@
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/Event.h"
 #include "core/dom/MessagePort.h"
@@ -174,6 +173,23 @@ WorkerNavigator* WorkerContext::navigator() const
     if (!m_navigator)
         m_navigator = WorkerNavigator::create(m_userAgent);
     return m_navigator.get();
+}
+
+bool WorkerContext::hasPendingActivity() const
+{
+    ActiveDOMObjectsSet::const_iterator activeObjectsEnd = activeDOMObjects().end();
+    for (ActiveDOMObjectsSet::const_iterator iter = activeDOMObjects().begin(); iter != activeObjectsEnd; ++iter) {
+        if ((*iter)->hasPendingActivity())
+            return true;
+    }
+
+    HashSet<MessagePort*>::const_iterator messagePortsEnd = messagePorts().end();
+    for (HashSet<MessagePort*>::const_iterator iter = messagePorts().begin(); iter != messagePortsEnd; ++iter) {
+        if ((*iter)->hasPendingActivity())
+            return true;
+    }
+
+    return false;
 }
 
 void WorkerContext::postTask(PassOwnPtr<Task> task)

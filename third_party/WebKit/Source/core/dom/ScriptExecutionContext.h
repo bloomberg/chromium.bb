@@ -38,7 +38,6 @@
 namespace WebCore {
 
 class CachedScript;
-class ContextLifecycleNotifier;
 class DatabaseContext;
 class DOMTimer;
 class EventListener;
@@ -79,8 +78,6 @@ public:
 
     // Active objects are not garbage collected even if inaccessible, e.g. because their activity may result in callbacks being invoked.
     bool canSuspendActiveDOMObjects();
-    bool hasPendingActivity();
-
     // Active objects can be asked to suspend even if canSuspendActiveDOMObjects() returns 'false' -
     // step-by-step JS debugging is one example.
     virtual void suspendActiveDOMObjects(ActiveDOMObject::ReasonForSuspension);
@@ -90,12 +87,18 @@ public:
     bool activeDOMObjectsAreSuspended() const { return m_activeDOMObjectsAreSuspended; }
     bool activeDOMObjectsAreStopped() const { return m_activeDOMObjectsAreStopped; }
 
+    // Called from the constructor and destructors of ActiveDOMObject.
+    void didCreateActiveDOMObject(ActiveDOMObject*);
+    void willDestroyActiveDOMObject(ActiveDOMObject*);
+
     // Called after the construction of an ActiveDOMObject to synchronize suspend state.
     void suspendActiveDOMObjectIfNeeded(ActiveDOMObject*);
 
-    // Called from the constructor and destructors of ContextDestructionObserver
-    void wasObservedBy(ContextDestructionObserver*, ContextDestructionObserver::Type as);
-    void wasUnobservedBy(ContextDestructionObserver*, ContextDestructionObserver::Type as);
+    typedef HashSet<ActiveDOMObject*> ActiveDOMObjectsSet;
+    const ActiveDOMObjectsSet& activeDOMObjects() const { return m_activeDOMObjects; }
+
+    void didCreateDestructionObserver(ContextDestructionObserver*);
+    void willDestroyDestructionObserver(ContextDestructionObserver*);
 
     // MessagePort is conceptually a kind of ActiveDOMObject, but it needs to be tracked separately for message dispatch.
     void processMessagePortMessagesSoon();
@@ -156,8 +159,6 @@ protected:
         String m_message;
     };
 
-    ContextLifecycleNotifier* lifecycleNotifier();
-
 private:
     virtual const KURL& virtualURL() const = 0;
     virtual KURL virtualCompleteURL(const String&) const = 0;
@@ -171,10 +172,12 @@ private:
 
     virtual void refScriptExecutionContext() = 0;
     virtual void derefScriptExecutionContext() = 0;
-    virtual PassOwnPtr<ContextLifecycleNotifier> createLifecycleNotifier();
 
-    OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
     HashSet<MessagePort*> m_messagePorts;
+    HashSet<ContextDestructionObserver*> m_destructionObservers;
+    ActiveDOMObjectsSet m_activeDOMObjects;
+    bool m_iteratingActiveDOMObjects;
+    bool m_inDestructor;
 
     int m_circularSequentialID;
     typedef HashMap<int, DOMTimer*> TimeoutMap;

@@ -32,34 +32,21 @@
 namespace WebCore {
 
 DocumentLifecycleObserver::DocumentLifecycleObserver(Document* document)
-    : ContextDestructionObserver(document, DocumentLifecycleObserverType)
+    : ContextDestructionObserver(document)
 {
+    document->addLifecycleObserver(this);
 }
 
-DocumentLifecycleObserver::~DocumentLifecycleObserver()
+PassOwnPtr<DocumentLifecycleNotifier> DocumentLifecycleNotifier::create()
 {
-    observeContext(0, DocumentLifecycleObserverType);
+    return adoptPtr(new DocumentLifecycleNotifier());
 }
 
-DocumentLifecycleNotifier::DocumentLifecycleNotifier(ScriptExecutionContext* context)
-    : ContextLifecycleNotifier(context)
+void DocumentLifecycleNotifier::addObserver(DocumentLifecycleObserver* observer)
 {
-}
-
-void DocumentLifecycleNotifier::addObserver(ContextDestructionObserver* observer, ContextDestructionObserver::Type as)
-{
-    RELEASE_ASSERT(!m_iterating);
-    if (as == ContextDestructionObserver::DocumentLifecycleObserverType)
-        m_documentObservers.add(static_cast<DocumentLifecycleObserver*>(observer));
-    ContextLifecycleNotifier::addObserver(observer, as);
-}
-
-void DocumentLifecycleNotifier::removeObserver(ContextDestructionObserver* observer, ContextDestructionObserver::Type as)
-{
-    RELEASE_ASSERT(!m_iterating);
-    if (as == ContextDestructionObserver::DocumentLifecycleObserverType)
-        m_documentObservers.remove(static_cast<DocumentLifecycleObserver*>(observer));
-    ContextLifecycleNotifier::removeObserver(observer, as);
+    ASSERT(!m_iterating);
+    ASSERT(!m_observers.contains(observer));
+    m_observers.append(observer);
 }
 
 } // namespace WebCore
