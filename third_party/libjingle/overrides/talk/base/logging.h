@@ -123,6 +123,8 @@ class DiagnosticLogMessage {
                        bool log_to_chrome);
   ~DiagnosticLogMessage();
 
+  uint32 LogStartTime();
+
   std::ostream& stream() { return print_stream_; }
 
  private:
@@ -132,6 +134,7 @@ class DiagnosticLogMessage {
   const bool log_to_chrome_;
 
   std::ostringstream print_stream_;
+  std::ostringstream print_stream_with_timestamp_;
 };
 
 // This class is used to explicitly ignore values in the conditional
