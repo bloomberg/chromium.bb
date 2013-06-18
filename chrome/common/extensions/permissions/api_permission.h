@@ -71,6 +71,7 @@ class APIPermission {
     kEchoPrivate,
     kEnterprisePlatformKeysPrivate,
     kExperimental,
+    kFeedbackPrivate,
     kFileBrowserHandler,
     kFileBrowserHandlerInternal,
     kFileBrowserPrivate,

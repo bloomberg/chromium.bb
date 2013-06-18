@@ -56,6 +56,7 @@
           'system_info_memory.idl',
           'experimental_system_info_storage.idl',
           'extension.json',
+          'feedback_private.idl',
           'file_browser_handler_internal.json',
           'file_system.idl',
           'font_settings.json',

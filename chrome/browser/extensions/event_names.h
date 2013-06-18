@@ -119,6 +119,9 @@ extern const char kOnAudioDeviceChanged[];
 extern const char kOnLaunched[];
 extern const char kOnRestarted[];
 
+// FeedbackPrivate
+extern const char kOnFeedbackRequested[];
+
 }  // namespace event_names
 
 }  // namespace extensions

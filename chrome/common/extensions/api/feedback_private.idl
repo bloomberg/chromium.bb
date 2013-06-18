@@ -1,0 +1,78 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+namespace feedbackPrivate {
+
+  dictionary AttachedFile {
+    DOMString name;
+    [instanceOf=Blob] object data;
+  };
+
+  dictionary SystemInformation {
+    DOMString key;
+    DOMString value;
+  };
+
+  dictionary FeedbackInfo {
+    // File to attach to the feedback report.
+    AttachedFile? attachedFile;
+
+    // An optional tag to label what type this feedback is.
+    DOMString? categoryTag;
+
+    // The feedback text describing the user issue.
+    DOMString description;
+
+    // The e-mail of the user that initiated this feedback.
+    DOMString? email;
+
+    // The URL of the page that this issue was being experienced on.
+    DOMString? pageUrl;
+
+    // Optional product ID to override the Chrome [OS] product id that is
+    // usually passed to the feedback server.
+    DOMString? productId;
+
+    // Screenshot to send with this feedback.
+    [instanceOf=Blob] object? screenshot;
+
+    // An array of key/value pairs providing system information for this
+    // feedback report.
+    SystemInformation[]? systemInformation;
+
+    // TODO(rkc): Remove these once we have bindings to send blobs to Chrome.
+    // Used internally to store the blob Url after parameter customization.
+    DOMString attachedFileBlobUrl;
+    DOMString screenshotBlobUrl;
+  };
+
+  // Status of the sending of a feedback report.
+  enum Status {success, delayed};
+
+  callback GetUserEmailCallback = void(DOMString email);
+  callback GetSystemInformationCallback =
+      void(SystemInformation[] systemInformation);
+  callback SendFeedbackCallback = void(Status status);
+  callback GetStringsCallback = void(object result);
+
+  interface Functions {
+    // Returns the email of the currently active or logged in user.
+    static void getUserEmail(GetUserEmailCallback callback);
+
+    // Returns the system information dictionary.
+    static void getSystemInformation(GetSystemInformationCallback callback);
+
+    // Sends a feedback report.
+    static void sendFeedback(FeedbackInfo feedback,
+                             SendFeedbackCallback callback);
+  };
+
+  interface Events {
+    // Fired when the a user requests the launch of the feedback UI. We're
+    // using an event for this versus using the override API since we want
+    // to be invoked, but not showing a UI, so the feedback extension can
+    // take a screenshot of the user's desktop.
+    static void onFeedbackRequested(FeedbackInfo feedback);
+  };
+};

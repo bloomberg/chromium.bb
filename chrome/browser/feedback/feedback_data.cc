@@ -152,6 +152,12 @@ void FeedbackData::FeedbackPageDataComplete() {
 }
 
 #if defined(OS_CHROMEOS)
+void FeedbackData::set_sys_info(
+    scoped_ptr<chromeos::SystemLogsResponse> sys_info) {
+  if (sys_info.get())
+    CompressSyslogs(sys_info.Pass());
+}
+
 void FeedbackData::CompressSyslogs(
     scoped_ptr<chromeos::SystemLogsResponse> sys_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

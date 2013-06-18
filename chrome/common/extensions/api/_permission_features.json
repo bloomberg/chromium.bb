@@ -204,6 +204,13 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "feedbackPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "platform_app"],
+    "whitelist": [
+      "7910EAFDAF64B947E1CB31B333A9BD14CA556B6C" // Feedback UI.
+    ]
+  },
   "fileBrowserHandler": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]
