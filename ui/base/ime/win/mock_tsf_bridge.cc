@@ -30,7 +30,7 @@ bool MockTSFBridge::CancelComposition() {
   return true;
 }
 
-void MockTSFBridge::OnTextInputTypeChanged(TextInputClient* client) {
+void MockTSFBridge::OnTextInputTypeChanged(const TextInputClient* client) {
   latest_text_input_type_ = client->GetTextInputType();
 }
 

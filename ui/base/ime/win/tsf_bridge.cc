@@ -36,7 +36,7 @@ class TSFBridgeDelegate : public TSFBridge {
   bool Initialize();
 
   // TsfBridge:
-  virtual void OnTextInputTypeChanged(TextInputClient* client) OVERRIDE;
+  virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnTextLayoutChanged() OVERRIDE;
   virtual bool CancelComposition() OVERRIDE;
   virtual void SetFocusedClient(HWND focused_window,
@@ -184,7 +184,7 @@ bool TSFBridgeDelegate::Initialize() {
   return true;
 }
 
-void TSFBridgeDelegate::OnTextInputTypeChanged(TextInputClient* client) {
+void TSFBridgeDelegate::OnTextInputTypeChanged(const TextInputClient* client) {
   DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
   DCHECK(IsInitialized());
 

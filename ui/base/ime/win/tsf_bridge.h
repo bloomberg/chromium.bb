@@ -49,7 +49,7 @@ class UI_EXPORT TSFBridge {
   // Handles TextInputTypeChanged event. RWHVW is responsible for calling this
   // handler whenever renderer's input text type is changed. Does nothing
   // unless |client| is focused.
-  virtual void OnTextInputTypeChanged(TextInputClient* client) = 0;
+  virtual void OnTextInputTypeChanged(const TextInputClient* client) = 0;
 
   // Sends an event to TSF manager that the text layout should be updated.
   virtual void OnTextLayoutChanged() = 0;

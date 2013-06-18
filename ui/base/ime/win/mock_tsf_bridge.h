@@ -21,7 +21,7 @@ class MockTSFBridge : public TSFBridge {
 
   // TSFBridge:
   virtual bool CancelComposition() OVERRIDE;
-  virtual void OnTextInputTypeChanged(TextInputClient* client) OVERRIDE;
+  virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnTextLayoutChanged() OVERRIDE;
   virtual void SetFocusedClient(HWND focused_window,
                                 TextInputClient* client) OVERRIDE;
