@@ -429,6 +429,9 @@ wl_resource_destroy(struct wl_resource *resource)
 	id = resource->object.id;
 	destroy_resource(resource, NULL);
 
+	if (!(wl_map_lookup_flags(&client->objects, id) & WL_MAP_ENTRY_LEGACY))
+		free(resource);
+
 	if (id < WL_SERVER_ID_START) {
 		if (client->display_resource) {
 			wl_resource_queue_event(client->display_resource,
@@ -986,7 +989,7 @@ wl_client_add_object(struct wl_client *client,
 
 	wl_resource_init(resource, interface, implementation, id, data);
 	resource->client = client;
-	resource->destroy = (void *) free;
+	resource->destroy = NULL;
 
 	if (wl_map_insert_at(&client->objects, 0, resource->object.id, resource) < 0) {
 		wl_resource_post_error(client->display_resource,
