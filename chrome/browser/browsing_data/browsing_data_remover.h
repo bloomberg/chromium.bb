@@ -82,7 +82,6 @@ class BrowsingDataRemover : public content::NotificationObserver
     REMOVE_WEBSQL = 1 << 11,
     REMOVE_SERVER_BOUND_CERTS = 1 << 12,
     REMOVE_CONTENT_LICENSES = 1 << 13,
-    REMOVE_SHADER_CACHE = 1 << 14,
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
     // protected-web origin.
@@ -94,8 +93,6 @@ class BrowsingDataRemover : public content::NotificationObserver
                        REMOVE_INDEXEDDB | REMOVE_LOCAL_STORAGE |
                        REMOVE_PLUGIN_DATA | REMOVE_WEBSQL |
                        REMOVE_SERVER_BOUND_CERTS,
-    // "cached data" includes the http cache and the shader cache.
-    REMOVE_CACHED_DATA = REMOVE_CACHE | REMOVE_SHADER_CACHE
   };
 
   // When BrowsingDataRemover successfully removes data, a notification of type

@@ -164,7 +164,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
     remove_mask |= BrowsingDataRemover::REMOVE_DOWNLOADS;
   }
   if (prefs->GetBoolean(prefs::kDeleteCache))
-    remove_mask |= BrowsingDataRemover::REMOVE_CACHED_DATA;
+    remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
   if (prefs->GetBoolean(prefs::kDeleteCookies)) {
     remove_mask |= site_data_mask;
     origin_mask |= BrowsingDataHelper::UNPROTECTED_WEB;

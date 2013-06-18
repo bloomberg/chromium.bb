@@ -516,6 +516,12 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       prerender_manager->ClearData(
           prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS);
     }
+
+    // Tell the shader disk cache to clear.
+    waiting_for_clear_shader_cache_ = true;
+    content::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
+
+    ClearShaderCacheOnUIThread();
   }
 
 #if defined(ENABLE_PLUGINS)
@@ -532,13 +538,6 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
   }
 #endif
-
-  if (remove_mask & REMOVE_SHADER_CACHE) {
-    waiting_for_clear_shader_cache_ = true;
-    content::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
-
-    ClearShaderCacheOnUIThread();
-  }
 
   // Always wipe accumulated network related data (TransportSecurityState and
   // HttpServerPropertiesManager data).
