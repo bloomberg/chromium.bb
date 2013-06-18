@@ -20,6 +20,7 @@ UISourceCode uri to url mappings:
 
 Running: testScriptFileOnReloadWithDirtyFile
 Adding file system.
+Adding file system mapping.
 Dumping uiSourceCode and script content:
     uiSourceCode: <foo content>
     script: <foo content>

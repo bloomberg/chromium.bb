@@ -37,19 +37,12 @@ function test()
         __proto__: WebInspector.Object.prototype
     };
 
-    var fileMapping = new WebInspector.FileMapping();
-    var mappingEntries = [];
-    mappingEntries.push(new WebInspector.FileMapping.Entry("http://localhost/", "/var/www/localhost/"));
-    mappingEntries.push(new WebInspector.FileMapping.Entry("http://www.example.com/", "/home/example.com/"));
-    mappingEntries.push(new WebInspector.FileMapping.Entry("http://www.foo.com/", "/bar/"));
-    fileMapping.setMappingEntries(mappingEntries);
-
-    var fileSystemMapping = new WebInspector.FileSystemMappingImpl();
+    var fileSystemMapping = new WebInspector.FileSystemMapping();
     var fileSystemPath = "/var/www";
     var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
-    fileSystemMapping.addFileSystemMapping("/var/www");
-
-    var workspace = new WebInspector.Workspace(fileMapping, fileSystemMapping);
+    fileSystemMapping.addFileSystem("/var/www");
+    fileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
+    var workspace = new WebInspector.Workspace(fileSystemMapping);
 
     function dumpHasMappingForURL(url)
     {
@@ -66,10 +59,10 @@ function test()
         InspectorTest.addResult("    url " + url + " is mapped to " + (uiSourceCode ? uiSourceCode.uri() : null));
     }
 
-    function dumpURLForPath(path)
+    function dumpURLForPath(fileSystemPath, filePath)
     {
-        var url = workspace.urlForPath(path)
-        InspectorTest.addResult("    path " + path + " is mapped to " + (url ? url : null));
+        var url = workspace.urlForPath(fileSystemPath, filePath)
+        InspectorTest.addResult("    path " + fileSystemPath + " / " + filePath + " is mapped to " + (url ? url : null));
     }
     
     createUISourceCode(projectId, "localhost/index.html");
@@ -91,11 +84,11 @@ function test()
     dumpUISourceCodeForURL("https://localhost/index.html");
     InspectorTest.addResult("");
 
-    dumpURLForPath("/home/example.com/foo/index.html");
-    dumpURLForPath("/home/example.com/index.html");
-    dumpURLForPath("/var/www/localhost/index.html");
-    dumpURLForPath("/var/www/localhost/foo/index.html");
-    dumpURLForPath("/home/foo/index.html");
+    dumpURLForPath("/home/example.com", "foo/index.html");
+    dumpURLForPath("/home/example.com", "index.html");
+    dumpURLForPath("/var/www", "localhost/index.html");
+    dumpURLForPath("/var/www", "localhost/foo/index.html");
+    dumpURLForPath("/home/foo", "index.html");
 
     InspectorTest.completeTest();
 }

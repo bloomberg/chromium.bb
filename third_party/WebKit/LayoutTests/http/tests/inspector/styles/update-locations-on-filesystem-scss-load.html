@@ -84,11 +84,12 @@ function test()
 
     var files = {};
     files["/" + namePrefix + "css"] = cssContent;
-    InspectorTest.testFileMapping.setMappingEntries([new WebInspector.FileMapping.Entry(resourcesURL, fileSystemPath + "/")]);
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 4);
     InspectorTest.addResult("Adding file system.");
     manager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, fileSystemAdded, this);
-    manager.addMockFileSystem(fileSystemPath, files);
+    manager.addMockFileSystem(fileSystemPath);
+    InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, resourcesURL, "/");
+    manager.addFiles(fileSystemPath, files);
 
     InspectorTest.addSniffer(WebInspector.SASSSourceMapping.prototype, "_bindUISourceCode", afterBind);
 
@@ -100,7 +101,7 @@ function test()
     dumpLiveLocation();
 
     InspectorTest.addResult("Adding filesystem SCSS.");
-    var scssPath = "/" + namePrefix + "scss";
+    var scssPath = namePrefix + "scss";
     fileSystem.setFileContent(scssPath, scssContent, function() {});
     InspectorTest.addMockUISourceCodeToWorkspace(scssURL, WebInspector.resourceTypes.Stylesheet, scssContent);
     manager.fileSystemWorkspaceProvider._simpleProjectDelegates[fileSystemProjectId]._addFile(scssPath);

@@ -8,10 +8,9 @@ InspectorTest.createIsolatedFileSystemManager = function(workspace, fileSystemMa
     return manager;
 }
 
-var MockIsolatedFileSystem = function(path, files)
+var MockIsolatedFileSystem = function(path)
 {
     this._path = path;
-    this._files = files;
 };
 MockIsolatedFileSystem.prototype = {
     path: function()
@@ -32,28 +31,52 @@ MockIsolatedFileSystem.prototype = {
 
     requestFilesRecursive: function(path, callback)
     {
+        this._callback = callback;
+        if (!this._files)
+            return;
+        this._innerRequestFilesRecursive();
+    },
+
+    _innerRequestFilesRecursive: function()
+    {
+        if (!this._callback)
+            return;
         var files = Object.keys(this._files);
         for (var i = 0; i < files.length; ++i)
-            callback(files[i]);
+            this._callback(files[i].substr(1));
+        delete this._callback;
     },
+
+    _addFiles: function(files)
+    {
+        this._files = files;
+        this._innerRequestFilesRecursive();
+    }
 }
 
 var MockIsolatedFileSystemManager = function() {};
 MockIsolatedFileSystemManager.prototype = {
-    addMockFileSystem: function(path, files)
+    addMockFileSystem: function(path, skipAddFileSystem)
     {
-        var fileSystem = new MockIsolatedFileSystem(path, files);
+        var fileSystem = new MockIsolatedFileSystem(path);
         this._fileSystems = this._fileSystems || {};
         this._fileSystems[path] = fileSystem;
-        this.fileSystemMapping.addFileSystemMapping(path);
+        if (!skipAddFileSystem)
+            this.fileSystemMapping.addFileSystem(path);
         this.dispatchEventToListeners(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, fileSystem);
+    },
+
+    addFiles: function(path, files)
+    {
+        var fileSystem = this._fileSystems[path];
+        fileSystem._addFiles(files);
     },
 
     removeMockFileSystem: function(path)
     {
         var fileSystem = this._fileSystems[path];
         delete this._fileSystems[path];
-        this.fileSystemMapping.removeFileSystemMapping(path);
+        this.fileSystemMapping.removeFileSystem(path);
         this.dispatchEventToListeners(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, fileSystem);
     },
 

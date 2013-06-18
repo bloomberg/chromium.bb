@@ -38,14 +38,20 @@ function test()
             InspectorTest.createWorkspace();
             var manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
             var uiSourceCodes = [];
-            var entry1 = new WebInspector.FileMapping.Entry("http://localhost/", "/var/www/localhost/");
-            var entry2 = new WebInspector.FileMapping.Entry("http://www.example.com/", "/foo/bar/");
-            InspectorTest.testFileMapping.setMappingEntries([entry1, entry2]);
+
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 3);
             InspectorTest.addResult("Adding first file system.");
-            manager.addMockFileSystem("/var/www", {"/localhost/foo.js": "<foo content>", "/bar.js": "<bar content>"});
+            manager.addMockFileSystem("/var/www");
             InspectorTest.addResult("Adding second file system.");
-            manager.addMockFileSystem("/foo/bar", {"/baz.js": "<baz content>"});
+            manager.addMockFileSystem("/foo/bar");
+
+            InspectorTest.addResult("Adding file mappings.");
+            InspectorTest.testFileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
+            InspectorTest.testFileSystemMapping.addFileMapping("/foo/bar", "http://www.example.com/", "/");
+
+            InspectorTest.addResult("Adding files to file systems.");
+            manager.addFiles("/var/www", {"/localhost/foo.js": "<foo content>", "/bar.js": "<bar content>"});
+            manager.addFiles("/foo/bar", {"/baz.js": "<baz content>"});
 
             dumpUISourceCodes(uiSourceCodes, uiSourceCodesDumped);
 

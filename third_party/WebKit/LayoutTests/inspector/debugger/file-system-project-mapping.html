@@ -51,10 +51,10 @@ function test()
             var files = {"/html/foo.js": "<foo content>", "/bar.js": "<bar content>"};
 
             createObjects();
-            InspectorTest.testFileMapping.setMappingEntries([]);
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 4);
             InspectorTest.addResult("Adding file system.");
-            manager.addMockFileSystem(fileSystemPath, files);
+            manager.addMockFileSystem(fileSystemPath);
+            manager.addFiles(fileSystemPath, files);
             InspectorTest.addResult("Adding network resource.");
             InspectorTest.addMockUISourceCodeToWorkspace("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
             InspectorTest.addMockUISourceCodeToWorkspace("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
@@ -64,27 +64,28 @@ function test()
             InspectorTest.override(WebInspector, "suggestReload", function() { });
             InspectorTest.addResult("Adding mapping between network and file system resources.");
             InspectorTest.testWorkspace.addMapping(networkUISourceCode, uiSourceCode, manager.fileSystemWorkspaceProvider);
-            manager.removeMockFileSystem(fileSystemPath);
-
+            var setting = InspectorTest.testFileSystemMapping._fileSystemMappingSetting;
             InspectorTest.addResult("Emulate reloading inspector.");
             createObjects();
+            InspectorTest.testFileSystemMapping._fileSystemMappingSetting = setting;
+            InspectorTest.testFileSystemMapping._loadFromSettings();
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
-            manager.addMockFileSystem(fileSystemPath, files);
+            manager.addMockFileSystem(fileSystemPath, true);
+            manager.addFiles(fileSystemPath, files);
             dumpFileSystemUISourceCodesMappings();
             InspectorTest.override(WebInspector, "suggestReload", function() { });
             InspectorTest.addResult("Removing mapping between network and file system resources.");
             uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, ["html", "foo.js"]);
             InspectorTest.testWorkspace.removeMapping(uiSourceCode);
-            manager.removeMockFileSystem(fileSystemPath);
 
             InspectorTest.addResult("Emulate reloading inspector.");
             createObjects();
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
-            manager.addMockFileSystem(fileSystemPath, files);
+            manager.addMockFileSystem(fileSystemPath);
+            manager.addFiles(fileSystemPath, files);
             dumpFileSystemUISourceCodesMappings();
-            manager.removeMockFileSystem("/var/www");
 
-            InspectorTest.testFileMapping.setMappingEntries([]);
+            InspectorTest.testFileSystemMapping.removeMappingForURL(networkUISourceCode.url);
             next();
         },
 
@@ -113,11 +114,12 @@ function test()
             var fileSystemProjectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
             var files = {"/html/foo.js": originalFileContent, "/bar.js": "<bar content>"};
             createObjects();
-            var entry1 = new WebInspector.FileMapping.Entry("http://localhost/", "/var/www/");
-            InspectorTest.testFileMapping.setMappingEntries([entry1]);
-            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
             InspectorTest.addResult("Adding file system.");
-            manager.addMockFileSystem(fileSystemPath, files);
+            manager.addMockFileSystem(fileSystemPath);
+            InspectorTest.addResult("Adding file system mapping.");
+            InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost/", "/");
+            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
+            manager.addFiles(fileSystemPath, files);
 
             loadScript();
 
@@ -205,6 +207,7 @@ function test()
                 unloadScript();
                 loadScript;
 
+                InspectorTest.testFileSystemMapping.removeFileMapping(fileSystemPath, "http://localhost/", "/");
                 next();
             }
         }
