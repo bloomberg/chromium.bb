@@ -18,7 +18,6 @@ PASS "noPluginEmbedElemWithTabindex"; document.activeElement === pluginElement i
 PASS "noPluginObjectElemWithTabindex"; document.activeElement === pluginElement is true
 PASS "noPluginEmbedElemWithContenteditable"; document.activeElement === pluginElement is true
 PASS "noPluginObjectElemWithContenteditable"; document.activeElement === pluginElement is true
-fast/events/tabindex-focus-blur-all.html
 Test for bug 32292: "Unable to focus on embedded plugins such as Flash via javascript focus()"
 
 This tests focusing Embeds and Objects. See LayoutTests/java for Applet elements.

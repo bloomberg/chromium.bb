@@ -85,7 +85,8 @@ private:
 
     virtual RenderWidget* renderWidgetForJSBindings() const = 0;
 
-    virtual bool supportsFocus() const OVERRIDE;
+    virtual bool supportsFocus() const OVERRIDE { return true; };
+    virtual bool rendererIsFocusable() const OVERRIDE;
 
     virtual bool isKeyboardFocusable(KeyboardEvent*) const;
     virtual bool isPluginElement() const;

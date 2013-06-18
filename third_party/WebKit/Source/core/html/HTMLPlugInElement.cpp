@@ -218,9 +218,9 @@ bool HTMLPlugInElement::isPluginElement() const
     return true;
 }
 
-bool HTMLPlugInElement::supportsFocus() const
+bool HTMLPlugInElement::rendererIsFocusable() const
 {
-    if (HTMLFrameOwnerElement::supportsFocus())
+    if (HTMLFrameOwnerElement::supportsFocus() && HTMLFrameOwnerElement::rendererIsFocusable())
         return true;
 
     if (useFallbackContent() || !renderer() || !renderer()->isEmbeddedObject())
