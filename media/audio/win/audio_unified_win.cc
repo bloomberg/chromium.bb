@@ -280,7 +280,11 @@ bool WASAPIUnifiedStream::Open() {
   // One extra bus is needed for the input channel mixing case.
   if (channel_mixer_) {
     DCHECK_LT(hw_input_params.channels(), input_channels_);
-    channel_bus_ = AudioBus::Create(input_channels_, input_bus_->frames());
+    // The size of the |channel_bus_| must be the same as the size of the
+    // output bus to ensure that the channel manager can deal with both
+    // resampled and non-resampled data as input.
+    channel_bus_ = AudioBus::Create(
+        input_channels_, params_.frames_per_buffer());
   }
 
   // Check if FIFO and resampling is required to match the input rate to the
@@ -912,6 +916,7 @@ void WASAPIUnifiedStream::ProcessOutputAudio(IAudioClock* audio_output_clock) {
   AudioBus* input_bus = VarispeedMode() ?
       resampled_bus_.get() : input_bus_.get();
   if (channel_mixer_) {
+    DCHECK_EQ(input_bus->frames(), channel_bus_->frames());
     // Most common case is 1->2 channel upmixing.
     channel_mixer_->Transform(input_bus, channel_bus_.get());
     // Use the output from the channel mixer as new input bus.
