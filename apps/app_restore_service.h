@@ -8,10 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "apps/app_lifetime_monitor.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace extensions {
 class Extension;
@@ -23,8 +22,7 @@ namespace apps {
 
 // Tracks what apps need to be restarted when the browser restarts.
 class AppRestoreService : public BrowserContextKeyedService,
-                          public content::NotificationObserver,
-                          public extensions::ShellWindowRegistry::Observer {
+                          public AppLifetimeMonitor::Observer {
  public:
   // Returns true if apps should be restored on the current platform, given
   // whether this new browser process launched due to a restart.
@@ -43,29 +41,27 @@ class AppRestoreService : public BrowserContextKeyedService,
   static AppRestoreService* Get(Profile* profile);
 
  private:
-  // content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // extensions::ShellWindowRegistry::Observer.
-  virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowIconChanged(ShellWindow* shell_window) OVERRIDE;
-  virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
+  // AppLifetimeMonitor::Observer.
+  virtual void OnAppStart(Profile* profile, const std::string& app_id) OVERRIDE;
+  virtual void OnAppActivated(Profile* profile,
+                              const std::string& app_id) OVERRIDE;
+  virtual void OnAppDeactivated(Profile* profile,
+                                const std::string& app_id) OVERRIDE;
+  virtual void OnAppStop(Profile* profile, const std::string& app_id) OVERRIDE;
+  virtual void OnChromeTerminating() OVERRIDE;
 
   // BrowserContextKeyedService.
   virtual void Shutdown() OVERRIDE;
 
   void RecordAppStart(const std::string& extension_id);
   void RecordAppStop(const std::string& extension_id);
-  void RecordIfAppHasWindows(const std::string& id);
+  void RecordAppActiveState(const std::string& id, bool is_active);
 
   void RestoreApp(const extensions::Extension* extension);
 
-  void StartObservingShellWindows();
-  void StopObservingShellWindows();
+  void StartObservingAppLifetime();
+  void StopObservingAppLifetime();
 
-  content::NotificationRegistrar registrar_;
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRestoreService);

@@ -60,7 +60,7 @@ namespace {
 const char kPrefRunning[] = "running";
 
 // Whether this extension had windows when it was last running.
-const char kHasWindows[] = "has_windows";
+const char kIsActive[] = "is_active";
 
 // Where an extension was installed from. (see Manifest::Location)
 const char kPrefLocation[] = "location";
@@ -985,19 +985,19 @@ bool ExtensionPrefs::IsExtensionRunning(const std::string& extension_id) {
   return running;
 }
 
-void ExtensionPrefs::SetHasWindows(const std::string& extension_id,
-                                   bool has_windows) {
-  Value* value = Value::CreateBooleanValue(has_windows);
-  UpdateExtensionPref(extension_id, kHasWindows, value);
+void ExtensionPrefs::SetIsActive(const std::string& extension_id,
+                                 bool is_active) {
+  Value* value = Value::CreateBooleanValue(is_active);
+  UpdateExtensionPref(extension_id, kIsActive, value);
 }
 
-bool ExtensionPrefs::HasWindows(const std::string& extension_id) {
+bool ExtensionPrefs::IsActive(const std::string& extension_id) {
   const DictionaryValue* extension = GetExtensionPref(extension_id);
   if (!extension)
     return false;
-  bool has_windows = false;
-  extension->GetBoolean(kHasWindows, &has_windows);
-  return has_windows;
+  bool is_active = false;
+  extension->GetBoolean(kIsActive, &is_active);
+  return is_active;
 }
 
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {

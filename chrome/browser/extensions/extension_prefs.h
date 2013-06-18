@@ -351,11 +351,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // restart apps across browser restarts.
   bool IsExtensionRunning(const std::string& extension_id);
 
-  // Set/Get whether or not the extension has windows associated with it. Used
-  // to force a launch of apps that don't handle onRestarted() on a restart. We
-  // can only safely do that if the app had windows when it was last running.
-  void SetHasWindows(const std::string& extension_id, bool has_windows);
-  bool HasWindows(const std::string& extension_id);
+  // Set/Get whether or not the app is active. Used to force a launch of apps
+  // that don't handle onRestarted() on a restart. We can only safely do that if
+  // the app was active when it was last running.
+  void SetIsActive(const std::string& extension_id, bool is_active);
+  bool IsActive(const std::string& extension_id);
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
