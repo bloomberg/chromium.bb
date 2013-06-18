@@ -207,7 +207,6 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             builders._exact_matches = {
                 "MOCK Leopard": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
                 "MOCK Linux": {"port_name": "test-linux-x86_64", "specifiers": set(["mock-specifier"])},
-                "MOCK Vista": {"port_name": "test-win-vista", "specifiers": set(["mock-specifier"])},
                 "MOCK Win7": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
             }
 
@@ -222,7 +221,6 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             builders._exact_matches = old_exact_matches
 
         self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-linux-x86_64/failures/expected/image-expected.txt')), 'original win7 result')
-        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-vista/failures/expected/image-expected.txt')), 'original win7 result')
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/chromium-mac-leopard/userscripts/another-test-expected.txt')))
         self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK Win7"}]}\n')
 
@@ -232,7 +230,6 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         # FIXME: it's confusing that this is the test- port, and not the regular win port. Really all of the tests should be using the test ports.
         port = self.tool.port_factory.get('test-win-win7')
         self._write(port._filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt'), 'original win7 result')
-        self._write(port._filesystem.join(port.layout_tests_dir(), 'platform/test-win-vista/failures/expected/image-expected.txt'), 'original vista result')
 
         old_exact_matches = builders._exact_matches
         oc = OutputCapture()
@@ -240,7 +237,6 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             builders._exact_matches = {
                 "MOCK Leopard": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
                 "MOCK Linux": {"port_name": "test-linux-x86_64", "specifiers": set(["mock-specifier"])},
-                "MOCK Vista": {"port_name": "test-win-vista", "specifiers": set(["mock-specifier"])},
                 "MOCK Win7": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
             }
 
@@ -255,7 +251,6 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             builders._exact_matches = old_exact_matches
 
         self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-linux-x86_64/failures/expected/image-expected.txt')), 'original win7 result')
-        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-vista/failures/expected/image-expected.txt')), 'original vista result')
         self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')), 'MOCK Web result, convert 404 to None=True')
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/chromium-mac-leopard/userscripts/another-test-expected.txt')))
         self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK Win7"}]}\n')
@@ -264,18 +259,18 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
         self.tool.executive = MockExecutive2()
 
         # FIXME: it's confusing that this is the test- port, and not the regular win port. Really all of the tests should be using the test ports.
-        port = self.tool.port_factory.get('test-win-vista')
-        self._write(port._filesystem.join(port.layout_tests_dir(), 'platform/test-win-vista/failures/expected/image-expected.txt'), 'original vista result')
+        port = self.tool.port_factory.get('test-win-win7')
+        self._write(port._filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt'), 'original win7 result')
 
         old_exact_matches = builders._exact_matches
         oc = OutputCapture()
         try:
             builders._exact_matches = {
                 "MOCK XP": {"port_name": "test-win-xp"},
-                "MOCK Vista": {"port_name": "test-win-vista"},
+                "MOCK Win7": {"port_name": "test-win-win7"},
             }
 
-            options = MockOptions(optimize=True, builder="MOCK Vista", suffixes="txt",
+            options = MockOptions(optimize=True, builder="MOCK Win7", suffixes="txt",
                 move_overwritten_baselines_to=None, verbose=True, test="failures/expected/image.html",
                 results_directory=None)
 
@@ -285,9 +280,9 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
             out, _, _ = oc.restore_output()
             builders._exact_matches = old_exact_matches
 
-        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-vista/failures/expected/image-expected.txt')), 'MOCK Web result, convert 404 to None=True')
+        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')), 'MOCK Web result, convert 404 to None=True')
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(port.layout_tests_dir(), 'platform/test-win-xp/failures/expected/image-expected.txt')))
-        self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK Vista"}]}\n')
+        self.assertMultiLineEqual(out, '{"add": [], "remove-lines": [{"test": "failures/expected/image.html", "builder": "MOCK Win7"}]}\n')
 
 
 class TestRebaselineJson(_BaseTestCase):

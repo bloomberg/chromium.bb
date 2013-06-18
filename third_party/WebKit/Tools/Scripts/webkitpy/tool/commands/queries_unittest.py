@@ -183,11 +183,7 @@ class PrintExpectationsTest(unittest.TestCase):
 
     def test_multiple(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/image.html'],
-                      ('// For test-win-vista\n'
-                       'failures/expected/image.html [ ImageOnlyFailure ]\n'
-                       'failures/expected/text.html [ Failure ]\n'
-                       '\n'
-                       '// For test-win-win7\n'
+                      ('// For test-win-win7\n'
                        'failures/expected/image.html [ ImageOnlyFailure ]\n'
                        'failures/expected/text.html [ Failure ]\n'
                        '\n'
@@ -267,11 +263,7 @@ class PrintBaselinesTest(unittest.TestCase):
         command.execute(MockOptions(all=False, include_virtual_tests=False, csv=False, platform='test-win-*'), ['passes/text.html'], self.tool)
         stdout, _, _ = self.restore_output()
         self.assertMultiLineEqual(stdout,
-                          ('// For test-win-vista\n'
-                           'passes/text-expected.png\n'
-                           'passes/text-expected.txt\n'
-                           '\n'
-                           '// For test-win-win7\n'
+                          ('// For test-win-win7\n'
                            'passes/text-expected.png\n'
                            'passes/text-expected.txt\n'
                            '\n'

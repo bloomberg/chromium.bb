@@ -284,7 +284,7 @@ class TestConfigurationConverter(object):
 
 
         # 4) Substitute specifier subsets that match macros witin each set:
-        #   (xp, vista, win7, release) -> (win, release)
+        #   (xp, win7, release) -> (win, release)
         self.collapse_macros(self._configuration_macros, specifiers_list)
 
         macro_keys = set(self._configuration_macros.keys())

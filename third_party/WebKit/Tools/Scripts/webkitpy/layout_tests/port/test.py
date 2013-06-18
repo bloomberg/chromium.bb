@@ -351,7 +351,7 @@ class TestPort(Port):
     ALL_BASELINE_VARIANTS = (
         'test-linux-x86_64',
         'test-mac-snowleopard', 'test-mac-leopard',
-        'test-win-vista', 'test-win-win7', 'test-win-xp',
+        'test-win-win7', 'test-win-xp',
     )
 
     @classmethod
@@ -376,7 +376,6 @@ class TestPort(Port):
         version_map = {
             'test-win-xp': 'xp',
             'test-win-win7': 'win7',
-            'test-win-vista': 'vista',
             'test-mac-leopard': 'leopard',
             'test-mac-snowleopard': 'snowleopard',
             'test-linux-x86_64': 'lucid',
@@ -399,8 +398,7 @@ class TestPort(Port):
             'test-mac-snowleopard': ['test-mac-snowleopard'],
             'test-mac-leopard': ['test-mac-leopard', 'test-mac-snowleopard'],
             'test-win-win7': ['test-win-win7'],
-            'test-win-vista': ['test-win-vista', 'test-win-win7'],
-            'test-win-xp': ['test-win-xp', 'test-win-vista', 'test-win-win7'],
+            'test-win-xp': ['test-win-xp', 'test-win-win7'],
             'test-linux-x86_64': ['test-linux-x86_64', 'test-win-win7'],
         }
         return [self._webkit_baseline_path(d) for d in search_paths[self.name()]]
@@ -517,7 +515,6 @@ class TestPort(Port):
         return (('leopard', 'x86'),
                 ('snowleopard', 'x86'),
                 ('xp', 'x86'),
-                ('vista', 'x86'),
                 ('win7', 'x86'),
                 ('lucid', 'x86'),
                 ('lucid', 'x86_64'))
@@ -527,7 +524,7 @@ class TestPort(Port):
 
     def configuration_specifier_macros(self):
         """To avoid surprises when introducing new macros, these are intentionally fixed in time."""
-        return {'mac': ['leopard', 'snowleopard'], 'win': ['xp', 'vista', 'win7'], 'linux': ['lucid']}
+        return {'mac': ['leopard', 'snowleopard'], 'win': ['xp', 'win7'], 'linux': ['lucid']}
 
     def all_baseline_variants(self):
         return self.ALL_BASELINE_VARIANTS

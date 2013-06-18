@@ -361,7 +361,6 @@ class ExpectationSyntaxTests(Base):
 
     def test_config_modifiers(self):
         self.assert_tokenize_exp('[ Mac ] foo.html', modifiers=['MAC', 'SKIP'], expectations=['PASS'])
-        self.assert_tokenize_exp('[ Mac Vista ] foo.html', modifiers=['MAC', 'VISTA', 'SKIP'], expectations=['PASS'])
         self.assert_tokenize_exp('[ Mac ] foo.html [ Failure ] ', modifiers=['MAC'], expectations=['FAIL'])
 
     def test_unknown_config(self):
@@ -504,7 +503,7 @@ Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 
         actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
 
-        self.assertEqual("""Bug(x) [ Linux Vista Win7 Release ] failures/expected/foo.html [ Failure ]
+        self.assertEqual("""Bug(x) [ Linux Win7 Release ] failures/expected/foo.html [ Failure ]
 Bug(y) [ Win Mac Debug ] failures/expected/foo.html [ Crash ]
 """, actual_expectations)
 
@@ -521,7 +520,6 @@ Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
         expectations = TestExpectations(test_port)
 
         actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-vista', None).test_configuration())
         actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
 
         self.assertEqual("""Bug(y) [ Win Debug ] failures/expected/foo.html [ Crash ]
@@ -540,7 +538,6 @@ Bug(y) [ Mac ] failures/expected/foo.html [ Crash ]
         expectations = TestExpectations(test_port)
 
         actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', test_config)
-        actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-vista', None).test_configuration())
         actual_expectations = expectations.remove_configuration_from_test('failures/expected/foo.html', host.port_factory.get('test-win-win7', None).test_configuration())
 
         self.assertEqual("""Bug(x) [ Win Debug ] failures/expected/foo.html [ Failure Timeout ]
