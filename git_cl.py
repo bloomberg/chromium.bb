@@ -605,6 +605,8 @@ or verify this branch is set up to track another (via the --track argument to
 
   def GetIssueURL(self):
     """Get the URL for a particular issue."""
+    if not self.GetIssue():
+      return None
     return '%s/%s' % (self.GetRietveldServer(), self.GetIssue())
 
   def GetDescription(self, pretty=False):
@@ -1047,12 +1049,12 @@ def CMDstatus(parser, args):
   if show_branches:
     branches = RunGit(['for-each-ref', '--format=%(refname)', 'refs/heads'])
     if branches:
-      print 'Branches associated with reviews:'
       changes = (Changelist(branchref=b) for b in branches.splitlines())
-      branches = dict((cl.GetBranch(), cl.GetIssue()) for cl in changes)
+      branches = dict((cl.GetBranch(), cl.GetIssueURL()) for cl in changes)
       alignment = max(5, max(len(b) for b in branches))
+      print 'Branches associated with reviews:'
       for branch in sorted(branches):
-        print "  %*s: %s" % (alignment, branch, branches[branch])
+        print "  %*s: %s" % (alignment, branch, branches[branch] or '')
 
   cl = Changelist()
   if options.field:
