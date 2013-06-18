@@ -77,6 +77,7 @@ class LocalFileStreamReaderTest : public testing::Test {
     // Give another chance for deleted streams to perform Close.
     base::MessageLoop::current()->RunUntilIdle();
     file_thread_.Stop();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
  protected:

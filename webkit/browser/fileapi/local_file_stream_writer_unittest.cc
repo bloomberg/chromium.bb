@@ -28,6 +28,10 @@ class LocalFileStreamWriterTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
+  virtual void TearDown() OVERRIDE {
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
  protected:
   base::FilePath Path(const std::string& name) {
     return temp_dir_.path().AppendASCII(name);
