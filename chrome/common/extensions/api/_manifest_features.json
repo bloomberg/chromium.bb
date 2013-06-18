@@ -155,7 +155,7 @@
     ]
   },
   "externally_connectable": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": [
       "extension", "hosted_app", "packaged_app", "platform_app"
     ]
