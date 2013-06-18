@@ -1728,11 +1728,6 @@ crbug.com/249021 [ Debug ] http/tests/security/isolatedWorld/bypass-main-world-c
 
 crbug.com/248407 [ Debug ] compositing/reflections/animation-inside-reflection.html [ Pass Timeout ]
 
-# Rebaselines needed because of "turbulance" -> "turbulence" typo fix
-crbug.com/229678 svg/W3C-SVG-1.1-SE/types-dom-04-b.svg [ Failure ]
-crbug.com/229678 svg/W3C-SVG-1.1/filters-turb-01-f.svg [ Failure ]
-crbug.com/229678 svg/W3C-SVG-1.1/filters-turb-02-f.svg [ Failure ]
-
 crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFailure Pass ]
 crbug.com/248146 [ Linux ] editing/style/create-block-for-style-012.html [ ImageOnlyFailure Pass ]
 crbug.com/248146 [ Linux ] fast/text/whitespace/nbsp-mode-and-linewraps.html [ ImageOnlyFailure Pass ]
