@@ -556,9 +556,6 @@
             ],
             'conditions': [
                 ['component=="shared_library"', {
-                    'defines': [
-                        'WEBKIT_DLL',
-                    ],
                     'dependencies': [
                         '../../core/core.gyp:webcore_derived',
                         '../../core/core.gyp:webcore_test_support',
@@ -577,11 +574,6 @@
                         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                         # We must not add webkit_support here because of cyclic dependency.
                     ],
-                    'direct_dependent_settings': {
-                        'defines': [
-                            'WEBKIT_DLL',
-                        ],
-                    },
                     'export_dependent_settings': [
                         '<(DEPTH)/url/url.gyp:url_lib',
                         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',

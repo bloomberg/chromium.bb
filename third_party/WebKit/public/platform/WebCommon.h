@@ -35,7 +35,7 @@
 #define WEBKIT_IMPLEMENTATION 0
 #endif
 
-#if defined(WEBKIT_DLL)
+#if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 #if WEBKIT_IMPLEMENTATION
 #define WEBKIT_EXPORT __declspec(dllexport)
@@ -45,7 +45,7 @@
 #else // defined(WIN32)
 #define WEBKIT_EXPORT __attribute__((visibility("default")))
 #endif
-#else // defined(WEBKIT_DLL)
+#else // defined(COMPONENT_BUILD)
 #define WEBKIT_EXPORT
 #endif
 

@@ -630,11 +630,6 @@
         ['exclude', 'platform/graphics/cpu/arm/filters/.*NEON\\.(cpp|h)'],
       ],
       'conditions': [
-        ['component=="shared_library"', {
-            'defines': [
-                'WEBKIT_DLL',
-            ],
-        }],
         ['use_default_render_theme==1', {
           'sources/': [
             ['exclude', 'platform/chromium/PlatformThemeChromiumWin.h'],
