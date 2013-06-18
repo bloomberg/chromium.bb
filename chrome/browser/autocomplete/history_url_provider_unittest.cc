@@ -793,58 +793,59 @@ TEST_F(HistoryURLProviderTest, CullSearchResults) {
 }
 
 TEST_F(HistoryURLProviderTest, SuggestExactInput) {
+  const size_t npos = std::string::npos;
   struct TestCase {
     // Inputs:
     const char* input;
     bool trim_http;
     // Expected Outputs:
     const char* contents;
-    // Offsets of the ACMatchClassifications, terminated by -1s.
+    // Offsets of the ACMatchClassifications, terminated by npos.
     size_t offsets[3];
     // The index of the ACMatchClassification that should have the MATCH bit
-    // set, -1 if there no ACMatchClassification should have the MATCH bit set.
+    // set, npos if no ACMatchClassification should have the MATCH bit set.
     size_t match_classification_index;
   } test_cases[] = {
     { "http://www.somesite.com", false,
-      "http://www.somesite.com", {0, -1, -1}, 0 },
+      "http://www.somesite.com", {0, npos, npos}, 0 },
     { "www.somesite.com", true,
-      "www.somesite.com", {0, -1, -1}, 0 },
+      "www.somesite.com", {0, npos, npos}, 0 },
     { "www.somesite.com", false,
-      "http://www.somesite.com", {0, 7, -1}, 1 },
+      "http://www.somesite.com", {0, 7, npos}, 1 },
     { "somesite.com", true,
-      "somesite.com", {0, -1, -1}, 0 },
+      "somesite.com", {0, npos, npos}, 0 },
     { "somesite.com", false,
-      "http://somesite.com", {0, 7, -1}, 1 },
+      "http://somesite.com", {0, 7, npos}, 1 },
     { "w", true,
-      "w", {0, -1, -1}, 0 },
+      "w", {0, npos, npos}, 0 },
     { "w", false,
-      "http://w", {0, 7, -1}, 1 },
+      "http://w", {0, 7, npos}, 1 },
     { "w.com", true,
-      "w.com", {0, -1, -1}, 0 },
+      "w.com", {0, npos, npos}, 0 },
     { "w.com", false,
-      "http://w.com", {0, 7, -1}, 1 },
+      "http://w.com", {0, 7, npos}, 1 },
     { "www.w.com", true,
-      "www.w.com", {0, -1, -1}, 0 },
+      "www.w.com", {0, npos, npos}, 0 },
     { "www.w.com", false,
-      "http://www.w.com", {0, 7, -1}, 1 },
+      "http://www.w.com", {0, 7, npos}, 1 },
     { "view-source:www.w.com/", true,
-      "view-source:www.w.com", {0, -1, -1}, -1 },
+      "view-source:www.w.com", {0, npos, npos}, npos },
     { "view-source:www.w.com/", false,
-      "view-source:http://www.w.com", {0, -1, -1}, -1 },
+      "view-source:http://www.w.com", {0, npos, npos}, npos },
     { "view-source:http://www.w.com/", false,
-      "view-source:http://www.w.com", {0, -1, -1}, 0 },
+      "view-source:http://www.w.com", {0, npos, npos}, 0 },
     { "   view-source:", true,
-      "view-source:", {0, -1, -1}, 0 },
+      "view-source:", {0, npos, npos}, 0 },
     { "http:////////w.com", false,
-      "http://w.com", {0, -1, -1}, -1 },
+      "http://w.com", {0, npos, npos}, npos },
     { "    http:////////www.w.com", false,
-      "http://www.w.com", {0, -1, -1}, -1 },
+      "http://www.w.com", {0, npos, npos}, npos },
     { "http:a///www.w.com", false,
-      "http://a///www.w.com", {0, -1, -1}, -1 },
+      "http://a///www.w.com", {0, npos, npos}, npos },
     { "mailto://a@b.com", true,
-      "mailto://a@b.com", {0, -1, -1}, 0 },
+      "mailto://a@b.com", {0, npos, npos}, 0 },
     { "mailto://a@b.com", false,
-      "mailto://a@b.com", {0, -1, -1}, 0 },
+      "mailto://a@b.com", {0, npos, npos}, 0 },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     SCOPED_TRACE(testing::Message() << "Index " << i << " input: "
@@ -867,7 +868,6 @@ TEST_F(HistoryURLProviderTest, SuggestExactInput) {
                  ACMatchClassification::MATCH : 0),
                 match.contents_class[match_index].style);
     }
-    EXPECT_EQ(std::string::npos,
-              test_cases[i].offsets[match.contents_class.size()]);
+    EXPECT_EQ(npos, test_cases[i].offsets[match.contents_class.size()]);
   }
 }
