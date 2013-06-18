@@ -39,13 +39,13 @@
 #include "chrome/app/breakpad_linux_impl.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
+#include "components/breakpad/common/breakpad_paths.h"
 #include "content/public/common/content_descriptors.h"
 
 #if defined(OS_ANDROID)
@@ -654,7 +654,7 @@ void EnableCrashDumping(bool unattended) {
   PathService::Get(base::DIR_TEMP, &tmp_path);
 
   base::FilePath dumps_path(tmp_path);
-  if (PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path)) {
+  if (PathService::Get(breakpad::DIR_CRASH_DUMPS, &dumps_path)) {
     base::FilePath logfile =
         dumps_path.AppendASCII(CrashUploadList::kReporterLogFilename);
     std::string logfile_str = logfile.value();
@@ -1625,7 +1625,7 @@ void InitCrashReporter() {
     base::FilePath alternate_minidump_location_path(
         alternate_minidump_location);
     PathService::Override(
-        chrome::DIR_CRASH_DUMPS,
+        breakpad::DIR_CRASH_DUMPS,
         base::FilePath(alternate_minidump_location));
   }
 

@@ -2,6 +2,7 @@ include_rules = [
   "+breakpad",
   "+chrome/browser",
   "+chrome/third_party/hunspell/google",
+  "+components/breakpad",
   "+content/browser",
   "+content/public/browser",
 ]
