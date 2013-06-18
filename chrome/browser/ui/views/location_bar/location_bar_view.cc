@@ -80,6 +80,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_hdc.h"
@@ -417,7 +418,14 @@ void LocationBarView::GetOmniboxPopupPositioningInfo(
     int* popup_width,
     int* left_margin,
     int* right_margin) {
-  *top_left_screen_coord = gfx::Point(0, parent()->height());
+  // Because the popup might appear atop the attached bookmark bar, there won't
+  // necessarily be a client edge separating it from the rest of the toolbar.
+  // Therefore we position the popup high enough so it can draw its own client
+  // edge at the top, in the same place the toolbar would normally draw the
+  // client edge.
+  *top_left_screen_coord = gfx::Point(
+      0,
+      parent()->height() - views::NonClientFrameView::kClientEdgeThickness);
   views::View::ConvertPointToScreen(parent(), top_left_screen_coord);
   *popup_width = parent()->width();
 

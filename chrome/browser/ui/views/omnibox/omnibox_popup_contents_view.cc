@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_non_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -17,6 +18,7 @@
 #include "ui/gfx/path.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/non_client_view.h"
 
 #if defined(USE_AURA)
 #include "ui/views/corewm/window_animations.h"
@@ -24,6 +26,9 @@
 
 namespace {
 
+// This is the number of pixels in the border image used to draw the bottom
+// border + drop shadow interior to the "visual" border. We lay out assuming
+// that this many pixels inside the border is "in the popup."
 const SkAlpha kGlassPopupAlpha = 240;
 const SkAlpha kOpaquePopupAlpha = 255;
 
@@ -127,8 +132,10 @@ gfx::Rect OmniboxPopupContentsView::GetPopupBounds() const {
 void OmniboxPopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
 
-  contents_rect.Inset(left_margin_, outside_vertical_padding_, right_margin_,
-                      outside_vertical_padding_);
+  contents_rect.Inset(left_margin_,
+                      views::NonClientFrameView::kClientEdgeThickness +
+                          outside_vertical_padding_,
+                      right_margin_, outside_vertical_padding_);
   int top = contents_rect.y();
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
     View* v = child_at(i);
@@ -401,8 +408,10 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
       (result_view->GetPreferredSize().height() -
        result_view->GetTextHeight());
 
-  return popup_height + outside_vertical_padding_ * 2 +
-        bottom_shadow_->height() - kBorderInterior;
+  return popup_height +
+         views::NonClientFrameView::kClientEdgeThickness +  // Top border.
+         outside_vertical_padding_ * 2 +                    // Padding.
+         bottom_shadow_->height() - kBorderInterior;        // Bottom border.
 }
 
 OmniboxResultView* OmniboxPopupContentsView::CreateResultView(
@@ -429,6 +438,13 @@ void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
   PaintResultViews(canvas);
   canvas->Restore();
 
+  // Top border.
+  canvas->FillRect(
+      gfx::Rect(0, 0, width(), views::NonClientFrameView::kClientEdgeThickness),
+      ThemeProperties::GetDefaultColor(
+          ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
+
+  // Bottom border.
   canvas->TileImageInt(*bottom_shadow_, 0, height() - bottom_shadow_->height(),
                        width(), bottom_shadow_->height());
 }
