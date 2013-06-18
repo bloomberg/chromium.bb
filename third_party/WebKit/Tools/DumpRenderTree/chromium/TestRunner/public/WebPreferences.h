@@ -43,19 +43,8 @@ class WebView;
 namespace WebTestRunner {
 
 struct WEBTESTRUNNER_EXPORT WebPreferences {
-    WebKit::WebString standardFontFamily;
-    WebKit::WebString fixedFontFamily;
-    WebKit::WebString serifFontFamily;
-    WebKit::WebString sansSerifFontFamily;
-    WebKit::WebString cursiveFontFamily;
-    WebKit::WebString fantasyFontFamily;
-
     int defaultFontSize;
-    int defaultFixedFontSize;
     int minimumFontSize;
-    int minimumLogicalFontSize;
-    int minimumAccelerated2dCanvasSize;
-
     bool DOMPasteAllowed;
     bool XSSAuditorEnabled;
     bool allowDisplayOfInsecureContent;
@@ -65,7 +54,6 @@ struct WEBTESTRUNNER_EXPORT WebPreferences {
     WebKit::WebString defaultTextEncodingName;
     bool experimentalWebGLEnabled;
     bool experimentalCSSRegionsEnabled;
-    bool experimentalCSSExclusionsEnabled;
     bool experimentalCSSGridLayoutEnabled;
     bool javaEnabled;
     bool javaScriptCanAccessClipboard;
@@ -73,39 +61,20 @@ struct WEBTESTRUNNER_EXPORT WebPreferences {
     bool supportsMultipleWindows;
     bool javaScriptEnabled;
     bool loadsImagesAutomatically;
-    bool localStorageEnabled;
     bool offlineWebApplicationCacheEnabled;
     bool pluginsEnabled;
-    bool shrinksStandaloneImagesToFit;
-    bool textAreasAreResizable;
     WebKit::WebURL userStyleSheetLocation;
-    bool webSecurityEnabled;
     bool allowUniversalAccessFromFileURLs;
     WebKit::WebSettings::EditingBehavior editingBehavior;
     bool tabsToLinks;
     bool hyperlinkAuditingEnabled;
     bool caretBrowsingEnabled;
-    bool acceleratedCompositingForVideoEnabled;
-    bool acceleratedCompositingForFixedPositionEnabled;
-    bool acceleratedCompositingForOverflowScrollEnabled;
-    bool acceleratedCompositingForTransitionEnabled;
-    bool acceleratedCompositingEnabled;
-    bool forceCompositingMode;
-    bool threadedHTMLParser;
-    bool accelerated2dCanvasEnabled;
-    bool perTilePaintingEnabled;
-    bool acceleratedAnimationEnabled;
-    bool deferredImageDecodingEnabled;
-    bool mediaPlaybackRequiresUserGesture;
-    bool mockScrollbarsEnabled;
     bool cssCustomFilterEnabled;
     bool shouldRespectImageOrientation;
     bool asynchronousSpellCheckingEnabled;
-    bool touchDragDropEnabled;
 
     WebPreferences() { reset(); }
     void reset();
-    void applyTo(WebKit::WebView*);
 };
 
 }

@@ -31,49 +31,14 @@
 #include "config.h"
 #include "WebPreferences.h"
 
-#include "WebRuntimeFeatures.h"
-#include "WebView.h"
-
 using namespace WebKit;
 
 namespace WebTestRunner {
 
 void WebPreferences::reset()
 {
-#ifdef __APPLE__
-    cursiveFontFamily = WebString::fromUTF8("Apple Chancery");
-    fantasyFontFamily = WebString::fromUTF8("Papyrus");
-    WebString serif = WebString::fromUTF8("Times");
-#else
-    // These two fonts are picked from the intersection of
-    // Win XP font list and Vista font list :
-    //   http://www.microsoft.com/typography/fonts/winxp.htm
-    //   http://blogs.msdn.com/michkap/archive/2006/04/04/567881.aspx
-    // Some of them are installed only with CJK and complex script
-    // support enabled on Windows XP and are out of consideration here.
-    // (although we enabled both on our buildbots.)
-    // They (especially Impact for fantasy) are not typical cursive
-    // and fantasy fonts, but it should not matter for layout tests
-    // as long as they're available.
-    cursiveFontFamily = WebString::fromUTF8("Comic Sans MS");
-    fantasyFontFamily = WebString::fromUTF8("Impact");
-    // NOTE: case matters here, this must be 'times new roman', else
-    // some layout tests fail.
-    WebString serif = WebString::fromUTF8("times new roman");
-#endif
-    serifFontFamily = serif;
-    standardFontFamily = serif;
-    fixedFontFamily = WebString::fromUTF8("Courier");
-    sansSerifFontFamily = WebString::fromUTF8("Helvetica");
-
     defaultFontSize = 16;
-    defaultFixedFontSize = 13;
     minimumFontSize = 0;
-    minimumLogicalFontSize = 9;
-    // Do not disable acceleration for 2d canvas based on size.
-    // This makes having test expectations consistent.
-    minimumAccelerated2dCanvasSize = 0;
-
     DOMPasteAllowed = true;
     XSSAuditorEnabled = false;
     allowDisplayOfInsecureContent = true;
@@ -82,7 +47,6 @@ void WebPreferences::reset()
     authorAndUserStylesEnabled = true;
     defaultTextEncodingName = WebString::fromUTF8("ISO-8859-1");
     experimentalWebGLEnabled = false;
-    experimentalCSSExclusionsEnabled = true;
     experimentalCSSRegionsEnabled = true;
     experimentalCSSGridLayoutEnabled = true;
     javaEnabled = false;
@@ -91,13 +55,9 @@ void WebPreferences::reset()
     supportsMultipleWindows = true;
     javaScriptEnabled = true;
     loadsImagesAutomatically = true;
-    localStorageEnabled = true;
     offlineWebApplicationCacheEnabled = true;
     pluginsEnabled = true;
-    shrinksStandaloneImagesToFit = false;
-    textAreasAreResizable = true;
     userStyleSheetLocation = WebURL();
-    webSecurityEnabled = true;
     caretBrowsingEnabled = false;
 
     // Allow those layout tests running as local files, i.e. under
@@ -112,111 +72,9 @@ void WebPreferences::reset()
 
     tabsToLinks = false;
     hyperlinkAuditingEnabled = false;
-    acceleratedCompositingForVideoEnabled = false;
-    acceleratedCompositingForFixedPositionEnabled = false;
-    acceleratedCompositingForOverflowScrollEnabled = false;
-    acceleratedCompositingForTransitionEnabled = false;
-    acceleratedCompositingEnabled = false;
-    accelerated2dCanvasEnabled = false;
-    forceCompositingMode = false;
-    threadedHTMLParser = true;
-    perTilePaintingEnabled = false;
-    deferredImageDecodingEnabled = false;
-    mediaPlaybackRequiresUserGesture = false;
-    mockScrollbarsEnabled = false;
     cssCustomFilterEnabled = false;
     shouldRespectImageOrientation = false;
     asynchronousSpellCheckingEnabled = false;
-}
-
-void WebPreferences::applyTo(WebView* webView)
-{
-    WebSettings* settings = webView->settings();
-    settings->setStandardFontFamily(standardFontFamily);
-    settings->setFixedFontFamily(fixedFontFamily);
-    settings->setSerifFontFamily(serifFontFamily);
-    settings->setSansSerifFontFamily(sansSerifFontFamily);
-    settings->setCursiveFontFamily(cursiveFontFamily);
-    settings->setFantasyFontFamily(fantasyFontFamily);
-
-    settings->setDefaultFontSize(defaultFontSize);
-    settings->setDefaultFixedFontSize(defaultFixedFontSize);
-    settings->setMinimumFontSize(minimumFontSize);
-    settings->setMinimumLogicalFontSize(minimumLogicalFontSize);
-    settings->setMinimumAccelerated2dCanvasSize(minimumAccelerated2dCanvasSize);
-
-    settings->setDOMPasteAllowed(DOMPasteAllowed);
-    settings->setXSSAuditorEnabled(XSSAuditorEnabled);
-    settings->setAllowDisplayOfInsecureContent(allowDisplayOfInsecureContent);
-    settings->setAllowFileAccessFromFileURLs(allowFileAccessFromFileURLs);
-    settings->setAllowRunningOfInsecureContent(allowRunningOfInsecureContent);
-    settings->setAuthorAndUserStylesEnabled(authorAndUserStylesEnabled);
-    settings->setDefaultTextEncodingName(defaultTextEncodingName);
-    settings->setExperimentalWebGLEnabled(experimentalWebGLEnabled);
-    WebRuntimeFeatures::enableCSSRegions(experimentalCSSRegionsEnabled);
-    WebRuntimeFeatures::enableCSSExclusions(experimentalCSSExclusionsEnabled);
-    WebRuntimeFeatures::enableCSSGridLayout(experimentalCSSGridLayoutEnabled);
-    settings->setExperimentalCSSCustomFilterEnabled(cssCustomFilterEnabled);
-    settings->setJavaEnabled(javaEnabled);
-    settings->setJavaScriptCanAccessClipboard(javaScriptCanAccessClipboard);
-    settings->setJavaScriptCanOpenWindowsAutomatically(javaScriptCanOpenWindowsAutomatically);
-    settings->setSupportsMultipleWindows(supportsMultipleWindows);
-    settings->setJavaScriptEnabled(javaScriptEnabled);
-    settings->setLoadsImagesAutomatically(loadsImagesAutomatically);
-    settings->setLocalStorageEnabled(localStorageEnabled);
-    settings->setOfflineWebApplicationCacheEnabled(offlineWebApplicationCacheEnabled);
-    settings->setPluginsEnabled(pluginsEnabled);
-    settings->setShrinksStandaloneImagesToFit(shrinksStandaloneImagesToFit);
-    settings->setTextAreasAreResizable(textAreasAreResizable);
-    settings->setUserStyleSheetLocation(userStyleSheetLocation);
-    settings->setWebSecurityEnabled(webSecurityEnabled);
-    settings->setAllowUniversalAccessFromFileURLs(allowUniversalAccessFromFileURLs);
-    settings->setEditingBehavior(editingBehavior);
-    settings->setHyperlinkAuditingEnabled(hyperlinkAuditingEnabled);
-    // LayoutTests were written with Safari Mac in mind which does not allow
-    // tabbing to links by default.
-    webView->setTabsToLinks(tabsToLinks);
-    settings->setCaretBrowsingEnabled(caretBrowsingEnabled);
-    settings->setAcceleratedCompositingEnabled(acceleratedCompositingEnabled);
-    settings->setAcceleratedCompositingForVideoEnabled(acceleratedCompositingForVideoEnabled);
-    settings->setAcceleratedCompositingForFixedPositionEnabled(acceleratedCompositingForFixedPositionEnabled);
-    settings->setAcceleratedCompositingForOverflowScrollEnabled(acceleratedCompositingForOverflowScrollEnabled);
-    settings->setAcceleratedCompositingForTransitionEnabled(acceleratedCompositingForTransitionEnabled);
-    settings->setFixedPositionCreatesStackingContext(acceleratedCompositingForFixedPositionEnabled);
-    settings->setForceCompositingMode(forceCompositingMode);
-    settings->setThreadedHTMLParser(threadedHTMLParser);
-    settings->setAccelerated2dCanvasEnabled(accelerated2dCanvasEnabled);
-    settings->setPerTilePaintingEnabled(perTilePaintingEnabled);
-    settings->setDeferredImageDecodingEnabled(deferredImageDecodingEnabled);
-    settings->setMediaPlaybackRequiresUserGesture(mediaPlaybackRequiresUserGesture);
-    settings->setMockScrollbarsEnabled(mockScrollbarsEnabled);
-    settings->setShouldRespectImageOrientation(shouldRespectImageOrientation);
-    settings->setAsynchronousSpellCheckingEnabled(asynchronousSpellCheckingEnabled);
-
-    // Fixed values.
-    settings->setTouchDragDropEnabled(false);
-    settings->setTouchEditingEnabled(false);
-    settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
-    settings->setDownloadableBinaryFontsEnabled(true);
-    settings->setAllowScriptsToCloseWindows(false);
-    settings->setNeedsSiteSpecificQuirks(true);
-    settings->setEditableLinkBehaviorNeverLive();
-    settings->setEnableScrollAnimator(false);
-    settings->setFontRenderingModeNormal();
-    settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
-    settings->setUsesEncodingDetector(false);
-    settings->setImagesEnabled(true);
-    // Enable fullscreen so the fullscreen layout tests can run.
-    settings->setFullScreenEnabled(true);
-    settings->setValidationMessageTimerMagnification(-1);
-    settings->setVisualWordMovementEnabled(false);
-    settings->setPasswordEchoEnabled(false);
-    settings->setSmartInsertDeleteEnabled(true);
-#ifdef WIN32
-    settings->setSelectTrailingWhitespaceEnabled(true);
-#else
-    settings->setSelectTrailingWhitespaceEnabled(false);
-#endif
 }
 
 }
