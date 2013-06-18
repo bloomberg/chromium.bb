@@ -13,7 +13,7 @@ function assertThrowsError(method, opt_expectedError) {
   } catch (e) {
     var message = e.message || e;
     if (opt_expectedError) {
-      assertEq(opt_expectedError, message);
+      assertEq(opt_expectedError, e.name);
     } else {
       assertTrue(
           message.indexOf('is not available in packaged apps') != -1,
@@ -122,7 +122,7 @@ chrome.test.runTests([
     var xhr = new XMLHttpRequest();
     assertThrowsError(function() {
       xhr.open('GET', 'data:should not load', false);
-    }, 'InvalidAccessError: DOM Exception 15');
+    }, 'InvalidAccessError');
     succeed();
   },
 

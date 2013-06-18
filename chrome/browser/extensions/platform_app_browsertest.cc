@@ -324,8 +324,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowStorage) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/storage")) << message_;
 }
 
-// TODO(kbr): http://crbug.com/251058
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_Restrictions) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/restrictions")) << message_;
 }
 
