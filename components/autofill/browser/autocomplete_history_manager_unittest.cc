@@ -20,7 +20,7 @@
 #include "components/autofill/browser/test_autofill_driver.h"
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
-#include "components/autofill/common/form_data.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/webdata/common/web_data_service_test_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_COMMON_AUTOFILL_SWITCHES_H_
-#define COMPONENTS_AUTOFILL_COMMON_AUTOFILL_SWITCHES_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_SWITCHES_H_
+#define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_SWITCHES_H_
 
 namespace autofill {
 namespace switches {
@@ -24,4 +24,4 @@ extern const char kWalletServiceUseProd[];
 }  // namespace switches
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_COMMON_AUTOFILL_SWITCHES_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_SWITCHES_H_

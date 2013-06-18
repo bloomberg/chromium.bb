@@ -8,7 +8,7 @@
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_scanner.h"
 #include "components/autofill/browser/credit_card_field.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {

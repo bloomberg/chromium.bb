@@ -1,6 +1,6 @@
 include_rules = [
-  "+components/autofill/common",
   "+components/autofill/content/renderer",
+  "+components/autofill/core/common",
   "+components/visitedlink/renderer",
   "+content/public/renderer",
   "+extensions/common",

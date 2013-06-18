@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "components/autofill/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "googleurl/src/gurl.h"
 
 namespace autofill {

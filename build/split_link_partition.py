@@ -124,8 +124,8 @@
   # _constants file, it'd probably be better to break the target into separate
   # .lib files.
   'all_from_libs': [
-    (r'autofill_common\.lib$', r'switches\.obj$'),
-    (r'autofill_common\.lib$', r'autofill_constants\.obj$'),
+    (r'autofill_core_common\.lib$', r'switches\.obj$'),
+    (r'autofill_core_common\.lib$', r'autofill_constants\.obj$'),
     (r'\bbase\.lib$', r'scoped_variant\.obj$'),
     (r'\bbase\.lib$', r'string_util_constants\.obj$'),
     (r'\bbase\.lib$', r'trace_event_impl_constants\.obj$'),

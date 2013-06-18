@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_switches.h"
 
 namespace autofill {
 namespace switches {

@@ -1,6 +1,7 @@
 include_rules = [
   "+components/webdata/common",
   "+content/public/browser",
+  "+content/public/common",
   "+crypto/random.h",
   "+google_apis/gaia",
   "+google_apis/google_api_keys.h",
@@ -9,6 +10,9 @@ include_rules = [
   "+sql",
   "+third_party/libjingle",
   "+third_party/libphonenumber",  # For phone number i18n.
+  # Allow inclusion of WebKit API files.
+  "+third_party/WebKit/public/platform",
+  "+third_party/WebKit/Source/WebKit/chromium",
   "+webkit/plugins/webplugininfo.h",
 
   # TODO(joi): This is "ok" temporarily (it's just a header file with

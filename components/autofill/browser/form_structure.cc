@@ -21,12 +21,12 @@
 #include "components/autofill/browser/autofill_xml_parser.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/form_field.h"
-#include "components/autofill/common/autofill_constants.h"
-#include "components/autofill/common/form_data.h"
-#include "components/autofill/common/form_data_predictions.h"
-#include "components/autofill/common/form_field_data.h"
-#include "components/autofill/common/form_field_data_predictions.h"
 #include "components/autofill/content/browser/autocheckout_page_meta_data.h"
+#include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/form_field_data_predictions.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace autofill {

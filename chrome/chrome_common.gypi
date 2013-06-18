@@ -480,7 +480,7 @@
           'dependencies': [
             '<(DEPTH)/chrome/app/policy/cloud_policy_codegen.gyp:policy',
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
-            '<(DEPTH)/components/components.gyp:autofill_common',
+            '<(DEPTH)/components/components.gyp:autofill_core_common',
             '<(DEPTH)/ipc/ipc.gyp:ipc',
             '<(DEPTH)/printing/printing.gyp:printing',
             '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',

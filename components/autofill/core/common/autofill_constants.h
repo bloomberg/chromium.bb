@@ -4,8 +4,8 @@
 
 // Contains constants specific to the Autofill component.
 
-#ifndef COMPONENTS_AUTOFILL_COMMON_AUTOFILL_CONSTANTS_H_
-#define COMPONENTS_AUTOFILL_COMMON_AUTOFILL_CONSTANTS_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_
+#define COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_
 
 #include <stddef.h>         // For size_t
 
@@ -22,4 +22,4 @@ extern const size_t kRequiredAutofillFields;
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_COMMON_AUTOFILL_CONSTANTS_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_

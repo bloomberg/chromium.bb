@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util_android.h"

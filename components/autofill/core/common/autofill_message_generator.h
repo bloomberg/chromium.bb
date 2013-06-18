@@ -4,4 +4,4 @@
 
 // Multiply-included file, hence no include guard.
 
-#include "components/autofill/common/autofill_messages.h"
+#include "components/autofill/core/common/autofill_messages.h"

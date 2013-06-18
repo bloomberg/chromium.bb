@@ -11,7 +11,7 @@
 
 #include "build/build_config.h"
 
-#include "components/autofill/common/autofill_pref_names.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 
 namespace prefs {
 

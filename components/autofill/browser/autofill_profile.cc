@@ -22,7 +22,7 @@
 #include "components/autofill/browser/contact_info.h"
 #include "components/autofill/browser/phone_number.h"
 #include "components/autofill/browser/phone_number_i18n.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "grit/component_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

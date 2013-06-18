@@ -8,12 +8,12 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/content/renderer/password_generation_manager.h"
+#include "components/autofill/core/common/autofill_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 
 using WebKit::WebDocument;
 using WebKit::WebElement;

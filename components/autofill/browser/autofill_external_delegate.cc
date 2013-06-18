@@ -6,7 +6,7 @@
 #include "components/autofill/browser/autocomplete_history_manager.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_manager.h"
-#include "components/autofill/common/autofill_messages.h"
+#include "components/autofill/core/common/autofill_messages.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

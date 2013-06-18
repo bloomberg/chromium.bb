@@ -4,9 +4,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "components/autofill/common/autofill_messages.h"
-#include "components/autofill/common/form_data.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/core/common/autofill_messages.h"
+#include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"

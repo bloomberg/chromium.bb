@@ -10,8 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
-#include "components/autofill/common/autofill_pref_names.h"
-#include "components/autofill/common/form_field_data.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/webdata/encryptor/encryptor.h"
 

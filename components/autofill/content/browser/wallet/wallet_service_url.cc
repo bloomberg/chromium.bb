@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "components/autofill/common/autofill_switches.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/url_util.h"
