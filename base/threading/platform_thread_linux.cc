@@ -15,7 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 
-#if defined(OS_LINUX)
+#if !defined(OS_NACL)
 #include <sys/prctl.h>
 #include <sys/resource.h>
 #include <sys/syscall.h>
