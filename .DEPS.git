@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@556548854754a5c7af75eb9ecbae14841ac3d576'
+         '@9039b28cc238afcbf7581cbda934c18a08a4c8a6'
 }
 
 deps = {
@@ -39,8 +39,8 @@ deps = {
         Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/accessibility-developer-tools':
         Var('git_url') + '/external/accessibility-developer-tools.git@ad5df9a5341d38778658c90e4aa241c4ebe4e8aa',
-    'src/third_party/angle':
-        Var('git_url') + '/external/angleproject.git@36cced4a9b48cc1e654fbb27477f12fb77b63c91',
+    'src/third_party/angle_dx11':
+        'https://code.google.com/p/angleproject.git@d089bd98e59b037f7f61df926172b5f25e3556cd',
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/src':
@@ -194,6 +194,8 @@ deps_os = {
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@1f3578bb9c3cfdf1293f106f07e5b0b3e19ae543',
         'src/third_party/angle':
+            None,
+        'src/third_party/angle_dx11':
             None,
         'src/third_party/bidichecker':
             None,
