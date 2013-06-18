@@ -84,7 +84,7 @@ base::NullableString16 DomStorageHost::GetAreaKey(int connection_id,
                                                   unsigned index) {
   DomStorageArea* area = GetOpenArea(connection_id);
   if (!area)
-    return base::NullableString16(true);
+    return base::NullableString16();
   return area->Key(index);
 }
 
@@ -92,7 +92,7 @@ base::NullableString16 DomStorageHost::GetAreaItem(int connection_id,
                                                    const base::string16& key) {
   DomStorageArea* area = GetOpenArea(connection_id);
   if (!area)
-    return base::NullableString16(true);
+    return base::NullableString16();
   return area->GetItem(key);
 }
 

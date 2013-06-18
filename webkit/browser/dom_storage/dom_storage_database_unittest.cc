@@ -157,7 +157,7 @@ TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
     ASSERT_TRUE(db.CommitChanges(false, storage));
     ValuesMap::iterator it = storage.begin();
     for (; it != storage.end(); ++it)
-      it->second = base::NullableString16(true);
+      it->second = base::NullableString16();
     ASSERT_TRUE(db.CommitChanges(false, storage));
   }
   EXPECT_FALSE(file_util::PathExists(file_name));
@@ -297,7 +297,7 @@ TEST(DomStorageDatabaseTest, TestSimpleRemoveOneValue) {
   ValuesMap values;
   // A null string in the map should mean that that key gets
   // removed.
-  values[kCannedKey] = base::NullableString16(true);
+  values[kCannedKey] = base::NullableString16();
   EXPECT_TRUE(db.CommitChanges(false, values));
 
   expected.clear();

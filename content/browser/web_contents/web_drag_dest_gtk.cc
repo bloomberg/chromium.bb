@@ -209,7 +209,7 @@ void WebDragDestGtk::OnDragDataReceived(
             // This is a hack. Some file managers also populate text/plain with
             // a file URL when dragging files, so we clear it to avoid exposing
             // it to the web content.
-            drop_data_->text = base::NullableString16(true);
+            drop_data_->text = base::NullableString16();
           } else if (!drop_data_->url.is_valid()) {
             // Also set the first non-file URL as the URL content for the drop.
             drop_data_->url = url;

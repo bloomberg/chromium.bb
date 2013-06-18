@@ -320,7 +320,7 @@ TEST_F(DomStorageCachedAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
   EXPECT_FALSE(IsIgnoringAllMutations(cached_area.get()));
   EXPECT_TRUE(IsIgnoringKeyMutations(cached_area.get(), kKey));
   cached_area->ApplyMutation(base::NullableString16(kKey, false),
-                             base::NullableString16(true));
+                             base::NullableString16());
   EXPECT_EQ(kValue, cached_area->GetItem(kConnectionId, kKey).string());
   mock_proxy_->CompleteOnePendingCallback(true);  // set completion
   EXPECT_FALSE(IsIgnoringKeyMutations(cached_area.get(), kKey));

@@ -41,7 +41,7 @@ unsigned DomStorageMap::Length() const {
 
 base::NullableString16 DomStorageMap::Key(unsigned index) {
   if (index >= values_.size())
-    return base::NullableString16(true);
+    return base::NullableString16();
   while (last_key_index_ != index) {
     if (last_key_index_ > index) {
       --key_iterator_;
@@ -57,7 +57,7 @@ base::NullableString16 DomStorageMap::Key(unsigned index) {
 base::NullableString16 DomStorageMap::GetItem(const base::string16& key) const {
   ValuesMap::const_iterator found = values_.find(key);
   if (found == values_.end())
-    return base::NullableString16(true);
+    return base::NullableString16();
   return found->second;
 }
 
@@ -66,7 +66,7 @@ bool DomStorageMap::SetItem(
     base::NullableString16* old_value) {
   ValuesMap::const_iterator found = values_.find(key);
   if (found == values_.end())
-    *old_value = base::NullableString16(true);
+    *old_value = base::NullableString16();
   else
     *old_value = found->second;
 

@@ -18,7 +18,6 @@ namespace base {
 class NullableString16 {
  public:
   NullableString16() : is_null_(true) { }
-  explicit NullableString16(bool is_null) : is_null_(is_null) { }
   NullableString16(const string16& string, bool is_null)
       : string_(string), is_null_(is_null) {
   }

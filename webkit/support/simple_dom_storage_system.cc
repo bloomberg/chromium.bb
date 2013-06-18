@@ -145,13 +145,13 @@ unsigned SimpleDomStorageSystem::AreaImpl::length() {
 WebString SimpleDomStorageSystem::AreaImpl::key(unsigned index) {
   if (Host())
     return Host()->GetAreaKey(connection_id_, index);
-  return base::NullableString16(true);
+  return base::NullableString16();
 }
 
 WebString SimpleDomStorageSystem::AreaImpl::getItem(const WebString& key) {
   if (Host())
     return Host()->GetAreaItem(connection_id_, key);
-  return base::NullableString16(true);
+  return base::NullableString16();
 }
 
 void SimpleDomStorageSystem::AreaImpl::setItem(
@@ -241,7 +241,7 @@ void SimpleDomStorageSystem::OnDomStorageItemRemoved(
     const GURL& page_url) {
   DispatchDomStorageEvent(area, page_url,
                           base::NullableString16(key, false),
-                          base::NullableString16(true),
+                          base::NullableString16(),
                           base::NullableString16(old_value, false));
 }
 
@@ -249,9 +249,9 @@ void SimpleDomStorageSystem::OnDomStorageAreaCleared(
     const dom_storage::DomStorageArea* area,
     const GURL& page_url) {
   DispatchDomStorageEvent(area, page_url,
-                          base::NullableString16(true),
-                          base::NullableString16(true),
-                          base::NullableString16(true));
+                          base::NullableString16(),
+                          base::NullableString16(),
+                          base::NullableString16());
 }
 
 void SimpleDomStorageSystem::DispatchDomStorageEvent(

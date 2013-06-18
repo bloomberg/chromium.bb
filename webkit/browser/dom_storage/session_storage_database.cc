@@ -523,7 +523,7 @@ bool SessionStorageDatabase::ReadMap(const std::string& map_id,
     // Key is of the form "map-<mapid>-<key>".
     base::string16 key16 = UTF8ToUTF16(key.substr(map_start_key.length()));
     if (only_keys) {
-      (*result)[key16] = base::NullableString16(true);
+      (*result)[key16] = base::NullableString16();
     } else {
       // Convert the raw data stored in std::string (it->value()) to raw data
       // stored in base::string16.

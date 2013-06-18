@@ -89,11 +89,10 @@ SessionStorageDatabaseTest::SessionStorageDatabaseTest()
       kKey1(ASCIIToUTF16("key1")),
       kKey2(ASCIIToUTF16("key2")),
       kKey3(ASCIIToUTF16("key3")),
-      kValue1(base::NullableString16(ASCIIToUTF16("value1"), false)),
-      kValue2(base::NullableString16(ASCIIToUTF16("value2"), false)),
-      kValue3(base::NullableString16(ASCIIToUTF16("value3"), false)),
-      kValue4(base::NullableString16(ASCIIToUTF16("value4"), false)),
-      kValueNull(base::NullableString16(true)) { }
+      kValue1(ASCIIToUTF16("value1"), false),
+      kValue2(ASCIIToUTF16("value2"), false),
+      kValue3(ASCIIToUTF16("value3"), false),
+      kValue4(ASCIIToUTF16("value4"), false) { }
 
 SessionStorageDatabaseTest::~SessionStorageDatabaseTest() { }
 

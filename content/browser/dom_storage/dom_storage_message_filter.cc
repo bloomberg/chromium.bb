@@ -173,7 +173,7 @@ void DOMStorageMessageFilter::OnDomStorageItemRemoved(
     const GURL& page_url) {
   SendDomStorageEvent(area, page_url,
                       base::NullableString16(key, false),
-                      base::NullableString16(true),
+                      base::NullableString16(),
                       base::NullableString16(old_value, false));
 }
 
@@ -181,9 +181,9 @@ void DOMStorageMessageFilter::OnDomStorageAreaCleared(
     const dom_storage::DomStorageArea* area,
     const GURL& page_url) {
   SendDomStorageEvent(area, page_url,
-                      base::NullableString16(true),
-                      base::NullableString16(true),
-                      base::NullableString16(true));
+                      base::NullableString16(),
+                      base::NullableString16(),
+                      base::NullableString16());
 }
 
 void DOMStorageMessageFilter::SendDomStorageEvent(
