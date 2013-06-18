@@ -2805,7 +2805,9 @@ TEST_F(SourceBufferStreamTest, EndSelected_During_PendingSeek) {
   NewSegmentAppend(0, 15);
 
   Seek(20);
-  EXPECT_TRUE(stream_->IsEndSelected());
+  EXPECT_TRUE(stream_->IsSeekPending());
+  stream_->EndOfStream();
+  EXPECT_FALSE(stream_->IsSeekPending());
 }
 
 // If there is a pending seek between 2 existing ranges,
@@ -2818,7 +2820,9 @@ TEST_F(SourceBufferStreamTest, EndNotSelected_During_PendingSeek) {
   NewSegmentAppend(30, 10);
 
   Seek(20);
-  EXPECT_FALSE(stream_->IsEndSelected());
+  EXPECT_TRUE(stream_->IsSeekPending());
+  stream_->EndOfStream();
+  EXPECT_TRUE(stream_->IsSeekPending());
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.

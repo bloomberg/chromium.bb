@@ -42,6 +42,7 @@ class MEDIA_EXPORT SourceBufferStream {
     kSuccess,
     kNeedBuffer,
     kConfigChange,
+    kEndOfStream
   };
 
   SourceBufferStream(const AudioDecoderConfig& audio_config,
@@ -88,9 +89,11 @@ class MEDIA_EXPORT SourceBufferStream {
   // Returns a list of the buffered time ranges.
   Ranges<base::TimeDelta> GetBufferedTime() const;
 
-  // Returns true if we don't have any ranges or the last range is selected
-  // or there is a pending seek beyond any existing ranges.
-  bool IsEndSelected() const;
+  // Notifies this object that end of stream has been signalled.
+  void EndOfStream();
+
+  // Cancel the previous end of stream notification.
+  void CancelEndOfStream();
 
   const AudioDecoderConfig& GetCurrentAudioDecoderConfig();
   const VideoDecoderConfig& GetCurrentVideoDecoderConfig();
@@ -257,6 +260,10 @@ class MEDIA_EXPORT SourceBufferStream {
   // one.
   std::string GetStreamTypeName() const;
 
+  // Returns true if we don't have any ranges or the last range is selected
+  // or there is a pending seek beyond any existing ranges.
+  bool IsEndSelected() const;
+
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.
   LogCB log_cb_;
@@ -283,6 +290,9 @@ class MEDIA_EXPORT SourceBufferStream {
   // True if more data needs to be appended before the Seek() can complete,
   // false if no Seek() has been requested or the Seek() is completed.
   bool seek_pending_;
+
+  // True if the end of the stream has been signalled.
+  bool end_of_stream_;
 
   // Timestamp of the last request to Seek().
   base::TimeDelta seek_buffer_timestamp_;

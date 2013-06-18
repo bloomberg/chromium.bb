@@ -2497,4 +2497,65 @@ TEST_F(ChunkDemuxerTest, ReadAfterAudioDisabled) {
   EXPECT_TRUE(audio_read_done);
 }
 
+// Verifies that signalling end of stream while stalled at a gap
+// boundary does not trigger end of stream buffers to be returned.
+TEST_F(ChunkDemuxerTest, TestEndOfStreamWhileWaitingForGapToBeFilled) {
+  ASSERT_TRUE(InitDemuxer(true, true));
+
+  AppendCluster(0, 10);
+  AppendCluster(300, 10);
+  CheckExpectedRanges(kSourceId, "{ [0,132) [300,432) }");
+
+
+  GenerateExpectedReads(0, 10);
+
+  bool audio_read_done = false;
+  bool video_read_done = false;
+  ReadAudio(base::Bind(&OnReadDone,
+                       base::TimeDelta::FromMilliseconds(138),
+                       &audio_read_done));
+  ReadVideo(base::Bind(&OnReadDone,
+                       base::TimeDelta::FromMilliseconds(138),
+                       &video_read_done));
+
+  // Verify that the reads didn't complete
+  EXPECT_FALSE(audio_read_done);
+  EXPECT_FALSE(video_read_done);
+
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(438)));
+  demuxer_->EndOfStream(PIPELINE_OK);
+
+  // Verify that the reads still haven't completed.
+  EXPECT_FALSE(audio_read_done);
+  EXPECT_FALSE(video_read_done);
+
+  AppendCluster(138, 24);
+
+  CheckExpectedRanges(kSourceId, "{ [0,438) }");
+
+  // Verify that the reads have completed.
+  EXPECT_TRUE(audio_read_done);
+  EXPECT_TRUE(video_read_done);
+
+  // Read the rest of the buffers.
+  GenerateExpectedReads(161, 171, 22);
+
+  // Verify that reads block because the append cleared the end of stream state.
+  audio_read_done = false;
+  video_read_done = false;
+  ReadAudio(base::Bind(&OnReadDone_EOSExpected,
+                       &audio_read_done));
+  ReadVideo(base::Bind(&OnReadDone_EOSExpected,
+                       &video_read_done));
+
+  // Verify that the reads don't complete.
+  EXPECT_FALSE(audio_read_done);
+  EXPECT_FALSE(video_read_done);
+
+  demuxer_->EndOfStream(PIPELINE_OK);
+
+  EXPECT_TRUE(audio_read_done);
+  EXPECT_TRUE(video_read_done);
+}
+
 }  // namespace media

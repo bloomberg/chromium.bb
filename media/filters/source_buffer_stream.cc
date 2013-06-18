@@ -303,6 +303,7 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
       current_config_index_(0),
       append_config_index_(0),
       seek_pending_(false),
+      end_of_stream_(false),
       seek_buffer_timestamp_(kNoTimestamp()),
       selected_range_(NULL),
       media_segment_start_time_(kNoTimestamp()),
@@ -324,6 +325,7 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
       current_config_index_(0),
       append_config_index_(0),
       seek_pending_(false),
+      end_of_stream_(false),
       seek_buffer_timestamp_(kNoTimestamp()),
       selected_range_(NULL),
       media_segment_start_time_(kNoTimestamp()),
@@ -348,6 +350,7 @@ SourceBufferStream::~SourceBufferStream() {
 
 void SourceBufferStream::OnNewMediaSegment(
     base::TimeDelta media_segment_start_time) {
+  DCHECK(!end_of_stream_);
   media_segment_start_time_ = media_segment_start_time;
   new_media_segment_ = true;
 
@@ -374,6 +377,7 @@ bool SourceBufferStream::Append(
 
   DCHECK(!buffers.empty());
   DCHECK(media_segment_start_time_ != kNoTimestamp());
+  DCHECK(!end_of_stream_);
 
   // New media segments must begin with a keyframe.
   if (new_media_segment_ && !buffers.front()->IsKeyframe()) {
@@ -915,7 +919,7 @@ void SourceBufferStream::Seek(base::TimeDelta timestamp) {
 }
 
 bool SourceBufferStream::IsSeekPending() const {
-  return seek_pending_;
+  return !(end_of_stream_ && IsEndSelected()) && seek_pending_;
 }
 
 void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
@@ -968,8 +972,11 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
     return kSuccess;
   }
 
-  if (!selected_range_ || !selected_range_->HasNextBuffer())
+  if (!selected_range_ || !selected_range_->HasNextBuffer()) {
+    if (end_of_stream_ && IsEndSelected())
+      return kEndOfStream;
     return kNeedBuffer;
+  }
 
   if (selected_range_->GetNextConfigId() != current_config_index_) {
     config_change_pending_ = true;
@@ -1052,6 +1059,16 @@ Ranges<base::TimeDelta> SourceBufferStream::GetBufferedTime() const {
     ranges.Add((*itr)->GetStartTimestamp(), (*itr)->GetBufferedEndTimestamp());
   }
   return ranges;
+}
+
+void SourceBufferStream::EndOfStream() {
+  DCHECK(!end_of_stream_);
+  end_of_stream_ = true;
+}
+
+void SourceBufferStream::CancelEndOfStream() {
+  DCHECK(end_of_stream_);
+  end_of_stream_ = false;
 }
 
 bool SourceBufferStream::IsEndSelected() const {

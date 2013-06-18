@@ -275,7 +275,6 @@ class ChunkDemuxerStream : public DemuxerStream {
   mutable base::Lock lock_;
   State state_;
   ReadCBQueue read_cbs_;
-  bool end_of_stream_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChunkDemuxerStream);
 };
@@ -283,16 +282,14 @@ class ChunkDemuxerStream : public DemuxerStream {
 ChunkDemuxerStream::ChunkDemuxerStream(const AudioDecoderConfig& audio_config,
                                        const LogCB& log_cb)
     : type_(AUDIO),
-      state_(RETURNING_DATA_FOR_READS),
-      end_of_stream_(false) {
+      state_(RETURNING_DATA_FOR_READS) {
   stream_.reset(new SourceBufferStream(audio_config, log_cb));
 }
 
 ChunkDemuxerStream::ChunkDemuxerStream(const VideoDecoderConfig& video_config,
                                        const LogCB& log_cb)
     : type_(VIDEO),
-      state_(RETURNING_DATA_FOR_READS),
-      end_of_stream_(false) {
+      state_(RETURNING_DATA_FOR_READS) {
   stream_.reset(new SourceBufferStream(video_config, log_cb));
 }
 
@@ -339,13 +336,11 @@ void ChunkDemuxerStream::CancelPendingSeek() {
 
 bool ChunkDemuxerStream::IsSeekPending() const {
   base::AutoLock auto_lock(lock_);
-  return !(end_of_stream_ && stream_->IsEndSelected()) &&
-      stream_->IsSeekPending();
+  return stream_->IsSeekPending();
 }
 
 void ChunkDemuxerStream::OnNewMediaSegment(TimeDelta start_timestamp) {
   base::AutoLock auto_lock(lock_);
-  DCHECK(!end_of_stream_);
   stream_->OnNewMediaSegment(start_timestamp);
 }
 
@@ -356,7 +351,6 @@ bool ChunkDemuxerStream::Append(const StreamParser::BufferQueue& buffers) {
   ClosureQueue closures;
   {
     base::AutoLock auto_lock(lock_);
-    DCHECK(!end_of_stream_);
     DCHECK_NE(state_, SHUTDOWN);
     if (!stream_->Append(buffers)) {
       DVLOG(1) << "ChunkDemuxerStream::Append() : stream append failed";
@@ -410,8 +404,7 @@ void ChunkDemuxerStream::EndOfStream() {
   ClosureQueue closures;
   {
     base::AutoLock auto_lock(lock_);
-    DCHECK(!end_of_stream_);
-    end_of_stream_ = true;
+    stream_->EndOfStream();
     CreateReadDoneClosures_Locked(&closures);
   }
 
@@ -421,8 +414,7 @@ void ChunkDemuxerStream::EndOfStream() {
 
 void ChunkDemuxerStream::CancelEndOfStream() {
   base::AutoLock auto_lock(lock_);
-  DCHECK(end_of_stream_);
-  end_of_stream_ = false;
+  stream_->CancelEndOfStream();
 }
 
 void ChunkDemuxerStream::Shutdown() {
@@ -533,12 +525,11 @@ bool ChunkDemuxerStream::GetNextBuffer_Locked(
           *status = DemuxerStream::kOk;
           return true;
         case SourceBufferStream::kNeedBuffer:
-          if (end_of_stream_) {
-            *status = DemuxerStream::kOk;
-            *buffer = StreamParserBuffer::CreateEOSBuffer();
-            return true;
-          }
           return false;
+        case SourceBufferStream::kEndOfStream:
+          *status = DemuxerStream::kOk;
+          *buffer = StreamParserBuffer::CreateEOSBuffer();
+          return true;
         case SourceBufferStream::kConfigChange:
           DVLOG(2) << "Config change reported to ChunkDemuxerStream.";
           *status = kConfigChanged;
