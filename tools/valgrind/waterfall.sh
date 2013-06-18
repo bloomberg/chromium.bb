@@ -177,30 +177,33 @@ EOF
 NUMBUILDS=3
 
 CMD=$1
-shift
-
-while getopts “hn:” OPTION
-do
-     case $OPTION in
-         h)
-             usage
-             exit
-             ;;
-         n)
-             NUMBUILDS=$OPTARG
-             ;;
-         ?)
-             usage
-             exit
-             ;;
-     esac
-done
-
-shift $((OPTIND-1))
-
 if [ $# != 0 ]; then
-  usage
-  exit 1
+  shift
+fi
+
+# Arguments for "match" are handled in match_suppressions
+if [ "$CMD" != "match" ]; then
+  while getopts “hn:” OPTION
+  do
+    case $OPTION in
+      h)
+        usage
+        exit
+        ;;
+      n)
+        NUMBUILDS=$OPTARG
+        ;;
+      ?)
+        usage
+        exit
+        ;;
+    esac
+  done
+  shift $((OPTIND-1))
+  if [ $# != 0 ]; then
+    usage
+    exit 1
+  fi
 fi
 
 if [ "$CMD" = "fetch" ]; then
@@ -208,7 +211,7 @@ if [ "$CMD" = "fetch" ]; then
   fetch_logs $WATERFALL_PAGE
   fetch_logs $WATERFALL_FYI_PAGE
 elif [ "$CMD" = "match" ]; then
-  match_suppressions ${@:2}
+  match_suppressions $@
   match_gtest_excludes
 elif [ "$CMD" = "blame" ]; then
   echo The blame command died of bitrot. If you need it, please reimplement it.
