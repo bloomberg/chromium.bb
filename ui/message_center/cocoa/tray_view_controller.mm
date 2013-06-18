@@ -169,10 +169,9 @@ const CGFloat kTrayBottomMargin = 75;
   std::map<std::string, MCNotificationController*> newMap;
 
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow setShadowColor:
-      gfx::SkColorToCalibratedNSColor(message_center::kShadowColor)];
+  [shadow setShadowColor:[NSColor colorWithDeviceWhite:0 alpha:0.55]];
   [shadow setShadowOffset:NSMakeSize(0, -1)];
-  [shadow setShadowBlurRadius:4.0];
+  [shadow setShadowBlurRadius:2.0];
 
   CGFloat minY = message_center::kMarginBetweenItems;
 
