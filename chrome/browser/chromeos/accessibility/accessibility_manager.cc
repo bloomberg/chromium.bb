@@ -464,6 +464,14 @@ void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
                               type,
                               ash::kMaxMagnifierType + 1);
   }
+  if (profile_) {
+    const PrefService* const prefs = profile_->GetPrefs();
+    UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosLargeCursor",
+                          prefs->GetBoolean(prefs::kLargeCursorEnabled));
+    UMA_HISTOGRAM_BOOLEAN(
+        "Accessibility.CrosAlwaysShowA11yMenu",
+        prefs->GetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu));
+  }
 }
 
 void AccessibilityManager::Observe(
