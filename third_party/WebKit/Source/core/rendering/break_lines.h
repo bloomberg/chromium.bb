@@ -28,11 +28,16 @@ namespace WebCore {
 class LazyLineBreakIterator;
 
 int nextBreakablePositionIgnoringNBSP(LazyLineBreakIterator&, int pos);
+int nextBreakablePosition(LazyLineBreakIterator&, int pos);
 
-inline bool isBreakable(LazyLineBreakIterator& lazyBreakIterator, int pos, int& nextBreakable)
+inline bool isBreakable(LazyLineBreakIterator& lazyBreakIterator, int pos, int& nextBreakable, bool breakNBSP)
 {
-    if (pos > nextBreakable)
-        nextBreakable = nextBreakablePositionIgnoringNBSP(lazyBreakIterator, pos);
+    if (pos > nextBreakable) {
+        if (breakNBSP)
+            nextBreakable = nextBreakablePosition(lazyBreakIterator, pos);
+        else
+            nextBreakable = nextBreakablePositionIgnoringNBSP(lazyBreakIterator, pos);
+    }
     return pos == nextBreakable;
 }
 

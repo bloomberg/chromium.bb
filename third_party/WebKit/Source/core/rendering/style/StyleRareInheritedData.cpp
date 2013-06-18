@@ -68,6 +68,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , userModify(READ_ONLY)
     , wordBreak(RenderStyle::initialWordBreak())
     , overflowWrap(RenderStyle::initialOverflowWrap())
+    , nbspMode(NBNORMAL)
     , lineBreak(LineBreakAuto)
     , resize(RenderStyle::initialResize())
     , userSelect(RenderStyle::initialUserSelect())
@@ -122,6 +123,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , userModify(o.userModify)
     , wordBreak(o.wordBreak)
     , overflowWrap(o.overflowWrap)
+    , nbspMode(o.nbspMode)
     , lineBreak(o.lineBreak)
     , resize(o.resize)
     , userSelect(o.userSelect)
@@ -192,6 +194,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && userModify == o.userModify
         && wordBreak == o.wordBreak
         && overflowWrap == o.overflowWrap
+        && nbspMode == o.nbspMode
         && lineBreak == o.lineBreak
         && resize == o.resize
         && userSelect == o.userSelect
