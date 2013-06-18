@@ -41,10 +41,34 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "weborigin/KURL.h"
+#include "wtf/text/StringHash.h"
 
 using namespace WebCore;
 
 namespace WebKit {
+namespace {
+
+void addReferencedFilePaths(HistoryItem* item, HashSet<String>& results)
+{
+    const FormData* formData = item->formData();
+    if (formData) {
+        for (size_t i = 0; i < formData->elements().size(); ++i) {
+            const FormDataElement& element = formData->elements()[i];
+            if (element.m_type == FormDataElement::encodedFile)
+                results.add(element.m_filename);
+        }
+    }
+
+    const Vector<String>& filePaths = FormController::getReferencedFilePaths(item->documentState());
+    for (size_t i = 0; i < filePaths.size(); ++i)
+        results.add(filePaths[i]);
+
+    const HistoryItemVector& children = item->children();
+    for (size_t i = 0; i < children.size(); ++i)
+        addReferencedFilePaths(children[i].get(), results);
+}
+
+} // namespace
 
 void WebHistoryItem::initialize()
 {
@@ -289,19 +313,12 @@ void WebHistoryItem::appendToChildren(const WebHistoryItem& item)
 
 WebVector<WebString> WebHistoryItem::getReferencedFilePaths() const
 {
-    Vector<WebString> filePaths;
-    const FormData* formData = m_private->formData();
-    if (formData) {
-        for (size_t i = 0; i < formData->elements().size(); ++i) {
-            const FormDataElement& element = formData->elements()[i];
-            if (element.m_type == FormDataElement::encodedFile)
-                filePaths.append(element.m_filename);
-        }
-    }
-    const Vector<String>& selectedFilePaths = WebCore::FormController::getReferencedFilePaths(m_private->documentState());
-    for (size_t i = 0; i < selectedFilePaths.size(); ++i)
-        filePaths.append(selectedFilePaths[i]);
-    return filePaths;
+    HashSet<String> filePaths;
+    addReferencedFilePaths(m_private.get(), filePaths);
+
+    Vector<String> results;
+    copyToVector(filePaths, results);
+    return results;
 }
 
 WebHistoryItem::WebHistoryItem(const PassRefPtr<HistoryItem>& item)
