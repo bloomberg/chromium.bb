@@ -445,7 +445,7 @@ void RenderWidgetHostViewMac::EnableCoreAnimation() {
 
   software_layer_.reset([[CALayer alloc] init]);
   if (!software_layer_)
-    LOG(WARNING) << "Failed to create CALayer for software rendering";
+    LOG(ERROR) << "Failed to create CALayer for software rendering";
   [software_layer_ setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
   [software_layer_ setDelegate:cocoa_view_];
   [software_layer_ setAutoresizingMask:kCALayerWidthSizable |
@@ -460,7 +460,7 @@ void RenderWidgetHostViewMac::EnableCoreAnimation() {
 
   if (compositing_iosurface_) {
     if (!CreateCompositedIOSurfaceAndLayer()) {
-      LOG(WARNING) << "Failed to create CALayer for existing IOSurface";
+      LOG(ERROR) << "Failed to create CALayer for existing IOSurface";
     }
   }
 }
@@ -477,20 +477,20 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceAndLayer() {
     compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
         initWithRenderWidgetHostViewMac:this]);
     if (!compositing_iosurface_layer_) {
-      LOG(WARNING) << "Failed to create CALayer for IOSurface";
+      LOG(ERROR) << "Failed to create CALayer for IOSurface";
       return false;
     }
     [cocoa_view_ setLayer:compositing_iosurface_layer_];
   }
   if (![compositing_iosurface_layer_ ensureContext]) {
-    LOG(WARNING) << "Failed to create context for IOSurface";
+    LOG(ERROR) << "Failed to create context for IOSurface";
     return false;
   }
   if (!compositing_iosurface_) {
     compositing_iosurface_.reset(CompositingIOSurfaceMac::Create(
         [compositing_iosurface_layer_ context]));
     if (!compositing_iosurface_) {
-      LOG(WARNING) << "Failed to create CompositingIOSurface";
+      LOG(ERROR) << "Failed to create CompositingIOSurface";
       return false;
     }
   }
@@ -1216,8 +1216,8 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
 
   if (use_core_animation_) {
     if (!CreateCompositedIOSurfaceAndLayer()) {
-      LOG(WARNING) << "Failed to create CompositingIOSurface or its layer";
-      return true;
+      LOG(ERROR) << "Failed to create CompositingIOSurface or its layer";
+      return false;
     }
   } else {
     if (!compositing_iosurface_) {
@@ -1225,19 +1225,17 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
           CompositingIOSurfaceMac::Create(window_number()));
     }
     if (!compositing_iosurface_) {
-      LOG(WARNING) << "Failed to create CompositingIOSurfaceMac";
-      return true;
+      LOG(ERROR) << "Failed to create CompositingIOSurfaceMac";
+      return false;
     }
   }
   should_post_notification = true;
 
-  compositing_iosurface_->SetIOSurface(
-      surface_handle, size, surface_scale_factor, latency_info);
-
-  // TODO(ccameron): If we've failed to allocate the GL texture for the
-  // IOSurface, or basically anything else along the way, we'll just display
-  // a white out, potentially forever. Instead, kick the renderer back to
-  // software mode (like a context lost or a GPU process death).
+  if (!compositing_iosurface_->SetIOSurface(
+          surface_handle, size, surface_scale_factor, latency_info)) {
+    LOG(ERROR) << "Failed SetIOSurface on CompositingIOSurfaceMac";
+    return false;
+  }
 
   GotAcceleratedFrame();
 
@@ -1255,7 +1253,11 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
       DCHECK(compositing_iosurface_layer_);
       [compositing_iosurface_layer_ setNeedsDisplay];
     } else {
-      compositing_iosurface_->DrawIOSurface(this);
+      if (!compositing_iosurface_->DrawIOSurface(this)) {
+        [cocoa_view_ setNeedsDisplay:YES];
+        GotAcceleratedCompositingError();
+        return false;
+      }
     }
   }
 
@@ -1322,6 +1324,13 @@ void RenderWidgetHostViewMac::ThrottledAckPendingSwapBuffers() {
     next_swap_ack_time_ = now + vsync_interval;
     AckPendingSwapBuffers();
   }
+}
+
+void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
+  AckPendingSwapBuffers();
+  DestroyCompositedIOSurfaceAndLayer();
+  // TODO(ccameron): force the renderer to recreate its output surface, and
+  // potentially fall back to software mode.
 }
 
 void RenderWidgetHostViewMac::GetVSyncParameters(
@@ -1488,6 +1497,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
                             params.latency_info)) {
     if (!use_core_animation_)
       ThrottledAckPendingSwapBuffers();
+  } else {
+    GotAcceleratedCompositingError();
   }
 }
 
@@ -1507,6 +1518,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
                             params.latency_info)) {
     if (!use_core_animation_)
       ThrottledAckPendingSwapBuffers();
+  } else {
+    GotAcceleratedCompositingError();
   }
 }
 
@@ -2542,9 +2555,13 @@ void RenderWidgetHostViewMac::FrameSwapped() {
       NSRectFill(dirtyRect);
     }
 
-    renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
-        renderWidgetHostView_.get());
-    return;
+    if (renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
+            renderWidgetHostView_.get())) {
+      return;
+    }
+    // On error, fall back to software and fall through to the non-accelerated
+    // drawing path.
+    renderWidgetHostView_->GotAcceleratedCompositingError();
   }
 
   CGContextRef context = static_cast<CGContextRef>(

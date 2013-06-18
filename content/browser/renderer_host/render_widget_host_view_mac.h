@@ -327,9 +327,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   const std::string& selected_text() const { return selected_text_; }
 
-  // Call setNeedsDisplay on the cocoa_view_. The IOSurface will be drawn during
-  // the next drawRect. Return true if the Ack should be sent, false if it
-  // should be deferred until drawRect.
+  // Update the IOSurface to be drawn and call setNeedsDisplay on
+  // |cocoa_view_|. Returns false if an unexpected error cause creation of the
+  // IOSurface or its texture to fail, or if there was an error on the GL
+  // context.
   bool CompositorSwapBuffers(uint64 surface_handle,
                              const gfx::Size& size,
                              float scale_factor,
@@ -341,6 +342,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Ack pending SwapBuffers requests, but no more frequently than the vsync
   // rate if the renderer is not throttling the swap rate.
   void ThrottledAckPendingSwapBuffers();
+
+  // Called when a GPU error is detected. Deletes all compositing state.
+  void GotAcceleratedCompositingError();
 
   // Returns true and stores first rectangle for character range if the
   // requested |range| is already cached, otherwise returns false.

@@ -61,7 +61,7 @@ class CompositingIOSurfaceMac {
   ~CompositingIOSurfaceMac();
 
   // Set IOSurface that will be drawn on the next NSView drawRect.
-  void SetIOSurface(uint64 io_surface_handle,
+  bool SetIOSurface(uint64 io_surface_handle,
                     const gfx::Size& size,
                     float scale_factor,
                     const ui::LatencyInfo& latency_info);
@@ -74,11 +74,11 @@ class CompositingIOSurfaceMac {
   // remaining right and bottom edges will be white. |scaleFactor| is 1
   // in normal views, 2 in HiDPI views.  |frame_subscriber| listens to
   // this draw event and provides output buffer for copying this frame into.
-  void DrawIOSurface(const gfx::Size& window_size,
+  bool DrawIOSurface(const gfx::Size& window_size,
                      float window_scale_factor,
                      RenderWidgetHostViewFrameSubscriber* frame_subscriber,
                      bool using_core_animation);
-  void DrawIOSurface(RenderWidgetHostViewMac* render_widget_host_view);
+  bool DrawIOSurface(RenderWidgetHostViewMac* render_widget_host_view);
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
   // into |out|. The copied region is specified with |src_pixel_subrect| and
@@ -307,6 +307,10 @@ class CompositingIOSurfaceMac {
   void FailAllCopies();
   void DestroyAllCopyContextsWithinContext();
 
+  // Check for GL errors and store the result in error_. Only return new
+  // errors
+  GLenum GetAndSaveGLError();
+
   gfx::Rect IntersectWithIOSurface(const gfx::Rect& rect) const;
 
   // Cached pointer to IOSurfaceSupport Singleton.
@@ -351,10 +355,6 @@ class CompositingIOSurfaceMac {
   // Lock for sharing data between UI thread and display-link thread.
   base::Lock lock_;
 
-  // Counts for throttling swaps.
-  int64 vsync_count_;
-  int64 swap_count_;
-
   // Vsync timing data.
   base::TimeTicks vsync_timebase_;
   uint32 vsync_interval_numerator_;
@@ -363,6 +363,9 @@ class CompositingIOSurfaceMac {
   bool initialized_is_intel_;
   bool is_intel_;
   GLint screen_;
+
+  // Error saved by GetAndSaveGLError
+  GLint gl_error_;
 
   ui::LatencyInfo latency_info_;
 };
