@@ -1,0 +1,127 @@
+// Copyright (C) 2013 Google Inc. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//    * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//    * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#ifndef StrokeData_h
+#define StrokeData_h
+
+#include "core/platform/graphics/DashArray.h"
+#include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/GraphicsTypes.h"
+#include "core/platform/graphics/Pattern.h"
+
+#include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/effects/SkDashPathEffect.h"
+
+#include "wtf/PassOwnPtr.h"
+
+namespace WebCore {
+
+// Encapsulates stroke painting information.
+// It is pulled out of GraphicsContextState to enable other methods to use it.
+class StrokeData {
+public:
+    StrokeData()
+        : m_style(SolidStroke)
+        , m_thickness(0)
+        , m_color(Color::black)
+        , m_lineCap(SkPaint::kDefault_Cap)
+        , m_lineJoin(SkPaint::kDefault_Join)
+        , m_miterLimit(4)
+        , m_dash(0)
+    {
+    }
+
+    StrokeData(const StrokeData& other)
+        : m_style(other.m_style)
+        , m_thickness(other.m_thickness)
+        , m_color(other.m_color)
+        , m_gradient(other.m_gradient)
+        , m_pattern(other.m_pattern)
+        , m_lineCap(other.m_lineCap)
+        , m_lineJoin(other.m_lineJoin)
+        , m_miterLimit(other.m_miterLimit)
+        , m_dash(other.m_dash)
+    {
+        SkSafeRef(m_dash);
+    }
+
+    ~StrokeData()
+    {
+        SkSafeUnref(m_dash);
+    }
+
+    StrokeStyle style() const { return m_style; }
+    void setStyle(const StrokeStyle style) { m_style = style; }
+
+    float thickness() const { return m_thickness; }
+    void setThickness(const float thickness) { m_thickness = thickness; }
+
+    Color color() const { return m_color; }
+    void setColor(const Color& color) { m_color = color; }
+
+    Gradient* gradient() const { return m_gradient.get(); }
+    void setGradient(const PassRefPtr<Gradient> gradient) { m_gradient = gradient; }
+    void clearGradient() { m_gradient.clear(); }
+
+    Pattern* pattern() const { return m_pattern.get(); }
+    void setPattern(const PassRefPtr<Pattern> pattern) { m_pattern = pattern; }
+    void clearPattern() { m_pattern.clear(); }
+
+    LineCap lineCap() const { return (LineCap)m_lineCap; }
+    void setLineCap(const LineCap cap) { m_lineCap = (SkPaint::Cap)cap; }
+
+    LineJoin lineJoin() const { return (LineJoin)m_lineJoin; }
+    void setLineJoin(const LineJoin join) { m_lineJoin = (SkPaint::Join)join; }
+
+    float miterLimit() const { return m_miterLimit; }
+    void setMiterLimit(const float miterLimit) { m_miterLimit = miterLimit; }
+
+    void setLineDash(const DashArray&, const float);
+
+    // Sets everything on the paint except the pattern, gradient and color.
+    // GraphicsContext::setupShader does that. Returns a float representing the
+    // effective width of the pen. If a non-zero length is provided, the
+    // number of dashes/dots on a dashed/dotted line will be adjusted to
+    // start and end that length with a dash/dot.
+    float setupPaint(SkPaint*, int length = 0) const;
+
+private:
+    StrokeStyle m_style;
+    float m_thickness;
+    Color m_color;
+    RefPtr<Gradient> m_gradient;
+    RefPtr<Pattern> m_pattern;
+    SkPaint::Cap m_lineCap;
+    SkPaint::Join m_lineJoin;
+    float m_miterLimit;
+    SkDashPathEffect* m_dash;
+};
+
+} // namespace WebCore
+
+#endif // StrokeData_h

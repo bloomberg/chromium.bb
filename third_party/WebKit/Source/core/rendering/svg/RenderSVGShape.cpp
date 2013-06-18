@@ -31,7 +31,6 @@
 
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/PointerEventsHitRules.h"
@@ -96,16 +95,17 @@ void RenderSVGShape::strokeShape(GraphicsContext* context) const
 bool RenderSVGShape::shapeDependentStrokeContains(const FloatPoint& point)
 {
     ASSERT(m_path);
-    BoundingRectStrokeStyleApplier applier(this, style());
+    StrokeData strokeData;
+    SVGRenderSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
 
     if (hasNonScalingStroke()) {
         AffineTransform nonScalingTransform = nonScalingStrokeTransform();
         Path* usePath = nonScalingStrokePath(m_path.get(), nonScalingTransform);
 
-        return usePath->strokeContains(&applier, nonScalingTransform.mapPoint(point));
+        return usePath->strokeContains(nonScalingTransform.mapPoint(point), strokeData);
     }
 
-    return m_path->strokeContains(&applier, point);
+    return m_path->strokeContains(point, strokeData);
 }
 
 bool RenderSVGShape::shapeDependentFillContains(const FloatPoint& point, const WindRule fillRule) const
@@ -380,19 +380,20 @@ FloatRect RenderSVGShape::calculateStrokeBoundingBox() const
     ASSERT(m_path);
     FloatRect strokeBoundingBox = m_fillBoundingBox;
 
-    const SVGRenderStyle* svgStyle = style()->svgStyle();
-    if (svgStyle->hasStroke()) {
-        BoundingRectStrokeStyleApplier strokeStyle(this, style());
+    if (style()->svgStyle()->hasStroke()) {
+        StrokeData strokeData;
+        SVGRenderSupport::applyStrokeStyleToStrokeData(&strokeData, style(), this);
         if (hasNonScalingStroke()) {
             AffineTransform nonScalingTransform = nonScalingStrokeTransform();
             if (nonScalingTransform.isInvertible()) {
                 Path* usePath = nonScalingStrokePath(m_path.get(), nonScalingTransform);
-                FloatRect strokeBoundingRect = usePath->strokeBoundingRect(&strokeStyle);
+                FloatRect strokeBoundingRect = usePath->strokeBoundingRect(strokeData);
                 strokeBoundingRect = nonScalingTransform.inverse().mapRect(strokeBoundingRect);
                 strokeBoundingBox.unite(strokeBoundingRect);
             }
-        } else
-            strokeBoundingBox.unite(path().strokeBoundingRect(&strokeStyle));
+        } else {
+            strokeBoundingBox.unite(path().strokeBoundingRect(strokeData));
+        }
     }
 
     if (!m_markerPositions.isEmpty())

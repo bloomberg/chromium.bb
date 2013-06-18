@@ -184,12 +184,4 @@ bool SkPathContainsPoint(SkPath* originalPath, const FloatPoint& point, SkPath::
     return contains;
 }
 
-GraphicsContext* scratchContext()
-{
-    static ImageBuffer* scratch = ImageBuffer::create(IntSize(1, 1)).leakPtr();
-    // We don't bother checking for failure creating the ImageBuffer, since our
-    // ImageBuffer initializer won't fail.
-    return scratch->context();
-}
-
 }  // namespace WebCore

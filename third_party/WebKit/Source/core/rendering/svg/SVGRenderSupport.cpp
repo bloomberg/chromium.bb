@@ -432,20 +432,47 @@ void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const
     context->setStrokeThickness(svgStyle->strokeWidth().value(lengthContext));
     context->setLineCap(svgStyle->capStyle());
     context->setLineJoin(svgStyle->joinStyle());
-    if (svgStyle->joinStyle() == MiterJoin)
-        context->setMiterLimit(svgStyle->strokeMiterLimit());
+    context->setMiterLimit(svgStyle->strokeMiterLimit());
 
     const Vector<SVGLength>& dashes = svgStyle->strokeDashArray();
     if (dashes.isEmpty())
-        context->setStrokeStyle(SolidStroke);
-    else {
-        DashArray dashArray;
-        const Vector<SVGLength>::const_iterator end = dashes.end();
-        for (Vector<SVGLength>::const_iterator it = dashes.begin(); it != end; ++it)
-            dashArray.append((*it).value(lengthContext));
+        return;
 
-        context->setLineDash(dashArray, svgStyle->strokeDashOffset().value(lengthContext));
-    }
+    DashArray dashArray;
+    const Vector<SVGLength>::const_iterator end = dashes.end();
+    for (Vector<SVGLength>::const_iterator it = dashes.begin(); it != end; ++it)
+        dashArray.append((*it).value(lengthContext));
+
+    context->setLineDash(dashArray, svgStyle->strokeDashOffset().value(lengthContext));
+}
+
+void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, const RenderStyle* style, const RenderObject* object)
+{
+    ASSERT(strokeData);
+    ASSERT(style);
+    ASSERT(object);
+    ASSERT(object->node());
+    ASSERT(object->node()->isSVGElement());
+
+    const SVGRenderStyle* svgStyle = style->svgStyle();
+    ASSERT(svgStyle);
+
+    SVGLengthContext lengthContext(toSVGElement(object->node()));
+    strokeData->setThickness(svgStyle->strokeWidth().value(lengthContext));
+    strokeData->setLineCap(svgStyle->capStyle());
+    strokeData->setLineJoin(svgStyle->joinStyle());
+    strokeData->setMiterLimit(svgStyle->strokeMiterLimit());
+
+    const Vector<SVGLength>& dashes = svgStyle->strokeDashArray();
+    if (dashes.isEmpty())
+        return;
+
+    DashArray dashArray;
+    const Vector<SVGLength>::const_iterator end = dashes.end();
+    for (Vector<SVGLength>::const_iterator it = dashes.begin(); it != end; ++it)
+        dashArray.append((*it).value(lengthContext));
+
+    strokeData->setLineDash(dashArray, svgStyle->strokeDashOffset().value(lengthContext));
 }
 
 void SVGRenderSupport::childAdded(RenderObject* parent, RenderObject* child)
