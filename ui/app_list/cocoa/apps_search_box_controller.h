@@ -12,14 +12,19 @@
 #include "ui/app_list/app_list_export.h"
 
 namespace app_list {
+class AppListMenu;
+class AppListViewDelegate;
 class SearchBoxModel;
 class SearchBoxModelObserverBridge;
 }
 
+@class AppListMenuController;
+@class HoverImageMenuButton;
 @class SearchTextField;
 
 @protocol AppsSearchBoxDelegate<NSTextFieldDelegate>
 
+- (app_list::AppListViewDelegate*)appListDelegate;
 - (app_list::SearchBoxModel*)searchBoxModel;
 - (void)modelTextDidChange;
 
@@ -31,7 +36,10 @@ APP_LIST_EXPORT
  @private
   scoped_nsobject<SearchTextField> searchTextField_;
   scoped_nsobject<NSImageView> searchImageView_;
+  scoped_nsobject<HoverImageMenuButton> menuButton_;
+  scoped_nsobject<AppListMenuController> menuController_;
   scoped_ptr<app_list::SearchBoxModelObserverBridge> bridge_;
+  scoped_ptr<app_list::AppListMenu> appListMenu_;
 
   id<AppsSearchBoxDelegate> delegate_;  // Weak. Owns us.
 }
@@ -46,6 +54,8 @@ APP_LIST_EXPORT
 @interface AppsSearchBoxController (TestingAPI)
 
 - (NSTextField*)searchTextField;
+- (NSPopUpButton*)menuControl;
+- (app_list::AppListMenu*)appListMenu;
 
 @end
 

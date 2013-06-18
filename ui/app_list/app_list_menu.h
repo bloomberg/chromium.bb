@@ -26,7 +26,6 @@ class AppListMenu : public ui::SimpleMenuModel::Delegate {
   explicit AppListMenu(AppListViewDelegate* delegate);
   virtual ~AppListMenu();
 
- protected:
   ui::SimpleMenuModel* menu_model() { return &menu_model_; }
 
  private:

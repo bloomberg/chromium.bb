@@ -621,8 +621,8 @@
           'use_system_libjpeg%': '<(android_webview_build)',
         }],
 
-        # Enable Settings App only on Windows.
-        ['enable_app_list==1 and OS=="win"', {
+        # Do not enable the Settings App on ChromeOS.
+        ['enable_app_list==1 and chromeos==0', {
           'enable_settings_app%': 1,
         }, {
           'enable_settings_app%': 0,
