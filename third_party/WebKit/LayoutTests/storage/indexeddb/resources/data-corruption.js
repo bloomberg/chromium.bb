@@ -10,6 +10,7 @@ function prepareDatabase()
 {
     db = event.target.result;
     debug("setVersionSuccess():");
+    shouldBeEqualToString("event.dataLoss", "none");
     self.trans = evalAndLog("trans = event.target.transaction");
     shouldBeNonNull("trans");
     trans.onabort = unexpectedAbortCallback;

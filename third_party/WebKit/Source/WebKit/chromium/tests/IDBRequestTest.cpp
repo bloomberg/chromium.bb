@@ -180,7 +180,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
         EXPECT_EQ(request->readyState(), "pending");
 
         scriptExecutionContext()->stopActiveDOMObjects();
-        request->onUpgradeNeeded(oldVersion, interface, metadata);
+        request->onUpgradeNeeded(oldVersion, interface, metadata, WebKit::WebIDBCallbacks::DataLossNone);
     }
 
     {

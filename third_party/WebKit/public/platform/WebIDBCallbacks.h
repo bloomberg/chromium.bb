@@ -45,6 +45,11 @@ class WebIDBCallbacks {
 public:
     virtual ~WebIDBCallbacks() { }
 
+    enum DataLoss {
+        DataLossNone = 0,
+        DataLossTotal = 1
+    };
+
     // For classes that follow the PImpl pattern, pass a const reference.
     // For the rest, pass ownership to the callee via a pointer.
     virtual void onError(const WebIDBDatabaseError&) { WEBKIT_ASSERT_NOT_REACHED(); }
@@ -61,7 +66,11 @@ public:
     // FIXME: Remove the following overload once callers are updated:
     virtual void onBlocked() { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onBlocked(long long oldVersion) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata)
+    {
+        onUpgradeNeeded(oldVersion, database, metadata, DataLossNone);
+    }
+    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, DataLoss dataLoss) { WEBKIT_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace WebKit

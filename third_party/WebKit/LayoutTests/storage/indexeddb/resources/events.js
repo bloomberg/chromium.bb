@@ -13,6 +13,7 @@ function test()
     if ('document' in self) {
         shouldBeTrue("'oldVersion' in document.createEvent('IDBVersionChangeEvent')");
         shouldBeTrue("'newVersion' in document.createEvent('IDBVersionChangeEvent')");
+        shouldBeTrue("'dataLoss' in document.createEvent('IDBVersionChangeEvent')");
     }
 
     finishJSTest();

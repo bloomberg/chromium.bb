@@ -31,21 +31,31 @@
 
 namespace WebCore {
 
-PassRefPtr<IDBVersionChangeEvent> IDBVersionChangeEvent::create(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType)
+PassRefPtr<IDBVersionChangeEvent> IDBVersionChangeEvent::create(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, WebKit::WebIDBCallbacks::DataLoss dataLoss)
 {
-    return adoptRef(new IDBVersionChangeEvent(oldVersion, newVersion, eventType));
+    return adoptRef(new IDBVersionChangeEvent(oldVersion, newVersion, eventType, dataLoss));
 }
 
-IDBVersionChangeEvent::IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType)
+IDBVersionChangeEvent::IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, WebKit::WebIDBCallbacks::DataLoss dataLoss)
     : Event(eventType, false /*canBubble*/, false /*cancelable*/)
     , m_oldVersion(oldVersion)
     , m_newVersion(newVersion)
+    , m_dataLoss(dataLoss)
 {
     ScriptWrappable::init(this);
 }
 
 IDBVersionChangeEvent::~IDBVersionChangeEvent()
 {
+}
+
+const AtomicString& IDBVersionChangeEvent::dataLoss()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, total, ("total", AtomicString::ConstructFromLiteral));
+    if (m_dataLoss == WebKit::WebIDBCallbacks::DataLossTotal)
+        return total;
+    DEFINE_STATIC_LOCAL(AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
+    return none;
 }
 
 const AtomicString& IDBVersionChangeEvent::interfaceName() const
