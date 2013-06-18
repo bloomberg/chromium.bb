@@ -20,6 +20,13 @@
 
 namespace content {
 
+BrowserPluginCompositingHelper::SwapBuffersInfo::SwapBuffersInfo()
+    : route_id(0),
+      host_id(0),
+      software_frame_id(0),
+      shared_memory(NULL) {
+}
+
 BrowserPluginCompositingHelper::BrowserPluginCompositingHelper(
     WebKit::WebPluginContainer* container,
     BrowserPluginManager* manager,
@@ -84,17 +91,15 @@ void BrowserPluginCompositingHelper::CheckSizeAndAdjustLayerBounds(
 }
 
 void BrowserPluginCompositingHelper::MailboxReleased(
-    const MailboxSwapInfo& mailbox,
+    SwapBuffersInfo mailbox,
     unsigned sync_point,
     bool lost_resource) {
-  if (lost_resource) {
-    // Recurse with an empty mailbox if the one being released was lost.
-    MailboxSwapInfo empty_info;
-    empty_info.type = mailbox.type;
-    empty_info.route_id = mailbox.route_id;
-    empty_info.host_id = mailbox.host_id;
-    MailboxReleased(empty_info, 0, false);
-    return;
+  if (mailbox.type == SOFTWARE_COMPOSITOR_FRAME) {
+    delete mailbox.shared_memory;
+    mailbox.shared_memory = NULL;
+  } else if (lost_resource) {
+    // Reset mailbox's name if the resource was lost.
+    mailbox.name.SetZero();
   }
 
   // This means the GPU process crashed or guest crashed.
@@ -124,12 +129,25 @@ void BrowserPluginCompositingHelper::MailboxReleased(
               sync_point));
       break;
     }
-    case COMPOSITOR_FRAME: {
+    case GL_COMPOSITOR_FRAME: {
       cc::CompositorFrameAck ack;
       ack.gl_frame_data.reset(new cc::GLFrameData());
       ack.gl_frame_data->mailbox = mailbox.name;
       ack.gl_frame_data->size = mailbox.size;
       ack.gl_frame_data->sync_point = sync_point;
+
+      browser_plugin_manager_->Send(
+         new BrowserPluginHostMsg_CompositorFrameACK(
+             host_routing_id_,
+             instance_id_,
+             mailbox.route_id,
+             mailbox.host_id,
+             ack));
+      break;
+    }
+    case SOFTWARE_COMPOSITOR_FRAME: {
+      cc::CompositorFrameAck ack;
+      ack.last_software_frame_id = mailbox.software_frame_id;
 
       browser_plugin_manager_->Send(
          new BrowserPluginHostMsg_CompositorFrameACK(
@@ -155,7 +173,7 @@ void BrowserPluginCompositingHelper::OnContainerDestroy() {
 }
 
 void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
-    const MailboxSwapInfo& mailbox,
+    const SwapBuffersInfo& mailbox,
     unsigned sync_point,
     float device_scale_factor) {
   DCHECK(!delegated_layer_.get());
@@ -198,26 +216,33 @@ void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
                                 device_scale_factor,
                                 texture_layer_.get());
 
-  bool current_mailbox_valid = !mailbox.name.IsZero();
-  if (!last_mailbox_valid_) {
-    MailboxSwapInfo empty_info;
-    empty_info.type = mailbox.type;
-    empty_info.route_id = mailbox.route_id;
-    empty_info.host_id = mailbox.host_id;
+  bool is_software_frame = mailbox.type == SOFTWARE_COMPOSITOR_FRAME;
+  bool current_mailbox_valid = is_software_frame ?
+      mailbox.shared_memory != NULL : !mailbox.name.IsZero();
+  if (!is_software_frame && !last_mailbox_valid_) {
+    SwapBuffersInfo empty_info = mailbox;
+    empty_info.name.SetZero();
     MailboxReleased(empty_info, 0, false);
     if (!current_mailbox_valid)
       return;
   }
 
-  cc::TextureMailbox::ReleaseCallback callback;
+  cc::TextureMailbox texture_mailbox;
   if (current_mailbox_valid) {
-    callback = base::Bind(&BrowserPluginCompositingHelper::MailboxReleased,
-                          scoped_refptr<BrowserPluginCompositingHelper>(this),
-                          mailbox);
+    cc::TextureMailbox::ReleaseCallback callback =
+        base::Bind(&BrowserPluginCompositingHelper::MailboxReleased,
+                   scoped_refptr<BrowserPluginCompositingHelper>(this),
+                   mailbox);
+    if (is_software_frame) {
+      texture_mailbox = cc::TextureMailbox(mailbox.shared_memory,
+                                           mailbox.size, callback);
+    } else {
+      texture_mailbox = cc::TextureMailbox(mailbox.name, callback, sync_point);
+    }
   }
-  texture_layer_->SetTextureMailbox(cc::TextureMailbox(mailbox.name,
-                                                       callback,
-                                                       sync_point));
+
+  texture_layer_->SetFlipped(!is_software_frame);
+  texture_layer_->SetTextureMailbox(texture_mailbox);
   texture_layer_->SetNeedsDisplay();
   last_mailbox_valid_ = current_mailbox_valid;
 }
@@ -228,7 +253,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
     int gpu_route_id,
     int gpu_host_id,
     float device_scale_factor) {
-  MailboxSwapInfo swap_info;
+  SwapBuffersInfo swap_info;
   swap_info.name.SetName(reinterpret_cast<const int8*>(mailbox_name.data()));
   swap_info.type = TEXTURE_IMAGE_TRANSPORT;
   swap_info.size = size;
@@ -242,14 +267,42 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
     int route_id,
     int host_id) {
   if (frame->gl_frame_data) {
-    MailboxSwapInfo swap_info;
+    SwapBuffersInfo swap_info;
     swap_info.name = frame->gl_frame_data->mailbox;
-    swap_info.type = COMPOSITOR_FRAME;
+    swap_info.type = GL_COMPOSITOR_FRAME;
     swap_info.size = frame->gl_frame_data->size;
     swap_info.route_id = route_id;
     swap_info.host_id = host_id;
     OnBuffersSwappedPrivate(swap_info,
                             frame->gl_frame_data->sync_point,
+                            frame->metadata.device_scale_factor);
+    return;
+  }
+
+  if (frame->software_frame_data) {
+    cc::SoftwareFrameData* frame_data = frame->software_frame_data.get();
+
+    SwapBuffersInfo swap_info;
+    swap_info.type = SOFTWARE_COMPOSITOR_FRAME;
+    swap_info.size = frame_data->size;
+    swap_info.route_id = route_id;
+    swap_info.host_id = host_id;
+    swap_info.software_frame_id = frame_data->id;
+
+    scoped_ptr<base::SharedMemory> shared_memory(
+        new base::SharedMemory(frame_data->handle, true));
+    const size_t size_in_bytes = 4 * frame_data->size.GetArea();
+    if (!shared_memory->Map(size_in_bytes)) {
+      LOG(ERROR) << "Failed to map shared memory of size "
+                 << size_in_bytes;
+      // Send ACK right away.
+      ack_pending_ = true;
+      MailboxReleased(swap_info, 0, false);
+      return;
+    }
+
+    swap_info.shared_memory = shared_memory.release();
+    OnBuffersSwappedPrivate(swap_info, 0,
                             frame->metadata.device_scale_factor);
     return;
   }

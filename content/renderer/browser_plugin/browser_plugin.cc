@@ -1133,7 +1133,7 @@ void BrowserPlugin::RespondPermission(
   else
     browser_plugin_manager()->Send(
         new BrowserPluginHostMsg_RespondPermission(
-            render_view_->GetRoutingID(), guest_instance_id_, permission_type,
+            render_view_routing_id_, guest_instance_id_, permission_type,
             request_id, allow));
 }
 

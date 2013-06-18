@@ -175,6 +175,23 @@ void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
 
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
+  if (frame->software_frame_data) {
+    cc::SoftwareFrameData* frame_data = frame->software_frame_data.get();
+#ifdef OS_WIN
+    base::SharedMemory shared_memory(frame_data->handle, true,
+                                     host_->GetProcess()->GetHandle());
+#else
+    base::SharedMemory shared_memory(frame_data->handle, true);
+#endif
+
+    RenderWidgetHostView* embedder_view =
+        guest_->GetEmbedderRenderWidgetHostView();
+    base::ProcessHandle embedder_pid =
+        embedder_view->GetRenderWidgetHost()->GetProcess()->GetHandle();
+
+    shared_memory.GiveToProcess(embedder_pid, &frame_data->handle);
+  }
+
   guest_->clear_damage_buffer();
   guest_->SendMessageToEmbedder(
       new BrowserPluginMsg_CompositorFrameSwapped(
