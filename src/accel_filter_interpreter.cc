@@ -21,8 +21,13 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
     : FilterInterpreter(NULL, next, tracer, false),
       pointer_sensitivity_(prop_reg, "Pointer Sensitivity", 3),
       scroll_sensitivity_(prop_reg, "Scroll Sensitivity", 3),
-      custom_point_str_(prop_reg, "Pointer Accel Curve", ""),
-      custom_scroll_str_(prop_reg, "Scroll Accel Curve", ""),
+      // Hack: cast custom_point_/custom_scroll_ to float arrays.
+      custom_point_prop_(prop_reg, "Pointer Accel Curve",
+                         reinterpret_cast<double*>(&custom_point_),
+                         sizeof(custom_point_) / sizeof(double)),
+      custom_scroll_prop_(prop_reg, "Scroll Accel Curve",
+                          reinterpret_cast<double*>(&custom_scroll_),
+                          sizeof(custom_scroll_) / sizeof(double)),
       point_x_out_scale_(prop_reg, "Point X Out Scale", 1.0),
       point_y_out_scale_(prop_reg, "Point Y Out Scale", 1.0),
       scroll_x_out_scale_(prop_reg, "Scroll X Out Scale", 3.0),
@@ -105,44 +110,6 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
   }
 }
 
-void AccelFilterInterpreter::ParseCurveString(const char* input,
-                                              char* cache,
-                                              CurveSegment* out_segs) {
-  if (!strncmp(input, cache, strlen(input)))
-    return;  // cache hit
-  memset(cache, 0, kCacheStrLen);
-  strncpy(cache, input, kCacheStrLen - 1);
-  // input must be a space-separated list of x, y coord pairs
-  float prev_x = 0.0;
-  float prev_y = 0.0;
-  const char* ptr = input;
-  size_t i = 0;
-  while (i < kMaxCustomCurveSegs) {
-    float cur_x = static_cast<float>(atof(ptr));
-    ptr = strchr(ptr, ' ');
-    if (!ptr)
-      break;
-    ++ptr;
-    float cur_y = static_cast<float>(atof(ptr));
-    float dx = cur_x - prev_x;
-    float dy = cur_y - prev_y;
-    float slope = dy / dx;
-    float icept = cur_y - cur_x * slope;
-    out_segs[i] = CurveSegment(cur_x, 0.0, slope, icept);
-    ++i;
-    ptr = strchr(ptr, ' ');
-    if (!ptr)
-      break;
-    ++ptr;
-    prev_x = cur_x;
-    prev_y = cur_y;
-  }
-  if (i == 0)
-    out_segs[0] = CurveSegment(INFINITY, 0.0, 1.0, 0.0);  // Sane default
-  else
-    out_segs[i - 1].x_ = INFINITY;  // Extend final segment
-}
-
 void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
   Gesture copy = gs;
   CurveSegment* segs = NULL;
@@ -181,9 +148,6 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
           segs = point_curves_[pointer_sensitivity_.val_ - 1];
       } else {
         segs = custom_point_;
-        ParseCurveString(custom_point_str_.val_,
-                         last_parsed_custom_point_str_,
-                         custom_point_);
         max_segs = kMaxCustomCurveSegs;
       }
       x_scale = point_x_out_scale_.val_;
@@ -205,9 +169,6 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
         segs = scroll_curves_[scroll_sensitivity_.val_ - 1];
       } else {
         segs = custom_scroll_;
-        ParseCurveString(custom_scroll_str_.val_,
-                         last_parsed_custom_scroll_str_,
-                         custom_scroll_);
         max_segs = kMaxCustomCurveSegs;
       }
       x_scale = scroll_x_out_scale_.val_;

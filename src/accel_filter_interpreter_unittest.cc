@@ -251,8 +251,20 @@ TEST(AccelFilterInterpreterTest, CustomAccelTest) {
 
   accel_interpreter.pointer_sensitivity_.val_ = 0;  // custom sensitivity
   accel_interpreter.scroll_sensitivity_.val_ = 0;  // custom sensitivity
-  accel_interpreter.custom_point_str_.val_ = "2.0 1.0 3 3 4.1 3";
-  accel_interpreter.custom_scroll_str_.val_ = "0.5 1 1.0 2.0 2 2.0 3.0 4";
+  accel_interpreter.custom_point_[0] =
+      AccelFilterInterpreter::CurveSegment(2.0, 0.0, 0.5, 0.0);
+  accel_interpreter.custom_point_[1] =
+      AccelFilterInterpreter::CurveSegment(3.0, 0.0, 2.0, -3.0);
+  accel_interpreter.custom_point_[2] =
+      AccelFilterInterpreter::CurveSegment(INFINITY, 0.0, 0.0, 3.0);
+  accel_interpreter.custom_scroll_[0] =
+      AccelFilterInterpreter::CurveSegment(0.5, 0.0, 2.0, 0.0);
+  accel_interpreter.custom_scroll_[1] =
+      AccelFilterInterpreter::CurveSegment(1.0, 0.0, 2.0, 0.0);
+  accel_interpreter.custom_scroll_[2] =
+      AccelFilterInterpreter::CurveSegment(2.0, 0.0, 0.0, 2.0);
+  accel_interpreter.custom_scroll_[3] =
+      AccelFilterInterpreter::CurveSegment(INFINITY, 0.0, 2.0, -2.0);
 
   float move_in[]  = { 1.0, 2.5, 3.5, 5.0 };
   float move_out[] = { 0.5, 2.0, 3.0, 3.0 };

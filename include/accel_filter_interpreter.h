@@ -40,13 +40,13 @@ class AccelFilterInterpreter : public FilterInterpreter {
         : x_(x), sqr_(s), mul_(m), int_(b) {}
     CurveSegment(const CurveSegment& that)
         : x_(that.x_), sqr_(that.sqr_), mul_(that.mul_), int_(that.int_) {}
-    float x_;  // Max X value of segment. User's point will be less than this.
-    float sqr_;  // x^2 multiplier
-    float mul_;  // Slope of line (x multiplier)
-    float int_;  // Intercept of line
+    // Be careful adding new members: We currently cast arrays of CurveSegment
+    // to arrays of float (to expose to the properties system)
+    double x_;  // Max X value of segment. User's point will be less than this.
+    double sqr_;  // x^2 multiplier
+    double mul_;  // Slope of line (x multiplier)
+    double int_;  // Intercept of line
   };
-
-  void ParseCurveString(const char* input, char* cache, CurveSegment* out_segs);
 
   static const size_t kMaxCurveSegs = 3;
   static const size_t kMaxCustomCurveSegs = 20;
@@ -64,13 +64,8 @@ class AccelFilterInterpreter : public FilterInterpreter {
   IntProperty pointer_sensitivity_;  // [1..5] or 0 for custom
   IntProperty scroll_sensitivity_;  // [1..5] or 0 for custom
 
-  static const size_t kMaxCurveSegStrLen = 30;
-  static const size_t kCacheStrLen = kMaxCustomCurveSegs * kMaxCurveSegStrLen;
-
-  StringProperty custom_point_str_;
-  char last_parsed_custom_point_str_[kCacheStrLen];
-  StringProperty custom_scroll_str_;
-  char last_parsed_custom_scroll_str_[kCacheStrLen];
+  DoubleArrayProperty custom_point_prop_;
+  DoubleArrayProperty custom_scroll_prop_;
 
   DoubleProperty point_x_out_scale_;
   DoubleProperty point_y_out_scale_;
