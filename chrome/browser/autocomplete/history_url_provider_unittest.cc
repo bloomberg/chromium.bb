@@ -23,13 +23,13 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
 using base::TimeDelta;
 
-using content::BrowserThread;
+using content::TestBrowserThreadBundle;
 
 struct TestURLInfo {
   const char* url;
@@ -133,9 +133,7 @@ class HistoryURLProviderTest : public testing::Test,
                                public AutocompleteProviderListener {
  public:
   HistoryURLProviderTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        sort_matches_(false) {
+      : sort_matches_(false) {
     HistoryQuickProvider::set_disabled(true);
   }
 
@@ -187,9 +185,7 @@ class HistoryURLProviderTest : public testing::Test,
 
   void RunAdjustOffsetTest(const string16 text, size_t expected_offset);
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   ACMatches matches_;
   scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;
