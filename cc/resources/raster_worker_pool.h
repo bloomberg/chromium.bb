@@ -38,8 +38,9 @@ class CC_EXPORT RasterWorkerPoolTask
   virtual bool RunOnThread(SkDevice* device, unsigned thread_index) = 0;
   virtual void DispatchCompletionCallback() = 0;
 
-  void DidRun();
+  void DidRun(bool was_canceled);
   bool HasFinishedRunning() const;
+  bool WasCanceled() const;
   void DidComplete();
   bool HasCompleted() const;
 
@@ -58,6 +59,7 @@ class CC_EXPORT RasterWorkerPoolTask
  private:
   bool did_run_;
   bool did_complete_;
+  bool was_canceled_;
   const Resource* resource_;
   WorkerPoolTask::TaskVector dependencies_;
 };

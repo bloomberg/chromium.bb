@@ -180,7 +180,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     return RunRasterOnThread(device, thread_index);
   }
   virtual void DispatchCompletionCallback() OVERRIDE {
-    reply_.Run(analysis_, !HasFinishedRunning());
+    reply_.Run(analysis_, !HasFinishedRunning() || WasCanceled());
   }
 
  protected:
@@ -243,6 +243,7 @@ RasterWorkerPoolTask::RasterWorkerPoolTask(
     WorkerPoolTask::TaskVector* dependencies)
     : did_run_(false),
       did_complete_(false),
+      was_canceled_(false),
       resource_(resource) {
   dependencies_.swap(*dependencies);
 }
@@ -250,13 +251,18 @@ RasterWorkerPoolTask::RasterWorkerPoolTask(
 RasterWorkerPoolTask::~RasterWorkerPoolTask() {
 }
 
-void RasterWorkerPoolTask::DidRun() {
+void RasterWorkerPoolTask::DidRun(bool was_canceled) {
   DCHECK(!did_run_);
   did_run_ = true;
+  was_canceled_ = was_canceled;
 }
 
 bool RasterWorkerPoolTask::HasFinishedRunning() const {
   return did_run_;
+}
+
+bool RasterWorkerPoolTask::WasCanceled() const {
+  return was_canceled_;
 }
 
 void RasterWorkerPoolTask::DidComplete() {

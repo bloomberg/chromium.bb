@@ -138,9 +138,7 @@ void ImageRasterWorkerPool::OnRasterTaskCompleted(
   // Bind image to resource.
   resource_provider()->BindImage(task->resource()->id());
 
-  if (!was_canceled)
-    task->DidRun();
-
+  task->DidRun(was_canceled);
   task->DidComplete();
   task->DispatchCompletionCallback();
 
