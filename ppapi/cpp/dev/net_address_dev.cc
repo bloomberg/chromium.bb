@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/dev/net_address_dev.h"
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -65,34 +66,36 @@ PP_NetAddress_Family_Dev NetAddress_Dev::GetFamily() const {
   return PP_NETADDRESS_FAMILY_UNSPECIFIED;
 }
 
-Var NetAddress_Dev::DescribeAsString(PP_Bool include_port) const {
+Var NetAddress_Dev::DescribeAsString(bool include_port) const {
   if (has_interface<PPB_NetAddress_Dev_0_1>()) {
     return Var(PASS_REF,
                get_interface<PPB_NetAddress_Dev_0_1>()->DescribeAsString(
-                   pp_resource(), include_port));
+                   pp_resource(), PP_FromBool(include_port)));
   }
 
   return Var();
 }
 
-PP_Bool NetAddress_Dev::DescribeAsIPv4Address(
+bool NetAddress_Dev::DescribeAsIPv4Address(
     PP_NetAddress_IPv4_Dev* ipv4_addr) const {
   if (has_interface<PPB_NetAddress_Dev_0_1>()) {
-    return get_interface<PPB_NetAddress_Dev_0_1>()->DescribeAsIPv4Address(
-        pp_resource(), ipv4_addr);
+    return PP_ToBool(
+        get_interface<PPB_NetAddress_Dev_0_1>()->DescribeAsIPv4Address(
+            pp_resource(), ipv4_addr));
   }
 
-  return PP_FALSE;
+  return false;
 }
 
-PP_Bool NetAddress_Dev::DescribeAsIPv6Address(
+bool NetAddress_Dev::DescribeAsIPv6Address(
     PP_NetAddress_IPv6_Dev* ipv6_addr) const {
   if (has_interface<PPB_NetAddress_Dev_0_1>()) {
-    return get_interface<PPB_NetAddress_Dev_0_1>()->DescribeAsIPv6Address(
-        pp_resource(), ipv6_addr);
+    return PP_ToBool(
+        get_interface<PPB_NetAddress_Dev_0_1>()->DescribeAsIPv6Address(
+            pp_resource(), ipv6_addr));
   }
 
-  return PP_FALSE;
+  return false;
 }
 
 }  // namespace pp

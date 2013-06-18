@@ -40,11 +40,11 @@ class NetAddress_Dev : public Resource {
 
   PP_NetAddress_Family_Dev GetFamily() const;
 
-  Var DescribeAsString(PP_Bool include_port) const;
+  Var DescribeAsString(bool include_port) const;
 
-  PP_Bool DescribeAsIPv4Address(PP_NetAddress_IPv4_Dev* ipv4_addr) const;
+  bool DescribeAsIPv4Address(PP_NetAddress_IPv4_Dev* ipv4_addr) const;
 
-  PP_Bool DescribeAsIPv6Address(PP_NetAddress_IPv6_Dev* ipv6_addr) const;
+  bool DescribeAsIPv6Address(PP_NetAddress_IPv6_Dev* ipv6_addr) const;
 };
 
 }  // namespace pp

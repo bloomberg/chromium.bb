@@ -102,14 +102,14 @@ std::string TestNetAddress::TestDescribeAsString() {
     PP_NetAddress_IPv4_Dev ipv4_addr1 = { ConvertToNetEndian16(1234),
                                           { 127, 0, 0, 1 } };
     NetAddress_Dev addr1(instance_, ipv4_addr1);
-    ASSERT_EQ("127.0.0.1", addr1.DescribeAsString(PP_FALSE).AsString());
-    ASSERT_EQ("127.0.0.1:1234", addr1.DescribeAsString(PP_TRUE).AsString());
+    ASSERT_EQ("127.0.0.1", addr1.DescribeAsString(false).AsString());
+    ASSERT_EQ("127.0.0.1:1234", addr1.DescribeAsString(true).AsString());
 
     PP_NetAddress_IPv4_Dev ipv4_addr2 = { ConvertToNetEndian16(80),
                                           { 192, 168, 0, 2 } };
     NetAddress_Dev addr2(instance_, ipv4_addr2);
-    ASSERT_EQ("192.168.0.2", addr2.DescribeAsString(PP_FALSE).AsString());
-    ASSERT_EQ("192.168.0.2:80", addr2.DescribeAsString(PP_TRUE).AsString());
+    ASSERT_EQ("192.168.0.2", addr2.DescribeAsString(false).AsString());
+    ASSERT_EQ("192.168.0.2:80", addr2.DescribeAsString(true).AsString());
   }
   {
     // Test describing IPv6 addresses.
@@ -164,9 +164,9 @@ std::string TestNetAddress::TestDescribeAsString() {
           instance_, ipv6_test_cases[i].host_order_addr,
           ipv6_test_cases[i].host_order_port);
       ASSERT_EQ(ipv6_test_cases[i].expected_without_port,
-                addr.DescribeAsString(PP_FALSE).AsString());
+                addr.DescribeAsString(false).AsString());
       ASSERT_EQ(ipv6_test_cases[i].expected_with_port,
-                addr.DescribeAsString(PP_TRUE).AsString());
+                addr.DescribeAsString(true).AsString());
     }
   }
 
