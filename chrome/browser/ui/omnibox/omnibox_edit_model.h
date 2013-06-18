@@ -95,8 +95,10 @@ class OmniboxEditModel {
   void RestoreState(const State& state);
 
   // Returns the match for the current text. If the user has not edited the text
-  // this is the match corresponding to the permanent text.
-  AutocompleteMatch CurrentMatch();
+  // this is the match corresponding to the permanent text. Returns the
+  // alternate nav URL, if |alternate_nav_url| is non-NULL and there is such a
+  // URL.
+  AutocompleteMatch CurrentMatch(GURL* alternate_nav_url) const;
 
   // Called when the user wants to export the entire current text as a URL.
   // Sets the url, and if known, the title and favicon.
@@ -137,10 +139,6 @@ class OmniboxEditModel {
 
   // Sets the user_text_ to |text|.  Only the View should call this.
   void SetUserText(const string16& text);
-
-  // Calls through to SearchProvider::FinalizeInstantQuery.
-  void FinalizeInstantQuery(const string16& input_text,
-                            const InstantSuggestion& suggestion);
 
   // Sets the suggestion text.
   void SetInstantSuggestion(const InstantSuggestion& suggestion);
@@ -307,8 +305,16 @@ class OmniboxEditModel {
     omnibox_controller_->OnPopupBoundsChanged(bounds);
   }
 
-  // Called when the results have changed in the OmniboxController.
-  void OnResultChanged(bool default_match_changed);
+  // Called when the current match has changed in the OmniboxController.
+  void OnCurrentMatchChanged(bool is_temporary_set_by_instant);
+
+  // Callend when the gray text suggestion has changed in the OmniboxController.
+  void OnGrayTextChanged();
+
+  // Access the current view text.
+  string16 GetViewText() const;
+
+  string16 user_text() const { return user_text_; }
 
   // TODO(beaudoin): We need this to allow OmniboxController access the
   // InstantController via OmniboxEditController, because the only valid pointer

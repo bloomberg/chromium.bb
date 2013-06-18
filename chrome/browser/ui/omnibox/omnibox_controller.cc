@@ -15,6 +15,8 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
@@ -25,6 +27,21 @@
 
 using predictors::AutocompleteActionPredictor;
 
+namespace {
+
+string16 GetDefaultSearchProviderKeyword(Profile* profile) {
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  if (template_url_service) {
+    TemplateURL* template_url =
+        template_url_service->GetDefaultSearchProvider();
+    if (template_url)
+      return template_url->keyword();
+  }
+  return string16();
+}
+
+}  // namespace
 
 OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
                                      Profile* profile)
@@ -83,36 +100,40 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
   if (default_match_changed) {
     // The default match has changed, we need to let the OmniboxEditModel know
     // about new inline autocomplete text (blue highlight).
-    string16 inline_autocomplete_text;
-    string16 keyword;
-    bool is_keyword_hint = false;
     const AutocompleteResult& result = this->result();
     const AutocompleteResult::const_iterator match(result.default_match());
     if (match != result.end()) {
-      if ((match->inline_autocomplete_offset != string16::npos) &&
-          (match->inline_autocomplete_offset <
-           match->fill_into_edit.length())) {
-        inline_autocomplete_text =
-            match->fill_into_edit.substr(match->inline_autocomplete_offset);
+      current_match_ = *match;
+      // TODO(beaudoin): This code could be made simpler if AutocompleteMatch
+      // had an |inline_autocompletion| instead of |inline_autocomplete_offset|.
+      // The |fill_into_edit| we get may not match what we have in the view at
+      // that time. We're only interested in the inline_autocomplete part, so
+      // update this here.
+      current_match_.fill_into_edit = omnibox_edit_model_->user_text();
+      if (match->inline_autocomplete_offset < match->fill_into_edit.length()) {
+        current_match_.inline_autocomplete_offset =
+            current_match_.fill_into_edit.length();
+        current_match_.fill_into_edit += match->fill_into_edit.substr(
+            match->inline_autocomplete_offset);
+      } else {
+        current_match_.inline_autocomplete_offset = string16::npos;
       }
 
       if (!prerender::IsOmniboxEnabled(profile_))
         DoPreconnect(*match);
-
-      // We could prefetch the alternate nav URL, if any, but because there
-      // can be many of these as a user types an initial series of characters,
-      // the OS DNS cache could suffer eviction problems for minimal gain.
-
-      match->GetKeywordUIState(profile_, &keyword, &is_keyword_hint);
+      omnibox_edit_model_->OnCurrentMatchChanged(false);
+    } else {
+      InvalidateCurrentMatch();
+      popup_->OnResultChanged();
+      omnibox_edit_model_->OnPopupDataChanged(string16(), NULL, string16(),
+                                              false);
     }
-
-    popup_->OnResultChanged();
-    omnibox_edit_model_->OnPopupDataChanged(inline_autocomplete_text, NULL,
-                                            keyword, is_keyword_hint);
   } else {
     popup_->OnResultChanged();
   }
 
+  // TODO(beaudoin): This may no longer be needed now that instant classic is
+  // gone.
   if (popup_->IsOpen()) {
     // The popup size may have changed, let instant know.
     OnPopupBoundsChanged(popup_->view()->GetTargetBounds());
@@ -161,6 +182,87 @@ bool OmniboxController::DoInstant(const AutocompleteMatch& match,
   return false;
 #endif
 }
+
+void OmniboxController::FinalizeInstantQuery(
+    const string16& input_text,
+    const InstantSuggestion& suggestion) {
+// Should only get called for the HTML popup.
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
+  if (!popup_model()->result().empty()) {
+    // We need to finalize the instant query in all cases where the
+    // |popup_model| holds some result. It is not enough to check whether the
+    // popup is open, since when an IME is active the popup may be closed while
+    // |popup_model| contains a non-empty result.
+    SearchProvider* search_provider =
+        autocomplete_controller_->search_provider();
+    // There may be no providers during testing; guard against that.
+    if (search_provider)
+      search_provider->FinalizeInstantQuery(input_text, suggestion);
+  }
+#endif
+}
+
+void OmniboxController::SetInstantSuggestion(
+    const InstantSuggestion& suggestion) {
+// Should only get called for the HTML popup.
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
+  switch (suggestion.behavior) {
+    case INSTANT_COMPLETE_NOW:
+      // Set blue suggestion text.
+      // TODO(beaudoin): This currently goes to the SearchProvider. Instead we
+      // should just create a valid current_match_ and call
+      // omnibox_edit_model_->OnCurrentMatchChanged. This way we can get rid of
+      // FinalizeInstantQuery entirely.
+      if (!suggestion.text.empty())
+        FinalizeInstantQuery(omnibox_edit_model_->GetViewText(), suggestion);
+      return;
+
+    case INSTANT_COMPLETE_NEVER: {
+      DCHECK_EQ(INSTANT_SUGGESTION_SEARCH, suggestion.type);
+
+      // Set gray suggestion text.
+      // Remove "?" if we're in forced query mode.
+      gray_suggestion_ = suggestion.text;
+
+      // TODO(beaudoin): The following should no longer be needed once the
+      // instant suggestion no longer goes through the search provider.
+      SearchProvider* search_provider =
+          autocomplete_controller_->search_provider();
+      if (search_provider)
+        search_provider->ClearInstantSuggestion();
+
+      omnibox_edit_model_->OnGrayTextChanged();
+      return;
+    }
+
+    case INSTANT_COMPLETE_REPLACE:
+      // Replace the entire omnibox text by the suggestion the user just arrowed
+      // to.
+      CreateAndSetInstantMatch(suggestion.text, suggestion.text,
+                               suggestion.type == INSTANT_SUGGESTION_SEARCH ?
+                                   AutocompleteMatchType::SEARCH_SUGGEST :
+                                   AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+
+      omnibox_edit_model_->OnCurrentMatchChanged(true);
+      return;
+  }
+#endif
+}
+
+void OmniboxController::InvalidateCurrentMatch() {
+  current_match_ = AutocompleteMatch();
+}
+
+const AutocompleteMatch& OmniboxController::CurrentMatch(
+    GURL* alternate_nav_url) const {
+  if (alternate_nav_url && current_match_.destination_url.is_valid()) {
+    *alternate_nav_url = AutocompleteResult::ComputeAlternateNavUrl(
+        autocomplete_controller_->input(), current_match_);
+  }
+
+  return current_match_;
+}
+
 
 void OmniboxController::ClearPopupKeywordMode() const {
   if (popup_->IsOpen() &&
@@ -212,4 +314,17 @@ bool OmniboxController::UseVerbatimInstant(bool just_deleted_text) const {
 
 InstantController* OmniboxController::GetInstantController() const {
   return omnibox_edit_model_->GetInstantController();
+}
+
+void OmniboxController::CreateAndSetInstantMatch(
+    string16 query_string,
+    string16 input_text,
+    AutocompleteMatchType::Type match_type) {
+  string16 keyword = GetDefaultSearchProviderKeyword(profile_);
+  if (keyword.empty())
+    return;  // CreateSearchSuggestion needs a keyword.
+
+  current_match_ = SearchProvider::CreateSearchSuggestion(
+      profile_, NULL, AutocompleteInput(), query_string, input_text, 0,
+      match_type, 0, false, keyword, -1);
 }

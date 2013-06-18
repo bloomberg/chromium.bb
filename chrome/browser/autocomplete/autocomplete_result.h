@@ -119,6 +119,11 @@ class AutocompleteResult {
   void Validate() const;
 #endif
 
+  // Compute the "alternate navigation URL" for a given match. This is obtained
+  // by interpreting the user input directly as a URL.
+  static GURL ComputeAlternateNavUrl(const AutocompleteInput& input,
+                                     const AutocompleteMatch& match);
+
  private:
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 

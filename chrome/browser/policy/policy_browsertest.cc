@@ -779,7 +779,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "stuff to search for");
   OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
-  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL expected("http://search.example/search?q=stuff+to+search+for");
@@ -794,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   EXPECT_FALSE(service->GetDefaultSearchProvider());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "should not work");
   // This means that submitting won't trigger any action.
-  EXPECT_FALSE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_FALSE(model->CurrentMatch(NULL).destination_url.is_valid());
   EXPECT_EQ(GURL(content::kAboutBlankURL), web_contents->GetURL());
 }
 
@@ -817,7 +817,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
   OmniboxEditModel* model = location_bar->GetLocationEntry()->model();
   no_safesearch_observer.Wait();
-  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL expected_without("http://google.com/");
@@ -845,7 +845,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
   safesearch_observer.Wait();
   model = location_bar->GetLocationEntry()->model();
-  EXPECT_TRUE(model->CurrentMatch().destination_url.is_valid());
+  EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
   web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   std::string expected_url("http://google.com/?");
   expected_url += std::string(chrome::kSafeSearchSafeParameter) + "&" +

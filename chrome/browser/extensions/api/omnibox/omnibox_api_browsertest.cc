@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
   AutocompleteController* autocomplete_controller =
       GetAutocompleteController(browser());
   omnibox_view->OnBeforePossibleChange();
-  omnibox_view->SetUserText(string16());
+  omnibox_view->SetUserText(ASCIIToUTF16("keyword command"));
   omnibox_view->OnAfterPossibleChange();
 
   autocomplete_controller->Start(
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   omnibox_view->OnBeforePossibleChange();
-  omnibox_view->SetUserText(string16());
+  omnibox_view->SetUserText(ASCIIToUTF16("keyword newtab"));
   omnibox_view->OnAfterPossibleChange();
   WaitForAutocompleteDone(autocomplete_controller);
   EXPECT_TRUE(autocomplete_controller->done());

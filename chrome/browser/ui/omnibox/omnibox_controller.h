@@ -11,11 +11,13 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 
 struct AutocompleteMatch;
 class AutocompleteResult;
 class GURL;
 class InstantController;
+struct InstantSuggestion;
 class OmniboxEditModel;
 class OmniboxPopupModel;
 class Profile;
@@ -63,6 +65,17 @@ class OmniboxController : public AutocompleteControllerDelegate {
                  bool just_deleted_text,
                  bool keyword_is_selected);
 
+  // Calls through to SearchProvider::FinalizeInstantQuery.
+  void FinalizeInstantQuery(const string16& input_text,
+                            const InstantSuggestion& suggestion);
+
+  // Sets the suggestion text.
+  void SetInstantSuggestion(const InstantSuggestion& suggestion);
+
+  // Set |current_match_| to an invalid value, indicating that we do not yet
+  // have a valid match for the current text in the omnibox.
+  void InvalidateCurrentMatch();
+
   void set_popup_model(OmniboxPopupModel* popup_model) {
     popup_ = popup_model;
   }
@@ -70,6 +83,10 @@ class OmniboxController : public AutocompleteControllerDelegate {
   // TODO(beaudoin): The edit and popup model should be siblings owned by the
   // LocationBarView, making this accessor unnecessary.
   OmniboxPopupModel* popup_model() const { return popup_; }
+
+  const string16& gray_suggestion() const { return gray_suggestion_; }
+
+  const AutocompleteMatch& CurrentMatch(GURL* alternate_nav_url) const;
 
   // Turns off keyword mode for the current match.
   void ClearPopupKeywordMode() const;
@@ -98,6 +115,11 @@ class OmniboxController : public AutocompleteControllerDelegate {
   // which OmniboxEditModel has some ways of reaching.
   InstantController* GetInstantController() const;
 
+  // Creates an AutocompleteMatch for an instant result and sets it into
+  // |current_match_|.
+  void CreateAndSetInstantMatch(string16 query_string,
+                                string16 input_text,
+                                AutocompleteMatchType::Type match_type);
   // Weak, it owns us.
   // TODO(beaudoin): Consider defining a delegate to ease unit testing.
   OmniboxEditModel* omnibox_edit_model_;
@@ -106,7 +128,19 @@ class OmniboxController : public AutocompleteControllerDelegate {
 
   OmniboxPopupModel* popup_;
 
+  InstantController* instant_controller_;
+
   scoped_ptr<AutocompleteController> autocomplete_controller_;
+
+  // TODO(beaudoin): This AutocompleteMatch is used to let the OmniboxEditModel
+  // know what it should display. Not every field is required for that purpose,
+  // but the ones specifically needed are unclear. We should therefore spend
+  // some time to extract these fields and use a tighter structure here.
+  AutocompleteMatch current_match_;
+
+  // The completion suggested by instant, displayed in gray text besides
+  // |fill_into_edit|.
+  string16 gray_suggestion_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxController);
 };
