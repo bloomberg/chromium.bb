@@ -19,6 +19,7 @@ import os
 import sys
 
 from perf_tools import histogram_metric
+from perf_tools import memory_metrics
 from telemetry.core import util
 from telemetry.page import page_measurement
 
@@ -35,7 +36,7 @@ class PageCycler(page_measurement.PageMeasurement):
                            'page_cycler.js'), 'r') as f:
       self._page_cycler_js = f.read()
 
-    self._start_commit_charge = None
+    self._memory_metrics = None
     self._histograms = None
 
   def AddCommandLineOptions(self, parser):
@@ -47,7 +48,8 @@ class PageCycler(page_measurement.PageMeasurement):
     parser.add_option(pageset_repeat_option)
 
   def SetUpBrowser(self, browser):
-    self._start_commit_charge = browser.memory_stats['SystemCommitCharge']
+    self._memory_metrics = memory_metrics.MemoryMetrics()
+    self._memory_metrics.Start(browser)
 
     self._histograms = [histogram_metric.HistogramMetric(
                            h, histogram_metric.RENDERER_HISTOGRAM)
@@ -77,44 +79,6 @@ class PageCycler(page_measurement.PageMeasurement):
     if sys.platform == 'darwin' and sys.argv[-1].endswith('/typical_25.json'):
       print 'typical_25 is currently disabled on mac. Skipping test.'
       sys.exit(0)
-
-  def MeasureMemory(self, tab, results):
-    memory = tab.browser.memory_stats
-    if not memory['Browser']:
-      return
-
-    metric = 'resident_set_size'
-    if sys.platform == 'win32':
-      metric = 'working_set'
-
-    def AddSummariesForProcessTypes(process_types_memory, process_type_trace):
-      def AddSummary(value_name_memory, value_name_trace):
-        if len(process_types_memory) > 1 and value_name_memory.endswith('Peak'):
-          return
-        values = []
-        for process_type_memory in process_types_memory:
-          if value_name_memory in memory[process_type_memory]:
-            values.append(memory[process_type_memory][value_name_memory])
-        if values:
-          results.AddSummary(value_name_trace + process_type_trace,
-                             'bytes', sum(values), data_type='unimportant')
-      AddSummary('VM', 'vm_final_size_')
-      AddSummary('WorkingSetSize', 'vm_%s_final_size_' % metric)
-      AddSummary('PrivateDirty', 'vm_private_dirty_final_')
-      AddSummary('ProportionalSetSize', 'vm_proportional_set_size_final_')
-      AddSummary('VMPeak', 'vm_peak_size_')
-      AddSummary('WorkingSetSizePeak', '%s_peak_size_' % metric)
-
-    AddSummariesForProcessTypes(['Browser'], 'browser')
-    AddSummariesForProcessTypes(['Renderer'], 'renderer')
-    AddSummariesForProcessTypes(['Gpu'], 'gpu')
-    AddSummariesForProcessTypes(['Browser', 'Renderer', 'Gpu'], 'total')
-
-    results.AddSummary('commit_charge', 'kb',
-                       memory['SystemCommitCharge'] - self._start_commit_charge,
-                       data_type='unimportant')
-    results.AddSummary('processes', 'count', memory['ProcessCount'],
-                       data_type='unimportant')
 
   def MeasureIO(self, tab, results):
     io_stats = tab.browser.io_stats
@@ -159,5 +123,5 @@ class PageCycler(page_measurement.PageMeasurement):
                 chart_name='times')
 
   def DidRunPageSet(self, tab, results):
-    self.MeasureMemory(tab, results)
+    self._memory_metrics.StopAndGetResults(tab.browser, results)
     self.MeasureIO(tab, results)
