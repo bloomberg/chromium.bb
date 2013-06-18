@@ -6,13 +6,10 @@
 #define MEDIA_AUDIO_VIRTUAL_AUDIO_OUTPUT_STREAM_H_
 
 #include "base/callback.h"
+#include "base/threading/thread_checker.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_converter.h"
-
-namespace base {
-class MessageLoopProxy;
-}
 
 namespace media {
 
@@ -34,7 +31,6 @@ class MEDIA_EXPORT VirtualAudioOutputStream
   // Construct an audio loopback pathway to the given |target| (not owned).
   // |target| must outlive this instance.
   VirtualAudioOutputStream(const AudioParameters& params,
-                           base::MessageLoopProxy* message_loop,
                            VirtualAudioInputStream* target,
                            const AfterCloseCallback& after_close_cb);
 
@@ -54,7 +50,6 @@ class MEDIA_EXPORT VirtualAudioOutputStream
                               base::TimeDelta buffer_delay) OVERRIDE;
 
   const AudioParameters params_;
-  base::MessageLoopProxy* const message_loop_;
   // Pointer to the VirtualAudioInputStream to attach to when Start() is called.
   // This pointer should always be valid because VirtualAudioInputStream should
   // outlive this class.
@@ -64,6 +59,8 @@ class MEDIA_EXPORT VirtualAudioOutputStream
 
   AudioSourceCallback* callback_;
   double volume_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualAudioOutputStream);
 };

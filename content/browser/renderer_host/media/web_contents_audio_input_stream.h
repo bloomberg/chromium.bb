@@ -55,10 +55,13 @@ class CONTENT_EXPORT WebContentsAudioInputStream
   // WebContentsCaptureUtil::ExtractTabCaptureTarget().  The caller must
   // guarantee Close() is called on the returned object so that it may
   // self-destruct.
+  // |worker_loop| is the loop on which AudioInputCallback methods are called
+  // and may or may not be the single thread that invokes the AudioInputStream
+  // methods.
   static WebContentsAudioInputStream* Create(
       const std::string& device_id,
       const media::AudioParameters& params,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop);
+      const scoped_refptr<base::MessageLoopProxy>& worker_loop);
 
  private:
   friend class WebContentsAudioInputStreamTest;
@@ -72,7 +75,6 @@ class CONTENT_EXPORT WebContentsAudioInputStream
 
   WebContentsAudioInputStream(
       int render_process_id, int render_view_id,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
       AudioMirroringManager* mirroring_manager,
       const scoped_refptr<WebContentsTracker>& tracker,
       media::VirtualAudioInputStream* mixer_stream);
