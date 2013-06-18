@@ -123,6 +123,8 @@ TEST(WTF_PartitionAlloc, Basic)
     void* ptr = partitionAlloc(&root, kTestAllocSize);
     EXPECT_TRUE(ptr);
     EXPECT_EQ(sizeof(WTF::PartitionPageHeader), reinterpret_cast<size_t>(ptr) & WTF::kPartitionPageOffsetMask);
+    // Check that the offset appears to include a guard page.
+    EXPECT_EQ(WTF::kPartitionPageSize + sizeof(WTF::PartitionPageHeader), reinterpret_cast<size_t>(ptr) & WTF::kSuperPageOffsetMask);
 
     partitionFree(ptr);
     // Expect that a just-freed page doesn't get tossed to the freelist.
@@ -321,8 +323,9 @@ TEST(WTF_PartitionAlloc, FreePageListPageTransitions)
 TEST(WTF_PartitionAlloc, MultiPageAllocs)
 {
     TestSetup();
-    size_t numPartitionPagesPerSuperPage = WTF::kSuperPageSize / WTF::kPartitionPageSize;
-    size_t numPagesNeeded = numPartitionPagesPerSuperPage + 1;
+    // This is guaranteed to cross a super page boundary because the first
+    // partition page "slot" will be taken up by a guard page.
+    size_t numPagesNeeded = WTF::kSuperPageSize / WTF::kPartitionPageSize;
     EXPECT_GT(numPagesNeeded, 1u);
     OwnArrayPtr<WTF::PartitionPageHeader*> pages;
     pages = adoptArrayPtr(new WTF::PartitionPageHeader*[numPagesNeeded]);
@@ -332,10 +335,14 @@ TEST(WTF_PartitionAlloc, MultiPageAllocs)
         pages[i] = GetFullPage(kTestAllocSize);
         if (!i)
             firstSuperPageBase = (reinterpret_cast<uintptr_t>(pages[i]) & WTF::kSuperPageBaseMask);
-        if (i == numPagesNeeded - 1)
-            EXPECT_FALSE((reinterpret_cast<uintptr_t>(pages[i]) & WTF::kSuperPageBaseMask) == firstSuperPageBase);
-        else
-            EXPECT_EQ(firstSuperPageBase, reinterpret_cast<uintptr_t>(pages[i]) & WTF::kSuperPageBaseMask);
+        if (i == numPagesNeeded - 1) {
+            uintptr_t secondSuperPageBase = reinterpret_cast<uintptr_t>(pages[i]) & WTF::kSuperPageBaseMask;
+            EXPECT_FALSE(secondSuperPageBase == firstSuperPageBase);
+            // If the two super pages are contiguous, also check that we didn't
+            // erroneously allocate a guard page for the second page.
+            if (secondSuperPageBase == firstSuperPageBase + WTF::kSuperPageSize)
+                EXPECT_EQ(0u, secondSuperPageBase & WTF::kSuperPageOffsetMask);
+        }
     }
     for (i = 0; i < numPagesNeeded; ++i) {
         FreeFullPage(pages[i], kTestAllocSize);
@@ -350,9 +357,9 @@ TEST(WTF_PartitionAlloc, MultiPageAllocs)
 TEST(WTF_PartitionAlloc, MappingCollision)
 {
     TestSetup();
-    char* pageBase = root.pageBaseBegin;
 
     WTF::PartitionPageHeader* page1 = GetFullPage(kTestAllocSize);
+    char* pageBase = reinterpret_cast<char*>(page1);
     // Map a single system page either side of the mapping for our allocations,
     // with the goal of tripping up alignment of the next mapping.
     void* map1 = mmap(pageBase - WTF::kSystemPageSize, WTF::kSystemPageSize, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);

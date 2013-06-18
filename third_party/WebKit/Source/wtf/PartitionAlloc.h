@@ -129,8 +129,10 @@ struct PartitionRoot {
     PartitionPageHeader seedPage;
     PartitionBucket seedBucket;
     PartitionBucket buckets[kNumBuckets];
-    char* pageBaseBegin;
-    char* pageBaseEnd;
+    char* nextSuperPage;
+    char* nextPartitionPage;
+    char* nextPartitionPageEnd;
+    bool initialized;
 };
 
 WTF_EXPORT void partitionAllocInit(PartitionRoot*);

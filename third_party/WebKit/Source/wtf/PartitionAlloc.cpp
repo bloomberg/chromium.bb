@@ -44,7 +44,8 @@ namespace WTF {
 
 void partitionAllocInit(PartitionRoot* root)
 {
-    ASSERT(!root->pageBaseBegin);
+    ASSERT(!root->initialized);
+    root->initialized = true;
     size_t i;
     for (i = 0; i < kNumBuckets; ++i) {
         PartitionBucket* bucket = &root->buckets[i];
@@ -54,8 +55,9 @@ void partitionAllocInit(PartitionRoot* root)
         bucket->numFullPages = 0;
     }
 
-    root->pageBaseBegin = getRandomSuperPageBase();
-    root->pageBaseEnd = 0;
+    root->nextSuperPage = 0;
+    root->nextPartitionPage = 0;
+    root->nextPartitionPageEnd = 0;
     root->seedPage.numAllocatedSlots = 0;
     root->seedPage.bucket = &root->seedBucket;
     root->seedPage.freelistHead = 0;
@@ -107,7 +109,8 @@ static void partitionAllocShutdownBucket(PartitionBucket* bucket, Vector<Partiti
 
 void partitionAllocShutdown(PartitionRoot* root)
 {
-    ASSERT(root->pageBaseBegin);
+    ASSERT(root->initialized);
+    root->initialized = false;
     // As we iterate through all the partition pages, we keep a list of all the
     // distinct super pages that we have seen. This is so that we can free all
     // the super pages correctly. A super page must be freed all at once -- it
@@ -128,8 +131,6 @@ void partitionAllocShutdown(PartitionRoot* root)
     }
     // Finally, free the freepage bucket.
     partitionAllocShutdownBucket(&root->buckets[kFreePageBucket], &superPages);
-    root->pageBaseBegin = 0;
-    root->pageBaseEnd = 0;
     // Now that we've examined all partition pages in all buckets, it's safe
     // to free all our super pages.
     for (Vector<PartitionPageHeader*>::iterator it = superPages.begin(); it != superPages.end(); ++it)
@@ -138,22 +139,42 @@ void partitionAllocShutdown(PartitionRoot* root)
 
 static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(PartitionRoot* root)
 {
-    void* ret;
-    if (LIKELY(root->pageBaseEnd != 0)) {
+    char* ret = 0;
+    if (LIKELY(root->nextPartitionPage != 0)) {
         // In this case, we can still hand out pages from a previous
-        // multi-page allocation.
-        ret = root->pageBaseBegin;
-        root->pageBaseBegin += kPartitionPageSize;
-        if (UNLIKELY(root->pageBaseBegin == root->pageBaseEnd)) {
+        // super page allocation.
+        ret = root->nextPartitionPage;
+        root->nextPartitionPage += kPartitionPageSize;
+        if (UNLIKELY(root->nextPartitionPage == root->nextPartitionPageEnd)) {
             // We ran out, need to get more pages next time.
-            root->pageBaseBegin = root->pageBaseEnd;
-            root->pageBaseEnd = 0;
+            root->nextPartitionPage = 0;
+            root->nextPartitionPageEnd = 0;
         }
     } else {
-        ret = allocSuperPages(root->pageBaseBegin, kSuperPageSize);
-        root->pageBaseBegin = reinterpret_cast<char*>(ret);
-        root->pageBaseEnd = root->pageBaseBegin + kSuperPageSize;
-        root->pageBaseBegin += kPartitionPageSize;
+        // Need a new super page.
+        // We need to put a guard page in front if either:
+        // a) This is the first super page allocation.
+        // b) The super page did not end up at our suggested address.
+        bool needsGuard = false;
+        if (!root->nextSuperPage) {
+            needsGuard = true;
+            root->nextSuperPage = getRandomSuperPageBase();
+        }
+        ret = reinterpret_cast<char*>(allocSuperPages(root->nextSuperPage, kSuperPageSize));
+        if (ret != root->nextSuperPage) {
+            needsGuard = true;
+            // Re-randomize the base location for next time just in case the
+            // underlying operating system picks lousy locations for mappings.
+            root->nextSuperPage = 0;
+        } else {
+            root->nextSuperPage = ret + kSuperPageSize;
+        }
+        root->nextPartitionPageEnd = ret + kSuperPageSize;
+        if (needsGuard) {
+            setSystemPagesInaccessible(ret, kPartitionPageSize);
+            ret += kPartitionPageSize;
+        }
+        root->nextPartitionPage = ret + kPartitionPageSize;
     }
     return reinterpret_cast<PartitionPageHeader*>(ret);
 }
