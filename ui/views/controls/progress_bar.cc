@@ -289,7 +289,7 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
                 p, highlight_colors, highlight_points,
                 arraysize(highlight_colors), SkShader::kClamp_TileMode, NULL));
         paint.setShader(s.get());
-        paint.setXfermode(SkXfermode::Create(SkXfermode::kSrcOver_Mode));
+        paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
         canvas->DrawRect(gfx::Rect(highlight_left, 0,
                                    kHighlightWidth + kBorderWidth, height()),
                          paint);

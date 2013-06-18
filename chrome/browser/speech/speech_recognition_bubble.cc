@@ -239,7 +239,7 @@ void SpeechRecognitionBubbleBase::DrawVolumeOverlay(SkCanvas* canvas,
       image.GetRepresentation(scale_factor_).sk_bitmap(), 0, 0);
   buffer_canvas.restore();
   SkPaint multiply_paint;
-  multiply_paint.setXfermode(SkXfermode::Create(SkXfermode::kModulate_Mode));
+  multiply_paint.setXfermodeMode(SkXfermode::kModulate_Mode);
   buffer_canvas.drawBitmap(
       g_images.Get().mic_mask()->GetRepresentation(scale_factor_).sk_bitmap(),
       -clip_right, 0, &multiply_paint);
