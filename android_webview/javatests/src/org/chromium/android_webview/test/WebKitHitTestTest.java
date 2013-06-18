@@ -47,10 +47,10 @@ public class WebKitHitTestTest extends AwTestBase {
     }
 
     private void setServerResponseAndLoad(String response) throws Throwable {
-      String url = mWebServer.setResponse("/hittest.html", response, null);
-      loadUrlSync(mAwContents,
-                  mContentsClient.getOnPageFinishedHelper(),
-                  url);
+        String url = mWebServer.setResponse("/hittest.html", response, null);
+        loadUrlSync(mAwContents,
+                    mContentsClient.getOnPageFinishedHelper(),
+                    url);
     }
 
     private static String fullPageLink(String href, String anchorText) {
