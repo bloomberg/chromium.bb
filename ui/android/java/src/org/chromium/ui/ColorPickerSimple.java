@@ -40,6 +40,10 @@ public class ColorPickerSimple extends View {
 
     private OnColorChangedListener mOnColorTouchedListener;
 
+    private int mLastTouchedXPosition;
+
+    private int mLastTouchedYPosition;
+
     public ColorPickerSimple(Context context) {
         super(context);
     }
@@ -70,6 +74,27 @@ public class ColorPickerSimple extends View {
             newPaint.setColor(COLORS[i]);
             mPaints[i] = newPaint;
         }
+
+        // Responds to the user touching the grid and works out which color has been chosen as
+        // a result, depending on the X,Y coordinate. Note that we respond to the click event
+        // here, but the onClick() method doesn't provide us with the X,Y coordinates, so we
+        // track them in onTouchEvent() below. This way the grid reacts properly to touch events
+        // whereas if we put this onClick() code in onTouchEvent below then we get some strange
+        // interactions with the ScrollView in the parent ColorPickerDialog.
+        setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mOnColorTouchedListener != null && getWidth() > 0 && getHeight() > 0) {
+                    int column = mLastTouchedXPosition * COLUMN_COUNT / getWidth();
+                    int row = mLastTouchedYPosition * ROW_COUNT / getHeight();
+
+                    int colorIndex = (row * COLUMN_COUNT) + column;
+                    if (colorIndex >= 0 && colorIndex < COLORS.length) {
+                        mOnColorTouchedListener.onColorChanged(COLORS[colorIndex]);
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -88,31 +113,18 @@ public class ColorPickerSimple extends View {
     }
 
     /**
-     * Responds to the user touching the grid and works out which color has been chosen as
-     * a result, depending on the X,Y coordinate.
+     * Stores the X,Y coordinates of the touch so that we can use them in the onClick() listener
+     * above to work out where the click was on the grid.
      *
      * @param event The MotionEvent the X,Y coordinates are retrieved from.
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() != MotionEvent.ACTION_DOWN ||
-            mOnColorTouchedListener == null) {
-            return false;
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            mLastTouchedXPosition = (int) event.getX();
+            mLastTouchedYPosition = (int) event.getY();
         }
-
-        if ((getWidth() > 0) && (getHeight() > 0)) {
-            int x = (int) event.getX();
-            int y = (int) event.getY();
-
-            int column = x * COLUMN_COUNT / getWidth();
-            int row = y * ROW_COUNT / getHeight();
-
-            int colorIndex = (row * COLUMN_COUNT) + column;
-            if (colorIndex >= 0 && colorIndex < COLORS.length) {
-                mOnColorTouchedListener.onColorChanged(COLORS[colorIndex]);
-            }
-        }
-        return true;
+        return super.onTouchEvent(event);
     }
 
     /**
