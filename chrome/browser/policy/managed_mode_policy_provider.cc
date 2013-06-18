@@ -21,6 +21,7 @@
 #include "sync/protocol/sync.pb.h"
 
 using base::DictionaryValue;
+using base::JSONReader;
 using base::Value;
 using content::BrowserThread;
 using content::UserMetricsAction;
@@ -177,16 +178,15 @@ SyncMergeResult ManagedModePolicyProvider::MergeDataAndStartSyncing(
 
   // Clear all atomic and split settings, then recreate them from Sync data.
   Clear();
-  base::JSONReader reader;
   for (SyncDataList::const_iterator it = initial_sync_data.begin();
        it != initial_sync_data.end(); ++it) {
     DCHECK_EQ(MANAGED_USER_SETTINGS, it->GetDataType());
     const ::sync_pb::ManagedUserSettingSpecifics& managed_user_setting =
         it->GetSpecifics().managed_user_setting();
-    Value* value = reader.Read(managed_user_setting.value());
+    scoped_ptr<Value> value(JSONReader::Read(managed_user_setting.value()));
     std::string name_suffix = managed_user_setting.name();
     DictionaryValue* dict = GetDictionaryAndSplitKey(&name_suffix);
-    dict->SetWithoutPathExpansion(name_suffix, value);
+    dict->SetWithoutPathExpansion(name_suffix, value.release());
   }
   store_->ReportValueChanged(kAtomicSettings);
   store_->ReportValueChanged(kSplitSettings);
@@ -250,7 +250,6 @@ SyncDataList ManagedModePolicyProvider::GetAllSyncData(ModelType type) const {
 SyncError ManagedModePolicyProvider::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& change_list) {
-  base::JSONReader reader;
   for (SyncChangeList::const_iterator it = change_list.begin();
        it != change_list.end(); ++it) {
     SyncData data = it->sync_data();
@@ -262,7 +261,7 @@ SyncError ManagedModePolicyProvider::ProcessSyncChanges(
     switch (it->change_type()) {
       case SyncChange::ACTION_ADD:
       case SyncChange::ACTION_UPDATE: {
-        Value* value = reader.Read(managed_user_setting.value());
+        scoped_ptr<Value> value(JSONReader::Read(managed_user_setting.value()));
         if (dict->HasKey(key)) {
           DLOG_IF(WARNING, it->change_type() == SyncChange::ACTION_ADD)
               << "Value for key " << key << " already exists";
@@ -270,7 +269,7 @@ SyncError ManagedModePolicyProvider::ProcessSyncChanges(
           DLOG_IF(WARNING, it->change_type() == SyncChange::ACTION_UPDATE)
               << "Value for key " << key << " doesn't exist yet";
         }
-        dict->SetWithoutPathExpansion(key, value);
+        dict->SetWithoutPathExpansion(key, value.release());
         break;
       }
       case SyncChange::ACTION_DELETE: {

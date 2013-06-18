@@ -263,9 +263,9 @@ class ManagedModePolicyProviderAPITest : public PolicyTestBase {
       EXPECT_TRUE(dict_.GetWithoutPathExpansion(key, &expected_value));
     }
 
-    base::JSONReader reader;
-    Value* value = reader.Read(managed_user_setting.value());
-    EXPECT_TRUE(expected_value->Equals(value));
+    scoped_ptr<Value> value(
+        base::JSONReader::Read(managed_user_setting.value()));
+    EXPECT_TRUE(expected_value->Equals(value.get()));
   }
 
   // PolicyTestBase overrides:
