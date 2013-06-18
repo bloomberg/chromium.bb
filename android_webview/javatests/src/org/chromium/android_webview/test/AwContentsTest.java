@@ -111,6 +111,18 @@ public class AwContentsTest extends AwTestBase {
         createAwTestContainerView(mContentsClient).getAwContents().destroy();
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCreateLoadPageDestroy() throws Throwable {
+        AwTestContainerView awTestContainerView =
+                createAwTestContainerViewOnMainSync(mContentsClient);
+        loadUrlSync(awTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), CommonResources.ABOUT_HTML);
+        destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
+        // It should be safe to call destroy multiple times.
+        destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
+    }
+
     /*
      * @LargeTest
      * @Feature({"AndroidWebView"})
@@ -346,15 +358,5 @@ public class AwContentsTest extends AwTestBase {
         } finally {
             if (webServer != null) webServer.shutdown();
         }
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testCreateLoadPageDestroy() throws Throwable {
-        AwTestContainerView awTestContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        loadUrlSync(awTestContainerView.getAwContents(),
-                mContentsClient.getOnPageFinishedHelper(), CommonResources.ABOUT_HTML);
-        awTestContainerView.destroy();
     }
 }

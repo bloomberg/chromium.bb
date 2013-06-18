@@ -462,7 +462,7 @@ public class AwContents {
         // methods are called on it after it's been destroyed, and other
         // code relies on AwContents.mContentViewCore to be non-null.
 
-        mCleanupReference.cleanupNow();
+        if (mCleanupReference != null) mCleanupReference.cleanupNow();
         mNativeAwContents = 0;
         mCleanupReference = null;
     }
