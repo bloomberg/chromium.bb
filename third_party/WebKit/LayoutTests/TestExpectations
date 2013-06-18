@@ -1683,15 +1683,6 @@ Bug(jamesr) virtual/softwarecompositing/video/video-controls-layer-creation.html
 # New baseline might fail on Mac according to trybots.
 crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ ImageOnlyFailure ]
 
-crbug.com/249237 fast/forms/interactive-validation-remove-node-in-handler.html [ Crash Pass ]
-crbug.com/249237 fast/forms/interactive-validation-required-checkbox.html [ Crash Pass ]
-crbug.com/249237 fast/forms/interactive-validation-attach-assertion.html [ Crash Pass ]
-crbug.com/249237 [ Release ] fast/forms/interactive-validation-formnovalidate-child.html [ Crash Pass ]
-crbug.com/249237 [ Release ] fast/forms/interactive-validation-select-crash.html [ Crash Pass ]
-crbug.com/249237 [ Release ] fast/forms/interactive-validation-novalidate.html [ Crash Pass ]
-crbug.com/249237 [ Release ] fast/forms/interactive-validation-cancel.html [ Crash Pass ]
-crbug.com/249237 [ Release ] fast/forms/interactive-validation-formnovalidate.html [ Crash Pass ]
-
 crbug.com/247979 [ Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure Pass ]
 crbug.com/247979 [ XP Release ] inspector/elements/edit-dom-actions.html [ Slow Pass Failure ]
 crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ Timeout ]
