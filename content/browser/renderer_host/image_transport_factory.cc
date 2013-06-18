@@ -510,7 +510,7 @@ class BrowserCompositorOutputSurface
 
   virtual ~BrowserCompositorOutputSurface() {
     DCHECK(CalledOnValidThread());
-    if (!client_)
+    if (!HasClient())
       return;
     output_surface_proxy_->RemoveSurface(surface_id_);
   }
@@ -529,8 +529,8 @@ class BrowserCompositorOutputSurface
   void OnUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval) {
     DCHECK(CalledOnValidThread());
-    DCHECK(client_);
-    client_->OnVSyncParametersChanged(timebase, interval);
+    DCHECK(HasClient());
+    OnVSyncParametersChanged(timebase, interval);
     compositor_message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&ui::Compositor::OnUpdateVSyncParameters,

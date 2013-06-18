@@ -4,6 +4,8 @@
 
 #include "cc/trees/thread_proxy.h"
 
+#include <string>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
@@ -17,7 +19,6 @@
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/scheduler/frame_rate_controller.h"
 #include "cc/scheduler/scheduler.h"
-#include "cc/scheduler/vsync_time_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -36,6 +37,23 @@ const int kDrawDurationEstimatePaddingInMicroseconds = 0;
 }  // namespace
 
 namespace cc {
+
+struct ThreadProxy::ReadbackRequest {
+  CompletionEvent completion;
+  bool success;
+  void* pixels;
+  gfx::Rect rect;
+};
+
+struct ThreadProxy::CommitPendingRequest {
+  CompletionEvent completion;
+  bool commit_pending;
+};
+
+struct ThreadProxy::SchedulerStateRequest {
+  CompletionEvent completion;
+  std::string state;
+};
 
 scoped_ptr<Proxy> ThreadProxy::Create(LayerTreeHost* layer_tree_host,
                                       scoped_ptr<Thread> impl_thread) {
@@ -69,7 +87,6 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layer_tree_host,
           layer_tree_host->settings().begin_frame_scheduling_enabled),
       using_synchronous_renderer_compositor_(
           layer_tree_host->settings().using_synchronous_renderer_compositor),
-      vsync_client_(NULL),
       inside_draw_(false),
       defer_commits_(false),
       renew_tree_priority_on_impl_thread_pending_(false),
@@ -334,36 +351,21 @@ void ThreadProxy::CheckOutputSurfaceStatusOnImplThread() {
 void ThreadProxy::OnSwapBuffersCompleteOnImplThread() {
   DCHECK(IsImplThread());
   TRACE_EVENT0("cc", "ThreadProxy::OnSwapBuffersCompleteOnImplThread");
-  scheduler_on_impl_thread_->DidSwapBuffersComplete();
   Proxy::MainThread()->PostTask(
       base::Bind(&ThreadProxy::DidCompleteSwapBuffers, main_thread_weak_ptr_));
 }
 
-void ThreadProxy::OnVSyncParametersChanged(base::TimeTicks timebase,
-                                           base::TimeDelta interval) {
+void ThreadProxy::SetNeedsBeginFrameOnImplThread(bool enable) {
   DCHECK(IsImplThread());
-  TRACE_EVENT2("cc",
-               "ThreadProxy::OnVSyncParametersChanged",
-               "timebase",
-               (timebase - base::TimeTicks()).InMilliseconds(),
-               "interval",
-               interval.InMilliseconds());
-  scheduler_on_impl_thread_->SetTimebaseAndInterval(timebase, interval);
+  TRACE_EVENT1("cc", "ThreadProxy::SetNeedsBeginFrameOnImplThread",
+               "enable", enable);
+  layer_tree_host_impl_->SetNeedsBeginFrame(enable);
 }
 
 void ThreadProxy::BeginFrameOnImplThread(base::TimeTicks frame_time) {
   DCHECK(IsImplThread());
-  TRACE_EVENT0("cc", "ThreadProxy::OnBeginFrameOnImplThread");
-  if (vsync_client_)
-    vsync_client_->DidVSync(frame_time);
-}
-
-void ThreadProxy::RequestVSyncNotification(VSyncClient* client) {
-  DCHECK(IsImplThread());
-  TRACE_EVENT1(
-      "cc", "ThreadProxy::RequestVSyncNotification", "enable", !!client);
-  vsync_client_ = client;
-  layer_tree_host_impl_->SetNeedsBeginFrame(!!client);
+  TRACE_EVENT0("cc", "ThreadProxy::BeginFrameOnImplThread");
+  scheduler_on_impl_thread_->BeginFrame(frame_time);
 }
 
 void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
@@ -377,10 +379,8 @@ void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {
 
 void ThreadProxy::OnHasPendingTreeStateChanged(bool has_pending_tree) {
   DCHECK(IsImplThread());
-  TRACE_EVENT1("cc",
-               "ThreadProxy::OnHasPendingTreeStateChanged",
-               "has_pending_tree",
-               has_pending_tree);
+  TRACE_EVENT1("cc", "ThreadProxy::OnHasPendingTreeStateChanged",
+               "has_pending_tree", has_pending_tree);
   scheduler_on_impl_thread_->SetHasPendingTree(has_pending_tree);
 }
 
@@ -1152,35 +1152,14 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::InitializeImplOnImplThread");
   DCHECK(IsImplThread());
   layer_tree_host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
-  const base::TimeDelta display_refresh_interval =
-      base::TimeDelta::FromMicroseconds(
-          base::Time::kMicrosecondsPerSecond /
-          layer_tree_host_->settings().refresh_rate);
-  scoped_ptr<FrameRateController> frame_rate_controller;
-  if (throttle_frame_production_) {
-    if (begin_frame_scheduling_enabled_) {
-      frame_rate_controller.reset(
-          new FrameRateController(VSyncTimeSource::Create(
-              this,
-              using_synchronous_renderer_compositor_ ?
-                  VSyncTimeSource::DISABLE_SYNCHRONOUSLY :
-                  VSyncTimeSource::DISABLE_ON_NEXT_TICK)));
-    } else {
-      frame_rate_controller.reset(
-          new FrameRateController(DelayBasedTimeSource::Create(
-              display_refresh_interval, Proxy::ImplThread())));
-    }
-  } else {
-    frame_rate_controller.reset(new FrameRateController(Proxy::ImplThread()));
-  }
   const LayerTreeSettings& settings = layer_tree_host_->settings();
   SchedulerSettings scheduler_settings;
   scheduler_settings.impl_side_painting = settings.impl_side_painting;
   scheduler_settings.timeout_and_draw_when_animation_checkerboards =
       settings.timeout_and_draw_when_animation_checkerboards;
-  scheduler_on_impl_thread_ = Scheduler::Create(this,
-                                                frame_rate_controller.Pass(),
-                                                scheduler_settings);
+  scheduler_settings.using_synchronous_renderer_compositor =
+      settings.using_synchronous_renderer_compositor;
+  scheduler_on_impl_thread_ = Scheduler::Create(this, scheduler_settings);
   scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
 
   impl_thread_weak_ptr_ = weak_factory_on_impl_thread_.GetWeakPtr();
@@ -1206,16 +1185,6 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
 
   if (*success) {
     *capabilities = layer_tree_host_impl_->GetRendererCapabilities();
-
-    OutputSurface* output_surface_ptr = layer_tree_host_impl_->output_surface();
-    DCHECK(output_surface_ptr);
-    int max_frames_pending =
-        output_surface_ptr->capabilities().max_frames_pending;
-    if (max_frames_pending <= 0)
-      max_frames_pending = FrameRateController::DEFAULT_MAX_FRAMES_PENDING;
-
-    scheduler_on_impl_thread_->SetMaxFramesPending(max_frames_pending);
-
     scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
   }
 
@@ -1260,7 +1229,6 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   scheduler_on_impl_thread_.reset();
   layer_tree_host_impl_.reset();
   weak_factory_on_impl_thread_.InvalidateWeakPtrs();
-  vsync_client_ = NULL;
   completion->Signal();
 }
 
@@ -1317,6 +1285,29 @@ void ThreadProxy::CommitPendingOnImplThreadForTesting(
     request->commit_pending = scheduler_on_impl_thread_->CommitPending();
   else
     request->commit_pending = false;
+  request->completion.Signal();
+}
+
+std::string ThreadProxy::SchedulerStateAsStringForTesting() {
+  if (IsImplThread())
+    return scheduler_on_impl_thread_->StateAsStringForTesting();
+
+  SchedulerStateRequest scheduler_state_request;
+  {
+    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
+    Proxy::ImplThread()->PostTask(
+        base::Bind(&ThreadProxy::SchedulerStateAsStringOnImplThreadForTesting,
+                   impl_thread_weak_ptr_,
+                   &scheduler_state_request));
+    scheduler_state_request.completion.Wait();
+  }
+  return scheduler_state_request.state;
+}
+
+void ThreadProxy::SchedulerStateAsStringOnImplThreadForTesting(
+    SchedulerStateRequest* request) {
+  DCHECK(IsImplThread());
+  request->state = scheduler_on_impl_thread_->StateAsStringForTesting();
   request->completion.Signal();
 }
 

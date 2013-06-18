@@ -2049,36 +2049,6 @@ class LayerTreeHostTestCapturePicture : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestCapturePicture);
 
-class LayerTreeHostTestMaxPendingFrames : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestMaxPendingFrames() : LayerTreeHostTest() {}
-
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    DCHECK(host_impl->proxy()->HasImplThread());
-
-    const ThreadProxy* proxy = static_cast<ThreadProxy*>(host_impl->proxy());
-    if (delegating_renderer()) {
-      EXPECT_EQ(1, proxy->MaxFramesPendingForTesting());
-    } else {
-      EXPECT_EQ(FrameRateController::DEFAULT_MAX_FRAMES_PENDING,
-                proxy->MaxFramesPendingForTesting());
-    }
-    EndTest();
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-};
-
-TEST_F(LayerTreeHostTestMaxPendingFrames, DelegatingRenderer) {
-  RunTest(true, true, true);
-}
-
-TEST_F(LayerTreeHostTestMaxPendingFrames, GLRenderer) {
-  RunTest(true, false, true);
-}
-
 class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
     : public LayerTreeHostTest {
  public:
@@ -2253,30 +2223,8 @@ class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
   }
 
   virtual void BeginTest() OVERRIDE {
+    // This will trigger a SetNeedsBeginFrame which will trigger a BeginFrame.
     PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    FakeOutputSurface* fake_output_surface =
-        reinterpret_cast<FakeOutputSurface*>(host_impl->output_surface());
-
-    // The BeginFrame notification is turned off now but will get
-    // enabled once we return, so post a task to trigger it.
-    ASSERT_FALSE(fake_output_surface->needs_begin_frame());
-    PostBeginFrameOnImplThread(fake_output_surface);
-  }
-
-  void PostBeginFrameOnImplThread(FakeOutputSurface* fake_output_surface) {
-    DCHECK(ImplThread());
-    ImplThread()->PostTask(
-        base::Bind(&LayerTreeHostTestBeginFrameNotification::BeginFrame,
-                   base::Unretained(this),
-                   base::Unretained(fake_output_surface)));
-  }
-
-  void BeginFrame(FakeOutputSurface* fake_output_surface) {
-    ASSERT_TRUE(fake_output_surface->needs_begin_frame());
-    fake_output_surface->BeginFrame(frame_time_);
   }
 
   virtual bool PrepareToDrawOnThread(
@@ -2824,11 +2772,6 @@ class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
     }
   }
 
-  virtual void SwapBuffersCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    const ThreadProxy* proxy = static_cast<ThreadProxy*>(impl->proxy());
-    EXPECT_EQ(0, proxy->NumFramesPendingForTesting());
-  }
-
   virtual void AfterTest() OVERRIDE {}
 
  protected:
@@ -2895,6 +2838,9 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
 
     // Force redraw again.
     host_impl->SetNeedsRedrawRect(gfx::Rect(1, 1));
+
+    // If we didn't swap this begin frame, we need to request another one.
+    host_impl->SetNeedsBeginFrame(true);
   }
 
   virtual void AfterTest() OVERRIDE {

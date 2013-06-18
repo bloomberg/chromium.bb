@@ -589,9 +589,13 @@ void LayerTreeTest::RunTest(bool threaded,
 }
 
 scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
+  scoped_ptr<FakeOutputSurface> output_surface;
   if (delegating_renderer_)
-    return FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
-  return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
+    output_surface = FakeOutputSurface::CreateDelegating3d();
+  else
+    output_surface = FakeOutputSurface::Create3d();
+  output_surface_ = output_surface.get();
+  return output_surface.PassAs<OutputSurface>();
 }
 
 scoped_refptr<cc::ContextProvider> LayerTreeTest::

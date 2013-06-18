@@ -371,14 +371,14 @@ void LatencyTest::RunTest(const std::vector<int>& behaviors) {
     if (mode_ == kWebGLThread) {
       // Print vsync info when in threaded mode.
       Query query_vsync =
-          Query::EventNameIs("CCThreadProxy::onVSyncParametersChanged") &&
-          Query::EventHasNumberArg("monotonicTimebase") &&
-          Query::EventHasNumberArg("intervalInSeconds");
+          Query::EventNameIs("OutputSurface::OnVSyncParametersChanged") &&
+          Query::EventHasNumberArg("timebase") &&
+          Query::EventHasNumberArg("interval");
 
       const TraceEvent* vsync_info = analyzer_->FindFirstOf(query_vsync);
       if (vsync_info) {
-        double timebase = vsync_info->GetKnownArgAsDouble("monotonicTimebase");
-        double interval = vsync_info->GetKnownArgAsDouble("intervalInSeconds");
+        double timebase = vsync_info->GetKnownArgAsDouble("timebase");
+        double interval = vsync_info->GetKnownArgAsDouble("interval");
         printf("VSync scheduling: timebase = %f; interval = %f\n",
                timebase, interval);
       }
