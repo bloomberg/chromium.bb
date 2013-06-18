@@ -99,6 +99,7 @@ GURL RemoveQueryParameter(const GURL& url) {
 
 FakeDriveService::FakeDriveService()
     : largest_changestamp_(0),
+      published_date_seq_(0),
       default_max_results_(0),
       resource_id_count_(0),
       resource_list_load_count_(0),
@@ -1321,6 +1322,11 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
   new_entry->Set("link", links);
 
   AddNewChangestamp(new_entry.get());
+
+  base::Time published_date =
+      base::Time() + base::TimeDelta::FromMilliseconds(++published_date_seq_);
+  new_entry->SetString("published.$t",
+                       util::FormatTimeAsString(published_date));
 
   // If there are no entries, prepare an empty entry to add.
   if (!resource_list_value_->HasKey("entry"))

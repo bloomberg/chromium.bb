@@ -259,6 +259,7 @@ class FakeDriveService : public DriveServiceInterface {
   scoped_ptr<base::Value> account_metadata_value_;
   scoped_ptr<base::Value> app_info_value_;
   int64 largest_changestamp_;
+  int64 published_date_seq_;
   int default_max_results_;
   int resource_id_count_;
   int resource_list_load_count_;
