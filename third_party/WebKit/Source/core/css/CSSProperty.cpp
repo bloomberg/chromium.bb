@@ -340,7 +340,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitLineBreak:
     case CSSPropertyWebkitLineGrid:
     case CSSPropertyWebkitLineSnap:
-    case CSSPropertyWebkitNbspMode:
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRtlOrdering:
     case CSSPropertyWebkitRubyPosition:

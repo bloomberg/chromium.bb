@@ -214,10 +214,6 @@ enum EOverflowWrap {
     NormalOverflowWrap, BreakOverflowWrap
 };
 
-enum ENBSPMode {
-    NBNORMAL, SPACE
-};
-
 enum LineBreak {
     LineBreakAuto, LineBreakLoose, LineBreakNormal, LineBreakStrict, LineBreakAfterWhiteSpace
 };

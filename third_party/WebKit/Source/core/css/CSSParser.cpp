@@ -830,10 +830,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueNone || valueID == CSSValueSlide || valueID == CSSValueScroll || valueID == CSSValueAlternate)
             return true;
         break;
-    case CSSPropertyWebkitNbspMode: // normal | space
-        if (valueID == CSSValueNormal || valueID == CSSValueSpace)
-            return true;
-        break;
     case CSSPropertyWebkitPrintColorAdjust:
         if (valueID == CSSValueExact || valueID == CSSValueEconomy)
             return true;
@@ -1008,7 +1004,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWebkitMarqueeDirection:
     case CSSPropertyWebkitMarqueeStyle:
-    case CSSPropertyWebkitNbspMode:
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
@@ -2819,7 +2814,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWebkitMarqueeDirection:
     case CSSPropertyWebkitMarqueeStyle:
-    case CSSPropertyWebkitNbspMode:
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
