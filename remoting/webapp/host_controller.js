@@ -30,11 +30,9 @@ remoting.HostController = function() {
     }
   };
 
-  try {
-    this.hostDispatcher_.getDaemonVersion(printVersion);
-  } catch (err) {
+  this.hostDispatcher_.getDaemonVersion(printVersion, function() {
     console.log('Host version not available.');
-  }
+  });
 }
 
 // Note that the values in the enums below are copied from
@@ -64,7 +62,8 @@ remoting.HostController.AsyncResult = {
  *     called when done.
  */
 remoting.HostController.prototype.getConsent = function(callback) {
-  this.hostDispatcher_.getUsageStatsConsent(callback);
+  this.hostDispatcher_.getUsageStatsConsent(callback,
+                                            remoting.showErrorMessage);
 };
 
 /**
@@ -121,7 +120,8 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
 
     if (success) {
       that.hostDispatcher_.getPinHash(newHostId, hostPin,
-          startHostWithHash.bind(null, hostName, publicKey, privateKey, xhr));
+          startHostWithHash.bind(null, hostName, publicKey, privateKey, xhr),
+          remoting.showErrorMessage);
     } else {
       console.log('Failed to register the host. Status: ' + xhr.status +
                   ' response: ' + xhr.responseText);
@@ -150,7 +150,8 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
     var onStartDaemon = function(result) {
       onStarted(callback, result, hostName, publicKey);
     };
-    that.hostDispatcher_.startDaemon(hostConfig, consent, onStartDaemon);
+    that.hostDispatcher_.startDaemon(hostConfig, consent, onStartDaemon,
+                                     remoting.showErrorMessage);
   }
 
   /**
@@ -201,10 +202,12 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
    * @return {void} Nothing.
    */
   function startWithHostname(hostName) {
-    that.hostDispatcher_.generateKeyPair(onKeyGenerated.bind(null, hostName));
+    that.hostDispatcher_.generateKeyPair(onKeyGenerated.bind(null, hostName),
+                                         remoting.showErrorMessage);
   }
 
-  this.hostDispatcher_.getHostName(startWithHostname);
+  this.hostDispatcher_.getHostName(startWithHostname,
+                                   remoting.showErrorMessage);
 };
 
 /**
@@ -241,7 +244,7 @@ remoting.HostController.prototype.stop = function(callback) {
     that.getLocalHostId(unregisterHost.bind(null, result));
   };
 
-  this.hostDispatcher_.stopDaemon(onStopped);
+  this.hostDispatcher_.stopDaemon(onStopped, remoting.showErrorMessage);
 };
 
 /**
@@ -273,7 +276,8 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
     }
     /** @type {string} */
     var hostId = config['host_id'];
-    that.hostDispatcher_.getPinHash(hostId, newPin, updateDaemonConfigWithHash);
+    that.hostDispatcher_.getPinHash(hostId, newPin, updateDaemonConfigWithHash,
+                                    remoting.showErrorMessage);
   }
 
   /** @param {string} pinHash */
@@ -281,12 +285,13 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
     var newConfig = {
       host_secret_hash: pinHash
     };
-    that.hostDispatcher_.updateDaemonConfig(newConfig, callback);
+    that.hostDispatcher_.updateDaemonConfig(newConfig, callback,
+                                            remoting.showErrorMessage);
   }
 
   // TODO(sergeyu): When crbug.com/121518 is fixed: replace this call
   // with an unprivileged version if that is necessary.
-  this.hostDispatcher_.getDaemonConfig(onConfig);
+  this.hostDispatcher_.getDaemonConfig(onConfig, remoting.showErrorMessage);
 };
 
 /**
@@ -296,7 +301,9 @@ remoting.HostController.prototype.updatePin = function(newPin, callback) {
  *     Completion callback.
  */
 remoting.HostController.prototype.getLocalHostState = function(onDone) {
-  this.hostDispatcher_.getDaemonState(onDone);
+  this.hostDispatcher_.getDaemonState(onDone, function() {
+    onDone(remoting.HostController.State.NOT_IMPLEMENTED);
+  });
 };
 
 /**
@@ -315,11 +322,10 @@ remoting.HostController.prototype.getLocalHostId = function(onDone) {
     }
     onDone(hostId);
   };
-  try {
-    this.hostDispatcher_.getDaemonConfig(onConfig);
-  } catch (err) {
+
+  this.hostDispatcher_.getDaemonConfig(onConfig, function(error) {
     onDone(null);
-  }
+  });
 };
 
 /** @type {remoting.HostController} */

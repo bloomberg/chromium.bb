@@ -17,19 +17,6 @@ index 5dfc368..f69d984 100644
 -window.addEventListener('beforeunload', onBeforeUnload, false);
  window.addEventListener('resize', remoting.onResize, false);
 -window.addEventListener('unload', remoting.disconnect, false);
-diff --git a/remoting/webapp/host_controller.js b/remoting/webapp/host_controller.js
-index 83c9844..98f63c3 100644
---- a/host_controller.js
-+++ b/host_controller.js
-@@ -31,7 +31,7 @@ remoting.HostController.prototype.getLocalHostStateAndId = function(onDone) {
-   };
-
-   try {
--    this.hostDispatcher_.getDaemonVersion(printVersion);
-+    onConfig('{}');
-   } catch (err) {
-     console.log('Host version not available.');
-   }
 diff --git a/remoting/webapp/main.html b/remoting/webapp/main.html
 index 061caeb..f61e532 100644
 --- a/main.html
