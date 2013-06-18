@@ -11,10 +11,10 @@
 #include "base/message_loop.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/browser/renderer_host/webmenurunner_mac.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #import "ui/base/cocoa/base_view.h"
-#include "webkit/glue/webmenurunner_mac.h"
 
 namespace content {
 

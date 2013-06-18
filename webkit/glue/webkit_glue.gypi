@@ -300,8 +300,6 @@
         'webkit_glue_export.h',
         'webkitplatformsupport_impl.cc',
         'webkitplatformsupport_impl.h',
-        'webmenurunner_mac.h',
-        'webmenurunner_mac.mm',
         'websocketstreamhandle_bridge.h',
         'websocketstreamhandle_delegate.h',
         'websocketstreamhandle_impl.cc',

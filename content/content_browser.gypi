@@ -943,6 +943,8 @@
     'browser/renderer_host/web_input_event_aura.h',
     'browser/renderer_host/web_input_event_aurawin.cc',
     'browser/renderer_host/web_input_event_aurax11.cc',
+    'browser/renderer_host/webmenurunner_mac.h',
+    'browser/renderer_host/webmenurunner_mac.mm',
     'browser/resolve_proxy_msg_helper.cc',
     'browser/resolve_proxy_msg_helper.h',
     'browser/resource_context_impl.cc',

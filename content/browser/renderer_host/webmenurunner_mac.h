@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBMENURUNNER_MAC_H_
-#define WEBKIT_GLUE_WEBMENURUNNER_MAC_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_WEBMENURUNNER_MAC_H_
+#define CONTENT_BROWSER_RENDERER_HOST_WEBMENURUNNER_MAC_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -11,7 +11,6 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "webkit/common/webmenuitem.h"
-#include "webkit/glue/webkit_glue_export.h"
 
 
 // WebMenuRunner ---------------------------------------------------------------
@@ -20,7 +19,6 @@
 // item is selected, MenuDelegate is informed and sets a flag which can be
 // queried after the menu has finished running.
 
-WEBKIT_GLUE_EXPORT
 @interface WebMenuRunner : NSObject {
  @private
   // The native menu control.
@@ -60,4 +58,4 @@ WEBKIT_GLUE_EXPORT
 
 @end  // @interface WebMenuRunner
 
-#endif // WEBKIT_GLUE_WEBMENURUNNER_MAC_H_
+#endif // CONTENT_BROWSER_RENDERER_HOST_WEBMENURUNNER_MAC_H_
