@@ -123,12 +123,8 @@ public class AwContentsTest extends AwTestBase {
         destroyAwContentsOnMainSync(awTestContainerView.getAwContents());
     }
 
-    /*
-     * @LargeTest
-     * @Feature({"AndroidWebView"})
-     * Disabled until we switch to final rendering pipeline.
-     */
-    @DisabledTest
+    @LargeTest
+    @Feature({"AndroidWebView"})
     public void testCreateLoadDestroyManyTimes() throws Throwable {
         final int CREATE_AND_DESTROY_REPEAT_COUNT = 10;
         for (int i = 0; i < CREATE_AND_DESTROY_REPEAT_COUNT; ++i) {
@@ -140,12 +136,8 @@ public class AwContentsTest extends AwTestBase {
         }
     }
 
-    /*
-     * @LargeTest
-     * @Feature({"AndroidWebView"})
-     * Disabled until we switch to final rendering pipeline.
-     */
-    @DisabledTest
+    @LargeTest
+    @Feature({"AndroidWebView"})
     public void testCreateLoadDestroyManyAtOnce() throws Throwable {
         final int CREATE_AND_DESTROY_REPEAT_COUNT = 10;
         AwTestContainerView views[] = new AwTestContainerView[CREATE_AND_DESTROY_REPEAT_COUNT];
