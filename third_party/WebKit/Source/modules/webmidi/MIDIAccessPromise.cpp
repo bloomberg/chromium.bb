@@ -41,6 +41,7 @@ namespace WebCore {
 PassRefPtr<MIDIAccessPromise> MIDIAccessPromise::create(ScriptExecutionContext* context, const Dictionary& options)
 {
     RefPtr<MIDIAccessPromise> midiAccessPromise(adoptRef(new MIDIAccessPromise(context, options)));
+    midiAccessPromise->setPendingActivity(midiAccessPromise.get());
     midiAccessPromise->suspendIfNeeded();
     return midiAccessPromise.release();
 }
@@ -52,7 +53,6 @@ MIDIAccessPromise::MIDIAccessPromise(ScriptExecutionContext* context, const Dict
     , m_access(MIDIAccess::create(context, this))
 {
     ScriptWrappable::init(this);
-    setPendingActivity(this);
 }
 
 MIDIAccessPromise::~MIDIAccessPromise()
