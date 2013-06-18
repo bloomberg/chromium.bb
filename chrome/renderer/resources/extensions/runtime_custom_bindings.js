@@ -19,9 +19,15 @@ if (contextType == 'BLESSED_EXTENSION' ||
     contextType == 'UNBLESSED_EXTENSION') {
   var manifest = runtimeNatives.GetManifest();
   if (manifest.app && manifest.app.background) {
+    // Get the background page if one exists. Otherwise, default to the current
+    // window.
     backgroundPage = extensionNatives.GetExtensionViews(-1, 'BACKGROUND')[0];
-    var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
-    backgroundRequire = GetModuleSystem(backgroundPage).require;
+    if (backgroundPage) {
+      var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
+      backgroundRequire = GetModuleSystem(backgroundPage).require;
+    } else {
+      backgroundPage = window;
+    }
   }
 }
 
