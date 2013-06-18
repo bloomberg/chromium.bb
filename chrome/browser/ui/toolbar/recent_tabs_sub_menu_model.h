@@ -53,16 +53,17 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
+  virtual const gfx::Font* GetLabelFontAt(int index) const OVERRIDE;
 
   int GetMaxWidthForItemAtIndex(int item_index) const;
 
-  // Command Id for disabled recently closed header menu item to which we want
-  // to append the accelerator string.
+  // Command Id for recently closed items header or disabled item to which the
+  // accelerator string will be appended.
   static const int kRecentlyClosedHeaderCommandId;
+  static const int kDisabledRecentlyClosedHeaderCommandId;
 
-  // Command Id for disabled menu items, e.g. device section header,
-  // "No tabs from other devices", etc.
-  static const int kOtherDeviceHeaderCommandId;
+  // Command Id for other devices section headers, using the device name.
+  static const int kDeviceNameCommandId;
 
  private:
   struct TabNavigationItem;

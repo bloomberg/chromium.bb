@@ -54,6 +54,10 @@ class WrenchMenu : public views::MenuDelegate,
   bool use_new_menu() const { return use_new_menu_; }
 
   // MenuDelegate overrides:
+  virtual const gfx::Font* GetLabelFont(int index) const OVERRIDE;
+  virtual bool GetForegroundColor(int command_id,
+                                  bool is_hovered,
+                                  SkColor* override_color) const OVERRIDE;
   virtual string16 GetTooltipText(int id, const gfx::Point& p) const OVERRIDE;
   virtual bool IsTriggerableEvent(views::MenuItemView* menu,
                                   const ui::Event& e) OVERRIDE;
@@ -135,6 +139,13 @@ class WrenchMenu : public views::MenuDelegate,
     return bookmark_menu_delegate_.get() && id >= first_bookmark_command_id_;
   }
 
+  // Returns true if |id| identifies a recent tabs menu item.
+  bool is_recent_tabs_command(int id) const {
+    return (recent_tabs_menu_model_delegate_.get() &&
+            id >= first_recent_tabs_command_id_ &&
+            id <= last_recent_tabs_command_id_);
+  }
+
   // The views menu. Owned by |menu_runner_|.
   views::MenuItemView* root_;
 
@@ -166,8 +177,12 @@ class WrenchMenu : public views::MenuDelegate,
   // Used for managing "Recent tabs" menu items.
   scoped_ptr<RecentTabsMenuModelDelegate> recent_tabs_menu_model_delegate_;
 
-  // ID to use for the items representing bookmarks in the bookmark menu.
+  // First ID to use for the items representing bookmarks in the bookmark menu.
   int first_bookmark_command_id_;
+
+  // First/last IDs to use for the items of the recent tabs sub-menu.
+  int first_recent_tabs_command_id_;
+  int last_recent_tabs_command_id_;
 
   content::NotificationRegistrar registrar_;
 

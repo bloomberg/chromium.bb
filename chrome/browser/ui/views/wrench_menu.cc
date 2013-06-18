@@ -762,6 +762,21 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
         kMaxMenuItemWidth : -1;
   }
 
+  const gfx::Font* GetLabelFontAt(int index) const {
+    return model_->GetLabelFontAt(index);
+  }
+
+  bool GetForegroundColor(int command_id,
+                          bool is_hovered,
+                          SkColor* override_color) const {
+    // The items for which we get a font, should be shown in black.
+    if (GetLabelFontAt(command_id)) {
+      *override_color = SK_ColorBLACK;
+      return true;
+    }
+    return false;
+  }
+
  private:
   ui::MenuModel* model_;
   views::MenuItemView* menu_item_;
@@ -781,6 +796,8 @@ WrenchMenu::WrenchMenu(Browser* browser,
       bookmark_menu_(NULL),
       feedback_menu_item_(NULL),
       first_bookmark_command_id_(0),
+      first_recent_tabs_command_id_(-1),
+      last_recent_tabs_command_id_(-1),
       use_new_menu_(use_new_menu),
       supports_new_separators_(supports_new_separators) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
@@ -840,6 +857,26 @@ const ui::NativeTheme* WrenchMenu::GetNativeTheme() const {
 
 const views::MenuConfig& WrenchMenu::GetMenuConfig() const {
   return MenuConfig::instance(GetNativeTheme());
+}
+
+const gfx::Font* WrenchMenu::GetLabelFont(int index) const {
+  if (is_recent_tabs_command(index)) {
+    return recent_tabs_menu_model_delegate_->GetLabelFontAt(
+        index - first_recent_tabs_command_id_);
+  }
+  return NULL;
+}
+
+bool WrenchMenu::GetForegroundColor(int command_id,
+                                    bool is_hovered,
+                                    SkColor* override_color) const {
+  if (is_recent_tabs_command(command_id)) {
+    return recent_tabs_menu_model_delegate_->GetForegroundColor(
+        command_id - first_recent_tabs_command_id_,
+        is_hovered,
+        override_color);
+  }
+  return false;
 }
 
 string16 WrenchMenu::GetTooltipText(int id,
@@ -1060,8 +1097,15 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
     MenuItemView* item = AppendMenuItem(
         parent, model, i, model->GetTypeAt(i), next_id, height);
 
-    if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU)
+    if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU) {
+      bool is_recent_tabs_menu =
+          model->GetCommandIdAt(i) == IDC_RECENT_TABS_MENU;
+      if (is_recent_tabs_menu)
+        first_recent_tabs_command_id_ = *next_id;
       PopulateMenu(item, model->GetSubmenuModelAt(i), next_id);
+      if (is_recent_tabs_menu)
+        last_recent_tabs_command_id_ = *next_id - 1;
+    }
 
     const ui::NativeTheme* native_theme = GetNativeTheme();
 

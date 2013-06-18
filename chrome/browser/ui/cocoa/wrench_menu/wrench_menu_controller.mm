@@ -38,6 +38,7 @@ using content::UserMetricsAction;
 - (NSButton*)zoomDisplay;
 - (void)removeAllItems:(NSMenu*)menu;
 - (NSMenu*)recentTabsSubmenu;
+- (ui::MenuModel*)recentTabsMenuModel;
 - (int)maxWidthForMenuModel:(ui::MenuModel*)model
                  modelIndex:(int)modelIndex;
 @end
@@ -236,11 +237,8 @@ class ZoomLevelObserver {
 }
 
 - (void)updateRecentTabsSubmenu {
-  ui::MenuModel* model = [self wrenchMenuModel];
-  int index = 0;
-  if (ui::MenuModel::GetModelAndIndexForCommandId(
-      RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId,
-      &model, &index)) {
+  ui::MenuModel* model = [self recentTabsMenuModel];
+  if (model) {
     recentTabsMenuModelDelegate_.reset(
         new RecentTabsMenuModelDelegate(model, [self recentTabsSubmenu]));
   }
@@ -319,19 +317,34 @@ class ZoomLevelObserver {
   return [[[self menu] itemWithTitle:title] submenu];
 }
 
+// The recent tabs menu model is recognized by the existence of either the
+// kRecentlyClosedHeaderCommandId or the kDisabledRecentlyClosedHeaderCommandId.
+- (ui::MenuModel*)recentTabsMenuModel {
+  int index = 0;
+  // Start searching at the wrnech menu model level, |model| will be updated
+  // only if the command we're looking for is found in one of the [sub]menus.
+  ui::MenuModel* model = [self wrenchMenuModel];
+  if (ui::MenuModel::GetModelAndIndexForCommandId(
+          RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId, &model,
+          &index)) {
+    return model;
+  }
+  if (ui::MenuModel::GetModelAndIndexForCommandId(
+          RecentTabsSubMenuModel::kDisabledRecentlyClosedHeaderCommandId,
+          &model, &index)) {
+    return model;
+  }
+  return NULL;
+}
+
 // This overrdies the parent class to return a custom width for recent tabs
 // menu.
 - (int)maxWidthForMenuModel:(ui::MenuModel*)model
                  modelIndex:(int)modelIndex {
-  int index = 0;
-  ui::MenuModel* recentTabsMenuModel = [self wrenchMenuModel];
-  if (ui::MenuModel::GetModelAndIndexForCommandId(
-      RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId,
-      &recentTabsMenuModel, &index)) {
-    if (recentTabsMenuModel == model) {
-      return static_cast<RecentTabsSubMenuModel*>(
-          recentTabsMenuModel)->GetMaxWidthForItemAtIndex(modelIndex);
-    }
+  ui::MenuModel* recentTabsMenuModel = [self recentTabsMenuModel];
+  if (recentTabsMenuModel && recentTabsMenuModel == model) {
+    return static_cast<RecentTabsSubMenuModel*>(
+        recentTabsMenuModel)->GetMaxWidthForItemAtIndex(modelIndex);
   }
   return -1;
 }

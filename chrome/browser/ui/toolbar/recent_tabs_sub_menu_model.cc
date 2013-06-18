@@ -110,7 +110,7 @@ int CommandIdToWindowModelIndex(int command_id) {
   return command_id - kFirstWindowCommandId;
 }
 
-}  // namepace
+}  // namespace
 
 // An element in |RecentTabsSubMenuModel::tab_navigation_items_| that stores
 // the navigation information of a local or foreign tab required to restore the
@@ -136,7 +136,8 @@ struct RecentTabsSubMenuModel::TabNavigationItem {
 };
 
 const int RecentTabsSubMenuModel::kRecentlyClosedHeaderCommandId = 500;
-const int RecentTabsSubMenuModel::kOtherDeviceHeaderCommandId = 1000;
+const int RecentTabsSubMenuModel::kDisabledRecentlyClosedHeaderCommandId = 501;
+const int RecentTabsSubMenuModel::kDeviceNameCommandId = 1000;
 
 RecentTabsSubMenuModel::RecentTabsSubMenuModel(
     ui::AcceleratorProvider* accelerator_provider,
@@ -179,7 +180,8 @@ bool RecentTabsSubMenuModel::IsCommandIdChecked(int command_id) const {
 
 bool RecentTabsSubMenuModel::IsCommandIdEnabled(int command_id) const {
   if (command_id == kRecentlyClosedHeaderCommandId ||
-      command_id == kOtherDeviceHeaderCommandId ||
+      command_id == kDisabledRecentlyClosedHeaderCommandId ||
+      command_id == kDeviceNameCommandId ||
       command_id == IDC_RECENT_TABS_NO_DEVICE_TABS) {
     return false;
   }
@@ -188,7 +190,12 @@ bool RecentTabsSubMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool RecentTabsSubMenuModel::GetAcceleratorForCommandId(
     int command_id, ui::Accelerator* accelerator) {
-  if (command_id == kRecentlyClosedHeaderCommandId &&
+  // If there are no recently closed items, we show the accelerator beside
+  // the header, otherwise, we show it beside the first item underneath it.
+  int index_in_menu = GetIndexOfCommandId(command_id);
+  int header_index = GetIndexOfCommandId(kRecentlyClosedHeaderCommandId);
+  if ((command_id == kDisabledRecentlyClosedHeaderCommandId ||
+       (header_index != -1 && index_in_menu == header_index + 1)) &&
       reopen_closed_tab_accelerator_.key_code() != ui::VKEY_UNKNOWN) {
     *accelerator = reopen_closed_tab_accelerator_;
     return true;
@@ -204,7 +211,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
 
-  DCHECK_NE(kOtherDeviceHeaderCommandId, command_id);
+  DCHECK_NE(kDeviceNameCommandId, command_id);
   DCHECK_NE(IDC_RECENT_TABS_NO_DEVICE_TABS, command_id);
 
   WindowOpenDisposition disposition =
@@ -254,10 +261,21 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
+const gfx::Font* RecentTabsSubMenuModel::GetLabelFontAt(int index) const {
+  int command_id = GetCommandIdAt(index);
+  if (command_id == kDeviceNameCommandId ||
+      command_id == kRecentlyClosedHeaderCommandId) {
+    return &ResourceBundle::GetSharedInstance().GetFont(
+        ResourceBundle::BoldFont);
+  }
+  return NULL;
+}
+
 int RecentTabsSubMenuModel::GetMaxWidthForItemAtIndex(int item_index) const {
   int command_id = GetCommandIdAt(item_index);
   if (command_id == IDC_RECENT_TABS_NO_DEVICE_TABS ||
-      command_id == kRecentlyClosedHeaderCommandId) {
+      command_id == kRecentlyClosedHeaderCommandId ||
+      command_id == kDisabledRecentlyClosedHeaderCommandId) {
     return -1;
   }
   return 320;
@@ -284,7 +302,8 @@ void RecentTabsSubMenuModel::BuildRecentTabs() {
   if (!service || service->entries().size() == 0) {
     // This is to show a disabled restore tab entry with the accelerator to
     // teach users about this command.
-    AddItemWithStringId(kRecentlyClosedHeaderCommandId, IDS_RESTORE_TAB);
+    AddItemWithStringId(kDisabledRecentlyClosedHeaderCommandId,
+                        IDS_NEW_TAB_RECENTLY_CLOSED);
     return;
   }
 
@@ -371,7 +390,7 @@ void RecentTabsSubMenuModel::BuildDevices() {
     // Add the header for the device session.
     DCHECK(!session->session_name.empty());
     AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItem(kOtherDeviceHeaderCommandId, UTF8ToUTF16(session->session_name));
+    AddItem(kDeviceNameCommandId, UTF8ToUTF16(session->session_name));
     AddDeviceFavicon(GetItemCount() - 1, session->device_type);
 
     // Build tab menu items from sorted session tabs.
