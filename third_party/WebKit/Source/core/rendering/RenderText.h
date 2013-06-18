@@ -86,11 +86,11 @@ public:
     float maxLogicalWidth() const;
 
     void trimmedPrefWidths(float leadWidth,
-                           float& beginMinW, bool& beginWS,
-                           float& endMinW, bool& endWS,
-                           bool& hasBreakableChar, bool& hasBreak,
-                           float& beginMaxW, float& endMaxW,
-                           float& minW, float& maxW, bool& stripFrontSpaces);
+        float& firstLineMinWidth, bool& hasBreakableStart,
+        float& lastLineMinWidth, bool& hasBreakableEnd,
+        bool& hasBreakableChar, bool& hasBreak,
+        float& firstLineMaxWidth, float& lastLineMaxWidth,
+        float& minWidth, float& maxWidth, bool& stripFrontSpaces);
 
     virtual IntRect linesBoundingBox() const;
     LayoutRect linesVisualOverflowBoundingBox() const;
@@ -181,8 +181,8 @@ private:
     bool m_hasBreakableChar : 1; // Whether or not we can be broken into multiple lines.
     bool m_hasBreak : 1; // Whether or not we have a hard break (e.g., <pre> with '\n').
     bool m_hasTab : 1; // Whether or not we have a variable width tab character (e.g., <pre> with '\t').
-    bool m_hasBeginWS : 1; // Whether or not we begin with WS (only true if we aren't pre)
-    bool m_hasEndWS : 1; // Whether or not we end with WS (only true if we aren't pre)
+    bool m_hasBreakableStart : 1;
+    bool m_hasBreakableEnd : 1;
     bool m_linesDirty : 1; // This bit indicates that the text run has already dirtied specific
                            // line boxes, and this hint will enable layoutInlineChildren to avoid
                            // just dirtying everything when character data is modified (e.g., appended/inserted
@@ -195,8 +195,8 @@ private:
     
     float m_minWidth;
     float m_maxWidth;
-    float m_beginMinWidth;
-    float m_endMinWidth;
+    float m_firstLineMinWidth;
+    float m_lastLineLineMinWidth;
 
     String m_text;
 

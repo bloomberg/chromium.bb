@@ -6134,16 +6134,17 @@ void RenderBlock::computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidt
                 // then they shouldn't be considered in the breakable char
                 // check.
                 bool hasBreakableChar, hasBreak;
-                float beginMin, endMin;
-                bool beginWS, endWS;
-                float beginMax, endMax;
-                t->trimmedPrefWidths(inlineMax, beginMin, beginWS, endMin, endWS,
-                                     hasBreakableChar, hasBreak, beginMax, endMax,
-                                     childMin, childMax, stripFrontSpaces);
+                float firstLineMinWidth, lastLineMinWidth;
+                bool hasBreakableStart, hasBreakableEnd;
+                float firstLineMaxWidth, lastLineMaxWidth;
+                t->trimmedPrefWidths(inlineMax,
+                    firstLineMinWidth, hasBreakableStart, lastLineMinWidth, hasBreakableEnd,
+                    hasBreakableChar, hasBreak, firstLineMaxWidth, lastLineMaxWidth,
+                    childMin, childMax, stripFrontSpaces);
 
                 // This text object will not be rendered, but it may still provide a breaking opportunity.
                 if (!hasBreak && childMax == 0) {
-                    if (autoWrap && (beginWS || endWS)) {
+                    if (autoWrap && (hasBreakableStart || hasBreakableEnd)) {
                         updatePreferredWidth(minLogicalWidth, inlineMin);
                         inlineMin = 0;
                     }
@@ -6160,14 +6161,14 @@ void RenderBlock::computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidt
                 if (!addedTextIndent || hasRemainingNegativeTextIndent) {
                     ti = textIndent.ceilToFloat();
                     childMin += ti;
-                    beginMin += ti;
+                    firstLineMinWidth += ti;
                     
                     // It the text indent negative and larger than the child minimum, we re-use the remainder
                     // in future minimum calculations, but using the negative value again on the maximum
                     // will lead to under-counting the max pref width.
                     if (!addedTextIndent) {
                         childMax += ti;
-                        beginMax += ti;
+                        firstLineMaxWidth += ti;
                         addedTextIndent = true;
                     }
                     
@@ -6183,40 +6184,36 @@ void RenderBlock::computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidt
                 if (!hasBreakableChar) {
                     inlineMin += childMin;
                 } else {
-                    // We have a breakable character.  Now we need to know if
-                    // we start and end with whitespace.
-                    if (beginWS)
-                        // Go ahead and end the current line.
+                    if (hasBreakableStart) {
                         updatePreferredWidth(minLogicalWidth, inlineMin);
-                    else {
-                        inlineMin += beginMin;
+                    } else {
+                        inlineMin += firstLineMinWidth;
                         updatePreferredWidth(minLogicalWidth, inlineMin);
                         childMin -= ti;
                     }
 
                     inlineMin = childMin;
 
-                    if (endWS) {
-                        // We end in whitespace, which means we can go ahead
-                        // and end our current line.
+                    if (hasBreakableEnd) {
                         updatePreferredWidth(minLogicalWidth, inlineMin);
                         inlineMin = 0;
                         shouldBreakLineAfterText = false;
                     } else {
                         updatePreferredWidth(minLogicalWidth, inlineMin);
-                        inlineMin = endMin;
+                        inlineMin = lastLineMinWidth;
                         shouldBreakLineAfterText = true;
                     }
                 }
 
                 if (hasBreak) {
-                    inlineMax += beginMax;
+                    inlineMax += firstLineMaxWidth;
                     updatePreferredWidth(maxLogicalWidth, inlineMax);
                     updatePreferredWidth(maxLogicalWidth, childMax);
-                    inlineMax = endMax;
+                    inlineMax = lastLineMaxWidth;
                     addedTextIndent = true;
-                } else
+                } else {
                     inlineMax += max<float>(0, childMax);
+                }
             }
 
             // Ignore spaces after a list marker.
