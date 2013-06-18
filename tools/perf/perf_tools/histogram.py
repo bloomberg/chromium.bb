@@ -39,3 +39,12 @@ def SubtractHistogram(histogram_json, start_histogram_json):
   histogram['count'] -= start_histogram['count']
 
   return json.dumps(histogram)
+
+def GetHistogramFromDomAutomation(function, name, tab):
+  # TODO(jeremy): Remove references to
+  # domAutomationController when we update the reference builds.
+  js = ('(window.statsCollectionController ? '
+        'statsCollectionController : '
+        'domAutomationController).%s("%s")' %
+        (function, name))
+  return tab.EvaluateJavaScript(js)
