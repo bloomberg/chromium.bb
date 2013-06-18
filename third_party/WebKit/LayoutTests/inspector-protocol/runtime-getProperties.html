@@ -75,6 +75,28 @@ function test()
     }
     function callbackProperties5(result) {
         logGetPropertiesResult("Object(5)", result);
+        return { callback: callbackStartNotOwn };
+    }
+
+    
+    // 'Not own' section -- check all properties of the object, including ones from it prototype chain.
+
+    function callbackStartNotOwn() {
+        // Create an wrapper object with additional property.
+        var expression = "({ a: 2, set b() {}, get b() {return 5;}, __proto__: { a: 3, c: 4, get d() {return 6;} }})";
+        
+        return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEvalNotOwn };
+    }
+    function callbackEvalNotOwn(result) {
+        var id = result.result.objectId;
+        if (id === undefined)
+            throw new Error("objectId is expected");
+        return {
+            command: "Runtime.getProperties", params: {objectId: id, ownProperties: false}, callback: callbackPropertiesNotOwn
+        };
+    }
+    function callbackPropertiesNotOwn(result) {
+        logGetPropertiesResult("Not own properties", result);
         return { callback: callbackStartArray };
     }
 
@@ -127,10 +149,12 @@ function test()
         for (var i = 0; i < propertyArray.length; i++) {
             var p = propertyArray[i];
             var v = p.value;
+            var own = p.isOwn ? "own" : "inherited";
             if (v)
-                InspectorTest.log("  " + p.name + " " + v.type + " " + v.value);
+                InspectorTest.log("  " + p.name + " " + own + " " + v.type + " " + v.value );
             else
-                InspectorTest.log("  " + p.name);
+                InspectorTest.log("  " + p.name + " " + own + " no value" +
+                    (p.get ? ", getter" : "") + (p.set ? ", setter" : ""));
         }
         var internalPropertyArray = protocolResult.internalProperties;
         if (internalPropertyArray) {

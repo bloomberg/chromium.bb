@@ -399,11 +399,11 @@ InjectedScript.prototype = {
 
                 try {
                     nameProcessed[name] = true;
-                    var descriptor = Object.getOwnPropertyDescriptor(/** @type {!Object} */ (object), name);
+                    var descriptor = Object.getOwnPropertyDescriptor(/** @type {!Object} */ (o), name);
                     if (!descriptor) {
                         // Not all bindings provide proper descriptors. Fall back to the writable, configurable property.
                         try {
-                            descriptor = { name: name, value: object[name], writable: false, configurable: false, enumerable: false};
+                            descriptor = { name: name, value: o[name], writable: false, configurable: false, enumerable: false};
                             if (o === object) 
                                 descriptor.isOwn = true;
                             descriptors.push(descriptor);
