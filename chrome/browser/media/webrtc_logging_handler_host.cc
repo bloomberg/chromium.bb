@@ -133,10 +133,14 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
                             kWebRtcLogSize / 2,
                             false);
 
+  // App session ID
+  std::string info = "App session ID: " + app_session_id_ + '\n';
+  pcb.Write(info.c_str(), info.length());
+
   // OS
-  std::string info = base::SysInfo::OperatingSystemName() + " " +
-                     base::SysInfo::OperatingSystemVersion() + " " +
-                     base::SysInfo::OperatingSystemArchitecture() + '\n';
+  info = base::SysInfo::OperatingSystemName() + " " +
+         base::SysInfo::OperatingSystemVersion() + " " +
+         base::SysInfo::OperatingSystemArchitecture() + '\n';
   pcb.Write(info.c_str(), info.length());
 #if defined(OS_LINUX)
   info = "Linux distribution: " + base::GetLinuxDistro() + '\n';
