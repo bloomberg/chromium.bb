@@ -1868,15 +1868,13 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_SaveAs)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PDF_GetResourceImage,
                      PP_ResourceImage /* image_id */,
                      float /* scale */)
+
 // Reply for PpapiHostMsg_PDF_GetResourceImage containing the host resource id
 // of the image and a PP_ImageDataDesc which describes the image. Also carries
-// a shared memory handle pointing to the memory containg the image. On linux,
-// the handle is transmitted in this message as |fd|. This is due to the
-// unfortunate way that ImageHandles are defined for use with PPB_ImageData.
-IPC_MESSAGE_CONTROL3(PpapiPluginMsg_PDF_GetResourceImageReply,
+// a shared memory handle pointing to the memory containg the image.
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_PDF_GetResourceImageReply,
                      ppapi::HostResource /* resource_id */,
-                     PP_ImageDataDesc /* image_data_desc */,
-                     int /* fd */)
+                     PP_ImageDataDesc /* image_data_desc */)
 
 // VideoCapture_Dev, plugin -> host
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_Create)

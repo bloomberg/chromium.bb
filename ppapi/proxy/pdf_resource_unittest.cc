@@ -168,8 +168,7 @@ TEST_F(PDFResourceTest, GetResourceImageForScale) {
   };
   SerializedHandle serialized_handle(SerializedHandle::SHARED_MEMORY);
   PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(expected_resource,
-                                                     expected_desc,
-                                                     0);
+                                                     expected_desc);
   ResourceSyncCallHandler handler(
       &sink(),
       PpapiHostMsg_PDF_GetResourceImage::ID,

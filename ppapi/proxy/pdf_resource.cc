@@ -168,9 +168,8 @@ PP_Resource PDFResource::GetResourceImageForScale(PP_ResourceImage image_id,
 
   HostResource resource;
   PP_ImageDataDesc image_desc;
-  int fd;
   if (!UnpackMessage<PpapiPluginMsg_PDF_GetResourceImageReply>(
-      reply, &resource, &image_desc, &fd)) {
+      reply, &resource, &image_desc)) {
     return 0;
   }
 
@@ -179,19 +178,10 @@ PP_Resource PDFResource::GetResourceImageForScale(PP_ResourceImage image_id,
   if (!PPB_ImageData_Shared::IsImageDataDescValid(image_desc))
     return 0;
 
-#if defined(OS_ANDROID)
-  // This is compiled into android for tests only.
-  return 0;
-#elif defined(TOOLKIT_GTK)
-  return (new PlatformImageData(resource, image_desc, fd))->GetReference();
-#elif defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
   base::SharedMemoryHandle handle;
   if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &handle))
     return 0;
-  return (new PlatformImageData(resource, image_desc, handle))->GetReference();
-#else
-#error Not implemented.
-#endif
+  return (new SimpleImageData(resource, image_desc, handle))->GetReference();
 }
 
 PP_Resource PDFResource::GetResourceImage(PP_ResourceImage image_id) {

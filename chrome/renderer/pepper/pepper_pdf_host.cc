@@ -20,11 +20,11 @@
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/enter.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -318,29 +318,12 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
 
   ppapi::host::ReplyMessageContext reply_context =
       context->MakeReplyMessageContext();
-#if defined(TOOLKIT_GTK)
-  // For GTK, we pass the SysV shared memory key in the message.
-  PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
-                                                     image_data_desc,
-                                                     image_handle.fd);
-#elif defined(OS_POSIX) || defined(OS_WIN)
   ppapi::proxy::SerializedHandle serialized_handle;
-  PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
-                                                     image_data_desc,
-                                                     0);
   serialized_handle.set_shmem(image_handle, byte_count);
   reply_context.params.AppendHandle(serialized_handle);
-#else
-  // Not supported on the other platforms.
-  // This is a stub reply_msg not to break the build.
-  PpapiPluginMsg_PDF_GetResourceImageReply reply_msg(host_resource,
-                                                     image_data_desc,
-                                                     0);
-  NOTIMPLEMENTED();
-  return PP_ERROR_NOTSUPPORTED;
-#endif
-
-  SendReply(reply_context, reply_msg);
+  SendReply(reply_context,
+            PpapiPluginMsg_PDF_GetResourceImageReply(host_resource,
+                                                     image_data_desc));
 
   // Keep a reference to the resource only if the function succeeds.
   image_data_resource.Release();
@@ -363,7 +346,7 @@ bool PepperPDFHost::CreateImageData(
     uint32_t* out_byte_count) {
   PP_Resource resource = ppapi::proxy::PPB_ImageData_Proxy::CreateImageData(
       instance,
-      ppapi::PPB_ImageData_Shared::PLATFORM,
+      ppapi::PPB_ImageData_Shared::SIMPLE,
       format, size,
       false /* init_to_zero */,
       out_image_data_desc, out_image_handle, out_byte_count);
@@ -384,10 +367,10 @@ bool PepperPDFHost::CreateImageData(
   if (!mapper.is_valid())
     return false;
 
-  skia::PlatformCanvas* canvas = image_data->GetPlatformCanvas();
-  // Note: Do not skBitmap::copyTo the canvas bitmap directly because it will
-  // ignore the allocated pixels in shared memory and re-allocate a new buffer.
-  canvas->writePixels(pixels_to_write, 0, 0);
+  const SkBitmap* bitmap = image_data->GetMappedBitmap();
+  pixels_to_write.copyPixelsTo(bitmap->getPixels(),
+                               bitmap->getSize(),
+                               bitmap->rowBytes());
 
   return true;
 }
