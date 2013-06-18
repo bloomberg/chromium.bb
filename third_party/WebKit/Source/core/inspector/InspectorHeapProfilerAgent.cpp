@@ -103,6 +103,7 @@ void InspectorHeapProfilerAgent::setFrontend(InspectorFrontend* frontend)
 
 void InspectorHeapProfilerAgent::clearFrontend()
 {
+    stopTrackingHeapObjects(0);
     m_state->setBoolean(HeapProfilerAgentState::profileHeadersRequested, false);
     m_frontend = 0;
 }
