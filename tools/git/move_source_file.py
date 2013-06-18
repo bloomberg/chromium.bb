@@ -19,6 +19,7 @@ find files that reference the moved file.
 """
 
 
+import optparse
 import os
 import re
 import subprocess
@@ -36,6 +37,9 @@ sort_headers = __import__('sort-headers')
 HANDLED_EXTENSIONS = ['.cc', '.mm', '.h', '.hh']
 
 
+def IsHandledFile(path):
+  return os.path.splitext(path)[1] in HANDLED_EXTENSIONS
+
 def MakeDestinationPath(from_path, to_path):
   """Given the from and to paths, return a correct destination path.
 
@@ -43,7 +47,7 @@ def MakeDestinationPath(from_path, to_path):
   in which case the path must end with /.  Also does basic sanity
   checks.
   """
-  if os.path.splitext(from_path)[1] not in HANDLED_EXTENSIONS:
+  if not IsHandledFile(from_path):
     raise Exception('Only intended to move individual source files. (%s)' %
                     from_path)
   dest_extension = os.path.splitext(to_path)[1]
@@ -84,7 +88,7 @@ def UpdatePostMove(from_path, to_path):
     # Reorder headers in files that changed.
     for changed_file in files_with_changed_includes:
       def AlwaysConfirm(a, b): return True
-      sort_headers.FixFileWithConfirmFunction(changed_file, AlwaysConfirm)
+      sort_headers.FixFileWithConfirmFunction(changed_file, AlwaysConfirm, True)
 
   # Update comments; only supports // comments, which are primarily
   # used in our code.
@@ -149,25 +153,35 @@ def main():
   if not os.path.isdir('.git'):
     print 'Fatal: You must run from the root of a git checkout.'
     return 1
-  args = sys.argv[1:]
 
-  already_moved = False
-  if len(args) > 0 and args[0] == '--already-moved':
-    args = args[1:]
-    already_moved = True
+  parser = optparse.OptionParser(usage='%prog FROM_PATH... TO_PATH')
+  parser.add_option('--already_moved', action='store_true',
+                    dest='already_moved',
+                    help='Causes the script to skip moving the file.')
+  parser.add_option('--no_error_for_non_source_file', action='store_false',
+                    default='True',
+                    dest='error_for_non_source_file',
+                    help='Causes the script to simply print a warning on '
+                    'encountering a non-source file rather than raising an '
+                    'error.')
+  opts, args = parser.parse_args()
 
   if len(args) < 2:
-    print ('Usage: move_source_file.py [--already-moved] FROM_PATH... TO_PATH'
-           '\n\n%s' % __doc__)
+    parser.print_help()
     return 1
 
   if len(args) > 2 and not args[-1].endswith('/'):
     print 'Target %s is not a directory.' % args[-1]
+    print
+    parser.print_help()
     return 1
 
   for from_path in args[:len(args)-1]:
+    if not opts.error_for_non_source_file and not IsHandledFile(from_path):
+      print '%s does not appear to be a source file, skipping' % (from_path)
+      continue
     to_path = MakeDestinationPath(from_path, args[-1])
-    if not already_moved:
+    if not opts.already_moved:
       MoveFile(from_path, to_path)
     UpdatePostMove(from_path, to_path)
   return 0

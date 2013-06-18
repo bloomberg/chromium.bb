@@ -77,23 +77,43 @@ def SortHeader(infile, outfile):
     if IsInclude(line):
       headerblock = []
       while IsInclude(line):
+        infile_ended_on_include_line = False
         headerblock.append(line)
-        line = infile.next()
+        # Ensure we don't die due to trying to read beyond the end of the file.
+        try:
+          line = infile.next()
+        except StopIteration:
+          infile_ended_on_include_line = True
+          break
       for header in sorted(headerblock, key=IncludeCompareKey):
         outfile.write(header)
+      if infile_ended_on_include_line:
+        # We already wrote the last line above; exit to ensure it isn't written
+        # again.
+        return
       # Intentionally fall through, to write the line that caused
       # the above while loop to exit.
     outfile.write(line)
 
 
-def FixFileWithConfirmFunction(filename, confirm_function):
+def FixFileWithConfirmFunction(filename, confirm_function,
+                               perform_safety_checks):
   """Creates a fixed version of the file, invokes |confirm_function|
   to decide whether to use the new file, and cleans up.
 
   |confirm_function| takes two parameters, the original filename and
   the fixed-up filename, and returns True to use the fixed-up file,
   false to not use it.
+
+  If |perform_safety_checks| is True, then the function checks whether it is
+  unsafe to reorder headers in this file and skips the reorder with a warning
+  message in that case.
   """
+  if perform_safety_checks and IsUnsafeToReorderHeaders(filename):
+    print ('Not reordering headers in %s as the script thinks that the '
+           'order of headers in this file is semantically significant.'
+           % (filename))
+    return
   fixfilename = filename + '.new'
   infile = open(filename, 'rb')
   outfile = open(fixfilename, 'wb')
@@ -114,7 +134,7 @@ def FixFileWithConfirmFunction(filename, confirm_function):
       pass
 
 
-def DiffAndConfirm(filename, should_confirm):
+def DiffAndConfirm(filename, should_confirm, perform_safety_checks):
   """Shows a diff of what the tool would change the file named
   filename to.  Shows a confirmation prompt if should_confirm is true.
   Saves the resulting file if should_confirm is false or the user
@@ -130,14 +150,27 @@ def DiffAndConfirm(filename, should_confirm):
 
     return (not should_confirm or YesNo('Use new file (y/N)?'))
 
-  FixFileWithConfirmFunction(filename, ConfirmFunction)
+  FixFileWithConfirmFunction(filename, ConfirmFunction, perform_safety_checks)
 
+def IsUnsafeToReorderHeaders(filename):
+  # *_message_generator.cc is almost certainly a file that generates IPC
+  # definitions. Changes in include order in these files can result in them not
+  # building correctly.
+  if filename.find("message_generator.cc") != -1:
+    return True
+  return False
 
 def main():
   parser = optparse.OptionParser(usage='%prog filename1 filename2 ...')
   parser.add_option('-f', '--force', action='store_false', default=True,
                     dest='should_confirm',
                     help='Turn off confirmation prompt.')
+  parser.add_option('--no_safety_checks',
+                    action='store_false', default=True,
+                    dest='perform_safety_checks',
+                    help='Do not perform the safety checks via which this '
+                    'script refuses to operate on files for which it thinks '
+                    'the include ordering is semantically significant.')
   opts, filenames = parser.parse_args()
 
   if len(filenames) < 1:
@@ -145,7 +178,7 @@ def main():
     return 1
 
   for filename in filenames:
-    DiffAndConfirm(filename, opts.should_confirm)
+    DiffAndConfirm(filename, opts.should_confirm, opts.perform_safety_checks)
 
 
 if __name__ == '__main__':

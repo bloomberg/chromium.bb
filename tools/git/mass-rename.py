@@ -34,7 +34,8 @@ def main():
       subprocess.check_call([
         sys.executable,
         os.path.join(BASE_DIR, 'move_source_file.py'),
-        '--already-moved',
+        '--already_moved',
+        '--no_error_for_non_source_file',
         fro, to])
     else:
       print "Skipping: %s -- not a rename?" % fro
