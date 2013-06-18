@@ -36,15 +36,17 @@ clean_exit () {
     log "Cleaning up: $TMPDIR"
     rm -rf "$TMPDIR"
   fi
+  trap "" EXIT
   exit $1
 }
 
-# Ensure clean exit on Ctrl-C.
-trap "clean_exit 1" INT
+# Ensure clean exit on Ctrl-C or normal exit.
+trap "clean_exit 1" INT HUP QUIT TERM
+trap "clean_exit \$?" EXIT
 
 panic () {
   echo "ERROR: $@" >&2
-  clean_exit 1
+  exit 1
 }
 
 fail_panic () {
@@ -95,6 +97,7 @@ PULL_LIBS_DIR=
 SANDBOXED=
 SANDBOXED_INDEX=
 START=
+SU_PREFIX=
 SYMBOL_DIR=
 TARGET_ARCH=
 TOOLCHAIN=
@@ -154,6 +157,9 @@ for opt; do
       ;;
     --start)
       START=true
+      ;;
+    --su-prefix=*)
+      SU_PREFIX=$optarg
       ;;
     --symbol-dir=*)
       SYMBOL_DIR=$optarg
@@ -300,6 +306,10 @@ Valid options:
   --gdb=<program>       Specify host gdb client binary.
   --target-arch=<name>  Specify NDK target arch.
   --adb=<program>       Specify host ADB binary.
+
+  --su-prefix=<prefix>  Prepend <prefix> to 'adb shell' commands that are
+                        run by this script. This can be useful to use
+                        the 'su' program on rooted production devices.
 
   --pull-libs           Force system libraries extraction.
   --no-pull-libs        Do not extract any system library.
@@ -813,22 +823,46 @@ fi
 # If so, we can launch gdbserver directly, otherwise, we have to
 # use run-as $PACKAGE_NAME ..., which requires the package to be debuggable.
 #
-SHELL_UID=$(adb shell cat /proc/self/status | \
-            awk '$1 == "Uid:" { print $2; }')
-log "Shell UID: $SHELL_UID"
-COMMAND_PREFIX=
-if [ "$SHELL_UID" != 0 -o -n "$NO_ROOT" ]; then
-  log "Using run-as $PACKAGE_NAME to run without root."
-  COMMAND_PREFIX="run-as $PACKAGE_NAME"
+if [ "$SU_PREFIX" ]; then
+  # Need to check that this works properly.
+  SU_PREFIX_TEST_LOG=$TMPDIR/su-prefix.log
+  adb_shell $SU_PREFIX echo "foo" > $SU_PREFIX_TEST_LOG 2>&1
+  if [ $? != 0 -o "$(cat $SU_PREFIX_TEST_LOG)" != "foo" ]; then
+    echo "ERROR: Cannot use '$SU_PREFIX' as a valid su prefix:"
+    echo "$ adb shell $SU_PREFIX echo foo"
+    cat $SU_PREFIX_TEST_LOG
+    exit 1
+  fi
+  COMMAND_PREFIX=$SU_PREFIX
+else
+  SHELL_UID=$(adb shell cat /proc/self/status | \
+              awk '$1 == "Uid:" { print $2; }')
+  log "Shell UID: $SHELL_UID"
+  if [ "$SHELL_UID" != 0 -o -n "$NO_ROOT" ]; then
+    COMMAND_PREFIX="run-as $PACKAGE_NAME"
+  else
+    COMMAND_PREFIX=
+  fi
 fi
+log "Command prefix: '$COMMAND_PREFIX'"
 
 # Pull device's system libraries that are mapped by our process.
 # Pulling all system libraries is too long, so determine which ones
 # we need by looking at /proc/$PID/maps instead
 if [ "$PULL_LIBS" -a -z "$NO_PULL_LIBS" ]; then
   echo "Extracting system libraries into: $PULL_LIBS_DIR"
-  SYSTEM_LIBS=$(adb_shell $COMMAND_PREFIX cat /proc/$PID/maps | \
-                awk '$6 ~ /\/system\/.*\.so$/ { print $6; }' | sort -u)
+  rm -f $PULL_LIBS_DIR/build.prop
+  MAPPINGS=$(adb_shell $COMMAND_PREFIX cat /proc/$PID/maps)
+  if [ $? != 0 ]; then
+    echo "ERROR: Could not list process's memory mappings."
+    if [ "$SU_PREFIX" ]; then
+      panic "Are you sure your --su-prefix is correct?"
+    else
+      panic "Use --su-prefix if the application is not debuggable."
+    fi
+  fi
+  SYSTEM_LIBS=$(echo "$MAPPINGS" | \
+      awk '$6 ~ /\/system\/.*\.so$/ { print $6; }' | sort -u)
   for SYSLIB in /system/bin/linker $SYSTEM_LIBS; do
     echo "Pulling from device: $SYSLIB"
     DST_FILE=$PULL_LIBS_DIR$SYSLIB
@@ -927,5 +961,3 @@ fi
 log "Launching gdb client: $GDB $GDBARGS -x $COMMANDS"
 $GDB $GDBARGS -x $COMMANDS &&
 rm -f "$GDBSERVER_PIDFILE"
-
-clean_exit $?
