@@ -55,8 +55,12 @@ MockPairingRegistryDelegate::~MockPairingRegistryDelegate() {
 }
 
 void MockPairingRegistryDelegate::AddPairing(
-    const PairingRegistry::Pairing& new_paired_client) {
-  paired_clients_[new_paired_client.client_id] = new_paired_client;
+    const PairingRegistry::Pairing& new_paired_client,
+    const PairingRegistry::AddPairingCallback& callback) {
+  paired_clients_[new_paired_client.client_id()] = new_paired_client;
+  if (!callback.is_null()) {
+    callback.Run(true);
+  }
 }
 
 void MockPairingRegistryDelegate::GetPairing(

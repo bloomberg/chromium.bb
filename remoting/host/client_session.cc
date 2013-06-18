@@ -181,8 +181,8 @@ void ClientSession::RequestPairing(
     protocol::PairingRegistry::Pairing pairing =
         pairing_registry_->CreatePairing(pairing_request.client_name());
     protocol::PairingResponse pairing_response;
-    pairing_response.set_client_id(pairing.client_id);
-    pairing_response.set_shared_secret(pairing.shared_secret);
+    pairing_response.set_client_id(pairing.client_id());
+    pairing_response.set_shared_secret(pairing.shared_secret());
     connection_->client_stub()->SetPairingResponse(pairing_response);
   }
 }

@@ -31,6 +31,7 @@ const int kMessages = 1;
 
 const char kNoClientId[] = "";
 const char kNoPairedSecret[] = "";
+const char kTestClientName[] = "client-name";
 const char kTestClientId[] = "client-id";
 const char kTestHostId[] = "12345678910123456";
 
@@ -85,10 +86,10 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
   void CreatePairingRegistry(bool with_paired_client) {
     mock_delegate_ = new MockPairingRegistryDelegate;
     if (with_paired_client) {
-      PairingRegistry::Pairing pairing;
-      pairing.client_id = kTestClientId;
-      pairing.shared_secret = kTestPairedSecret;
-      mock_delegate_->AddPairing(pairing);
+      PairingRegistry::Pairing pairing(
+          base::Time(), kTestClientName, kTestClientId, kTestPairedSecret);
+      mock_delegate_->AddPairing(pairing,
+                                 PairingRegistry::AddPairingCallback());
     }
     pairing_registry_ = new PairingRegistry(
         scoped_ptr<PairingRegistry::Delegate>(mock_delegate_));

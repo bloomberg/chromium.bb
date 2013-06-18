@@ -97,7 +97,7 @@ void PairingHostAuthenticator::ProcessMessageWithPairing(
     const base::Closure& resume_callback,
     PairingRegistry::Pairing pairing) {
   waiting_for_paired_secret_ = false;
-  std::string paired_secret = pairing.shared_secret;
+  std::string paired_secret = pairing.shared_secret();
   if (paired_secret.empty()) {
     LOG(INFO) << "Unknown client id";
     error_message_ = "unknown-client-id";

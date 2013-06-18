@@ -12,9 +12,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time.h"
 
 namespace remoting {
 namespace protocol {
+
+// TODO(jamiewalch): This class is little more than a wrapper around the
+// Pairing and Delegate classes. Refactor it away.
 
 // PairingRegistry holds information about paired clients to support
 // PIN-less authentication. For each paired client, the registry holds
@@ -29,28 +33,55 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
                         public base::NonThreadSafe {
  public:
   struct Pairing {
-    std::string client_id;
-    std::string client_name;
-    std::string shared_secret;
+    Pairing();
+    Pairing(const base::Time& created_time,
+            const std::string& client_name,
+            const std::string& client_id,
+            const std::string& shared_secret);
+    ~Pairing();
+
+    static Pairing Create(const std::string& client_name);
+
+    bool operator==(const Pairing& other) const;
+
+    bool is_valid() const;
+
+    base::Time created_time() const { return created_time_; }
+    std::string client_id() const { return client_id_; }
+    std::string client_name() const { return client_name_; }
+    std::string shared_secret() const { return shared_secret_; }
+
+   private:
+    base::Time created_time_;
+    std::string client_name_;
+    std::string client_id_;
+    std::string shared_secret_;
   };
 
   // Mapping from client id to pairing information.
   typedef std::map<std::string, Pairing> PairedClients;
 
-  // Delegate::GetPairing callback.
-  typedef base::Callback<void(Pairing)> GetPairingCallback;
+  // Delegate callbacks.
+  typedef base::Callback<void(Pairing client_information)> GetPairingCallback;
+  typedef base::Callback<void(bool success)> AddPairingCallback;
 
   // Interface representing the persistent storage back-end.
   class Delegate {
    public:
     virtual ~Delegate() {}
 
-    // Add pairing information to persistent storage. Must not block.
-    virtual void AddPairing(const Pairing& new_paired_client) = 0;
+    // Add pairing information to persistent storage. If a non-NULL callback
+    // is provided, invoke it on completion to indicate success or failure.
+    // Must not block.
+    //
+    // TODO(jamiewalch): Plumb the callback into the RequestPairing flow so
+    // that the client isn't sent the pairing information until it has been
+    // saved.
+    virtual void AddPairing(const Pairing& new_paired_client,
+                            const AddPairingCallback& callback) = 0;
 
-    // Retrieve the Pairing for the specified client id. If none is
-    // found, invoke the callback with a Pairing in which (at least)
-    // the shared_secret is empty.
+    // Retrieve the Pairing for the specified client id. If none is found,
+    // invoke the callback with a default pairing. Must not block.
     virtual void GetPairing(const std::string& client_id,
                             const GetPairingCallback& callback) = 0;
   };
@@ -80,7 +111,8 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
 class NotImplementedPairingRegistryDelegate : public PairingRegistry::Delegate {
  public:
   virtual void AddPairing(
-      const PairingRegistry::Pairing& paired_clients) OVERRIDE;
+      const PairingRegistry::Pairing& paired_clients,
+      const PairingRegistry::AddPairingCallback& callback) OVERRIDE;
   virtual void GetPairing(
       const std::string& client_id,
       const PairingRegistry::GetPairingCallback& callback) OVERRIDE;

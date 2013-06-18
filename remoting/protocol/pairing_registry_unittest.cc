@@ -23,7 +23,7 @@ class PairingRegistryTest : public testing::Test {
 
   void CompareSecret(const std::string& expected,
                      PairingRegistry::Pairing actual) {
-    EXPECT_EQ(actual.shared_secret, expected);
+    EXPECT_EQ(actual.shared_secret(), expected);
     got_secret_ = true;
   }
 
@@ -32,22 +32,19 @@ class PairingRegistryTest : public testing::Test {
 };
 
 TEST_F(PairingRegistryTest, GetPairing) {
-  PairingRegistry::Pairing client_info = {
-    "client_id",
-    "client_name",
-    "shared_secret"
-  };
+  PairingRegistry::Pairing client_info =
+      PairingRegistry::Pairing::Create("client_name");
   MockPairingRegistryDelegate* mock_delegate =
       new MockPairingRegistryDelegate();
-  mock_delegate->AddPairing(client_info);
+  mock_delegate->AddPairing(client_info, PairingRegistry::AddPairingCallback());
   scoped_ptr<PairingRegistry::Delegate> delegate(mock_delegate);
 
   scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass()));
 
-  registry->GetPairing(client_info.client_id,
+  registry->GetPairing(client_info.client_id(),
                        base::Bind(&PairingRegistryTest::CompareSecret,
                                   base::Unretained(this),
-                                  client_info.shared_secret));
+                                  client_info.shared_secret()));
   mock_delegate->RunCallback();
   EXPECT_TRUE(got_secret_);
 }
@@ -69,8 +66,8 @@ TEST_F(PairingRegistryTest, AddPairing) {
   ASSERT_EQ(clients.size(), 2u);
   PairingRegistry::Pairing first = clients.begin()->second;
   PairingRegistry::Pairing second = (++clients.begin())->second;
-  EXPECT_EQ(first.client_name, second.client_name);
-  EXPECT_NE(first.client_id, second.client_id);
+  EXPECT_EQ(first.client_name(), second.client_name());
+  EXPECT_NE(first.client_id(), second.client_id());
 }
 
 }  // namespace protocol
