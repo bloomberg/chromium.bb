@@ -142,7 +142,7 @@ class DriveUploader : public DriveUploaderInterface {
       StartInitiateUploadCallback;
 
   // Starts uploading a file with |upload_file_info|.
-  void StartUploadFile(
+  CancelCallback StartUploadFile(
       scoped_ptr<UploadFileInfo> upload_file_info,
       const StartInitiateUploadCallback& start_initiate_upload_callback);
   void StartUploadFileAfterGetFileSize(

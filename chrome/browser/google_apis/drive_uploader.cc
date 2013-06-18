@@ -22,24 +22,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-// Google Documents List API requires uploading in chunks of 512kB.
-const int64 kUploadChunkSize = 512 * 1024;
-
-// Opens |path| with |file_stream| and returns the file size.
-// If failed, returns an error code in a negative value.
-int64 OpenFileStreamAndGetSizeOnBlockingPool(net::FileStream* file_stream,
-                                             const base::FilePath& path) {
-  int result = file_stream->OpenSync(
-      path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
-  if (result != net::OK)
-    return result;
-  return file_stream->Available();
-}
-
-}  // namespace
-
 namespace google_apis {
 
 // Structure containing current upload information of file, passed between
@@ -58,7 +40,9 @@ struct DriveUploader::UploadFileInfo {
         content_length(0),
         power_save_blocker(content::PowerSaveBlocker::Create(
             content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-            "Upload in progress")) {
+            "Upload in progress")),
+        cancelled(false),
+        weak_ptr_factory_(this) {
   }
 
   ~UploadFileInfo() {
@@ -71,6 +55,11 @@ struct DriveUploader::UploadFileInfo {
            "], content_length=[" + base::UintToString(content_length) +
            "], drive_path=[" + drive_path.AsUTF8Unsafe() +
            "]";
+  }
+
+  // Returns the callback to cancel the upload represented by this struct.
+  CancelCallback GetCancelCallback() {
+    return base::Bind(&UploadFileInfo::Cancel, weak_ptr_factory_.GetWeakPtr());
   }
 
   // Final path in gdata. Looks like /special/drive/MyFolder/MyFile.
@@ -97,6 +86,26 @@ struct DriveUploader::UploadFileInfo {
 
   // Blocks system suspend while upload is in progress.
   scoped_ptr<content::PowerSaveBlocker> power_save_blocker;
+
+  // Fields for implementing cancellation. |cancel_callback| is non-null if
+  // there is an in-flight HTTP request. In that case, |cancell_callback| will
+  // cancel the operation. |cancelled| is initially false and turns to true
+  // once Cancel() is called. DriveUploader will check this field before after
+  // an async task other than HTTP requests and cancels the subsequent requests
+  // if this is flagged to true.
+  CancelCallback cancel_callback;
+  bool cancelled;
+
+ private:
+  // Cancels the upload represented by this struct.
+  void Cancel() {
+    cancelled = true;
+    if (!cancel_callback.is_null())
+      cancel_callback.Run();
+  }
+
+  base::WeakPtrFactory<UploadFileInfo> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(UploadFileInfo);
 };
 
 DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
@@ -122,7 +131,7 @@ CancelCallback DriveUploader::UploadNewFile(
   DCHECK(!content_type.empty());
   DCHECK(!callback.is_null());
 
-  StartUploadFile(
+  return StartUploadFile(
       scoped_ptr<UploadFileInfo>(new UploadFileInfo(drive_file_path,
                                                     local_file_path,
                                                     content_type,
@@ -151,7 +160,7 @@ CancelCallback DriveUploader::UploadExistingFile(
   DCHECK(!content_type.empty());
   DCHECK(!callback.is_null());
 
-  StartUploadFile(
+  return StartUploadFile(
       scoped_ptr<UploadFileInfo>(new UploadFileInfo(drive_file_path,
                                                     local_file_path,
                                                     content_type,
@@ -183,7 +192,7 @@ CancelCallback DriveUploader::ResumeUploadFile(
       callback, progress_callback));
   upload_file_info->upload_location = upload_location;
 
-  StartUploadFile(
+  return StartUploadFile(
       upload_file_info.Pass(),
       base::Bind(&DriveUploader::StartGetUploadStatus,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -191,14 +200,12 @@ CancelCallback DriveUploader::ResumeUploadFile(
   return CancelCallback();
 }
 
-void DriveUploader::StartUploadFile(
+CancelCallback DriveUploader::StartUploadFile(
     scoped_ptr<UploadFileInfo> upload_file_info,
     const StartInitiateUploadCallback& start_initiate_upload_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "Uploading file: " << upload_file_info->DebugString();
 
-  // Passing a raw net::FileStream* to the blocking pool is safe, because it is
-  // owned by |upload_file_info| in the reply callback.
   UploadFileInfo* info_ptr = upload_file_info.get();
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(),
@@ -209,6 +216,7 @@ void DriveUploader::StartUploadFile(
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&upload_file_info),
                  start_initiate_upload_callback));
+  return info_ptr->GetCancelCallback();
 }
 
 void DriveUploader::StartUploadFileAfterGetFileSize(
@@ -223,6 +231,10 @@ void DriveUploader::StartUploadFileAfterGetFileSize(
   }
   DCHECK_GE(upload_file_info->content_length, 0);
 
+  if (upload_file_info->cancelled) {
+    UploadFailed(upload_file_info.Pass(), GDATA_CANCELLED);
+    return;
+  }
   start_initiate_upload_callback.Run(upload_file_info.Pass());
 }
 
@@ -233,7 +245,7 @@ void DriveUploader::StartInitiateUploadNewFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* info_ptr = upload_file_info.get();
-  drive_service_->InitiateUploadNewFile(
+  info_ptr->cancel_callback = drive_service_->InitiateUploadNewFile(
       info_ptr->drive_path,
       info_ptr->content_type,
       info_ptr->content_length,
@@ -251,7 +263,7 @@ void DriveUploader::StartInitiateUploadExistingFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* info_ptr = upload_file_info.get();
-  drive_service_->InitiateUploadExistingFile(
+  info_ptr->cancel_callback = drive_service_->InitiateUploadExistingFile(
       info_ptr->drive_path,
       info_ptr->content_type,
       info_ptr->content_length,
@@ -302,7 +314,7 @@ void DriveUploader::StartGetUploadStatus(
   DCHECK(upload_file_info);
 
   UploadFileInfo* info_ptr = upload_file_info.get();
-  drive_service_->GetUploadStatus(
+  info_ptr->cancel_callback = drive_service_->GetUploadStatus(
       info_ptr->drive_path,
       info_ptr->upload_location,
       info_ptr->content_length,
@@ -319,8 +331,16 @@ void DriveUploader::UploadNextChunk(
   DCHECK_GE(start_position, 0);
   DCHECK_LE(start_position, upload_file_info->content_length);
 
+  // TODO(kinaba) this will become not needed if the redundant workaround
+  // base::MessageLoop::current()->PostTask for calling UploadNextChunk is
+  // removed.
+  if (upload_file_info->cancelled) {
+    UploadFailed(upload_file_info.Pass(), GDATA_CANCELLED);
+    return;
+  }
+
   UploadFileInfo* info_ptr = upload_file_info.get();
-  drive_service_->ResumeUpload(
+  info_ptr->cancel_callback = drive_service_->ResumeUpload(
       info_ptr->drive_path,
       info_ptr->upload_location,
       start_position,
