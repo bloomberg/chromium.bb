@@ -72,10 +72,7 @@
 #include "webkit/common/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#include "third_party/WebKit/public/web/win/WebScreenInfoFactory.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #elif defined(OS_ANDROID)
 #include "media/base/android/media_player_manager.h"

@@ -40,7 +40,6 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/gtk/WebInputEventFactory.h"
-#include "third_party/WebKit/public/web/x11/WebScreenInfoFactory.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/text/text_elider.h"

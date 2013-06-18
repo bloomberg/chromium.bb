@@ -52,9 +52,6 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
-#if defined(OS_WIN)
-#include "third_party/WebKit/public/web/win/WebScreenInfoFactory.h"
-#endif
 #include "ui/base/events/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/size_conversions.h"

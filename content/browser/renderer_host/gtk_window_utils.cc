@@ -4,16 +4,16 @@
 
 #include "content/browser/renderer_host/gtk_window_utils.h"
 
-#include <vector>
-
+#include <X11/Xlib.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+
+#include <vector>
 
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/rect.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
-#include "third_party/WebKit/public/web/x11/WebScreenInfoFactory.h"
 
 namespace content {
 
@@ -44,16 +44,34 @@ gfx::Rect GetWorkArea(Window window) {
                    property[start_index + 2], property[start_index + 3]);
 }
 
+WebKit::WebScreenInfo GetScreenInfo(Display* display, int screenNumber) {
+  // XDisplayWidth() and XDisplayHeight() return cached values. To ensure that
+  // we return the correct dimensions after the screen is resized, query the
+  // root window's geometry each time.
+  Window root = RootWindow(display, screenNumber);
+  Window root_ret;
+  int x, y;
+  unsigned int width, height, border, depth;
+  XGetGeometry(
+      display, root, &root_ret, &x, &y, &width, &height, &border, &depth);
+
+  WebKit::WebScreenInfo results;
+  results.depthPerComponent = 8;  // Assume 8bpp, which is usually right.
+  results.depth = depth;
+  results.isMonochrome = depth == 1;
+  results.rect = WebKit::WebRect(x, y, width, height);
+  results.availableRect = results.rect;
+  return results;
+}
+
 }  // namespace
 
 void GetScreenInfoFromNativeWindow(
     GdkWindow* gdk_window, WebKit::WebScreenInfo* results) {
   GdkScreen* screen = gdk_window_get_screen(gdk_window);
-  *results = WebKit::WebScreenInfoFactory::screenInfo(
-      gdk_x11_drawable_get_xdisplay(gdk_window),
-      gdk_x11_screen_get_screen_number(screen));
+  *results = GetScreenInfo(gdk_x11_drawable_get_xdisplay(gdk_window),
+                        gdk_x11_screen_get_screen_number(screen));
 
-  // TODO(tony): We should move this code into WebScreenInfoFactory.
   int monitor_number = gdk_screen_get_monitor_at_window(screen, gdk_window);
   GdkRectangle monitor_rect;
   gdk_screen_get_monitor_geometry(screen, monitor_number, &monitor_rect);
