@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEB_DISCARDABLE_MEMORY_IMPL_H_
-#define WEBKIT_GLUE_WEB_DISCARDABLE_MEMORY_IMPL_H_
+#ifndef WEBKIT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_
+#define WEBKIT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_
 
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebDiscardableMemory.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace WebKit {
 class WebDiscardableMemory;
@@ -18,7 +18,7 @@ namespace webkit_glue {
 
 // Implementation of WebDiscardableMemory that is responsible for allocating
 // discardable memory.
-class WEBKIT_GLUE_EXPORT WebDiscardableMemoryImpl
+class WEBKIT_CHILD_EXPORT WebDiscardableMemoryImpl
     : NON_EXPORTED_BASE(public WebKit::WebDiscardableMemory) {
  public:
   WebDiscardableMemoryImpl();
@@ -41,4 +41,4 @@ class WEBKIT_GLUE_EXPORT WebDiscardableMemoryImpl
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_WEB_DISCARDABLE_MEMORY_IMPL_H_
+#endif  // WEBKIT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_

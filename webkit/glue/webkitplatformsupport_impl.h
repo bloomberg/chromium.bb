@@ -114,8 +114,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual void setSharedTimerFireInterval(double interval_seconds);
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)(void*), void* context);
-  virtual WebKit::WebDiscardableMemory* allocateAndLockDiscardableMemory(
-      size_t bytes);
 
 
   // Embedder functions. The following are not implemented by the glue layer and

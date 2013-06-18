@@ -10,7 +10,6 @@
 
 #include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
-#include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
@@ -45,7 +44,6 @@
 #include "ui/base/layout.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/user_agent/user_agent.h"
-#include "webkit/glue/web_discardable_memory_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
@@ -919,17 +917,6 @@ void WebKitPlatformSupportImpl::ResumeSharedTimer() {
     setSharedTimerFireInterval(
         shared_timer_fire_time_ - monotonicallyIncreasingTime());
   }
-}
-
-WebKit::WebDiscardableMemory*
-    WebKitPlatformSupportImpl::allocateAndLockDiscardableMemory(size_t bytes) {
-  if (!base::DiscardableMemory::Supported())
-    return NULL;
-  scoped_ptr<WebDiscardableMemoryImpl> discardable(
-      new WebDiscardableMemoryImpl());
-  if (discardable->InitializeAndLock(bytes))
-    return discardable.release();
-  return NULL;
 }
 
 #if defined(OS_ANDROID)

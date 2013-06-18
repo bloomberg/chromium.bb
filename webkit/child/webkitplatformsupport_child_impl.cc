@@ -4,8 +4,10 @@
 
 #include "webkit/child/webkitplatformsupport_child_impl.h"
 
+#include "base/memory/discardable_memory.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/child/fling_curve_configuration.h"
+#include "webkit/child/web_discardable_memory_impl.h"
 #include "webkit/child/webthread_impl.h"
 #include "webkit/child/worker_task_runner.h"
 
@@ -87,6 +89,17 @@ void WebKitPlatformSupportChildImpl::didStopWorkerRunLoop(
     const WebKit::WebWorkerRunLoop& runLoop) {
   WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
   worker_task_runner->OnWorkerRunLoopStopped(runLoop);
+}
+
+WebKit::WebDiscardableMemory*
+WebKitPlatformSupportChildImpl::allocateAndLockDiscardableMemory(size_t bytes) {
+  if (!base::DiscardableMemory::Supported())
+    return NULL;
+  scoped_ptr<WebDiscardableMemoryImpl> discardable(
+      new WebDiscardableMemoryImpl());
+  if (discardable->InitializeAndLock(bytes))
+    return discardable.release();
+  return NULL;
 }
 
 // static

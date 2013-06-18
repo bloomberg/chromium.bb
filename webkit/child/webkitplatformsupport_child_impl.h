@@ -51,6 +51,9 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
   virtual void didStopWorkerRunLoop(
       const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
 
+  virtual WebKit::WebDiscardableMemory* allocateAndLockDiscardableMemory(
+      size_t bytes);
+
  private:
   static void DestroyCurrentThread(void*);
 
