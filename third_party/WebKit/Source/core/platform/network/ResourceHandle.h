@@ -64,12 +64,6 @@ public:
 
     ResourceRequest& firstRequest();
 
-    typedef PassRefPtr<ResourceHandle> (*BuiltinConstructor)(const ResourceRequest& request, ResourceHandleClient* client);
-    static void registerBuiltinConstructor(const AtomicString& protocol, BuiltinConstructor);
-
-    typedef void (*BuiltinSynchronousLoader)(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
-    static void registerBuiltinSynchronousLoader(const AtomicString& protocol, BuiltinSynchronousLoader);
-
 protected:
     ResourceHandle(const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff);
 
