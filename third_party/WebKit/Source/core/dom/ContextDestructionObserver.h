@@ -33,14 +33,20 @@ class ScriptExecutionContext;
 
 class ContextDestructionObserver {
 public:
-    explicit ContextDestructionObserver(ScriptExecutionContext*);
+    enum Type {
+        ActiveDOMObjectType,
+        DocumentLifecycleObserverType,
+        GenericType
+    };
+
+    explicit ContextDestructionObserver(ScriptExecutionContext*, Type = GenericType);
     virtual void contextDestroyed();
 
     ScriptExecutionContext* scriptExecutionContext() const { return m_scriptExecutionContext; }
 
 protected:
     virtual ~ContextDestructionObserver();
-    void observeContext(ScriptExecutionContext*);
+    void observeContext(ScriptExecutionContext*, Type);
 
     ScriptExecutionContext* m_scriptExecutionContext;
 };

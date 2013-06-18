@@ -27,9 +27,10 @@
 #define DocumentLifecycleObserver_h
 
 #include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleNotifier.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
@@ -38,49 +39,47 @@ class Document;
 class DocumentLifecycleObserver : public ContextDestructionObserver {
 public:
     explicit DocumentLifecycleObserver(Document*);
-    virtual ~DocumentLifecycleObserver() { }
+    virtual ~DocumentLifecycleObserver();
     virtual void documentWasDetached() { }
     virtual void documentWasDisposed() { }
 };
 
-class DocumentLifecycleNotifier {
+class DocumentLifecycleNotifier  : public ContextLifecycleNotifier {
 public:
-    static PassOwnPtr<DocumentLifecycleNotifier> create();
+    static PassOwnPtr<DocumentLifecycleNotifier> create(ScriptExecutionContext*);
 
     void notifyDocumentWasDetached();
     void notifyDocumentWasDisposed();
 
-    void addObserver(DocumentLifecycleObserver*);
+    virtual void addObserver(ContextDestructionObserver*, ContextDestructionObserver::Type as) OVERRIDE;
+    virtual void removeObserver(ContextDestructionObserver*, ContextDestructionObserver::Type as) OVERRIDE;
 
 private:
-#if ASSERT_DISABLED
-    DocumentLifecycleNotifier() { }
-    void startIteration() { }
-    void endIteration() { }
-#else
-    DocumentLifecycleNotifier() : m_iterating(false) { }
+    explicit DocumentLifecycleNotifier(ScriptExecutionContext*);
     void startIteration() { m_iterating = true; }
     void endIteration() { m_iterating = false; }
-    bool m_iterating;
-#endif
 
-    Vector<DocumentLifecycleObserver*> m_observers; // Use Vector instead of HashSet for faster iteration
+    typedef HashSet<DocumentLifecycleObserver*> DocumentObserverSet;
+    DocumentObserverSet m_documentObservers;
 };
+
+inline PassOwnPtr<DocumentLifecycleNotifier> DocumentLifecycleNotifier::create(ScriptExecutionContext* context)
+{
+    return adoptPtr(new DocumentLifecycleNotifier(context));
+}
 
 inline void DocumentLifecycleNotifier::notifyDocumentWasDetached()
 {
-    startIteration();
-    for (size_t i = 0; i < m_observers.size(); ++i)
-        m_observers[i]->documentWasDetached();
-    endIteration();
+    TemporaryChange<bool> scope(this->m_iterating, true);
+    for (DocumentObserverSet::iterator i = m_documentObservers.begin(); i != m_documentObservers.end(); ++i)
+        (*i)->documentWasDetached();
 }
 
 inline void DocumentLifecycleNotifier::notifyDocumentWasDisposed()
 {
-    startIteration();
-    for (size_t i = 0; i < m_observers.size(); ++i)
-        m_observers[i]->documentWasDisposed();
-    endIteration();
+    TemporaryChange<bool> scope(this->m_iterating, true);
+    for (DocumentObserverSet::iterator i = m_documentObservers.begin(); i != m_documentObservers.end(); ++i)
+        (*i)->documentWasDisposed();
 }
 
 } // namespace WebCore

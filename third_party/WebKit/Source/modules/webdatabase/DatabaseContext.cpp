@@ -131,15 +131,7 @@ DatabaseContext::~DatabaseContext()
 void DatabaseContext::contextDestroyed()
 {
     stopDatabases();
-
-    // Normally, willDestroyActiveDOMObject() is called in ~ActiveDOMObject().
-    // However, we're here because the destructor hasn't been called, and the
-    // ScriptExecutionContext we're associated with is about to be destructed.
-    // So, go ahead an unregister self from the ActiveDOMObject list, and
-    // set m_scriptExecutionContext to 0 so that ~ActiveDOMObject() doesn't
-    // try to do so again.
-    m_scriptExecutionContext->willDestroyActiveDOMObject(this);
-    m_scriptExecutionContext = 0;
+    ActiveDOMObject::contextDestroyed();
 }
 
 // stop() is from stopActiveDOMObjects() which indicates that the owner Frame

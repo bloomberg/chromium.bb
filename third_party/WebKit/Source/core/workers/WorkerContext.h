@@ -79,8 +79,6 @@ namespace WebCore {
 
         WorkerThread* thread() const { return m_thread; }
 
-        bool hasPendingActivity() const;
-
         virtual void postTask(PassOwnPtr<Task>) OVERRIDE; // Executes the task on context's thread asynchronously.
 
         // WorkerGlobalScope
