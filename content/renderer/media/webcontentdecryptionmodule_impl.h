@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBCONTENTDECRYPTIONMODULE_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_WEBCONTENTDECRYPTIONMODULE_IMPL_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 
 namespace content {

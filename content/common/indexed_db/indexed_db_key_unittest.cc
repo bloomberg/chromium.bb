@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebIDBKey.h"
