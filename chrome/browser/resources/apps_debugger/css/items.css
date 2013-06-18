@@ -7,7 +7,16 @@ html {
   color: rgb(48, 57, 66);
   font-family: Arial, sans-serif;
   font-size: 90%;
-  overflow: visible;
+  height: 100%;
+  width: 100%;
+}
+
+html {
+  overflow: hidden;
+}
+
+body {
+  overflow: scroll;
 }
 
 body {
