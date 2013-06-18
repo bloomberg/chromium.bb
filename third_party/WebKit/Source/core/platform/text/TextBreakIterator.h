@@ -38,8 +38,8 @@ class TextBreakIterator;
 TextBreakIterator* cursorMovementIterator(const UChar*, int length);
 
 TextBreakIterator* wordBreakIterator(const UChar*, int length);
-TextBreakIterator* acquireLineBreakIterator(const LChar*, int length, const AtomicString& locale);
-TextBreakIterator* acquireLineBreakIterator(const UChar*, int length, const AtomicString& locale);
+TextBreakIterator* acquireLineBreakIterator(const LChar*, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength);
+TextBreakIterator* acquireLineBreakIterator(const UChar*, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength);
 void releaseLineBreakIterator(TextBreakIterator*);
 TextBreakIterator* sentenceBreakIterator(const UChar*, int length);
 
@@ -59,6 +59,8 @@ class LazyLineBreakIterator {
 public:
     LazyLineBreakIterator()
         : m_iterator(0)
+        , m_cachedPriorContext(0)
+        , m_cachedPriorContextLength(0)
     {
         resetPriorContext();
     }
@@ -67,6 +69,8 @@ public:
         : m_string(string)
         , m_locale(locale)
         , m_iterator(0)
+        , m_cachedPriorContext(0)
+        , m_cachedPriorContextLength(0)
     {
         resetPriorContext();
     }
@@ -84,23 +88,27 @@ public:
         COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
         return m_priorContext[1];
     }
+
     UChar secondToLastCharacter() const
     {
         COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
         return m_priorContext[0];
     }
+
     void setPriorContext(UChar last, UChar secondToLast)
     {
         COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
         m_priorContext[0] = secondToLast;
         m_priorContext[1] = last;
     }
+
     void updatePriorContext(UChar last)
     {
         COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
         m_priorContext[0] = m_priorContext[1];
         m_priorContext[1] = last;
     }
+
     void resetPriorContext()
     {
         COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
@@ -108,13 +116,35 @@ public:
         m_priorContext[1] = 0;
     }
 
-    TextBreakIterator* get()
+    unsigned priorContextLength() const
     {
+        unsigned priorContextLength = 0;
+        COMPILE_ASSERT(WTF_ARRAY_LENGTH(m_priorContext) == 2, TextBreakIterator_unexpected_prior_context_length);
+        if (m_priorContext[1]) {
+            ++priorContextLength;
+            if (m_priorContext[0])
+                ++priorContextLength;
+        }
+        return priorContextLength;
+    }
+
+    // Obtain text break iterator, possibly previously cached, where this iterator is (or has been)
+    // initialized to use the previously stored string as the primary breaking context and using
+    // previously stored prior context if non-empty.
+    TextBreakIterator* get(unsigned priorContextLength)
+    {
+        ASSERT(priorContextLength <= priorContextCapacity);
+        const UChar* priorContext = priorContextLength ? &m_priorContext[priorContextCapacity - priorContextLength] : 0;
         if (!m_iterator) {
             if (m_string.is8Bit())
-                m_iterator = acquireLineBreakIterator(m_string.characters8(), m_string.length(), m_locale);
+                m_iterator = acquireLineBreakIterator(m_string.characters8(), m_string.length(), m_locale, priorContext, priorContextLength);
             else
-                m_iterator = acquireLineBreakIterator(m_string.characters16(), m_string.length(), m_locale);
+                m_iterator = acquireLineBreakIterator(m_string.characters16(), m_string.length(), m_locale, priorContext, priorContextLength);
+            m_cachedPriorContext = priorContext;
+            m_cachedPriorContextLength = priorContextLength;
+        } else if (priorContext != m_cachedPriorContext || priorContextLength != m_cachedPriorContextLength) {
+            this->resetStringAndReleaseIterator(m_string, m_locale);
+            return this->get(priorContextLength);
         }
         return m_iterator;
     }
@@ -127,6 +157,8 @@ public:
         m_string = string;
         m_locale = locale;
         m_iterator = 0;
+        m_cachedPriorContext = 0;
+        m_cachedPriorContextLength = 0;
     }
 
 private:
@@ -135,6 +167,8 @@ private:
     AtomicString m_locale;
     TextBreakIterator* m_iterator;
     UChar m_priorContext[priorContextCapacity];
+    const UChar* m_cachedPriorContext;
+    unsigned m_cachedPriorContextLength;
 };
 
 // Iterates over "extended grapheme clusters", as defined in UAX #29.
