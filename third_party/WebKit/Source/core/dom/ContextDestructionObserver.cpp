@@ -31,29 +31,30 @@
 
 namespace WebCore {
 
-ContextDestructionObserver::ContextDestructionObserver(ScriptExecutionContext* scriptExecutionContext)
+ContextDestructionObserver::ContextDestructionObserver(ScriptExecutionContext* scriptExecutionContext, Type type)
     : m_scriptExecutionContext(0)
 {
-    observeContext(scriptExecutionContext);
+    observeContext(scriptExecutionContext, type);
 }
 
 ContextDestructionObserver::~ContextDestructionObserver()
 {
-    observeContext(0);
+    if (m_scriptExecutionContext)
+        observeContext(0, GenericType);
 }
 
-void ContextDestructionObserver::observeContext(ScriptExecutionContext* scriptExecutionContext)
+void ContextDestructionObserver::observeContext(ScriptExecutionContext* scriptExecutionContext, Type as)
 {
     if (m_scriptExecutionContext) {
         ASSERT(m_scriptExecutionContext->isContextThread());
-        m_scriptExecutionContext->willDestroyDestructionObserver(this);
+        m_scriptExecutionContext->wasUnobservedBy(this, as);
     }
 
     m_scriptExecutionContext = scriptExecutionContext;
 
     if (m_scriptExecutionContext) {
         ASSERT(m_scriptExecutionContext->isContextThread());
-        m_scriptExecutionContext->didCreateDestructionObserver(this);
+        m_scriptExecutionContext->wasObservedBy(this, as);
     }
 }
 

@@ -1694,6 +1694,8 @@
             'dom/ContextDestructionObserver.cpp',
             'dom/ContextFeatures.cpp',
             'dom/ContextFeatures.h',
+            'dom/ContextLifecycleNotifier.cpp',
+            'dom/ContextLifecycleNotifier.h',
             'dom/CrossThreadTask.h',
             'dom/CustomElementDefinition.cpp',
             'dom/CustomElementDefinition.h',

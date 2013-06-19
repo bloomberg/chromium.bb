@@ -643,8 +643,7 @@ void Document::dispose()
         m_scriptedAnimationController->clearDocumentPointer();
     m_scriptedAnimationController.clear();
 
-    if (m_lifecycleNotifier)
-        m_lifecycleNotifier->notifyDocumentWasDisposed();
+    lifecycleNotifier()->notifyDocumentWasDisposed();
 }
 
 Element* Document::getElementById(const AtomicString& id) const
@@ -2002,8 +2001,7 @@ void Document::detach(const AttachContext& context)
     if (m_mediaQueryMatcher)
         m_mediaQueryMatcher->documentDestroyed();
 
-    if (m_lifecycleNotifier)
-        m_lifecycleNotifier->notifyDocumentWasDetached();
+    lifecycleNotifier()->notifyDocumentWasDetached();
 }
 
 void Document::prepareForDestruction()
@@ -5226,11 +5224,14 @@ void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
     m_associatedFormControls.clear();
 }
 
-void Document::addLifecycleObserver(DocumentLifecycleObserver* observer)
+PassOwnPtr<ContextLifecycleNotifier> Document::createLifecycleNotifier()
 {
-    if (!m_lifecycleNotifier)
-        m_lifecycleNotifier = DocumentLifecycleNotifier::create();
-    m_lifecycleNotifier->addObserver(observer);
+    return DocumentLifecycleNotifier::create(this);
+}
+
+DocumentLifecycleNotifier* Document::lifecycleNotifier()
+{
+    return static_cast<DocumentLifecycleNotifier*>(ScriptExecutionContext::lifecycleNotifier());
 }
 
 } // namespace WebCore

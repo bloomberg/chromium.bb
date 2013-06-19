@@ -32,21 +32,38 @@
 namespace WebCore {
 
 DocumentLifecycleObserver::DocumentLifecycleObserver(Document* document)
-    : ContextDestructionObserver(document)
+    : ContextDestructionObserver(document, DocumentLifecycleObserverType)
 {
-    document->addLifecycleObserver(this);
 }
 
-PassOwnPtr<DocumentLifecycleNotifier> DocumentLifecycleNotifier::create()
+DocumentLifecycleObserver::~DocumentLifecycleObserver()
 {
-    return adoptPtr(new DocumentLifecycleNotifier());
+    observeContext(0, DocumentLifecycleObserverType);
 }
 
-void DocumentLifecycleNotifier::addObserver(DocumentLifecycleObserver* observer)
+DocumentLifecycleNotifier::DocumentLifecycleNotifier(ScriptExecutionContext* context)
+    : ContextLifecycleNotifier(context)
 {
-    ASSERT(!m_iterating);
-    ASSERT(!m_observers.contains(observer));
-    m_observers.append(observer);
+}
+
+void DocumentLifecycleNotifier::addObserver(ContextDestructionObserver* observer, ContextDestructionObserver::Type as)
+{
+    if (as == ContextDestructionObserver::DocumentLifecycleObserverType) {
+        RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
+        m_documentObservers.add(static_cast<DocumentLifecycleObserver*>(observer));
+    }
+
+    ContextLifecycleNotifier::addObserver(observer, as);
+}
+
+void DocumentLifecycleNotifier::removeObserver(ContextDestructionObserver* observer, ContextDestructionObserver::Type as)
+{
+    if (as == ContextDestructionObserver::DocumentLifecycleObserverType) {
+        RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
+        m_documentObservers.remove(static_cast<DocumentLifecycleObserver*>(observer));
+    }
+
+    ContextLifecycleNotifier::removeObserver(observer, as);
 }
 
 } // namespace WebCore
