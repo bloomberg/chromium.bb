@@ -11,7 +11,6 @@
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/dragdrop/desktop_selection_provider_aurax11.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
 
@@ -33,37 +32,31 @@ const char* kAtomsToCache[] = {
   kDndSelection,
   Clipboard::kMimeTypeURIList,
   kMimeTypeMozillaURL,
+  Clipboard::kMimeTypeText,
   NULL
 };
 
 }  // namespace
 
 OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11(
-    ui::DesktopSelectionProviderAuraX11* provider,
     ::Window x_window,
-    const std::vector< ::Atom> targets)
+    scoped_ptr<SelectionFormatMap> selection)
     : x_display_(GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
       own_window_(false),
-      selection_event_provider_(provider),
       x_window_(x_window),
       atom_cache_(x_display_, kAtomsToCache),
-      selection_requestor_(x_display_, x_window_,
-                           atom_cache_.GetAtom(kDndSelection)),
+      format_map_(selection.Pass()),
       selection_owner_(x_display_, x_window_,
-                       atom_cache_.GetAtom(kDndSelection)),
-      targets_(targets) {
+                       atom_cache_.GetAtom(kDndSelection)) {
   // We don't know all possible MIME types at compile time.
   atom_cache_.allow_uncached_atoms();
-
-  selection_event_provider_->SetDropHandler(this);
 }
 
 OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11()
     : x_display_(GetXDisplay()),
       x_root_window_(DefaultRootWindow(x_display_)),
       own_window_(true),
-      selection_event_provider_(NULL),
       x_window_(XCreateWindow(
           x_display_,
           x_root_window_,
@@ -75,8 +68,7 @@ OSExchangeDataProviderAuraX11::OSExchangeDataProviderAuraX11()
           0,
           NULL)),
       atom_cache_(x_display_, kAtomsToCache),
-      selection_requestor_(x_display_, x_window_,
-                           atom_cache_.GetAtom(kDndSelection)),
+      format_map_(new SelectionFormatMap),
       selection_owner_(x_display_, x_window_,
                        atom_cache_.GetAtom(kDndSelection)) {
   // We don't know all possible MIME types at compile time.
@@ -91,18 +83,42 @@ OSExchangeDataProviderAuraX11::~OSExchangeDataProviderAuraX11() {
   if (own_window_) {
     base::MessagePumpAuraX11::Current()->RemoveDispatcherForWindow(x_window_);
     XDestroyWindow(x_display_, x_window_);
-  } else {
-    selection_event_provider_->SetDropHandler(NULL);
   }
 }
 
-void OSExchangeDataProviderAuraX11::OnSelectionNotify(
-    const XSelectionEvent& event) {
-  selection_requestor_.OnSelectionNotify(event);
+void OSExchangeDataProviderAuraX11::TakeOwnershipOfSelection() const {
+  selection_owner_.TakeOwnershipOfSelection(
+      scoped_ptr<SelectionFormatMap>(format_map_->Clone()));
 }
 
-void OSExchangeDataProviderAuraX11::SetString(const string16& data) {
-  NOTIMPLEMENTED();
+void OSExchangeDataProviderAuraX11::RetrieveTargets(
+    std::vector<Atom>* targets) const {
+  selection_owner_.RetrieveTargets(targets);
+}
+
+scoped_ptr<SelectionFormatMap>
+OSExchangeDataProviderAuraX11::CloneFormatMap() const {
+  // We clone the |selection_owner_|'s format map instead of our own in case
+  // ours has been modified since TakeOwnershipOfSelection() was called.
+  return selection_owner_.selection_format_map()->Clone();
+}
+
+void OSExchangeDataProviderAuraX11::SetString(const string16& text_data) {
+  std::string utf8 = UTF16ToUTF8(text_data);
+
+  // Ownership of |data| is passed to |format_map_|.
+  size_t text_len = utf8.size();
+  char* data = new char[text_len];
+  memcpy(data, utf8.c_str(), text_len);
+
+  format_map_->Insert(
+      atom_cache_.GetAtom(Clipboard::kMimeTypeText), data, text_len);
+  format_map_->Insert(
+      atom_cache_.GetAtom(kText), data, text_len);
+  format_map_->Insert(
+      atom_cache_.GetAtom(kString), data, text_len);
+  format_map_->Insert(
+      atom_cache_.GetAtom(kUtf8String), data, text_len);
 }
 
 void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
@@ -128,10 +144,9 @@ void OSExchangeDataProviderAuraX11::SetPickledData(
 bool OSExchangeDataProviderAuraX11::GetString(string16* result) const {
   std::vector< ::Atom> text_atoms = ui::GetTextAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
-  ui::GetAtomIntersection(text_atoms, targets_, &requested_types);
+  ui::GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
 
-  scoped_ptr<ui::SelectionData> data(
-      selection_requestor_.RequestAndWaitForTypes(requested_types));
+  scoped_ptr<ui::SelectionData> data(format_map_->GetFirstOf(requested_types));
   if (data) {
     std::string text = data->GetText();
     *result = UTF8ToUTF16(text);
@@ -145,10 +160,9 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(GURL* url,
                                                    string16* title) const {
   std::vector< ::Atom> url_atoms = ui::GetURLAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
-  ui::GetAtomIntersection(url_atoms, targets_, &requested_types);
+  ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
-  scoped_ptr<ui::SelectionData> data(
-      selection_requestor_.RequestAndWaitForTypes(requested_types));
+  scoped_ptr<ui::SelectionData> data(format_map_->GetFirstOf(requested_types));
   if (data) {
     // TODO(erg): Technically, both of these forms can accept multiple URLs,
     // but that doesn't match the assumptions of the rest of the system which
@@ -213,14 +227,14 @@ bool OSExchangeDataProviderAuraX11::GetPickledData(
 bool OSExchangeDataProviderAuraX11::HasString() const {
   std::vector< ::Atom> text_atoms = ui::GetTextAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
-  ui::GetAtomIntersection(text_atoms, targets_, &requested_types);
+  ui::GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
   return !requested_types.empty();
 }
 
 bool OSExchangeDataProviderAuraX11::HasURL() const {
   std::vector< ::Atom> url_atoms = ui::GetURLAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
-  ui::GetAtomIntersection(url_atoms, targets_, &requested_types);
+  ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
   return !requested_types.empty();
 }
 
@@ -234,7 +248,7 @@ bool OSExchangeDataProviderAuraX11::HasCustomFormat(
   std::vector< ::Atom> url_atoms;
   url_atoms.push_back(atom_cache_.GetAtom(format.ToString().c_str()));
   std::vector< ::Atom> requested_types;
-  ui::GetAtomIntersection(url_atoms, targets_, &requested_types);
+  ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
   return !requested_types.empty();
 }
@@ -249,10 +263,9 @@ bool OSExchangeDataProviderAuraX11::GetHtml(string16* html,
   std::vector< ::Atom> url_atoms;
   url_atoms.push_back(atom_cache_.GetAtom(Clipboard::kMimeTypeHTML));
   std::vector< ::Atom> requested_types;
-  ui::GetAtomIntersection(url_atoms, targets_, &requested_types);
+  ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
-  scoped_ptr<ui::SelectionData> data(
-      selection_requestor_.RequestAndWaitForTypes(requested_types));
+  scoped_ptr<ui::SelectionData> data(format_map_->GetFirstOf(requested_types));
   if (data) {
     *html = data->GetHtml();
     *base_url = GURL();
@@ -266,7 +279,7 @@ bool OSExchangeDataProviderAuraX11::HasHtml() const {
   std::vector< ::Atom> url_atoms;
   url_atoms.push_back(atom_cache_.GetAtom(Clipboard::kMimeTypeHTML));
   std::vector< ::Atom> requested_types;
-  ui::GetAtomIntersection(url_atoms, targets_, &requested_types);
+  ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
 
   return !requested_types.empty();
 }
@@ -274,27 +287,38 @@ bool OSExchangeDataProviderAuraX11::HasHtml() const {
 void OSExchangeDataProviderAuraX11::SetDragImage(
     const gfx::ImageSkia& image,
     const gfx::Vector2d& cursor_offset) {
-  NOTIMPLEMENTED();
+  drag_image_ = image;
+  drag_image_offset_ = cursor_offset;
 }
 
 const gfx::ImageSkia& OSExchangeDataProviderAuraX11::GetDragImage() const {
-  NOTIMPLEMENTED();
   return drag_image_;
 }
 
 const gfx::Vector2d& OSExchangeDataProviderAuraX11::GetDragImageOffset() const {
-  NOTIMPLEMENTED();
   return drag_image_offset_;
 }
 
 bool OSExchangeDataProviderAuraX11::Dispatch(const base::NativeEvent& event) {
-  // TODO(erg): Implement this side when we implement sending data.
-  return false;
+  XEvent* xev = event;
+  switch (xev->type) {
+    case SelectionRequest:
+      selection_owner_.OnSelectionRequest(xev->xselectionrequest);
+      break;
+    default:
+      NOTIMPLEMENTED();
+  }
+
+  return true;
 }
 
 bool OSExchangeDataProviderAuraX11::GetPlainTextURL(GURL* url) const {
   NOTIMPLEMENTED();
   return false;
+}
+
+std::vector< ::Atom> OSExchangeDataProviderAuraX11::GetTargets() const {
+  return format_map_->GetTypes();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

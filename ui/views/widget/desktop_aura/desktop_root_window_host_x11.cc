@@ -111,8 +111,7 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
       focus_when_shown_(false),
       current_cursor_(ui::kCursorNull),
       native_widget_delegate_(native_widget_delegate),
-      desktop_native_widget_aura_(desktop_native_widget_aura),
-      drop_handler_(NULL) {
+      desktop_native_widget_aura_(desktop_native_widget_aura) {
 }
 
 DesktopRootWindowHostX11::~DesktopRootWindowHostX11() {
@@ -907,20 +906,6 @@ void DesktopRootWindowHostX11::PrepareForShutdown() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostX11, ui::DesktopSelectionProviderAuraX11 implementation:
-
-void DesktopRootWindowHostX11::SetDropHandler(
-    ui::OSExchangeDataProviderAuraX11* handler) {
-  if (handler) {
-    DCHECK(!drop_handler_);
-    drop_handler_ = handler;
-  } else {
-    DCHECK(drop_handler_);
-    drop_handler_ = NULL;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostX11, MessageLoop::Dispatcher implementation:
 
 bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
@@ -1194,8 +1179,7 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       break;
     }
     case SelectionNotify: {
-      if (drop_handler_)
-        drop_handler_->OnSelectionNotify(xev->xselection);
+      drag_drop_client_->OnSelectionNotify(xev->xselection);
       break;
     }
   }

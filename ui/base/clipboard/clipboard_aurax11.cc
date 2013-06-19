@@ -399,7 +399,7 @@ scoped_ptr<SelectionData> Clipboard::AuraX11Details::RequestAndWaitForTypes(
          it != types.end(); ++it) {
       SelectionFormatMap::const_iterator format_map_it = format_map->find(*it);
       if (format_map_it != format_map->end()) {
-        scoped_ptr<SelectionData> data_out(new SelectionData(x_display_));
+        scoped_ptr<SelectionData> data_out(new SelectionData);
         data_out->Set(format_map_it->first, format_map_it->second.first,
                       format_map_it->second.second, false);
         return data_out.Pass();

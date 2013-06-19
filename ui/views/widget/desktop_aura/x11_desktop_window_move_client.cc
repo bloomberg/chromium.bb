@@ -34,6 +34,10 @@ void X11DesktopWindowMoveClient::OnMouseMovement(XMotionEvent* event) {
       system_loc, root_window_->GetHostSize()));
 }
 
+void X11DesktopWindowMoveClient::OnMouseReleased() {
+  EndMoveLoop();
+}
+
 void X11DesktopWindowMoveClient::OnMoveLoopEnded() {
   root_window_ = NULL;
 }

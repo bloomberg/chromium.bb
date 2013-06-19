@@ -18,6 +18,9 @@ class X11WholeScreenMoveLoopDelegate {
   // Called when we receive a motion event.
   virtual void OnMouseMovement(XMotionEvent* event) = 0;
 
+  // Called when the mouse button is released.
+  virtual void OnMouseReleased() = 0;
+
   // Called when the user has released the mouse button. The move loop will
   // release the grab after this has been called.
   virtual void OnMoveLoopEnded() = 0;

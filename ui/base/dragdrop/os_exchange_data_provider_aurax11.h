@@ -26,19 +26,16 @@
 namespace ui {
 
 class Clipboard;
-class DesktopSelectionProviderAuraX11;
 
 // OSExchangeData::Provider implementation for aura on linux.
 class UI_EXPORT OSExchangeDataProviderAuraX11
     : public OSExchangeData::Provider,
       public base::MessagePumpDispatcher {
  public:
-  // Creates a Provider for drag receiving. |x_window| is the window the cursor
-  // is over, and |targets| are the MIME types being offered by the other
-  // process.
-  OSExchangeDataProviderAuraX11(ui::DesktopSelectionProviderAuraX11* provider,
-                                ::Window x_window,
-                                const std::vector< ::Atom> targets);
+  // |x_window| is the window the cursor is over, and |selection| is the set of
+  // data being offered.
+  OSExchangeDataProviderAuraX11(::Window x_window,
+                                scoped_ptr<SelectionFormatMap> selection);
 
   // Creates a Provider for sending drag information. This creates its own,
   // hidden X11 window to own send data.
@@ -46,9 +43,16 @@ class UI_EXPORT OSExchangeDataProviderAuraX11
 
   virtual ~OSExchangeDataProviderAuraX11();
 
-  // If we are receiving, we receive messages from a DesktopRootWindowHost
-  // through this interface.
-  void OnSelectionNotify(const XSelectionEvent& event);
+  // After all the Set* methods have built up the data we're offering, call
+  // this to take ownership of the XdndSelection clipboard.
+  void TakeOwnershipOfSelection() const;
+
+  // Retrieves a list of types we're offering. Noop if we haven't taken the
+  // selection.
+  void RetrieveTargets(std::vector<Atom>* targets) const;
+
+  // Makes a copy of the format map currently being offered.
+  scoped_ptr<SelectionFormatMap> CloneFormatMap() const;
 
   // Overridden from OSExchangeData::Provider:
   virtual void SetString(const string16& data) OVERRIDE;
@@ -89,6 +93,9 @@ class UI_EXPORT OSExchangeDataProviderAuraX11
   // parsed as a URL.
   bool GetPlainTextURL(GURL* url) const;
 
+  // Returns the targets in |format_map_|.
+  std::vector< ::Atom> GetTargets() const;
+
   // Drag image and offset data.
   gfx::ImageSkia drag_image_;
   gfx::Vector2d drag_image_offset_;
@@ -105,19 +112,17 @@ class UI_EXPORT OSExchangeDataProviderAuraX11
   // our own xwindow just to receive events on it.
   const bool own_window_;
 
-  // When we don't own the window, we keep track of the object that does so we
-  // can receive messages from it.
-  ui::DesktopSelectionProviderAuraX11* selection_event_provider_;
-
   ::Window x_window_;
 
   X11AtomCache atom_cache_;
 
-  mutable SelectionRequestor selection_requestor_;
-  mutable SelectionOwner selection_owner_;
+  // A representation of data. This is either passed to us from the other
+  // process, or built up through a sequence of Set*() calls. It can be passed
+  // to |selection_owner_| when we take the selection.
+  scoped_ptr<SelectionFormatMap> format_map_;
 
-  // The mime types we have been offered by the source window.
-  std::vector< ::Atom> targets_;
+  // Takes a snapshot of |format_map_| and offers it to other windows.
+  mutable SelectionOwner selection_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderAuraX11);
 };

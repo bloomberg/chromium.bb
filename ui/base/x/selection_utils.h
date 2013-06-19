@@ -18,6 +18,7 @@
 #include "ui/base/x/x11_atom_cache.h"
 
 namespace ui {
+class SelectionData;
 class X11AtomCache;
 
 extern const char kMimeTypeMozillaURL[];
@@ -53,6 +54,16 @@ class UI_EXPORT SelectionFormatMap {
   // us.
   void Insert(::Atom atom, char* data, size_t size);
 
+  // Returns the first of the requested_types or NULL if missing.
+  ui::SelectionData* GetFirstOf(
+      const std::vector< ::Atom>& requested_types) const;
+
+  // Returns all the selected types.
+  std::vector< ::Atom> GetTypes() const;
+
+  // Creates a copy of the selection data.
+  scoped_ptr<SelectionFormatMap> Clone() const;
+
   // Pass through to STL map. Only allow non-mutation access.
   const_iterator begin() const { return data_.begin(); }
   const_iterator end() const { return data_.end(); }
@@ -71,7 +82,7 @@ class UI_EXPORT SelectionFormatMap {
 class UI_EXPORT SelectionData {
  public:
   // |atom_cache| is still owned by caller.
-  explicit SelectionData(Display* x_display);
+  SelectionData();
   ~SelectionData();
 
   ::Atom type() const { return type_; }

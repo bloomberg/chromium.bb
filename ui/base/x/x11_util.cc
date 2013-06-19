@@ -761,6 +761,62 @@ bool PropertyExists(XID window, const std::string& property_name) {
   return num_items > 0;
 }
 
+bool GetRawBytesOfProperty(XID window,
+                           Atom property,
+                           unsigned char** out_data,
+                           size_t* out_data_bytes,
+                           size_t* out_data_items,
+                           Atom* out_type) {
+  // Retrieve the data from our window.
+  unsigned long nitems = 0;
+  unsigned long nbytes = 0;
+  Atom prop_type = None;
+  int prop_format = 0;
+  unsigned char* property_data = NULL;
+  if (XGetWindowProperty(GetXDisplay(), window, property,
+                         0, 0x1FFFFFFF /* MAXINT32 / 4 */, False,
+                         AnyPropertyType, &prop_type, &prop_format,
+                         &nitems, &nbytes, &property_data) != Success) {
+    return false;
+  }
+
+  if (prop_type == None)
+    return false;
+
+  if (out_data)
+    *out_data = property_data;
+  else
+    XFree(property_data);
+
+  if (out_data_bytes) {
+    // So even though we should theoretically have nbytes (and we can't
+    // pass NULL there), we need to manually calculate the byte length here
+    // because nbytes always returns zero.
+    switch (prop_format) {
+      case 8:
+        *out_data_bytes = nitems;
+        break;
+      case 16:
+        *out_data_bytes = sizeof(short) * nitems;
+        break;
+      case 32:
+        *out_data_bytes = sizeof(long) * nitems;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  if (out_data_items)
+    *out_data_items = nitems;
+
+  if (out_type)
+    *out_type = prop_type;
+
+  return true;
+}
+
 bool GetIntProperty(XID window, const std::string& property_name, int* value) {
   Atom type = None;
   int format = 0;  // size in bits of each item in 'property'
@@ -778,6 +834,27 @@ bool GetIntProperty(XID window, const std::string& property_name, int* value) {
   }
 
   *value = static_cast<int>(*(reinterpret_cast<long*>(property)));
+  XFree(property);
+  return true;
+}
+
+bool GetXIDProperty(XID window, const std::string& property_name, XID* value) {
+  Atom type = None;
+  int format = 0;  // size in bits of each item in 'property'
+  unsigned long num_items = 0;
+  unsigned char* property = NULL;
+
+  int result = GetProperty(window, property_name, 1,
+                           &type, &format, &num_items, &property);
+  if (result != Success)
+    return false;
+
+  if (format != 32 || num_items != 1) {
+    XFree(property);
+    return false;
+  }
+
+  *value = *(reinterpret_cast<XID*>(property));
   XFree(property);
   return true;
 }
@@ -876,6 +953,32 @@ bool SetIntArrayProperty(XID window,
 
   // XChangeProperty() expects values of type 32 to be longs.
   scoped_ptr<long[]> data(new long[value.size()]);
+  for (size_t i = 0; i < value.size(); ++i)
+    data[i] = value[i];
+
+  gdk_error_trap_push();
+  XChangeProperty(ui::GetXDisplay(),
+                  window,
+                  name_atom,
+                  type_atom,
+                  32,  // size in bits of items in 'value'
+                  PropModeReplace,
+                  reinterpret_cast<const unsigned char*>(data.get()),
+                  value.size());  // num items
+  XSync(ui::GetXDisplay(), False);
+  return gdk_error_trap_pop() == 0;
+}
+
+bool SetAtomArrayProperty(XID window,
+                          const std::string& name,
+                          const std::string& type,
+                          const std::vector<Atom>& value) {
+  DCHECK(!value.empty());
+  Atom name_atom = GetAtom(name.c_str());
+  Atom type_atom = GetAtom(type.c_str());
+
+  // XChangeProperty() expects values of type 32 to be longs.
+  scoped_ptr<Atom[]> data(new Atom[value.size()]);
   for (size_t i = 0; i < value.size(); ++i)
     data[i] = value[i];
 

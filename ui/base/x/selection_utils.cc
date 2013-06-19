@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/x/x11_atom_cache.h"
+#include "ui/base/x/x11_util.h"
 
 namespace ui {
 
@@ -75,18 +76,68 @@ SelectionFormatMap::~SelectionFormatMap() {
 }
 
 void SelectionFormatMap::Insert(::Atom atom, char* data, size_t size) {
-  DCHECK(data_.find(atom) == data_.end());
+  // Views code often inserts the same content multiple times, so we have to
+  // free old data. Only call delete when it's the last pointer we have to that
+  // data.
+  InternalMap::iterator exists_it = data_.find(atom);
+  if (exists_it != data_.end()) {
+    int count = 0;
+    for (InternalMap::iterator it = data_.begin(); it != data_.end(); ++it) {
+      if (it->second.first == exists_it->second.first)
+        count++;
+    }
+
+    if (count == 1)
+      delete [] exists_it->second.first;
+  }
+
   data_.insert(std::make_pair(atom, std::make_pair(data, size)));
+}
+
+ui::SelectionData* SelectionFormatMap::GetFirstOf(
+    const std::vector< ::Atom>& requested_types) const {
+  for (std::vector< ::Atom>::const_iterator it = requested_types.begin();
+       it != requested_types.end(); ++it) {
+    const_iterator data_it = data_.find(*it);
+    if (data_it != data_.end()) {
+      ui::SelectionData* data = new SelectionData;
+      data->Set(data_it->first, data_it->second.first, data_it->second.second,
+                false);
+      return data;
+    }
+  }
+
+  return NULL;
+}
+
+std::vector< ::Atom> SelectionFormatMap::GetTypes() const {
+  std::vector< ::Atom> atoms;
+  for (const_iterator it = data_.begin(); it != data_.end(); ++it)
+    atoms.push_back(it->first);
+
+  return atoms;
+}
+
+scoped_ptr<SelectionFormatMap> SelectionFormatMap::Clone() const {
+  scoped_ptr<SelectionFormatMap> ret(new SelectionFormatMap);
+
+  for (const_iterator it = data_.begin(); it != data_.end(); ++it) {
+    char* data_copy = new char[it->second.second];
+    memcpy(data_copy, it->second.first, it->second.second);
+    ret->Insert(it->first, data_copy, it->second.second);
+  }
+
+  return ret.Pass();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SelectionData::SelectionData(Display* x_display)
+SelectionData::SelectionData()
     : type_(None),
       data_(NULL),
       size_(0),
       owned_(false),
-      atom_cache_(x_display, kSelectionDataAtoms) {
+      atom_cache_(ui::GetXDisplay(), kSelectionDataAtoms) {
 }
 
 SelectionData::~SelectionData() {

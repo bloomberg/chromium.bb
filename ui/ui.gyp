@@ -153,7 +153,6 @@
         'base/default_theme_provider_mac.mm',
         'base/dragdrop/cocoa_dnd_util.h',
         'base/dragdrop/cocoa_dnd_util.mm',
-        'base/dragdrop/desktop_selection_provider_aurax11.h',
         'base/dragdrop/drag_drop_types.h',
         'base/dragdrop/drag_drop_types_win.cc',
         'base/dragdrop/drag_source_win.cc',

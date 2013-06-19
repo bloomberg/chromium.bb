@@ -36,6 +36,9 @@ class UI_EXPORT SelectionOwner {
   // Returns the current selection data. Useful for fast paths.
   SelectionFormatMap* selection_format_map() { return selection_data_.get(); }
 
+  // Retrieves a list of types we're offering.
+  void RetrieveTargets(std::vector<Atom>* targets);
+
   // Attempts to take ownership of the selection. If we're successful, present
   // |data| to other windows.
   void TakeOwnershipOfSelection(scoped_ptr<SelectionFormatMap> data);

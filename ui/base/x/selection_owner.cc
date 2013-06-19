@@ -35,6 +35,15 @@ SelectionOwner::SelectionOwner(Display* x_display,
 }
 
 SelectionOwner::~SelectionOwner() {
+  Clear();
+}
+
+void SelectionOwner::RetrieveTargets(std::vector<Atom>* targets) {
+  targets->clear();
+  for (SelectionFormatMap::const_iterator it = selection_data_->begin();
+       it != selection_data_->end(); ++it) {
+    targets->push_back(it->first);
+  }
 }
 
 void SelectionOwner::TakeOwnershipOfSelection(
@@ -73,10 +82,7 @@ void SelectionOwner::OnSelectionRequest(const XSelectionRequestEvent& event) {
       // types we support.
       std::vector<Atom> targets;
       targets.push_back(targets_atom);
-      for (SelectionFormatMap::const_iterator it = selection_data_->begin();
-           it != selection_data_->end(); ++it) {
-        targets.push_back(it->first);
-      }
+      RetrieveTargets(&targets);
 
       XChangeProperty(x_display_, event.requestor, event.property, XA_ATOM, 32,
                       PropModeReplace,

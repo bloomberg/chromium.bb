@@ -10,6 +10,8 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
+#include <set>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +20,8 @@
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/gfx/point.h"
 #include "ui/views/views_export.h"
+#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop.h"
+#include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
 
 namespace aura {
 class RootWindow;
@@ -34,7 +38,9 @@ namespace ui {
 class DragSource;
 class DropTargetEvent;
 class OSExchangeData;
+class OSExchangeDataProviderAuraX11;
 class RootWindow;
+class SelectionFormatMap;
 }
 
 namespace views {
@@ -45,7 +51,8 @@ class DesktopRootWindowHostX11;
 // handles the views drag events.
 class VIEWS_EXPORT DesktopDragDropClientAuraX11
     : public aura::client::DragDropClient,
-      public aura::WindowObserver {
+      public aura::WindowObserver,
+      public X11WholeScreenMoveLoopDelegate {
  public:
   DesktopDragDropClientAuraX11(
       views::DesktopRootWindowHostX11* root_window_host,
@@ -54,6 +61,11 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
       ::Window xwindow);
   virtual ~DesktopDragDropClientAuraX11();
 
+  // We maintain a mapping of live DesktopDragDropClientAuraX11 objects to
+  // their ::Windows. We do this so that we're able to short circuit sending
+  // X11 messages to windows in our process.
+  static DesktopDragDropClientAuraX11* GetForWindow(::Window window);
+
   // These methods handle the various X11 client messages from the platform.
   void OnXdndEnter(const XClientMessageEvent& event);
   void OnXdndLeave(const XClientMessageEvent& event);
@@ -61,6 +73,9 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void OnXdndStatus(const XClientMessageEvent& event);
   void OnXdndFinished(const XClientMessageEvent& event);
   void OnXdndDrop(const XClientMessageEvent& event);
+
+  // Called when XSelection data has been copied to our process.
+  void OnSelectionNotify(const XSelectionEvent& xselection);
 
   // Overridden from aura::client::DragDropClient:
   virtual int StartDragAndDrop(
@@ -77,10 +92,18 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   virtual void DragCancel() OVERRIDE;
   virtual bool IsDragDropInProgress() OVERRIDE;
 
-  // aura::WindowObserver implementation:
+  // Overridden from aura::WindowObserver:
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
+  // Overridden from X11WholeScreenMoveLoopDelegate:
+  virtual void OnMouseMovement(XMotionEvent* event) OVERRIDE;
+  virtual void OnMouseReleased() OVERRIDE;
+  virtual void OnMoveLoopEnded() OVERRIDE;
+
  private:
+  typedef std::map< ::Window, std::pair<gfx::Point, unsigned long> >
+      NextPositionMap;
+
   // When we receive an position x11 message, we need to translate that into
   // the underlying aura::Window representation, as moves internal to the X11
   // window can cause internal drag leave and enter messages.
@@ -95,11 +118,41 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   // Converts our bitfield of actions into an Atom that represents what action
   // we're most likely to take on drop.
-  unsigned long DragOperationToAtom(int drag_operation);
+  ::Atom DragOperationToAtom(int drag_operation);
+
+  // Converts a single action atom to a drag operation.
+  int AtomToDragOperation(::Atom atom);
+
+  // During the blocking StartDragAndDrop() call, this converts the views-style
+  // |drag_operation_| bitfield into a vector of Atoms to offer to other
+  // processes.
+  std::vector< ::Atom> GetOfferedDragOperations();
+
+  // This returns a newly allocated copy of the data we're offering in this
+  // drag. This is done to bypass an asynchronous roundtrip with the X11
+  // server.
+  scoped_ptr<ui::SelectionFormatMap> CloneFormatMap() const;
+
+  // Handling XdndPosition can be paused while waiting for more data; this is
+  // called either synchronously from OnXdndPosition, or asynchronously after
+  // we've received data requested from the other window.
+  void CompleteXdndPosition(::Window source_window,
+                            const gfx::Point& screen_point);
+
+  void SendXdndEnter(::Window dest_window);
+  void SendXdndLeave(::Window dest_window);
+  void SendXdndPosition(::Window dest_window,
+                        const gfx::Point& screen_point,
+                        unsigned long time);
+  void SendXdndDrop(::Window dest_window);
 
   // Sends |xev| to |xid|, optionally short circuiting the round trip to the X
   // server.
-  void SendXClientEvent(unsigned long xid, XEvent* xev);
+  void SendXClientEvent(::Window xid, XEvent* xev);
+
+  // A nested message loop that notifies this object of events through the
+  // X11WholeScreenMoveLoopDelegate interface.
+  X11WholeScreenMoveLoop move_loop_;
 
   views::DesktopRootWindowHostX11* root_window_host_;
   aura::RootWindow* root_window_;
@@ -110,9 +163,8 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   ui::X11AtomCache atom_cache_;
 
   // Target side information.
-
   class X11DragContext;
-  scoped_ptr<X11DragContext> current_context_;
+  scoped_ptr<X11DragContext> target_current_context_;
 
   // The Aura window that is currently under the cursor. We need to manually
   // keep track of this because Windows will only call our drag enter method
@@ -127,9 +179,44 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   gfx::Point target_window_location_;
   gfx::Point target_window_root_location_;
 
+  // In the Xdnd protocol, we aren't supposed to send another XdndPosition
+  // message until we have received a confirming XdndStatus message.
+  std::set< ::Window> waiting_on_status_;
+
+  // If we would send an XdndPosition message while we're waiting for an
+  // XdndStatus response, we need to cache the latest details we'd send.
+  NextPositionMap next_position_message_;
+
+  // Source side information.
+  ui::OSExchangeDataProviderAuraX11 const* source_provider_;
+  ::Window source_current_window_;
+
   bool drag_drop_in_progress_;
 
+  // The operation bitfield as requested by StartDragAndDrop.
   int drag_operation_;
+
+  // The operation performed. Is initialized to None at the start of
+  // StartDragAndDrop(), and is set only during the asynchronous XdndFinished
+  // message.
+  int resulting_operation_;
+
+  // This window will be receiving a drop as soon as we receive an XdndStatus
+  // from it.
+  std::set< ::Window> pending_drop_;
+
+  // We offer the other window a list of possible operations,
+  // XdndActionsList. This is the requested action from the other window. This
+  // is None if we haven't sent out an XdndPosition message yet, haven't yet
+  // received an XdndStatus or if the other window has told us that there's no
+  // action that we can agree on.
+  //
+  // This is a map instead of a simple variable because of the case where we
+  // put an XdndLeave in the queue at roughly the same time that the other
+  // window responds to an XdndStatus.
+  std::map< ::Window, ::Atom> negotiated_operation_;
+
+  static std::map< ::Window, DesktopDragDropClientAuraX11*> g_live_client_map;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientAuraX11);
 };

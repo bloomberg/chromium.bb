@@ -934,14 +934,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
 }
 #endif
 
-// TODO(erg): Disabled while the other half of drag and drop is being written.
-// http://crbug.com/130806
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_DragAndDrop_InitiateDrag DISABLED_DragAndDrop_InitiateDrag
-#else
-#define MAYBE_DragAndDrop_InitiateDrag DragAndDrop_InitiateDrag
-#endif
-TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_InitiateDrag) {
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello string world"));
 
@@ -987,14 +980,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_InitiateDrag) {
       textfield_view_->GetDragOperationsForView(textfield_view_, kStringPoint));
 }
 
-// TODO(erg): Disabled while the other half of drag and drop is being written.
-// http://crbug.com/130806
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_DragAndDrop_ToTheRight DISABLED_DragAndDrop_ToTheRight
-#else
-#define MAYBE_DragAndDrop_ToTheRight DragAndDrop_ToTheRight
-#endif
-TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheRight) {
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
@@ -1049,14 +1035,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheRight) {
   EXPECT_STR_EQ("h welloorld", textfield_->text());
 }
 
-// TODO(erg): Disabled while the other half of drag and drop is being written.
-// http://crbug.com/130806
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_DragAndDrop_ToTheLeft DISABLED_DragAndDrop_ToTheLeft
-#else
-#define MAYBE_DragAndDrop_ToTheLeft DragAndDrop_ToTheLeft
-#endif
-TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheLeft) {
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
@@ -1111,14 +1090,7 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_ToTheLeft) {
   EXPECT_STR_EQ("h worlellod", textfield_->text());
 }
 
-// TODO(erg): Disabled while the other half of drag and drop is being written.
-// http://crbug.com/130806
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_DragAndDrop_Canceled DISABLED_DragAndDrop_Canceled
-#else
-#define MAYBE_DragAndDrop_Canceled DragAndDrop_Canceled
-#endif
-TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_Canceled) {
+TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello world"));
 

@@ -43,9 +43,8 @@ bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
       delegate_->OnMouseMovement(&xev->xmotion);
       break;
     }
-    case ButtonPress:
     case ButtonRelease: {
-      EndMoveLoop();
+      delegate_->OnMouseReleased();
       break;
     }
   }
