@@ -1720,6 +1720,14 @@ crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 crbug.com/230326 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Crash Pass ]
 crbug.com/249021 [ Debug ] http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Crash Pass ]
 
+Bug(ojan) fast/css/word-space-extra.html [ ImageOnlyFailure Failure Pass Missing ]
+Bug(ojan) fast/replaced/width100percent-image.html [ ImageOnlyFailure Failure Pass Missing ]
+Bug(ojan) fast/replaced/width100percent-menulist.html [ ImageOnlyFailure Failure Pass Missing ]
+Bug(ojan) fast/replaced/width100percent-searchfield.html [ ImageOnlyFailure Failure Pass Missing ]
+Bug(ojan) fast/replaced/width100percent-textarea.html [ ImageOnlyFailure Failure Pass Missing ]
+Bug(ojan) fast/replaced/width100percent-textfield.html [ ImageOnlyFailure Failure Pass Missing ]
+Bug(ojan) tables/mozilla/bugs/bug57828.html [ ImageOnlyFailure Failure Pass Missing ]
+
 crbug.com/248407 [ Debug ] compositing/reflections/animation-inside-reflection.html [ Pass Timeout ]
 
 crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFailure Pass ]

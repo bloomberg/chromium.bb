@@ -819,7 +819,7 @@ void RenderText::trimmedPrefWidths(float leadWidth,
         }
     }
 
-    stripFrontSpaces = collapseWhiteSpace && m_hasBreakableEnd;
+    stripFrontSpaces = collapseWhiteSpace && m_hasEndWhiteSpace;
 
     if (!style()->autoWrap() || minWidth > maxWidth)
         minWidth = maxWidth;
@@ -948,6 +948,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     m_hasTab = false;
     m_hasBreakableStart = false;
     m_hasBreakableEnd = false;
+    m_hasEndWhiteSpace = false;
 
     RenderStyle* styleToUse = style();
     const Font& f = styleToUse->font(); // FIXME: This ignores first-line.
@@ -1010,10 +1011,13 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
         } else
             isSpace = c == ' ';
 
-        if ((isSpace || isNewline) && !i)
-            m_hasBreakableStart = true;
-        if ((isSpace || isNewline) && i == len - 1)
-            m_hasBreakableEnd = true;
+        bool isBreakableLocation = isNewline || (isSpace && styleToUse->autoWrap());
+        if (!i)
+            m_hasBreakableStart = isBreakableLocation;
+        if (i == len - 1) {
+            m_hasBreakableEnd = isBreakableLocation;
+            m_hasEndWhiteSpace = isNewline || isSpace;
+        }
 
         if (!ignoringSpaces && styleToUse->collapseWhiteSpace() && previousCharacterIsSpace && isSpace)
             ignoringSpaces = true;

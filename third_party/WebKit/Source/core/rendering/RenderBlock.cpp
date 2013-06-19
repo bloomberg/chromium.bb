@@ -5773,12 +5773,9 @@ void RenderBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Lay
 
     maxLogicalWidth = max(minLogicalWidth, maxLogicalWidth);
 
-    if (!style()->autoWrap() && childrenInline()) {
-        minLogicalWidth = maxLogicalWidth;
-        // A horizontal marquee with inline children has no minimum width.
-        if (isMarquee() && toRenderMarquee(this)->isHorizontal())
-            minLogicalWidth = 0;
-    }
+    // A horizontal marquee with inline children has no minimum width.
+    if (childrenInline() && isMarquee() && toRenderMarquee(this)->isHorizontal())
+        minLogicalWidth = 0;
 
     if (isTableCell()) {
         Length tableCellWidth = toRenderTableCell(this)->styleOrColLogicalWidth();
