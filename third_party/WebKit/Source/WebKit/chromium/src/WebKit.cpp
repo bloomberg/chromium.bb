@@ -43,7 +43,6 @@
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/EventTracer.h"
 #include "core/platform/LayoutTestSupport.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/MediaPlayer.h"
@@ -161,8 +160,6 @@ void initializeWithoutV8(Platform* platform)
     // the initialization thread-safe, but given that so many code paths use
     // this, initializing this lazily probably doesn't buy us much.
     WTF::UTF8Encoding();
-
-    WebCore::EventTracer::initialize();
 
     WebCore::setIDBFactoryBackendInterfaceCreateFunction(WebKit::IDBFactoryBackendProxy::create);
 
