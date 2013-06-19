@@ -34,19 +34,21 @@
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/IntSize.h"
-#include "core/platform/graphics/chromium/ImageBufferDataSkia.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/Uint8ClampedArray.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Uint8ClampedArray.h"
+#include "wtf/Vector.h"
+
+class SkCanvas;
 
 namespace WebKit { class WebLayer; }
 
 namespace WebCore {
 
+class Canvas2DLayerBridge;
 class Image;
 class ImageData;
 class IntPoint;
@@ -119,7 +121,6 @@ public:
     String toDataURL(const String& mimeType, const double* quality = 0, CoordinateSystem = LogicalCoordinateSystem) const;
     AffineTransform baseTransform() const { return AffineTransform(); }
     void transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstColorSpace);
-    void platformTransformColorSpace(const Vector<uint8_t>&);
     static const Vector<uint8_t>& getLinearRgbLUT();
     static const Vector<uint8_t>& getDeviceRgbLUT();
     WebKit::WebLayer* platformLayer() const;
@@ -137,19 +138,17 @@ private:
     void draw(GraphicsContext*, const FloatRect&, const FloatRect& = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
     void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&);
 
-    inline void genericConvertToLuminanceMask();
-
     friend class GraphicsContext;
     friend class GeneratedImage;
     friend class CrossfadeGeneratedImage;
     friend class GeneratorGeneratedImage;
 
-private:
-    ImageBufferData m_data;
     IntSize m_size;
     IntSize m_logicalSize;
     float m_resolutionScale;
+    OwnPtr<SkCanvas> m_canvas;
     OwnPtr<GraphicsContext> m_context;
+    OwnPtr<Canvas2DLayerBridge> m_layerBridge;
 
     // This constructor will place its success into the given out-variable
     // so that create() knows when it should return failure.

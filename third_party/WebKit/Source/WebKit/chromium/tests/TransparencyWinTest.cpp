@@ -34,6 +34,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "skia/ext/platform_canvas.h"
 
 #include <windows.h>
 #include <gtest/gtest.h>
