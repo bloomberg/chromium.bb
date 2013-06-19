@@ -12,7 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/base/origin_url_conversions.h"
+#include "webkit/common/database/database_identifier.h"
 
 namespace fileapi {
 
@@ -169,7 +169,7 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
 
 std::string GetFileSystemName(const GURL& origin_url, FileSystemType type) {
   std::string origin_identifier =
-      webkit_base::GetOriginIdentifierFromURL(origin_url);
+      webkit_database::GetIdentifierFromOrigin(origin_url);
   std::string type_string = GetFileSystemTypeString(type);
   DCHECK(!type_string.empty());
   return origin_identifier + ":" + type_string;

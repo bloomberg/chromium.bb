@@ -104,9 +104,9 @@
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/common/database/database_identifier.h"
 #include "webkit/plugins/npapi/mock_plugin_list.h"
 
 #if defined(OS_CHROMEOS)
@@ -3892,7 +3892,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   const Extension* extension = InstallCRX(path, INSTALL_NEW);
   ASSERT_TRUE(extension);
   GURL ext_url(extension->url());
-  std::string origin_id = webkit_base::GetOriginIdentifierFromURL(ext_url);
+  std::string origin_id = webkit_database::GetIdentifierFromOrigin(ext_url);
 
   // Set a cookie for the extension.
   net::CookieMonster* cookie_monster =
@@ -3992,7 +3992,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin());
   EXPECT_TRUE(profile_->GetExtensionSpecialStoragePolicy()->
       IsStorageUnlimited(origin1));
-  std::string origin_id = webkit_base::GetOriginIdentifierFromURL(origin1);
+  std::string origin_id = webkit_database::GetIdentifierFromOrigin(origin1);
 
   // Install app2 from the same origin with unlimited storage.
   extension = PackAndInstallCRX(data_dir_.AppendASCII("app2"), INSTALL_NEW);

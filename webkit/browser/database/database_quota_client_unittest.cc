@@ -12,10 +12,10 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_quota_client.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/database/database_util.h"
+#include "webkit/common/database/database_identifier.h"
 
 namespace webkit_database {
 
@@ -37,7 +37,7 @@ class MockDatabaseTracker : public DatabaseTracker {
       OriginInfo* info) OVERRIDE {
     std::map<GURL, MockOriginInfo>::const_iterator found =
         mock_origin_infos_.find(
-            webkit_base::GetOriginURLFromIdentifier(origin_identifier));
+            webkit_database::GetOriginFromIdentifier(origin_identifier));
     if (found == mock_origin_infos_.end())
       return false;
     *info = OriginInfo(found->second);
@@ -86,7 +86,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   void AddMockDatabase(const GURL& origin,  const char* name, int size) {
     MockOriginInfo& info = mock_origin_infos_[origin];
-    info.set_origin(webkit_base::GetOriginIdentifierFromURL(origin));
+    info.set_origin(webkit_database::GetIdentifierFromOrigin(origin));
     info.AddMockDatabase(ASCIIToUTF16(name), size);
   }
 

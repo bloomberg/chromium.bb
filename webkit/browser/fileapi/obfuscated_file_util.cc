@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -31,6 +30,7 @@
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/browser/fileapi/timed_task_helper.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/common/database/database_identifier.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 // Example of various paths:
@@ -229,7 +229,7 @@ class ObfuscatedOriginEnumerator
       origins_.pop_back();
     }
     current_ = record;
-    return webkit_base::GetOriginURLFromIdentifier(record.origin);
+    return webkit_database::GetOriginFromIdentifier(record.origin);
   }
 
   // Returns the current origin's information.
@@ -933,7 +933,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   InitOriginDatabase(false);
   if (origin_database_) {
     origin_database_->RemovePathForOrigin(
-        webkit_base::GetOriginIdentifierFromURL(origin));
+        webkit_database::GetIdentifierFromOrigin(origin));
   }
   if (!file_util::Delete(origin_path, true /* recursive */))
     return false;
@@ -975,7 +975,7 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
     return true;
   }
   std::string key =
-      webkit_base::GetOriginIdentifierFromURL(origin) +
+      webkit_database::GetIdentifierFromOrigin(origin) +
       type_string;
   DirectoryMap::iterator iter = directories_.find(key);
   if (iter != directories_.end()) {
@@ -1180,7 +1180,7 @@ std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
       special_storage_policy_->HasIsolatedStorage(origin)) {
     return type_string;
   }
-  return webkit_base::GetOriginIdentifierFromURL(origin) +
+  return webkit_database::GetIdentifierFromOrigin(origin) +
       type_string;
 }
 
@@ -1232,7 +1232,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
     return base::FilePath();
   }
   base::FilePath directory_name;
-  std::string id = webkit_base::GetOriginIdentifierFromURL(origin);
+  std::string id = webkit_database::GetIdentifierFromOrigin(origin);
 
   bool exists_in_db = origin_database_->HasOriginPath(id);
   if (!exists_in_db && !create) {
@@ -1319,7 +1319,7 @@ bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
     DCHECK(special_storage_policy_->HasIsolatedStorage(isolated_origin_));
     origin_database_.reset(
         new SandboxIsolatedOriginDatabase(
-            webkit_base::GetOriginIdentifierFromURL(isolated_origin_),
+            webkit_database::GetIdentifierFromOrigin(isolated_origin_),
             file_system_directory_));
     return true;
   }

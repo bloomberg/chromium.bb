@@ -15,10 +15,10 @@
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/common/database/database_identifier.h"
 
 namespace {
 
@@ -205,9 +205,9 @@ class DatabaseTracker_TestHelper_Test {
     // Create and open three databases.
     int64 database_size = 0;
     const std::string kOrigin1 =
-        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin1Url));
+        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 =
-        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin2Url));
+        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDB3 = ASCIIToUTF16("db3");
@@ -319,9 +319,9 @@ class DatabaseTracker_TestHelper_Test {
     // Open three new databases.
     int64 database_size = 0;
     const std::string kOrigin1 =
-        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin1Url));
+        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 =
-        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin2Url));
+        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDB3 = ASCIIToUTF16("db3");
@@ -447,7 +447,7 @@ class DatabaseTracker_TestHelper_Test {
   static void DatabaseTrackerQuotaIntegration() {
     const GURL kOrigin(kOrigin1Url);
     const std::string kOriginId =
-        webkit_base::GetOriginIdentifierFromURL(kOrigin);
+        webkit_database::GetIdentifierFromOrigin(kOrigin);
     const base::string16 kName = ASCIIToUTF16("name");
     const base::string16 kDescription = ASCIIToUTF16("description");
 
@@ -545,9 +545,9 @@ class DatabaseTracker_TestHelper_Test {
   static void DatabaseTrackerClearSessionOnlyDatabasesOnExit() {
     int64 database_size = 0;
     const std::string kOrigin1 =
-        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin1Url));
+        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 =
-        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin2Url));
+        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDescription = ASCIIToUTF16("database_description");
@@ -625,9 +625,9 @@ class DatabaseTracker_TestHelper_Test {
   static void DatabaseTrackerSetForceKeepSessionState() {
     int64 database_size = 0;
     const std::string kOrigin1 =
-        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin1Url));
+        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 =
-        webkit_base::GetOriginIdentifierFromURL(GURL(kOrigin2Url));
+        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDescription = ASCIIToUTF16("database_description");
@@ -703,7 +703,7 @@ class DatabaseTracker_TestHelper_Test {
   static void EmptyDatabaseNameIsValid() {
     const GURL kOrigin(kOrigin1Url);
     const std::string kOriginId =
-        webkit_base::GetOriginIdentifierFromURL(kOrigin);
+        webkit_database::GetIdentifierFromOrigin(kOrigin);
     const base::string16 kEmptyName;
     const base::string16 kDescription(ASCIIToUTF16("description"));
     const base::string16 kChangedDescription(
@@ -752,7 +752,7 @@ class DatabaseTracker_TestHelper_Test {
   static void HandleSqliteError() {
     const GURL kOrigin(kOrigin1Url);
     const std::string kOriginId =
-        webkit_base::GetOriginIdentifierFromURL(kOrigin);
+        webkit_database::GetIdentifierFromOrigin(kOrigin);
     const base::string16 kName(ASCIIToUTF16("name"));
     const base::string16 kDescription(ASCIIToUTF16("description"));
 

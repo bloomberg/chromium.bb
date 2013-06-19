@@ -5,8 +5,8 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_util.h"
+#include "webkit/common/database/database_identifier.h"
 
 using webkit_database::DatabaseUtil;
 
@@ -29,8 +29,8 @@ static void TestVfsFilePath(bool expected_result,
 }
 
 static GURL ToAndFromOriginIdentifier(const GURL origin_url) {
-  std::string id = webkit_base::GetOriginIdentifierFromURL(origin_url);
-  return webkit_base::GetOriginURLFromIdentifier(id);
+  std::string id = webkit_database::GetIdentifierFromOrigin(origin_url);
+  return webkit_database::GetOriginFromIdentifier(id);
 }
 
 static void TestValidOriginIdentifier(bool expected_result,

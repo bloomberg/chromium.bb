@@ -11,6 +11,11 @@
 
 namespace webkit_database {
 
+WEBKIT_STORAGE_COMMON_EXPORT std::string GetIdentifierFromOrigin(
+    const GURL& origin);
+WEBKIT_STORAGE_COMMON_EXPORT GURL GetOriginFromIdentifier(
+    const std::string& identifier);
+
 class WEBKIT_STORAGE_COMMON_EXPORT DatabaseIdentifier {
  public:
   static const DatabaseIdentifier UniqueFileIdentifier();

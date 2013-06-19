@@ -48,9 +48,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // The indexed db directory.
   static const base::FilePath::CharType kIndexedDBDirectory[];
 
-  // The indexed db file extension.
-  static const base::FilePath::CharType kIndexedDBExtension[];
-
   // Disables the exit-time deletion of session-only data.
   void SetForceKeepSessionState() { force_keep_session_state_ = true; }
 

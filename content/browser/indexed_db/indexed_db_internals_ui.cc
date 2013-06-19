@@ -26,7 +26,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/zlib/google/zip.h"
 #include "webkit/base/file_path_string_conversions.h"
-#include "webkit/base/origin_url_conversions.h"
+#include "webkit/common/database/database_identifier.h"
 
 namespace content {
 
@@ -206,7 +206,7 @@ void IndexedDBInternalsUI::DownloadOriginDataOnWebkitThread(
   base::FilePath temp_path = temp_dir.Take();
 
   std::string origin_id =
-      webkit_base::GetOriginIdentifierFromURL(origin_url);
+      webkit_database::GetIdentifierFromOrigin(origin_url);
   base::FilePath zip_path =
       temp_path.AppendASCII(origin_id).AddExtension(FILE_PATH_LITERAL("zip"));
 

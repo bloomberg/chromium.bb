@@ -29,8 +29,8 @@
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 #include "webkit/base/file_path_string_conversions.h"
-#include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_util.h"
+#include "webkit/common/database/database_identifier.h"
 
 using webkit_database::DatabaseUtil;
 using WebKit::WebIDBDatabaseError;
@@ -233,7 +233,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   GURL origin_url =
-      webkit_base::GetOriginURLFromIdentifier(params.database_identifier);
+      webkit_database::GetOriginFromIdentifier(params.database_identifier);
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 

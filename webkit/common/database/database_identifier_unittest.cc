@@ -188,7 +188,7 @@ TEST(DatabaseIdentifierTest, ExtractOriginDataFromIdentifier) {
      "http", "nondefaultport.net", 8001,
      GURL("http://nondefaultport.net:8001"), false},
     {"file__0",
-     "", "", 0, GURL(), true},
+     "", "", 0, GURL("file:///"), true},
     {"__0",
      "", "", 0, GURL(), true},
     {"http_foo_bar_baz.org_0",
@@ -226,6 +226,7 @@ TEST(DatabaseIdentifierTest, ExtractOriginDataFromIdentifier) {
     "HtTp_NonCanonicalRepresenTation_0",
     "http_non_ascii.\xa1.com_0",
     "http_not_canonical_escape%3d_0",
+    "http_bytes_after_port_0abcd",
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(bogus_components); ++i) {

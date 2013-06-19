@@ -10,6 +10,16 @@
 
 namespace webkit_database {
 
+// static
+std::string GetIdentifierFromOrigin(const GURL& origin) {
+  return DatabaseIdentifier::CreateFromOrigin(origin).ToString();
+}
+
+// static
+GURL GetOriginFromIdentifier(const std::string& identifier) {
+  return DatabaseIdentifier::Parse(identifier).ToOrigin();
+}
+
 static bool SchemeIsUnique(const std::string& scheme) {
   return scheme == "about" || scheme == "data" || scheme == "javascript";
 }
@@ -116,6 +126,8 @@ std::string DatabaseIdentifier::ToString() const {
 }
 
 GURL DatabaseIdentifier::ToOrigin() const {
+  if (is_file_)
+    return GURL("file:///");
   if (is_unique_)
     return GURL();
   if (port_ == 0)

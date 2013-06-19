@@ -16,7 +16,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/base/origin_url_conversions.h"
+#include "webkit/common/database/database_identifier.h"
 
 // Declared to shorten the line lengths.
 static const quota::StorageType kTemp = quota::kStorageTypeTemporary;
@@ -128,7 +128,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
 
   void AddFakeIndexedDB(const GURL& origin, int size) {
     base::FilePath file_path_origin = idb_context()->GetFilePathForTesting(
-        webkit_base::GetOriginIdentifierFromURL(origin));
+        webkit_database::GetIdentifierFromOrigin(origin));
     if (!file_util::CreateDirectory(file_path_origin)) {
       LOG(ERROR) << "failed to file_util::CreateDirectory "
                  << file_path_origin.value();

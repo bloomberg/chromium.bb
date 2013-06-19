@@ -14,9 +14,9 @@
 #include "base/task_runner_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/database/database_util.h"
+#include "webkit/common/database/database_identifier.h"
 
 using quota::QuotaClient;
 
@@ -29,7 +29,7 @@ int64 GetOriginUsageOnDBThread(
     const GURL& origin_url) {
   OriginInfo info;
   if (db_tracker->GetOriginInfo(
-          webkit_base::GetOriginIdentifierFromURL(origin_url), &info))
+          webkit_database::GetIdentifierFromOrigin(origin_url), &info))
     return info.TotalSize();
   return 0;
 }
@@ -42,7 +42,7 @@ void GetOriginsOnDBThread(
     for (std::vector<std::string>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
-      GURL origin = webkit_base::GetOriginURLFromIdentifier(*iter);
+      GURL origin = webkit_database::GetOriginFromIdentifier(*iter);
       origins_ptr->insert(origin);
     }
   }
@@ -57,7 +57,7 @@ void GetOriginsForHostOnDBThread(
     for (std::vector<std::string>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
-      GURL origin = webkit_base::GetOriginURLFromIdentifier(*iter);
+      GURL origin = webkit_database::GetOriginFromIdentifier(*iter);
       if (host == net::GetHostOrSpecFromURL(origin))
         origins_ptr->insert(origin);
     }
@@ -210,7 +210,7 @@ void DatabaseQuotaClient::DeleteOriginData(
       FROM_HERE,
       base::Bind(&DatabaseTracker::DeleteDataForOrigin,
                  db_tracker_,
-                 webkit_base::GetOriginIdentifierFromURL(origin),
+                 webkit_database::GetIdentifierFromOrigin(origin),
                  delete_callback),
       delete_callback);
 }

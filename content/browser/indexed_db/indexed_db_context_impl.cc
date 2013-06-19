@@ -22,10 +22,10 @@
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/base/file_path_string_conversions.h"
-#include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
+#include "webkit/common/database/database_identifier.h"
 
 using webkit_database::DatabaseUtil;
 
@@ -33,7 +33,10 @@ namespace content {
 const base::FilePath::CharType IndexedDBContextImpl::kIndexedDBDirectory[] =
     FILE_PATH_LITERAL("IndexedDB");
 
-const base::FilePath::CharType IndexedDBContextImpl::kIndexedDBExtension[] =
+static const base::FilePath::CharType kIndexedDBExtension[] =
+    FILE_PATH_LITERAL(".indexeddb");
+
+static const base::FilePath::CharType kLevelDBExtension[] =
     FILE_PATH_LITERAL(".leveldb");
 
 namespace {
@@ -48,9 +51,11 @@ void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
       indexeddb_path, false, base::FileEnumerator::DIRECTORIES);
   for (base::FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
-    if (file_path.Extension() == IndexedDBContextImpl::kIndexedDBExtension) {
-      std::string origin_id = file_path.BaseName().MaybeAsASCII();
-      origins->push_back(webkit_base::GetOriginURLFromIdentifier(origin_id));
+    if (file_path.Extension() == kLevelDBExtension &&
+        file_path.RemoveExtension().Extension() == kIndexedDBExtension) {
+      std::string origin_id = file_path.BaseName().RemoveExtension()
+          .RemoveExtension().MaybeAsASCII();
+      origins->push_back(webkit_database::GetOriginFromIdentifier(origin_id));
       if (file_paths)
         file_paths->push_back(file_path);
     }
@@ -195,7 +200,7 @@ void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
 
 base::FilePath IndexedDBContextImpl::GetFilePath(const GURL& origin_url) {
   std::string origin_id =
-      webkit_base::GetOriginIdentifierFromURL(origin_url);
+      webkit_database::GetIdentifierFromOrigin(origin_url);
   return GetIndexedDBFilePath(origin_id);
 }
 
@@ -303,15 +308,15 @@ base::FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
     const std::string& origin_id) const {
   DCHECK(!data_path_.empty());
   return data_path_.AppendASCII(origin_id).
-      AddExtension(FILE_PATH_LITERAL(".indexeddb")).
-      AddExtension(kIndexedDBExtension);
+      AddExtension(kIndexedDBExtension).
+      AddExtension(kLevelDBExtension);
 }
 
 int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   if (data_path_.empty())
     return 0;
   std::string origin_id =
-      webkit_base::GetOriginIdentifierFromURL(origin_url);
+      webkit_database::GetIdentifierFromOrigin(origin_url);
   base::FilePath file_path = GetIndexedDBFilePath(origin_id);
   return file_util::ComputeDirectorySize(file_path);
 }
