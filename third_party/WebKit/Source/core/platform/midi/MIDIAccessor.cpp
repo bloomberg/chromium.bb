@@ -56,7 +56,7 @@ MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client)
     ASSERT(m_accessor);
 }
 
-void MIDIAccessor::requestAccess(int access)
+void MIDIAccessor::requestAccess(bool access)
 {
     m_accessor->requestAccess(access);
 }
@@ -76,14 +76,19 @@ void MIDIAccessor::addOutputPort(const WebString& id, const WebString& manufactu
     m_client->addOutputPort(id, manufacturer, name, version);
 }
 
-void MIDIAccessor::accessApproved(bool approved)
+void MIDIAccessor::didAllowAccess()
 {
-    m_client->accessApproved(approved);
+    m_client->didAllowAccess();
 }
 
-void MIDIAccessor::receiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
+void MIDIAccessor::didBlockAccess()
 {
-    m_client->receiveMIDIData(portIndex, data, length, timeStamp);
+    m_client->didBlockAccess();
+}
+
+void MIDIAccessor::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
+{
+    m_client->didReceiveMIDIData(portIndex, data, length, timeStamp);
 }
 
 } // namespace WebCore

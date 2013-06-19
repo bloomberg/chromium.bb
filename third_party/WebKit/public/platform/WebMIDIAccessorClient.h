@@ -35,15 +35,16 @@
 
 namespace WebKit {
 
-// Abstract client interface to the Chromium MIDI system.
-
 class WebMIDIAccessorClient {
 public:
-    virtual void addInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
-    virtual void addOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
+    virtual void didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
+    virtual void didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version) = 0;
 
-    virtual void accessApproved(bool approved) = 0;
-    virtual void receiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) = 0;
+    virtual void didAllowAccess() = 0;
+    virtual void didBlockAccess() = 0;
+
+    // |timeStamp| is in milliseconds according to the Web MIDI API.
+    virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) = 0;
 
 protected:
     virtual ~WebMIDIAccessorClient() { }
