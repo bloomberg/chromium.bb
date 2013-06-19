@@ -1146,7 +1146,8 @@ def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch,
     starting_ref = branch
 
   result = git.RunGit(
-      git_repo, ['rev-list', '%s..%s' % (tracking_branch, starting_ref)])
+      git_repo,
+      ['rev-list', '--reverse', '%s..%s' % (tracking_branch, starting_ref)])
 
   sha1s = result.output.splitlines()
   if not sha1s:
