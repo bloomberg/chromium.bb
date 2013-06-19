@@ -109,6 +109,7 @@ def main():
         {'name': 'ChromiumPerfAv', 'url': 'http://build.chromium.org/p/chromium.perf_av', 'groups': ['@ToT Chromium']},
         {'name': 'ChromiumWebkit', 'url': 'http://build.chromium.org/p/chromium.webkit', 'groups': ['@ToT Chromium', '@ToT Blink']},
         {'name': 'ChromiumFYI', 'url': 'http://build.chromium.org/p/chromium.fyi', 'groups': ['@ToT Chromium FYI']},
+        {'name': 'V8', 'url': 'http://build.chromium.org/p/client.v8', 'groups': ['@ToT V8']},
     ]
 
     insert_builder_and_test_data(masters)
