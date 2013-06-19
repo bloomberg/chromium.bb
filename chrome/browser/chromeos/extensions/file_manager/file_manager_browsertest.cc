@@ -394,7 +394,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserSimpleTest, Test) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_OpenSpecialTypes,
+    OpenSpecialTypes,
     FileManagerBrowserSimpleTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
@@ -409,9 +409,8 @@ INSTANTIATE_TEST_CASE_P(
                       // ASAN Tests (2).  TODO(mtomasz): crbug.com/243611.
                       // TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive")));
 
-// Test is flaky, see http://crbug.com/247299
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_KeyboardOpeartions,
+    KeyboardOpeartions,
     FileManagerBrowserSimpleTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
