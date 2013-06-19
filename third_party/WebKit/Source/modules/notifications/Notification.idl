@@ -40,34 +40,22 @@
 #endif
 ] interface Notification {
     void show();
-#if defined(ENABLE_LEGACY_NOTIFICATIONS) && ENABLE_LEGACY_NOTIFICATIONS
-    void cancel();
-#endif
-#if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
-    void close();
-#endif
+    [Conditional=LEGACY_NOTIFICATIONS] void cancel();
+    [Conditional=NOTIFICATIONS] void close();
 
 
-#if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
-    [CallWith=ScriptExecutionContext] static readonly attribute DOMString permission;
-    [CallWith=ScriptExecutionContext] static void requestPermission(optional NotificationPermissionCallback callback);
-#endif
+    [CallWith=ScriptExecutionContext, Conditional=NOTIFICATIONS] static readonly attribute DOMString permission;
+    [CallWith=ScriptExecutionContext, Conditional=NOTIFICATIONS] static void requestPermission(optional NotificationPermissionCallback callback);
 
     attribute EventListener onshow;
-#if defined(ENABLE_LEGACY_NOTIFICATIONS) && ENABLE_LEGACY_NOTIFICATIONS
-    attribute EventListener ondisplay;
-#endif
+    [Conditional=LEGACY_NOTIFICATIONS] attribute EventListener ondisplay;
     attribute EventListener onerror;
     attribute EventListener onclose;
     attribute EventListener onclick;
 
-#if defined(ENABLE_LEGACY_NOTIFICATIONS) && ENABLE_LEGACY_NOTIFICATIONS
-    attribute DOMString dir;
-    attribute DOMString replaceId;
-#endif
-#if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
-    attribute DOMString tag;
-#endif
+    [Conditional=LEGACY_NOTIFICATIONS] attribute DOMString dir;
+    [Conditional=LEGACY_NOTIFICATIONS] attribute DOMString replaceId;
+    [Conditional=NOTIFICATIONS] attribute DOMString tag;
 
     // EventTarget interface
     void addEventListener(DOMString type, 

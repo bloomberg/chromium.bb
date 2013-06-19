@@ -149,12 +149,10 @@
     [EnabledAtRuntime, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds, GetterRaisesException] readonly attribute Storage sessionStorage;
     [EnabledAtRuntime, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds, GetterRaisesException] readonly attribute Storage localStorage;
 
-#if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
     // This is the interface orientation in degrees. Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.
-    readonly attribute long orientation;
-#endif
+    [Conditional=ORIENTATION_EVENTS] readonly attribute long orientation;
 
     [Replaceable] readonly attribute Console console;
 
@@ -260,9 +258,7 @@
     attribute EventListener onwebkitanimationstart;
     attribute EventListener onwebkittransitionend;
     attribute EventListener ontransitionend;
-#if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
-    attribute EventListener onorientationchange;
-#endif
+    [Conditional=ORIENTATION_EVENTS] attribute EventListener onorientationchange;
     [EnabledAtRuntime=touch] attribute EventListener ontouchstart;
     [EnabledAtRuntime=touch] attribute EventListener ontouchmove;
     [EnabledAtRuntime=touch] attribute EventListener ontouchend;

@@ -27,8 +27,6 @@
 [
     Conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS
 ] partial interface WorkerContext {
-#if defined(ENABLE_LEGACY_NOTIFICATIONS) && ENABLE_LEGACY_NOTIFICATIONS
-    [EnabledAtRuntime=notifications] readonly attribute NotificationCenter webkitNotifications;
-#endif
+    [EnabledAtRuntime=notifications, Conditional=LEGACY_NOTIFICATIONS] readonly attribute NotificationCenter webkitNotifications;
 };
 

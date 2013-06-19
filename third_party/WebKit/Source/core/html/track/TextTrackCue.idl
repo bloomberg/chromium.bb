@@ -58,8 +58,6 @@
                              optional boolean useCapture);
     [RaisesException] boolean dispatchEvent(Event evt);
 
-#if defined(ENABLE_WEBVTT_REGIONS) && ENABLE_WEBVTT_REGIONS
-    attribute DOMString regionId;
-#endif
+    [Conditional=WEBVTT_REGIONS] attribute DOMString regionId;
 };
 

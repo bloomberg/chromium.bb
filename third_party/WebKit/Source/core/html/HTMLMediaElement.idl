@@ -97,9 +97,7 @@ readonly attribute unsigned long webkitVideoDecodedByteCount;
 [EnabledAtRuntime=legacyEncryptedMedia] attribute EventListener onwebkitkeymessage;
 [EnabledAtRuntime=legacyEncryptedMedia] attribute EventListener onwebkitneedkey;
 
-#if defined(ENABLE_ENCRYPTED_MEDIA_V2) && ENABLE_ENCRYPTED_MEDIA_V2
-[EnabledAtRuntime=encryptedMedia] attribute MediaKeys mediaKeys;
-#endif
+[EnabledAtRuntime=encryptedMedia, Conditional=ENCRYPTED_MEDIA_V2] attribute MediaKeys mediaKeys;
 
 [EnabledAtRuntime=videoTrack, RaisesException] TextTrack addTextTrack(DOMString kind, optional DOMString label, optional DOMString language);
 [EnabledAtRuntime=videoTrack] readonly attribute TextTrackList textTracks;

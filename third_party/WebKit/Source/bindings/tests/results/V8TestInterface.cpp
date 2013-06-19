@@ -1070,23 +1070,23 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
     desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestInterface::namedPropertyGetter, V8TestInterface::namedPropertySetter, V8TestInterface::namedPropertyQuery, 0, V8TestInterface::namedPropertyEnumerator);
+#if ENABLE(Condition11) || ENABLE(Condition12)
 
     // Custom Signature 'supplementalMethod2'
     const int supplementalMethod2Argc = 2;
     v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::info, currentWorldType) };
     v8::Handle<v8::Signature> supplementalMethod2Signature = v8::Signature::New(desc, supplementalMethod2Argc, supplementalMethod2Argv);
-#if ENABLE(Condition11) || ENABLE(Condition12)
     proto->Set(v8::String::NewSymbol("supplementalMethod2"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod2MethodCallback, v8Undefined(), supplementalMethod2Signature, 2));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     desc->Set(v8::String::NewSymbol("supplementalMethod4"), v8::FunctionTemplate::New(TestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
+#if ENABLE(Condition22) || ENABLE(Condition23)
 
     // Custom Signature 'implementsMethod2'
     const int implementsMethod2Argc = 2;
     v8::Handle<v8::FunctionTemplate> implementsMethod2Argv[implementsMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::info, currentWorldType) };
     v8::Handle<v8::Signature> implementsMethod2Signature = v8::Signature::New(desc, implementsMethod2Argc, implementsMethod2Argv);
-#if ENABLE(Condition22) || ENABLE(Condition23)
     proto->Set(v8::String::NewSymbol("implementsMethod2"), v8::FunctionTemplate::New(TestInterfaceV8Internal::implementsMethod2MethodCallback, v8Undefined(), implementsMethod2Signature, 2));
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)

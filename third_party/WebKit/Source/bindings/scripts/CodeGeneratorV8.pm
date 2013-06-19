@@ -3083,6 +3083,8 @@ END
        $signature = "v8::Local<v8::Signature>()";
     }
 
+    my $conditionalString = GenerateConditionalString($function);
+    $code .= "#if ${conditionalString}\n" if $conditionalString;
     if (RequiresCustomSignature($function)) {
         $signature = "${name}Signature";
         $code .= "\n    // Custom Signature '$name'\n" . CreateCustomSignature($function);
@@ -3100,8 +3102,6 @@ END
 
     my $functionLength = GetFunctionLength($function);
 
-    my $conditionalString = GenerateConditionalString($function);
-    $code .= "#if ${conditionalString}\n" if $conditionalString;
     if ($function->extendedAttributes->{"PerWorldBindings"}) {
         $code .= "    if (currentWorldType == MainWorld) {\n";
         $code .= "        ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
