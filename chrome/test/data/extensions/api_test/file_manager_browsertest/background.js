@@ -79,20 +79,23 @@ StepsRunner.prototype.run_ = function(steps) {
   this.next();
 };
 
-chrome.test.runTests([
-  // Waits for the C++ code to send a string identifying a test, then runs that
-  // test.
-  function testRunner() {
-    var command = chrome.extension.inIncognitoContext ? 'which test guest' :
-        'which test non-guest';
-    chrome.test.sendMessage(command, function(testCaseName) {
-      // Run one of the test cases defined in the testcase namespace, in
-      // test_cases.js. The test case name is passed via StartTest call in
-      // file_manager_browsertest.cc.
-      if (testcase[testCaseName])
-        testcase[testCaseName]();
-      else
-        chrome.test.fail('Bogus test name passed to testRunner()');
-    });
+var steps = [
+  // Check for the guest mode.
+  function() {
+    chrome.test.sendMessage('isInGuestMode', steps.shift());
+  },
+  // Obtain the test case name.
+  function(result) {
+    if (JSON.parse(result) != chrome.extension.inIncognitoContext)
+      return;
+    chrome.test.sendMessage('getTestName', steps.shift());
+  },
+  // Run the test case.
+  function(testCaseName) {
+    if (!testcase[testCaseName])
+      return;
+    chrome.test.runTests([testcase[testCaseName]]);
   }
-]);
+];
+
+steps.shift()();

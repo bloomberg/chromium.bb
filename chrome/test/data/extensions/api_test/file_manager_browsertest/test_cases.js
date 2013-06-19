@@ -177,12 +177,12 @@ testcase.intermediate.fileDisplay = function(path) {
     function(inAppId, actualFilesBefore) {
       appId = inAppId;
       chrome.test.assertEq(expectedFilesBefore, actualFilesBefore);
-      chrome.test.sendMessage('initial check done', this.next);
+      chrome.test.sendMessage('addEntry', this.next);
     },
     // Confirm that the file has been added externally and wait for it
     // to appear in UI.
     function(reply) {
-      chrome.test.assertEq('file added', reply);
+      chrome.test.assertEq('onEntryAdded', reply);
       callRemoteTestUtil(
           'waitForFileListChange',
           appId,

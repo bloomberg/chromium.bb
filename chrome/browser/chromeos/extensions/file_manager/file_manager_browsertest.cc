@@ -8,6 +8,7 @@
 //  - Selecting a file and copy-pasting it with the keyboard copies the file.
 //  - Selecting a file and pressing delete deletes it.
 
+#include <deque>
 #include <string>
 
 #include "base/bind.h"
@@ -19,16 +20,20 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_utils.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace {
@@ -271,20 +276,68 @@ class DriveTestVolume {
   drive::DriveIntegrationService* integration_service_;
 };
 
-// Parameter of FileManagerBrowserTestBase.
-// The second value is the case name of javascript.
+// Listener to obtain the test relative messages synchronously.
+class FileManagerTestListener : public content::NotificationObserver {
+ public:
+  struct Message {
+    int type;
+    std::string message;
+    extensions::TestSendMessageFunction* function;
+  };
+
+  FileManagerTestListener() {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+                   content::NotificationService::AllSources());
+  }
+
+  Message GetNextMessage() {
+    if (messages_.empty())
+      content::RunMessageLoop();
+    const Message entry = messages_.front();
+    messages_.pop_front();
+    return entry;
+  }
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    Message entry;
+    entry.type = type;
+    entry.message = type != chrome::NOTIFICATION_EXTENSION_TEST_PASSED ?
+        *content::Details<std::string>(details).ptr() :
+        std::string();
+    entry.function = type == chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE ?
+        content::Source<extensions::TestSendMessageFunction>(source).ptr() :
+        NULL;
+    messages_.push_back(entry);
+    base::MessageLoopForUI::current()->Quit();
+  }
+
+ private:
+  std::deque<Message> messages_;
+  content::NotificationRegistrar registrar_;
+};
+
+// Parameter of FileManagerBrowserTest.
+// The second value is the case name of JavaScript.
 typedef std::tr1::tuple<GuestMode, const char*> TestParameter;
 
 // The base test class.
-class FileManagerBrowserTestBase :
+class FileManagerBrowserTest :
       public ExtensionApiTest,
       public ::testing::WithParamInterface<TestParameter> {
  protected:
-  FileManagerBrowserTestBase() :
+  FileManagerBrowserTest() :
       local_volume_(new LocalTestVolume),
       drive_volume_(std::tr1::get<0>(GetParam()) != IN_GUEST_MODE ?
-                    new DriveTestVolume() : NULL),
-      guest_mode_(std::tr1::get<0>(GetParam())) {}
+                    new DriveTestVolume() : NULL) {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
 
@@ -297,22 +350,18 @@ class FileManagerBrowserTestBase :
   // test.
   void StartTest();
 
- protected:
   const scoped_ptr<LocalTestVolume> local_volume_;
   const scoped_ptr<DriveTestVolume> drive_volume_;
-
- private:
-  GuestMode guest_mode_;
 };
 
-void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
+void FileManagerBrowserTest::SetUpInProcessBrowserTestFixture() {
   ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
   if (drive_volume_)
     ASSERT_TRUE(drive_volume_->SetUp());
 }
 
-void FileManagerBrowserTestBase::SetUpOnMainThread() {
+void FileManagerBrowserTest::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
   ASSERT_TRUE(local_volume_->Mount(browser()->profile()));
 
@@ -332,8 +381,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   }
 }
 
-void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
-  if (guest_mode_ == IN_GUEST_MODE) {
+void FileManagerBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+  if (std::tr1::get<0>(GetParam()) == IN_GUEST_MODE) {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
     command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
     command_line->AppendSwitch(switches::kIncognito);
@@ -341,61 +390,58 @@ void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
   ExtensionApiTest::SetUpCommandLine(command_line);
 }
 
-void FileManagerBrowserTestBase::StartTest() {
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
+  // Launch the extension.
   base::FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
   const extensions::Extension* extension = LoadExtensionAsComponent(path);
   ASSERT_TRUE(extension);
 
-  bool in_guest_mode = guest_mode_ == IN_GUEST_MODE;
-  ExtensionTestMessageListener listener(
-      in_guest_mode ? "which test guest" : "which test non-guest", true);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(std::tr1::get<1>(GetParam()));
-}
-
-class FileManagerBrowserFileDisplayTest : public FileManagerBrowserTestBase {};
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserFileDisplayTest, Test) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest());
-
-  ExtensionTestMessageListener listener("initial check done", true);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-  const TestEntryInfo entry = {
-    FILE,
-    "music.ogg",  // Prototype file name.
-    "newly added file.ogg",  // Target file name.
-    "audio/ogg",
-    NONE,
-    "4 Sep 1998 00:00:00"
-  };
-  if (drive_volume_)
-    drive_volume_->CreateEntry(entry);
-  local_volume_->CreateEntry(entry);
-  listener.Reply("file added");
-
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  // Handle the messages from JavaScript.
+  // The while loop is break when the test is passed or failed.
+  FileManagerTestListener listener;
+  while (true) {
+    FileManagerTestListener::Message entry = listener.GetNextMessage();
+    if (entry.type == chrome::NOTIFICATION_EXTENSION_TEST_PASSED) {
+      // Test succeed.
+      break;
+    } else if (entry.type == chrome::NOTIFICATION_EXTENSION_TEST_FAILED) {
+      // Test failed.
+      ADD_FAILURE() << entry.message;
+      break;
+    } else if (entry.message == "getTestName") {
+      // Pass the test case name.
+      entry.function->Reply(std::tr1::get<1>(GetParam()));
+    } else if (entry.message == "isInGuestMode") {
+      // Obtains whther the test is in guest mode or not.
+      entry.function->Reply(std::tr1::get<0>(GetParam()) ? "true" : "false");
+    } else if (entry.message == "addEntry") {
+      // Add the extra entry.
+      const TestEntryInfo file = {
+        FILE,
+        "music.ogg",  // Prototype file name.
+        "newly added file.ogg",  // Target file name.
+        "audio/ogg",
+        NONE,
+        "4 Sep 1998 00:00:00"
+      };
+      if (drive_volume_)
+        drive_volume_->CreateEntry(file);
+      local_volume_->CreateEntry(file);
+      entry.function->Reply("onEntryAdded");
+    }
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(
-    AllTests,
-    FileManagerBrowserFileDisplayTest,
+    FileDisplay,
+    FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive")));
 
-// A test class that just executes JavaScript unit test.
-class FileManagerBrowserSimpleTest : public FileManagerBrowserTestBase {};
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserSimpleTest, Test) {
-  ResultCatcher catcher;
-  ASSERT_NO_FATAL_FAILURE(StartTest());
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
 INSTANTIATE_TEST_CASE_P(
     OpenSpecialTypes,
-    FileManagerBrowserSimpleTest,
+    FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive"),
@@ -411,7 +457,7 @@ INSTANTIATE_TEST_CASE_P(
 
 INSTANTIATE_TEST_CASE_P(
     KeyboardOpeartions,
-    FileManagerBrowserSimpleTest,
+    FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
                                     "keyboardDeleteDownloads"),
@@ -422,7 +468,7 @@ INSTANTIATE_TEST_CASE_P(
 
 INSTANTIATE_TEST_CASE_P(
     DriveSpecific,
-    FileManagerBrowserSimpleTest,
+    FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "openSidebarRecent"),
                       TestParameter(NOT_IN_GUEST_MODE, "openSidebarOffline"),
                       TestParameter(NOT_IN_GUEST_MODE,
@@ -431,7 +477,7 @@ INSTANTIATE_TEST_CASE_P(
 
 INSTANTIATE_TEST_CASE_P(
     Transfer,
-    FileManagerBrowserSimpleTest,
+    FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "transferFromDriveToDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
@@ -451,13 +497,13 @@ INSTANTIATE_TEST_CASE_P(
 
 INSTANTIATE_TEST_CASE_P(
      HideSearchBox,
-     FileManagerBrowserSimpleTest,
+     FileManagerBrowserTest,
      ::testing::Values(TestParameter(IN_GUEST_MODE, "hideSearchBox"),
                        TestParameter(NOT_IN_GUEST_MODE, "hideSearchBox")));
 
 INSTANTIATE_TEST_CASE_P(
     RestorePrefs,
-    FileManagerBrowserSimpleTest,
+    FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "restoreSortColumn"),
                       TestParameter(NOT_IN_GUEST_MODE, "restoreSortColumn"),
                       TestParameter(IN_GUEST_MODE, "restoreCurrentView"),
