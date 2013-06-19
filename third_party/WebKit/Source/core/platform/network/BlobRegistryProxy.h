@@ -42,7 +42,10 @@ public:
     BlobRegistryProxy();
 
     virtual void registerBlobURL(const KURL&, PassOwnPtr<BlobData>);
+    virtual void registerStreamURL(const KURL&, const WTF::String&);
     virtual void registerBlobURL(const KURL&, const KURL& srcURL);
+    virtual void addDataToStream(const KURL&, PassRefPtr<RawData>);
+    virtual void finalizeStream(const KURL&);
     virtual void unregisterBlobURL(const KURL&);
 
 private:

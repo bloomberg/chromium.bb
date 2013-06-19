@@ -36,6 +36,7 @@
 namespace WebKit {
 
 class WebBlobData;
+class WebString;
 class WebThreadSafeData;
 class WebURL;
 
@@ -48,8 +49,9 @@ public:
     // Registers a blob URL referring to the specified blob data.
     virtual void registerBlobURL(const WebURL&, WebBlobData&) = 0;
 
-    // Registers a stream URL.
-    virtual void registerStreamURL(const WebURL&) { WEBKIT_ASSERT_NOT_REACHED(); };
+    // Registers a stream URL referring to a stream with the specified media
+    // type.
+    virtual void registerStreamURL(const WebURL&, const WebString&) { WEBKIT_ASSERT_NOT_REACHED(); }
 
     // Registers a blob or stream URL referring to the blob data or stream
     // identified by the specified srcURL.

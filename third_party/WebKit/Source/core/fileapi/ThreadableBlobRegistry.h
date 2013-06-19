@@ -31,6 +31,7 @@
 #ifndef ThreadableBlobRegistry_h
 #define ThreadableBlobRegistry_h
 
+#include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
@@ -38,12 +39,16 @@ namespace WebCore {
 
 class BlobData;
 class KURL;
+class RawData;
 class SecurityOrigin;
 
 class ThreadableBlobRegistry {
 public:
     static void registerBlobURL(const KURL&, PassOwnPtr<BlobData>);
+    static void registerStreamURL(const KURL&, const String&);
     static void registerBlobURL(SecurityOrigin*, const KURL&, const KURL& srcURL);
+    static void addDataToStream(const KURL&, PassRefPtr<RawData>);
+    static void finalizeStream(const KURL&);
     static void unregisterBlobURL(const KURL&);
 };
 

@@ -31,7 +31,9 @@
 #ifndef BlobRegistry_h
 #define BlobRegistry_h
 
-#include <wtf/PassOwnPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -39,6 +41,7 @@ class BlobData;
 class BlobStorageData;
 class BlobRegistry;
 class KURL;
+class RawData;
 
 BlobRegistry& blobRegistry();
 
@@ -47,10 +50,22 @@ class BlobRegistry {
 public:
     // Registers a blob URL referring to the specified blob data.
     virtual void registerBlobURL(const KURL&, PassOwnPtr<BlobData>) = 0;
-    
-    // Registers a new blob URL referring to the blob data identified by the specified srcURL.
+
+    // Registers a stream URL referring to a stream with the specified media
+    // type.
+    virtual void registerStreamURL(const KURL&, const String&) = 0;
+
+    // Registers a new blob or stream URL referring to the blob data or stream
+    // identified by the specified srcURL.
     virtual void registerBlobURL(const KURL&, const KURL& srcURL) = 0;
 
+    // Add data to the stream referred by the URL.
+    virtual void addDataToStream(const KURL&, PassRefPtr<RawData>) = 0;
+
+    // Tell the registry that this stream won't receive any more data.
+    virtual void finalizeStream(const KURL&) = 0;
+
+    // Unregisters a blob or stream referred by the URL.
     virtual void unregisterBlobURL(const KURL&) = 0;
 
 protected:

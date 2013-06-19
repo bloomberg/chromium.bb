@@ -36,10 +36,13 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebBlobData.h"
 #include "public/platform/WebBlobRegistry.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebThreadSafeData.h"
 #include "public/platform/WebURL.h"
 #include "weborigin/KURL.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -63,10 +66,30 @@ void BlobRegistryProxy::registerBlobURL(const KURL& url, PassOwnPtr<BlobData> bl
     }
 }
 
+void BlobRegistryProxy::registerStreamURL(const KURL& url, const String& type)
+{
+    if (m_webBlobRegistry)
+        m_webBlobRegistry->registerStreamURL(url, type);
+}
+
 void BlobRegistryProxy::registerBlobURL(const KURL& url, const KURL& srcURL)
 {
     if (m_webBlobRegistry)
         m_webBlobRegistry->registerBlobURL(url, srcURL);
+}
+
+void BlobRegistryProxy::addDataToStream(const KURL& url, PassRefPtr<RawData> streamData)
+{
+    if (m_webBlobRegistry) {
+        WebKit::WebThreadSafeData webThreadSafeData(streamData);
+        m_webBlobRegistry->addDataToStream(url, webThreadSafeData);
+    }
+}
+
+void BlobRegistryProxy::finalizeStream(const KURL& url)
+{
+    if (m_webBlobRegistry)
+        m_webBlobRegistry->finalizeStream(url);
 }
 
 void BlobRegistryProxy::unregisterBlobURL(const KURL& url)
