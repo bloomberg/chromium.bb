@@ -79,7 +79,8 @@ static gfx::Size SoftwarePlaneDimension(
     GLenum output_resource_format,
     int plane_index) {
   if (output_resource_format == kYUVResourceFormat) {
-    if (plane_index == media::VideoFrame::kYPlane)
+    if (plane_index == media::VideoFrame::kYPlane ||
+        plane_index == media::VideoFrame::kAPlane)
       return coded_size;
 
     switch (input_frame_format) {
@@ -132,7 +133,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   bool software_compositor = !resource_provider_->GraphicsContext3D();
 
   GLenum output_resource_format = kYUVResourceFormat;
-  size_t output_plane_count = 3;
+  size_t output_plane_count =
+      (input_frame_format == media::VideoFrame::YV12A) ? 4 : 3;
 
   // TODO(skaslev): If we're in software compositing mode, we do the YUV -> RGB
   // conversion here. That involves an extra copy of each frame to a bitmap.
