@@ -70,9 +70,9 @@ run_test() {
     courgette -apply "${file1}" "${patch}" "${apply}"
     cmp -s "${file2}" "${apply}"
     if [ "${?}" -ne 0 ]; then
-      echo "FAIL ${file1}"
+      echo "FAIL_COURGETTE ${file1}"
     else
-      echo "PASS ${file1}"
+      echo "PASS_COURGETTE ${file1}"
       local bsdiff_patch="${patches_dir}/${file1}.bsdiff_patch"
       local bsdiff_apply="${applied_dir}/${file2}.bsdiff_applied"
       bsdiff "${file1}" "${file2}" "${bsdiff_patch}"
@@ -82,28 +82,16 @@ run_test() {
         echo "FAIL_BSDIFF ${file1}"
       else
         echo "PASS_BSDIFF ${file1}"
-        local patch_size="$(du -b "${patch}" | cut -f1)"
+        bzip2 -k -9 "${patch}"
+        local patch_size="$(du -b "${patch}.bz2" | cut -f1)"
         local bsdiff_patch_size="$(du -b "${bsdiff_patch}" | cut -f1)"
         echo "SIZE courgette=${patch_size} bsdiff=${bsdiff_patch_size} ${file1}"
         if [ "${patch_size}" -eq "${bsdiff_patch_size}" ]; then
-          echo "TIE ${file1}"
+          echo "BEST_TIE ${patch_size} ${file1}"
         elif [ "${patch_size}" -lt "${bsdiff_patch_size}" ]; then
-          echo "COURGETTE ${file1}"
+          echo "BEST_COURGETTE ${patch_size} ${file1}"
         elif [ "${patch_size}" -gt "${bsdiff_patch_size}" ]; then
-          echo "BSDIFF ${file1}"
-        fi
-        bzip2 -k -9 "${patch}"
-        bzip2 -k -9 "${bsdiff_patch}"
-        local patch_size_bz2="$(du -b "${patch}.bz2" | cut -f1)"
-        local bsdiff_patch_size_bz2="$(du -b "${bsdiff_patch}.bz2" | cut -f1)"
-        echo "SIZE_BZ2 courgette=${patch_size_bz2}" \
-          "bsdiff=${bsdiff_patch_size_bz2} ${file1}"
-        if [ "${patch_size_bz2}" -eq "${bsdiff_patch_size_bz2}" ]; then
-          echo "TIE_BZ2 ${file1}"
-        elif [ "${patch_size_bz2}" -lt "${bsdiff_patch_size_bz2}" ]; then
-          echo "COURGETTE_BZ2 ${file1}"
-        elif [ "${patch_size_bz2}" -gt "${bsdiff_patch_size_bz2}" ]; then
-          echo "BSDIFF_BZ2 ${file1}"
+          echo "BEST_BSDIFF ${bsdiff_patch_size} ${file1}"
         fi
       fi
     fi
@@ -133,17 +121,12 @@ count_result() {
 }
 
 cat <<EOF | tee -a "${log}"
-$(count_result "PASS") successful courgette patches
-$(count_result "FAIL") failed courgette patches (search log for "^FAIL ")
+$(count_result "PASS_COURGETTE") successful courgette patches
+$(count_result "FAIL_COURGETTE") failed courgette patches (search log for \
+"^FAIL_COURGETTE")
 $(count_result "PASS_BSDIFF") succesful bsdiff patches
 $(count_result "FAIL_BSDIFF") failed bsdiff patches
-$(count_result "COURGETTE") patch(es) where courgette is smaller
-$(count_result "BSDIFF") patch(es) where bsdiff is smaller
-$(count_result "TIE") patch(es) where both are the same size
-$(count_result "COURGETTE_BZ2") patch(es) where courgette is smaller after \
-compression
-$(count_result "BSDIFF_BZ2") patch(es) where bsdiff is smaller after \
-compression
-$(count_result "TIE_BZ2") patch(es) where both are the same size after \
-compression
+$(count_result "BEST_COURGETTE") patch(es) where courgette is smaller
+$(count_result "BEST_BSDIFF") patch(es) where bsdiff is smaller
+$(count_result "BEST_TIE") patch(es) where both are the same size
 EOF

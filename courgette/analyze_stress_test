@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# Copyright 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Produce metrics analyzing the output of a stress test
+
+set -e
+
+error() {
+  echo "error: ${@}" >&2
+}
+
+# Given a token, search for and count the instances of lines from the
+# logfile that start with the token.
+count_result() {
+  if [ ! -z "${1}" ]; then
+    echo $(cat "${log}" | grep "^${1} " | wc -l)    
+  else
+    echo 0
+  fi
+}
+
+main() {
+  if [ $# -lt 1 ]; then
+    cat <<EOF
+
+USAGE: $(basename ${0}) logfile
+
+Analyze the logfile of a stress test and produce metrics.
+
+EOF
+    exit 1
+  fi
+
+  local log="${1}"
+  if [ ! -f "${log}" ]; then
+    error "\"${log}\" not found"
+    exit 1
+  fi
+
+  cat <<EOF
+$(count_result "PASS_COURGETTE") successful courgette patches
+$(count_result "FAIL_COURGETTE") failed courgette patches
+$(count_result "PASS_BSDIFF") succesful bsdiff patches
+$(count_result "FAIL_BSDIFF") failed bsdiff patches
+$(count_result "BEST_COURGETTE") patch(es) where courgette is smaller
+$(count_result "BEST_BSDIFF") patch(es) where bsdiff is smaller
+$(count_result "BEST_TIE") patch(es) where both are the same size
+EOF
+
+  # Log file has the format "^SIZE courgette=... bsdiff=..."
+  local courgette_total="$(cat "${log}" \
+    | grep "^SIZE " \
+    | cut -d' ' -f2 \
+    | awk -F= 'BEGIN{sum=0} {sum += $2} END{print sum}')"
+  echo "${courgette_total} bytes for a courgette payload"
+
+  local bsdiff_total="$(cat "${log}" \
+    | grep "^SIZE " \
+    | cut -d' ' -f3 \
+    | awk -F= 'BEGIN{sum=0} {sum += $2} END{print sum}')"
+  echo "${bsdiff_total} bytes for a bsdiff payload"
+
+  local best_total="$(cat "${log}" \
+    | grep "^BEST_" \
+    | awk 'BEGIN{sum=0} {sum += $2} END{print sum}')"
+    echo "${best_total} bytes for a best-choice payload"
+
+  local pct="$(echo "100*${best_total}/${bsdiff_total}" \
+    | bc -lq \
+    | awk '{printf "%.2f\n", $0}')"
+    echo "${pct}% of a bsdiff-only payload"
+
+  local savings="$((bsdiff_total - best_total))"
+  echo "${savings} bytes saved by courgette"
+
+  local pct_savings="$(echo "100*${savings}/${bsdiff_total}" \
+    | bc -lq \
+    | awk '{printf "%.2f\n", $0}')"
+  echo "${pct_savings}% savings"
+}
+
+main "${@}"
