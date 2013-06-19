@@ -285,7 +285,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNSNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLElementFactory.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/FontFamilyNames.cpp',
 

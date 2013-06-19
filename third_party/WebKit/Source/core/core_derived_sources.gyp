@@ -418,8 +418,6 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLElementFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLElementFactory.h',
           ],
           'action': [
             'python',
@@ -428,7 +426,6 @@
             '--',
             '<@(_inputs)',
             '--',
-            '--factory',
             '--extraDefines', '<(feature_defines)'
           ],
           'msvs_cygwin_shell': 1,
