@@ -153,13 +153,11 @@ public:
     virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*) { return 0; }
     virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*) { return 0; }
 
-
     // MIDI ----------------------------------------------------------------
 
     // Creates a platform dependent WebMIDIAccessor. MIDIAccessor under platform
     // creates and owns it.
     virtual WebMIDIAccessor* createMIDIAccessor(WebMIDIAccessorClient*) { return 0; }
-
 
     // Blob ----------------------------------------------------------------
 

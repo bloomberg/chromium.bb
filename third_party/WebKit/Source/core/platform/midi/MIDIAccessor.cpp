@@ -56,7 +56,7 @@ MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client)
     ASSERT(m_accessor);
 }
 
-void MIDIAccessor::requestAccess(bool access)
+void MIDIAccessor::requestAccess(int access)
 {
     m_accessor->requestAccess(access);
 }
@@ -66,29 +66,24 @@ void MIDIAccessor::sendMIDIData(unsigned portIndex, const unsigned char* data, s
     m_accessor->sendMIDIData(portIndex, data, length, timeStamp);
 }
 
-void MIDIAccessor::didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
+void MIDIAccessor::addInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
 {
-    m_client->didAddInputPort(id, manufacturer, name, version);
+    m_client->addInputPort(id, manufacturer, name, version);
 }
 
-void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
+void MIDIAccessor::addOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
 {
-    m_client->didAddOutputPort(id, manufacturer, name, version);
+    m_client->addOutputPort(id, manufacturer, name, version);
 }
 
-void MIDIAccessor::didAllowAccess()
+void MIDIAccessor::accessApproved(bool approved)
 {
-    m_client->didAllowAccess();
+    m_client->accessApproved(approved);
 }
 
-void MIDIAccessor::didBlockAccess()
+void MIDIAccessor::receiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
 {
-    m_client->didBlockAccess();
-}
-
-void MIDIAccessor::didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp)
-{
-    m_client->didReceiveMIDIData(portIndex, data, length, timeStamp);
+    m_client->receiveMIDIData(portIndex, data, length, timeStamp);
 }
 
 } // namespace WebCore

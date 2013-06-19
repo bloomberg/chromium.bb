@@ -35,12 +35,14 @@
 
 namespace WebKit {
 
+// Abstract interface to the Chromium MIDI system.
+
 class WebMIDIAccessor {
 public:
     virtual ~WebMIDIAccessor() { }
 
-    // |access| is set to true if MIDIOptions.sysexEnabled is true. Otherwise false.
-    virtual void requestAccess(bool access) { }
+    // |access| is set to 1 if MIDIOptions.sysexEnabled is true. Otherwise 0.
+    virtual void requestAccess(int access) { }
     // |timeStamp| is measured in milliseconds as Web MIDI spec defines.
     virtual void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) { }
 };
