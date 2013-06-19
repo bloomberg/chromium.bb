@@ -30,7 +30,6 @@
 #include "core/platform/SharedTimer.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/platform/Timer.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MainThread.h>
 
@@ -102,12 +101,8 @@ void ThreadTimers::updateSharedTimer()
 
 void ThreadTimers::sharedTimerFired()
 {
-    TRACE_EVENT_SAMPLING_STATE0("WebKit\0WebKitInternal");
-
     // Redirect to non-static method.
     threadGlobalData().threadTimers().sharedTimerFiredInternal();
-
-    TRACE_EVENT_SAMPLING_STATE0("WebKit\0WebKitSleeping");
 }
 
 void ThreadTimers::sharedTimerFiredInternal()

@@ -35,12 +35,9 @@
 
 namespace WebCore {
 
-// The dummy variable is needed to avoid a crash when someone updates the state variables
-// before EventTracer::initialize() is called.
-long dummyTraceSamplingState;
-long* traceSamplingState0 = &dummyTraceSamplingState;
-long* traceSamplingState1 = &dummyTraceSamplingState;
-long* traceSamplingState2 = &dummyTraceSamplingState;
+TraceEventAPIAtomicWord* traceSamplingState0;
+TraceEventAPIAtomicWord* traceSamplingState1;
+TraceEventAPIAtomicWord* traceSamplingState2;
 
 void EventTracer::initialize()
 {

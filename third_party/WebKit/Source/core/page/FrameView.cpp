@@ -876,7 +876,6 @@ void FrameView::layout(bool allowSubtree)
         return;
 
     TRACE_EVENT0("webkit", "FrameView::layout");
-    TraceEvent::SamplingState0Scope("WebKit\0WebKitLayout");
 
     // Protect the view from being deleted during layout (in recalcStyle)
     RefPtr<FrameView> protector(this);
