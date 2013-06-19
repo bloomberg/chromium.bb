@@ -68,8 +68,11 @@ quota::QuotaStatusCode DeleteOriginOnFileThread(
     FileSystemContext* context,
     const GURL& origin,
     FileSystemType type) {
+  FileSystemMountPointProvider* provider = context->GetMountPointProvider(type);
+  if (!provider || !provider->GetQuotaUtil())
+    return quota::kQuotaErrorNotSupported;
   base::PlatformFileError result =
-      context->sandbox_provider()->DeleteOriginDataOnFileThread(
+      provider->GetQuotaUtil()->DeleteOriginDataOnFileThread(
           context, context->quota_manager_proxy(), origin, type);
   if (result == base::PLATFORM_FILE_OK)
     return quota::kQuotaStatusOk;
