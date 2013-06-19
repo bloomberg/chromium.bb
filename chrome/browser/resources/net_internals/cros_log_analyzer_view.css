@@ -1,0 +1,185 @@
+ /* Copyright 2013 The Chromium Authors. All rights reserved.
+  * Use of this source code is governed by a BSD-style license that can be
+  * found in the LICENSE file.
+  */
+
+ #cros-log-analyzer-header {
+  margin-bottom: 20px;
+ }
+
+.cros-log-analyzer-container {
+  background-color: rgb(242, 242, 242);
+  border: 1px solid rgb(220, 220, 220);
+}
+
+#cros-log-analyzer-log-content {
+  border: 1px solid rgb(220, 220, 220);
+  font-size: 11px;
+  height: 300px;
+  line-height: 18px;
+  margin-bottom: -1px;
+  overflow: scroll;
+  padding: 10px;
+  width: 1000px;
+ }
+
+#cros-log-analyzer-filter-container {
+  font-size: 12px;
+  margin-bottom: 5px;
+  padding: 5px 10px;
+  width: 1000px;
+}
+
+#cros-log-analyzer-filter-container p {
+  margin: 10px 0;
+}
+
+#cros-log-analyzer-log-table {
+  table-layout: fixed;
+  width: 950px;
+}
+
+#cros-log-analyzer-log-table td {
+  overflow: hidden;
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+.cros-log-analyzer-td-time {
+  width: 100px;
+}
+
+#cros-log-analyzer-log-header-table {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: -1px;
+  text-align: center;
+  width: 1000px;
+}
+
+.cros-log-analyzer-td-pname {
+  text-align: center;
+  width: 120px;
+}
+
+.cros-log-analyzer-td-level {
+  width: 70px;
+}
+
+.cros-log-analyzer-td-level p {
+  border: 1px solid;
+  border-radius: 5px;
+  margin: 0 3px;
+  text-align: center;
+  width: 58px;
+}
+
+.cros-log-analyzer-td-level-error {
+  background-color: rgb(255, 153, 163);
+  color: red;
+}
+
+.cros-log-analyzer-td-level-info {
+  background-color: rgb(195, 227, 250);
+  color: rgb(10, 147, 245);
+  width: 120px;
+}
+
+.cros-log-analyzer-td-level-warning {
+  background-color: rgb(250, 229, 195);
+  color: darkorange;
+}
+
+.cros-log-analyzer-td-level-unknown {
+  color: gray;
+}
+
+.cros-log-analyzer-td-pid {
+  width: 60px;
+}
+
+#cros-log-analyzer-filter-pname {
+  border-bottom: 1px solid rgb(209, 209, 209);
+  padding: 5px 0 10px 0;
+}
+
+#cros-log-analyzer-filter-level {
+  padding: 5px 0 10px 0;
+}
+
+#cros-log-analyzer-search-container {
+  -webkit-margin-start: 760px;
+  border-radius: 5px;
+  font-size: 12px;
+  margin-bottom: 5px;
+  margin-top: -40px;
+  padding: 5px;
+  width: 240px;
+}
+
+#cros-log-analyzer-search-container input {
+  border: 1px solid rgb(220, 220, 220);
+}
+
+#cros-log-analyzer-visualizer-container {
+  border: 1px solid rgb(211, 211, 211);
+  height: 100px;
+  position: relative;
+  width: 1002px;
+}
+
+#cros-log-analyzer-visualizer-timeline {
+  background: gray;
+  opacity: 0.5;
+  position: absolute;
+  top: 0;
+  width: 2px;
+}
+
+.cros-log-analyzer-visualizer-time-display {
+  font-size: 10px;
+  position: absolute;
+  width: 50px;
+}
+
+#cros-log-analyzer-visualizer-reset-btn {
+  border: 1px solid rgb(211, 211, 211);
+  border-radius: 2px;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
+#cros-log-analyzer-visualizer-tracking-layer {
+  background: none;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.cros-log-analyzer-visualizer-canvas {
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.cros-log-analyzer-flash {
+  -webkit-animation: fade 1s linear 1;
+}
+
+@-webkit-keyframes fade {
+  0%
+  {
+    opacity: 1;
+  }
+  50%
+  {
+    opacity: 0;
+  }
+  100%
+  {
+    opacity: 1;
+  }
+}

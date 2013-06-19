@@ -278,7 +278,8 @@ var NetInternalsTest = (function() {
       logs: LogsView.TAB_ID,
       prerender: PrerenderView.TAB_ID,
       bandwidth: BandwidthView.TAB_ID,
-      chromeos: CrosView.TAB_ID
+      chromeos: CrosView.TAB_ID,
+      analyzer: CrosLogAnalyzerView.TAB_ID
     };
 
     assertEquals(typeof hashToTabHandleIdMap[hash], 'string',

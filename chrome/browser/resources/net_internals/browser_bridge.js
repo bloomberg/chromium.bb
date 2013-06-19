@@ -713,8 +713,10 @@ var BrowserBridge = (function() {
      *   observer.onSystemLogChanged(systemLogInfo)
      */
     addSystemLogObserver: function(observer, ignoreWhenUnchanged) {
-      this.pollableDataHelpers_.systemLog.addObserver(
-          observer, ignoreWhenUnchanged);
+      if (this.pollableDataHelpers_.systemLog) {
+        this.pollableDataHelpers_.systemLog.addObserver(
+            observer, ignoreWhenUnchanged);
+      }
     },
 
     /**
