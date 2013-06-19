@@ -259,12 +259,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Invoked before a form repost warning is shown.
   virtual void BeforeFormRepostWarningShow() {}
 
-  // Invoked when the before unload fires. The time is from the renderer.
-  virtual void BeforeUnloadFired(const base::TimeTicks& proceed_time) {}
-
-  // Invoked when a user cancels a before unload dialog.
-  virtual void BeforeUnloadDialogCancelled() {}
-
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

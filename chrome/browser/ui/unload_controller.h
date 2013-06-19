@@ -41,7 +41,7 @@ namespace chrome {
 //     If beforeunload/unload handlers need to run, UnloadController returns
 //     true and calls ProcessPendingTabs() (private method).
 //  2. For each tab with a beforeunload/unload handler, ProcessPendingTabs()
-//        calls |CoreTabHelper::OnCloseStarted()|
+//        calls |web_contents->OnCloseStarted()|
 //        and   |web_contents->GetRenderViewHost()->FirePageBeforeUnload()|.
 //  3. If the user allowed the close to continue, we detach all the tabs with
 //     unload handlers, remove them from the tab strip, and finish closing

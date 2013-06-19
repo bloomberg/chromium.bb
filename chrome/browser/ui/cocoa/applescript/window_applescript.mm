@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/tab_applescript.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -180,8 +179,7 @@
       browser_,
       GURL(chrome::kChromeUINewTabURL),
       content::PAGE_TRANSITION_TYPED);
-  CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
-  core_tab_helper->set_new_tab_start_time(newTabStartTime);
+  contents->SetNewTabStartTime(newTabStartTime);
   [aTab setWebContents:contents];
 }
 
@@ -198,9 +196,7 @@
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = index;
   chrome::Navigate(&params);
-  CoreTabHelper* core_tab_helper =
-      CoreTabHelper::FromWebContents(params.target_contents);
-  core_tab_helper->set_new_tab_start_time(newTabStartTime);
+  params.target_contents->SetNewTabStartTime(newTabStartTime);
 
   [aTab setWebContents:params.target_contents];
 }
