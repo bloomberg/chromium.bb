@@ -209,6 +209,10 @@ void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
 void HistoryURLProviderTest::SetUpImpl(bool no_db) {
   profile_.reset(new TestingProfile());
   profile_->CreateHistoryService(true, no_db);
+  if (!no_db) {
+    profile_->BlockUntilHistoryProcessesPendingRequests();
+    profile_->BlockUntilHistoryIndexIsRefreshed();
+  }
   history_service_ =
       HistoryServiceFactory::GetForProfile(profile_.get(),
                                            Profile::EXPLICIT_ACCESS);
