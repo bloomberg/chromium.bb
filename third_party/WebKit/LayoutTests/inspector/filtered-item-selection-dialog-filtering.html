@@ -11,17 +11,26 @@ function test()
     var overridenTitle = [];
     var overridenQuery = "";
     var overridenScores = [];
-    var delegate = {
-        itemTitleAt: function(itemIndex) { return overridenTitles[itemIndex] || ""; },
-        itemSuffixAt: function(itemIndex) { },
-        itemSubtitleAt: function(itemIndex) { },
+
+    function StubDelegate()
+    {
+        WebInspector.SelectionDialogContentProvider.call(this);
+    }
+    StubDelegate.prototype = {
         itemKeyAt: function(itemIndex) { return overridenInput[itemIndex]; },
         itemScoreAt: function(itemIndex) { return overridenScores[itemIndex] || 0; },
-        itemsCount: function() { return overridenInput.length; },
-        requestItems: function(callback) { callback(); },
+        itemCount: function() { return overridenInput.length; },
         selectItem: function(itemIndex, promptValue) { },
         rewriteQuery: function(query) { return overridenQuery; },
-    };
+
+        __proto__: WebInspector.SelectionDialogContentProvider.prototype
+    }
+
+    var overridenInput = [];
+    var overridenTitle = [];
+    var overridenQuery = "";
+    var overridenScores = [];
+    var delegate = new StubDelegate();
 
     function checkQuery(title, query, input, titles, scores)
     {
@@ -48,12 +57,6 @@ function test()
     checkQuery("Case insensitive matching", "ab", ["abc", "bac", "a_B"]);
     checkQuery("Duplicate symbols in query", "aab", ["abab", "abaa", "caab", "baac", "fooaab"]);
     checkQuery("Dangerous input escaping", "^[]{}()\\.$*+?|", ["^[]{}()\\.$*+?|", "0123456789abcdef"]);
-    checkQuery("Camel case matching", "fBaB", ["fooBarBaz", "FooBarBaz", "Foo_Bar_Baz", "foo_bar_baz", "foobarbaz", "foobarBaz", "afooBarBaz", "aFooBarBaz", "a fooBarBaz", "fooBorBaz", "fooBorCaz"]);
-    checkQuery("Underscore matching", "fO_ba_b", ["foOBarBaz", "FoOBarBaz", "FoO_Bar_Baz", "foO_bar_baz", "foObarbaz", "foObarBaz", "afoOBarBaz", "aFoOBarBaz", "a foOBarBaz", "foOBorBaz", "foOBorCaz"]);
-    checkQuery("Case insensitive matching", "fb", ["foo_bar", "FB", "foobar", "fBar"]);
-    checkQuery("Case insensitive underscore matching", "f_b", ["foo_bar", "FOO_BAR", "Foo_Bar", "fOo_bAr"]);
-    checkQuery("Exact substring match", "foo", ["a/fobazo", "b/foobar", "c/FOObar"], ["fobazo", "foobar", "FOObar"]);
-    checkQuery("Default scoring", "foo", ["foo1", "foo2", "foo3"], undefined, [1,2,3]);
     InspectorTest.completeTest();
 }
 
