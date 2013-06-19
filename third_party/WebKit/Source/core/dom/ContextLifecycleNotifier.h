@@ -38,7 +38,7 @@ class MemoryObjectInfo;
 namespace WebCore {
 
 class ActiveDOMObject;
-class ContextDestructionObserver;
+class ContextLifecycleObserver;
 class ScriptExecutionContext;
 
 class ContextLifecycleNotifier {
@@ -47,13 +47,13 @@ public:
 
     virtual ~ContextLifecycleNotifier();
 
-    typedef HashSet<ContextDestructionObserver*> ContextObserverSet;
+    typedef HashSet<ContextLifecycleObserver*> ContextObserverSet;
     typedef HashSet<ActiveDOMObject*> ActiveDOMObjectSet;
 
     const ActiveDOMObjectSet& activeDOMObjects() const { return m_activeDOMObjects; }
 
-    virtual void addObserver(ContextDestructionObserver*, ContextDestructionObserver::Type as);
-    virtual void removeObserver(ContextDestructionObserver*, ContextDestructionObserver::Type as);
+    virtual void addObserver(ContextLifecycleObserver*, ContextLifecycleObserver::Type as);
+    virtual void removeObserver(ContextLifecycleObserver*, ContextLifecycleObserver::Type as);
 
     void notifyResumingActiveDOMObjects();
     void notifySuspendingActiveDOMObjects(ActiveDOMObject::ReasonForSuspension);
@@ -79,7 +79,7 @@ protected:
 
 private:
     ScriptExecutionContext* m_context;
-    ContextObserverSet m_destructionObservers;
+    ContextObserverSet m_contextObservers;
     ActiveDOMObjectSet m_activeDOMObjects;
     bool m_inDestructor;
 };

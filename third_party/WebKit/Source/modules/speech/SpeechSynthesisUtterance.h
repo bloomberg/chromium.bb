@@ -27,7 +27,7 @@
 #define SpeechSynthesisUtterance_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/EventTarget.h"
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
 #include "modules/speech/SpeechSynthesisVoice.h"
@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class SpeechSynthesisUtterance : public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public RefCounted<SpeechSynthesisUtterance>, public ContextDestructionObserver, public EventTarget {
+class SpeechSynthesisUtterance : public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public RefCounted<SpeechSynthesisUtterance>, public ContextLifecycleObserver, public EventTarget {
 public:
     static PassRefPtr<SpeechSynthesisUtterance> create(ScriptExecutionContext*, const String&);
 

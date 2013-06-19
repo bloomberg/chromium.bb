@@ -27,7 +27,7 @@
 #define DOMSecurityPolicy_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
@@ -39,7 +39,7 @@ class ContentSecurityPolicy;
 class DOMStringList;
 class Frame;
 
-class DOMSecurityPolicy : public RefCounted<DOMSecurityPolicy>, public ScriptWrappable, public ContextDestructionObserver {
+class DOMSecurityPolicy : public RefCounted<DOMSecurityPolicy>, public ScriptWrappable, public ContextLifecycleObserver {
 public:
     static PassRefPtr<DOMSecurityPolicy> create(ScriptExecutionContext* context)
     {

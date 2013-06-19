@@ -70,7 +70,7 @@ static const float lineHeight = 5.33;
 static const float scrollTime = 0.433;
 
 TextTrackRegion::TextTrackRegion(ScriptExecutionContext* context)
-    : ContextDestructionObserver(context)
+    : ContextLifecycleObserver(context)
     , m_id(emptyString())
     , m_width(defaultWidth)
     , m_heightInLines(defaultHeightInLines)

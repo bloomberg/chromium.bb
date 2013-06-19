@@ -47,7 +47,7 @@ public:
     }
 
     virtual void call(const Vector<RefPtr<MutationRecord> >&, MutationObserver*) OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ContextDestructionObserver::scriptExecutionContext(); }
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ContextLifecycleObserver::scriptExecutionContext(); }
 
 private:
     V8MutationCallback(v8::Handle<v8::Function>, ScriptExecutionContext*, v8::Handle<v8::Object>, v8::Isolate*);

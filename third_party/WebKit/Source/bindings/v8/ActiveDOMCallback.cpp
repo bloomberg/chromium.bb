@@ -38,7 +38,7 @@
 namespace WebCore {
 
 ActiveDOMCallback::ActiveDOMCallback(ScriptExecutionContext* context)
-    : ContextDestructionObserver(context)
+    : ContextLifecycleObserver(context)
 {
 }
 

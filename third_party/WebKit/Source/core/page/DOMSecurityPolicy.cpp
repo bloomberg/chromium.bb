@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/page/DOMSecurityPolicy.h"
 
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ContentSecurityPolicy.h"
@@ -80,7 +80,7 @@ bool isAllowed(ScriptExecutionContext* context)
 } // namespace
 
 DOMSecurityPolicy::DOMSecurityPolicy(ScriptExecutionContext* context)
-    : ContextDestructionObserver(context)
+    : ContextLifecycleObserver(context)
 {
     ScriptWrappable::init(this);
 }

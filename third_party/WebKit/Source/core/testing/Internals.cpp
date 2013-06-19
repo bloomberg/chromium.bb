@@ -195,7 +195,7 @@ void Internals::resetToConsistentState(Page* page)
 }
 
 Internals::Internals(Document* document)
-    : ContextDestructionObserver(document)
+    : ContextLifecycleObserver(document)
     , m_runtimeFlags(InternalRuntimeFlags::create())
 {
 }

@@ -20,30 +20,30 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
 #include "config.h"
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 
 #include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 
-ContextDestructionObserver::ContextDestructionObserver(ScriptExecutionContext* scriptExecutionContext, Type type)
+ContextLifecycleObserver::ContextLifecycleObserver(ScriptExecutionContext* scriptExecutionContext, Type type)
     : m_scriptExecutionContext(0)
 {
     observeContext(scriptExecutionContext, type);
 }
 
-ContextDestructionObserver::~ContextDestructionObserver()
+ContextLifecycleObserver::~ContextLifecycleObserver()
 {
     if (m_scriptExecutionContext)
         observeContext(0, GenericType);
 }
 
-void ContextDestructionObserver::observeContext(ScriptExecutionContext* scriptExecutionContext, Type as)
+void ContextLifecycleObserver::observeContext(ScriptExecutionContext* scriptExecutionContext, Type as)
 {
     if (m_scriptExecutionContext) {
         ASSERT(m_scriptExecutionContext->isContextThread());
@@ -58,7 +58,7 @@ void ContextDestructionObserver::observeContext(ScriptExecutionContext* scriptEx
     }
 }
 
-void ContextDestructionObserver::contextDestroyed()
+void ContextLifecycleObserver::contextDestroyed()
 {
     m_scriptExecutionContext = 0;
 }

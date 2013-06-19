@@ -46,7 +46,7 @@
 
 namespace WTF {
 
-template<> struct SequenceMemoryInstrumentationTraits<WebCore::ContextDestructionObserver*> {
+template<> struct SequenceMemoryInstrumentationTraits<WebCore::ContextLifecycleObserver*> {
     template <typename I> static void reportMemoryUsage(I, I, MemoryClassInfo&) { }
 };
 
@@ -194,12 +194,12 @@ void ScriptExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* obj
         object->suspend(m_reasonForSuspendingActiveDOMObjects);
 }
 
-void ScriptExecutionContext::wasObservedBy(ContextDestructionObserver* observer, ContextDestructionObserver::Type as)
+void ScriptExecutionContext::wasObservedBy(ContextLifecycleObserver* observer, ContextLifecycleObserver::Type as)
 {
     lifecycleNotifier()->addObserver(observer, as);
 }
 
-void ScriptExecutionContext::wasUnobservedBy(ContextDestructionObserver* observer, ContextDestructionObserver::Type as)
+void ScriptExecutionContext::wasUnobservedBy(ContextLifecycleObserver* observer, ContextLifecycleObserver::Type as)
 {
     lifecycleNotifier()->removeObserver(observer, as);
 }

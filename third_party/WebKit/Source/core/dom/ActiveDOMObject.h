@@ -27,13 +27,13 @@
 #ifndef ActiveDOMObject_h
 #define ActiveDOMObject_h
 
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include <wtf/Assertions.h>
 #include <wtf/Forward.h>
 
 namespace WebCore {
 
-class ActiveDOMObject : public ContextDestructionObserver {
+class ActiveDOMObject : public ContextLifecycleObserver {
 public:
     ActiveDOMObject(ScriptExecutionContext*);
 

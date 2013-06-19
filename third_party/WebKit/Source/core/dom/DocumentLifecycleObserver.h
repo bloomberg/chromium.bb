@@ -26,8 +26,8 @@
 #ifndef DocumentLifecycleObserver_h
 #define DocumentLifecycleObserver_h
 
-#include "core/dom/ContextDestructionObserver.h"
 #include "core/dom/ContextLifecycleNotifier.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
@@ -36,7 +36,7 @@ namespace WebCore {
 
 class Document;
 
-class DocumentLifecycleObserver : public ContextDestructionObserver {
+class DocumentLifecycleObserver : public ContextLifecycleObserver {
 public:
     explicit DocumentLifecycleObserver(Document*);
     virtual ~DocumentLifecycleObserver();
@@ -51,8 +51,8 @@ public:
     void notifyDocumentWasDetached();
     void notifyDocumentWasDisposed();
 
-    virtual void addObserver(ContextDestructionObserver*, ContextDestructionObserver::Type as) OVERRIDE;
-    virtual void removeObserver(ContextDestructionObserver*, ContextDestructionObserver::Type as) OVERRIDE;
+    virtual void addObserver(ContextLifecycleObserver*, ContextLifecycleObserver::Type as) OVERRIDE;
+    virtual void removeObserver(ContextLifecycleObserver*, ContextLifecycleObserver::Type as) OVERRIDE;
 
 private:
     explicit DocumentLifecycleNotifier(ScriptExecutionContext*);

@@ -41,7 +41,7 @@ PassRefPtr<MediaKeySession> MediaKeySession::create(ScriptExecutionContext* cont
 }
 
 MediaKeySession::MediaKeySession(ScriptExecutionContext* context, ContentDecryptionModule* cdm, MediaKeys* keys)
-    : ContextDestructionObserver(context)
+    : ContextLifecycleObserver(context)
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_keySystem(keys->keySystem())
     , m_session(cdm->createSession(this))
@@ -198,7 +198,7 @@ const AtomicString& MediaKeySession::interfaceName() const
 
 ScriptExecutionContext* MediaKeySession::scriptExecutionContext() const
 {
-    return ContextDestructionObserver::scriptExecutionContext();
+    return ContextLifecycleObserver::scriptExecutionContext();
 }
 
 }

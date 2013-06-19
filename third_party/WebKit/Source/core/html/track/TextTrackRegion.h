@@ -33,7 +33,7 @@
 
 #if ENABLE(WEBVTT_REGIONS)
 
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/html/track/TextTrack.h"
 #include "core/platform/graphics/FloatPoint.h"
@@ -45,7 +45,7 @@ namespace WebCore {
 class HTMLDivElement;
 class TextTrackCueBox;
 
-class TextTrackRegion : public RefCounted<TextTrackRegion>, public ContextDestructionObserver {
+class TextTrackRegion : public RefCounted<TextTrackRegion>, public ContextLifecycleObserver {
 public:
     static PassRefPtr<TextTrackRegion> create(ScriptExecutionContext* context)
     {

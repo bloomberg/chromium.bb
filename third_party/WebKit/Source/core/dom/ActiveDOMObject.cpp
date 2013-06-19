@@ -33,7 +33,7 @@
 namespace WebCore {
 
 ActiveDOMObject::ActiveDOMObject(ScriptExecutionContext* scriptExecutionContext)
-    : ContextDestructionObserver(scriptExecutionContext, ActiveDOMObjectType)
+    : ContextLifecycleObserver(scriptExecutionContext, ActiveDOMObjectType)
     , m_pendingActivityCount(0)
 #if !ASSERT_DISABLED
     , m_suspendIfNeededCalled(false)
@@ -50,7 +50,7 @@ ActiveDOMObject::~ActiveDOMObject()
     // ActiveDOMObject may be inherited by a sub-class whose life-cycle
     // exceeds that of the associated ScriptExecutionContext. In those cases,
     // m_scriptExecutionContext would/should have been nullified by
-    // ContextDestructionObserver::contextDestroyed() (which we implement /
+    // ContextLifecycleObserver::contextDestroyed() (which we implement /
     // inherit). Hence, we should ensure that this is not 0 before use it
     // here.
     if (!m_scriptExecutionContext)

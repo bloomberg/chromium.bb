@@ -31,7 +31,7 @@
 #ifndef ActiveDOMCallback_h
 #define ActiveDOMCallback_h
 
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -45,7 +45,7 @@ class ScriptExecutionContext;
 //
 // Should only be created, used, and destroyed on the script execution
 // context thread.
-class ActiveDOMCallback : public ContextDestructionObserver {
+class ActiveDOMCallback : public ContextLifecycleObserver {
 public:
     ActiveDOMCallback(ScriptExecutionContext* context);
     virtual ~ActiveDOMCallback();

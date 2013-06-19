@@ -4430,7 +4430,7 @@ END
 
     $header{classPublic}->add(<<END);
 
-    virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextDestructionObserver::scriptExecutionContext(); }
+    virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextLifecycleObserver::scriptExecutionContext(); }
 
 END
     $header{classPrivate}->add(<<END);

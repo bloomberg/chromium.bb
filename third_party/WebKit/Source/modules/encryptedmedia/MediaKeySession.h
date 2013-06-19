@@ -27,7 +27,7 @@
 #define MediaKeySession_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/Timer.h"
@@ -51,7 +51,7 @@ class ContentDecryptionModuleSession;
 // it may outlive any references to it as long as the MediaKeys object is alive.
 // The ContentDecryptionModuleSession has the same lifetime as this object.
 class MediaKeySession
-    : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTarget, public ContextDestructionObserver
+    : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTarget, public ContextLifecycleObserver
     , private ContentDecryptionModuleSessionClient {
 public:
     static PassRefPtr<MediaKeySession> create(ScriptExecutionContext*, ContentDecryptionModule*, MediaKeys*);

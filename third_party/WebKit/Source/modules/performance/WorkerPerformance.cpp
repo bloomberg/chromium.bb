@@ -38,7 +38,7 @@
 namespace WebCore {
 
 WorkerPerformance::WorkerPerformance(ScriptExecutionContext* context)
-    : ContextDestructionObserver(context)
+    : ContextLifecycleObserver(context)
 {
 }
 

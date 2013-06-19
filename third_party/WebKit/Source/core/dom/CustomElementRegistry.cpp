@@ -62,7 +62,7 @@ void setTypeExtension(Element* element, const AtomicString& typeExtension)
 }
 
 CustomElementRegistry::CustomElementRegistry(Document* document)
-    : ContextDestructionObserver(document)
+    : ContextLifecycleObserver(document)
 {
 }
 

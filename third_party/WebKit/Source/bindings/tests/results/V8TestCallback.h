@@ -51,7 +51,7 @@ public:
     virtual bool callbackWithBoolean(bool boolParam);
     virtual bool callbackWithSequence(Vector<RefPtr<TestObj> > sequenceParam);
 
-    virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextDestructionObserver::scriptExecutionContext(); }
+    virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextLifecycleObserver::scriptExecutionContext(); }
 
 private:
     V8TestCallback(v8::Handle<v8::Object>, ScriptExecutionContext*);

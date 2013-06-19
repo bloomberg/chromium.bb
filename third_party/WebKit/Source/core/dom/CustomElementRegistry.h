@@ -32,7 +32,7 @@
 #define CustomElementRegistry_h
 
 #include "bindings/v8/ScriptValue.h"
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
@@ -66,7 +66,7 @@ private:
 
 void setTypeExtension(Element*, const AtomicString& typeExtension);
 
-class CustomElementRegistry : public RefCounted<CustomElementRegistry>, public ContextDestructionObserver {
+class CustomElementRegistry : public RefCounted<CustomElementRegistry>, public ContextLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(CustomElementRegistry); WTF_MAKE_FAST_ALLOCATED;
 public:
     class CallbackDeliveryScope {

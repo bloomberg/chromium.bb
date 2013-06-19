@@ -42,7 +42,7 @@
 namespace WebCore {
 
 NamedFlowCollection::NamedFlowCollection(Document* document)
-    : ContextDestructionObserver(document)
+    : ContextLifecycleObserver(document)
 {
     ASSERT(RuntimeEnabledFeatures::cssRegionsEnabled());
 }
@@ -104,7 +104,7 @@ void NamedFlowCollection::discardNamedFlow(NamedFlow* namedFlow)
 
 Document* NamedFlowCollection::document() const
 {
-    ScriptExecutionContext* context = ContextDestructionObserver::scriptExecutionContext();
+    ScriptExecutionContext* context = ContextLifecycleObserver::scriptExecutionContext();
     return toDocument(context);
 }
 

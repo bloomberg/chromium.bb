@@ -20,18 +20,18 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
-#ifndef ContextDestructionObserver_h
-#define ContextDestructionObserver_h
+#ifndef ContextLifecycleObserver_h
+#define ContextLifecycleObserver_h
 
 namespace WebCore {
 
 class ScriptExecutionContext;
 
-class ContextDestructionObserver {
+class ContextLifecycleObserver {
 public:
     enum Type {
         ActiveDOMObjectType,
@@ -39,13 +39,13 @@ public:
         GenericType
     };
 
-    explicit ContextDestructionObserver(ScriptExecutionContext*, Type = GenericType);
+    explicit ContextLifecycleObserver(ScriptExecutionContext*, Type = GenericType);
     virtual void contextDestroyed();
 
     ScriptExecutionContext* scriptExecutionContext() const { return m_scriptExecutionContext; }
 
 protected:
-    virtual ~ContextDestructionObserver();
+    virtual ~ContextLifecycleObserver();
     void observeContext(ScriptExecutionContext*, Type);
 
     ScriptExecutionContext* m_scriptExecutionContext;
@@ -53,4 +53,4 @@ protected:
 
 } // namespace WebCore
 
-#endif // ContextDestructionObserver_h
+#endif // ContextLifecycleObserver_h

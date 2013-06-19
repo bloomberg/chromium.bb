@@ -103,7 +103,7 @@ PassRefPtr<MediaStream> MediaStream::create(ScriptExecutionContext* context, Pas
 }
 
 MediaStream::MediaStream(ScriptExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
-    : ContextDestructionObserver(context)
+    : ContextLifecycleObserver(context)
     , m_stopped(false)
     , m_descriptor(streamDescriptor)
     , m_scheduledEventTimer(this, &MediaStream::scheduledEventTimerFired)
@@ -254,7 +254,7 @@ void MediaStream::streamEnded()
 
 void MediaStream::contextDestroyed()
 {
-    ContextDestructionObserver::contextDestroyed();
+    ContextLifecycleObserver::contextDestroyed();
     m_stopped = true;
 }
 
@@ -265,7 +265,7 @@ const AtomicString& MediaStream::interfaceName() const
 
 ScriptExecutionContext* MediaStream::scriptExecutionContext() const
 {
-    return ContextDestructionObserver::scriptExecutionContext();
+    return ContextLifecycleObserver::scriptExecutionContext();
 }
 
 EventTargetData* MediaStream::eventTargetData()

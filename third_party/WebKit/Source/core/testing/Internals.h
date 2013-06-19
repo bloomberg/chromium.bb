@@ -28,7 +28,7 @@
 #define Internals_h
 
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeList.h"
 #include <wtf/ArrayBuffer.h>
@@ -62,8 +62,7 @@ class TypeConversions;
 
 typedef int ExceptionCode;
 
-class Internals : public RefCounted<Internals>
-                , public ContextDestructionObserver {
+class Internals : public RefCounted<Internals>, public ContextLifecycleObserver {
 public:
     static PassRefPtr<Internals> create(Document*);
     virtual ~Internals();

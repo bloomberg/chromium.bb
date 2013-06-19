@@ -43,31 +43,31 @@ ContextLifecycleNotifier::ContextLifecycleNotifier(ScriptExecutionContext* conte
 ContextLifecycleNotifier::~ContextLifecycleNotifier()
 {
     m_inDestructor = true;
-    for (ContextObserverSet::iterator iter = m_destructionObservers.begin(); iter != m_destructionObservers.end(); iter = m_destructionObservers.begin()) {
-        ContextDestructionObserver* observer = *iter;
-        m_destructionObservers.remove(observer);
+    for (ContextObserverSet::iterator iter = m_contextObservers.begin(); iter != m_contextObservers.end(); iter = m_contextObservers.begin()) {
+        ContextLifecycleObserver* observer = *iter;
+        m_contextObservers.remove(observer);
         ASSERT(observer->scriptExecutionContext() == m_context);
         observer->contextDestroyed();
     }
 }
 
-void ContextLifecycleNotifier::addObserver(ContextDestructionObserver* observer, ContextDestructionObserver::Type as)
+void ContextLifecycleNotifier::addObserver(ContextLifecycleObserver* observer, ContextLifecycleObserver::Type as)
 {
     RELEASE_ASSERT(!m_inDestructor);
     RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
-    m_destructionObservers.add(observer);
-    if (as == ContextDestructionObserver::ActiveDOMObjectType) {
+    m_contextObservers.add(observer);
+    if (as == ContextLifecycleObserver::ActiveDOMObjectType) {
         RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
         m_activeDOMObjects.add(static_cast<ActiveDOMObject*>(observer));
     }
 }
 
-void ContextLifecycleNotifier::removeObserver(ContextDestructionObserver* observer, ContextDestructionObserver::Type as)
+void ContextLifecycleNotifier::removeObserver(ContextLifecycleObserver* observer, ContextLifecycleObserver::Type as)
 {
     RELEASE_ASSERT(!m_inDestructor);
     RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
-    m_destructionObservers.remove(observer);
-    if (as == ContextDestructionObserver::ActiveDOMObjectType) {
+    m_contextObservers.remove(observer);
+    if (as == ContextLifecycleObserver::ActiveDOMObjectType) {
         RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
         m_activeDOMObjects.remove(static_cast<ActiveDOMObject*>(observer));
     }

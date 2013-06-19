@@ -75,7 +75,7 @@ namespace WebCore {
 // During shutdown, the DatabaseContext needs to:
 // 1. "outlive" the ScriptExecutionContext.
 //    - This is needed because the DatabaseContext needs to remove itself from the
-//      ScriptExecutionContext's ActiveDOMObject list and ContextDestructionObserver
+//      ScriptExecutionContext's ActiveDOMObject list and ContextLifecycleObserver
 //      list. This removal needs to be executed on the script's thread. Hence, we
 //      rely on the ScriptExecutionContext's shutdown process to call
 //      stop() and contextDestroyed() to give us a chance to clean these up from

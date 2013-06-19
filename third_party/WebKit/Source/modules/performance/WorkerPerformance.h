@@ -31,7 +31,7 @@
 #ifndef WorkerPerformance_h
 #define WorkerPerformance_h
 
-#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -40,7 +40,7 @@ namespace WebCore {
 
 class ScriptExecutionContext;
 
-class WorkerPerformance : public RefCounted<WorkerPerformance>, public ContextDestructionObserver {
+class WorkerPerformance : public RefCounted<WorkerPerformance>, public ContextLifecycleObserver {
 public:
     static PassRefPtr<WorkerPerformance> create(ScriptExecutionContext* context) { return adoptRef(new WorkerPerformance(context)); }
     ~WorkerPerformance();
