@@ -38,10 +38,10 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/UserMediaController.h"
-#include "public/platform/WebMediaStream.h"
 
 namespace WebCore {
 
@@ -133,12 +133,12 @@ void UserMediaRequest::didCompleteQuery(const MediaStreamSourceVector& audioSour
         m_controller->requestUserMedia(this, audioSources, videoSources);
 }
 
-void UserMediaRequest::succeed(WebKit::WebMediaStream webStream)
+void UserMediaRequest::succeed(PassRefPtr<MediaStreamDescriptor> streamDescriptor)
 {
     if (!m_scriptExecutionContext)
         return;
 
-    RefPtr<MediaStream> stream = MediaStream::create(m_scriptExecutionContext, webStream);
+    RefPtr<MediaStream> stream = MediaStream::create(m_scriptExecutionContext, streamDescriptor);
 
     MediaStreamTrackVector audioTracks = stream->getAudioTracks();
     for (MediaStreamTrackVector::iterator iter = audioTracks.begin(); iter != audioTracks.end(); ++iter) {

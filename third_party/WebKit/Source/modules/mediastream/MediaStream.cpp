@@ -28,14 +28,10 @@
 
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/UUID.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "modules/mediastream/MediaStreamTrackEvent.h"
-#include "public/platform/WebMediaStream.h"
-#include "public/platform/WebMediaStreamSource.h"
-#include "public/platform/WebMediaStreamTrack.h"
 
 namespace WebCore {
 
@@ -60,10 +56,10 @@ static void processTrack(MediaStreamTrack* track, MediaStreamSourceVector& sourc
 
 static PassRefPtr<MediaStream> createFromSourceVectors(ScriptExecutionContext* context, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
 {
-    WebKit::WebMediaStream webStream = WebKit::WebMediaStream(createCanonicalUUIDString(), audioSources, videoSources);
-    MediaStreamCenter::instance().didCreateMediaStream(webStream);
+    RefPtr<MediaStreamDescriptor> descriptor = MediaStreamDescriptor::create(audioSources, videoSources);
+    MediaStreamCenter::instance().didCreateMediaStream(descriptor.get());
 
-    return MediaStream::create(context, webStream);
+    return MediaStream::create(context, descriptor.release());
 }
 
 PassRefPtr<MediaStream> MediaStream::create(ScriptExecutionContext* context)
@@ -101,39 +97,39 @@ PassRefPtr<MediaStream> MediaStream::create(ScriptExecutionContext* context, con
     return createFromSourceVectors(context, audioSources, videoSources);
 }
 
-PassRefPtr<MediaStream> MediaStream::create(ScriptExecutionContext* context, WebKit::WebMediaStream webStream)
+PassRefPtr<MediaStream> MediaStream::create(ScriptExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
 {
-    return adoptRef(new MediaStream(context, webStream));
+    return adoptRef(new MediaStream(context, streamDescriptor));
 }
 
-MediaStream::MediaStream(ScriptExecutionContext* context, WebKit::WebMediaStream webStream)
+MediaStream::MediaStream(ScriptExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
     : ContextDestructionObserver(context)
     , m_stopped(false)
-    , m_webStream(webStream)
+    , m_descriptor(streamDescriptor)
     , m_scheduledEventTimer(this, &MediaStream::scheduledEventTimerFired)
 {
     ScriptWrappable::init(this);
-    m_webStream.setClient(this);
+    m_descriptor->setClient(this);
 
-    size_t numberOfAudioTracks = m_webStream.numberOfAudioComponents();
+    size_t numberOfAudioTracks = m_descriptor->numberOfAudioComponents();
     m_audioTracks.reserveCapacity(numberOfAudioTracks);
     for (size_t i = 0; i < numberOfAudioTracks; i++)
-        m_audioTracks.append(MediaStreamTrack::create(context, m_webStream.audioComponent(i)));
+        m_audioTracks.append(MediaStreamTrack::create(context, m_descriptor->audioComponent(i)));
 
-    size_t numberOfVideoTracks = m_webStream.numberOfVideoComponents();
+    size_t numberOfVideoTracks = m_descriptor->numberOfVideoComponents();
     m_videoTracks.reserveCapacity(numberOfVideoTracks);
     for (size_t i = 0; i < numberOfVideoTracks; i++)
-        m_videoTracks.append(MediaStreamTrack::create(context, m_webStream.videoComponent(i)));
+        m_videoTracks.append(MediaStreamTrack::create(context, m_descriptor->videoComponent(i)));
 }
 
 MediaStream::~MediaStream()
 {
-    m_webStream.setClient(0);
+    m_descriptor->setClient(0);
 }
 
 bool MediaStream::ended() const
 {
-    return m_stopped || m_webStream.ended();
+    return m_stopped || m_descriptor->ended();
 }
 
 void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode& ec)
@@ -153,7 +149,7 @@ void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode&
     if (getTrackById(track->id()))
         return;
 
-    RefPtr<MediaStreamComponent> component = MediaStreamComponent::create(m_webStream, track->component()->source());
+    RefPtr<MediaStreamComponent> component = MediaStreamComponent::create(m_descriptor.get(), track->component()->source());
     RefPtr<MediaStreamTrack> newTrack = MediaStreamTrack::create(scriptExecutionContext(), component.get());
 
     switch (component->source()->type()) {
@@ -165,9 +161,9 @@ void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode&
         break;
     }
 
-    m_webStream.addComponent(component.get());
+    m_descriptor->addComponent(component.release());
 
-    MediaStreamCenter::instance().didAddMediaStreamTrack(m_webStream, newTrack->component());
+    MediaStreamCenter::instance().didAddMediaStreamTrack(m_descriptor.get(), newTrack->component());
 }
 
 void MediaStream::removeTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode& ec)
@@ -201,12 +197,12 @@ void MediaStream::removeTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCo
     if (pos == notFound)
         return;
 
-    m_webStream.removeComponent(track->component());
+    m_descriptor->removeComponent(track->component());
 
     if (!m_audioTracks.size() && !m_videoTracks.size())
-        m_webStream.setEnded();
+        m_descriptor->setEnded();
 
-    MediaStreamCenter::instance().didRemoveMediaStreamTrack(m_webStream, track->component());
+    MediaStreamCenter::instance().didRemoveMediaStreamTrack(m_descriptor.get(), track->component());
 }
 
 MediaStreamTrack* MediaStream::getTrackById(String id)
@@ -229,7 +225,7 @@ void MediaStream::stop()
     if (ended())
         return;
 
-    MediaStreamCenter::instance().didStopLocalMediaStream(webStream());
+    MediaStreamCenter::instance().didStopLocalMediaStream(descriptor());
 
     streamEnded();
 }
@@ -252,7 +248,7 @@ void MediaStream::streamEnded()
     if (ended())
         return;
 
-    m_webStream.setEnded();
+    m_descriptor->setEnded();
     scheduleDispatchEvent(Event::create(eventNames().endedEvent, false, false));
 }
 
@@ -284,11 +280,11 @@ EventTargetData* MediaStream::ensureEventTargetData()
 
 void MediaStream::addRemoteTrack(MediaStreamComponent* component)
 {
-    ASSERT(component && !(component->stream().isNull()));
+    ASSERT(component && !component->stream());
     if (ended())
         return;
 
-    component->setStream(webStream());
+    component->setStream(descriptor());
 
     RefPtr<MediaStreamTrack> track = MediaStreamTrack::create(scriptExecutionContext(), component);
     switch (component->source()->type()) {
@@ -299,7 +295,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component)
         m_videoTracks.append(track);
         break;
     }
-    m_webStream.addComponent(component);
+    m_descriptor->addComponent(component);
 
     scheduleDispatchEvent(MediaStreamTrackEvent::create(eventNames().addtrackEvent, false, false, track));
 }
@@ -329,7 +325,7 @@ void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
     if (index == notFound)
         return;
 
-    m_webStream.removeComponent(component);
+    m_descriptor->removeComponent(component);
 
     RefPtr<MediaStreamTrack> track = (*tracks)[index];
     tracks->remove(index);

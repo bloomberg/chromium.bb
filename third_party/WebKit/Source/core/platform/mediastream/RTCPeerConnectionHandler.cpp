@@ -34,7 +34,6 @@
 
 #include "core/platform/mediastream/MediaConstraints.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
-#include "core/platform/mediastream/MediaStreamSource.h"
 #include "core/platform/mediastream/RTCConfiguration.h"
 #include "core/platform/mediastream/RTCDTMFSenderHandler.h"
 #include "core/platform/mediastream/RTCDataChannelHandler.h"
@@ -134,14 +133,14 @@ WebKit::WebRTCSessionDescription RTCPeerConnectionHandler::remoteDescription()
     return m_webHandler->remoteDescription();
 }
 
-bool RTCPeerConnectionHandler::addStream(WebKit::WebMediaStream webStream, PassRefPtr<MediaConstraints> constraints)
+bool RTCPeerConnectionHandler::addStream(PassRefPtr<MediaStreamDescriptor> mediaStream, PassRefPtr<MediaConstraints> constraints)
 {
-    return m_webHandler->addStream(webStream, constraints);
+    return m_webHandler->addStream(mediaStream, constraints);
 }
 
-void RTCPeerConnectionHandler::removeStream(WebKit::WebMediaStream webStream)
+void RTCPeerConnectionHandler::removeStream(PassRefPtr<MediaStreamDescriptor> mediaStream)
 {
-    m_webHandler->removeStream(webStream);
+    m_webHandler->removeStream(mediaStream);
 }
 
 void RTCPeerConnectionHandler::getStats(PassRefPtr<RTCStatsRequest> request)
@@ -197,14 +196,14 @@ void RTCPeerConnectionHandler::didChangeICEConnectionState(WebKit::WebRTCPeerCon
     m_client->didChangeIceConnectionState(static_cast<RTCPeerConnectionHandlerClient::IceConnectionState>(state));
 }
 
-void RTCPeerConnectionHandler::didAddRemoteStream(const WebKit::WebMediaStream& webStream)
+void RTCPeerConnectionHandler::didAddRemoteStream(const WebKit::WebMediaStream& webMediaStreamDescriptor)
 {
-    m_client->didAddRemoteStream(webStream);
+    m_client->didAddRemoteStream(webMediaStreamDescriptor);
 }
 
-void RTCPeerConnectionHandler::didRemoveRemoteStream(const WebKit::WebMediaStream& webStream)
+void RTCPeerConnectionHandler::didRemoveRemoteStream(const WebKit::WebMediaStream& webMediaStreamDescriptor)
 {
-    m_client->didRemoveRemoteStream(webStream);
+    m_client->didRemoveRemoteStream(webMediaStreamDescriptor);
 }
 
 void RTCPeerConnectionHandler::didAddRemoteDataChannel(WebKit::WebRTCDataChannelHandler* webHandler)

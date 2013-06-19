@@ -28,7 +28,6 @@
 
 #include "core/dom/Event.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/platform/chromium/support/WebMediaStreamClient.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
 #include "public/platform/WebSourceInfo.h"
@@ -95,7 +94,7 @@ void MediaStreamTrack::setEnabled(bool enabled)
 
     m_component->setEnabled(enabled);
 
-    if (m_component->stream().ended())
+    if (m_component->stream()->ended())
         return;
 
     MediaStreamCenter::instance().didSetMediaStreamTrackEnabled(m_component->stream(), m_component.get());
@@ -161,7 +160,7 @@ void MediaStreamTrack::sourceChangedState()
 
 void MediaStreamTrack::didEndTrack()
 {
-    WebKit::WebMediaStreamClient* client = m_component->stream().client();
+    MediaStreamDescriptorClient* client = m_component->stream()->client();
     if (!client)
         return;
 

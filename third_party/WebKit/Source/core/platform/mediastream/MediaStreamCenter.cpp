@@ -33,7 +33,7 @@
 
 #include "core/platform/mediastream/MediaStreamCenter.h"
 
-#include "core/platform/chromium/support/WebMediaStreamClient.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
@@ -76,52 +76,53 @@ bool MediaStreamCenter::getSourceInfos(const String& url, WebKit::WebVector<WebK
     return m_private && m_private->getSourceInfos(url, sourceInfos);
 }
 
-void MediaStreamCenter::didSetMediaStreamTrackEnabled(WebKit::WebMediaStream webStream,  MediaStreamComponent* component)
+void MediaStreamCenter::didSetMediaStreamTrackEnabled(MediaStreamDescriptor* stream,  MediaStreamComponent* component)
 {
     if (m_private) {
         if (component->enabled())
-            m_private->didEnableMediaStreamTrack(webStream, component);
+            m_private->didEnableMediaStreamTrack(stream, component);
         else
-            m_private->didDisableMediaStreamTrack(webStream, component);
+            m_private->didDisableMediaStreamTrack(stream, component);
     }
 }
 
-bool MediaStreamCenter::didAddMediaStreamTrack(WebKit::WebMediaStream webStream, MediaStreamComponent* component)
+bool MediaStreamCenter::didAddMediaStreamTrack(MediaStreamDescriptor* stream, MediaStreamComponent* component)
 {
-    return m_private && m_private->didAddMediaStreamTrack(webStream, component);
+    return m_private && m_private->didAddMediaStreamTrack(stream, component);
 }
 
-bool MediaStreamCenter::didRemoveMediaStreamTrack(WebKit::WebMediaStream webStream, MediaStreamComponent* component)
+bool MediaStreamCenter::didRemoveMediaStreamTrack(MediaStreamDescriptor* stream, MediaStreamComponent* component)
 {
-    return m_private && m_private->didRemoveMediaStreamTrack(webStream, component);
+    return m_private && m_private->didRemoveMediaStreamTrack(stream, component);
 }
 
-void MediaStreamCenter::didStopLocalMediaStream(WebKit::WebMediaStream webStream)
+void MediaStreamCenter::didStopLocalMediaStream(MediaStreamDescriptor* stream)
 {
     if (m_private) {
-        m_private->didStopLocalMediaStream(webStream);
-        for (unsigned i = 0; i < webStream.numberOfAudioComponents(); i++)
-            webStream.audioComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
-        for (unsigned i = 0; i < webStream.numberOfVideoComponents(); i++)
-            webStream.videoComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
+        m_private->didStopLocalMediaStream(stream);
+        for (unsigned i = 0; i < stream->numberOfAudioComponents(); i++)
+            stream->audioComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
+        for (unsigned i = 0; i < stream->numberOfVideoComponents(); i++)
+            stream->videoComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
     }
 }
 
-void MediaStreamCenter::didCreateMediaStream(WebKit::WebMediaStream webStream)
+void MediaStreamCenter::didCreateMediaStream(MediaStreamDescriptor* stream)
 {
     if (m_private) {
+        WebKit::WebMediaStream webStream(stream);
         m_private->didCreateMediaStream(webStream);
     }
 }
 
-void MediaStreamCenter::stopLocalMediaStream(WebKit::WebMediaStream webStream)
+void MediaStreamCenter::stopLocalMediaStream(const WebKit::WebMediaStream& webStream)
 {
-
-    WebKit::WebMediaStreamClient* client = webStream.client();
+    MediaStreamDescriptor* stream = webStream;
+    MediaStreamDescriptorClient* client = stream->client();
     if (client)
         client->streamEnded();
     else
-        webStream.setEnded();
+        stream->setEnded();
 }
 
 } // namespace WebCore

@@ -29,7 +29,6 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/platform/mediastream/MediaStreamComponent.h"
 #include "core/platform/mediastream/RTCDTMFSenderHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "modules/mediastream/MediaStreamTrack.h"

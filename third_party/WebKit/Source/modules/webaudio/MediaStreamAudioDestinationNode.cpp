@@ -34,9 +34,6 @@
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
-#include "public/platform/WebMediaStream.h"
-#include "public/platform/WebMediaStreamSource.h"
-#include "public/platform/WebMediaStreamTrack.h"
 #include "wtf/Locker.h"
 
 namespace WebCore {
@@ -57,9 +54,8 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext* c
     MediaStreamSourceVector audioSources;
     audioSources.append(m_source);
     MediaStreamSourceVector videoSources;
-    WebKit::WebMediaStream webStream = WebKit::WebMediaStream(createCanonicalUUIDString(), audioSources, videoSources);
-    m_stream = MediaStream::create(context->scriptExecutionContext(), webStream);
-    MediaStreamCenter::instance().didCreateMediaStream(m_stream->webStream());
+    m_stream = MediaStream::create(context->scriptExecutionContext(), MediaStreamDescriptor::create(audioSources, videoSources));
+    MediaStreamCenter::instance().didCreateMediaStream(m_stream->descriptor());
 
     m_source->setAudioFormat(numberOfChannels, context->sampleRate());
 
