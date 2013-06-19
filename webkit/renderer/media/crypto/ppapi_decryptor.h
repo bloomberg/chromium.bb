@@ -51,9 +51,9 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
                       const uint8* init_data, int init_data_length,
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
+  virtual Decryptor* GetDecryptor() OVERRIDE;
 
   // media::Decryptor implementation.
-  virtual media::MediaKeys* GetMediaKeys() OVERRIDE;
   virtual void RegisterNewKeyCB(StreamType stream_type,
                                 const NewKeyCB& key_added_cb) OVERRIDE;
   virtual void Decrypt(StreamType stream_type,

@@ -160,8 +160,6 @@ class MockDecryptor : public Decryptor {
   MockDecryptor();
   virtual ~MockDecryptor();
 
-  MOCK_METHOD0(GetMediaKeys, MediaKeys*(void));
-
   MOCK_METHOD2(RegisterNewKeyCB, void(StreamType stream_type,
                                       const NewKeyCB& new_key_cb));
   MOCK_METHOD3(Decrypt, void(StreamType stream_type,

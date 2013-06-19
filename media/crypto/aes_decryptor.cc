@@ -211,7 +211,7 @@ void AesDecryptor::AddKey(const uint8* key,
 void AesDecryptor::CancelKeyRequest(const std::string& session_id) {
 }
 
-MediaKeys* AesDecryptor::GetMediaKeys() {
+Decryptor* AesDecryptor::GetDecryptor() {
   return this;
 }
 

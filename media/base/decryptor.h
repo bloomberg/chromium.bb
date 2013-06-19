@@ -17,7 +17,6 @@ namespace media {
 class AudioDecoderConfig;
 class DataBuffer;
 class DecoderBuffer;
-class MediaKeys;
 class VideoDecoderConfig;
 class VideoFrame;
 
@@ -46,11 +45,6 @@ class MEDIA_EXPORT Decryptor {
 
   Decryptor();
   virtual ~Decryptor();
-
-  // Gets the MediaKey object associated with the Decryptor. Returns NULL if
-  // no MediaKey object is associated. The returned object is only guaranteed
-  // to be valid during the Decryptor's lifetime.
-  virtual MediaKeys* GetMediaKeys() = 0;
 
   // Indicates that a new key has been added to the MediaKeys object associated
   // with the Decryptor.

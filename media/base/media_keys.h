@@ -14,6 +14,8 @@
 
 namespace media {
 
+class Decryptor;
+
 // Performs media key operations.
 //
 // All key operations are called on the renderer thread. Therefore, these calls
@@ -55,6 +57,11 @@ class MEDIA_EXPORT MediaKeys {
 
   // Cancels the key request specified by |session_id|.
   virtual void CancelKeyRequest(const std::string& session_id) = 0;
+
+  // Gets the Decryptor object associated with the MediaKeys. Returns NULL if
+  // no Decryptor object is associated. The returned object is only guaranteed
+  // to be valid during the MediaKeys' lifetime.
+  virtual Decryptor* GetDecryptor();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaKeys);

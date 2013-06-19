@@ -55,10 +55,11 @@ class ProxyDecryptor : public media::MediaKeys {
   virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
 
  private:
-  // Helper functions to create decryptors to handle the given |key_system|.
-  scoped_ptr<media::Decryptor> CreateDecryptor(const std::string& key_system);
+  // Helper functions to create MediaKeys to handle the given |key_system|.
+  scoped_ptr<media::MediaKeys> CreateMediaKeys(const std::string& key_system);
+
 #if defined(ENABLE_PEPPER_CDMS)
-  scoped_ptr<media::Decryptor> CreatePpapiDecryptor(
+  scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
       const std::string& key_system);
   // Callback for cleaning up a Pepper CDM.
   void DestroyHelperPlugin();
@@ -92,9 +93,9 @@ class ProxyDecryptor : public media::MediaKeys {
 
   media::DecryptorReadyCB decryptor_ready_cb_;
 
-  // The real decryptor that does decryption for the ProxyDecryptor.
+  // The real MediaKeys that manages key operations for the ProxyDecryptor.
   // This pointer is protected by the |lock_|.
-  scoped_ptr<media::Decryptor> decryptor_;
+  scoped_ptr<media::MediaKeys> media_keys_;
 
   base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;
 

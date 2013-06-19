@@ -70,7 +70,7 @@ ProxyDecryptor::~ProxyDecryptor() {
   // Destroy the decryptor explicitly before destroying the plugin.
   {
     base::AutoLock auto_lock(lock_);
-    decryptor_.reset();
+    media_keys_.reset();
   }
 }
 
@@ -92,8 +92,8 @@ void ProxyDecryptor::SetDecryptorReadyCB(
 
   // Normal decryptor request.
   DCHECK(decryptor_ready_cb_.is_null());
-  if (decryptor_) {
-    decryptor_ready_cb.Run(decryptor_.get());
+  if (media_keys_) {
+    decryptor_ready_cb.Run(media_keys_->GetDecryptor());
     return;
   }
   decryptor_ready_cb_ = decryptor_ready_cb;
@@ -104,26 +104,22 @@ bool ProxyDecryptor::InitializeCDM(const std::string& key_system) {
 
   base::AutoLock auto_lock(lock_);
 
-  DCHECK(!decryptor_);
-  decryptor_ = CreateDecryptor(key_system);
+  DCHECK(!media_keys_);
+  media_keys_ = CreateMediaKeys(key_system);
 
-  return decryptor_ != NULL;
+  return media_keys_ != NULL;
 }
-
 
 bool ProxyDecryptor::GenerateKeyRequest(const std::string& type,
                                         const uint8* init_data,
                                         int init_data_length) {
-  DCHECK(decryptor_);
-
-  if (!decryptor_->GetMediaKeys()->GenerateKeyRequest(
-      type, init_data, init_data_length)) {
-    decryptor_.reset();
+  if (!media_keys_->GenerateKeyRequest(type, init_data, init_data_length)) {
+    media_keys_.reset();
     return false;
   }
 
   if (!decryptor_ready_cb_.is_null())
-    base::ResetAndReturn(&decryptor_ready_cb_).Run(decryptor_.get());
+    base::ResetAndReturn(&decryptor_ready_cb_).Run(media_keys_->GetDecryptor());
 
   return true;
 }
@@ -136,19 +132,18 @@ void ProxyDecryptor::AddKey(const uint8* key,
   DVLOG(1) << "AddKey()";
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  decryptor_->GetMediaKeys()->AddKey(
-      key, key_length, init_data, init_data_length, session_id);
+  media_keys_->AddKey(key, key_length, init_data, init_data_length, session_id);
 }
 
 void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
   DVLOG(1) << "CancelKeyRequest()";
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  decryptor_->GetMediaKeys()->CancelKeyRequest(session_id);
+  media_keys_->CancelKeyRequest(session_id);
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
-scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
+scoped_ptr<media::MediaKeys> ProxyDecryptor::CreatePpapiDecryptor(
     const std::string& key_system) {
   DCHECK(web_media_player_client_);
   DCHECK(web_frame_);
@@ -159,7 +154,7 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
       CreateHelperPlugin(plugin_type, web_media_player_client_, web_frame_);
   if (!plugin_instance.get()) {
     DVLOG(1) << "ProxyDecryptor: plugin instance creation failed.";
-    return scoped_ptr<media::Decryptor>();
+    return scoped_ptr<media::MediaKeys>();
   }
 
   scoped_ptr<webkit_media::PpapiDecryptor> decryptor = PpapiDecryptor::Create(
@@ -176,18 +171,19 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
     DestroyHelperPlugin();
   // Else the new object will call destroy_plugin_cb to destroy Helper Plugin.
 
-  return scoped_ptr<media::Decryptor>(decryptor.Pass());
+  return scoped_ptr<media::MediaKeys>(decryptor.Pass());
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-scoped_ptr<media::Decryptor> ProxyDecryptor::CreateDecryptor(
+scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
     const std::string& key_system) {
-  if (CanUseAesDecryptor(key_system))
-    return scoped_ptr<media::Decryptor>(new media::AesDecryptor(
+  if (CanUseAesDecryptor(key_system)) {
+    return scoped_ptr<media::MediaKeys>(new media::AesDecryptor(
         base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr())));
+  }
 
 #if defined(ENABLE_PEPPER_CDMS)
   // We only support AesDecryptor and PpapiDecryptor. So if we cannot
@@ -195,7 +191,7 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreateDecryptor(
   // |key_system|.
   return CreatePpapiDecryptor(key_system);
 #else
-  return scoped_ptr<media::Decryptor>();
+  return scoped_ptr<media::MediaKeys>();
 #endif  // defined(ENABLE_PEPPER_CDMS)
 }
 

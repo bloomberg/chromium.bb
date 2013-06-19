@@ -126,7 +126,7 @@ void PpapiDecryptor::CancelKeyRequest(const std::string& session_id) {
     ReportFailureToCallPlugin(session_id);
 }
 
-media::MediaKeys* PpapiDecryptor::GetMediaKeys() {
+media::Decryptor* PpapiDecryptor::GetDecryptor() {
   return this;
 }
 
