@@ -58,7 +58,6 @@ public:
 
     static MediaStreamCenter& instance();
 
-    void queryMediaStreamSources(PassRefPtr<MediaStreamSourcesQueryClient>);
     bool getSourceInfos(const String& url, WebKit::WebVector<WebKit::WebSourceInfo>&);
     void didSetMediaStreamTrackEnabled(MediaStreamDescriptor*, MediaStreamComponent*);
     bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);

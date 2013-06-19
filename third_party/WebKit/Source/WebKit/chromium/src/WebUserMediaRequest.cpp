@@ -56,6 +56,11 @@ WebUserMediaRequest::WebUserMediaRequest(const PassRefPtr<UserMediaRequest>& req
 {
 }
 
+WebUserMediaRequest::WebUserMediaRequest(UserMediaRequest* request)
+    : m_private(request)
+{
+}
+
 void WebUserMediaRequest::reset()
 {
     m_private.reset();

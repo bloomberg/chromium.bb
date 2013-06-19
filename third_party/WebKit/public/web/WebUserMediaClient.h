@@ -41,7 +41,10 @@ class WebUserMediaClient {
 public:
     virtual ~WebUserMediaClient() { }
 
+    // DEPRECATED
     virtual void requestUserMedia(const WebUserMediaRequest&, const WebVector<WebMediaStreamSource>& audioSources, const WebVector<WebMediaStreamSource>& videoSources) { }
+
+    virtual void requestUserMedia(const WebUserMediaRequest&) { }
 
     virtual void cancelUserMediaRequest(const WebUserMediaRequest&) = 0;
 };

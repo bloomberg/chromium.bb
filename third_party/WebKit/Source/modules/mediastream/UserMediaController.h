@@ -31,12 +31,14 @@
 
 namespace WebCore {
 
+class UserMediaRequest;
+
 class UserMediaController : public Supplement<Page> {
 public:
     ~UserMediaController();
 
     UserMediaClient* client() const { return m_client; }
-    void requestUserMedia(PassRefPtr<UserMediaRequest>, const MediaStreamSourceVector& audioSources,  const MediaStreamSourceVector& videoSources);
+    void requestUserMedia(PassRefPtr<UserMediaRequest>);
     void cancelUserMediaRequest(UserMediaRequest*);
 
     static PassOwnPtr<UserMediaController> create(UserMediaClient*);
@@ -50,9 +52,9 @@ private:
     UserMediaClient* m_client;
 };
 
-inline void UserMediaController::requestUserMedia(PassRefPtr<UserMediaRequest> request, const MediaStreamSourceVector& audioSources,  const MediaStreamSourceVector& videoSources)
+inline void UserMediaController::requestUserMedia(PassRefPtr<UserMediaRequest> request)
 {
-    m_client->requestUserMedia(request, audioSources, videoSources);
+    m_client->requestUserMedia(request);
 }
 
 inline void UserMediaController::cancelUserMediaRequest(UserMediaRequest* request)

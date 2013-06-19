@@ -34,11 +34,9 @@
 #include "core/platform/mediastream/MediaStreamCenter.h"
 
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
-#include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamCenter.h"
-#include "public/platform/WebMediaStreamSourcesRequest.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
@@ -59,16 +57,6 @@ MediaStreamCenter::MediaStreamCenter()
 
 MediaStreamCenter::~MediaStreamCenter()
 {
-}
-
-void MediaStreamCenter::queryMediaStreamSources(PassRefPtr<MediaStreamSourcesQueryClient> client)
-{
-    if (m_private) {
-        m_private->queryMediaStreamSources(client);
-    } else {
-        MediaStreamSourceVector audioSources, videoSources;
-        client->didCompleteQuery(audioSources, videoSources);
-    }
 }
 
 bool MediaStreamCenter::getSourceInfos(const String& url, WebKit::WebVector<WebKit::WebSourceInfo>& sourceInfos)

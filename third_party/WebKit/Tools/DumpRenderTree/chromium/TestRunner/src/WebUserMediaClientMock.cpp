@@ -80,7 +80,7 @@ WebUserMediaClientMock::WebUserMediaClientMock(WebTestDelegate* delegate)
 {
 }
 
-void WebUserMediaClientMock::requestUserMedia(const WebUserMediaRequest& streamRequest, const WebVector<WebMediaStreamSource>& audioSourcesVector, const WebVector<WebMediaStreamSource>& videoSourcesVector)
+void WebUserMediaClientMock::requestUserMedia(const WebUserMediaRequest& streamRequest)
 {
     WEBKIT_ASSERT(!streamRequest.isNull());
     WebUserMediaRequest request = streamRequest;

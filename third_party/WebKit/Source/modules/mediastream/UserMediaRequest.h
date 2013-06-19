@@ -71,7 +71,7 @@ public:
     // MediaStreamSourcesQueryClient
     virtual bool audio() const;
     virtual bool video() const;
-    virtual void didCompleteQuery(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
+    virtual void didCompleteQuery(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources) { }
 
     // ContextLifecycleObserver
     virtual void contextDestroyed();

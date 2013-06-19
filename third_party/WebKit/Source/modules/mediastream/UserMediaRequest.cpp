@@ -124,13 +124,8 @@ Document* UserMediaRequest::ownerDocument()
 
 void UserMediaRequest::start()
 {
-    MediaStreamCenter::instance().queryMediaStreamSources(this);
-}
-
-void UserMediaRequest::didCompleteQuery(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
-{
     if (m_controller)
-        m_controller->requestUserMedia(this, audioSources, videoSources);
+        m_controller->requestUserMedia(this);
 }
 
 void UserMediaRequest::succeed(PassRefPtr<MediaStreamDescriptor> streamDescriptor)

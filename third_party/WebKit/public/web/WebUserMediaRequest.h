@@ -79,6 +79,7 @@ public:
 
 #if WEBKIT_IMPLEMENTATION
     WebUserMediaRequest(const PassRefPtr<WebCore::UserMediaRequest>&);
+    WebUserMediaRequest(WebCore::UserMediaRequest*);
     operator WebCore::UserMediaRequest*() const;
 #endif
 

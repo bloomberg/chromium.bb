@@ -44,7 +44,9 @@ class WebMediaStreamCenter {
 public:
     virtual ~WebMediaStreamCenter() { }
 
-    virtual void queryMediaStreamSources(const WebMediaStreamSourcesRequest&) = 0;
+    // DEPRECATED
+    virtual void queryMediaStreamSources(const WebMediaStreamSourcesRequest&) { }
+
     virtual bool getSourceInfos(const WebString& url, WebVector<WebSourceInfo>&) { return false; }
     virtual void didEnableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
     virtual void didDisableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;

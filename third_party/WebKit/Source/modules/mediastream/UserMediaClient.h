@@ -40,7 +40,7 @@ class Page;
 
 class UserMediaClient {
 public:
-    virtual void requestUserMedia(PassRefPtr<UserMediaRequest>, const MediaStreamSourceVector& audioSources,  const MediaStreamSourceVector& videoSources) = 0;
+    virtual void requestUserMedia(PassRefPtr<UserMediaRequest>) = 0;
     virtual void cancelUserMediaRequest(UserMediaRequest*) = 0;
 
 protected:

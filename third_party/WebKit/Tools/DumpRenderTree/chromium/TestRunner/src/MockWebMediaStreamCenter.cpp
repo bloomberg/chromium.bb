@@ -36,7 +36,6 @@
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamCenterClient.h"
 #include "public/platform/WebMediaStreamSource.h"
-#include "public/platform/WebMediaStreamSourcesRequest.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebSourceInfo.h"
 #include "public/platform/WebVector.h"
@@ -47,12 +46,6 @@ namespace WebTestRunner {
 
 MockWebMediaStreamCenter::MockWebMediaStreamCenter(WebMediaStreamCenterClient* client)
 {
-}
-
-void MockWebMediaStreamCenter::queryMediaStreamSources(const WebMediaStreamSourcesRequest& request)
-{
-    WebVector<WebMediaStreamSource> audioSources, videoSources;
-    request.didCompleteQuery(audioSources, videoSources);
 }
 
 bool MockWebMediaStreamCenter::getSourceInfos(const WebString& url, WebVector<WebSourceInfo>& webSourceInfoVector)
