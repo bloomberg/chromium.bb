@@ -20,14 +20,19 @@ function test()
     }
 
     InspectorTest.runTestSuite([
-        function testLocalResource(next)
-        {
-            testLoadForURL("file:///", next);
-        },
-
         function testNetworkResource(next)
         {
             testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php", next);
+        },
+
+        function testResourceFromIncorrectURL(next)
+        {
+            testLoadForURL("resource.php", next);
+        },
+
+        function testResourceFromFileScheme(next)
+        {
+            testLoadForURL("file:///var/www/index.html", next);
         },
     ]);
 }
