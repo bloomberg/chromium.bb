@@ -1,0 +1,3 @@
+
+PASS Check that change on a link with same url doesn't affect others. 
+

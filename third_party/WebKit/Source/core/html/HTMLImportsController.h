@@ -40,21 +40,15 @@
 
 namespace WebCore {
 
-class DocumentFragment;
+class HTMLImportLoader;
 class HTMLImportsController;
 
 //
 // A LinkResource subclasss used for @rel=import.
 //
-class LinkImport : public LinkResource, CachedResourceClient {
+class LinkImport : public LinkResource {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    enum State {
-        StatePreparing,
-        StateStarted,
-        StateError,
-        StateReady
-    };
 
     static PassRefPtr<LinkImport> create(HTMLLinkElement* owner);
 
@@ -67,22 +61,41 @@ public:
     virtual void ownerRemoved() OVERRIDE;
 
     Document* importedDocument() const;
+
+private:
+    RefPtr<HTMLImportLoader> m_loader;
+};
+
+
+class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public CachedResourceClient {
+public:
+    enum State {
+        StateLoading,
+        StateError,
+        StateReady
+    };
+
+    static PassRefPtr<HTMLImportLoader> create(HTMLImportsController*, const KURL&, const CachedResourceHandle<CachedScript>&);
+    virtual ~HTMLImportLoader();
+
+    Document* importedDocument() const;
     const KURL& url() const { return m_url; }
+
     void importDestroyed();
     bool isDone() const { return m_state == StateReady || m_state == StateError; }
 
 private:
-    State startRequest();
-    State finish();
-    void setState(State);
+    HTMLImportLoader(HTMLImportsController*, const KURL&, const CachedResourceHandle<CachedScript>&);
 
     // CachedResourceClient
     virtual void notifyFinished(CachedResource*) OVERRIDE;
 
+    State finish();
+    void setState(State);
+
     HTMLImportsController* m_controller;
-    LinkImport* m_ofSameLocation;
-    KURL m_url;
     State m_state;
+    KURL m_url;
     CachedResourceHandle<CachedScript> m_resource;
     RefPtr<Document> m_importedDocument;
 };
@@ -96,19 +109,18 @@ public:
     explicit HTMLImportsController(Document*);
     virtual ~HTMLImportsController();
 
-    void addImport(PassRefPtr<LinkImport>);
+    void addImport(PassRefPtr<HTMLImportLoader>);
     void showSecurityErrorMessage(const String&);
-    PassRefPtr<LinkImport> findLinkFor(const KURL&) const;
+    PassRefPtr<HTMLImportLoader> findLinkFor(const KURL&) const;
     SecurityOrigin* securityOrigin() const;
     bool haveLoaded() const;
     void didLoad();
 
 private:
-
     Document* m_master;
 
     // List of import which has been loaded or being loaded.
-    typedef Vector<RefPtr<LinkImport> > ImportList;
+    typedef Vector<RefPtr<HTMLImportLoader> > ImportList;
     ImportList m_imports;
 };
 

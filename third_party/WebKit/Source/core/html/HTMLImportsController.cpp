@@ -49,19 +49,91 @@ PassRefPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
 
 LinkImport::LinkImport(HTMLLinkElement* owner)
     : LinkResource(owner)
-    , m_controller(0)
-    , m_ofSameLocation(0)
-    , m_state(StatePreparing)
 {
 }
 
 LinkImport::~LinkImport()
 {
+}
+
+Document* LinkImport::importedDocument() const
+{
+    if (!m_loader)
+        return 0;
+    return m_loader->importedDocument();
+}
+
+void LinkImport::process()
+{
+    if (m_loader)
+        return;
+    if (!m_owner)
+        return;
+
+    // FIXME(morrita): Should take care of sub-imports whose document doesn't have frame.
+    if (!m_owner->document()->frame())
+        return;
+
+    LinkRequestBuilder builder(m_owner);
+    if (!builder.isValid())
+        return;
+
+    HTMLImportsController* controller = m_owner->document()->ensureImports();
+    if (RefPtr<HTMLImportLoader> found = controller->findLinkFor(builder.url())) {
+        m_loader = found;
+        return;
+    }
+
+    CachedResourceRequest request = builder.build(true);
+    CachedResourceHandle<CachedScript> resource = m_owner->document()->cachedResourceLoader()->requestScript(request);
+    m_loader = HTMLImportLoader::create(controller, builder.url(), resource);
+}
+
+void LinkImport::ownerRemoved()
+{
+    m_owner = 0;
+    m_loader.clear();
+}
+
+
+PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImportsController* controller, const KURL& url, const CachedResourceHandle<CachedScript>& resource)
+{
+    RefPtr<HTMLImportLoader> loader = adoptRef(new HTMLImportLoader(controller, url, resource));
+    controller->addImport(loader);
+    return loader;
+}
+
+HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller, const KURL& url, const CachedResourceHandle<CachedScript>& resource)
+    : m_controller(controller)
+    , m_state(StateLoading)
+    , m_resource(resource)
+    , m_url(url)
+{
+    m_resource->addClient(this);
+}
+
+HTMLImportLoader::~HTMLImportLoader()
+{
     if (m_resource)
         m_resource->removeClient(this);
 }
 
-LinkImport::State LinkImport::finish()
+void HTMLImportLoader::notifyFinished(CachedResource*)
+{
+    setState(finish());
+}
+
+void HTMLImportLoader::setState(State state)
+{
+    if (m_state == state)
+        return;
+    m_state = state;
+
+    if ((m_state == StateReady  || m_state == StateError) && m_controller)
+        m_controller->didLoad();
+}
+
+HTMLImportLoader::State HTMLImportLoader::finish()
 {
     if (!m_controller)
         return StateError;
@@ -83,85 +155,19 @@ LinkImport::State LinkImport::finish()
     return StateReady;
 }
 
-void LinkImport::notifyFinished(CachedResource*)
+Document* HTMLImportLoader::importedDocument() const
 {
-    setState(finish());
-}
-
-void LinkImport::setState(State state)
-{
-    if (m_state == state)
-        return;
-    m_state = state;
-
-    if ((m_state == StateReady  || m_state == StateError)
-        && m_controller)
-        m_controller->didLoad();
-}
-
-LinkImport::State LinkImport::startRequest()
-{
-    ASSERT(m_owner);
-    ASSERT(m_state == StatePreparing);
-
-    // FIXME(morrita): Should take care of sub-imports whose document doesn't have frame.
-    if (!m_owner->document()->frame())
-        return StateError;
-
-    LinkRequestBuilder builder(m_owner);
-    if (!builder.isValid())
-        return StateError;
-
-    m_controller = m_owner->document()->ensureImports();
-    if (RefPtr<LinkImport> found = m_controller->findLinkFor(builder.url())) {
-        m_ofSameLocation = found.get();
-        return StateReady;
-    }
-
-    CachedResourceRequest request = builder.build(true);
-    m_resource = m_owner->document()->cachedResourceLoader()->requestScript(request);
-    if (!m_resource)
-        return StateError;
-
-    m_resource->addClient(this);
-    m_url = builder.url();
-    m_controller->addImport(this);
-
-    return StateStarted;
-}
-
-Document* LinkImport::importedDocument() const
-{
-    if (!m_owner)
-        return 0;
     if (m_state != StateReady)
         return 0;
-
-    if (m_ofSameLocation) {
-        ASSERT(!m_importedDocument);
-        return m_ofSameLocation->importedDocument();
-    }
-
     return m_importedDocument.get();
 }
 
-void LinkImport::process()
-{
-    if (StatePreparing != m_state)
-        return;
-    setState(startRequest());
-}
-
-void LinkImport::ownerRemoved()
-{
-    m_owner = 0;
-}
-
-void LinkImport::importDestroyed()
+void HTMLImportLoader::importDestroyed()
 {
     m_controller = 0;
     m_importedDocument.clear();
 }
+
 
 PassOwnPtr<HTMLImportsController> HTMLImportsController::create(Document* master)
 {
@@ -179,7 +185,7 @@ HTMLImportsController::~HTMLImportsController()
         m_imports[i]->importDestroyed();
 }
 
-void HTMLImportsController::addImport(PassRefPtr<LinkImport> link)
+void HTMLImportsController::addImport(PassRefPtr<HTMLImportLoader> link)
 {
     ASSERT(!link->url().isEmpty() && link->url().isValid());
     m_imports.append(link);
@@ -196,7 +202,7 @@ void HTMLImportsController::didLoad()
         m_master->didLoadAllImports();
 }
 
-PassRefPtr<LinkImport> HTMLImportsController::findLinkFor(const KURL& url) const
+PassRefPtr<HTMLImportLoader> HTMLImportsController::findLinkFor(const KURL& url) const
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
         if (m_imports[i]->url() == url)
