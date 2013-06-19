@@ -169,23 +169,21 @@ void JobScheduler::RemoveObserver(JobListObserver* observer) {
 void JobScheduler::CancelJob(JobID job_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // TODO(kinaba): Completely remove drive_service_->CancelForFilePath
-  // once DriveUploader supported cancellation callback: crbug.com/257012.
   JobEntry* job = job_map_.Lookup(job_id);
   if (job) {
+    // TODO(kinaba): crbug.com/251116 Support cancelling jobs not yet started.
     if (!job->cancel_callback.is_null())
       job->cancel_callback.Run();
-    else
-      drive_service_->CancelForFilePath(job->job_info.file_path);
   }
 }
 
 void JobScheduler::CancelAllJobs() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // TODO(kinaba): Move the cancellation feature from DriveService
-  // to JobScheduler.
-  drive_service_->CancelAll();
+  // CancelJob may remove the entry from |job_map_|. That's OK. IDMap supports
+  // removable during iteration.
+  for (JobIDMap::iterator iter(&job_map_); !iter.IsAtEnd(); iter.Advance())
+    CancelJob(iter.GetCurrentKey());
 }
 
 void JobScheduler::GetAboutResource(

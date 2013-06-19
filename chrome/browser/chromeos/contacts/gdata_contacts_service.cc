@@ -871,7 +871,6 @@ GDataContactsService::GDataContactsService(
 
 GDataContactsService::~GDataContactsService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  sender_->CancelAll();
   STLDeleteContainerPointers(requests_.begin(), requests_.end());
   requests_.clear();
 }

@@ -18,12 +18,6 @@ void DummyDriveService::RemoveObserver(DriveServiceObserver* observer) {}
 
 bool DummyDriveService::CanSendRequest() const { return true; }
 
-void DummyDriveService::CancelAll() {}
-
-bool DummyDriveService::CancelForFilePath(const base::FilePath& file_path) {
-  return true;
-}
-
 std::string DummyDriveService::CanonicalizeResourceId(
     const std::string& resource_id) const {
   return resource_id;

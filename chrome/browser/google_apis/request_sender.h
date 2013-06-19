@@ -51,9 +51,6 @@ class RequestSender {
   // Prepares the object for use.
   virtual void Initialize();
 
-  // Cancels all in-flight requests.
-  void CancelAll();
-
   // Starts a request implementing the AuthenticatedRequestInterface
   // interface, and makes the request retry upon authentication failures by
   // calling back to RetryRequest.

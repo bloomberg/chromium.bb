@@ -145,16 +145,6 @@ bool GDataWapiService::CanSendRequest() const {
   return HasRefreshToken();
 }
 
-void GDataWapiService::CancelAll() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  sender_->CancelAll();
-}
-
-bool GDataWapiService::CancelForFilePath(const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return sender_->request_registry()->CancelForFilePath(file_path);
-}
-
 std::string GDataWapiService::CanonicalizeResourceId(
     const std::string& resource_id) const {
   return resource_id;

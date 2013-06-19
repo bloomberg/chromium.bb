@@ -60,36 +60,6 @@ RequestRegistry::RequestRegistry() {
 }
 
 RequestRegistry::~RequestRegistry() {
-  DCHECK(in_flight_requests_.IsEmpty());
-}
-
-void RequestRegistry::CancelAll() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  for (RequestIDMap::iterator iter(&in_flight_requests_);
-       !iter.IsAtEnd();
-       iter.Advance()) {
-    Request* request = iter.GetCurrentValue();
-    CancelRequest(request);
-    // CancelRequest may immediately trigger OnRequestFinish and remove the
-    // request from the map, but IDMap is designed to be safe on such remove
-    // while iteration.
-  }
-}
-
-bool RequestRegistry::CancelForFilePath(const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  for (RequestIDMap::iterator iter(&in_flight_requests_);
-       !iter.IsAtEnd();
-       iter.Advance()) {
-    Request* request = iter.GetCurrentValue();
-    if (request->progress_status().file_path == file_path) {
-      CancelRequest(request);
-      return true;
-    }
-  }
-  return false;
 }
 
 void RequestRegistry::CancelRequest(Request* request) {

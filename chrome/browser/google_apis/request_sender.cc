@@ -35,11 +35,6 @@ void RequestSender::Initialize() {
   auth_service_->Initialize(profile_);
 }
 
-void RequestSender::CancelAll() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  request_registry_->CancelAll();
-}
-
 base::Closure RequestSender::StartRequestWithRetry(
     AuthenticatedRequestInterface* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

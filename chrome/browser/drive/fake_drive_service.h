@@ -81,8 +81,6 @@ class FakeDriveService : public DriveServiceInterface {
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanSendRequest() const OVERRIDE;
-  virtual void CancelAll() OVERRIDE;
-  virtual bool CancelForFilePath(const base::FilePath& file_path) OVERRIDE;
   virtual std::string CanonicalizeResourceId(
       const std::string& resource_id) const OVERRIDE;
   virtual std::string GetRootResourceId() const OVERRIDE;

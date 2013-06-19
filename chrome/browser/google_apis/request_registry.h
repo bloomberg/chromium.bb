@@ -78,13 +78,6 @@ class RequestRegistry {
     RequestProgressStatus progress_status_;
   };
 
-  // Cancels all in-flight requests.
-  void CancelAll();
-
-  // Cancels ongoing request for a given virtual |file_path|. Returns true if
-  // the request was found and canceled.
-  bool CancelForFilePath(const base::FilePath& file_path);
-
   // Cancels the specified request.
   void CancelRequest(Request* request);
 

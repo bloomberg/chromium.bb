@@ -266,16 +266,6 @@ bool DriveAPIService::CanSendRequest() const {
   return HasRefreshToken();
 }
 
-void DriveAPIService::CancelAll() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  sender_->CancelAll();
-}
-
-bool DriveAPIService::CancelForFilePath(const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return sender_->request_registry()->CancelForFilePath(file_path);
-}
-
 std::string DriveAPIService::CanonicalizeResourceId(
     const std::string& resource_id) const {
   return drive::util::CanonicalizeResourceId(resource_id);

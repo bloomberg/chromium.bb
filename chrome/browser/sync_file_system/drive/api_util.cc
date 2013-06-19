@@ -185,7 +185,6 @@ APIUtil::~APIUtil() {
   DCHECK(CalledOnValidThread());
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   drive_service_->RemoveObserver(this);
-  drive_service_->CancelAll();
 }
 
 void APIUtil::AddObserver(APIUtilObserver* observer) {

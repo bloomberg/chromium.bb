@@ -30,8 +30,6 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_METHOD1(RemoveObserver,
       void(DriveServiceObserver* observer));
   MOCK_CONST_METHOD0(CanSendRequest, bool());
-  MOCK_METHOD0(CancelAll, void(void));
-  MOCK_METHOD1(CancelForFilePath, bool(const base::FilePath& file_path));
   MOCK_CONST_METHOD1(CanonicalizeResourceId,
                      std::string(const std::string& resource_id));
   MOCK_CONST_METHOD0(GetRootResourceId, std::string());

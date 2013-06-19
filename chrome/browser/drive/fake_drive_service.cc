@@ -203,16 +203,6 @@ bool FakeDriveService::CanSendRequest() const {
   return true;
 }
 
-void FakeDriveService::CancelAll() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
-bool FakeDriveService::CancelForFilePath(const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  last_cancelled_file_ = file_path;
-  return true;
-}
-
 std::string FakeDriveService::CanonicalizeResourceId(
     const std::string& resource_id) const {
   return resource_id;

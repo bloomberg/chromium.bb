@@ -50,13 +50,6 @@ class DriveServiceInterface {
   // True if ready to send requests.
   virtual bool CanSendRequest() const = 0;
 
-  // Cancels all in-flight requests.
-  virtual void CancelAll() = 0;
-
-  // Cancels ongoing request for a given virtual |file_path|. Returns true if
-  // the request was found and canceled.
-  virtual bool CancelForFilePath(const base::FilePath& file_path) = 0;
-
   // Converts the given resource ID into the desired format.
   virtual std::string CanonicalizeResourceId(
       const std::string& resource_id) const = 0;
