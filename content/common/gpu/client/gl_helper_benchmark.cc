@@ -201,10 +201,10 @@ TEST_F(GLHelperTest, ScaleBenchmark) {
             context_->flush();
           }
           context_->finish();
+          end_time = base::TimeTicks::Now();
           if (iterations > 2000) {
             break;
           }
-          end_time = base::TimeTicks::Now();
           if ((end_time - start_time).InMillisecondsF() > 1000) {
             break;
           }
