@@ -33,12 +33,47 @@
 #include "core/html/BaseButtonInputType.h"
 
 #include "HTMLNames.h"
+#include "core/dom/Text.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderButton.h"
+#include "core/rendering/RenderTextFragment.h"
 
 namespace WebCore {
 
 using namespace HTMLNames;
+
+class NonSelectableText : public Text {
+    inline NonSelectableText(Document* document, const String& data)
+        : Text(document, data, CreateText)
+    {
+    }
+
+    virtual RenderText* createTextRenderer(RenderArena* arena, RenderStyle*) OVERRIDE
+    {
+        return new (arena) RenderTextFragment(document(), dataImpl());
+    }
+
+public:
+    static inline PassRefPtr<NonSelectableText> create(Document* document, const String& data)
+    {
+        return adoptRef(new NonSelectableText(document, data));
+    }
+};
+
+// ----------------------------
+
+void BaseButtonInputType::createShadowSubtree()
+{
+    ASSERT(element()->userAgentShadowRoot());
+    RefPtr<Text> text = NonSelectableText::create(element()->document(), element()->valueWithDefault());
+    element()->userAgentShadowRoot()->appendChild(text);
+}
+
+void BaseButtonInputType::valueAttributeChanged()
+{
+    toText(element()->userAgentShadowRoot()->firstChild())->setData(element()->valueWithDefault());
+}
 
 bool BaseButtonInputType::shouldSaveAndRestoreFormControlState() const
 {
