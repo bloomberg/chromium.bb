@@ -71,7 +71,7 @@
 
             waitForEvent('ended', logEndTest);
 
-            waitForEvent('canplaythrough', function() {
+            waitForEventOnce('canplaythrough', function() {
                 video.currentTime = 5.00;
                 videoCanPlayThrough = true;
 

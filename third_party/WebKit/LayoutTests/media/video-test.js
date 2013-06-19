@@ -148,17 +148,17 @@ function run(testFuncString)
     }
 }
 
-function waitForEventOnce(eventName, func, endit)
+function waitForEventOnce(eventName, func, endit, doNotLog)
 {
-    waitForEvent(eventName, func, endit, true)
+    waitForEvent(eventName, func, endit, true, null, doNotLog)
 }
 
 function waitForEventAndEnd(eventName, funcString)
 {
-    waitForEvent(eventName, funcString, true)
+    waitForEvent(eventName, funcString, true, false, null, false)
 }
 
-function waitForEvent(eventName, func, endit, oneTimeOnly, element)
+function waitForEvent(eventName, func, endit, oneTimeOnly, element, doNotLog)
 {
     if (!element)
         element = mediaElement;
@@ -168,7 +168,8 @@ function waitForEvent(eventName, func, endit, oneTimeOnly, element)
         if (oneTimeOnly)
             element.removeEventListener(eventName, _eventCallback, true);
 
-        consoleWrite("EVENT(" + eventName + ")");
+        if (!doNotLog)
+          consoleWrite("EVENT(" + eventName + ")");
 
         if (func)
             func(event);

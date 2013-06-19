@@ -15,7 +15,7 @@
 
             function mediaLoadedMetadata()
             {
-                waitForEvent("playing", mediaPlaying);
+                waitForEventOnce("playing", mediaPlaying);
                 waitForEvent("pause", mediaPause);
                 waitForEvent("ended", mediaEnded);
                 run("mediaElement.play()");
@@ -34,11 +34,14 @@
             function mediaEnded()
             {
                 testExpected("mediaElement.ended", true);
- 
-                if (repeated)
+
+                if (repeated) {
                     endTest();
- 
+                    return;
+                }
+
                 repeated = true;
+                waitForEventOnce("playing", mediaPlaying);
                 run("mediaElement.play()");
             }
 
@@ -48,4 +51,3 @@
         <p>This tests ensure that media element emits the 'playing' event every time it starts playing after eos. It also ensure that 'pause' and 'ended' events are sent when media playback ends.</p>
     </body>
 </html>
-

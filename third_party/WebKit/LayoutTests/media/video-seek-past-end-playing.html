@@ -8,7 +8,7 @@
 <script>
     var timeupdateEventCount = 0;
 
-    waitForEvent('canplaythrough', function () { 
+    waitForEventOnce('canplaythrough', function () {
         testExpected("video.paused", true);
         run("video.play()");
         testExpected("video.paused", false);

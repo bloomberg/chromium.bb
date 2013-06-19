@@ -7,7 +7,7 @@
         <script src=../video-test.js></script>
         <script src=../media-controls.js></script>
 
-        <script>            
+        <script>
 
         var testTrack;
         var testCueDisplayBox;
@@ -71,9 +71,9 @@
             testTrack = document.querySelector('track');
             video.src = findMediaFile('video', '../content/test');
             waitForEvent('seeked', seeked);
-            waitForEvent('canplaythrough', function() { video.currentTime = .5; });
+            waitForEventOnce('canplaythrough', function() { video.currentTime = .5; });
         }
-        
+
         </script>
     </head>
     <body onload="loaded()">

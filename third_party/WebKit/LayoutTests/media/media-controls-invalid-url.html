@@ -12,7 +12,7 @@
                 video = document.getElementsByTagName("video")[0];
                 video.src = findMediaFile("video", "content/test");
 
-                waitForEvent("canplaythrough", start);
+                waitForEventOnce("canplaythrough", start);
                 waitForEvent("seeked", seeked);
                 waitForEvent("error", error);
             }

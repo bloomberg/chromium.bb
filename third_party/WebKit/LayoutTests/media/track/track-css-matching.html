@@ -80,7 +80,7 @@
             video.src = findMediaFile('video', '../content/test');
             video.id = "testvideo";
             waitForEvent('seeked', seeked);
-            waitForEvent('canplaythrough', function() { video.currentTime = seekTimes[0]; });
+            waitForEventOnce('canplaythrough', function() { video.currentTime = seekTimes[0]; });
         }
 
         </script>

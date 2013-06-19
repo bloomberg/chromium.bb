@@ -85,7 +85,7 @@
             function start()
             {
                 findMediaElement();
-                waitForEvent('canplaythrough', canplaythrough);
+                waitForEventOnce('canplaythrough', canplaythrough);
                 waitForEvent('ended', ended);
                 waitForEvent('ratechange', ratechange);
 
@@ -97,7 +97,7 @@
     </head>
 
     <body onload="start()">
-        
+
         <video controls > </video>
         <ol>
             <li>'playbackRate' should not change when play() is called.</li>

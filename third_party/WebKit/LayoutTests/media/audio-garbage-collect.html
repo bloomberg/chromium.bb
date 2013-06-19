@@ -50,10 +50,11 @@ function start() {
                 finish();
         }
     });
-    a.addEventListener('canplaythrough', function() {
+
+    waitForEvent('canplaythrough', function() {
         a.currentTime = a.duration - 0.35;
         a.play();
-    });
+    }, false, true, a, true);
 }
 
 start();

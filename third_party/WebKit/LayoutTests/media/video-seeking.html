@@ -10,30 +10,37 @@
     var seekedCount = 0;
 
     function seeked()
-    { 
-        ++seekedCount; 
+    {
+        ++seekedCount;
         consoleWrite("");
 
         testExpected("video.seeking", false);
         testExpected("video.currentTime", seekedCount * 0.5);
+
+        if (seekedCount == 3) {
+            endTest();
+            return;
+        }
+
         run("video.currentTime = " + (seekedCount + 1) * 0.5);
         testExpected("video.seeking", true);
 
         consoleWrite("");
 
-        if (seekedCount == 3)
-            endTest();
      }
 
-    function canplaythrough() 
+    function canplaythrough()
     {
+        if (seekedCount > 0)
+            return;
+
         run("video.currentTime = 0.5");
         consoleWrite("");
     }
-    
+
     waitForEvent('waiting' );
     waitForEvent('seeked', seeked );
-    waitForEvent('canplaythrough', canplaythrough);
+    waitForEventOnce('canplaythrough', canplaythrough);
 
     video.src = findMediaFile("video", "content/test");
 </script>

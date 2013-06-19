@@ -119,7 +119,7 @@
         paragraph.appendChild(video);
         document.body.appendChild(paragraph);
 
-        waitForEvent("canplaythrough", canplaythrough);
+        waitForEventOnce("canplaythrough", canplaythrough);
         waitForEvent("pause", pause);
 
         var fileName = location.href.split('/').pop();

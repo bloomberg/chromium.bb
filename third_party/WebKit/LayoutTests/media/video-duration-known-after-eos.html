@@ -16,6 +16,7 @@
 
             function playing()
             {
+                video.removeEventListener("playing", playing);
                 run("video.currentTime = video.duration - 0.2");
             }
 
@@ -43,5 +44,3 @@
         <p>Tests that duration is known after playback ended.</p>
     </body>
 </html>
-
-

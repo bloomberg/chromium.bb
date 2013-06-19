@@ -70,7 +70,7 @@
             function start()
             {
                 findMediaElement();
-                waitForEvent('canplaythrough', test);
+                waitForEventOnce('canplaythrough', test);
                 waitForEvent('seeked', seeked);
                 video.src = findMediaFile("video", "content/test");
             }    
@@ -82,4 +82,3 @@
         <video controls></video>
     </body>
 </html>
-

@@ -5,7 +5,6 @@ EVENT(webkitsourceopen) : open
 onFirstSourceOpen
 EVENT(webkitsourceended) : ended
 onFirstSourceEnded
-EVENT(playing)
 triggerFirstSeek
 EVENT(seeking)
 onFirstSeeking
@@ -23,7 +22,6 @@ EVENT(webkitsourceopen) : open
 onSecondSourceOpen
 EVENT(webkitsourceended) : ended
 onSecondSourceEnded
-EVENT(playing)
 triggerSecondSourceClose
 EVENT(webkitsourceclose) : closed
 onSecondSourceClose

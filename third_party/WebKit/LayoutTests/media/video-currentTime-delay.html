@@ -2,27 +2,27 @@
 <body>
 
     <video controls></video>
-    
+
     <p>Test a delay in playing the movie results in a canPlay event.</p>
-    
+
     <script src=media-file.js></script>
     <script src=video-test.js></script>
     <script>
-    waitForEvent('canplaythrough',  
-    function () { 
+    waitForEventOnce('canplaythrough',
+    function () {
         waitForEventAndEnd('ended');
-    
+
         testExpected("video.currentTime", 0);
-        run("video.currentTime = video.duration - 0.2"); 
+        run("video.currentTime = video.duration - 0.2");
     });
 
     waitForEvent('seeked',
-    function () {        
+    function () {
         setTimeout(function() {
-            run("video.play()"); 
+            run("video.play()");
         }, 400);
     });
-    
+
     video.src = findMediaFile("video", "content/test");
     </script>
 

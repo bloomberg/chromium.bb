@@ -66,7 +66,7 @@
                 video.src = findMediaFile("video", "../content/test");
             }
 
-            waitForEvent('canplaythrough', function() {
+            waitForEventOnce('canplaythrough', function() {
                 video.currentTime = 4.00;
                 videoCanPlayThrough = true;
 

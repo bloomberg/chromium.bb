@@ -116,7 +116,7 @@ function playForMillisecs(milliseconds)
     var callPauseIfTimeIsReached = function ()
     {
         var playedTime = video.currentTime - playedFromTime;
-        
+
         if (playedTime < 0) {
             // Deal with 'loop' attribue. This work only once, hence the warning
             // At the begining of playForMillisecs()
@@ -153,7 +153,7 @@ function videoPlayedMain()
     waitForEvent("loadstart");
     waitForEvent("ratechange");
     waitForEvent("loadedmetadata");
-    waitForEvent("canplay", canplay); // Will trigger nextTest() which launches the tests.
+    waitForEventOnce("canplay", canplay); // Will trigger nextTest() which launches the tests.
     waitForEvent("pause", pause);
     
     video.load();

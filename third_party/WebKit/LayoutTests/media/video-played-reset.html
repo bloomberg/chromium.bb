@@ -5,19 +5,19 @@
         <script src=video-test.js></script>
         <script src=video-played.js></script>
         <script>
-    
-            var testFunctions = 
-            [ 
+
+            var testFunctions =
+            [
                 PlayWithNoRanges,
                 ResetToAVideoSource,
                 JumpAndPlayFwd,
                 ResetToAnEmptyVideoSource
             ];
-    
+
             // NOTE: Result details are not printed for this test because time values are different from machine
             // to machine and run to run. Commenting out the following line turns on detailed logging back on, which
             // can be useful for debugging test failure.
-            disableFullTestDetailsPrinting(); 
+            disableFullTestDetailsPrinting();
 
             function PlayWithNoRanges()
             {
@@ -29,11 +29,11 @@
 
                 startPlayingInNewRange();
             }
-        
+
             function ResetToAVideoSource()
             {
                 consoleWrite("<br><b><em>Test to reset to non empty video source</em></b>");
-    
+
                 timeRangeCount = currentTimeRange = 0;
                 expectedStartTimes = new Array();
                 expectedEndTimes = new Array();
@@ -43,6 +43,8 @@
 
                 var mediaFile = findMediaFile("video", "content/test");
                 runSilently("video.src = \"" + mediaFile + "\"");
+
+                waitForEventOnce("canplay", canplay);
                 run("video.load()"); // Triggers canplay()
             }
 
@@ -63,7 +65,7 @@
             function ResetToAnEmptyVideoSource()
             {
                 consoleWrite("<br><b><em>Test to reset to an empty video source</em></b>");
-    
+
                 willPauseInExistingRange = false;
                 willExtendAnExistingRange = false;
                 timeRangeCount = currentTimeRange = 0;

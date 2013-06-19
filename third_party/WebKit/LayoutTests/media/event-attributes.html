@@ -18,9 +18,11 @@
                 switch (event.type)
                 {
                     case "canplaythrough":
+                        if (playingCount > 0)
+                            return;
                         testExpected('progressEventCount', 1, '>=');
                         consoleWrite("<br>*** starting playback");
-                        run("video.play()"); 
+                        run("video.play()");
                         break;
                     case "playing":
                         if (++playingCount == 1) {

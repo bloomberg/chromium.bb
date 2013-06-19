@@ -30,6 +30,8 @@
 
                     video.play();
                     video_fixed_size.play();
+                    video.removeEventListener('canplay', oncanplay);
+                    video_fixed_size.removeEventListener('canplay', oncanplay);
                 };
                 video.addEventListener('canplay', oncanplay);
                 video_fixed_size.addEventListener('canplay', oncanplay);
@@ -39,6 +41,9 @@
                     if (++playingCount < 2) {
                         return;
                     }
+
+                    video.removeEventListener('playing', onplaying);
+                    video_fixed_size.removeEventListener('playing', onplaying);
 
                     // Make sure both videos play for a bit.
                     function ontimeupdate(e) {

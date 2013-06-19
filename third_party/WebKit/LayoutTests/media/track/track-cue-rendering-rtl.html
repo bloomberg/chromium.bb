@@ -65,7 +65,7 @@
             consoleWrite("");
             consoleWrite("** RTL cues alternate with LTR cues **");
             waitForEvent('seeked', seeked);
-            waitForEvent('canplaythrough', function() { video.currentTime = .25; });
+            waitForEventOnce('canplaythrough', function() { video.currentTime = .25; });
         }
         </script>
     </head>

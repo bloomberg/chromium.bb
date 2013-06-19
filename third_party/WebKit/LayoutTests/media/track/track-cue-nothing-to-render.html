@@ -49,7 +49,7 @@
             testTrack = document.querySelector('track');
             video.src = findMediaFile('video', '../content/counting');
             waitForEvent('seeked', seeked);
-            waitForEvent('canplaythrough', function() { video.currentTime = .5; });
+            waitForEventOnce('canplaythrough', function() { video.currentTime = .5; });
         }
         
         </script>

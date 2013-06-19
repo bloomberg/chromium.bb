@@ -94,7 +94,7 @@
             // both are the second child in the shadow DOM.
             controlsPanelElement = internals.shadowRoot(video).firstChild.firstChild;
 
-            waitForEvent('canplaythrough', function() {
+            waitForEventOnce('canplaythrough', function() {
                 cueDisplayContainer = textTrackDisplayElement(video);
                 testInitialContainer();
                 runNextTestCase();
