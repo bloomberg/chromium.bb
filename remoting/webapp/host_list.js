@@ -104,7 +104,7 @@ remoting.HostList.prototype.load = function(onDone) {
     }
     onDone();
   };
-  remoting.storage.local.get(remoting.HostList.HOSTS_KEY, storeHostList);
+  chrome.storage.local.get(remoting.HostList.HOSTS_KEY, storeHostList);
 };
 
 /**
@@ -462,7 +462,7 @@ remoting.HostList.prototype.onErrorClick_ = function() {
 remoting.HostList.prototype.save_ = function() {
   var items = {};
   items[remoting.HostList.HOSTS_KEY] = JSON.stringify(this.hosts_);
-  remoting.storage.local.set(items);
+  chrome.storage.local.set(items);
 };
 
 /**

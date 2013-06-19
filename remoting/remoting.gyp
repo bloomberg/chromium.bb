@@ -204,7 +204,6 @@
       'webapp/server_log_entry.js',
       'webapp/session_connector.js',
       'webapp/stats_accumulator.js',
-      'webapp/storage.js',
       'webapp/third_party_host_permissions.js',
       'webapp/xhr_proxy.js',
       'webapp/third_party_token_fetcher.js',

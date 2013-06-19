@@ -157,32 +157,32 @@ remoting.showOrHideCallback = function(mode, items) {
 };
 
 remoting.showOrHideIT2MeUi = function() {
-  remoting.storage.local.get(remoting.kIT2MeVisitedStorageKey,
-                             remoting.showOrHideCallback.bind(null, 'it2me'));
+  chrome.storage.local.get(remoting.kIT2MeVisitedStorageKey,
+                           remoting.showOrHideCallback.bind(null, 'it2me'));
 };
 
 remoting.showOrHideMe2MeUi = function() {
-  remoting.storage.local.get(remoting.kMe2MeVisitedStorageKey,
-                             remoting.showOrHideCallback.bind(null, 'me2me'));
+  chrome.storage.local.get(remoting.kMe2MeVisitedStorageKey,
+                           remoting.showOrHideCallback.bind(null, 'me2me'));
 };
 
 remoting.showIT2MeUiAndSave = function() {
   var items = {};
   items[remoting.kIT2MeVisitedStorageKey] = true;
-  remoting.storage.local.set(items);
+  chrome.storage.local.set(items);
   remoting.showOrHideCallback('it2me', [true]);
 };
 
 remoting.showMe2MeUiAndSave = function() {
   var items = {};
   items[remoting.kMe2MeVisitedStorageKey] = true;
-  remoting.storage.local.set(items);
+  chrome.storage.local.set(items);
   remoting.showOrHideCallback('me2me', [true]);
 };
 
 remoting.resetInfographics = function() {
-  remoting.storage.local.remove(remoting.kIT2MeVisitedStorageKey);
-  remoting.storage.local.remove(remoting.kMe2MeVisitedStorageKey);
+  chrome.storage.local.remove(remoting.kIT2MeVisitedStorageKey);
+  chrome.storage.local.remove(remoting.kMe2MeVisitedStorageKey);
   remoting.showOrHideCallback('it2me', [false]);
   remoting.showOrHideCallback('me2me', [false]);
 }

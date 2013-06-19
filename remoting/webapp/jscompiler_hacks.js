@@ -67,18 +67,44 @@ var WebKitMutationObserver = function(callback) {};
     @param {Object} options */
 WebKitMutationObserver.prototype.observe = function(element, options) {};
 
-// TODO(jamiewalch): Flesh this out with the correct type when we're a v2 app.
-/** @type {remoting.MockStorage} */
-remoting.storage.local = null;
-
 /** @type {Object} */
 chrome.storage = {};
 
-/** @type {remoting.MockStorage} */
+/** @type {chrome.Storage} */
 chrome.storage.local;
 
-/** @type {remoting.MockStorage} */
+/** @type {chrome.Storage} */
 chrome.storage.sync;
+
+/** @constructor */
+chrome.Storage = function() {};
+
+/**
+ * @param {string|Array.<string>|Object.<string>} items
+ * @param {function(Object.<string>):void} callback
+ * @return {void}
+ */
+chrome.Storage.prototype.get = function(items, callback) {};
+
+/**
+ * @param {Object.<string>} items
+ * @param {function():void=} opt_callback
+ * @return {void}
+ */
+chrome.Storage.prototype.set = function(items, opt_callback) {};
+
+/**
+ * @param {string|Array.<string>} items
+ * @param {function():void=} opt_callback
+ * @return {void}
+ */
+chrome.Storage.prototype.remove = function(items, opt_callback) {};
+
+/**
+ * @param {function():void=} opt_callback
+ * @return {void}
+ */
+chrome.Storage.prototype.clear = function(opt_callback) {};
 
 /** @type {Object} */
 chrome.app.runtime = {

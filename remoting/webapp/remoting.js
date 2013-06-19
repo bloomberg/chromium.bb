@@ -35,11 +35,6 @@ function consentRequired_(authContinue) {
  */
 remoting.init = function() {
   migrateLocalToChromeStorage_();
-
-  // TODO(jamiewalch): Remove this when we migrate to apps v2
-  // (http://crbug.com/ 134213).
-  remoting.initMockStorage();
-
   remoting.logExtensionInfo_();
   l10n.localize();
   // Create global objects.
@@ -236,7 +231,7 @@ remoting.promptClose = function() {
  */
 remoting.signOut = function() {
   remoting.oauth2.clear();
-  remoting.storage.local.clear();
+  chrome.storage.local.clear();
   remoting.setMode(remoting.AppMode.HOME);
   document.getElementById('auth-dialog').hidden = false;
 };

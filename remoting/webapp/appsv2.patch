@@ -100,15 +100,14 @@ diff --git a/remoting/webapp/remoting.js b/remoting/webapp/remoting.js
 index f89072a..2fadd83 100644
 --- a/remoting.js
 +++ b/remoting.js
-@@ -34,8 +34,6 @@ function consentRequired_(authContinue) {
+@@ -34,7 +34,6 @@ function consentRequired_(authContinue) {
   * Entry point for app initialization.
   */
  remoting.init = function() {
 -  migrateLocalToChromeStorage_();
--
-   // TODO(jamiewalch): Remove this when we migrate to apps v2
-   // (http://crbug.com/ 134213).
-   remoting.initMockStorage();
+   remoting.logExtensionInfo_();
+   l10n.localize();
+   // Create global objects.
 @@ -45,10 +45,7 @@ remoting.init = function() {
    // Create global objects.
    remoting.settings = new remoting.Settings();
