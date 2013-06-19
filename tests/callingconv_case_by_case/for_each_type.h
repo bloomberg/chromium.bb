@@ -83,7 +83,13 @@ DO_FOR_TYPE(NONTRIV_CLASS_I32_I32)
 DO_FOR_TYPE(NONTRIV_CLASS_DOUBLE_DOUBLE)
 
 DO_FOR_TYPE(MEMBER_PTRS)
-DO_FOR_TYPE(MEMBER_FUN_PTRS)
+/*
+ * C++ method pointers are represented differently on x86 and ARM.
+ * PNaCl is changing to use the ARM representation, so the following
+ * test will not pass on x86.
+ * See https://code.google.com/p/nativeclient/issues/detail?id=3450
+ */
+/* DO_FOR_TYPE(MEMBER_FUN_PTRS) */
 
 /*
  * Vector arguments currently have different name mangling (gcc < 4.5 bug).
