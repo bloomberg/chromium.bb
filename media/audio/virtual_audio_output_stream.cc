@@ -4,22 +4,20 @@
 
 #include "media/audio/virtual_audio_output_stream.h"
 
-#include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/audio/virtual_audio_input_stream.h"
 
 namespace media {
 
 VirtualAudioOutputStream::VirtualAudioOutputStream(
-    const AudioParameters& params, VirtualAudioInputStream* target,
-    const AfterCloseCallback& after_close_cb)
-    : params_(params), target_input_stream_(target),
-      after_close_cb_(after_close_cb), callback_(NULL), volume_(1.0f) {
+    const AudioParameters& params, base::MessageLoopProxy* message_loop,
+    VirtualAudioInputStream* target, const AfterCloseCallback& after_close_cb)
+    : params_(params), message_loop_(message_loop),
+      target_input_stream_(target), after_close_cb_(after_close_cb),
+      callback_(NULL), volume_(1.0f) {
   DCHECK(params_.IsValid());
+  DCHECK(message_loop_);
   DCHECK(target);
-
-  // VAOS can be constructed on any thread, but will DCHECK that all
-  // AudioOutputStream methods are called from the same thread.
-  thread_checker_.DetachFromThread();
 }
 
 VirtualAudioOutputStream::~VirtualAudioOutputStream() {
@@ -27,27 +25,27 @@ VirtualAudioOutputStream::~VirtualAudioOutputStream() {
 }
 
 bool VirtualAudioOutputStream::Open() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   return true;
 }
 
 void VirtualAudioOutputStream::Start(AudioSourceCallback* callback)  {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(!callback_);
   callback_ = callback;
   target_input_stream_->AddOutputStream(this, params_);
 }
 
 void VirtualAudioOutputStream::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (callback_) {
-    target_input_stream_->RemoveOutputStream(this, params_);
     callback_ = NULL;
+    target_input_stream_->RemoveOutputStream(this, params_);
   }
 }
 
 void VirtualAudioOutputStream::Close() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(message_loop_->BelongsToCurrentThread());
 
   Stop();
 
@@ -62,19 +60,18 @@ void VirtualAudioOutputStream::Close() {
 }
 
 void VirtualAudioOutputStream::SetVolume(double volume) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   volume_ = volume;
 }
 
 void VirtualAudioOutputStream::GetVolume(double* volume) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(message_loop_->BelongsToCurrentThread());
   *volume = volume_;
 }
 
 double VirtualAudioOutputStream::ProvideInput(AudioBus* audio_bus,
                                               base::TimeDelta buffer_delay) {
-  // Note: This method may be invoked on any one thread, depending on the
-  // platform.
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(callback_);
 
   const int frames = callback_->OnMoreData(audio_bus, AudioBuffersState());

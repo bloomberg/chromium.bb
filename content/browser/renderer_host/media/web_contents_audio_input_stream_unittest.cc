@@ -89,10 +89,10 @@ class MockWebContentsTracker : public WebContentsTracker {
 class MockVirtualAudioInputStream : public VirtualAudioInputStream {
  public:
   explicit MockVirtualAudioInputStream(
-      const scoped_refptr<base::MessageLoopProxy>& worker_loop)
-      : VirtualAudioInputStream(TestAudioParameters(), worker_loop,
+      const scoped_refptr<base::MessageLoopProxy>& message_loop)
+      : VirtualAudioInputStream(TestAudioParameters(), message_loop,
                                 VirtualAudioInputStream::AfterCloseCallback()),
-        real_(TestAudioParameters(), worker_loop,
+        real_(TestAudioParameters(), message_loop,
               base::Bind(&MockVirtualAudioInputStream::OnRealStreamHasClosed,
                          base::Unretained(this))),
         real_stream_is_closed_(false) {
@@ -218,7 +218,7 @@ class WebContentsAudioInputStreamTest : public testing::Test {
 
     wcais_ = new WebContentsAudioInputStream(
         current_render_process_id_, current_render_view_id_,
-        mock_mirroring_manager_.get(),
+        audio_thread_.message_loop_proxy(), mock_mirroring_manager_.get(),
         mock_tracker_, mock_vais_);
     wcais_->Open();
   }

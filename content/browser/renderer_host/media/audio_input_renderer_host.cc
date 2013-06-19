@@ -268,7 +268,7 @@ void AudioInputRendererHost::OnCreateStream(
   entry->writer.reset(writer.release());
   if (WebContentsCaptureUtil::IsWebContentsDeviceId(device_id)) {
     entry->controller = media::AudioInputController::CreateForStream(
-        audio_manager_->GetMessageLoop(),
+        audio_manager_->GetWorkerLoop(),
         this,
         WebContentsAudioInputStream::Create(
             device_id, audio_params, audio_manager_->GetWorkerLoop()),
