@@ -56,13 +56,13 @@ struct {
   const char* value;
 } const kWebAudioConstraints[] = {
     {webrtc::MediaConstraintsInterface::kEchoCancellation,
-     webrtc::MediaConstraintsInterface::kValueFalse},
+     webrtc::MediaConstraintsInterface::kValueTrue},
     {webrtc::MediaConstraintsInterface::kAutoGainControl,
-     webrtc::MediaConstraintsInterface::kValueFalse},
+     webrtc::MediaConstraintsInterface::kValueTrue},
     {webrtc::MediaConstraintsInterface::kNoiseSuppression,
-     webrtc::MediaConstraintsInterface::kValueFalse},
+     webrtc::MediaConstraintsInterface::kValueTrue},
     {webrtc::MediaConstraintsInterface::kHighpassFilter,
-     webrtc::MediaConstraintsInterface::kValueFalse},
+     webrtc::MediaConstraintsInterface::kValueTrue},
 };
 
 class WebAudioConstraints : public RTCMediaConstraints {
