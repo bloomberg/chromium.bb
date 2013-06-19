@@ -15001,6 +15001,7 @@ other types of suffix sets.
   <int value="3" label="Page not current: origin/path mismatch"/>
   <int value="4" label="Page not current: instant not supported"/>
   <int value="5" label="No overlay"/>
+  <int value="6" label="Javascript disabled"/>
 </enum>
 
 <enum name="InstantExtended_InstantNavigation" type="int">

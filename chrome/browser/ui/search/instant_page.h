@@ -111,7 +111,7 @@ class InstantPage : public content::WebContentsObserver {
 
   // Returns the Instant URL that was loaded for this page. Returns the empty
   // string if no URL was explicitly loaded as is the case for InstantTab.
-  const std::string& instant_url() const { return instant_url_; }
+  virtual const std::string& instant_url() const;
 
   // Returns true if the page is known to support the Instant API. This starts
   // out false, and is set to true whenever we get any message from the page.

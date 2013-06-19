@@ -25,6 +25,10 @@ bool InstantPage::supports_instant() const {
   return supports_instant_;
 }
 
+const std::string& InstantPage::instant_url() const {
+  return instant_url_;
+}
+
 bool InstantPage::IsLocal() const {
   return contents() &&
       (contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl) ||

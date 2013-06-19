@@ -76,7 +76,8 @@ class InstantController : public InstantPage::Delegate {
     INSTANT_FALLBACK_ORIGIN_PATH_MISMATCH = 3,
     INSTANT_FALLBACK_INSTANT_NOT_SUPPORTED = 4,
     INSTANT_FALLBACK_NO_OVERLAY = 5,
-    INSTANT_FALLBACK_MAX = 6,
+    INSTANT_FALLBACK_JAVASCRIPT_DISABLED = 6,
+    INSTANT_FALLBACK_MAX = 7,
   };
 
   InstantController(BrowserInstantController* browser,
@@ -251,11 +252,30 @@ class InstantController : public InstantPage::Delegate {
   virtual InstantTab* instant_tab() const;
   virtual InstantNTP* ntp() const;
 
+  virtual Profile* profile() const;
+
+  // Returns true if Javascript is enabled and false otherwise.
+  virtual bool IsJavascriptEnabled() const;
+
+  // Returns true if the browser is in startup.
+  virtual bool InStartup() const;
+
  private:
   friend class InstantExtendedManualTest;
   friend class InstantTestBase;
-  FRIEND_TEST_ALL_PREFIXES(InstantControllerTest,
-                           ShouldSwitchToLocalOverlayReturn);
+#define UNIT_F(test) FRIEND_TEST_ALL_PREFIXES(InstantControllerTest, test)
+  UNIT_F(DoesNotSwitchToLocalNTPIfOnCurrentNTP);
+  UNIT_F(DoesNotSwitchToLocalNTPIfOnLocalNTP);
+  UNIT_F(IsJavascriptEnabled);
+  UNIT_F(IsJavascriptEnabledChecksContentSettings);
+  UNIT_F(IsJavascriptEnabledChecksPrefs);
+  UNIT_F(PrefersRemoteNTPOnStartup);
+  UNIT_F(ShouldSwitchToLocalOverlay);
+  UNIT_F(SwitchesToLocalNTPIfJSDisabled);
+  UNIT_F(SwitchesToLocalNTPIfNoInstantSupport);
+  UNIT_F(SwitchesToLocalNTPIfNoNTPReady);
+  UNIT_F(SwitchesToLocalNTPIfPathBad);
+#undef UNIT_F
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UsesOverlayIfTabNotReady);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
@@ -319,8 +339,6 @@ class InstantController : public InstantPage::Delegate {
                            TypedSearchURLDoesntReuseInstantTab);
 #endif
 
-  Profile* profile() const;
-
   // Overridden from InstantPage::Delegate:
   // TODO(shishir): We assume that the WebContent's current RenderViewHost is
   // the RenderViewHost being created which is not always true. Fix this.
@@ -373,7 +391,7 @@ class InstantController : public InstantPage::Delegate {
 
   // Returns the local Instant URL. (Just a convenience wrapper around
   // chrome::GetLocalInstantURL.)
-  std::string GetLocalInstantURL() const;
+  virtual std::string GetLocalInstantURL() const;
 
   // Returns true if |page| has an up-to-date Instant URL and supports Instant.
   // Note that local URLs will not pass this check.

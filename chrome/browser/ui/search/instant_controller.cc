@@ -7,12 +7,15 @@
 #include <iterator>
 
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/search_provider.h"
+#include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -30,6 +33,8 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_settings_types.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "content/public/browser/navigation_entry.h"
@@ -1588,25 +1593,25 @@ void InstantController::ReloadStaleNTP() {
 }
 
 bool InstantController::ShouldSwitchToLocalNTP() const {
-  if (!ntp_)
+  if (!ntp())
+    return true;
+
+  // Assume users with Javascript disabled do not want the online experience.
+  if (!IsJavascriptEnabled())
     return true;
 
   // Already a local page. Not calling IsLocal() because we want to distinguish
   // between the Google-specific and generic local NTP.
-  if (extended_enabled() && ntp_->instant_url() == GetLocalInstantURL())
+  if (extended_enabled() && ntp()->instant_url() == GetLocalInstantURL())
     return false;
 
   if (PageIsCurrent(ntp()))
     return false;
 
-  // TODO(shishir): This is not completely reliable. Find a better way to detect
-  // startup time.
-  const bool in_startup = !browser_->GetActiveWebContents();
-
   // The preloaded NTP does not support instant yet. If we're not in startup,
   // always fall back to the local NTP. If we are in startup, use the local NTP
   // (unless the finch flag to use the remote NTP is set).
-  return !(in_startup && chrome::ShouldPreferRemoteNTPOnStartup());
+  return !(InStartup() && chrome::ShouldPreferRemoteNTPOnStartup());
 }
 
 void InstantController::ResetOverlay(const std::string& instant_url) {
@@ -1630,6 +1635,10 @@ InstantController::ShouldSwitchToLocalOverlay() const {
 
   if (!overlay())
     return DetermineFallbackReason(NULL, std::string());
+
+  // Assume users with Javascript disabled do not want the online experience.
+  if (!IsJavascriptEnabled())
+    return INSTANT_FALLBACK_JAVASCRIPT_DISABLED;
 
   if (overlay()->IsLocal())
     return INSTANT_FALLBACK_NONE;
@@ -1873,4 +1882,28 @@ void InstantController::PopulateInstantAutocompleteResultFromMatch(
       << result->provider << " " << result->destination_url << " '"
       << result->description << "' '" << result->search_query << "' "
       << result->transition <<  " " << result->autocomplete_match_index;
+}
+
+bool InstantController::IsJavascriptEnabled() const {
+  GURL instant_url(GetInstantURL());
+  GURL origin(instant_url.GetOrigin());
+  ContentSetting js_setting = profile()->GetHostContentSettingsMap()->
+      GetContentSetting(origin, origin, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                        NO_RESOURCE_IDENTIFIER);
+  // Javascript can be disabled either in content settings or via a WebKit
+  // preference, so check both. Disabling it through the Settings page affects
+  // content settings. I'm not sure how to disable the WebKit preference, but
+  // it's theoretically possible some users have it off.
+  bool js_content_enabled =
+      js_setting == CONTENT_SETTING_DEFAULT ||
+      js_setting == CONTENT_SETTING_ALLOW;
+  bool js_webkit_enabled = profile()->GetPrefs()->GetBoolean(
+      prefs::kWebKitJavascriptEnabled);
+  return js_content_enabled && js_webkit_enabled;
+}
+
+bool InstantController::InStartup() const {
+  // TODO(shishir): This is not completely reliable. Find a better way to detect
+  // startup time.
+  return !browser_->GetActiveWebContents();
 }
