@@ -222,7 +222,7 @@ class BufferedDataSourceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSourceTest);
 };
 
-TEST_F(BufferedDataSourceTest, DISABLED_Range_Supported) {
+TEST_F(BufferedDataSourceTest, Range_Supported) {
   Initialize(kHttpUrl, true);
 
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
@@ -233,7 +233,7 @@ TEST_F(BufferedDataSourceTest, DISABLED_Range_Supported) {
   Stop();
 }
 
-TEST_F(BufferedDataSourceTest, DISABLED_Range_InstanceSizeUnknown) {
+TEST_F(BufferedDataSourceTest, Range_InstanceSizeUnknown) {
   Initialize(kHttpUrl, true);
 
   Respond(response_generator_->Generate206(
