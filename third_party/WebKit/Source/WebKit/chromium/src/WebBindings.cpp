@@ -172,6 +172,11 @@ void WebBindings::unregisterObjectOwner(NPP)
 {
 }
 
+NPP WebBindings::getObjectOwner(NPObject* object)
+{
+    return 0;
+}
+
 void WebBindings::unregisterObject(NPObject* object)
 {
     _NPN_UnregisterObject(object);

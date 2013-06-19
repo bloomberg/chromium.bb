@@ -129,6 +129,9 @@ public:
     // _NPN_UnregisterObjectOwner
     WEBKIT_EXPORT static void unregisterObjectOwner(NPP);
 
+    // Temporary dummy implementation of _NPN_GetObjectOwner.
+    WEBKIT_EXPORT static NPP getObjectOwner(NPObject*);
+
     // _NPN_UnregisterObject
     WEBKIT_EXPORT static void unregisterObject(NPObject*);
 
