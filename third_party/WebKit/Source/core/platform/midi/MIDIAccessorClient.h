@@ -37,8 +37,8 @@ namespace WebCore {
 
 class MIDIAccessorClient {
 public:
-    virtual void addInputPort(const String& id, const String& manufacturer, const String& name, const String& version) = 0;
-    virtual void addOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) = 0;
+    virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) = 0;
+    virtual void didAddOutputPort(const String& id, const String& manufacturer, const String& name, const String& version) = 0;
 
     virtual void accessApproved(bool approved) = 0;
     virtual void receiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) = 0;
