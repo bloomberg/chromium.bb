@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/platform_file.h"
+#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
@@ -53,6 +54,7 @@ class CannedSyncableFileSystem
  public:
   typedef base::Callback<void(base::PlatformFileError)> StatusCallback;
   typedef base::Callback<void(int64)> WriteCallback;
+  typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
 
   CannedSyncableFileSystem(const GURL& origin,
                            base::SingleThreadTaskRunner* io_task_runner,
@@ -118,6 +120,8 @@ class CannedSyncableFileSystem
       const fileapi::FileSystemURL& url,
       base::PlatformFileInfo* info,
       base::FilePath* platform_path);
+  base::PlatformFileError ReadDirectory(const fileapi::FileSystemURL& url,
+                                        FileEntryList* entries);
 
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64 Write(net::URLRequestContext* url_request_context,
@@ -173,6 +177,9 @@ class CannedSyncableFileSystem
                                     base::PlatformFileInfo* info,
                                     base::FilePath* platform_path,
                                     const StatusCallback& callback);
+  void DoReadDirectory(const fileapi::FileSystemURL& url,
+                       FileEntryList* entries,
+                       const StatusCallback& callback);
   void DoWrite(net::URLRequestContext* url_request_context,
                const fileapi::FileSystemURL& url,
                const GURL& blob_url,

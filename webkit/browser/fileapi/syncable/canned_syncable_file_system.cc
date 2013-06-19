@@ -4,6 +4,8 @@
 
 #include "webkit/browser/fileapi/syncable/canned_syncable_file_system.h"
 
+#include <iterator>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
@@ -124,6 +126,20 @@ void OnCreateSnapshotFile(
   *file_info_out = file_info;
   *platform_path_out = platform_path;
   callback.Run(result);
+}
+
+void OnReadDirectory(
+    CannedSyncableFileSystem::FileEntryList* entries_out,
+    const CannedSyncableFileSystem::StatusCallback& callback,
+    base::PlatformFileError error,
+    const fileapi::FileSystemOperation::FileEntryList& entries,
+    bool has_more) {
+  DCHECK(entries_out);
+  entries_out->reserve(entries_out->size() + entries.size());
+  std::copy(entries.begin(), entries.end(), std::back_inserter(*entries_out));
+
+  if (!has_more)
+    callback.Run(error);
 }
 
 class WriteHelper {
@@ -415,6 +431,18 @@ PlatformFileError CannedSyncableFileSystem::GetMetadataAndPlatformPath(
                  platform_path));
 }
 
+PlatformFileError CannedSyncableFileSystem::ReadDirectory(
+    const fileapi::FileSystemURL& url,
+    FileEntryList* entries) {
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoReadDirectory,
+          base::Unretained(this),
+          url,
+          entries));
+}
+
 int64 CannedSyncableFileSystem::Write(
     net::URLRequestContext* url_request_context,
     const FileSystemURL& url, const GURL& blob_url) {
@@ -578,6 +606,15 @@ void CannedSyncableFileSystem::DoGetMetadataAndPlatformPath(
   EXPECT_TRUE(is_filesystem_opened_);
   operation_runner()->CreateSnapshotFile(
       url, base::Bind(&OnCreateSnapshotFile, info, platform_path, callback));
+}
+
+void CannedSyncableFileSystem::DoReadDirectory(
+    const FileSystemURL& url,
+    FileEntryList* entries,
+    const StatusCallback& callback) {
+  EXPECT_TRUE(is_filesystem_opened_);
+  operation_runner()->ReadDirectory(
+      url, base::Bind(&OnReadDirectory, entries, callback));
 }
 
 void CannedSyncableFileSystem::DoWrite(
