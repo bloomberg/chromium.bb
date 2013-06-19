@@ -233,7 +233,7 @@ TEST_F(BufferedDataSourceTest, DISABLED_Range_Supported) {
   Stop();
 }
 
-TEST_F(BufferedDataSourceTest, Range_InstanceSizeUnknown) {
+TEST_F(BufferedDataSourceTest, DISABLED_Range_InstanceSizeUnknown) {
   Initialize(kHttpUrl, true);
 
   Respond(response_generator_->Generate206(
