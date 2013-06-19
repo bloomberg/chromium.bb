@@ -49,6 +49,8 @@ public:
     virtual String validationMessage() const OVERRIDE;
     virtual bool valueMissing() const OVERRIDE;
 
+    virtual void reset() OVERRIDE;
+
     unsigned length() const;
 
     int size() const { return m_size; }
@@ -133,8 +135,6 @@ private:
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const OVERRIDE;
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle *);
     virtual bool appendFormData(FormDataList&, bool);
-
-    virtual void reset();
 
     virtual void defaultEventHandler(Event*);
 

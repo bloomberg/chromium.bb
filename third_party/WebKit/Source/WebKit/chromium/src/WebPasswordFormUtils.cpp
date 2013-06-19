@@ -65,14 +65,14 @@ void findPasswordFormFields(HTMLFormElement* form, PasswordFormFields* fields)
     for (size_t i = 0; i < formElements.size(); i++) {
         if (!formElements[i]->isFormControlElement())
             continue;
-        HTMLFormControlElement* formElement = static_cast<HTMLFormControlElement*>(formElements[i]);
-        if (formElement->isActivatedSubmit())
-            fields->submit = formElement;
+        HTMLFormControlElement* control = toHTMLFormControlElement(formElements[i]);
+        if (control->isActivatedSubmit())
+            fields->submit = control;
 
-        if (!formElement->hasTagName(HTMLNames::inputTag))
+        if (!control->hasTagName(HTMLNames::inputTag))
             continue;
 
-        HTMLInputElement* inputElement = toHTMLInputElement(formElement);
+        HTMLInputElement* inputElement = toHTMLInputElement(control);
         if (inputElement->isDisabledFormControl())
             continue;
 

@@ -462,7 +462,7 @@ HTMLFormControlElement* HTMLFormControlElement::enclosingFormControlElement(Node
 {
     for (; node; node = node->parentNode()) {
         if (node->isElementNode() && toElement(node)->isFormControlElement())
-            return static_cast<HTMLFormControlElement*>(node);
+            return toHTMLFormControlElement(node);
     }
     return 0;
 }

@@ -186,13 +186,13 @@ void HTMLFormElement::submitImplicitly(Event* event, bool fromImplicitSubmission
         FormAssociatedElement* formAssociatedElement = m_associatedElements[i];
         if (!formAssociatedElement->isFormControlElement())
             continue;
-        HTMLFormControlElement* formElement = static_cast<HTMLFormControlElement*>(formAssociatedElement);
-        if (formElement->isSuccessfulSubmitButton()) {
-            if (formElement->renderer()) {
-                formElement->dispatchSimulatedClick(event);
+        HTMLFormControlElement* control = toHTMLFormControlElement(formAssociatedElement);
+        if (control->isSuccessfulSubmitButton()) {
+            if (control->renderer()) {
+                control->dispatchSimulatedClick(event);
                 return;
             }
-        } else if (formElement->canTriggerImplicitSubmission())
+        } else if (control->canTriggerImplicitSubmission())
             ++submissionTriggerCount;
     }
     if (fromImplicitSubmissionTrigger && submissionTriggerCount == 1)
@@ -203,7 +203,7 @@ static inline HTMLFormControlElement* submitElementFromEvent(const Event* event)
 {
     for (Node* node = event->target()->toNode(); node; node = node->parentNode()) {
         if (node->isElementNode() && toElement(node)->isFormControlElement())
-            return static_cast<HTMLFormControlElement*>(node);
+            return toHTMLFormControlElement(node);
     }
     return 0;
 }
@@ -220,7 +220,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
 
     for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
         if (m_associatedElements[i]->isFormControlElement())
-            static_cast<HTMLFormControlElement*>(m_associatedElements[i])->hideVisibleValidationMessage();
+            toHTMLFormControlElement(m_associatedElements[i])->hideVisibleValidationMessage();
     }
 
     Vector<RefPtr<FormAssociatedElement> > unhandledInvalidControls;
@@ -242,7 +242,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
             unhandled->scrollIntoViewIfNeeded(false);
             unhandled->focus();
             if (unhandled->isFormControlElement())
-                static_cast<HTMLFormControlElement*>(unhandled)->updateVisibleValidationMessage();
+                toHTMLFormControlElement(unhandled)->updateVisibleValidationMessage();
             break;
         }
     }
@@ -344,7 +344,7 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
         if (!associatedElement->isFormControlElement())
             continue;
         if (needButtonActivation) {
-            HTMLFormControlElement* control = static_cast<HTMLFormControlElement*>(associatedElement);
+            HTMLFormControlElement* control = toHTMLFormControlElement(associatedElement);
             if (control->isActivatedSubmit())
                 needButtonActivation = false;
             else if (firstSuccessfulSubmitButton == 0 && control->isSuccessfulSubmitButton())
@@ -379,7 +379,7 @@ void HTMLFormElement::reset()
 
     for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
         if (m_associatedElements[i]->isFormControlElement())
-            static_cast<HTMLFormControlElement*>(m_associatedElements[i])->reset();
+            toHTMLFormControlElement(m_associatedElements[i])->reset();
     }
 
     m_isInResetFunction = false;
@@ -625,7 +625,7 @@ HTMLFormControlElement* HTMLFormElement::defaultButton() const
     for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
         if (!m_associatedElements[i]->isFormControlElement())
             continue;
-        HTMLFormControlElement* control = static_cast<HTMLFormControlElement*>(m_associatedElements[i]);
+        HTMLFormControlElement* control = toHTMLFormControlElement(m_associatedElements[i]);
         if (control->isSuccessfulSubmitButton())
             return control;
     }
@@ -656,7 +656,7 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<Form
     bool hasInvalidControls = false;
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
-            HTMLFormControlElement* control = static_cast<HTMLFormControlElement*>(elements[i].get());
+            HTMLFormControlElement* control = toHTMLFormControlElement(elements[i].get());
             if (!control->checkValidity(unhandledInvalidControls, dispatchEvents) && control->form() == this)
                 hasInvalidControls = true;
         }
@@ -664,14 +664,14 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<Form
     return hasInvalidControls;
 }
 
-HTMLFormControlElement* HTMLFormElement::elementForAlias(const AtomicString& alias)
+Node* HTMLFormElement::elementForAlias(const AtomicString& alias)
 {
     if (alias.isEmpty() || !m_elementAliases)
         return 0;
     return m_elementAliases->get(alias.impl());
 }
 
-void HTMLFormElement::addElementAlias(HTMLFormControlElement* element, const AtomicString& alias)
+void HTMLFormElement::addElementAlias(Node* element, const AtomicString& alias)
 {
     if (alias.isEmpty())
         return;
@@ -684,7 +684,7 @@ void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<N
 {
     elements()->namedItems(name, namedItems);
 
-    HTMLFormControlElement* aliasElement = elementForAlias(name);
+    Node* aliasElement = elementForAlias(name);
     if (aliasElement) {
         if (namedItems.find(aliasElement) == notFound) {
             // We have seen it before but it is gone now. Still, we need to return it.
@@ -693,7 +693,7 @@ void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<N
         }
     }
     if (namedItems.size() && namedItems.first() != aliasElement)
-        addElementAlias(static_cast<HTMLFormControlElement*>(namedItems.first().get()), name);
+        addElementAlias(namedItems.first().get(), name);
 }
 
 bool HTMLFormElement::shouldAutocomplete() const

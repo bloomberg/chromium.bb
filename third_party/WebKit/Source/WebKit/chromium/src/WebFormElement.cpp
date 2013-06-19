@@ -94,7 +94,7 @@ void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& re
     for (size_t i = 0; i < form->associatedElements().size(); i++) {
         if (!form->associatedElements()[i]->isFormControlElement())
             continue;
-        HTMLFormControlElement* element = static_cast<HTMLFormControlElement*>(form->associatedElements()[i]);
+        HTMLFormControlElement* element = toHTMLFormControlElement(form->associatedElements()[i]);
         if (element->hasLocalName(HTMLNames::inputTag)
             || element->hasLocalName(HTMLNames::selectTag))
             tempVector.append(element);

@@ -171,6 +171,18 @@ private:
     bool m_hasAutofocused : 1;
 };
 
+inline HTMLFormControlElement* toHTMLFormControlElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || (node->isElementNode() && toElement(node)->isFormControlElement()));
+    return static_cast<HTMLFormControlElement*>(node);
+}
+
+inline HTMLFormControlElement* toHTMLFormControlElement(FormAssociatedElement* control)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!control || control->isFormControlElement());
+    return static_cast<HTMLFormControlElement*>(control);
+}
+
 } // namespace
 
 #endif

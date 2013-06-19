@@ -95,7 +95,7 @@ WebFormControlElement& WebFormControlElement::operator=(const PassRefPtr<HTMLFor
 
 WebFormControlElement::operator PassRefPtr<HTMLFormControlElement>() const
 {
-    return static_cast<HTMLFormControlElement*>(m_private.get());
+    return toHTMLFormControlElement(m_private.get());
 }
 
 } // namespace WebKit

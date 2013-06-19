@@ -62,7 +62,7 @@ HTMLFormControlElement* HTMLLegendElement::associatedControl()
     Element* element = fieldset;
     while ((element = ElementTraversal::next(element, fieldset))) {
         if (element->isFormControlElement())
-            return static_cast<HTMLFormControlElement*>(element);
+            return toHTMLFormControlElement(element);
     }
 
     return 0;

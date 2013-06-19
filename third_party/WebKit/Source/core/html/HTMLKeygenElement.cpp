@@ -118,7 +118,7 @@ const AtomicString& HTMLKeygenElement::formControlType() const
 
 void HTMLKeygenElement::reset()
 {
-    static_cast<HTMLFormControlElement*>(shadowSelect())->reset();
+    shadowSelect()->reset();
 }
 
 bool HTMLKeygenElement::shouldSaveAndRestoreFormControlState() const
