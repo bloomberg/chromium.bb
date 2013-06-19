@@ -87,6 +87,11 @@ static void setAllDefersLoading(const ResourceLoaderSet& loaders, bool defers)
         loadersCopy[i]->setDefersLoading(defers);
 }
 
+static bool isArchiveMIMEType(const String& mimeType)
+{
+    return mimeType == "multipart/related";
+}
+
 DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData& substituteData)
     : m_deferMainResourceDataLoad(true)
     , m_frame(0)
@@ -130,6 +135,7 @@ DocumentLoader::~DocumentLoader()
 
 PassRefPtr<SharedBuffer> DocumentLoader::mainResourceData() const
 {
+    ASSERT(isArchiveMIMEType(m_response.mimeType()));
     if (m_substituteData.isValid())
         return m_substituteData.content()->copy();
     if (m_mainResource)
@@ -561,6 +567,9 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
 
     m_response = response;
 
+    if (isArchiveMIMEType(m_response.mimeType()) && m_mainResource->dataBufferingPolicy() != BufferData)
+        m_mainResource->setDataBufferingPolicy(BufferData);
+
     if (m_identifierForLoadWithoutResourceLoader)
         frameLoader()->notifier()->dispatchDidReceiveResponse(this, m_identifierForLoadWithoutResourceLoader, m_response, 0);
 
@@ -590,11 +599,6 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
         if (isLoadingMainResource())
             finishedLoading(0);
     }
-}
-
-static bool isArchiveMIMEType(const String& mimeType)
-{
-    return mimeType == "multipart/related";
 }
 
 void DocumentLoader::commitLoad(const char* data, int length)
@@ -887,12 +891,6 @@ void DocumentLoader::setDefersLoading(bool defers)
     setAllDefersLoading(m_resourceLoaders, defers);
 }
 
-void DocumentLoader::setMainResourceDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
-{
-    if (m_mainResource)
-        m_mainResource->setDataBufferingPolicy(dataBufferingPolicy);
-}
-
 void DocumentLoader::stopLoadingSubresources()
 {
     cancelAll(m_resourceLoaders);
@@ -968,7 +966,7 @@ void DocumentLoader::startLoadingMainResource()
 
     ResourceRequest request(m_request);
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
-        (SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy));
+        (SendCallbacks, SniffContent, DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy));
     CachedResourceRequest cachedResourceRequest(request, cachedResourceRequestInitiators().document, mainResourceLoadOptions);
     m_mainResource = m_cachedResourceLoader->requestMainResource(cachedResourceRequest);
     if (!m_mainResource) {

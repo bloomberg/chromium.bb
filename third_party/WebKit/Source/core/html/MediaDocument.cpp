@@ -97,12 +97,6 @@ void MediaDocumentParser::createDocumentStructure()
 
     m_mediaElement->appendChild(sourceElement, IGNORE_EXCEPTION);
     body->appendChild(mediaElement, IGNORE_EXCEPTION);
-
-    Frame* frame = document()->frame();
-    if (!frame)
-        return;
-
-    frame->loader()->activeDocumentLoader()->setMainResourceDataBufferingPolicy(DoNotBufferData);
 }
 
 void MediaDocumentParser::appendBytes(DocumentWriter*, const char*, size_t)

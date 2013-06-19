@@ -362,31 +362,15 @@ void InspectorResourceAgent::didFinishLoading(unsigned long identifier, Document
         finishTime = loader->timing()->monotonicTimeToPseudoWallTime(monotonicFinishTime);
 
     String requestId = IdentifiersFactory::requestId(identifier);
-    if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::DocumentResource) {
-        RefPtr<SharedBuffer> buffer = loader->frameLoader()->documentLoader()->mainResourceData();
-        m_resourcesData->addResourceSharedBuffer(requestId, buffer, loader->frame()->document()->inputEncoding());
-    }
-
     m_resourcesData->maybeDecodeDataToContent(requestId);
-
     if (!finishTime)
         finishTime = currentTime();
-
     m_frontend->loadingFinished(requestId, finishTime);
 }
 
 void InspectorResourceAgent::didFailLoading(unsigned long identifier, DocumentLoader* loader, const ResourceError& error)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
-
-    if (m_resourcesData->resourceType(requestId) == InspectorPageAgent::DocumentResource) {
-        Frame* frame = loader ? loader->frame() : 0;
-        if (frame && frame->loader()->documentLoader() && frame->document()) {
-            RefPtr<SharedBuffer> buffer = frame->loader()->documentLoader()->mainResourceData();
-            m_resourcesData->addResourceSharedBuffer(requestId, buffer, frame->document()->inputEncoding());
-        }
-    }
-
     bool canceled = error.isCancellation();
     m_frontend->loadingFailed(requestId, currentTime(), error.localizedDescription(), canceled ? &canceled : 0);
 }

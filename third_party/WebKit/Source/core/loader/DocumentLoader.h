@@ -81,7 +81,6 @@ namespace WebCore {
         void detachFromFrame();
 
         FrameLoader* frameLoader() const;
-        PassRefPtr<SharedBuffer> mainResourceData() const;
 
         unsigned long mainResourceIdentifier() const;
         
@@ -134,7 +133,6 @@ namespace WebCore {
         KURL urlForHistory() const;
         
         void setDefersLoading(bool);
-        void setMainResourceDataBufferingPolicy(DataBufferingPolicy);
 
         void startLoadingMainResource();
         void cancelMainResourceLoad(const ResourceError&);
@@ -180,6 +178,7 @@ namespace WebCore {
         void clearMainResourceLoader();
         ResourceLoader* mainResourceLoader() const;
         void clearMainResourceHandle();
+        PassRefPtr<SharedBuffer> mainResourceData() const;
 
         bool maybeCreateArchive();
         void clearArchiveResources();
