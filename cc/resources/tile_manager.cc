@@ -25,12 +25,18 @@ namespace {
 
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
-inline TileManagerBin BinFromTilePriority(const TilePriority& prio) {
+inline TileManagerBin BinFromTilePriority(const TilePriority& prio,
+                                          TreePriority tree_priority) {
   // The amount of time for which we want to have prepainting coverage.
   const float kPrepaintingWindowTimeSeconds = 1.0f;
   const float kBackflingGuardDistancePixels = 314.0f;
 
-  if (prio.time_to_visible_in_seconds == 0)
+  // Don't let low res tiles be in the now bin unless we're in a mode where
+  // we're prioritizing checkerboard prevention.
+  bool can_be_in_now_bin = tree_priority == SMOOTHNESS_TAKES_PRIORITY ||
+                           prio.resolution != LOW_RESOLUTION;
+
+  if (can_be_in_now_bin && prio.time_to_visible_in_seconds == 0)
     return NOW_BIN;
 
   if (prio.resolution == NON_IDEAL_RESOLUTION)
@@ -260,16 +266,21 @@ void TileManager::AssignBinsToTiles() {
         prio[HIGH_PRIORITY_BIN].distance_to_visible_in_pixels;
     mts.required_for_activation =
         prio[HIGH_PRIORITY_BIN].required_for_activation;
-    mts.bin[HIGH_PRIORITY_BIN] = BinFromTilePriority(prio[HIGH_PRIORITY_BIN]);
-    mts.bin[LOW_PRIORITY_BIN] = BinFromTilePriority(prio[LOW_PRIORITY_BIN]);
-    mts.gpu_memmgr_stats_bin = BinFromTilePriority(tile->combined_priority());
+    mts.bin[HIGH_PRIORITY_BIN] =
+        BinFromTilePriority(prio[HIGH_PRIORITY_BIN], tree_priority);
+    mts.bin[LOW_PRIORITY_BIN] =
+        BinFromTilePriority(prio[LOW_PRIORITY_BIN], tree_priority);
+    mts.gpu_memmgr_stats_bin =
+        BinFromTilePriority(tile->combined_priority(), tree_priority);
 
     DidTileTreeBinChange(tile,
-        bin_map[BinFromTilePriority(tile->priority(ACTIVE_TREE))],
-        ACTIVE_TREE);
+                         bin_map[BinFromTilePriority(
+                             tile->priority(ACTIVE_TREE), tree_priority)],
+                         ACTIVE_TREE);
     DidTileTreeBinChange(tile,
-        bin_map[BinFromTilePriority(tile->priority(PENDING_TREE))],
-        PENDING_TREE);
+                         bin_map[BinFromTilePriority(
+                             tile->priority(PENDING_TREE), tree_priority)],
+                         PENDING_TREE);
 
     for (int i = 0; i < NUM_BIN_PRIORITIES; ++i)
       mts.bin[i] = bin_map[mts.bin[i]];
