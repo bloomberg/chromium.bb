@@ -192,36 +192,177 @@ def _ParseInstruction(instruction):
   return prefixes, name, ops
 
 
+REG32_TO_REG64 = {
+    '%eax' : '%rax',
+    '%ebx' : '%rbx',
+    '%ecx' : '%rcx',
+    '%edx' : '%rdx',
+    '%esi' : '%rsi',
+    '%edi' : '%rdi',
+    '%esp' : '%rsp',
+    '%ebp' : '%rbp',
+    '%r8d' : '%r8',
+    '%r9d' : '%r9',
+    '%r10d' : '%r10',
+    '%r11d' : '%r11',
+    '%r12d' : '%r12',
+    '%r13d' : '%r13',
+    '%r14d' : '%r14',
+    '%r15d' : '%r15'}
+
+REGS64 = REG32_TO_REG64.values()
+
+
+class Condition(object):
+  """Represents assertion about the state of 64-bit registers.
+
+  (used as precondition and postcondition)
+
+  Supported assertions:
+    0. %rpb and %rsp are sandboxed (and nothing is known about other registers)
+    1. {%rax} is restricted, %rbp and %rsp are sandboxed
+    2-13. same for %rbx-%r14 not including %rbp and %rsp
+    14. %rbp is restricted, %rsp is sandboxed
+    15. %rsp is restricted, %rpb is sandboxed
+
+  It can be observed that all assertions 1..15 differ from default 0 in a single
+  register, which prompts internal representation of a single field,
+  _restricted_register, which stores name of this standing out register
+  (or None).
+
+  * 'restricted' means higher 32 bits are zeroes
+  * 'sandboxed' means within [%r15, %r15 + 2**32) range
+  It goes without saying that %r15 is never changed and by definition sandboxed.
+  """
+
+  def __init__(self, restricted=None, restricted_instead_of_sandboxed=None):
+    self._restricted_register = None
+    if restricted is not None:
+      assert restricted_instead_of_sandboxed is None
+      assert restricted in REGS64
+      assert restricted not in ['%r15', '%rbp', '%rsp']
+      self._restricted_register = restricted
+    if restricted_instead_of_sandboxed is not None:
+      assert restricted is None
+      assert restricted_instead_of_sandboxed in ['%rbp', '%rsp']
+      self._restricted_register = restricted_instead_of_sandboxed
+
+  def __eq__(self, other):
+    return self._restricted_register == other._restricted_register
+
+  def __ne__(self, other):
+    return not self == other
+
+  def Implies(self, other):
+    return self.WhyNotImplies(other) is None
+
+  def WhyNotImplies(self, other):
+    if other._restricted_register is None:
+      if self._restricted_register in ['%rbp', '%rsp']:
+        return '%s should not be restricted' % self._restricted_register
+      else:
+        return None
+    else:
+      if self._restricted_register != other._restricted_register:
+        return (
+            'register %s should be restricted, '
+            'while in fact %r is restricted' % (
+                other._restricted_register, self._restricted_register))
+      else:
+        return None
+
+
 def ValidateRegularInstruction(instruction, bitness):
-  # TODO(shcherbina): describe meaning of restricted registers in return value.
+  """Validate regular instruction (not direct jump).
+
+  Args:
+    instruction: objdump_parser.Instruction tuple
+    bitness: 32 or 64
+  Returns:
+    Pair (precondition, postcondition) of Condition instances.
+    (for 32-bit case they are meaningless and are not used)
+  Raises:
+    According to usual convention.
+  """
   assert bitness in [32, 64]
 
   try:
     _ValidateNop(instruction)
-    return
+    return Condition(), Condition()
   except DoNotMatchError:
     pass
 
   try:
     _ValidateOperandlessInstruction(instruction, bitness)
-    return
+    return Condition(), Condition()
   except DoNotMatchError:
     pass
 
   if bitness == 32:
     try:
       _ValidateStringInstruction(instruction)
-      return
+      return Condition(), Condition()
     except DoNotMatchError:
       pass
 
     try:
       _ValidateTlsInstruction(instruction)
-      return
+      return Condition(), Condition()
     except DoNotMatchError:
       pass
 
-  _ParseInstruction(instruction)
+  precondition = Condition()
+  postcondition = Condition()
+
+  _, name, ops = _ParseInstruction(instruction)
+  # TODO(shcherbina): prohibit excessive prefixes.
+
+  if name == 'mov':
+    write_ops = [ops[1]]
+
+    if bitness == 64:
+      for op in ops:
+        m = re.match(_MemoryRE() + r'$', op)
+        if m is not None:
+          base = m.group('memory_base')
+          index = m.group('memory_index')
+          allowed_bases = ['%r15', '%rbp', '%rsp', '%rip']
+          if base not in allowed_bases:
+            raise SandboxingError(
+                'memory access only is allowed with base from %s'
+                % allowed_bases,
+                instruction)
+          if index is not None:
+            if index == '%riz':
+              pass
+            elif index in REGS64:
+              if index in ['%r15', '%rsp', '%rbp']:
+                raise SandboxingError(
+                    '%s can\'t be used as index in memory access' % index,
+                    instruction)
+              else:
+                precondition = Condition(restricted=index)
+            else:
+              raise SandboxingError(
+                  'unrecognized register is used for memory access as index',
+                  instruction)
+
+      for op in write_ops:
+        # TODO(shcherbina): disallow writes to
+        #   rbp, rsp
+        #   bp, sp, bpl, spl,
+        #   cs, ds, es, fs, gs
+        if op in ['%r15', '%r15d', '%r15w', '%r15b']:
+          raise SandboxingError('changes to r15 are not allowed', instruction)
+        if op in REG32_TO_REG64:
+          assert postcondition == Condition()
+          r = REG32_TO_REG64[op]
+          if r in ['%rbp', '%rsp']:
+            postcondition = Condition(restricted_instead_of_sandboxed=r)
+          else:
+            postcondition = Condition(restricted=r)
+
+    return precondition, postcondition
 
   raise DoNotMatchError(instruction)
 
@@ -262,24 +403,21 @@ def ValidateDirectJumpOrRegularInstruction(instruction, bitness):
     instruction: objdump_parser.Instruction tuple.
     bitness: 32 or 64.
   Returns:
-    Triple (jump_destination,
-            required_restricted_register,
-            resulting_restricted_register).
+    Triple (jump_destination, precondition, postcondition).
     jump_destination is either absolute offset or None if instruction is not
-    jump. Restricted register business is explained in
-    ValidateRegularInstruction.
+    jump. Pre/postconditions are as in ValidateRegularInstructions.
   Raises:
     According to usual convention.
   """
   assert bitness in [32, 64]
   try:
     destination = ValidateDirectJump(instruction)
-    return destination, None, None
+    return destination, Condition(), Condition()
   except DoNotMatchError:
     pass
 
-  ValidateRegularInstruction(instruction, bitness)
-  return None, None, None
+  precondition, postcondition = ValidateRegularInstruction(instruction, bitness)
+  return None, precondition, postcondition
 
 
 def ValidateSuperinstruction32(superinstruction):

@@ -12,6 +12,7 @@ class Validator(object):
     self.messages = []
     self.valid_jump_targets = set()
     self.jumps = {}
+    self.condition = spec.Condition()
 
   def ValidateSuperinstruction(self, superinstruction):
     raise NotImplementedError()
@@ -20,6 +21,11 @@ class Validator(object):
     offset = insns[0].address
     last_byte_offset = offset + sum(len(insn.bytes) for insn in insns) - 1
     return offset // spec.BUNDLE_SIZE == last_byte_offset // spec.BUNDLE_SIZE
+
+  def CheckConditions(
+      self, insns, precondition, postcondition):
+    raise NotImplementedError()
+
 
   def Validate(self):
     if len(self.data) % spec.BUNDLE_SIZE != 0:
@@ -47,23 +53,27 @@ class Validator(object):
             if not self.FitsWithinBundle(insns[i:i+n]):
               self.messages.append(
                   (offset, 'superinstruction crosses bundle boundary'))
+            self.CheckConditions(
+                insns[i:i+n],
+                precondition=spec.Condition(),
+                postcondition=spec.Condition())
             i += n
             break
           except spec.DoNotMatchError:
             continue
         else:
           try:
-            jump_destination, _, _ = (
+            jump_destination, precondition, postcondition = (
                 spec.ValidateDirectJumpOrRegularInstruction(
                     insns[i],
                     self.BITNESS))
-
-            if jump_destination is not None:
-              self.jumps[insns[i].address] = jump_destination
-
             if not self.FitsWithinBundle(insns[i:i+1]):
               self.messages.append(
                   (offset, 'instruction crosses bundle boundary'))
+            self.CheckConditions(
+                insns[i:i+1], precondition, postcondition)
+            if jump_destination is not None:
+              self.jumps[insns[i].address] = jump_destination
             i += 1
           except spec.DoNotMatchError:
             self.messages.append(
@@ -73,6 +83,7 @@ class Validator(object):
       except spec.SandboxingError as e:
         self.messages.append((offset, str(e)))
         i += 1
+        self.condition = spec.Condition()
 
     assert i == len(insns)
 
@@ -91,13 +102,40 @@ class Validator32(Validator):
   def ValidateSuperinstruction(self, superinstruction):
     spec.ValidateSuperinstruction32(superinstruction)
 
+  def CheckConditions(
+      self, insns, precondition, postcondition):
+    assert precondition == postcondition == spec.Condition()
+
 
 class Validator64(Validator):
-
-  # TODO(shcherbina): track restricted_register
 
   BITNESS = 64
   MAX_SUPERINSTRUCTION_LENGTH = 5
 
   def ValidateSuperinstruction(self, superinstruction):
     spec.ValidateSuperinstruction64(superinstruction)
+
+  def CheckConditions(
+      self, insns, precondition, postcondition):
+    offset = insns[0].address
+    if not self.condition.Implies(precondition):
+      self.messages.append((offset, self.condition.WhyNotImplies(precondition)))
+
+    if not spec.Condition().Implies(precondition):
+      self.valid_jump_targets.remove(offset)
+
+    self.condition = postcondition
+
+    end_offset = offset + sum(len(insn.bytes) for insn in insns)
+    # Here we rely on the fact that our chunks never end mid-bundle, so
+    # this check would be performed at the end of the chunk as well.
+    if end_offset % spec.BUNDLE_SIZE == 0:
+      # At the end of bundle we reset condition to default value
+      # (because anybody can jump to this point), so we have to check
+      # that it's safe to do so.
+      if not self.condition.Implies(spec.Condition()):
+        self.messages.append((
+            end_offset,
+            '%s at the end of bundle'
+            % self.condition.WhyNotImplies(spec.Condition())))
+      self.condition = spec.Condition()

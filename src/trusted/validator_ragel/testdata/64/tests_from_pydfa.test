@@ -450,6 +450,8 @@
      2:	41 8b 1c 07          	mov    (%r15,%rax,1),%ebx
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Test for a top-bit-set register.
@@ -462,6 +464,8 @@
      3:	43 8b 1c 27          	mov    (%r15,%r12,1),%ebx
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Check %edi and %esi because the first 'mov' also begins superinstructions.
@@ -474,6 +478,8 @@
      2:	41 8b 1c 3f          	mov    (%r15,%rdi,1),%ebx
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov %esi, %esi
@@ -485,6 +491,8 @@
      2:	41 8b 1c 37          	mov    (%r15,%rsi,1),%ebx
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Check mask on its own.
@@ -494,6 +502,8 @@
      0:	89 c0                	mov    %eax,%eax
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov (%r15, %rax), %ebx
@@ -503,6 +513,8 @@
 @rdfa_output:
   0: [0] improper memory address - bad index
   return code: 1
+@spec:
+  0: register %rax should be restricted, while in fact None is restricted
 ----------------------------------------------------------------------
 @hex:
   # mov %eax, %eax
@@ -518,6 +530,8 @@
 @rdfa_output:
   6: [0] bad jump target
   return code: 1
+@spec:
+  6: jump into a middle of instruction (0x2)
 ----------------------------------------------------------------------
 @hex:
   # Check that post-conditions do not leak from a superinstruction.  In the
