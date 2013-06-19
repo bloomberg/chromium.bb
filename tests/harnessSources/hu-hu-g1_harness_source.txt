@@ -1,5 +1,10 @@
 tables: hu-hu-g1.ctb
 
+accessibility
+
+testmode: backtranslate
+accessibility
+
 adásszerű
 
 testmode: backtranslate
@@ -9,6 +14,11 @@ adásszünet
 
 testmode: backtranslate
 adásszünet
+
+adászárásig
+
+testmode: backtranslate
+adászárásig
 
 adósszámla
 
@@ -160,6 +170,16 @@ arcsérülés
 testmode: backtranslate
 arcsérülés
 
+arzénnyom
+
+testmode: backtranslate
+arzénnyom
+
+áremelkedésszerű
+
+testmode: backtranslate
+áremelkedésszerű
+
 árgusszemű
 
 testmode: backtranslate
@@ -170,10 +190,20 @@ testmode: backtranslate
 testmode: backtranslate
 árvízsújtotta
 
+átlaggyerekre
+
+testmode: backtranslate
+átlaggyerekre
+
 autósszemüveg
 
 testmode: backtranslate
 autósszemüveg
+
+autósszőnyeg
+
+testmode: backtranslate
+autósszőnyeg
 
 azonnyomban
 
@@ -185,10 +215,25 @@ bádoggyűjtemény
 testmode: backtranslate
 bádoggyűjtemény
 
+Bánnyíres
+
+testmode: backtranslate
+Bánnyíres
+
 bázisszint
 
 testmode: backtranslate
 bázisszint
+
+Barccsal
+
+testmode: backtranslate
+Barccsal
+
+barkácszene
+
+testmode: backtranslate
+barkácszene
 
 barnásszőke
 
@@ -214,6 +259,16 @@ baromsággyűjtemény
 
 testmode: backtranslate
 baromsággyűjtemény
+
+basszusszerű
+
+testmode: backtranslate
+basszusszerű
+
+basszusszintetizátor
+
+testmode: backtranslate
+basszusszintetizátor
 
 becslésszerűen
 
@@ -270,6 +325,11 @@ binsenggyökér
 testmode: backtranslate
 binsenggyökér
 
+blueszene
+
+testmode: backtranslate
+blueszene
+
 biznisszé
 
 testmode: backtranslate
@@ -325,6 +385,11 @@ brekegésszerű
 testmode: backtranslate
 brekegésszerű
 
+Briganty
+
+testmode: backtranslate
+Briganty
+
 bronzsáska
 
 testmode: backtranslate
@@ -345,6 +410,11 @@ bronzsisak
 testmode: backtranslate
 bronzsisak
 
+bukásszámba
+
+testmode: backtranslate
+bukásszámba
+
 búcsújárásszerű
 
 testmode: backtranslate
@@ -359,6 +429,11 @@ chipseszacskó
 
 testmode: backtranslate
 chipseszacskó
+
+ciripelésszerűen
+
+testmode: backtranslate
+ciripelésszerűen
 
 curiosity
 
@@ -399,6 +474,11 @@ csipkésszélű
 
 testmode: backtranslate
 csipkésszélű
+
+csípésszám
+
+testmode: backtranslate
+csípésszám
 
 csobbanásszerű
 
@@ -430,6 +510,11 @@ döggyapjú
 testmode: backtranslate
 döggyapjú
 
+döggyárnak
+
+testmode: backtranslate
+döggyárnak
+
 dőlésszög
 
 testmode: backtranslate
@@ -515,6 +600,11 @@ edzésszámot
 testmode: backtranslate
 edzésszámot
 
+effektusszerűen
+
+testmode: backtranslate
+effektusszerűen
+
 egyenesszálú
 
 testmode: backtranslate
@@ -539,6 +629,11 @@ egyesszámban
 
 testmode: backtranslate
 egyesszámban
+
+egységgyertyából
+
+testmode: backtranslate
+egységgyertyából
 
 éhesszájat 
 
@@ -579,6 +674,11 @@ ekhósszekerek
 
 testmode: backtranslate
 ekhósszekerek
+
+elektronnyalábra
+
+testmode: backtranslate
+elektronnyalábra
 
 eleséggyűjtés 
 
@@ -635,6 +735,11 @@ emelésszerű
 testmode: backtranslate
 emelésszerű
 
+eposszal
+
+testmode: backtranslate
+eposszal
+
 érccsapadék, érccsengés, érccsatorna 
 
 testmode: backtranslate
@@ -675,10 +780,20 @@ testmode: backtranslate
 testmode: backtranslate
 ércsodrony
 
+erősítésszabályozás
+
+testmode: backtranslate
+erősítésszabályozás
+
 erőforrászabáló
 
 testmode: backtranslate
 erőforrászabáló
+
+erőlködésszagúnak
+
+testmode: backtranslate
+erőlködésszagúnak
 
 érzékelésszint
 
@@ -735,6 +850,11 @@ fásszárú
 testmode: backtranslate
 fásszárú
 
+fázisszögnek
+
+testmode: backtranslate
+fázisszögnek
+
 fegyenccsoport
 
 testmode: backtranslate
@@ -784,6 +904,11 @@ felszerelésszettet
 
 testmode: backtranslate
 felszerelésszettet
+
+feltevésszerűen
+
+testmode: backtranslate
+feltevésszerűen
 
 fertőzésszerű
 
@@ -885,6 +1010,11 @@ fuvarosszekér
 testmode: backtranslate
 fuvarosszekér
 
+fúvósszekció
+
+testmode: backtranslate
+fúvósszekció
+
 fúvósszerszám
 
 testmode: backtranslate
@@ -914,6 +1044,11 @@ gázspray
 
 testmode: backtranslate
 gázspray
+
+gátstop
+
+testmode: backtranslate
+gázstop
 
 gázsugár
 
@@ -1014,6 +1149,11 @@ gyújtászsinór
 
 testmode: backtranslate
 gyújtászsinór
+
+gyülekezésszabadságot
+
+testmode: backtranslate
+gyülekezésszabadságot
 
 gyűlésszíne
 
@@ -1130,6 +1270,11 @@ harcsor
 testmode: backtranslate
 harcsor
 
+harmincsornyi
+
+testmode: backtranslate
+harmincsornyi
+
 hármasszámú
 
 testmode: backtranslate
@@ -1160,10 +1305,25 @@ hártyásszárnyú
 testmode: backtranslate
 hártyásszárnyú
 
+hasszőrzet
+
+testmode: backtranslate
+hasszőrzet
+
+hasszél
+
+testmode: backtranslate
+hasszél
+
 hasisszagot
 
 testmode: backtranslate
 hasisszagot
+
+hatásszélesség
+
+testmode: backtranslate
+hatásszélesség
 
 hatásszünet
 
@@ -1310,6 +1470,11 @@ Hússzövetség
 testmode: backtranslate
 Hússzövetség
 
+hűséggyűrűsök
+
+testmode: backtranslate
+hűséggyűrűsök
+
 hűvösszemű
 
 testmode: backtranslate
@@ -1360,6 +1525,11 @@ imádsággyűjtemény
 testmode: backtranslate
 imádsággyűjtemény
 
+impulzusszélességét
+
+testmode: backtranslate
+impulzusszélességét
+
 inasszerep
 
 testmode: backtranslate
@@ -1379,6 +1549,11 @@ indiánnyelv
 
 testmode: backtranslate
 indiánnyelv
+
+információsszabadság
+
+testmode: backtranslate
+információsszabadság
 
 ingyennyelvoktatás
 
@@ -1505,6 +1680,11 @@ kalapácszengés
 testmode: backtranslate
 kalapácszengés
 
+kalapácszongora
+
+testmode: backtranslate
+kalapácszongora
+
 kamionnyi
 
 testmode: backtranslate
@@ -1514,6 +1694,11 @@ kaparásszerű
 
 testmode: backtranslate
 kaparásszerű
+
+Kapolcs
+
+testmode: backtranslate
+Kapolcs
 
 Kaposszekcső
 
@@ -1610,6 +1795,12 @@ képmásszerű
 testmode: backtranslate
 képmásszerű 
 
+képváltásszámot
+
+testmode: backtranslate
+képváltásszámot
+
+
 képzésszerű 
 
 testmode: backtranslate
@@ -1650,6 +1841,11 @@ késszúrás
 testmode: backtranslate
 késszúrás
 
+ketreccsapda
+
+testmode: backtranslate
+ketreccsapda
+
 kevésszavú 
 
 testmode: backtranslate
@@ -1659,6 +1855,11 @@ kevésszer
 
 testmode: backtranslate
 kevésszer
+
+kiadászárolás
+
+testmode: backtranslate
+kiadászárolás
 
 kifejlesszem
 
@@ -1839,6 +2040,11 @@ köhögésszerű
 testmode: backtranslate
 köhögésszerű
 
+kölcsönnyakláncait
+
+testmode: backtranslate
+kölcsönnyakláncait
+
 közlekedésszervezők
 
 testmode: backtranslate
@@ -1853,6 +2059,11 @@ kőművesszerszámait
 
 testmode: backtranslate
 kőművesszerszámait 
+
+konstansszimbólumainak
+
+testmode: backtranslate
+konstansszimbólumainak
 
 köntösszegély
 
@@ -1944,6 +2155,11 @@ különcség
 testmode: backtranslate
 különcség
 
+különnyíló
+
+testmode: backtranslate
+különnyíló
+
 labirintusszerű
 
 testmode: backtranslate
@@ -2019,6 +2235,11 @@ lázsóhajtás
 testmode: backtranslate
 lázsóhajtás
 
+lebegésszerű
+
+testmode: backtranslate
+lebegésszerű
+
 léggyök
 
 testmode: backtranslate
@@ -2053,6 +2274,11 @@ lengésszabály
 
 testmode: backtranslate
 lengésszabály
+
+lexikonnyi
+
+testmode: backtranslate
+lexikonnyi
 
 légzésszám
 
@@ -2184,6 +2410,11 @@ magánnyelvmesterek
 testmode: backtranslate
 magánnyelvmesterek
 
+magánnyaralók
+
+testmode: backtranslate
+magánnyaralók
+
 magánnyugdíjpénztár
 
 testmode: backtranslate
@@ -2193,6 +2424,11 @@ magasszárú
 
 testmode: backtranslate
 magasszárú
+
+maggyűjteményről
+
+testmode: backtranslate
+maggyűjteményről
 
 mágnásszámba
 
@@ -2259,6 +2495,11 @@ Martraversszal
 testmode: backtranslate
 Martraversszal
 
+matracsor
+
+testmode: backtranslate
+matracsor
+
 másszínű
 
 testmode: backtranslate
@@ -2288,6 +2529,11 @@ medresszék
 
 testmode: backtranslate
 medresszék
+
+megfázásszerű
+
+testmode: backtranslate
+megfázásszerű
 
 meggybefőtt
 
@@ -2334,6 +2580,11 @@ meggyízű
 testmode: backtranslate
 meggyízű
 
+meggyként
+
+testmode: backtranslate
+meggyként
+
 meggylekvár
 
 testmode: backtranslate
@@ -2354,6 +2605,11 @@ meggypiros
 testmode: backtranslate
 meggypiros
 
+meggysör
+
+testmode: backtranslate
+meggysör
+
 meggyszín
 
 testmode: backtranslate
@@ -2373,6 +2629,11 @@ meggyvörös
 
 testmode: backtranslate
 meggyvörös
+
+meggyző
+
+testmode: backtranslate
+meggyző
 
 meglepetésszoftver
 
@@ -2444,6 +2705,11 @@ Mikosszéplak
 testmode: backtranslate
 Mikosszéplak
 
+mikulásszerkó
+
+testmode: backtranslate
+mikulásszerkó
+
 mikrofonnyílás
 
 testmode: backtranslate
@@ -2459,10 +2725,20 @@ mitesszer
 testmode: backtranslate
 mitesszer
 
+mitugrásszal
+
+testmode: backtranslate
+mitugrásszal
+
 mohaszöld
 
 testmode: backtranslate
 mohaszöld
+
+molosszer
+
+testmode: backtranslate
+molosszer
 
 mókusszerű 
 
@@ -2513,6 +2789,11 @@ művelődésszervező
 
 testmode: backtranslate
 művelődésszervező
+
+nyálasszájú
+
+testmode: backtranslate
+nyálasszájú
 
 nászutazásszerű 
 
@@ -2574,6 +2855,11 @@ nercstóla
 testmode: backtranslate
 nercstóla
 
+népességgyarapodás
+
+testmode: backtranslate
+népességgyarapodás
+
 nyargonccsizma
 
 testmode: backtranslate
@@ -2629,10 +2915,20 @@ nyomásszinten
 testmode: backtranslate
 nyomásszinten
 
+oktatásszociológiai
+
+testmode: backtranslate
+oktatásszociológiai
+
 ordasszőrű
 
 testmode: backtranslate
 ordasszőrű
+
+orgazmusszerű
+
+testmode: backtranslate
+orgazmusszerű
 
 óriásszalamandra
 
@@ -2704,7 +3000,13 @@ testmode: backtranslate
 testmode: backtranslate
 önnyomatú 
 
+örökséggyűjteményben
+
+testmode: backtranslate
+örökséggyűjteményben
+
 örvénylésszerű
+
 
 testmode: backtranslate
 örvénylésszerű
@@ -2743,6 +3045,11 @@ testmode: backtranslate
 
 testmode: backtranslate
 ősszellem
+
+ötvösszakmai
+
+testmode: backtranslate
+ötvösszakmai
 
 őzsebesen
 
@@ -2809,6 +3116,11 @@ pedagógusszobába
 testmode: backtranslate
 pedagógusszobába
 
+pedagógusszövetség
+
+testmode: backtranslate
+pedagógusszövetség
+
 pedagógussztrájk
 
 testmode: backtranslate
@@ -2863,6 +3175,11 @@ pergamennyaláb
 
 testmode: backtranslate
 pergamennyaláb
+
+periódusszámának
+
+testmode: backtranslate
+periódusszámának
 
 piaccsarnok
 
@@ -2974,6 +3291,16 @@ postásszakszervezet
 testmode: backtranslate
 postásszakszervezet
 
+postássztrájk
+
+testmode: backtranslate
+postássztrájk
+
+pólusszámhoz
+
+testmode: backtranslate
+pólusszámhoz
+
 precízség
 
 testmode: backtranslate
@@ -3004,6 +3331,13 @@ protonnyalábok
 testmode: backtranslate
 protonnyalábok
 
+comment: this testcase look begcaps opcode working if a word containing both lowercase and uppercase letters
+PSZÁF-összevonást
+
+comment: this testcase testing begcaps opcode backtranslation if a word containing both lowercase and uppercase letters
+testmode: backtranslate
+PSZÁF-összevonást
+
 pszichológusszövetség
 
 testmode: backtranslate
@@ -3033,6 +3367,21 @@ rajzsablon
 
 testmode: backtranslate
 rajzsablon
+
+rajzsarok
+
+testmode: backtranslate
+rajzsarok
+
+rajzsarkot
+
+testmode: backtranslate
+rajzsarkot
+
+rajzsorozatban
+
+testmode: backtranslate
+rajzsorozatban
 
 rácság
 
@@ -3119,6 +3468,11 @@ rézsut
 testmode: backtranslate
 rézsut
 
+ricinusszerű
+
+testmode: backtranslate
+ricinusszerű
+
 ritkasággyűjtő
 
 testmode: backtranslate
@@ -3133,6 +3487,11 @@ ritmuszavar
 
 testmode: backtranslate
 ritmuszavar
+
+rizszabálókat
+
+testmode: backtranslate
+rizszabálókat
 
 robbanásszerű
 
@@ -3158,6 +3517,11 @@ rothadásszag
 
 testmode: backtranslate
 rothadásszag
+
+rovásszerűen
+
+testmode: backtranslate
+rovásszerűen
 
 rózsásszőkés
 
@@ -3224,6 +3588,21 @@ sátáncsapat
 testmode: backtranslate
 sátáncsapat
 
+szalaggyakorlatát
+
+testmode: backtranslate
+szalaggyakorlatát
+
+szalaggyűjtemény
+
+testmode: backtranslate
+szalaggyűjtemény
+
+szeggyár
+
+testmode: backtranslate
+szeggyár
+
 selymesszőke
 
 testmode: backtranslate
@@ -3249,6 +3628,16 @@ sertészsír
 testmode: backtranslate
 sertészsír
 
+szénnyomokat
+
+testmode: backtranslate
+szénnyomokat
+
+szociálisszálláshely-program
+
+testmode: backtranslate
+szociálisszálláshely-program
+
 sonkásszelet
 
 testmode: backtranslate
@@ -3273,6 +3662,16 @@ spanyolmeggyen
 
 testmode: backtranslate
 spanyolmeggyen
+
+spiccszűrőbe
+
+testmode: backtranslate
+spiccszűrőbe
+
+stadionnyi
+
+testmode: backtranslate
+stadionnyi
 
 stílusszerű, stílusszerkesztő
 
@@ -3384,6 +3783,11 @@ szerződésszegő
 testmode: backtranslate
 szerződésszegő
 
+szervizsarok
+
+testmode: backtranslate
+szervizsarok
+
 szétossza
 
 testmode: backtranslate
@@ -3464,6 +3868,16 @@ szöveggyűjtemény
 testmode: backtranslate
 szöveggyűjtemény
 
+szőnyeggyár
+
+testmode: backtranslate
+szőnyeggyár
+
+szúnyoggyérítés
+
+testmode: backtranslate
+szúnyoggyérítés
+
 szúrásszerű
 
 testmode: backtranslate
@@ -3539,10 +3953,20 @@ tejfölösszájú
 testmode: backtranslate
 tejfölösszájú
 
+teknősszámlálás
+
+testmode: backtranslate
+teknősszámlálás
+
 településszerkezet 
 
 testmode: backtranslate
 településszerkezet 
+
+települészónájára
+
+testmode: backtranslate
+települészónájára
 
 templomosszakértő
 
@@ -3568,6 +3992,11 @@ tigrisszerű
 
 testmode: backtranslate
 tigrisszerű
+
+tisztséggyűjtemény
+
+testmode: backtranslate
+tisztséggyűjtemény
 
 tipusszám
 
@@ -3684,6 +4113,11 @@ tudásszomj
 testmode: backtranslate
 tudásszomj
 
+turizmusszektor
+
+testmode: backtranslate
+turizmusszektor
+
 tükrösszélű
 
 testmode: backtranslate
@@ -3749,6 +4183,11 @@ utalásszerűen
 testmode: backtranslate
 utalásszerűen
 
+utalásszinten
+
+testmode: backtranslate
+utalásszinten
+
 utánpótlásszállítmánnyal
 
 testmode: backtranslate
@@ -3783,6 +4222,11 @@ utasszolgálat
 
 testmode: backtranslate
 utasszolgálat
+
+utasításszavakkal
+
+testmode: backtranslate
+utasításszavakkal
 
 utazásszerű
 
@@ -3839,6 +4283,11 @@ testmode: backtranslate
 testmode: backtranslate
 üveggyűrű
 
+vagdalthússzerű
+
+testmode: backtranslate
+vagdalthússzerű
+
 vagonnyi
 
 testmode: backtranslate
@@ -3853,6 +4302,11 @@ vallásszabadság
 
 testmode: backtranslate
 vallásszabadság
+
+vallásszociológus
+
+testmode: vacktranslate
+vallásszociológus
 
 vallomásszámba
 
@@ -4104,6 +4558,11 @@ vitorlásszezon
 testmode: backtranslate
 vitorlásszezon
 
+vitrinnyi
+
+testmode: backtranslate
+vitrinnyi
+
 vizeleteszacskó 
 
 testmode: backtranslate
@@ -4113,6 +4572,11 @@ vizeszsemle
 
 testmode: backtranslate
 vizeszsemle
+
+vízfolyásszerű
+
+testmode: backtranslate
+vízfolyásszerű
 
 vízsáv
 
@@ -4188,6 +4652,11 @@ webesszolgáltatás
 
 testmode: backtranslate
 webesszolgáltatás
+
+zaklatásszámba
+
+testmode: backtranslate
+zaklatásszámba
 
 záloggyűrűmet
 

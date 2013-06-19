@@ -7,12 +7,20 @@
     {
       "data": [
         {
+          "input": "⠁⠉⠉⠑⠎⠎⠊⠃⠊⠇⠊⠞⠽", 
+          "output": "accessibility"
+        }, 
+        {
           "input": "⠁⠙⠈⠎⠱⠑⠗⠾", 
           "output": "adásszerű"
         }, 
         {
           "input": "⠁⠙⠈⠎⠱⠷⠝⠑⠞", 
           "output": "adásszünet"
+        }, 
+        {
+          "input": "⠁⠙⠈⠎⠣⠈⠗⠈⠎⠊⠛", 
+          "output": "adászárásig"
         }, 
         {
           "input": "⠁⠙⠪⠎⠱⠈⠍⠇⠁", 
@@ -135,6 +143,14 @@
           "output": "arcsérülés"
         }, 
         {
+          "input": "⠁⠗⠣⠡⠝⠫⠕⠍", 
+          "output": "arzénnyom"
+        }, 
+        {
+          "input": "⠈⠗⠑⠍⠑⠇⠅⠑⠙⠡⠎⠱⠑⠗⠾", 
+          "output": "áremelkedésszerű"
+        }, 
+        {
           "input": "⠈⠗⠛⠥⠎⠱⠑⠍⠾", 
           "output": "árgusszemű"
         }, 
@@ -143,8 +159,16 @@
           "output": "árvízsújtotta"
         }, 
         {
+          "input": "⠈⠞⠇⠁⠛⠹⠑⠗⠑⠅⠗⠑", 
+          "output": "átlaggyerekre"
+        }, 
+        {
           "input": "⠁⠥⠞⠪⠎⠱⠑⠍⠷⠧⠑⠛", 
           "output": "autósszemüveg"
+        }, 
+        {
+          "input": "⠁⠥⠞⠪⠎⠱⠻⠫⠑⠛", 
+          "output": "autósszőnyeg"
         }, 
         {
           "input": "⠁⠣⠕⠝⠫⠕⠍⠃⠁⠝", 
@@ -155,8 +179,20 @@
           "output": "bádoggyűjtemény"
         }, 
         {
+          "input": "⠨⠃⠈⠝⠫⠌⠗⠑⠎", 
+          "output": "Bánnyíres"
+        }, 
+        {
           "input": "⠃⠈⠣⠊⠎⠱⠊⠝⠞", 
           "output": "bázisszint"
+        }, 
+        {
+          "input": "⠨⠃⠁⠗⠩⠩⠁⠇", 
+          "output": "Barccsal"
+        }, 
+        {
+          "input": "⠃⠁⠗⠅⠈⠩⠣⠑⠝⠑", 
+          "output": "barkácszene"
         }, 
         {
           "input": "⠃⠁⠗⠝⠈⠎⠱⠻⠅⠑", 
@@ -177,6 +213,14 @@
         {
           "input": "⠃⠁⠗⠕⠍⠎⠈⠛⠹⠾⠚⠞⠑⠍⠡⠫", 
           "output": "baromsággyűjtemény"
+        }, 
+        {
+          "input": "⠃⠁⠱⠱⠥⠎⠱⠑⠗⠾", 
+          "output": "basszusszerű"
+        }, 
+        {
+          "input": "⠃⠁⠱⠱⠥⠎⠱⠊⠝⠞⠑⠞⠊⠣⠈⠞⠕⠗", 
+          "output": "basszusszintetizátor"
         }, 
         {
           "input": "⠃⠑⠩⠇⠡⠎⠱⠑⠗⠾⠑⠝", 
@@ -223,6 +267,10 @@
           "output": "binsenggyökér"
         }, 
         {
+          "input": "⠃⠇⠥⠑⠎⠣⠑⠝⠑", 
+          "output": "blueszene"
+        }, 
+        {
           "input": "⠃⠊⠣⠝⠊⠱⠱⠡", 
           "output": "biznisszé"
         }, 
@@ -267,6 +315,10 @@
           "output": "brekegésszerű"
         }, 
         {
+          "input": "⠨⠃⠗⠊⠛⠁⠝⠞⠽", 
+          "output": "Briganty"
+        }, 
+        {
           "input": "⠃⠗⠕⠝⠣⠎⠈⠎⠅⠁", 
           "output": "bronzsáska"
         }, 
@@ -283,6 +335,10 @@
           "output": "bronzsisak"
         }, 
         {
+          "input": "⠃⠥⠅⠈⠎⠱⠈⠍⠃⠁", 
+          "output": "bukásszámba"
+        }, 
+        {
           "input": "⠃⠬⠩⠬⠚⠈⠗⠈⠎⠱⠑⠗⠾", 
           "output": "búcsújárásszerű"
         }, 
@@ -293,6 +349,10 @@
         {
           "input": "⠉⠓⠊⠏⠎⠑⠎⠣⠁⠩⠅⠪", 
           "output": "chipseszacskó"
+        }, 
+        {
+          "input": "⠉⠊⠗⠊⠏⠑⠇⠡⠎⠱⠑⠗⠾⠑⠝", 
+          "output": "ciripelésszerűen"
         }, 
         {
           "input": "⠉⠥⠗⠊⠕⠎⠊⠞⠽", 
@@ -327,6 +387,10 @@
           "output": "csipkésszélű"
         }, 
         {
+          "input": "⠩⠌⠏⠡⠎⠱⠈⠍", 
+          "output": "csípésszám"
+        }, 
+        {
           "input": "⠩⠕⠃⠃⠁⠝⠈⠎⠱⠑⠗⠾", 
           "output": "csobbanásszerű"
         }, 
@@ -349,6 +413,10 @@
         {
           "input": "⠙⠟⠛⠹⠁⠏⠚⠬", 
           "output": "döggyapjú"
+        }, 
+        {
+          "input": "⠙⠟⠛⠹⠈⠗⠝⠁⠅", 
+          "output": "döggyárnak"
         }, 
         {
           "input": "⠙⠻⠇⠡⠎⠱⠟⠛", 
@@ -419,6 +487,10 @@
           "output": "edzésszámot"
         }, 
         {
+          "input": "⠑⠋⠋⠑⠅⠞⠥⠎⠱⠑⠗⠾⠑⠝", 
+          "output": "effektusszerűen"
+        }, 
+        {
           "input": "⠑⠹⠑⠝⠑⠎⠱⠈⠇⠬", 
           "output": "egyenesszálú"
         }, 
@@ -437,6 +509,10 @@
         {
           "input": "⠑⠹⠑⠎⠱⠈⠍⠃⠁⠝", 
           "output": "egyesszámban"
+        }, 
+        {
+          "input": "⠑⠹⠎⠡⠛⠹⠑⠗⠳⠈⠃⠪⠇", 
+          "output": "egységgyertyából"
         }, 
         {
           "input": "⠡⠓⠑⠎⠱⠈⠚⠁⠞ ", 
@@ -469,6 +545,10 @@
         {
           "input": "⠑⠅⠓⠪⠎⠱⠑⠅⠑⠗⠑⠅", 
           "output": "ekhósszekerek"
+        }, 
+        {
+          "input": "⠑⠇⠑⠅⠞⠗⠕⠝⠫⠁⠇⠈⠃⠗⠁", 
+          "output": "elektronnyalábra"
         }, 
         {
           "input": "⠑⠇⠑⠎⠡⠛⠹⠾⠚⠞⠡⠎ ", 
@@ -515,6 +595,10 @@
           "output": "emelésszerű"
         }, 
         {
+          "input": "⠑⠏⠕⠱⠱⠁⠇", 
+          "output": "eposszal"
+        }, 
+        {
           "input": "⠡⠗⠉⠩⠁⠏⠁⠙⠡⠅⠂ ⠡⠗⠉⠩⠑⠝⠛⠡⠎⠂ ⠡⠗⠉⠩⠁⠞⠕⠗⠝⠁ ", 
           "output": "érccsapadék, érccsengés, érccsatorna "
         }, 
@@ -547,8 +631,16 @@
           "output": "ércsodrony"
         }, 
         {
+          "input": "⠑⠗⠻⠎⠌⠞⠡⠎⠱⠁⠃⠈⠸⠕⠣⠈⠎", 
+          "output": "erősítésszabályozás"
+        }, 
+        {
           "input": "⠑⠗⠻⠋⠕⠗⠗⠈⠎⠣⠁⠃⠈⠇⠪", 
           "output": "erőforrászabáló"
+        }, 
+        {
+          "input": "⠑⠗⠻⠇⠅⠟⠙⠡⠎⠱⠁⠛⠬⠝⠁⠅", 
+          "output": "erőlködésszagúnak"
         }, 
         {
           "input": "⠡⠗⠣⠡⠅⠑⠇⠡⠎⠱⠊⠝⠞", 
@@ -595,6 +687,10 @@
           "output": "fásszárú"
         }, 
         {
+          "input": "⠋⠈⠣⠊⠎⠱⠟⠛⠝⠑⠅", 
+          "output": "fázisszögnek"
+        }, 
+        {
           "input": "⠋⠑⠹⠑⠝⠉⠩⠕⠏⠕⠗⠞", 
           "output": "fegyenccsoport"
         }, 
@@ -633,6 +729,10 @@
         {
           "input": "⠋⠑⠇⠱⠑⠗⠑⠇⠡⠎⠱⠑⠞⠞⠑⠞", 
           "output": "felszerelésszettet"
+        }, 
+        {
+          "input": "⠋⠑⠇⠞⠑⠧⠡⠎⠱⠑⠗⠾⠑⠝", 
+          "output": "feltevésszerűen"
         }, 
         {
           "input": "⠋⠑⠗⠞⠻⠣⠡⠎⠱⠑⠗⠾", 
@@ -715,6 +815,10 @@
           "output": "fuvarosszekér"
         }, 
         {
+          "input": "⠋⠬⠧⠪⠎⠱⠑⠅⠉⠊⠪", 
+          "output": "fúvósszekció"
+        }, 
+        {
           "input": "⠋⠬⠧⠪⠎⠱⠑⠗⠱⠈⠍", 
           "output": "fúvósszerszám"
         }, 
@@ -737,6 +841,10 @@
         {
           "input": "⠛⠈⠣⠎⠏⠗⠁⠽", 
           "output": "gázspray"
+        }, 
+        {
+          "input": "⠛⠈⠣⠎⠞⠕⠏", 
+          "output": "gázstop"
         }, 
         {
           "input": "⠛⠈⠣⠎⠥⠛⠈⠗", 
@@ -817,6 +925,10 @@
         {
           "input": "⠹⠬⠚⠞⠈⠎⠜⠊⠝⠪⠗", 
           "output": "gyújtászsinór"
+        }, 
+        {
+          "input": "⠹⠷⠇⠑⠅⠑⠣⠡⠎⠱⠁⠃⠁⠙⠎⠈⠛⠕⠞", 
+          "output": "gyülekezésszabadságot"
         }, 
         {
           "input": "⠹⠾⠇⠡⠎⠱⠌⠝⠑", 
@@ -911,6 +1023,10 @@
           "output": "harcsor"
         }, 
         {
+          "input": "⠓⠁⠗⠍⠊⠝⠉⠎⠕⠗⠫⠊", 
+          "output": "harmincsornyi"
+        }, 
+        {
           "input": "⠓⠈⠗⠍⠁⠎⠱⠈⠍⠬", 
           "output": "hármasszámú"
         }, 
@@ -935,8 +1051,20 @@
           "output": "hártyásszárnyú"
         }, 
         {
+          "input": "⠓⠁⠎⠱⠻⠗⠣⠑⠞", 
+          "output": "hasszőrzet"
+        }, 
+        {
+          "input": "⠓⠁⠎⠱⠡⠇", 
+          "output": "hasszél"
+        }, 
+        {
           "input": "⠓⠁⠎⠊⠎⠱⠁⠛⠕⠞", 
           "output": "hasisszagot"
+        }, 
+        {
+          "input": "⠓⠁⠞⠈⠎⠱⠡⠇⠑⠎⠎⠡⠛", 
+          "output": "hatásszélesség"
         }, 
         {
           "input": "⠓⠁⠞⠈⠎⠱⠷⠝⠑⠞", 
@@ -1055,6 +1183,10 @@
           "output": "Hússzövetség"
         }, 
         {
+          "input": "⠓⠾⠎⠡⠛⠹⠾⠗⠾⠎⠟⠅", 
+          "output": "hűséggyűrűsök"
+        }, 
+        {
           "input": "⠓⠾⠧⠟⠎⠱⠑⠍⠾", 
           "output": "hűvösszemű"
         }, 
@@ -1095,6 +1227,10 @@
           "output": "imádsággyűjtemény"
         }, 
         {
+          "input": "⠊⠍⠏⠥⠇⠣⠥⠎⠱⠡⠇⠑⠎⠎⠡⠛⠡⠞", 
+          "output": "impulzusszélességét"
+        }, 
+        {
           "input": "⠊⠝⠁⠎⠱⠑⠗⠑⠏", 
           "output": "inasszerep"
         }, 
@@ -1109,6 +1245,10 @@
         {
           "input": "⠊⠝⠙⠊⠈⠝⠫⠑⠇⠧", 
           "output": "indiánnyelv"
+        }, 
+        {
+          "input": "⠊⠝⠋⠕⠗⠍⠈⠉⠊⠪⠎⠱⠁⠃⠁⠙⠎⠈⠛", 
+          "output": "információsszabadság"
         }, 
         {
           "input": "⠊⠝⠹⠑⠝⠫⠑⠇⠧⠕⠅⠞⠁⠞⠈⠎", 
@@ -1211,12 +1351,20 @@
           "output": "kalapácszengés"
         }, 
         {
+          "input": "⠅⠁⠇⠁⠏⠈⠩⠣⠕⠝⠛⠕⠗⠁", 
+          "output": "kalapácszongora"
+        }, 
+        {
           "input": "⠅⠁⠍⠊⠕⠝⠫⠊", 
           "output": "kamionnyi"
         }, 
         {
           "input": "⠅⠁⠏⠁⠗⠈⠎⠱⠑⠗⠾", 
           "output": "kaparásszerű"
+        }, 
+        {
+          "input": "⠨⠅⠁⠏⠕⠇⠩", 
+          "output": "Kapolcs"
         }, 
         {
           "input": "⠨⠅⠁⠏⠕⠎⠱⠑⠅⠩⠻", 
@@ -1295,6 +1443,10 @@
           "output": "képmásszerű "
         }, 
         {
+          "input": "⠅⠡⠏⠧⠈⠇⠞⠈⠎⠱⠈⠍⠕⠞", 
+          "output": "képváltásszámot"
+        }, 
+        {
           "input": "⠅⠡⠏⠣⠡⠎⠱⠑⠗⠾ ", 
           "output": "képzésszerű "
         }, 
@@ -1327,12 +1479,20 @@
           "output": "késszúrás"
         }, 
         {
+          "input": "⠅⠑⠞⠗⠑⠉⠩⠁⠏⠙⠁", 
+          "output": "ketreccsapda"
+        }, 
+        {
           "input": "⠅⠑⠧⠡⠎⠱⠁⠧⠬ ", 
           "output": "kevésszavú "
         }, 
         {
           "input": "⠅⠑⠧⠡⠎⠱⠑⠗", 
           "output": "kevésszer"
+        }, 
+        {
+          "input": "⠅⠊⠁⠙⠈⠎⠣⠈⠗⠕⠇⠈⠎", 
+          "output": "kiadászárolás"
         }, 
         {
           "input": "⠅⠊⠋⠑⠚⠇⠑⠱⠱⠑⠍", 
@@ -1479,6 +1639,10 @@
           "output": "köhögésszerű"
         }, 
         {
+          "input": "⠅⠟⠇⠩⠟⠝⠫⠁⠅⠇⠈⠝⠉⠁⠊⠞", 
+          "output": "kölcsönnyakláncait"
+        }, 
+        {
           "input": "⠅⠟⠣⠇⠑⠅⠑⠙⠡⠎⠱⠑⠗⠧⠑⠣⠻⠅", 
           "output": "közlekedésszervezők"
         }, 
@@ -1489,6 +1653,10 @@
         {
           "input": "⠅⠻⠍⠾⠧⠑⠎⠱⠑⠗⠱⠈⠍⠁⠊⠞ ", 
           "output": "kőművesszerszámait "
+        }, 
+        {
+          "input": "⠅⠕⠝⠎⠞⠁⠝⠎⠱⠊⠍⠃⠪⠇⠥⠍⠁⠊⠝⠁⠅", 
+          "output": "konstansszimbólumainak"
         }, 
         {
           "input": "⠅⠟⠝⠞⠟⠎⠱⠑⠛⠡⠸", 
@@ -1563,6 +1731,10 @@
           "output": "különcség"
         }, 
         {
+          "input": "⠅⠷⠇⠟⠝⠫⠌⠇⠪", 
+          "output": "különnyíló"
+        }, 
+        {
           "input": "⠇⠁⠃⠊⠗⠊⠝⠞⠥⠎⠱⠑⠗⠾", 
           "output": "labirintusszerű"
         }, 
@@ -1623,6 +1795,10 @@
           "output": "lázsóhajtás"
         }, 
         {
+          "input": "⠇⠑⠃⠑⠛⠡⠎⠱⠑⠗⠾", 
+          "output": "lebegésszerű"
+        }, 
+        {
           "input": "⠇⠡⠛⠹⠟⠅", 
           "output": "léggyök"
         }, 
@@ -1649,6 +1825,10 @@
         {
           "input": "⠇⠑⠝⠛⠡⠎⠱⠁⠃⠈⠸", 
           "output": "lengésszabály"
+        }, 
+        {
+          "input": "⠇⠑⠭⠊⠅⠕⠝⠫⠊", 
+          "output": "lexikonnyi"
         }, 
         {
           "input": "⠇⠡⠛⠣⠡⠎⠱⠈⠍", 
@@ -1755,12 +1935,20 @@
           "output": "magánnyelvmesterek"
         }, 
         {
+          "input": "⠍⠁⠛⠈⠝⠫⠁⠗⠁⠇⠪⠅", 
+          "output": "magánnyaralók"
+        }, 
+        {
           "input": "⠍⠁⠛⠈⠝⠫⠥⠛⠙⠌⠚⠏⠡⠝⠣⠞⠈⠗", 
           "output": "magánnyugdíjpénztár"
         }, 
         {
           "input": "⠍⠁⠛⠁⠎⠱⠈⠗⠬", 
           "output": "magasszárú"
+        }, 
+        {
+          "input": "⠍⠁⠛⠹⠾⠚⠞⠑⠍⠡⠫⠗⠻⠇", 
+          "output": "maggyűjteményről"
         }, 
         {
           "input": "⠍⠈⠛⠝⠈⠎⠱⠈⠍⠃⠁", 
@@ -1815,6 +2003,10 @@
           "output": "Martraversszal"
         }, 
         {
+          "input": "⠍⠁⠞⠗⠁⠉⠎⠕⠗", 
+          "output": "matracsor"
+        }, 
+        {
           "input": "⠍⠈⠎⠱⠌⠝⠾", 
           "output": "másszínű"
         }, 
@@ -1837,6 +2029,10 @@
         {
           "input": "⠍⠑⠙⠗⠑⠎⠱⠡⠅", 
           "output": "medresszék"
+        }, 
+        {
+          "input": "⠍⠑⠛⠋⠈⠣⠈⠎⠱⠑⠗⠾", 
+          "output": "megfázásszerű"
         }, 
         {
           "input": "⠍⠑⠹⠹⠃⠑⠋⠻⠞⠞", 
@@ -1875,6 +2071,10 @@
           "output": "meggyízű"
         }, 
         {
+          "input": "⠍⠑⠹⠹⠅⠡⠝⠞", 
+          "output": "meggyként"
+        }, 
+        {
           "input": "⠍⠑⠹⠹⠇⠑⠅⠧⠈⠗", 
           "output": "meggylekvár"
         }, 
@@ -1891,6 +2091,10 @@
           "output": "meggypiros"
         }, 
         {
+          "input": "⠍⠑⠹⠹⠎⠟⠗", 
+          "output": "meggysör"
+        }, 
+        {
           "input": "⠍⠑⠹⠹⠱⠌⠝", 
           "output": "meggyszín"
         }, 
@@ -1905,6 +2109,10 @@
         {
           "input": "⠍⠑⠹⠹⠧⠟⠗⠟⠎", 
           "output": "meggyvörös"
+        }, 
+        {
+          "input": "⠍⠑⠹⠹⠣⠻", 
+          "output": "meggyző"
         }, 
         {
           "input": "⠍⠑⠛⠇⠑⠏⠑⠞⠡⠎⠱⠕⠋⠞⠧⠑⠗", 
@@ -1963,6 +2171,10 @@
           "output": "Mikosszéplak"
         }, 
         {
+          "input": "⠍⠊⠅⠥⠇⠈⠎⠱⠑⠗⠅⠪", 
+          "output": "mikulásszerkó"
+        }, 
+        {
           "input": "⠍⠊⠅⠗⠕⠋⠕⠝⠫⠌⠇⠈⠎", 
           "output": "mikrofonnyílás"
         }, 
@@ -1975,8 +2187,16 @@
           "output": "mitesszer"
         }, 
         {
+          "input": "⠍⠊⠞⠥⠛⠗⠈⠱⠱⠁⠇", 
+          "output": "mitugrásszal"
+        }, 
+        {
           "input": "⠍⠕⠓⠁⠎⠣⠟⠇⠙", 
           "output": "mohaszöld"
+        }, 
+        {
+          "input": "⠍⠕⠇⠕⠱⠱⠑⠗", 
+          "output": "molosszer"
         }, 
         {
           "input": "⠍⠪⠅⠥⠎⠱⠑⠗⠾ ", 
@@ -2017,6 +2237,10 @@
         {
           "input": "⠍⠾⠧⠑⠇⠻⠙⠡⠎⠱⠑⠗⠧⠑⠣⠻", 
           "output": "művelődésszervező"
+        }, 
+        {
+          "input": "⠫⠈⠇⠁⠎⠱⠈⠚⠬", 
+          "output": "nyálasszájú"
         }, 
         {
           "input": "⠝⠈⠱⠥⠞⠁⠣⠈⠎⠱⠑⠗⠾ ", 
@@ -2067,6 +2291,10 @@
           "output": "nercstóla"
         }, 
         {
+          "input": "⠝⠡⠏⠑⠎⠎⠡⠛⠹⠁⠗⠁⠏⠕⠙⠈⠎", 
+          "output": "népességgyarapodás"
+        }, 
+        {
           "input": "⠫⠁⠗⠛⠕⠝⠉⠩⠊⠣⠍⠁", 
           "output": "nyargonccsizma"
         }, 
@@ -2111,8 +2339,16 @@
           "output": "nyomásszinten"
         }, 
         {
+          "input": "⠕⠅⠞⠁⠞⠈⠎⠱⠕⠉⠊⠕⠇⠪⠛⠊⠁⠊", 
+          "output": "oktatásszociológiai"
+        }, 
+        {
           "input": "⠕⠗⠙⠁⠎⠱⠻⠗⠾", 
           "output": "ordasszőrű"
+        }, 
+        {
+          "input": "⠕⠗⠛⠁⠣⠍⠥⠎⠱⠑⠗⠾", 
+          "output": "orgazmusszerű"
         }, 
         {
           "input": "⠪⠗⠊⠈⠎⠱⠁⠇⠁⠍⠁⠝⠙⠗⠁", 
@@ -2171,6 +2407,10 @@
           "output": "önnyomatú "
         }, 
         {
+          "input": "⠟⠗⠟⠅⠎⠡⠛⠹⠾⠚⠞⠑⠍⠡⠫⠃⠑⠝", 
+          "output": "örökséggyűjteményben"
+        }, 
+        {
           "input": "⠟⠗⠧⠡⠫⠇⠡⠎⠱⠑⠗⠾", 
           "output": "örvénylésszerű"
         }, 
@@ -2201,6 +2441,10 @@
         {
           "input": "⠻⠎⠱⠑⠇⠇⠑⠍", 
           "output": "ősszellem"
+        }, 
+        {
+          "input": "⠟⠞⠧⠟⠎⠱⠁⠅⠍⠁⠊", 
+          "output": "ötvösszakmai"
         }, 
         {
           "input": "⠻⠣⠎⠑⠃⠑⠎⠑⠝", 
@@ -2255,6 +2499,10 @@
           "output": "pedagógusszobába"
         }, 
         {
+          "input": "⠏⠑⠙⠁⠛⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛", 
+          "output": "pedagógusszövetség"
+        }, 
+        {
           "input": "⠏⠑⠙⠁⠛⠪⠛⠥⠎⠱⠞⠗⠈⠚⠅", 
           "output": "pedagógussztrájk"
         }, 
@@ -2297,6 +2545,10 @@
         {
           "input": "⠏⠑⠗⠛⠁⠍⠑⠝⠫⠁⠇⠈⠃", 
           "output": "pergamennyaláb"
+        }, 
+        {
+          "input": "⠏⠑⠗⠊⠪⠙⠥⠎⠱⠈⠍⠈⠝⠁⠅", 
+          "output": "periódusszámának"
         }, 
         {
           "input": "⠏⠊⠁⠉⠩⠁⠗⠝⠕⠅", 
@@ -2387,6 +2639,14 @@
           "output": "postásszakszervezet"
         }, 
         {
+          "input": "⠏⠕⠎⠞⠈⠎⠱⠞⠗⠈⠚⠅", 
+          "output": "postássztrájk"
+        }, 
+        {
+          "input": "⠏⠪⠇⠥⠎⠱⠈⠍⠓⠕⠣", 
+          "output": "pólusszámhoz"
+        }, 
+        {
           "input": "⠏⠗⠑⠉⠌⠣⠎⠡⠛", 
           "output": "precízség"
         }, 
@@ -2411,6 +2671,13 @@
           "output": "protonnyalábok"
         }, 
         {
+          "comment": [
+            "this testcase testing begcaps opcode backtranslation if a word containing both lowercase and uppercase letters"
+          ], 
+          "input": "⠨⠨⠏⠱⠈⠋⠤⠟⠱⠱⠑⠧⠕⠝⠈⠎⠞", 
+          "output": "PSZÁF-összevonást"
+        }, 
+        {
           "input": "⠏⠱⠊⠉⠓⠕⠇⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛", 
           "output": "pszichológusszövetség"
         }, 
@@ -2433,6 +2700,18 @@
         {
           "input": "⠗⠁⠚⠣⠎⠁⠃⠇⠕⠝", 
           "output": "rajzsablon"
+        }, 
+        {
+          "input": "⠗⠁⠚⠣⠎⠁⠗⠕⠅", 
+          "output": "rajzsarok"
+        }, 
+        {
+          "input": "⠗⠁⠚⠣⠎⠁⠗⠅⠕⠞", 
+          "output": "rajzsarkot"
+        }, 
+        {
+          "input": "⠗⠁⠚⠣⠎⠕⠗⠕⠣⠁⠞⠃⠁⠝", 
+          "output": "rajzsorozatban"
         }, 
         {
           "input": "⠗⠈⠉⠎⠈⠛", 
@@ -2503,6 +2782,10 @@
           "output": "rézsut"
         }, 
         {
+          "input": "⠗⠊⠉⠊⠝⠥⠎⠱⠑⠗⠾", 
+          "output": "ricinusszerű"
+        }, 
+        {
           "input": "⠗⠊⠞⠅⠁⠎⠈⠛⠹⠾⠚⠞⠻", 
           "output": "ritkasággyűjtő"
         }, 
@@ -2513,6 +2796,10 @@
         {
           "input": "⠗⠊⠞⠍⠥⠎⠣⠁⠧⠁⠗", 
           "output": "ritmuszavar"
+        }, 
+        {
+          "input": "⠗⠊⠜⠣⠁⠃⠈⠇⠪⠅⠁⠞", 
+          "output": "rizszabálókat"
         }, 
         {
           "input": "⠗⠕⠃⠃⠁⠝⠈⠎⠱⠑⠗⠾", 
@@ -2533,6 +2820,10 @@
         {
           "input": "⠗⠕⠞⠓⠁⠙⠈⠎⠱⠁⠛", 
           "output": "rothadásszag"
+        }, 
+        {
+          "input": "⠗⠕⠧⠈⠎⠱⠑⠗⠾⠑⠝", 
+          "output": "rovásszerűen"
         }, 
         {
           "input": "⠗⠪⠜⠈⠎⠱⠻⠅⠡⠎", 
@@ -2587,6 +2878,18 @@
           "output": "sátáncsapat"
         }, 
         {
+          "input": "⠱⠁⠇⠁⠛⠹⠁⠅⠕⠗⠇⠁⠞⠈⠞", 
+          "output": "szalaggyakorlatát"
+        }, 
+        {
+          "input": "⠱⠁⠇⠁⠛⠹⠾⠚⠞⠑⠍⠡⠫", 
+          "output": "szalaggyűjtemény"
+        }, 
+        {
+          "input": "⠱⠑⠛⠹⠈⠗", 
+          "output": "szeggyár"
+        }, 
+        {
           "input": "⠎⠑⠸⠍⠑⠎⠱⠻⠅⠑", 
           "output": "selymesszőke"
         }, 
@@ -2607,6 +2910,14 @@
           "output": "sertészsír"
         }, 
         {
+          "input": "⠱⠡⠝⠫⠕⠍⠕⠅⠁⠞", 
+          "output": "szénnyomokat"
+        }, 
+        {
+          "input": "⠱⠕⠉⠊⠈⠇⠊⠎⠱⠈⠇⠇⠈⠎⠓⠑⠸⠤⠏⠗⠕⠛⠗⠁⠍", 
+          "output": "szociálisszálláshely-program"
+        }, 
+        {
           "input": "⠎⠕⠝⠅⠈⠎⠱⠑⠇⠑⠞", 
           "output": "sonkásszelet"
         }, 
@@ -2625,6 +2936,14 @@
         {
           "input": "⠎⠏⠁⠫⠕⠇⠍⠑⠹⠹⠑⠝", 
           "output": "spanyolmeggyen"
+        }, 
+        {
+          "input": "⠎⠏⠊⠉⠉⠱⠾⠗⠻⠃⠑", 
+          "output": "spiccszűrőbe"
+        }, 
+        {
+          "input": "⠎⠞⠁⠙⠊⠕⠝⠫⠊", 
+          "output": "stadionnyi"
         }, 
         {
           "input": "⠎⠞⠌⠇⠥⠎⠱⠑⠗⠾⠂ ⠎⠞⠌⠇⠥⠎⠱⠑⠗⠅⠑⠱⠞⠻", 
@@ -2715,6 +3034,10 @@
           "output": "szerződésszegő"
         }, 
         {
+          "input": "⠱⠑⠗⠧⠊⠣⠎⠁⠗⠕⠅", 
+          "output": "szervizsarok"
+        }, 
+        {
           "input": "⠱⠡⠞⠕⠱⠱⠁", 
           "output": "szétossza"
         }, 
@@ -2779,6 +3102,14 @@
           "output": "szöveggyűjtemény"
         }, 
         {
+          "input": "⠱⠻⠫⠑⠛⠹⠈⠗", 
+          "output": "szőnyeggyár"
+        }, 
+        {
+          "input": "⠱⠬⠫⠕⠛⠹⠡⠗⠌⠞⠡⠎", 
+          "output": "szúnyoggyérítés"
+        }, 
+        {
           "input": "⠱⠬⠗⠈⠎⠱⠑⠗⠾", 
           "output": "szúrásszerű"
         }, 
@@ -2839,8 +3170,16 @@
           "output": "tejfölösszájú"
         }, 
         {
+          "input": "⠞⠑⠅⠝⠻⠎⠱⠈⠍⠇⠈⠇⠈⠎", 
+          "output": "teknősszámlálás"
+        }, 
+        {
           "input": "⠞⠑⠇⠑⠏⠷⠇⠡⠎⠱⠑⠗⠅⠑⠣⠑⠞ ", 
           "output": "településszerkezet "
+        }, 
+        {
+          "input": "⠞⠑⠇⠑⠏⠷⠇⠡⠎⠣⠪⠝⠈⠚⠈⠗⠁", 
+          "output": "települészónájára"
         }, 
         {
           "input": "⠞⠑⠍⠏⠇⠕⠍⠕⠎⠱⠁⠅⠡⠗⠞⠻", 
@@ -2861,6 +3200,10 @@
         {
           "input": "⠞⠊⠛⠗⠊⠎⠱⠑⠗⠾", 
           "output": "tigrisszerű"
+        }, 
+        {
+          "input": "⠞⠊⠱⠞⠎⠡⠛⠹⠾⠚⠞⠑⠍⠡⠫", 
+          "output": "tisztséggyűjtemény"
         }, 
         {
           "input": "⠞⠊⠏⠥⠎⠱⠈⠍", 
@@ -2955,6 +3298,10 @@
           "output": "tudásszomj"
         }, 
         {
+          "input": "⠞⠥⠗⠊⠣⠍⠥⠎⠱⠑⠅⠞⠕⠗", 
+          "output": "turizmusszektor"
+        }, 
+        {
           "input": "⠞⠷⠅⠗⠟⠎⠱⠡⠇⠾", 
           "output": "tükrösszélű"
         }, 
@@ -3007,6 +3354,10 @@
           "output": "utalásszerűen"
         }, 
         {
+          "input": "⠥⠞⠁⠇⠈⠎⠱⠊⠝⠞⠑⠝", 
+          "output": "utalásszinten"
+        }, 
+        {
           "input": "⠥⠞⠈⠝⠏⠪⠞⠇⠈⠎⠱⠈⠇⠇⠌⠞⠍⠈⠫⠫⠁⠇", 
           "output": "utánpótlásszállítmánnyal"
         }, 
@@ -3033,6 +3384,10 @@
         {
           "input": "⠥⠞⠁⠎⠱⠕⠇⠛⠈⠇⠁⠞", 
           "output": "utasszolgálat"
+        }, 
+        {
+          "input": "⠥⠞⠁⠎⠌⠞⠈⠎⠱⠁⠧⠁⠅⠅⠁⠇", 
+          "output": "utasításszavakkal"
         }, 
         {
           "input": "⠥⠞⠁⠣⠈⠎⠱⠑⠗⠾", 
@@ -3077,6 +3432,10 @@
         {
           "input": "⠷⠧⠑⠛⠹⠾⠗⠾", 
           "output": "üveggyűrű"
+        }, 
+        {
+          "input": "⠧⠁⠛⠙⠁⠇⠞⠓⠬⠎⠱⠑⠗⠾", 
+          "output": "vagdalthússzerű"
         }, 
         {
           "input": "⠧⠁⠛⠕⠝⠫⠊", 
@@ -3291,12 +3650,20 @@
           "output": "vitorlásszezon"
         }, 
         {
+          "input": "⠧⠊⠞⠗⠊⠝⠫⠊", 
+          "output": "vitrinnyi"
+        }, 
+        {
           "input": "⠧⠊⠣⠑⠇⠑⠞⠑⠎⠣⠁⠩⠅⠪ ", 
           "output": "vizeleteszacskó "
         }, 
         {
           "input": "⠧⠊⠣⠑⠎⠜⠑⠍⠇⠑", 
           "output": "vizeszsemle"
+        }, 
+        {
+          "input": "⠧⠌⠣⠋⠕⠸⠈⠎⠱⠑⠗⠾", 
+          "output": "vízfolyásszerű"
         }, 
         {
           "input": "⠧⠌⠣⠎⠈⠧", 
@@ -3357,6 +3724,10 @@
         {
           "input": "⠺⠑⠃⠑⠎⠱⠕⠇⠛⠈⠇⠞⠁⠞⠈⠎", 
           "output": "webesszolgáltatás"
+        }, 
+        {
+          "input": "⠣⠁⠅⠇⠁⠞⠈⠎⠱⠈⠍⠃⠁", 
+          "output": "zaklatásszámba"
         }, 
         {
           "input": "⠣⠈⠇⠕⠛⠹⠾⠗⠾⠍⠑⠞", 
@@ -3459,12 +3830,20 @@
     {
       "data": [
         {
+          "input": "accessibility", 
+          "output": "⠁⠉⠉⠑⠎⠎⠊⠃⠊⠇⠊⠞⠽"
+        }, 
+        {
           "input": "adásszerű", 
           "output": "⠁⠙⠈⠎⠱⠑⠗⠾"
         }, 
         {
           "input": "adásszünet", 
           "output": "⠁⠙⠈⠎⠱⠷⠝⠑⠞"
+        }, 
+        {
+          "input": "adászárásig", 
+          "output": "⠁⠙⠈⠎⠣⠈⠗⠈⠎⠊⠛"
         }, 
         {
           "input": "adósszámla", 
@@ -3587,6 +3966,14 @@
           "output": "⠁⠗⠉⠎⠡⠗⠷⠇⠡⠎"
         }, 
         {
+          "input": "arzénnyom", 
+          "output": "⠁⠗⠣⠡⠝⠫⠕⠍"
+        }, 
+        {
+          "input": "áremelkedésszerű", 
+          "output": "⠈⠗⠑⠍⠑⠇⠅⠑⠙⠡⠎⠱⠑⠗⠾"
+        }, 
+        {
           "input": "árgusszemű", 
           "output": "⠈⠗⠛⠥⠎⠱⠑⠍⠾"
         }, 
@@ -3595,8 +3982,16 @@
           "output": "⠈⠗⠧⠌⠣⠎⠬⠚⠞⠕⠞⠞⠁"
         }, 
         {
+          "input": "átlaggyerekre", 
+          "output": "⠈⠞⠇⠁⠛⠹⠑⠗⠑⠅⠗⠑"
+        }, 
+        {
           "input": "autósszemüveg", 
           "output": "⠁⠥⠞⠪⠎⠱⠑⠍⠷⠧⠑⠛"
+        }, 
+        {
+          "input": "autósszőnyeg", 
+          "output": "⠁⠥⠞⠪⠎⠱⠻⠫⠑⠛"
         }, 
         {
           "input": "azonnyomban", 
@@ -3607,8 +4002,20 @@
           "output": "⠃⠈⠙⠕⠛⠹⠾⠚⠞⠑⠍⠡⠫"
         }, 
         {
+          "input": "Bánnyíres", 
+          "output": "⠨⠃⠈⠝⠫⠌⠗⠑⠎"
+        }, 
+        {
           "input": "bázisszint", 
           "output": "⠃⠈⠣⠊⠎⠱⠊⠝⠞"
+        }, 
+        {
+          "input": "Barccsal", 
+          "output": "⠨⠃⠁⠗⠩⠩⠁⠇"
+        }, 
+        {
+          "input": "barkácszene", 
+          "output": "⠃⠁⠗⠅⠈⠩⠣⠑⠝⠑"
         }, 
         {
           "input": "barnásszőke", 
@@ -3629,6 +4036,14 @@
         {
           "input": "baromsággyűjtemény", 
           "output": "⠃⠁⠗⠕⠍⠎⠈⠛⠹⠾⠚⠞⠑⠍⠡⠫"
+        }, 
+        {
+          "input": "basszusszerű", 
+          "output": "⠃⠁⠱⠱⠥⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "basszusszintetizátor", 
+          "output": "⠃⠁⠱⠱⠥⠎⠱⠊⠝⠞⠑⠞⠊⠣⠈⠞⠕⠗"
         }, 
         {
           "input": "becslésszerűen", 
@@ -3675,6 +4090,10 @@
           "output": "⠃⠊⠝⠎⠑⠝⠹⠹⠟⠅⠡⠗"
         }, 
         {
+          "input": "blueszene", 
+          "output": "⠃⠇⠥⠑⠎⠣⠑⠝⠑"
+        }, 
+        {
           "input": "biznisszé", 
           "output": "⠃⠊⠣⠝⠊⠱⠱⠡"
         }, 
@@ -3719,6 +4138,10 @@
           "output": "⠃⠗⠑⠅⠑⠛⠡⠎⠱⠑⠗⠾"
         }, 
         {
+          "input": "Briganty", 
+          "output": "⠨⠃⠗⠊⠛⠁⠝⠞⠽"
+        }, 
+        {
           "input": "bronzsáska", 
           "output": "⠃⠗⠕⠝⠣⠎⠈⠎⠅⠁"
         }, 
@@ -3735,6 +4158,10 @@
           "output": "⠃⠗⠕⠝⠣⠎⠊⠎⠁⠅"
         }, 
         {
+          "input": "bukásszámba", 
+          "output": "⠃⠥⠅⠈⠎⠱⠈⠍⠃⠁"
+        }, 
+        {
           "input": "búcsújárásszerű", 
           "output": "⠃⠬⠩⠬⠚⠈⠗⠈⠎⠱⠑⠗⠾"
         }, 
@@ -3745,6 +4172,10 @@
         {
           "input": "chipseszacskó", 
           "output": "⠉⠓⠊⠏⠎⠑⠎⠣⠁⠩⠅⠪"
+        }, 
+        {
+          "input": "ciripelésszerűen", 
+          "output": "⠉⠊⠗⠊⠏⠑⠇⠡⠎⠱⠑⠗⠾⠑⠝"
         }, 
         {
           "input": "curiosity", 
@@ -3779,6 +4210,10 @@
           "output": "⠩⠊⠏⠅⠡⠎⠱⠡⠇⠾"
         }, 
         {
+          "input": "csípésszám", 
+          "output": "⠩⠌⠏⠡⠎⠱⠈⠍"
+        }, 
+        {
           "input": "csobbanásszerű", 
           "output": "⠩⠕⠃⠃⠁⠝⠈⠎⠱⠑⠗⠾"
         }, 
@@ -3801,6 +4236,10 @@
         {
           "input": "döggyapjú", 
           "output": "⠙⠟⠛⠹⠁⠏⠚⠬"
+        }, 
+        {
+          "input": "döggyárnak", 
+          "output": "⠙⠟⠛⠹⠈⠗⠝⠁⠅"
         }, 
         {
           "input": "dőlésszög", 
@@ -3871,6 +4310,10 @@
           "output": "⠑⠙⠣⠡⠎⠱⠈⠍⠕⠞"
         }, 
         {
+          "input": "effektusszerűen", 
+          "output": "⠑⠋⠋⠑⠅⠞⠥⠎⠱⠑⠗⠾⠑⠝"
+        }, 
+        {
           "input": "egyenesszálú", 
           "output": "⠑⠹⠑⠝⠑⠎⠱⠈⠇⠬"
         }, 
@@ -3889,6 +4332,10 @@
         {
           "input": "egyesszámban", 
           "output": "⠑⠹⠑⠎⠱⠈⠍⠃⠁⠝"
+        }, 
+        {
+          "input": "egységgyertyából", 
+          "output": "⠑⠹⠎⠡⠛⠹⠑⠗⠳⠈⠃⠪⠇"
         }, 
         {
           "input": "éhesszájat ", 
@@ -3921,6 +4368,10 @@
         {
           "input": "ekhósszekerek", 
           "output": "⠑⠅⠓⠪⠎⠱⠑⠅⠑⠗⠑⠅"
+        }, 
+        {
+          "input": "elektronnyalábra", 
+          "output": "⠑⠇⠑⠅⠞⠗⠕⠝⠫⠁⠇⠈⠃⠗⠁"
         }, 
         {
           "input": "eleséggyűjtés ", 
@@ -3967,6 +4418,10 @@
           "output": "⠑⠍⠑⠇⠡⠎⠱⠑⠗⠾"
         }, 
         {
+          "input": "eposszal", 
+          "output": "⠑⠏⠕⠱⠱⠁⠇"
+        }, 
+        {
           "input": "érccsapadék, érccsengés, érccsatorna ", 
           "output": "⠡⠗⠉⠩⠁⠏⠁⠙⠡⠅⠂ ⠡⠗⠉⠩⠑⠝⠛⠡⠎⠂ ⠡⠗⠉⠩⠁⠞⠕⠗⠝⠁ "
         }, 
@@ -3999,8 +4454,16 @@
           "output": "⠡⠗⠉⠎⠕⠙⠗⠕⠫"
         }, 
         {
+          "input": "erősítésszabályozás", 
+          "output": "⠑⠗⠻⠎⠌⠞⠡⠎⠱⠁⠃⠈⠸⠕⠣⠈⠎"
+        }, 
+        {
           "input": "erőforrászabáló", 
           "output": "⠑⠗⠻⠋⠕⠗⠗⠈⠎⠣⠁⠃⠈⠇⠪"
+        }, 
+        {
+          "input": "erőlködésszagúnak", 
+          "output": "⠑⠗⠻⠇⠅⠟⠙⠡⠎⠱⠁⠛⠬⠝⠁⠅"
         }, 
         {
           "input": "érzékelésszint", 
@@ -4047,6 +4510,10 @@
           "output": "⠋⠈⠎⠱⠈⠗⠬"
         }, 
         {
+          "input": "fázisszögnek", 
+          "output": "⠋⠈⠣⠊⠎⠱⠟⠛⠝⠑⠅"
+        }, 
+        {
           "input": "fegyenccsoport", 
           "output": "⠋⠑⠹⠑⠝⠉⠩⠕⠏⠕⠗⠞"
         }, 
@@ -4085,6 +4552,10 @@
         {
           "input": "felszerelésszettet", 
           "output": "⠋⠑⠇⠱⠑⠗⠑⠇⠡⠎⠱⠑⠞⠞⠑⠞"
+        }, 
+        {
+          "input": "feltevésszerűen", 
+          "output": "⠋⠑⠇⠞⠑⠧⠡⠎⠱⠑⠗⠾⠑⠝"
         }, 
         {
           "input": "fertőzésszerű", 
@@ -4167,6 +4638,10 @@
           "output": "⠋⠥⠧⠁⠗⠕⠎⠱⠑⠅⠡⠗"
         }, 
         {
+          "input": "fúvósszekció", 
+          "output": "⠋⠬⠧⠪⠎⠱⠑⠅⠉⠊⠪"
+        }, 
+        {
           "input": "fúvósszerszám", 
           "output": "⠋⠬⠧⠪⠎⠱⠑⠗⠱⠈⠍"
         }, 
@@ -4189,6 +4664,10 @@
         {
           "input": "gázspray", 
           "output": "⠛⠈⠣⠎⠏⠗⠁⠽"
+        }, 
+        {
+          "input": "gátstop", 
+          "output": "⠛⠈⠞⠎⠞⠕⠏"
         }, 
         {
           "input": "gázsugár", 
@@ -4269,6 +4748,10 @@
         {
           "input": "gyújtászsinór", 
           "output": "⠹⠬⠚⠞⠈⠎⠜⠊⠝⠪⠗"
+        }, 
+        {
+          "input": "gyülekezésszabadságot", 
+          "output": "⠹⠷⠇⠑⠅⠑⠣⠡⠎⠱⠁⠃⠁⠙⠎⠈⠛⠕⠞"
         }, 
         {
           "input": "gyűlésszíne", 
@@ -4363,6 +4846,10 @@
           "output": "⠓⠁⠗⠉⠎⠕⠗"
         }, 
         {
+          "input": "harmincsornyi", 
+          "output": "⠓⠁⠗⠍⠊⠝⠉⠎⠕⠗⠫⠊"
+        }, 
+        {
           "input": "hármasszámú", 
           "output": "⠓⠈⠗⠍⠁⠎⠱⠈⠍⠬"
         }, 
@@ -4387,8 +4874,20 @@
           "output": "⠓⠈⠗⠳⠈⠎⠱⠈⠗⠫⠬"
         }, 
         {
+          "input": "hasszőrzet", 
+          "output": "⠓⠁⠎⠱⠻⠗⠣⠑⠞"
+        }, 
+        {
+          "input": "hasszél", 
+          "output": "⠓⠁⠎⠱⠡⠇"
+        }, 
+        {
           "input": "hasisszagot", 
           "output": "⠓⠁⠎⠊⠎⠱⠁⠛⠕⠞"
+        }, 
+        {
+          "input": "hatásszélesség", 
+          "output": "⠓⠁⠞⠈⠎⠱⠡⠇⠑⠎⠎⠡⠛"
         }, 
         {
           "input": "hatásszünet", 
@@ -4507,6 +5006,10 @@
           "output": "⠨⠓⠬⠎⠱⠟⠧⠑⠞⠎⠡⠛"
         }, 
         {
+          "input": "hűséggyűrűsök", 
+          "output": "⠓⠾⠎⠡⠛⠹⠾⠗⠾⠎⠟⠅"
+        }, 
+        {
           "input": "hűvösszemű", 
           "output": "⠓⠾⠧⠟⠎⠱⠑⠍⠾"
         }, 
@@ -4547,6 +5050,10 @@
           "output": "⠊⠍⠈⠙⠎⠈⠛⠹⠾⠚⠞⠑⠍⠡⠫"
         }, 
         {
+          "input": "impulzusszélességét", 
+          "output": "⠊⠍⠏⠥⠇⠣⠥⠎⠱⠡⠇⠑⠎⠎⠡⠛⠡⠞"
+        }, 
+        {
           "input": "inasszerep", 
           "output": "⠊⠝⠁⠎⠱⠑⠗⠑⠏"
         }, 
@@ -4561,6 +5068,10 @@
         {
           "input": "indiánnyelv", 
           "output": "⠊⠝⠙⠊⠈⠝⠫⠑⠇⠧"
+        }, 
+        {
+          "input": "információsszabadság", 
+          "output": "⠊⠝⠋⠕⠗⠍⠈⠉⠊⠪⠎⠱⠁⠃⠁⠙⠎⠈⠛"
         }, 
         {
           "input": "ingyennyelvoktatás", 
@@ -4663,12 +5174,20 @@
           "output": "⠅⠁⠇⠁⠏⠈⠩⠣⠑⠝⠛⠡⠎"
         }, 
         {
+          "input": "kalapácszongora", 
+          "output": "⠅⠁⠇⠁⠏⠈⠩⠣⠕⠝⠛⠕⠗⠁"
+        }, 
+        {
           "input": "kamionnyi", 
           "output": "⠅⠁⠍⠊⠕⠝⠫⠊"
         }, 
         {
           "input": "kaparásszerű", 
           "output": "⠅⠁⠏⠁⠗⠈⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "Kapolcs", 
+          "output": "⠨⠅⠁⠏⠕⠇⠩"
         }, 
         {
           "input": "Kaposszekcső", 
@@ -4747,6 +5266,10 @@
           "output": "⠅⠡⠏⠍⠈⠎⠱⠑⠗⠾ "
         }, 
         {
+          "input": "képváltásszámot", 
+          "output": "⠅⠡⠏⠧⠈⠇⠞⠈⠎⠱⠈⠍⠕⠞"
+        }, 
+        {
           "input": "képzésszerű ", 
           "output": "⠅⠡⠏⠣⠡⠎⠱⠑⠗⠾ "
         }, 
@@ -4779,12 +5302,20 @@
           "output": "⠅⠡⠎⠱⠬⠗⠈⠎"
         }, 
         {
+          "input": "ketreccsapda", 
+          "output": "⠅⠑⠞⠗⠑⠉⠩⠁⠏⠙⠁"
+        }, 
+        {
           "input": "kevésszavú ", 
           "output": "⠅⠑⠧⠡⠎⠱⠁⠧⠬ "
         }, 
         {
           "input": "kevésszer", 
           "output": "⠅⠑⠧⠡⠎⠱⠑⠗"
+        }, 
+        {
+          "input": "kiadászárolás", 
+          "output": "⠅⠊⠁⠙⠈⠎⠣⠈⠗⠕⠇⠈⠎"
         }, 
         {
           "input": "kifejlesszem", 
@@ -4931,6 +5462,10 @@
           "output": "⠅⠟⠓⠟⠛⠡⠎⠱⠑⠗⠾"
         }, 
         {
+          "input": "kölcsönnyakláncait", 
+          "output": "⠅⠟⠇⠩⠟⠝⠫⠁⠅⠇⠈⠝⠉⠁⠊⠞"
+        }, 
+        {
           "input": "közlekedésszervezők", 
           "output": "⠅⠟⠣⠇⠑⠅⠑⠙⠡⠎⠱⠑⠗⠧⠑⠣⠻⠅"
         }, 
@@ -4941,6 +5476,10 @@
         {
           "input": "kőművesszerszámait ", 
           "output": "⠅⠻⠍⠾⠧⠑⠎⠱⠑⠗⠱⠈⠍⠁⠊⠞ "
+        }, 
+        {
+          "input": "konstansszimbólumainak", 
+          "output": "⠅⠕⠝⠎⠞⠁⠝⠎⠱⠊⠍⠃⠪⠇⠥⠍⠁⠊⠝⠁⠅"
         }, 
         {
           "input": "köntösszegély", 
@@ -5015,6 +5554,10 @@
           "output": "⠅⠷⠇⠟⠝⠉⠎⠡⠛"
         }, 
         {
+          "input": "különnyíló", 
+          "output": "⠅⠷⠇⠟⠝⠫⠌⠇⠪"
+        }, 
+        {
           "input": "labirintusszerű", 
           "output": "⠇⠁⠃⠊⠗⠊⠝⠞⠥⠎⠱⠑⠗⠾"
         }, 
@@ -5075,6 +5618,10 @@
           "output": "⠇⠈⠣⠎⠪⠓⠁⠚⠞⠈⠎"
         }, 
         {
+          "input": "lebegésszerű", 
+          "output": "⠇⠑⠃⠑⠛⠡⠎⠱⠑⠗⠾"
+        }, 
+        {
           "input": "léggyök", 
           "output": "⠇⠡⠛⠹⠟⠅"
         }, 
@@ -5101,6 +5648,10 @@
         {
           "input": "lengésszabály", 
           "output": "⠇⠑⠝⠛⠡⠎⠱⠁⠃⠈⠸"
+        }, 
+        {
+          "input": "lexikonnyi", 
+          "output": "⠇⠑⠭⠊⠅⠕⠝⠫⠊"
         }, 
         {
           "input": "légzésszám", 
@@ -5207,12 +5758,20 @@
           "output": "⠍⠁⠛⠈⠝⠫⠑⠇⠧⠍⠑⠎⠞⠑⠗⠑⠅"
         }, 
         {
+          "input": "magánnyaralók", 
+          "output": "⠍⠁⠛⠈⠝⠫⠁⠗⠁⠇⠪⠅"
+        }, 
+        {
           "input": "magánnyugdíjpénztár", 
           "output": "⠍⠁⠛⠈⠝⠫⠥⠛⠙⠌⠚⠏⠡⠝⠣⠞⠈⠗"
         }, 
         {
           "input": "magasszárú", 
           "output": "⠍⠁⠛⠁⠎⠱⠈⠗⠬"
+        }, 
+        {
+          "input": "maggyűjteményről", 
+          "output": "⠍⠁⠛⠹⠾⠚⠞⠑⠍⠡⠫⠗⠻⠇"
         }, 
         {
           "input": "mágnásszámba", 
@@ -5267,6 +5826,10 @@
           "output": "⠨⠍⠁⠗⠞⠗⠁⠧⠑⠗⠱⠱⠁⠇"
         }, 
         {
+          "input": "matracsor", 
+          "output": "⠍⠁⠞⠗⠁⠉⠎⠕⠗"
+        }, 
+        {
           "input": "másszínű", 
           "output": "⠍⠈⠎⠱⠌⠝⠾"
         }, 
@@ -5289,6 +5852,10 @@
         {
           "input": "medresszék", 
           "output": "⠍⠑⠙⠗⠑⠎⠱⠡⠅"
+        }, 
+        {
+          "input": "megfázásszerű", 
+          "output": "⠍⠑⠛⠋⠈⠣⠈⠎⠱⠑⠗⠾"
         }, 
         {
           "input": "meggybefőtt", 
@@ -5327,6 +5894,10 @@
           "output": "⠍⠑⠹⠹⠌⠣⠾"
         }, 
         {
+          "input": "meggyként", 
+          "output": "⠍⠑⠹⠹⠅⠡⠝⠞"
+        }, 
+        {
           "input": "meggylekvár", 
           "output": "⠍⠑⠹⠹⠇⠑⠅⠧⠈⠗"
         }, 
@@ -5343,6 +5914,10 @@
           "output": "⠍⠑⠹⠹⠏⠊⠗⠕⠎"
         }, 
         {
+          "input": "meggysör", 
+          "output": "⠍⠑⠹⠹⠎⠟⠗"
+        }, 
+        {
           "input": "meggyszín", 
           "output": "⠍⠑⠹⠹⠱⠌⠝"
         }, 
@@ -5357,6 +5932,10 @@
         {
           "input": "meggyvörös", 
           "output": "⠍⠑⠹⠹⠧⠟⠗⠟⠎"
+        }, 
+        {
+          "input": "meggyző", 
+          "output": "⠍⠑⠹⠹⠣⠻"
         }, 
         {
           "input": "meglepetésszoftver", 
@@ -5415,6 +5994,10 @@
           "output": "⠨⠍⠊⠅⠕⠎⠱⠡⠏⠇⠁⠅"
         }, 
         {
+          "input": "mikulásszerkó", 
+          "output": "⠍⠊⠅⠥⠇⠈⠎⠱⠑⠗⠅⠪"
+        }, 
+        {
           "input": "mikrofonnyílás", 
           "output": "⠍⠊⠅⠗⠕⠋⠕⠝⠫⠌⠇⠈⠎"
         }, 
@@ -5427,8 +6010,16 @@
           "output": "⠍⠊⠞⠑⠱⠱⠑⠗"
         }, 
         {
+          "input": "mitugrásszal", 
+          "output": "⠍⠊⠞⠥⠛⠗⠈⠱⠱⠁⠇"
+        }, 
+        {
           "input": "mohaszöld", 
           "output": "⠍⠕⠓⠁⠎⠣⠟⠇⠙"
+        }, 
+        {
+          "input": "molosszer", 
+          "output": "⠍⠕⠇⠕⠱⠱⠑⠗"
         }, 
         {
           "input": "mókusszerű ", 
@@ -5469,6 +6060,10 @@
         {
           "input": "művelődésszervező", 
           "output": "⠍⠾⠧⠑⠇⠻⠙⠡⠎⠱⠑⠗⠧⠑⠣⠻"
+        }, 
+        {
+          "input": "nyálasszájú", 
+          "output": "⠫⠈⠇⠁⠎⠱⠈⠚⠬"
         }, 
         {
           "input": "nászutazásszerű ", 
@@ -5519,6 +6114,10 @@
           "output": "⠝⠑⠗⠉⠎⠞⠪⠇⠁"
         }, 
         {
+          "input": "népességgyarapodás", 
+          "output": "⠝⠡⠏⠑⠎⠎⠡⠛⠹⠁⠗⠁⠏⠕⠙⠈⠎"
+        }, 
+        {
           "input": "nyargonccsizma", 
           "output": "⠫⠁⠗⠛⠕⠝⠉⠩⠊⠣⠍⠁"
         }, 
@@ -5563,8 +6162,16 @@
           "output": "⠫⠕⠍⠈⠎⠱⠊⠝⠞⠑⠝"
         }, 
         {
+          "input": "oktatásszociológiai", 
+          "output": "⠕⠅⠞⠁⠞⠈⠎⠱⠕⠉⠊⠕⠇⠪⠛⠊⠁⠊"
+        }, 
+        {
           "input": "ordasszőrű", 
           "output": "⠕⠗⠙⠁⠎⠱⠻⠗⠾"
+        }, 
+        {
+          "input": "orgazmusszerű", 
+          "output": "⠕⠗⠛⠁⠣⠍⠥⠎⠱⠑⠗⠾"
         }, 
         {
           "input": "óriásszalamandra", 
@@ -5623,6 +6230,10 @@
           "output": "⠟⠝⠫⠕⠍⠁⠞⠬ "
         }, 
         {
+          "input": "örökséggyűjteményben", 
+          "output": "⠟⠗⠟⠅⠎⠡⠛⠹⠾⠚⠞⠑⠍⠡⠫⠃⠑⠝"
+        }, 
+        {
           "input": "örvénylésszerű", 
           "output": "⠟⠗⠧⠡⠫⠇⠡⠎⠱⠑⠗⠾"
         }, 
@@ -5653,6 +6264,10 @@
         {
           "input": "ősszellem", 
           "output": "⠻⠎⠱⠑⠇⠇⠑⠍"
+        }, 
+        {
+          "input": "ötvösszakmai", 
+          "output": "⠟⠞⠧⠟⠎⠱⠁⠅⠍⠁⠊"
         }, 
         {
           "input": "őzsebesen", 
@@ -5707,6 +6322,10 @@
           "output": "⠏⠑⠙⠁⠛⠪⠛⠥⠎⠱⠕⠃⠈⠃⠁"
         }, 
         {
+          "input": "pedagógusszövetség", 
+          "output": "⠏⠑⠙⠁⠛⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛"
+        }, 
+        {
           "input": "pedagógussztrájk", 
           "output": "⠏⠑⠙⠁⠛⠪⠛⠥⠎⠱⠞⠗⠈⠚⠅"
         }, 
@@ -5749,6 +6368,10 @@
         {
           "input": "pergamennyaláb", 
           "output": "⠏⠑⠗⠛⠁⠍⠑⠝⠫⠁⠇⠈⠃"
+        }, 
+        {
+          "input": "periódusszámának", 
+          "output": "⠏⠑⠗⠊⠪⠙⠥⠎⠱⠈⠍⠈⠝⠁⠅"
         }, 
         {
           "input": "piaccsarnok", 
@@ -5839,6 +6462,14 @@
           "output": "⠏⠕⠎⠞⠈⠎⠱⠁⠅⠱⠑⠗⠧⠑⠣⠑⠞"
         }, 
         {
+          "input": "postássztrájk", 
+          "output": "⠏⠕⠎⠞⠈⠎⠱⠞⠗⠈⠚⠅"
+        }, 
+        {
+          "input": "pólusszámhoz", 
+          "output": "⠏⠪⠇⠥⠎⠱⠈⠍⠓⠕⠣"
+        }, 
+        {
           "input": "precízség", 
           "output": "⠏⠗⠑⠉⠌⠣⠎⠡⠛"
         }, 
@@ -5863,6 +6494,13 @@
           "output": "⠏⠗⠕⠞⠕⠝⠫⠁⠇⠈⠃⠕⠅"
         }, 
         {
+          "comment": [
+            "this testcase look begcaps opcode working if a word containing both lowercase and uppercase letters"
+          ], 
+          "input": "PSZÁF-összevonást", 
+          "output": "⠨⠨⠏⠱⠈⠋⠤⠟⠱⠱⠑⠧⠕⠝⠈⠎⠞"
+        }, 
+        {
           "input": "pszichológusszövetség", 
           "output": "⠏⠱⠊⠉⠓⠕⠇⠪⠛⠥⠎⠱⠟⠧⠑⠞⠎⠡⠛"
         }, 
@@ -5885,6 +6523,18 @@
         {
           "input": "rajzsablon", 
           "output": "⠗⠁⠚⠣⠎⠁⠃⠇⠕⠝"
+        }, 
+        {
+          "input": "rajzsarok", 
+          "output": "⠗⠁⠚⠣⠎⠁⠗⠕⠅"
+        }, 
+        {
+          "input": "rajzsarkot", 
+          "output": "⠗⠁⠚⠣⠎⠁⠗⠅⠕⠞"
+        }, 
+        {
+          "input": "rajzsorozatban", 
+          "output": "⠗⠁⠚⠣⠎⠕⠗⠕⠣⠁⠞⠃⠁⠝"
         }, 
         {
           "input": "rácság", 
@@ -5955,6 +6605,10 @@
           "output": "⠗⠡⠜⠥⠞"
         }, 
         {
+          "input": "ricinusszerű", 
+          "output": "⠗⠊⠉⠊⠝⠥⠎⠱⠑⠗⠾"
+        }, 
+        {
           "input": "ritkasággyűjtő", 
           "output": "⠗⠊⠞⠅⠁⠎⠈⠛⠹⠾⠚⠞⠻"
         }, 
@@ -5965,6 +6619,10 @@
         {
           "input": "ritmuszavar", 
           "output": "⠗⠊⠞⠍⠥⠎⠣⠁⠧⠁⠗"
+        }, 
+        {
+          "input": "rizszabálókat", 
+          "output": "⠗⠊⠜⠣⠁⠃⠈⠇⠪⠅⠁⠞"
         }, 
         {
           "input": "robbanásszerű", 
@@ -5985,6 +6643,10 @@
         {
           "input": "rothadásszag", 
           "output": "⠗⠕⠞⠓⠁⠙⠈⠎⠱⠁⠛"
+        }, 
+        {
+          "input": "rovásszerűen", 
+          "output": "⠗⠕⠧⠈⠎⠱⠑⠗⠾⠑⠝"
         }, 
         {
           "input": "rózsásszőkés", 
@@ -6039,6 +6701,18 @@
           "output": "⠎⠈⠞⠈⠝⠩⠁⠏⠁⠞"
         }, 
         {
+          "input": "szalaggyakorlatát", 
+          "output": "⠱⠁⠇⠁⠛⠹⠁⠅⠕⠗⠇⠁⠞⠈⠞"
+        }, 
+        {
+          "input": "szalaggyűjtemény", 
+          "output": "⠱⠁⠇⠁⠛⠹⠾⠚⠞⠑⠍⠡⠫"
+        }, 
+        {
+          "input": "szeggyár", 
+          "output": "⠱⠑⠛⠹⠈⠗"
+        }, 
+        {
           "input": "selymesszőke", 
           "output": "⠎⠑⠸⠍⠑⠎⠱⠻⠅⠑"
         }, 
@@ -6059,6 +6733,14 @@
           "output": "⠎⠑⠗⠞⠡⠎⠜⠌⠗"
         }, 
         {
+          "input": "szénnyomokat", 
+          "output": "⠱⠡⠝⠫⠕⠍⠕⠅⠁⠞"
+        }, 
+        {
+          "input": "szociálisszálláshely-program", 
+          "output": "⠱⠕⠉⠊⠈⠇⠊⠎⠱⠈⠇⠇⠈⠎⠓⠑⠸⠤⠏⠗⠕⠛⠗⠁⠍"
+        }, 
+        {
           "input": "sonkásszelet", 
           "output": "⠎⠕⠝⠅⠈⠎⠱⠑⠇⠑⠞"
         }, 
@@ -6077,6 +6759,14 @@
         {
           "input": "spanyolmeggyen", 
           "output": "⠎⠏⠁⠫⠕⠇⠍⠑⠹⠹⠑⠝"
+        }, 
+        {
+          "input": "spiccszűrőbe", 
+          "output": "⠎⠏⠊⠉⠉⠱⠾⠗⠻⠃⠑"
+        }, 
+        {
+          "input": "stadionnyi", 
+          "output": "⠎⠞⠁⠙⠊⠕⠝⠫⠊"
         }, 
         {
           "input": "stílusszerű, stílusszerkesztő", 
@@ -6167,6 +6857,10 @@
           "output": "⠱⠑⠗⠣⠻⠙⠡⠎⠱⠑⠛⠻"
         }, 
         {
+          "input": "szervizsarok", 
+          "output": "⠱⠑⠗⠧⠊⠣⠎⠁⠗⠕⠅"
+        }, 
+        {
           "input": "szétossza", 
           "output": "⠱⠡⠞⠕⠱⠱⠁"
         }, 
@@ -6231,6 +6925,14 @@
           "output": "⠱⠟⠧⠑⠛⠹⠾⠚⠞⠑⠍⠡⠫"
         }, 
         {
+          "input": "szőnyeggyár", 
+          "output": "⠱⠻⠫⠑⠛⠹⠈⠗"
+        }, 
+        {
+          "input": "szúnyoggyérítés", 
+          "output": "⠱⠬⠫⠕⠛⠹⠡⠗⠌⠞⠡⠎"
+        }, 
+        {
           "input": "szúrásszerű", 
           "output": "⠱⠬⠗⠈⠎⠱⠑⠗⠾"
         }, 
@@ -6291,8 +6993,16 @@
           "output": "⠞⠑⠚⠋⠟⠇⠟⠎⠱⠈⠚⠬"
         }, 
         {
+          "input": "teknősszámlálás", 
+          "output": "⠞⠑⠅⠝⠻⠎⠱⠈⠍⠇⠈⠇⠈⠎"
+        }, 
+        {
           "input": "településszerkezet ", 
           "output": "⠞⠑⠇⠑⠏⠷⠇⠡⠎⠱⠑⠗⠅⠑⠣⠑⠞ "
+        }, 
+        {
+          "input": "települészónájára", 
+          "output": "⠞⠑⠇⠑⠏⠷⠇⠡⠎⠣⠪⠝⠈⠚⠈⠗⠁"
         }, 
         {
           "input": "templomosszakértő", 
@@ -6313,6 +7023,10 @@
         {
           "input": "tigrisszerű", 
           "output": "⠞⠊⠛⠗⠊⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "tisztséggyűjtemény", 
+          "output": "⠞⠊⠱⠞⠎⠡⠛⠹⠾⠚⠞⠑⠍⠡⠫"
         }, 
         {
           "input": "tipusszám", 
@@ -6407,6 +7121,10 @@
           "output": "⠞⠥⠙⠈⠎⠱⠕⠍⠚"
         }, 
         {
+          "input": "turizmusszektor", 
+          "output": "⠞⠥⠗⠊⠣⠍⠥⠎⠱⠑⠅⠞⠕⠗"
+        }, 
+        {
           "input": "tükrösszélű", 
           "output": "⠞⠷⠅⠗⠟⠎⠱⠡⠇⠾"
         }, 
@@ -6459,6 +7177,10 @@
           "output": "⠥⠞⠁⠇⠈⠎⠱⠑⠗⠾⠑⠝"
         }, 
         {
+          "input": "utalásszinten", 
+          "output": "⠥⠞⠁⠇⠈⠎⠱⠊⠝⠞⠑⠝"
+        }, 
+        {
           "input": "utánpótlásszállítmánnyal", 
           "output": "⠥⠞⠈⠝⠏⠪⠞⠇⠈⠎⠱⠈⠇⠇⠌⠞⠍⠈⠫⠫⠁⠇"
         }, 
@@ -6485,6 +7207,10 @@
         {
           "input": "utasszolgálat", 
           "output": "⠥⠞⠁⠎⠱⠕⠇⠛⠈⠇⠁⠞"
+        }, 
+        {
+          "input": "utasításszavakkal", 
+          "output": "⠥⠞⠁⠎⠌⠞⠈⠎⠱⠁⠧⠁⠅⠅⠁⠇"
         }, 
         {
           "input": "utazásszerű", 
@@ -6531,6 +7257,10 @@
           "output": "⠷⠧⠑⠛⠹⠾⠗⠾"
         }, 
         {
+          "input": "vagdalthússzerű", 
+          "output": "⠧⠁⠛⠙⠁⠇⠞⠓⠬⠎⠱⠑⠗⠾"
+        }, 
+        {
           "input": "vagonnyi", 
           "output": "⠧⠁⠛⠕⠝⠫⠊"
         }, 
@@ -6541,6 +7271,14 @@
         {
           "input": "vallásszabadság", 
           "output": "⠧⠁⠇⠇⠈⠎⠱⠁⠃⠁⠙⠎⠈⠛"
+        }, 
+        {
+          "input": "vallásszociológus", 
+          "output": "⠧⠁⠇⠇⠈⠎⠱⠕⠉⠊⠕⠇⠪⠛⠥⠎"
+        }, 
+        {
+          "input": "vallásszociológus", 
+          "output": "⠧⠁⠇⠇⠈⠎⠱⠕⠉⠊⠕⠇⠪⠛⠥⠎"
         }, 
         {
           "input": "vallomásszámba", 
@@ -6743,12 +7481,20 @@
           "output": "⠧⠊⠞⠕⠗⠇⠈⠎⠱⠑⠣⠕⠝"
         }, 
         {
+          "input": "vitrinnyi", 
+          "output": "⠧⠊⠞⠗⠊⠝⠫⠊"
+        }, 
+        {
           "input": "vizeleteszacskó ", 
           "output": "⠧⠊⠣⠑⠇⠑⠞⠑⠎⠣⠁⠩⠅⠪ "
         }, 
         {
           "input": "vizeszsemle", 
           "output": "⠧⠊⠣⠑⠎⠜⠑⠍⠇⠑"
+        }, 
+        {
+          "input": "vízfolyásszerű", 
+          "output": "⠧⠌⠣⠋⠕⠸⠈⠎⠱⠑⠗⠾"
         }, 
         {
           "input": "vízsáv", 
@@ -6809,6 +7555,10 @@
         {
           "input": "webesszolgáltatás", 
           "output": "⠺⠑⠃⠑⠎⠱⠕⠇⠛⠈⠇⠞⠁⠞⠈⠎"
+        }, 
+        {
+          "input": "zaklatásszámba", 
+          "output": "⠣⠁⠅⠇⠁⠞⠈⠎⠱⠈⠍⠃⠁"
         }, 
         {
           "input": "záloggyűrűmet", 
