@@ -605,16 +605,30 @@ test.util.sync.deleteFile = function(contentWindow, filename) {
 };
 
 /**
- * Obtains computed styles of the elements specified by |queries|.
+ * Wait for the elements' style to be changed as the expected values.  The
+ * queries argument is a list of object that have the query property and the
+ * styles property. The query property is a string query to specify the
+ * element. The styles property is a string map of the style name and its
+ * expected value.
  *
  * @param {Window} contentWindow Window to be tested.
- * @param {Array.<string>>} queries List of elements to be computed styles.
- * @return {Array.<CSSStyleDeclaration>} List of computed styles.
+ * @param {Array.<object>} queries Queries that specifies the elements and
+ *   expected styles.
+ * @param {function()} callback Callback function to be notified the change of
+ *     the styles.
  */
-test.util.sync.getComputedStyles = function(contentWindow, queries) {
-  return queries.map(function(query) {
-    var element = contentWindow.document.querySelector(query);
-    return contentWindow.getComputedStyle(element);
+test.util.async.waitForStyles = function(contentWindow, queries, callback) {
+  test.util.repeatUntilTrue_(function() {
+    for (var i = 0; i < queries.length; i++) {
+      var element = contentWindow.document.querySelector(queries[i].query);
+      var styles = queries[i].styles;
+      for (var name in styles) {
+        if (contentWindow.getComputedStyle(element)[name] != styles[name])
+          return false;
+      }
+    }
+    callback();
+    return true;
   });
 };
 

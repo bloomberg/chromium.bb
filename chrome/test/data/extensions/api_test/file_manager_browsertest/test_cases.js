@@ -921,18 +921,22 @@ testcase.hideSearchBox = function() {
       appId = inAppId;
       callRemoteTestUtil('resizeWindow', appId, [100, 100], this.next);
     },
-    // Get the computed style.
+    // Wait for the style change.
     function(result) {
       chrome.test.assertTrue(result);
-      callRemoteTestUtil('getComputedStyles',
+      callRemoteTestUtil('waitForStyles',
                          appId,
-                         [['.search-box-wrapper', '#search-clear-button']],
+                         [{
+                            query: '.search-box-wrapper',
+                            styles: {visibility: 'display'}
+                          }, {
+                            query: '#search-clear-button',
+                            styles: {hidden: 'none'}
+                          }],
                          this.next);
     },
     // Check the styles
-    function(styles) {
-      chrome.test.assertTrue(styles[0].visibility == 'hidden');
-      chrome.test.assertTrue(styles[1].display == 'none');
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
