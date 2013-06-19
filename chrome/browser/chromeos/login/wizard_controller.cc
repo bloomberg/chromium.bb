@@ -192,7 +192,8 @@ void WizardController::Init(
 
     bool keyboard_driven_oobe = false;
     system::StatisticsProvider::GetInstance()->GetMachineFlag(
-        chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+        chromeos::system::kOemKeyboardDrivenOobeKey,
+        &keyboard_driven_oobe);
     if (keyboard_driven_oobe) {
       focus_ring_controller_.reset(new FocusRingController);
       focus_ring_controller_->SetVisible(true);

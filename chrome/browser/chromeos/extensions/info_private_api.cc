@@ -18,9 +18,6 @@ namespace extensions {
 
 namespace {
 
-// Name of machine statistic property with HWID.
-const char kHardwareClass[] = "hardware_class";
-
 // Key which corresponds to the HWID setting.
 const char kPropertyHWID[] = "hwid";
 
@@ -29,9 +26,6 @@ const char kPropertyHomeProvider[] = "homeProvider";
 
 // Key which corresponds to the initial_locale property.
 const char kPropertyInitialLocale[] = "initialLocale";
-
-// Name of machine statistic property with board.
-const char kPropertyReleaseBoard[] = "CHROMEOS_RELEASE_BOARD";
 
 // Key which corresponds to the board property in JS.
 const char kPropertyBoard[] = "board";
@@ -69,7 +63,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     std::string hwid;
     chromeos::system::StatisticsProvider* provider =
         chromeos::system::StatisticsProvider::GetInstance();
-    provider->GetMachineStatistic(kHardwareClass, &hwid);
+    provider->GetMachineStatistic(chromeos::system::kHardwareClass, &hwid);
     return new base::StringValue(hwid);
   } else if (property_name == kPropertyHomeProvider) {
     NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
@@ -81,7 +75,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     std::string board;
     chromeos::system::StatisticsProvider* provider =
         chromeos::system::StatisticsProvider::GetInstance();
-    provider->GetMachineStatistic(kPropertyReleaseBoard, &board);
+    provider->GetMachineStatistic(chromeos::system::kMachineInfoBoard, &board);
     return new base::StringValue(board);
   } else if (property_name == kPropertyOwner) {
     return Value::CreateBooleanValue(

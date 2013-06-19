@@ -371,7 +371,7 @@ void DeviceStatusCollector::GetBootMode(
     em::DeviceStatusReportRequest* request) {
   std::string dev_switch_mode;
   if (statistics_provider_->GetMachineStatistic(
-      "devsw_boot", &dev_switch_mode)) {
+          chromeos::system::kDevSwitchBootMode, &dev_switch_mode)) {
     if (dev_switch_mode == "1")
       request->set_boot_mode("Dev");
     else if (dev_switch_mode == "0")

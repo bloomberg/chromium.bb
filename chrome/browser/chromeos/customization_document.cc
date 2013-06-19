@@ -47,8 +47,6 @@ const char kSupportPageAttr[] = "support_page";
 
 const char kAcceptedManifestVersion[] = "1.0";
 
-const char kHardwareClass[] = "hardware_class";
-
 // Path to OEM partner startup customization manifest.
 const char kStartupCustomizationManifestPath[] =
     "/opt/oem/etc/startup_manifest.json";
@@ -175,7 +173,8 @@ void StartupCustomizationDocument::Init(
     root_->GetString(kRegistrationUrlAttr, &registration_url_);
 
     std::string hwid;
-    if (statistics_provider->GetMachineStatistic(kHardwareClass, &hwid)) {
+    if (statistics_provider->GetMachineStatistic(
+            chromeos::system::kHardwareClass, &hwid)) {
       ListValue* hwid_list = NULL;
       if (root_->GetList(kHwidMapAttr, &hwid_list)) {
         for (size_t i = 0; i < hwid_list->GetSize(); ++i) {

@@ -42,7 +42,7 @@ void LoadGaiaAuthExtension(Profile* profile) {
 #if defined(OS_CHROMEOS)
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  provider->GetMachineFlag(chromeos::kOemKeyboardDrivenOobeKey,
+  provider->GetMachineFlag(chromeos::system::kOemKeyboardDrivenOobeKey,
                            &force_keyboard_oobe);
 #endif // OS_CHROMEOS
   if (force_keyboard_oobe) {

@@ -18,7 +18,7 @@ ChromeViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
       !chromeos::StartupUtils::IsOobeCompleted()) {
     bool keyboard_driven_oobe = false;
     chromeos::system::StatisticsProvider::GetInstance()->GetMachineFlag(
-        chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+        chromeos::system::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
     if (keyboard_driven_oobe)
       return base::TimeDelta::FromSeconds(1);
   }

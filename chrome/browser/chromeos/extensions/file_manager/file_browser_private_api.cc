@@ -2255,13 +2255,13 @@ bool FileDialogStringsFunction::RunImpl() {
 #endif
 
   std::string board;
-  const char kMachineInfoBoard[] = "CHROMEOS_RELEASE_BOARD";
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineStatistic(kMachineInfoBoard, &board))
+  if (!provider->GetMachineStatistic(chromeos::system::kMachineInfoBoard,
+                                     &board)) {
     board = "unknown";
-  dict->SetString(kMachineInfoBoard, board);
-
+  }
+  dict->SetString(chromeos::system::kMachineInfoBoard, board);
   return true;
 }
 

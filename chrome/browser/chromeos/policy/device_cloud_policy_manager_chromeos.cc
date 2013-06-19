@@ -138,10 +138,12 @@ std::string DeviceCloudPolicyManagerChromeOS::GetDeviceRequisition() const {
   std::string requisition;
   const PrefService::Preference* pref = local_state_->FindPreference(
       prefs::kDeviceEnrollmentRequisition);
-  if (pref->IsDefaultValue())
-    requisition = GetMachineStatistic(chromeos::kOemDeviceRequisitionKey);
-  else
+  if (pref->IsDefaultValue()) {
+    requisition =
+        GetMachineStatistic(chromeos::system::kOemDeviceRequisitionKey);
+  } else {
     pref->GetValue()->GetAsString(&requisition);
+  }
 
   return requisition;
 }
@@ -165,14 +167,15 @@ bool DeviceCloudPolicyManagerChromeOS::ShouldAutoStartEnrollment() const {
   if (local_state_->HasPrefPath(prefs::kDeviceEnrollmentAutoStart))
     return local_state_->GetBoolean(prefs::kDeviceEnrollmentAutoStart);
 
-  return GetMachineFlag(chromeos::kOemIsEnterpriseManagedKey, false);
+  return GetMachineFlag(chromeos::system::kOemIsEnterpriseManagedKey, false);
 }
 
 bool DeviceCloudPolicyManagerChromeOS::CanExitEnrollment() const {
   if (local_state_->HasPrefPath(prefs::kDeviceEnrollmentCanExit))
     return local_state_->GetBoolean(prefs::kDeviceEnrollmentCanExit);
 
-  return GetMachineFlag(chromeos::kOemCanExitEnterpriseEnrollmentKey, true);
+  return GetMachineFlag(chromeos::system::kOemCanExitEnterpriseEnrollmentKey,
+                        true);
 }
 
 void DeviceCloudPolicyManagerChromeOS::Shutdown() {

@@ -349,7 +349,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
   bool keyboard_driven_oobe = false;
   system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+      chromeos::system::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
   localized_strings->SetString("highlightStrength",
                                keyboard_driven_oobe ? "strong" : "normal");
 }

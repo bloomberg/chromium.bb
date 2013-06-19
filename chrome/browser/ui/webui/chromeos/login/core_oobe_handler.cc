@@ -200,7 +200,7 @@ void CoreOobeHandler::UpdateOobeUIVisibility() {
   bool enable_keyboard_flow = false;
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  provider->GetMachineFlag(chromeos::kOemKeyboardDrivenOobeKey,
+  provider->GetMachineFlag(chromeos::system::kOemKeyboardDrivenOobeKey,
                            &enable_keyboard_flow);
   if (enable_keyboard_flow)
     CallJS("cr.ui.Oobe.enableKeyboardFlow", enable_keyboard_flow);

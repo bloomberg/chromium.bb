@@ -27,9 +27,6 @@ namespace imageburner {
 
 namespace {
 
-// Name for hwid in machine statistics.
-const char kHwidStatistic[] = "hardware_class";
-
 const char kConfigFileUrl[] =
     "https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf";
 const char kTempImageFolderName[] = "chromeos_image";
@@ -559,7 +556,7 @@ void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
   // Get image file name and image download URL.
   std::string hwid;
   if (fetched && system::StatisticsProvider::GetInstance()->
-      GetMachineStatistic(kHwidStatistic, &hwid)) {
+      GetMachineStatistic(system::kHardwareClass, &hwid)) {
     ConfigFile config_file(content);
     image_file_name_ = config_file.GetProperty(kFileName, hwid);
     image_download_url_ = GURL(config_file.GetProperty(kUrl, hwid));

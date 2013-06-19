@@ -91,7 +91,7 @@ bool IsMachineHWIDCorrect() {
   std::string hwid;
   chromeos::system::StatisticsProvider* stats =
       chromeos::system::StatisticsProvider::GetInstance();
-  if (!stats->GetMachineStatistic("hardware_class", &hwid)) {
+  if (!stats->GetMachineStatistic(chromeos::system::kHardwareClass, &hwid)) {
     LOG(ERROR) << "Couldn't get machine statistic 'hardware_class'.";
     return false;
   }

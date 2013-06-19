@@ -261,7 +261,8 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
 
   bool keyboard_driven_oobe = false;
   system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+      chromeos::system::kOemKeyboardDrivenOobeKey,
+      &keyboard_driven_oobe);
   if (keyboard_driven_oobe)
     views::FocusManager::set_arrow_key_traversal_enabled(true);
 }

@@ -9,9 +9,5 @@
 namespace chromeos {
 
 const base::FilePath::CharType kDriveCacheDirname[] = FPL("GCache");
-const char kOemDeviceRequisitionKey[] = "oem_device_requisition";
-const char kOemIsEnterpriseManagedKey[] = "oem_enterprise_managed";
-const char kOemCanExitEnterpriseEnrollmentKey[] = "oem_can_exit_enrollment";
-const char kOemKeyboardDrivenOobeKey[] = "oem_keyboard_driven_oobe";
 
 }  // namespace chromeos

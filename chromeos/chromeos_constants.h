@@ -13,10 +13,6 @@
 namespace chromeos {
 
 CHROMEOS_EXPORT extern const base::FilePath::CharType kDriveCacheDirname[];
-CHROMEOS_EXPORT extern const char kOemDeviceRequisitionKey[];
-CHROMEOS_EXPORT extern const char kOemIsEnterpriseManagedKey[];
-CHROMEOS_EXPORT extern const char kOemCanExitEnterpriseEnrollmentKey[];
-CHROMEOS_EXPORT extern const char kOemKeyboardDrivenOobeKey[];
 
 }  // namespace chromeos
 

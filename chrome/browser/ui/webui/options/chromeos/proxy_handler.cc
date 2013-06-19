@@ -70,7 +70,7 @@ void ProxyHandler::InitializePage() {
 
   bool keyboard_driven_oobe = false;
   system::StatisticsProvider::GetInstance()->GetMachineFlag(
-      chromeos::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
+      chromeos::system::kOemKeyboardDrivenOobeKey, &keyboard_driven_oobe);
   if (keyboard_driven_oobe) {
     web_ui()->CallJavascriptFunction(
         "DetailsInternetPage.initializeKeyboardFlow");

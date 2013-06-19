@@ -51,9 +51,7 @@ void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
   }
   // Possible ECHO code type and corresponding key name in StatisticsProvider.
   const std::string kCouponType = "COUPON_CODE";
-  const std::string kCouponCodeKey = "ubind_attribute";
   const std::string kGroupType = "GROUP_CODE";
-  const std::string kGroupCodeKey = "gbind_attribute";
 
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
@@ -61,10 +59,13 @@ void EchoPrivateGetRegistrationCodeFunction::GetRegistrationCode(
   if (!chromeos::KioskModeSettings::Get()->IsKioskModeEnabled()) {
     // In Kiosk mode, we effectively disable the registration API
     // by always returning an empty code.
-    if (type == kCouponType)
-      provider->GetMachineStatistic(kCouponCodeKey, &result);
-    else if (type == kGroupType)
-      provider->GetMachineStatistic(kGroupCodeKey, &result);
+    if (type == kCouponType) {
+      provider->GetMachineStatistic(chromeos::system::kOffersCouponCodeKey,
+                                    &result);
+    } else if (type == kGroupType) {
+      provider->GetMachineStatistic(chromeos::system::kOffersGroupCodeKey,
+                                    &result);
+    }
   }
 
   results_ = echo_api::GetRegistrationCode::Results::Create(result);
