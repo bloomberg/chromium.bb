@@ -9,7 +9,7 @@
 {
   'target_conditions': [
     ['OS!="win" or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_win(_unittest)?\\.(h|cc)$'],
+      'sources/': [ ['exclude', '_win(_browsertest|_unittest)?\\.(h|cc)$'],
                     ['exclude', '(^|/)win/'],
                     ['exclude', '(^|/)win_[^/]*\\.(h|cc)$'] ],
     }],
@@ -81,8 +81,7 @@
       'sources/': [ ['exclude', '_views\\.(h|cc)$'] ]
     }],
     ['<(use_aura)==0 or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_aura(_unittest)?\\.(h|cc)$'],
-                    ['exclude', '_aura(_browsertest)?\\.(h|cc)$'],
+      'sources/': [ ['exclude', '_aura(_browsertest|_unittest)?\\.(h|cc)$'],
                     ['exclude', '(^|/)aura/'],
       ]
     }],
