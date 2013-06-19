@@ -196,7 +196,7 @@ void NativeTextfieldWin::AppendText(const string16& text) {
                 reinterpret_cast<LPARAM>(text.c_str()));
 }
 
-void NativeTextfieldWin::ReplaceSelection(const string16& text) {
+void NativeTextfieldWin::InsertOrReplaceText(const string16& text) {
   // Currently not needed.
   NOTIMPLEMENTED();
 }

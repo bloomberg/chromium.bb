@@ -884,7 +884,6 @@ void OmniboxViewViews::CopyURL() {
 }
 
 void OmniboxViewViews::OnPaste() {
-  // Replace the selection if we have something to paste.
   const string16 text(GetClipboardText());
   if (!text.empty()) {
     // Record this paste, so we can do different behavior.
@@ -892,6 +891,6 @@ void OmniboxViewViews::OnPaste() {
     // Force a Paste operation to trigger the text_changed code in
     // OnAfterPossibleChange(), even if identical contents are pasted.
     text_before_change_.clear();
-    ReplaceSelection(text);
+    InsertOrReplaceText(text);
   }
 }

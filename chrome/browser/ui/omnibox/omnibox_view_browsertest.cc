@@ -39,6 +39,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
@@ -135,15 +136,14 @@ std::string GetPrimarySelectionText() {
   g_free(selection_text);
   return result;
 }
+#endif
 
 // Stores the given text to clipboard.
-void SetClipboardText(const char* text) {
-  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-  DCHECK(clipboard);
-
-  gtk_clipboard_set_text(clipboard, text, -1);
+void SetClipboardText(const string16& text) {
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ui::ScopedClipboardWriter writer(clipboard, ui::Clipboard::BUFFER_STANDARD);
+  writer.WriteText(text);
 }
-#endif
 
 #if defined(OS_MACOSX)
 const int kCtrlOrCmdMask = ui::EF_COMMAND_DOWN;
@@ -1597,32 +1597,45 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PrimarySelection) {
   // The content in the PRIMARY clipboard should not be cleared.
   EXPECT_EQ("Hello world", GetPrimarySelectionText());
 }
+#endif  // defined(TOOLKIT_GTK)
 
-// http://crbug.com/131179
-#if defined(OS_LINUX)
-#define MAYBE_PasteReplacingAll DISABLED_PasteReplacingAll
-#else
-#define MAYBE_PasteReplacingAll PasteReplacingAll
-#endif
-
-// http://crbug.com/12316
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_PasteReplacingAll) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
   ASSERT_TRUE(popup_model);
+  EXPECT_FALSE(popup_model->IsOpen());
 
-  SetClipboardText(kSearchText);
-
-  // Paste text.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_V, ui::EF_CONTROL_DOWN));
+  // Paste should yield the expected text and open the popup.
+  SetClipboardText(ASCIIToUTF16(kSearchText));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_V, kCtrlOrCmdMask));
   ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
-  ASSERT_TRUE(popup_model->IsOpen());
+  EXPECT_EQ(ASCIIToUTF16(kSearchText), omnibox_view->GetText());
+  EXPECT_TRUE(popup_model->IsOpen());
 
-  // Inline autocomplete shouldn't be triggered.
-  ASSERT_EQ(ASCIIToUTF16("abc"), omnibox_view->GetText());
+  // Close the popup and select all.
+  omnibox_view->CloseOmniboxPopup();
+  omnibox_view->SelectAll(false);
+  EXPECT_FALSE(popup_model->IsOpen());
+
+  // Pasting the same text again over itself should re-open the popup.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_V, kCtrlOrCmdMask));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  EXPECT_EQ(ASCIIToUTF16(kSearchText), omnibox_view->GetText());
+  // This fails on GTK, see http://crbug.com/131179
+#if !defined(TOOLKIT_GTK)
+  EXPECT_TRUE(popup_model->IsOpen());
+#endif
+  omnibox_view->CloseOmniboxPopup();
+  EXPECT_FALSE(popup_model->IsOpen());
+
+  // Pasting amid text should yield the expected text and re-open the popup.
+  omnibox_view->SetWindowTextAndCaretPos(ASCIIToUTF16("abcd"), 2, false, false);
+  SetClipboardText(ASCIIToUTF16("123"));
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_V, kCtrlOrCmdMask));
+  EXPECT_EQ(ASCIIToUTF16("ab123cd"), omnibox_view->GetText());
+  EXPECT_TRUE(popup_model->IsOpen());
 }
-#endif  // defined(TOOLKIT_GTK)
 
 #if defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllOnClick) {

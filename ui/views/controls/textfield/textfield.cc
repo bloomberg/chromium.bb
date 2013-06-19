@@ -189,9 +189,9 @@ void Textfield::AppendText(const string16& text) {
     native_wrapper_->AppendText(text);
 }
 
-void Textfield::ReplaceSelection(const string16& text) {
+void Textfield::InsertOrReplaceText(const string16& text) {
   if (native_wrapper_) {
-    native_wrapper_->ReplaceSelection(text);
+    native_wrapper_->InsertOrReplaceText(text);
     text_ = native_wrapper_->GetText();
   }
 }

@@ -520,10 +520,10 @@ void NativeTextfieldViews::AppendText(const string16& text) {
   SchedulePaint();
 }
 
-void NativeTextfieldViews::ReplaceSelection(const string16& text) {
-  if (text.empty() && !model_->HasSelection())
+void NativeTextfieldViews::InsertOrReplaceText(const string16& text) {
+  if (text.empty())
     return;
-  model_->ReplaceText(text);
+  model_->InsertText(text);
   OnCaretBoundsChanged();
   SchedulePaint();
 }
