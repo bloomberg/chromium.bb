@@ -39,12 +39,14 @@
 #include "core/page/EditorClient.h"
 #include "core/page/FocusDirection.h"
 #include "core/page/Page.h"
+#include "core/platform/DragImage.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/text/TextCheckerClient.h"
 #include "modules/device_orientation/DeviceMotionClient.h"
-
 #include "public/platform/WebScreenInfo.h"
+#include "wtf/Forward.h"
+
 #include <v8.h>
 
 /*
@@ -360,7 +362,7 @@ public:
     EmptyDragClient() { }
     virtual ~EmptyDragClient() {}
     virtual DragDestinationAction actionMaskForDrag(DragData*) OVERRIDE { return DragDestinationActionNone; }
-    virtual void startDrag(DragImageRef, const IntPoint&, const IntPoint&, Clipboard*, Frame*, bool) OVERRIDE { }
+    virtual void startDrag(DragImage*, const IntPoint&, const IntPoint&, Clipboard*, Frame*, bool) OVERRIDE { }
 };
 
 class EmptyInspectorClient : public InspectorClient {

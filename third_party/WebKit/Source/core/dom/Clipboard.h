@@ -31,13 +31,17 @@
 #include "core/page/DragActions.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/graphics/IntPoint.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
+class CachedImage;
 class DataTransferItemList;
 class DragData;
+class DragImage;
 class FileList;
 class Frame;
+class Range;
 
 // State available during IE's events for drag and drop and copy/paste
 class Clipboard : public RefCounted<Clipboard>, public ScriptWrappable {
@@ -76,7 +80,7 @@ public:
     Node* dragImageElement() const { return m_dragImageElement.get(); }
     virtual void setDragImageElement(Node*, const IntPoint&) = 0;
 
-    virtual DragImageRef createDragImage(IntPoint& dragLocation) const = 0;
+    virtual PassOwnPtr<DragImage> createDragImage(IntPoint& dragLocation) const = 0;
     virtual void declareAndWriteDragImage(Element*, const KURL&, const String& title, Frame*) = 0;
     virtual void writeURL(const KURL&, const String&, Frame*) = 0;
     virtual void writeRange(Range*, Frame*) = 0;

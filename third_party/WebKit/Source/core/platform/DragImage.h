@@ -20,42 +20,44 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef DragImage_h
 #define DragImage_h
 
-#include "core/platform/chromium/DragImageRef.h"
-#include "core/platform/graphics/FloatSize.h"
-#include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/IntSize.h"
-#include <wtf/Forward.h>
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
-    
-    class CachedImage;
-    class FontDescription;
-    class Frame;
-    class Image;
-    class KURL;
-    class Range;
 
-    IntSize dragImageSize(DragImageRef);
-    
-    //These functions should be memory neutral, eg. if they return a newly allocated image, 
-    //they should release the input image.  As a corollary these methods don't guarantee
-    //the input image ref will still be valid after they have been called
-    DragImageRef fitDragImageToMaxSize(DragImageRef image, const IntSize& srcSize, const IntSize& size);
-    DragImageRef scaleDragImage(DragImageRef, FloatSize scale);
-    DragImageRef dissolveDragImageToFraction(DragImageRef image, float delta);
-    
-    DragImageRef createDragImageFromImage(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation);
-    DragImageRef createDragImageForSelection(DragImageRef, float dragImageAlpha);
-    DragImageRef createDragImageIconForCachedImage(CachedImage*);
-    DragImageRef createDragImageForLink(const KURL&, const String& label, const FontDescription&, float deviceScaleFactor);
-    void deleteDragImage(DragImageRef);
+class FontDescription;
+class Image;
+class KURL;
+
+class DragImage {
+public:
+    static PassOwnPtr<DragImage> create(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation);
+    static PassOwnPtr<DragImage> create(const KURL&, const String& label, const FontDescription& systemFont, float deviceScaleFactor);
+    ~DragImage();
+
+    const SkBitmap& bitmap() { return m_bitmap; }
+    float resolutionScale() const { return m_resolutionScale; }
+    IntSize size() const { return IntSize(m_bitmap.width(), m_bitmap.height()); }
+
+    void fitToMaxSize(const IntSize& srcSize, const IntSize& maxSize);
+    void scale(float scaleX, float scaleY);
+    void dissolveToFraction(float fraction);
+
+private:
+    DragImage(const SkBitmap&, float resolutionScale);
+
+    SkBitmap m_bitmap;
+    float m_resolutionScale;
+};
+
 }
 
-#endif //!DragImage_h
+#endif // DragImage_h

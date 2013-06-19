@@ -32,10 +32,16 @@
 
 #include "core/platform/DragImage.h"
 
-#include <gtest/gtest.h>
 #include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
-#include <wtf/PassOwnPtr.h>
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 
@@ -100,32 +106,24 @@ private:
 
 TEST(DragImageTest, NullHandling)
 {
-    EXPECT_FALSE(createDragImageFromImage(0));
+    EXPECT_FALSE(DragImage::create(0));
 
-    deleteDragImage(0);
-    EXPECT_TRUE(dragImageSize(0).isZero());
-    EXPECT_FALSE(scaleDragImage(0, FloatSize(0.5, 0.5)));
-    EXPECT_FALSE(dissolveDragImageToFraction(0, 0.5));
-    EXPECT_FALSE(createDragImageFromImage(0));
-    EXPECT_FALSE(createDragImageIconForCachedImage(0));
+    RefPtr<TestImage> nullTestImage(TestImage::create(IntSize()));
+    EXPECT_FALSE(DragImage::create(nullTestImage.get()));
 }
 
 TEST(DragImageTest, NonNullHandling)
 {
     RefPtr<TestImage> testImage(TestImage::create(IntSize(2, 2)));
-    DragImageRef dragImage = createDragImageFromImage(testImage.get());
+    OwnPtr<DragImage> dragImage = DragImage::create(testImage.get());
     ASSERT_TRUE(dragImage);
 
-    dragImage = scaleDragImage(dragImage, FloatSize(0.5, 0.5));
-    ASSERT_TRUE(dragImage);
-    IntSize size = dragImageSize(dragImage);
+    dragImage->scale(0.5, 0.5);
+    IntSize size = dragImage->size();
     EXPECT_EQ(1, size.width());
     EXPECT_EQ(1, size.height());
 
-    dragImage = dissolveDragImageToFraction(dragImage, 0.5);
-    ASSERT_TRUE(dragImage);
-
-    deleteDragImage(dragImage);
+    dragImage->dissolveToFraction(0.5);
 }
 
 TEST(DragImageTest, CreateDragImage)
@@ -134,16 +132,16 @@ TEST(DragImageTest, CreateDragImage)
         // Tests that the DrageImage implementation doesn't choke on null values
         // of nativeImageForCurrentFrame().
         RefPtr<TestImage> testImage(TestImage::create(IntSize()));
-        EXPECT_FALSE(createDragImageFromImage(testImage.get()));
+        EXPECT_FALSE(DragImage::create(testImage.get()));
     }
 
     {
         // Tests that the drag image is a deep copy.
         RefPtr<TestImage> testImage(TestImage::create(IntSize(1, 1)));
-        DragImageRef dragImage = createDragImageFromImage(testImage.get());
+        OwnPtr<DragImage> dragImage = DragImage::create(testImage.get());
         ASSERT_TRUE(dragImage);
-        SkAutoLockPixels lock1(*dragImage->bitmap), lock2(testImage->nativeImageForCurrentFrame()->bitmap());
-        EXPECT_NE(dragImage->bitmap->getPixels(), testImage->nativeImageForCurrentFrame()->bitmap().getPixels());
+        SkAutoLockPixels lock1(dragImage->bitmap()), lock2(testImage->nativeImageForCurrentFrame()->bitmap());
+        EXPECT_NE(dragImage->bitmap().getPixels(), testImage->nativeImageForCurrentFrame()->bitmap().getPixels());
     }
 }
 

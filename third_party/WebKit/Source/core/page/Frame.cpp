@@ -658,10 +658,10 @@ struct ScopedFramePaintingState {
     Color backgroundColor;
 };
 
-DragImageRef Frame::nodeImage(Node* node)
+PassOwnPtr<DragImage> Frame::nodeImage(Node* node)
 {
     if (!node->renderer())
-        return 0;
+        return nullptr;
 
     const ScopedFramePaintingState state(this, node);
 
@@ -675,7 +675,7 @@ DragImageRef Frame::nodeImage(Node* node)
     // Document::updateLayout may have blown away the original RenderObject.
     RenderObject* renderer = node->renderer();
     if (!renderer)
-      return 0;
+        return nullptr;
 
     LayoutRect topLevelRect;
     IntRect paintingRect = pixelSnappedIntRect(renderer->paintingRootRect(topLevelRect));
@@ -688,20 +688,20 @@ DragImageRef Frame::nodeImage(Node* node)
 
     OwnPtr<ImageBuffer> buffer(ImageBuffer::create(paintingRect.size(), deviceScaleFactor));
     if (!buffer)
-        return 0;
+        return nullptr;
     buffer->context()->translate(-paintingRect.x(), -paintingRect.y());
     buffer->context()->clip(FloatRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
     m_view->paintContents(buffer->context(), paintingRect);
 
     RefPtr<Image> image = buffer->copyImage();
-    return createDragImageFromImage(image.get(), renderer->shouldRespectImageOrientation());
+    return DragImage::create(image.get(), renderer->shouldRespectImageOrientation());
 }
 
-DragImageRef Frame::dragImageForSelection()
+PassOwnPtr<DragImage> Frame::dragImageForSelection()
 {
     if (!selection()->isRange())
-        return 0;
+        return nullptr;
 
     const ScopedFramePaintingState state(this, 0);
     m_view->setPaintBehavior(PaintBehaviorSelectionOnly | PaintBehaviorFlattenCompositingLayers);
@@ -717,14 +717,14 @@ DragImageRef Frame::dragImageForSelection()
 
     OwnPtr<ImageBuffer> buffer(ImageBuffer::create(paintingRect.size(), deviceScaleFactor));
     if (!buffer)
-        return 0;
+        return nullptr;
     buffer->context()->translate(-paintingRect.x(), -paintingRect.y());
     buffer->context()->clip(FloatRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
     m_view->paintContents(buffer->context(), paintingRect);
 
     RefPtr<Image> image = buffer->copyImage();
-    return createDragImageFromImage(image.get());
+    return DragImage::create(image.get());
 }
 
 } // namespace WebCore

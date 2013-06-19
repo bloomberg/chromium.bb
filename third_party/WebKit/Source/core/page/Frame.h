@@ -33,9 +33,9 @@
 #include "core/page/AdjustViewSizeOrNot.h"
 #include "core/page/FrameTree.h"
 #include "core/platform/ScrollTypes.h"
-#include "core/platform/chromium/DragImageRef.h"
 #include "core/platform/graphics/IntSize.h"
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
@@ -43,6 +43,7 @@ namespace WebCore {
     class Color;
     class DOMWindow;
     class Document;
+    class DragImage;
     class Editor;
     class Element;
     class EventHandler;
@@ -147,8 +148,8 @@ namespace WebCore {
 
         String displayStringModifiedByEncoding(const String&) const;
 
-        DragImageRef nodeImage(Node*);
-        DragImageRef dragImageForSelection();
+        PassOwnPtr<DragImage> nodeImage(Node*);
+        PassOwnPtr<DragImage> dragImageForSelection();
 
         VisiblePosition visiblePositionForPoint(const IntPoint& framePoint);
         Document* documentAtPoint(const IntPoint& windowPoint);

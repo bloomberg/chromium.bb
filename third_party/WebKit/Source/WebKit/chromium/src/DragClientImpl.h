@@ -37,6 +37,7 @@
 namespace WebCore {
 class ClipBoard;
 class DragData;
+class DragImage;
 class IntPoint;
 class KURL;
 }
@@ -50,7 +51,7 @@ public:
 
     virtual WebCore::DragDestinationAction actionMaskForDrag(WebCore::DragData*);
     virtual void startDrag(
-        WebCore::DragImageRef dragImage,
+        WebCore::DragImage*,
         const WebCore::IntPoint& dragImageOrigin,
         const WebCore::IntPoint& eventPos,
         WebCore::Clipboard* clipboard,

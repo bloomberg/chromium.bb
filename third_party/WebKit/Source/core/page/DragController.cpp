@@ -27,8 +27,6 @@
 #include "config.h"
 #include "core/page/DragController.h"
 
-#include <wtf/CurrentTime.h>
-#include <wtf/RefPtr.h>
 #include "HTMLNames.h"
 #include "core/dom/Clipboard.h"
 #include "core/dom/ClipboardAccessPolicy.h"
@@ -63,6 +61,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/DragData.h"
+#include "core/platform/DragImage.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageOrientation.h"
@@ -73,6 +72,10 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 #if OS(WINDOWS)
 #include <windows.h>
@@ -726,7 +729,7 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
     m_draggingImageURL = KURL();
     m_sourceDragOperation = srcOp;
 
-    DragImageRef dragImage = 0;
+    OwnPtr<DragImage> dragImage;
     IntPoint dragLoc(0, 0);
     IntPoint dragImageOffset(0, 0);
 
@@ -753,9 +756,9 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
     Image* image = node->isElementNode() ? getImage(toElement(node)) : 0;
     if (state.m_dragType == DragSourceActionSelection) {
         if (!clipboard->hasData()) {
-            if (enclosingTextFormControl(src->selection()->start()))
+            if (enclosingTextFormControl(src->selection()->start())) {
                 clipboard->writePlainText(src->editor()->selectedTextForClipboard());
-            else {
+            } else {
                 RefPtr<Range> selectionRange = src->selection()->toNormalizedRange();
                 ASSERT(selectionRange);
 
@@ -763,11 +766,13 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
             }
         }
         if (!dragImage) {
-            dragImage = createDragImageForSelection(src->dragImageForSelection(), DragImageAlpha);
+            dragImage = src->dragImageForSelection();
+            if (dragImage)
+                dragImage->dissolveToFraction(DragImageAlpha);
             dragLoc = dragLocForSelectionDrag(src);
             m_dragOffset = IntPoint(dragOrigin.x() - dragLoc.x(), dragOrigin.y() - dragLoc.y());
         }
-        doSystemDrag(dragImage, dragLoc, dragOrigin, clipboard, src, false);
+        doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
     } else if (!imageURL.isEmpty() && node && node->isElementNode() && image && !image->isNull()
                && (m_dragSourceAction & DragSourceActionImage)) {
         // We shouldn't be starting a drag for an image that can't provide an extension.
@@ -783,10 +788,10 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
             IntRect imageRect = hitTestResult.imageRect();
             imageRect.setLocation(m_page->mainFrame()->view()->rootViewToContents(src->view()->contentsToRootView(imageRect.location())));
             doImageDrag(element, dragOrigin, hitTestResult.imageRect(), clipboard, src, m_dragOffset);
-        } else
+        } else {
             // DHTML defined drag image
-            doSystemDrag(dragImage, dragLoc, dragOrigin, clipboard, src, false);
-
+            doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
+        }
     } else if (!linkURL.isEmpty() && (m_dragSourceAction & DragSourceActionLink)) {
         if (!clipboard->hasData())
             // Simplify whitespace so the title put on the clipboard resembles what the user sees
@@ -807,16 +812,16 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
             FontDescription fontDescription;
             RenderTheme::defaultTheme()->systemFont(WebCore::CSSValueNone, fontDescription);
             float deviceScaleFactor = src->page() ? src->page()->deviceScaleFactor() : 1;
-            dragImage = createDragImageForLink(linkURL, hitTestResult.textContent(), fontDescription, deviceScaleFactor);
-            IntSize size = dragImageSize(dragImage);
+            dragImage = DragImage::create(linkURL, hitTestResult.textContent(), fontDescription, deviceScaleFactor);
+            IntSize size = dragImage ? dragImage->size() : IntSize();
             m_dragOffset = IntPoint(-size.width() / 2, -LinkDragBorderInset);
             dragLoc = IntPoint(mouseDraggedPoint.x() + m_dragOffset.x(), mouseDraggedPoint.y() + m_dragOffset.y());
         }
-        doSystemDrag(dragImage, dragLoc, mouseDraggedPoint, clipboard, src, true);
+        doSystemDrag(dragImage.get(), dragLoc, mouseDraggedPoint, clipboard, src, true);
     } else if (state.m_dragType == DragSourceActionDHTML) {
         if (dragImage) {
             ASSERT(m_dragSourceAction & DragSourceActionDHTML);
-            doSystemDrag(dragImage, dragLoc, dragOrigin, clipboard, src, false);
+            doSystemDrag(dragImage.get(), dragLoc, dragOrigin, clipboard, src, false);
         } else {
             startedDrag = false;
         }
@@ -826,26 +831,24 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
         startedDrag = false;
     }
 
-    if (dragImage)
-        deleteDragImage(dragImage);
     return startedDrag;
 }
 
 void DragController::doImageDrag(Element* element, const IntPoint& dragOrigin, const IntRect& rect, Clipboard* clipboard, Frame* frame, IntPoint& dragImageOffset)
 {
     IntPoint mouseDownPoint = dragOrigin;
-    DragImageRef dragImage;
+    OwnPtr<DragImage> dragImage;
     IntPoint origin;
 
     Image* image = getImage(element);
     if (image && image->size().height() * image->size().width() <= MaxOriginalImageArea
-        && (dragImage = createDragImageFromImage(image, element->renderer() ? element->renderer()->shouldRespectImageOrientation() : DoNotRespectImageOrientation))) {
+        && (dragImage = DragImage::create(image, element->renderer() ? element->renderer()->shouldRespectImageOrientation() : DoNotRespectImageOrientation))) {
         IntSize originalSize = rect.size();
         origin = rect.location();
 
-        dragImage = fitDragImageToMaxSize(dragImage, rect.size(), maxDragImageSize());
-        dragImage = dissolveDragImageToFraction(dragImage, DragImageAlpha);
-        IntSize newSize = dragImageSize(dragImage);
+        dragImage->fitToMaxSize(rect.size(), maxDragImageSize());
+        dragImage->dissolveToFraction(DragImageAlpha);
+        IntSize newSize = dragImage->size();
 
         // Properly orient the drag image and orient it differently if it's smaller than the original
         float scale = newSize.width() / (float)originalSize.width();
@@ -855,19 +858,13 @@ void DragController::doImageDrag(Element* element, const IntPoint& dragOrigin, c
         float dy = origin.y() - mouseDownPoint.y();
         dy *= scale;
         origin.setY((int)(dy + 0.5));
-    } else {
-        dragImage = createDragImageIconForCachedImage(getCachedImage(element));
-        if (dragImage)
-            origin = IntPoint(DragIconRightInset - dragImageSize(dragImage).width(), DragIconBottomInset);
     }
 
     dragImageOffset = mouseDownPoint + origin;
-    doSystemDrag(dragImage, dragImageOffset, dragOrigin, clipboard, frame, false);
-
-    deleteDragImage(dragImage);
+    doSystemDrag(dragImage.get(), dragImageOffset, dragOrigin, clipboard, frame, false);
 }
 
-void DragController::doSystemDrag(DragImageRef image, const IntPoint& dragLoc, const IntPoint& eventPos, Clipboard* clipboard, Frame* frame, bool forLink)
+void DragController::doSystemDrag(DragImage* image, const IntPoint& dragLoc, const IntPoint& eventPos, Clipboard* clipboard, Frame* frame, bool forLink)
 {
     m_didInitiateDrag = true;
     m_dragInitiator = frame->document();

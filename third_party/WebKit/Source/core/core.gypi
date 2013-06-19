@@ -2634,8 +2634,6 @@
             'platform/chromium/ClipboardUtilitiesChromium.cpp',
             'platform/chromium/ClipboardUtilitiesChromium.h',
             'platform/chromium/DragDataRef.h',
-            'platform/chromium/DragImageChromiumSkia.cpp',
-            'platform/chromium/DragImageRef.h',
             'platform/chromium/FileSystemChromium.cpp',
             'platform/chromium/FileSystemChromiumLinux.cpp',
             'platform/chromium/FileSystemChromiumMac.mm',

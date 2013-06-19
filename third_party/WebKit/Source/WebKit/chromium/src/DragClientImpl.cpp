@@ -33,13 +33,18 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/page/Frame.h"
+#include "core/platform/DragImage.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/ClipboardChromium.h"
-#include "core/platform/chromium/DragImageRef.h"
+#include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebImage.h"
+#include "public/platform/WebPoint.h"
+#include "public/web/WebDragOperation.h"
+#include "wtf/Assertions.h"
+#include "wtf/RefPtr.h"
 
 using namespace WebCore;
 
@@ -54,7 +59,7 @@ DragDestinationAction DragClientImpl::actionMaskForDrag(DragData*)
         DragDestinationActionDHTML | DragDestinationActionEdit);
 }
 
-void DragClientImpl::startDrag(DragImageRef dragImage,
+void DragClientImpl::startDrag(DragImage* dragImage,
                                const IntPoint& dragImageOrigin,
                                const IntPoint& eventPos,
                                Clipboard* clipboard,
@@ -65,18 +70,22 @@ void DragClientImpl::startDrag(DragImageRef dragImage,
     RefPtr<Frame> frameProtector = frame;
 
     WebDragData dragData = static_cast<ClipboardChromium*>(clipboard)->dataObject();
-
-    DragOperation dragOperationMask = clipboard->sourceOperation();
-
+    WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(clipboard->sourceOperation());
+    WebImage image;
     IntSize offsetSize(eventPos - dragImageOrigin);
     WebPoint offsetPoint(offsetSize.width(), offsetSize.height());
 
-    if (dragImage && dragImage->bitmap && m_webView->deviceScaleFactor() != dragImage->resolutionScale) {
-        ASSERT(dragImage->resolutionScale > 0);
-        float scale = m_webView->deviceScaleFactor() / dragImage->resolutionScale;
-        dragImage = scaleDragImage(dragImage, WebCore::FloatSize(scale, scale));
+    if (dragImage) {
+        float resolutionScale = dragImage->resolutionScale();
+        if (m_webView->deviceScaleFactor() != resolutionScale) {
+            ASSERT(resolutionScale > 0);
+            float scale = m_webView->deviceScaleFactor() / resolutionScale;
+            dragImage->scale(scale, scale);
+        }
+        image = dragImage->bitmap();
     }
-    m_webView->startDragging(frame, dragData, static_cast<WebDragOperationsMask>(dragOperationMask), (dragImage && dragImage->bitmap) ? WebImage(*dragImage->bitmap) : WebImage(), offsetPoint);
+
+    m_webView->startDragging(frame, dragData, dragOperationMask, image, offsetPoint);
 }
 
 } // namespace WebKit

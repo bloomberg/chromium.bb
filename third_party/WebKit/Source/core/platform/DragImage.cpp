@@ -26,18 +26,35 @@
 #include "config.h"
 #include "core/platform/DragImage.h"
 
+#include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
-#include "core/platform/graphics/FontSelector.h"
+#include "core/platform/graphics/FontMetrics.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/StringTruncator.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
+#include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkMatrix.h"
 #include "weborigin/KURL.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
+
+#include <algorithm>
 
 namespace WebCore {
-    
+
 const float kDragLabelBorderX = 4;
 // Keep border_y in synch with DragController::LinkDragBorderInset.
 const float kDragLabelBorderY = 2;
@@ -51,11 +68,52 @@ const float kMaxDragLabelStringWidth = (kMaxDragLabelWidth - 2 * kDragLabelBorde
 const float kDragLinkLabelFontSize = 11;
 const float kDragLinkUrlFontSize = 10;
 
+PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnum shouldRespectImageOrientation)
+{
+    if (!image)
+        return nullptr;
+
+    RefPtr<NativeImageSkia> bitmap = image->nativeImageForCurrentFrame();
+    if (!bitmap)
+        return nullptr;
+
+    if (image->isBitmapImage()) {
+        ImageOrientation orientation = DefaultImageOrientation;
+        BitmapImage* bitmapImage = static_cast<BitmapImage*>(image);
+        IntSize sizeRespectingOrientation = bitmapImage->sizeRespectingOrientation();
+
+        if (shouldRespectImageOrientation == RespectImageOrientation)
+            orientation = bitmapImage->currentFrameOrientation();
+
+        if (orientation != DefaultImageOrientation) {
+            FloatRect destRect(FloatPoint(), sizeRespectingOrientation);
+            if (orientation.usesWidthAsHeight())
+                destRect = destRect.transposedRect();
+
+            SkBitmap skBitmap;
+            skBitmap.setConfig(
+                SkBitmap::kARGB_8888_Config, sizeRespectingOrientation.width(), sizeRespectingOrientation.height());
+            if (!skBitmap.allocPixels())
+                return nullptr;
+
+            SkCanvas canvas(skBitmap);
+            canvas.concat(orientation.transformFromDefault(sizeRespectingOrientation));
+            canvas.drawBitmapRect(bitmap->bitmap(), 0, destRect);
+
+            return adoptPtr(new DragImage(skBitmap, bitmap->resolutionScale()));
+        }
+    }
+
+    SkBitmap skBitmap;
+    if (!bitmap->bitmap().copyTo(&skBitmap, SkBitmap::kARGB_8888_Config))
+        return nullptr;
+    return adoptPtr(new DragImage(skBitmap, bitmap->resolutionScale()));
+}
+
 static Font deriveDragLabelFont(int size, FontWeight fontWeight, const FontDescription& systemFont)
 {
     FontDescription description = systemFont;
     description.setWeight(fontWeight);
-
     description.setSpecifiedSize(size);
     description.setComputedSize(size);
     Font result(description, 0, 0);
@@ -63,46 +121,7 @@ static Font deriveDragLabelFont(int size, FontWeight fontWeight, const FontDescr
     return result;
 }
 
-DragImageRef fitDragImageToMaxSize(DragImageRef image, const IntSize& srcSize, const IntSize& size)
-{
-    float heightResizeRatio = 0.0f;
-    float widthResizeRatio = 0.0f;
-    float resizeRatio = -1.0f;
-    IntSize originalSize = dragImageSize(image);
-    
-    if (srcSize.width() > size.width()) {
-        widthResizeRatio = size.width() / (float)srcSize.width();
-        resizeRatio = widthResizeRatio;
-    }
-    
-    if (srcSize.height() > size.height()) {
-        heightResizeRatio = size.height() / (float)srcSize.height();
-        if ((resizeRatio < 0.0f) || (resizeRatio > heightResizeRatio))
-            resizeRatio = heightResizeRatio;
-    }
-    
-    if (srcSize == originalSize)
-        return resizeRatio > 0.0f ? scaleDragImage(image, FloatSize(resizeRatio, resizeRatio)) : image;
-    
-    // The image was scaled in the webpage so at minimum we must account for that scaling
-    float scalex = srcSize.width() / (float)originalSize.width();
-    float scaley = srcSize.height() / (float)originalSize.height();
-    if (resizeRatio > 0.0f) {
-        scalex *= resizeRatio;
-        scaley *= resizeRatio;
-    }
-    
-    return scaleDragImage(image, FloatSize(scalex, scaley));
-}
-    
-DragImageRef createDragImageForSelection(DragImageRef image, float dragImageAlpha)
-{
-    if (image)
-        image = dissolveDragImageToFraction(image, dragImageAlpha);
-    return image;
-}
-
-DragImageRef createDragImageForLink(const KURL& url, const String& inLabel, const FontDescription& systemFont, float deviceScaleFactor)
+PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, const FontDescription& systemFont, float deviceScaleFactor)
 {
     const Font labelFont = deriveDragLabelFont(kDragLinkLabelFontSize, FontWeightBold, systemFont);
     const Font urlFont = deriveDragLabelFont(kDragLinkUrlFontSize, FontWeightNormal, systemFont);
@@ -149,7 +168,7 @@ DragImageRef createDragImageForLink(const KURL& url, const String& inLabel, cons
     scaledImageSize.scale(deviceScaleFactor);
     OwnPtr<ImageBuffer> buffer(ImageBuffer::create(scaledImageSize, deviceScaleFactor));
     if (!buffer)
-        return 0;
+        return nullptr;
 
     const float DragLabelRadius = 5;
     const IntSize radii(DragLabelRadius, DragLabelRadius);
@@ -174,8 +193,77 @@ DragImageRef createDragImageForLink(const KURL& url, const String& inLabel, cons
     buffer->context()->drawText(urlFont, TextRunPaintInfo(textRun), textPos);
 
     RefPtr<Image> image = buffer->copyImage();
-    return createDragImageFromImage(image.get());
+    return DragImage::create(image.get());
+}
+
+DragImage::DragImage(const SkBitmap& bitmap, float resolutionScale)
+    : m_bitmap(bitmap)
+    , m_resolutionScale(resolutionScale)
+{
+}
+
+DragImage::~DragImage()
+{
+}
+
+void DragImage::fitToMaxSize(const IntSize& srcSize, const IntSize& maxSize)
+{
+    float heightResizeRatio = 0.0f;
+    float widthResizeRatio = 0.0f;
+    float resizeRatio = -1.0f;
+    IntSize originalSize = size();
+
+    if (srcSize.width() > maxSize.width()) {
+        widthResizeRatio = maxSize.width() / static_cast<float>(srcSize.width());
+        resizeRatio = widthResizeRatio;
+    }
+
+    if (srcSize.height() > maxSize.height()) {
+        heightResizeRatio = maxSize.height() / static_cast<float>(srcSize.height());
+        if ((resizeRatio < 0.0f) || (resizeRatio > heightResizeRatio))
+            resizeRatio = heightResizeRatio;
+    }
+
+    if (srcSize == originalSize) {
+        if (resizeRatio > 0.0f)
+            scale(resizeRatio, resizeRatio);
+        return;
+    }
+
+    // The image was scaled in the webpage so at minimum we must account for that scaling
+    float scaleX = srcSize.width() / static_cast<float>(originalSize.width());
+    float scaleY = srcSize.height() / static_cast<float>(originalSize.height());
+    if (resizeRatio > 0.0f) {
+        scaleX *= resizeRatio;
+        scaleY *= resizeRatio;
+    }
+
+    scale(scaleX, scaleY);
+}
+
+void DragImage::scale(float scaleX, float scaleY)
+{
+    int imageWidth = scaleX * m_bitmap.width();
+    int imageHeight = scaleY * m_bitmap.height();
+    m_bitmap = skia::ImageOperations::Resize(
+        m_bitmap, skia::ImageOperations::RESIZE_LANCZOS3, imageWidth, imageHeight);
+}
+
+void DragImage::dissolveToFraction(float fraction)
+{
+    m_bitmap.setIsOpaque(false);
+    SkAutoLockPixels lock(m_bitmap);
+
+    for (int row = 0; row < m_bitmap.height(); ++row) {
+        for (int column = 0; column < m_bitmap.width(); ++column) {
+            uint32_t* pixel = m_bitmap.getAddr32(column, row);
+            *pixel = SkPreMultiplyARGB(
+                SkColorGetA(*pixel) * fraction,
+                SkColorGetR(*pixel),
+                SkColorGetG(*pixel),
+                SkColorGetB(*pixel));
+        }
+    }
 }
 
 } // namespace WebCore
-

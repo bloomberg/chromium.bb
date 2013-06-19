@@ -95,7 +95,7 @@ namespace WebCore {
             return m_dataObject;
         }
 
-        virtual DragImageRef createDragImage(IntPoint& dragLoc) const;
+        virtual PassOwnPtr<DragImage> createDragImage(IntPoint& dragLoc) const;
         virtual void declareAndWriteDragImage(Element*, const KURL&, const String& title, Frame*);
         virtual void writeURL(const KURL&, const String&, Frame*);
         virtual void writeRange(Range*, Frame*);
