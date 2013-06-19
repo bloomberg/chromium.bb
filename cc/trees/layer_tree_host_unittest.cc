@@ -15,6 +15,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/output_surface.h"

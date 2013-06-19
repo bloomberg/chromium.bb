@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/time.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/context_provider.h"
@@ -90,6 +91,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       did_swap_buffer_(false),
       current_sw_canvas_(NULL) {
   capabilities_.deferred_gl_initialization = true;
+  capabilities_.adjust_deadline_for_parent = false;
   // Cannot call out to GetDelegate() here as the output surface is not
   // constructed on the correct thread.
 }
@@ -219,7 +221,7 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   did_swap_buffer_ = false;
   SetNeedsRedrawRect(gfx::Rect(damage_size));
   if (needs_begin_frame_)
-    BeginFrame(base::TimeTicks::Now());
+    BeginFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
 
   if (did_swap_buffer_)
     OnSwapBuffersComplete(NULL);

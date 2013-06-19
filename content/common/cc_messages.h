@@ -4,6 +4,7 @@
 //
 // IPC Messages sent between compositor instances.
 
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/quads/checkerboard_draw_quad.h"
@@ -210,6 +211,12 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
   IPC_STRUCT_TRAITS_MEMBER(filter)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(mailbox)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::BeginFrameArgs)
+  IPC_STRUCT_TRAITS_MEMBER(frame_time)
+  IPC_STRUCT_TRAITS_MEMBER(deadline)
+  IPC_STRUCT_TRAITS_MEMBER(interval)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)

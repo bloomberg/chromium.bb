@@ -16,6 +16,7 @@
 #include "base/process.h"
 #include "cc/layers/delegated_renderer_layer_client.h"
 #include "cc/layers/texture_layer_client.h"
+#include "cc/output/begin_frame_args.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -192,7 +193,7 @@ class RenderWidgetHostViewAndroid
   void SendMouseEvent(const WebKit::WebMouseEvent& event);
   void SendMouseWheelEvent(const WebKit::WebMouseWheelEvent& event);
   void SendGestureEvent(const WebKit::WebGestureEvent& event);
-  void SendBeginFrame(base::TimeTicks frame_time);
+  void SendBeginFrame(const cc::BeginFrameArgs& args);
 
   void OnTextInputStateChanged(const ViewHostMsg_TextInputState_Params& params);
   void OnProcessImeBatchStateAck(bool is_begin);

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/scheduler_settings.h"
 
 namespace cc {
@@ -79,8 +80,7 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates that the system has entered and left a BeginFrame callback.
   // The scheduler will not draw more than once in a given BeginFrame
   // callback.
-  void DidEnterBeginFrame();
-  void SetFrameTime(base::TimeTicks frame_time);
+  void DidEnterBeginFrame(const BeginFrameArgs& args);
   void DidLeaveBeginFrame();
   bool inside_begin_frame() const { return inside_begin_frame_; }
 
@@ -189,7 +189,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool expect_immediate_begin_frame_for_main_thread_;
   bool main_thread_needs_layer_textures_;
   bool inside_begin_frame_;
-  base::TimeTicks last_frame_time_;
+  BeginFrameArgs last_begin_frame_args_;
   bool visible_;
   bool can_start_;
   bool can_draw_;

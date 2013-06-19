@@ -8,7 +8,9 @@
 
 namespace cc {
 
-void FakeTimeSourceClient::OnTimerTick() { tick_called_ = true; }
+void FakeTimeSourceClient::OnTimerTick() {
+  tick_called_ = true;
+}
 
 base::TimeTicks FakeDelayBasedTimeSource::Now() const { return now_; }
 

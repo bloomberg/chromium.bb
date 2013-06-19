@@ -12,6 +12,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/output_surface.h"
 #include "ipc/ipc_sync_message_filter.h"
 
@@ -87,7 +88,7 @@ class CompositorOutputSurface
   void OnUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
 #if defined(OS_ANDROID)
-  void OnBeginFrame(base::TimeTicks frame_time);
+  void OnBeginFrame(const cc::BeginFrameArgs& args);
 #endif
   bool Send(IPC::Message* message);
 

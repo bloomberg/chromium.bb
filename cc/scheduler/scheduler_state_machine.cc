@@ -84,7 +84,12 @@ std::string SchedulerStateMachine::ToString() {
   base::StringAppendF(&str, "inside_begin_frame_ = %d; ",
       inside_begin_frame_);
   base::StringAppendF(&str, "last_frame_time_ = %"PRId64"; ",
-      (last_frame_time_ - base::TimeTicks()).InMilliseconds());
+      (last_begin_frame_args_.frame_time - base::TimeTicks())
+          .InMilliseconds());
+  base::StringAppendF(&str, "last_deadline_ = %"PRId64"; ",
+      (last_begin_frame_args_.deadline - base::TimeTicks()).InMilliseconds());
+  base::StringAppendF(&str, "last_interval_ = %"PRId64"; ",
+      last_begin_frame_args_.interval.InMilliseconds());
   base::StringAppendF(&str, "visible_ = %d; ", visible_);
   base::StringAppendF(&str, "can_start_ = %d; ", can_start_);
   base::StringAppendF(&str, "can_draw_ = %d; ", can_draw_);
@@ -367,12 +372,9 @@ bool SchedulerStateMachine::ProactiveBeginFrameWantedByImplThread() const {
   return false;
 }
 
-void SchedulerStateMachine::DidEnterBeginFrame() {
+void SchedulerStateMachine::DidEnterBeginFrame(const BeginFrameArgs& args) {
   inside_begin_frame_ = true;
-}
-
-void SchedulerStateMachine::SetFrameTime(base::TimeTicks frame_time) {
-  last_frame_time_ = frame_time;
+  last_begin_frame_args_ = args;
 }
 
 void SchedulerStateMachine::DidLeaveBeginFrame() {

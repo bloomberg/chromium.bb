@@ -138,9 +138,9 @@ void CompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
   OutputSurface::SetNeedsBeginFrame(enable);
 }
 
-void CompositorOutputSurface::OnBeginFrame(base::TimeTicks frame_time) {
+void CompositorOutputSurface::OnBeginFrame(const cc::BeginFrameArgs& args) {
   DCHECK(CalledOnValidThread());
-  BeginFrame(frame_time);
+  BeginFrame(args);
 }
 #endif  // defined(OS_ANDROID)
 

@@ -18,7 +18,8 @@ class FakeFrameRateControllerClient : public cc::FrameRateControllerClient {
   void Reset() { began_frame_ = false; }
   bool BeganFrame() const { return began_frame_; }
 
-  virtual void FrameRateControllerTick(bool throttled) OVERRIDE {
+  virtual void FrameRateControllerTick(
+      bool throttled, const BeginFrameArgs& args) OVERRIDE {
     began_frame_ = !throttled;
   }
 

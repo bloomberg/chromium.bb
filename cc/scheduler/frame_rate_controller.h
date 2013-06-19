@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/begin_frame_args.h"
 
 namespace base { class SingleThreadTaskRunner; }
 
@@ -24,7 +25,8 @@ class CC_EXPORT FrameRateControllerClient {
 
  public:
   // Throttled is true when we have a maximum number of frames pending.
-  virtual void FrameRateControllerTick(bool throttled) = 0;
+  virtual void FrameRateControllerTick(bool throttled,
+                                       const BeginFrameArgs& args) = 0;
 };
 
 class FrameRateControllerTimeSourceAdapter;
@@ -33,10 +35,6 @@ class FrameRateControllerTimeSourceAdapter;
 // is not sent by a parent compositor.
 class CC_EXPORT FrameRateController {
  public:
-  enum {
-    DEFAULT_MAX_FRAMES_PENDING = 2
-  };
-
   explicit FrameRateController(scoped_refptr<TimeSource> timer);
   // Alternate form of FrameRateController with unthrottled frame-rate.
   explicit FrameRateController(base::SingleThreadTaskRunner* task_runner);
@@ -68,6 +66,7 @@ class CC_EXPORT FrameRateController {
 
   void SetTimebaseAndInterval(base::TimeTicks timebase,
                               base::TimeDelta interval);
+  void SetDeadlineAdjustment(base::TimeDelta delta);
 
  protected:
   friend class FrameRateControllerTimeSourceAdapter;
@@ -79,6 +78,8 @@ class CC_EXPORT FrameRateController {
   FrameRateControllerClient* client_;
   int num_frames_pending_;
   int max_swaps_pending_;
+  base::TimeDelta interval_;
+  base::TimeDelta deadline_adjustment_;
   scoped_refptr<TimeSource> time_source_;
   scoped_ptr<FrameRateControllerTimeSourceAdapter> time_source_client_adapter_;
   bool active_;

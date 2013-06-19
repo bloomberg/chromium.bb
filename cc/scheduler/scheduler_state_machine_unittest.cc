@@ -56,7 +56,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     state.DidLeaveBeginFrame();
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
     EXPECT_FALSE(state.BeginFrameNeededToDrawByImplThread());
-    state.DidEnterBeginFrame();
+    state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   }
 
@@ -72,7 +72,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     state.DidLeaveBeginFrame();
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
     EXPECT_FALSE(state.BeginFrameNeededToDrawByImplThread());
-    state.DidEnterBeginFrame();
+    state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   }
 
@@ -123,7 +123,7 @@ TEST(SchedulerStateMachineTest,
   state.SetNeedsRedraw();
   EXPECT_TRUE(state.RedrawPending());
   EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
 
   // We're drawing now.
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
@@ -155,7 +155,7 @@ TEST(SchedulerStateMachineTest,
   state.SetNeedsRedraw();
   EXPECT_TRUE(state.RedrawPending());
   EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
 
   // We're drawing now.
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
@@ -197,7 +197,7 @@ TEST(SchedulerStateMachineTest,
   // Then initiate a draw.
   state.SetNeedsRedraw();
   EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   EXPECT_TRUE(state.RedrawPending());
 
@@ -240,7 +240,7 @@ TEST(SchedulerStateMachineTest,
   // Then initiate a draw.
   state.SetNeedsRedraw();
   EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   EXPECT_TRUE(state.RedrawPending());
 
@@ -295,7 +295,7 @@ TEST(SchedulerStateMachineTest,
   // Then initiate a draw.
   state.SetNeedsRedraw();
   EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   EXPECT_TRUE(state.RedrawPending());
 
@@ -331,7 +331,7 @@ TEST(SchedulerStateMachineTest,
   // Start a draw.
   state.SetNeedsRedraw();
   EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   EXPECT_TRUE(state.RedrawPending());
 
@@ -347,7 +347,7 @@ TEST(SchedulerStateMachineTest,
 
   state.DidLeaveBeginFrame();
   EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
 
   // We should try to draw again in the next begin frame on the impl thread.
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
@@ -363,7 +363,7 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   state.SetCanDraw(true);
   state.SetNeedsRedraw();
   EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
 
@@ -376,7 +376,7 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   state.DidDrawIfPossibleCompleted(true);
   state.DidLeaveBeginFrame();
   EXPECT_TRUE(state.BeginFrameNeededToDrawByImplThread());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
 
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
@@ -400,7 +400,7 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginFrame) {
       state.SetCommitState(all_commit_states[i]);
       bool visible = j;
       if (!visible) {
-        state.DidEnterBeginFrame();
+        state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
         state.SetVisible(false);
       } else {
         state.SetVisible(true);
@@ -430,7 +430,7 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginFrame) {
       state.SetCommitState(all_commit_states[i]);
       bool forced_draw = j;
       if (!forced_draw) {
-        state.DidEnterBeginFrame();
+        state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
         state.SetNeedsRedraw(true);
         state.SetVisible(true);
       } else {
@@ -476,7 +476,7 @@ TEST(SchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible) {
       state.SetNeedsRedraw(true);
       state.SetNeedsForcedRedraw(false);
       if (j == 1)
-        state.DidEnterBeginFrame();
+        state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
 
       // Case 1: needs_commit=false.
       EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE,
@@ -507,7 +507,7 @@ TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw) {
       state.SetNeedsRedraw(true);
       state.SetNeedsForcedRedraw(false);
       if (j == 1)
-        state.DidEnterBeginFrame();
+        state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
 
       state.SetCanDraw(false);
       EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE,
@@ -562,7 +562,7 @@ TEST(SchedulerStateMachineTest, TestsetNeedsCommitIsNotLost) {
   // Expect to commit regardless of BeginFrame state.
   state.DidLeaveBeginFrame();
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.NextAction());
 
   // Commit and make sure we draw on next BeginFrame
@@ -617,7 +617,7 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // At BeginFrame, draw.
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
   state.DidDrawIfPossibleCompleted(true);
@@ -671,7 +671,7 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // At BeginFrame, draw.
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
   state.DidDrawIfPossibleCompleted(true);
@@ -825,7 +825,7 @@ TEST(SchedulerStateMachineTest,
   // Once the context is recreated, whether we draw should be based on
   // SetCanDraw.
   state.SetNeedsRedraw(true);
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.SetCanDraw(false);
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
@@ -850,7 +850,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
 
   // Set damage and expect a draw.
   state.SetNeedsRedraw(true);
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(state.NextAction());
   state.DidLeaveBeginFrame();
@@ -876,7 +876,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
 
   // Expect to be told to begin context recreation, independent of
   // BeginFrame state.
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
             state.NextAction());
   state.DidLeaveBeginFrame();
@@ -902,7 +902,7 @@ TEST(SchedulerStateMachineTest,
 
   // Set damage and expect a draw.
   state.SetNeedsRedraw(true);
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.NextAction());
   state.UpdateState(state.NextAction());
   state.DidLeaveBeginFrame();
@@ -929,7 +929,7 @@ TEST(SchedulerStateMachineTest,
 
   // Expect to be told to begin context recreation, independent of
   // BeginFrame state
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
             state.NextAction());
   state.DidLeaveBeginFrame();
@@ -951,7 +951,7 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost) {
 
   // Ask a forced redraw and verify it ocurrs.
   state.SetNeedsForcedRedraw(true);
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
   state.DidLeaveBeginFrame();
 
@@ -966,7 +966,7 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost) {
 
   // Ask a forced redraw and verify it ocurrs.
   state.SetNeedsForcedRedraw(true);
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
   state.DidLeaveBeginFrame();
 }
@@ -1100,7 +1100,7 @@ TEST(SchedulerStateMachineTest, TestImmediateFinishCommit) {
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
             state.CommitState());
 
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   state.SetNeedsForcedRedraw(true);
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
@@ -1139,7 +1139,7 @@ TEST(SchedulerStateMachineTest, TestImmediateFinishCommitDuringCommit) {
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
             state.CommitState());
 
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   state.SetNeedsForcedRedraw(true);
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
@@ -1178,7 +1178,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
             state.CommitState());
 
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   state.SetNeedsForcedRedraw(true);
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());
@@ -1224,7 +1224,7 @@ TEST(SchedulerStateMachineTest, ImmediateFinishCommitWhileCantDraw) {
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW,
             state.CommitState());
 
-  state.DidEnterBeginFrame();
+  state.DidEnterBeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
   state.SetNeedsForcedRedraw(true);
   EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.NextAction());

@@ -41,6 +41,10 @@ class OutputSurfaceCallbacks;
 //      surface (on the compositor thread) and go back to step 1.
 class CC_EXPORT OutputSurface : public FrameRateControllerClient {
  public:
+  enum {
+    DEFAULT_MAX_FRAMES_PENDING = 2
+  };
+
   explicit OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
 
   explicit OutputSurface(scoped_ptr<cc::SoftwareOutputDevice> software_device);
@@ -54,11 +58,14 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
     Capabilities()
         : delegated_rendering(false),
           max_frames_pending(0),
-          deferred_gl_initialization(false) {}
-
+          deferred_gl_initialization(false),
+          adjust_deadline_for_parent(true) {}
     bool delegated_rendering;
     int max_frames_pending;
     bool deferred_gl_initialization;
+    // This doesn't handle the <webview> case, but once BeginFrame is
+    // supported natively, we shouldn't need adjust_deadline_for_parent.
+    bool adjust_deadline_for_parent;
   };
 
   const Capabilities& capabilities() const {
@@ -142,7 +149,8 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   // Platforms should move to native BeginFrames instead.
   void OnVSyncParametersChanged(base::TimeTicks timebase,
                                 base::TimeDelta interval);
-  virtual void FrameRateControllerTick(bool throttled) OVERRIDE;
+  virtual void FrameRateControllerTick(bool throttled,
+                                       const BeginFrameArgs& args) OVERRIDE;
   scoped_ptr<FrameRateController> frame_rate_controller_;
   int max_frames_pending_;
   int pending_swap_buffers_;
@@ -152,7 +160,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   // first so OutputSurface has a chance to update the FrameRateController
   bool HasClient() { return !!client_; }
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
-  void BeginFrame(base::TimeTicks frame_time);
+  void BeginFrame(const BeginFrameArgs& args);
   void DidSwapBuffers();
   void OnSwapBuffersComplete(const CompositorFrameAck* ack);
   void DidLoseOutputSurface();

@@ -42,8 +42,8 @@ class TestOutputSurface : public OutputSurface {
     OnVSyncParametersChanged(timebase, interval);
   }
 
-  void BeginFrameForTesting(base::TimeTicks frame_time) {
-    BeginFrame(frame_time);
+  void BeginFrameForTesting() {
+    BeginFrame(BeginFrameArgs::CreateForTesting());
   }
 
   void DidSwapBuffersForTesting() {
@@ -73,7 +73,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
     return deferred_initialize_result_;
   }
   virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) OVERRIDE {}
-  virtual void BeginFrame(base::TimeTicks frame_time) OVERRIDE {
+  virtual void BeginFrame(const BeginFrameArgs& args) OVERRIDE {
     begin_frame_count_++;
   }
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE {}
@@ -213,7 +213,7 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
       new base::TestSimpleTaskRunner;
   bool throttle_frame_production = true;
   const base::TimeDelta display_refresh_interval =
-      base::TimeDelta::FromMicroseconds(16666);
+      BeginFrameArgs::DefaultInterval();
 
   output_surface.InitializeBeginFrameEmulation(
       task_runner.get(),
@@ -281,13 +281,13 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
 
   // Optimistically injected BeginFrames without a SetNeedsBeginFrame should be
   // allowed.
-  output_surface.BeginFrameForTesting(base::TimeTicks::Now());
+  output_surface.BeginFrameForTesting();
   EXPECT_EQ(client.begin_frame_count(), 5);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
 
   // Optimistically injected BeginFrames without a SetNeedsBeginFrame should
   // still be throttled by pending begin frames however.
-  output_surface.BeginFrameForTesting(base::TimeTicks::Now());
+  output_surface.BeginFrameForTesting();
   EXPECT_EQ(client.begin_frame_count(), 5);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
 
@@ -296,7 +296,7 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   output_surface.DidSwapBuffersForTesting();
   EXPECT_EQ(client.begin_frame_count(), 5);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
-  output_surface.BeginFrameForTesting(base::TimeTicks::Now());
+  output_surface.BeginFrameForTesting();
   EXPECT_EQ(client.begin_frame_count(), 5);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
 }

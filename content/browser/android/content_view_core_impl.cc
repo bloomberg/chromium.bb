@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "cc/layers/layer.h"
+#include "cc/output/begin_frame_args.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/media_player_manager_impl.h"
@@ -76,6 +77,10 @@ enum PopupItemType {
 namespace content {
 
 namespace {
+
+const unsigned int kDefaultVSyncIntervalMicros = 16666u;
+// TODO(brianderson): Use adaptive draw-time estimation.
+const float kDefaultBrowserCompositeVSyncFraction = 1.0f / 3;
 
 const void* kContentViewUserDataKey = &kContentViewUserDataKey;
 
@@ -158,6 +163,10 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       root_layer_(cc::Layer::Create()),
       tab_crashed_(false),
+      vsync_interval_(base::TimeDelta::FromMicroseconds(
+          kDefaultVSyncIntervalMicros)),
+      expected_browser_composite_time_(base::TimeDelta::FromMicroseconds(
+          kDefaultVSyncIntervalMicros * kDefaultBrowserCompositeVSyncFraction)),
       view_android_(view_android),
       window_android_(window_android) {
   CHECK(web_contents) <<
@@ -701,7 +710,7 @@ void ContentViewCoreImpl::LoadUrl(
   tab_crashed_ = false;
 }
 
-void ContentViewCoreImpl::SetVSyncNotificationEnabled(bool enabled) {
+void ContentViewCoreImpl::SetNeedsBeginFrame(bool enabled) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -1223,6 +1232,11 @@ void ContentViewCoreImpl::UpdateVSyncParameters(JNIEnv* env, jobject /* obj */,
   host->UpdateVSyncParameters(
       base::TimeTicks::FromInternalValue(timebase_micros),
       base::TimeDelta::FromMicroseconds(interval_micros));
+
+  vsync_interval_ =
+      base::TimeDelta::FromMicroseconds(interval_micros);
+  expected_browser_composite_time_ =
+      vsync_interval_ * kDefaultBrowserCompositeVSyncFraction;
 }
 
 void ContentViewCoreImpl::OnVSync(JNIEnv* env, jobject /* obj */,
@@ -1231,8 +1245,13 @@ void ContentViewCoreImpl::OnVSync(JNIEnv* env, jobject /* obj */,
   if (!view)
     return;
 
+  base::TimeTicks frame_time =
+      base::TimeTicks::FromInternalValue(frame_time_micros);
+  base::TimeTicks display_time = frame_time + vsync_interval_;
+  base::TimeTicks deadline = display_time - expected_browser_composite_time_;
+
   view->SendBeginFrame(
-      base::TimeTicks::FromInternalValue(frame_time_micros));
+      cc::BeginFrameArgs::Create(frame_time, deadline, vsync_interval_));
 }
 
 jboolean ContentViewCoreImpl::OnAnimate(JNIEnv* env, jobject /* obj */,

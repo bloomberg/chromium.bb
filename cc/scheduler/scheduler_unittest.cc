@@ -170,7 +170,7 @@ TEST(SchedulerTest, RequestCommit) {
   client.Reset();
 
   // BeginFrame should draw.
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
   EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
   EXPECT_FALSE(client.needs_begin_frame());
@@ -208,7 +208,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrameSentToMainThread) {
   client.Reset();
 
   // Tick should draw but then begin another frame.
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_TRUE(client.needs_begin_frame());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginFrameToMainThread", client, 1, 2);
@@ -216,7 +216,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrameSentToMainThread) {
 
   // Go back to quiescent state and verify we no longer request BeginFrames.
   scheduler->FinishCommit();
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_FALSE(client.needs_begin_frame());
 }
 
@@ -237,7 +237,7 @@ TEST(SchedulerTest, TextureAcquisitionCausesCommitInsteadOfDraw) {
   EXPECT_TRUE(client.needs_begin_frame());
 
   client.Reset();
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
   EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -261,7 +261,7 @@ TEST(SchedulerTest, TextureAcquisitionCausesCommitInsteadOfDraw) {
 
   // No draw happens since the textures are acquired by the main thread.
   client.Reset();
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrameOnImplThread", client);
   EXPECT_TRUE(scheduler->RedrawPending());
   EXPECT_TRUE(client.needs_begin_frame());
@@ -275,7 +275,7 @@ TEST(SchedulerTest, TextureAcquisitionCausesCommitInsteadOfDraw) {
 
   // Now we can draw again after the commit happens.
   client.Reset();
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 2);
   EXPECT_ACTION("SetNeedsBeginFrameOnImplThread", client, 1, 2);
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -323,7 +323,7 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
   client.Reset();
 
   // Once compositor draw complete, the delayed texture acquisition fires.
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 0, 3);
   EXPECT_ACTION("ScheduledActionAcquireLayerTexturesForMainThread",
                 client,
@@ -404,12 +404,12 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
   EXPECT_TRUE(client.needs_begin_frame());
   EXPECT_EQ(0, client.num_draws());
 
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(scheduler->RedrawPending());
   EXPECT_TRUE(client.needs_begin_frame());
 
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(2, client.num_draws());
   EXPECT_FALSE(scheduler->RedrawPending());
   EXPECT_FALSE(client.needs_begin_frame());
@@ -433,7 +433,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   EXPECT_EQ(0, client.num_draws());
 
   // Fail the draw.
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(1, client.num_draws());
 
   // We have a commit pending and the draw failed, and we didn't lose the redraw
@@ -443,7 +443,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   EXPECT_TRUE(client.needs_begin_frame());
 
   // Fail the draw again.
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(2, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -451,7 +451,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
 
   // Draw successfully.
   client.SetDrawWillHappen(true);
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(3, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -496,13 +496,13 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
   EXPECT_EQ(0, client.num_draws());
   EXPECT_TRUE(client.needs_begin_frame());
 
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_TRUE(client.needs_begin_frame());
   scheduler->FinishCommit();
 
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(2, client.num_draws());;
   EXPECT_FALSE(scheduler->RedrawPending());
   EXPECT_FALSE(scheduler->CommitPending());
@@ -527,7 +527,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   EXPECT_EQ(0, client.num_draws());
 
   // Fail the draw.
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(1, client.num_draws());
 
   // We have a commit pending and the draw failed, and we didn't lose the commit
@@ -537,7 +537,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   EXPECT_TRUE(client.needs_begin_frame());
 
   // Fail the draw again.
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(2, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -545,7 +545,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
 
   // Draw successfully.
   client.SetDrawWillHappen(true);
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(3, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -567,7 +567,7 @@ TEST(SchedulerTest, NoSwapWhenDrawFails) {
   EXPECT_EQ(0, client.num_draws());
 
   // Draw successfully, this starts a new frame.
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(1, client.num_draws());
 
   scheduler->SetNeedsRedraw();
@@ -576,7 +576,7 @@ TEST(SchedulerTest, NoSwapWhenDrawFails) {
 
   // Fail to draw, this should not start a frame.
   client.SetDrawWillHappen(false);
-  scheduler->BeginFrame(base::TimeTicks::Now());
+  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
   EXPECT_EQ(2, client.num_draws());
 }
 

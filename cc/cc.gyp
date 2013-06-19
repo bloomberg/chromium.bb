@@ -154,6 +154,8 @@
       'layers/video_layer.h',
       'layers/video_layer_impl.cc',
       'layers/video_layer_impl.h',
+      'output/begin_frame_args.cc',
+      'output/begin_frame_args.h',
       'output/compositor_frame.cc',
       'output/compositor_frame.h',
       'output/compositor_frame_ack.cc',

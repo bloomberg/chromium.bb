@@ -1072,8 +1072,8 @@ void LayerTreeHostImpl::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
-void LayerTreeHostImpl::BeginFrame(base::TimeTicks frame_time) {
-  client_->BeginFrameOnImplThread(frame_time);
+void LayerTreeHostImpl::BeginFrame(const BeginFrameArgs& args) {
+  client_->BeginFrameOnImplThread(args);
 }
 
 void LayerTreeHostImpl::OnSwapBuffersComplete(
@@ -1526,7 +1526,7 @@ bool LayerTreeHostImpl::DoInitializeRenderer(
   int max_frames_pending =
       output_surface->capabilities().max_frames_pending;
   if (max_frames_pending <= 0)
-    max_frames_pending = FrameRateController::DEFAULT_MAX_FRAMES_PENDING;
+    max_frames_pending = OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
   output_surface->SetMaxFramesPending(max_frames_pending);
 
   output_surface_ = output_surface.Pass();

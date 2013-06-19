@@ -362,10 +362,10 @@ void ThreadProxy::SetNeedsBeginFrameOnImplThread(bool enable) {
   layer_tree_host_impl_->SetNeedsBeginFrame(enable);
 }
 
-void ThreadProxy::BeginFrameOnImplThread(base::TimeTicks frame_time) {
+void ThreadProxy::BeginFrameOnImplThread(const BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   TRACE_EVENT0("cc", "ThreadProxy::BeginFrameOnImplThread");
-  scheduler_on_impl_thread_->BeginFrame(frame_time);
+  scheduler_on_impl_thread_->BeginFrame(args);
 }
 
 void ThreadProxy::OnCanDrawStateChanged(bool can_draw) {

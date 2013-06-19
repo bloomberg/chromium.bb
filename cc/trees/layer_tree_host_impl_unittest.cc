@@ -22,6 +22,7 @@
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/tiled_layer_impl.h"
 #include "cc/layers/video_layer_impl.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_renderer.h"
@@ -95,7 +96,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {}
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
-  virtual void BeginFrameOnImplThread(base::TimeTicks frame_time)
+  virtual void BeginFrameOnImplThread(const BeginFrameArgs& args)
       OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {
     on_can_draw_state_changed_called_ = true;

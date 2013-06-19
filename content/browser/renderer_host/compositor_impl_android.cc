@@ -46,13 +46,24 @@ namespace {
 class DirectOutputSurface : public cc::OutputSurface {
  public:
   DirectOutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
-      : cc::OutputSurface(context3d.Pass()) {}
+      : cc::OutputSurface(context3d.Pass()) {
+    capabilities_.adjust_deadline_for_parent = false;
+  }
 
   virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE {
     surface_size_ = size;
   }
   virtual void SwapBuffers(cc::CompositorFrame*) OVERRIDE {
     context3d()->shallowFlushCHROMIUM();
+  }
+};
+
+// Used to override capabilities_.adjust_deadline_for_parent to false
+class OutputSurfaceWithoutParent : public cc::OutputSurface {
+ public:
+  OutputSurfaceWithoutParent(scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
+      : cc::OutputSurface(context3d.Pass()) {
+    capabilities_.adjust_deadline_for_parent = false;
   }
 };
 
@@ -365,8 +376,9 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface() {
       LOG(ERROR) << "Failed to create 3D context for compositor.";
       return scoped_ptr<cc::OutputSurface>();
     }
-    return make_scoped_ptr(new cc::OutputSurface(
-        context.PassAs<WebKit::WebGraphicsContext3D>()));
+    return scoped_ptr<cc::OutputSurface>(
+        new OutputSurfaceWithoutParent(
+            context.PassAs<WebKit::WebGraphicsContext3D>()));
   }
 }
 

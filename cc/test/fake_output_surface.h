@@ -6,6 +6,7 @@
 #define CC_TEST_FAKE_OUTPUT_SURFACE_H_
 
 #include "base/time.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"

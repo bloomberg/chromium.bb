@@ -104,6 +104,9 @@ void OutputSurface::InitializeBeginFrameEmulation(
 
   frame_rate_controller_->SetClient(this);
   frame_rate_controller_->SetMaxSwapsPending(max_frames_pending_);
+  frame_rate_controller_->SetDeadlineAdjustment(
+      capabilities_.adjust_deadline_for_parent ?
+          BeginFrameArgs::DefaultDeadlineAdjustment() : base::TimeDelta());
 
   // The new frame rate controller will consume the swap acks of the old
   // frame rate controller, so we set that expectation up here.
@@ -126,10 +129,11 @@ void OutputSurface::OnVSyncParametersChanged(base::TimeTicks timebase,
     frame_rate_controller_->SetTimebaseAndInterval(timebase, interval);
 }
 
-void OutputSurface::FrameRateControllerTick(bool throttled) {
+void OutputSurface::FrameRateControllerTick(bool throttled,
+                                            const BeginFrameArgs& args) {
   DCHECK(frame_rate_controller_);
   if (!throttled)
-    BeginFrame(frame_rate_controller_->LastTickTime());
+    BeginFrame(args);
 }
 
 // Forwarded to OutputSurfaceClient
@@ -145,7 +149,7 @@ void OutputSurface::SetNeedsBeginFrame(bool enable) {
     frame_rate_controller_->SetActive(enable);
 }
 
-void OutputSurface::BeginFrame(base::TimeTicks frame_time) {
+void OutputSurface::BeginFrame(const BeginFrameArgs& args) {
   TRACE_EVENT2("cc", "OutputSurface::BeginFrame",
                "begin_frame_pending_", begin_frame_pending_,
                "pending_swap_buffers_", pending_swap_buffers_);
@@ -153,7 +157,7 @@ void OutputSurface::BeginFrame(base::TimeTicks frame_time) {
       (pending_swap_buffers_ >= max_frames_pending_ && max_frames_pending_ > 0))
     return;
   begin_frame_pending_ = true;
-  client_->BeginFrame(frame_time);
+  client_->BeginFrame(args);
 }
 
 void OutputSurface::DidSwapBuffers() {

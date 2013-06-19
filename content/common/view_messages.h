@@ -8,6 +8,7 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/strings/string16.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/common/browser_rendering_stats.h"
@@ -1283,7 +1284,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_ShowImeIfNeeded)
 
 // Sent by the browser when the renderer should generate a new frame.
 IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
-                    base::TimeTicks /* frame_time */)
+                    cc::BeginFrameArgs /* args */)
 
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.

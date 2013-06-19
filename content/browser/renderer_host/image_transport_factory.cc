@@ -505,6 +505,7 @@ class BrowserCompositorOutputSurface
       else
         LOG(ERROR) << "Trouble parsing --" << switches::kUIMaxFramesPending;
     }
+    capabilities_.adjust_deadline_for_parent = false;
     DetachFromThread();
   }
 

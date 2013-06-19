@@ -38,6 +38,7 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
     : client_(NULL),
       num_frames_pending_(0),
       max_swaps_pending_(0),
+      interval_(BeginFrameArgs::DefaultInterval()),
       time_source_(timer),
       active_(false),
       is_time_source_throttling_(true),
@@ -53,6 +54,7 @@ FrameRateController::FrameRateController(
     : client_(NULL),
       num_frames_pending_(0),
       max_swaps_pending_(0),
+      interval_(BeginFrameArgs::DefaultInterval()),
       active_(false),
       is_time_source_throttling_(false),
       weak_factory_(this),
@@ -86,8 +88,13 @@ void FrameRateController::SetMaxSwapsPending(int max_swaps_pending) {
 
 void FrameRateController::SetTimebaseAndInterval(base::TimeTicks timebase,
                                                  base::TimeDelta interval) {
+  interval_ = interval;
   if (is_time_source_throttling_)
     time_source_->SetTimebaseAndInterval(timebase, interval);
+}
+
+void FrameRateController::SetDeadlineAdjustment(base::TimeDelta delta) {
+  deadline_adjustment_ = delta;
 }
 
 void FrameRateController::OnTimerTick() {
@@ -100,7 +107,12 @@ void FrameRateController::OnTimerTick() {
   TRACE_COUNTER_ID1("cc", "ThrottledCompositor", task_runner_, throttled);
 
   if (client_) {
-    client_->FrameRateControllerTick(throttled);
+    // TODO(brianderson): Use an adaptive parent compositor deadline.
+    base::TimeTicks frame_time = LastTickTime();
+    base::TimeTicks deadline = NextTickTime() + deadline_adjustment_;
+    client_->FrameRateControllerTick(
+        throttled,
+        BeginFrameArgs::Create(frame_time, deadline, interval_));
   }
 
   if (!is_time_source_throttling_ && !throttled)

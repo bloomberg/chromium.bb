@@ -18,9 +18,6 @@ Scheduler::Scheduler(SchedulerClient* client,
       weak_factory_(this),
       last_set_needs_begin_frame_(false),
       has_pending_begin_frame_(false),
-      last_begin_frame_time_(base::TimeTicks()),
-      // TODO(brianderson): Pass with BeginFrame in the near future.
-      interval_(base::TimeDelta::FromMicroseconds(16666)),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false) {
   DCHECK(client_);
@@ -111,16 +108,21 @@ void Scheduler::DidCreateAndInitializeOutputSurface() {
 
 base::TimeTicks Scheduler::AnticipatedDrawTime() {
   TRACE_EVENT0("cc", "Scheduler::AnticipatedDrawTime");
-  if (!last_set_needs_begin_frame_)
+
+  if (!last_set_needs_begin_frame_ ||
+      last_begin_frame_args_.interval <= base::TimeDelta())
     return base::TimeTicks();
 
+  // TODO(brianderson): Express this in terms of the deadline.
   base::TimeTicks now = base::TimeTicks::Now();
-  int64 intervals = ((now - last_begin_frame_time_) / interval_) + 1;
-  return last_begin_frame_time_ + (interval_ * intervals);
+  int64 intervals = 1 + ((now - last_begin_frame_args_.frame_time) /
+                         last_begin_frame_args_.interval);
+  return last_begin_frame_args_.frame_time +
+      (last_begin_frame_args_.interval * intervals);
 }
 
 base::TimeTicks Scheduler::LastBeginFrameOnImplThreadTime() {
-  return last_begin_frame_time_;
+  return last_begin_frame_args_.frame_time;
 }
 
 void Scheduler::SetupNextBeginFrameIfNeeded() {
@@ -162,14 +164,13 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   }
 }
 
-void Scheduler::BeginFrame(base::TimeTicks frame_time) {
+void Scheduler::BeginFrame(const BeginFrameArgs& args) {
   TRACE_EVENT0("cc", "Scheduler::BeginFrame");
   DCHECK(!has_pending_begin_frame_);
   has_pending_begin_frame_ = true;
-  last_begin_frame_time_ = frame_time;
   safe_to_expect_begin_frame_ = true;
-  state_machine_.DidEnterBeginFrame();
-  state_machine_.SetFrameTime(frame_time);
+  last_begin_frame_args_ = args;
+  state_machine_.DidEnterBeginFrame(args);
   ProcessScheduledActions();
   state_machine_.DidLeaveBeginFrame();
 }

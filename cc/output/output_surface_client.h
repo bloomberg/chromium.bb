@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/context_provider.h"
 #include "ui/gfx/rect.h"
 
@@ -27,7 +28,7 @@ class CC_EXPORT OutputSurfaceClient {
   virtual bool DeferredInitialize(
       scoped_refptr<ContextProvider> offscreen_context_provider) = 0;
   virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) = 0;
-  virtual void BeginFrame(base::TimeTicks frame_time) = 0;
+  virtual void BeginFrame(const BeginFrameArgs& args) = 0;
   virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) = 0;
   virtual void DidLoseOutputSurface() = 0;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,

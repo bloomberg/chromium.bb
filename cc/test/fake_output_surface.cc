@@ -83,7 +83,7 @@ void FakeOutputSurface::SetNeedsBeginFrame(bool enable) {
 }
 
 void FakeOutputSurface::OnBeginFrame() {
-  OutputSurface::BeginFrame(base::TimeTicks::Now());
+  OutputSurface::BeginFrame(BeginFrameArgs::CreateForTesting());
 }
 
 

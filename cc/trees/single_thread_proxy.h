@@ -9,6 +9,7 @@
 
 #include "base/time.h"
 #include "cc/animation/animation_events.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
 
@@ -51,7 +52,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
-  virtual void BeginFrameOnImplThread(base::TimeTicks frame_time)
+  virtual void BeginFrameOnImplThread(const BeginFrameArgs& args)
       OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void OnHasPendingTreeStateChanged(bool have_pending_tree) OVERRIDE;

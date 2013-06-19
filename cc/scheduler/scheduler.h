@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/trees/layer_tree_host.h"
@@ -100,7 +101,7 @@ class CC_EXPORT Scheduler {
 
   base::TimeTicks LastBeginFrameOnImplThreadTime();
 
-  void BeginFrame(base::TimeTicks frame_time);
+  void BeginFrame(const BeginFrameArgs& args);
 
   std::string StateAsStringForTesting() { return state_machine_.ToString(); }
 
@@ -122,8 +123,7 @@ class CC_EXPORT Scheduler {
   // TODO(brianderson): crbug.com/249806 : Remove safe_to_expect_begin_frame_
   // workaround.
   bool safe_to_expect_begin_frame_;
-  base::TimeTicks last_begin_frame_time_;
-  base::TimeDelta interval_;
+  BeginFrameArgs last_begin_frame_args_;
 
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_;

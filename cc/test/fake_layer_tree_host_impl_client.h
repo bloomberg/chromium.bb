@@ -5,6 +5,7 @@
 #ifndef CC_TEST_FAKE_LAYER_TREE_HOST_IMPL_CLIENT_H_
 #define CC_TEST_FAKE_LAYER_TREE_HOST_IMPL_CLIENT_H_
 
+#include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
 namespace cc {
@@ -17,7 +18,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE {}
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {}
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
-  virtual void BeginFrameOnImplThread(base::TimeTicks frame_time)
+  virtual void BeginFrameOnImplThread(const BeginFrameArgs& args)
       OVERRIDE {}
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE {}
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) OVERRIDE {}
