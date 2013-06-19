@@ -381,7 +381,7 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
 void RenderImage::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     RenderReplaced::paint(paintInfo, paintOffset);
-    
+
     if (paintInfo.phase == PaintPhaseOutline)
         paintAreaElementFocusRing(paintInfo);
 }
@@ -411,26 +411,35 @@ void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
     if (path.isEmpty())
         return;
 
-    // FIXME: Do we need additional code to clip the path to the image's bounding box?
-
     RenderStyle* areaElementStyle = areaElement->computedStyle();
     unsigned short outlineWidth = areaElementStyle->outlineWidth();
     if (!outlineWidth)
         return;
 
+    // FIXME: Clip path instead of context when Skia pathops is ready.
+    // https://crbug.com/251206
+    paintInfo.context->clip(absoluteContentBox());
     paintInfo.context->drawFocusRing(path, outlineWidth,
         areaElementStyle->outlineOffset(),
         areaElementStyle->visitedDependentColor(CSSPropertyOutlineColor));
 }
 
-void RenderImage::areaElementFocusChanged(HTMLAreaElement* element)
+void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
 {
-    ASSERT_UNUSED(element, element->imageElement() == node());
+    ASSERT(areaElement->imageElement() == node());
 
-    // It would be more efficient to only repaint the focus ring rectangle
-    // for the passed-in area element. That would require adding functions
-    // to the area element class.
-    repaint();
+    Path path = areaElement->computePath(this);
+    if (path.isEmpty())
+        return;
+
+    RenderStyle* areaElementStyle = areaElement->computedStyle();
+    unsigned short outlineWidth = areaElementStyle->outlineWidth();
+
+    IntRect repaintRect = enclosingIntRect(path.boundingRect());
+    repaintRect.moveBy(-absoluteContentBox().location());
+    repaintRect.inflate(outlineWidth);
+
+    repaintRectangle(repaintRect);
 }
 
 void RenderImage::paintIntoRect(GraphicsContext* context, const LayoutRect& rect)

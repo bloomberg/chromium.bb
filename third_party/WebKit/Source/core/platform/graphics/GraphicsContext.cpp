@@ -528,9 +528,22 @@ void GraphicsContext::drawEllipse(const IntRect& elipseRect)
     }
 }
 
-void GraphicsContext::drawFocusRing(const Path& path, int width, int offset, const Color& color)
+void GraphicsContext::drawFocusRing(const Path& focusRingPath, int width, int offset, const Color& color)
 {
-    // FIXME: implement
+    // FIXME: Implement support for offset.
+    UNUSED_PARAM(offset);
+
+    if (paintingDisabled())
+        return;
+
+    SkPath path = focusRingPath.skPath();
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kStroke_Style);
+
+    paint.setColor(color.rgb());
+    drawOuterPath(path, paint, width);
+    drawInnerPath(path, paint, width);
 }
 
 void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int offset, const Color& color)
