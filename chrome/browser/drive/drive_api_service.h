@@ -2,19 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_DUMMY_DRIVE_SERVICE_H_
-#define CHROME_BROWSER_GOOGLE_APIS_DUMMY_DRIVE_SERVICE_H_
+#ifndef CHROME_BROWSER_DRIVE_DRIVE_API_SERVICE_H_
+#define CHROME_BROWSER_DRIVE_DRIVE_API_SERVICE_H_
 
-#include "chrome/browser/google_apis/drive_service_interface.h"
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
+#include "chrome/browser/drive/drive_service_interface.h"
+#include "chrome/browser/google_apis/auth_service_observer.h"
+#include "chrome/browser/google_apis/drive_api_url_generator.h"
+
+class GURL;
+class Profile;
+
+namespace base {
+class FilePath;
+}
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace google_apis {
+class RequestSender;
 
-// Dummy implementation of DriveServiceInterface.
-// All functions do nothing, or return place holder values like 'true'.
-class DummyDriveService : public DriveServiceInterface {
+// This class provides Drive request calls using Drive V2 API.
+// Details of API call are abstracted in each request class and this class
+// works as a thin wrapper for the API.
+class DriveAPIService : public DriveServiceInterface,
+                        public AuthServiceObserver {
  public:
-  DummyDriveService();
-  virtual ~DummyDriveService();
+  // |url_request_context_getter| is used to initialize URLFetcher.
+  // |base_url| is used to generate URLs for communication with the drive API.
+  // |custom_user_agent| will be used for the User-Agent header in HTTP
+  // requests issues through the service if the value is not empty.
+  DriveAPIService(
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GURL& base_url,
+      const std::string& custom_user_agent);
+  virtual ~DriveAPIService();
 
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
@@ -129,8 +156,21 @@ class DummyDriveService : public DriveServiceInterface {
       const std::string& resource_id,
       const std::string& app_id,
       const AuthorizeAppCallback& callback) OVERRIDE;
+
+ private:
+  // AuthServiceObserver override.
+  virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
+
+  net::URLRequestContextGetter* url_request_context_getter_;
+  Profile* profile_;
+  scoped_ptr<RequestSender> sender_;
+  ObserverList<DriveServiceObserver> observers_;
+  DriveApiUrlGenerator url_generator_;
+  const std::string custom_user_agent_;
+
+  DISALLOW_COPY_AND_ASSIGN(DriveAPIService);
 };
 
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_DUMMY_DRIVE_SERVICE_H_
+#endif  // CHROME_BROWSER_DRIVE_DRIVE_API_SERVICE_H_

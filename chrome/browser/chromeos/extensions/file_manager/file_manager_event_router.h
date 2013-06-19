@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
 class FileManagerNotifications;

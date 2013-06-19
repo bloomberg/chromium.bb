@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/base_requests.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
 
 namespace net {
 class URLRequestContextGetter;

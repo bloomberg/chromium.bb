@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_SERVICE_H_
-#define CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_SERVICE_H_
+#ifndef CHROME_BROWSER_DRIVE_GDATA_WAPI_SERVICE_H_
+#define CHROME_BROWSER_DRIVE_GDATA_WAPI_SERVICE_H_
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_requests.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 
@@ -179,4 +179,4 @@ class GDataWapiService : public DriveServiceInterface,
 
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_SERVICE_H_
+#endif  // CHROME_BROWSER_DRIVE_GDATA_WAPI_SERVICE_H_

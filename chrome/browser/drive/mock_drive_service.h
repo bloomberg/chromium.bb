@@ -4,13 +4,13 @@
 
 // This file contains mocks for classes in drive_service_interface.h
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_MOCK_DRIVE_SERVICE_H_
-#define CHROME_BROWSER_GOOGLE_APIS_MOCK_DRIVE_SERVICE_H_
+#ifndef CHROME_BROWSER_DRIVE_MOCK_DRIVE_SERVICE_H_
+#define CHROME_BROWSER_DRIVE_MOCK_DRIVE_SERVICE_H_
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -215,4 +215,4 @@ class MockDriveService : public DriveServiceInterface {
 
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_MOCK_DRIVE_SERVICE_H_
+#endif  // CHROME_BROWSER_DRIVE_MOCK_DRIVE_SERVICE_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_FAKE_DRIVE_SERVICE_H_
-#define CHROME_BROWSER_GOOGLE_APIS_FAKE_DRIVE_SERVICE_H_
+#ifndef CHROME_BROWSER_DRIVE_FAKE_DRIVE_SERVICE_H_
+#define CHROME_BROWSER_DRIVE_FAKE_DRIVE_SERVICE_H_
 
 #include "base/files/file_path.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 
 namespace google_apis {
 
@@ -274,4 +274,4 @@ class FakeDriveService : public DriveServiceInterface {
 
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_FAKE_DRIVE_SERVICE_H_
+#endif  // CHROME_BROWSER_DRIVE_FAKE_DRIVE_SERVICE_H_
