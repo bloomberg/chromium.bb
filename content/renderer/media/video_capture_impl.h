@@ -15,6 +15,17 @@
 // from any threads without worrying about thread safety.
 // The |capture_message_loop_proxy_| is the working thread of VideoCaptureImpl.
 // All non-const members are accessed only on that working thread.
+//
+// Implementation note: tasks are posted bound to Unretained(this) to both the
+// I/O and Capture threads and this is safe (even though the I/O thread is
+// scoped to the renderer process and the capture_message_loop_proxy_ thread is
+// scoped to the VideoCaptureImplManager) because VideoCaptureImplManager only
+// triggers deletion of its VideoCaptureImpl's by calling DeInit which detours
+// through the capture & I/O threads, so as long as nobody posts tasks after the
+// DeInit() call is made, it is guaranteed none of these Unretained posted tasks
+// will dangle after the delete goes through.  The "as long as" is guaranteed by
+// clients of VideoCaptureImplManager not using devices after they've
+// RemoveDevice'd them.
 
 #ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_H_
