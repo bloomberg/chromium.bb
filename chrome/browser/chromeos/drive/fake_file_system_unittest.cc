@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
 
 #include "base/file_util.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -25,8 +26,7 @@ class FakeFileSystemTest : public ::testing::Test {
         "chromeos/gdata/account_metadata.json");
 
     // Create a testee instance.
-    fake_file_system_.reset(
-        new FakeFileSystem(fake_drive_service_.get()));
+    fake_file_system_.reset(new FakeFileSystem(fake_drive_service_.get()));
     ASSERT_TRUE(fake_file_system_->InitializeForTesting());
   }
 
@@ -43,7 +43,7 @@ TEST_F(FakeFileSystemTest, GetResourceEntryById) {
   fake_file_system_->GetResourceEntryById(
       resource_id,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(resource_id, entry->resource_id());
@@ -67,7 +67,7 @@ TEST_F(FakeFileSystemTest, GetFileContentByPath) {
           &initialize_error, &entry, &cache_file_path, &cancel_download),
       get_content_callback.callback(),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, initialize_error);
   EXPECT_TRUE(entry);
@@ -93,7 +93,7 @@ TEST_F(FakeFileSystemTest, GetFileContentByPath) {
           &initialize_error, &entry, &cache_file_path, &cancel_download),
       get_content_callback.callback(),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, initialize_error);
   EXPECT_TRUE(entry);
@@ -126,7 +126,7 @@ TEST_F(FakeFileSystemTest, GetFileContentByPath_Directory) {
           &initialize_error, &entry, &cache_file_path, &cancel_download),
       get_content_callback.callback(),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_NOT_A_FILE, completion_error);
 }
@@ -138,7 +138,7 @@ TEST_F(FakeFileSystemTest, GetResourceEntryByPath) {
       util::GetDriveMyDriveRootPath().AppendASCII(
           "Directory 1/Sub Directory Folder"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
@@ -151,7 +151,7 @@ TEST_F(FakeFileSystemTest, GetResourceEntryByPath_Root) {
   fake_file_system_->GetResourceEntryByPath(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
@@ -166,7 +166,7 @@ TEST_F(FakeFileSystemTest, GetResourceEntryByPath_Invalid) {
   fake_file_system_->GetResourceEntryByPath(
       util::GetDriveMyDriveRootPath().AppendASCII("Invalid File Name"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(FILE_ERROR_NOT_FOUND, error);
   ASSERT_FALSE(entry);
