@@ -1382,25 +1382,17 @@ ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
   }
 
 #if defined(__i386__) || defined(__x86_64__)
-  if (sysno == __NR_mmap) {
-    if (IsArchitectureX86_64())
-      return RestrictMmapFlags(sandbox);
-    else
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
+  if (sysno == __NR_mmap)
+    return RestrictMmapFlags(sandbox);
 #endif
 
 #if defined(__i386__) || defined(__arm__)
   if (sysno == __NR_mmap2)
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return RestrictMmapFlags(sandbox);
 #endif
 
-  if (sysno == __NR_mprotect) {
-    if (IsArchitectureX86_64())
-      return RestrictMprotectFlags(sandbox);
-    else
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
+  if (sysno == __NR_mprotect)
+    return RestrictMprotectFlags(sandbox);
 
   if (sysno == __NR_fcntl) {
     if (IsArchitectureX86_64())
