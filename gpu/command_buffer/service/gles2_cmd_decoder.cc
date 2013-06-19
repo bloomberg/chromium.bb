@@ -625,7 +625,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   // These check the state of the currently bound framebuffer or the
   // backbuffer if no framebuffer is bound.
-  bool BoundFramebufferHasColorAttachmentWithAlpha();
+  // If all_draw_buffers is false, only check with COLOR_ATTACHMENT0, otherwise
+  // check with all attached and enabled color attachments.
+  bool BoundFramebufferHasColorAttachmentWithAlpha(bool all_draw_buffers);
   bool BoundFramebufferHasDepthAttachment();
   bool BoundFramebufferHasStencilAttachment();
 
@@ -3602,9 +3604,15 @@ void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
   glBindBuffer(target, service_id);
 }
 
-bool GLES2DecoderImpl::BoundFramebufferHasColorAttachmentWithAlpha() {
-  return (GLES2Util::GetChannelsForFormat(
-      GetBoundDrawFrameBufferInternalFormat()) & 0x0008) != 0;
+bool GLES2DecoderImpl::BoundFramebufferHasColorAttachmentWithAlpha(
+    bool all_draw_buffers) {
+  Framebuffer* framebuffer =
+      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+  if (!all_draw_buffers || !framebuffer) {
+    return (GLES2Util::GetChannelsForFormat(
+        GetBoundDrawFrameBufferInternalFormat()) & 0x0008) != 0;
+  }
+  return framebuffer->HasAlphaMRT();
 }
 
 bool GLES2DecoderImpl::BoundFramebufferHasDepthAttachment() {
@@ -3637,7 +3645,7 @@ void GLES2DecoderImpl::ApplyDirtyState() {
     glColorMask(
         state_.color_mask_red, state_.color_mask_green, state_.color_mask_blue,
         state_.color_mask_alpha &&
-            BoundFramebufferHasColorAttachmentWithAlpha());
+            BoundFramebufferHasColorAttachmentWithAlpha(true));
     bool have_depth = BoundFramebufferHasDepthAttachment();
     glDepthMask(state_.depth_mask && have_depth);
     EnableDisable(GL_DEPTH_TEST, state_.enable_flags.depth_test && have_depth);
@@ -4079,7 +4087,7 @@ bool GLES2DecoderImpl::GetHelper(
       if (params) {
         GLint v = 0;
         glGetIntegerv(GL_ALPHA_BITS, &v);
-        params[0] = BoundFramebufferHasColorAttachmentWithAlpha() ? v : 0;
+        params[0] = BoundFramebufferHasColorAttachmentWithAlpha(false) ? v : 0;
       }
       return true;
     case GL_DEPTH_BITS:

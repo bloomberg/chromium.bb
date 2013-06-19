@@ -121,6 +121,9 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
 
   void SetDrawBuffers(GLsizei n, const GLenum* bufs);
 
+  // Return true if any draw buffers has an alpha channel.
+  bool HasAlphaMRT() const;
+
   static void ClearFramebufferCompleteComboMap();
 
   static bool AllowFramebufferComboCompleteMapForTesting() {
