@@ -7,9 +7,10 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "cc/base/scoped_ptr_deque.h"
-#include "cc/base/scoped_ptr_hash_map.h"
 #include "cc/output/output_surface.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -44,7 +45,7 @@ size_t TextureSize(gfx::Size size, WGC3Denum format) {
       bytes_per_component;
 }
 
-struct Texture {
+struct Texture : public base::RefCounted<Texture> {
   Texture() : format(0), filter(GL_NEAREST_MIPMAP_LINEAR) {}
 
   void Reallocate(gfx::Size size, WGC3Denum format) {
@@ -57,6 +58,10 @@ struct Texture {
   WGC3Denum format;
   WGC3Denum filter;
   scoped_ptr<uint8_t[]> data;
+
+ private:
+  friend class base::RefCounted<Texture>;
+  ~Texture() {}
 };
 
 // Shared data between multiple ResourceProviderContext. This contains mailbox
@@ -77,16 +82,16 @@ class ContextSharedData {
 
   void ProduceTexture(const WGC3Dbyte* mailbox_name,
                       unsigned sync_point,
-                      scoped_ptr<Texture> texture) {
+                      scoped_refptr<Texture> texture) {
     unsigned mailbox = 0;
     memcpy(&mailbox, mailbox_name, sizeof(mailbox));
     ASSERT_TRUE(mailbox && mailbox < next_mailbox_);
-    textures_.set(mailbox, texture.Pass());
+    textures_[mailbox] = texture;
     ASSERT_LT(sync_point_for_mailbox_[mailbox], sync_point);
     sync_point_for_mailbox_[mailbox] = sync_point;
   }
 
-  scoped_ptr<Texture> ConsumeTexture(const WGC3Dbyte* mailbox_name,
+  scoped_refptr<Texture> ConsumeTexture(const WGC3Dbyte* mailbox_name,
                                      unsigned sync_point) {
     unsigned mailbox = 0;
     memcpy(&mailbox, mailbox_name, sizeof(mailbox));
@@ -97,9 +102,9 @@ class ContextSharedData {
     // ProduceTexture.
     if (sync_point_for_mailbox_[mailbox] > sync_point) {
       NOTREACHED();
-      return scoped_ptr<Texture>();
+      return scoped_refptr<Texture>();
     }
-    return textures_.take(mailbox);
+    return textures_[mailbox];
   }
 
  private:
@@ -107,7 +112,7 @@ class ContextSharedData {
 
   unsigned next_sync_point_;
   unsigned next_mailbox_;
-  typedef ScopedPtrHashMap<unsigned, Texture> TextureMap;
+  typedef base::hash_map<unsigned, scoped_refptr<Texture> > TextureMap;
   TextureMap textures_;
   base::hash_map<unsigned, unsigned> sync_point_for_mailbox_;
 };
@@ -129,7 +134,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
          it != pending_produce_textures_.end();
          ++it) {
       shared_data_->ProduceTexture(
-          (*it)->mailbox, sync_point, (*it)->texture.Pass());
+          (*it)->mailbox, sync_point, (*it)->texture);
     }
     pending_produce_textures_.clear();
     return sync_point;
@@ -147,7 +152,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
 
   virtual WebGLId createTexture() OVERRIDE {
     WebGLId id = TestWebGraphicsContext3D::createTexture();
-    textures_.add(id, make_scoped_ptr(new Texture));
+    textures_[id] = new Texture;
     return id;
   }
 
@@ -212,8 +217,8 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     ASSERT_TRUE(current_texture_);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
     ASSERT_FALSE(level);
-    ASSERT_TRUE(textures_.get(current_texture_));
-    ASSERT_EQ(textures_.get(current_texture_)->format, format);
+    ASSERT_TRUE(textures_[current_texture_]);
+    ASSERT_EQ(textures_[current_texture_]->format, format);
     ASSERT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
     ASSERT_TRUE(pixels);
     SetPixels(xoffset, yoffset, width, height, pixels);
@@ -223,7 +228,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
       OVERRIDE {
     ASSERT_TRUE(current_texture_);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
-    Texture* texture = textures_.get(current_texture_);
+    scoped_refptr<Texture> texture = textures_[current_texture_];
     ASSERT_TRUE(texture);
     if (param != GL_TEXTURE_MIN_FILTER)
       return;
@@ -244,8 +249,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     // haven't waited on that sync point.
     scoped_ptr<PendingProduceTexture> pending(new PendingProduceTexture);
     memcpy(pending->mailbox, mailbox, sizeof(pending->mailbox));
-    pending->texture = textures_.take(current_texture_);
-    textures_.set(current_texture_, scoped_ptr<Texture>());
+    pending->texture = textures_[current_texture_];
     pending_produce_textures_.push_back(pending.Pass());
   }
 
@@ -253,14 +257,13 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
                                       const WGC3Dbyte* mailbox) OVERRIDE {
     ASSERT_TRUE(current_texture_);
     ASSERT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
-    textures_.set(
-        current_texture_,
-        shared_data_->ConsumeTexture(mailbox, last_waited_sync_point_));
+    textures_[current_texture_] = shared_data_->ConsumeTexture(
+        mailbox, last_waited_sync_point_);
   }
 
   void GetPixels(gfx::Size size, WGC3Denum format, uint8_t* pixels) {
     ASSERT_TRUE(current_texture_);
-    Texture* texture = textures_.get(current_texture_);
+    scoped_refptr<Texture> texture = textures_[current_texture_];
     ASSERT_TRUE(texture);
     ASSERT_EQ(texture->size, size);
     ASSERT_EQ(texture->format, format);
@@ -269,7 +272,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
 
   WGC3Denum GetTextureFilter() {
     DCHECK(current_texture_);
-    Texture* texture = textures_.get(current_texture_);
+    scoped_refptr<Texture> texture = textures_[current_texture_];
     DCHECK(texture);
     return texture->filter;
   }
@@ -287,7 +290,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
  private:
   void AllocateTexture(gfx::Size size, WGC3Denum format) {
     ASSERT_TRUE(current_texture_);
-    Texture* texture = textures_.get(current_texture_);
+    scoped_refptr<Texture> texture = textures_[current_texture_];
     ASSERT_TRUE(texture);
     texture->Reallocate(size, format);
   }
@@ -298,7 +301,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
                  int height,
                  const void* pixels) {
     ASSERT_TRUE(current_texture_);
-    Texture* texture = textures_.get(current_texture_);
+    scoped_refptr<Texture> texture = textures_[current_texture_];
     ASSERT_TRUE(texture);
     ASSERT_TRUE(texture->data.get());
     ASSERT_TRUE(xoffset >= 0 && xoffset + width <= texture->size.width());
@@ -317,10 +320,10 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     }
   }
 
-  typedef ScopedPtrHashMap<WebGLId, Texture> TextureMap;
+  typedef base::hash_map<WebGLId, scoped_refptr<Texture> > TextureMap;
   struct PendingProduceTexture {
     WGC3Dbyte mailbox[64];
-    scoped_ptr<Texture> texture;
+    scoped_refptr<Texture> texture;
   };
   typedef ScopedPtrDeque<PendingProduceTexture> PendingProduceTextureList;
   ContextSharedData* shared_data_;
@@ -1188,10 +1191,11 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
     ResourceProvider::ScopedReadLockGL lock(resource_provider.get(), id);
     Mock::VerifyAndClearExpectations(context);
 
-    // When done with it, then it should be produced back to the mailbox.
-    EXPECT_CALL(*context, bindTexture(target, texture_id));
+    // When done with it, a sync point should be inserted, but no produce is
+    // necessary.
+    EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
     EXPECT_CALL(*context, insertSyncPoint());
-    EXPECT_CALL(*context, produceTextureCHROMIUM(target, _));
+    EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
 
     EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
     EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
@@ -1248,10 +1252,11 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
     ResourceProvider::ScopedReadLockGL lock(resource_provider.get(), id);
     Mock::VerifyAndClearExpectations(context);
 
-    // When done with it, then it should be produced back to the mailbox.
-    EXPECT_CALL(*context, bindTexture(target, texture_id));
+    // When done with it, a sync point should be inserted, but no produce is
+    // necessary.
+    EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
     EXPECT_CALL(*context, insertSyncPoint());
-    EXPECT_CALL(*context, produceTextureCHROMIUM(target, _));
+    EXPECT_CALL(*context, produceTextureCHROMIUM(_, _)).Times(0);
 
     EXPECT_CALL(*context, waitSyncPoint(_)).Times(0);
     EXPECT_CALL(*context, consumeTextureCHROMIUM(_, _)).Times(0);
