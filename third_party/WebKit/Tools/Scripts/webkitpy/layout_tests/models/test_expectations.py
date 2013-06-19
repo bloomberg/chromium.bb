@@ -803,6 +803,8 @@ class TestExpectations(object):
                     'missing': MISSING,
                     'skip': SKIP}
 
+    EXPECTATIONS_TO_STRING = dict((k, v) for (v, k) in EXPECTATIONS.iteritems())
+
     # (aggregated by category, pass/fail/skip, type)
     EXPECTATION_DESCRIPTIONS = {SKIP: 'skipped',
                                 PASS: 'passes',
@@ -824,6 +826,8 @@ class TestExpectations(object):
                  TestExpectationParser.SLOW_MODIFIER: SLOW,
                  TestExpectationParser.REBASELINE_MODIFIER: REBASELINE,
                  'none': NONE}
+
+    MODIFIERS_TO_STRING = dict((k, v) for (v, k) in MODIFIERS.iteritems())
 
     TIMELINES = {TestExpectationParser.WONTFIX_MODIFIER: WONTFIX,
                  'now': NOW}
@@ -915,7 +919,7 @@ class TestExpectations(object):
 
         # FIXME: move ignore_tests into port.skipped_layout_tests()
         self.add_extra_skipped_tests(port.skipped_layout_tests(tests).union(set(port.get_option('ignore_tests', []))))
-        self.add_flaky_expectations_from_bot()
+        self.add_expectations_from_bot()
 
         self._has_warnings = False
         self._report_warnings()
@@ -1048,9 +1052,9 @@ class TestExpectations(object):
             expectation_line = self._parser.expectation_for_skipped_test(test_name)
             self._model.add_expectation_line(expectation_line, override_existing_matches=True)
 
-    def add_flaky_expectations_from_bot(self):
-        # FIXME: Right now, this will show the expectations entry in the flakiness dashboard rows for each test
-        # to be whatever the bot thinks they should be. Is this a good thing?
+    def add_expectations_from_bot(self):
+        # FIXME: With mode 'very-flaky' and 'maybe-flaky', this will show the expectations entry in the flakiness
+        # dashboard rows for each test to be whatever the bot thinks they should be. Is this a good thing?
         bot_expectations = self._port.bot_expectations()
         for test_name in bot_expectations:
             expectation_line = self._parser.expectation_line_for_test(test_name, bot_expectations[test_name])

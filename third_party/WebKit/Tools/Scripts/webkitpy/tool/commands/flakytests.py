@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
-from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpecationsFactory
+from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser, TestExpectationsModel, TestExpectations
 
 
@@ -38,5 +38,5 @@ class FlakyTests(AbstractDeclarativeCommand):
     def execute(self, options, args, tool):
         port = tool.port_factory.get()
         full_port_name = port.determine_full_port_name(tool, options, port.port_name)
-        expectations = BotTestExpecationsFactory().expectations_for_port(full_port_name)
+        expectations = BotTestExpectationsFactory().expectations_for_port(full_port_name)
         print TestExpectations.list_to_string(expectations.expectation_lines())

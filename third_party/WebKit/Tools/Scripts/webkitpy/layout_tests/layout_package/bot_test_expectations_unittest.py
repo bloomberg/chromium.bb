@@ -83,6 +83,11 @@ class BotTestExpectationsTest(unittest.TestCase):
         expectations = bot_test_expectations.BotTestExpectations(results_json)
         self.assertEqual(expectations.flakes_by_path(only_ignore_very_flaky), expectations_string)
 
+    def _assert_unexpected_results(self, test_data, expectations_string):
+        results_json = self._results_json_from_test_data(test_data)
+        expectations = bot_test_expectations.BotTestExpectations(results_json)
+        self.assertEqual(expectations.unexpected_results_by_path(), expectations_string)
+
     def test_basic(self):
         test_data = {
             'tests': {
@@ -116,3 +121,44 @@ class BotTestExpectationsTest(unittest.TestCase):
             'foo/imageplustextflake.html': sorted(["IMAGE+TEXT", "PASS"]),
             'foo/allfailures.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING"]),
         }, only_ignore_very_flaky=True)
+
+    def test_unexpected_results_no_unexpected(self):
+        test_data = {
+            'tests': {
+                'foo': {
+                    'pass1.html': {'results': [[4, 'P']]},
+                    'pass2.html': {'results': [[2, 'Z']], 'expected': 'PASS FAIL'},
+                    'fail.html': {'results': [[2, 'P'], [1, 'F']], 'expected': 'PASS FAIL'},
+                    'not_run.html': {'results': []},
+                    'crash.html': {'results': [[2, 'F'], [1, 'C']], 'expected': 'CRASH FAIL WONTFIX'},
+                }
+            }
+        }
+        self._assert_unexpected_results(test_data, {})
+
+    def test_unexpected_results_all_unexpected(self):
+        test_data = {
+            'tests': {
+                'foo': {
+                    'pass1.html': {'results': [[4, 'P']], 'expected': 'FAIL'},
+                    'pass2.html': {'results': [[2, 'P']], 'expected': 'IMAGE'},
+                    'fail.html': {'results': [[4, 'F']]},
+                    'f_p.html': {'results': [[1, 'F'], [2, 'P']]},
+                    'crash.html': {'results': [[2, 'F'], [1, 'C']], 'expected': 'WONTFIX'},
+                    'image.html': {'results': [[2, 'F'], [1, 'I']], 'expected': 'CRASH FAIL'},
+                    'i_f.html': {'results': [[1, 'F'], [5, 'I']], 'expected': 'PASS'},
+                    'all.html': self._results_from_string('FPFPCNCNTXTXIZIZOCYOCY'),
+                }
+            }
+        }
+        self.maxDiff = None
+        self._assert_unexpected_results(test_data, {
+            'foo/pass1.html': sorted(["FAIL", "PASS"]),
+            'foo/pass2.html': sorted(["IMAGE", "PASS"]),
+            'foo/fail.html': sorted(["TEXT", "PASS"]),
+            'foo/f_p.html': sorted(["TEXT", "PASS"]),
+            'foo/crash.html': sorted(["WONTFIX", "CRASH", "TEXT"]),
+            'foo/image.html': sorted(["CRASH", "FAIL", "IMAGE"]),
+            'foo/i_f.html': sorted(["PASS", "IMAGE", "TEXT"]),
+            'foo/all.html': sorted(["TEXT", "PASS", "IMAGE+TEXT", "TIMEOUT", "CRASH", "IMAGE", "MISSING"]),
+        })

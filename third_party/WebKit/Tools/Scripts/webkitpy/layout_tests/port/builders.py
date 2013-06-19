@@ -61,6 +61,18 @@ _exact_matches = {
 }
 
 
+# Mapping from port name to the deps builder of the same os:
+_deps_builders = {
+    "chromium-linux-x86": "WebKit Linux (deps)",
+    "chromium-linux-x86_64": "WebKit Linux (deps)",
+    "chromium-win-xp": "WebKit XP (deps)",
+    "chromium-win-win7": "WebKit XP (deps)",
+    "chromium-mac-snowleopard": "WebKit Mac10.6 (deps)",
+    "chromium-mac-lion": "WebKit Mac10.6 (deps)",
+    "chromium-mac-mountainlion": "WebKit Mac10.6 (deps)",
+}
+
+
 _ports_without_builders = [
     # FIXME: Move to _extact_matches.
     "chromium-android",
@@ -104,3 +116,7 @@ def builder_name_for_port_name(target_port_name):
 
 def builder_path_for_port_name(port_name):
     builder_path_from_name(builder_name_for_port_name(port_name))
+
+
+def deps_builder_name_for_port_name(target_port_name):
+    return _deps_builders.get(target_port_name, None)

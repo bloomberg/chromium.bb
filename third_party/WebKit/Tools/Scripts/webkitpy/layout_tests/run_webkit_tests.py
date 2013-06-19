@@ -204,7 +204,11 @@ def parse_args(args):
         optparse.make_option("--ignore-flaky-tests", action="store",
             help=("Control whether tests that are flaky on the bots get ignored."
                 "'very-flaky' == Ignore any tests that flaked more than once on the bot."
-                "'maybe-flaky' == Ignore any tests that flaked once on the bot.")),
+                "'maybe-flaky' == Ignore any tests that flaked once on the bot."
+                "'unexpected' == Ignore any tests that had unexpected results on the bot.")),
+        optparse.make_option("--ignore-builder-category", action="store",
+            help=("The category of builders to use with the --ignore-flaky-tests "
+                "option ('layout' or 'deps').")),
         optparse.make_option("--test-list", action="append",
             help="read list of tests to run from file", metavar="FILE"),
         optparse.make_option("--skipped", action="store", default="default",

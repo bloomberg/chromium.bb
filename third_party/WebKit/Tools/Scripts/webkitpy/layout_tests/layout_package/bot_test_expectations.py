@@ -36,6 +36,7 @@ import urllib
 import urllib2
 
 from webkitpy.layout_tests.port import builders
+from webkitpy.layout_tests.models.test_expectations import TestExpectations
 from webkitpy.layout_tests.models.test_expectations import TestExpectationLine
 
 
@@ -66,6 +67,7 @@ class ResultsJSON(object):
     TESTS_KEY = 'tests'
     FAILURE_MAP_KEY = 'failure_map'
     RESULTS_KEY = 'results'
+    EXPECTATIONS_KEY = 'expected'
     BUGS_KEY = 'bugs'
     RLE_LENGTH = 0
     RLE_VALUE = 1
@@ -103,11 +105,15 @@ class ResultsJSON(object):
         return item[self.RLE_LENGTH], item[self.RLE_VALUE]
 
 
-class BotTestExpecationsFactory(object):
+class BotTestExpectationsFactory(object):
     RESULTS_URL_PREFIX = 'http://test-results.appspot.com/testfile?master=ChromiumWebkit&testtype=layout-tests&name=results-small.json&builder='
 
-    def _results_json_for_port(self, port_name):
-        builder_name = builders.builder_name_for_port_name(port_name)
+    def _results_json_for_port(self, port_name, builder_category):
+        if builder_category == 'deps':
+            builder_name = builders.deps_builder_name_for_port_name(port_name)
+        else:
+            builder_name = builders.builder_name_for_port_name(port_name)
+
         if not builder_name:
             return None
         results_url = self.RESULTS_URL_PREFIX + urllib.quote(builder_name)
@@ -118,8 +124,8 @@ class BotTestExpecationsFactory(object):
             _log.warning('Could not retrieve flakiness data from the bot.  url: %s', results_url)
             _log.warning(error)
 
-    def expectations_for_port(self, port_name):
-        results_json = self._results_json_for_port(port_name)
+    def expectations_for_port(self, port_name, builder_category='layout'):
+        results_json = self._results_json_for_port(port_name, builder_category)
         if not results_json:
             return None
         return BotTestExpectations(results_json)
@@ -142,6 +148,7 @@ class BotTestExpectations(object):
         return line
 
     def flakes_by_path(self, only_ignore_very_flaky):
+        """Sets test expectations to bot results if there are at least two distinct results."""
         flakes_by_path = {}
         for test_path, entry in self.results_json.walk_results():
             results_dict = entry[self.results_json.RESULTS_KEY]
@@ -150,6 +157,55 @@ class BotTestExpectations(object):
                 continue
             flakes_by_path[test_path] = sorted(map(self.results_json.expectation_for_type, flaky_types))
         return flakes_by_path
+
+    def unexpected_results_by_path(self):
+        """For tests with unexpected results, returns original expectations + results."""
+        def exp_to_string(exp):
+            return (TestExpectations.EXPECTATIONS_TO_STRING.get(exp, None) or
+                    TestExpectations.MODIFIERS_TO_STRING.get(exp, None)).upper()
+
+        def string_to_exp(string):
+            # Needs a bit more logic than the method above,
+            # since a PASS is 0 and evaluates to False.
+            result = TestExpectations.EXPECTATIONS.get(string.lower(), None)
+            if not result is None:
+                return result
+            result = TestExpectations.MODIFIERS.get(string.lower(), None)
+            if not result is None:
+                return result
+            raise ValueError(string)
+
+        unexpected_results_by_path = {}
+        for test_path, entry in self.results_json.walk_results():
+            # Expectations for this test. No expectation defaults to PASS.
+            exp_string = entry.get(self.results_json.EXPECTATIONS_KEY, u'PASS')
+
+            # All run-length-encoded results for this test.
+            results_dict = entry.get(self.results_json.RESULTS_KEY, {})
+
+            # Set of expectations for this test.
+            expectations = set(map(string_to_exp, exp_string.split(' ')))
+
+            # Set of distinct results for this test.
+            result_types = self._flaky_types_in_results(results_dict)
+
+            # Distinct results as non-encoded strings.
+            result_strings = map(self.results_json.expectation_for_type, result_types)
+
+            # Distinct resulting expectations.
+            result_exp = map(string_to_exp, result_strings)
+
+            expected = lambda e: TestExpectations.result_was_expected(e, expectations, False)
+
+            additional_expectations = set(e for e in result_exp if not expected(e))
+
+            # Test did not have unexpected results.
+            if not additional_expectations:
+                continue
+
+            expectations.update(additional_expectations)
+            unexpected_results_by_path[test_path] = sorted(map(exp_to_string, expectations))
+        return unexpected_results_by_path
 
     def expectation_lines(self):
         lines = []
