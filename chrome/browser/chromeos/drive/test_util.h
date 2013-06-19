@@ -25,14 +25,6 @@ namespace test_util {
 // Disk space size used by FakeFreeDiskSpaceGetter.
 const int64 kLotsOfSpace = internal::kMinFreeSpace * 10;
 
-// This is a bitmask of cache states in FileCacheEntry. Used only in tests.
-enum TestFileCacheState {
-  TEST_CACHE_STATE_NONE       = 0,
-  TEST_CACHE_STATE_PINNED     = 1 << 0,
-  TEST_CACHE_STATE_PRESENT    = 1 << 1,
-  TEST_CACHE_STATE_DIRTY      = 1 << 2,
-};
-
 // Test data type of file cache
 struct TestCacheResource {
   TestCacheResource(const std::string& source_file,
@@ -51,13 +43,6 @@ struct TestCacheResource {
 
 // Obtains default test data for FileCacheEntry.
 std::vector<TestCacheResource> GetDefaultTestCacheResources();
-
-// Converts |cache_state| which is a bit mask of TestFileCacheState, to a
-// FileCacheEntry.
-FileCacheEntry ToCacheEntry(int cache_state);
-
-// Returns true if the cache state of the given two cache entries are equal.
-bool CacheStatesEqual(const FileCacheEntry& a, const FileCacheEntry& b);
 
 // Helper to destroy objects which needs Destroy() to be called on destruction.
 // Note: When using this helper, you should destruct objects before

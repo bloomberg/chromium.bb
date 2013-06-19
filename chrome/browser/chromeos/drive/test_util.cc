@@ -72,20 +72,6 @@ std::vector<TestCacheResource> GetDefaultTestCacheResources() {
       resources + ARRAYSIZE_UNSAFE(resources));
 }
 
-FileCacheEntry ToCacheEntry(int cache_state) {
-  FileCacheEntry cache_entry;
-  cache_entry.set_is_present(cache_state & TEST_CACHE_STATE_PRESENT);
-  cache_entry.set_is_pinned(cache_state & TEST_CACHE_STATE_PINNED);
-  cache_entry.set_is_dirty(cache_state & TEST_CACHE_STATE_DIRTY);
-  return cache_entry;
-}
-
-bool CacheStatesEqual(const FileCacheEntry& a, const FileCacheEntry& b) {
-  return a.is_present() == b.is_present() &&
-      a.is_pinned() == b.is_pinned() &&
-      a.is_dirty() == b.is_dirty();
-}
-
 bool PrepareTestCacheResources(
     internal::FileCache* cache,
     const std::vector<TestCacheResource>& resources) {
