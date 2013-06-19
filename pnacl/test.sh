@@ -200,8 +200,10 @@ scons-tests () {
     # (but don't bother separating build/run for now) until we
     # converge on exactly what we want
     RunScons ${arch} ${modeflags} "$@" smoke_tests
-    # nonpexe tests
-    RunScons ${arch} ${modeflags} pnacl_generate_pexe=0 "$@" nonpexe_tests
+    if [ ${mode} != "sbtc" ]; then
+      # nonpexe tests
+      RunScons ${arch} ${modeflags} pnacl_generate_pexe=0 "$@" nonpexe_tests
+    fi
   fi
 }
 
