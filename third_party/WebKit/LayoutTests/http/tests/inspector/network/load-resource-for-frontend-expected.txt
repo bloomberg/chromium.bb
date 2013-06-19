@@ -1,13 +1,9 @@
 
+Running: testLocalResource
+Loading resource from file:///
+Failed: Can not load local file
+
 Running: testNetworkResource
 Loading resource from http://localhost:8080/inspector/network/resources/resource.php
 Success: Hello world
-
-Running: testResourceFromIncorrectURL
-Loading resource from resource.php
-Failed: Couldn't create a loader
-
-Running: testResourceFromFileScheme
-Loading resource from file:///var/www/index.html
-Failed: Can not load local file
 
