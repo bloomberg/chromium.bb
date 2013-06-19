@@ -119,6 +119,40 @@ const char kCorruptedPacketUnsalvagable[] = {
   0x08, '_', 'p', 'r',  // Useless trailing data.
 };
 
+const char kCorruptedPacketDoubleRecord[] = {
+  // Header
+  0x00, 0x00,               // ID is zeroed out
+  0x81, 0x80,               // Standard query response, RA, no error
+  0x00, 0x00,               // No questions (for simplicity)
+  0x00, 0x02,               // 2 RRs (answers)
+  0x00, 0x00,               // 0 authority RRs
+  0x00, 0x00,               // 0 additional RRs
+
+  // Answer 1
+  0x06, 'p', 'r', 'i', 'v', 'e', 't',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x01,        // TYPE is A.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x04,        // RDLENGTH is 4
+  0x05, 0x03,
+  0xc0, 0x0c,
+
+  // Answer 2 -- Same key
+  0x06, 'p', 'r', 'i', 'v', 'e', 't',
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  0x00,
+  0x00, 0x01,        // TYPE is A.
+  0x00, 0x01,        // CLASS is IN.
+  0x00, 0x01,        // TTL (4 bytes) is 20 hours, 47 minutes, 48 seconds.
+  0x24, 0x74,
+  0x00, 0x04,        // RDLENGTH is 4
+  0x02, 0x03,
+  0x04, 0x05,
+};
+
 const char kCorruptedPacketSalvagable[] = {
   // Header
   0x00, 0x00,               // ID is zeroed out
@@ -410,6 +444,10 @@ class MDnsTest : public ::testing::Test {
 
   MOCK_METHOD2(MockableRecordCallback, void(MDnsTransaction::Result result,
                                             const RecordParsed* record));
+
+  MOCK_METHOD2(MockableRecordCallback2, void(MDnsTransaction::Result result,
+                                             const RecordParsed* record));
+
 
  protected:
   void ExpectPacket(const char* packet, unsigned size);
@@ -839,6 +877,41 @@ TEST_F(MDnsTest, TransactionReentrantDeleteFromCache) {
   EXPECT_EQ(NULL, transaction_.get());
 }
 
+TEST_F(MDnsTest, TransactionReentrantCacheLookupStart) {
+  ExpectPacket(kQueryPacketPrivet, sizeof(kQueryPacketPrivet));
+
+  scoped_ptr<MDnsTransaction> transaction1 = test_client_->CreateTransaction(
+      dns_protocol::kTypePTR, "_privet._tcp.local",
+      MDnsTransaction::QUERY_NETWORK |
+      MDnsTransaction::QUERY_CACHE |
+      MDnsTransaction::SINGLE_RESULT,
+      base::Bind(&MDnsTest::MockableRecordCallback,
+                 base::Unretained(this)));
+
+  scoped_ptr<MDnsTransaction> transaction2 = test_client_->CreateTransaction(
+      dns_protocol::kTypePTR, "_printer._tcp.local",
+      MDnsTransaction::QUERY_CACHE |
+      MDnsTransaction::SINGLE_RESULT,
+      base::Bind(&MDnsTest::MockableRecordCallback2,
+                 base::Unretained(this)));
+
+  EXPECT_CALL(*this, MockableRecordCallback2(MDnsTransaction::RESULT_RECORD,
+                                             _))
+      .Times(Exactly(1));
+
+  EXPECT_CALL(*this, MockableRecordCallback(MDnsTransaction::RESULT_RECORD,
+                                            _))
+      .Times(Exactly(1))
+      .WillOnce(IgnoreResult(InvokeWithoutArgs(transaction2.get(),
+                                               &MDnsTransaction::Start)));
+
+  ASSERT_TRUE(transaction1->Start());
+
+  EXPECT_TRUE(test_client_->IsListeningForTests());
+
+  SimulatePacketReceive(kSamplePacket1, sizeof(kSamplePacket1));
+}
+
 // In order to reliably test reentrant listener deletes, we create two listeners
 // and have each of them delete both, so we're guaranteed to try and deliver a
 // callback to at least one deleted listener.
@@ -869,6 +942,33 @@ TEST_F(MDnsTest, ListenerReentrantDelete) {
   EXPECT_EQ(NULL, listener1_.get());
   EXPECT_EQ(NULL, listener2_.get());
 }
+
+ACTION_P(SaveIPAddress, ip_container) {
+  ::testing::StaticAssertTypeEq<const RecordParsed*, arg1_type>();
+  ::testing::StaticAssertTypeEq<IPAddressNumber*, ip_container_type>();
+
+  *ip_container = arg1->template rdata<ARecordRdata>()->address();
+}
+
+TEST_F(MDnsTest, DoubleRecordDisagreeing) {
+  IPAddressNumber address;
+  StrictMock<MockListenerDelegate> delegate_privet;
+
+  scoped_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+      dns_protocol::kTypeA, "privet.local", &delegate_privet);
+
+  ASSERT_TRUE(listener_privet->Start());
+
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
+      .Times(Exactly(1))
+      .WillOnce(SaveIPAddress(&address));
+
+  SimulatePacketReceive(kCorruptedPacketDoubleRecord,
+                        sizeof(kCorruptedPacketDoubleRecord));
+
+  EXPECT_EQ("2.3.4.5", IPAddressToString(address));
+}
+
 
 // Note: These tests assume that the ipv4 socket will always be created first.
 // This is a simplifying assumption based on the way the code works now.

@@ -24,7 +24,32 @@ class RecordParsed;
 // guaranteed not to return expired records. It also has facilities for timely
 // record expiration.
 class NET_EXPORT_PRIVATE MDnsCache {
- public:
+public:
+  // Key type for the record map. It is a 3-tuple of type, name and optional
+  // value ordered by type, then name, then optional value. This allows us to
+  // query for all records of a certain type and name, while also allowing us
+  // to set records of a certain type, name and optionally value as unique.
+  class Key {
+   public:
+    Key(unsigned type, const std::string& name, const std::string& optional);
+    Key(const Key&);
+    Key& operator=(const Key&);
+    ~Key();
+    bool operator<(const Key& key) const;
+    bool operator==(const Key& key) const;
+
+    unsigned type() const { return type_; }
+    const std::string& name() const  { return name_; }
+    const std::string& optional() const { return optional_; }
+
+    // Create the cache key corresponding to |record|.
+    static Key CreateFor(const RecordParsed* record);
+   private:
+    unsigned type_;
+    std::string name_;
+    std::string optional_;
+  };
+
   typedef base::Callback<void(const RecordParsed*)> RecordRemovedCallback;
 
   enum UpdateType {
@@ -40,6 +65,10 @@ class NET_EXPORT_PRIVATE MDnsCache {
   // (existed previously with different value) or not changed (existed
   // previously with same value).
   UpdateType UpdateDnsRecord(scoped_ptr<const RecordParsed> record);
+
+  // Check cache for record with key |key|. Return the record if it exists, or
+  // NULL if it doesn't.
+  const RecordParsed* LookupKey(const Key& key);
 
   // Return records with type |type| and name |name|. Expired records will not
   // be returned. If |name| is empty, return all records with type |type|.
@@ -60,41 +89,19 @@ class NET_EXPORT_PRIVATE MDnsCache {
 
   void Clear();
 
- private:
-  // Key type for the record map. It is a 3-tuple of type, name and optional
-  // value ordered by type, then name, then optional value. This allows us to
-  // query for all records of a certain type and name, while also allowing us
-  // to set records of a certain type, name and optionally value as unique.
-  class Key {
-   public:
-    Key(unsigned type, const std::string& name, const std::string& optional);
-    Key(const Key&);
-    Key& operator=(const Key&);
-    ~Key();
-    bool operator<(const Key& key) const;
-    bool operator==(const Key& key) const;
-
-    unsigned type() const { return type_; }
-    const std::string& name() const  { return name_; }
-    const std::string& optional() const { return optional_; }
-
-   private:
-     unsigned type_;
-     std::string name_;
-     std::string optional_;
-  };
-
+private:
   typedef std::map<Key, const RecordParsed*> RecordMap;
 
   // Get the effective expiration of a cache entry, based on its creation time
   // and TTL. Does adjustments so entries with a TTL of zero will have a
   // nonzero TTL, as explained in RFC 6762 Section 10.1.
-  base::Time GetEffectiveExpiration(const RecordParsed* entry) const;
+  static base::Time GetEffectiveExpiration(const RecordParsed* entry);
 
   // Get optional part of the DNS key for shared records. For example, in PTR
   // records this is the pointed domain, since multiple PTR records may exist
   // for the same name.
-  std::string GetOptionalFieldForRecord(const RecordParsed* record) const;
+  static std::string GetOptionalFieldForRecord(
+      const RecordParsed* record);
 
   RecordMap mdns_cache_;
 

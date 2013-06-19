@@ -213,6 +213,10 @@ bool MDnsClientImpl::Core::SendQuery(uint16 rrtype, std::string name) {
 void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
                                         int bytes_read) {
   unsigned offset;
+  // Note: We store cache keys rather than record pointers to avoid
+  // erroneous behavior in case a packet contains multiple exclusive
+  // records with the same type and name.
+  std::map<MDnsCache::Key, MDnsListener::UpdateType> update_keys;
 
   if (!response->InitParseWithoutQuery(bytes_read)) {
     LOG(WARNING) << "Could not understand an mDNS packet.";
@@ -229,10 +233,10 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
 
   for (unsigned i = 0; i < answer_count; i++) {
     offset = parser.GetOffset();
-    scoped_ptr<const RecordParsed> scoped_record = RecordParsed::CreateFrom(
+    scoped_ptr<const RecordParsed> record = RecordParsed::CreateFrom(
         &parser, base::Time::Now());
 
-    if (!scoped_record) {
+    if (!record) {
       LOG(WARNING) << "Could not understand an mDNS record.";
 
       if (offset == parser.GetOffset()) {
@@ -243,16 +247,14 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
       }
     }
 
-    if ((scoped_record->klass() & dns_protocol::kMDnsClassMask) !=
+    if ((record->klass() & dns_protocol::kMDnsClassMask) !=
         dns_protocol::kClassIN) {
       LOG(WARNING) << "Received an mDNS record with non-IN class. Ignoring.";
       continue;  // Ignore all records not in the IN class.
     }
 
-    // We want to retain a copy of the record pointer for updating listeners
-    // but we are passing ownership to the cache.
-    const RecordParsed* record = scoped_record.get();
-    MDnsCache::UpdateType update = cache_.UpdateDnsRecord(scoped_record.Pass());
+    MDnsCache::Key update_key = MDnsCache::Key::CreateFor(record.get());
+    MDnsCache::UpdateType update = cache_.UpdateDnsRecord(record.Pass());
 
     // Cleanup time may have changed.
     ScheduleCleanup(cache_.next_expiration());
@@ -275,10 +277,19 @@ void MDnsClientImpl::Core::HandlePacket(DnsResponse* response,
           break;
       }
 
-      AlertListeners(update_external,
-                     ListenerKey(record->type(), record->name()), record);
+      update_keys.insert(std::make_pair(update_key, update_external));
+    }
+  }
+
+  for (std::map<MDnsCache::Key, MDnsListener::UpdateType>::iterator i =
+           update_keys.begin(); i != update_keys.end(); i++) {
+    const RecordParsed* record = cache_.LookupKey(i->first);
+    if (record) {
+      AlertListeners(i->second, ListenerKey(record->type(), record->name()),
+                     record);
       // Alert listeners listening only for rrtype and not for name.
-      AlertListeners(update_external, ListenerKey(record->type(), ""), record);
+      AlertListeners(i->second, ListenerKey(record->type(), ""),
+                     record);
     }
   }
 }

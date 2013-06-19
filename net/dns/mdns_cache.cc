@@ -59,6 +59,14 @@ bool MDnsCache::Key::operator==(const MDnsCache::Key& key) const {
   return type_ == key.type_ && name_ == key.name_ && optional_ == key.optional_;
 }
 
+// static
+MDnsCache::Key MDnsCache::Key::CreateFor(const RecordParsed* record) {
+  return Key(record->type(),
+             record->name(),
+             GetOptionalFieldForRecord(record));
+}
+
+
 MDnsCache::MDnsCache() {
 }
 
@@ -71,14 +79,19 @@ void MDnsCache::Clear() {
   STLDeleteValues(&mdns_cache_);
 }
 
+const RecordParsed* MDnsCache::LookupKey(const Key& key) {
+  RecordMap::iterator found = mdns_cache_.find(key);
+  if (found != mdns_cache_.end()) {
+    return found->second;
+  }
+  return NULL;
+}
+
 MDnsCache::UpdateType MDnsCache::UpdateDnsRecord(
     scoped_ptr<const RecordParsed> record) {
   UpdateType type = NoChange;
 
-  MDnsCache::Key cache_key = MDnsCache::Key(
-      record->type(),
-      record->name(),
-      GetOptionalFieldForRecord(record.get()));
+  Key cache_key = Key::CreateFor(record.get());
 
   base::Time expiration = GetEffectiveExpiration(record.get());
   if (next_expiration_ == base::Time() || expiration < next_expiration_) {
@@ -155,8 +168,9 @@ void MDnsCache::FindDnsRecords(unsigned type,
   }
 }
 
+// static
 std::string MDnsCache::GetOptionalFieldForRecord(
-    const RecordParsed* record) const {
+    const RecordParsed* record) {
   switch (record->type()) {
     case PtrRecordRdata::kType: {
       const PtrRecordRdata* rdata = record->rdata<PtrRecordRdata>();
@@ -167,7 +181,8 @@ std::string MDnsCache::GetOptionalFieldForRecord(
   }
 }
 
-base::Time MDnsCache::GetEffectiveExpiration(const RecordParsed* record) const {
+// static
+base::Time MDnsCache::GetEffectiveExpiration(const RecordParsed* record) {
   base::TimeDelta ttl;
 
   if (record->ttl()) {
