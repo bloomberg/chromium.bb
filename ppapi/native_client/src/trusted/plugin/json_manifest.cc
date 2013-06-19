@@ -42,7 +42,6 @@ const char* const kUrlKey =            "url";
 
 // Pnacl keys
 const char* const kOptLevelKey = "-O";
-const char* const kPnaclExperimentalFlags = "experimental_flags";
 
 // Sample NaCL manifest file:
 // {
@@ -369,10 +368,6 @@ void GrabUrlAndPnaclOptions(const Json::Value& url_spec,
     if (opt_raw > 3)
       opt_raw = 3;
     pnacl_options->set_opt_level(static_cast<int8_t>(opt_raw));
-  }
-  if (url_spec.isMember(kPnaclExperimentalFlags)) {
-    pnacl_options->set_experimental_flags(
-        url_spec[kPnaclExperimentalFlags].asString());
   }
 }
 

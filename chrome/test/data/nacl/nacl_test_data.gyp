@@ -194,7 +194,6 @@
           'pnacl_nmf_options/pnacl_o_0.nmf',
           'pnacl_nmf_options/pnacl_o_2.nmf',
           'pnacl_nmf_options/pnacl_o_large.nmf',
-          'pnacl_nmf_options/pnacl_time_passes.nmf',
         ],
       },
       'dependencies': [

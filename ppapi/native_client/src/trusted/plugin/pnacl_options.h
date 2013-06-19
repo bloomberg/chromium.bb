@@ -32,7 +32,7 @@ class PnaclOptions {
   // Return true if the manifest did not specify any special options
   // (just using the default).
   bool HasDefaultOpts() const {
-    return opt_level_ == -1 && experimental_flags_.empty();
+    return opt_level_ == -1;
   }
 
   // Return a character array of \x00 delimited commandline options.
@@ -44,13 +44,6 @@ class PnaclOptions {
   uint8_t opt_level() const { return opt_level_; }
   void set_opt_level(int8_t l);
 
-  nacl::string experimental_flags() const {
-    return experimental_flags_;
-  }
-  void set_experimental_flags(const nacl::string& f) {
-    experimental_flags_ = f;
-  }
-
   void set_cache_validators(const nacl::string& c) {
     cache_validators_ = c;
   }
@@ -61,7 +54,6 @@ class PnaclOptions {
   // double-check that it is the case when more fields are added.
   bool translate_;
   int8_t opt_level_;
-  nacl::string experimental_flags_;
   nacl::string cache_validators_;
 };
 
