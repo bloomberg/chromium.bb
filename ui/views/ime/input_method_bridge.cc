@@ -224,12 +224,16 @@ void InputMethodBridge::EnsureCaretInRect(const gfx::Rect& rect) {
 
 // Overridden from FocusChangeListener.
 void InputMethodBridge::OnWillChangeFocus(View* focused_before, View* focused) {
-  ConfirmCompositionText();
+  if (HasCompositionText()) {
+    ConfirmCompositionText();
+    CancelComposition(focused_before);
+  }
 }
 
 void InputMethodBridge::OnDidChangeFocus(View* focused_before, View* focused) {
-  OnTextInputTypeChanged(GetFocusedView());
-  OnCaretBoundsChanged(GetFocusedView());
+  DCHECK_EQ(GetFocusedView(), focused);
+  OnTextInputTypeChanged(focused);
+  OnCaretBoundsChanged(focused);
 }
 
 ui::InputMethod* InputMethodBridge::GetHostInputMethod() const {
