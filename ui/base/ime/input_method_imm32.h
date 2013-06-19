@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,19 +39,23 @@ class UI_EXPORT InputMethodIMM32 : public InputMethodWin {
                                         TextInputClient* focused) OVERRIDE;
 
  private:
-  LRESULT OnImeSetContext(UINT message,
+  LRESULT OnImeSetContext(HWND window_handle,
+                          UINT message,
                           WPARAM wparam,
                           LPARAM lparam,
                           BOOL* handled);
-  LRESULT OnImeStartComposition(UINT message,
+  LRESULT OnImeStartComposition(HWND window_handle,
+                                UINT message,
                                 WPARAM wparam,
                                 LPARAM lparam,
                                 BOOL* handled);
-  LRESULT OnImeComposition(UINT message,
+  LRESULT OnImeComposition(HWND window_handle,
+                           UINT message,
                            WPARAM wparam,
                            LPARAM lparam,
                            BOOL* handled);
-  LRESULT OnImeEndComposition(UINT message,
+  LRESULT OnImeEndComposition(HWND window_handle,
+                              UINT message,
                               WPARAM wparam,
                               LPARAM lparam,
                               BOOL* handled);
@@ -62,7 +66,15 @@ class UI_EXPORT InputMethodIMM32 : public InputMethodWin {
   // Enables or disables the IME according to the current text input type.
   void UpdateIMEState();
 
+  // Returns true if the Win32 native window bound to |client| has Win32 input
+  // focus.
+  bool IsWindowFocused(const TextInputClient* client) const;
+
   bool enabled_;
+
+  // Window handle where composition is on-going. NULL when there is no
+  // composition.
+  HWND composing_window_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodIMM32);
 };
