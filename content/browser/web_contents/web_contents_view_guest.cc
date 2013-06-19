@@ -14,6 +14,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/drag_messages.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/context_menu_params.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -28,10 +29,12 @@ namespace content {
 WebContentsViewGuest::WebContentsViewGuest(
     WebContentsImpl* web_contents,
     BrowserPluginGuest* guest,
-    WebContentsViewPort* platform_view)
+    WebContentsViewPort* platform_view,
+    RenderViewHostDelegateView* platform_view_delegate_view)
     : web_contents_(web_contents),
       guest_(guest),
-      platform_view_(platform_view) {
+      platform_view_(platform_view),
+      platform_view_delegate_view_(platform_view_delegate_view) {
 }
 
 WebContentsViewGuest::~WebContentsViewGuest() {
@@ -53,7 +56,11 @@ gfx::NativeWindow WebContentsViewGuest::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
-  out->SetRect(0, 0, size_.width(), size_.height());
+  // We need embedder container's bounds to calculate our bounds.
+  guest_->embedder_web_contents()->GetView()->GetContainerBounds(out);
+  gfx::Point guest_coordinates = guest_->GetScreenCoordinates(gfx::Point());
+  out->Offset(guest_coordinates.x(), guest_coordinates.y());
+  out->set_size(size_);
 }
 
 void WebContentsViewGuest::SizeContents(const gfx::Size& size) {
@@ -181,9 +188,8 @@ void WebContentsViewGuest::GotFocus() {
 void WebContentsViewGuest::TakeFocus(bool reverse) {
 }
 
-void WebContentsViewGuest::ShowContextMenu(
-    const ContextMenuParams& params) {
-  NOTIMPLEMENTED();
+void WebContentsViewGuest::ShowContextMenu(const ContextMenuParams& params) {
+  platform_view_delegate_view_->ShowContextMenu(params);
 }
 
 void WebContentsViewGuest::ShowPopupMenu(const gfx::Rect& bounds,

@@ -391,7 +391,11 @@ RenderViewContextMenu::RenderViewContextMenu(
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForProfile(profile_)),
-      command_executed_(false) {
+      command_executed_(false),
+      is_guest_(false) {
+  RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
+  if (rvh && rvh->GetProcess()->IsGuest())
+    is_guest_ = true;
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() {
@@ -572,6 +576,7 @@ void RenderViewContextMenu::InitMenu() {
   if (params_.media_type == WebContextMenuData::MediaTypeNone &&
       !has_link &&
       !params_.is_editable &&
+      !is_guest_ &&
       !has_selection) {
     if (!params_.page_url.is_empty()) {
       bool is_devtools = IsDevToolsURL(params_.page_url);
@@ -623,7 +628,7 @@ void RenderViewContextMenu::InitMenu() {
   else if (has_selection)
     AppendCopyItem();
 
-  if (has_selection) {
+  if (!is_guest_ && has_selection) {
     AppendSearchProvider();
     if (!IsDevToolsURL(params_.page_url))
       AppendPrintItem();
@@ -634,16 +639,19 @@ void RenderViewContextMenu::InitMenu() {
 
   AppendDeveloperItems();
 
-  if (!print_preview_menu_observer_.get()) {
-    print_preview_menu_observer_.reset(
-        new PrintPreviewContextMenuObserver(source_web_contents_));
+  if (!is_guest_) {
+    if (!print_preview_menu_observer_.get()) {
+      print_preview_menu_observer_.reset(
+          new PrintPreviewContextMenuObserver(source_web_contents_));
+    }
+    if (!instant_extended_observer_.get()) {
+      instant_extended_observer_.reset(
+          new InstantExtendedContextMenuObserver(source_web_contents_));
+    }
+
+    observers_.AddObserver(print_preview_menu_observer_.get());
+    observers_.AddObserver(instant_extended_observer_.get());
   }
-  if (!instant_extended_observer_.get()) {
-    instant_extended_observer_.reset(
-        new InstantExtendedContextMenuObserver(source_web_contents_));
-  }
-  observers_.AddObserver(print_preview_menu_observer_.get());
-  observers_.AddObserver(instant_extended_observer_.get());
 }
 
 const Extension* RenderViewContextMenu::GetExtension() const {

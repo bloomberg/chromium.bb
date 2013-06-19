@@ -1508,9 +1508,11 @@ bool BrowserPlugin::acceptsInputEvents() {
 
 bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
                                      WebKit::WebCursorInfo& cursor_info) {
-  if (guest_crashed_ || !HasGuestInstanceID() ||
-      event.type == WebKit::WebInputEvent::ContextMenu)
+  if (guest_crashed_ || !HasGuestInstanceID())
     return false;
+
+  if (event.type == WebKit::WebInputEvent::ContextMenu)
+    return true;
 
   const WebKit::WebInputEvent* modified_event = &event;
   scoped_ptr<WebKit::WebTouchEvent> touch_event;

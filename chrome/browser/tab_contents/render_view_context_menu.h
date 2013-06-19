@@ -287,6 +287,13 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // should be notified of menu closing without execution.
   bool command_executed_;
 
+  // Whether or not the menu was triggered for a browser plugin guest.
+  // Guests are rendered inside chrome apps, but have most of the actions
+  // that a regular web page has.
+  // Currently actions/items that are suppressed from guests are: searching,
+  // printing, speech and instant.
+  bool is_guest_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };
 

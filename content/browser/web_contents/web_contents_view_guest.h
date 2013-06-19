@@ -30,7 +30,8 @@ class CONTENT_EXPORT WebContentsViewGuest
   // |platform_view|.
   WebContentsViewGuest(WebContentsImpl* web_contents,
                        BrowserPluginGuest* guest,
-                       WebContentsViewPort* platform_view);
+                       WebContentsViewPort* platform_view,
+                       RenderViewHostDelegateView* platform_view_delegate_view);
   virtual ~WebContentsViewGuest();
 
   WebContents* web_contents();
@@ -97,6 +98,9 @@ class CONTENT_EXPORT WebContentsViewGuest
   // Calls to this WebContentsViewGuest are forwarded to |platform_view_|.
   WebContentsViewPort* platform_view_;
   gfx::Size size_;
+
+  // Delegate view for guest's platform view.
+  RenderViewHostDelegateView* platform_view_delegate_view_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewGuest);
 };

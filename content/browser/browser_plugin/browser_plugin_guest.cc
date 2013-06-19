@@ -581,12 +581,11 @@ void BrowserPluginGuest::CloseContents(WebContents* source) {
   SendMessageToEmbedder(new BrowserPluginMsg_Close(instance_id_));
 }
 
-bool BrowserPluginGuest::HandleContextMenu(
-    const ContextMenuParams& params) {
-  // TODO(fsamuel): We have a do nothing context menu handler for now until
+bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {
+  // TODO(fsamuel): We show the regular page context menu handler for now until
   // we implement the Apps Context Menu API for Browser Plugin (see
   // http://crbug.com/140315).
-  return true;
+  return false;  // Will be handled by WebContentsViewGuest.
 }
 
 void BrowserPluginGuest::HandleKeyboardEvent(
