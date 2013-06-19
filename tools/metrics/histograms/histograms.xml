@@ -929,16 +929,25 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="clickjacking.discard_download">
-  <summary>TBD</summary>
+<histogram name="clickjacking.discard_download" units="ms">
+  <summary>
+    The length of time between a dangerous download appearing on the downloads
+    shelf, and the &quot;Discard&quot; button being clicked.
+  </summary>
 </histogram>
 
-<histogram name="clickjacking.launch_url">
-  <summary>TBD</summary>
+<histogram name="clickjacking.launch_url" units="ms">
+  <summary>
+    The length of time between the external protocol dialog being shown and the
+    &quot;Launch Application&quot; button being clicked.
+  </summary>
 </histogram>
 
-<histogram name="clickjacking.open_download">
-  <summary>TBD</summary>
+<histogram name="clickjacking.open_download" units="ms">
+  <summary>
+    The length of time between a download appearing on the download shelf, and
+    the user opening it by clicking the item or pressing return.
+  </summary>
 </histogram>
 
 <histogram name="clickjacking.report_and_discard_download" units="ms">
@@ -948,8 +957,11 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="clickjacking.save_download">
-  <summary>TBD</summary>
+<histogram name="clickjacking.save_download" units="ms">
+  <summary>
+    The length of time between a dangerous download appearing on the download
+    shelf, and the &quot;Keep&quot; button being clicked.
+  </summary>
 </histogram>
 
 <histogram name="Clipboard.IncognitoUseCase" enum="ClipboardAction">
