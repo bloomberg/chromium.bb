@@ -43,7 +43,6 @@ namespace WebCore {
 AbstractWorker::AbstractWorker(ScriptExecutionContext* context)
     : ActiveDOMObject(context)
 {
-    ScriptWrappable::init(this);
 }
 
 AbstractWorker::~AbstractWorker()
@@ -52,7 +51,7 @@ AbstractWorker::~AbstractWorker()
 
 void AbstractWorker::contextDestroyed()
 {
-    ActiveDOMObject::contextDestroyed(); 
+    ActiveDOMObject::contextDestroyed();
 }
 
 KURL AbstractWorker::resolveURL(const String& url, ExceptionCode& ec)

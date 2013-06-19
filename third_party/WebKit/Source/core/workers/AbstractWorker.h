@@ -46,7 +46,7 @@ namespace WebCore {
     class KURL;
     class ScriptExecutionContext;
 
-    class AbstractWorker : public RefCounted<AbstractWorker>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
+    class AbstractWorker : public RefCounted<AbstractWorker>, public EventTarget, public ActiveDOMObject {
     public:
         // EventTarget APIs
         virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }

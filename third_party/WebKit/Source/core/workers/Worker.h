@@ -47,7 +47,7 @@ namespace WebCore {
 
     typedef int ExceptionCode;
 
-    class Worker : public AbstractWorker, private WorkerScriptLoaderClient {
+    class Worker : public AbstractWorker, public ScriptWrappable, private WorkerScriptLoaderClient {
     public:
         static PassRefPtr<Worker> create(ScriptExecutionContext*, const String& url, ExceptionCode&);
         virtual ~Worker();
@@ -61,7 +61,7 @@ namespace WebCore {
         virtual bool canSuspend() const OVERRIDE;
         virtual void stop() OVERRIDE;
         virtual bool hasPendingActivity() const OVERRIDE;
-    
+
         DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
     private:

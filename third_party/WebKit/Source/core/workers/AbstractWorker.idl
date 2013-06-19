@@ -30,19 +30,10 @@
  */
 
 [
-    NoInterfaceObject,
-    ActiveDOMObject,
-    EventTarget
+    NoInterfaceObject
 ] interface AbstractWorker {
-
     attribute EventListener onerror;
-
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
 };
 
+Worker implements AbstractWorker;
+SharedWorker implements AbstractWorker;
