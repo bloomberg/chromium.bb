@@ -25,12 +25,4 @@ specific_include_rules = {
     "!content/public/browser/notification_source.h",
     "!content/public/browser/notification_types.h",
   ],
-  "drive_uploader\.(h|cc)": [
-    "!chrome/browser/drive/drive_service_interface.h",
-    "!content/public/browser/power_save_blocker.h",
-  ],
-  "drive_uploader_unittest\.cc": [
-    "!chrome/browser/drive/drive_service_interface.h",
-    "!chrome/browser/drive/dummy_drive_service.h",
-  ],
 }
