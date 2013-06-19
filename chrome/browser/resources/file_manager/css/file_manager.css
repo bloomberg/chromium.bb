@@ -21,18 +21,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  transition: opacity 70ms linear;
   width: 100%;
-}
-
-body:not([new-ui]) {
-  opacity: 0;
-}
-
-body.loaded {
-  /* Do not use display:none because list will calculate metrics incorrectly. */
-  /* display: -webkit-box;*/
-  opacity: 1;
 }
 
 /* Drop opacity of selected rows to give a visual feedback on copy/cut
@@ -41,13 +30,13 @@ body.loaded {
   opacity: 0.8;
 }
 
-body[new-ui] ::-webkit-scrollbar {
+::-webkit-scrollbar {
   height: 0;
   width: 0;
 }
 
 /* TODO(mtomasz): Flip scrollbars to the opposite side for RTL languages. */
-body[new-ui] .scrollbar-vertical {
+.scrollbar-vertical {
   bottom: 0;
   position: absolute;
   right: 0;
@@ -56,7 +45,7 @@ body[new-ui] .scrollbar-vertical {
   z-index: 1000;
 }
 
-body[new-ui] .scrollbar-button {
+.scrollbar-button {
   background-color: black;
   border: 1px solid #ccc;
   border-radius: 3px;
@@ -69,92 +58,45 @@ body[new-ui] .scrollbar-button {
   width: 8px;
 }
 
-body[new-ui] :hover > .scrollbar-vertical > .scrollbar-button {
+:hover > .scrollbar-vertical > .scrollbar-button {
   opacity: 0.3;
 }
 
-body[new-ui] .scrollbar-vertical > .scrollbar-button:hover {
+.scrollbar-vertical > .scrollbar-button:hover {
   opacity: 0.4;
 }
 
-body[new-ui] .scrollbar-vertical > .scrollbar-button.pressed {
+.scrollbar-vertical > .scrollbar-button.pressed {
   opacity: 0.5;
 }
 
-body:not([new-ui]) #butter-bar-container {
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  left: 0;
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: 3;
-}
-
-body[new-ui] #butter-bar-container {
+#butter-bar-container {
   width: 100%;
 }
 
-body:not([new-ui]) #butter-bar {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  background-color: #e3e3e3;
-  border: 1px solid #d4d4d4;
-  border-radius: 2px;
-  border-top-width: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  color: #222;
-  display: -webkit-box;
-  margin-top: 2px;
-  max-width: 340px;
-  min-width: 200px;
-  padding: 0 1em;
-  pointer-events: auto;
-  top: 1px;
-  transition: opacity 130ms;
-  width: 30%;
-  z-index: 2;
-}
-
-body[new-ui] #butter-bar {
+#butter-bar {
   color: #666;
   display: -webkit-box;
   padding: 15px;
 }
 
-body #butter-bar:not(.visible) {
-  opacity: 0;
-  pointer-events: none;
-}
-
-body[new-ui] #butter-bar:not(.visible) {
+#butter-bar:not(.visible) {
   display: none;
 }
 
 #butter-bar .content {
   -webkit-box-flex: 1.0;
   -webkit-box-orient: block-axis;
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  min-height: 35px;
-}
-
-body[new-ui] #butter-bar .content {
   -webkit-box-pack: end;
-  min-height: 0;
+  display: -webkit-box;
 }
 
 #butter-bar .actions {
-  -webkit-box-align: center;
+  -webkit-box-align: end;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
   -webkit-margin-start: 6px;
   display: -webkit-box;
-}
-
-body[new-ui] #butter-bar .actions {
-  -webkit-box-align: end;
 }
 
 #butter-bar .actions a {
@@ -178,22 +120,15 @@ body[new-ui] #butter-bar .actions {
   margin-left: -6px;
 }
 
-body[new-ui] #butter-bar .actions a.x {
+#butter-bar .actions a.x {
   margin-bottom: -14px;
 }
 
 #butter-bar .butter-message.single-line {
+  line-height: 2.0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-body[new-ui] #butter-bar .butter-message.single-line {
-  line-height: 2.0;
-}
-
-body:not([new-ui]) #butter-bar .progress-track {
-  height: 5px;
 }
 
 /* The top title of the dialog. */
@@ -216,13 +151,10 @@ body:not([new-ui]) #butter-bar .progress-track {
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
   background-color: white;  /* Makes #drag-container invisible. */
+  border-radius: 2px;
   display: -webkit-box;
   overflow: hidden;
   position: relative;
-}
-
-body[new-ui] .dialog-container {
-  border-radius: 2px;
 }
 
 /* List/grid and preview are inside this container. */
@@ -235,26 +167,19 @@ body[new-ui] .dialog-container {
 
 /* Directory tree at the left. */
 .dialog-sidebar {
-  -webkit-border-end: 1px solid rgb(170, 170, 170);
+  -webkit-border-end: 1px solid rgb(225, 225, 225);
   -webkit-box-flex: 0;
   -webkit-box-orient: vertical;
-  background-color: #e6e6e6;
+  background-color: #f1f1f1;
   display: -webkit-box;
   max-width: 50%;
-  min-width: 45px;
+  min-width: 100px;
   overflow: hidden;
   position: relative;
-  width: 168px;
-}
-
-body[new-ui] .dialog-sidebar {
-  -webkit-border-end: 1px solid rgb(225, 225, 225);
-  background-color: #f1f1f1;
-  min-width: 100px;
   width: 200px;
 }
 
-body[new-ui] .dialog-sidebar-header {
+.dialog-sidebar-header {
   -webkit-app-region: drag;
   -webkit-box-flex: 0;
   display: -webkit-box;
@@ -262,25 +187,25 @@ body[new-ui] .dialog-sidebar-header {
   line-height: 45px;
 }
 
-body[new-ui] .dialog-sidebar-header #app-name {
+.dialog-sidebar-header #app-name {
   -webkit-margin-start: 15px;
   color: #303030;
   font-size: 130%;
 }
 
-body[new-ui] .dialog-sidebar-contents {
+.dialog-sidebar-contents {
   -webkit-box-flex: 1;
   display: -webkit-box;
   position: relative;
 }
 
-body[new-ui] .dialog-sidebar-footer {
+.dialog-sidebar-footer {
   -webkit-box-flex: 0;
   display: -webkit-box;
 }
 
 /* A vertical splitter between the roots list and the file list. It is actually
-  a transparent area centered on the roots list right border.*/
+   a transparent area centered on the roots list right border.*/
 div.splitter {
   -webkit-box-flex: 0;
   cursor: col-resize;
@@ -291,13 +216,13 @@ div.splitter {
   z-index: 100;
 }
 
-body[new-ui] #volume-list {
+#volume-list {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
 }
 
-body[new-ui] #volume-list > * {
+#volume-list > * {
   background-color: rgb(240, 240, 240);
   background-image: none;
   border: none;
@@ -306,24 +231,24 @@ body[new-ui] #volume-list > * {
   padding: 0 5px;
 }
 
-body[new-ui] #volume-list > .accepts,
-body[new-ui] #volume-list > [lead][selected],
-body[new-ui] #volume-list > [lead],
-body[new-ui] #volume-list > [selected],
-body[new-ui] #volume-list > [anchor] {
+#volume-list > .accepts,
+#volume-list > [lead][selected],
+#volume-list > [lead],
+#volume-list > [selected],
+#volume-list > [anchor] {
   background-color: rgb(225, 225, 225);
 }
 
-body[new-ui] #volume-list:focus > .accepts,
-body[new-ui] #volume-list:focus > [lead][selected],
-body[new-ui] #volume-list:focus > [lead],
-body[new-ui] #volume-list:focus > [selected],
-body[new-ui] #volume-list:focus > [anchor] {
+#volume-list:focus > .accepts,
+#volume-list:focus > [lead][selected],
+#volume-list:focus > [lead],
+#volume-list:focus > [selected],
+#volume-list:focus > [anchor] {
   background-color: rgb(66, 129, 244);
   color: white;
 }
 
-body[new-ui] #volume-list li.root-item {
+#volume-list li.root-item {
   -webkit-box-align: center;
   border-radius: 0;
   display: -webkit-box;
@@ -331,7 +256,7 @@ body[new-ui] #volume-list li.root-item {
   padding-left: 11px;
 }
 
-body[new-ui] #volume-list li.root-item > .root-label {
+#volume-list li.root-item > .root-label {
   -webkit-box-flex: 1;
   margin: 0 2px;
   overflow: hidden;
@@ -339,7 +264,7 @@ body[new-ui] #volume-list li.root-item > .root-label {
   white-space: nowrap;
 }
 
-body[new-ui] #volume-list .volume-icon {
+#volume-list .volume-icon {
   background-position: center 2px;
   background-repeat: no-repeat;
   height: 24px;
@@ -358,42 +283,31 @@ body[new-ui] #volume-list .volume-icon {
 }
 
 #directory-tree {
+  border-right: 1px solid rgb(212, 212, 212);
   bottom: 0;
   left: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
   position: absolute;
   right: 0;
   top: 47px;
 }
 
-body[new-ui] #directory-tree {
-  border-right: 1px solid rgb(212, 212, 212);
-  padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
-}
-
 #directory-tree .tree-row {
+  background-color: white;
   background-image: none;
   border: none;
   border-radius: 0;
+  cursor: pointer;
   display: -webkit-box;
-  line-height: 39px;
+  line-height: 29px;
   margin: 0;
   padding: 0 3px;
 }
 
-body[new-ui] #directory-tree .tree-row {
-  background-color: white;
-  cursor: pointer;
-  line-height: 29px;
-}
-
 /* For rows of subitems (non-top items) */
 #directory-tree .tree-children .tree-row {
-  line-height: 31px;
-}
-
-body[new-ui] #directory-tree .tree-children .tree-row {
   line-height: 29px;
 }
 
@@ -407,7 +321,7 @@ body[new-ui] #directory-tree .tree-children .tree-row {
   width: 37px;
 }
 
-body[new-ui] #directory-tree:focus .tree-row[selected] > .expand-icon {
+#directory-tree:focus .tree-row[selected] > .expand-icon {
   background-image: -webkit-canvas(tree-triangle-inverted);
 }
 
@@ -427,10 +341,6 @@ body[new-ui] #directory-tree:focus .tree-row[selected] > .expand-icon {
   text-overflow: ellipsis;
 }
 
-body:not([new-ui]) #directory-tree .tree-row:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
 #directory-tree .tree-item.accepts > .tree-row,
 #directory-tree .tree-row[lead][selected],
 #directory-tree .tree-row[lead],
@@ -439,11 +349,11 @@ body:not([new-ui]) #directory-tree .tree-row:hover {
   background-color: rgb(204, 204, 204);
 }
 
-body[new-ui] #directory-tree .tree-item.accepts > .tree-row,
-body[new-ui] #directory-tree .tree-row[lead][selected],
-body[new-ui] #directory-tree .tree-row[lead],
-body[new-ui] #directory-tree .tree-row[selected],
-body[new-ui] #directory-tree .tree-row[anchor] {
+#directory-tree .tree-item.accepts > .tree-row,
+#directory-tree .tree-row[lead][selected],
+#directory-tree .tree-row[lead],
+#directory-tree .tree-row[selected],
+#directory-tree .tree-row[anchor] {
   background-color: rgb(225, 225, 225);
 }
 
@@ -455,25 +365,16 @@ body[new-ui] #directory-tree .tree-row[anchor] {
   background-color: rgb(193, 209, 232);
 }
 
-body[new-ui] #directory-tree:focus .tree-item.accepts > .tree-row,
-body[new-ui] #directory-tree:focus .tree-row[lead][selected],
-body[new-ui] #directory-tree:focus .tree-row[lead],
-body[new-ui] #directory-tree:focus .tree-row[selected],
-body[new-ui] #directory-tree:focus .tree-row[anchor] {
+#directory-tree:focus .tree-item.accepts > .tree-row,
+#directory-tree:focus .tree-row[lead][selected],
+#directory-tree:focus .tree-row[lead],
+#directory-tree:focus .tree-row[selected],
+#directory-tree:focus .tree-row[anchor] {
   background-color: rgb(66, 129, 244);
   color: white;
 }
 
-body:not([new-ui]) #directory-tree:hover .tree-item.accepts > .tree-row:hover,
-body:not([new-ui]) #directory-tree:hover .tree-row[lead]:hover,
-body:not([new-ui]) #directory-tree:hover .tree-row[lead][selected]:hover,
-body:not([new-ui]) #directory-tree:hover .tree-row[selected]:hover,
-body:not([new-ui]) #directory-tree:hover .tree-row[anchor]:hover {
-  background-color: rgb(177, 193, 216);
-}
-
-body[new-ui] #volume-list .root-item > div.root-eject,
-body:not([new-ui]) #directory-tree .tree-row > div.root-eject {
+#volume-list .root-item > div.root-eject {
   /* The transition commented out to work around crbug.com/157813 */
   /* transition: opacity 70ms linear; */
   background-image: -webkit-image-set(
@@ -507,91 +408,66 @@ body:not([new-ui]) #directory-tree .tree-row > div.root-eject {
 
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
+  -webkit-app-region: drag;
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   display: -webkit-box;
+  height: 48px;
+  margin: 0;
   transition: all 180ms ease;
 }
 
-body:not([new-ui]) .dialog-header {
-  -webkit-margin-end: 7px;
-  height: 30px;
-  margin-bottom: 7px;
-  margin-top: 7px;
-}
-
-body[new-ui] .dialog-header {
-  -webkit-app-region: drag;
-  height: 48px;
-  margin: 0;
-}
-
-body[new-ui] .search-box-wrapper {
+.search-box-wrapper {
   -webkit-align-items: center;
   -webkit-box-flex: 1;
   display: -webkit-flex;
   height: 100%;
 }
 
-body[new-ui] .search-box-wrapper.too-short {
+.search-box-wrapper.too-short {
   visibility: hidden;
 }
 
-body[new-ui] .dialog-header #search-box,
-body[new-ui] .dialog-header #autocomplete-list,
-body[new-ui] .dialog-header #search-icon,
-body[new-ui] .dialog-header #search-clear-button,
-body[new-ui] .dialog-header .buttonbar button {
+.dialog-header #search-box,
+.dialog-header #autocomplete-list,
+.dialog-header #search-icon,
+.dialog-header #search-clear-button,
+.dialog-header .buttonbar button {
   -webkit-app-region: no-drag;
 }
 
-body[new-ui] .dialog-header #gear-button {
+.dialog-header #gear-button {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/topbar_button_settings.png') 1x,
     url('../images/files/ui/new-ui/2x/topbar_button_settings.png') 2x);
 }
 
-body[new-ui] .dialog-header #maximize-button {
+.dialog-header #maximize-button {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/topbar_button_maximize.png') 1x,
     url('../images/files/ui/new-ui/2x/topbar_button_maximize.png') 2x);
 }
 
-body[new-ui] .dialog-header #close-button {
+.dialog-header #close-button {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/topbar_button_close.png') 1x,
     url('../images/files/ui/new-ui/2x/topbar_button_close.png') 2x);
 }
 
-body[new-ui]:not([type='full-page']) .dialog-header #close-button,
-body[new-ui]:not([type='full-page']) .dialog-header #maximize-button {
+body:not([type='full-page']) .dialog-header #close-button,
+body:not([type='full-page']) .dialog-header #maximize-button {
   display: none;
 }
 
 /* Container for the detail and thumbnail list views. */
-body:not([new-ui]) .dialog-body {
-  -webkit-box-flex: 1;
-  -webkit-box-orient: vertical;
-  border-top: 1px solid #d4d4d4;
-  display: -webkit-box;
-  overflow: hidden;
-  position: relative;
-  transition: all 180ms ease;
-}
-
-body[new-ui] .dialog-body {
+.dialog-body {
   -webkit-box-flex: 1;
   -webkit-transition: all 180ms ease;
   border-top: 1px solid rgb(225, 225, 225);
   position: relative;
 }
 
-body:not([new-ui]) .main-panel {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
-}
-
-body[new-ui] .main-panel {
+.main-panel {
   bottom: 0;
   display: -webkit-box;
   left: 0;
@@ -600,7 +476,7 @@ body[new-ui] .main-panel {
   top: 0;
 }
 
-body[new-ui] .dialog-middlebar-contents {
+.dialog-middlebar-contents {
   display: -webkit-box;
   max-width: 50%;
   min-width: 45px;
@@ -612,16 +488,8 @@ body[new-ui] .dialog-middlebar-contents {
 .dialog-footer {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  display: -webkit-box;
-}
-
-body:not([new-ui]) .dialog-footer {
-  border-top: 1px solid #d2d2d2;
-  padding: 10px 17px 14px 15px;
-}
-
-body[new-ui] .dialog-footer {
   border-top: 1px solid rgb(225, 225, 225);
+  display: -webkit-box;
   padding: 10px;
 }
 
@@ -640,10 +508,6 @@ body[new-ui] .dialog-footer {
   -webkit-box-flex: 1;
   -webkit-margin-end: 20px;
   -webkit-margin-start: 20px;
-}
-
-body:not([new-ui]) #file-type {
-  -webkit-margin-end: 10px;
 }
 
 /* The container for breadcrumb elements. */
@@ -711,38 +575,20 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
 
 /* A single directory name in the list of path breadcrumbs. */
 .breadcrumb-path {
-  color: rgb(38, 86, 146);
+  color: #969696;
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-body[new-ui] .breadcrumb-path:not(.breadcrumb-last) {
-  -webkit-app-region: no-drag;
-}
-
-body:not([new-ui]) #search-breadcrumbs .breadcrumb-path {
-  color: #888;
-}
-
-body[new-ui] #search-breadcrumbs .breadcrumb-path {
-  color: #969696;
-}
-
-body[new-ui] #search-breadcrumbs .breadcrumb-path:hover,
-body:not([new-ui]) #search-breadcrumbs .breadcrumb-path:hover {
+.breadcrumb-path:hover {
   color: #666;
 }
 
 /* The final breadcrumb, representing the current directory. */
-body[new-ui] #search-breadcrumbs .breadcrumb-path.breadcrumb-last {
+#search-breadcrumbs .breadcrumb-path.breadcrumb-last {
   color: #141414;
-  cursor: default;
-}
-
-body:not([new-ui]) .breadcrumb-last {
-  color: black;
   cursor: default;
 }
 
@@ -759,12 +605,12 @@ body:not([new-ui]) .breadcrumb-last {
   width: 25px;
 }
 
-body[new-ui] .dialog-header .buttonbar {
+.dialog-header .buttonbar {
   -webkit-box-align: center;
   height: 100%;
 }
 
-body[new-ui] .dialog-header .buttonbar button {
+.dialog-header .buttonbar button {
   -webkit-box-shadow: none;
   -webkit-margin-end: 10px;
   -webkit-margin-start: 0;
@@ -781,15 +627,15 @@ body[new-ui] .dialog-header .buttonbar button {
   width: 32px;
 }
 
-body[new-ui] .dialog-header .buttonbar button:active {
+.dialog-header .buttonbar button:active {
   -webkit-box-shadow:
     0 1px 0 0 #c2c2c2 inset,
     0 0 0 1px #dedede inset;
 }
 
-body[new-ui] .dialog-header button:hover,
-body[new-ui] .dialog-header button:focus,
-body[new-ui] .dialog-header button:active {
+.dialog-header button:hover,
+.dialog-header button:focus,
+.dialog-header button:active {
   background-color: #ededed;
 }
 
@@ -802,30 +648,16 @@ body[new-ui] .dialog-header button:active {
 }
 
 #search-box {
-  -webkit-margin-end: 10px;
+  -webkit-margin-end: 0;
   -webkit-padding-after: 2px;
   -webkit-padding-before: 1px;
   -webkit-padding-end: 24px;
   -webkit-padding-start: 23px;
-  background: -webkit-image-set(
-    url('../images/files/ui/icon_search.png') 1x,
-    url('../images/files/ui/2x/icon_search.png') 2x);
   background-color: #fff;
   background-position: 4px 5.5px;
   background-repeat: no-repeat;
-  color: #333;
-  display: -webkit-box;
-  height: 29px;
-  line-height: 25px;
-  max-width: 150px;
-  transition: max-width 200ms;
-  width: 100%;
-}
-
-body[new-ui] #search-box {
-  -webkit-margin-end: 0;
-  background-image: none;
   border-style: none;
+  color: #333;
   display: block;
   height: 48px;
   line-height: 1em;
@@ -838,70 +670,25 @@ body[new-ui] #search-box {
   width: 0; /* Overrided by script */
 }
 
-body[new-ui] #search-box:focus,
-body[new-ui] #search-box:active,
-body[new-ui] .has-text #search-box {
+#search-box:focus,
+#search-box:active,
+.has-text #search-box {
   pointer-events: auto;
 }
 
-body #search-box[hidden] {
+#search-box[hidden] {
   display: none;  /* Required, since overriden by #search-box. */
-}
-
-html[dir='rtl'] body:not([new-ui]) #search-box {
-  background-position: right 4px top 5.5px;
-}
-
-body:not([new-ui]) #search-box:hover {
-  border: 1px solid #b9b9b9;
-  border-top: 1px solid #a0a0a0;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-}
-
-body:not([new-ui]) #search-box:focus {
-  border: 1px solid rgb(77, 144, 254);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
-  max-width: 240px;
-  outline: none;
-  width: 100%;
 }
 
 #search-box::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }
 
-body:not([new-ui]) #search-box::-webkit-search-cancel-button {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/search_clear.png') 1x,
-    url('../images/files/ui/2x/search_clear.png') 2x);
-  height: 16px;
-  position: absolute;
-  top: 6px;
-  width: 16px;
-}
-
-html:not([dir='rtl']) body:not([new-ui])
 #search-box::-webkit-search-cancel-button {
   right: 2px;
 }
 
-html[dir='rtl'] body:not([new-ui]) #search-box::-webkit-search-cancel-button {
-  left: 2px;
-}
-
-body:not([new-ui]) #search-box::-webkit-search-cancel-button:hover {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/search_clear_hover.png') 1x,
-    url('../images/files/ui/2x/search_clear_hover.png') 2x);
-}
-
-body:not([new-ui]) #search-box::-webkit-search-cancel-button:active {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/search_clear_pressed.png') 1x,
-    url('../images/files/ui/2x/search_clear_pressed.png') 2x);
-}
-
-body[new-ui] #search-icon {
+#search-icon {
   -webkit-flex-shrink: 0;
   -webkit-margin-end: 3px;
   -webkit-margin-start: 10px;
@@ -915,16 +702,16 @@ body[new-ui] #search-icon {
   width: 32px;
 }
 
-body[new-ui] #search-icon:hover,
-body[new-ui] #search-box:active + #search-icon,
-body[new-ui] #search-box:focus + #search-icon,
-body[new-ui] .has-text #search-icon {
+#search-icon:hover,
+#search-box:active + #search-icon,
+#search-box:focus + #search-icon,
+.has-text #search-icon {
   background: -webkit-image-set(
     url('../images/files/ui/new-ui/search_icon_active.png') 1x,
     url('../images/files/ui/new-ui/2x/search_icon_active.png') 2x);
 }
 
-body[new-ui] #search-clear-button {
+#search-clear-button {
   -webkit-margin-end: 30px;
   -webkit-margin-start: 10px;
   background-image: -webkit-image-set(
@@ -937,66 +724,24 @@ body[new-ui] #search-clear-button {
   width: 12px;
 }
 
-body[new-ui] .search-box-wrapper.has-text + #search-clear-button {
+.search-box-wrapper.has-text + #search-clear-button {
   display: block;
 }
 
-body[new-ui] .search-box-wrapper.too-short + #search-clear-button {
+.search-box-wrapper.too-short + #search-clear-button {
   display: none;
 }
 
-body[new-ui] #search-clear-button:hover {
+#search-clear-button:hover {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/search_clear_hover.png') 1x,
     url('../images/files/ui/new-ui/2x/search_clear_hover.png') 2x);
 }
 
-body[new-ui] #search-clear-button:active {
+#search-clear-button:active {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/search_clear_pressed.png') 1x,
     url('../images/files/ui/new-ui/2x/search_clear_pressed.png') 2x);
-}
-
-body:not([new-ui]) button#detail-view::before {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/view_list_black.png') 1x,
-    url('../images/files/ui/2x/view_list_black.png') 2x);
-}
-
-body:not([new-ui]) button#thumbnail-view::before {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/view_thumbs_black.png') 1x,
-    url('../images/files/ui/2x/view_thumbs_black.png') 2x);
-}
-
-body:not([new-ui]) button#detail-view::before,
-body:not([new-ui]) button#thumbnail-view::before {
-  background-position: center;
-  background-repeat: no-repeat;
-  bottom: 0;
-  content: '';
-  left: 0;
-  opacity: 0.5;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-body:not([new-ui]) button#detail-view[disabled]::before,
-body:not([new-ui]) button#thumbnail-view[disabled]::before {
-  opacity: 0.75;
-}
-
-body:not([new-ui]) button#detail-view:hover::before,
-body:not([new-ui]) button#thumbnail-view:hover::before {
-  opacity: 1;
-}
-
-
-/* When detail-view is not disabled (thus thumbnail view is disabled), push
-   it up a little, to make it's right glowing border visible while focused.*/
-body:not([new-ui]) button#detail-view:not([disabled]) {
-  z-index: 2;
 }
 
 .filelist-panel {
@@ -1021,13 +766,10 @@ body:not([new-ui]) button#detail-view:not([disabled]) {
 #detail-table > list,
 .thumbnail-grid {
   -webkit-box-flex: 1;
-}
-
-body[new-ui] .main-panel #detail-table > list {
   padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
 }
 
-body[new-ui] .main-panel #detail-table > list > .drag-selection-border {
+.main-panel #detail-table > list > .drag-selection-border {
   -webkit-box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.3);
   border: 2px solid rgba(255, 255, 255, 0.6);
@@ -1145,11 +887,8 @@ body[new-ui] .main-panel #detail-table > list > .drag-selection-border {
 /* The cr.ui.Grid representing the detailed file list. */
 .thumbnail-grid {
   overflow-y: auto;
-  width: 100%;
-}
-
-body[new-ui] .thumbnail-grid {
   padding-bottom: 0;  /* For the preview panel. Will be overridden by JS. */
+  width: 100%;
 }
 
 body[type='full-page'] .thumbnail-frame > .img-container {
@@ -1157,16 +896,10 @@ body[type='full-page'] .thumbnail-frame > .img-container {
 }
 
 body[type='full-page'] .thumbnail-frame > .img-container,
-body[type='full-page'] .detail-name .detail-icon,
-body:not([new-ui])[type='full-page'] .filename-label > * {
+body[type='full-page'] .detail-name .detail-icon {
   cursor: pointer;
 }
 
-body:not([new-ui])[type='full-page'] grid .filename-label > :hover {
-  text-decoration: underline;
-}
-
-body:not([new-ui])[type='full-page'] list .filename-label > :hover,
 .breadcrumb-path:not(.breadcrumb-last):hover,
 .breadcrumb-path.accepts {
   color: rgb(17, 85, 204);
@@ -1190,7 +923,7 @@ body:not([new-ui])[type='full-page'] list .filename-label > :hover,
   position: absolute;
 }
 
-body[new-ui] .img-container > img:not(.cached) {
+.img-container > img:not(.cached) {
   -webkit-animation: fadeIn 500ms ease-in;
 }
 
@@ -1213,18 +946,7 @@ body[new-ui] .img-container > img:not(.cached) {
 
 /* Styles specific for the grid view. */
 
-/* The item width and margins are chosen so that the standard File Open/Save
-   dialogs have three nicely aligned columns of thumbnails. */
-body:not([new-ui]) .thumbnail-grid .thumbnail-item {
-  -webkit-margin-start: 8px;
-  border: 1px solid transparent;  /* Selection will make the border visible. */
-  margin-top: 7px;
-  padding: 0;
-  position: relative;
-  text-align: center;
-}
-
-body[new-ui] .thumbnail-grid .thumbnail-item {
+.thumbnail-grid .thumbnail-item {
   -webkit-margin-start: 8px;
   border: 3px solid transparent;  /* Selection will make the border visible. */
   margin-top: 7px;
@@ -1232,19 +954,7 @@ body[new-ui] .thumbnail-grid .thumbnail-item {
   position: relative;
 }
 
-body:not([new-ui]) .thumbnail-grid .thumbnail-frame {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/hashed_bg.gif') 1x,
-    url('../images/files/ui/2x/hashed_bg.gif') 2x);
-  border: 1px solid rgb(217, 217, 217);
-  height: 180px;
-  overflow: hidden;
-  padding-bottom: 30px;  /* .thumbnail-bottom height */
-  position: relative;
-  width: 240px;
-}
-
-body[new-ui] .thumbnail-grid .thumbnail-frame {
+.thumbnail-grid .thumbnail-frame {
   background-color: rgb(245, 245, 245);
   height: 180px;
   overflow: hidden;
@@ -1253,8 +963,7 @@ body[new-ui] .thumbnail-grid .thumbnail-frame {
 }
 
 .thumbnail-grid .thumbnail-item[selected] .thumbnail-frame,
-.thumbnail-grid .thumbnail-item.accepts .thumbnail-frame,
-body:not([new-ui]) .thumbnail-grid .thumbnail-item:hover .thumbnail-frame {
+.thumbnail-grid .thumbnail-item.accepts .thumbnail-frame {
   border-color: white;
 }
 
@@ -1263,28 +972,10 @@ body:not([new-ui]) .thumbnail-grid .thumbnail-item:hover .thumbnail-frame {
   width: 100%;
 }
 
-body .thumbnail-grid .thumbnail-bottom {
-  background: rgba(0, 0, 0, 0.75);
-  color: #eee;
-  height: 30px;
-}
-
-body[new-ui] .thumbnail-grid .thumbnail-bottom {
+.thumbnail-grid .thumbnail-bottom {
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
-}
-
-body:not([new-ui]) .thumbnail-item .thumbnail-bottom .file-checkbox {
-  left: 9px;
-  position: absolute;
-  top: 10px;
-}
-
-/* Show the file name differently if the checkbox is present */
-.thumbnail-bottom.show-checkbox {
-  -webkit-box-pack: start;
-  -webkit-padding-start: 28px;
-  text-align: start;
+  height: 30px;
 }
 
 /* In the full page mode we can afford to show thumbnails as large as 320x240
@@ -1294,13 +985,7 @@ body[type='full-page'] .thumbnail-grid .thumbnail-item {
   margin-top: 20px;
 }
 
-body[type='full-page']:not([new-ui]) .thumbnail-grid .thumbnail-frame {
-  height: 240px;
-  padding-bottom: 34px;  /* .thumbnail-bottom height */
-  width: 320px;
-}
-
-body[type='full-page'][new-ui] .thumbnail-grid .thumbnail-frame {
+body[type='full-page'] .thumbnail-grid .thumbnail-frame {
   height: 240px;
   width: 320px;
 }
@@ -1330,72 +1015,44 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 #default-actions-list > * {
   background-color: transparent;
   background-image: none;
-  border-radius: 0;
-}
-
-body[new-ui] #list-container grid > *:hover {
   border-color: transparent;
+  border-radius: 0;
 }
 
 #list-container list > li[selected],
 #list-container grid > li[selected],
 #default-actions-list > li[selected] {
-  background-color: #dedede;
-}
-
-body[new-ui] #list-container list > li[selected],
-body[new-ui] #list-container grid > li[selected],
-body[new-ui] #default-actions-list > li[selected] {
   background-color: rgb(225, 225, 225);
 }
 
 #list-container list:focus > li[selected],
 #list-container grid:focus > li[selected],
 #default-actions-list:focus > li[selected] {
-  background-color: rgb(203, 219, 241);
-}
-
-body[new-ui] #list-container list:focus > li[selected],
-body[new-ui] #list-container grid:focus > li[selected],
-body[new-ui] #default-actions-list:focus > li[selected] {
   background-color: rgb(66, 129, 244);
   color: white;
 }
 
 #list-container list > li.accepts[selected],
-#list-container grid > li.accepts[selected],
-body:not([new-ui]) #list-container list > li[selected]:hover,
-body:not([new-ui]) #list-container grid > li[selected]:hover,
-body:not([new-ui]) #default-actions-list > li[selected]:hover {
-  background-color: rgb(193, 211, 236);
-}
-
-body[new-ui] #list-container list > li.accepts[selected],
-body[new-ui] #list-container grid > li.accepts[selected] {
+#list-container grid > li.accepts[selected] {
   background-color: rgb(215, 215, 215);
 }
 
-body[new-ui] #list-container list:focus > li.accepts[selected],
-body[new-ui] #list-container grid:focus > li.accepts[selected] {
+#list-container list:focus > li.accepts[selected],
+#list-container grid:focus > li.accepts[selected] {
   background-color: rgb(48, 125, 254);
 }
 
 #list-container list > li.accepts,
-#list-container grid > li.accepts,
-body:not([new-ui]) #list-container list > li:hover,
-body:not([new-ui]) #list-container grid > li:hover,
-body:not([new-ui]) #default-actions-list > li:hover {
+#list-container grid > li.accepts {
   background-color: #f1f1f1;
 }
 
-body:not([new-ui]) #list-container.nohover list > :not([selected]):hover,
-body:not([new-ui]) #list-container.nohover grid > :not([selected]):hover,
 #list-container.nohover grid > .accepts {
   background-color: transparent;
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
-body[new-ui] #volume-list > .accepts,
+#volume-list > .accepts,
 #list-container list > li.accepts,
 #list-container grid > li.accepts {
   -webkit-animation: acceptsBlink 200ms linear 1s 3;
@@ -1411,9 +1068,6 @@ body[new-ui] #volume-list > .accepts,
 
 .table-row-cell .selection-label {
   -webkit-margin-end: 10px;
-}
-
-body[new-ui] .table-row-cell .selection-label {
   height: 15px;
 }
 
@@ -1468,20 +1122,7 @@ input.rename {
 }
 
 /* Bottom pane describing current selection. */
-body:not([new-ui]) .preview-panel {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-transform: translate(0, 0);
-  background-color: #f0f0f0;
-  display: -webkit-box;
-  height: 61px;
-  opacity: 1;
-  padding: 0 16px 0 7px;
-  position: relative;
-  z-index: 3;
-}
-
-body[new-ui] .preview-panel {
+.preview-panel {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-transition: background-color 150ms ease;
@@ -1499,16 +1140,14 @@ body[new-ui] .preview-panel {
   z-index: 3;
 }
 
-body:not([new-ui]) .preview-panel[visibility=hiding],
-body[new-ui] .preview-panel[visibility=hiding] {
+.preview-panel[visibility=hiding] {
   /* Using all seems to cause preview panel and checkbox flicking issue. */
   -webkit-transform: translate(0, 5px);
   opacity: 0;
   transition: opacity 220ms ease;
 }
 
-body:not([new-ui]) .preview-panel[visibility=hidden],
-body[new-ui] .preview-panel[visibility=hidden] {
+.preview-panel[visibility=hidden] {
   display: none;
   opacity: 0;
 }
@@ -1516,48 +1155,26 @@ body[new-ui] .preview-panel[visibility=hidden] {
 .preview-thumbnails {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
-  padding-left: 39px;
-}
-
-body[new-ui] .preview-thumbnails {
   padding-left: 25px;
 }
 
 .preview-thumbnails > .thumbnail {
-  background-color: #f2f2f2;
-  border: 1px solid #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  height: 45px;
-  margin: 0 0 0 -39px;  /* Show 7 pixels of the overlapped image */
-  position: relative;
-  width: 45px;
-}
-
-body[new-ui] .preview-thumbnails > .thumbnail {
+  background-color: white;
   border: 1px solid #fff;
   box-shadow: 0 1px 1px rgba(80, 80, 80, 0.5);
   height: 35px;
   margin: 0 0 0 -25px;  /* Overlapped images. */
+  position: relative;
   width: 35px;
 }
 
-body[new-ui] .preview-thumbnails > .thumbnail {
-  background-color: white;
-}
-
 .preview-thumbnails > .thumbnail > .img-container {
-  background-size: 45px 45px;
-  height: 45px;
-  overflow: hidden;
-  position: relative;
-  width: 45px;
-}
-
-body[new-ui] .preview-thumbnails > .thumbnail > .img-container {
   background-size: 35px 35px;
   border: 1px solid white;
   box-sizing: border-box;
   height: 35px;
+  overflow: hidden;
+  position: relative;
   width: 35px;
 }
 
@@ -1612,10 +1229,6 @@ body[new-ui] .preview-thumbnails > .thumbnail > .img-container {
 .table-header-splitter {
   -webkit-border-start: 1px #d4d4d4 solid;
   background-color: inherit;
-  height: 27px;
-}
-
-body[new-ui] .table-header-splitter {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/vertical_separator.png') 1x,
     url('../images/files/ui/new-ui/2x/vertical_separator.png') 2x);
@@ -1627,21 +1240,15 @@ body[new-ui] .table-header-splitter {
   width: 5px;
 }
 
-body[new-ui] .table-header-splitter:last-child {
+.table-header-splitter:last-child {
   display: none;
 }
 
 /* Container for a table header. */
 .table-header {
-  background-color: #f5f5f5;
-  border-bottom: 1px #d2d2d2 solid;
-  box-sizing: border-box;
-  height: 27px;
-}
-
-body[new-ui] .table-header {
   background-color: transparent;
   border-bottom: none;
+  box-sizing: border-box;
   height: 47px;
 }
 
@@ -1677,10 +1284,6 @@ body[new-ui] .table-header {
 
 /* Text label in a table header. */
 .table-header-label {
-  line-height: 27px;
-}
-
-body[new-ui] .table-header-label {
   color: rgb(100, 100, 100);
   line-height: 40px;
 }
@@ -1693,7 +1296,7 @@ body[new-ui] .table-header-label {
   padding: 0 10px;
 }
 
-body[new-ui] .table-row-cell {
+.table-row-cell {
   color: rgb(100, 100, 100);
 }
 
@@ -1701,13 +1304,13 @@ body[new-ui] .table-row-cell {
   display: -webkit-box;
 }
 
-body[new-ui] .table-row-cell > .detail-name {
+.table-row-cell > .detail-name {
   color: rgb(0, 0, 0);
 }
 
 
-body[new-ui] #list-container list:focus > [selected] .table-row-cell,
-body[new-ui] #list-container list:focus > [selected] .detail-name {
+#list-container list:focus > [selected] .table-row-cell,
+#list-container list:focus > [selected] .detail-name {
   color: white;
 }
 
@@ -1723,37 +1326,15 @@ body[new-ui] #list-container list:focus > [selected] .detail-name {
 }
 
 #select-all-checkbox {
-  -webkit-margin-end: 7px;
-  -webkit-margin-start: 2px;
+  -webkit-margin-end: 13px;
+  -webkit-margin-start: 3px;
   margin-bottom: 0;
   margin-top: 0;
   vertical-align: middle;
 }
 
-body[new-ui] #select-all-checkbox {
-  -webkit-margin-end: 13px;
-  -webkit-margin-start: 3px;
-  vertical-align: middle;
-}
-
-#list-container li.table-row:hover .file-checkbox,
-#list-container li.table-row:hover .pin,
-#list-container li.thumbnail-item:hover .file-checkbox {
-  opacity: 0.6;
-}
-
-body[new-ui] #list-container li.table-row:hover .pin,
-body[new-ui] #list-container li.thumbnail-item:hover .file-checkbox {
-  opacity: 0.4;
-}
-
-#list-container li.table-row[selected] .pin,
-#list-container li.thumbnail-item[selected] .file-checkbox {
-  opacity: 1.0 !important;
-}
-
-body[new-ui] #list-container .table-header #select-all-checkbox,
-body[new-ui] #list-container li.table-row .file-checkbox {
+#list-container .table-header #select-all-checkbox,
+#list-container li.table-row .file-checkbox {
   -webkit-appearance: none;
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/select_checkbox.png') 1x,
@@ -1762,56 +1343,44 @@ body[new-ui] #list-container li.table-row .file-checkbox {
   background-repeat: no-repeat;
   border-style: none;
   height: 15px;
-  opacity: 1.0;
   width: 15px;
 }
 
-body[new-ui] #list-container li.table-row .file-checkbox {
+#list-container li.table-row .file-checkbox {
   vertical-align: top;
 }
 
-body[new-ui] #list-container .table-header #select-all-checkbox::after,
-body[new-ui] #list-container li.table-row .file-checkbox::after {
+#list-container .table-header #select-all-checkbox::after,
+#list-container li.table-row .file-checkbox::after {
   content: none;
 }
 
-body[new-ui] #list-container .table-header #select-all-checkbox:checked,
-body[new-ui] #list-container li.table-row .file-checkbox:checked {
+#list-container .table-header #select-all-checkbox:checked,
+#list-container li.table-row .file-checkbox:checked {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/select_checkbox_checked.png') 1x,
     url('../images/files/ui/new-ui/2x/select_checkbox_checked.png') 2x);
 }
 
-body[new-ui] #list-container .table-header #select-all-checkbox:checked,
-body[new-ui] #list-container list li.table-row[selected] .file-checkbox {
+#list-container .table-header #select-all-checkbox:checked,
+#list-container list li.table-row[selected] .file-checkbox {
   -webkit-filter: brightness(0) opacity(40%);
 }
 
-body[new-ui] #list-container list:focus li.table-row[selected] .file-checkbox {
+#list-container list:focus li.table-row[selected] .file-checkbox {
   -webkit-filter: brightness(0) invert();
 }
 
 #list-container li.table-row,
 #default-actions-list li {
-  border: 1px solid white;
   border-left-width: 0;
   border-right-width: 0;
-  height: 39px;
-  padding-bottom: 1px;
-  padding-top: 1px;
-}
-
-body[new-ui] #list-container li.table-row {
   border-style: none;
   height: 29px;
   line-height: 29px;
   margin: 0;
   padding-bottom: 0;
   padding-top: 0;
-}
-
-body[new-ui] #default-actions-list li {
-  border-style: none;
 }
 
 /* The icon in the name column. See file_types.css for specific icons. */
@@ -1835,7 +1404,7 @@ body[new-ui] #default-actions-list li {
   -webkit-box-flex: 1;
 }
 
-body[new-ui] #delete-button {
+#delete-button {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/onbutton_trash.png') 1x,
     url('../images/files/ui/new-ui/2x/onbutton_trash.png') 2x);
@@ -1846,7 +1415,7 @@ body[new-ui] #delete-button {
   width: 25px;
 }
 
-body #delete-button[disabled] {
+#delete-button[disabled] {
   display: none;
 }
 
@@ -2028,10 +1597,6 @@ menu.file-context-menu {
   z-index: 4;
 }
 
-body:not([new-ui]) menu.chrome-menu {
-  min-width: 200px;
-}
-
 menu.chrome-menu hr {
   color: transparent;
   font-size: 0;
@@ -2151,34 +1716,6 @@ body[type='full-page'] [visibleif]:not([visibleif~='full-page']) {
   display: none;
 }
 
-body:not([new-ui]) #gear-button::before {
-  background-image: url('../images/files/ui/settings.svg');
-  background-position: 20px center;
-  background-repeat: no-repeat;
-  bottom: 0;
-  content: '';
-  left: 0;
-  opacity: 0.75;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-body:not([new-ui]) #gear-button:hover::before {
-  opacity: 1;
-}
-
-body:not([new-ui]) #gear-button {
-  overflow: hidden;
-  text-align: left;
-  width: 54px;
-}
-
-body:not([new-ui]) #gear-button span.disclosureindicator {
-  float: none;
-  margin-left: 42px;
-}
-
 .buttonbar > * {
   position: relative;
 }
@@ -2263,56 +1800,12 @@ body:not([new-ui]) #gear-button span.disclosureindicator {
   display: block;
 }
 
-body:not([new-ui]) #downloads-root-context-menu {
-  min-width: 250px;
-}
-
-body:not([new-ui]) #volume-space-info {
-  -webkit-box-pack: justify;
-  display: -webkit-box;
-}
-
-body:not([new-ui]) #volume-space-info-label {
-  display: block;
-}
-
-body:not([new-ui]) #volume-space-info > div {
-  -webkit-box-flex: 1;
-  border: 1px solid rgb(192, 192, 192);
-  display: block;
-  height: 11px;
-  margin: 8px 0 9px 10px;
-  min-width: 30px;
-}
-
-body:not([new-ui]) #volume-space-info-bar[pending] {
-  -webkit-animation-duration: 800ms;
-  -webkit-animation-iteration-count: infinite;
-  -webkit-animation-name: bg;
-  -webkit-animation-timing-function: linear;
-  background-color: rgb(192, 192, 192);
-  background-image: linear-gradient(315deg, transparent,
-      transparent 33%, rgba(0, 0, 0, 0.12) 33%, rgba(0, 0, 0, 0.12) 66%,
-      transparent 66%, transparent);
-  background-position: 0 0;
-  background-repeat: repeat-x;
-  background-size: 16px 8px;
-}
-
-body:not([new-ui]) #volume-space-info-bar {
-  background-color: rgb(192, 192, 192);
-  border: 1px solid rgb(255, 255, 255);
-  box-sizing: border-box;
-  height: 100%;
-  width: 50%;
-}
-
-body[new-ui] #volume-space-info-contents {
+#volume-space-info-contents {
   -webkit-box-align: center;
   display: -webkit-box;
 }
 
-body[new-ui] #volume-space-info-contents > div {
+#volume-space-info-contents > div {
   -webkit-box-flex: 1;
   -webkit-margin-start: 15px;
   display: -webkit-box;
@@ -2323,14 +1816,10 @@ body[new-ui] #volume-space-info-contents > div {
 }
 
 #list-container .table-header-cell:hover {
-  background-color: #ececec;
-}
-
-body[new-ui] #list-container .table-header-cell:hover {
   background-color: inherit;
 }
 
-body[new-ui] #list-container .table-header-cell:first-child {
+#list-container .table-header-cell:first-child {
   -webkit-box-sizing: border-box;
   -webkit-padding-start: 8px;
 }
@@ -2353,17 +1842,7 @@ button:focus {
   display: none;
 }
 
-body:not([new-ui]) list.autocomplete-suggestions {
-  background-color: white;
-  border: 1px solid #aaa;
-  border-radius: 2px;
-  box-sizing: border-box;  /* To match the width with the search box's. */
-  min-height: 0;
-  position: fixed;
-  z-index: 3;
-}
-
-body[new-ui] list.autocomplete-suggestions {
+list.autocomplete-suggestions {
   -webkit-margin-before: -7px;
   -webkit-margin-start: -38px;
   background-color: rgb(250, 250, 250);
@@ -2381,24 +1860,16 @@ body[new-ui] list.autocomplete-suggestions {
 
 list.autocomplete-suggestions > li {
   -webkit-box-align: center;
+  background-color: transparent;
+  background-image: none;
+  border: none;
   border-radius: 0;
   display: -webkit-box;
   margin: 0;  /* To prevent vertical overflow. */
   padding: 3px 0;
 }
 
-body:not([new-ui]) list.autocomplete-suggestions > li:hover {
-  background-color: white;
-  border: 1px solid white;
-}
-
-body[new-ui] list.autocomplete-suggestions > li {
-  background-color: transparent;
-  background-image: none;
-  border: none;
-}
-
-body[new-ui] list.autocomplete-suggestions > li > div.detail-icon {
+list.autocomplete-suggestions > li > div.detail-icon {
   -webkit-margin-end: 6px;
   -webkit-margin-start: 6px;
 }
@@ -2410,22 +1881,11 @@ list.autocomplete-suggestions > li > div.detail-text {
 }
 
 list.autocomplete-suggestions > li > div.detail-text em {
+  color: rgb(150, 150, 150);
   font-style: normal;
 }
 
-body[new-ui] list.autocomplete-suggestions > li > div.detail-text em {
-  color: rgb(150, 150, 150);
-}
-
-body:not([new-ui]) list.autocomplete-suggestions > li > div[search-icon] {
-  background: -webkit-image-set(
-    url('../images/files/ui/icon_search.png') 1x,
-    url('../images/files/ui/2x/icon_search.png') 2x);
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-body[new-ui] list.autocomplete-suggestions > li > div[search-icon] {
+list.autocomplete-suggestions > li > div[search-icon] {
   background: -webkit-image-set(
     url('../images/files/ui/new-ui/search_icon_active.png') 1x,
     url('../images/files/ui/new-ui/2x/search_icon_active.png') 2x);
@@ -2433,70 +1893,59 @@ body[new-ui] list.autocomplete-suggestions > li > div[search-icon] {
   background-repeat: no-repeat;
 }
 
-body[new-ui] list.autocomplete-suggestions > li[selected] > div[search-icon],
-body[new-ui] list.autocomplete-suggestions > li[lead] > div[search-icon] {
+list.autocomplete-suggestions > li[selected] > div[search-icon],
+list.autocomplete-suggestions > li[lead] > div[search-icon] {
   -webkit-filter: brightness(0) invert();
 }
 
-body:not([new-ui]) list.autocomplete-suggestions[hasElementFocus] > [selected],
-body:not([new-ui]) list.autocomplete-suggestions[hasElementFocus] > [lead],
-body:not([new-ui]) list.autocomplete-suggestions:not([hasElementFocus]) >
-    [selected],
-body:not([new-ui]) list.autocomplete-suggestions:not([hasElementFocus]) >
-    [lead] {
-  background-color: rgb(238, 238, 238);
-  background-image: none;
-  border: 1px solid white;
-}
-
-body[new-ui] list.autocomplete-suggestions > [selected],
-body[new-ui] list.autocomplete-suggestions > [lead] {
+list.autocomplete-suggestions > [selected],
+list.autocomplete-suggestions > [lead] {
   background-color: rgb(66, 129, 244);
   color: white;
 }
 
-body[new-ui] list.autocomplete-suggestions > [selected] > div.detail-text em,
-body[new-ui] list.autocomplete-suggestions > [lead] > div.detail-text em {
+list.autocomplete-suggestions > [selected] > div.detail-text em,
+list.autocomplete-suggestions > [lead] > div.detail-text em {
   color: white;
 }
 
-body[new-ui] #gear-menu {
+#gear-menu {
   margin-top: 8px;
 }
 
-body[new-ui] #gear-menu > menuitem:not(.menuitem-button) {
+#gear-menu > menuitem:not(.menuitem-button) {
   margin-right: 50px;
 }
 
 /* View buttons in the gear menu. */
 
-body[new-ui] menuitem#detail-view {
+menuitem#detail-view {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/button_list_view.png') 1x,
     url('../images/files/ui/new-ui/2x/button_list_view.png') 2x);
 }
 
-body[new-ui] menuitem#detail-view[selected]:not([disabled]),
-body[new-ui] menuitem#detail-view[lead]:not([disabled]) {
+menuitem#detail-view[selected]:not([disabled]),
+menuitem#detail-view[lead]:not([disabled]) {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/button_list_view_white.png') 1x,
     url('../images/files/ui/new-ui/2x/button_list_view_white.png') 2x);
 }
 
-body[new-ui] menuitem#thumbnail-view {
+menuitem#thumbnail-view {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/button_mosaic_view.png') 1x,
     url('../images/files/ui/new-ui/2x/button_mosaic_view.png') 2x);
 }
 
-body[new-ui] menuitem#thumbnail-view[selected]:not([disabled]),
-body[new-ui] menuitem#thumbnail-view[lead]:not([disabled]) {
+menuitem#thumbnail-view[selected]:not([disabled]),
+menuitem#thumbnail-view[lead]:not([disabled]) {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/button_mosaic_view_white.png') 1x,
     url('../images/files/ui/new-ui/2x/button_mosaic_view_white.png') 2x);
 }
 
-body[new-ui] #iframe-drag-area {
+#iframe-drag-area {
   -webkit-app-region: drag;
   height: 45px;
   left: 64px;
@@ -2507,11 +1956,11 @@ body[new-ui] #iframe-drag-area {
   z-index: 101;
 }
 
-body[new-ui] .cr-dialog-frame.error-dialog-frame {
+.cr-dialog-frame.error-dialog-frame {
   width: 300px;
 }
 
-body[new-ui] .error-dialog-frame .error-dialog-img {
+.error-dialog-frame .error-dialog-img {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_ERROR_NETWORK_GENERIC') 1x,
     url('chrome://theme/IDR_ERROR_NETWORK_GENERIC@2x') 2x);
@@ -2524,11 +1973,11 @@ body[new-ui] .error-dialog-frame .error-dialog-img {
   display: none;
 }
 
-body[new-ui] .error-dialog-frame .cr-dialog-close,
-body[new-ui] .error-dialog-frame .cr-dialog-title {
+.error-dialog-frame .cr-dialog-close,
+.error-dialog-frame .cr-dialog-title {
   display: none;
 }
 
-body[new-ui] .error-dialog-frame .cr-dialog-text {
+.error-dialog-frame .cr-dialog-text {
   text-align: center;
 }

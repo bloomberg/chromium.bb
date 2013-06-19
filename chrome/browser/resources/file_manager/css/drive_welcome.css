@@ -93,10 +93,6 @@
   top: 0;
 }
 
-body:not([new-ui]) .drive-welcome.header .drive-welcome-wrapper {
-  border-top: 1px solid #d4d4d4;
-}
-
 .drive-welcome.header .drive-welcome-icon {
   background-position: center 18px;
   background-size: 51px 44px;

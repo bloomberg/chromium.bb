@@ -110,12 +110,7 @@ input.common[type='checkbox']::after {
   opacity: 0.7;
 }
 
-body:not([new-ui]) .buttonbar {
-  display: -webkit-box;
-  height: 29px;
-}
-
-body[new-ui] .buttonbar {
+.buttonbar {
   display: -webkit-box;
   height: 35px;
 }
@@ -123,79 +118,6 @@ body[new-ui] .buttonbar {
 .buttonbar.right {
   -webkit-box-flex: 1.0;
   -webkit-box-pack: end;
-}
-
-body:not([new-ui]) .buttonbar button:first-child {
-  margin-left: 0;
-}
-
-body:not([new-ui]) .buttonbar button.right {
-  border-radius: 0 2px 2px 0;
-  margin-left: -1px;
-}
-
-body:not([new-ui]) .buttonbar button.left {
-  border-radius: 2px 0 0 2px;
-  border-right-color: transparent;
-  margin-right: 0;
-}
-
-body:not([new-ui]) .buttonbar button.small {
-  min-width: 34px;
-  padding: 0;
-  width: 34px;
-}
-
-body:not([new-ui]) .buttonbar button {
-  -webkit-margin-after: 0;
-  -webkit-margin-before: 0;
-  -webkit-margin-end: 0;
-  -webkit-margin-start: 8px;
-  -webkit-user-select: none;
-  background-color: whiteSmoke;
-  background-image: linear-gradient(to bottom, whiteSmoke, #F1F1F1);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
-  box-shadow: none;
-  box-sizing: content-box;
-  color: #444;
-  cursor: default;
-  font-size: 13px;
-  height: 27px;
-  line-height: 27px;
-  min-width: 54px;
-  padding: 0 8px;
-  position: relative;
-  text-align: center;
-  transition: all 218ms;
-  z-index: 1;
-}
-
-body:not([new-ui]) .buttonbar button:hover {
-  background-image: linear-gradient(to bottom, #F8F8F8, #F1F1F1);
-  border: 1px solid #C6C6C6;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-  color: #222;
-  transition: all 0;
-}
-
-body:not([new-ui]) .buttonbar button:active {
-  background-color: #F6F6F6;
-  background-image: linear-gradient(to bottom, #F6F6F6, #F1F1F1);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-body:not([new-ui]) .buttonbar button[disabled] {
-  background-color: #EEE;
-  background-image: linear-gradient(to bottom, #EEE, #E0E0E0);
-  border: 1px solid #CCC;
-  color: #333;
-}
-
-body:not([new-ui]) .buttonbar button:hover,
-body:not([new-ui]) .buttonbar button:active,
-body:not([new-ui]) .buttonbar button[disabled] {
-  z-index: 10;
 }
 
 .buttonbar button:active img {
@@ -226,45 +148,6 @@ body:not([new-ui]) .buttonbar button[disabled] {
   transition: none;
 }
 
-body:not([new-ui]) .buttonbar button.action,
-body:not([new-ui]) .buttonbar button.action:focus,
-body:not([new-ui]) .buttonbar button.action:hover,
-body:not([new-ui]) .buttonbar button.action:active {
-  background-color: rgb(209, 72, 54);
-  background-image: -webkit-gradient(linear,
-      left top, left bottom, from(rgb(221, 75, 57)), to(rgb(209, 72, 54)));
-  border: 1px solid transparent;
-  color: #FFF;
-  font-weight: bold;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-body:not([new-ui]) .buttonbar button.action:not([disabled]):focus {
-  border-color: rgb(209, 72, 54);
-}
-
-body:not([new-ui]) .buttonbar button.action:not([disabled]):hover {
-  background-color: rgb(197, 55, 39);
-  background-image: -webkit-gradient(linear,
-      left top, left bottom, from(rgb(221, 75, 57)), to(rgb(197, 55, 39)));
-  border-bottom-color: rgb(175, 48, 31);
-  border-color: rgb(176, 40, 26);
-}
-
-body:not([new-ui]) .buttonbar button.action:not([disabled]):active {
-  background-color: rgb(176, 40, 26);
-  background-image: -webkit-gradient(linear,
-      left top, left bottom, from(rgb(221, 75, 57)), to(rgb(176, 40, 26)));
-  border-color: rgb(153, 42, 27);
-}
-
-body:not([new-ui]) .buttonbar button.action[disabled] {
-  background-color: rgb(209, 72, 54);
-  border-color: rgb(176, 40, 26);
-  opacity: 0.5;
-}
-
 span.disclosureindicator {
   background-image: -webkit-image-set(
     url('../images/common/disclosure_arrow_dk_grey.png') 1x,
@@ -280,46 +163,31 @@ span.disclosureindicator {
    menus in FileBrowser look like native ChromeOS menus. */
 
 menu.chrome-menu {
-  border: 1px solid rgba(0, 0, 0, .32);
+  background-color: rgb(250, 250, 250);
+  border: 1px solid rgb(255, 255, 255);
   border-radius: 3px;
-  box-shadow: 0 2px 1px 0 rgba(0, 0, 0, .2);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
+  color: rgb(34, 34, 34);
   outline: none;
-  padding: 2px 0;
+  overflow: hidden;
+  padding: 5px 0;
   transition: opacity 200ms ease-in;
   z-index: 15;
 }
 
-body[new-ui] menu.chrome-menu {
-  background-color: rgb(250, 250, 250);
-  border: 1px solid rgb(255, 255, 255);
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
-  color: rgb(34, 34, 34);
-  overflow: hidden;
-  padding: 5px 0;
-}
-
-body menu.chrome-menu[hidden] {
+menu.chrome-menu[hidden] {
   display: block;
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
 }
 
-body menu.chrome-menu.hide-delayed[hidden] {
+menu.chrome-menu.hide-delayed[hidden] {
   transition-delay: 120ms;
   transition-property: opacity, visibility;
 }
 
-body:not([new-ui]) menu.chrome-menu > menuitem {
-  background-position: 6px center;
-  background-repeat: no-repeat;
-  height: 30px;
-  line-height: 28px;
-  padding-left: 28px;
-  padding-right: 20px;
-}
-
-body[new-ui] menu.chrome-menu > :not(hr) {
+menu.chrome-menu > :not(hr) {
   background-position: right 10px center;
   background-repeat: no-repeat;
   line-height: 30px;
@@ -327,7 +195,7 @@ body[new-ui] menu.chrome-menu > :not(hr) {
   padding-right: 20px;
 }
 
-body[new-ui] menu.chrome-menu > .menuitem-button {
+menu.chrome-menu > .menuitem-button {
   background-position: center;
   background-repeat: no-repeat;
   border: 1px solid rgb(235, 235, 235);
@@ -339,46 +207,30 @@ body[new-ui] menu.chrome-menu > .menuitem-button {
   width: 60px;
 }
 
-body[new-ui] menu.chrome-menu > .menuitem-button[checked] {
+menu.chrome-menu > .menuitem-button[checked] {
   background-color: rgb(235, 235, 235);
 }
 
-body[new-ui] menu.chrome-menu > .menuitem-button.left {
+menu.chrome-menu > .menuitem-button.left {
   right: 59px;
 }
 
-body[new-ui] menu.chrome-menu > .menuitem-button.right {
+menu.chrome-menu > .menuitem-button.right {
   right: 0;
 }
 
 menu.chrome-menu > menuitem[disabled] {
-  background-color: rgb(255, 255, 255);
-  color: rgb(153, 153, 153);
-}
-
-body[new-ui] menu.chrome-menu > menuitem[disabled] {
   background-color: rgb(252, 252, 252);
+  color: rgb(153, 153, 153);
 }
 
 menu.chrome-menu > menuitem:not([disabled])[selected],
 menu.chrome-menu > menuitem:not([disabled])[selected]:active {
-  background-color: rgb(241, 241, 241);
-  color: rgb(34, 34, 34);
-}
-
-body[new-ui] menu.chrome-menu > menuitem:not([disabled])[selected],
-body[new-ui] menu.chrome-menu > menuitem:not([disabled])[selected]:active {
   background-color: rgb(66, 129, 244);
   color: white;
 }
 
-body:not([new-ui]) menu.chrome-menu > hr {
-  background: rgb(218, 218, 218);
-  height: 1px;
-  margin: 2px 0;
-}
-
-body[new-ui] menu.chrome-menu > hr {
+menu.chrome-menu > hr {
   background: rgb(235, 235, 235);
   height: 1px;
   margin: 5px 0;
@@ -388,7 +240,6 @@ menu.chrome-menu > menuitem[checked] {
   background-image: -webkit-image-set(
     url('../images/common/check_no_box.png') 1x,
     url('../images/common/2x/check_no_box.png') 2x);
-  background-position: 2px center;
 }
 
 menu.chrome-menu > [checked]::before {
@@ -396,26 +247,10 @@ menu.chrome-menu > [checked]::before {
 }
 
 /* Ok/Cancel style buttons */
-body:not([new-ui]) button,
-body:not([new-ui]) input[type='button'],
-body:not([new-ui]) input[type='submit'],
-body:not([new-ui]) select {
-  -webkit-user-select: none;
-  background: linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
-  border: 1px solid #aaa;
-  border-radius: 2px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  color: #444;
-  font: inherit;
-  margin-bottom: 0;
-  min-width: 4em;
-  padding: 3px 12px 3px 12px;
-}
-
-body[new-ui] button,
-body[new-ui] input[type='button'],
-body[new-ui] input[type='submit'],
-body[new-ui] select {
+button,
+input[type='button'],
+input[type='submit'],
+select {
   background-color: rgb(250, 250, 250);
   background-image: none;
   background-position: center;
@@ -439,24 +274,14 @@ body[new-ui] select {
   z-index: 1;
 }
 
-body[new-ui] .buttonbar button {
+.buttonbar button {
   -webkit-margin-start: 8px;
 }
 
-body:not([new-ui]) button:hover,
-body:not([new-ui]) input[type='button']:hover,
-body:not([new-ui]) input[type='submit']:hover,
-body:not([new-ui]) select:hover {
-  background: #ebebeb linear-gradient(#fefefe, #f8f8f8 40%, #e9e9e9);
-  border-color: #999;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  color: #222;
-}
-
-body[new-ui] button:hover,
-body[new-ui] input[type='button']:hover,
-body[new-ui] input[type='submit']:hover,
-body[new-ui] select:hover {
+button:hover,
+input[type='button']:hover,
+input[type='submit']:hover,
+select:hover {
   border-image: -webkit-image-set(
     url('../images/common/button_hover.png') 1x,
     url('../images/common/2x/button_hover.png') 2x) 5 5 repeat;
@@ -464,18 +289,9 @@ body[new-ui] select:hover {
   color: #222;
 }
 
-body:not([new-ui]) button:active,
-body:not([new-ui]) input[type='button']:active,
-body:not([new-ui]) input[type='submit']:active {
-  background-color: #ebebeb;
-  background-image: linear-gradient(#f4f4f4, #efefef 40%, #dcdcdc);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-  color: #333;
-}
-
-body[new-ui] button:active,
-body[new-ui] input[type='button']:active,
-body[new-ui] input[type='submit']:active {
+button:active,
+input[type='button']:active,
+input[type='submit']:active {
   border-image: -webkit-image-set(
     url('../images/common/button_pressed.png') 1x,
     url('../images/common/2x/button_pressed.png') 2x) 5 5 repeat;
@@ -483,24 +299,12 @@ body[new-ui] input[type='submit']:active {
   color: #333;
 }
 
-body:not([new-ui]) button[disabled],
-body:not([new-ui]) input[type='button'][disabled],
-body:not([new-ui]) input[type='submit'][disabled],
-body:not([new-ui]) button[disabled]:hover,
-body:not([new-ui]) input[type='button'][disabled]:hover,
-body:not([new-ui]) input[type='submit'][disabled]:hover {
-  background: linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
-  border-color: #aaa;
-  box-shadow: none;
-  color: #888;
-}
-
-body[new-ui] button[disabled],
-body[new-ui] input[type='button'][disabled],
-body[new-ui] input[type='submit'][disabled],
-body[new-ui] button[disabled]:hover,
-body[new-ui] input[type='button'][disabled]:hover,
-body[new-ui] input[type='submit'][disabled]:hover {
+button[disabled],
+input[type='button'][disabled],
+input[type='submit'][disabled],
+button[disabled]:hover,
+input[type='button'][disabled]:hover,
+input[type='submit'][disabled]:hover {
   background-color: rgb(250, 250, 250);
   background-image: none;
   border: 1px solid rgb(255, 255, 255);
@@ -512,32 +316,14 @@ body[new-ui] input[type='submit'][disabled]:hover {
   color: rgb(150, 150, 150);
 }
 
-/* Blue progress bar. */
-body:not([new-ui]) .progress-bar {
-  background-color: #e6e6e6;
-  border: 1px solid #ddd;
-  border-radius: 2px;
-  box-sizing: border-box;
-  margin: 2px 0;
-}
-
-body:not([new-ui]) .progress-track {
-  background-image: linear-gradient(
-      rgb(110, 188, 249) 1px, rgb(86, 167, 247) 2px,
-      rgb(76, 148, 245) 11px, rgb(41, 112, 211) 12px);
-  border: 1px solid rgb(65, 137, 237);
-  border-radius: 2px;
-  height: 10px;
-  margin: -1px;
-}
-
-body[new-ui] .progress-bar {
+/* Gray progress bar. */
+.progress-bar {
   background-color: #e6e6e6;
   border-radius: 3px;
   height: 6px;
 }
 
-body[new-ui] .progress-track {
+.progress-track {
   background-color: #888;
   border-radius: 3px;
   height: 6px;
@@ -569,7 +355,7 @@ div.watch-single-video-icon {
 
 /* Pop-up dialogs. */
 
-body[new-ui] .cr-dialog-container {
+.cr-dialog-container {
   -webkit-box-align: center;
   -webkit-box-pack: center;
   -webkit-user-select: none;
@@ -584,7 +370,7 @@ body[new-ui] .cr-dialog-container {
   z-index: 9999;
 }
 
-body[new-ui] .cr-dialog-frame {
+.cr-dialog-frame {
   -webkit-box-orient: vertical;
   background-color: rgb(250, 250, 250);
   border: 1px solid rgb(255, 255, 255);
@@ -597,7 +383,7 @@ body[new-ui] .cr-dialog-frame {
   width: 460px;
 }
 
-body[new-ui] .cr-dialog-frame:focus {
+.cr-dialog-frame:focus {
   outline: none;
 }
 
@@ -616,20 +402,20 @@ body[new-ui] .cr-dialog-frame:focus {
  }
 }
 
-body[new-ui] .cr-dialog-frame.pulse {
+.cr-dialog-frame.pulse {
   -webkit-animation-duration: 180ms;
   -webkit-animation-iteration-count: 1;
   -webkit-animation-name: pulse;
   -webkit-animation-timing-function: ease-in-out;
 }
 
-body[new-ui] .shown > .cr-dialog-frame {
+.shown > .cr-dialog-frame {
   -webkit-transform: perspective(500px) scale(1)
                      translateY(0) rotateX(0);
   opacity: 1;
 }
 
-body[new-ui] .cr-dialog-frame {
+.cr-dialog-frame {
   -webkit-transform: perspective(500px) scale(0.99)
                      translateY(-20px) rotateX(5deg);
   opacity: 0;
@@ -637,7 +423,7 @@ body[new-ui] .cr-dialog-frame {
   transition-duration: 250ms;
 }
 
-body[new-ui] .cr-dialog-shield {
+.cr-dialog-shield {
   background-color: white;
   bottom: 0;
   display: block;
@@ -650,16 +436,16 @@ body[new-ui] .cr-dialog-shield {
   transition: opacity 500ms;
 }
 
-body[new-ui] .shown > .cr-dialog-shield {
+.shown > .cr-dialog-shield {
   opacity: 0.5;
   transition: opacity 500ms;
 }
 
-body[new-ui] [hidden] {
+[hidden] {
   display: none;
 }
 
-body[new-ui] .cr-dialog-title {
+.cr-dialog-title {
   -webkit-margin-after: 10px;
   -webkit-margin-end: 20px;
   display: block;
@@ -668,34 +454,34 @@ body[new-ui] .cr-dialog-title {
   word-wrap: normal;
 }
 
-body[new-ui] .cr-dialog-text {
+.cr-dialog-text {
   margin: 13px 0;
 }
 
-body[new-ui] .cr-dialog-text,
-body[new-ui] .cr-dialog-title {
+.cr-dialog-text,
+.cr-dialog-title {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-body[new-ui] .cr-dialog-frame input {
+.cr-dialog-frame input {
   box-sizing: border-box;
   width: 100%;
 }
 
-body[new-ui] .cr-dialog-buttons {
+.cr-dialog-buttons {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
   display: -webkit-box;
   padding-top: 10px;
 }
 
-body[new-ui] .cr-dialog-buttons button {
+.cr-dialog-buttons button {
   -webkit-margin-start: 8px;
   line-height: 1.8;
 }
 
-body[new-ui] .cr-dialog-close {
+.cr-dialog-close {
   background: url('chrome://theme/IDR_CLOSE_DIALOG') center no-repeat;
   display: inline-block;
   height: 44px;
@@ -706,10 +492,10 @@ body[new-ui] .cr-dialog-close {
   width: 44px;
 }
 
-body[new-ui] .cr-dialog-close:hover {
+.cr-dialog-close:hover {
   background-image: url('chrome://theme/IDR_CLOSE_DIALOG_H');
 }
 
-body[new-ui] .cr-dialog-close:active {
+.cr-dialog-close:active {
   background-image: url('chrome://theme/IDR_CLOSE_DIALOG_P');
 }

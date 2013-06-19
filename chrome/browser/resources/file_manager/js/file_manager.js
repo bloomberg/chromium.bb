@@ -296,41 +296,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.metadataCache_.resumeRefresh(this.getWatchedDirectoryEntry().toURL());
   };
 
-  /**
-   * FileManager initially created hidden to prevent flickering.
-   * When DOM is almost constructed it need to be shown. Cancels
-   * delayed show.
-   *
-   * @private
-   */
-  FileManager.prototype.show_ = function() {
-    if (this.showDelayTimeout_) {
-      clearTimeout(this.showDelayTimeout_);
-      this.showDelayTimeout_ = null;
-    }
-    this.dialogDom_.classList.add('loaded');
-  };
-
-  /**
-   * If initialization code think that right after initialization
-   * something going to be shown instead of just a file list (like Gallery)
-   * it may delay show to prevent flickering. However initialization may take
-   * significant time and we don't want to keep it hidden for too long.
-   * So it will be shown not more than in 0.5 sec. If initialization completed
-   * the page must show immediatelly.
-   *
-   * @param {number} delay In milliseconds.
-   * @private
-   */
-  FileManager.prototype.delayShow_ = function(delay) {
-    if (!this.showDelayTimeout_) {
-      this.showDelayTimeout_ = setTimeout(function() {
-        this.showDelayTimeout_ = null;
-        this.show_();
-      }.bind(this), delay);
-    }
-  };
-
   FileManager.prototype.initPreferences_ = function(callback) {
     var group = new AsyncUtil.Group();
 
@@ -842,7 +807,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.initEssentialUI_ = function(callback) {
     this.listType_ = null;
-    this.showDelayTimeout_ = null;
 
     this.filesystemObserverId_ = null;
     this.driveObserverId_ = null;
@@ -1673,8 +1637,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     if (PathUtil.getRootType(path) === RootType.DRIVE) {
       if (!this.isDriveEnabled()) {
-        if (pageLoading)
-          this.show_();
         var leafName = path.substr(path.indexOf('/') + 1);
         path = this.directoryModel_.getDefaultDirectory() + '/' + leafName;
         this.finishSetupCurrentDirectory_(path, invokeHandlers);
@@ -1689,8 +1651,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // Expected finish of setupPath to Drive.
       tracker.exceptInitialChange = true;
       tracker.start();
-      if (pageLoading)
-        this.delayShow_(500);
       // Waits until the Drive is mounted.
       this.volumeManager_.mountDrive(function() {
         tracker.stop();
@@ -1700,8 +1660,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         tracker.stop();
       });
     } else {
-      if (invokeHandlers)
-        this.delayShow_(500);
       this.finishSetupCurrentDirectory_(path, invokeHandlers);
     }
   };
@@ -1759,11 +1717,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           }.bind(this);
           this.directoryModel_.addEventListener('scan-completed', listener);
         }
-
-        if (action != 'gallery') {
-          // Opening gallery will invoke |this.show_| at the right time.
-          this.show_();
-        }
       }.bind(this);
 
       this.directoryModel_.setupPath(path, onResolve);
@@ -1778,7 +1731,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    this.show_();
     this.directoryModel_.setupPath(path);
   };
 

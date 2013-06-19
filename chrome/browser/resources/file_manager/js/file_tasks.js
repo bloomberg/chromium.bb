@@ -548,7 +548,6 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
   };
 
   galleryFrame.onload = function() {
-    fm.show_();
     galleryFrame.contentWindow.ImageUtil.metrics = metrics;
     window.galleryTestAPI = galleryFrame.contentWindow.galleryTestAPI;
 

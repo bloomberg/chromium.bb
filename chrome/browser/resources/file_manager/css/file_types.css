@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 /* Small icons for file types, used in lists and menus. */
-*[file-type-icon] {
+[file-type-icon] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC@2x') 2x);
@@ -11,116 +11,108 @@
   background-repeat: no-repeat;
 }
 
-*[file-type-icon='archive'] {
+[file-type-icon='archive'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE@2x') 2x);
 }
 
-*[file-type-icon='audio'] {
+[file-type-icon='audio'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO@2x') 2x);
 }
 
-*[file-type-icon='drive'] {
+[file-type-icon='drive'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_DRIVE') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_DRIVE@2x') 2x);
 }
 
-*[file-type-icon='excel'] {
+[file-type-icon='excel'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_EXCEL') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_EXCEL@2x') 2x);
 }
 
-*[file-type-icon='folder'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_FOLDER') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_FOLDER@2x') 2x);
-}
-
 /* TODO(mtomasz): Move all assets from themes to local resources. */
 /* TODO(mtomasz): Add inverted icons for other file types. */
-body[new-ui] *[file-type-icon='folder'] {
+[file-type-icon='folder'] {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/black_folder.png') 1x,
     url('../images/files/ui/new-ui/2x/black_folder.png') 2x);
 }
 
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[file-type-icon='folder'],
-body[new-ui] list.autocomplete-suggestions li[selected]
-    *[file-type-icon='folder'],
-body[new-ui] list:focus li[selected] *[file-type-icon='folder'] {
+tree:focus .tree-item[selected] > .tree-row > [file-type-icon='folder'],
+list.autocomplete-suggestions li[selected] [file-type-icon='folder'],
+list:focus li[selected] [file-type-icon='folder'] {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/white_folder.png') 1x,
     url('../images/files/ui/new-ui/2x/white_folder.png') 2x);
 }
 
-*[file-type-icon='gdoc'] {
+[file-type-icon='gdoc'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDOC') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDOC@2x') 2x);
 }
 
-*[file-type-icon='gdraw'] {
+[file-type-icon='gdraw'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDRAW') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDRAW@2x') 2x);
 }
 
-*[file-type-icon='gsheet'] {
+[file-type-icon='gsheet'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSHEET') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSHEET@2x') 2x);
 }
 
-*[file-type-icon='gslides'] {
+[file-type-icon='gslides'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSLIDES') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSLIDES@2x') 2x);
 }
 
-*[file-type-icon='gtable'] {
+[file-type-icon='gtable'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GTABLE') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GTABLE@2x') 2x);
 }
 
-*[file-type-icon='image'] {
+[file-type-icon='image'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE@2x') 2x);
 }
 
-*[file-type-icon='pdf'] {
+[file-type-icon='pdf'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PDF') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PDF@2x') 2x);
 }
 
-*[file-type-icon='ppt'] {
+[file-type-icon='ppt'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PPT') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PPT@2x') 2x);
 }
 
-*[file-type-icon='video'] {
+[file-type-icon='video'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO@2x') 2x);
 }
 
-*[file-type-icon='word'] {
+[file-type-icon='word'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_WORD') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_WORD@2x') 2x);
 }
 
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
-*[generic-thumbnail] {
+[generic-thumbnail] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC@2x') 2x);
@@ -128,92 +120,80 @@ body[new-ui] list:focus li[selected] *[file-type-icon='folder'] {
   background-repeat: no-repeat;
 }
 
-*[generic-thumbnail='audio'] {
+[generic-thumbnail='audio'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_AUDIO') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_AUDIO@2x') 2x);
 }
 
-*[generic-thumbnail='folder'] {
+[generic-thumbnail='folder'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER@2x') 2x);
 }
 
-body[new-ui] *[generic-thumbnail='folder'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER@2x') 2x);
-}
-
-body[new-ui] *[generic-thumbnail='folder'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER@2x') 2x);
-}
-
-*[generic-thumbnail='image'] {
+[generic-thumbnail='image'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_IMAGE') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_IMAGE@2x') 2x);
 }
 
-*[generic-thumbnail='video'] {
+[generic-thumbnail='video'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_VIDEO') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_VIDEO@2x') 2x);
 }
 
 /* Icons for volume types. */
-*[volume-type-icon='archive'] {
+[volume-type-icon='archive'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/archive.png') 1x,
     url('../images/files/volumes/2x/archive.png') 2x);
 }
 
-*[volume-type-icon='downloads'] {
+[volume-type-icon='downloads'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/downloads.png') 1x,
     url('../images/files/volumes/2x/downloads.png') 2x);
 }
 
-*[volume-type-icon='drive'] {
+[volume-type-icon='drive'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/drive.png') 1x,
     url('../images/files/volumes/2x/drive.png') 2x);
 }
 
-*[volume-type-icon='drive_offline'] {
+[volume-type-icon='drive_offline'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/drive_offline.png') 1x,
     url('../images/files/volumes/2x/drive_offline.png') 2x);
 }
 
-*[volume-type-icon='drive_shared_with_me'] {
+[volume-type-icon='drive_shared_with_me'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/drive_shared.png') 1x,
     url('../images/files/volumes/2x/drive_shared.png') 2x);
 }
 
-*[volume-type-icon='drive_recent'] {
+[volume-type-icon='drive_recent'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/drive_recent.png') 1x,
     url('../images/files/volumes/2x/drive_recent.png') 2x);
 }
 
-*[volume-type-icon='removable'] {
+[volume-type-icon='removable'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_usb.png') 1x,
     url('../images/files/volumes/2x/device_usb.png') 2x);
 }
 
-*[volume-type-icon='removable'][volume-subtype='sd'] {
+[volume-type-icon='removable'][volume-subtype='sd'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_sd.png') 1x,
     url('../images/files/volumes/2x/device_sd.png') 2x);
 }
 
-*[volume-type-icon='removable'][volume-subtype='optical'] {
+[volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_optical.png') 1x,
     url('../images/files/volumes/2x/device_optical.png') 2x);
@@ -221,145 +201,140 @@ body[new-ui] *[generic-thumbnail='folder'] {
 
 /* TODO(kaznacheev): consider a better icon for volume-subtype=unknown.
    Also find out if we need an icon for volume-subtype=mobile */
-*[volume-type-icon='removable'][volume-subtype='unknown'] {
+[volume-type-icon='removable'][volume-subtype='unknown'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/device_hd.png') 1x,
     url('../images/files/volumes/2x/device_hd.png') 2x);
 }
 
-body[new-ui] *[volume-type-icon='archive'] {
+[volume-type-icon='archive'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_archive.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_archive.png') 2x);
 }
 
-body[new-ui] list:focus li[selected] *[volume-type-icon='archive'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='archive'] {
+list:focus li[selected] [volume-type-icon='archive'],
+tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='archive'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_archive.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_archive.png') 2x);
 }
 
-body[new-ui] *[volume-type-icon='downloads'] {
+[volume-type-icon='downloads'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_downloads.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_downloads.png') 2x);
 }
 
-body[new-ui] list:focus li[selected] *[volume-type-icon='downloads'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='downloads'] {
+list:focus li[selected] [volume-type-icon='downloads'],
+tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='downloads'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_downloads.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_downloads.png') 2x);
 }
 
-body[new-ui] *[volume-type-icon='drive'] {
+[volume-type-icon='drive'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_drive.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_drive.png') 2x);
 }
 
-body[new-ui] list:focus li[selected] *[volume-type-icon='drive'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='drive'] {
+list:focus li[selected] [volume-type-icon='drive'],
+tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='drive'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_drive.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_drive.png') 2x);
 }
 
-body[new-ui] *[volume-type-icon='drive_offline'] {
+[volume-type-icon='drive_offline'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_offline.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_offline.png') 2x);
 }
 
-body[new-ui] list:focus li[selected] *[volume-type-icon='drive_offline'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='drive_offline'] {
+list:focus li[selected] [volume-type-icon='drive_offline'],
+tree:focus .tree-item[selected] > .tree-row >
+    [volume-type-icon='drive_offline'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_offline.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_offline.png') 2x);
 }
 
-body[new-ui] *[volume-type-icon='drive_shared_with_me'] {
+[volume-type-icon='drive_shared_with_me'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_shared.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_shared.png') 2x);
 }
 
-body[new-ui] list:focus li[selected]
-    *[volume-type-icon='drive_shared_with_me'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='drive_shared_with_me'] {
+list:focus li[selected] [volume-type-icon='drive_shared_with_me'],
+tree:focus .tree-item[selected] > .tree-row >
+    [volume-type-icon='drive_shared_with_me'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_shared.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_shared.png') 2x);
 }
 
-body[new-ui] *[volume-type-icon='drive_recent'] {
+[volume-type-icon='drive_recent'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_recent.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_recent.png') 2x);
 }
 
-body[new-ui] list:focus li[selected] *[volume-type-icon='drive_recent'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='drive_recent'] {
+list:focus li[selected] [volume-type-icon='drive_recent'],
+tree:focus .tree-item[selected] > .tree-row >
+    [volume-type-icon='drive_recent'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_recent.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_recent.png') 2x);
 }
 
-body[new-ui] *[volume-type-icon='removable'] {
+[volume-type-icon='removable'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_usb.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_usb.png') 2x);
 }
 
-body[new-ui] list:focus li[selected] *[volume-type-icon='removable'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='removable'] {
+list:focus li[selected] [volume-type-icon='removable'],
+tree:focus .tree-item[selected] > .tree-row >
+    [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_usb.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_usb.png') 2x);
 }
 
-body[new-ui] *[volume-type-icon='removable'][volume-subtype='sd'] {
+[volume-type-icon='removable'][volume-subtype='sd'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_sd.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_sd.png') 2x);
 }
 
-body[new-ui] list:focus li[selected]
-    *[volume-type-icon='removable'][volume-subtype='sd'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='removable'][volume-subtype='sd'] {
+list:focus li[selected] [volume-type-icon='removable'][volume-subtype='sd'],
+tree:focus .tree-item[selected] > .tree-row >
+    [volume-type-icon='removable'][volume-subtype='sd'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_sd.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_sd.png') 2x);
 }
 
-body[new-ui] *[volume-type-icon='removable'][volume-subtype='optical'] {
+[volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_optical.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_optical.png') 2x);
 }
 
-body[new-ui] list:focus div[selected]
-    *[volume-type-icon='removable'][volume-subtype='optical'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='removable'][volume-subtype='optical'] {
+list:focus div[selected]
+    [volume-type-icon='removable'][volume-subtype='optical'],
+tree:focus .tree-item[selected] > .tree-row >
+    [volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_optical.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_optical.png') 2x);
 }
 
-body[new-ui] list:focus li[selected]
-    *[volume-type-icon='removable'][volume-subtype='optical'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='removable'][volume-subtype='optical'] {
+list:focus li[selected]
+    [volume-type-icon='removable'][volume-subtype='optical'],
+tree:focus .tree-item[selected] > .tree-row >
+    [volume-type-icon='removable'][volume-subtype='optical'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_optical.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_optical.png') 2x);
@@ -367,16 +342,16 @@ body[new-ui] tree:focus .tree-item[selected] > .tree-row >
 
 /* TODO(kaznacheev): consider a better icon for volume-subtype=unknown.
    Also find out if we need an icon for volume-subtype=mobile */
-body[new-ui] *[volume-type-icon='removable'][volume-subtype='unknown'] {
+[volume-type-icon='removable'][volume-subtype='unknown'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/black_hdd.png') 1x,
     url('../images/files/volumes/new-ui/2x/black_hdd.png') 2x);
 }
 
-body[new-ui] list:focus li[selected]
-    *[volume-type-icon='removable'][volume-subtype='unknown'],
-body[new-ui] tree:focus .tree-item[selected] > .tree-row >
-    *[volume-type-icon='removable'][volume-subtype='unknown'] {
+list:focus li[selected]
+    [volume-type-icon='removable'][volume-subtype='unknown'],
+tree:focus .tree-item[selected] > .tree-row >
+    [volume-type-icon='removable'][volume-subtype='unknown'] {
   background-image: -webkit-image-set(
     url('../images/files/volumes/new-ui/white_hdd.png') 1x,
     url('../images/files/volumes/new-ui/2x/white_hdd.png') 2x);
