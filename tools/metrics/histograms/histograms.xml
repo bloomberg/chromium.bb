@@ -11862,6 +11862,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebFont.WebFontsInPage">
+  <summary>
+    The number of webfonts used in a page. This is recorded when the first
+    layout is done, and so will not count webfonts dynamically loaded by
+    scripts.
+  </summary>
+</histogram>
+
 <histogram name="WebHistory.LocalResultMissingOnServer" units="%">
   <summary>
     Percentage of results that are present locally but are not returned by the
