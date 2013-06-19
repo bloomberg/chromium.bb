@@ -24,6 +24,12 @@
 #include "net/base/net_util.h"
 #include "webkit/support/webkit_support.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "base/run_loop.h"
+#include "content/public/test/nested_message_pump_android.h"
+#endif
+
 namespace {
 
 #if defined(OS_ANDROID)
@@ -33,6 +39,11 @@ const char kAndroidLayoutTestPath[] =
 
 // The base URL from which layout tests are being served on Android.
 const char kAndroidLayoutTestBase[] = "http://127.0.0.1:8000/all-tests/";
+
+base::MessagePump* CreateMessagePumpForUI() {
+  return new content::NestedMessagePumpAndroid();
+}
+
 #endif
 
 GURL GetURLForLayoutTest(const std::string& test_name,
@@ -125,14 +136,23 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters,
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
   base::ScopedTempDir browser_context_path_for_layout_tests;
 
-  // TODO(beverloo): Create the FIFOs required for Android layout tests.
-
   if (layout_test_mode) {
     CHECK(browser_context_path_for_layout_tests.CreateUniqueTempDir());
     CHECK(!browser_context_path_for_layout_tests.path().MaybeAsASCII().empty());
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kContentShellDataPath,
         browser_context_path_for_layout_tests.path().MaybeAsASCII());
+
+#if defined(OS_ANDROID)
+    // TODO(beverloo): Create the FIFOs required for Android layout tests.
+
+    JNIEnv* env = base::android::AttachCurrentThread();
+    content::NestedMessagePumpAndroid::RegisterJni(env);
+
+    const bool success = base::MessageLoop::InitMessagePumpForUIFactory(
+        &CreateMessagePumpForUI);
+    CHECK(success) << "Unable to initialize the message pump for Android.";
+#endif
   }
 
   int exit_code = main_runner->Initialize(parameters);
@@ -189,7 +209,15 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters,
       }
 
       ran_at_least_once = true;
+#if defined(OS_ANDROID)
+      // The message loop on Android is provided by the system, and does not
+      // offer a blocking Run() method. For layout tests, use a nested loop
+      // together with a base::RunLoop so it can block until a QuitClosure.
+      base::RunLoop run_loop;
+      run_loop.Run();
+#else
       main_runner->Run();
+#endif
 
       if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
         break;

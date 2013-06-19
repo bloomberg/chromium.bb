@@ -49,6 +49,8 @@
         'public/test/mock_render_thread.h',
         'public/test/mock_resource_context.cc',
         'public/test/mock_resource_context.h',
+        'public/test/nested_message_pump_android.cc',
+        'public/test/nested_message_pump_android.h',
         'public/test/render_view_fake_resources_test.cc',
         'public/test/render_view_fake_resources_test.h',
         'public/test/render_view_test.cc',
@@ -229,6 +231,11 @@
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
             '../third_party/libvpx/libvpx.gyp:libvpx',
+          ],
+        }],
+        ['OS=="android"', {
+          'dependencies': [
+            'test_support_content_jni_headers',
           ],
         }],
       ],
@@ -844,8 +851,6 @@
             'renderer/savable_resources_browsertest.cc',
             'test/accessibility_browser_test_utils.cc',
             'test/accessibility_browser_test_utils.h',
-            'test/browser_test_message_pump_android.cc',
-            'test/browser_test_message_pump_android.h',
             'test/content_browser_test.h',
             'test/content_browser_test.cc',
             'test/content_browser_test_utils.cc',
@@ -1133,6 +1138,7 @@
           'dependencies': [
             'content_browsertests',
             'content_java',
+            'content_java_test_support',
             'content_shell_java',
           ],
           'variables': {
@@ -1161,6 +1167,22 @@
     }],
     ['OS == "android"', {
       'targets': [
+        {
+          'target_name': 'test_support_content_jni_headers',
+          'type': 'none',
+          'sources': [
+            'public/test/android/javatests/src/org/chromium/content/browser/test/NestedSystemMessageHandler.java',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)/content/public/test',
+            ],
+          },
+          'variables': {
+            'jni_gen_package': 'content/public/test',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
         {
           'target_name': 'content_java_test_support',
           'type': 'none',

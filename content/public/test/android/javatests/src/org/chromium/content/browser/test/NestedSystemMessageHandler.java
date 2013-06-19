@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content_browsertests_apk;
+package org.chromium.content.browser.test;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -24,13 +24,13 @@ import java.lang.reflect.InvocationTargetException;
  * and dispatch them.
  */
 @JNINamespace("content")
-class BrowserTestSystemMessageHandler {
+class NestedSystemMessageHandler {
     // See org.chromium.base.SystemMessageHandler for more message ids.
     // The id here should not conflict with the ones in SystemMessageHandler.
     private static final int QUIT_MESSAGE = 10;
     private static final Handler mHandler = new Handler();
 
-    private BrowserTestSystemMessageHandler() {
+    private NestedSystemMessageHandler() {
     }
 
     /**
@@ -122,7 +122,7 @@ class BrowserTestSystemMessageHandler {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private static BrowserTestSystemMessageHandler create() {
-        return new BrowserTestSystemMessageHandler();
+    private static NestedSystemMessageHandler create() {
+        return new NestedSystemMessageHandler();
     }
 }

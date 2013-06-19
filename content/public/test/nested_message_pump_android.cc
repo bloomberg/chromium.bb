@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/browser_test_message_pump_android.h"
+#include "content/public/test/nested_message_pump_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
-#include "jni/BrowserTestSystemMessageHandler_jni.h"
+#include "jni/NestedSystemMessageHandler_jni.h"
 
 namespace {
 
@@ -22,7 +22,7 @@ base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >
 
 namespace content {
 
-struct BrowserTestMessagePumpAndroid::RunState {
+struct NestedMessagePumpAndroid::RunState {
   RunState(base::MessagePump::Delegate* delegate, int run_depth)
       : delegate(delegate),
         run_depth(run_depth),
@@ -45,14 +45,14 @@ struct BrowserTestMessagePumpAndroid::RunState {
   base::TimeTicks delayed_work_time;
 };
 
-BrowserTestMessagePumpAndroid::BrowserTestMessagePumpAndroid()
+NestedMessagePumpAndroid::NestedMessagePumpAndroid()
     : state_(NULL) {
 }
 
-BrowserTestMessagePumpAndroid::~BrowserTestMessagePumpAndroid() {
+NestedMessagePumpAndroid::~NestedMessagePumpAndroid() {
 }
 
-void BrowserTestMessagePumpAndroid::Run(Delegate* delegate) {
+void NestedMessagePumpAndroid::Run(Delegate* delegate) {
   RunState state(delegate, state_ ? state_->run_depth + 1 : 1);
   RunState* previous_state = state_;
   state_ = &state;
@@ -91,7 +91,7 @@ void BrowserTestMessagePumpAndroid::Run(Delegate* delegate) {
     // No native tasks to process right now. Process tasks from the Java
     // System message handler. This will return when the java message queue
     // is idle.
-    bool ret = Java_BrowserTestSystemMessageHandler_runNestedLoopTillIdle(env,
+    bool ret = Java_NestedSystemMessageHandler_runNestedLoopTillIdle(env,
         g_message_handler_obj.Get().obj());
     CHECK(ret) << "Error running java message loop, tests will likely fail.";
 
@@ -115,17 +115,17 @@ void BrowserTestMessagePumpAndroid::Run(Delegate* delegate) {
   state_ = previous_state;
 }
 
-void BrowserTestMessagePumpAndroid::Start(
+void NestedMessagePumpAndroid::Start(
     base::MessagePump::Delegate* delegate) {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
   g_message_handler_obj.Get().Reset(
-      Java_BrowserTestSystemMessageHandler_create(env));
+      Java_NestedSystemMessageHandler_create(env));
 
   base::MessagePumpForUI::Start(delegate);
 }
 
-void BrowserTestMessagePumpAndroid::Quit() {
+void NestedMessagePumpAndroid::Quit() {
   if (state_) {
     state_->should_quit = true;
     state_->waitable_event.Signal();
@@ -134,7 +134,7 @@ void BrowserTestMessagePumpAndroid::Quit() {
   base::MessagePumpForUI::Quit();
 }
 
-void BrowserTestMessagePumpAndroid::ScheduleWork() {
+void NestedMessagePumpAndroid::ScheduleWork() {
   if (state_) {
     state_->waitable_event.Signal();
     return;
@@ -143,7 +143,7 @@ void BrowserTestMessagePumpAndroid::ScheduleWork() {
   base::MessagePumpForUI::ScheduleWork();
 }
 
-void BrowserTestMessagePumpAndroid::ScheduleDelayedWork(
+void NestedMessagePumpAndroid::ScheduleDelayedWork(
     const base::TimeTicks& delayed_work_time) {
   if (state_) {
     // We know that we can't be blocked on Wait right now since this method can
@@ -157,7 +157,7 @@ void BrowserTestMessagePumpAndroid::ScheduleDelayedWork(
 }
 
 // static
-bool BrowserTestMessagePumpAndroid::RegisterJni(JNIEnv* env) {
+bool NestedMessagePumpAndroid::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
