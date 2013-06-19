@@ -11,6 +11,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_item_model_observer.h"
+#import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/font.h"
@@ -31,6 +32,7 @@ class ItemModelObserverBridge : public app_list::AppListItemModelObserver {
   virtual ~ItemModelObserverBridge();
 
   AppListItemModel* model() { return model_; }
+  NSMenu* GetContextMenu();
 
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;
@@ -41,6 +43,7 @@ class ItemModelObserverBridge : public app_list::AppListItemModelObserver {
  private:
   AppsGridViewItem* parent_;  // Weak. Owns us.
   AppListItemModel* model_;  // Weak. Owned by AppListModel::Apps.
+  scoped_nsobject<MenuController> context_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ItemModelObserverBridge);
 };
@@ -54,6 +57,15 @@ ItemModelObserverBridge::ItemModelObserverBridge(AppsGridViewItem* parent,
 
 ItemModelObserverBridge::~ItemModelObserverBridge() {
   model_->RemoveObserver(this);
+}
+
+NSMenu* ItemModelObserverBridge::GetContextMenu() {
+  if (!context_menu_controller_) {
+    context_menu_controller_.reset(
+        [[MenuController alloc] initWithModel:model_->GetContextMenuModel()
+                       useWithPopUpButtonCell:NO]);
+  }
+  return [context_menu_controller_ menu];
 }
 
 void ItemModelObserverBridge::ItemIconChanged() {
@@ -220,6 +232,11 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   DCHECK_EQ(1u, [[[self view] subviews] count]);
   return base::mac::ObjCCastStrict<NSButton>(
       [[[self view] subviews] objectAtIndex:0]);
+}
+
+- (NSMenu*)contextMenu {
+  [self setSelected:YES];
+  return observerBridge_->GetContextMenu();
 }
 
 - (AppsGridItemBackgroundView*)itemBackgroundView {

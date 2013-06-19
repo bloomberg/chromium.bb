@@ -28,6 +28,9 @@ const CGFloat kDragThreshold = 5;
 - (void)updateDrag:(NSEvent*)theEvent;
 - (void)completeDrag;
 
+- (NSMenu*)menuForEvent:(NSEvent*)theEvent
+                 inPage:(NSCollectionView*)page;
+
 @end
 
 // An NSCollectionView that forwards mouse events to the factory they share.
@@ -217,11 +220,27 @@ const CGFloat kDragThreshold = 5;
   dragging_ = NO;
 }
 
+- (NSMenu*)menuForEvent:(NSEvent*)theEvent
+                 inPage:(NSCollectionView*)page {
+  size_t pageIndex = [gridController_ pageIndexForCollectionView:page];
+  size_t itemIndex = [self itemIndexForPage:pageIndex
+                               hitWithEvent:theEvent];
+  if (itemIndex == NSNotFound)
+    return nil;
+
+  return [[gridController_ itemAtIndex:itemIndex] contextMenu];
+}
+
 @end
 
 @implementation GridCollectionView
 
 @synthesize factory = factory_;
+
+- (NSMenu*)menuForEvent:(NSEvent*)theEvent {
+  return [factory_ menuForEvent:theEvent
+                         inPage:self];
+}
 
 - (void)mouseDown:(NSEvent*)theEvent {
   [factory_ onMouseDownInPage:self

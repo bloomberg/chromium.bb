@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_item_model.h"
 #import "ui/app_list/cocoa/apps_collection_view_drag_manager.h"
@@ -12,6 +13,7 @@
 #import "ui/app_list/cocoa/test/apps_grid_controller_test_helper.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
+#include "ui/base/models/simple_menu_model.h"
 #import "ui/base/test/cocoa_test_event_utils.h"
 
 @interface TestPaginationObserver : NSObject<AppsPaginationModelObserver> {
@@ -106,6 +108,23 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
   scoped_ptr<AppListTestViewDelegate> owned_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridControllerTest);
+};
+
+class AppListItemWithMenu : public AppListItemModel {
+ public:
+  AppListItemWithMenu(const std::string& title) : menu_model_(NULL) {
+    SetTitle(title);
+    menu_model_.AddItem(0, UTF8ToUTF16("Menu For: " + title));
+  }
+
+  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE {
+    return &menu_model_;
+  }
+
+ private:
+  ui::SimpleMenuModel menu_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListItemWithMenu);
 };
 
 // Generate a mouse event at the centre of the view in |page| with the given
@@ -772,6 +791,24 @@ TEST_F(AppsGridControllerTest, ScrollingWhileDragging) {
   EXPECT_EQ(2u, [apps_grid_controller_ scheduledScrollPage]);
 
   [apps_grid_controller_ setPaginationObserver:nil];
+}
+
+TEST_F(AppsGridControllerTest, ContextMenus) {
+  model()->apps()->AddAt(0, new AppListItemWithMenu("Item One"));
+  model()->apps()->AddAt(1, new AppListItemWithMenu("Item Two"));
+  EXPECT_EQ(2u, [apps_grid_controller_ itemCount]);
+
+  NSCollectionView* page = [apps_grid_controller_ collectionViewAtPageIndex:0];
+  NSEvent* mouse_at_cell_0 = MouseEventInCell(page, 0);
+  NSEvent* mouse_at_cell_1 = MouseEventInCell(page, 1);
+
+  NSMenu* menu = [page menuForEvent:mouse_at_cell_0];
+  EXPECT_EQ(1, [menu numberOfItems]);
+  EXPECT_NSEQ(@"Menu For: Item One", [[menu itemAtIndex:0] title]);
+
+  menu = [page menuForEvent:mouse_at_cell_1];
+  EXPECT_EQ(1, [menu numberOfItems]);
+  EXPECT_NSEQ(@"Menu For: Item Two", [[menu itemAtIndex:0] title]);
 }
 
 }  // namespace test

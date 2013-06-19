@@ -35,6 +35,8 @@ APP_LIST_EXPORT
 
 - (NSButton*)button;
 
+- (NSMenu*)contextMenu;
+
 @end
 
 #endif  // UI_APP_LIST_COCOA_APPS_GRID_VIEW_ITEM_H_
