@@ -436,6 +436,10 @@ public:
     virtual void getQueryivEXT(WGC3Denum target, WGC3Denum pname, WGC3Dint* params) { }
     virtual void getQueryObjectuivEXT(WebGLId query, WGC3Denum pname, WGC3Duint* params) { }
 
+    // This call passes ownership of the WebGraphicsSyncPointCallback to the
+    // WebGraphicsContext3D implementation.
+    virtual void signalQuery(WebGLId query, WebGraphicsSyncPointCallback* callback) { delete callback; }
+
     // GL_CHROMIUM_bind_uniform_location
     virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location, const WGC3Dchar* uniform) { }
 
