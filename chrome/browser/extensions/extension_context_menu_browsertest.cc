@@ -338,10 +338,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, LongTitle) {
   ASSERT_TRUE(label.size() <= limit);
 }
 
+// Flaky on Windows debug bots. http://crbug.com/251590
+#if defined(OS_WIN)
+#define MAYBE_TopLevel DISABLED_TopLevel
+#else
+#define MAYBE_TopLevel TopLevel
+#endif
 // Checks that Context Menus are ordered alphabetically by their name when
 // extensions have only one single Context Menu item and by the extension name
 // when multiples Context Menu items are created.
-IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, TopLevel) {
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, MAYBE_TopLevel) {
   // We expect to see the following items in the menu:
   //   An Extension with multiple Context Menus
   //     Context Menu #1
