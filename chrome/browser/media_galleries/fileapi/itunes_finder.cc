@@ -47,8 +47,8 @@ ITunesFinder::ITunesFinder(const ITunesFinderCallback& callback)
 
 void ITunesFinder::PostResultToUIThread(const std::string& unique_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  // The use of base::Owned() below will cause this class to delete as soon as
-  // FinishOnUIThread() finishes.
+  // The use of base::Owned() below will cause this class to get deleted either
+  // when FinishOnUIThread() finishes or if the PostTask() fails.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,

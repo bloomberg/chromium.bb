@@ -6,109 +6,32 @@
 
 #include <string>
 
-#include "base/base64.h"
 #include "base/base_paths_win.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/media_galleries/fileapi/itunes_xml_utils.h"
+#include "chrome/browser/media_galleries/fileapi/safe_itunes_pref_parser_win.h"
 #include "chrome/common/chrome_paths.h"
-#include "third_party/libxml/chromium/libxml_utils.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace itunes {
 
 namespace {
 
-// Read the iTunes preferences from |pref_file| and then try to extract the
-// library XML location from the XML file. Return it if found. The minimal
-// valid snippet of XML is:
-//
-//   <plist>
-//     <dict>
-//       <key>User Preferences</key>
-//       <dict>
-//         <key>iTunes Library XML Location:1</key>
-//         <data>Base64 encoded w string path</data>
-//       </dict>
-//     </dict>
-//   </plist>
-//
-base::FilePath::StringType FindLibraryLocationInPrefXML(
-    const std::string& pref_file) {
-  XmlReader reader;
-  base::FilePath::StringType result;
+// Try to read the iTunes preferences file from the default location and return
+// its contents if found.
+std::string GetPrefFileData() {
+  std::string xml_pref_data;
 
-  if (!reader.LoadFile(pref_file))
-    return result;
-
-  // Find the plist node and then search within that tag.
-  if (!SeekToNodeAtCurrentDepth(&reader, "plist"))
-    return result;
-  if (!reader.Read())
-    return result;
-
-  if (!SeekToNodeAtCurrentDepth(&reader, "dict"))
-    return result;
-
-  if (!SeekInDict(&reader, "User Preferences"))
-    return result;
-
-  if (!SeekToNodeAtCurrentDepth(&reader, "dict"))
-    return result;
-
-  if (!SeekInDict(&reader, "iTunes Library XML Location:1"))
-    return result;
-
-  if (!SeekToNodeAtCurrentDepth(&reader, "data"))
-    return result;
-
-  std::string pref_value;
-  if (!reader.ReadElementContent(&pref_value))
-    return result;
-  // The data is a base64 encoded wchar_t*. Because Base64Decode uses
-  // std::strings, the result has to be casted to a wchar_t*.
-  std::string data;
-  if (!base::Base64Decode(CollapseWhitespaceASCII(pref_value, true), &data))
-    return result;
-  return base::FilePath::StringType(
-      reinterpret_cast<const wchar_t*>(data.data()), data.size()/2);
-}
-
-// Try to find the iTunes library XML by examining the iTunes preferences
-// file and return it if found.
-base::FilePath TryPreferencesFile() {
   base::FilePath appdata_dir;
-  if (!PathService::Get(base::DIR_APP_DATA, &appdata_dir))
-    return base::FilePath();
-  base::FilePath pref_file = appdata_dir.AppendASCII("Apple Computer")
-                                        .AppendASCII("iTunes")
-                                        .AppendASCII("iTunesPrefs.xml");
-  if (!file_util::PathExists(pref_file))
-    return base::FilePath();
-
-  base::FilePath::StringType library_location =
-      FindLibraryLocationInPrefXML(pref_file.AsUTF8Unsafe());
-  base::FilePath library_file(library_location);
-  if (!file_util::PathExists(library_file))
-    return base::FilePath();
-  return library_file;
-}
-
-// Check the default location for the iTunes library XML file. Return the
-// location if found.
-base::FilePath TryDefaultLocation() {
-  base::FilePath music_dir;
-  if (!PathService::Get(chrome::DIR_USER_MUSIC, &music_dir))
-    return base::FilePath();
-  base::FilePath library_file =
-      music_dir.AppendASCII("iTunes").AppendASCII("iTunes Music Library.xml");
-
-  if (!file_util::PathExists(library_file))
-    return base::FilePath();
-  return library_file;
+  if (PathService::Get(base::DIR_APP_DATA, &appdata_dir)) {
+    base::FilePath pref_file = appdata_dir.AppendASCII("Apple Computer")
+                                          .AppendASCII("iTunes")
+                                          .AppendASCII("iTunesPrefs.xml");
+    file_util::ReadFileToString(pref_file, &xml_pref_data);
+  }
+  return xml_pref_data;
 }
 
 }  // namespace
@@ -120,16 +43,48 @@ ITunesFinderWin::ITunesFinderWin(const ITunesFinderCallback& callback)
 ITunesFinderWin::~ITunesFinderWin() {}
 
 void ITunesFinderWin::FindITunesLibraryOnFileThread() {
-  base::FilePath library_file = TryPreferencesFile();
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  if (library_file.empty())
-    library_file = TryDefaultLocation();
-
-  if (library_file.empty()) {
-    PostResultToUIThread(std::string());
+  std::string xml_pref_data = GetPrefFileData();
+  if (xml_pref_data.empty()) {
+    TryDefaultLocation();
     return;
   }
 
+  scoped_refptr<SafeITunesPrefParserWin> parser =
+      new SafeITunesPrefParserWin(
+          xml_pref_data,
+          base::Bind(&ITunesFinderWin::FinishedParsingPrefXML,
+                     base::Unretained(this)));
+  parser->Start();
+}
+
+void ITunesFinderWin::TryDefaultLocation() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
+  base::FilePath music_dir;
+  if (!PathService::Get(chrome::DIR_USER_MUSIC, &music_dir)) {
+    PostResultToUIThread(std::string());
+    return;
+  }
+  base::FilePath library_file =
+      music_dir.AppendASCII("iTunes").AppendASCII("iTunes Music Library.xml");
+
+  if (!file_util::PathExists(library_file)) {
+    PostResultToUIThread(std::string());
+    return;
+  }
+  PostResultToUIThread(library_file.AsUTF8Unsafe());
+}
+
+void ITunesFinderWin::FinishedParsingPrefXML(
+    const base::FilePath& library_file) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
+  if (library_file.empty() || !file_util::PathExists(library_file)) {
+    TryDefaultLocation();
+    return;
+  }
   PostResultToUIThread(library_file.AsUTF8Unsafe());
 }
 

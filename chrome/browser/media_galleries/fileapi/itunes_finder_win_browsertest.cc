@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,9 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
-#include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_finder_win.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/test/test_browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "chrome/test/base/in_process_browser_test.h"
 
 namespace itunes {
 
@@ -36,12 +34,9 @@ void TouchFile(const base::FilePath& file) {
   ASSERT_EQ(1, file_util::WriteFile(file, " ", 1));
 }
 
-class ITunesFinderWinTest : public testing::Test {
+class ITunesFinderWinTest : public InProcessBrowserTest {
  public:
-  ITunesFinderWinTest()
-    : ui_thread_(content::BrowserThread::UI, &loop_),
-      file_thread_(content::BrowserThread::FILE, &loop_) {
-  }
+  ITunesFinderWinTest() : test_finder_callback_called_(false) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(app_data_dir_.CreateUniqueTempDir());
@@ -50,6 +45,7 @@ class ITunesFinderWinTest : public testing::Test {
         new base::ScopedPathOverride(base::DIR_APP_DATA, app_data_dir()));
     music_dir_override_.reset(
         new base::ScopedPathOverride(chrome::DIR_USER_MUSIC, music_dir()));
+    InProcessBrowserTest::SetUp();
   }
 
   const base::FilePath& app_data_dir() {
@@ -75,18 +71,31 @@ class ITunesFinderWinTest : public testing::Test {
     TouchFile(default_dir.AppendASCII("iTunes Music Library.xml"));
   }
 
-  std::string TestFindITunesLibrary() {
-    std::string result;
+  void TestFindITunesLibrary() {
+    test_finder_callback_called_ = false;
+    result_.clear();
+    base::RunLoop loop;
     ITunesFinder::FindITunesLibrary(
-        base::Bind(&ITunesFinderWinTest::FinderCallback,
-                   base::Unretained(this), base::Unretained(&result)));
-    base::RunLoop().RunUntilIdle();
-    return result;
+        base::Bind(&ITunesFinderWinTest::TestFinderCallback,
+                   base::Unretained(this),
+                   loop.QuitClosure()));
+    loop.Run();
+  }
+
+  bool EmptyResult() const {
+    return result_.empty();
+  }
+
+  bool test_finder_callback_called() const {
+    return test_finder_callback_called_;
   }
 
  private:
-  void FinderCallback(std::string* result_holder, const std::string& result) {
-    *result_holder = result;
+  void TestFinderCallback(const base::Closure& quit_closure,
+                          const std::string& result) {
+    test_finder_callback_called_ = true;
+    result_ = result;
+    quit_closure.Run();
   }
 
   scoped_ptr<base::ScopedPathOverride> app_data_dir_override_;
@@ -94,25 +103,26 @@ class ITunesFinderWinTest : public testing::Test {
   base::ScopedTempDir app_data_dir_;
   base::ScopedTempDir music_dir_;
 
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  bool test_finder_callback_called_;
+  std::string result_;
 
   DISALLOW_COPY_AND_ASSIGN(ITunesFinderWinTest);
 };
 
-TEST_F(ITunesFinderWinTest, NotFound) {
-  std::string result = TestFindITunesLibrary();
-  EXPECT_TRUE(result.empty());
+IN_PROC_BROWSER_TEST_F(ITunesFinderWinTest, NotFound) {
+  TestFindITunesLibrary();
+  EXPECT_TRUE(test_finder_callback_called());
+  EXPECT_TRUE(EmptyResult());
 }
 
-TEST_F(ITunesFinderWinTest, DefaultLocation) {
+IN_PROC_BROWSER_TEST_F(ITunesFinderWinTest, DefaultLocation) {
   TouchDefault();
-  std::string result = TestFindITunesLibrary();
-  EXPECT_FALSE(result.empty());
+  TestFindITunesLibrary();
+  EXPECT_TRUE(test_finder_callback_called());
+  EXPECT_FALSE(EmptyResult());
 }
 
-TEST_F(ITunesFinderWinTest, CustomLocation) {
+IN_PROC_BROWSER_TEST_F(ITunesFinderWinTest, CustomLocation) {
   base::FilePath library_xml = music_dir().AppendASCII("library.xml");
   TouchFile(library_xml);
   std::string xml = base::StringPrintf(
@@ -126,11 +136,12 @@ TEST_F(ITunesFinderWinTest, CustomLocation) {
       "  </dict>"
       "</plist>", EncodePath(library_xml).c_str());
   WritePrefFile(xml);
-  std::string result = TestFindITunesLibrary();
-  EXPECT_FALSE(result.empty());
+  TestFindITunesLibrary();
+  EXPECT_TRUE(test_finder_callback_called());
+  EXPECT_FALSE(EmptyResult());
 }
 
-TEST_F(ITunesFinderWinTest, BadCustomLocation) {
+IN_PROC_BROWSER_TEST_F(ITunesFinderWinTest, BadCustomLocation) {
   // Missing file.
   base::FilePath library_xml = music_dir().AppendASCII("library.xml");
   std::string xml = base::StringPrintf(
@@ -144,8 +155,9 @@ TEST_F(ITunesFinderWinTest, BadCustomLocation) {
       "  </dict>"
       "</plist>", EncodePath(library_xml).c_str());
   WritePrefFile(xml);
-  std::string result = TestFindITunesLibrary();
-  EXPECT_TRUE(result.empty());
+  TestFindITunesLibrary();
+  EXPECT_TRUE(test_finder_callback_called());
+  EXPECT_TRUE(EmptyResult());
   TouchFile(library_xml);
 
   // User Preferences dictionary at the wrong level.
@@ -158,8 +170,9 @@ TEST_F(ITunesFinderWinTest, BadCustomLocation) {
       "    </dict>"
       "</plist>", EncodePath(library_xml).c_str());
   WritePrefFile(xml);
-  result = TestFindITunesLibrary();
-  EXPECT_TRUE(result.empty());
+  TestFindITunesLibrary();
+  EXPECT_TRUE(test_finder_callback_called());
+  EXPECT_TRUE(EmptyResult());
 
   // Library location at the wrong scope.
   xml = base::StringPrintf(
@@ -172,8 +185,9 @@ TEST_F(ITunesFinderWinTest, BadCustomLocation) {
       "  </dict>"
       "</plist>", EncodePath(library_xml).c_str());
   WritePrefFile(xml);
-  result = TestFindITunesLibrary();
-  EXPECT_TRUE(result.empty());
+  TestFindITunesLibrary();
+  EXPECT_TRUE(test_finder_callback_called());
+  EXPECT_TRUE(EmptyResult());
 }
 
 }  // namespace

@@ -925,7 +925,6 @@
         'browser/managed_mode/managed_user_registration_service_unittest.cc',
         'browser/managed_mode/managed_user_service_unittest.cc',
         'browser/managed_mode/managed_user_refresh_token_fetcher_unittest.cc',
-        'browser/media_galleries/fileapi/itunes_finder_win_unittest.cc',
         'browser/media_galleries/fileapi/itunes_library_parser_unittest.cc',
         'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
         'browser/media_galleries/fileapi/picasa/picasa_album_table_reader_unittest.cc',

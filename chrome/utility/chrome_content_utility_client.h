@@ -80,6 +80,10 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnAnalyzeZipFileForDownloadProtection(
       IPC::PlatformFileForTransit zip_file);
 
+#if defined(OS_WIN)
+  void OnParseITunesPrefXml(const std::string& itunes_xml_data);
+#endif  // defined(OS_WIN)
+
   scoped_ptr<ProfileImportHandler> import_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentUtilityClient);

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_galleries/fileapi/itunes_xml_utils.h"
+#include "chrome/common/itunes_xml_utils.h"
+
 #include <string>
 
 #include "base/logging.h"

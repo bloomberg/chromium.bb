@@ -285,10 +285,13 @@
             '../base/base.gyp:base',
             '../content/content.gyp:content_utility',
             '../skia/skia.gyp:skia',
+            '../third_party/libxml/libxml.gyp:libxml',
           ],
           'sources': [
             'utility/chrome_content_utility_client.cc',
             'utility/chrome_content_utility_client.h',
+            'utility/itunes_pref_parser_win.cc',
+            'utility/itunes_pref_parser_win.h',
             'utility/profile_import_handler.cc',
             'utility/profile_import_handler.h',
           ],

@@ -35,6 +35,7 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/utility/itunes_pref_parser_win.h"
 #include "printing/emf_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif  // defined(OS_WIN)
@@ -111,6 +112,11 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CreateZipFile, OnCreateZipFile)
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseITunesPrefXml,
+                        OnParseITunesPrefXml)
+#endif  // defined(OS_WIN)
+
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -127,8 +133,8 @@ void ChromeContentUtilityClient::OnUnpackExtension(
     const std::string& extension_id,
     int location,
     int creation_flags) {
-  CHECK(location > extensions::Manifest::INVALID_LOCATION);
-  CHECK(location < extensions::Manifest::NUM_LOCATIONS);
+  CHECK_GT(location, extensions::Manifest::INVALID_LOCATION);
+  CHECK_LT(location, extensions::Manifest::NUM_LOCATIONS);
   extensions::PermissionsInfo::GetInstance()->InitializeWithDelegate(
       extensions::ChromeAPIPermissions());
   extensions::RegisterChromeManifestHandlers();
@@ -430,10 +436,10 @@ void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
 void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
   int error_code;
   std::string error;
-  Value* value = base::JSONReader::ReadAndReturnError(
+  base::Value* value = base::JSONReader::ReadAndReturnError(
       json, base::JSON_PARSE_RFC, &error_code, &error);
   if (value) {
-    ListValue wrapper;
+    base::ListValue wrapper;
     wrapper.Append(value);
     Send(new ChromeUtilityHostMsg_ParseJSON_Succeeded(wrapper));
   } else {
@@ -478,5 +484,15 @@ void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
       results));
   ReleaseProcessIfNeeded();
 }
+
+#if defined(OS_WIN)
+void ChromeContentUtilityClient::OnParseITunesPrefXml(
+    const std::string& itunes_xml_data) {
+  base::FilePath library_path(
+      itunes::FindLibraryLocationInPrefXml(itunes_xml_data));
+  Send(new ChromeUtilityHostMsg_GotITunesDirectory(library_path));
+  ReleaseProcessIfNeeded();
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace chrome

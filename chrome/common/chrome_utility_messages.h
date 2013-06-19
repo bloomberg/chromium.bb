@@ -57,6 +57,7 @@ IPC_STRUCT_TRAITS_END()
 //------------------------------------------------------------------------------
 // Utility process messages:
 // These are messages from the browser to the utility process.
+
 // Tell the utility process to unpack the given extension file in its
 // directory and verify that it is valid.
 IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_UnpackExtension,
@@ -124,9 +125,17 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_StartupPing)
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
                      IPC::PlatformFileForTransit /* zip_file */)
 
+#if defined(OS_WIN)
+// Tell the utility process to parse the iTunes preference XML file contents
+// and return the path to the iTunes directory.
+IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_ParseITunesPrefXml,
+                     std::string /* XML to parse */)
+#endif  // defined(OS_WIN)
+
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.
+
 // Reply when the utility process is done unpacking an extension.  |manifest|
 // is the parsed manifest.json file.
 // The unpacker should also have written out files containing the decoded
@@ -217,3 +226,10 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_ProcessStarted)
 IPC_MESSAGE_CONTROL1(
     ChromeUtilityHostMsg_AnalyzeZipFileForDownloadProtection_Finished,
     safe_browsing::zip_analyzer::Results)
+
+#if defined(OS_WIN)
+// Reply after parsing the iTunes preferences XML file contents with either the
+// path to the iTunes directory or an empty FilePath.
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GotITunesDirectory,
+                     base::FilePath /* Path to iTunes library */)
+#endif  // defined(OS_WIN)

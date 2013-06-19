@@ -335,6 +335,8 @@
         'common/instant_restricted_id_cache.h',
         'common/instant_types.cc',
         'common/instant_types.h',
+        'common/itunes_xml_utils.cc',
+        'common/itunes_xml_utils.h',
         'common/json_schema/json_schema_constants.cc',
         'common/json_schema/json_schema_constants.h',
         'common/json_schema/json_schema_validator.cc',
