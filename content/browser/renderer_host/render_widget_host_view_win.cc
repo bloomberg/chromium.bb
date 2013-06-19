@@ -54,7 +54,6 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/win/WebInputEventFactory.h"
-#include "third_party/WebKit/public/web/win/WebScreenInfoFactory.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
@@ -306,11 +305,31 @@ bool ShouldSendPinchGesture() {
   return pinch_allowed;
 }
 
-void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
-                            gfx::NativeViewId id) {
-  *results = WebKit::WebScreenInfoFactory::screenInfo(
-      gfx::NativeViewFromId(id));
-  results->deviceScaleFactor = ui::win::GetDeviceScaleFactor();
+void GetScreenInfoForWindow(gfx::NativeViewId id,
+                            WebKit::WebScreenInfo* results) {
+  HWND window = gfx::NativeViewFromId(id);
+
+  HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
+
+  MONITORINFOEX monitor_info;
+  monitor_info.cbSize = sizeof(MONITORINFOEX);
+  if (!GetMonitorInfo(monitor, &monitor_info))
+    return;
+
+  DEVMODE dev_mode;
+  dev_mode.dmSize = sizeof(dev_mode);
+  dev_mode.dmDriverExtra = 0;
+  EnumDisplaySettings(monitor_info.szDevice, ENUM_CURRENT_SETTINGS, &dev_mode);
+
+  WebKit::WebScreenInfo screen_info;
+  screen_info.depth = dev_mode.dmBitsPerPel;
+  screen_info.depthPerComponent = dev_mode.dmBitsPerPel / 3;  // Assumes RGB
+  screen_info.deviceScaleFactor = ui::win::GetDeviceScaleFactor();
+  screen_info.isMonochrome = dev_mode.dmColor == DMCOLOR_MONOCHROME;
+  screen_info.rect = gfx::Rect(monitor_info.rcMonitor);
+  screen_info.availableRect = gfx::Rect(monitor_info.rcWork);
+
+  *results = screen_info;
 }
 
 void SetDwmPresentParameters(HWND window) {
@@ -2460,7 +2479,7 @@ void RenderWidgetHostViewWin::AcceleratedPaint(HDC dc) {
 }
 
 void RenderWidgetHostViewWin::GetScreenInfo(WebKit::WebScreenInfo* results) {
-  GetScreenInfoForWindow(results, GetNativeViewId());
+  GetScreenInfoForWindow(GetNativeViewId(), results);
 }
 
 gfx::Rect RenderWidgetHostViewWin::GetBoundsInRootWindow() {
@@ -3167,7 +3186,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 // static
 void RenderWidgetHostViewPort::GetDefaultScreenInfo(
       WebKit::WebScreenInfo* results) {
-  GetScreenInfoForWindow(results, 0);
+  GetScreenInfoForWindow(0, results);
 }
 
 }  // namespace content
