@@ -347,7 +347,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataOriginSetMask) {
       UNPROTECTED_WEB | PROTECTED_WEB | EXTENSION);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataRemovalMask) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
+                       FLAKY_BrowsingDataRemovalMask) {
   RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
       "appcache", BrowsingDataRemover::REMOVE_APPCACHE);
   RunRemoveBrowsingDataWithKeyAndCompareRemovalMask(
