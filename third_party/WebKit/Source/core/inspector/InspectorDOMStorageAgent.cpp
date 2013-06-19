@@ -76,13 +76,10 @@ InspectorDOMStorageAgent::InspectorDOMStorageAgent(InstrumentingAgents* instrume
     , m_pageAgent(pageAgent)
     , m_frontend(0)
 {
-    m_instrumentingAgents->setInspectorDOMStorageAgent(this);
 }
 
 InspectorDOMStorageAgent::~InspectorDOMStorageAgent()
 {
-    m_instrumentingAgents->setInspectorDOMStorageAgent(0);
-    m_instrumentingAgents = 0;
 }
 
 void InspectorDOMStorageAgent::setFrontend(InspectorFrontend* frontend)
@@ -104,10 +101,12 @@ bool InspectorDOMStorageAgent::isEnabled() const
 void InspectorDOMStorageAgent::enable(ErrorString*)
 {
     m_state->setBoolean(DOMStorageAgentState::domStorageAgentEnabled, true);
+    m_instrumentingAgents->setInspectorDOMStorageAgent(this);
 }
 
 void InspectorDOMStorageAgent::disable(ErrorString*)
 {
+    m_instrumentingAgents->setInspectorDOMStorageAgent(0);
     m_state->setBoolean(DOMStorageAgentState::domStorageAgentEnabled, false);
 }
 
