@@ -1869,7 +1869,7 @@
           'dependencies': [
             'common/extensions/api/api.gyp:api',
             '../components/components.gyp:autofill_content_test_util',
-            '../components/component_resources.gyp:component_resources',
+            '../components/component_strings.gyp:component_strings',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',

@@ -12,7 +12,7 @@
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_field_data_predictions.h"
-#include "grit/component_resources.h"
+#include "grit/component_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"

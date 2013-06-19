@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill/browser/autofill_external_delegate.h"
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autocomplete_history_manager.h"
-#include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "content/public/browser/navigation_controller.h"
@@ -13,7 +14,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/component_resources.h"
+#include "grit/component_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 

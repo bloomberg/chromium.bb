@@ -4,27 +4,27 @@
 
 {
   'variables': {
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
+    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/components',
   },
   'targets': [
     {
-      'target_name': 'component_resources',
+      'target_name': 'component_strings',
       'type': 'none',
       'actions': [
         {
-          'action_name': 'component_resources',
+          'action_name': 'component_strings',
           'variables': {
-            'grit_grd_file': 'component_resources.grd',
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/component_resources',
+            'grit_grd_file': 'component_strings.grd',
+            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/components/strings',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
      'direct_dependent_settings': {
         'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/component_resources',
-          ],
-        },
+            '<(SHARED_INTERMEDIATE_DIR)/components/strings',
+        ],
+      },
     },
   ],
 }

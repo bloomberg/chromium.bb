@@ -311,7 +311,7 @@
         'chrome_strings',
         'platform_locale_settings',
         'theme_resources',
-        '<(DEPTH)/components/component_resources.gyp:component_resources',
+        '<(DEPTH)/components/component_strings.gyp:component_strings',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/ui.gyp:ui_resources',

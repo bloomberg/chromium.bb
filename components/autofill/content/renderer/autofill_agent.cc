@@ -25,7 +25,7 @@
 #include "content/public/common/password_form.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/renderer/render_view.h"
-#include "grit/component_resources.h"
+#include "grit/component_strings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"

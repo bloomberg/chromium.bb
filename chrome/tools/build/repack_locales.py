@@ -69,10 +69,10 @@ def calc_inputs(locale):
   inputs.append(os.path.join(GRIT_DIR,
                 'platform_locale_settings_%s.pak' % locale))
 
-  #e.g. '<(SHARED_INTERMEDIATE_DIR)/component_resources/
-  # component_resources_da.pak',
-  inputs.append(os.path.join(SHARE_INT_DIR, 'component_resources',
-                'component_resources_%s.pak' % locale))
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/components/strings/
+  # component_strings_da.pak',
+  inputs.append(os.path.join(SHARE_INT_DIR, 'components', 'strings',
+                'component_strings_%s.pak' % locale))
 
   if OS != 'ios':
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak'

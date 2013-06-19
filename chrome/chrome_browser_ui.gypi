@@ -2365,7 +2365,7 @@
             'debugger',
             'installer_util',
             '../components/components.gyp:autofill_content_risk_proto',
-            '../components/component_resources.gyp:component_resources',
+            '../components/component_strings.gyp:component_strings',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../net/net.gyp:net_with_v8',
             '../printing/printing.gyp:printing',

@@ -114,7 +114,7 @@
             '../url/url.gyp:url_lib',
             '../webkit/support/webkit_support.gyp:webkit_resources',
 
-            'component_resources.gyp:component_resources',
+            'component_strings.gyp:component_strings',
           ],
           'sources': [
             'autofill/browser/address.cc',
@@ -269,7 +269,7 @@
             '../url/url.gyp:url_lib',
             '../webkit/support/webkit_support.gyp:webkit_resources',
 
-            'component_resources.gyp:component_resources',
+            'component_strings.gyp:component_strings',
           ],
           'sources': [
             'autofill/content/browser/autocheckout/whitelist_manager.cc',
@@ -326,7 +326,7 @@
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
 
-            'component_resources.gyp:component_resources',
+            'component_strings.gyp:component_strings',
           ],
           'sources': [
             'autofill/content/renderer/autofill_agent.cc',

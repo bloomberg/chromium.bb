@@ -54,7 +54,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
-#include "grit/component_resources.h"
+#include "grit/component_strings.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"

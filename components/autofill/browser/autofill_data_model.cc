@@ -15,7 +15,7 @@
 #include "components/autofill/browser/validation.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "googleurl/src/gurl.h"
-#include "grit/component_resources.h"
+#include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
