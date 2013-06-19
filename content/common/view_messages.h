@@ -1790,12 +1790,12 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
 // ViewHostMsg_DidChangeScrollOffset works properly in this case.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidChangeScrollOffset)
 
-// Notifies that the scrollbars-visible state of the content changed.
+// Notifies that the pinned-to-side state of the content changed.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame,
                     bool /* has_horizontal_scrollbar */,
                     bool /* has_vertical_scrollbar */)
 
-// Notifies that the pinned-to-side state of the content changed.
+// Notifies that the scrollbars-visible state of the content changed.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidChangeScrollbarsForMainFrame,
                     bool /* pinned_to_left */,
                     bool /* pinned_to_right */)
@@ -1804,7 +1804,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidChangeScrollbarsForMainFrame,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeNumWheelEvents,
                     int /* count */)
 
-// Notifies whether there are JavaScript touche event handlers or not.
+// Notifies whether there are JavaScript touch event handlers or not.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_HasTouchEventHandlers,
                     bool /* has_handlers */)
 
