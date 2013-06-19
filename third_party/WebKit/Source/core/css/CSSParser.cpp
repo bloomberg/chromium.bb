@@ -11398,11 +11398,6 @@ void CSSParser::updateLastSelectorLineAndPosition()
     m_lastSelectorLineNumber = m_lineNumber;
 }
 
-void CSSParser::updateLastMediaLine(MediaQuerySet* media)
-{
-    media->setLastLine(m_lineNumber);
-}
-
 void CSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)
 {
     resumeErrorLogging();

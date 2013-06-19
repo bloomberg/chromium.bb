@@ -55,13 +55,11 @@ namespace WebCore {
  */
 
 MediaQuerySet::MediaQuerySet()
-    : m_lastLine(0)
 {
 }
 
 MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
     : RefCounted<MediaQuerySet>()
-    , m_lastLine(o.m_lastLine)
     , m_queries(o.m_queries.size())
 {
     for (unsigned i = 0; i < m_queries.size(); ++i)

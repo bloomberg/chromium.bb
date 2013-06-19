@@ -53,9 +53,6 @@ public:
 
     const Vector<OwnPtr<MediaQuery> >& queryVector() const { return m_queries; }
 
-    int lastLine() const { return m_lastLine; }
-    void setLastLine(int lastLine) { m_lastLine = lastLine; }
-
     String mediaText() const;
 
     PassRefPtr<MediaQuerySet> copy() const { return adoptRef(new MediaQuerySet(*this)); }
@@ -66,7 +63,6 @@ private:
     MediaQuerySet();
     MediaQuerySet(const MediaQuerySet&);
 
-    unsigned m_lastLine;
     Vector<OwnPtr<MediaQuery> > m_queries;
 };
 

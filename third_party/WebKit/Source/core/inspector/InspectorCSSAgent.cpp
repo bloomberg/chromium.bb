@@ -1216,7 +1216,6 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
 
     if (!sourceURL.isEmpty()) {
         mediaObject->setSourceURL(sourceURL);
-        mediaObject->setSourceLine(media->queries()->lastLine());
 
         CSSRule* parentRule = media->parentRule();
         if (!parentRule)

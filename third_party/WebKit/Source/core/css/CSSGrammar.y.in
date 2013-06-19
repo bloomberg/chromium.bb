@@ -653,17 +653,14 @@ media_list:
     media_query {
         $$ = parser->createMediaQuerySet();
         $$->addMediaQuery(parser->sinkFloatingMediaQuery($1));
-        parser->updateLastMediaLine($$);
     }
     | mq_list media_query {
         $$ = $1;
         $$->addMediaQuery(parser->sinkFloatingMediaQuery($2));
-        parser->updateLastMediaLine($$);
     }
     | mq_list {
         $$ = $1;
         $$->addMediaQuery(parser->sinkFloatingMediaQuery(parser->createFloatingNotAllQuery()));
-        parser->updateLastMediaLine($$);
     }
     ;
 
