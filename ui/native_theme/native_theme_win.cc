@@ -28,6 +28,7 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/common_theme.h"
 
 // This was removed from Winvers.h but is still used.
@@ -499,6 +500,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
 
     // Dialogs
     case kColorId_DialogBackground:
+      if (gfx::IsInvertedColorScheme())
+        return color_utils::InvertColor(kDialogBackgroundColor);
       return kDialogBackgroundColor;
 
     // FocusableBorder
