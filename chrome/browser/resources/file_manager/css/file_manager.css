@@ -923,7 +923,7 @@ body[type='full-page'] .detail-name .detail-icon {
   position: absolute;
 }
 
-.img-container > img:not(.cached) {
+.img-container > img:not(.cached):not(.drag-thumbnail) {
   -webkit-animation: fadeIn 500ms ease-in;
 }
 
@@ -1558,16 +1558,25 @@ body[overlay-visible] > :not(.overlay-pane) {
   transition: opacity 200ms ease-in;
 }
 
+#drag-container .drag-contents.for-image  {
+  padding: 2px;
+}
+
 #drag-container .thumbnail-item {
   -webkit-box-orient: horizontal;
   display: -webkit-box;
 }
 
+/* When changing these properties please preserve these conditions:
+   1. width == height (so that the rotated thumbnail does not look off-center)
+   2. width % 8 == 0 (to minimize rounding errors in the centering code) */
 #drag-container .img-container {
   -webkit-box-flex: 0;
   display: -webkit-box;
+  height: 64px;
   overflow: hidden;
   position: relative;
+  width: 64px;
 }
 
 #drag-container .label {
@@ -1579,18 +1588,6 @@ body[overlay-visible] > :not(.overlay-pane) {
   padding: 0 5px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-#drag-container .drag-contents.drag-image-thumbnail  {
-  padding: 2px;
-}
-
-/* When changing these properties please preserve these conditions:
-   1. width == height (so that the rotated thumbnail does not look off-center)
-   2. width % 8 == 0 (to minimize rounding errors in the centering code) */
-#drag-container .img-container {
-  height: 64px;
-  width: 64px;
 }
 
 menu.file-context-menu {

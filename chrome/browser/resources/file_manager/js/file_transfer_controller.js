@@ -263,7 +263,8 @@ FileTransferController.prototype = {
     // Option 2. Thumbnail image available, then render it without
     // a label.
     if (thumbnailImage) {
-      contents.classList.add('drag-image-thumbnail');
+      thumbnailImage.classList.add('drag-thumbnail');
+      contents.classList.add('for-image');
       contents.appendChild(this.preloadedThumbnailImageNode_);
       return container;
     }
