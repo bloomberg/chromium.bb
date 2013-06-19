@@ -37,6 +37,7 @@ namespace {
 FileError CheckPreConditionForEnsureFileDownloaded(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
+    const base::FilePath& temporary_file_directory,
     ResourceEntry* entry,
     base::FilePath* cache_file_path) {
   DCHECK(metadata);
@@ -55,9 +56,8 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   // document.
   if (entry->file_specific_info().is_hosted_document()) {
     base::FilePath gdoc_file_path;
-    if (!file_util::CreateTemporaryFileInDir(
-            cache->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_TMP),
-            &gdoc_file_path) ||
+    if (!file_util::CreateTemporaryFileInDir(temporary_file_directory,
+                                             &gdoc_file_path) ||
         !util::CreateGDocFile(gdoc_file_path,
                               GURL(entry->file_specific_info().alternate_url()),
                               entry->resource_id()))
@@ -102,13 +102,14 @@ FileError CheckPreConditionForEnsureFileDownloadedByResourceId(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const std::string& resource_id,
+    const base::FilePath& temporary_file_directory,
     base::FilePath* cache_file_path,
     ResourceEntry* entry) {
   FileError error = metadata->GetResourceEntryById(resource_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
   return CheckPreConditionForEnsureFileDownloaded(
-      metadata, cache, entry, cache_file_path);
+      metadata, cache, temporary_file_directory, entry, cache_file_path);
 }
 
 // Calls CheckPreConditionForEnsureFileDownloaded() with the entry specified by
@@ -117,13 +118,14 @@ FileError CheckPreConditionForEnsureFileDownloadedByPath(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     const base::FilePath& file_path,
+    const base::FilePath& temporary_file_directory,
     base::FilePath* cache_file_path,
     ResourceEntry* entry) {
   FileError error = metadata->GetResourceEntryByPath(file_path, entry);
   if (error != FILE_ERROR_OK)
     return error;
   return CheckPreConditionForEnsureFileDownloaded(
-      metadata, cache, entry, cache_file_path);
+      metadata, cache, temporary_file_directory, entry, cache_file_path);
 }
 
 // Creates a file with unique name in |dir| and stores the path to |temp_file|.
@@ -152,6 +154,7 @@ FileError PrepareForDownloadFile(
     internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
     scoped_ptr<google_apis::ResourceEntry> gdata_entry,
+    const base::FilePath& temporary_file_directory,
     ResourceEntry* entry,
     base::FilePath* drive_file_path,
     base::FilePath* temp_download_file) {
@@ -181,7 +184,7 @@ FileError PrepareForDownloadFile(
 
   // Create the temporary file which will store the donwloaded content.
   return CreateTemporaryReadableFileInDir(
-      cache->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_TMP),
+      temporary_file_directory,
       temp_download_file) ? FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
@@ -292,12 +295,14 @@ DownloadOperation::DownloadOperation(
     OperationObserver* observer,
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
-    internal::FileCache* cache)
+    internal::FileCache* cache,
+    const base::FilePath& temporary_file_directory)
     : blocking_task_runner_(blocking_task_runner),
       observer_(observer),
       scheduler_(scheduler),
       metadata_(metadata),
       cache_(cache),
+      temporary_file_directory_(temporary_file_directory),
       weak_ptr_factory_(this) {
 }
 
@@ -325,6 +330,7 @@ void DownloadOperation::EnsureFileDownloadedByResourceId(
                  base::Unretained(metadata_),
                  base::Unretained(cache_),
                  resource_id,
+                 temporary_file_directory_,
                  cache_file_path,
                  entry),
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition,
@@ -356,6 +362,7 @@ void DownloadOperation::EnsureFileDownloadedByPath(
                  base::Unretained(metadata_),
                  base::Unretained(cache_),
                  file_path,
+                 temporary_file_directory_,
                  cache_file_path,
                  entry),
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition,
@@ -445,6 +452,7 @@ void DownloadOperation::EnsureFileDownloadedAfterGetResourceEntry(
                  base::Unretained(metadata_),
                  base::Unretained(cache_),
                  base::Passed(&resource_entry),
+                 temporary_file_directory_,
                  params->entry.get(),
                  &params->drive_file_path,
                  &params->temp_download_file_path),

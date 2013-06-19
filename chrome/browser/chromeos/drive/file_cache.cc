@@ -28,11 +28,6 @@ namespace {
 
 typedef std::map<std::string, FileCacheEntry> CacheMap;
 
-const base::FilePath::CharType kFileCacheMetaDir[] = FILE_PATH_LITERAL("meta");
-const base::FilePath::CharType kFileCacheFilesDir[] =
-    FILE_PATH_LITERAL("files");
-const base::FilePath::CharType kFileCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
-
 // Returns true if |md5| matches the one in |cache_entry| with some
 // exceptions. See the function definition for details.
 bool CheckIfMd5Matches(const std::string& md5,
@@ -80,28 +75,6 @@ void ScanCacheDirectory(const base::FilePath& directory_path,
     // Create and insert new entry into cache map.
     cache_map->insert(std::make_pair(resource_id, cache_entry));
   }
-}
-
-// Create cache directory paths and set permissions.
-bool InitCachePaths(const std::vector<base::FilePath>& cache_paths) {
-  if (cache_paths.size() < FileCache::NUM_CACHE_TYPES) {
-    NOTREACHED();
-    LOG(ERROR) << "Size of cache_paths is invalid.";
-    return false;
-  }
-
-  if (!FileCache::CreateCacheDirectories(cache_paths))
-    return false;
-
-  // Change permissions of cache file directory to u+rwx,og+x (711) in order to
-  // allow archive files in that directory to be mounted by cros-disks.
-  file_util::SetPosixFilePermissions(
-      cache_paths[FileCache::CACHE_TYPE_FILES],
-      file_util::FILE_PERMISSION_USER_MASK |
-      file_util::FILE_PERMISSION_EXECUTE_BY_GROUP |
-      file_util::FILE_PERMISSION_EXECUTE_BY_OTHERS);
-
-  return true;
 }
 
 // Moves the file.
@@ -157,19 +130,6 @@ void DeleteFilesSelectively(const base::FilePath& path_to_delete_pattern,
   }
 }
 
-// Moves all files under |directory_from| to |directory_to|.
-void MoveAllFilesFromDirectory(const base::FilePath& directory_from,
-                               const base::FilePath& directory_to) {
-  base::FileEnumerator enumerator(directory_from, false,  // not recursive
-                                  base::FileEnumerator::FILES);
-  for (base::FilePath file_from = enumerator.Next(); !file_from.empty();
-       file_from = enumerator.Next()) {
-    const base::FilePath file_to = directory_to.Append(file_from.BaseName());
-    if (!file_util::PathExists(file_to))  // Do not overwrite existing files.
-      file_util::Move(file_from, file_to);
-  }
-}
-
 // Runs callback with pointers dereferenced.
 // Used to implement GetFile, MarkAsMounted.
 void RunGetFileFromCacheCallback(
@@ -195,11 +155,12 @@ void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
 
 }  // namespace
 
-FileCache::FileCache(const base::FilePath& cache_root_path,
+FileCache::FileCache(const base::FilePath& metadata_directory,
+                     const base::FilePath& cache_file_directory,
                      base::SequencedTaskRunner* blocking_task_runner,
                      FreeDiskSpaceGetterInterface* free_disk_space_getter)
-    : cache_root_path_(cache_root_path),
-      cache_paths_(GetCachePaths(cache_root_path_)),
+    : metadata_directory_(metadata_directory),
+      cache_file_directory_(cache_file_directory),
       blocking_task_runner_(blocking_task_runner),
       free_disk_space_getter_(free_disk_space_getter),
       weak_ptr_factory_(this) {
@@ -211,13 +172,6 @@ FileCache::~FileCache() {
   // Must be on the sequenced worker pool, as |metadata_| must be deleted on
   // the sequenced worker pool.
   AssertOnSequencedWorkerPool();
-}
-
-base::FilePath FileCache::GetCacheDirectoryPath(
-    CacheSubDirectoryType sub_dir_type) const {
-  DCHECK_LE(0, sub_dir_type);
-  DCHECK_GT(NUM_CACHE_TYPES, sub_dir_type);
-  return cache_paths_[sub_dir_type];
 }
 
 base::FilePath FileCache::GetCacheFilePath(const std::string& resource_id,
@@ -234,7 +188,7 @@ base::FilePath FileCache::GetCacheFilePath(const std::string& resource_id,
     base_name += base::FilePath::kExtensionSeparator;
     base_name += util::EscapeCacheFileName(md5);
   }
-  return GetCacheDirectoryPath(CACHE_TYPE_FILES).Append(
+  return cache_file_directory_.Append(
       base::FilePath::FromUTF8Unsafe(base_name));
 }
 
@@ -244,7 +198,7 @@ void FileCache::AssertOnSequencedWorkerPool() {
 }
 
 bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {
-  return cache_root_path_ == path || cache_root_path_.IsParent(path);
+  return cache_file_directory_.IsParent(path);
 }
 
 void FileCache::GetCacheEntryOnUIThread(const std::string& resource_id,
@@ -319,7 +273,7 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   AssertOnSequencedWorkerPool();
 
   // Do nothing and return if we have enough space.
-  if (HasEnoughSpaceFor(num_bytes, cache_root_path_))
+  if (HasEnoughSpaceFor(num_bytes, cache_file_directory_))
     return true;
 
   // Otherwise, try to free up the disk space.
@@ -337,7 +291,7 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   DCHECK(!it->HasError());
 
   // Remove all files which have no corresponding cache entries.
-  base::FileEnumerator enumerator(cache_paths_[CACHE_TYPE_FILES],
+  base::FileEnumerator enumerator(cache_file_directory_,
                                   false,  // not recursive
                                   base::FileEnumerator::FILES);
   std::string resource_id;
@@ -351,7 +305,7 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   }
 
   // Check the disk space again.
-  return HasEnoughSpaceFor(num_bytes, cache_root_path_);
+  return HasEnoughSpaceFor(num_bytes, cache_file_directory_);
 }
 
 void FileCache::GetFileOnUIThread(const std::string& resource_id,
@@ -657,14 +611,9 @@ void FileCache::ClearAllOnUIThread(const InitializeCacheCallback& callback) {
 bool FileCache::Initialize() {
   AssertOnSequencedWorkerPool();
 
-  if (!InitCachePaths(cache_paths_))
-    return false;
-
-  MigrateFilesFromOldDirectories();
-
   metadata_.reset(new FileCacheMetadata(blocking_task_runner_.get()));
 
-  switch (metadata_->Initialize(cache_paths_[CACHE_TYPE_META])) {
+  switch (metadata_->Initialize(metadata_directory_)) {
     case FileCacheMetadata::INITIALIZE_FAILED:
       return false;
 
@@ -673,7 +622,7 @@ bool FileCache::Initialize() {
 
     case FileCacheMetadata::INITIALIZE_CREATED: {
       CacheMap cache_map;
-      ScanCacheDirectory(cache_paths_[CACHE_TYPE_FILES], &cache_map);
+      ScanCacheDirectory(cache_file_directory_, &cache_map);
       for (CacheMap::const_iterator it = cache_map.begin();
            it != cache_map.end(); ++it) {
         metadata_->AddOrUpdateCacheEntry(it->first, it->second);
@@ -701,22 +650,6 @@ void FileCache::Destroy() {
 void FileCache::DestroyOnBlockingPool() {
   AssertOnSequencedWorkerPool();
   delete this;
-}
-
-void FileCache::MigrateFilesFromOldDirectories() {
-  const base::FilePath persistent_directory =
-      cache_root_path_.AppendASCII("persistent");
-  const base::FilePath tmp_directory = cache_root_path_.AppendASCII("tmp");
-  if (!file_util::PathExists(persistent_directory))
-    return;
-
-  // Move all files inside "persistent" to "files".
-  MoveAllFilesFromDirectory(persistent_directory,
-                            cache_paths_[CACHE_TYPE_FILES]);
-  file_util::Delete(persistent_directory,  true /* recursive */);
-
-  // Move all files inside "tmp" to "files".
-  MoveAllFilesFromDirectory(tmp_directory, cache_paths_[CACHE_TYPE_FILES]);
 }
 
 FileError FileCache::StoreInternal(const std::string& resource_id,
@@ -843,15 +776,22 @@ FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {
 bool FileCache::ClearAll() {
   AssertOnSequencedWorkerPool();
 
-  if (!file_util::Delete(cache_root_path_, true)) {
-    LOG(WARNING) << "Failed to delete the cache directory";
-    return false;
-  }
+  // Remove entries on the metadata.
+  scoped_ptr<FileCacheMetadata::Iterator> it = metadata_->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance())
+    metadata_->RemoveCacheEntry(it->GetKey());
 
-  if (!Initialize()) {
-    LOG(WARNING) << "Failed to initialize the cache";
+  if (it->HasError())
     return false;
-  }
+
+  // Remove files.
+  base::FileEnumerator enumerator(cache_file_directory_,
+                                  false,  // not recursive
+                                  base::FileEnumerator::FILES);
+  for (base::FilePath file = enumerator.Next(); !file.empty();
+       file = enumerator.Next())
+    file_util::Delete(file, false /* recursive */);
+
   return true;
 }
 
@@ -866,37 +806,6 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
   // Subtract this as if this portion does not exist.
   free_space -= kMinFreeSpace;
   return (free_space >= num_bytes);
-}
-
-// static
-std::vector<base::FilePath> FileCache::GetCachePaths(
-    const base::FilePath& cache_root_path) {
-  std::vector<base::FilePath> cache_paths;
-  // The order should match FileCache::CacheSubDirectoryType enum.
-  cache_paths.push_back(cache_root_path.Append(kFileCacheMetaDir));
-  cache_paths.push_back(cache_root_path.Append(kFileCacheFilesDir));
-  cache_paths.push_back(cache_root_path.Append(kFileCacheTmpDir));
-  return cache_paths;
-}
-
-// static
-bool FileCache::CreateCacheDirectories(
-    const std::vector<base::FilePath>& paths_to_create) {
-  bool success = true;
-
-  for (size_t i = 0; i < paths_to_create.size(); ++i) {
-    if (file_util::DirectoryExists(paths_to_create[i]))
-      continue;
-
-    if (!file_util::CreateDirectory(paths_to_create[i])) {
-      // Error creating this directory, record error and proceed with next one.
-      success = false;
-      PLOG(ERROR) << "Error creating directory " << paths_to_create[i].value();
-    } else {
-      DVLOG(1) << "Created directory " << paths_to_create[i].value();
-    }
-  }
-  return success;
 }
 
 }  // namespace internal

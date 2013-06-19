@@ -65,7 +65,8 @@ class FileSystem : public FileSystemInterface,
              google_apis::DriveServiceInterface* drive_service,
              JobScheduler* scheduler,
              internal::ResourceMetadata* resource_metadata,
-             base::SequencedTaskRunner* blocking_task_runner);
+             base::SequencedTaskRunner* blocking_task_runner,
+             const base::FilePath& temporary_file_directory);
   virtual ~FileSystem();
 
   // FileSystemInterface overrides.
@@ -383,6 +384,8 @@ class FileSystem : public FileSystemInterface,
   ObserverList<FileSystemObserver> observers_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  base::FilePath temporary_file_directory_;
 
   // Implementation of each file system operation.
   scoped_ptr<file_system::CopyOperation> copy_operation_;

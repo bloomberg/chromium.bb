@@ -56,7 +56,8 @@ CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
                              JobScheduler* scheduler,
                              internal::ResourceMetadata* metadata,
                              internal::FileCache* cache,
-                             google_apis::DriveServiceInterface* drive_service)
+                             google_apis::DriveServiceInterface* drive_service,
+                             const base::FilePath& temporary_file_directory)
   : blocking_task_runner_(blocking_task_runner),
     observer_(observer),
     scheduler_(scheduler),
@@ -72,7 +73,8 @@ CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
                                               observer,
                                               scheduler,
                                               metadata,
-                                              cache)),
+                                              cache,
+                                              temporary_file_directory)),
     move_operation_(new MoveOperation(observer, scheduler, metadata)),
     weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

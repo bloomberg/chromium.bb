@@ -32,6 +32,17 @@ namespace util {
 
 // Path constants.
 
+// Name of the directory used to store metadata.
+const base::FilePath::CharType kMetadataDirectory[] = FILE_PATH_LITERAL("meta");
+
+// Name of the directory used to store cached files.
+const base::FilePath::CharType kCacheFileDirectory[] =
+    FILE_PATH_LITERAL("files");
+
+// Name of the directory used to store temporary files.
+const base::FilePath::CharType kTemporaryFileDirectory[] =
+    FILE_PATH_LITERAL("tmp");
+
 // The extension for dirty files. The file names look like
 // "<resource-id>.local".
 const base::FilePath::CharType kLocallyModifiedFileExtension[] =
@@ -136,6 +147,12 @@ base::FilePath GetCacheRootPath(Profile* profile);
 void ParseCacheFilePath(const base::FilePath& path,
                         std::string* resource_id,
                         std::string* md5);
+
+// Migrates cache files from old "persistent" and "tmp" directories to the new
+// "files" directory (see crbug.com/248905).
+// TODO(hashimoto): Remove this function at some point.
+void MigrateCacheFilesFromOldDirectories(
+    const base::FilePath& cache_root_directory);
 
 // Callback type for PrepareWritableFileAndRun.
 typedef base::Callback<void (FileError, const base::FilePath& path)>

@@ -147,6 +147,7 @@ class DriveIntegrationService
   // True if Drive is disabled due to initialization errors.
   bool drive_disabled_;
 
+  base::FilePath cache_root_directory_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<internal::FileCache, util::DestroyHelper> cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;

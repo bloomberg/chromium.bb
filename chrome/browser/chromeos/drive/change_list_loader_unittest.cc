@@ -38,6 +38,7 @@ class ChangeListLoaderTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     cache_.reset(new FileCache(temp_dir_.path(),
+                               temp_dir_.path(),
                                base::MessageLoopProxy::current(),
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());

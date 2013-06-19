@@ -68,23 +68,14 @@ class FreeDiskSpaceGetterInterface {
 // GetCacheFilePath() for example), should be run with |blocking_task_runner|.
 class FileCache {
  public:
-  // Enum defining GCache subdirectory location.
-  // This indexes into |FileCache::cache_paths_| vector.
-  enum CacheSubDirectoryType {
-    CACHE_TYPE_META = 0,       // Resource metadata.
-    CACHE_TYPE_FILES,          // Cached files.
-    CACHE_TYPE_TMP,            // Temporary files.
-    NUM_CACHE_TYPES,           // This must be at the end.
-  };
-
   // Enum defining type of file operation e.g. copy or move, etc.
   enum FileOperationType {
     FILE_OPERATION_MOVE = 0,
     FILE_OPERATION_COPY,
   };
 
-  // |cache_root_path| specifies the root directory for the cache. Sub
-  // directories will be created under the root directory.
+  // |metadata_directory| stores the metadata and |cache_file_directory| stores
+  // cached files.
   //
   // |blocking_task_runner| is used to post a task to the blocking worker
   // pool for file operations. Must not be null.
@@ -93,16 +84,10 @@ class FileCache {
   // getter for testing. NULL must be passed for production code.
   //
   // Must be called on the UI thread.
-  FileCache(const base::FilePath& cache_root_path,
+  FileCache(const base::FilePath& metadata_directory,
+            const base::FilePath& cache_file_directory,
             base::SequencedTaskRunner* blocking_task_runner,
             FreeDiskSpaceGetterInterface* free_disk_space_getter);
-
-  // Returns the sub-directory under drive cache directory for the given sub
-  // directory type. Example:  <user_profile_dir>/GCache/v1/files
-  //
-  // Can be called on any thread.
-  base::FilePath GetCacheDirectoryPath(
-      CacheSubDirectoryType sub_dir_type) const;
 
   // Returns true if the given path is under drive cache directory, i.e.
   // <user_profile_dir>/GCache/v1
@@ -259,18 +244,6 @@ class FileCache {
   // Must be called on the UI thread.
   void Destroy();
 
-  // Returns file paths for all the cache sub directories under
-  // |cache_root_path|.
-  static std::vector<base::FilePath> GetCachePaths(
-      const base::FilePath& cache_root_path);
-
-  // Creates cache directory and its sub-directories if they don't exist.
-  // TODO(glotov): take care of this when the setup and cleanup part is
-  // landed, noting that these directories need to be created for development
-  // in linux box and unittest. (http://crosbug.com/27577)
-  static bool CreateCacheDirectories(
-      const std::vector<base::FilePath>& paths_to_create);
-
  private:
   friend class FileCacheTest;
   friend class FileCacheTestOnUIThread;
@@ -298,11 +271,6 @@ class FileCache {
   // Destroys the cache on the blocking pool.
   void DestroyOnBlockingPool();
 
-  // Migrates files from old "persistent" and "tmp" directories to the new
-  // "files" directory (see crbug.com/248905).
-  // TODO(hashimoto): Remove this method at some point.
-  void MigrateFilesFromOldDirectories();
-
   // Used to implement Store and StoreLocallyModifiedOnUIThread.
   // TODO(hidehiko): Merge this method with Store(), after
   // StoreLocallyModifiedOnUIThread is removed.
@@ -325,11 +293,9 @@ class FileCache {
   // bytes, while keeping kMinFreeSpace bytes on the disk.
   bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
 
-  // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
-  const base::FilePath cache_root_path_;
-  // Paths for all subdirectories of GCache, one for each
-  // FileCache::CacheSubDirectoryType enum.
-  const std::vector<base::FilePath> cache_paths_;
+  const base::FilePath metadata_directory_;
+  const base::FilePath cache_file_directory_;
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // The cache state data. This member must be access only on the blocking pool.

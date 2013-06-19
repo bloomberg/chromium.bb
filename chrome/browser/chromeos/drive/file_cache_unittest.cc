@@ -60,6 +60,11 @@ class FileCacheTestOnUIThread : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir_.path().Append(util::kMetadataDirectory)));
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir_.path().Append(util::kCacheFileDirectory)));
+
     ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
                                                     &dummy_file_path_));
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
@@ -68,9 +73,11 @@ class FileCacheTestOnUIThread : public testing::Test {
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-    cache_.reset(new FileCache(temp_dir_.path(),
-                               blocking_task_runner_.get(),
-                               fake_free_disk_space_getter_.get()));
+    cache_.reset(new FileCache(
+        temp_dir_.path().Append(util::kMetadataDirectory),
+        temp_dir_.path().Append(util::kCacheFileDirectory),
+        blocking_task_runner_.get(),
+        fake_free_disk_space_getter_.get()));
 
     bool success = false;
     base::PostTaskAndReplyWithResult(
@@ -369,7 +376,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     base::FilePath actual_path = cache_->GetCacheFilePath(
         resource_id, md5, FileCache::CACHED_FILE_FROM_SERVER);
     base::FilePath expected_path =
-        cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_FILES);
+        temp_dir_.path().Append(util::kCacheFileDirectory);
     expected_path = expected_path.Append(
         base::FilePath::FromUTF8Unsafe(expected_filename));
     EXPECT_EQ(expected_path, actual_path);
@@ -851,7 +858,8 @@ TEST(FileCacheExtraTest, InitializationFailure) {
 
   // Set the cache root to a non existent path, so the initialization fails.
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache(new FileCache(
-      base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent/blah/blah"),
+      base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent/blah/meta"),
+      base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent/blah/files"),
       base::MessageLoopProxy::current(),
       NULL /* free_disk_space_getter */));
 
@@ -881,21 +889,24 @@ class FileCacheTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir_.path().Append(util::kMetadataDirectory)));
+    ASSERT_TRUE(file_util::CreateDirectory(
+        temp_dir_.path().Append(util::kCacheFileDirectory)));
+
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
-    cache_.reset(new FileCache(temp_dir_.path(),
-                               base::MessageLoopProxy::current(),
-                               fake_free_disk_space_getter_.get()));
+    cache_.reset(new FileCache(
+        temp_dir_.path().Append(util::kMetadataDirectory),
+        temp_dir_.path().Append(util::kCacheFileDirectory),
+        base::MessageLoopProxy::current(),
+        fake_free_disk_space_getter_.get()));
 
     ASSERT_TRUE(cache_->Initialize());
   }
 
   virtual void TearDown() OVERRIDE {
     cache_.reset();
-  }
-
-  static void MigrateFilesFromOldDirectories(FileCache* cache) {
-    cache->MigrateFilesFromOldDirectories();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -905,35 +916,10 @@ class FileCacheTest : public testing::Test {
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
 };
 
-TEST_F(FileCacheTest, MigrateFilesFromOldDirectories) {
-  const base::FilePath persistent_directory =
-      temp_dir_.path().AppendASCII("persistent");
-  const base::FilePath tmp_directory = temp_dir_.path().AppendASCII("tmp");
-  const base::FilePath files_directory =
-      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_FILES);
-
-  // Prepare directories with previously used names.
-  ASSERT_TRUE(file_util::CreateDirectory(persistent_directory));
-  ASSERT_TRUE(file_util::CreateDirectory(tmp_directory));
-
-  // Put some files.
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
-      persistent_directory.AppendASCII("foo.abc"), "foo"));
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
-      tmp_directory.AppendASCII("bar.123"), "bar"));
-
-  // Migrate.
-  MigrateFilesFromOldDirectories(cache_.get());
-
-  EXPECT_FALSE(file_util::PathExists(persistent_directory));
-  EXPECT_TRUE(file_util::PathExists(files_directory.AppendASCII("foo.abc")));
-  EXPECT_TRUE(file_util::PathExists(files_directory.AppendASCII("bar.123")));
-}
-
 TEST_F(FileCacheTest, ScanCacheFile) {
   // Set up files in the cache directory.
   const base::FilePath directory =
-      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_FILES);
+      temp_dir_.path().Append(util::kCacheFileDirectory);
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
       directory.AppendASCII("id_foo.md5foo"), "foo"));
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
@@ -941,11 +927,11 @@ TEST_F(FileCacheTest, ScanCacheFile) {
 
   // Remove the existing DB.
   ASSERT_TRUE(file_util::Delete(
-      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
-      true /* recursive */));
+      temp_dir_.path().Append(util::kMetadataDirectory), true /* recursive */));
 
   // Create a new cache and initialize it.
-  cache_.reset(new FileCache(temp_dir_.path(),
+  cache_.reset(new FileCache(temp_dir_.path().Append(util::kMetadataDirectory),
+                             temp_dir_.path().Append(util::kCacheFileDirectory),
                              base::MessageLoopProxy::current(),
                              fake_free_disk_space_getter_.get()));
   ASSERT_TRUE(cache_->Initialize());

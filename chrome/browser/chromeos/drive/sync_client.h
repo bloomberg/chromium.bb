@@ -53,7 +53,8 @@ class SyncClient {
              file_system::OperationObserver* observer,
              JobScheduler* scheduler,
              ResourceMetadata* metadata,
-             FileCache* cache);
+             FileCache* cache,
+             const base::FilePath& temporary_file_directory);
   virtual ~SyncClient();
 
   // Adds a fetch task to the queue.

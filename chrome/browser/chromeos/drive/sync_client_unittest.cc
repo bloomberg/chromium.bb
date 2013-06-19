@@ -91,6 +91,7 @@ class SyncClientTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     cache_.reset(new FileCache(temp_dir_.path(),
+                               temp_dir_.path(),
                                base::MessageLoopProxy::current(),
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
@@ -101,7 +102,8 @@ class SyncClientTest : public testing::Test {
                                       &observer_,
                                       scheduler_.get(),
                                       metadata_.get(),
-                                      cache_.get()));
+                                      cache_.get(),
+                                      temp_dir_.path()));
 
     // Disable delaying so that DoSyncLoop() starts immediately.
     sync_client_->set_delay_for_testing(base::TimeDelta::FromSeconds(0));

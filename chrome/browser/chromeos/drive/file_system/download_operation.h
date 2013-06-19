@@ -41,7 +41,8 @@ class DownloadOperation {
                     OperationObserver* observer,
                     JobScheduler* scheduler,
                     internal::ResourceMetadata* metadata,
-                    internal::FileCache* cache);
+                    internal::FileCache* cache,
+                    const base::FilePath& temporary_file_directory);
   ~DownloadOperation();
 
   // Ensures that the file content specified by |resource_id| is locally
@@ -132,6 +133,7 @@ class DownloadOperation {
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
+  const base::FilePath temporary_file_directory_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

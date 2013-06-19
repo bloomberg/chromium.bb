@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -197,6 +198,35 @@ TEST(FileSystemUtilTest, ParseCacheFilePath) {
       &md5);
   EXPECT_EQ(resource_id, "pdf:a1b2");
   EXPECT_EQ(md5, "");
+}
+
+TEST(FileSystemUtilTest, MigrateCacheFilesFromOldDirectories) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const base::FilePath persistent_directory =
+      temp_dir.path().AppendASCII("persistent");
+  const base::FilePath tmp_directory = temp_dir.path().AppendASCII("tmp");
+  const base::FilePath files_directory =
+      temp_dir.path().Append(kCacheFileDirectory);
+
+  // Prepare directories.
+  ASSERT_TRUE(file_util::CreateDirectory(persistent_directory));
+  ASSERT_TRUE(file_util::CreateDirectory(tmp_directory));
+  ASSERT_TRUE(file_util::CreateDirectory(files_directory));
+
+  // Put some files.
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+      persistent_directory.AppendASCII("foo.abc"), "foo"));
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+      tmp_directory.AppendASCII("bar.123"), "bar"));
+
+  // Migrate.
+  MigrateCacheFilesFromOldDirectories(temp_dir.path());
+
+  EXPECT_FALSE(file_util::PathExists(persistent_directory));
+  EXPECT_TRUE(file_util::PathExists(files_directory.AppendASCII("foo.abc")));
+  EXPECT_TRUE(file_util::PathExists(files_directory.AppendASCII("bar.123")));
 }
 
 TEST(FileSystemUtilTest, NeedsNamespaceMigration) {

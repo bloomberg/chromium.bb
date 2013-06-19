@@ -80,9 +80,19 @@ class FileSystemTest : public testing::Test {
     scheduler_.reset(new JobScheduler(profile_.get(),
                                       fake_drive_service_.get()));
 
-    cache_.reset(new internal::FileCache(util::GetCacheRootPath(profile_.get()),
-                                         blocking_task_runner_.get(),
-                                         fake_free_disk_space_getter_.get()));
+    ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
+        profile_.get()).Append(util::kMetadataDirectory)));
+    ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
+        profile_.get()).Append(util::kCacheFileDirectory)));
+    ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
+        profile_.get()).Append(util::kTemporaryFileDirectory)));
+
+    cache_.reset(new internal::FileCache(
+        util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory),
+        util::GetCacheRootPath(profile_.get()).Append(
+            util::kCacheFileDirectory),
+        blocking_task_runner_.get(),
+        fake_free_disk_space_getter_.get()));
 
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
 
@@ -101,15 +111,18 @@ class FileSystemTest : public testing::Test {
 
   void SetUpResourceMetadataAndFileSystem() {
     resource_metadata_.reset(new internal::ResourceMetadata(
-        cache_->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_META),
+        util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory),
         blocking_task_runner_));
 
-    file_system_.reset(new FileSystem(profile_.get(),
-                                      cache_.get(),
-                                      fake_drive_service_.get(),
-                                      scheduler_.get(),
-                                      resource_metadata_.get(),
-                                      blocking_task_runner_.get()));
+    file_system_.reset(new FileSystem(
+        profile_.get(),
+        cache_.get(),
+        fake_drive_service_.get(),
+        scheduler_.get(),
+        resource_metadata_.get(),
+        blocking_task_runner_.get(),
+        util::GetCacheRootPath(profile_.get()).Append(
+            util::kTemporaryFileDirectory)));
     file_system_->AddObserver(mock_directory_observer_.get());
     file_system_->Initialize();
 
@@ -221,7 +234,8 @@ class FileSystemTest : public testing::Test {
         fake_drive_service_->GetRootResourceId();
     scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
         resource_metadata(new internal::ResourceMetadata(
-            cache_->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_META),
+            util::GetCacheRootPath(profile_.get()).Append(
+                util::kMetadataDirectory),
             blocking_task_runner_));
 
     FileError error = FILE_ERROR_FAILED;

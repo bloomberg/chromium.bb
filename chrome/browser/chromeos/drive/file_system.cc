@@ -75,7 +75,8 @@ FileSystem::FileSystem(
     google_apis::DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
     internal::ResourceMetadata* resource_metadata,
-    base::SequencedTaskRunner* blocking_task_runner)
+    base::SequencedTaskRunner* blocking_task_runner,
+    const base::FilePath& temporary_file_directory)
     : profile_(profile),
       cache_(cache),
       drive_service_(drive_service),
@@ -84,6 +85,7 @@ FileSystem::FileSystem(
       last_update_check_error_(FILE_ERROR_OK),
       hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
+      temporary_file_directory_(temporary_file_directory),
       weak_ptr_factory_(this) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -107,7 +109,8 @@ void FileSystem::Initialize() {
                                      scheduler_,
                                      resource_metadata_,
                                      cache_,
-                                     drive_service_));
+                                     drive_service_,
+                                     temporary_file_directory_));
   create_directory_operation_.reset(new file_system::CreateDirectoryOperation(
       blocking_task_runner_.get(), observer, scheduler_, resource_metadata_));
   create_file_operation_.reset(
@@ -131,7 +134,8 @@ void FileSystem::Initialize() {
                                          observer,
                                          scheduler_,
                                          resource_metadata_,
-                                         cache_));
+                                         cache_,
+                                         temporary_file_directory_));
   update_operation_.reset(
       new file_system::UpdateOperation(blocking_task_runner_.get(),
                                        observer,
@@ -144,7 +148,8 @@ void FileSystem::Initialize() {
                                               observer,
                                               scheduler_,
                                               resource_metadata_,
-                                              cache_));
+                                              cache_,
+                                              temporary_file_directory_));
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);

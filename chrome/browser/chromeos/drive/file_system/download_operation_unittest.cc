@@ -22,7 +22,8 @@ class DownloadOperationTest : public OperationTestBase {
     OperationTestBase::SetUp();
 
     operation_.reset(new DownloadOperation(
-        blocking_task_runner(), observer(), scheduler(), metadata(), cache()));
+        blocking_task_runner(), observer(), scheduler(), metadata(), cache(),
+        temp_dir()));
   }
 
   scoped_ptr<DownloadOperation> operation_;

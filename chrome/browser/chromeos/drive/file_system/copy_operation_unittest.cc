@@ -23,7 +23,8 @@ class CopyOperationTest : public OperationTestBase {
                                       scheduler(),
                                       metadata(),
                                       cache(),
-                                      fake_service()));
+                                      fake_service(),
+                                      temp_dir()));
   }
 
   scoped_ptr<CopyOperation> operation_;
