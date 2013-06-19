@@ -45,11 +45,6 @@ Missing opening brace.
 @-webkit-filter my-filter }
 PASS insertRuleException instanceof DOMException is true
 PASS insertRuleException.code is DOMException.SYNTAX_ERR
-
-Missing closing brace.
-@-webkit-filter my-filter {
-PASS insertRuleException instanceof DOMException is true
-PASS insertRuleException.code is DOMException.SYNTAX_ERR
 PASS successfullyParsed is true
 
 TEST COMPLETE

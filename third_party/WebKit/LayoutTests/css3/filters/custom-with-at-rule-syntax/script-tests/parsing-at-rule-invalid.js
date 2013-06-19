@@ -30,4 +30,3 @@ testInvalidFilterAtRule("Filter name as number.", "@-webkit-filter 123 { }");
 heading("Filter at-rule body tests.");
 testInvalidFilterAtRule("Missing rule body.", "@-webkit-filter my-filter");
 testInvalidFilterAtRule("Missing opening brace.", "@-webkit-filter my-filter }");
-testInvalidFilterAtRule("Missing closing brace.", "@-webkit-filter my-filter {");

@@ -379,7 +379,7 @@ PassRefPtr<StyleRuleBase> CSSParser::parseRule(StyleSheetContents* sheet, const 
 {
     setStyleSheet(sheet);
     m_allowNamespaceDeclarations = false;
-    setupParser("@-internal-rule{", string, "} ");
+    setupParser("@-internal-rule ", string, "");
     cssyyparse(this);
     return m_rule.release();
 }
@@ -387,7 +387,7 @@ PassRefPtr<StyleRuleBase> CSSParser::parseRule(StyleSheetContents* sheet, const 
 PassRefPtr<StyleKeyframe> CSSParser::parseKeyframeRule(StyleSheetContents* sheet, const String& string)
 {
     setStyleSheet(sheet);
-    setupParser("@-webkit-keyframe-rule{ ", string, "} ");
+    setupParser("@-internal-keyframe-rule ", string, "");
     cssyyparse(this);
     return m_keyframe.release();
 }
@@ -395,7 +395,7 @@ PassRefPtr<StyleKeyframe> CSSParser::parseKeyframeRule(StyleSheetContents* sheet
 bool CSSParser::parseSupportsCondition(const String& string)
 {
     m_supportsCondition = false;
-    setupParser("@-webkit-supports-condition{ ", string, "} ");
+    setupParser("@-internal-supports-condition ", string, "");
     cssyyparse(this);
     return m_supportsCondition;
 }
@@ -1196,7 +1196,7 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID p
 
     setStyleSheet(contextStyleSheet);
 
-    setupParser("@-internal-value{", string, "} ");
+    setupParser("@-internal-value ", string, "");
 
     m_id = propertyID;
     m_important = important;
@@ -1246,7 +1246,7 @@ bool CSSParser::parseColor(RGBA32& color, const String& string, bool strict)
 
 bool CSSParser::parseColor(const String& string)
 {
-    setupParser("@-internal-decls{color:", string, "} ");
+    setupParser("@-internal-decls color:", string, "");
     cssyyparse(this);
     m_rule = 0;
 
@@ -1272,7 +1272,7 @@ void CSSParser::parseSelector(const String& string, CSSSelectorList& selectorLis
 {
     m_selectorListForParseSelector = &selectorList;
 
-    setupParser("@-internal-selector{", string, "}");
+    setupParser("@-internal-selector ", string, "");
 
     cssyyparse(this);
 
@@ -1291,7 +1291,7 @@ PassRefPtr<ImmutableStylePropertySet> CSSParser::parseDeclaration(const String& 
 {
     setStyleSheet(contextStyleSheet);
 
-    setupParser("@-internal-decls{", string, "} ");
+    setupParser("@-internal-decls ", string, "");
     cssyyparse(this);
     m_rule = 0;
 
@@ -1310,7 +1310,7 @@ bool CSSParser::parseDeclaration(MutableStylePropertySet* declaration, const Str
 
     m_sourceDataHandler = sourceDataHandler;
 
-    setupParser("@-internal-decls{", string, "} ");
+    setupParser("@-internal-decls ", string, "");
     if (m_sourceDataHandler) {
         m_sourceDataHandler->startRuleHeader(CSSRuleSourceData::STYLE_RULE, 0);
         m_sourceDataHandler->endRuleHeader(1);
@@ -8686,7 +8686,7 @@ static bool validFlowName(const String& flowName)
 
 bool CSSParser::parseFlowThread(const String& flowName)
 {
-    setupParser("@-internal-decls{-webkit-flow-into:", flowName, "}");
+    setupParser("@-internal-decls -webkit-flow-into:", flowName, "");
     cssyyparse(this);
 
     m_rule = 0;
@@ -10281,15 +10281,15 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
             }
             return;
 
-        case 22:
-            if (!hasEscape && isEqualToCSSIdentifier(name + 2, "webkit-keyframe-rule"))
-                m_token = WEBKIT_KEYFRAME_RULE_SYM;
+        case 24:
+            if (!hasEscape && isEqualToCSSIdentifier(name + 2, "internal-keyframe-rule"))
+                m_token = INTERNAL_KEYFRAME_RULE_SYM;
             return;
 
-        case 27:
-            if (isEqualToCSSIdentifier(name + 2, "webkit-supports-condition")) {
+        case 29:
+            if (isEqualToCSSIdentifier(name + 2, "internal-supports-condition")) {
                 m_parsingMode = SupportsMode;
-                m_token = WEBKIT_SUPPORTS_CONDITION_SYM;
+                m_token = INTERNAL_SUPPORTS_CONDITION_SYM;
             }
             return;
         }

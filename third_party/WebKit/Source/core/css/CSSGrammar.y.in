@@ -139,10 +139,10 @@ inline static CSSParserValue makeOperatorValue(int value)
 %token INTERNAL_RULE_SYM
 %token INTERNAL_SELECTOR_SYM
 %token INTERNAL_VALUE_SYM
-%token WEBKIT_KEYFRAME_RULE_SYM
+%token INTERNAL_KEYFRAME_RULE_SYM
+%token INTERNAL_SUPPORTS_CONDITION_SYM
 %token WEBKIT_KEYFRAMES_SYM
 %token WEBKIT_REGION_RULE_SYM
-%token WEBKIT_SUPPORTS_CONDITION_SYM
 %token WEBKIT_FILTER_RULE_SYM
 %token <marginBox> TOPLEFTCORNER_SYM
 %token <marginBox> TOPLEFT_SYM
@@ -328,36 +328,36 @@ inline static CSSParserValue makeOperatorValue(int value)
 
 stylesheet:
     maybe_charset maybe_sgml rule_list
-  | internal_decls maybe_space
-  | internal_rule maybe_space
-  | internal_selector maybe_space
-  | internal_value maybe_space
+  | internal_decls
+  | internal_rule
+  | internal_selector
+  | internal_value
   | internal_medialist
-  | webkit_keyframe_rule maybe_space
-  | webkit_supports_condition maybe_space
+  | internal_keyframe_rule
+  | internal_supports_condition
   ;
 
 internal_rule:
-    INTERNAL_RULE_SYM '{' maybe_space valid_rule maybe_space '}' {
-        parser->m_rule = $4;
+    INTERNAL_RULE_SYM maybe_space valid_rule maybe_space TOKEN_EOF {
+        parser->m_rule = $3;
     }
 ;
 
-webkit_keyframe_rule:
-    WEBKIT_KEYFRAME_RULE_SYM '{' maybe_space keyframe_rule maybe_space '}' {
-        parser->m_keyframe = $4;
+internal_keyframe_rule:
+    INTERNAL_KEYFRAME_RULE_SYM maybe_space keyframe_rule maybe_space TOKEN_EOF {
+        parser->m_keyframe = $3;
     }
 ;
 
 internal_decls:
-    INTERNAL_DECLS_SYM '{' maybe_space_before_declaration declaration_list '}' {
+    INTERNAL_DECLS_SYM maybe_space_before_declaration declaration_list TOKEN_EOF {
         /* can be empty */
     }
 ;
 
 internal_value:
-    INTERNAL_VALUE_SYM '{' maybe_space expr '}' {
-        parser->m_valueList = parser->sinkFloatingValueList($4);
+    INTERNAL_VALUE_SYM maybe_space expr TOKEN_EOF {
+        parser->m_valueList = parser->sinkFloatingValueList($3);
         int oldParsedProperties = parser->m_parsedProperties.size();
         if (!parser->parseValue(parser->m_id, parser->m_important))
             parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
@@ -372,15 +372,15 @@ internal_medialist:
 ;
 
 internal_selector:
-    INTERNAL_SELECTOR_SYM '{' maybe_space selector_list '}' {
+    INTERNAL_SELECTOR_SYM maybe_space selector_list TOKEN_EOF {
         if (parser->m_selectorListForParseSelector)
-            parser->m_selectorListForParseSelector->adoptSelectorVector(*$4);
+            parser->m_selectorListForParseSelector->adoptSelectorVector(*$3);
     }
 ;
 
-webkit_supports_condition:
-    WEBKIT_SUPPORTS_CONDITION_SYM '{' maybe_space supports_condition '}' {
-        parser->m_supportsCondition = $4;
+internal_supports_condition:
+    INTERNAL_SUPPORTS_CONDITION_SYM maybe_space supports_condition TOKEN_EOF {
+        parser->m_supportsCondition = $3;
     }
 ;
 
@@ -410,8 +410,18 @@ closing_parenthesis:
   | %prec LOWEST_PREC TOKEN_EOF
   ;
 
+closing_square_bracket:
+    ']'
+  | %prec LOWEST_PREC TOKEN_EOF
+  ;
+
+semi_or_eof:
+    ';'
+  | TOKEN_EOF
+  ;
+
 charset:
-  CHARSET_SYM maybe_space STRING maybe_space ';' {
+  CHARSET_SYM maybe_space STRING maybe_space semi_or_eof {
      if (parser->m_styleSheet)
          parser->m_styleSheet->parserSetEncodingFromCharsetRule($3);
      parser->startEndUnknownRule();
@@ -523,10 +533,7 @@ before_import_rule:
     ;
 
 import:
-    before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space maybe_media_list ';' {
-        $$ = parser->createImportRule($4, $6);
-    }
-  | before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space maybe_media_list TOKEN_EOF {
+    before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space maybe_media_list semi_or_eof {
         $$ = parser->createImportRule($4, $6);
     }
   | before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space maybe_media_list invalid_block {
@@ -546,7 +553,7 @@ before_namespace_rule:
     ;
 
 namespace:
-    before_namespace_rule NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space ';' {
+    before_namespace_rule NAMESPACE_SYM maybe_space maybe_ns_prefix string_or_uri maybe_space semi_or_eof {
         parser->addNamespace($4, $5);
         $$ = 0;
     }
@@ -700,7 +707,7 @@ media:
     | before_media_rule MEDIA_SYM at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createMediaRule(0, $7);
     }
-    | before_media_rule MEDIA_SYM maybe_space media_list ';' {
+    | before_media_rule MEDIA_SYM maybe_space media_list semi_or_eof {
         $$ = 0;
         parser->endRuleBody(true);
     }
@@ -774,18 +781,18 @@ supports_disjunction:
     ;
 
 supports_condition_in_parens:
-    '(' maybe_space supports_condition ')' maybe_space {
+    '(' maybe_space supports_condition closing_parenthesis maybe_space {
         $$ = $3;
     }
     | supports_declaration_condition
-    | '(' error error_location error_recovery ')' maybe_space {
+    | '(' error error_location error_recovery closing_parenthesis maybe_space {
         parser->reportError($3, CSSParser::InvalidSupportsConditionError);
         $$ = false;
     }
     ;
 
 supports_declaration_condition:
-    '(' maybe_space IDENT maybe_space ':' maybe_space expr prio ')' maybe_space {
+    '(' maybe_space IDENT maybe_space ':' maybe_space expr prio closing_parenthesis maybe_space {
         $$ = false;
         CSSPropertyID id = cssPropertyID($3);
         if (id != CSSPropertyInvalid) {
@@ -799,7 +806,7 @@ supports_declaration_condition:
         parser->m_valueList = nullptr;
         parser->endProperty($8, false);
     }
-    | '(' maybe_space IDENT maybe_space ':' maybe_space error error_recovery ')' maybe_space {
+    | '(' maybe_space IDENT maybe_space ':' maybe_space error error_recovery closing_parenthesis maybe_space {
         $$ = false;
         parser->endProperty(false, false, CSSParser::GeneralError);
     }
@@ -1300,29 +1307,29 @@ attr_name:
     ;
 
 attrib:
-    '[' maybe_space attr_name ']' {
+    '[' maybe_space attr_name closing_square_bracket {
         $$ = parser->createFloatingSelector();
         $$->setAttribute(QualifiedName(nullAtom, $3, nullAtom));
         $$->setMatch(CSSSelector::Set);
     }
-    | '[' maybe_space attr_name match maybe_space ident_or_string maybe_space ']' {
+    | '[' maybe_space attr_name match maybe_space ident_or_string maybe_space closing_square_bracket {
         $$ = parser->createFloatingSelector();
         $$->setAttribute(QualifiedName(nullAtom, $3, nullAtom));
         $$->setMatch((CSSSelector::Match)$4);
         $$->setValue($6);
     }
-    | '[' maybe_space namespace_selector attr_name ']' {
+    | '[' maybe_space namespace_selector attr_name closing_square_bracket {
         $$ = parser->createFloatingSelector();
         $$->setAttribute(parser->determineNameInNamespace($3, $4));
         $$->setMatch(CSSSelector::Set);
     }
-    | '[' maybe_space namespace_selector attr_name match maybe_space ident_or_string maybe_space ']' {
+    | '[' maybe_space namespace_selector attr_name match maybe_space ident_or_string maybe_space closing_square_bracket {
         $$ = parser->createFloatingSelector();
         $$->setAttribute(parser->determineNameInNamespace($3, $4));
         $$->setMatch((CSSSelector::Match)$5);
         $$->setValue($7);
     }
-    | '[' selector_recovery ']' {
+    | '[' selector_recovery closing_square_bracket {
         YYERROR;
     }
   ;
@@ -1385,7 +1392,7 @@ pseudo:
             YYERROR;
     }
     // used by ::cue(:past/:future)
-    | ':' ':' CUEFUNCTION maybe_space simple_selector_list maybe_space ')' {
+    | ':' ':' CUEFUNCTION maybe_space simple_selector_list maybe_space closing_parenthesis {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
         $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($5));
@@ -1394,17 +1401,17 @@ pseudo:
         if (type != CSSSelector::PseudoCue)
             YYERROR;
     }
-    | ':' ':' CUEFUNCTION selector_recovery ')' {
+    | ':' ':' CUEFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
-    | ':' ':' DISTRIBUTEDFUNCTION maybe_space relative_selector ')' {
+    | ':' ':' DISTRIBUTEDFUNCTION maybe_space relative_selector closing_parenthesis {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoElement);
         $$->setFunctionArgumentSelector($5);
         parser->tokenToLowerCase($3);
         $$->setValue($3);
     }
-    | ':' ':' DISTRIBUTEDFUNCTION selector_recovery ')' {
+    | ':' ':' DISTRIBUTEDFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
     // use by :-webkit-any.
@@ -1412,7 +1419,7 @@ pseudo:
     // Use simple_selector_list for now to match -moz-any.
     // See http://lists.w3.org/Archives/Public/www-style/2010Sep/0566.html for some
     // related discussion with respect to :not.
-    | ':' ANYFUNCTION maybe_space simple_selector_list maybe_space ')' {
+    | ':' ANYFUNCTION maybe_space simple_selector_list maybe_space closing_parenthesis {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
         $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($4));
@@ -1422,11 +1429,11 @@ pseudo:
         if (type != CSSSelector::PseudoAny)
             YYERROR;
     }
-    | ':' ANYFUNCTION selector_recovery ')' {
+    | ':' ANYFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
     // used by :nth-*(ax+b)
-    | ':' FUNCTION maybe_space NTH maybe_space ')' {
+    | ':' FUNCTION maybe_space NTH maybe_space closing_parenthesis {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
         $$->setArgument($4);
@@ -1436,7 +1443,7 @@ pseudo:
             YYERROR;
     }
     // used by :nth-*
-    | ':' FUNCTION maybe_space maybe_unary_operator INTEGER maybe_space ')' {
+    | ':' FUNCTION maybe_space maybe_unary_operator INTEGER maybe_space closing_parenthesis {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
         $$->setArgument(String::number($4 * $5));
@@ -1446,7 +1453,7 @@ pseudo:
             YYERROR;
     }
     // used by :nth-*(odd/even) and :lang
-    | ':' FUNCTION maybe_space IDENT maybe_space ')' {
+    | ':' FUNCTION maybe_space IDENT maybe_space closing_parenthesis {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
         $$->setArgument($4);
@@ -1463,11 +1470,11 @@ pseudo:
                 YYERROR;
         }
     }
-    | ':' FUNCTION selector_recovery ')' {
+    | ':' FUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
     // used by :not
-    | ':' NOTFUNCTION maybe_space simple_selector maybe_space ')' {
+    | ':' NOTFUNCTION maybe_space simple_selector maybe_space closing_parenthesis {
         if (!$4->isSimple())
             YYERROR;
         else {
@@ -1482,7 +1489,7 @@ pseudo:
             $$->setValue($2);
         }
     }
-    | ':' NOTFUNCTION selector_recovery ')' {
+    | ':' NOTFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
   ;
@@ -1811,7 +1818,7 @@ at_rule_header_recovery:
     ;
 
 at_rule_end:
-    at_invalid_rule_header_end ';'
+    at_invalid_rule_header_end semi_or_eof
   | at_invalid_rule_header_end invalid_block
     ;
 
@@ -1840,8 +1847,7 @@ invalid_block:
     ;
 
 invalid_square_brackets_block:
-    '[' error_recovery ']'
-  | '[' error_recovery TOKEN_EOF
+    '[' error_recovery closing_square_bracket
     ;
 
 invalid_parentheses_block:

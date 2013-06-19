@@ -70,6 +70,9 @@ testFilterAtRule("Rule with arbitrary properties.",
     "@-webkit-filter my-filter { width: 100px; height: 100px; }", 
     "@-webkit-filter my-filter { width: 100px; height: 100px; }",
     {width: "100px", height: "100px"});
+testFilterAtRule("Empty rule, missing closing brace.",
+    "@-webkit-filter my-filter {",
+    "@-webkit-filter my-filter { }");
 
 heading("Nested filter at-rule tests.");
 testNestedRules("Nested rule.",

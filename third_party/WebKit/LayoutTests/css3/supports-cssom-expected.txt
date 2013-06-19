@@ -30,7 +30,7 @@ PASS rules[0].cssRules.length is 2
 @charset, @namespace, @import rules are not allowed inside @supports.
 PASS rules[0].insertRule('@charset "UTF-8"', 2) threw exception SyntaxError: An invalid or illegal string was specified..
 PASS rules[0].insertRule('@namespace ""', 2) threw exception SyntaxError: An invalid or illegal string was specified..
-PASS rules[0].insertRule('@import url("../fast/cssom/resources/import.css")', 2) threw exception SyntaxError: An invalid or illegal string was specified..
+PASS rules[0].insertRule('@import url("../fast/cssom/resources/import.css")', 2) threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 
 Whitespace and formatting should be preserved within the condition, whitespace outside the condition should be trimmed.
 PASS rules[1].conditionText is "((  (     padding: 0)    and (display: none)) or (display: rainbow))"
