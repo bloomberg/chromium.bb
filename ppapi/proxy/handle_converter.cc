@@ -54,18 +54,14 @@ void ConvertHandlesInParam(const ppapi::proxy::SerializedVar& var,
                            Handles* handles,
                            IPC::Message* msg,
                            int* handle_index) {
-  if (!var.raw_var_data())
-    return;
-
-  std::vector<ppapi::proxy::SerializedHandle*> var_handles =
-      var.raw_var_data()->GetHandles();
+  std::vector<ppapi::proxy::SerializedHandle*> var_handles = var.GetHandles();
   if (var_handles.empty())
     return;
 
   for (size_t i = 0; i < var_handles.size(); ++i)
     handles->push_back(*var_handles[i]);
   if (msg)
-    var.raw_var_data()->Write(msg, base::Bind(&HandleWriter, handle_index));
+    var.WriteDataToMessage(msg, base::Bind(&HandleWriter, handle_index));
 }
 
 // For PpapiMsg_ResourceReply and the reply to PpapiHostMsg_ResourceSyncCall,

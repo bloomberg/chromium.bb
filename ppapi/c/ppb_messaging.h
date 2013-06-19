@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_messaging.idl modified Mon May 20 15:31:07 2013. */
+/* From ppb_messaging.idl modified Wed Jun  5 10:32:59 2013. */
 
 #ifndef PPAPI_C_PPB_MESSAGING_H_
 #define PPAPI_C_PPB_MESSAGING_H_
@@ -50,8 +50,8 @@ struct PPB_Messaging_1_0 {
    * JavaScript.
    *
    * When passing array or dictionary <code>PP_Var</code>s, the entire reference
-   * graph will be converted and transferred, including reference cycles if they
-   * exist.
+   * graph will be converted and transferred. If the reference graph has cycles,
+   * the message will not be sent and an error will be logged to the console.
    *
    * Listeners for message events in JavaScript code will receive an object
    * conforming to the HTML 5 <code>MessageEvent</code> interface.

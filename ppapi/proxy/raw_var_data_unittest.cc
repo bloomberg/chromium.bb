@@ -26,6 +26,10 @@ namespace proxy {
 
 namespace {
 
+void DefaultHandleWriter(IPC::Message* m, const SerializedHandle& handle) {
+  IPC::ParamTraits<SerializedHandle>::Write(m, handle);
+}
+
 class RawVarDataTest : public testing::Test {
  public:
   RawVarDataTest() {}
@@ -44,21 +48,28 @@ class RawVarDataTest : public testing::Test {
   TestGlobals globals_;
 };
 
-PP_Var WriteAndRead(const PP_Var& var) {
+bool WriteAndRead(const PP_Var& var, PP_Var* result) {
   PP_Instance dummy_instance = 1234;
   scoped_ptr<RawVarDataGraph> expected_data(RawVarDataGraph::Create(
       var, dummy_instance));
+  if (!expected_data)
+    return false;
   IPC::Message m;
-  expected_data->Write(&m);
+  expected_data->Write(&m, base::Bind(&DefaultHandleWriter));
   PickleIterator iter(m);
   scoped_ptr<RawVarDataGraph> actual_data(RawVarDataGraph::Read(&m, &iter));
-  return actual_data->CreatePPVar(dummy_instance);
+  *result = actual_data->CreatePPVar(dummy_instance);
+  return true;
 }
 
 // Assumes a ref for var.
 bool WriteReadAndCompare(const PP_Var& var) {
   ScopedPPVar expected(ScopedPPVar::PassRef(), var);
-  ScopedPPVar actual(ScopedPPVar::PassRef(), WriteAndRead(expected.get()));
+  PP_Var result;
+  bool success = WriteAndRead(expected.get(), &result);
+  if (!success)
+    return false;
+  ScopedPPVar actual(ScopedPPVar::PassRef(), result);
   return TestEqual(expected.get(), actual.get());
 }
 
@@ -160,25 +171,18 @@ TEST_F(RawVarDataTest, DictionaryArrayTest) {
 
   // Array <-> dictionary cycle.
   dictionary->SetWithStringKey("10", release_array.get());
-  ScopedPPVar result = ScopedPPVar(ScopedPPVar::PassRef(),
-                                   WriteAndRead(release_dictionary.get()));
-  EXPECT_TRUE(TestEqual(release_dictionary.get(), result.get()));
+  PP_Var result;
+  ASSERT_FALSE(WriteAndRead(release_dictionary.get(), &result));
   // Break the cycle.
   // TODO(raymes): We need some better machinery for releasing vars with
   // cycles. Remove the code below once we have that.
   dictionary->DeleteWithStringKey("10");
-  DictionaryVar* result_dictionary = DictionaryVar::FromPPVar(result.get());
-  result_dictionary->DeleteWithStringKey("10");
 
   // Array with self references.
   array->Set(index, release_array.get());
-  result = ScopedPPVar(ScopedPPVar::PassRef(),
-                       WriteAndRead(release_array.get()));
-  EXPECT_TRUE(TestEqual(release_array.get(), result.get()));
+  ASSERT_FALSE(WriteAndRead(release_array.get(), &result));
   // Break the self reference.
   array->Set(index, PP_MakeUndefined());
-  ArrayVar* result_array = ArrayVar::FromPPVar(result.get());
-  result_array->Set(index, PP_MakeUndefined());
 }
 
 }  // namespace proxy

@@ -31,30 +31,36 @@ static const uint32 kMinimumArrayBufferSizeForShmem = 256 * 1024;
 static uint32 g_minimum_array_buffer_size_for_shmem =
     kMinimumArrayBufferSizeForShmem;
 
-void DefaultHandleWriter(IPC::Message* m, const SerializedHandle& handle) {
-  IPC::ParamTraits<SerializedHandle>::Write(m, handle);
-}
+struct StackEntry {
+  StackEntry(PP_Var v, size_t i) : var(v), data_index(i) {}
+  PP_Var var;
+  size_t data_index;
+};
 
 // For a given PP_Var, returns the RawVarData associated with it, or creates a
 // new one if there is no existing one. The data is appended to |data| if it
 // is newly created. The index into |data| pointing to the result is returned.
-// |id_map| keeps track of RawVarDatas that have already been created.
+// |visited_map| keeps track of RawVarDatas that have already been created.
 size_t GetOrCreateRawVarData(const PP_Var& var,
-                             base::hash_map<int64_t, size_t>* id_map,
+                             base::hash_map<int64_t, size_t>* visited_map,
                              ScopedVector<RawVarData>* data) {
   if (VarTracker::IsVarTypeRefcounted(var.type)) {
-    base::hash_map<int64_t, size_t>::iterator it = id_map->find(
+    base::hash_map<int64_t, size_t>::iterator it = visited_map->find(
         var.value.as_id);
-    if (it != id_map->end()) {
+    if (it != visited_map->end()) {
       return it->second;
     } else {
       data->push_back(RawVarData::Create(var.type));
-      (*id_map)[var.value.as_id] = data->size() - 1;
+      (*visited_map)[var.value.as_id] = data->size() - 1;
     }
   } else {
     data->push_back(RawVarData::Create(var.type));
   }
   return data->size() - 1;
+}
+
+bool CanHaveChildren(PP_Var var) {
+  return var.type == PP_VARTYPE_ARRAY || var.type == PP_VARTYPE_DICTIONARY;
 }
 
 }  // namespace
@@ -66,27 +72,40 @@ RawVarDataGraph::RawVarDataGraph() {
 RawVarDataGraph::~RawVarDataGraph() {
 }
 
+// This function uses a stack-based DFS search to traverse the var graph. Each
+// iteration, the top node on the stack examined. If the node has not been
+// visited yet (i.e. !initialized()) then it is added to the list of
+// |parent_ids| which contains all of the nodes on the path from the start node
+// to the current node. Each of that nodes children are examined. If they appear
+// in the list of |parent_ids| it means we have a cycle and we return NULL.
+// Otherwise, if they haven't been visited yet we add them to the stack, If the
+// node at the top of the stack has already been visited, then we pop it off the
+// stack and erase it from |parent_ids|.
 // static
 scoped_ptr<RawVarDataGraph> RawVarDataGraph::Create(const PP_Var& var,
                                                     PP_Instance instance) {
   scoped_ptr<RawVarDataGraph> graph(new RawVarDataGraph);
   // Map of |var.value.as_id| to a RawVarData index in RawVarDataGraph.
-  base::hash_map<int64_t, size_t> id_map;
+  base::hash_map<int64_t, size_t> visited_map;
+  base::hash_set<int64_t> parent_ids;
 
-  std::stack<std::pair<PP_Var, size_t> > stack;
-  stack.push(make_pair(var, GetOrCreateRawVarData(var, &id_map,
-                                                  &graph->data_)));
+  std::stack<StackEntry> stack;
+  stack.push(StackEntry(var, GetOrCreateRawVarData(var, &visited_map,
+                                                   &graph->data_)));
 
-  // Traverse the PP_Var graph with DFS.
   while (!stack.empty()) {
-    PP_Var current_var = stack.top().first;
-    RawVarData* current_var_data = graph->data_[stack.top().second];
-    stack.pop();
+    PP_Var current_var = stack.top().var;
+    RawVarData* current_var_data = graph->data_[stack.top().data_index];
 
-    // If the node is initialized, it means we have visited it.
-    if (current_var_data->initialized())
+    if (current_var_data->initialized()) {
+      stack.pop();
+      if (CanHaveChildren(current_var))
+        parent_ids.erase(current_var.value.as_id);
       continue;
+    }
 
+    if (CanHaveChildren(current_var))
+      parent_ids.insert(current_var.value.as_id);
     if (!current_var_data->Init(current_var, instance)) {
       NOTREACHED();
       return scoped_ptr<RawVarDataGraph>();
@@ -103,10 +122,16 @@ scoped_ptr<RawVarDataGraph> RawVarDataGraph::Create(const PP_Var& var,
                array_var->elements().begin();
            iter != array_var->elements().end();
            ++iter) {
-        size_t child_id = GetOrCreateRawVarData(iter->get(), &id_map,
+        const PP_Var& child = iter->get();
+        // If a child of this node is already in parent_ids, we have a cycle so
+        // we just return null.
+        if (CanHaveChildren(child) && parent_ids.count(child.value.as_id) != 0)
+          return scoped_ptr<RawVarDataGraph>();
+        size_t child_id = GetOrCreateRawVarData(child, &visited_map,
                                                 &graph->data_);
         static_cast<ArrayRawVarData*>(current_var_data)->AddChild(child_id);
-        stack.push(make_pair(iter->get(), child_id));
+        if (!graph->data_[child_id]->initialized())
+          stack.push(StackEntry(child, child_id));
       }
     } else if (current_var.type == PP_VARTYPE_DICTIONARY) {
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(current_var);
@@ -118,11 +143,15 @@ scoped_ptr<RawVarDataGraph> RawVarDataGraph::Create(const PP_Var& var,
                dict_var->key_value_map().begin();
            iter != dict_var->key_value_map().end();
            ++iter) {
-        size_t child_id = GetOrCreateRawVarData(iter->second.get(), &id_map,
+        const PP_Var& child = iter->second.get();
+        if (CanHaveChildren(child) && parent_ids.count(child.value.as_id) != 0)
+          return scoped_ptr<RawVarDataGraph>();
+        size_t child_id = GetOrCreateRawVarData(child, &visited_map,
                                                 &graph->data_);
         static_cast<DictionaryRawVarData*>(
             current_var_data)->AddChild(iter->first, child_id);
-        stack.push(make_pair(iter->second.get(), child_id));
+        if (!graph->data_[child_id]->initialized())
+          stack.push(StackEntry(child, child_id));
       }
     }
   }
@@ -151,10 +180,6 @@ void RawVarDataGraph::Write(IPC::Message* m,
     m->WriteInt(data_[i]->Type());
     data_[i]->Write(m, handle_writer);
   }
-}
-
-void RawVarDataGraph::Write(IPC::Message* m) {
-  Write(m, base::Bind(&DefaultHandleWriter));
 }
 
 // static
