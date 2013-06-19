@@ -34,9 +34,7 @@
     Conditional=LEGACY_NOTIFICATIONS,
     ActiveDOMObject
 ] interface NotificationCenter {
-#if !defined(ENABLE_TEXT_NOTIFICATIONS_ONLY) || !ENABLE_TEXT_NOTIFICATIONS_ONLY
    [EnabledPerContext=htmlNotifications, MeasureAs=LegacyHTMLNotifications, ActivityLog=Access, RaisesException] Notification createHTMLNotification(DOMString url);
-#endif
    [MeasureAs=LegacyTextNotifications, ActivityLog=Access, RaisesException] Notification createNotification(DOMString iconUrl, DOMString title, DOMString body);
 
    long checkPermission();
