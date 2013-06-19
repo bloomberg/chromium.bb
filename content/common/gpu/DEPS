@@ -4,6 +4,7 @@ include_rules = [
   "+libGLESv2",
   "+media/video/video_decode_accelerator.h",
   "+skia",
+  "+third_party/angle/include",
   "+third_party/openmax",
   "+third_party/mesa",
 
