@@ -7,13 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/examples/example_base.h"
 
 namespace views {
 
 class ImageButton;
+class LabelButton;
 
 namespace examples {
 

@@ -9,6 +9,7 @@
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/native_theme_delegate.h"
@@ -121,6 +122,12 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
     canvas->Restore();
   } else {
     PaintHelper(this, canvas, theme, part, state, rect, extra);
+  }
+
+  // For inverted color schemes, draw a solid fill with the button color.
+  if (gfx::IsInvertedColorScheme()) {
+    rect.Inset(insets_);
+    canvas->FillRect(rect, extra.button.background_color);
   }
 
   // Draw the Views focus border for the native theme style.

@@ -8,13 +8,13 @@
 #include "grit/ui_resources.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/focus_border.h"
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_WIN)
-#include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme_win.h"
 #endif
 
@@ -25,6 +25,10 @@ const int kSpacing = 5;
 
 // The length of the hover fade animation.
 const int kHoverAnimationDurationMs = 170;
+
+// Default text and shadow colors for STYLE_BUTTON.
+const SkColor kStyleButtonTextColor = SK_ColorBLACK;
+const SkColor kStyleButtonShadowColor = SK_ColorWHITE;
 
 }  // namespace
 
@@ -144,13 +148,8 @@ void LabelButton::SetStyle(ButtonStyle style) {
     label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     set_focusable(true);
   }
-  if (style == STYLE_BUTTON) {
+  if (style == STYLE_BUTTON)
     set_min_size(gfx::Size(70, 33));
-    const SkColor color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_WindowBackground);
-    label_->SetShadowColors(color, color);
-    label_->SetShadowOffset(0, 1);
-  }
   // Invalidate the layout to pickup the new insets from the border.
   InvalidateLayout();
   ResetColorsFromNativeTheme();
@@ -248,8 +247,7 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.is_focused = HasFocus() && IsAccessibilityFocusable();
   params->button.has_border = style() == STYLE_NATIVE_TEXTBUTTON;
   params->button.classic_state = 0;
-  params->button.background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ButtonBackgroundColor);
+  params->button.background_color = label()->background_color();
 }
 
 void LabelButton::UpdateImage() {
@@ -266,11 +264,30 @@ void LabelButton::ResetColorsFromNativeTheme() {
   };
 
   // Certain styles do not change text color when hovered or pressed.
-  bool constant_text_color = style() == STYLE_BUTTON;
+  bool constant_text_color = false;
 #if defined(OS_WIN)
   constant_text_color |= (style() == STYLE_NATIVE_TEXTBUTTON &&
                           theme == ui::NativeThemeWin::instance());
 #endif
+
+  label_->SetBackgroundColor(theme->GetSystemColor(
+      ui::NativeTheme::kColorId_ButtonBackgroundColor));
+
+  // Use hardcoded colors for inverted color scheme support and STYLE_BUTTON.
+  if (gfx::IsInvertedColorScheme()) {
+    constant_text_color = true;
+    colors[STATE_NORMAL] = SK_ColorWHITE;
+    label_->SetBackgroundColor(SK_ColorBLACK);
+    label_->SetAutoColorReadabilityEnabled(true);
+    label_->ClearEmbellishing();
+  } else if (style() == STYLE_BUTTON) {
+    constant_text_color = true;
+    colors[STATE_NORMAL] = kStyleButtonTextColor;
+    label_->SetAutoColorReadabilityEnabled(false);
+    label_->SetShadowColors(kStyleButtonShadowColor, kStyleButtonShadowColor);
+    label_->SetShadowOffset(0, 1);
+  }
+
   if (constant_text_color)
     colors[STATE_HOVERED] = colors[STATE_PRESSED] = colors[STATE_NORMAL];
 

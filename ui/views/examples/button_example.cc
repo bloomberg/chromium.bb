@@ -8,7 +8,9 @@
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -53,11 +55,13 @@ void ButtonExample::CreateExampleView(View* container) {
   label_button_->set_focusable(true);
   container->AddChildView(label_button_);
 
-  LabelButton* disabled_label_button =
-      new LabelButton(this, ASCIIToUTF16("Disabled STYLE_BUTTON Label Button"));
-  disabled_label_button->SetStyle(Button::STYLE_BUTTON);
-  disabled_label_button->SetState(Button::STATE_DISABLED);
-  container->AddChildView(disabled_label_button);
+  LabelButton* disabled_button =
+      new LabelButton(this, ASCIIToUTF16("Disabled Button"));
+  disabled_button->SetStyle(Button::STYLE_BUTTON);
+  disabled_button->SetState(Button::STATE_DISABLED);
+  container->AddChildView(disabled_button);
+
+  container->AddChildView(new BlueButton(this, ASCIIToUTF16("Blue Button")));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
