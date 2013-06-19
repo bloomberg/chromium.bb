@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -82,10 +83,12 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
 
   // Not all new tab pages get timed. In those cases, we don't have a
   // new_tab_start_time_.
-  if (tab->GetNewTabStartTime().is_null())
+  CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(tab);
+  if (core_tab_helper->new_tab_start_time().is_null())
     return;
 
-  base::TimeDelta duration = base::TimeTicks::Now() - tab->GetNewTabStartTime();
+  base::TimeDelta duration =
+      base::TimeTicks::Now() - core_tab_helper->new_tab_start_time();
   MetricEventDurationDetails details(event_name,
       static_cast<int>(duration.InMilliseconds()));
 
@@ -96,7 +99,8 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
   } else if (event_name == "Tab.NewTabOnload") {
     UMA_HISTOGRAM_TIMES("Tab.NewTabOnload", duration);
     // The new tab page has finished loading; reset it.
-    tab->SetNewTabStartTime(base::TimeTicks());
+    CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(tab);
+    core_tab_helper->set_new_tab_start_time(base::TimeTicks());
   } else {
     NOTREACHED();
   }
