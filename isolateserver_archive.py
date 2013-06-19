@@ -6,11 +6,12 @@
 """Archives a set of files to a server."""
 
 import binascii
+import cStringIO
 import hashlib
+import itertools
 import logging
 import optparse
 import os
-import cStringIO
 import sys
 import time
 import urllib
@@ -23,8 +24,13 @@ import run_test_cases
 # The minimum size of files to upload directly to the blobstore.
 MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 1024
 
-# The number of files to check the isolate server for each query.
-ITEMS_PER_CONTAINS_QUERY = 500
+# The number of files to check the isolate server per /contains query. The
+# number here is a trade-off; the more per request, the lower the effect of HTTP
+# round trip latency and TCP-level chattiness. On the other hand, larger values
+# cause longer lookups, increasing the initial latency to start uploading, which
+# is especially an issue for large files. This value is optimized for the "few
+# thousands files to look up with minimal number of large files missing" case.
+ITEMS_PER_CONTAINS_QUERY = 100
 
 # A list of already compressed extension types that should not receive any
 # compression before being uploaded.
@@ -176,13 +182,15 @@ class UploadRemote(run_isolated.Remote):
     return upload_file
 
 
-def update_files_to_upload(query_url, queries, upload):
+def check_files_exist_on_server(query_url, queries):
   """Queries the server to see which files from this batch already exist there.
 
   Arguments:
     queries: The hash files to potential upload to the server.
-    upload: Any new files that need to be upload are sent to this function.
+  Returns:
+    missing_files: list of files that are missing on the server.
   """
+  logging.info('Checking existence of %d files...', len(queries))
   body = ''.join(
       (binascii.unhexlify(meta_data['h']) for (_, meta_data) in queries))
   assert (len(body) % 20) == 0, repr(body)
@@ -194,13 +202,12 @@ def update_files_to_upload(query_url, queries, upload):
         'Got an incorrect number of responses from the server. Expected %d, '
         'but got %d' % (len(queries), len(response)))
 
-  hit = 0
-  for i in range(len(response)):
-    if response[i] == chr(0):
-      upload(queries[i])
-    else:
-      hit += 1
-  logging.info('Queried %d files, %d cache hit', len(queries), hit)
+  missing_files = [
+    queries[i] for i, flag in enumerate(response) if flag == chr(0)
+  ]
+  logging.info('Queried %d files, %d cache hit',
+               len(queries), len(queries) - len(missing_files))
+  return missing_files
 
 
 def compression_level(filename):
@@ -236,21 +243,36 @@ def zip_and_trigger_upload(infile, metadata, upload_function):
   return upload_function(priority, compressed_data, metadata['h'], None)
 
 
-def process_items(contains_hash_url, infiles, zip_and_upload):
-  """Generates the list of files that need to be uploaded and send them to
-  zip_and_upload.
+def batch_files_for_check(infiles):
+  """Splits list of files to check for existence on the server into batches.
 
-  Some may already be on the server.
+  Each batch corresponds to a single 'exists?' query to the server.
+
+  Yields:
+    batches: list of batches, each batch is a list of files.
   """
+  # TODO(maruel): Make this adaptative, e.g. only query a few, like 10 in one
+  # request, for the largest files, since they are the ones most likely to be
+  # missing, then batch larger requests (up to 500) for the tail since they are
+  # likely to be present.
   next_queries = []
   items = ((k, v) for k, v in infiles.iteritems() if 's' in v)
   for relfile, metadata in sorted(items, key=lambda x: -x[1]['s']):
     next_queries.append((relfile, metadata))
     if len(next_queries) == ITEMS_PER_CONTAINS_QUERY:
-      update_files_to_upload(contains_hash_url, next_queries, zip_and_upload)
+      yield next_queries
       next_queries = []
   if next_queries:
-    update_files_to_upload(contains_hash_url, next_queries, zip_and_upload)
+    yield next_queries
+
+
+def get_files_to_upload(contains_hash_url, infiles):
+  """Yields files that are missing on the server."""
+  with run_isolated.ThreadPool(1, 16, 0, prefix='get_files_to_upload') as pool:
+    for files in batch_files_for_check(infiles):
+      pool.add_task(0, check_files_exist_on_server, contains_hash_url, files)
+    for missing_file in itertools.chain.from_iterable(pool.iter_results()):
+      yield missing_file
 
 
 def upload_sha1_tree(base_url, indir, infiles, namespace):
@@ -276,30 +298,30 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
   # Create a pool of workers to zip and upload any files missing from
   # the server.
   num_threads = run_test_cases.num_processors()
-  zipping_pool = run_isolated.ThreadPool(num_threads, num_threads, 0)
+  zipping_pool = run_isolated.ThreadPool(min(2, num_threads),
+                                         num_threads, 0, 'zip')
   remote_uploader = UploadRemote(namespace, base_url, token)
 
-  # Starts the zip and upload process for a given query. The query is assumed
-  # to be in the format (relfile, metadata).
+  # Starts the zip and upload process for files that are missing
+  # from the server.
+  contains_hash_url = '%s/content/contains/%s?token=%s' % (
+      base_url, namespace, token)
   uploaded = []
-  def zip_and_upload(query):
-    relfile, metadata = query
+  for relfile, metadata in get_files_to_upload(contains_hash_url, infiles):
     infile = os.path.join(indir, relfile)
     zipping_pool.add_task(0, zip_and_trigger_upload, infile, metadata,
                           remote_uploader.add_item)
-    uploaded.append(query)
-
-  contains_hash_url = '%s/content/contains/%s?token=%s' % (
-      base_url, namespace, token)
-  process_items(contains_hash_url, infiles, zip_and_upload)
+    uploaded.append((relfile, metadata))
 
   logging.info('Waiting for all files to finish zipping')
   zipping_pool.join()
+  zipping_pool.close()
   logging.info('All files zipped.')
 
   logging.info('Waiting for all files to finish uploading')
   # Will raise if any exception occurred.
   remote_uploader.join()
+  remote_uploader.close()
   logging.info('All files are uploaded')
 
   total = len(infiles)
@@ -345,7 +367,9 @@ def main(args):
   levels = [logging.ERROR, logging.INFO, logging.DEBUG]
   logging.basicConfig(
       level=levels[min(len(levels)-1, options.verbose)],
-      format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
+      format='[%(threadName)s] %(asctime)s,%(msecs)03d %(levelname)5s'
+             ' %(module)15s(%(lineno)3d): %(message)s',
+      datefmt='%H:%M:%S')
   if files == ['-']:
     files = sys.stdin.readlines()
 

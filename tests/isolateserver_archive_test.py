@@ -18,22 +18,19 @@ BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_PATH)
 sys.path.insert(0, ROOT_DIR)
 
+import auto_stub
 import isolateserver_archive
 
 
-class IsolateServerTest(unittest.TestCase):
+class IsolateServerTest(auto_stub.TestCase):
   def setUp(self):
     super(IsolateServerTest, self).setUp()
-    self._old_url_open = isolateserver_archive.run_isolated.url_open
-    isolateserver_archive.run_isolated.url_open = self._url_open
-    self._old_randomness = isolateserver_archive.randomness
-    isolateserver_archive.randomness = lambda: 'not_really_random'
+    self.mock(isolateserver_archive.run_isolated, 'url_open', self._url_open)
+    self.mock(isolateserver_archive, 'randomness', lambda: 'not_really_random')
     self._lock = threading.Lock()
     self._requests = []
 
   def tearDown(self):
-    isolateserver_archive.run_isolated.url_open = self._old_url_open
-    isolateserver_archive.randomness = self._old_randomness
     try:
       self.assertEqual([], self._requests)
     finally:
@@ -147,46 +144,57 @@ class IsolateServerTest(unittest.TestCase):
       ),
     ]
 
-    old_read_and_compress = isolateserver_archive.read_and_compress
-    try:
-      isolateserver_archive.read_and_compress = lambda x, y: compressed
-      result = isolateserver_archive.upload_sha1_tree(
-            base_url=path,
-            indir=os.getcwd(),
-            infiles=infiles,
-            namespace='default-gzip')
-    finally:
-      isolateserver_archive.read_and_compress = old_read_and_compress
+    self.mock(isolateserver_archive, 'read_and_compress',
+              lambda x, y: compressed)
+    result = isolateserver_archive.upload_sha1_tree(
+          base_url=path,
+          indir=os.getcwd(),
+          infiles=infiles,
+          namespace='default-gzip')
 
     self.assertEqual(0, result)
 
-  def test_process_items(self):
-    old = isolateserver_archive.update_files_to_upload
-    try:
-      items = {
-        'foo': {'s': 12},
-        'bar': {},
-        'blow': {'s': 0},
-        'bizz': {'s': 1222},
-        'buzz': {'s': 1223},
-      }
-      expected = [
+  def test_batch_files_for_check(self):
+    items = {
+      'foo': {'s': 12},
+      'bar': {},
+      'blow': {'s': 0},
+      'bizz': {'s': 1222},
+      'buzz': {'s': 1223},
+    }
+    expected = [
+      [
         ('buzz', {'s': 1223}),
         ('bizz', {'s': 1222}),
         ('foo', {'s': 12}),
         ('blow', {'s': 0}),
-      ]
-      actual = []
-      def process(url, items, upload_func):
-        self.assertEqual('FakeUrl', url)
-        self.assertEqual(self.fail, upload_func)
-        actual.extend(items)
+      ],
+    ]
+    batches = list(isolateserver_archive.batch_files_for_check(items))
+    self.assertEqual(batches, expected)
 
-      isolateserver_archive.update_files_to_upload = process
-      isolateserver_archive.process_items('FakeUrl', items, self.fail)
-      self.assertEqual(expected, actual)
-    finally:
-      isolateserver_archive.update_files_to_upload = old
+  def test_get_files_to_upload(self):
+    items = {
+      'foo': {'s': 12},
+      'bar': {},
+      'blow': {'s': 0},
+      'bizz': {'s': 1222},
+      'buzz': {'s': 1223},
+    }
+    missing = {
+      'bizz': {'s': 1222},
+      'buzz': {'s': 1223},
+    }
+
+    def mock_check(url, items):
+      self.assertEqual('fakeurl', url)
+      return [item for item in items if item[0] in missing]
+    self.mock(isolateserver_archive, 'check_files_exist_on_server', mock_check)
+
+    # 'get_files_to_upload' doesn't guarantee order of its results, so convert
+    # list of pairs to unordered dict and compare dicts.
+    result = dict(isolateserver_archive.get_files_to_upload('fakeurl', items))
+    self.assertEqual(result, missing)
 
   def test_upload_blobstore_simple(self):
     content = 'blob_content'
