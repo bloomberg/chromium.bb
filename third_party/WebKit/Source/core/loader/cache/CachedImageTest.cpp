@@ -31,10 +31,19 @@
 #include "config.h"
 #include "core/loader/cache/CachedImage.h"
 
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/EmptyClients.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/MemoryCache.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/Image.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;
@@ -68,6 +77,20 @@ private:
     int m_imageChangedCount;
     bool m_notifyFinishedCalled;
 };
+
+class QuitTask : public WebKit::WebThread::Task {
+public:
+    virtual void run()
+    {
+        WebKit::Platform::current()->currentThread()->exitRunLoop();
+    }
+};
+
+void runPendingTasks()
+{
+    WebKit::Platform::current()->currentThread()->postTask(new QuitTask);
+    WebKit::Platform::current()->currentThread()->enterRunLoop();
+}
 
 TEST(CachedImageTest, MultipartImage)
 {
@@ -111,6 +134,40 @@ TEST(CachedImageTest, MultipartImage)
     ASSERT_EQ(cachedImage->image()->height(), 1);
     ASSERT_EQ(client.imageChangedCount(), 2);
     ASSERT_TRUE(client.notifyFinishedCalled());
+}
+
+TEST(CachedImageTest, CancelOnDetach)
+{
+    // Create enough of a mocked world to get a functioning ResourceLoader.
+    KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
+    Page::PageClients pageClients;
+    fillWithEmptyClients(pageClients);
+    EmptyFrameLoaderClient frameLoaderClient;
+    Page page(pageClients);
+    RefPtr<Frame> frame = Frame::create(&page, 0, &frameLoaderClient);
+    frame->setView(FrameView::create(frame.get()));
+    frame->init();
+    RefPtr<DocumentLoader> documentLoader = DocumentLoader::create(ResourceRequest(testURL), SubstituteData());
+    documentLoader->setFrame(frame.get());
+
+    // Emulate starting a real load.
+    CachedResourceHandle<CachedImage> cachedImage = new CachedImage(ResourceRequest(testURL));
+    cachedImage->load(documentLoader->cachedResourceLoader(), ResourceLoaderOptions());
+    memoryCache()->add(cachedImage.get());
+
+    MockCachedImageClient client;
+    cachedImage->addClient(&client);
+    EXPECT_EQ(CachedResource::Pending, cachedImage->status());
+
+    // The load should still be alive, but a timer should be started to cancel the load inside removeClient().
+    cachedImage->removeClient(&client);
+    EXPECT_EQ(CachedResource::Pending, cachedImage->status());
+    EXPECT_NE(reinterpret_cast<CachedResource*>(0), memoryCache()->resourceForURL(testURL));
+
+    // Trigger the cancel timer, ensure the load was cancelled and the resource was evicted from the cache.
+    runPendingTasks();
+    EXPECT_EQ(CachedResource::LoadError, cachedImage->status());
+    EXPECT_EQ(reinterpret_cast<CachedResource*>(0), memoryCache()->resourceForURL(testURL));
 }
 
 } // namespace

@@ -447,6 +447,8 @@ void CachedResource::removeClient(CachedResourceClient* client)
 
 void CachedResource::allClientsRemoved()
 {
+    if (!m_loader)
+        return;
     if (m_type == MainResource || m_type == RawResource)
         cancelTimerFired(&m_cancelTimer);
     else if (!m_cancelTimer.isActive())
@@ -459,6 +461,8 @@ void CachedResource::cancelTimerFired(Timer<CachedResource>* timer)
     if (hasClients() || !m_loader)
         return;
     m_loader->cancelIfNotFinishing();
+    if (m_status != Cached)
+        memoryCache()->remove(this);
 }
 
 void CachedResource::destroyDecodedDataIfNeeded()
