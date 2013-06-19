@@ -31,7 +31,6 @@
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontLoader.h"
 #include "core/dom/Document.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
 namespace WebCore {
@@ -88,11 +87,11 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
     CSSFontSelector* fontSelector = (*m_segmentedFontFaces.begin())->fontSelector();
     fontSelector->fontLoaded();
 
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading) {
+    if (m_loadState == Loading) {
         if (source->ensureFontData())
-            notifyFontLoader(Loaded);
+            setLoadState(Loaded);
         else if (!isValid())
-            notifyFontLoader(Error);
+            setLoadState(Error);
     }
 
     HashSet<CSSSegmentedFontFace*>::iterator end = m_segmentedFontFaces.end();
@@ -109,25 +108,25 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
     ASSERT(!m_segmentedFontFaces.isEmpty());
     CSSFontSelector* fontSelector = (*m_segmentedFontFaces.begin())->fontSelector();
 
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == NotLoaded)
-        notifyFontLoader(Loading);
+    if (m_loadState == NotLoaded)
+        setLoadState(Loading);
 
     size_t size = m_sources.size();
     for (size_t i = 0; i < size; ++i) {
         if (RefPtr<SimpleFontData> result = m_sources[i]->getFontData(fontDescription, syntheticBold, syntheticItalic, fontSelector)) {
             m_activeSource = m_sources[i].get();
-            if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading && m_sources[i]->isLoaded())
-                notifyFontLoader(Loaded);
+            if (m_loadState == Loading && m_sources[i]->isLoaded())
+                setLoadState(Loaded);
             return result.release();
         }
     }
 
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading)
-        notifyFontLoader(Error);
+    if (m_loadState == Loading)
+        setLoadState(Error);
     return 0;
 }
 
-void CSSFontFace::notifyFontLoader(LoadState newState)
+void CSSFontFace::setLoadState(LoadState newState)
 {
     m_loadState = newState;
 

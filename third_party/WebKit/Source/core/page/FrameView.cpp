@@ -2273,8 +2273,7 @@ void FrameView::performPostLayoutTasks()
     }
 
     m_frame->loader()->didLayout(milestonesAchieved);
-    if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
-        m_frame->document()->fontloader()->didLayout();
+    m_frame->document()->fontloader()->didLayout();
 
     RenderView* renderView = this->renderView();
     if (renderView)

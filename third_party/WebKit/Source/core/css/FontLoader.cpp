@@ -36,6 +36,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/page/FrameView.h"
+#include "core/platform/HistogramSupport.h"
 
 namespace WebCore {
 
@@ -147,6 +148,10 @@ ScriptExecutionContext* FontLoader::scriptExecutionContext() const
 
 void FontLoader::didLayout()
 {
+    if (m_document->page() && m_document->page()->mainFrame() == m_document->frame())
+        m_histogram.record();
+    if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
+        return;
     if (m_loadingCount || (!m_pendingDoneEvent && m_fontsReadyCallbacks.isEmpty()))
         return;
     if (!m_timer.isActive())
@@ -198,6 +203,10 @@ void FontLoader::firePendingCallbacks()
 
 void FontLoader::beginFontLoading(CSSFontFaceRule* rule)
 {
+    m_histogram.incrementCount();
+    if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
+        return;
+
     ++m_loadingCount;
     if (m_loadingCount == 1 && !m_pendingDoneEvent)
         scheduleEvent(CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadingEvent, rule));
@@ -207,12 +216,16 @@ void FontLoader::beginFontLoading(CSSFontFaceRule* rule)
 
 void FontLoader::fontLoaded(CSSFontFaceRule* rule)
 {
+    if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
+        return;
     scheduleEvent(CSSFontFaceLoadEvent::createForFontFaceRule(eventNames().loadEvent, rule));
     queueDoneEvent(rule);
 }
 
 void FontLoader::loadError(CSSFontFaceRule* rule, CSSFontFaceSource* source)
 {
+    if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
+        return;
     // FIXME: We should report NetworkError in case of timeout, etc.
     String errorName = (source && source->isDecodeError()) ? "InvalidFontDataError" : ExceptionCodeDescription(NOT_FOUND_ERR).name;
     scheduleEvent(CSSFontFaceLoadEvent::createForError(rule, DOMError::create(errorName)));
@@ -347,6 +360,14 @@ bool FontLoader::resolveFontStyle(const String& fontString, Font& font)
     font = style->font();
     font.update(styleResolver->fontSelector());
     return true;
+}
+
+void FontLoader::FontLoadHistogram::record()
+{
+    if (m_recorded)
+        return;
+    m_recorded = true;
+    HistogramSupport::histogramCustomCounts("WebFont.WebFontsInPage", m_count, 1, 100, 50);
 }
 
 } // namespace WebCore

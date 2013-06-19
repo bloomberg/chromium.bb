@@ -99,6 +99,7 @@ private:
     {
         UNUSED_PARAM(rule);
     }
+    void setLoadState(LoadState);
 
     FontTraitsMask m_traitsMask;
     Vector<UnicodeRange> m_ranges;
@@ -108,7 +109,6 @@ private:
     bool m_isLocalFallback;
     LoadState m_loadState;
     RefPtr<CSSFontFaceRule> m_rule;
-    void notifyFontLoader(LoadState);
 };
 
 }

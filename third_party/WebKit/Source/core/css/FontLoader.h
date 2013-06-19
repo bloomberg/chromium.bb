@@ -82,6 +82,17 @@ public:
     void scheduleCallback(PassRefPtr<VoidCallback>);
 
 private:
+    class FontLoadHistogram {
+    public:
+        FontLoadHistogram() : m_count(0), m_recorded(false) { }
+        void incrementCount() { m_count++; }
+        void record();
+
+    private:
+        int m_count;
+        bool m_recorded;
+    };
+
     FontLoader(Document*);
 
     virtual void refEventTarget() { ref(); }
@@ -105,6 +116,7 @@ private:
     Vector<RefPtr<VoidCallback> > m_fontsReadyCallbacks;
     RefPtr<Event> m_pendingDoneEvent;
     Timer<FontLoader> m_timer;
+    FontLoadHistogram m_histogram;
 };
 
 } // namespace WebCore
