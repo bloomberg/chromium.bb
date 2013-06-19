@@ -120,13 +120,7 @@ define i32 @main() {
           pexe,
           self.platform,
           ['--pnacl-sb'],
-          # Temporary hack to deal with fact that pnacl-translate.py
-          # is adding extra flag '-bitcode-format=pnacl' when --pnacl-sb
-          # is specified. Hence, command line overrides will apply.
-          # TODO(kschimpf) Remove this once we modify pnacl-llc to always
-          # expect PNaCl bitcode format.
-          # ['StreamInit h'])
-          ['StreamInitWithOverrides'])
+          ['StreamInit h'])
 
   def test_overrideO0(self):
     if driver_test_utils.CanRunHost():

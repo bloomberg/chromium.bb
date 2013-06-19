@@ -129,8 +129,7 @@ EXTRA_ENV = {
   # Append additional non-default flags here.
   'LLC_FLAGS_EXTRA' : '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST}} ' +
                       '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
-                      '${OPT_LEVEL == 0 ? -disable-fp-elim} ' +
-                      '${SANDBOXED ? --bitcode-format=pnacl}',
+                      '${OPT_LEVEL == 0 ? -disable-fp-elim}',
 
   # Opt level from command line (if any)
   'OPT_LEVEL' : '',
