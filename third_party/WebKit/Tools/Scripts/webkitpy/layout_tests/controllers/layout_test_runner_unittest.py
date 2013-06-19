@@ -230,6 +230,7 @@ class SharderTests(unittest.TestCase):
         "ietestcenter/Javascript/11.1.5_4-4-c-1.html",
         "dom/html/level2/html/HTMLAnchorElement06.html",
         "perf/object-keys.html",
+        "virtual/threaded/test.html",
     ]
 
     def get_test_input(self, test_file):
@@ -263,7 +264,8 @@ class SharderTests(unittest.TestCase):
                 'http/tests/xmlhttprequest/supported-xml-content-types.html',
                 'perf/object-keys.html'])])
         self.assert_shards(unlocked,
-            [('animations', ['animations/keyframes.html']),
+            [('virtual/threaded', ['virtual/threaded/test.html']),
+             ('animations', ['animations/keyframes.html']),
              ('dom/html/level2/html', ['dom/html/level2/html/HTMLAnchorElement03.html',
                                       'dom/html/level2/html/HTMLAnchorElement06.html']),
              ('fast/css', ['fast/css/display-none-inline-style-change-crash.html']),
@@ -282,7 +284,8 @@ class SharderTests(unittest.TestCase):
              ('.', ['fast/css/display-none-inline-style-change-crash.html']),
              ('.', ['dom/html/level2/html/HTMLAnchorElement03.html']),
              ('.', ['ietestcenter/Javascript/11.1.5_4-4-c-1.html']),
-             ('.', ['dom/html/level2/html/HTMLAnchorElement06.html'])])
+             ('.', ['dom/html/level2/html/HTMLAnchorElement06.html']),
+             ('.', ['virtual/threaded/test.html'])])
 
     def test_shard_in_two(self):
         locked, unlocked = self.get_shards(num_workers=1, fully_parallel=False)
@@ -299,7 +302,8 @@ class SharderTests(unittest.TestCase):
                'fast/css/display-none-inline-style-change-crash.html',
                'dom/html/level2/html/HTMLAnchorElement03.html',
                'ietestcenter/Javascript/11.1.5_4-4-c-1.html',
-               'dom/html/level2/html/HTMLAnchorElement06.html'])])
+               'dom/html/level2/html/HTMLAnchorElement06.html',
+               'virtual/threaded/test.html'])])
 
     def test_shard_in_two_has_no_locked_shards(self):
         locked, unlocked = self.get_shards(num_workers=1, fully_parallel=False,

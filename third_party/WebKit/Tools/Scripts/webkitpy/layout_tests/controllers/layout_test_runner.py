@@ -516,6 +516,7 @@ class Sharder(object):
         minimizing flakiness caused by inter-test dependencies."""
         locked_shards = []
         unlocked_shards = []
+        unlocked_slow_shards = []
         tests_by_dir = {}
         # FIXME: Given that the tests are already sorted by directory,
         # we can probably rewrite this to be clearer and faster.
@@ -528,11 +529,16 @@ class Sharder(object):
             shard = TestShard(directory, test_inputs)
             if test_inputs[0].requires_lock:
                 locked_shards.append(shard)
+            # In practice, virtual test suites are slow to run. It's a bit hacky, but
+            # put them first since they're the long-tail of test runtime.
+            elif directory.startswith('virtual'):
+                unlocked_slow_shards.append(shard)
             else:
                 unlocked_shards.append(shard)
 
         # Sort the shards by directory name.
         locked_shards.sort(key=lambda shard: shard.name)
+        unlocked_slow_shards.sort(key=lambda shard: shard.name)
         unlocked_shards.sort(key=lambda shard: shard.name)
 
         # Put a ceiling on the number of locked shards, so that we
@@ -544,7 +550,7 @@ class Sharder(object):
         # limit this to no more than a quarter of all workers, e.g.:
         # return max(math.ceil(num_workers / 4.0), 1)
         return (self._resize_shards(locked_shards, self._max_locked_shards, 'locked_shard'),
-                unlocked_shards)
+                unlocked_slow_shards + unlocked_shards)
 
     def _resize_shards(self, old_shards, max_new_shards, shard_name_prefix):
         """Takes a list of shards and redistributes the tests into no more
