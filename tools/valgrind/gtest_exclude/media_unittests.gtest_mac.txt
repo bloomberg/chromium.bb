@@ -1,2 +1,0 @@
-# Crashes due to memory errors, probably in WebRTC, see http://crbug.com/244102
-ScreenCapturerMacTest.Capture

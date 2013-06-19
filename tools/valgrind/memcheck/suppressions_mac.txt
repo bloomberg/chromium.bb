@@ -2348,15 +2348,6 @@
    fun:_ZN10disk_cache15SimpleIndexFile15RestoreFromDiskERKN4base8FilePathE
 }
 {
-   bug_244102
-   Memcheck:Unaddressable
-   ...
-   fun:_ZN6webrtc12_GLOBAL__N_117ScreenCapturerMac10GlBlitFastERKNS_12DesktopFrameERKNS_13DesktopRegionE
-   fun:_ZN6webrtc12_GLOBAL__N_117ScreenCapturerMac7CaptureERKNS_13DesktopRegionE
-   fun:_ZN7content19ScreenCaptureDevice4Core9DoCaptureEv
-   fun:_ZN7content19ScreenCaptureDevice4Core7DoStartEv
-}
-{
    bug_244420
    Memcheck:Uninitialized
    ...
