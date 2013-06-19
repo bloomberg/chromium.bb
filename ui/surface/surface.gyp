@@ -74,8 +74,6 @@
         'accelerated_surface_win.h',
         'd3d9_utils_win.cc',
         'd3d9_utils_win.h',
-        'io_surface_support_mac.cc',
-        'io_surface_support_mac.h',
         'surface_export.h',
         'surface_switches.h',
         'surface_switches.cc',

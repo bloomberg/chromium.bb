@@ -59,7 +59,7 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
-#include "ui/surface/io_surface_support_mac.h"
+#include "ui/gl/io_surface_support_mac.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 using content::BackingStoreMac;

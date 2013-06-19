@@ -5,7 +5,7 @@
 #include <dlfcn.h>
 
 #include "base/memory/singleton.h"
-#include "ui/surface/io_surface_support_mac.h"
+#include "ui/gl/io_surface_support_mac.h"
 
 typedef CFTypeRef (*IOSurfaceCreateProcPtr)(CFDictionaryRef properties);
 typedef uint32 (*IOSurfaceGetIDProcPtr)(CFTypeRef io_surface);

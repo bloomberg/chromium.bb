@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
-#define UI_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
+#ifndef UI_GL_IO_SURFACE_SUPPORT_MAC_H_
+#define UI_GL_IO_SURFACE_SUPPORT_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreVideo/CoreVideo.h>
@@ -11,7 +11,7 @@
 #include <OpenGL/OpenGL.h>
 
 #include "base/basictypes.h"
-#include "ui/surface/surface_export.h"
+#include "ui/gl/gl_export.h"
 
 // This Mac OS X-specific class provides dynamically-linked access to
 // IOSurface.framework, which is only available on 10.6 and later.
@@ -21,7 +21,7 @@
 // See IOSurface/IOSurfaceAPI.h and OpenGL/CGLIOSurface.h on 10.6 for
 // documentation of the fields and methods of this class.
 
-class SURFACE_EXPORT IOSurfaceSupport {
+class GL_EXPORT IOSurfaceSupport {
  public:
   // Returns an instance of the IOSurfaceSupport class if the
   // operating system supports it, NULL otherwise. It is safe to call
@@ -70,4 +70,4 @@ class SURFACE_EXPORT IOSurfaceSupport {
   DISALLOW_COPY_AND_ASSIGN(IOSurfaceSupport);
 };
 
-#endif  // UI_SURFACE_IO_SURFACE_SUPPORT_MAC_H_
+#endif  // UI_GL_IO_SURFACE_SUPPORT_MAC_H_

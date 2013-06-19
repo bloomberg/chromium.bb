@@ -10,8 +10,8 @@
 #include "base/command_line.h"
 #include "content/plugin/webplugin_proxy.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gl/io_surface_support_mac.h"
 #include "ui/surface/accelerated_surface_mac.h"
-#include "ui/surface/io_surface_support_mac.h"
 #include "ui/surface/transport_dib.h"
 
 namespace content {

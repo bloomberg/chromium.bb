@@ -21,8 +21,9 @@
 #include "media/base/video_frame.h"
 #include "net/base/net_util.h"
 #include "ui/compositor/compositor_setup.h"
+
 #if defined(OS_MACOSX)
-#include "ui/surface/io_surface_support_mac.h"
+#include "ui/gl/io_surface_support_mac.h"
 #endif
 
 namespace content {

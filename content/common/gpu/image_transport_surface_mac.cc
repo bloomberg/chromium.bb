@@ -14,7 +14,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_cgl.h"
 #include "ui/gl/gl_surface_osmesa.h"
-#include "ui/surface/io_surface_support_mac.h"
+#include "ui/gl/io_surface_support_mac.h"
 
 namespace content {
 namespace {

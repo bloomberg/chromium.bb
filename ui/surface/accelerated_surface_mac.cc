@@ -11,8 +11,8 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/io_surface_support_mac.h"
 #include "ui/gl/scoped_make_current.h"
-#include "ui/surface/io_surface_support_mac.h"
 
 AcceleratedSurface::AcceleratedSurface()
     : io_surface_id_(0),

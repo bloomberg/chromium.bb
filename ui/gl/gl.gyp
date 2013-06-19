@@ -104,6 +104,8 @@
         'gl_switches.h',
         'gpu_switching_manager.cc',
         'gpu_switching_manager.h',
+        'io_surface_support_mac.cc',
+        'io_surface_support_mac.h',
         'scoped_binders.cc',
         'scoped_binders.h',
         'scoped_make_current.cc',
