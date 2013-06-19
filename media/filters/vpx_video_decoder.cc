@@ -218,6 +218,10 @@ void VpxVideoDecoder::ReadFromDemuxerStream() {
       &VpxVideoDecoder::DoDecryptOrDecodeBuffer, weak_this_));
 }
 
+bool VpxVideoDecoder::HasAlpha() const {
+  return vpx_codec_alpha_ != NULL;
+}
+
 void VpxVideoDecoder::DoDecryptOrDecodeBuffer(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {

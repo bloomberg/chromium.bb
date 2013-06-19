@@ -14,6 +14,7 @@
 #include "media/crypto/aes_decryptor.h"
 #include "media/filters/chunk_demuxer.h"
 
+using testing::AnyNumber;
 using testing::AtMost;
 
 namespace media {
@@ -474,6 +475,7 @@ TEST_F(PipelineIntegrationTest,
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VP8A_WebM) {
+  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
   MockMediaSource source("bear-vp8a.webm", kVideoOnlyWebM, kAppendWholeFile);
   StartPipelineWithMediaSource(&source);
   source.EndOfStream();
@@ -935,6 +937,7 @@ TEST_F(PipelineIntegrationTest, DISABLED_BasicPlayback_VP9_Opus_WebM) {
 
 // Verify that VP8 video with alpha channel can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
+  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8a.webm"),
                     PIPELINE_OK));
   Play();
