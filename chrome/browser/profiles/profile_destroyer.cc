@@ -158,9 +158,10 @@ void ProfileDestroyer::DestroyProfile() {
   profile_ = NULL;
 
   // Don't wait for pending registrations, if any, these hosts are buggy.
-  DCHECK(registrar_.IsEmpty()) << "Some render process hosts where not "
-                               << "destroyed early enough!";
-  registrar_.RemoveAll();
+  // Note: this can happen, but if so, it's better to crash here than wait
+  // for the host to dereference a deleted Profile. http://crbug.com/248625
+  CHECK(registrar_.IsEmpty()) << "Some render process hosts were not "
+                              << "destroyed early enough!";
 
   // And stop the timer so we can be released early too.
   timer_.Stop();
