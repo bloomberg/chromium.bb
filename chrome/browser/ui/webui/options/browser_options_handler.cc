@@ -31,7 +31,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -92,7 +91,6 @@
 #endif
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/ui/webui/options/advanced_options_utils.h"
 #include "chromeos/chromeos_switches.h"
 #endif
@@ -1439,13 +1437,6 @@ void BrowserOptionsHandler::FileSelected(const base::FilePath& path, int index,
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
   pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
-}
-
-void BrowserOptionsHandler::OnCloudPrintSetupClosed() {
-#if !defined(OS_CHROMEOS)
-  if (cloud_print_connector_ui_enabled_)
-    SetupCloudPrintConnectorSection();
-#endif
 }
 
 #if defined(OS_CHROMEOS)

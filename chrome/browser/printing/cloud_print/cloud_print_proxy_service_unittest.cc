@@ -136,10 +136,10 @@ void MockServiceProcessControl::SetServiceDisabledExpectations() {
 }
 
 void MockServiceProcessControl::SetWillBeEnabledExpectations() {
+  int32 message_id = ServiceMsg_EnableCloudPrintProxyWithRobot::ID;
   EXPECT_CALL(
       *this,
-      Send(Property(&IPC::Message::type,
-                    static_cast<int32>(ServiceMsg_EnableCloudPrintProxy::ID))))
+      Send(Property(&IPC::Message::type, message_id)))
       .Times(1).WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 }
 
@@ -175,6 +175,12 @@ class TestCloudPrintProxyService : public CloudPrintProxyService {
   }
   MockServiceProcessControl* GetMockServiceProcessControl() {
     return &process_control_;
+  }
+
+  void EnableForUser() {
+    EnableForUserWithRobot("123", "123@gmail.com",
+                           MockServiceProcessControl::EnabledUserId(),
+                           base::DictionaryValue());
   }
 
  private:
@@ -383,8 +389,7 @@ TEST_F(CloudPrintProxyPolicyTest, StartWithNoPolicyProxyDisabledThenEnable) {
   EXPECT_EQ(std::string(), prefs->GetString(prefs::kCloudPrintEmail));
 
   service.GetMockServiceProcessControl()->SetWillBeEnabledExpectations();
-  service.EnableForUser(std::string(),
-                        MockServiceProcessControl::EnabledUserId());
+  service.EnableForUser();
 
   EXPECT_EQ(MockServiceProcessControl::EnabledUserId(),
             prefs->GetString(prefs::kCloudPrintEmail));
@@ -407,16 +412,14 @@ TEST_F(CloudPrintProxyPolicyTest,
   service.Initialize();
 
   EXPECT_EQ(std::string(), prefs->GetString(prefs::kCloudPrintEmail));
-  service.EnableForUser(std::string(),
-                        MockServiceProcessControl::EnabledUserId());
+  service.EnableForUser();
   EXPECT_EQ(std::string(), prefs->GetString(prefs::kCloudPrintEmail));
 
   prefs->RemoveManagedPref(prefs::kCloudPrintProxyEnabled);
   EXPECT_EQ(std::string(), prefs->GetString(prefs::kCloudPrintEmail));
 
   service.GetMockServiceProcessControl()->SetWillBeEnabledExpectations();
-  service.EnableForUser(std::string(),
-                        MockServiceProcessControl::EnabledUserId());
+  service.EnableForUser();
 
   EXPECT_EQ(MockServiceProcessControl::EnabledUserId(),
             prefs->GetString(prefs::kCloudPrintEmail));

@@ -13,10 +13,6 @@ namespace cloud_print {
 extern const char kCloudPrintUserAgent[];
 // The proxy header required by cloud print server.
 extern const char kChromeCloudPrintProxyHeader[];
-// The service id of cloud print used in gaia authentication.
-extern const char kCloudPrintGaiaServiceId[];
-// The user agent string used in gaia authentication.
-extern const char kProxyAuthUserAgent[];
 // The source of cloud print notifications.
 extern const char kCloudPrintPushNotificationsSource[];
 

@@ -13,11 +13,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 class Profile;
 class ServiceProcessControl;
+
+namespace base {
+class DictionaryValue;
+}  // namespace base
 
 namespace cloud_print {
 struct CloudPrintProxyInfo;
@@ -25,9 +28,7 @@ struct CloudPrintProxyInfo;
 
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
-class CloudPrintProxyService
-    : public CloudPrintSetupHandlerDelegate,
-      public BrowserContextKeyedService {
+class CloudPrintProxyService : public BrowserContextKeyedService {
  public:
   explicit CloudPrintProxyService(Profile* profile);
   virtual ~CloudPrintProxyService();
@@ -37,7 +38,6 @@ class CloudPrintProxyService
   void Initialize();
 
   // Enables/disables cloud printing for the user
-  virtual void EnableForUser(const std::string& lsid, const std::string& email);
   virtual void EnableForUserWithRobot(
       const std::string& robot_auth_code,
       const std::string& robot_email,
@@ -56,9 +56,6 @@ class CloudPrintProxyService
 
   std::string proxy_id() const { return proxy_id_; }
 
-  // CloudPrintSetupHandler::Delegate implementation.
-  virtual void OnCloudPrintSetupClosed() OVERRIDE;
-
   // Returns list of printer names available for registration.
   static void GetPrintersAvalibleForRegistration(
       std::vector<std::string>* printers);
@@ -70,7 +67,6 @@ class CloudPrintProxyService
 
   // Methods that send an IPC to the service.
   void RefreshCloudPrintProxyStatus();
-  void EnableCloudPrintProxy(const std::string& lsid, const std::string& email);
   void EnableCloudPrintProxyWithRobot(
       const std::string& robot_auth_code,
       const std::string& robot_email,

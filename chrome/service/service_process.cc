@@ -193,7 +193,7 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   // Then check if the cloud print proxy was previously enabled.
   if (command_line.HasSwitch(switches::kEnableCloudPrintProxy) ||
       service_prefs_->GetBoolean(prefs::kCloudPrintProxyEnabled, false)) {
-    GetCloudPrintProxy()->EnableForUser(std::string());
+    GetCloudPrintProxy()->EnableForUser();
   }
 
   VLOG(1) << "Starting Service Process IPC Server";

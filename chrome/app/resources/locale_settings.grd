@@ -384,34 +384,6 @@
         https://www.google.com/support/chrome/bin/answer.py?answer=1181420
       </message>
 
-      <!-- The width of the cloud print setup wizard / login dialog in -->
-      <!-- characters. -->
-      <message name="IDS_CLOUD_PRINT_SETUP_WIZARD_WIDTH_CHARS" 
-               use_name_for_id="true">
-        76
-      </message>
-
-      <!-- The height of the cloud print setup wizard / login dialog in -->
-      <!-- characters. -->
-      <message name="IDS_CLOUD_PRINT_SETUP_WIZARD_HEIGHT_LINES"
-               use_name_for_id="true">
-        15
-      </message>
-
-      <!-- The width of the cloud print setup wizard / login dialog in -->
-      <!-- characters when showing done. -->
-      <message name="IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_WIDTH_CHARS" 
-               use_name_for_id="true">
-        46
-      </message>
-
-      <!-- The height of the cloud print setup wizard / login dialog in -->
-      <!-- characters when showing done. -->
-      <message name="IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_HEIGHT_LINES"
-               use_name_for_id="true">
-        15
-      </message>
-
       <!-- The width for the "create application shortcuts" dialog in characters. -->
       <message name="IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         65

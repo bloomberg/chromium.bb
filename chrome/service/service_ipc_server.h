@@ -52,7 +52,6 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
   virtual void OnChannelError() OVERRIDE;
 
   // IPC message handlers.
-  void OnEnableCloudPrintProxy(const std::string& lsid);
   void OnEnableCloudPrintProxyWithRobot(
       const std::string& robot_auth_code,
       const std::string& robot_email,

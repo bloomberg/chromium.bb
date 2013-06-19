@@ -9,7 +9,6 @@
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
-#include "chrome/service/gaia/service_gaia_authenticator.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -26,39 +25,6 @@ CloudPrintAuth::CloudPrintAuth(
         cloud_print_server_url_(cloud_print_server_url),
         proxy_id_(proxy_id) {
   DCHECK(client);
-}
-
-void CloudPrintAuth::AuthenticateWithLsid(
-    const std::string& lsid,
-    const std::string& last_robot_refresh_token,
-    const std::string& last_robot_email,
-    const std::string& last_user_email) {
-  // Keeping VLOGs for Cloud Print proxy logging. It is convinient for finding
-  // issues with GCP in the field, where only release version is avaialble.
-  VLOG(1) << "CP_AUTH: Authenticating with LSID";
-  scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_print(
-      new ServiceGaiaAuthenticator(
-          kProxyAuthUserAgent,
-          kCloudPrintGaiaServiceId,
-          GaiaUrls::GetInstance()->client_login_url(),
-          g_service_process->io_thread()->message_loop_proxy().get()));
-  gaia_auth_for_print->set_message_loop(base::MessageLoop::current());
-  if (gaia_auth_for_print->AuthenticateWithLsid(lsid)) {
-    // Stash away the user email so we can save it in prefs.
-    user_email_ = gaia_auth_for_print->email();
-    // If the same user is re-enabling Cloud Print and we have stashed robot
-    // credentials, we will use those.
-    if ((0 == base::strcasecmp(user_email_.c_str(), last_user_email.c_str())) &&
-        !last_robot_refresh_token.empty() &&
-        !last_robot_email.empty()) {
-      AuthenticateWithRobotToken(last_robot_refresh_token,
-                                 last_robot_email);
-    }
-    AuthenticateWithToken(gaia_auth_for_print->auth_token());
-  } else {
-    // Notify client about authentication error.
-    client_->OnInvalidCredentials();
-  }
 }
 
 void CloudPrintAuth::AuthenticateWithToken(

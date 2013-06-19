@@ -92,8 +92,6 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
   // again on subsequent connections.
   client_connected_ = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceIPCServer, msg)
-    IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxy,
-                        OnEnableCloudPrintProxy)
     IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxyWithRobot,
                         OnEnableCloudPrintProxyWithRobot)
     IPC_MESSAGE_HANDLER(ServiceMsg_DisableCloudPrintProxy,
@@ -105,10 +103,6 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ServiceIPCServer::OnEnableCloudPrintProxy(const std::string& lsid) {
-  g_service_process->GetCloudPrintProxy()->EnableForUser(lsid);
 }
 
 void ServiceIPCServer::OnEnableCloudPrintProxyWithRobot(

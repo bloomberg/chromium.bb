@@ -77,8 +77,6 @@
         'gaia/gaia_auth_fetcher.h',
         'gaia/gaia_auth_util.cc',
         'gaia/gaia_auth_util.h',
-        'gaia/gaia_authenticator.cc',
-        'gaia/gaia_authenticator.h',
         'gaia/gaia_constants.cc',
         'gaia/gaia_constants.h',
         'gaia/gaia_oauth_client.cc',

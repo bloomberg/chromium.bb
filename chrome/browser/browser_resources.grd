@@ -93,9 +93,6 @@
       </if>
       <if expr="pp_ifdef('enable_printing')">
         <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
-        <include name="IDR_CLOUD_PRINT_SETUP_DONE_HTML" file="resources\cloud_print\cloud_print_setup_done.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_CLOUD_PRINT_SETUP_FLOW_HTML" file="resources\cloud_print\cloud_print_setup_flow.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_CLOUD_PRINT_SETUP_LOGIN_HTML" file="resources\cloud_print\cloud_print_setup_login.html" flattenhtml="true" type="BINDATA" />
       </if>
       <include name="IDR_CRASHES_HTML" file="resources\crashes.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_CRASHES_JS" file="resources\crashes.js" type="BINDATA" />
@@ -120,9 +117,6 @@
       </if>
       <include name="IDR_FLAGS_HTML" file="resources\flags.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />
-      <if expr="not is_android">
-        <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
-      </if>
       <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY_HTML" file="resources\history\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_HISTORY_JS" file="resources\history\history.js" flattenhtml="true" type="BINDATA" />

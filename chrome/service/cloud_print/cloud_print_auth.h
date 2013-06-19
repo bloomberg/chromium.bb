@@ -47,14 +47,6 @@ class CloudPrintAuth
   // The Authenticate* methods are the various entry points from
   // CloudPrintProxyBackend::Core. It calls us on a dedicated thread to
   // actually perform synchronous (and potentially blocking) operations.
-  //
-  // When we are passed in an LSID we authenticate using that
-  // and retrieve new auth tokens.
-  void AuthenticateWithLsid(const std::string& lsid,
-                            const std::string& last_robot_refresh_token,
-                            const std::string& last_robot_email,
-                            const std::string& last_user_email);
-
   void AuthenticateWithToken(const std::string& cloud_print_token);
   void AuthenticateWithRobotToken(const std::string& robot_oauth_refresh_token,
                                   const std::string& robot_email);

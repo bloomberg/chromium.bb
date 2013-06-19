@@ -22,8 +22,6 @@ const char kSyncService[] = "chromiumsync";
 
 // Service name for remoting.
 const char kRemotingService[] = "chromoting";
-// Service name for cloud print.
-const char kCloudPrintService[] = "cloudprint";
 
 // Service/scope names for device management (cloud-based policy) server.
 const char kDeviceManagementServiceOAuth[] =

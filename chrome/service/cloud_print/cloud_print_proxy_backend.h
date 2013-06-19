@@ -63,14 +63,6 @@ class CloudPrintProxyBackend {
                          bool enable_job_poll);
   ~CloudPrintProxyBackend();
 
-  // Called when the user enables Google Cloud Print.
-  // |last_robot_refresh_token|, |last_robot_email| and |last_user_email| are
-  // the previously persisted credentials if any. We will use this is the passed
-  // in LSID belongs to the same user as |last_user_email|.
-  bool InitializeWithLsid(const std::string& lsid,
-                          const std::string& last_robot_refresh_token,
-                          const std::string& last_robot_email,
-                          const std::string& last_user_email);
   // Legacy mechanism when we have saved user credentials but no saved robot
   // credentials.
   bool InitializeWithToken(const std::string& cloud_print_token);

@@ -8785,46 +8785,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_CLOUD_PRINT_CHROMEOS_OPTION_BUTTON" desc="Text on a button to go to the cloud print home page from the Chrome OS advanced options dialog.">
         Open <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
       </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE" desc="Title of the cloud print setup dialog.">
-        Set up <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
-      </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_HEADER" desc="Intro line of the cloud print setup dialog.">
-        Access and share your printers online with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
-      </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_EXPLAIN" desc="Explanation of the cloud print setup dialog.">
-        <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> is built on the idea that printing can be more intuitive, accessible, and useful. Using <ph name="CLOUD_PRINT_NAME">&lt;span jscontent="googleCloudPrint"&gt;&lt;/span&gt;<ex>Google Cloud Print</ex></ph> you can make your printers available to you from any <ph name="CLOUD_PRINT_NAME">&lt;span jscontent="googleCloudPrint"&gt;&lt;/span&gt;<ex>Google Cloud Print</ex></ph> enabled web or mobile app.
-      </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_ANYWHERE_HEADER" desc="Intro line about printing from anywhere.">
-        Print from anywhere
-      </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_ANYWHERE_EXPLAIN" desc="Explanation about printing from anywhere.">
-        Access your printers from any computer or smart phone. <ph name="BEGIN_LINK">&lt;a href="#" onclick="cloudprint.learnMore()"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
-      </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_PRINTER_HEADER" desc="Intro line about printer management.">
-        Manage your printer
-      </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_PRINTER_EXPLAIN" desc="Explanation about printer management.">
-        Review your print jobs and printer status online.
-      </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_SHARING_HEADER" desc="Intro line about printer management.">
-        Shared access
-      </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_SHARING_EXPLAIN" desc="Explanation about printer management.">
-        Share and control access to your printers with any Google account.
-      </message>
-      <if expr="is_android">
-        <message name="IDS_CLOUD_PRINT_SETUP_DONE" desc="Mobile: Message on completed set up of cloud print.">
-          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> has registered the printers on this device with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> enabled web or mobile app!
-        </message>
-      </if>
-      <if expr="not is_android">
-        <message name="IDS_CLOUD_PRINT_SETUP_DONE" desc="Message on completed set up of cloud print.">
-          <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> has registered the printers on this machine with &lt;b&gt;<ph name="EMAIL_ADDRESSES">$2<ex>foo@example.com</ex></ph>&lt;/b&gt;.  You can now print to your printers from any <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> enabled web or mobile app!
-        </message>
-      </if>
-      <message name="IDS_CLOUD_PRINT_SETUP_TEST_PAGE" desc="Label on button for printing a test page.">
-        Print a Test Page
-      </message>
       <message name="IDS_CLOUD_PRINT_REGISTER_PRINTER_FAILED" desc="Status message to be sent to the server when we failed to retrieve information about a printer to register.">
         An error occurred while retrieving printer capabilities for printer <ph name="PRINTER_NAME">$1<ex>HP Laserjet 7900</ex></ph>. This printer could not be registered with <ph name="CLOUD_PRINT_NAME">$2<ex>Google Cloud Print</ex></ph>.
       </message>
@@ -8837,50 +8797,8 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_CLOUD_PRINT_ENUM_FAILED" desc="Status message to be sent to the Cloud Print server when enumerating printers failed.">
         There was a problem listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>.
       </message>
-      <message name="IDS_CLOUD_PRINT_GAIA_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
-        Enter the letters above
-      </message>
-      <message name="IDS_CLOUD_PRINT_LOGIN_EMAIL_SAME_LINE" desc="The user Email address of the Google account. This label appears on the same line as the text field.">
-        Email:
-      </message>
-      <message name="IDS_CLOUD_PRINT_LOGIN_PASSWORD_SAME_LINE" desc="The user password of the Google account. This labe appears on the same line as the text field.">
-        Password:
-      </message>
-      <message name="IDS_CLOUD_PRINT_SIGNIN" desc="The label of the button to log to your Google account">
-        Sign in
-      </message>
-      <message name="IDS_CLOUD_PRINT_CANNOT_ACCESS_ACCOUNT" desc="The text of a hyperlink">
-        Can't access your account?
-      </message>
-      <message name="IDS_CLOUD_PRINT_CREATE_ACCOUNT" desc="The text of a hyperlink to create a Google account">
-        Create a Google Account
-      </message>
-      <message name="IDS_CLOUD_PRINT_CANNOT_BE_BLANK" desc="The input error message when the user hasn't entered a username or password">
-        Required field cannot be left blank
-      </message>
-      <message name="IDS_CLOUD_PRINT_LOGIN_COULD_NOT_CONNECT" desc="The connect error message">
-        Could not connect to the server
-      </message>
-      <message name="IDS_CLOUD_PRINT_ACCESS_CODE_HELP_LABEL" desc="A help link message for users who don't know what an application-specific password (aka access code) is">
-        What's this?
-      </message>
-      <message name="IDS_CLOUD_PRINT_INVALID_ACCESS_CODE_LABEL" desc="A message telling the user the application-specific password (aka access code) they entered is invalid.">
-        Invalid application-specific password.
-      </message>
       <message name="IDS_SERVICE_CRASH_RECOVERY_CONTENT" desc="Text content telling the user the service process has crashed.">
         The <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> connector process has crashed. Restart?
-      </message>
-      <message name="IDS_CLOUD_PRINT_SETUP_OK_BUTTON_LABEL" desc="The button label on the 'OK' button displayed at the end sign in.">
-        OK
-      </message>
-      <message name="IDS_CLOUD_PRINT_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
-        Sign in with your
-      </message>
-      <message name="IDS_CLOUD_PRINT_LOGIN_SIGNIN_SUFFIX" desc="The second part of the sentence. Google will be replaced by the Google logo. The translation of 'Account' will be display in bold">
-        Google Account
-      </message>
-      <message name="IDS_CLOUD_PRINT_ENTER_ACCESS_CODE_LABEL" desc="A message asking the user to enter an application-specific password (aka access code).">
-        Enter your application-specific password:
       </message>
 
       <!-- Print Preview -->

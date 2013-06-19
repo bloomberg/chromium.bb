@@ -19,7 +19,6 @@
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/cloud_print/connector_settings.h"
-#include "chrome/service/gaia/service_gaia_authenticator.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -52,15 +51,6 @@ class CloudPrintProxyBackend::Core
   // The Do* methods are the various entry points from CloudPrintProxyBackend
   // It calls us on a dedicated thread to actually perform synchronous
   // (and potentially blocking) operations.
-  //
-  // Called on the CloudPrintProxyBackend core_thread_ to perform
-  // initialization. When we are passed in an LSID we authenticate using that
-  // and retrieve new auth tokens.
-  void DoInitializeWithLsid(const std::string& lsid,
-                            const std::string& last_robot_refresh_token,
-                            const std::string& last_robot_email,
-                            const std::string& last_user_email);
-
   void DoInitializeWithToken(const std::string& cloud_print_token);
   void DoInitializeWithRobotToken(const std::string& robot_oauth_refresh_token,
                                   const std::string& robot_email);
@@ -177,21 +167,6 @@ CloudPrintProxyBackend::CloudPrintProxyBackend(
 
 CloudPrintProxyBackend::~CloudPrintProxyBackend() { DCHECK(!core_.get()); }
 
-bool CloudPrintProxyBackend::InitializeWithLsid(
-    const std::string& lsid,
-    const std::string& last_robot_refresh_token,
-    const std::string& last_robot_email,
-    const std::string& last_user_email) {
-  if (!core_thread_.Start())
-    return false;
-  core_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithLsid,
-                 core_.get(), lsid, last_robot_refresh_token, last_robot_email,
-                 last_user_email));
-  return true;
-}
-
 bool CloudPrintProxyBackend::InitializeWithToken(
     const std::string& cloud_print_token) {
   if (!core_thread_.Start())
@@ -271,20 +246,6 @@ void CloudPrintProxyBackend::Core::CreateAuthAndConnector() {
 void CloudPrintProxyBackend::Core::DestroyAuthAndConnector() {
   auth_ = NULL;
   connector_ = NULL;
-}
-
-void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
-    const std::string& lsid,
-    const std::string& last_robot_refresh_token,
-    const std::string& last_robot_email,
-    const std::string& last_user_email) {
-  DCHECK(base::MessageLoop::current() == backend_->core_thread_.message_loop());
-  CreateAuthAndConnector();
-  // Note: The GAIA login is synchronous but that should be OK because we are in
-  // the CloudPrintProxyCoreThread and we cannot really do anything else until
-  // the GAIA signin is successful.
-  auth_->AuthenticateWithLsid(lsid, last_robot_refresh_token,
-                              last_robot_email, last_user_email);
 }
 
 void CloudPrintProxyBackend::Core::DoInitializeWithToken(

@@ -57,9 +57,6 @@ namespace {
 // Path for a stripped down login page that does not have OOBE elements.
 const char kLoginPath[] = "login#login";
 
-// Path for the enterprise enrollment gaia page hosting.
-const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
-
 const char kStringsJSPath[] = "strings.js";
 const char kLoginJSPath[] = "login.js";
 const char kOobeJSPath[] = "oobe.js";
@@ -110,8 +107,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
                           IDR_LOGIN_HTML);
   source->AddResourcePath(kLoginJSPath,
                           IDR_LOGIN_JS);
-  source->AddResourcePath(kEnterpriseEnrollmentGaiaLoginPath,
-                          IDR_GAIA_LOGIN_HTML);
   source->AddResourcePath(kKeyboardUtilsJSPath,
                           IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyFrameSrc(
