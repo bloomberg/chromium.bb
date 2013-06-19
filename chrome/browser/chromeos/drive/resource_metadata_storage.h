@@ -70,8 +70,8 @@ class ResourceMetadataStorage {
   // Puts the entry to this storage.
   bool PutEntry(const ResourceEntry& entry);
 
-  // Returns an entry stored in this storage.
-  scoped_ptr<ResourceEntry> GetEntry(const std::string& resource_id);
+  // Gets an entry stored in this storage.
+  bool GetEntry(const std::string& resource_id, ResourceEntry* out_entry);
 
   // Removes an entry from this storage.
   bool RemoveEntry(const std::string& resource_id);

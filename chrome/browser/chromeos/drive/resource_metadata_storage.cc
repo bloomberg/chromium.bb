@@ -235,10 +235,11 @@ bool ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
   leveldb::WriteBatch batch;
 
   // Remove from the old parent.
-  scoped_ptr<ResourceEntry> old_entry = GetEntry(entry.resource_id());
-  if (old_entry && !old_entry->parent_resource_id().empty()) {
-    batch.Delete(GetChildEntryKey(old_entry->parent_resource_id(),
-                                  old_entry->base_name()));
+  ResourceEntry old_entry;
+  if (GetEntry(entry.resource_id(), &old_entry) &&
+      !old_entry.parent_resource_id().empty()) {
+    batch.Delete(GetChildEntryKey(old_entry.parent_resource_id(),
+                                  old_entry.base_name()));
   }
 
   // Add to the new parent.
@@ -255,8 +256,8 @@ bool ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
   return status.ok();
 }
 
-scoped_ptr<ResourceEntry> ResourceMetadataStorage::GetEntry(
-    const std::string& resource_id) {
+bool ResourceMetadataStorage::GetEntry(const std::string& resource_id,
+                                       ResourceEntry* out_entry) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!resource_id.empty());
 
@@ -264,29 +265,23 @@ scoped_ptr<ResourceEntry> ResourceMetadataStorage::GetEntry(
   const leveldb::Status status = resource_map_->Get(leveldb::ReadOptions(),
                                                     leveldb::Slice(resource_id),
                                                     &serialized_entry);
-  if (!status.ok())
-    return scoped_ptr<ResourceEntry>();
-
-  scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-  if (!entry->ParseFromString(serialized_entry))
-    return scoped_ptr<ResourceEntry>();
-  return entry.Pass();
+  return status.ok() && out_entry->ParseFromString(serialized_entry);
 }
 
 bool ResourceMetadataStorage::RemoveEntry(const std::string& resource_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!resource_id.empty());
 
-  scoped_ptr<ResourceEntry> entry = GetEntry(resource_id);
-  if (!entry)
+  ResourceEntry entry;
+  if (!GetEntry(resource_id, &entry))
     return false;
 
   leveldb::WriteBatch batch;
 
   // Remove from the parent.
-  if (!entry->parent_resource_id().empty()) {
-    batch.Delete(GetChildEntryKey(entry->parent_resource_id(),
-                                  entry->base_name()));
+  if (!entry.parent_resource_id().empty()) {
+    batch.Delete(GetChildEntryKey(entry.parent_resource_id(),
+                                  entry.base_name()));
   }
   // Remove the entry itself.
   batch.Delete(resource_id);

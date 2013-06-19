@@ -194,7 +194,8 @@ bool ResourceMetadata::SetUpDefaultEntries() {
 
   // Initialize the grand root and "other" entries. "/drive" and "/drive/other".
   // As an intermediate change, "/drive/root" is also added here.
-  if (!storage_->GetEntry(util::kDriveGrandRootSpecialResourceId)) {
+  ResourceEntry entry;
+  if (!storage_->GetEntry(util::kDriveGrandRootSpecialResourceId, &entry)) {
     ResourceEntry root;
     root.mutable_file_info()->set_is_directory(true);
     root.set_resource_id(util::kDriveGrandRootSpecialResourceId);
@@ -202,7 +203,7 @@ bool ResourceMetadata::SetUpDefaultEntries() {
     if (!storage_->PutEntry(CreateEntryWithProperBaseName(root)))
       return false;
   }
-  if (!storage_->GetEntry(util::kDriveOtherDirSpecialResourceId)) {
+  if (!storage_->GetEntry(util::kDriveOtherDirSpecialResourceId, &entry)) {
     if (!PutEntryUnderDirectory(util::CreateOtherDirEntry()))
       return false;
   }
@@ -272,14 +273,13 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
     return FILE_ERROR_NO_SPACE;
 
-  scoped_ptr<ResourceEntry> existing_entry =
-      storage_->GetEntry(entry.resource_id());
-  if (existing_entry)
+  ResourceEntry existing_entry;
+  if (storage_->GetEntry(entry.resource_id(), &existing_entry))
     return FILE_ERROR_EXISTS;
 
-  scoped_ptr<ResourceEntry> parent =
-      GetDirectory(entry.parent_resource_id());
-  if (!parent)
+  ResourceEntry parent;
+  if (!storage_->GetEntry(entry.parent_resource_id(), &parent) ||
+      !parent.file_info().is_directory())
     return FILE_ERROR_NOT_FOUND;
 
   if (!PutEntryUnderDirectory(entry))
@@ -327,11 +327,11 @@ FileError ResourceMetadata::RemoveEntry(const std::string& resource_id) {
   if (util::IsSpecialResourceId(resource_id))
     return FILE_ERROR_ACCESS_DENIED;
 
-  scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
-  if (!entry)
+  ResourceEntry entry;
+  if (!storage_->GetEntry(resource_id, &entry))
     return FILE_ERROR_NOT_FOUND;
 
-  if (!RemoveEntryRecursively(entry->resource_id()))
+  if (!RemoveEntryRecursively(entry.resource_id()))
     return FILE_ERROR_FAILED;
   return FILE_ERROR_OK;
 }
@@ -361,12 +361,8 @@ FileError ResourceMetadata::GetResourceEntryById(
   DCHECK(!resource_id.empty());
   DCHECK(out_entry);
 
-  scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
-  if (!entry)
-    return FILE_ERROR_NOT_FOUND;
-
-  out_entry->Swap(entry.get());
-  return FILE_ERROR_OK;
+  return storage_->GetEntry(resource_id, out_entry) ?
+      FILE_ERROR_OK : FILE_ERROR_NOT_FOUND;
 }
 
 void ResourceMetadata::GetResourceEntryByPathOnUIThread(
@@ -392,12 +388,8 @@ FileError ResourceMetadata::GetResourceEntryByPath(const base::FilePath& path,
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(out_entry);
 
-  scoped_ptr<ResourceEntry> entry = FindEntryByPathSync(path);
-  if (!entry)
-    return FILE_ERROR_NOT_FOUND;
-
-  *out_entry = *entry;
-  return FILE_ERROR_OK;
+  return FindEntryByPathSync(path, out_entry) ?
+      FILE_ERROR_OK : FILE_ERROR_NOT_FOUND;
 }
 
 void ResourceMetadata::ReadDirectoryByPathOnUIThread(
@@ -424,22 +416,20 @@ FileError ResourceMetadata::ReadDirectoryByPath(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(out_entries);
 
-  scoped_ptr<ResourceEntry> entry = FindEntryByPathSync(path);
-  if (!entry)
+  ResourceEntry entry;
+  if (!FindEntryByPathSync(path, &entry))
     return FILE_ERROR_NOT_FOUND;
 
-  if (!entry->file_info().is_directory())
+  if (!entry.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
   std::vector<std::string> children;
-  storage_->GetChildren(entry->resource_id(), &children);
+  storage_->GetChildren(entry.resource_id(), &children);
 
-  ResourceEntryVector entries;
+  ResourceEntryVector entries(children.size());
   for (size_t i = 0; i < children.size(); ++i) {
-    scoped_ptr<ResourceEntry> child = storage_->GetEntry(children[i]);
-    if (!child)
+    if (!storage_->GetEntry(children[i], &entries[i]))
       return FILE_ERROR_FAILED;
-    entries.push_back(*child);
   }
   out_entries->swap(entries);
   return FILE_ERROR_OK;
@@ -451,21 +441,19 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
     return FILE_ERROR_NO_SPACE;
 
-  scoped_ptr<ResourceEntry> old_entry =
-      storage_->GetEntry(entry.resource_id());
-  if (!old_entry)
+  ResourceEntry old_entry;
+  if (!storage_->GetEntry(entry.resource_id(), &old_entry))
     return FILE_ERROR_NOT_FOUND;
 
-  if (old_entry->parent_resource_id().empty() ||  // Rejct root.
-      old_entry->file_info().is_directory() !=  // Reject incompatible input.
+  if (old_entry.parent_resource_id().empty() ||  // Reject root.
+      old_entry.file_info().is_directory() !=  // Reject incompatible input.
       entry.file_info().is_directory())
     return FILE_ERROR_INVALID_OPERATION;
 
   // Update data.
-  scoped_ptr<ResourceEntry> new_parent =
-      GetDirectory(entry.parent_resource_id());
-
-  if (!new_parent)
+  ResourceEntry new_parent;
+  if (!storage_->GetEntry(entry.parent_resource_id(), &new_parent) ||
+      !new_parent.file_info().is_directory())
     return FILE_ERROR_NOT_FOUND;
 
   // Remove from the old parent and add it to the new parent with the new data.
@@ -497,10 +485,11 @@ void ResourceMetadata::GetChildDirectories(
   std::vector<std::string> children;
   storage_->GetChildren(resource_id, &children);
   for (size_t i = 0; i < children.size(); ++i) {
-    scoped_ptr<ResourceEntry> entry = storage_->GetEntry(children[i]);
-    if (entry && entry->file_info().is_directory()) {
-      child_directories->insert(GetFilePath(entry->resource_id()));
-      GetChildDirectories(entry->resource_id(), child_directories);
+    ResourceEntry entry;
+    if (storage_->GetEntry(children[i], &entry) &&
+        entry.file_info().is_directory()) {
+      child_directories->insert(GetFilePath(entry.resource_id()));
+      GetChildDirectories(entry.resource_id(), child_directories);
     }
   }
 }
@@ -522,11 +511,11 @@ base::FilePath ResourceMetadata::GetFilePath(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   base::FilePath path;
-  scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
-  if (entry) {
-    if (!entry->parent_resource_id().empty())
-      path = GetFilePath(entry->parent_resource_id());
-    path = path.Append(base::FilePath::FromUTF8Unsafe(entry->base_name()));
+  ResourceEntry entry;
+  if (storage_->GetEntry(resource_id, &entry)) {
+    if (!entry.parent_resource_id().empty())
+      path = GetFilePath(entry.parent_resource_id());
+    path = path.Append(base::FilePath::FromUTF8Unsafe(entry.base_name()));
   }
   return path;
 }
@@ -543,18 +532,18 @@ FileError ResourceMetadata::MoveEntryToDirectory(
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
     return FILE_ERROR_NO_SPACE;
 
-  scoped_ptr<ResourceEntry> entry = FindEntryByPathSync(file_path);
-  scoped_ptr<ResourceEntry> destination = FindEntryByPathSync(directory_path);
-  if (!entry || !destination)
+  ResourceEntry entry, destination;
+  if (!FindEntryByPathSync(file_path, &entry) ||
+      !FindEntryByPathSync(directory_path, &destination))
     return FILE_ERROR_NOT_FOUND;
-  if (!destination->file_info().is_directory())
+  if (!destination.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
-  entry->set_parent_resource_id(destination->resource_id());
+  entry.set_parent_resource_id(destination.resource_id());
 
-  FileError error = RefreshEntry(*entry);
+  FileError error = RefreshEntry(entry);
   if (error == FILE_ERROR_OK)
-    *out_file_path = GetFilePath(entry->resource_id());
+    *out_file_path = GetFilePath(entry.resource_id());
   return error;
 }
 
@@ -572,51 +561,49 @@ FileError ResourceMetadata::RenameEntry(
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
     return FILE_ERROR_NO_SPACE;
 
-  scoped_ptr<ResourceEntry> entry = FindEntryByPathSync(file_path);
-  if (!entry)
+  ResourceEntry entry;
+  if (!FindEntryByPathSync(file_path, &entry))
     return FILE_ERROR_NOT_FOUND;
 
   if (base::FilePath::FromUTF8Unsafe(new_name) == file_path.BaseName())
     return FILE_ERROR_EXISTS;
 
-  entry->set_title(new_name);
+  entry.set_title(new_name);
 
-  FileError error = RefreshEntry(*entry);
+  FileError error = RefreshEntry(entry);
   if (error == FILE_ERROR_OK)
-    *out_file_path = GetFilePath(entry->resource_id());
+    *out_file_path = GetFilePath(entry.resource_id());
   return error;
 }
 
-scoped_ptr<ResourceEntry> ResourceMetadata::FindEntryByPathSync(
-    const base::FilePath& file_path) {
+bool ResourceMetadata::FindEntryByPathSync(const base::FilePath& file_path,
+                                           ResourceEntry* out_entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   // Start from the root.
-  scoped_ptr<ResourceEntry> entry =
-      storage_->GetEntry(util::kDriveGrandRootSpecialResourceId);
-  DCHECK(entry);
-  DCHECK(entry->parent_resource_id().empty());
+  ResourceEntry entry;
+  if (!storage_->GetEntry(util::kDriveGrandRootSpecialResourceId, &entry))
+    return false;
+  DCHECK(entry.parent_resource_id().empty());
 
   // Check the first component.
   std::vector<base::FilePath::StringType> components;
   file_path.GetComponents(&components);
   if (components.empty() ||
-      base::FilePath(components[0]).AsUTF8Unsafe() != entry->base_name())
+      base::FilePath(components[0]).AsUTF8Unsafe() != entry.base_name())
     return scoped_ptr<ResourceEntry>();
 
   // Iterate over the remaining components.
   for (size_t i = 1; i < components.size(); ++i) {
     const std::string component = base::FilePath(components[i]).AsUTF8Unsafe();
-    const std::string resource_id = storage_->GetChild(entry->resource_id(),
+    const std::string resource_id = storage_->GetChild(entry.resource_id(),
                                                        component);
-    if (resource_id.empty())
-      return scoped_ptr<ResourceEntry>();
-
-    entry = storage_->GetEntry(resource_id);
-    DCHECK(entry);
-    DCHECK_EQ(entry->base_name(), component);
+    if (resource_id.empty() || !storage_->GetEntry(resource_id, &entry))
+      return false;
+    DCHECK_EQ(entry.base_name(), component);
   }
-  return entry.Pass();
+  out_entry->Swap(&entry);
+  return true;
 }
 
 void ResourceMetadata::GetResourceEntryPairByPathsOnUIThread(
@@ -647,18 +634,16 @@ FileError ResourceMetadata::RefreshDirectory(
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
     return FILE_ERROR_NO_SPACE;
 
-  scoped_ptr<ResourceEntry> directory = storage_->GetEntry(
-      directory_fetch_info.resource_id());
-
-  if (!directory)
+  ResourceEntry directory;
+  if (!storage_->GetEntry(directory_fetch_info.resource_id(), &directory))
     return FILE_ERROR_NOT_FOUND;
 
-  if (!directory->file_info().is_directory())
+  if (!directory.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
-  directory->mutable_directory_specific_info()->set_changestamp(
+  directory.mutable_directory_specific_info()->set_changestamp(
       directory_fetch_info.changestamp());
-  storage_->PutEntry(*directory);
+  storage_->PutEntry(directory);
 
   // First, go through the entry map. We'll handle existing entries and new
   // entries in the loop. We'll process deleted entries afterwards.
@@ -687,7 +672,7 @@ FileError ResourceMetadata::RefreshDirectory(
 
   // Go through the existing entries and remove deleted entries.
   std::vector<std::string> children;
-  storage_->GetChildren(directory->resource_id(), &children);
+  storage_->GetChildren(directory.resource_id(), &children);
   for (size_t i = 0; i < children.size(); ++i) {
     if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
       return FILE_ERROR_NO_SPACE;
@@ -699,19 +684,9 @@ FileError ResourceMetadata::RefreshDirectory(
   }
 
   if (out_file_path)
-    *out_file_path = GetFilePath(directory->resource_id());
+    *out_file_path = GetFilePath(directory.resource_id());
 
   return FILE_ERROR_OK;
-}
-
-scoped_ptr<ResourceEntry> ResourceMetadata::GetDirectory(
-    const std::string& resource_id) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(!resource_id.empty());
-
-  scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
-  return entry && entry->file_info().is_directory() ?
-      entry.Pass() : scoped_ptr<ResourceEntry>();
 }
 
 void ResourceMetadata::GetResourceEntryPairByPathsOnUIThreadAfterGetFirst(
@@ -802,10 +777,11 @@ bool ResourceMetadata::RemoveEntryRecursively(
     const std::string& resource_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<ResourceEntry> entry = storage_->GetEntry(resource_id);
-  DCHECK(entry);
+  ResourceEntry entry;
+  if (!storage_->GetEntry(resource_id, &entry))
+    return false;
 
-  if (entry->file_info().is_directory()) {
+  if (entry.file_info().is_directory()) {
     std::vector<std::string> children;
     storage_->GetChildren(resource_id, &children);
     for (size_t i = 0; i < children.size(); ++i) {

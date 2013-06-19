@@ -79,19 +79,18 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   entry1.set_resource_id(key1);
 
   // key1 not found.
-  EXPECT_FALSE(storage_->GetEntry(key1));
+  ResourceEntry result;
+  EXPECT_FALSE(storage_->GetEntry(key1, &result));
 
   // Put entry1.
   EXPECT_TRUE(storage_->PutEntry(entry1));
 
   // key1 found.
-  scoped_ptr<ResourceEntry> result;
-  result = storage_->GetEntry(key1);
-  ASSERT_TRUE(result);
-  EXPECT_EQ(key1, result->resource_id());
+  ASSERT_TRUE(storage_->GetEntry(key1, &result));
+  EXPECT_EQ(key1, result.resource_id());
 
   // key2 not found.
-  EXPECT_FALSE(storage_->GetEntry(key2));
+  EXPECT_FALSE(storage_->GetEntry(key2, &result));
 
   // Put entry2 as a child of entry1.
   ResourceEntry entry2;
@@ -101,7 +100,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   EXPECT_TRUE(storage_->PutEntry(entry2));
 
   // key2 found.
-  EXPECT_TRUE(storage_->GetEntry(key2));
+  EXPECT_TRUE(storage_->GetEntry(key2, &result));
   EXPECT_EQ(key2, storage_->GetChild(key1, name2));
 
   // Put entry3 as a child of entry2.
@@ -112,7 +111,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   EXPECT_TRUE(storage_->PutEntry(entry3));
 
   // key3 found.
-  EXPECT_TRUE(storage_->GetEntry(key3));
+  EXPECT_TRUE(storage_->GetEntry(key3, &result));
   EXPECT_EQ(key3, storage_->GetChild(key2, name3));
 
   // Change entry3's parent to entry1.
@@ -125,11 +124,11 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
 
   // Remove entries.
   EXPECT_TRUE(storage_->RemoveEntry(key3));
-  EXPECT_FALSE(storage_->GetEntry(key3));
+  EXPECT_FALSE(storage_->GetEntry(key3, &result));
   EXPECT_TRUE(storage_->RemoveEntry(key2));
-  EXPECT_FALSE(storage_->GetEntry(key2));
+  EXPECT_FALSE(storage_->GetEntry(key2, &result));
   EXPECT_TRUE(storage_->RemoveEntry(key1));
-  EXPECT_FALSE(storage_->GetEntry(key1));
+  EXPECT_FALSE(storage_->GetEntry(key1, &result));
 }
 
 TEST_F(ResourceMetadataStorageTest, Iterator) {
@@ -236,16 +235,14 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   ASSERT_TRUE(storage_->Initialize());
 
   // Can read data.
-  scoped_ptr<ResourceEntry> result;
-  result = storage_->GetEntry(parent_id1);
-  ASSERT_TRUE(result);
-  EXPECT_EQ(parent_id1, result->resource_id());
+  ResourceEntry result;
+  ASSERT_TRUE(storage_->GetEntry(parent_id1, &result));
+  EXPECT_EQ(parent_id1, result.resource_id());
 
-  result = storage_->GetEntry(child_id1);
-  ASSERT_TRUE(result);
-  EXPECT_EQ(child_id1, result->resource_id());
-  EXPECT_EQ(parent_id1, result->parent_resource_id());
-  EXPECT_EQ(child_name1, result->base_name());
+  ASSERT_TRUE(storage_->GetEntry(child_id1, &result));
+  EXPECT_EQ(child_id1, result.resource_id());
+  EXPECT_EQ(parent_id1, result.parent_resource_id());
+  EXPECT_EQ(child_name1, result.base_name());
 
   EXPECT_EQ(child_id1, storage_->GetChild(parent_id1, child_name1));
 }
@@ -258,9 +255,10 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
   entry.set_resource_id(key1);
 
   // Put some data.
+  ResourceEntry result;
   EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
   EXPECT_TRUE(storage_->PutEntry(entry));
-  EXPECT_TRUE(storage_->GetEntry(key1));
+  EXPECT_TRUE(storage_->GetEntry(key1, &result));
 
   // Set incompatible version and reopen DB.
   SetDBVersion(ResourceMetadataStorage::kDBVersion - 1);
@@ -269,7 +267,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
 
   // Data is erased because of the incompatible version.
   EXPECT_EQ(0, storage_->GetLargestChangestamp());
-  EXPECT_FALSE(storage_->GetEntry(key1));
+  EXPECT_FALSE(storage_->GetEntry(key1, &result));
 }
 
 TEST_F(ResourceMetadataStorageTest, WrongPath) {
