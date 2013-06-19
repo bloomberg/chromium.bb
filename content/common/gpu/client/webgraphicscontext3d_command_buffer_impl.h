@@ -52,6 +52,11 @@ class GpuChannelHost;
 class GpuChannelHostFactory;
 struct GpuMemoryAllocationForRenderer;
 
+const size_t kDefaultCommandBufferSize = 1024 * 1024;
+const size_t kDefaultStartTransferBufferSize = 1 * 1024 * 1024;
+const size_t kDefaultMinTransferBufferSize = 1 * 256 * 1024;
+const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
+
 // TODO(piman): move this logic to the compositor and remove it from the
 // context...
 class WebGraphicsContext3DSwapBuffersClient {

@@ -47,11 +47,6 @@ static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
 
 namespace {
 
-const size_t kDefaultCommandBufferSize = 1024 * 1024;
-const size_t kDefaultStartTransferBufferSize = 1 * 1024 * 1024;
-const size_t kDefaultMinTransferBufferSize = 1 * 256 * 1024;
-const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
-
 void ClearSharedContextsIfInShareSet(
     WebGraphicsContext3DCommandBufferImpl* context) {
   // If the given context isn't in the share set, that means that it
