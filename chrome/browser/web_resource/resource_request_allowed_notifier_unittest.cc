@@ -103,9 +103,11 @@ class ResourceRequestAllowedNotifierTest
     network_notifier.SimulateNetworkConnectionChange(type);
   }
 
-  // Simulate a resource request from the test service.
-  void SimulateResourceRequest() {
-    resource_request_allowed_notifier_.ResourceRequestsAllowed();
+  // Simulate a resource request from the test service. It returns true if
+  // resource request is allowed. Otherwise returns false and will change the
+  // result of was_notified() to true when the request is allowed.
+  bool SimulateResourceRequest() {
+    return resource_request_allowed_notifier_.ResourceRequestsAllowed();
   }
 
   void SimulateEulaAccepted() {
@@ -152,31 +154,31 @@ class ResourceRequestAllowedNotifierTest
 };
 
 TEST_F(ResourceRequestAllowedNotifierTest, DoNotNotifyIfOffline) {
-  SimulateResourceRequest();
   SetWaitingForNetwork(true);
+  EXPECT_FALSE(SimulateResourceRequest());
   SimulateNetworkConnectionChange(net::NetworkChangeNotifier::CONNECTION_NONE);
   EXPECT_FALSE(was_notified());
 }
 
 TEST_F(ResourceRequestAllowedNotifierTest, DoNotNotifyIfOnlineToOnline) {
-  SimulateResourceRequest();
   SetWaitingForNetwork(false);
+  EXPECT_TRUE(SimulateResourceRequest());
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
   EXPECT_FALSE(was_notified());
 }
 
 TEST_F(ResourceRequestAllowedNotifierTest, NotifyOnReconnect) {
-  SimulateResourceRequest();
   SetWaitingForNetwork(true);
+  EXPECT_FALSE(SimulateResourceRequest());
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_ETHERNET);
   EXPECT_TRUE(was_notified());
 }
 
 TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnWardriving) {
-  SimulateResourceRequest();
   SetWaitingForNetwork(false);
+  EXPECT_TRUE(SimulateResourceRequest());
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
@@ -192,8 +194,10 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnWardriving) {
 }
 
 TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnFlakyConnection) {
-  SimulateResourceRequest();
+  // SimulateResourceRequest() returns true because network is online.
   SetWaitingForNetwork(false);
+  EXPECT_TRUE(SimulateResourceRequest());
+  // The callback is nerver invoked whatever happens on network connection.
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_FALSE(was_notified());
@@ -202,6 +206,38 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnFlakyConnection) {
   EXPECT_FALSE(was_notified());
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
+  EXPECT_FALSE(was_notified());
+}
+
+TEST_F(ResourceRequestAllowedNotifierTest, NotifyOnFlakyConnection) {
+  SetWaitingForNetwork(false);
+  EXPECT_TRUE(SimulateResourceRequest());
+  // Network goes online, but not notified because SimulateResourceRequest()
+  // returns true before.
+  SimulateNetworkConnectionChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  EXPECT_FALSE(was_notified());
+  SimulateNetworkConnectionChange(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_FALSE(SimulateResourceRequest());
+  // Now, SimulateResourceRequest() returns false and will be notified later.
+  EXPECT_FALSE(was_notified());
+  SimulateNetworkConnectionChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  EXPECT_TRUE(was_notified());
+}
+
+TEST_F(ResourceRequestAllowedNotifierTest, NoNotifyOnEulaAfterGoOffline) {
+  DisableEulaAndNetwork();
+  EXPECT_FALSE(SimulateResourceRequest());
+
+  SimulateNetworkConnectionChange(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  EXPECT_FALSE(was_notified());
+  SimulateNetworkConnectionChange(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_FALSE(was_notified());
+  SimulateEulaAccepted();
   EXPECT_FALSE(was_notified());
 }
 
@@ -216,16 +252,16 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoRequestNoNotify) {
 }
 
 TEST_F(ResourceRequestAllowedNotifierTest, EulaOnlyNetworkOffline) {
-  SimulateResourceRequest();
   DisableEulaAndNetwork();
+  EXPECT_FALSE(SimulateResourceRequest());
 
   SimulateEulaAccepted();
   EXPECT_FALSE(was_notified());
 }
 
 TEST_F(ResourceRequestAllowedNotifierTest, EulaFirst) {
-  SimulateResourceRequest();
   DisableEulaAndNetwork();
+  EXPECT_FALSE(SimulateResourceRequest());
 
   SimulateEulaAccepted();
   EXPECT_FALSE(was_notified());
@@ -236,8 +272,8 @@ TEST_F(ResourceRequestAllowedNotifierTest, EulaFirst) {
 }
 
 TEST_F(ResourceRequestAllowedNotifierTest, NetworkFirst) {
-  SimulateResourceRequest();
   DisableEulaAndNetwork();
+  EXPECT_FALSE(SimulateResourceRequest());
 
   SimulateNetworkConnectionChange(
       net::NetworkChangeNotifier::CONNECTION_WIFI);

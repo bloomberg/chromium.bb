@@ -55,6 +55,7 @@ class ResourceRequestAllowedNotifier
 
   void SetWaitingForNetworkForTesting(bool waiting);
   void SetWaitingForEulaForTesting(bool waiting);
+  void SetObserverRequestedForTesting(bool requested);
 
  protected:
   // Notifies the observer if all criteria needed for resource requests are met.

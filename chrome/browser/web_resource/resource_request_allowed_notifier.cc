@@ -45,8 +45,9 @@ bool ResourceRequestAllowedNotifier::ResourceRequestsAllowed() {
   // The observer requested permission. Return the current criteria state and
   // set a flag to remind this class to notify the observer once the criteria
   // is met.
-  observer_requested_permission_ = true;
-  return !waiting_for_user_to_accept_eula_ && !waiting_for_network_;
+  observer_requested_permission_ = waiting_for_user_to_accept_eula_ ||
+                                   waiting_for_network_;
+  return !observer_requested_permission_;
 }
 
 void ResourceRequestAllowedNotifier::SetWaitingForNetworkForTesting(
@@ -57,6 +58,11 @@ void ResourceRequestAllowedNotifier::SetWaitingForNetworkForTesting(
 void ResourceRequestAllowedNotifier::SetWaitingForEulaForTesting(
     bool waiting) {
   waiting_for_user_to_accept_eula_ = waiting;
+}
+
+void ResourceRequestAllowedNotifier::SetObserverRequestedForTesting(
+    bool requested) {
+  observer_requested_permission_ = requested;
 }
 
 void ResourceRequestAllowedNotifier::MaybeNotifyObserver() {
@@ -96,5 +102,9 @@ void ResourceRequestAllowedNotifier::OnConnectionTypeChanged(
     waiting_for_network_ = false;
     DVLOG(1) << "Network came back online.";
     MaybeNotifyObserver();
+  } else if (!waiting_for_network_ &&
+             type == net::NetworkChangeNotifier::CONNECTION_NONE) {
+    waiting_for_network_ = true;
+    DVLOG(1) << "Network went offline.";
   }
 }

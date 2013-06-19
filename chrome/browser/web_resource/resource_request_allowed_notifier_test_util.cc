@@ -25,22 +25,19 @@ void TestRequestAllowedNotifier::SetRequestsAllowedOverride(bool allowed) {
 }
 
 void TestRequestAllowedNotifier::NotifyObserver() {
-  // Force the allowed state to true. This forces MaybeNotifyObserver to always
-  // notify observers, as MaybeNotifyObserver checks ResourceRequestsAllowed.
+  // Force the allowed state and requested state to true. This forces
+  // MaybeNotifyObserver to always notify observers, as MaybeNotifyObserver
+  // checks ResourceRequestsAllowed and requested state.
   override_requests_allowed_ = true;
   requests_allowed_ = true;
+  SetObserverRequestedForTesting(true);
   MaybeNotifyObserver();
 }
 
 bool TestRequestAllowedNotifier::ResourceRequestsAllowed() {
-  // Call ResourceRequestAllowedNotifier::ResourceRequestsAllowed once to
-  // simulate that the user requested permission. Only return that result if
-  // the override flag was set.
-  bool requests_allowed =
-      ResourceRequestAllowedNotifier::ResourceRequestsAllowed();
   if (override_requests_allowed_)
     return requests_allowed_;
-  return requests_allowed;
+  return ResourceRequestAllowedNotifier::ResourceRequestsAllowed();
 }
 
 EulaAcceptedNotifier* TestRequestAllowedNotifier::CreateEulaNotifier() {
