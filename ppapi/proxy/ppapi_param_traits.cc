@@ -661,4 +661,80 @@ void ParamTraits<ppapi::PPB_X509Certificate_Fields>::Log(const param_type& p,
                                                          std::string* l) {
 }
 
+// ppapi::SocketOptionData -----------------------------------------------------
+
+// static
+void ParamTraits<ppapi::SocketOptionData>::Write(Message* m,
+                                                 const param_type& p) {
+  ppapi::SocketOptionData::Type type = p.GetType();
+  ParamTraits<int32_t>::Write(m, static_cast<int32_t>(type));
+  switch (type) {
+    case ppapi::SocketOptionData::TYPE_INVALID: {
+      break;
+    }
+    case ppapi::SocketOptionData::TYPE_BOOL: {
+      bool out_value = false;
+      bool result = p.GetBool(&out_value);
+      // Suppress unused variable warnings.
+      static_cast<void>(result);
+      DCHECK(result);
+
+      ParamTraits<bool>::Write(m, out_value);
+      break;
+    }
+    case ppapi::SocketOptionData::TYPE_INT32: {
+      int32_t out_value = 0;
+      bool result = p.GetInt32(&out_value);
+      // Suppress unused variable warnings.
+      static_cast<void>(result);
+      DCHECK(result);
+
+      ParamTraits<int32_t>::Write(m, out_value);
+      break;
+    }
+    // No default so the compiler will warn on new types.
+  }
+}
+
+// static
+bool ParamTraits<ppapi::SocketOptionData>::Read(const Message* m,
+                                                PickleIterator* iter,
+                                                param_type* r) {
+  *r = ppapi::SocketOptionData();
+  int32_t type = 0;
+  if (!ParamTraits<int32_t>::Read(m, iter, &type))
+    return false;
+  if (type != ppapi::SocketOptionData::TYPE_INVALID &&
+      type != ppapi::SocketOptionData::TYPE_BOOL &&
+      type != ppapi::SocketOptionData::TYPE_INT32) {
+    return false;
+  }
+  switch (static_cast<ppapi::SocketOptionData::Type>(type)) {
+    case ppapi::SocketOptionData::TYPE_INVALID: {
+      return true;
+    }
+    case ppapi::SocketOptionData::TYPE_BOOL: {
+      bool value = false;
+      if (!ParamTraits<bool>::Read(m, iter, &value))
+        return false;
+      r->SetBool(value);
+      return true;
+    }
+    case ppapi::SocketOptionData::TYPE_INT32: {
+      int32_t value = 0;
+      if (!ParamTraits<int32_t>::Read(m, iter, &value))
+        return false;
+      r->SetInt32(value);
+      return true;
+    }
+    // No default so the compiler will warn on new types.
+  }
+  return false;
+}
+
+// static
+void ParamTraits<ppapi::SocketOptionData>::Log(const param_type& p,
+                                               std::string* l) {
+}
+
 }  // namespace IPC

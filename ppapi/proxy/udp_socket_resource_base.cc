@@ -12,18 +12,43 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/socket_option_data.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
 namespace ppapi {
 namespace proxy {
 
+namespace {
+
+int32_t ConvertPPError(int32_t pp_error, bool private_api) {
+  // The private API doesn't return network-specific error codes or
+  // PP_ERROR_NOACCESS. In order to preserve the behavior, we convert those to
+  // PP_ERROR_FAILED.
+  if (private_api &&
+      (pp_error <= PP_ERROR_CONNECTION_CLOSED ||
+       pp_error == PP_ERROR_NOACCESS)) {
+    return PP_ERROR_FAILED;
+  }
+
+  return pp_error;
+}
+
+}  // namespace
+
 const int32_t UDPSocketResourceBase::kMaxReadSize = 1024 * 1024;
 const int32_t UDPSocketResourceBase::kMaxWriteSize = 1024 * 1024;
+const int32_t UDPSocketResourceBase::kMaxSendBufferSize =
+    1024 * UDPSocketResourceBase::kMaxWriteSize;
+const int32_t UDPSocketResourceBase::kMaxReceiveBufferSize =
+    1024 * UDPSocketResourceBase::kMaxReadSize;
+
 
 UDPSocketResourceBase::UDPSocketResourceBase(Connection connection,
-                                             PP_Instance instance)
+                                             PP_Instance instance,
+                                             bool private_api)
     : PluginResource(connection, instance),
+      private_api_(private_api),
       bound_(false),
       closed_(false),
       read_buffer_(NULL),
@@ -35,33 +60,55 @@ UDPSocketResourceBase::UDPSocketResourceBase(Connection connection,
   memset(bound_addr_.data, 0,
          arraysize(bound_addr_.data) * sizeof(*bound_addr_.data));
 
-  SendCreate(BROWSER, PpapiHostMsg_UDPSocketPrivate_Create());
+  if (private_api)
+    SendCreate(BROWSER, PpapiHostMsg_UDPSocket_CreatePrivate());
+  else
+    SendCreate(BROWSER, PpapiHostMsg_UDPSocket_Create());
 }
 
 UDPSocketResourceBase::~UDPSocketResourceBase() {
 }
 
-int32_t UDPSocketResourceBase::SetSocketFeatureImpl(
-    PP_UDPSocketFeature_Private name,
-    const PP_Var& value) {
-  if (bound_ || closed_)
+int32_t UDPSocketResourceBase::SetOptionImpl(
+    PP_UDPSocket_Option_Dev name,
+    const PP_Var& value,
+    scoped_refptr<TrackedCallback> callback) {
+  if (closed_)
     return PP_ERROR_FAILED;
 
+  SocketOptionData option_data;
   switch (name) {
-    case PP_UDPSOCKETFEATURE_ADDRESS_REUSE:
-    case PP_UDPSOCKETFEATURE_BROADCAST: {
+    case PP_UDPSOCKET_OPTION_ADDRESS_REUSE:
+    case PP_UDPSOCKET_OPTION_BROADCAST: {
+      if (bound_)
+        return PP_ERROR_FAILED;
       if (value.type != PP_VARTYPE_BOOL)
         return PP_ERROR_BADARGUMENT;
-      Post(BROWSER,
-           PpapiHostMsg_UDPSocketPrivate_SetBoolSocketFeature(
-               static_cast<int32_t>(name), PP_ToBool(value.value.as_bool)));
+      option_data.SetBool(PP_ToBool(value.value.as_bool));
+      break;
+    }
+    case PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE:
+    case PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE: {
+      if (!bound_)
+        return PP_ERROR_FAILED;
+      if (value.type != PP_VARTYPE_INT32)
+        return PP_ERROR_BADARGUMENT;
+      option_data.SetInt32(value.value.as_int);
       break;
     }
     default: {
+      NOTREACHED();
       return PP_ERROR_BADARGUMENT;
     }
   }
-  return PP_OK;
+
+  Call<PpapiPluginMsg_UDPSocket_SetOptionReply>(
+      BROWSER,
+      PpapiHostMsg_UDPSocket_SetOption(name, option_data),
+      base::Bind(&UDPSocketResourceBase::OnPluginMsgSetOptionReply,
+                 base::Unretained(this),
+                 callback));
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t UDPSocketResourceBase::BindImpl(
@@ -77,9 +124,9 @@ int32_t UDPSocketResourceBase::BindImpl(
   bind_callback_ = callback;
 
   // Send the request, the browser will call us back via BindReply.
-  Call<PpapiPluginMsg_UDPSocketPrivate_BindReply>(
+  Call<PpapiPluginMsg_UDPSocket_BindReply>(
       BROWSER,
-      PpapiHostMsg_UDPSocketPrivate_Bind(*addr),
+      PpapiHostMsg_UDPSocket_Bind(*addr),
       base::Bind(&UDPSocketResourceBase::OnPluginMsgBindReply,
                  base::Unretained(this)));
   return PP_OK_COMPLETIONPENDING;
@@ -111,9 +158,9 @@ int32_t UDPSocketResourceBase::RecvFromImpl(
   recvfrom_callback_ = callback;
 
   // Send the request, the browser will call us back via RecvFromReply.
-  Call<PpapiPluginMsg_UDPSocketPrivate_RecvFromReply>(
+  Call<PpapiPluginMsg_UDPSocket_RecvFromReply>(
       BROWSER,
-      PpapiHostMsg_UDPSocketPrivate_RecvFrom(bytes_to_read_),
+      PpapiHostMsg_UDPSocket_RecvFrom(bytes_to_read_),
       base::Bind(&UDPSocketResourceBase::OnPluginMsgRecvFromReply,
                  base::Unretained(this), addr));
   return PP_OK_COMPLETIONPENDING;
@@ -145,10 +192,9 @@ int32_t UDPSocketResourceBase::SendToImpl(
   sendto_callback_ = callback;
 
   // Send the request, the browser will call us back via SendToReply.
-  Call<PpapiPluginMsg_UDPSocketPrivate_SendToReply>(
+  Call<PpapiPluginMsg_UDPSocket_SendToReply>(
       BROWSER,
-      PpapiHostMsg_UDPSocketPrivate_SendTo(
-          std::string(buffer, num_bytes), *addr),
+      PpapiHostMsg_UDPSocket_SendTo(std::string(buffer, num_bytes), *addr),
       base::Bind(&UDPSocketResourceBase::OnPluginMsgSendToReply,
                  base::Unretained(this)));
   return PP_OK_COMPLETIONPENDING;
@@ -161,7 +207,7 @@ void UDPSocketResourceBase::CloseImpl() {
   bound_ = false;
   closed_ = true;
 
-  Post(BROWSER, PpapiHostMsg_UDPSocketPrivate_Close());
+  Post(BROWSER, PpapiHostMsg_UDPSocket_Close());
 
   PostAbortIfNecessary(&bind_callback_);
   PostAbortIfNecessary(&recvfrom_callback_);
@@ -174,6 +220,13 @@ void UDPSocketResourceBase::PostAbortIfNecessary(
     (*callback)->PostAbort();
 }
 
+void UDPSocketResourceBase::OnPluginMsgSetOptionReply(
+    scoped_refptr<TrackedCallback> callback,
+    const ResourceMessageReplyParams& params) {
+  if (TrackedCallback::IsPending(callback))
+    callback->Run(ConvertPPError(params.result(), private_api_));
+}
+
 void UDPSocketResourceBase::OnPluginMsgBindReply(
     const ResourceMessageReplyParams& params,
     const PP_NetAddress_Private& bound_addr) {
@@ -184,7 +237,7 @@ void UDPSocketResourceBase::OnPluginMsgBindReply(
   if (params.result() == PP_OK)
     bound_ = true;
   bound_addr_ = bound_addr;
-  bind_callback_->Run(params.result());
+  bind_callback_->Run(ConvertPPError(params.result(), private_api_));
 }
 
 void UDPSocketResourceBase::OnPluginMsgRecvFromReply(
@@ -196,18 +249,18 @@ void UDPSocketResourceBase::OnPluginMsgRecvFromReply(
     NOTREACHED();
     return;
   }
-  bool succeeded = (params.result() == PP_OK);
-  if (succeeded && output_addr) {
+  int32_t result = params.result();
+  if (result == PP_OK && output_addr) {
     thunk::EnterResourceCreationNoLock enter(pp_instance());
     if (enter.succeeded()) {
       *output_addr = enter.functions()->CreateNetAddressFromNetAddressPrivate(
           pp_instance(), addr);
     } else {
-      succeeded = false;
+      result = PP_ERROR_FAILED;
     }
   }
 
-  if (succeeded) {
+  if (result == PP_OK) {
     CHECK_LE(static_cast<int32_t>(data.size()), bytes_to_read_);
     if (!data.empty())
       memcpy(read_buffer_, data.c_str(), data.size());
@@ -217,10 +270,10 @@ void UDPSocketResourceBase::OnPluginMsgRecvFromReply(
   bytes_to_read_ = -1;
   recvfrom_addr_ = addr;
 
-  if (succeeded)
+  if (result == PP_OK)
     recvfrom_callback_->Run(static_cast<int32_t>(data.size()));
   else
-    recvfrom_callback_->Run(params.result());
+    recvfrom_callback_->Run(ConvertPPError(result, private_api_));
 }
 
 void UDPSocketResourceBase::OnPluginMsgSendToReply(
@@ -233,7 +286,7 @@ void UDPSocketResourceBase::OnPluginMsgSendToReply(
   if (params.result() == PP_OK)
     sendto_callback_->Run(bytes_written);
   else
-    sendto_callback_->Run(params.result());
+    sendto_callback_->Run(ConvertPPError(params.result(), private_api_));
 }
 
 }  // namespace proxy

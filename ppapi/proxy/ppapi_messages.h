@@ -23,6 +23,7 @@
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
+#include "ppapi/c/dev/ppb_udp_socket_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_bool.h"
@@ -43,7 +44,6 @@
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
-#include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/proxy/host_resolver_private_resource.h"
@@ -64,6 +64,7 @@
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
+#include "ppapi/shared_impl/socket_option_data.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
 
@@ -101,6 +102,8 @@ IPC_ENUM_TRAITS(PP_TrueTypeFontStyle_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontWeight_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontWidth_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontCharset_Dev)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_UDPSocket_Option_Dev,
+                          PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
 
@@ -1215,27 +1218,6 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_SetBoolOption,
                      uint32 /* name */,
                      bool /* value */)
 
-// UDPSocketPrivate.
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocketPrivate_Create)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocketPrivate_SetBoolSocketFeature,
-                     int32_t /* name */,
-                     bool /* value */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocketPrivate_Bind,
-                     PP_NetAddress_Private /* net_addr */)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocketPrivate_RecvFrom,
-                     int32_t /* num_bytes */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocketPrivate_SendTo,
-                     std::string /* data */,
-                     PP_NetAddress_Private /* net_addr */)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocketPrivate_Close)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_UDPSocketPrivate_BindReply,
-                     PP_NetAddress_Private /* bound_addr */)
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_UDPSocketPrivate_RecvFromReply,
-                     std::string /* data */,
-                     PP_NetAddress_Private /* remote_addr */)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_UDPSocketPrivate_SendToReply,
-                     int32_t /* bytes_written */)
-
 // PPB_TCPServerSocket_Private.
 IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBTCPServerSocket_Listen,
                      int32 /* routing_id */,
@@ -1575,6 +1557,33 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Printing_GetDefaultPrintSettings)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply,
                      PP_PrintSettings_Dev /* print_settings */)
+
+// UDP Socket ------------------------------------------------------------------
+// Creates a PPB_UDPSocket resource.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocket_Create)
+
+// Creates a PPB_UDPSocket_Private resource.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocket_CreatePrivate)
+
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocket_SetOption,
+                     PP_UDPSocket_Option_Dev /* name */,
+                     ppapi::SocketOptionData /* value */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_UDPSocket_SetOptionReply)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocket_Bind,
+                     PP_NetAddress_Private /* net_addr */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_UDPSocket_BindReply,
+                     PP_NetAddress_Private /* bound_addr */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocket_RecvFrom,
+                     int32_t /* num_bytes */)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_UDPSocket_RecvFromReply,
+                     std::string /* data */,
+                     PP_NetAddress_Private /* remote_addr */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocket_SendTo,
+                     std::string /* data */,
+                     PP_NetAddress_Private /* net_addr */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_UDPSocket_SendToReply,
+                     int32_t /* bytes_written */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocket_Close)
 
 // URLLoader ------------------------------------------------------------------
 

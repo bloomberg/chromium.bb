@@ -21,7 +21,7 @@ typedef thunk::EnterResourceNoLock<thunk::PPB_NetAddress_API>
 
 UDPSocketResource::UDPSocketResource(Connection connection,
                                      PP_Instance instance)
-    : UDPSocketResourceBase(connection, instance) {
+    : UDPSocketResourceBase(connection, instance, false) {
 }
 
 UDPSocketResource::~UDPSocketResource() {
@@ -78,21 +78,8 @@ void UDPSocketResource::Close() {
 int32_t UDPSocketResource::SetOption(
     PP_UDPSocket_Option_Dev name,
     const PP_Var& value,
-    scoped_refptr<TrackedCallback> /* callback */) {
-  // TODO(yzshen): Add support for other options.
-  PP_UDPSocketFeature_Private feature;
-  switch (name) {
-    case PP_UDPSOCKET_OPTION_ADDRESS_REUSE:
-      feature = PP_UDPSOCKETFEATURE_ADDRESS_REUSE;
-      break;
-    case PP_UDPSOCKET_OPTION_BROADCAST:
-      feature = PP_UDPSOCKETFEATURE_BROADCAST;
-      break;
-    default:
-      return PP_ERROR_NOTSUPPORTED;
-  }
-
-  return SetSocketFeatureImpl(feature, value);
+    scoped_refptr<TrackedCallback> callback) {
+  return SetOptionImpl(name, value, callback);
 }
 
 }  // namespace proxy

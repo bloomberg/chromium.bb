@@ -97,6 +97,8 @@
           'shared_impl/scoped_pp_resource.h',
           'shared_impl/scoped_pp_var.cc',
           'shared_impl/scoped_pp_var.h',
+          'shared_impl/socket_option_data.cc',
+          'shared_impl/socket_option_data.h',
           'shared_impl/tcp_socket_shared.cc',
           'shared_impl/tcp_socket_shared.h',
           'shared_impl/thread_aware_callback.cc',

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_PRIVATE_MESSAGE_FILTER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_PRIVATE_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_MESSAGE_FILTER_H_
 
 #include <string>
 
@@ -16,6 +16,7 @@
 #include "content/public/common/process_type.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
+#include "ppapi/c/dev/ppb_udp_socket_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/host/resource_message_filter.h"
@@ -29,6 +30,9 @@ class UDPServerSocket;
 }
 
 namespace ppapi {
+
+class SocketOptionData;
+
 namespace host {
 struct ReplyMessageContext;
 }
@@ -39,14 +43,15 @@ namespace content {
 class BrowserPpapiHostImpl;
 struct SocketPermissionRequest;
 
-class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
+class CONTENT_EXPORT PepperUDPSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter {
  public:
-  PepperUDPSocketPrivateMessageFilter(BrowserPpapiHostImpl* host,
-                                      PP_Instance instance);
+  PepperUDPSocketMessageFilter(BrowserPpapiHostImpl* host,
+                               PP_Instance instance,
+                               bool private_api);
 
  protected:
-  virtual ~PepperUDPSocketPrivateMessageFilter();
+  virtual ~PepperUDPSocketMessageFilter();
 
  private:
   // ppapi::host::ResourceMessageFilter overrides.
@@ -56,10 +61,10 @@ class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  int32_t OnMsgSetBoolSocketFeature(
+  int32_t OnMsgSetOption(
       const ppapi::host::HostMessageContext* context,
-      int32_t name,
-      bool value);
+      PP_UDPSocket_Option_Dev name,
+      const ppapi::SocketOptionData& value);
   int32_t OnMsgBind(const ppapi::host::HostMessageContext* context,
                     const PP_NetAddress_Private& addr);
   int32_t OnMsgRecvFrom(const ppapi::host::HostMessageContext* context,
@@ -77,9 +82,9 @@ class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
   void Close();
 
   void OnRecvFromCompleted(const ppapi::host::ReplyMessageContext& context,
-                           int32_t result);
+                           int net_result);
   void OnSendToCompleted(const ppapi::host::ReplyMessageContext& context,
-                         int32_t result);
+                         int net_result);
 
   void SendBindReply(const ppapi::host::ReplyMessageContext& context,
                      int32_t result,
@@ -111,12 +116,14 @@ class CONTENT_EXPORT PepperUDPSocketPrivateMessageFilter
   net::IPEndPoint recvfrom_address_;
 
   bool external_plugin_;
+  bool private_api_;
+
   int render_process_id_;
   int render_view_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperUDPSocketPrivateMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(PepperUDPSocketMessageFilter);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_PRIVATE_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_UDP_SOCKET_MESSAGE_FILTER_H_

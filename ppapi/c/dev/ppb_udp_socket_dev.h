@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_udp_socket_dev.idl modified Thu Jun 13 09:38:45 2013. */
+/* From dev/ppb_udp_socket_dev.idl modified Tue Jun 18 22:26:29 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_UDP_SOCKET_DEV_H_
 #define PPAPI_C_DEV_PPB_UDP_SOCKET_DEV_H_
@@ -32,19 +32,23 @@
  */
 typedef enum {
   /* Allows the socket to share the local address to which it will be bound with
-   * other processes. Value's type should be PP_VARTYPE_BOOL. */
+   * other processes. Value's type should be PP_VARTYPE_BOOL.
+   * This option can only be set before calling Bind(). */
   PP_UDPSOCKET_OPTION_ADDRESS_REUSE = 0,
   /* Allows sending and receiving packets to and from broadcast addresses.
-   * Value's type should be PP_VARTYPE_BOOL. */
+   * Value's type should be PP_VARTYPE_BOOL.
+   * This option can only be set before calling Bind(). */
   PP_UDPSOCKET_OPTION_BROADCAST = 1,
   /* Specifies the total per-socket buffer space reserved for sends. Value's
    * type should be PP_VARTYPE_INT32.
+   * This option can only be set after a successful Bind() call.
    * Note: This is only treated as a hint for the browser to set the buffer
    * size. Even if SetOption() reports that this option has been successfully
    * set, the browser doesn't guarantee it will conform to it. */
   PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE = 2,
   /* Specifies the total per-socket buffer space reserved for receives. Value's
    * type should be PP_VARTYPE_INT32.
+   * This option can only be set after a successful Bind() call.
    * Note: This is only treated as a hint for the browser to set the buffer
    * size. Even if SetOption() reports that this option has been successfully
    * set, the browser doesn't guarantee it will conform to it. */
@@ -106,7 +110,7 @@ struct PPB_UDPSocket_Dev_0_1 {
    */
   void (*Close)(PP_Resource udp_socket);
   /**
-   * Sets a socket option to |udp_socket|. Should be called before Bind().
+   * Sets a socket option on |udp_socket|.
    * See the PP_UDPSocket_Option_Dev description for option names, value types
    * and allowed values.
    * Returns PP_OK on success. Otherwise, returns PP_ERROR_BADRESOURCE (if bad

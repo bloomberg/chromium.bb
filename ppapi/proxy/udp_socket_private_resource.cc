@@ -4,6 +4,8 @@
 
 #include "ppapi/proxy/udp_socket_private_resource.h"
 
+#include "base/logging.h"
+#include "ppapi/c/dev/ppb_udp_socket_dev.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 
 namespace ppapi {
@@ -11,7 +13,7 @@ namespace proxy {
 
 UDPSocketPrivateResource::UDPSocketPrivateResource(Connection connection,
                                                    PP_Instance instance)
-    : UDPSocketResourceBase(connection, instance) {
+    : UDPSocketResourceBase(connection, instance, true) {
 }
 
 UDPSocketPrivateResource::~UDPSocketPrivateResource() {
@@ -25,7 +27,22 @@ UDPSocketPrivateResource::AsPPB_UDPSocket_Private_API() {
 int32_t UDPSocketPrivateResource::SetSocketFeature(
     PP_UDPSocketFeature_Private name,
     PP_Var value) {
-  return SetSocketFeatureImpl(name, value);
+  PP_UDPSocket_Option_Dev public_name = PP_UDPSOCKET_OPTION_ADDRESS_REUSE;
+  switch (name) {
+    case PP_UDPSOCKETFEATURE_ADDRESS_REUSE:
+      // |public_name| has been initialized above.
+      break;
+    case PP_UDPSOCKETFEATURE_BROADCAST:
+      public_name = PP_UDPSOCKET_OPTION_BROADCAST;
+      break;
+    case PP_UDPSOCKETFEATURE_COUNT:
+      return PP_ERROR_BADARGUMENT;
+    default:
+      NOTREACHED();
+      return PP_ERROR_BADARGUMENT;
+  }
+  int32_t result = SetOptionImpl(public_name, value, NULL);
+  return result == PP_OK_COMPLETIONPENDING ? PP_OK : result;
 }
 
 int32_t UDPSocketPrivateResource::Bind(
