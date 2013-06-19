@@ -34,10 +34,6 @@
 #include "InspectorFrontend.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
-#include "core/dom/Event.h"
-#include "core/dom/EventListener.h"
-#include "core/dom/EventTarget.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -49,8 +45,11 @@
 #include "core/inspector/NetworkResourcesData.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ResourceLoader.h"
+#include "core/loader/ThreadableLoader.h"
+#include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResource.h"
@@ -87,47 +86,77 @@ static const char userAgentOverride[] = "userAgentOverride";
 
 namespace {
 
-class SendXHRCallback : public EventListener {
-    WTF_MAKE_NONCOPYABLE(SendXHRCallback);
+class InspectorThreadableLoaderClient : public ThreadableLoaderClient {
+    WTF_MAKE_NONCOPYABLE(InspectorThreadableLoaderClient);
 public:
-    static PassRefPtr<SendXHRCallback> create(PassRefPtr<LoadResourceForFrontendCallback> callback)
+    InspectorThreadableLoaderClient(PassRefPtr<LoadResourceForFrontendCallback> callback)
+        : m_callback(callback) { }
+
+    virtual ~InspectorThreadableLoaderClient() { }
+
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
     {
-        return adoptRef(new SendXHRCallback(callback));
+        WTF::TextEncoding textEncoding(response.textEncodingName());
+        bool useDetector = false;
+        if (!textEncoding.isValid()) {
+            textEncoding = UTF8Encoding();
+            useDetector = true;
+        }
+        m_decoder = TextResourceDecoder::create("text/plain", textEncoding, useDetector);
     }
 
-    virtual ~SendXHRCallback() { }
-
-    virtual bool operator==(const EventListener& other) OVERRIDE
+    virtual void didReceiveData(const char* data, int dataLength)
     {
-        return this == &other;
+        if (!dataLength)
+            return;
+
+        if (dataLength == -1)
+            dataLength = strlen(data);
+
+        m_responseText = m_responseText.concatenateWith(m_decoder->decode(data, dataLength));
     }
 
-    virtual void handleEvent(ScriptExecutionContext*, Event* event) OVERRIDE
+    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/)
     {
-        if (!m_callback->isActive())
-            return;
-        if (event->type() == eventNames().errorEvent) {
-            m_callback->sendFailure("Error loading resource.");
-            return;
-        }
-        if (event->type() != eventNames().readystatechangeEvent) {
-            m_callback->sendFailure("Unexpected event type.");
-            return;
-        }
+        m_responseText = m_responseText.concatenateWith(m_decoder->flush());
+        m_callback->sendSuccess(m_responseText.flattenToString());
+        dispose();
+    }
 
-        XMLHttpRequest* xhr = static_cast<XMLHttpRequest*>(event->target());
-        if (xhr->readyState() != XMLHttpRequest::DONE)
-            return;
+    virtual void didFail(const ResourceError&)
+    {
+        m_callback->sendFailure("Loading resource for inspector failed");
+        dispose();
+    }
 
-        ScriptString responseText = xhr->responseText(IGNORE_EXCEPTION);
-        m_callback->sendSuccess(responseText.flattenToString());
+    virtual void didFailRedirectCheck()
+    {
+        m_callback->sendFailure("Loading resource for inspector failed redirect check");
+        dispose();
+    }
+
+    void didFailLoaderCreation()
+    {
+        m_callback->sendFailure("Couldn't create a loader");
+        dispose();
+    }
+
+    void setLoader(PassRefPtr<ThreadableLoader> loader)
+    {
+        m_loader = loader;
     }
 
 private:
-    SendXHRCallback(PassRefPtr<LoadResourceForFrontendCallback> callback)
-        : EventListener(EventListener::CPPEventListenerType)
-        , m_callback(callback) { }
+    void dispose()
+    {
+        m_loader = 0;
+        delete this;
+    }
+
     RefPtr<LoadResourceForFrontendCallback> m_callback;
+    RefPtr<ThreadableLoader> m_loader;
+    RefPtr<TextResourceDecoder> m_decoder;
+    ScriptString m_responseText;
 };
 
 KURL urlWithoutFragment(const KURL& url)
@@ -683,30 +712,27 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
         return;
     }
 
-    RefPtr<XMLHttpRequest> xhr = XMLHttpRequest::create(document);
-
     KURL kurl = KURL(ParsedURLString, url);
     if (kurl.isLocalFile()) {
         *errorString = "Can not load local file";
         return;
     }
 
-    ExceptionCode ec = 0;
-    xhr->open(ASCIILiteral("GET"), kurl, ec);
-    if (ec) {
-        *errorString = "Error opening an XMLHttpRequest";
-        return;
-    }
+    ResourceRequest request(url);
+    request.setHTTPMethod("GET");
 
-    RefPtr<SendXHRCallback> sendXHRCallback = SendXHRCallback::create(callback);
-    xhr->addEventListener(eventNames().abortEvent, sendXHRCallback, false);
-    xhr->addEventListener(eventNames().errorEvent, sendXHRCallback, false);
-    xhr->addEventListener(eventNames().readystatechangeEvent, sendXHRCallback, false);
-    xhr->sendForInspector(ec);
-    if (ec) {
-        *errorString = "Error sending an XMLHttpRequest";
+    ThreadableLoaderOptions options;
+    options.allowCredentials = DoNotAllowStoredCredentials;
+    options.crossOriginRequestPolicy = AllowCrossOriginRequests;
+
+    InspectorThreadableLoaderClient* inspectorThreadableLoaderClient = new InspectorThreadableLoaderClient(callback);
+    RefPtr<DocumentThreadableLoader> loader = DocumentThreadableLoader::create(document, inspectorThreadableLoaderClient, request, options);
+    if (!loader) {
+        inspectorThreadableLoaderClient->didFailLoaderCreation();
         return;
     }
+    loader->setDefersLoading(false);
+    inspectorThreadableLoaderClient->setLoader(loader.release());
 }
 
 void InspectorResourceAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)

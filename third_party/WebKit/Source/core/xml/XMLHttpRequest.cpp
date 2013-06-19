@@ -680,12 +680,6 @@ void XMLHttpRequest::sendBytesData(const void* data, size_t length, ExceptionCod
     createRequest(ec);
 }
 
-void XMLHttpRequest::sendForInspector(ExceptionCode& ec)
-{
-    m_allowCrossOriginRequests = true;
-    send(ec);
-}
-
 void XMLHttpRequest::sendForInspectorXHRReplay(PassRefPtr<FormData> formData, ExceptionCode& ec)
 {
     m_requestEntityBody = formData ? formData->deepCopy() : 0;

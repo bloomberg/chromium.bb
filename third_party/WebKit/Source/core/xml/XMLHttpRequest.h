@@ -111,7 +111,6 @@ public:
     unsigned long timeout() const { return m_timeoutMilliseconds; }
     void setTimeout(unsigned long timeout, ExceptionCode&);
 
-    void sendForInspector(ExceptionCode&);
     void sendForInspectorXHRReplay(PassRefPtr<FormData>, ExceptionCode&);
 
     // Expose HTTP validation methods for other untrusted requests.
