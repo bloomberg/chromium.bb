@@ -134,12 +134,16 @@ void WebContentsDelegateAndroid::AddNewContents(
 }
 
 void WebContentsDelegateAndroid::ActivateContents(WebContents* contents) {
-  // TODO(dtrainor) When doing the merge I came across this.  Should we be
-  // activating this tab here?
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+  Java_WebContentsDelegateAndroid_activateContents(env, obj.obj());
 }
 
 void WebContentsDelegateAndroid::DeactivateContents(WebContents* contents) {
-  // Do nothing.
+  // On desktop the current window is deactivated here, bringing the next window
+  // to focus. Not implemented on Android.
 }
 
 void WebContentsDelegateAndroid::LoadingStateChanged(WebContents* source) {

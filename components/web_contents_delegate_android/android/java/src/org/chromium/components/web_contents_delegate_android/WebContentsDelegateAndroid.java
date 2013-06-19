@@ -58,6 +58,10 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
+    public void activateContents() {
+    }
+
+    @CalledByNative
     public void closeContents() {
     }
 
