@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "content/browser/renderer_host/socket_stream_host.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -26,13 +28,17 @@ SocketStreamDispatcherHost::SocketStreamDispatcherHost(
     : render_process_id_(render_process_id),
       url_request_context_selector_(selector),
       resource_context_(resource_context),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      on_shutdown_(false) {
   DCHECK(selector);
   net::WebSocketJob::EnsureInit();
 }
 
 bool SocketStreamDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                    bool* message_was_ok) {
+  if (on_shutdown_)
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(SocketStreamDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(SocketStreamHostMsg_Connect, OnConnect)
@@ -178,15 +184,8 @@ void SocketStreamDispatcherHost::ContinueSSLRequest(
 }
 
 SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
-  // TODO(ukai): Implement IDMap::RemoveAll().
-  for (IDMap<SocketStreamHost>::const_iterator iter(&hosts_);
-       !iter.IsAtEnd();
-       iter.Advance()) {
-    int socket_id = iter.GetCurrentKey();
-    const SocketStreamHost* socket_stream_host = iter.GetCurrentValue();
-    delete socket_stream_host;
-    hosts_.Remove(socket_id);
-  }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  Shutdown();
 }
 
 // Message handlers called by OnMessageReceived.
@@ -247,6 +246,20 @@ void SocketStreamDispatcherHost::DeleteSocketStreamHost(int socket_id) {
 net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
   return url_request_context_selector_->GetRequestContext(
       ResourceType::SUB_RESOURCE);
+}
+
+void SocketStreamDispatcherHost::Shutdown() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // TODO(ukai): Implement IDMap::RemoveAll().
+  for (IDMap<SocketStreamHost>::const_iterator iter(&hosts_);
+       !iter.IsAtEnd();
+       iter.Advance()) {
+    int socket_id = iter.GetCurrentKey();
+    const SocketStreamHost* socket_stream_host = iter.GetCurrentValue();
+    delete socket_stream_host;
+    hosts_.Remove(socket_id);
+  }
+  on_shutdown_ = true;
 }
 
 }  // namespace content

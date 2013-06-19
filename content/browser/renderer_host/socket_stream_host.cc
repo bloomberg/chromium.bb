@@ -51,6 +51,7 @@ int SocketStreamHost::SocketIdFromSocketStream(
 
 SocketStreamHost::~SocketStreamHost() {
   VLOG(1) << "SocketStreamHost destructed socket_id=" << socket_id_;
+  socket_->set_context(NULL);
   socket_->DetachDelegate();
 }
 

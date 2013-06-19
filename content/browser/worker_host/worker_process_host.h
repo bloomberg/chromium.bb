@@ -33,6 +33,7 @@ namespace content {
 class BrowserChildProcessHostImpl;
 class IndexedDBContextImpl;
 class ResourceContext;
+class SocketStreamDispatcherHost;
 class WorkerServiceImpl;
 
 // The WorkerProcessHost is the interface that represents the browser side of
@@ -206,6 +207,8 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
                     WorkerMessageFilter* filter,
                     int route_id);
 
+  void ShutdownSocketStreamDispatcherHostIfNecessary();
+
   virtual bool CanShutdown() OVERRIDE;
 
   // Updates the title shown in the task manager.
@@ -227,6 +230,8 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
   bool process_launched_;
+
+  scoped_refptr<SocketStreamDispatcherHost> socket_stream_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHost);
 };
