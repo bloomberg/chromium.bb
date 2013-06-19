@@ -102,6 +102,11 @@ void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& re
     result.assign(tempVector);
 }
 
+bool WebFormElement::checkValidityWithoutDispatchingEvents()
+{
+    return unwrap<HTMLFormElement>()->checkValidityWithoutDispatchingEvents();
+}
+
 void WebFormElement::finishRequestAutocomplete(WebFormElement::AutocompleteResult result)
 {
     unwrap<HTMLFormElement>()->finishRequestAutocomplete(static_cast<HTMLFormElement::AutocompleteResult>(result));

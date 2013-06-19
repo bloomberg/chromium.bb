@@ -84,10 +84,12 @@ public:
     virtual bool isActivatedSubmit() const { return false; }
     virtual void setActivatedSubmit(bool) { }
 
+    enum CheckValidityDispatchEvents { CheckValidityDispatchEventsAllowed, CheckValidityDispatchEventsNone };
+
     virtual bool willValidate() const;
     void updateVisibleValidationMessage();
     void hideVisibleValidationMessage();
-    bool checkValidity(Vector<RefPtr<FormAssociatedElement> >* unhandledInvalidControls = 0);
+    bool checkValidity(Vector<RefPtr<FormAssociatedElement> >* unhandledInvalidControls = 0, CheckValidityDispatchEvents = CheckValidityDispatchEventsAllowed);
     // This must be called when a validation constraint or control value is changed.
     void setNeedsValidityCheck();
     virtual void setCustomValidity(const String&) OVERRIDE;

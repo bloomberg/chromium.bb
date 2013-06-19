@@ -26,6 +26,7 @@
 
 #include "core/dom/CheckedRadioButtons.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLFormControlElement.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FormSubmission.h"
 #include <wtf/OwnPtr.h>
@@ -100,6 +101,7 @@ public:
     HTMLFormControlElement* defaultButton() const;
 
     bool checkValidity();
+    bool checkValidityWithoutDispatchingEvents();
 
     enum AutocompleteResult {
         AutocompleteResultSuccess,
@@ -153,7 +155,7 @@ private:
     // Validates each of the controls, and stores controls of which 'invalid'
     // event was not canceled to the specified vector. Returns true if there
     // are any invalid controls in this form.
-    bool checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >&);
+    bool checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >*, HTMLFormControlElement::CheckValidityDispatchEvents = HTMLFormControlElement::CheckValidityDispatchEventsAllowed);
 
     typedef HashMap<RefPtr<AtomicStringImpl>, RefPtr<HTMLFormControlElement> > AliasMap;
 

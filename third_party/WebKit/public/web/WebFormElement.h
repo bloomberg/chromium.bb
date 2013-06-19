@@ -68,6 +68,7 @@ namespace WebKit {
         // FIXME: Deprecate and replace with WebVector<WebElement>.
         WEBKIT_EXPORT void getNamedElements(const WebString&, WebVector<WebNode>&);
         WEBKIT_EXPORT void getFormControlElements(WebVector<WebFormControlElement>&) const;
+        WEBKIT_EXPORT bool checkValidityWithoutDispatchingEvents();
 
         enum AutocompleteResult {
             AutocompleteResultSuccess,

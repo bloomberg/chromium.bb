@@ -224,7 +224,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
     }
 
     Vector<RefPtr<FormAssociatedElement> > unhandledInvalidControls;
-    if (!checkInvalidControlsAndCollectUnhandled(unhandledInvalidControls))
+    if (!checkInvalidControlsAndCollectUnhandled(&unhandledInvalidControls))
         return true;
     // Because the form has invalid controls, we abort the form submission and
     // show a validation message on a focusable form control.
@@ -636,10 +636,15 @@ HTMLFormControlElement* HTMLFormElement::defaultButton() const
 bool HTMLFormElement::checkValidity()
 {
     Vector<RefPtr<FormAssociatedElement> > controls;
-    return !checkInvalidControlsAndCollectUnhandled(controls);
+    return !checkInvalidControlsAndCollectUnhandled(&controls);
 }
 
-bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >& unhandledInvalidControls)
+bool HTMLFormElement::checkValidityWithoutDispatchingEvents()
+{
+    return !checkInvalidControlsAndCollectUnhandled(0, HTMLFormControlElement::CheckValidityDispatchEventsNone);
+}
+
+bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<FormAssociatedElement> >* unhandledInvalidControls, HTMLFormControlElement::CheckValidityDispatchEvents dispatchEvents)
 {
     RefPtr<HTMLFormElement> protector(this);
     // Copy m_associatedElements because event handlers called from
@@ -652,7 +657,7 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(Vector<RefPtr<Form
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
             HTMLFormControlElement* control = static_cast<HTMLFormControlElement*>(elements[i].get());
-            if (!control->checkValidity(&unhandledInvalidControls) && control->form() == this)
+            if (!control->checkValidity(unhandledInvalidControls, dispatchEvents) && control->form() == this)
                 hasInvalidControls = true;
         }
     }
