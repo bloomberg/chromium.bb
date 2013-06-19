@@ -1836,7 +1836,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	current = NULL;
 	configured = NULL;
 
-	wl_list_for_each(drm_mode, &output->base.mode_list, base.link) {
+	wl_list_for_each_reverse(drm_mode, &output->base.mode_list, base.link) {
 		if (config == OUTPUT_CONFIG_MODE &&
 		    width == drm_mode->base.width &&
 		    height == drm_mode->base.height)
