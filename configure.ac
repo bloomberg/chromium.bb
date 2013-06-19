@@ -52,7 +52,7 @@ AC_CHECK_DECL(CLOCK_MONOTONIC,[],
 	      [[#include <time.h>]])
 AC_CHECK_HEADERS([execinfo.h])
 
-AC_CHECK_FUNCS([mkostemp strchrnul])
+AC_CHECK_FUNCS([mkostemp strchrnul initgroups])
 
 COMPOSITOR_MODULES="wayland-server >= 1.1.90 pixman-1"
 

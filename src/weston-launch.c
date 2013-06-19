@@ -631,8 +631,12 @@ main(int argc, char *argv[])
 		}
 
 		if (setgid(wl.pw->pw_gid) < 0 ||
+#ifdef HAVE_INITGROUPS
+                    initgroups(wl.pw->pw_name, wl.pw->pw_gid) < 0 ||
+#endif
 		    setuid(wl.pw->pw_uid) < 0)
 			error(1, errno, "dropping privilidges failed");
+
 
 		if (sleep_fork) {
 			if (wl.verbose)
