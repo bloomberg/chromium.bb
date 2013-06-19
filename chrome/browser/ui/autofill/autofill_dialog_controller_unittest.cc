@@ -1064,6 +1064,7 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
       controller()->MenuModelForSection(SECTION_SHIPPING);
   shipping_model->ActivatedAt(shipping_model->GetItemCount() - 1);
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrument) {
@@ -1075,6 +1076,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrument) {
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
@@ -1087,6 +1089,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentInvalid());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
@@ -1095,6 +1098,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
 
   controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 // Tests that editing an address (in wallet mode0 and submitting the dialog
@@ -1110,6 +1114,7 @@ TEST_F(AutofillDialogControllerTest, UpdateAddress) {
 
   controller()->EditClickedForSection(SECTION_SHIPPING);
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 // Tests that editing an instrument (CC + address) in wallet mode updates an
@@ -1122,6 +1127,7 @@ TEST_F(AutofillDialogControllerTest, UpdateInstrument) {
 
   controller()->EditClickedForSection(SECTION_CC_BILLING);
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 
   EXPECT_TRUE(
       controller()->GetTestingWalletClient()->updated_billing_address());
@@ -1139,6 +1145,7 @@ TEST_F(AutofillDialogControllerTest, UpdateInstrumentSaveAddress) {
 
   controller()->EditClickedForSection(SECTION_CC_BILLING);
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 
   EXPECT_TRUE(
       controller()->GetTestingWalletClient()->updated_billing_address());
@@ -1158,6 +1165,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentUpdateAddress) {
 
   controller()->EditClickedForSection(SECTION_SHIPPING);
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 MATCHER(UsesLocalBillingAddress, "uses the local billing address") {
@@ -1179,6 +1187,7 @@ TEST_F(AutofillDialogControllerTest, BillingForShipping) {
   UseBillingForShipping();
 
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 // Tests that when using billing address for shipping, and there is an exact
@@ -1203,6 +1212,7 @@ TEST_F(AutofillDialogControllerTest, BillingForShippingHasMatch) {
   UseBillingForShipping();
 
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 // Tests that adding new instrument and also using billing address for shipping,
@@ -1219,6 +1229,7 @@ TEST_F(AutofillDialogControllerTest, BillingForShippingNewInstrument) {
   UseBillingForShipping();
 
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 }
 
 // Test that the local view contents is used when saving a new instrument and
@@ -1244,6 +1255,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentSameAsBilling) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveAddress(UsesLocalBillingAddress(), _)).Times(1);
   controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 
   EXPECT_TRUE(
       controller()->GetTestingWalletClient()->updated_billing_address());
@@ -1919,23 +1931,6 @@ TEST_F(AutofillDialogControllerTest, RiskNeverLoadsWithPendingLegalDocuments) {
   wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
-
-  EXPECT_EQ("no pagers", controller()->GetRiskData());
-}
-
-TEST_F(AutofillDialogControllerTest, RiskLoadsWithoutPendingLegalDocuments) {
-  EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(1);
-
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnAccept();
-
-  EXPECT_EQ("no pagers", controller()->GetRiskData());
-
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
-  EXPECT_EQ(kFakeFingerprintEncoded, controller()->GetRiskData());
 }
 
 TEST_F(AutofillDialogControllerTest, RiskLoadsAfterAcceptingLegalDocuments) {
@@ -1949,7 +1944,6 @@ TEST_F(AutofillDialogControllerTest, RiskLoadsAfterAcceptingLegalDocuments) {
   EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(1);
 
   controller()->OnAccept();
-  EXPECT_EQ("no pagers", controller()->GetRiskData());
 
   // Simulate a risk load and verify |GetRiskData()| matches the encoded value.
   controller()->OnDidAcceptLegalDocuments();

@@ -1680,7 +1680,9 @@ void AutofillDialogControllerImpl::OnAccept() {
         UTF16ToUTF8(view_->GetCvc()),
         wallet_items_->obfuscated_gaia_id());
   } else if (IsPayingWithWallet()) {
-    SubmitWithWallet();
+    // TODO(dbeam): disallow interacting with the dialog while submitting.
+    // http://crbug.com/230932
+    AcceptLegalDocuments();
   } else {
     FinishSubmit();
   }
@@ -1801,12 +1803,12 @@ DialogType AutofillDialogControllerImpl::GetDialogType() const {
 }
 
 std::string AutofillDialogControllerImpl::GetRiskData() const {
-  return risk_data_.empty() ? "no pagers" : risk_data_;
+  DCHECK(!risk_data_.empty());
+  return risk_data_;
 }
 
 void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {
   DCHECK(is_submitting_ && IsPayingWithWallet());
-
   has_accepted_legal_documents_ = true;
   LoadRiskFingerprintData();
 }
@@ -2080,10 +2082,6 @@ bool AutofillDialogControllerImpl::IsPayingWithWallet() const {
 }
 
 void AutofillDialogControllerImpl::LoadRiskFingerprintData() {
-  DCHECK(AreLegalDocumentsCurrent());
-
-  // Clear potential stale data to ensure |GetFullWalletIfReady()| triggers only
-  // when a new fingerprint is loaded.
   risk_data_.clear();
 
   uint64 obfuscated_gaia_id = 0;
@@ -2123,7 +2121,7 @@ void AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData(
   bool success = base::Base64Encode(proto_data, &risk_data_);
   DCHECK(success);
 
-  GetFullWalletIfReady();
+  SubmitWithWallet();
 }
 
 void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
@@ -2671,17 +2669,10 @@ bool AutofillDialogControllerImpl::AreLegalDocumentsCurrent() const {
       (wallet_items_ && wallet_items_->legal_documents().empty());
 }
 
-void AutofillDialogControllerImpl::SubmitWithWallet() {
-  // TODO(dbeam): disallow interacting with the dialog while submitting.
-  // http://crbug.com/230932
-
-  active_instrument_id_.clear();
-  active_address_id_.clear();
-  full_wallet_.reset();
-
+void AutofillDialogControllerImpl::AcceptLegalDocuments() {
   content::BrowserThread::PostTask(
-     content::BrowserThread::IO, FROM_HERE,
-     base::Bind(&UserDidOptIntoLocationServices));
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&UserDidOptIntoLocationServices));
 
   GetWalletClient()->AcceptLegalDocuments(
       wallet_items_->legal_documents(),
@@ -2690,6 +2681,12 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
 
   if (AreLegalDocumentsCurrent())
     LoadRiskFingerprintData();
+}
+
+void AutofillDialogControllerImpl::SubmitWithWallet() {
+  active_instrument_id_.clear();
+  active_address_id_.clear();
+  full_wallet_.reset();
 
   const wallet::WalletItems::MaskedInstrument* active_instrument =
       ActiveInstrument();
@@ -2740,8 +2737,10 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
 
   // If there's neither an address nor instrument to save, |GetFullWallet()|
   // is called when the risk fingerprint is loaded.
-  if (!active_instrument_id_.empty() && !active_address_id_.empty())
+  if (!active_instrument_id_.empty() && !active_address_id_.empty()) {
+    GetFullWallet();
     return;
+  }
 
   // If instrument and address aren't based off of any existing data, save both.
   if (inputted_instrument && inputted_address && !update_request &&
@@ -2844,10 +2843,8 @@ void AutofillDialogControllerImpl::GetFullWalletIfReady() {
   DCHECK(is_submitting_);
   DCHECK(IsPayingWithWallet());
 
-  if (!active_instrument_id_.empty() && !active_address_id_.empty() &&
-      !risk_data_.empty()) {
+  if (!active_instrument_id_.empty() && !active_address_id_.empty())
     GetFullWallet();
-  }
 }
 
 void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(

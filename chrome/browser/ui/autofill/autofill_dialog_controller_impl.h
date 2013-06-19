@@ -446,6 +446,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether the user has accepted all the current legal documents' terms.
   bool AreLegalDocumentsCurrent() const;
 
+  // Accepts any pending legal documents now that the user has pressed Submit.
+  void AcceptLegalDocuments();
+
   // Start the submit proccess to interact with Online Wallet (might do various
   // things like accept documents, save details, update details, respond to
   // required actions, etc.).

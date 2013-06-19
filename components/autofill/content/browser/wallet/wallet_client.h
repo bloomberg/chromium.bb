@@ -171,7 +171,8 @@ class WalletClient
   // The GetWalletItems call to the Online Wallet backend may require the user
   // to accept various legal documents before a FullWallet can be generated.
   // The |google_transaction_id| is provided in the response to the
-  // GetWalletItems call.
+  // GetWalletItems call. If |documents| are empty, |delegate_| will not receive
+  // a corresponding |OnDidAcceptLegalDocuments()| call.
   virtual void AcceptLegalDocuments(
       const std::vector<WalletItems::LegalDocument*>& documents,
       const std::string& google_transaction_id,
