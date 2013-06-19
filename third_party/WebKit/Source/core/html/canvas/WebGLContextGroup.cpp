@@ -88,10 +88,12 @@ void WebGLContextGroup::detachAndRemoveAllObjects()
 
 void WebGLContextGroup::loseContextGroup(WebGLRenderingContext::LostContextMode mode)
 {
+    // Detach must happen before loseContextImpl, which destroys the GraphicsContext3D
+    // and prevents groupObjects from being properly deleted.
+    detachAndRemoveAllObjects();
+
     for (HashSet<WebGLRenderingContext*>::iterator it = m_contexts.begin(); it != m_contexts.end(); ++it)
         (*it)->loseContextImpl(mode);
-
-    detachAndRemoveAllObjects();
 }
 
 } // namespace WebCore

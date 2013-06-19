@@ -743,8 +743,11 @@ WebGLRenderingContext::~WebGLRenderingContext()
     for (size_t i = 0; i < m_extensions.size(); ++i)
         delete m_extensions[i];
 
-    destroyGraphicsContext3D();
+    // Context must be removed from the group prior to the destruction of the
+    // GraphicsContext3D, otherwise shared objects may not be properly deleted.
     m_contextGroup->removeContext(this);
+
+    destroyGraphicsContext3D();
 
     if (m_multisamplingObserverRegistered) {
         Page* page = canvas()->document()->page();
