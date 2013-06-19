@@ -70,7 +70,7 @@ if (window == backgroundPage) {
   // Force the runtime API to be loaded in the background page. Using
   // backgroundPageModuleSystem.require('runtime') is insufficient as
   // requireNative is only allowed while lazily loading an API.
-  backgroundPage.runtime;
+  backgroundPage.chrome.runtime;
   var bindDirectoryEntryCallback = backgroundRequire(
       'runtime').bindDirectoryEntryCallback;
 }
