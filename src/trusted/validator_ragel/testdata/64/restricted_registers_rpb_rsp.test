@@ -11,7 +11,7 @@
   2: [0] improper %rbp sandboxing
   return code: 1
 @spec:
-  2: ("%rbp can't be used as index in memory access", Instruction(address=2, bytes=[65, 138, 4, 47], disasm='mov (%r15,%rbp,1),%al'))
+  2: ("%rbp can't be used as index in memory access", Instruction(0x2: 41 8a 04 2f  mov (%r15,%rbp,1),%al))
 ----------------------------------------------------------------------
 @hex:
   # %rsp too
@@ -25,7 +25,7 @@
   2: [0] improper %rsp sandboxing
   return code: 1
 @spec:
-  2: ("%r15 can't be used as index in memory access", Instruction(address=2, bytes=[66, 138, 4, 60], disasm='mov (%rsp,%r15,1),%al'))
+  2: ("%r15 can't be used as index in memory access", Instruction(0x2: 42 8a 04 3c  mov (%rsp,%r15,1),%al))
 ----------------------------------------------------------------------
 @hex:
   # But they can be restricted provided next instruction immediately

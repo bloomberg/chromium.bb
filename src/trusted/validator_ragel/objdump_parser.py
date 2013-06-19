@@ -18,6 +18,11 @@ Instruction = collections.namedtuple(
     'Instruction',
     ['address', 'bytes', 'disasm'])
 
+class Instruction(Instruction):
+  def __repr__(self):
+    hex_bytes = ' '.join('%02x' % b for b in self.bytes)
+    return 'Instruction(0x%x: %s  %s)' % (self.address, hex_bytes, self.disasm)
+
 
 def ParseLine(line):
   """Split objdump line.

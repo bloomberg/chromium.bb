@@ -17,4 +17,4 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('16-bit conditional jumps are disallowed', Instruction(address=0, bytes=[102, 15, 132, 5, 0], disasm='je 0xa'))
+  0: ('16-bit conditional jumps are disallowed', Instruction(0x0: 66 0f 84 05 00  je 0xa))

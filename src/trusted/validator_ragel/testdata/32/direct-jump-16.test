@@ -17,4 +17,4 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: ('16-bit jumps are disallowed', Instruction(address=0, bytes=[102, 233, 1, 0], disasm='jmpw 0x5'))
+  0: ('16-bit jumps are disallowed', Instruction(0x0: 66 e9 01 00  jmpw 0x5))

@@ -50,4 +50,4 @@
   1c: [0] unrecognized instruction
   return code: 1
 @spec:
-  1c: ('16-bit jumps are disallowed', Instruction(address=28, bytes=[102, 232, 240, 255], disasm='callw 0x10'))
+  1c: ('16-bit jumps are disallowed', Instruction(0x1c: 66 e8 f0 ff  callw 0x10))
