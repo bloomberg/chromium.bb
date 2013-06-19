@@ -302,6 +302,11 @@ class ExtensionImpl : public ChromeV8Extension {
       v8::Handle<v8::Value> url_value(object->Get(url));
       info.SetURL(GURL(*v8::String::AsciiValue(url_value)));
     }
+    v8::Handle<v8::String> instance_id(v8::String::New("instanceId"));
+    if (object->Has(instance_id)) {
+      v8::Handle<v8::Value> instance_id_value(object->Get(instance_id));
+      info.SetInstanceID(instance_id_value->IntegerValue());
+    }
     return info;
   }
 

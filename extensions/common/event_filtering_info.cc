@@ -10,7 +10,9 @@
 namespace extensions {
 
 EventFilteringInfo::EventFilteringInfo()
-    : has_url_(false) {
+    : has_url_(false),
+      has_instance_id_(false),
+      instance_id_(0) {
 }
 
 EventFilteringInfo::~EventFilteringInfo() {
@@ -21,14 +23,9 @@ void EventFilteringInfo::SetURL(const GURL& url) {
   has_url_ = true;
 }
 
-std::string EventFilteringInfo::AsJSONString() const {
-  std::string result;
-  base::DictionaryValue value;
-  if (has_url_)
-    value.SetString("url", url_.spec());
-
-  base::JSONWriter::Write(&value, &result);
-  return result;
+void EventFilteringInfo::SetInstanceID(int instance_id) {
+  instance_id_ = instance_id;
+  has_instance_id_ = true;
 }
 
 scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
@@ -38,6 +35,9 @@ scoped_ptr<base::Value> EventFilteringInfo::AsValue() const {
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   if (has_url_)
     result->SetString("url", url_.spec());
+
+  if (has_instance_id_)
+    result->SetInteger("instanceId", instance_id_);
   return result.PassAs<base::Value>();
 }
 

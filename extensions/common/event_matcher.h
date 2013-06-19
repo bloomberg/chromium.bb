@@ -30,6 +30,8 @@ class EventMatcher {
 
   int HasURLFilters() const;
 
+  int GetInstanceID() const;
+
   base::DictionaryValue* value() const {
     return filter_.get();
   }

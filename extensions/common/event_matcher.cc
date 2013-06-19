@@ -21,8 +21,9 @@ EventMatcher::~EventMatcher() {
 
 bool EventMatcher::MatchNonURLCriteria(
     const EventFilteringInfo& event_info) const {
-  // There is currently no criteria apart from URL criteria.
-  return true;
+  if (!event_info.has_instance_id())
+    return true;
+  return event_info.instance_id() == GetInstanceID();
 }
 
 int EventMatcher::GetURLFilterCount() const {
@@ -42,6 +43,12 @@ bool EventMatcher::GetURLFilter(int i, base::DictionaryValue** url_filter_out) {
 
 int EventMatcher::HasURLFilters() const {
   return GetURLFilterCount() != 0;
+}
+
+int EventMatcher::GetInstanceID() const {
+  int instance_id = 0;
+  filter_->GetInteger("instanceId", &instance_id);
+  return instance_id;
 }
 
 }  // namespace extensions
