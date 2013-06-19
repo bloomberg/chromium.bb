@@ -293,6 +293,11 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
   FlushUploads();
 
   ScheduleMoreTasks();
+
+  // Make sure another check for completed uploads is scheduled
+  // while there is still pending uploads left.
+  if (!tasks_with_pending_upload_.empty())
+    ScheduleCheckForCompletedRasterTasks();
 }
 
 void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
