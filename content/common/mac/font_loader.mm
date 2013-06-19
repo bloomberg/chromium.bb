@@ -13,9 +13,12 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/common/mac/font_descriptor.h"
+
+#include <map>
 
 extern "C" {
 
@@ -53,10 +56,39 @@ void _CTFontManagerUnregisterFontForData(NSUInteger, int) {
 
 }  // extern "C"
 
+namespace {
+
+uint32 GetFontIDForFont(const base::FilePath& font_path) {
+  // content/common can't depend on content/browser, so this cannot call
+  // BrowserThread::CurrentlyOn(). Check this is always called on the same
+  // thread.
+  static pthread_t thread_id = pthread_self();
+  DCHECK_EQ(pthread_self(), thread_id);
+
+  // Font loading used to call ATSFontGetContainer()
+  // and used that as font id.
+  // ATS is deprecated and CTFont doesn't seem to have a obvious fixed id for a
+  // font. Since this function is only called from a single thread, use a static
+  // map to store ids.
+  typedef std::map<base::FilePath, uint32> FontIdMap;
+  CR_DEFINE_STATIC_LOCAL(FontIdMap, font_ids, ());
+
+  auto it = font_ids.find(font_path);
+  if (it != font_ids.end())
+    return it->second;
+
+  uint32 font_id = font_ids.size() + 1;
+  font_ids[font_path] = font_id;
+  return font_id;
+}
+
+}  // namespace
+
 // static
 void FontLoader::LoadFont(const FontDescriptor& font,
                           FontLoader::Result* result) {
   base::ThreadRestrictions::AssertIOAllowed();
+
   DCHECK(result);
   result->font_data_size = 0;
   result->font_id = 0;
@@ -71,26 +103,7 @@ void FontLoader::LoadFont(const FontDescriptor& font,
     return;
   }
 
-  // NSFont -> ATSFontRef.
-  ATSFontRef ats_font =
-      CTFontGetPlatformFont(reinterpret_cast<CTFontRef>(font_to_encode), NULL);
-  if (!ats_font) {
-    DLOG(ERROR) << "Conversion to ATSFontRef failed for " << font_name;
-    return;
-  }
-
-  // Retrieve the ATSFontContainerRef corresponding to the font file we want to
-  // load. This is a unique identifier that allows the caller determine if the
-  // font file in question is already loaded.
-  COMPILE_ASSERT(sizeof(ATSFontContainerRef) == sizeof(result->font_id),
-      uint32_cant_hold_fontcontainer_ref);
-  ATSFontContainerRef fontContainer = kATSFontContainerRefUnspecified;
-  if (ATSFontGetContainer(ats_font, 0, &fontContainer) != noErr) {
-      DLOG(ERROR) << "Failed to get font container ref for " << font_name;
-      return;
-  }
-
-  // ATSFontRef -> File path.
+  // NSFont -> File path.
   // Warning: Calling this function on a font activated from memory will result
   // in failure with a -50 - paramErr.  This may occur if
   // CreateCGFontFromBuffer() is called in the same process as this function
@@ -98,13 +111,16 @@ void FontLoader::LoadFont(const FontDescriptor& font,
   // If said unit test were to load a system font and activate it from memory
   // it becomes impossible for the system to the find the original file ref
   // since the font now lives in memory as far as it's concerned.
-  FSRef font_fsref;
-  if (ATSFontGetFileReference(ats_font, &font_fsref) != noErr) {
+  CTFontRef ct_font_to_encode = (CTFontRef)font_to_encode;
+  scoped_nsobject<NSURL> font_url(
+      base::mac::CFToNSCast(base::mac::CFCastStrict<CFURLRef>(
+          CTFontCopyAttribute(ct_font_to_encode, kCTFontURLAttribute))));
+  if (![font_url isFileURL]) {
     DLOG(ERROR) << "Failed to find font file for " << font_name;
     return;
   }
-  base::FilePath font_path =
-      base::FilePath(base::mac::PathFromFSRef(font_fsref));
+
+  base::FilePath font_path = base::mac::NSStringToFilePath([font_url path]);
 
   // Load file into shared memory buffer.
   int64 font_file_size_64 = -1;
@@ -133,7 +149,7 @@ void FontLoader::LoadFont(const FontDescriptor& font,
   }
 
   result->font_data_size = font_file_size_32;
-  result->font_id = fontContainer;
+  result->font_id = GetFontIDForFont(font_path);
 }
 
 // static

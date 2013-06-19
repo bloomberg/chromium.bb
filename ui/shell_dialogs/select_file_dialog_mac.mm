@@ -378,8 +378,7 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
   if (!did_cancel) {
     if (type == ui::SelectFileDialog::SELECT_SAVEAS_FILE) {
       if ([[panel URL] isFileURL]) {
-        paths.push_back(base::FilePath(
-            base::SysNSStringToUTF8([[panel URL] path])));
+        paths.push_back(base::mac::NSStringToFilePath([[panel URL] path]));
       }
 
       NSView* accessoryView = [panel accessoryView];
