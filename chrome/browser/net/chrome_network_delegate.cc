@@ -327,7 +327,8 @@ void StoreAccumulatedContentLength(int received_content_length,
 }
 
 void RecordContentLengthHistograms(
-    int64 received_content_length, int64 original_content_length) {
+    int64 received_content_length, int64 original_content_length,
+    const base::TimeDelta& freshness_lifetime) {
 #if defined(OS_ANDROID)
   // Add the current resource to these histograms only when a valid
   // X-Original-Content-Length header is present.
@@ -348,6 +349,23 @@ void RecordContentLengthHistograms(
                        original_content_length);
   UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthDifference",
                        original_content_length - received_content_length);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Net.HttpContentFreshnessLifetime",
+                             freshness_lifetime,
+                             base::TimeDelta::FromHours(1),
+                             base::TimeDelta::FromDays(30), 100);
+  if (freshness_lifetime.InSeconds() <= 0)
+    return;
+  UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthCacheable",
+                       received_content_length);
+  if (freshness_lifetime.InHours() < 4)
+    return;
+  UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthCacheable4Hours",
+                       received_content_length);
+
+  if (freshness_lifetime.InHours() < 24)
+    return;
+  UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthCacheable24Hours",
+                       received_content_length);
 #endif
 }
 
@@ -566,10 +584,14 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
       int64 adjusted_original_content_length = original_content_length;
       if (adjusted_original_content_length == -1)
         adjusted_original_content_length = received_content_length;
+      base::TimeDelta freshness_lifetime =
+          request->response_info().headers->GetFreshnessLifetime(
+              request->response_info().response_time);
       AccumulateContentLength(received_content_length,
                               adjusted_original_content_length);
       RecordContentLengthHistograms(received_content_length,
-                                    original_content_length);
+                                    original_content_length,
+                                    freshness_lifetime);
       DVLOG(2) << __FUNCTION__
           << " received content length: " << received_content_length
           << " original content length: " << original_content_length
