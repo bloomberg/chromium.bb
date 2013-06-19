@@ -1,5 +1,8 @@
 /*
- * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2006 Samuel Weinig <sam.weinig@gmail.com>
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
+ * 
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -17,18 +20,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface DocumentType : Node {
-
-    // DOM Level 1
-
-    readonly attribute DOMString name;
-    readonly attribute NamedNodeMap entities;
-    readonly attribute NamedNodeMap notations;
-
-    // DOM Level 2
-
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString publicId;
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString systemId;
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString internalSubset;
+[NoInterfaceObject]
+interface ChildNode {
+    [PerWorldBindings] readonly attribute Element previousElementSibling;
+    [PerWorldBindings] readonly attribute Element nextElementSibling;
+    [RaisesException] void remove();
 };
 
+DocumentType implements ChildNode;
+Element implements ChildNode;
+CharacterData implements ChildNode;

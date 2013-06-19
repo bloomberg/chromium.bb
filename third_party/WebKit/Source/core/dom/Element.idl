@@ -105,11 +105,6 @@
     [ImplementedAs=createShadowRoot, RaisesException] ShadowRoot webkitCreateShadowRoot();
     [ImplementedAs=shadowRoot, PerWorldBindings] readonly attribute ShadowRoot webkitShadowRoot;
 
-    // ChildNode interface API
-    [PerWorldBindings] readonly attribute Element previousElementSibling;
-    [PerWorldBindings] readonly attribute Element nextElementSibling;
-    [RaisesException] void remove();
-
     // CSSOM View Module API
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();

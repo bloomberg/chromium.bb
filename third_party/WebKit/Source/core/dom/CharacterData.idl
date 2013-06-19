@@ -36,10 +36,5 @@ interface CharacterData : Node {
      [RaisesException] void replaceData([IsIndex,Default=Undefined] optional unsigned long offset, 
                                     [IsIndex,Default=Undefined] optional unsigned long length,
                                     [Default=Undefined] optional DOMString data);
-
-    // ChildNode interface API
-    readonly attribute Element previousElementSibling;
-    readonly attribute Element nextElementSibling;
-    [RaisesException] void remove();
 };
 
