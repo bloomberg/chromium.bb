@@ -36,6 +36,9 @@ const base::FilePath::CharType kChildMapDBName[] =
 // Meant to be a character which never happen to be in real resource IDs.
 const char kDBKeyDelimeter = '\0';
 
+// String used as a suffix of a key for a cache entry.
+const char kCacheEntryKeySuffix[] = "CACHE";
+
 // Returns a string to be used as the key for the header.
 std::string GetHeaderDBKey() {
   std::string key;
@@ -47,6 +50,28 @@ std::string GetHeaderDBKey() {
 // Returns true if |key| is a key for a child entry.
 bool IsChildEntryKey(const leveldb::Slice& key) {
   return !key.empty() && key[key.size() - 1] == kDBKeyDelimeter;
+}
+
+// Returns a string to be used as a key for a cache entry.
+std::string GetCacheEntryKey(const std::string& resource_id) {
+  std::string key(resource_id);
+  key.push_back(kDBKeyDelimeter);
+  key.append(kCacheEntryKeySuffix);
+  return key;
+}
+
+// Returns true if |key| is a key for a cache entry.
+bool IsCacheEntryKey(const leveldb::Slice& key) {
+  // A cache entry key should end with |kDBKeyDelimeter + kCacheEntryKeySuffix|.
+  const leveldb::Slice expected_suffix(kCacheEntryKeySuffix,
+                                       arraysize(kCacheEntryKeySuffix) - 1);
+  if (key.size() < 1 + expected_suffix.size() ||
+      key[key.size() - expected_suffix.size() - 1] != kDBKeyDelimeter)
+    return false;
+
+  const leveldb::Slice key_substring(
+      key.data() + key.size() - expected_suffix.size(), expected_suffix.size());
+  return key_substring.compare(expected_suffix) == 0;
 }
 
 // Converts leveldb::Status to DBInitStatus.
@@ -98,6 +123,7 @@ void ResourceMetadataStorage::Iterator::Advance() {
 
   for (it_->Next() ; it_->Valid(); it_->Next()) {
     if (!IsChildEntryKey(it_->key()) &&
+        !IsCacheEntryKey(it_->key()) &&
         entry_.ParseFromArray(it_->value().data(), it_->value().size()))
       break;
   }
@@ -313,9 +339,8 @@ std::string ResourceMetadataStorage::GetChild(
   return child_resource_id;
 }
 
-void ResourceMetadataStorage::GetChildren(
-    const std::string& parent_resource_id,
-    std::vector<std::string>* children) {
+void ResourceMetadataStorage::GetChildren(const std::string& parent_resource_id,
+                                          std::vector<std::string>* children) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // Iterate over all entries with keys starting with |parent_resource_id|.
@@ -328,6 +353,47 @@ void ResourceMetadataStorage::GetChildren(
       children->push_back(it->value().ToString());
   }
   DCHECK(it->status().ok());
+}
+
+bool ResourceMetadataStorage::PutCacheEntry(const std::string& resource_id,
+                                            const FileCacheEntry& entry) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!resource_id.empty());
+
+  std::string serialized_entry;
+  if (!entry.SerializeToString(&serialized_entry)) {
+    DLOG(ERROR) << "Failed to serialize the entry.";
+    return false;
+  }
+
+  const leveldb::Status status = resource_map_->Put(
+      leveldb::WriteOptions(),
+      leveldb::Slice(GetCacheEntryKey(resource_id)),
+      leveldb::Slice(serialized_entry));
+  return status.ok();
+}
+
+bool ResourceMetadataStorage::GetCacheEntry(const std::string& resource_id,
+                                            FileCacheEntry* out_entry) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!resource_id.empty());
+
+  std::string serialized_entry;
+  const leveldb::Status status = resource_map_->Get(
+      leveldb::ReadOptions(),
+      leveldb::Slice(GetCacheEntryKey(resource_id)),
+      &serialized_entry);
+  return status.ok() && out_entry->ParseFromString(serialized_entry);
+}
+
+bool ResourceMetadataStorage::RemoveCacheEntry(const std::string& resource_id) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!resource_id.empty());
+
+  const leveldb::Status status = resource_map_->Delete(
+      leveldb::WriteOptions(),
+      leveldb::Slice(GetCacheEntryKey(resource_id)));
+  return status.ok();
 }
 
 // static
@@ -387,6 +453,20 @@ bool ResourceMetadataStorage::CheckValidity() {
   scoped_ptr<leveldb::Iterator> it(resource_map_->NewIterator(options));
   it->SeekToFirst();
 
+  // DB is organized like this:
+  //
+  // <key>                          : <value>
+  // "\0HEADER"                     : ResourceMetadataHeader
+  // "|ID of A|"                    : ResourceEntry for entry A.
+  // "|ID of A|\0CACHE"             : FileCacheEntry for entry A.
+  // "|ID of A|\0|child name 1|\0"  : ID of the 1st child entry of entry A.
+  // "|ID of A|\0|child name 2|\0"  : ID of the 2nd child entry of entry A.
+  // ...
+  // "|ID of A|\0|child name n|\0"  : ID of the nth child entry of entry A.
+  // "|ID of B|"                    : ResourceEntry for entry B.
+  // "|ID of B|\0CACHE"             : FileCacheEntry for entry B.
+  // ...
+
   // Check the header.
   ResourceMetadataHeader header;
   if (!it->Valid() ||
@@ -409,6 +489,10 @@ bool ResourceMetadataStorage::CheckValidity() {
       ++num_child_entries;
       continue;
     }
+
+    // Ignore cache entries.
+    if (IsCacheEntryKey(it->key()))
+      continue;
 
     // Check if stored data is broken.
     if (!entry.ParseFromArray(it->value().data(), it->value().size()) ||

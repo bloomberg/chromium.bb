@@ -87,6 +87,16 @@ class ResourceMetadataStorage {
   void GetChildren(const std::string& parent_resource_id,
                    std::vector<std::string>* children);
 
+  // Puts the cache entry to this storage.
+  bool PutCacheEntry(const std::string& resource_id,
+                     const FileCacheEntry& entry);
+
+  // Gets a cache entry stored in this storage.
+  bool GetCacheEntry(const std::string& resource_id, FileCacheEntry* out_entry);
+
+  // Removes a cache entry from this storage.
+  bool RemoveCacheEntry(const std::string& resource_id);
+
  private:
   friend class ResourceMetadataStorageTest;
 

@@ -148,6 +148,11 @@ TEST_F(ResourceMetadataStorageTest, Iterator) {
   for (size_t i = 0; i < entries.size(); ++i)
     EXPECT_TRUE(storage_->PutEntry(entries[i]));
 
+  // Insert some dummy cache entries.
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(storage_->PutCacheEntry(entries[0].resource_id(), cache_entry));
+  EXPECT_TRUE(storage_->PutCacheEntry(entries[1].resource_id(), cache_entry));
+
   // Iterate and check the result.
   std::map<std::string, ResourceEntry> result;
   scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
@@ -161,6 +166,33 @@ TEST_F(ResourceMetadataStorageTest, Iterator) {
   EXPECT_EQ(entries.size(), result.size());
   for (size_t i = 0; i < entries.size(); ++i)
     EXPECT_EQ(1U, result.count(entries[i].resource_id()));
+}
+
+TEST_F(ResourceMetadataStorageTest, PutCacheEntry) {
+  FileCacheEntry entry;
+  const std::string key1 = "abcdefg";
+  const std::string key2 = "abcd";
+  const std::string md5_1 = "foo";
+  const std::string md5_2 = "bar";
+
+  // Put cache entries.
+  entry.set_md5(md5_1);
+  EXPECT_TRUE(storage_->PutCacheEntry(key1, entry));
+  entry.set_md5(md5_2);
+  EXPECT_TRUE(storage_->PutCacheEntry(key2, entry));
+
+  // Get cache entires.
+  EXPECT_TRUE(storage_->GetCacheEntry(key1, &entry));
+  EXPECT_EQ(md5_1, entry.md5());
+  EXPECT_TRUE(storage_->GetCacheEntry(key2, &entry));
+  EXPECT_EQ(md5_2, entry.md5());
+
+  // Remove cache entries.
+  EXPECT_TRUE(storage_->RemoveCacheEntry(key1));
+  EXPECT_FALSE(storage_->GetCacheEntry(key1, &entry));
+
+  EXPECT_TRUE(storage_->RemoveCacheEntry(key2));
+  EXPECT_FALSE(storage_->GetCacheEntry(key2, &entry));
 }
 
 TEST_F(ResourceMetadataStorageTest, GetChildren) {
@@ -190,7 +222,7 @@ TEST_F(ResourceMetadataStorageTest, GetChildren) {
     EXPECT_TRUE(storage_->PutEntry(entry));
   }
 
-  // Put some data.
+  // Put children.
   for (size_t i = 0; i < children_name_id.size(); ++i) {
     for (size_t j = 0; j < children_name_id[i].size(); ++j) {
       ResourceEntry entry;
@@ -199,6 +231,12 @@ TEST_F(ResourceMetadataStorageTest, GetChildren) {
       entry.set_resource_id(children_name_id[i][j].second);
       EXPECT_TRUE(storage_->PutEntry(entry));
     }
+  }
+
+  // Put some dummy cache entries.
+  for (size_t i = 0; i < arraysize(parents_id); ++i) {
+    FileCacheEntry cache_entry;
+    EXPECT_TRUE(storage_->PutCacheEntry(parents_id[i], cache_entry));
   }
 
   // Try to get children.
@@ -334,6 +372,11 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   EXPECT_FALSE(CheckValidity());
   PutChild(key2, name3, key3);
   EXPECT_TRUE(CheckValidity());
+
+  // Add some cache entries.
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(storage_->PutCacheEntry(key1, cache_entry));
+  EXPECT_TRUE(storage_->PutCacheEntry(key2, cache_entry));
 
   // Remove key2.
   RemoveChild(key1, name2);
