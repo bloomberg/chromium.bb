@@ -1010,7 +1010,7 @@ void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBac
     FrameLoadType loadType;
     if (resourceRequest.cachePolicy() == ReloadIgnoringCacheData)
         loadType = FrameLoadTypeReload;
-    else if (lockBackForwardList || history()->currentItemShouldBeReplaced())
+    else if (lockBackForwardList)
         loadType = FrameLoadTypeRedirectWithLockedBackForwardList;
     else
         loadType = FrameLoadTypeStandard;

@@ -78,6 +78,7 @@ public:
 
     double delay() const { return m_delay; }
     bool lockBackForwardList() const { return m_lockBackForwardList; }
+    void setLockBackForwardList(bool lockBackForwardList) { m_lockBackForwardList = lockBackForwardList; }
     bool wasDuringLoad() const { return m_wasDuringLoad; }
     bool isLocationChange() const { return m_isLocationChange; }
     PassOwnPtr<UserGestureIndicator> createUserGestureIndicator()
@@ -124,6 +125,8 @@ protected:
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         frame->loader()->clientRedirected(KURL(ParsedURLString, m_url), delay(), currentTime() + timer->nextFireInterval());
+        if (frame->loader()->history()->currentItemShouldBeReplaced())
+            setLockBackForwardList(true);
     }
 
     virtual void didStopTimer(Frame* frame)
@@ -250,6 +253,8 @@ public:
 
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         frame->loader()->clientRedirected(m_submission->requestURL(), delay(), currentTime() + timer->nextFireInterval());
+        if (frame->loader()->history()->currentItemShouldBeReplaced())
+            setLockBackForwardList(true);
     }
 
     virtual void didStopTimer(Frame* frame)
