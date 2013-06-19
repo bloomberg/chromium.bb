@@ -67,18 +67,15 @@ class WebMediaPlayerProxyAndroid {
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) = 0;
 
   virtual void GenerateKeyRequest(int player_id,
-                                  const std::string& key_system,
                                   const std::string& type,
                                   const std::vector<uint8>& init_data) = 0;
 
   virtual void AddKey(int player_id,
-                      const std::string& key_system,
                       const std::vector<uint8>& key,
                       const std::vector<uint8>& init_data,
                       const std::string& session_id) = 0;
 
   virtual void CancelKeyRequest(int player_id,
-                                const std::string& key_system,
                                 const std::string& session_id) = 0;
 
   // Inform the media source player of changed duration from demuxer.

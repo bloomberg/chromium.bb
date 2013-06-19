@@ -99,27 +99,25 @@ void ProxyDecryptor::SetDecryptorReadyCB(
   decryptor_ready_cb_ = decryptor_ready_cb;
 }
 
-bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
-                                        const std::string& type,
-                                        const uint8* init_data,
-                                        int init_data_length) {
-  // We do not support run-time switching of decryptors. GenerateKeyRequest()
-  // only creates a new decryptor when |decryptor_| is not initialized.
-  DVLOG(1) << "GenerateKeyRequest: key_system = " << key_system;
+bool ProxyDecryptor::InitializeCDM(const std::string& key_system) {
+  DVLOG(1) << "InitializeCDM: key_system = " << key_system;
 
   base::AutoLock auto_lock(lock_);
 
-  if (!decryptor_) {
-    decryptor_ = CreateDecryptor(key_system);
-    if (!decryptor_) {
-      key_error_cb_.Run(
-          key_system, std::string(), media::MediaKeys::kClientError, 0);
-      return false;
-    }
-  }
+  DCHECK(!decryptor_);
+  decryptor_ = CreateDecryptor(key_system);
+
+  return decryptor_ != NULL;
+}
+
+
+bool ProxyDecryptor::GenerateKeyRequest(const std::string& type,
+                                        const uint8* init_data,
+                                        int init_data_length) {
+  DCHECK(decryptor_);
 
   if (!decryptor_->GetMediaKeys()->GenerateKeyRequest(
-      key_system, type, init_data, init_data_length)) {
+      type, init_data, init_data_length)) {
     decryptor_.reset();
     return false;
   }
@@ -130,8 +128,7 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& key_system,
   return true;
 }
 
-void ProxyDecryptor::AddKey(const std::string& key_system,
-                            const uint8* key,
+void ProxyDecryptor::AddKey(const uint8* key,
                             int key_length,
                             const uint8* init_data,
                             int init_data_length,
@@ -140,15 +137,14 @@ void ProxyDecryptor::AddKey(const std::string& key_system,
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
   decryptor_->GetMediaKeys()->AddKey(
-      key_system, key, key_length, init_data, init_data_length, session_id);
+      key, key_length, init_data, init_data_length, session_id);
 }
 
-void ProxyDecryptor::CancelKeyRequest(const std::string& key_system,
-                                      const std::string& session_id) {
+void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
   DVLOG(1) << "CancelKeyRequest()";
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  decryptor_->GetMediaKeys()->CancelKeyRequest(key_system, session_id);
+  decryptor_->GetMediaKeys()->CancelKeyRequest(session_id);
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -166,15 +162,21 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
     return scoped_ptr<media::Decryptor>();
   }
 
-  // The new object will call destroy_plugin_cb to destroy Helper Plugin.
-  return scoped_ptr<media::Decryptor>(new PpapiDecryptor(
+  scoped_ptr<webkit_media::PpapiDecryptor> decryptor = PpapiDecryptor::Create(
+      key_system,
       plugin_instance,
       base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::DestroyHelperPlugin,
-                 weak_ptr_factory_.GetWeakPtr())));
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  if (!decryptor)
+    DestroyHelperPlugin();
+  // Else the new object will call destroy_plugin_cb to destroy Helper Plugin.
+
+  return scoped_ptr<media::Decryptor>(decryptor.Pass());
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
@@ -197,32 +199,27 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreateDecryptor(
 #endif  // defined(ENABLE_PEPPER_CDMS)
 }
 
-void ProxyDecryptor::KeyAdded(const std::string& key_system,
-                              const std::string& session_id) {
-  key_added_cb_.Run(key_system, session_id);
+void ProxyDecryptor::KeyAdded(const std::string& session_id) {
+  key_added_cb_.Run(session_id);
 }
 
-void ProxyDecryptor::KeyError(const std::string& key_system,
-                              const std::string& session_id,
+void ProxyDecryptor::KeyError(const std::string& session_id,
                               media::MediaKeys::KeyError error_code,
                               int system_code) {
-  key_error_cb_.Run(key_system, session_id, error_code, system_code);
+  key_error_cb_.Run(session_id, error_code, system_code);
 }
 
-void ProxyDecryptor::KeyMessage(const std::string& key_system,
-                                const std::string& session_id,
+void ProxyDecryptor::KeyMessage(const std::string& session_id,
                                 const std::string& message,
                                 const std::string& default_url) {
-  key_message_cb_.Run(key_system, session_id, message, default_url);
+  key_message_cb_.Run(session_id, message, default_url);
 }
 
-void ProxyDecryptor::NeedKey(const std::string& key_system,
-                             const std::string& session_id,
+void ProxyDecryptor::NeedKey(const std::string& session_id,
                              const std::string& type,
                              scoped_ptr<uint8[]> init_data,
                              int init_data_size) {
-  need_key_cb_.Run(key_system, session_id, type,
-                   init_data.Pass(), init_data_size);
+  need_key_cb_.Run(session_id, type, init_data.Pass(), init_data_size);
 }
 
 }  // namespace webkit_media

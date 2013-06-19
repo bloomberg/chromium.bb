@@ -80,15 +80,12 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
                                   unsigned seek_request_id) OVERRIDE;
   virtual void OnMediaConfigRequest(int player_id) OVERRIDE;
   virtual void OnKeyAdded(int media_keys_id,
-                          const std::string& key_system,
                           const std::string& session_id) OVERRIDE;
   virtual void OnKeyError(int media_keys_id,
-                          const std::string& key_system,
                           const std::string& session_id,
                           media::MediaKeys::KeyError error_code,
                           int system_code) OVERRIDE;
   virtual void OnKeyMessage(int media_keys_id,
-                            const std::string& key_system,
                             const std::string& session_id,
                             const std::string& message,
                             const std::string& destination_url) OVERRIDE;
@@ -127,17 +124,13 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
   void OnMediaSeekRequestAck(int player_id, unsigned seek_request_id);
   void OnGenerateKeyRequest(int media_keys_id,
-                            const std::string& key_system,
                             const std::string& type,
                             const std::vector<uint8>& init_data);
   void OnAddKey(int media_keys_id,
-                const std::string& key_system,
                 const std::vector<uint8>& key,
                 const std::vector<uint8>& init_data,
                 const std::string& session_id);
-  void OnCancelKeyRequest(int media_keys_id,
-                          const std::string& key_system,
-                          const std::string& session_id);
+  void OnCancelKeyRequest(int media_keys_id, const std::string& session_id);
   void OnDurationChanged(int player_id, const base::TimeDelta& duration);
 
 #if defined(GOOGLE_TV)

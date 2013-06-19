@@ -917,18 +917,24 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     const WebString& key_system,
     const unsigned char* init_data,
     unsigned init_data_length) {
+  DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
+           << std::string(reinterpret_cast<const char*>(init_data),
+                          static_cast<size_t>(init_data_length));
+
   if (!IsSupportedKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   // We do not support run-time switching between key systems for now.
-  if (current_key_system_.isEmpty())
+  if (current_key_system_.isEmpty()) {
+#if defined(GOOGLE_TV)
+    if (!decryptor_->InitializeCDM(key_system.utf8()))
+      return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+#endif  // defined(GOOGLE_TV
     current_key_system_ = key_system;
-  else if (key_system != current_key_system_)
+  }
+  else if (key_system != current_key_system_) {
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
-  DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
-           << std::string(reinterpret_cast<const char*>(init_data),
-                          static_cast<size_t>(init_data_length));
+  }
 
 #if defined(GOOGLE_TV)
   // TODO(xhwang): We assume all streams are from the same container (thus have
@@ -943,7 +949,6 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
 #else
   proxy_->GenerateKeyRequest(
       player_id_,
-      key_system.utf8(),
       init_data_type_,
       std::vector<uint8>(init_data, init_data + init_data_length));
 #endif  // defined(GOOGLE_TV)
@@ -973,13 +978,6 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::AddKeyInternal(
     const WebString& session_id) {
   DCHECK(key);
   DCHECK_GT(key_length, 0u);
-
-  if (!IsSupportedKeySystem(key_system))
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-  if (current_key_system_.isEmpty() || key_system != current_key_system_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
   DVLOG(1) << "addKey: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(key),
                           static_cast<size_t>(key_length)) << ", "
@@ -987,12 +985,17 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::AddKeyInternal(
                           static_cast<size_t>(init_data_length))
            << " [" << session_id.utf8().data() << "]";
 
+  if (!IsSupportedKeySystem(key_system))
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+  if (current_key_system_.isEmpty() || key_system != current_key_system_)
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+
 #if defined(GOOGLE_TV)
-  decryptor_->AddKey(key_system.utf8(), key, key_length,
-                     init_data, init_data_length, session_id.utf8());
+  decryptor_->AddKey(key, key_length, init_data, init_data_length,
+                     session_id.utf8());
 #else
   proxy_->AddKey(player_id_,
-                 key_system.utf8(),
                  std::vector<uint8>(key, key + key_length),
                  std::vector<uint8>(init_data, init_data + init_data_length),
                  session_id.utf8());
@@ -1021,56 +1024,51 @@ WebMediaPlayerAndroid::CancelKeyRequestInternal(
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
 #if defined(GOOGLE_TV)
-  decryptor_->CancelKeyRequest(key_system.utf8(), session_id.utf8());
+  decryptor_->CancelKeyRequest(session_id.utf8());
 #else
-  proxy_->CancelKeyRequest(player_id_, key_system.utf8(), session_id.utf8());
+  proxy_->CancelKeyRequest(player_id_, session_id.utf8());
 #endif  // #if defined(GOOGLE_TV)
 
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
-void WebMediaPlayerAndroid::OnKeyAdded(const std::string& key_system,
-                                       const std::string& session_id) {
-  EmeUMAHistogramCounts(key_system, "KeyAdded", 1);
+void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
+  EmeUMAHistogramCounts(current_key_system_.utf8(), "KeyAdded", 1);
 
   if (media_source_delegate_)
-    media_source_delegate_->NotifyDemuxerReady(key_system);
+    media_source_delegate_->NotifyDemuxerReady(current_key_system_.utf8());
 
-  client_->keyAdded(WebString::fromUTF8(key_system),
-                    WebString::fromUTF8(session_id));
+  client_->keyAdded(current_key_system_, WebString::fromUTF8(session_id));
 }
 
-void WebMediaPlayerAndroid::OnKeyError(const std::string& key_system,
-                                       const std::string& session_id,
+void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
                                        media::MediaKeys::KeyError error_code,
                                        int system_code) {
-  EmeUMAHistogramEnumeration(
-      key_system, "KeyError", error_code, media::MediaKeys::kMaxKeyError);
+  EmeUMAHistogramEnumeration(current_key_system_.utf8(), "KeyError",
+                             error_code, media::MediaKeys::kMaxKeyError);
 
   client_->keyError(
-      WebString::fromUTF8(key_system),
+      current_key_system_,
       WebString::fromUTF8(session_id),
       static_cast<WebKit::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
       system_code);
 }
 
-void WebMediaPlayerAndroid::OnKeyMessage(const std::string& key_system,
-                                         const std::string& session_id,
+void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
                                          const std::string& message,
                                          const std::string& destination_url) {
   const GURL destination_url_gurl(destination_url);
   DLOG_IF(WARNING, !destination_url.empty() && !destination_url_gurl.is_valid())
       << "Invalid URL in destination_url: " << destination_url;
 
-  client_->keyMessage(WebString::fromUTF8(key_system),
+  client_->keyMessage(current_key_system_,
                       WebString::fromUTF8(session_id),
                       reinterpret_cast<const uint8*>(message.data()),
                       message.size(),
                       destination_url_gurl);
 }
 
-void WebMediaPlayerAndroid::OnNeedKey(const std::string& key_system,
-                                      const std::string& session_id,
+void WebMediaPlayerAndroid::OnNeedKey(const std::string& session_id,
                                       const std::string& type,
                                       scoped_ptr<uint8[]> init_data,
                                       int init_data_size) {
@@ -1086,7 +1084,7 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& key_system,
   if (init_data_type_.empty())
     init_data_type_ = type;
 
-  client_->keyNeeded(WebString::fromUTF8(key_system),
+  client_->keyNeeded(WebString(),
                      WebString::fromUTF8(session_id),
                      init_data.get(),
                      init_data_size);

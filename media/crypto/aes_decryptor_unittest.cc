@@ -244,26 +244,24 @@ class AesDecryptorTest : public testing::Test {
                               key_id_size);
     EXPECT_CALL(
         *this,
-        KeyMessage(
-            kClearKeySystem, StrNe(std::string()), StrEq(key_id_string), ""))
+        KeyMessage(StrNe(std::string()), StrEq(key_id_string), ""))
         .WillOnce(SaveArg<1>(&session_id_string_));
     EXPECT_TRUE(decryptor_.GenerateKeyRequest(
-        kClearKeySystem, std::string(), key_id, key_id_size));
+        std::string(), key_id, key_id_size));
   }
 
   void AddKeyAndExpectToSucceed(const uint8* key_id, int key_id_size,
                                 const uint8* key, int key_size) {
-    EXPECT_CALL(*this, KeyAdded(kClearKeySystem, session_id_string_));
-    decryptor_.AddKey(kClearKeySystem, key, key_size, key_id, key_id_size,
+    EXPECT_CALL(*this, KeyAdded(session_id_string_));
+    decryptor_.AddKey(key, key_size, key_id, key_id_size,
                       session_id_string_);
   }
 
   void AddKeyAndExpectToFail(const uint8* key_id, int key_id_size,
                              const uint8* key, int key_size) {
-    EXPECT_CALL(*this, KeyError(kClearKeySystem, session_id_string_,
+    EXPECT_CALL(*this, KeyError(session_id_string_,
                                 MediaKeys::kUnknownError, 0));
-    decryptor_.AddKey(kClearKeySystem, key, key_size, key_id, key_id_size,
-                      session_id_string_);
+    decryptor_.AddKey(key, key_size, key_id, key_id_size, session_id_string_);
   }
 
   MOCK_METHOD2(BufferDecrypted, void(Decryptor::Status,
@@ -312,11 +310,10 @@ class AesDecryptorTest : public testing::Test {
     decryptor_.Decrypt(Decryptor::kVideo, encrypted, decrypt_cb_);
   }
 
-  MOCK_METHOD2(KeyAdded, void(const std::string&, const std::string&));
-  MOCK_METHOD4(KeyError, void(const std::string&, const std::string&,
+  MOCK_METHOD1(KeyAdded, void(const std::string&));
+  MOCK_METHOD3(KeyError, void(const std::string&,
                               MediaKeys::KeyError, int));
-  MOCK_METHOD4(KeyMessage, void(const std::string& key_system,
-                                const std::string& session_id,
+  MOCK_METHOD3(KeyMessage, void(const std::string& session_id,
                                 const std::string& message,
                                 const std::string& default_url));
 
@@ -327,9 +324,8 @@ class AesDecryptorTest : public testing::Test {
 };
 
 TEST_F(AesDecryptorTest, GenerateKeyRequestWithNullInitData) {
-  EXPECT_CALL(*this, KeyMessage(kClearKeySystem, StrNe(std::string()), "", ""));
-  EXPECT_TRUE(
-      decryptor_.GenerateKeyRequest(kClearKeySystem, std::string(), NULL, 0));
+  EXPECT_CALL(*this, KeyMessage(StrNe(std::string()), "", ""));
+  EXPECT_TRUE(decryptor_.GenerateKeyRequest(std::string(), NULL, 0));
 }
 
 TEST_F(AesDecryptorTest, NormalWebMDecryption) {

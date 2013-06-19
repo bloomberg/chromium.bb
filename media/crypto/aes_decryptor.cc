@@ -138,13 +138,12 @@ AesDecryptor::~AesDecryptor() {
   STLDeleteValues(&key_map_);
 }
 
-bool AesDecryptor::GenerateKeyRequest(const std::string& key_system,
-                                      const std::string& type,
+bool AesDecryptor::GenerateKeyRequest(const std::string& type,
                                       const uint8* init_data,
                                       int init_data_length) {
   std::string session_id_string(base::UintToString(next_session_id_++));
 
-  // For now, the AesDecryptor does not care about |key_system| and |type|;
+  // For now, the AesDecryptor does not care about |type|;
   // just fire the event with the |init_data| as the request.
   std::string message;
   if (init_data && init_data_length) {
@@ -152,12 +151,11 @@ bool AesDecryptor::GenerateKeyRequest(const std::string& key_system,
                           init_data_length);
   }
 
-  key_message_cb_.Run(key_system, session_id_string, message, std::string());
+  key_message_cb_.Run(session_id_string, message, std::string());
   return true;
 }
 
-void AesDecryptor::AddKey(const std::string& key_system,
-                          const uint8* key,
+void AesDecryptor::AddKey(const uint8* key,
                           int key_length,
                           const uint8* init_data,
                           int init_data_length,
@@ -169,7 +167,7 @@ void AesDecryptor::AddKey(const std::string& key_system,
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=16550
   if (key_length != DecryptConfig::kDecryptionKeySize) {
     DVLOG(1) << "Invalid key length: " << key_length;
-    key_error_cb_.Run(key_system, session_id, MediaKeys::kUnknownError, 0);
+    key_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -189,13 +187,13 @@ void AesDecryptor::AddKey(const std::string& key_system,
   scoped_ptr<DecryptionKey> decryption_key(new DecryptionKey(key_string));
   if (!decryption_key) {
     DVLOG(1) << "Could not create key.";
-    key_error_cb_.Run(key_system, session_id, MediaKeys::kUnknownError, 0);
+    key_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
   if (!decryption_key->Init()) {
     DVLOG(1) << "Could not initialize decryption key.";
-    key_error_cb_.Run(key_system, session_id, MediaKeys::kUnknownError, 0);
+    key_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -207,11 +205,10 @@ void AesDecryptor::AddKey(const std::string& key_system,
   if (!new_video_key_cb_.is_null())
     new_video_key_cb_.Run();
 
-  key_added_cb_.Run(key_system, session_id);
+  key_added_cb_.Run(session_id);
 }
 
-void AesDecryptor::CancelKeyRequest(const std::string& key_system,
-                                    const std::string& session_id) {
+void AesDecryptor::CancelKeyRequest(const std::string& session_id) {
 }
 
 MediaKeys* AesDecryptor::GetMediaKeys() {

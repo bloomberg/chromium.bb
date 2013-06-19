@@ -85,17 +85,14 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
     // Resets the Client to a clean state.
     void Reset();
 
-    void KeyAdded(const std::string& key_system, const std::string& session_id);
-    void KeyError(const std::string& key_system,
-                  const std::string& session_id,
+    void KeyAdded(const std::string& session_id);
+    void KeyError(const std::string& session_id,
                   media::MediaKeys::KeyError error_code,
                   int system_code);
-    void KeyMessage(const std::string& key_system,
-                    const std::string& session_id,
+    void KeyMessage(const std::string& session_id,
                     const std::string& message,
                     const std::string& default_url);
-    void NeedKey(const std::string& key_system,
-                 const std::string& session_id,
+    void NeedKey(const std::string& session_id,
                  const std::string& type,
                  scoped_ptr<uint8[]> init_data, int init_data_length);
 

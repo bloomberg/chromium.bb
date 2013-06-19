@@ -35,6 +35,9 @@ class ProxyDecryptor : public media::MediaKeys {
                  const media::NeedKeyCB& need_key_cb);
   virtual ~ProxyDecryptor();
 
+  // Only call this once.
+  bool InitializeCDM(const std::string& key_system);
+
   // Requests the ProxyDecryptor to notify the decryptor when it's ready through
   // the |decryptor_ready_cb| provided.
   // If |decryptor_ready_cb| is null, the existing callback will be fired with
@@ -42,16 +45,14 @@ class ProxyDecryptor : public media::MediaKeys {
   void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
 
   // MediaKeys implementation.
-  virtual bool GenerateKeyRequest(const std::string& key_system,
-                                  const std::string& type,
+  // May only be called after InitializeCDM() succeeds.
+  virtual bool GenerateKeyRequest(const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) OVERRIDE;
-  virtual void AddKey(const std::string& key_system,
-                      const uint8* key, int key_length,
+  virtual void AddKey(const uint8* key, int key_length,
                       const uint8* init_data, int init_data_length,
                       const std::string& session_id) OVERRIDE;
-  virtual void CancelKeyRequest(const std::string& key_system,
-                                const std::string& session_id) OVERRIDE;
+  virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
 
  private:
   // Helper functions to create decryptors to handle the given |key_system|.
@@ -64,17 +65,14 @@ class ProxyDecryptor : public media::MediaKeys {
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
   // Callbacks for firing key events.
-  void KeyAdded(const std::string& key_system, const std::string& session_id);
-  void KeyError(const std::string& key_system,
-                const std::string& session_id,
+  void KeyAdded(const std::string& session_id);
+  void KeyError(const std::string& session_id,
                 media::MediaKeys::KeyError error_code,
                 int system_code);
-  void KeyMessage(const std::string& key_system,
-                  const std::string& session_id,
+  void KeyMessage(const std::string& session_id,
                   const std::string& message,
                   const std::string& default_url);
-  void NeedKey(const std::string& key_system,
-               const std::string& session_id,
+  void NeedKey(const std::string& session_id,
                const std::string& type,
                scoped_ptr<uint8[]> init_data, int init_data_size);
 

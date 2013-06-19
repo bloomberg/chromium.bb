@@ -185,28 +185,25 @@ void WebMediaPlayerProxyImplAndroid::ReadFromDemuxerAck(
 
 void WebMediaPlayerProxyImplAndroid::GenerateKeyRequest(
     int player_id,
-    const std::string& key_system,
     const std::string& type,
     const std::vector<uint8>& init_data) {
   Send(new MediaPlayerHostMsg_GenerateKeyRequest(
-      routing_id(), player_id, key_system, type, init_data));
+      routing_id(), player_id, type, init_data));
 }
 
 void WebMediaPlayerProxyImplAndroid::AddKey(int player_id,
-                                            const std::string& key_system,
                                             const std::vector<uint8>& key,
                                             const std::vector<uint8>& init_data,
                                             const std::string& session_id) {
   Send(new MediaPlayerHostMsg_AddKey(
-      routing_id(), player_id, key_system, key, init_data, session_id));
+      routing_id(), player_id, key, init_data, session_id));
 }
 
 void WebMediaPlayerProxyImplAndroid::CancelKeyRequest(
     int player_id,
-    const std::string& key_system,
     const std::string& session_id) {
   Send(new MediaPlayerHostMsg_CancelKeyRequest(
-      routing_id(), player_id, key_system, session_id));
+      routing_id(), player_id, session_id));
 }
 
 #if defined(GOOGLE_TV)
@@ -272,33 +269,30 @@ void WebMediaPlayerProxyImplAndroid::OnMediaConfigRequest(int player_id) {
 }
 
 void WebMediaPlayerProxyImplAndroid::OnKeyAdded(int player_id,
-                                                const std::string& key_system,
                                                 const std::string& session_id) {
   webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
-    player->OnKeyAdded(key_system, session_id);
+    player->OnKeyAdded(session_id);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnKeyError(
     int player_id,
-    const std::string& key_system,
     const std::string& session_id,
     media::MediaKeys::KeyError error_code,
     int system_code) {
   webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
-    player->OnKeyError(key_system, session_id, error_code, system_code);
+    player->OnKeyError(session_id, error_code, system_code);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnKeyMessage(
     int player_id,
-    const std::string& key_system,
     const std::string& session_id,
     const std::string& message,
     const std::string& destination_url) {
   webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player)
-    player->OnKeyMessage(key_system, session_id, message, destination_url);
+    player->OnKeyMessage(session_id, message, destination_url);
 }
 
 }  // namespace content

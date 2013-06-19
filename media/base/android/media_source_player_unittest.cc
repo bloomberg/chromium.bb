@@ -55,15 +55,12 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     return NULL;
   }
   virtual void OnKeyAdded(int key_id,
-                          const std::string& key_system,
                           const std::string& session_id) OVERRIDE {}
   virtual void OnKeyError(int key_id,
-                          const std::string& key_system,
                           const std::string& session_id,
                           media::MediaKeys::KeyError error_code,
                           int system_code) OVERRIDE {}
   virtual void OnKeyMessage(int key_id,
-                            const std::string& key_system,
                             const std::string& session_id,
                             const std::string& message,
                             const std::string& destination_url) OVERRIDE {}

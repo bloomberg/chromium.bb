@@ -46,6 +46,7 @@
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 #include "webkit/renderer/media/buffered_data_source.h"
+#include "webkit/renderer/media/crypto/key_systems.h"
 #include "webkit/renderer/media/texttrack_impl.h"
 #include "webkit/renderer/media/webaudiosourceprovider_impl.h"
 #include "webkit/renderer/media/webinbandtexttrack_impl.h"
@@ -690,24 +691,27 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(
     const WebString& key_system,
     const unsigned char* init_data,
     unsigned init_data_length) {
-  if (!IsSupportedKeySystem(key_system))
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-  // We do not support run-time switching between key systems for now.
-  if (current_key_system_.isEmpty())
-    current_key_system_ = key_system;
-  else if (key_system != current_key_system_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
   DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(init_data),
                           static_cast<size_t>(init_data_length));
 
+  if (!IsSupportedKeySystem(key_system))
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+  // We do not support run-time switching between key systems for now.
+  if (current_key_system_.isEmpty()) {
+    if (!decryptor_->InitializeCDM(key_system.utf8()))
+      return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+    current_key_system_ = key_system;
+  }
+  else if (key_system != current_key_system_) {
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+  }
+
   // TODO(xhwang): We assume all streams are from the same container (thus have
   // the same "type") for now. In the future, the "type" should be passed down
   // from the application.
-  if (!decryptor_->GenerateKeyRequest(key_system.utf8(),
-                                      init_data_type_,
+  if (!decryptor_->GenerateKeyRequest(init_data_type_,
                                       init_data, init_data_length)) {
     current_key_system_.reset();
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
@@ -738,13 +742,6 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::AddKeyInternal(
     const WebString& session_id) {
   DCHECK(key);
   DCHECK_GT(key_length, 0u);
-
-  if (!IsSupportedKeySystem(key_system))
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-  if (current_key_system_.isEmpty() || key_system != current_key_system_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
   DVLOG(1) << "addKey: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(key),
                           static_cast<size_t>(key_length)) << ", "
@@ -752,7 +749,14 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::AddKeyInternal(
                           static_cast<size_t>(init_data_length))
            << " [" << session_id.utf8().data() << "]";
 
-  decryptor_->AddKey(key_system.utf8(), key, key_length,
+
+  if (!IsSupportedKeySystem(key_system))
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+  if (current_key_system_.isEmpty() || key_system != current_key_system_)
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+
+  decryptor_->AddKey(key, key_length,
                      init_data, init_data_length, session_id.utf8());
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
@@ -776,7 +780,7 @@ WebMediaPlayerImpl::CancelKeyRequestInternal(
   if (current_key_system_.isEmpty() || key_system != current_key_system_)
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
-  decryptor_->CancelKeyRequest(key_system.utf8(), session_id.utf8());
+  decryptor_->CancelKeyRequest(session_id.utf8());
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -879,16 +883,14 @@ void WebMediaPlayerImpl::OnDemuxerOpened(
       chunk_demuxer_, base::Bind(&LogMediaSourceError, media_log_)));
 }
 
-void WebMediaPlayerImpl::OnKeyAdded(const std::string& key_system,
-                                    const std::string& session_id) {
+void WebMediaPlayerImpl::OnKeyAdded(const std::string& session_id) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  EmeUMAHistogramCounts(key_system, "KeyAdded", 1);
-  GetClient()->keyAdded(WebString::fromUTF8(key_system),
+  EmeUMAHistogramCounts(current_key_system_.utf8(), "KeyAdded", 1);
+  GetClient()->keyAdded(current_key_system_,
                         WebString::fromUTF8(session_id));
 }
 
-void WebMediaPlayerImpl::OnNeedKey(const std::string& key_system,
-                                   const std::string& session_id,
+void WebMediaPlayerImpl::OnNeedKey(const std::string& session_id,
                                    const std::string& type,
                                    scoped_ptr<uint8[]> init_data,
                                    int init_data_size) {
@@ -904,7 +906,7 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& key_system,
   if (init_data_type_.empty())
     init_data_type_ = type;
 
-  GetClient()->keyNeeded(WebString::fromUTF8(key_system),
+  GetClient()->keyNeeded(WebString(),
                          WebString::fromUTF8(session_id),
                          init_data.get(),
                          init_data_size);
@@ -927,24 +929,22 @@ WebMediaPlayerImpl::OnTextTrack(media::TextKind kind,
   return scoped_ptr<media::TextTrack>(new TextTrackImpl(text_track));
 }
 
-void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
-                                    const std::string& session_id,
+void WebMediaPlayerImpl::OnKeyError(const std::string& session_id,
                                     media::MediaKeys::KeyError error_code,
                                     int system_code) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  EmeUMAHistogramEnumeration(
-      key_system, "KeyError", error_code, media::MediaKeys::kMaxKeyError);
+  EmeUMAHistogramEnumeration(current_key_system_.utf8(), "KeyError",
+                             error_code, media::MediaKeys::kMaxKeyError);
 
   GetClient()->keyError(
-      WebString::fromUTF8(key_system),
+      current_key_system_,
       WebString::fromUTF8(session_id),
       static_cast<WebKit::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
       system_code);
 }
 
-void WebMediaPlayerImpl::OnKeyMessage(const std::string& key_system,
-                                      const std::string& session_id,
+void WebMediaPlayerImpl::OnKeyMessage(const std::string& session_id,
                                       const std::string& message,
                                       const std::string& default_url) {
   DCHECK(main_loop_->BelongsToCurrentThread());
@@ -953,7 +953,7 @@ void WebMediaPlayerImpl::OnKeyMessage(const std::string& key_system,
   DLOG_IF(WARNING, !default_url.empty() && !default_url_gurl.is_valid())
       << "Invalid URL in default_url: " << default_url;
 
-  GetClient()->keyMessage(WebString::fromUTF8(key_system),
+  GetClient()->keyMessage(current_key_system_,
                           WebString::fromUTF8(session_id),
                           reinterpret_cast<const uint8*>(message.data()),
                           message.size(),
@@ -1003,7 +1003,7 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
 
     demuxer_.reset(new media::FFmpegDemuxer(
         media_loop_, data_source_.get(),
-        BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", "")));
+        BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnNeedKey, "")));
   } else {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);
@@ -1012,7 +1012,7 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
     chunk_demuxer_ = new media::ChunkDemuxer(
         BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnDemuxerOpened,
                               base::Passed(&ms)),
-        BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""),
+        BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnNeedKey, ""),
         base::Bind(&WebMediaPlayerImpl::OnTextTrack, base::Unretained(this)),
         base::Bind(&LogMediaSourceError, media_log_));
     demuxer_.reset(chunk_demuxer_);

@@ -19,6 +19,7 @@ namespace media {
 // TODO(qinmin): implement all the functions in this class.
 class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
  public:
+  // TODO(xhwang): Pass in |key_system|.
   MediaDrmBridge(int media_keys_id, const std::vector<uint8>& uuid);
   virtual ~MediaDrmBridge();
 
@@ -26,16 +27,13 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   static bool IsAvailable();
 
   // MediaKeys implementations.
-  virtual bool GenerateKeyRequest(const std::string& key_system,
-                                  const std::string& type,
+  virtual bool GenerateKeyRequest(const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) OVERRIDE;
-  virtual void AddKey(const std::string& key_system,
-                      const uint8* key, int key_length,
+  virtual void AddKey(const uint8* key, int key_length,
                       const uint8* init_data, int init_data_length,
                       const std::string& session_id) OVERRIDE;
-  virtual void CancelKeyRequest(const std::string& key_system,
-                                const std::string& session_id) OVERRIDE;
+  virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
 
   // Drm related message was received.
   void OnDrmEvent(JNIEnv* env, jobject, jstring session_id,

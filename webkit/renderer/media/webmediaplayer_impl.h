@@ -40,7 +40,6 @@
 #include "third_party/WebKit/public/web/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
-#include "webkit/renderer/media/crypto/key_systems.h"
 #include "webkit/renderer/media/crypto/proxy_decryptor.h"
 
 class RenderAudioSourceProvider;
@@ -189,17 +188,14 @@ class WebMediaPlayerImpl
   void OnPipelineBufferingState(
       media::Pipeline::BufferingState buffering_state);
   void OnDemuxerOpened(scoped_ptr<WebKit::WebMediaSource> media_source);
-  void OnKeyAdded(const std::string& key_system, const std::string& session_id);
-  void OnKeyError(const std::string& key_system,
-                  const std::string& session_id,
+  void OnKeyAdded(const std::string& session_id);
+  void OnKeyError(const std::string& session_id,
                   media::MediaKeys::KeyError error_code,
                   int system_code);
-  void OnKeyMessage(const std::string& key_system,
-                    const std::string& session_id,
+  void OnKeyMessage(const std::string& session_id,
                     const std::string& message,
                     const std::string& default_url);
-  void OnNeedKey(const std::string& key_system,
-                 const std::string& type,
+  void OnNeedKey(const std::string& type,
                  const std::string& session_id,
                  scoped_ptr<uint8[]> init_data,
                  int init_data_size);

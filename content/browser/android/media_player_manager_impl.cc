@@ -283,28 +283,24 @@ void MediaPlayerManagerImpl::OnMediaConfigRequest(int player_id) {
 }
 
 void MediaPlayerManagerImpl::OnKeyAdded(int media_keys_id,
-                                        const std::string& key_system,
                                         const std::string& session_id) {
-  Send(new MediaPlayerMsg_KeyAdded(
-      routing_id(), media_keys_id, key_system, session_id));
+  Send(new MediaPlayerMsg_KeyAdded(routing_id(), media_keys_id, session_id));
 }
 
 void MediaPlayerManagerImpl::OnKeyError(int media_keys_id,
-                                        const std::string& key_system,
                                         const std::string& session_id,
                                         media::MediaKeys::KeyError error_code,
                                         int system_code) {
   Send(new MediaPlayerMsg_KeyError(routing_id(), media_keys_id,
-      key_system, session_id, error_code, system_code));
+                                   session_id, error_code, system_code));
 }
 
 void MediaPlayerManagerImpl::OnKeyMessage(int media_keys_id,
-                                          const std::string& key_system,
                                           const std::string& session_id,
                                           const std::string& message,
                                           const std::string& destination_url) {
-  Send(new MediaPlayerMsg_KeyMessage(routing_id(), media_keys_id,
-       key_system, session_id, message, destination_url));
+  Send(new MediaPlayerMsg_KeyMessage(routing_id(), media_keys_id, session_id,
+                                     message, destination_url));
 }
 
 #if defined(GOOGLE_TV)
@@ -441,35 +437,31 @@ void MediaPlayerManagerImpl::OnMediaSeekRequestAck(
 
 void MediaPlayerManagerImpl::OnGenerateKeyRequest(
     int media_keys_id,
-    const std::string& key_system,
     const std::string& type,
     const std::vector<uint8>& init_data) {
   // TODO(qinmin): add a new MediaDrmBridge if GetDrmBridge() returns NULL.
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (drm_bridge) {
-    drm_bridge->GenerateKeyRequest(key_system, type, &init_data[0],
-                                   init_data.size());
+    drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());
   }
 }
 
 void MediaPlayerManagerImpl::OnAddKey(int media_keys_id,
-                                      const std::string& key_system,
                                       const std::vector<uint8>& key,
                                       const std::vector<uint8>& init_data,
                                       const std::string& session_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (drm_bridge) {
-    drm_bridge->AddKey(key_system, &key[0], key.size(), &init_data[0],
-                       init_data.size(), session_id);
+    drm_bridge->AddKey(&key[0], key.size(), &init_data[0], init_data.size(),
+                       session_id);
   }
 }
 
 void MediaPlayerManagerImpl::OnCancelKeyRequest(int media_keys_id,
-                                                const std::string& key_system,
                                                 const std::string& session_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (drm_bridge)
-    drm_bridge->CancelKeyRequest(key_system, session_id);
+    drm_bridge->CancelKeyRequest(session_id);
 }
 
 void MediaPlayerManagerImpl::OnDurationChanged(

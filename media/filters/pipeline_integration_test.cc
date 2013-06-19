@@ -66,24 +66,20 @@ class FakeEncryptedMedia {
    public:
     virtual ~AppBase() {}
 
-    virtual void KeyAdded(const std::string& key_system,
-                          const std::string& session_id) = 0;
+    virtual void KeyAdded(const std::string& session_id) = 0;
 
     // Errors are not expected unless overridden.
-    virtual void KeyError(const std::string& key_system,
-                          const std::string& session_id,
+    virtual void KeyError(const std::string& session_id,
                           MediaKeys::KeyError error_code,
                           int system_code) {
       FAIL() << "Unexpected Key Error";
     }
 
-    virtual void KeyMessage(const std::string& key_system,
-                            const std::string& session_id,
+    virtual void KeyMessage(const std::string& session_id,
                             const std::string& message,
                             const std::string& default_url) = 0;
 
-    virtual void NeedKey(const std::string& key_system,
-                         const std::string& session_id,
+    virtual void NeedKey(const std::string& session_id,
                          const std::string& type,
                          scoped_ptr<uint8[]> init_data, int init_data_length,
                          AesDecryptor* decryptor) = 0;
@@ -106,30 +102,27 @@ class FakeEncryptedMedia {
   }
 
   // Callbacks for firing key events. Delegate to |app_|.
-  void KeyAdded(const std::string& key_system, const std::string& session_id) {
-    app_->KeyAdded(key_system, session_id);
+  void KeyAdded(const std::string& session_id) {
+    app_->KeyAdded(session_id);
   }
 
-  void KeyError(const std::string& key_system,
-                const std::string& session_id,
+  void KeyError(const std::string& session_id,
                 MediaKeys::KeyError error_code,
                 int system_code) {
-    app_->KeyError(key_system, session_id, error_code, system_code);
+    app_->KeyError(session_id, error_code, system_code);
   }
 
-  void KeyMessage(const std::string& key_system,
-                  const std::string& session_id,
+  void KeyMessage(const std::string& session_id,
                   const std::string& message,
                   const std::string& default_url) {
-    app_->KeyMessage(key_system, session_id, message, default_url);
+    app_->KeyMessage(session_id, message, default_url);
   }
 
-  void NeedKey(const std::string& key_system,
-               const std::string& session_id,
+  void NeedKey(const std::string& session_id,
                const std::string& type,
                scoped_ptr<uint8[]> init_data, int init_data_length) {
-    app_->NeedKey(key_system, session_id, type,
-                  init_data.Pass(), init_data_length, &decryptor_);
+    app_->NeedKey(session_id, type, init_data.Pass(), init_data_length,
+                  &decryptor_);
   }
 
  private:
@@ -140,42 +133,30 @@ class FakeEncryptedMedia {
 // Provides |kSecretKey| in response to needkey.
 class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
  public:
-  virtual void KeyAdded(const std::string& key_system,
-                        const std::string& session_id) OVERRIDE {
-    EXPECT_EQ(kClearKeySystem, key_system);
+  virtual void KeyAdded(const std::string& session_id) OVERRIDE {
     EXPECT_FALSE(session_id.empty());
   }
 
-  virtual void KeyMessage(const std::string& key_system,
-                          const std::string& session_id,
+  virtual void KeyMessage(const std::string& session_id,
                           const std::string& message,
                           const std::string& default_url) OVERRIDE {
-    EXPECT_EQ(kClearKeySystem, key_system);
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
 
-    current_key_system_ = key_system;
     current_session_id_ = session_id;
   }
 
-  virtual void NeedKey(const std::string& key_system,
-                       const std::string& session_id,
+  virtual void NeedKey(const std::string& session_id,
                        const std::string& type,
                        scoped_ptr<uint8[]> init_data, int init_data_length,
                        AesDecryptor* decryptor) OVERRIDE {
-    current_key_system_ = key_system;
     current_session_id_ = session_id;
 
-    // When NeedKey is called from the demuxer, the |key_system| will be empty.
-    // In this case, we need to call GenerateKeyRequest() to initialize a
-    // session (which will call KeyMessage).
-    if (current_key_system_.empty()) {
-      EXPECT_TRUE(current_session_id_.empty());
-      EXPECT_TRUE(decryptor->GenerateKeyRequest(
-          kClearKeySystem, type, kInitData, arraysize(kInitData)));
+    if (current_session_id_.empty()) {
+      EXPECT_TRUE(decryptor->GenerateKeyRequest(type, kInitData,
+                                                arraysize(kInitData)));
     }
 
-    EXPECT_FALSE(current_key_system_.empty());
     EXPECT_FALSE(current_session_id_.empty());
 
     // Clear Key really needs the key ID in |init_data|. For WebM, they are the
@@ -188,36 +169,30 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
       key_id_length = arraysize(kKeyId);
     }
 
-    decryptor->AddKey(current_key_system_, kSecretKey, arraysize(kSecretKey),
+    decryptor->AddKey(kSecretKey, arraysize(kSecretKey),
                       key_id, key_id_length, current_session_id_);
   }
 
-  std::string current_key_system_;
   std::string current_session_id_;
 };
 
 // Ignores needkey and does not perform a license request
 class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
-  virtual void KeyAdded(const std::string& key_system,
-                        const std::string& session_id) OVERRIDE {
-    EXPECT_EQ(kClearKeySystem, key_system);
+  virtual void KeyAdded(const std::string& session_id) OVERRIDE {
     EXPECT_FALSE(session_id.empty());
     FAIL() << "Unexpected KeyAdded";
   }
 
-  virtual void KeyMessage(const std::string& key_system,
-                          const std::string& session_id,
+  virtual void KeyMessage(const std::string& session_id,
                           const std::string& message,
                           const std::string& default_url) OVERRIDE {
-    EXPECT_EQ(kClearKeySystem, key_system);
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
     FAIL() << "Unexpected KeyMessage";
   }
 
-  virtual void NeedKey(const std::string& key_system,
-                       const std::string& session_id,
+  virtual void NeedKey(const std::string& session_id,
                        const std::string& type,
                        scoped_ptr<uint8[]> init_data, int init_data_length,
                        AesDecryptor* decryptor) OVERRIDE {
@@ -324,8 +299,7 @@ class MockMediaSource {
     DCHECK(init_data.get());
     DCHECK_GT(init_data_size, 0);
     CHECK(!need_key_cb_.is_null());
-    need_key_cb_.Run(
-        std::string(), std::string(), type, init_data.Pass(), init_data_size);
+    need_key_cb_.Run(std::string(), type, init_data.Pass(), init_data_size);
   }
 
   scoped_ptr<TextTrack> OnTextTrack(TextKind kind,

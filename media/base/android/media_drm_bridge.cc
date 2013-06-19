@@ -21,21 +21,18 @@ MediaDrmBridge::MediaDrmBridge(
 
 MediaDrmBridge::~MediaDrmBridge() {}
 
-bool MediaDrmBridge::GenerateKeyRequest(const std::string& key_system,
-                                        const std::string& type,
+bool MediaDrmBridge::GenerateKeyRequest(const std::string& type,
                                         const uint8* init_data,
                                         int init_data_length) {
   NOTIMPLEMENTED();
   return false;
 }
 
-void MediaDrmBridge::CancelKeyRequest(const std::string& key_system,
-                                      const std::string& session_id) {
+void MediaDrmBridge::CancelKeyRequest(const std::string& session_id) {
   NOTIMPLEMENTED();
 }
 
-void MediaDrmBridge::AddKey(const std::string& key_system,
-                            const uint8* key, int key_length,
+void MediaDrmBridge::AddKey(const uint8* key, int key_length,
                             const uint8* init_data, int init_data_length,
                             const std::string& session_id) {
   NOTIMPLEMENTED();

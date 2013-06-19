@@ -15,7 +15,6 @@
 #include "third_party/WebKit/public/web/WebMediaSource.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
-#include "webkit/renderer/media/crypto/key_systems.h"
 #include "webkit/renderer/media/webmediaplayer_util.h"
 #include "webkit/renderer/media/webmediasourceclient_impl.h"
 
@@ -110,7 +109,7 @@ void MediaSourceDelegate::InitializeMediaSource(
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerOpened),
-      BIND_TO_RENDER_LOOP_2(&MediaSourceDelegate::OnNeedKey, "", ""),
+      BIND_TO_RENDER_LOOP_1(&MediaSourceDelegate::OnNeedKey, ""),
       base::Bind(&MediaSourceDelegate::OnAddTextTrack,
                  base::Unretained(this)),
       base::Bind(&LogMediaSourceError, media_log_)));
@@ -401,16 +400,14 @@ void MediaSourceDelegate::OnDemuxerOpened() {
       chunk_demuxer_.get(), base::Bind(&LogMediaSourceError, media_log_)));
 }
 
-void MediaSourceDelegate::OnNeedKey(const std::string& key_system,
-                                    const std::string& session_id,
+void MediaSourceDelegate::OnNeedKey(const std::string& session_id,
                                     const std::string& type,
                                     scoped_ptr<uint8[]> init_data,
                                     int init_data_size) {
   if (need_key_cb_.is_null())
     return;
 
-  need_key_cb_.Run(
-      key_system, session_id, type, init_data.Pass(), init_data_size);
+  need_key_cb_.Run(session_id, type, init_data.Pass(), init_data_size);
 }
 
 scoped_ptr<media::TextTrack> MediaSourceDelegate::OnAddTextTrack(

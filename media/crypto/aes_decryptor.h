@@ -34,16 +34,13 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   virtual ~AesDecryptor();
 
   // MediaKeys implementation.
-  virtual bool GenerateKeyRequest(const std::string& key_system,
-                                  const std::string& type,
+  virtual bool GenerateKeyRequest(const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) OVERRIDE;
-  virtual void AddKey(const std::string& key_system,
-                      const uint8* key, int key_length,
+  virtual void AddKey(const uint8* key, int key_length,
                       const uint8* init_data, int init_data_length,
                       const std::string& session_id) OVERRIDE;
-  virtual void CancelKeyRequest(const std::string& key_system,
-                                const std::string& session_id) OVERRIDE;
+  virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
 
   // Decryptor implementation.
   virtual MediaKeys* GetMediaKeys() OVERRIDE;

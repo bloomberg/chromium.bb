@@ -208,18 +208,15 @@ class WebMediaPlayerAndroid
       const WebKit::WebString& key_system,
       const WebKit::WebString& session_id) OVERRIDE;
 
-  void OnKeyAdded(const std::string& key_system, const std::string& session_id);
-  void OnKeyError(const std::string& key_system,
-                  const std::string& session_id,
+  void OnKeyAdded(const std::string& session_id);
+  void OnKeyError(const std::string& session_id,
                   media::MediaKeys::KeyError error_code,
                   int system_code);
-  void OnKeyMessage(const std::string& key_system,
-                    const std::string& session_id,
+  void OnKeyMessage(const std::string& session_id,
                     const std::string& message,
                     const std::string& destination_url);
 
-  void OnNeedKey(const std::string& key_system,
-                 const std::string& type,
+  void OnNeedKey(const std::string& type,
                  const std::string& session_id,
                  scoped_ptr<uint8[]> init_data,
                  int init_data_size);

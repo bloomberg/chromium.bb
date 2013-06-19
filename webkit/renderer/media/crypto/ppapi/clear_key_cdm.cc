@@ -160,22 +160,19 @@ void ClearKeyCdm::Client::Reset() {
   default_url_.clear();
 }
 
-void ClearKeyCdm::Client::KeyAdded(const std::string& key_system,
-                                   const std::string& session_id) {
+void ClearKeyCdm::Client::KeyAdded(const std::string& session_id) {
   status_ = kKeyAdded;
   session_id_ = session_id;
 }
 
-void ClearKeyCdm::Client::KeyError(const std::string& key_system,
-                                   const std::string& session_id,
+void ClearKeyCdm::Client::KeyError(const std::string& session_id,
                                    media::MediaKeys::KeyError error_code,
                                    int system_code) {
   status_ = kKeyError;
   session_id_ = session_id;
 }
 
-void ClearKeyCdm::Client::KeyMessage(const std::string& key_system,
-                                     const std::string& session_id,
+void ClearKeyCdm::Client::KeyMessage(const std::string& session_id,
                                      const std::string& message,
                                      const std::string& default_url) {
   status_ = kKeyMessage;
@@ -184,8 +181,7 @@ void ClearKeyCdm::Client::KeyMessage(const std::string& key_system,
   default_url_ = default_url;
 }
 
-void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
-                                  const std::string& session_id,
+void ClearKeyCdm::Client::NeedKey(const std::string& session_id,
                                   const std::string& type,
                                   scoped_ptr<uint8[]> init_data,
                                   int init_data_length) {
@@ -220,8 +216,7 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type, int type_size,
   DVLOG(1) << "GenerateKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  decryptor_.GenerateKeyRequest(kExternalClearKey,
-                                std::string(type, type_size),
+  decryptor_.GenerateKeyRequest(std::string(type, type_size),
                                 init_data, init_data_size);
 
   if (client_.status() != Client::kKeyMessage) {
@@ -249,11 +244,7 @@ cdm::Status ClearKeyCdm::AddKey(const char* session_id,
   DVLOG(1) << "AddKey()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  decryptor_.AddKey(std::string(),
-                    key,
-                    key_size,
-                    key_id,
-                    key_id_size,
+  decryptor_.AddKey(key, key_size, key_id, key_id_size,
                     std::string(session_id, session_id_size));
 
   if (client_.status() != Client::kKeyAdded)
@@ -272,8 +263,7 @@ cdm::Status ClearKeyCdm::CancelKeyRequest(const char* session_id,
   DVLOG(1) << "CancelKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  decryptor_.CancelKeyRequest(std::string(),
-                              std::string(session_id, session_id_size));
+  decryptor_.CancelKeyRequest(std::string(session_id, session_id_size));
   return cdm::kSuccess;
 }
 

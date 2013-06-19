@@ -285,6 +285,12 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       weak_this_(weak_ptr_factory_.GetWeakPtr()) {
 }
 
+void ContentDecryptorDelegate::Initialize(const std::string& key_system) {
+  // TODO(ddorwin): Add an Initialize method to PPP_ContentDecryptor_Private.
+  DCHECK(!key_system.empty());
+  key_system_ = key_system;
+}
+
 void ContentDecryptorDelegate::SetKeyEventCallbacks(
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
@@ -296,20 +302,16 @@ void ContentDecryptorDelegate::SetKeyEventCallbacks(
   need_key_cb_ = need_key_cb;
 }
 
-bool ContentDecryptorDelegate::GenerateKeyRequest(const std::string& key_system,
-                                                  const std::string& type,
+bool ContentDecryptorDelegate::GenerateKeyRequest(const std::string& type,
                                                   const uint8* init_data,
                                                   int init_data_length) {
-  if (key_system.empty())
-    return false;
-
   PP_Var init_data_array =
       PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
           init_data_length, init_data);
 
   plugin_decryption_interface_->GenerateKeyRequest(
       pp_instance_,
-      StringVar::StringToPPVar(key_system),
+      StringVar::StringToPPVar(key_system_),  // TODO(ddorwin): Remove.
       StringVar::StringToPPVar(type),
       init_data_array);
   return true;
@@ -615,7 +617,8 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
 void ContentDecryptorDelegate::NeedKey(PP_Var key_system_var,
                                        PP_Var session_id_var,
                                        PP_Var init_data_var) {
-  // TODO(tomfinegan): send the data to media stack.
+  // TODO(ddorwin): Remove from PPB_ContentDecryptor_Private.
+  NOTREACHED();
 }
 
 void ContentDecryptorDelegate::KeyAdded(PP_Var key_system_var,
@@ -623,15 +626,13 @@ void ContentDecryptorDelegate::KeyAdded(PP_Var key_system_var,
   if (key_added_cb_.is_null())
     return;
 
-  StringVar* key_system_string = StringVar::FromPPVar(key_system_var);
   StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
-  if (!key_system_string || !session_id_string) {
-    key_error_cb_.Run(
-        std::string(), std::string(), media::MediaKeys::kUnknownError, 0);
+  if (!session_id_string) {
+    key_error_cb_.Run(std::string(), media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  key_added_cb_.Run(key_system_string->value(), session_id_string->value());
+  key_added_cb_.Run(session_id_string->value());
 }
 
 void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
@@ -641,7 +642,6 @@ void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
   if (key_message_cb_.is_null())
     return;
 
-  StringVar* key_system_string = StringVar::FromPPVar(key_system_var);
   StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
 
   ArrayBufferVar* message_array_buffer =
@@ -655,14 +655,12 @@ void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
 
   StringVar* default_url_string = StringVar::FromPPVar(default_url_var);
 
-  if (!key_system_string || !session_id_string || !default_url_string) {
-    key_error_cb_.Run(
-        std::string(), std::string(), media::MediaKeys::kUnknownError, 0);
+  if (!session_id_string || !default_url_string) {
+    key_error_cb_.Run(std::string(), media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  key_message_cb_.Run(key_system_string->value(),
-                      session_id_string->value(),
+  key_message_cb_.Run(session_id_string->value(),
                       message,
                       default_url_string->value());
 }
@@ -674,19 +672,15 @@ void ContentDecryptorDelegate::KeyError(PP_Var key_system_var,
   if (key_error_cb_.is_null())
     return;
 
-  StringVar* key_system_string = StringVar::FromPPVar(key_system_var);
   StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
-  if (!key_system_string || !session_id_string) {
-    key_error_cb_.Run(
-        std::string(), std::string(), media::MediaKeys::kUnknownError, 0);
+  if (!session_id_string) {
+    key_error_cb_.Run(std::string(), media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  key_error_cb_.Run(
-      key_system_string->value(),
-      session_id_string->value(),
-      static_cast<media::MediaKeys::KeyError>(media_error),
-      system_code);
+  key_error_cb_.Run(session_id_string->value(),
+                    static_cast<media::MediaKeys::KeyError>(media_error),
+                    system_code);
 }
 
 void ContentDecryptorDelegate::DecoderInitializeDone(

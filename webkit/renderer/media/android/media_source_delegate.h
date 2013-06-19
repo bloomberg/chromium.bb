@@ -100,8 +100,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void OnDemuxerInitDone(media::PipelineStatus status);
   void OnDemuxerStopDone();
   void OnDemuxerOpened();
-  void OnNeedKey(const std::string& key_system,
-                 const std::string& type,
+  void OnNeedKey(const std::string& type,
                  const std::string& session_id,
                  scoped_ptr<uint8[]> init_data,
                  int init_data_size);

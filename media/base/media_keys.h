@@ -37,28 +37,24 @@ class MEDIA_EXPORT MediaKeys {
   MediaKeys();
   virtual ~MediaKeys();
 
-  // Generates a key request for the |key_system| with |type| and
-  // |init_data| provided.
+  // Generates a key request with the |type| and |init_data| provided.
   // Returns true if generating key request succeeded, false otherwise.
   // Note: AddKey() and CancelKeyRequest() should only be called after
   // GenerateKeyRequest() returns true.
-  virtual bool GenerateKeyRequest(const std::string& key_system,
-                                  const std::string& type,
+  virtual bool GenerateKeyRequest(const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) = 0;
 
-  // Adds a |key| to the |key_system|. The |key| is not limited to a decryption
+  // Adds a |key| to the session. The |key| is not limited to a decryption
   // key. It can be any data that the key system accepts, such as a license.
   // If multiple calls of this function set different keys for the same
   // key ID, the older key will be replaced by the newer key.
-  virtual void AddKey(const std::string& key_system,
-                      const uint8* key, int key_length,
+  virtual void AddKey(const uint8* key, int key_length,
                       const uint8* init_data, int init_data_length,
                       const std::string& session_id) = 0;
 
   // Cancels the key request specified by |session_id|.
-  virtual void CancelKeyRequest(const std::string& key_system,
-                                const std::string& session_id) = 0;
+  virtual void CancelKeyRequest(const std::string& session_id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaKeys);
@@ -66,21 +62,17 @@ class MEDIA_EXPORT MediaKeys {
 
 // Key event callbacks. See the spec for details:
 // http://dvcs.w3.org/hg/html-media/raw-file/eme-v0.1b/encrypted-media/encrypted-media.html#event-summary
-typedef base::Callback<void(const std::string& key_system,
-                            const std::string& session_id)> KeyAddedCB;
+typedef base::Callback<void(const std::string& session_id)> KeyAddedCB;
 
-typedef base::Callback<void(const std::string& key_system,
-                            const std::string& session_id,
+typedef base::Callback<void(const std::string& session_id,
                             media::MediaKeys::KeyError error_code,
                             int system_code)> KeyErrorCB;
 
-typedef base::Callback<void(const std::string& key_system,
-                            const std::string& session_id,
+typedef base::Callback<void(const std::string& session_id,
                             const std::string& message,
                             const std::string& default_url)> KeyMessageCB;
 
-typedef base::Callback<void(const std::string& key_system,
-                            const std::string& session_id,
+typedef base::Callback<void(const std::string& session_id,
                             const std::string& type,
                             scoped_ptr<uint8[]> init_data,
                             int init_data_size)> NeedKeyCB;

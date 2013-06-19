@@ -116,19 +116,16 @@ class MEDIA_EXPORT MediaPlayerManager {
 
   // Called when the DRM engine wants to send a KeyAdded.
   virtual void OnKeyAdded(int key_id,
-                          const std::string& key_system,
                           const std::string& session_id) = 0;
 
   // Called when the DRM engine wants to send a KeyError.
   virtual void OnKeyError(int key_id,
-                          const std::string& key_system,
                           const std::string& session_id,
                           media::MediaKeys::KeyError error_code,
                           int system_code) = 0;
 
   // Called when the DRM engine wants to send a KeyMessage.
   virtual void OnKeyMessage(int key_id,
-                            const std::string& key_system,
                             const std::string& session_id,
                             const std::string& message,
                             const std::string& destination_url) = 0;

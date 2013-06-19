@@ -215,39 +215,33 @@ IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_NotifyExternalSurface,
 
 // Messages for encrypted media extensions API ------------------------------
 
-IPC_MESSAGE_ROUTED4(MediaPlayerHostMsg_GenerateKeyRequest,
+IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_GenerateKeyRequest,
                     int /* player_id */,
-                    std::string /* key_system */,
                     std::string /* type */,
                     std::vector<uint8> /* init_data */)
 
-IPC_MESSAGE_ROUTED5(MediaPlayerHostMsg_AddKey,
+IPC_MESSAGE_ROUTED4(MediaPlayerHostMsg_AddKey,
                     int /* player_id */,
-                    std::string /* key_system */,
                     std::vector<uint8> /* key */,
                     std::vector<uint8> /* init_data */,
                     std::string /* session_id */)
 
-IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_CancelKeyRequest,
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_CancelKeyRequest,
                     int /* player_id */,
-                    std::string /* key_system */,
                     std::string /* session_id */)
 
-IPC_MESSAGE_ROUTED3(MediaPlayerMsg_KeyAdded,
+IPC_MESSAGE_ROUTED2(MediaPlayerMsg_KeyAdded,
                     int /* player_id */,
-                    std::string /* key_system */,
                     std::string /* session_id */)
 
-IPC_MESSAGE_ROUTED5(MediaPlayerMsg_KeyError,
+IPC_MESSAGE_ROUTED4(MediaPlayerMsg_KeyError,
                     int /* player_id */,
-                    std::string /* key_system */,
                     std::string /* session_id */,
                     media::MediaKeys::KeyError /* error_code */,
                     int /* system_code */)
 
-IPC_MESSAGE_ROUTED5(MediaPlayerMsg_KeyMessage,
+IPC_MESSAGE_ROUTED4(MediaPlayerMsg_KeyMessage,
                     int /* player_id */,
-                    std::string /* key_system */,
                     std::string /* session_id */,
                     std::string /* message */,
                     std::string /* destination_url */)
