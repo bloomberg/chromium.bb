@@ -631,6 +631,7 @@
         'browser/google_apis/drive_api_url_generator.h',
         'browser/google_apis/drive_api_util.cc',
         'browser/google_apis/drive_api_util.h',
+        'browser/google_apis/drive_common_callbacks.h',
         'browser/google_apis/drive_entry_kinds.h',
         'browser/google_apis/drive_notification_observer.h',
         'browser/google_apis/drive_switches.cc',

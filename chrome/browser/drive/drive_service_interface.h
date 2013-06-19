@@ -8,15 +8,11 @@
 #include <string>
 
 #include "chrome/browser/google_apis/base_requests.h"
+#include "chrome/browser/google_apis/drive_common_callbacks.h"
 
 class Profile;
 
 namespace google_apis {
-
-class AboutResource;
-class AppList;
-class ResourceEntry;
-class ResourceList;
 
 // Observer interface for DriveServiceInterface.
 class DriveServiceObserver {
@@ -30,43 +26,6 @@ class DriveServiceObserver {
  protected:
   virtual ~DriveServiceObserver() {}
 };
-
-// Callback used for GetResourceList().
-typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<ResourceList> resource_list)>
-    GetResourceListCallback;
-
-// Callback used for GetResourceEntry().
-typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<ResourceEntry> entry)>
-    GetResourceEntryCallback;
-
-// Callback used for GetAboutResource().
-typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<AboutResource> about_resource)>
-    GetAboutResourceCallback;
-
-// Callback used for GetApplicationInfo().
-typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<AppList> app_list)>
-    GetAppListCallback;
-
-// Callback used for ResumeUpload() and GetUploadStatus().
-typedef base::Callback<void(
-    const UploadRangeResponse& response,
-    scoped_ptr<ResourceEntry> new_entry)> UploadRangeCallback;
-
-// Callback used for AuthorizeApp(). |open_url| is used to open the target
-// file with the authorized app.
-typedef base::Callback<void(GDataErrorCode error,
-                            const GURL& open_url)>
-    AuthorizeAppCallback;
-
-// Closure for canceling a certain request. Each request-issuing method returns
-// this type of closure. If it is called during the request is in-flight, the
-// callback passed with the request is invoked with GDATA_CANCELLED. If the
-// request is already finished, nothing happens.
-typedef base::Closure CancelCallback;
 
 // This defines an interface for sharing by DriveService and MockDriveService
 // so that we can do testing of clients of DriveService.
