@@ -43,8 +43,4 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& out,
 
 }  // namespace
 
-// TODO(avi) update users of NullableString16 to use the namespace and remove
-// this "using".
-using base::NullableString16;
-
 #endif  // BASE_STRINGS_NULLABLE_STRING16_H_
