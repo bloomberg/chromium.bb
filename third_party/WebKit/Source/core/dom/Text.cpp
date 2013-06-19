@@ -280,18 +280,13 @@ void Text::recalcTextStyle(StyleChange change)
 {
     RenderText* renderer = toRenderText(this->renderer());
 
-    if (!renderer) {
+    if (renderer) {
+        if (change != NoChange || needsStyleRecalc())
+            renderer->setStyle(document()->styleResolver()->styleForText(this));
         if (needsStyleRecalc())
-            reattach();
-        clearNeedsStyleRecalc();
-        return;
-    }
-
-    if (needsStyleRecalc()) {
-        renderer->setStyle(document()->styleResolver()->styleForText(this));
-        renderer->setText(dataImpl());
-    } else if (change != NoChange) {
-        renderer->setStyle(document()->styleResolver()->styleForText(this));
+            renderer->setText(dataImpl());
+    } else if (needsStyleRecalc()) {
+        reattach();
     }
 
     clearNeedsStyleRecalc();
