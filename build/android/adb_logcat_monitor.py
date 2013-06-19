@@ -126,6 +126,7 @@ def main(base_dir, adb_cmd='adb'):
     while True:
       for device_id in GetAttachedDevices(adb_cmd):
         if not device_id in devices:
+          subprocess.call([adb_cmd, '-s', device_id, 'logcat', '-c'])
           devices[device_id] = (None, 0)
 
       for device in devices:
