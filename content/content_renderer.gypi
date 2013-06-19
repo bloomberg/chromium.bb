@@ -370,6 +370,9 @@
       ],
     }],
     ['OS=="android"', {
+      'sources!': [
+        'renderer/accessibility/renderer_accessibility_focus_only.cc'
+      ],
       'dependencies': [
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
       ],

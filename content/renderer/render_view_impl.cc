@@ -5887,8 +5887,10 @@ void RenderViewImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
   }
   if (accessibility_mode_ == AccessibilityModeComplete)
     renderer_accessibility_ = new RendererAccessibilityComplete(this);
+#if !defined(OS_ANDROID)
   else if (accessibility_mode_ == AccessibilityModeEditableTextOnly)
     renderer_accessibility_ = new RendererAccessibilityFocusOnly(this);
+#endif
 }
 
 void RenderViewImpl::OnSetActive(bool active) {
@@ -6630,6 +6632,11 @@ void RenderViewImpl::OnDisownOpener() {
 bool RenderViewImpl::didTapMultipleTargets(
     const WebKit::WebGestureEvent& event,
     const WebVector<WebRect>& target_rects) {
+  // Never show a disambiguation popup when accessibility is enabled,
+  // as this interferes with "touch exploration".
+  if (accessibility_mode_ == AccessibilityModeComplete)
+    return false;
+
   gfx::Rect finger_rect(
       event.x - event.data.tap.width / 2, event.y - event.data.tap.height / 2,
       event.data.tap.width, event.data.tap.height);
