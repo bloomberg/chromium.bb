@@ -28,8 +28,6 @@ RequestRegistry::Request::Request(RequestRegistry* registry,
 }
 
 RequestRegistry::Request::~Request() {
-  DCHECK(progress_status_.transfer_state == REQUEST_COMPLETED ||
-         progress_status_.transfer_state == REQUEST_FAILED);
 }
 
 void RequestRegistry::Request::Cancel() {
@@ -49,8 +47,6 @@ void RequestRegistry::Request::NotifyStart() {
 void RequestRegistry::Request::NotifyFinish(
     RequestTransferState status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(progress_status_.transfer_state >= REQUEST_STARTED);
-  DCHECK(status == REQUEST_COMPLETED || status == REQUEST_FAILED);
   progress_status_.transfer_state = status;
   registry_->OnRequestFinish(progress_status().request_id);
 }
@@ -78,11 +74,9 @@ void RequestRegistry::OnRequestStart(
 void RequestRegistry::OnRequestFinish(RequestID id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Request* request = in_flight_requests_.Lookup(id);
-  DCHECK(request);
-
   DVLOG(1) << "Request[" << id << "] finished.";
-  in_flight_requests_.Remove(id);
+  if (in_flight_requests_.Lookup(id))
+    in_flight_requests_.Remove(id);
 }
 
 }  // namespace google_apis
