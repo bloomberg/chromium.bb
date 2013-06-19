@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -222,7 +223,8 @@ bool UnloadController::DetachWebContents(content::WebContents* contents) {
     tabs_needing_unload_ack_.insert(contents);
     browser_->tab_strip_model()->DetachWebContentsAt(index);
     contents->SetDelegate(detached_delegate_.get());
-    contents->OnUnloadDetachedStarted();
+    CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
+    core_tab_helper->OnUnloadDetachedStarted();
     return true;
   }
   return false;
@@ -250,7 +252,10 @@ void UnloadController::ProcessPendingTabs() {
     // the tab's render_view_host may have been nulled out.
     if (contents->GetRenderViewHost()) {
       tab_needing_before_unload_ack_ = contents;
-      contents->OnCloseStarted();
+
+      CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
+      core_tab_helper->OnCloseStarted();
+
       contents->GetRenderViewHost()->FirePageBeforeUnload(false);
     } else {
       ProcessPendingTabs();
@@ -271,7 +276,9 @@ void UnloadController::ProcessPendingTabs() {
       // Null check render_view_host here as this gets called on a PostTask
       // and the tab's render_view_host may have been nulled out.
       if (contents->GetRenderViewHost()) {
-        contents->OnUnloadStarted();
+        CoreTabHelper* core_tab_helper =
+            CoreTabHelper::FromWebContents(contents);
+        core_tab_helper->OnUnloadStarted();
         DetachWebContents(contents);
         contents->GetRenderViewHost()->ClosePage();
       }
@@ -313,13 +320,18 @@ void UnloadController::CancelWindowClose() {
   DCHECK(is_attempting_to_close_browser_);
   tabs_needing_before_unload_.clear();
   if (tab_needing_before_unload_ack_ != NULL) {
-    tab_needing_before_unload_ack_->OnCloseCanceled();
+
+    CoreTabHelper* core_tab_helper =
+        CoreTabHelper::FromWebContents(tab_needing_before_unload_ack_);
+    core_tab_helper->OnCloseCanceled();
     tab_needing_before_unload_ack_ = NULL;
   }
   for (WebContentsSet::iterator it = tabs_needing_unload_.begin();
        it != tabs_needing_unload_.end(); it++) {
     content::WebContents* contents = *it;
-    contents->OnCloseCanceled();
+
+    CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
+    core_tab_helper->OnCloseCanceled();
   }
   tabs_needing_unload_.clear();
 

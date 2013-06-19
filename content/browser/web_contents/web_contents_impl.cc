@@ -397,23 +397,6 @@ WebContentsImpl::~WebContentsImpl() {
   }
 #endif
 
-  // OnCloseStarted isn't called in unit tests.
-  if (!close_start_time_.is_null()) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeDelta close_time = now - close_start_time_;
-    UMA_HISTOGRAM_TIMES("Tab.Close", close_time);
-
-    base::TimeTicks unload_start_time = close_start_time_;
-    base::TimeTicks unload_end_time = now;
-    if (!before_unload_end_time_.is_null())
-      unload_start_time = before_unload_end_time_;
-    if (!unload_detached_start_time_.is_null())
-      unload_end_time = unload_detached_start_time_;
-    base::TimeDelta unload_time = unload_end_time - unload_start_time;
-    UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", unload_time);
-
-  }
-
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     WebContentsImplDestroyed());
@@ -1951,36 +1934,8 @@ RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
   return &renderer_preferences_;
 }
 
-void WebContentsImpl::SetNewTabStartTime(const base::TimeTicks& time) {
-  new_tab_start_time_ = time;
-}
-
-base::TimeTicks WebContentsImpl::GetNewTabStartTime() const {
-  return new_tab_start_time_;
-}
-
 void WebContentsImpl::Close() {
   Close(GetRenderViewHost());
-}
-
-void WebContentsImpl::OnCloseStarted() {
-  if (close_start_time_.is_null())
-    close_start_time_ = base::TimeTicks::Now();
-}
-
-void WebContentsImpl::OnCloseCanceled() {
-  close_start_time_ = base::TimeTicks();
-  before_unload_end_time_ = base::TimeTicks();
-  unload_detached_start_time_ = base::TimeTicks();
-}
-
-void WebContentsImpl::OnUnloadStarted() {
-  before_unload_end_time_ = base::TimeTicks::Now();
-}
-
-void WebContentsImpl::OnUnloadDetachedStarted() {
-  if (unload_detached_start_time_.is_null())
-    unload_detached_start_time_ = base::TimeTicks::Now();
 }
 
 void WebContentsImpl::DragSourceEndedAt(int client_x, int client_y,
@@ -3505,9 +3460,10 @@ void WebContentsImpl::WorkerCrashed() {
 void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
     bool proceed, const base::TimeTicks& proceed_time,
     bool* proceed_to_fire_unload) {
-  before_unload_end_time_ = proceed_time;
   if (delegate_)
     delegate_->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    BeforeUnloadFired(proceed_time));
 }
 
 void WebContentsImpl::RenderViewGoneFromRenderManager(
@@ -3647,7 +3603,9 @@ void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
     // spinning, since we forced it to start spinning in Navigate.
     DidStopLoading(rvh);
     controller_.DiscardNonCommittedEntries();
-    OnCloseCanceled();
+
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      BeforeUnloadDialogCancelled());
   }
   is_showing_before_unload_dialog_ = false;
   static_cast<RenderViewHostImpl*>(
