@@ -114,6 +114,28 @@ BrowsingDataRemover* BrowsingDataRemover::CreateForRange(Profile* profile,
 // Static.
 BrowsingDataRemover* BrowsingDataRemover::CreateForPeriod(Profile* profile,
     TimePeriod period) {
+  switch (period) {
+    case LAST_HOUR:
+      content::RecordAction(
+          UserMetricsAction("ClearBrowsingData_LastHour"));
+      break;
+    case LAST_DAY:
+      content::RecordAction(
+          UserMetricsAction("ClearBrowsingData_LastDay"));
+      break;
+    case LAST_WEEK:
+      content::RecordAction(
+          UserMetricsAction("ClearBrowsingData_LastWeek"));
+      break;
+    case FOUR_WEEKS:
+      content::RecordAction(
+          UserMetricsAction("ClearBrowsingData_LastMonth"));
+      break;
+    case EVERYTHING:
+      content::RecordAction(
+          UserMetricsAction("ClearBrowsingData_Everything"));
+      break;
+  }
   return new BrowsingDataRemover(profile,
       BrowsingDataRemover::CalculateBeginDeleteTime(period),
       base::Time::Max());
