@@ -66,14 +66,14 @@ void MIDIAccessor::sendMIDIData(unsigned portIndex, const unsigned char* data, s
     m_accessor->sendMIDIData(portIndex, data, length, timeStamp);
 }
 
-void MIDIAccessor::addInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
+void MIDIAccessor::didAddInputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
 {
-    m_client->addInputPort(id, manufacturer, name, version);
+    m_client->didAddInputPort(id, manufacturer, name, version);
 }
 
-void MIDIAccessor::addOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
+void MIDIAccessor::didAddOutputPort(const WebString& id, const WebString& manufacturer, const WebString& name, const WebString& version)
 {
-    m_client->addOutputPort(id, manufacturer, name, version);
+    m_client->didAddOutputPort(id, manufacturer, name, version);
 }
 
 void MIDIAccessor::didAllowAccess()
