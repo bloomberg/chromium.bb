@@ -49,10 +49,22 @@ const struct {
   { "_comp_ime_bbaiamgfapehflhememkfglaehiobjnknacl_mozc_jp", "\xe3\x81\x82" },
   // For simplified Chinese input methods
   { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
+  { "_comp_ime_cpgalbafkoofkjmaeonnfijgpfennjjnzh-t-i0-pinyin",
+    "\xe6\x8b\xbc" },
+  { "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin",
+    "\xe6\x8b\xbc" },
   { "pinyin-dv", "\xe6\x8b\xbc" },
   // For traditional Chinese input methods
   { "mozc-chewing", "\xe9\x85\xb7" },  // U+9177
+  { "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und",
+    "\xe9\x85\xb7" },  // U+9177
+  { "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und",
+    "\xe9\x85\xb7" },  // U+9177
   { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
+  { "_comp_ime_aeebooiibjahgpgmhkeocbeekccfknbjzh-hant-t-i0-cangjie-1987",
+    "\xe5\x80\x89" },  // U+5009
+  { "_comp_ime_gjhclobljhjhgoebiipblnmdodbmpdgdzh-hant-t-i0-cangjie-1987",
+    "\xe5\x80\x89" },  // U+5009
   { "m17n:zh:quick", "\xe9\x80\x9f" },  // U+901F
   // For Hangul input method.
   { "mozc-hangul", "\xed\x95\x9c" },  // U+D55C
@@ -76,6 +88,18 @@ const struct {
   { "mozc-hangul", IDS_LANGUAGES_MEDIUM_LEN_NAME_KOREAN },
   { "pinyin", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
   { "pinyin-dv", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
+  { "_comp_ime_cpgalbafkoofkjmaeonnfijgpfennjjnzh-t-i0-pinyin",
+    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED},
+  { "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin",
+    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
+  { "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und",
+    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
+  { "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und",
+    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
+  { "_comp_ime_aeebooiibjahgpgmhkeocbeekccfknbjzh-hant-t-i0-cangjie-1987",
+    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
+  { "_comp_ime_gjhclobljhjhgoebiipblnmdodbmpdgdzh-hant-t-i0-cangjie-1987",
+    IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
 };
 const size_t kMappingImeIdToMediumLenNameResourceIdLen =
     ARRAYSIZE_UNSAFE(kMappingImeIdToMediumLenNameResourceId);
@@ -91,6 +115,9 @@ const struct {
 } kDefaultInputMethodRecommendation[] = {
   { "ja", "us", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us" },
   { "ja", "jp", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp" },
+  { "zh-CN", "us", "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin" },
+  { "zh-TW", "us",
+    "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und" },
 };
 
 }  // namespace

@@ -98,7 +98,7 @@ class InputMethodManagerImplTest :  public testing::Test {
     ime_list_.push_back(ext1);
 
     ComponentExtensionIME ext2;
-    ext2.id = "ext2_id";
+    ext2.id = "nmblnjkfdkabgdofidlkienfnnbjhnab";
     ext2.description = "ext2_description";
     ext2.path = base::FilePath("ext2_file_path");
 
@@ -108,6 +108,13 @@ class InputMethodManagerImplTest :  public testing::Test {
     ext2_engine1.language_code = "en";
     ext2_engine1.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine1);
+
+    ComponentExtensionEngine ext2_engine2;
+    ext2_engine2.engine_id = "ext2_engine2_engine_id";
+    ext2_engine2.display_name = "ext2_engine_2_display_name";
+    ext2_engine2.language_code = "en";
+    ext2_engine2.layouts.push_back("us(dvorak)");
+    ext2.engines.push_back(ext2_engine2);
 
     ime_list_.push_back(ext2);
 
@@ -271,6 +278,8 @@ TEST_F(InputMethodManagerImplTest, TestObserver) {
 }
 
 TEST_F(InputMethodManagerImplTest, TestGetSupportedInputMethods) {
+  InitComponentExtension();
+  InitIBusBus();
   scoped_ptr<InputMethodDescriptors> methods(
       manager_->GetSupportedInputMethods());
   ASSERT_TRUE(methods.get());
@@ -279,9 +288,6 @@ TEST_F(InputMethodManagerImplTest, TestGetSupportedInputMethods) {
   const InputMethodDescriptor* id_to_find =
       manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
           nacl_mozc_us_id);
-  id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
-      "mozc-chewing");
-  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
   id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
       "xkb:us::eng");
   EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
@@ -499,7 +505,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableImes) {
   InitIBusBus();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
-  ids.push_back("mozc-chewing");
+  ids.push_back("_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabext2_engine1_engine_id");
   ids.push_back("mozc-dv");
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(1, mock_ibus_daemon_controller_->start_count());
@@ -567,7 +573,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutsThenLock) {
   manager_->RemoveObserver(&observer);
 }
 
-TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndImeThenLock) {
+TEST_F(InputMethodManagerImplTest, SwithchInputMethodTest) {
   // For http://crbug.com/19655#c11 - (15).
   TestObserver observer;
   manager_->AddObserver(&observer);
@@ -576,8 +582,8 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayoutAndImeThenLock) {
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back("xkb:us:dvorak:eng");
-  ids.push_back("pinyin-dv");
-  ids.push_back("mozc-chewing");
+  ids.push_back("_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabext2_engine2_engine_id");
+  ids.push_back("_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabext2_engine1_engine_id");
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(3U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, observer.input_method_changed_count_);
@@ -700,7 +706,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back(nacl_mozc_us_id);  // Japanese
-  ids.push_back("mozc-chewing");  // T-Chinese
+  ids.push_back("_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabext2_engine1_engine_id");  // T-Chinese
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
@@ -716,7 +722,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
   ASSERT_EQ(1U, manager_->GetCurrentInputMethodProperties().size());
   EXPECT_EQ("key-mozc", manager_->GetCurrentInputMethodProperties().at(0).key);
 
-  manager_->ChangeInputMethod("mozc-chewing");
+  manager_->ChangeInputMethod("_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabext2_engine1_engine_id");
   // Since the IME is changed, the property for mozc Japanese should be hidden.
   EXPECT_TRUE(manager_->GetCurrentInputMethodProperties().empty());
 

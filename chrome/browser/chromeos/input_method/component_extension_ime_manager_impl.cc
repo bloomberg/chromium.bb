@@ -64,6 +64,21 @@ struct WhitelistedComponentExtensionIME {
   },
 #else
   {
+    // Open-sourced Pinyin Chinese Input Method.
+    "cpgalbafkoofkjmaeonnfijgpfennjjn",
+    "/usr/share/chromeos-assets/input_methods/pinyin",
+  },
+  {
+    // Open-sourced Zhuyin Chinese Input Method.
+    "ekbifjdfhkmdeeajnolmgdlmkllopefi",
+    "/usr/share/chromeos-assets/input_methods/zhuyin",
+  },
+  {
+    // Open-sourced Cangjie Chinese Input Method.
+    "aeebooiibjahgpgmhkeocbeekccfknbj",
+    "/usr/share/chromeos-assets/input_methods/cangjie",
+  },
+  {
     // Open-sourced Mozc Japanese Input.
     "bbaiamgfapehflhememkfglaehiobjnk",
     "/usr/share/chromeos-assets/input_methods/nacl_mozc",

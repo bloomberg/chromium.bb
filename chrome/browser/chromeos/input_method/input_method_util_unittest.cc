@@ -24,6 +24,11 @@ namespace input_method {
 
 namespace {
 
+const char pinyin_ime_id[] =
+    "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin";
+const char zhuyin_ime_id[] =
+    "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und";
+
 class TestableInputMethodUtil : public InputMethodUtil {
  public:
   explicit TestableInputMethodUtil(InputMethodDelegate* delegate,
@@ -47,6 +52,33 @@ class InputMethodUtilTest : public testing::Test {
         base::Bind(&l10n_util::GetStringUTF16));
     delegate_.set_get_display_language_name_callback(
         base::Bind(&InputMethodUtilTest::GetDisplayLanguageName));
+  }
+
+  virtual void SetUp() OVERRIDE {
+    InputMethodDescriptors input_methods;
+
+    std::vector<std::string> layouts;
+    std::vector<std::string> languages;
+    layouts.push_back("us");
+    languages.push_back("zh-CN");
+
+    InputMethodDescriptor pinyin_ime(pinyin_ime_id,
+                                     "Pinyin input for testing",
+                                     layouts,
+                                     languages,
+                                     GURL(""));
+    input_methods.push_back(pinyin_ime);
+
+    languages.clear();
+    languages.push_back("zh-TW");
+    InputMethodDescriptor zhuyin_ime(zhuyin_ime_id,
+                                     "Zhuyin input for testing",
+                                     layouts,
+                                     languages,
+                                     GURL(""));
+    input_methods.push_back(zhuyin_ime);
+
+    util_.SetComponentExtensions(input_methods);
   }
 
   InputMethodDescriptor GetDesc(const std::string& id,
@@ -118,17 +150,12 @@ TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
     EXPECT_EQ(ASCIIToUTF16("CAS"), util_.GetInputMethodShortName(desc));
   }
   {
-    InputMethodDescriptor desc = GetDesc("pinyin", "us", "zh-CN");
+    InputMethodDescriptor desc = GetDesc(pinyin_ime_id, "us", "zh-CN");
     EXPECT_EQ(UTF8ToUTF16("\xe6\x8b\xbc"),
               util_.GetInputMethodShortName(desc));
   }
   {
-    InputMethodDescriptor desc = GetDesc("pinyin-dv", "us(dvorak)", "zh-CN");
-    EXPECT_EQ(UTF8ToUTF16("\xe6\x8b\xbc"),
-              util_.GetInputMethodShortName(desc));
-  }
-  {
-    InputMethodDescriptor desc = GetDesc("mozc-chewing", "us", "zh-TW");
+    InputMethodDescriptor desc = GetDesc(zhuyin_ime_id, "us", "zh-TW");
     EXPECT_EQ(UTF8ToUTF16("\xe9\x85\xb7"),
               util_.GetInputMethodShortName(desc));
   }
@@ -170,12 +197,11 @@ TEST_F(InputMethodUtilTest, GetInputMethodMediumNameTest) {
     const char * input_method_id[] = {
       "m17n:zh:cangjie",
       "m17n:zh:quick",
-      "pinyin",
-      "mozc-chewing",
+      pinyin_ime_id,
+      zhuyin_ime_id,
       "mozc-hangul",
-      "pinyin",
-      "pinyin",
-      "pinyin-dv",
+      pinyin_ime_id,
+      pinyin_ime_id,
     };
     const int len = ARRAYSIZE_UNSAFE(input_method_id);
     for (int i=0; i<len; ++i) {
@@ -203,11 +229,6 @@ TEST_F(InputMethodUtilTest, GetInputMethodLongNameTest) {
   {
     InputMethodDescriptor desc = GetDesc("m17n:vi:tcvn", "us", "vi");
     EXPECT_EQ(ASCIIToUTF16("Vietnamese input method (TCVN6064)"),
-              util_.GetInputMethodLongName(desc));
-  }
-  {
-    InputMethodDescriptor desc = GetDesc("pinyin", "us", "ja");
-    EXPECT_EQ(ASCIIToUTF16("Pinyin input method"),
               util_.GetInputMethodLongName(desc));
   }
   {
@@ -275,20 +296,15 @@ TEST_F(InputMethodUtilTest, GetInputMethodLongNameTest) {
   }
 }
 
-TEST_F(InputMethodUtilTest, TestGetStringUTF8) {
-  EXPECT_EQ(UTF8ToUTF16("Pinyin input method"),
-            util_.TranslateString("pinyin"));
-}
-
 TEST_F(InputMethodUtilTest, TestIsValidInputMethodId) {
   EXPECT_TRUE(util_.IsValidInputMethodId("xkb:us:colemak:eng"));
-  EXPECT_TRUE(util_.IsValidInputMethodId("pinyin"));
+  EXPECT_TRUE(util_.IsValidInputMethodId(pinyin_ime_id));
   EXPECT_FALSE(util_.IsValidInputMethodId("unsupported-input-method"));
 }
 
 TEST_F(InputMethodUtilTest, TestIsKeyboardLayout) {
   EXPECT_TRUE(InputMethodUtil::IsKeyboardLayout("xkb:us::eng"));
-  EXPECT_FALSE(InputMethodUtil::IsKeyboardLayout("pinyin"));
+  EXPECT_FALSE(InputMethodUtil::IsKeyboardLayout(pinyin_ime_id));
 }
 
 TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {
@@ -296,8 +312,7 @@ TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {
   EXPECT_EQ("", util_.GetKeyboardLayoutName("UNSUPPORTED_ID"));
 
   // Supported cases (samples).
-  EXPECT_EQ("us", util_.GetKeyboardLayoutName("pinyin"));
-  EXPECT_EQ("us(dvorak)", util_.GetKeyboardLayoutName("pinyin-dv"));
+  EXPECT_EQ("us", util_.GetKeyboardLayoutName(pinyin_ime_id));
   EXPECT_EQ("us", util_.GetKeyboardLayoutName("m17n:ar:kbd"));
   EXPECT_EQ("es", util_.GetKeyboardLayoutName("xkb:es::spa"));
   EXPECT_EQ("es(cat)", util_.GetKeyboardLayoutName("xkb:es:cat:cat"));
@@ -310,12 +325,10 @@ TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {
 
 TEST_F(InputMethodUtilTest, TestGetLanguageCodeFromInputMethodId) {
   // Make sure that the -CN is added properly.
-  EXPECT_EQ("zh-CN", util_.GetLanguageCodeFromInputMethodId("pinyin"));
+  EXPECT_EQ("zh-CN", util_.GetLanguageCodeFromInputMethodId(pinyin_ime_id));
 }
 
 TEST_F(InputMethodUtilTest, TestGetInputMethodDisplayNameFromId) {
-  EXPECT_EQ("Pinyin input method",
-            util_.GetInputMethodDisplayNameFromId("pinyin"));
   EXPECT_EQ("US keyboard",
             util_.GetInputMethodDisplayNameFromId("xkb:us::eng"));
   EXPECT_EQ("", util_.GetInputMethodDisplayNameFromId("nonexistent"));
@@ -325,9 +338,9 @@ TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromId) {
   EXPECT_EQ(NULL, util_.GetInputMethodDescriptorFromId("non_existent"));
 
   const InputMethodDescriptor* descriptor =
-      util_.GetInputMethodDescriptorFromId("pinyin");
+      util_.GetInputMethodDescriptorFromId(pinyin_ime_id);
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
-  EXPECT_EQ("pinyin", descriptor->id());
+  EXPECT_EQ(pinyin_ime_id, descriptor->id());
   EXPECT_EQ("us", descriptor->GetPreferredKeyboardLayout());
   // This used to be "zh" but now we have "zh-CN" in input_methods.h,
   // hence this should be zh-CN now.
@@ -337,8 +350,8 @@ TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromId) {
 
 TEST_F(InputMethodUtilTest, TestGetInputMethodIdsForLanguageCode) {
   std::multimap<std::string, std::string> language_code_to_ids_map;
-  language_code_to_ids_map.insert(std::make_pair("ja", "pinyin"));
-  language_code_to_ids_map.insert(std::make_pair("ja", "pinyin"));
+  language_code_to_ids_map.insert(std::make_pair("ja", pinyin_ime_id));
+  language_code_to_ids_map.insert(std::make_pair("ja", pinyin_ime_id));
   language_code_to_ids_map.insert(std::make_pair("ja", "xkb:jp:jpn"));
   language_code_to_ids_map.insert(std::make_pair("fr", "xkb:fr:fra"));
 
@@ -386,7 +399,7 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Zh) {
   util_.GetFirstLoginInputMethodIds("zh-CN", *descriptor, &input_method_ids);
   ASSERT_EQ(2U, input_method_ids.size());
   EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
-  EXPECT_EQ("pinyin", input_method_ids[1]);  // Pinyin for US keybaord.
+  EXPECT_EQ(pinyin_ime_id, input_method_ids[1]);  // Pinyin for US keybaord.
 }
 
 // Korean keyboard + Korean UI = Korean keyboard + mozc-hangul.
@@ -423,7 +436,7 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_ZhTw) {
   util_.GetFirstLoginInputMethodIds("zh-TW", *descriptor, &input_method_ids);
   ASSERT_EQ(2U, input_method_ids.size());
   EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
-  EXPECT_EQ("mozc-chewing", input_method_ids[1]);  // Chewing.
+  EXPECT_EQ(zhuyin_ime_id, input_method_ids[1]);  // Chewing.
 }
 
 // US keyboard + Thai = US keyboard + kesmanee.
@@ -454,7 +467,7 @@ TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {
   std::vector<std::string> input_method_ids;
   input_method_ids.push_back("xkb:us::eng");  // English US.
   input_method_ids.push_back("xkb:us:dvorak:eng");  // English US Dvorak.
-  input_method_ids.push_back("pinyin");  // Pinyin
+  input_method_ids.push_back(pinyin_ime_id);  // Pinyin
   input_method_ids.push_back("xkb:fr::fra");  // French France.
   std::vector<std::string> language_codes;
   util_.GetLanguageCodesFromInputMethodIds(input_method_ids, &language_codes);

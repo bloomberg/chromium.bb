@@ -98,13 +98,7 @@ m17n:th:kesmanee	us	th
 m17n:th:pattachote	us	th
 m17n:th:tis820	us	th
 
-# Simplified Chinese
-pinyin	us	zh-CN
-pinyin-dv	us(dvorak)	zh-CN	
-
 # Traditional Chinese
-mozc-chewing	us	zh-TW
-m17n:zh:cangjie	us	zh-TW
 m17n:zh:quick	us	zh-TW
 
 # Vietnamese

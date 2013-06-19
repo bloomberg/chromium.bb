@@ -19,7 +19,6 @@ class InputMethodWhitelistTest : public testing::Test {
 }  // namespace
 
 TEST_F(InputMethodWhitelistTest, TestInputMethodIdIsWhitelisted) {
-  EXPECT_TRUE(whitelist_.InputMethodIdIsWhitelisted("pinyin"));
   EXPECT_TRUE(whitelist_.InputMethodIdIsWhitelisted("xkb:us:dvorak:eng"));
   EXPECT_FALSE(whitelist_.InputMethodIdIsWhitelisted("mozc,"));
   EXPECT_FALSE(whitelist_.InputMethodIdIsWhitelisted(
