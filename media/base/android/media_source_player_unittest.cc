@@ -9,6 +9,8 @@
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/media_source_player.h"
+#include "media/base/decoder_buffer.h"
+#include "media/base/test_data_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gl/android/surface_texture_bridge.h"
 
@@ -24,7 +26,7 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual void RequestMediaResources(int player_id) OVERRIDE {}
   virtual void ReleaseMediaResources(int player_id) OVERRIDE {}
   virtual MediaResourceGetter* GetMediaResourceGetter() OVERRIDE {
-      return NULL;
+    return NULL;
   }
   virtual void OnTimeUpdate(int player_id,
                             base::TimeDelta current_time) OVERRIDE {}
@@ -45,6 +47,8 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   virtual void OnReadFromDemuxer(int player_id, media::DemuxerStream::Type type,
                                  bool seek_done) OVERRIDE {
     num_requests_++;
+    if (message_loop_.is_running())
+      message_loop_.Quit();
   }
   virtual void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
                                   unsigned seek_request_id) OVERRIDE {
@@ -65,13 +69,15 @@ class MockMediaPlayerManager : public MediaPlayerManager {
                             const std::string& message,
                             const std::string& destination_url) OVERRIDE {}
 
-  int num_requests() { return num_requests_; }
-  unsigned last_seek_request_id() { return last_seek_request_id_; }
+  int num_requests() const { return num_requests_; }
+  unsigned last_seek_request_id() const { return last_seek_request_id_; }
+  base::MessageLoop* message_loop() { return &message_loop_; }
 
  private:
   // The number of request this object sents for decoding data.
   int num_requests_;
   unsigned last_seek_request_id_;
+  base::MessageLoop message_loop_;
 };
 
 class MediaSourcePlayerTest : public testing::Test {
@@ -97,6 +103,10 @@ class MediaSourcePlayerTest : public testing::Test {
     params.audio_channels = 2;
     params.audio_sampling_rate = 44100;
     params.is_audio_encrypted = false;
+    scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-extradata");
+    params.audio_extra_data = std::vector<uint8>(
+        buffer->GetData(),
+        buffer->GetData() + buffer->GetDataSize());
     Start(params);
   }
 
@@ -114,13 +124,29 @@ class MediaSourcePlayerTest : public testing::Test {
     player_->Start();
   }
 
+  MediaPlayerHostMsg_ReadFromDemuxerAck_Params
+      CreateReadFromDemuxerAckForAudio() {
+    MediaPlayerHostMsg_ReadFromDemuxerAck_Params ack_params;
+    ack_params.type = DemuxerStream::AUDIO;
+    ack_params.access_units.resize(1);
+    ack_params.access_units[0].status = DemuxerStream::kOk;
+    scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-packet-0");
+    ack_params.access_units[0].data = std::vector<uint8>(
+        buffer->GetData(), buffer->GetData() + buffer->GetDataSize());
+    // Vorbis needs 4 extra bytes padding on Android to decode properly. Check
+    // NuMediaExtractor.cpp in Android source code.
+    uint8 padding[4] = { 0xff , 0xff , 0xff , 0xff };
+    ack_params.access_units[0].data.insert(
+        ack_params.access_units[0].data.end(), padding, padding + 4);
+    return ack_params;
+  }
+
  protected:
   scoped_ptr<MockMediaPlayerManager> manager_;
   scoped_ptr<MediaSourcePlayer> player_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayerTest);
 };
-
 
 TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithValidConfig) {
   if (!MediaCodecBridge::IsAvailable())
@@ -146,7 +172,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
   params.audio_extra_data.insert(params.audio_extra_data.begin(),
                                  invalid_codec_data, invalid_codec_data + 4);
   Start(params);
-  EXPECT_TRUE(NULL == GetMediaDecoderJob(true));
+  EXPECT_EQ(NULL, GetMediaDecoderJob(true));
   EXPECT_EQ(0, manager_->num_requests());
 }
 
@@ -160,7 +186,7 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
   gfx::ScopedJavaSurface surface(surface_texture.get());
   StartVideoDecoderJob();
   // Video decoder job will not be created until surface is available.
-  EXPECT_TRUE(NULL == GetMediaDecoderJob(false));
+  EXPECT_EQ(NULL, GetMediaDecoderJob(false));
   EXPECT_EQ(0, manager_->num_requests());
 
   player_->SetVideoSurface(surface.Pass());
@@ -181,7 +207,7 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
   gfx::ScopedJavaSurface surface(surface_texture.get());
   StartVideoDecoderJob();
   // Video decoder job will not be created until surface is available.
-  EXPECT_TRUE(NULL == GetMediaDecoderJob(false));
+  EXPECT_EQ(NULL, GetMediaDecoderJob(false));
   EXPECT_EQ(0, manager_->num_requests());
 
   // Release the surface texture.
@@ -189,7 +215,7 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
   player_->SetVideoSurface(surface.Pass());
   EXPECT_EQ(1u, manager_->last_seek_request_id());
   player_->OnSeekRequestAck(manager_->last_seek_request_id());
-  EXPECT_TRUE(NULL == GetMediaDecoderJob(false));
+  EXPECT_EQ(NULL, GetMediaDecoderJob(false));
   EXPECT_EQ(0, manager_->num_requests());
 }
 
@@ -234,6 +260,69 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
   player_->OnSeekRequestAck(manager_->last_seek_request_id());
   EXPECT_TRUE(NULL != GetMediaDecoderJob(false));
   EXPECT_EQ(1, manager_->num_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, StartAfterSeekFinish) {
+  if (!MediaCodecBridge::IsAvailable())
+    return;
+
+  // Test decoder job will not start until all pending seek event is handled.
+
+  MediaPlayerHostMsg_DemuxerReady_Params params;
+  params.audio_codec = kCodecVorbis;
+  params.audio_channels = 2;
+  params.audio_sampling_rate = 44100;
+  params.is_audio_encrypted = false;
+  player_->DemuxerReady(params);
+  EXPECT_EQ(NULL, GetMediaDecoderJob(true));
+  EXPECT_EQ(0, manager_->num_requests());
+
+  // Initiate a seek
+  player_->SeekTo(base::TimeDelta());
+  EXPECT_EQ(1u, manager_->last_seek_request_id());
+
+  player_->Start();
+  EXPECT_EQ(NULL, GetMediaDecoderJob(true));
+  EXPECT_EQ(0, manager_->num_requests());
+
+  // Sending back the seek ACK.
+  player_->OnSeekRequestAck(manager_->last_seek_request_id());
+  EXPECT_TRUE(NULL != GetMediaDecoderJob(true));
+  EXPECT_EQ(1, manager_->num_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
+  if (!MediaCodecBridge::IsAvailable())
+    return;
+
+  // Test that if the decoding job is not fully stopped after Pause(),
+  // calling Start() will be a noop.
+  StartAudioDecoderJob();
+
+  MediaDecoderJob* decoder_job = GetMediaDecoderJob(true);
+  EXPECT_TRUE(NULL != decoder_job);
+  EXPECT_EQ(1, manager_->num_requests());
+  EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
+
+  // Sending data to player.
+  player_->ReadFromDemuxerAck(CreateReadFromDemuxerAckForAudio());
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+
+  // Decoder job will not immediately stop after Pause() since it is
+  // running on another thread.
+  player_->Pause();
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+
+  // Nothing happens when calling Start() again.
+  player_->Start();
+  // Verify that Start() will not destroy and recreate the decoder job.
+  EXPECT_EQ(decoder_job, GetMediaDecoderJob(true));
+  EXPECT_EQ(1, manager_->num_requests());
+  EXPECT_TRUE(GetMediaDecoderJob(true)->is_decoding());
+  manager_->message_loop()->Run();
+  // The decoder job should finish and a new request will be sent.
+  EXPECT_EQ(2, manager_->num_requests());
+  EXPECT_FALSE(GetMediaDecoderJob(true)->is_decoding());
 }
 
 }  // namespace media

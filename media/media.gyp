@@ -1007,8 +1007,6 @@
           'sources!': [
             'audio/audio_input_volume_unittest.cc',
             'base/container_names_unittest.cc',
-            'base/test_data_util.cc',
-            'base/test_data_util.h',
             'ffmpeg/ffmpeg_common_unittest.cc',
             'filters/audio_file_reader_unittest.cc',
             'filters/blocking_url_protocol_unittest.cc',

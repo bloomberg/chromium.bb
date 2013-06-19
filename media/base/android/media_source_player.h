@@ -59,7 +59,7 @@ class MediaDecoderJob {
   void Flush();
 
   struct Deleter {
-      inline void operator()(MediaDecoderJob* ptr) const { ptr->Release(); }
+    inline void operator()(MediaDecoderJob* ptr) const { ptr->Release(); }
   };
 
   // Causes this instance to be deleted on the thread it is bound to.
@@ -68,8 +68,10 @@ class MediaDecoderJob {
   // Called on the UI thread to indicate that one decode cycle has completed.
   void OnDecodeCompleted();
 
+  bool is_decoding() const { return is_decoding_; }
+
  protected:
-  MediaDecoderJob(base::Thread* thread,
+  MediaDecoderJob(const scoped_refptr<base::MessageLoopProxy>& decoder_loop,
                   MediaCodecBridge* media_codec_bridge,
                   bool is_audio);
 
@@ -92,14 +94,14 @@ class MediaDecoderJob {
       bool needs_flush,
       const MediaDecoderJob::DecoderCallback& callback);
 
+  // The UI message loop where callbacks should be dispatched.
+  scoped_refptr<base::MessageLoopProxy> ui_loop_;
+
+  // The message loop that decoder job runs on.
+  scoped_refptr<base::MessageLoopProxy> decoder_loop_;
+
   // The media codec bridge used for decoding.
   scoped_ptr<MediaCodecBridge> media_codec_bridge_;
-
-  // The message loop where callbacks should be dispatched.
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
-
-  // Thread the decode task runs on.
-  base::Thread* thread_;
 
   // Whether the decoder needs to be flushed.
   bool needs_flush_;
@@ -112,7 +114,7 @@ class MediaDecoderJob {
   base::WeakPtrFactory<MediaDecoderJob> weak_this_;
 
   // Whether the decoder is actively decoding data.
-  bool decoding_;
+  bool is_decoding_;
 };
 
 typedef scoped_ptr<MediaDecoderJob, MediaDecoderJob::Deleter>
@@ -180,9 +182,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   // Handle pending events when all the decoder jobs finished.
   void ProcessPendingEvents();
 
-  // Helper method to create the decoder jobs.
-  void CreateVideoDecoderJob();
-  void CreateAudioDecoderJob();
+  // Helper method to configure the decoder jobs.
+  void ConfigureVideoDecoderJob();
+  void ConfigureAudioDecoderJob();
 
   // Flush the decoders and clean up all the data needs to be decoded.
   void ClearDecodingData();
@@ -206,9 +208,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   };
   // Pending event that the player needs to do.
   unsigned pending_event_;
-
-  // Number of active decoding tasks.
-  int active_decoding_tasks_;
 
   // ID to keep track of whether all the seek requests are acked.
   unsigned seek_request_id_;

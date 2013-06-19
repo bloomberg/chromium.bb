@@ -53,14 +53,16 @@ base::LazyInstance<VideoDecoderThread>::Leaky
 namespace media {
 
 MediaDecoderJob::MediaDecoderJob(
-    base::Thread* thread, MediaCodecBridge* media_codec_bridge, bool is_audio)
-    : media_codec_bridge_(media_codec_bridge),
-      message_loop_(base::MessageLoopProxy::current()),
-      thread_(thread),
+    const scoped_refptr<base::MessageLoopProxy>& decoder_loop,
+    MediaCodecBridge* media_codec_bridge,
+    bool is_audio)
+    : ui_loop_(base::MessageLoopProxy::current()),
+      decoder_loop_(decoder_loop),
+      media_codec_bridge_(media_codec_bridge),
       needs_flush_(false),
       is_audio_(is_audio),
       weak_this_(this),
-      decoding_(false) {
+      is_decoding_(false) {
 }
 
 MediaDecoderJob::~MediaDecoderJob() {}
@@ -95,9 +97,10 @@ void MediaDecoderJob::Decode(
     const base::TimeTicks& start_wallclock_time,
     const base::TimeDelta& start_presentation_timestamp,
     const MediaDecoderJob::DecoderCallback& callback) {
-  DCHECK(!decoding_);
-  decoding_ = true;
-  thread_->message_loop()->PostTask(FROM_HERE, base::Bind(
+  DCHECK(!is_decoding_);
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  is_decoding_ = true;
+  decoder_loop_->PostTask(FROM_HERE, base::Bind(
       &MediaDecoderJob::DecodeInternal, base::Unretained(this), unit,
       start_wallclock_time, start_presentation_timestamp, needs_flush_,
       callback));
@@ -116,7 +119,7 @@ void MediaDecoderJob::DecodeInternal(
       kMediaCodecTimeoutInMicroseconds);
   int input_buf_index = media_codec_bridge_->DequeueInputBuffer(timeout);
   if (input_buf_index == MediaCodecBridge::INFO_MEDIA_CODEC_ERROR) {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+    ui_loop_->PostTask(FROM_HERE, base::Bind(
         callback, DECODE_FAILED, start_presentation_timestamp,
         start_wallclock_time, false));
     return;
@@ -178,7 +181,7 @@ void MediaDecoderJob::DecodeInternal(
       }
       return;
   }
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  ui_loop_->PostTask(FROM_HERE, base::Bind(
       callback, decode_status, start_presentation_timestamp,
       start_wallclock_time, end_of_stream));
 }
@@ -194,13 +197,14 @@ void MediaDecoderJob::ReleaseOutputBuffer(
         outputBufferIndex, size);
   }
   media_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, !is_audio_);
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  ui_loop_->PostTask(FROM_HERE, base::Bind(
       callback, DECODE_SUCCEEDED, presentation_timestamp,
       base::TimeTicks::Now(), end_of_stream));
 }
 
 void MediaDecoderJob::OnDecodeCompleted() {
-  decoding_ = false;
+  DCHECK(ui_loop_->BelongsToCurrentThread());
+  is_decoding_ = false;
 }
 
 void MediaDecoderJob::Flush() {
@@ -221,10 +225,12 @@ void MediaDecoderJob::Release() {
   // TODO(qinmin): Figure out the logic to passing the surface to a new
   // MediaDecoderJob instance after the previous one gets deleted on the decoder
   // thread.
-  if (decoding_ && thread_->message_loop() != base::MessageLoop::current())
-    thread_->message_loop()->DeleteSoon(FROM_HERE, this);
-  else
+  if (is_decoding_ && !decoder_loop_->BelongsToCurrentThread()) {
+    DCHECK(ui_loop_->BelongsToCurrentThread());
+    decoder_loop_->DeleteSoon(FROM_HERE, this);
+  } else {
     delete this;
+  }
 }
 
 VideoDecoderJob* VideoDecoderJob::Create(
@@ -236,7 +242,7 @@ VideoDecoderJob* VideoDecoderJob::Create(
 }
 
 VideoDecoderJob::VideoDecoderJob(MediaCodecBridge* media_codec_bridge)
-    : MediaDecoderJob(g_video_decoder_thread.Pointer(),
+    : MediaDecoderJob(g_video_decoder_thread.Pointer()->message_loop_proxy(),
                       media_codec_bridge,
                       false) {}
 
@@ -255,7 +261,7 @@ AudioDecoderJob* AudioDecoderJob::Create(
 }
 
 AudioDecoderJob::AudioDecoderJob(MediaCodecBridge* media_codec_bridge)
-    : MediaDecoderJob(g_audio_decoder_thread.Pointer(),
+    : MediaDecoderJob(g_audio_decoder_thread.Pointer()->message_loop_proxy(),
                       media_codec_bridge,
                       true) {}
 
@@ -264,7 +270,6 @@ MediaSourcePlayer::MediaSourcePlayer(
     MediaPlayerManager* manager)
     : MediaPlayerAndroid(player_id, manager),
       pending_event_(NO_EVENT_PENDING),
-      active_decoding_tasks_(0),
       seek_request_id_(0),
       width_(0),
       height_(0),
@@ -314,13 +319,15 @@ bool MediaSourcePlayer::Seekable() {
 void MediaSourcePlayer::Start() {
   playing_ = true;
 
-  CreateAudioDecoderJob();
-  CreateVideoDecoderJob();
-
   StartInternal();
 }
 
 void MediaSourcePlayer::Pause() {
+  // Since decoder jobs have their own thread, decoding is not fully paused
+  // until all the decoder jobs call MediaDecoderCallback(). It is possible
+  // that Start() is called while the player is waiting for
+  // MediaDecoderCallback(). In that case, decoding will continue when
+  // MediaDecoderCallback() is called.
   playing_ = false;
   start_wallclock_time_ = base::TimeTicks();
 }
@@ -357,7 +364,6 @@ void MediaSourcePlayer::Release() {
   video_decoder_job_.reset();
   reconfig_audio_decoder_ = false;
   reconfig_video_decoder_ = false;
-  active_decoding_tasks_ = 0;
   playing_ = false;
   pending_event_ = NO_EVENT_PENDING;
   surface_ = gfx::ScopedJavaSurface();
@@ -384,9 +390,14 @@ bool MediaSourcePlayer::IsPlayerReady() {
 }
 
 void MediaSourcePlayer::StartInternal() {
-  // Do nothing if the decoders are already running.
-  if (active_decoding_tasks_ > 0 || pending_event_ != NO_EVENT_PENDING)
+  // If there are pending events, wait for them finish.
+  if (pending_event_ != NO_EVENT_PENDING)
     return;
+
+  // Create decoder jobs if they are not created
+  ConfigureAudioDecoderJob();
+  ConfigureVideoDecoderJob();
+
 
   // If one of the decoder job is not ready, do nothing.
   if ((HasAudio() && !audio_decoder_job_) ||
@@ -394,11 +405,11 @@ void MediaSourcePlayer::StartInternal() {
     return;
   }
 
-  if (HasAudio()) {
+  if (HasAudio() && !audio_decoder_job_->is_decoding()) {
     audio_finished_ = false;
     DecodeMoreAudio();
   }
-  if (HasVideo()) {
+  if (HasVideo() && !video_decoder_job_->is_decoding()) {
     video_finished_ = false;
     DecodeMoreVideo();
   }
@@ -416,17 +427,17 @@ void MediaSourcePlayer::DemuxerReady(
   audio_extra_data_ = params.audio_extra_data;
   OnMediaMetadataChanged(duration_, width_, height_, true);
   if (pending_event_ & CONFIG_CHANGE_EVENT_PENDING) {
-    if (reconfig_audio_decoder_) {
-      CreateAudioDecoderJob();
-    }
+    if (reconfig_audio_decoder_)
+      ConfigureAudioDecoderJob();
+
     // If there is a pending surface change, we can merge it with the config
     // change.
     if (reconfig_video_decoder_) {
       pending_event_ &= ~SURFACE_CHANGE_EVENT_PENDING;
-      CreateVideoDecoderJob();
+      ConfigureVideoDecoderJob();
     }
     pending_event_ &= ~CONFIG_CHANGE_EVENT_PENDING;
-    if (playing_ && pending_event_ == NO_EVENT_PENDING)
+    if (playing_)
       StartInternal();
   }
 }
@@ -482,8 +493,10 @@ void MediaSourcePlayer::UpdateTimestamps(
 
 void MediaSourcePlayer::ProcessPendingEvents() {
   // Wait for all the decoding jobs to finish before processing pending tasks.
-  if (active_decoding_tasks_ > 0)
+  if ((audio_decoder_job_ && audio_decoder_job_->is_decoding()) ||
+      (video_decoder_job_ && video_decoder_job_->is_decoding())) {
     return;
+  }
 
   if (pending_event_ & SEEK_EVENT_PENDING) {
     ClearDecodingData();
@@ -501,11 +514,11 @@ void MediaSourcePlayer::ProcessPendingEvents() {
 
   if (pending_event_ & SURFACE_CHANGE_EVENT_PENDING) {
     video_decoder_job_.reset();
-    CreateVideoDecoderJob();
+    ConfigureVideoDecoderJob();
     pending_event_ &= ~SURFACE_CHANGE_EVENT_PENDING;
   }
 
-  if (playing_ && pending_event_ == NO_EVENT_PENDING)
+  if (playing_)
     StartInternal();
 }
 
@@ -513,9 +526,6 @@ void MediaSourcePlayer::MediaDecoderCallback(
     bool is_audio, MediaDecoderJob::DecodeStatus decode_status,
     const base::TimeDelta& presentation_timestamp,
     const base::TimeTicks& wallclock_time, bool end_of_stream) {
-  if (active_decoding_tasks_ > 0)
-    active_decoding_tasks_--;
-
   if (is_audio && audio_decoder_job_)
     audio_decoder_job_->OnDecodeCompleted();
   if (!is_audio && video_decoder_job_)
@@ -581,7 +591,6 @@ void MediaSourcePlayer::DecodeMoreAudio() {
       start_wallclock_time_, start_presentation_timestamp_,
       base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
                  weak_this_.GetWeakPtr(), true));
-  active_decoding_tasks_++;
 }
 
 void MediaSourcePlayer::DecodeMoreVideo() {
@@ -611,7 +620,6 @@ void MediaSourcePlayer::DecodeMoreVideo() {
       start_wallclock_time_, start_presentation_timestamp_,
       base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
                  weak_this_.GetWeakPtr(), false));
-  active_decoding_tasks_++;
 }
 
 
@@ -650,8 +658,11 @@ bool MediaSourcePlayer::HasAudio() {
   return kUnknownAudioCodec != audio_codec_;
 }
 
-void MediaSourcePlayer::CreateAudioDecoderJob() {
-  DCHECK_EQ(0, active_decoding_tasks_);
+void MediaSourcePlayer::ConfigureAudioDecoderJob() {
+  if (!HasAudio()) {
+    audio_decoder_job_.reset();
+    return;
+  }
 
   // Create audio decoder job only if config changes.
   if (HasAudio() && (reconfig_audio_decoder_ || !audio_decoder_job_)) {
@@ -663,9 +674,7 @@ void MediaSourcePlayer::CreateAudioDecoderJob() {
   }
 }
 
-void MediaSourcePlayer::CreateVideoDecoderJob() {
-  DCHECK_EQ(0, active_decoding_tasks_);
-
+void MediaSourcePlayer::ConfigureVideoDecoderJob() {
   if (!HasVideo() || surface_.IsSurfaceEmpty()) {
     video_decoder_job_.reset();
     return;
