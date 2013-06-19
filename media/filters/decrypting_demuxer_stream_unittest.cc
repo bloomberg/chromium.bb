@@ -258,6 +258,15 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalVideo) {
   }
 }
 
+TEST_F(DecryptingDemuxerStreamTest, Initialize_NullDecryptor) {
+  EXPECT_CALL(*this, RequestDecryptorNotification(_))
+      .WillRepeatedly(RunCallbackIfNotNull(static_cast<Decryptor*>(NULL)));
+
+  AudioDecoderConfig input_config(kCodecVorbis, kSampleFormatPlanarF32,
+                                  CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true);
+  InitializeAudioAndExpectStatus(input_config, DECODER_ERROR_NOT_SUPPORTED);
+}
+
 // Test normal read case.
 TEST_F(DecryptingDemuxerStreamTest, Read_Normal) {
   Initialize();

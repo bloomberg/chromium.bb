@@ -254,6 +254,13 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_Normal) {
   Initialize();
 }
 
+TEST_F(DecryptingVideoDecoderTest, Initialize_NullDecryptor) {
+  EXPECT_CALL(*this, RequestDecryptorNotification(_))
+      .WillRepeatedly(RunCallbackIfNotNull(static_cast<Decryptor*>(NULL)));
+  InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(),
+                            DECODER_ERROR_NOT_SUPPORTED);
+}
+
 TEST_F(DecryptingVideoDecoderTest, Initialize_Failure) {
   EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillRepeatedly(RunCallback<1>(false));
