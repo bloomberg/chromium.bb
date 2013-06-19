@@ -118,7 +118,7 @@ name=http://crbug.com/107567 intentional mismatch in _DebugHeapDelete, no frame
 *!std::numpunct<*>::_Tidy
 *!std::numpunct<*>::~numpunct<*>
 
-# TODO(rbultje): Investigate if code fix is required instead. 
+# TODO(rbultje): Investigate if code fix is required instead.
 WARNING
 name=http://crbug.com/223255 - prefetches in vp8
 instruction=prefetch*
@@ -416,17 +416,6 @@ name=Security test (calloc overflow)
 *!`anonymous namespace'::CallocReturnsNull
 *!`anonymous namespace'::SecurityTest_CallocOverflow_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>
-
-GDI USAGE ERROR
-name=crbug.com/175512
-...
-USER32.dll!UnregisterClassA
-USER32.dll!UnregisterClassA
-USER32.dll!UnregisterClassA
-USER32.dll!LoadBitmapW
-media.dll!media::*::ScreenCapturerWin::CaptureCursor
-media.dll!media::*::ScreenCapturerWin::CaptureFrame
-media.dll!media::ScreenCaptureDevice::Core::DoCapture
 
 GDI USAGE ERROR
 name=http://crbug.com/234484
