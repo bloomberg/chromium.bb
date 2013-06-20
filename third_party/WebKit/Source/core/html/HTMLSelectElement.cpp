@@ -142,8 +142,7 @@ bool HTMLSelectElement::hasPlaceholderLabelOption() const
     ASSERT(listIndex >= 0);
     if (listIndex < 0)
         return false;
-    HTMLOptionElement* option = static_cast<HTMLOptionElement*>(listItems()[listIndex]);
-    return !listIndex && option->value().isEmpty();
+    return !listIndex && toHTMLOptionElement(listItems()[listIndex])->value().isEmpty();
 }
 
 String HTMLSelectElement::validationMessage() const
@@ -240,8 +239,8 @@ String HTMLSelectElement::value() const
 {
     const Vector<HTMLElement*>& items = listItems();
     for (unsigned i = 0; i < items.size(); i++) {
-        if (items[i]->hasLocalName(optionTag) && static_cast<HTMLOptionElement*>(items[i])->selected())
-            return static_cast<HTMLOptionElement*>(items[i])->value();
+        if (items[i]->hasLocalName(optionTag) && toHTMLOptionElement(items[i])->selected())
+            return toHTMLOptionElement(items[i])->value();
     }
     return "";
 }
@@ -259,7 +258,7 @@ void HTMLSelectElement::setValue(const String &value)
     unsigned optionIndex = 0;
     for (unsigned i = 0; i < items.size(); i++) {
         if (items[i]->hasLocalName(optionTag)) {
-            if (static_cast<HTMLOptionElement*>(items[i])->value() == value) {
+            if (toHTMLOptionElement(items[i])->value() == value) {
                 setSelectedIndex(optionIndex);
                 return;
             }
@@ -959,7 +958,7 @@ size_t HTMLSelectElement::searchOptionsForValue(const String& value, size_t list
     for (size_t i = listIndexStart; i < loopEndIndex; ++i) {
         if (!items[i]->hasLocalName(optionTag))
             continue;
-        if (static_cast<HTMLOptionElement*>(items[i])->value() == value)
+        if (toHTMLOptionElement(items[i])->value() == value)
             return i;
     }
     return notFound;
@@ -977,7 +976,7 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
     for (size_t i = 0; i < itemsSize; ++i) {
         if (!items[i]->hasLocalName(optionTag))
             continue;
-        static_cast<HTMLOptionElement*>(items[i])->setSelectedState(false);
+        toHTMLOptionElement(items[i])->setSelectedState(false);
     }
 
     if (!multiple()) {

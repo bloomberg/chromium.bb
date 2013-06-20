@@ -1405,7 +1405,7 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityHitTest(const IntPo
         return accessibilityImageMapHitTest(static_cast<HTMLAreaElement*>(node), point);
 
     if (node->hasTagName(optionTag))
-        node = static_cast<HTMLOptionElement*>(node)->ownerSelectElement();
+        node = toHTMLOptionElement(node)->ownerSelectElement();
 
     RenderObject* obj = node->renderer();
     if (!obj)

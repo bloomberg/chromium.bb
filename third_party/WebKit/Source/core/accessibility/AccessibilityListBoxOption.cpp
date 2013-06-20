@@ -80,7 +80,7 @@ bool AccessibilityListBoxOption::isSelected() const
     if (!m_optionElement->hasTagName(optionTag))
         return false;
     
-    return static_cast<HTMLOptionElement*>(m_optionElement)->selected();
+    return toHTMLOptionElement(m_optionElement)->selected();
 }
 
 bool AccessibilityListBoxOption::isSelectedOptionActive() const
@@ -153,7 +153,7 @@ String AccessibilityListBoxOption::stringValue() const
         return ariaLabel;
     
     if (m_optionElement->hasTagName(optionTag))
-        return static_cast<HTMLOptionElement*>(m_optionElement)->text();
+        return toHTMLOptionElement(m_optionElement)->text();
     
     if (m_optionElement->hasTagName(optgroupTag))
         return static_cast<HTMLOptGroupElement*>(m_optionElement)->groupLabelText();
@@ -199,7 +199,7 @@ HTMLSelectElement* AccessibilityListBoxOption::listBoxOptionParentNode() const
         return 0;
     
     if (m_optionElement->hasTagName(optionTag))
-        return static_cast<HTMLOptionElement*>(m_optionElement)->ownerSelectElement();
+        return toHTMLOptionElement(m_optionElement)->ownerSelectElement();
     
     if (m_optionElement->hasTagName(optgroupTag))
         return static_cast<HTMLOptGroupElement*>(m_optionElement)->ownerSelectElement();

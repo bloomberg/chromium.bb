@@ -93,26 +93,20 @@ private:
     RefPtr<RenderStyle> m_style;
 };
 
-HTMLOptionElement* toHTMLOptionElement(Node*);
-const HTMLOptionElement* toHTMLOptionElement(const Node*);
 void toHTMLOptionElement(const HTMLOptionElement*); // This overload will catch anyone doing an unnecessary cast.
-
-#ifdef NDEBUG
-
-// The debug versions of these, with assertions, are not inlined.
 
 inline HTMLOptionElement* toHTMLOptionElement(Node* node)
 {
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::optionTag));
     return static_cast<HTMLOptionElement*>(node);
 }
 
 inline const HTMLOptionElement* toHTMLOptionElement(const Node* node)
 {
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::optionTag));
     return static_cast<const HTMLOptionElement*>(node);
 }
 
-#endif
-
-} // namespace
+} // namespace WebCore
 
 #endif

@@ -205,7 +205,7 @@ template <> inline bool isMatchingElement(const HTMLCollection* htmlCollection, 
         return element->hasLocalName(optionTag) && toHTMLOptionElement(element)->selected();
     case DataListOptions:
         if (element->hasLocalName(optionTag)) {
-            HTMLOptionElement* option = static_cast<HTMLOptionElement*>(element);
+            HTMLOptionElement* option = toHTMLOptionElement(element);
             if (!option->isDisabledFormControl() && !option->value().isEmpty())
                 return true;
         }

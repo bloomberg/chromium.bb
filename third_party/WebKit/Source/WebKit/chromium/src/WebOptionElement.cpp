@@ -95,7 +95,7 @@ WebOptionElement& WebOptionElement::operator=(const PassRefPtr<HTMLOptionElement
 
 WebOptionElement::operator PassRefPtr<HTMLOptionElement>() const
 {
-    return static_cast<HTMLOptionElement*>(m_private.get());
+    return toHTMLOptionElement(m_private.get());
 }
 
 } // namespace WebKit
