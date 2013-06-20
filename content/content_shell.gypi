@@ -120,6 +120,8 @@
         'shell/shell_javascript_dialog_mac.mm',
         'shell/shell_javascript_dialog_win.cc',
         'shell/shell_javascript_dialog.h',
+        'shell/shell_layout_tests_android.cc',
+        'shell/shell_layout_tests_android.h',
         'shell/shell_login_dialog_gtk.cc',
         'shell/shell_login_dialog_mac.mm',
         'shell/shell_login_dialog.cc',
@@ -618,6 +620,7 @@
           'type': 'none',
           'sources': [
             'shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsActivity.java',
+            'shell/android/java/src/org/chromium/content_shell/ShellLayoutTestUtils.java',
             'shell/android/java/src/org/chromium/content_shell/ShellManager.java',
             'shell/android/java/src/org/chromium/content_shell/Shell.java',
           ],

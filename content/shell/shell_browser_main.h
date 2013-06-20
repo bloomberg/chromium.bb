@@ -12,7 +12,8 @@ class BrowserMainRunner;
 struct MainFunctionParams;
 }
 
-int ShellBrowserMain(const content::MainFunctionParams& parameters,
-                     scoped_ptr<content::BrowserMainRunner>& main_runner);
+int ShellBrowserMain(
+    const content::MainFunctionParams& parameters,
+    const scoped_ptr<content::BrowserMainRunner>& main_runner);
 
 #endif  // CONTENT_SHELL_SHELL_BROWSER_MAIN_H_

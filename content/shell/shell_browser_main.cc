@@ -25,26 +25,11 @@
 #include "webkit/support/webkit_support.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
 #include "base/run_loop.h"
-#include "content/public/test/nested_message_pump_android.h"
+#include "content/shell/shell_layout_tests_android.h"
 #endif
 
 namespace {
-
-#if defined(OS_ANDROID)
-// Path to search for when translating a layout test path to an URL.
-const char kAndroidLayoutTestPath[] =
-    "/data/local/tmp/third_party/WebKit/LayoutTests/";
-
-// The base URL from which layout tests are being served on Android.
-const char kAndroidLayoutTestBase[] = "http://127.0.0.1:8000/all-tests/";
-
-base::MessagePump* CreateMessagePumpForUI() {
-  return new content::NestedMessagePumpAndroid();
-}
-
-#endif
 
 GURL GetURLForLayoutTest(const std::string& test_name,
                          base::FilePath* current_working_directory,
@@ -71,19 +56,13 @@ GURL GetURLForLayoutTest(const std::string& test_name,
   if (expected_pixel_hash)
     *expected_pixel_hash = pixel_hash;
 
+  GURL test_url;
 #if defined(OS_ANDROID)
-  // On Android, all passed tests will be paths to a local temporary directory.
-  // However, because we can't transfer all test files to the device, translate
-  // those paths to a local, forwarded URL so the host can serve them.
-  if (path_or_url.find(kAndroidLayoutTestPath) != std::string::npos) {
-    std::string test_location(kAndroidLayoutTestBase);
-    test_location.append(path_or_url.substr(strlen(kAndroidLayoutTestPath)));
-
-    return GURL(test_location);
-  }
+  if (content::GetTestUrlForAndroid(path_or_url, &test_url))
+    return test_url;
 #endif
 
-  GURL test_url(path_or_url);
+  test_url = GURL(path_or_url);
   if (!(test_url.is_valid() && test_url.has_scheme())) {
     // We're outside of the message loop here, and this is a test.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -130,8 +109,9 @@ bool GetNextTest(const CommandLine::StringVector& args,
 }  // namespace
 
 // Main routine for running as the Browser process.
-int ShellBrowserMain(const content::MainFunctionParams& parameters,
-                     scoped_ptr<content::BrowserMainRunner>& main_runner) {
+int ShellBrowserMain(
+    const content::MainFunctionParams& parameters,
+    const scoped_ptr<content::BrowserMainRunner>& main_runner) {
   bool layout_test_mode =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
   base::ScopedTempDir browser_context_path_for_layout_tests;
@@ -144,19 +124,12 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters,
         browser_context_path_for_layout_tests.path().MaybeAsASCII());
 
 #if defined(OS_ANDROID)
-    // TODO(beverloo): Create the FIFOs required for Android layout tests.
-
-    JNIEnv* env = base::android::AttachCurrentThread();
-    content::NestedMessagePumpAndroid::RegisterJni(env);
-
-    const bool success = base::MessageLoop::InitMessagePumpForUIFactory(
-        &CreateMessagePumpForUI);
-    CHECK(success) << "Unable to initialize the message pump for Android.";
+    content::EnsureInitializeForAndroidLayoutTests();
 #endif
   }
 
   int exit_code = main_runner->Initialize(parameters);
-  DCHECK(exit_code < 0)
+  DCHECK_LT(exit_code, 0)
       << "BrowserMainRunner::Initialize failed in ShellBrowserMain";
 
   if (exit_code >= 0)
