@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_LIST_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_LIST_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -27,7 +28,9 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   // their information in a list. It returns the list of description of all
   // profiles. Calls into DetectSourceProfilesWorker() on the FILE thread to do
   // the real work of detecting source profiles. |observer| must be non-NULL.
-  void DetectSourceProfiles(importer::ImporterListObserver* observer);
+  // |locale|: As in DetectSourceProfilesWorker().
+  void DetectSourceProfiles(const std::string& locale,
+                            importer::ImporterListObserver* observer);
 
   // Sets the observer of this object. When the current observer is destroyed,
   // this method should be called with a NULL |observer| so it is not notified
@@ -36,7 +39,8 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
 
   // DEPRECATED: This method is synchronous and performs file operations which
   // may end up blocking the current thread, which is usually the UI thread.
-  void DetectSourceProfilesHack();
+  // |locale|: As in DetectSourceProfilesWorker().
+  void DetectSourceProfilesHack(const std::string& locale);
 
   // Returns the number of different source profiles you can import from.
   size_t count() const { return source_profiles_.size(); }
@@ -59,8 +63,10 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   ~ImporterList();
 
   // The worker method for DetectSourceProfiles(). Must be called on the FILE
-  // thread.
-  void DetectSourceProfilesWorker();
+  // thread. |locale|:The application locale (it must be taken as an argument
+  // since this code runs on the FILE thread where GetApplicationLocale() isn't
+  // available).
+  void DetectSourceProfilesWorker(const std::string& locale);
 
   // Called by DetectSourceProfilesWorker() on the source thread. This method
   // notifies |observer_| that the source profiles are loaded. |profiles| is

@@ -55,7 +55,11 @@ void DetectSafariProfiles(std::vector<importer::SourceProfile*>* profiles) {
 }
 #endif  // defined(OS_MACOSX)
 
-void DetectFirefoxProfiles(std::vector<importer::SourceProfile*>* profiles) {
+// |locale|: The application locale used for lookups in Firefox's
+// locale-specific search engines feature (see firefox3_importer.cc for
+// details).
+void DetectFirefoxProfiles(const std::string locale,
+                           std::vector<importer::SourceProfile*>* profiles) {
   base::FilePath profile_path = GetFirefoxProfilePath();
   if (profile_path.empty())
     return;
@@ -88,6 +92,7 @@ void DetectFirefoxProfiles(std::vector<importer::SourceProfile*>* profiles) {
     firefox->app_path = app_path;
   firefox->services_supported = importer::HISTORY | importer::FAVORITES |
       importer::PASSWORDS | importer::SEARCH_ENGINES;
+  firefox->locale = locale;
   profiles->push_back(firefox);
 }
 
@@ -122,6 +127,7 @@ ImporterList::ImporterList(
 }
 
 void ImporterList::DetectSourceProfiles(
+    const std::string& locale,
     importer::ImporterListObserver* observer) {
   DCHECK(observer);
   observer_ = observer;
@@ -133,15 +139,15 @@ void ImporterList::DetectSourceProfiles(
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&ImporterList::DetectSourceProfilesWorker, this));
+      base::Bind(&ImporterList::DetectSourceProfilesWorker, this, locale));
 }
 
 void ImporterList::SetObserver(importer::ImporterListObserver* observer) {
   observer_ = observer;
 }
 
-void ImporterList::DetectSourceProfilesHack() {
-  DetectSourceProfilesWorker();
+void ImporterList::DetectSourceProfilesHack(const std::string& locale) {
+  DetectSourceProfilesWorker(locale);
 }
 
 const importer::SourceProfile& ImporterList::GetSourceProfileAt(
@@ -166,7 +172,7 @@ const importer::SourceProfile& ImporterList::GetSourceProfileForImporterType(
 ImporterList::~ImporterList() {
 }
 
-void ImporterList::DetectSourceProfilesWorker() {
+void ImporterList::DetectSourceProfilesWorker(const std::string& locale) {
   // TODO(jhawkins): Remove this condition once DetectSourceProfilesHack is
   // removed.
   if (is_observed_)
@@ -178,24 +184,24 @@ void ImporterList::DetectSourceProfilesWorker() {
   // profile detected, which should be the user's current default.
 #if defined(OS_WIN)
   if (ShellIntegration::IsFirefoxDefaultBrowser()) {
-    DetectFirefoxProfiles(&profiles);
+    DetectFirefoxProfiles(locale, &profiles);
     DetectIEProfiles(&profiles);
   } else {
     DetectIEProfiles(&profiles);
-    DetectFirefoxProfiles(&profiles);
+    DetectFirefoxProfiles(locale, &profiles);
   }
   // TODO(brg) : Current UI requires win_util.
   DetectGoogleToolbarProfiles(&profiles, request_context_getter_);
 #elif defined(OS_MACOSX)
   if (ShellIntegration::IsFirefoxDefaultBrowser()) {
-    DetectFirefoxProfiles(&profiles);
+    DetectFirefoxProfiles(locale, &profiles);
     DetectSafariProfiles(&profiles);
   } else {
     DetectSafariProfiles(&profiles);
-    DetectFirefoxProfiles(&profiles);
+    DetectFirefoxProfiles(locale, &profiles);
   }
 #else
-  DetectFirefoxProfiles(&profiles);
+  DetectFirefoxProfiles(locale, &profiles);
 #endif
 
   // TODO(jhawkins): Remove this condition once DetectSourceProfilesHack is

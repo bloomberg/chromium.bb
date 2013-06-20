@@ -35,6 +35,7 @@ struct ParamTraits<importer::SourceProfile> {
     WriteParam(m, p.source_path);
     WriteParam(m, p.app_path);
     WriteParam(m, static_cast<int>(p.services_supported));
+    WriteParam(m, p.locale);
   }
   static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     if (!ReadParam(m, iter, &p->importer_name))
@@ -46,13 +47,17 @@ struct ParamTraits<importer::SourceProfile> {
     p->importer_type = static_cast<importer::ImporterType>(importer_type);
 
     if (!ReadParam(m, iter, &p->source_path) ||
-        !ReadParam(m, iter, &p->app_path))
+        !ReadParam(m, iter, &p->app_path)) {
         return false;
+    }
 
     int services_supported = 0;
     if (!ReadParam(m, iter, &services_supported))
       return false;
     p->services_supported = static_cast<uint16>(services_supported);
+
+    if (!ReadParam(m, iter, &p->locale))
+      return false;
 
     return true;
   }
@@ -67,6 +72,8 @@ struct ParamTraits<importer::SourceProfile> {
     LogParam(p.app_path, l);
     l->append(", ");
     LogParam(static_cast<int>(p.services_supported), l);
+    l->append(", ");
+    LogParam(p.locale, l);
     l->append(")");
   }
 };  // ParamTraits<importer::SourceProfile>

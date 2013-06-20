@@ -262,6 +262,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     source_profile.importer_type = importer::TYPE_FIREFOX3;
     source_profile.app_path = app_path_;
     source_profile.source_path = profile_path_;
+    source_profile.locale = "en-US";
 
     int items = importer::HISTORY | importer::PASSWORDS | importer::FAVORITES;
     if (import_search_plugins)

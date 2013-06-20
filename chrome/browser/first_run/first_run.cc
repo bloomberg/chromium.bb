@@ -693,7 +693,8 @@ void AutoImport(
   bool local_state_file_exists = file_util::PathExists(local_state_path);
 
   scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
-  importer_list->DetectSourceProfilesHack();
+  importer_list->DetectSourceProfilesHack(
+      g_browser_process->GetApplicationLocale());
 
   // Do import if there is an available profile for us to import.
   if (importer_list->count() > 0) {

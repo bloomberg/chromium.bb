@@ -95,10 +95,6 @@ struct Firefox3Importer::BookmarkItem {
 };
 
 Firefox3Importer::Firefox3Importer() {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  locale_ = g_browser_process->GetApplicationLocale();
-#endif
 }
 
 Firefox3Importer::~Firefox3Importer() {
@@ -108,12 +104,13 @@ void Firefox3Importer::StartImport(
     const importer::SourceProfile& source_profile,
     uint16 items,
     ImporterBridge* bridge) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-#endif
   bridge_ = bridge;
   source_path_ = source_profile.source_path;
   app_path_ = source_profile.app_path;
+
+#if defined(OS_POSIX)
+  locale_ = source_profile.locale;
+#endif
 
   // The order here is important!
   bridge_->NotifyStarted();
@@ -439,12 +436,13 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
     } while (s.Step() && !cancelled());
   }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX)
   // Ubuntu-flavored Firefox3 supports locale-specific search engines via
   // locale-named subdirectories. They fall back to en-US.
   // See http://crbug.com/53899
   // TODO(jshin): we need to make sure our locale code matches that of
   // Firefox.
+  DCHECK(!locale_.empty());
   base::FilePath locale_app_path = app_path.AppendASCII(locale_);
   base::FilePath default_locale_app_path = app_path.AppendASCII("en-US");
   if (file_util::DirectoryExists(locale_app_path))

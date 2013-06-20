@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
@@ -66,7 +67,8 @@ void ImportDataHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 void ImportDataHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   importer_list_ = new ImporterList(profile->GetRequestContext());
-  importer_list_->DetectSourceProfiles(this);
+  importer_list_->DetectSourceProfiles(
+      g_browser_process->GetApplicationLocale(), this);
 }
 
 void ImportDataHandler::RegisterMessages() {
