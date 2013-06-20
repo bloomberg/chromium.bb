@@ -8,10 +8,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "webkit/browser/quota/mock_storage_client.h"
 #include "webkit/browser/quota/quota_manager.h"
 
@@ -23,10 +23,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   typedef BrowsingDataQuotaHelper::QuotaInfoArray QuotaInfoArray;
 
   BrowsingDataQuotaHelperTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_),
-        fetching_completed_(true),
+      : fetching_completed_(true),
         quota_(-1),
         weak_factory_(this) {}
 
@@ -114,10 +111,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     fetching_completed_ = true;
   }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
 
   base::ScopedTempDir dir_;

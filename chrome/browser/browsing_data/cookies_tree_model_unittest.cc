@@ -24,7 +24,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,17 +38,11 @@ namespace {
 
 class CookiesTreeModelTest : public testing::Test {
  public:
-  CookiesTreeModelTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_user_blocking_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
-  }
-
   virtual ~CookiesTreeModelTest() {
     // Avoid memory leaks.
     special_storage_policy_ = NULL;
     profile_.reset();
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   virtual void SetUp() OVERRIDE {
@@ -92,7 +86,7 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_local_storage_helper_ = NULL;
     mock_browsing_data_database_helper_ = NULL;
     mock_browsing_data_flash_lso_helper_ = NULL;
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   scoped_ptr<CookiesTreeModel> CreateCookiesTreeModelWithInitialSample() {
@@ -339,11 +333,7 @@ class CookiesTreeModelTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_user_blocking_;
-  content::TestBrowserThread io_thread_;
-
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<MockBrowsingDataCookieHelper>
       mock_browsing_data_cookie_helper_;

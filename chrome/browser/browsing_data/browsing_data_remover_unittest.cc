@@ -35,6 +35,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/ssl/server_bound_cert_store.h"
@@ -542,14 +543,7 @@ class BrowsingDataRemoverTest : public testing::Test,
                                 public content::NotificationObserver {
  public:
   BrowsingDataRemoverTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB, &message_loop_),
-        webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_),
-        profile_(new TestingProfile()) {
+      : profile_(new TestingProfile()) {
     registrar_.Add(this, chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
                    content::Source<Profile>(profile_.get()));
   }
@@ -564,7 +558,7 @@ class BrowsingDataRemoverTest : public testing::Test,
     // the message loop is cleared out, before destroying the threads and loop.
     // Otherwise we leak memory.
     profile_.reset();
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void BlockUntilBrowsingDataRemoved(BrowsingDataRemover::TimePeriod period,
@@ -652,15 +646,7 @@ class BrowsingDataRemoverTest : public testing::Test,
   scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
   content::NotificationRegistrar registrar_;
 
-  // message_loop_, as well as all the threads associated with it must be
-  // defined before profile_ to prevent explosions. Oh how I love C++.
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread webkit_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<quota::MockQuotaManager> quota_manager_;
 

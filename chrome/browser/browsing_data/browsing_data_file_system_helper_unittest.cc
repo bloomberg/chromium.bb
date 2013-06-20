@@ -14,6 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
@@ -62,26 +63,19 @@ typedef scoped_ptr<FileSystemInfoList> ScopedFileSystemInfoList;
 // point.
 class BrowsingDataFileSystemHelperTest : public testing::Test {
  public:
-  BrowsingDataFileSystemHelperTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB, &message_loop_),
-        webkit_thread_(BrowserThread::WEBKIT_DEPRECATED, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        file_user_blocking_thread_(
-            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
+  BrowsingDataFileSystemHelperTest() {
     profile_.reset(new TestingProfile());
 
     helper_ = BrowsingDataFileSystemHelper::Create(
         BrowserContext::GetDefaultStoragePartition(profile_.get())->
             GetFileSystemContext());
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
     canned_helper_ = new CannedBrowsingDataFileSystemHelper(profile_.get());
   }
   virtual ~BrowsingDataFileSystemHelperTest() {
     // Avoid memory leaks.
     profile_.reset();
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   TestingProfile* GetProfile() {
@@ -153,7 +147,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
 
   // Sets up kOrigin1 with a temporary file system, kOrigin2 with a persistent
   // file system, and kOrigin3 with both.
-  virtual void PopulateTestFileSystemData() {
+  void PopulateTestFileSystemData() {
     sandbox_ = BrowserContext::GetDefaultStoragePartition(profile_.get())->
         GetFileSystemContext()->sandbox_provider();
 
@@ -186,16 +180,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   }
 
  protected:
-  // message_loop_, as well as all the threads associated with it must be
-  // defined before profile_ to prevent explosions. The threads also must be
-  // defined in the order they're listed here. Oh how I love C++.
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread webkit_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
 
   // Temporary storage to pass information back from callbacks.

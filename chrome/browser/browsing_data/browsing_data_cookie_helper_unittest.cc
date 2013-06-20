@@ -4,12 +4,11 @@
 
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 
-
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -21,7 +20,7 @@ namespace {
 
 class BrowsingDataCookieHelperTest : public testing::Test {
  public:
-  void SetUpOnIOThread(base::WaitableEvent* io_setup_complete) {
+  void SetUpOnIOThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     // This is a workaround for a bug in the TestingProfile.
     // The URLRequestContext will be created by GetCookieMonster on the UI
@@ -30,31 +29,21 @@ class BrowsingDataCookieHelperTest : public testing::Test {
     // Force it to be created here.
     testing_profile_->CreateRequestContext();
     testing_profile_->GetRequestContext()->GetURLRequestContext();
-    io_setup_complete->Signal();
   }
 
   virtual void SetUp() {
-    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
-                                                    &message_loop_));
-    // Note: we're starting a real IO thread because parts of the
-    // BrowsingDataCookieHelper expect to run on that thread.
-    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
-    ASSERT_TRUE(io_thread_->Start());
     testing_profile_.reset(new TestingProfile());
-    base::WaitableEvent io_setup_complete(true, false);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&BrowsingDataCookieHelperTest::SetUpOnIOThread,
-                   base::Unretained(this), &io_setup_complete));
-    io_setup_complete.Wait();
+                   base::Unretained(this)));
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   virtual void TearDown() {
     // This must be reset before the IO thread stops, because the
     // URLRequestContextGetter forces its own deletion to occur on that thread.
     testing_profile_->ResetRequestContext();
-    io_thread_.reset();
-    ui_thread_.reset();
   }
 
   void CreateCookiesForTest() {
@@ -209,9 +198,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> testing_profile_;
 
   net::CookieList cookie_list_;
