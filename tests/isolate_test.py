@@ -1319,6 +1319,97 @@ class IsolateLoad(IsolateBase):
     self.assertEqual(expected_saved_state, actual_saved_state)
     self.assertEqual([], os.listdir(self.directory))
 
+  def test_root_dir_because_of_variable(self):
+    # Ensures that load_isolate() works even when path variables have deep root
+    # dirs. The end result is similar to touch_root.isolate, except that
+    # no_run.isolate doesn't reference '..' at all.
+    #
+    # A real world example would be PRODUCT_DIR=../../out/Release but nothing in
+    # this directory is mapped.
+    #
+    # Imagine base/base_unittests.isolate would not map anything in
+    # PRODUCT_DIR. In that case, the automatically determined root dir is
+    # src/base, since nothing outside this directory is mapped.
+    isolate_file = os.path.join(
+        ROOT_DIR, 'tests', 'isolate', 'no_run.isolate')
+    options = self._get_option(isolate_file)
+    chromeos_value = int(isolate.get_flavor() == 'linux')
+    # Any directory outside ROOT_DIR/tests/isolate.
+    options.variables['PRODUCT_DIR'] = os.path.join('third_party')
+    complete_state = isolate.load_complete_state(options, ROOT_DIR, None, False)
+    actual_isolated = complete_state.saved_state.to_isolated()
+    actual_saved_state = complete_state.saved_state.flatten()
+
+    expected_isolated = {
+      'files': {
+        os.path.join(u'tests', 'isolate', 'files1', 'subdir', '42.txt'): {
+          'm': 416,
+          'h': _sha1('tests', 'isolate', 'files1', 'subdir', '42.txt'),
+          's': _size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
+        },
+        os.path.join(u'tests', 'isolate', 'files1', 'test_file1.txt'): {
+          'm': 416,
+          'h': _sha1('tests', 'isolate', 'files1', 'test_file1.txt'),
+          's': _size('tests', 'isolate', 'files1', 'test_file1.txt'),
+        },
+        os.path.join(u'tests', 'isolate', 'files1', 'test_file2.txt'): {
+          'm': 416,
+          'h': _sha1('tests', 'isolate', 'files1', 'test_file2.txt'),
+          's': _size('tests', 'isolate', 'files1', 'test_file2.txt'),
+        },
+        os.path.join(u'tests', 'isolate', 'no_run.isolate'): {
+          'm': 416,
+          'h': _sha1('tests', 'isolate', 'no_run.isolate'),
+          's': _size('tests', 'isolate', 'no_run.isolate'),
+        },
+      },
+      'os': isolate.get_flavor(),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+    }
+    self._cleanup_isolated(expected_isolated)
+    self.assertEqual(expected_isolated, actual_isolated)
+
+    expected_saved_state = {
+      'child_isolated_files': [],
+      'command': [],
+      'files': {
+        os.path.join(u'tests', 'isolate', 'files1', 'subdir', '42.txt'): {
+          'm': 416,
+          'h': _sha1('tests', 'isolate', 'files1', 'subdir', '42.txt'),
+          's': _size('tests', 'isolate', 'files1', 'subdir', '42.txt'),
+        },
+        os.path.join(u'tests', 'isolate', 'files1', 'test_file1.txt'): {
+          'm': 416,
+          'h': _sha1('tests', 'isolate', 'files1', 'test_file1.txt'),
+          's': _size('tests', 'isolate', 'files1', 'test_file1.txt'),
+        },
+        os.path.join(u'tests', 'isolate', 'files1', 'test_file2.txt'): {
+          'm': 416,
+          'h': _sha1('tests', 'isolate', 'files1', 'test_file2.txt'),
+          's': _size('tests', 'isolate', 'files1', 'test_file2.txt'),
+        },
+        os.path.join(u'tests', 'isolate', 'no_run.isolate'): {
+          'm': 416,
+          'h': _sha1('tests', 'isolate', 'no_run.isolate'),
+          's': _size('tests', 'isolate', 'no_run.isolate'),
+        },
+      },
+      'isolate_file': isolate.safe_relpath(
+          isolate.trace_inputs.get_native_path_case(isolate_file),
+          os.path.dirname(options.isolated)),
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'variables': {
+        'foo': 'bar',
+        'PRODUCT_DIR': os.path.join(u'..', '..', 'third_party'),
+        'OS': isolate.get_flavor(),
+        'chromeos': chromeos_value,
+      },
+    }
+    self._cleanup_isolated(expected_saved_state)
+    self._cleanup_saved_state(actual_saved_state)
+    self.assertEqual(expected_saved_state, actual_saved_state)
+    self.assertEqual([], os.listdir(self.directory))
+
   def test_chromium_split(self):
     # Create an .isolate file and a tree of random stuff.
     isolate_file = os.path.join(

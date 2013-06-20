@@ -1640,8 +1640,11 @@ class CompleteState(object):
     infiles = [eval_variables(f, variables) for f in infiles]
     touched = [eval_variables(f, variables) for f in touched]
     # root_dir is automatically determined by the deepest root accessed with the
-    # form '../../foo/bar'.
-    root_dir = determine_root_dir(relative_base_dir, infiles + touched)
+    # form '../../foo/bar'. Note that path variables must be taken in account
+    # too, add them as if they were input files.
+    path_variables = [variables[v] for v in PATH_VARIABLES if v in variables]
+    root_dir = determine_root_dir(
+        relative_base_dir, infiles + touched + path_variables)
     # The relative directory is automatically determined by the relative path
     # between root_dir and the directory containing the .isolate file,
     # isolate_base_dir.
@@ -1653,8 +1656,8 @@ class CompleteState(object):
         if not path_starts_with(
             root_dir, os.path.join(relative_base_dir, variables[i])):
           raise run_isolated.MappingError(
-              'Path variable %s=%r points outside the inferred root directory' %
-              (i, variables[i]))
+              'Path variable %s=%r points outside the inferred root directory'
+              ' %s' % (i, variables[i], root_dir))
     # Normalize the files based to root_dir. It is important to keep the
     # trailing os.path.sep at that step.
     infiles = [
