@@ -25,11 +25,21 @@ DesktopCaptureClient::~DesktopCaptureClient() {
 void DesktopCaptureClient::SetCapture(aura::Window* window) {
   if (capture_window_ == window)
     return;
-  if (window)
-    root_window_->gesture_recognizer()->
-        TransferEventsTo(capture_window_, window);
-
-  aura::Window* old_capture_window = capture_window_;
+  if (window) {
+    // If we're actually starting capture, then cancel any touches/gestures
+    // that aren't already locked to the new window, and transfer any on the
+    // old capture window to the new one.  When capture is released we have no
+    // distinction between the touches/gestures that were in the window all
+    // along (and so shouldn't be canceled) and those that got moved, so
+    // just leave them all where they are.
+    for (std::set<DesktopCaptureClient*>::iterator it =
+             live_capture_clients_.begin(); it != live_capture_clients_.end();
+         ++it) {
+      (*it)->root_window_->gesture_recognizer()->TransferEventsTo(
+          capture_window_, window);
+    }
+  }
+  aura::Window* old_capture_window = GetCaptureWindow();
   capture_window_ = window;
 
   if (capture_window_) {
@@ -55,7 +65,13 @@ void DesktopCaptureClient::ReleaseCapture(aura::Window* window) {
 }
 
 aura::Window* DesktopCaptureClient::GetCaptureWindow() {
-  return capture_window_;
+  for (std::set<DesktopCaptureClient*>::iterator it =
+            live_capture_clients_.begin(); it != live_capture_clients_.end();
+        ++it) {
+    if ((*it)->capture_window_)
+      return (*it)->capture_window_;
+  }
+  return NULL;
 }
 
 void DesktopCaptureClient::OnOtherCaptureClientTookCapture() {
@@ -64,13 +80,9 @@ void DesktopCaptureClient::OnOtherCaptureClientTookCapture() {
     // that needs to be cleared on capture changed regarding mouse up/down.
     root_window_->ClearMouseHandlers();
   }
-#if defined(OS_LINUX)
   else {
-    // Capture is a concept that we emulate on Linux; we don't receive messages
-    // from the X11 server about right click menu dismissal.
     SetCapture(NULL);
   }
-#endif
 }
 
 }  // namespace views
