@@ -174,19 +174,20 @@ bool ImageLoader::IsComponentExtensionResource(
 #endif
 #if defined(USE_AURA)
     {"keyboard/api_adapter.js", IDR_KEYBOARD_API_ADAPTER_JS},
-    {"keyboard/common.js", IDR_KEYBOARD_COMMON_JS},
-    {"keyboard/images/chevron.svg", IDR_KEYBOARD_IMAGES_CHEVRON},
-    {"keyboard/images/del.svg", IDR_KEYBOARD_IMAGES_DEL},
+    {"keyboard/constants.js", IDR_KEYBOARD_CONSTANTS_JS},
+    {"keyboard/elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY},
+    {"keyboard/elements/kb-keyboard.html", IDR_KEYBOARD_ELEMENTS_KEYBOARD},
+    {"keyboard/elements/kb-keyset.html", IDR_KEYBOARD_ELEMENTS_KEYSET},
+    {"keyboard/elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW},
     {"keyboard/images/keyboard.svg", IDR_KEYBOARD_IMAGES_KEYBOARD},
     {"keyboard/images/mic.svg", IDR_KEYBOARD_IMAGES_MIC},
-    {"keyboard/images/ret.svg", IDR_KEYBOARD_IMAGES_RET},
-    {"keyboard/images/shift.svg", IDR_KEYBOARD_IMAGES_SHIFT},
-    {"keyboard/images/shift_down.svg", IDR_KEYBOARD_IMAGES_SHIFT_DOWN},
-    {"keyboard/images/tab.svg", IDR_KEYBOARD_IMAGES_TAB},
+    {"keyboard/images/mic-green.svg", IDR_KEYBOARD_IMAGES_MIC_GREEN},
     {"keyboard/index.html", IDR_KEYBOARD_INDEX},
-    {"keyboard/layout_us.js", IDR_KEYBOARD_LAYOUT_US_JS},
+    {"keyboard/keysets.html", IDR_KEYBOARD_KEYSETS},
     {"keyboard/main.css", IDR_KEYBOARD_MAIN_CSS},
     {"keyboard/main.js", IDR_KEYBOARD_MAIN_JS},
+    {"keyboard/polymer.min.js", IDR_KEYBOARD_POLYMER},
+    {"keyboard/voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS},
 #endif
   };
   static const size_t kExtraComponentExtensionResourcesSize =

@@ -1,0 +1,159 @@
+<!--
+  -- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
+<element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
+    on-key-down="keyDown" attributes="keyset rows">
+  <template>
+    <content select="#{{keyset}}"></content>
+  </template>
+  <script>
+    /**
+     * The long-press delay in milliseconds before long-press handler is
+     * invoked.
+     * @type {number}
+     */
+    var LONGPRESS_DELAY_MSEC = 500;
+
+    /**
+     * The repeat delay in milliseconds before a key starts repeating. Use the
+     * same rate as Chromebook.
+     * (See chrome/browser/chromeos/language_preferences.cc)
+     * @type {number}
+     */
+    var REPEAT_DELAY_MSEC = 500;
+
+    /**
+     * The repeat interval or number of milliseconds between subsequent
+     * keypresses. Use the same rate as Chromebook.
+     * @type {number}
+     */
+    var REPEAT_INTERVAL_MSEC = 50;
+
+    /**
+     * The boolean to decide if keyboard should transit to upper case keyset
+     * when spacebar is pressed. If a closing punctuation is followed by a
+     * spacebar, keyboard should automatically transit to upper case.
+     * @type {boolean}
+     */
+    var enterUpperOnSpace = false;
+
+    /**
+     * A structure to track the currently repeating key on the keyboard.
+     */
+    var repeatKey = {
+      /**
+        * The timer for the delay before repeating behaviour begins.
+        * @type {number|undefined}
+        */
+      timer: undefined,
+
+      /**
+       * The interval timer for issuing keypresses of a repeating key.
+       * @type {number|undefined}
+       */
+      interval: undefined,
+
+      /**
+       * The key which is currently repeating.
+       * @type {BaseKey|undefined}
+       */
+      key: undefined,
+
+      /**
+       * Cancel the repeat timers of the currently active key.
+       */
+      cancel: function() {
+        clearTimeout(this.timer);
+        clearInterval(this.interval);
+        this.timer = undefined;
+        this.interval = undefined;
+        this.key = undefined;
+      }
+    };
+
+    Polymer.register(this, {
+      lastPressedKey: null,
+      voiceInput_: null,
+
+      ready: function() {
+        this.voiceInput_ = new VoiceInput(this);
+      },
+
+      /**
+       * Handles key-down event that is sent by kb-key.
+       * @param {CustomEvent} event The key-down event dispatched by kb-key.
+       * @param {Object} detail The detail of pressed kb-key.
+       */
+      keyDown: function(event, detail) {
+        var toKeyset = detail.toKeyset;
+        if (this.lastPressedKey)
+          this.lastPressedKey.classList.remove('active');
+        this.lastPressedKey = event.target;
+        this.lastPressedKey.classList.add('active');
+        repeatKey.cancel();
+        if (detail.repeat) {
+          sendKey(detail.char);
+          repeatKey.key = this.lastPressedKey;
+          repeatKey.timer = setTimeout(function() {
+            repeatKey.timer = undefined;
+            repeatKey.interval = setInterval(function() {
+               sendKey(detail.char);
+            }, REPEAT_INTERVAL_MSEC);
+          }, Math.max(0, REPEAT_DELAY_MSEC - REPEAT_INTERVAL_MSEC));
+        }
+      },
+
+      /**
+       * Handles key-up event that is sent by kb-key.
+       * @param {CustomEvent} event The key-up event dispatched by kb-key.
+       * @param {Object} detail The detail of pressed kb-key.
+       */
+      keyUp: function(event, detail) {
+        this.lastPressedKey.classList.remove('active');
+        if (this.lastPressedKey != event.target)
+          return;
+        if (repeatKey.key == event.target) {
+          repeatKey.cancel();
+          return;
+        }
+        var toKeyset = detail.toKeyset;
+        // Keyset transtion key.
+        if (toKeyset) {
+          this.keyset = toKeyset;
+        }
+        var char = detail.char;
+        if (enterUpperOnSpace) {
+          enterUpperOnSpace = false;
+          if (char == 'Spacebar')
+            this.keyset = 'upper';
+        }
+        switch(char) {
+          case 'Invalid':
+            return;
+          case 'Mic':
+            this.voiceInput_.onDown();
+            return;
+          case '.':
+          case '?':
+          case '!':
+            enterUpperOnSpace = true;
+            break;
+          case 'Tab':
+          case 'Spacebar':
+          case 'Enter':
+            sendKey(char);
+            return;
+          default:
+            break;
+        }
+        for (var i = 0; i < char.length; i++) {
+          sendKey(char.charAt(i));
+        }
+      }
+    });
+  </script>
+</element>
+

@@ -1,11 +1,26 @@
 <!DOCTYPE HTML>
+<!--
+  -- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
 <html>
   <head>
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="main.css">
+    <script src="constants.js"></script>
+    <script src="polymer.min.js"></script>
     <script src="api_adapter.js"></script>
-    <script src="common.js"></script>
-    <script src="layout_us.js"></script>
+    <script src="voice_input.js"></script>
+    <link rel="import" href="elements/kb-key.html">
+    <link rel="import" href="elements/kb-row.html">
+    <link rel="import" href="elements/kb-keyset.html">
+    <link rel="import" href="elements/kb-keyboard.html">
+    <link id="keysets" rel="import" href="keysets.html">
     <script src="main.js"></script>
   </head>
-  <body id="b"></body>
+  <body>
+    <kb-keyboard id="keyboard" touch-action="none" keyset="lower"></kb-keyboard>
+  </body>
 </html>

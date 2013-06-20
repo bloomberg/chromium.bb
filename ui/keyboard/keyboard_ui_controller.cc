@@ -20,22 +20,24 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
 
   source->SetDefaultResource(IDR_KEYBOARD_INDEX);
 
-  source->AddResourcePath("common.js", IDR_KEYBOARD_COMMON_JS);
-  source->AddResourcePath("images/chevron.svg", IDR_KEYBOARD_IMAGES_CHEVRON);
-  source->AddResourcePath("images/del.svg", IDR_KEYBOARD_IMAGES_DEL);
-  source->AddResourcePath("images/keyboard.svg", IDR_KEYBOARD_IMAGES_KEYBOARD);
+  source->AddResourcePath("elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY);
+  source->AddResourcePath("elements/kb-keyboard.html",
+                          IDR_KEYBOARD_ELEMENTS_KEYBOARD);
+  source->AddResourcePath("elements/kb-keyset.html",
+                          IDR_KEYBOARD_ELEMENTS_KEYSET);
+  source->AddResourcePath("elements/kb-row.html", IDR_KEYBOARD_ELEMENTS_ROW);
   source->AddResourcePath("images/mic.svg", IDR_KEYBOARD_IMAGES_MIC);
-  source->AddResourcePath("images/ret.svg", IDR_KEYBOARD_IMAGES_RET);
-  source->AddResourcePath("images/shift.svg", IDR_KEYBOARD_IMAGES_SHIFT);
-  source->AddResourcePath("images/shift_down.svg",
-      IDR_KEYBOARD_IMAGES_SHIFT_DOWN);
-  source->AddResourcePath("images/tab.svg", IDR_KEYBOARD_IMAGES_TAB);
+  source->AddResourcePath("images/mic-green.svg",
+                          IDR_KEYBOARD_IMAGES_MIC_GREEN);
   source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
+  source->AddResourcePath("polymer.min.js", IDR_KEYBOARD_POLYMER);
+  source->AddResourcePath("voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS);
 
   // These files are specific to the WebUI version
-  source->AddResourcePath("layout_us.js", IDR_KEYBOARD_WEBUI_LAYOUT_US_JS);
-  source->AddResourcePath("main.css", IDR_KEYBOARD_WEBUI_MAIN_CSS);
   source->AddResourcePath("api_adapter.js", IDR_KEYBOARD_WEBUI_API_ADAPTER_JS);
+  source->AddResourcePath("constants.js", IDR_KEYBOARD_WEBUI_CONSTANTS_JS);
+  source->AddResourcePath("keysets.html", IDR_KEYBOARD_WEBUI_KEYSETS);
+  source->AddResourcePath("main.css", IDR_KEYBOARD_WEBUI_MAIN_CSS);
 
   return source;
 }

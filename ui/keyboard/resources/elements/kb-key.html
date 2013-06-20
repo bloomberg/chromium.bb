@@ -1,0 +1,56 @@
+<!--
+  -- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
+<element name="kb-key" attributes="toKeyset char repeat" on-pointerdown="down"
+    on-pointerup="up">
+  <template>
+    <style>
+      @host {
+        * {
+          -webkit-box-flex: 1;
+          display: -webkit-box;
+          position: relative;
+          background-position: center center;
+          background-repeat: no-repeat;
+          background-size: contain;
+        }
+      }
+      .key {
+        bottom: 0;
+        left: 0;
+        height: 1.2em;
+        margin: auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+        text-align: center;
+      }
+    </style>
+    <div id="key" class="key">
+      <content></content>
+    </div>
+  </template>
+  <script>
+    Polymer.register(this, {
+      repeat: false,
+      down: function(event) {
+        var detail = {
+            char: this.char || this.textContent,
+            toKeyset: this.toKeyset,
+            repeat: this.repeat
+        };
+        this.send('key-down', detail);
+      },
+      up: function(event) {
+        var detail = {
+            char: this.char || this.textContent,
+            toKeyset: this.toKeyset
+        };
+        this.send('key-up', detail);
+      }
+    });
+  </script>
+</element>

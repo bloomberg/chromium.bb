@@ -1,0 +1,28 @@
+<!--
+  -- Copyright (c) 2013 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
+<element name="kb-row">
+  <template>
+    <style>
+      @host {
+        * {
+           -webkit-box-flex: 1;
+           display: -webkit-box;
+           text-align: center;
+           margin-right: 5px;
+           margin-top: 5px;
+        }
+      }
+      content::-webkit-distributed(kb-key) {
+        -webkit-flex: 1 auto;
+      }
+    </style>
+    <content select="*"></content>
+  </template>
+  <script>
+    Polymer.register(this);
+  </script>
+</element>
