@@ -856,11 +856,10 @@ CustomElementRegistry* Document::ensureCustomElementRegistry()
     return m_registry.get();
 }
 
-HTMLImportsController* Document::ensureImports()
+void Document::setImports(PassRefPtr<HTMLImportsController> imports)
 {
-    if (!m_imports)
-        m_imports = HTMLImportsController::create(this);
-    return m_imports.get();
+    ASSERT(!m_imports);
+    m_imports = imports;
 }
 
 void Document::didLoadAllImports()

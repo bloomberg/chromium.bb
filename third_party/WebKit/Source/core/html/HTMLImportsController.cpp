@@ -71,21 +71,30 @@ void LinkImport::process()
         return;
 
     // FIXME(morrita): Should take care of sub-imports whose document doesn't have frame.
-    if (!m_owner->document()->frame())
+    if (!m_owner->document()->frame() && !m_owner->document()->imports())
         return;
 
     LinkRequestBuilder builder(m_owner);
     if (!builder.isValid())
         return;
 
-    HTMLImportsController* controller = m_owner->document()->ensureImports();
+    HTMLImportsController* controller = m_owner->document()->imports();
+    if (!controller) {
+        ASSERT(m_owner->document()->frame()); // The document should be the master.
+        m_owner->document()->setImports(HTMLImportsController::create(m_owner->document()));
+        controller = m_owner->document()->imports();
+    }
+
     if (RefPtr<HTMLImportLoader> found = controller->findLinkFor(builder.url())) {
         m_loader = found;
         return;
     }
 
     CachedResourceRequest request = builder.build(true);
-    CachedResourceHandle<CachedScript> resource = m_owner->document()->cachedResourceLoader()->requestScript(request);
+    CachedResourceHandle<CachedScript> resource = controller->cachedResourceLoader()->requestScript(request);
+    if (!resource)
+        return;
+
     m_loader = HTMLImportLoader::create(controller, builder.url(), resource);
 }
 
@@ -150,6 +159,7 @@ HTMLImportLoader::State HTMLImportLoader::finish()
 
     // FIXME(morrita): This should be done in incremental way.
     m_importedDocument = HTMLDocument::create(0, m_resource->response().url());
+    m_importedDocument->setImports(m_controller);
     m_importedDocument->setContent(m_resource->script());
 
     return StateReady;
@@ -169,9 +179,9 @@ void HTMLImportLoader::importDestroyed()
 }
 
 
-PassOwnPtr<HTMLImportsController> HTMLImportsController::create(Document* master)
+PassRefPtr<HTMLImportsController> HTMLImportsController::create(Document* master)
 {
-    return adoptPtr(new HTMLImportsController(master));
+    return adoptRef(new HTMLImportsController(master));
 }
 
 HTMLImportsController::HTMLImportsController(Document* master)
@@ -205,7 +215,7 @@ void HTMLImportsController::didLoad()
 PassRefPtr<HTMLImportLoader> HTMLImportsController::findLinkFor(const KURL& url) const
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
-        if (m_imports[i]->url() == url)
+        if (equalIgnoringFragmentIdentifier(m_imports[i]->url(), url))
             return m_imports[i];
     }
 
@@ -215,6 +225,11 @@ PassRefPtr<HTMLImportLoader> HTMLImportsController::findLinkFor(const KURL& url)
 SecurityOrigin* HTMLImportsController::securityOrigin() const
 {
     return m_master->securityOrigin();
+}
+
+CachedResourceLoader* HTMLImportsController::cachedResourceLoader() const
+{
+    return m_master->cachedResourceLoader();
 }
 
 bool HTMLImportsController::haveLoaded() const

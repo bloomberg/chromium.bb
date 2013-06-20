@@ -1027,7 +1027,7 @@ public:
     CustomElementRegistry* registry() const { return m_registry.get(); }
     CustomElementRegistry* ensureCustomElementRegistry();
 
-    HTMLImportsController* ensureImports();
+    void setImports(PassRefPtr<HTMLImportsController>);
     HTMLImportsController* imports() const { return m_imports.get(); }
     bool haveImportsLoaded() const;
     void didLoadAllImports();
@@ -1371,7 +1371,7 @@ private:
     OwnPtr<TextAutosizer> m_textAutosizer;
 
     RefPtr<CustomElementRegistry> m_registry;
-    OwnPtr<HTMLImportsController> m_imports;
+    RefPtr<HTMLImportsController> m_imports;
 
     bool m_scheduledTasksAreSuspended;
     

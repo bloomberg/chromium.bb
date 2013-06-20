@@ -40,6 +40,7 @@
 
 namespace WebCore {
 
+class CachedResourceLoader;
 class HTMLImportLoader;
 class HTMLImportsController;
 
@@ -101,10 +102,10 @@ private:
 };
 
 
-class HTMLImportsController {
+class HTMLImportsController : public RefCounted<HTMLImportsController> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<HTMLImportsController> create(Document*);
+    static PassRefPtr<HTMLImportsController> create(Document*);
 
     explicit HTMLImportsController(Document*);
     virtual ~HTMLImportsController();
@@ -113,6 +114,7 @@ public:
     void showSecurityErrorMessage(const String&);
     PassRefPtr<HTMLImportLoader> findLinkFor(const KURL&) const;
     SecurityOrigin* securityOrigin() const;
+    CachedResourceLoader* cachedResourceLoader() const;
     bool haveLoaded() const;
     void didLoad();
 

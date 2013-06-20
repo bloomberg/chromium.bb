@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("This ensures that @import doesn't work with headless documents.")
+window.jsTestIsAsync = true;
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "resources/root.html");
+xhr.responseType = 'document';
+xhr.send(null);
+xhr.onload = function() {
+    shouldBeNull("xhr.response.getElementById('hello').import");
+    finishJSTest();
+};
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>

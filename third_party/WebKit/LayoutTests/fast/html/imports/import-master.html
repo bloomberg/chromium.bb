@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<link id="master" rel="import" href="import-master.html">
+</head>
+<body>
+<h1 style="dipslay: none;">Importing Master</h1>
+<script>
+shouldBe("master.import.querySelector('h1').innerHTML", "'Importing Master'");
+shouldBe("master.import.querySelector('#master').import", "master.import");
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>
