@@ -1,5 +1,10 @@
 <html>
   <script>
+    function finish()
+    {
+        document.body.outerHTML = 'PASS';
+        testRunner.notifyDone();
+    }
     function runTest()
     {
       if (!window.eventSender)
@@ -18,8 +23,10 @@
       if (++numFramesLoaded == 2)
         runTest();
     }
-    if (window.testRunner)
+    if (window.testRunner) {
+        testRunner.dumpAsText();
         testRunner.waitUntilDone();
+    }
   </script>
   <frameset rows="100px, 100px, *">
     <frame onload="frameLoaded()" src="resources/standalone-image-drag-to-editable-frame.html">

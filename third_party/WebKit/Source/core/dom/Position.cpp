@@ -843,7 +843,7 @@ bool Position::hasRenderedNonAnonymousDescendantsWithHeight(RenderObject* render
 
 bool Position::nodeIsUserSelectNone(Node* node)
 {
-    return node && node->renderer() && node->renderer()->style()->userSelect() == SELECT_NONE;
+    return node && node->renderer() && node->renderer()->style()->userSelect() == SELECT_NONE && node->renderer()->style()->userModify() == READ_ONLY;
 }
 
 ContainerNode* Position::findParent(const Node* node)

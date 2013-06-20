@@ -1643,10 +1643,15 @@ void RenderObject::showRenderTreeAndMark(const RenderObject* markedObject1, cons
 
 #endif // NDEBUG
 
+static bool shouldUseSelectionColor(const RenderStyle& style)
+{
+    return style.userSelect() != SELECT_NONE || style.userModify() != READ_ONLY;
+}
+
 Color RenderObject::selectionBackgroundColor() const
 {
     Color color;
-    if (style()->userSelect() != SELECT_NONE) {
+    if (shouldUseSelectionColor(*style())) {
         RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
         if (pseudoStyle && pseudoStyle->visitedDependentColor(CSSPropertyBackgroundColor).isValid())
             color = pseudoStyle->visitedDependentColor(CSSPropertyBackgroundColor).blendWithWhite();
@@ -1664,7 +1669,7 @@ Color RenderObject::selectionColor(int colorProperty) const
     Color color;
     // If the element is unselectable, or we are only painting the selection,
     // don't override the foreground color with the selection foreground color.
-    if (style()->userSelect() == SELECT_NONE
+    if (!shouldUseSelectionColor(*style())
         || (frame()->view()->paintBehavior() & PaintBehaviorSelectionOnly))
         return color;
 

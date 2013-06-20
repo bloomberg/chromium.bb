@@ -3,6 +3,11 @@ This layout test is checks that we don't crash when a stand alone image is dragg
 <a href='rdar://problem/5021127'>rdar://problem/5021127</a>
 </div></body>
 <script>
+function finish()
+{
+    window.parent.finish();
+}
+
 function waitForImageLoad()
 {
     if (!window.testRunner)
@@ -10,10 +15,10 @@ function waitForImageLoad()
 
     var img = document.body.getElementsByTagName("img")[0];
     if (img.width != 0)
-        testRunner.notifyDone();
+        finish();
     else {
         img.addEventListener("load", function() {
-            testRunner.notifyDone();
+            finish();
         }, false);
     }
 }
