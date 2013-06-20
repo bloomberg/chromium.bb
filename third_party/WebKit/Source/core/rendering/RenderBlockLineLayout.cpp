@@ -2643,6 +2643,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
     // this to detect when we encounter a second space so we know we have to terminate
     // a run.
     bool currentCharacterIsSpace = false;
+    bool currentCharacterShouldCollapseIfPreWap = false;
     TrailingObjects trailingObjects;
 
     InlineIterator lBreak = resolver.position();
@@ -2774,7 +2775,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                     && shouldSkipWhitespaceAfterStartObject(m_block, current.m_obj, lineMidpointState)) {
                     // Like with list markers, we start ignoring spaces to make sure that any
                     // additional spaces we see will be discarded.
-                    currentCharacterIsSpace = true;
+                    currentCharacterShouldCollapseIfPreWap = currentCharacterIsSpace = true;
                     ignoringSpaces = true;
                 }
             }
@@ -2797,7 +2798,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
 
             lineInfo.setEmpty(false, m_block, &width);
             ignoringSpaces = false;
-            currentCharacterIsSpace = false;
+            currentCharacterShouldCollapseIfPreWap = currentCharacterIsSpace = false;
             trailingObjects.clear();
 
             // Optimize for a common case. If we can't find whitespace after the list
@@ -2807,7 +2808,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                 if (blockStyle->collapseWhiteSpace() && shouldSkipWhitespaceAfterStartObject(m_block, current.m_obj, lineMidpointState)) {
                     // Like with inline flows, we start ignoring spaces to make sure that any
                     // additional spaces we see will be discarded.
-                    currentCharacterIsSpace = true;
+                    currentCharacterShouldCollapseIfPreWap = currentCharacterIsSpace = true;
                     ignoringSpaces = true;
                 }
                 if (toRenderListMarker(current.m_obj)->isInside())
@@ -2888,8 +2889,9 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
             UChar secondToLastCharacter = renderTextInfo.m_lineBreakIterator.secondToLastCharacter();
             for (; current.m_pos < t->textLength(); current.fastIncrementInTextNode()) {
                 bool previousCharacterIsSpace = currentCharacterIsSpace;
+                bool previousCharacterShouldCollapseIfPreWap = currentCharacterShouldCollapseIfPreWap;
                 UChar c = current.current();
-                currentCharacterIsSpace = c == ' ' || c == '\t' || (!preserveNewline && (c == '\n'));
+                currentCharacterShouldCollapseIfPreWap = currentCharacterIsSpace = c == ' ' || c == '\t' || (!preserveNewline && (c == '\n'));
 
                 if (!collapseWhiteSpace || !currentCharacterIsSpace)
                     lineInfo.setEmpty(false, m_block, &width);
@@ -3073,7 +3075,7 @@ InlineIterator RenderBlock::LineBreaker::nextSegmentBreak(InlineBidiResolver& re
                     ignoreStart.m_pos = current.m_pos;
                 }
 
-                if (!currentCharacterIsSpace && previousCharacterIsSpace) {
+                if (!currentCharacterIsSpace && previousCharacterShouldCollapseIfPreWap) {
                     if (autoWrap && currentStyle->breakOnlyAfterWhiteSpace())
                         lBreak.moveTo(current.m_obj, current.m_pos, current.m_nextBreakablePosition);
                 }
