@@ -389,6 +389,7 @@ private:
 
     PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*);
     void loadPendingImages();
+    void loadPendingShapeImage(ShapeValue*);
 
     struct MatchedPropertiesCacheItem {
         void reportMemoryUsage(MemoryObjectInfo*) const;

@@ -60,14 +60,14 @@ StyleImage* CSSImageValue::cachedOrPendingImage()
     return m_image.get();
 }
 
-StyleCachedImage* CSSImageValue::cachedImage(CachedResourceLoader* loader)
+StyleCachedImage* CSSImageValue::cachedImage(CachedResourceLoader* loader, const ResourceLoaderOptions& options)
 {
     ASSERT(loader);
 
     if (!m_accessedImage) {
         m_accessedImage = true;
 
-        CachedResourceRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? cachedResourceRequestInitiators().css : m_initiatorName);
+        CachedResourceRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? cachedResourceRequestInitiators().css : m_initiatorName, options);
         if (CachedResourceHandle<CachedImage> cachedImage = loader->requestImage(request))
             m_image = StyleCachedImage::create(cachedImage.get());
     }

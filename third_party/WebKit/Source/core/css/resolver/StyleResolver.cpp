@@ -3560,6 +3560,21 @@ PassRefPtr<StyleImage> StyleResolver::loadPendingImage(StylePendingImage* pendin
     return 0;
 }
 
+void StyleResolver::loadPendingShapeImage(ShapeValue* shapeValue)
+{
+    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, options, (SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, DoSecurityCheck, CheckContentSecurityPolicy, RestrictToSameOrigin));
+
+    StyleImage* image = shapeValue->image();
+    if (!image)
+        return;
+
+    StylePendingImage* pendingImage = static_cast<StylePendingImage*>(image);
+    CSSImageValue* cssImageValue =  pendingImage->cssImageValue();
+    CachedResourceLoader* cachedResourceLoader = m_state.document()->cachedResourceLoader();
+
+    shapeValue->setImage(cssImageValue->cachedImage(cachedResourceLoader, options));
+}
+
 void StyleResolver::loadPendingImages()
 {
     if (m_state.pendingImageProperties().isEmpty())
@@ -3635,12 +3650,10 @@ void StyleResolver::loadPendingImages()
             break;
         }
         case CSSPropertyWebkitShapeInside:
-            if (m_state.style()->shapeInside() && m_state.style()->shapeInside()->image() && m_state.style()->shapeInside()->image()->isPendingImage())
-                m_state.style()->shapeInside()->setImage(loadPendingImage(static_cast<StylePendingImage*>(m_state.style()->shapeInside()->image())));
+            loadPendingShapeImage(m_state.style()->shapeInside());
             break;
         case CSSPropertyWebkitShapeOutside:
-            if (m_state.style()->shapeOutside() && m_state.style()->shapeOutside()->image() && m_state.style()->shapeOutside()->image()->isPendingImage())
-                m_state.style()->shapeOutside()->setImage(loadPendingImage(static_cast<StylePendingImage*>(m_state.style()->shapeOutside()->image())));
+            loadPendingShapeImage(m_state.style()->shapeOutside());
             break;
         default:
             ASSERT_NOT_REACHED();
