@@ -919,3 +919,16 @@
    fun:gfx::NativeViewGLSurfaceOSMesa::Resize
    fun:webkit::gpu::GLInProcessContext::OnResizeView
 }
+{
+   bug_251827_a
+   Heapcheck:Leak
+   fun:MakePlanarBuffer
+   fun:media::AudioBufferTest*
+}
+{
+   bug_251827_b
+   Heapcheck:Leak
+   fun:MakeInterleavedBuffer
+   fun:media::AudioBufferTest*
+}
+
