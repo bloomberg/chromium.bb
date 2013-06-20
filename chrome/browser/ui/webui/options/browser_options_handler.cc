@@ -1318,10 +1318,11 @@ void BrowserOptionsHandler::CancelProfileRegistration(bool user_initiated) {
 
 void BrowserOptionsHandler::ObserveThemeChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
+  bool profile_is_managed = ManagedUserService::ProfileIsManaged(profile);
 #if defined(TOOLKIT_GTK)
   GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
   bool is_gtk_theme = theme_service->UsingNativeTheme();
-  base::FundamentalValue gtk_enabled(!is_gtk_theme);
+  base::FundamentalValue gtk_enabled(!is_gtk_theme && !profile_is_managed);
   web_ui()->CallJavascriptFunction("BrowserOptions.setGtkThemeButtonEnabled",
                                    gtk_enabled);
 #else
@@ -1330,14 +1331,16 @@ void BrowserOptionsHandler::ObserveThemeChanged() {
 #endif
 
   bool is_classic_theme = !is_gtk_theme && theme_service->UsingDefaultTheme();
-  base::FundamentalValue enabled(!is_classic_theme);
+  base::FundamentalValue enabled(!is_classic_theme && !profile_is_managed);
   web_ui()->CallJavascriptFunction("BrowserOptions.setThemesResetButtonEnabled",
                                    enabled);
 }
 
 void BrowserOptionsHandler::ThemesReset(const ListValue* args) {
-  content::RecordAction(UserMetricsAction("Options_ThemesReset"));
   Profile* profile = Profile::FromWebUI(web_ui());
+  if (ManagedUserService::ProfileIsManaged(profile))
+    return;
+  content::RecordAction(UserMetricsAction("Options_ThemesReset"));
   ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
 }
 

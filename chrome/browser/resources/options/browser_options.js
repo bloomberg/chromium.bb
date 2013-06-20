@@ -200,6 +200,10 @@ cr.define('options', function() {
           $('profiles-create').disabled = true;
           $('profiles-delete').disabled = true;
           $('profiles-list').canDeleteItems = false;
+          if ($('themes-GTK-button'))
+            $('themes-GTK-button').disabled = true;
+          $('themes-reset').disabled = true;
+          $('themes-gallery').disabled = true;
         }
       }
 
