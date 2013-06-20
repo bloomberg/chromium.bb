@@ -5997,11 +5997,13 @@ void RenderViewImpl::OnWasHidden() {
 
 #if defined(OS_ANDROID)
   // Inform WebMediaPlayerManagerAndroid to release all media player resources.
-  // unless some audio is playing.
+  // unless some audio is playing or the app wants to retain video playback.
   // If something is in progress the resource will not be freed, it will
   // only be freed once the tab is destroyed or if the user navigates away
   // via WebMediaPlayerAndroid::Destroy
-  media_player_manager_->ReleaseMediaResources();
+  media_player_manager_->ReleaseMediaResources(
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRetainVideoPlaybackOnLostFocus));
 
 #if defined(ENABLE_WEBRTC)
   RenderThreadImpl::current()->video_capture_impl_manager()->

@@ -33,15 +33,19 @@ void WebMediaPlayerManagerAndroid::UnregisterMediaPlayer(int player_id) {
   media_players_.erase(player_id);
 }
 
-void WebMediaPlayerManagerAndroid::ReleaseMediaResources() {
+void WebMediaPlayerManagerAndroid::ReleaseMediaResources(
+    bool retain_video_playback) {
   std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
   for (player_it = media_players_.begin();
       player_it != media_players_.end(); ++player_it) {
     WebMediaPlayerAndroid* player = player_it->second;
 
-    // Do not release if an audio track is still playing
-    if (player && (player->paused() || player->hasVideo()))
+    // Do not release if an audio track is still playing or the app wants to
+    // retain video playback.
+    if (player &&
+        (player->paused() || (!retain_video_playback && player->hasVideo()))) {
       player->ReleaseMediaResources();
+    }
   }
 }
 
