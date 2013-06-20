@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -330,6 +330,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   void DeleteScaledSnapshotTexture();
 
   void SendGestureEvent(const WebKit::WebGestureEvent& event);
+
+  // Checks if there there is a corresponding renderer process and updates
+  // |tab_crashed_| accordingly.
+  void UpdateTabCrashedFlag();
 
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;

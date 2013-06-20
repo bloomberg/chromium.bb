@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,11 +173,9 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       "A ContentViewCoreImpl should be created with a valid WebContents.";
 
   // When a tab is restored (from a saved state), it does not have a renderer
-  // process.  We treat it like the tab is crashed. If the content is loaded
-  // when the tab is shown, tab_crashed_ will be reset.  Since
-  // RenderWidgetHostView is associated with the lifetime of the renderer
-  // process, we use it to test whether there is a renderer process.
-  tab_crashed_ = !(web_contents->GetRenderWidgetHostView());
+  // process. We treat it like the tab is crashed. If the content is loaded
+  // when the tab is shown, tab_crashed_ will be reset.
+  UpdateTabCrashedFlag();
 
   // TODO(leandrogracia): make use of the hardware_accelerated argument.
 
@@ -345,6 +343,9 @@ void ContentViewCoreImpl::OnShow(JNIEnv* env, jobject obj) {
 
 void ContentViewCoreImpl::Show() {
   GetWebContents()->WasShown();
+  // Displaying WebContents may trigger a lazy reload, spawning a new renderer
+  // for the tab.
+  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::Hide() {
@@ -358,7 +359,7 @@ void ContentViewCoreImpl::OnTabCrashed() {
     return;
   Java_ContentViewCore_resetVSyncNotification(env, obj.obj());
 
-  // if tab_crashed_ is already true, just return. e.g. if two tabs share the
+  // If |tab_crashed_| is already true, just return. e.g. if two tabs share the
   // render process, this will be called for each tab when the render process
   // crashed. If user reload one tab, a new render process is created. It can be
   // shared by the other tab. But if user closes the tab before reload the other
@@ -707,7 +708,7 @@ void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
 void ContentViewCoreImpl::LoadUrl(
     NavigationController::LoadURLParams& params) {
   GetWebContents()->GetController().LoadURLWithParams(params);
-  tab_crashed_ = false;
+  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::SetNeedsBeginFrame(bool enabled) {
@@ -957,6 +958,12 @@ void ContentViewCoreImpl::SendGestureEvent(
     rwhv->SendGestureEvent(event);
 }
 
+void ContentViewCoreImpl::UpdateTabCrashedFlag() {
+  // Since RenderWidgetHostView is associated with the lifetime of the renderer
+  // process, we use it to test whether there is a renderer process.
+  tab_crashed_ = !(web_contents_->GetRenderWidgetHostView());
+}
+
 void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                       jfloat x, jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
@@ -1143,22 +1150,24 @@ jboolean ContentViewCoreImpl::CanGoToOffset(JNIEnv* env, jobject obj,
 
 void ContentViewCoreImpl::GoBack(JNIEnv* env, jobject obj) {
   web_contents_->GetController().GoBack();
-  tab_crashed_ = false;
+  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::GoForward(JNIEnv* env, jobject obj) {
   web_contents_->GetController().GoForward();
-  tab_crashed_ = false;
+  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::GoToOffset(JNIEnv* env, jobject obj, jint offset) {
   web_contents_->GetController().GoToOffset(offset);
+  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::GoToNavigationIndex(JNIEnv* env,
                                               jobject obj,
                                               jint index) {
   web_contents_->GetController().GoToIndex(index);
+  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::StopLoading(JNIEnv* env, jobject obj) {
@@ -1172,7 +1181,7 @@ void ContentViewCoreImpl::Reload(JNIEnv* env, jobject obj) {
     web_contents_->GetController().LoadIfNecessary();
   else
     web_contents_->GetController().Reload(true);
-  tab_crashed_ = false;
+  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::CancelPendingReload(JNIEnv* env, jobject obj) {
