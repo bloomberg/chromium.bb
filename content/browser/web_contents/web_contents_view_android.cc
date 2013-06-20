@@ -63,15 +63,15 @@ void WebContentsViewAndroid::NotifyExternalSurface(
 #endif
 
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {
-  return content_view_core_->GetViewAndroid();
+  return content_view_core_ ? content_view_core_->GetViewAndroid() : NULL;
 }
 
 gfx::NativeView WebContentsViewAndroid::GetContentNativeView() const {
-  return content_view_core_->GetViewAndroid();
+  return content_view_core_ ? content_view_core_->GetViewAndroid() : NULL;
 }
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
-  return content_view_core_->GetWindowAndroid();
+  return content_view_core_ ? content_view_core_->GetWindowAndroid() : NULL;
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
