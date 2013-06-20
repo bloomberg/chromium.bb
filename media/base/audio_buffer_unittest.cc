@@ -30,9 +30,9 @@ static scoped_refptr<AudioBuffer> MakeInterleavedBuffer(
   //   start + channels * increment
   //   start + 2 * channels * increment, ...
   int buffer_size = frames * channels * sizeof(T);
-  uint8* memory = new uint8[buffer_size];
-  uint8* data[] = { memory };
-  T* buffer = reinterpret_cast<T*>(memory);
+  scoped_ptr<uint8[]> memory(new uint8[buffer_size]);
+  uint8* data[] = { memory.get() };
+  T* buffer = reinterpret_cast<T*>(memory.get());
   for (int i = 0; i < frames * channels; ++i) {
     buffer[i] = start;
     start += increment;
@@ -62,12 +62,12 @@ static scoped_refptr<AudioBuffer> MakePlanarBuffer(
   //   start + frames * increment
   //   start + (frames + 1) * increment
   //   start + (frames + 2) * increment, ...
-  uint8** data = new uint8*[channels];
   int buffer_size = frames * sizeof(T);
+  scoped_ptr<uint8*[]> data(new uint8*[channels]);
+  scoped_ptr<uint8[]> memory(new uint8[channels * buffer_size]);
   for (int i = 0; i < channels; ++i) {
-    uint8* memory = new uint8[buffer_size];
-    data[i] = memory;
-    T* buffer = reinterpret_cast<T*>(memory);
+    data.get()[i] = memory.get() + i * buffer_size;
+    T* buffer = reinterpret_cast<T*>(data.get()[i]);
     for (int j = 0; j < frames; ++j) {
       buffer[j] = start;
       start += increment;
@@ -76,7 +76,7 @@ static scoped_refptr<AudioBuffer> MakePlanarBuffer(
   // Duration is 1 second per frame (for simplicity).
   base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
   return AudioBuffer::CopyFrom(
-      format, channels, frames, data, start_time, duration);
+      format, channels, frames, data.get(), start_time, duration);
 }
 
 static void VerifyResult(float* channel_data,
