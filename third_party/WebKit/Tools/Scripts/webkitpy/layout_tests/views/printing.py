@@ -203,13 +203,18 @@ class Printer(object):
                 unexpected_slow_tests.append(test_tuple)
 
         self._print_debug("")
-        self._print_test_list_timing("%s slowest tests that are not marked as SLOW and did not timeout/crash:" %
-            NUM_SLOW_TESTS_TO_LOG, unexpected_slow_tests)
-        self._print_debug("")
-        self._print_test_list_timing("Tests marked as SLOW:", slow_tests)
-        self._print_debug("")
-        self._print_test_list_timing("Tests that timed out or crashed:", timeout_or_crash_tests)
-        self._print_debug("")
+        if unexpected_slow_tests:
+            self._print_test_list_timing("%s slowest tests that are not marked as SLOW and did not timeout/crash:" %
+                NUM_SLOW_TESTS_TO_LOG, unexpected_slow_tests)
+            self._print_debug("")
+
+        if slow_tests:
+            self._print_test_list_timing("Tests marked as SLOW:", slow_tests)
+            self._print_debug("")
+
+        if timeout_or_crash_tests:
+            self._print_test_list_timing("Tests that timed out or crashed:", timeout_or_crash_tests)
+            self._print_debug("")
 
     def _print_test_list_timing(self, title, test_list):
         self._print_debug(title)
@@ -224,16 +229,22 @@ class Printer(object):
             stats[result.shard_name]['num_tests'] += 1
             stats[result.shard_name]['total_time'] += result.total_run_time
 
+        min_seconds_to_print = 15
+
         timings = []
         for directory in stats:
-            timings.append((directory, round(stats[directory]['total_time'], 1), stats[directory]['num_tests']))
+            rounded_time = round(stats[directory]['total_time'], 1)
+            if rounded_time > min_seconds_to_print:
+                timings.append((directory, rounded_time, stats[directory]['num_tests']))
+
+        if not timings:
+            return
+
         timings.sort()
 
         self._print_debug("Time to process slowest subdirectories:")
-        min_seconds_to_print = 10
         for timing in timings:
-            if timing[0] > min_seconds_to_print:
-                self._print_debug("  %s took %s seconds to run %s tests." % timing)
+            self._print_debug("  %s took %s seconds to run %s tests." % timing)
         self._print_debug("")
 
     def _print_statistics_for_test_timings(self, title, timings):

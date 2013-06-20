@@ -122,6 +122,39 @@ class  Testprinter(unittest.TestCase):
         printer.print_config('/tmp')
         self.assertNotIn('Baseline search path: test-mac-leopard -> test-mac-snowleopard -> generic', err.getvalue())
 
+    def test_print_directory_timings(self):
+        printer, err = self.get_printer()
+        printer._options.debug_rwt_logging = True
+
+        class MockRunResults:
+            results_by_name = {}
+
+        class MockResult:
+            def __init__(self, shard_name, total_run_time):
+                self.shard_name = shard_name
+                self.total_run_time = total_run_time
+
+        run_results = MockRunResults()
+        run_results.results_by_name = {
+            "slowShard": MockResult("slowShard", 16),
+            "borderlineShard": MockResult("borderlineShard", 15),
+            "fastShard": MockResult("fastShard", 1),
+        }
+
+        printer._print_directory_timings(run_results)
+        self.assertWritten(err, ['Time to process slowest subdirectories:\n', '  slowShard took 16.0 seconds to run 1 tests.\n', '\n'])
+
+        printer, err = self.get_printer()
+        printer._options.debug_rwt_logging = True
+
+        run_results.results_by_name = {
+            "borderlineShard": MockResult("borderlineShard", 15),
+            "fastShard": MockResult("fastShard", 1),
+        }
+
+        printer._print_directory_timings(run_results)
+        self.assertWritten(err, [])
+
     def test_print_one_line_summary(self):
         printer, err = self.get_printer()
         printer._print_one_line_summary(1, 1, 0)
