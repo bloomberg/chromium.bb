@@ -1792,13 +1792,13 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidChangeScrollOffset)
 
 // Notifies that the pinned-to-side state of the content changed.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidChangeScrollOffsetPinningForMainFrame,
-                    bool /* has_horizontal_scrollbar */,
-                    bool /* has_vertical_scrollbar */)
+                    bool /* pinned_to_left */,
+                    bool /* pinned_to_right */)
 
 // Notifies that the scrollbars-visible state of the content changed.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_DidChangeScrollbarsForMainFrame,
-                    bool /* pinned_to_left */,
-                    bool /* pinned_to_right */)
+                    bool /* has_horizontal_scrollbar */,
+                    bool /* has_vertical_scrollbar */)
 
 // Notifies that the number of JavaScript scroll handlers changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeNumWheelEvents,
