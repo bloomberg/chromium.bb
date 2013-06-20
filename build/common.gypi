@@ -818,6 +818,7 @@
     'use_system_libjpeg%': '<(use_system_libjpeg)',
     'android_webview_build%': '<(android_webview_build)',
     'gyp_managed_install%': 0,
+    'create_standalone_apk%': 1,
     'google_tv%': '<(google_tv)',
     'enable_app_list%': '<(enable_app_list)',
     'use_default_render_theme%': '<(use_default_render_theme)',
