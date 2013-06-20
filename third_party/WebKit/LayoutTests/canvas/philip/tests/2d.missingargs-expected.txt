@@ -1,2 +1,1 @@
-Failed assertion: expected exception of type TypeError, got: IndexSizeError: Index or size was negative, or greater than the allowed value.
-Failed assertion: expected exception of type TypeError, got: SyntaxError: An invalid or illegal string was specified.
+Passed
