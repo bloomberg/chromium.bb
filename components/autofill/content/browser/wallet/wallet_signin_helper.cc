@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -214,15 +215,19 @@ void WalletSigninHelper::OnURLFetchComplete(
       break;
 
     case PASSIVE_EXECUTING_SIGNIN:
-      url_fetcher_.reset();
-      state_ = PASSIVE_FETCHING_USERINFO;
-      StartFetchingUserNameFromSession();
+      if (ParseSignInResponse()) {
+        url_fetcher_.reset();
+        state_ = PASSIVE_FETCHING_USERINFO;
+        StartFetchingUserNameFromSession();
+      }
       break;
 
     case AUTOMATIC_EXECUTING_SIGNIN:
-      state_ = IDLE;
-      url_fetcher_.reset();
-      delegate_->OnAutomaticSigninSuccess(username_);
+      if (ParseSignInResponse()) {
+        url_fetcher_.reset();
+        state_ = IDLE;
+        delegate_->OnAutomaticSigninSuccess(username_);
+      }
       break;
 
     default:
@@ -269,25 +274,47 @@ void WalletSigninHelper::ProcessGetAccountInfoResponseAndFinish() {
   }
 }
 
+bool WalletSigninHelper::ParseSignInResponse() {
+  if (!url_fetcher_) {
+    NOTREACHED();
+    return false;
+  }
+
+  std::string data;
+  if (!url_fetcher_->GetResponseAsString(&data)) {
+    DVLOG(1) << "failed to GetResponseAsString";
+    OnOtherError();
+    return false;
+  }
+
+  if (!LowerCaseEqualsASCII(data, "yes")) {
+    OnServiceError(
+        GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP));
+    return false;
+  }
+
+  return true;
+}
+
 bool WalletSigninHelper::ParseGetAccountInfoResponse(
     const net::URLFetcher* fetcher, std::string* email) {
   DCHECK(email);
 
   std::string data;
   if (!fetcher->GetResponseAsString(&data)) {
-    LOG(ERROR) << "failed to GetResponseAsString";
+    DVLOG(1) << "failed to GetResponseAsString";
     return false;
   }
 
   scoped_ptr<base::Value> value(base::JSONReader::Read(data));
   if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY) {
-    LOG(ERROR) << "failed to parse JSON response";
+    DVLOG(1) << "failed to parse JSON response";
     return false;
   }
 
   DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
   if (!dict->GetStringWithoutPathExpansion("email", email)) {
-    LOG(ERROR) << "no email in JSON response";
+    DVLOG(1) << "no email in JSON response";
     return false;
   }
 

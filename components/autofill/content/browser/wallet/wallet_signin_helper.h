@@ -108,6 +108,11 @@ class WalletSigninHelper : public GaiaAuthConsumer,
   // and calls the delegate callbacks on success/failure.
   void ProcessGetAccountInfoResponseAndFinish();
 
+  // Attempts to parse a response from the Online Wallet sign-in.
+  // Returns true if the response is correct and the sign-in has succeeded.
+  // Otherwise, it calls OnServiceError() and returns false.
+  bool ParseSignInResponse();
+
   // Attempts to parse the GetAccountInfo response from the server.
   // Returns true on success; the obtained email address is stored into |email|.
   bool ParseGetAccountInfoResponse(const net::URLFetcher* fetcher,
