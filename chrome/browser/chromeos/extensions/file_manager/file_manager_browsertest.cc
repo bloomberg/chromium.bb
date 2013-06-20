@@ -439,8 +439,9 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive")));
 
+// TODO(hirono): Fix this test. crbug.com/247299
 INSTANTIATE_TEST_CASE_P(
-    OpenSpecialTypes,
+    DISABLED_OpenSpecialTypes,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
