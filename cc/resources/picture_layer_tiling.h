@@ -12,7 +12,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/hash_pair.h"
 #include "cc/base/region.h"
 #include "cc/base/tiling_data.h"
 #include "cc/resources/tile.h"

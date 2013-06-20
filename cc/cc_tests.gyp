@@ -13,7 +13,6 @@
       'animation/timing_function_unittest.cc',
       'animation/transform_operations_unittest.cc',
       'base/float_quad_unittest.cc',
-      'base/hash_pair_unittest.cc',
       'base/math_util_unittest.cc',
       'base/region_unittest.cc',
       'base/scoped_ptr_vector_unittest.cc',

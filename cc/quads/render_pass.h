@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/hash_pair.h"
 #include "cc/base/scoped_ptr_hash_map.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "skia/ext/refptr.h"
@@ -111,6 +110,7 @@ class CC_EXPORT RenderPass {
  protected:
   RenderPass();
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(RenderPass);
 };
 
@@ -134,7 +134,7 @@ struct hash<cc::RenderPass::Id> {
 #else
 #error define a hash function for your compiler
 #endif  // COMPILER
-}
+}  // namespace BASE_HASH_NAMESPACE
 
 namespace cc {
 typedef ScopedPtrVector<RenderPass> RenderPassList;

@@ -463,6 +463,7 @@
         'callback_unittest.nc',
         'cancelable_callback_unittest.cc',
         'command_line_unittest.cc',
+        'containers/hash_tables_unittest.cc',
         'containers/linked_list_unittest.cc',
         'containers/mru_cache_unittest.cc',
         'containers/small_map_unittest.cc',
