@@ -31,26 +31,24 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
     Config();
     ~Config();
 
+    struct RelayServerConfig {
+      RelayServerConfig();
+      ~RelayServerConfig();
+
+      std::string username;
+      std::string password;
+      std::string server_address;
+      int port;
+      std::string transport_type;
+    };
+
     // STUN server address and port.
     std::string stun_server;
     int stun_server_port;
 
-    // Relay server address and port.
-    std::string relay_server;
-    int relay_server_port;
+    std::vector<RelayServerConfig> relays;
 
-    // Relay server username.
-    std::string relay_username;
-
-    // Relay server password.
-    std::string relay_password;
-
-    // Transport protocol used to communicate with the server.
-    std::string relay_transport_type;
-
-    // When set to true relay is a legacy Google relay (not TURN compliant).
     bool legacy_relay;
-
     // Disable TCP-based transport when set to true.
     bool disable_tcp_transport;
   };
@@ -104,8 +102,23 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
   virtual void GetPortConfigurations() OVERRIDE;
 
  private:
+
+  struct RelayServer {
+    RelayServer();
+    ~RelayServer();
+
+    P2PPortAllocator::Config::RelayServerConfig config;
+    talk_base::SocketAddress resolved_relay_address;
+    scoped_refptr<P2PHostAddressRequest> relay_address_request;
+  };
+
   void ResolveStunServerAddress();
   void OnStunServerAddress(const net::IPAddressNumber& address);
+
+  void ResolveRelayServerAddresses();
+  void OnRelayServerAddressResolved(size_t index,
+                                    const net::IPAddressNumber& address);
+  bool IsRelayAddressesResolved() const;
 
   // This method allocates non-TURN relay sessions.
   void AllocateLegacyRelaySession();
@@ -118,6 +131,8 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
   scoped_refptr<P2PHostAddressRequest> stun_address_request_;
   talk_base::SocketAddress stun_server_address_;
 
+  std::vector<RelayServer> relay_info_;
+
   scoped_ptr<WebKit::WebURLLoader> relay_session_request_;
   int relay_session_attempts_;
   std::string relay_session_response_;
@@ -125,6 +140,7 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
   int relay_udp_port_;
   int relay_tcp_port_;
   int relay_ssltcp_port_;
+  int pending_relay_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PPortAllocatorSession);
 };
