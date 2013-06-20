@@ -1121,6 +1121,7 @@
         'browser/sessions/session_backend_unittest.cc',
         'browser/sessions/session_service_unittest.cc',
         'browser/sessions/session_types_unittest.cc',
+        'browser/local_discovery/service_discovery_client_unittest.cc',
         'browser/shell_integration_unittest.cc',
         'browser/shell_integration_win_unittest.cc',
         'browser/signin/fake_auth_status_provider.cc',
@@ -2470,6 +2471,11 @@
           'sources/': [
             ['exclude', '^browser/extensions/blacklist_unittest.cc'],
           ],
+        }],
+        ['enable_mdns != 1', {
+            'sources!' : [
+              'browser/local_discovery/service_discovery_client_unittest.cc',
+            ],
         }],
       ],
       'target_conditions': [
