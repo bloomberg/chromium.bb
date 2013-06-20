@@ -29,6 +29,8 @@ function doSomeCanvasCalls()
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.getTexParameter(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER);
+    gl.getTexParameter(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER);
 
     var renderbuffer = gl.createRenderbuffer();
     gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);

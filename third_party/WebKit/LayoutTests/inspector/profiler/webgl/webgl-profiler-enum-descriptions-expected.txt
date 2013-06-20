@@ -15,6 +15,8 @@ Tests WebGL enum formatting.
   {Call}  functionName:"texParameteri"  arguments:[TEXTURE_2D,TEXTURE_MAG_FILTER,LINEAR]
   {Call}  functionName:"texParameteri"  arguments:[TEXTURE_2D,TEXTURE_MIN_FILTER,LINEAR_MIPMAP_NEAREST]
   {Call}  functionName:"texImage2D"  arguments:[TEXTURE_2D,0,RGBA,512,512,0,RGBA,UNSIGNED_BYTE,null]
+  {Call}  functionName:"getTexParameter"  arguments:[TEXTURE_2D,TEXTURE_MAG_FILTER]  result:LINEAR
+  {Call}  functionName:"getTexParameter"  arguments:[TEXTURE_2D,TEXTURE_MIN_FILTER]  result:LINEAR_MIPMAP_NEAREST
   {Call}  functionName:"createRenderbuffer"  arguments:[]  result:WebGLRenderbuffer@1
   {Call}  functionName:"bindRenderbuffer"  arguments:[RENDERBUFFER,WebGLRenderbuffer@1]
   {Call}  functionName:"renderbufferStorage"  arguments:[RENDERBUFFER,DEPTH_COMPONENT16,512,512]
