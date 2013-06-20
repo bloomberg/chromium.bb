@@ -29,8 +29,14 @@ void MockBrowsingDataFileSystemHelper::DeleteFileSystemOrigin(
 void MockBrowsingDataFileSystemHelper::AddFileSystem(
     const GURL& origin, bool has_persistent, bool has_temporary,
     bool has_syncable) {
-  response_.push_back(BrowsingDataFileSystemHelper::FileSystemInfo(
-      origin, has_persistent, has_temporary, has_syncable, 0, 0, 0));
+  BrowsingDataFileSystemHelper::FileSystemInfo info(origin);
+  if (has_persistent)
+    info.usage_map[fileapi::kFileSystemTypePersistent] = 0;
+  if (has_temporary)
+    info.usage_map[fileapi::kFileSystemTypeTemporary] = 0;
+  if (has_syncable)
+    info.usage_map[fileapi::kFileSystemTypeSyncable] = 0;
+  response_.push_back(info);
   file_systems_[origin.spec()] = true;
 }
 

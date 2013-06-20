@@ -8,6 +8,7 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -18,6 +19,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "webkit/common/fileapi/file_system_types.h"
 
 namespace {
 
@@ -197,18 +199,20 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 
       const BrowsingDataFileSystemHelper::FileSystemInfo& file_system_info =
           *node.GetDetailedInfo().file_system_info;
+      const fileapi::FileSystemType kPerm = fileapi::kFileSystemTypePersistent;
+      const fileapi::FileSystemType kTemp = fileapi::kFileSystemTypeTemporary;
 
       dict->SetString(kKeyOrigin, file_system_info.origin.spec());
       dict->SetString(kKeyPersistent,
-                      file_system_info.has_persistent ?
+                      ContainsKey(file_system_info.usage_map, kPerm) ?
                           UTF16ToUTF8(ui::FormatBytes(
-                              file_system_info.usage_persistent)) :
+                              file_system_info.usage_map.find(kPerm)->second)) :
                           l10n_util::GetStringUTF8(
                               IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
       dict->SetString(kKeyTemporary,
-                      file_system_info.has_temporary ?
+                      ContainsKey(file_system_info.usage_map, kTemp) ?
                           UTF16ToUTF8(ui::FormatBytes(
-                              file_system_info.usage_temporary)) :
+                              file_system_info.usage_map.find(kTemp)->second)) :
                           l10n_util::GetStringUTF8(
                               IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
       break;
