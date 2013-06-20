@@ -137,8 +137,13 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
   }
 
   DVLOG(1) << "Audio input hardware sample rate: " << sample_rate;
-  UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputSampleRate",
-                            sample_rate, media::kUnexpectedAudioSampleRate);
+  media::AudioSampleRate asr = media::AsAudioSampleRate(sample_rate);
+  if (asr != media::kUnexpectedAudioSampleRate) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "WebRTC.AudioInputSampleRate", asr, media::kUnexpectedAudioSampleRate);
+  } else {
+    UMA_HISTOGRAM_COUNTS("WebRTC.AudioInputSampleRateUnexpected", sample_rate);
+  }
 
   // Verify that the reported input hardware sample rate is supported
   // on the current platform.

@@ -136,8 +136,13 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
     DVLOG(1) << "Resampling from 48000 to 192000 is required";
     sample_rate = 48000;
   }
-  UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputSampleRate",
-                            sample_rate, media::kUnexpectedAudioSampleRate);
+  media::AudioSampleRate asr = media::AsAudioSampleRate(sample_rate);
+  if (asr != media::kUnexpectedAudioSampleRate) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "WebRTC.AudioOutputSampleRate", asr, media::kUnexpectedAudioSampleRate);
+  } else {
+    UMA_HISTOGRAM_COUNTS("WebRTC.AudioOutputSampleRateUnexpected", sample_rate);
+  }
 
   // Verify that the reported output hardware sample rate is supported
   // on the current platform.
