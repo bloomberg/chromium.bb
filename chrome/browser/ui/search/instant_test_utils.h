@@ -88,7 +88,8 @@ class InstantTestBase {
   void KillInstantRenderView();
 
   void FocusOmnibox();
-  void FocusOmniboxAndWaitForInstantNTPSupport();
+  void FocusOmniboxAndWaitForInstantOverlaySupport();
+  void FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
   void SetOmniboxText(const std::string& text);
   bool SetOmniboxTextAndWaitForOverlayToShow(const std::string& text);
