@@ -160,9 +160,6 @@ webkit.org/b/112923 fast/forms/calendar-picker/calendar-picker-appearance-month-
 # Skipped until/unless color-correction is reimplemented.
 crbug.com/28005 fast/css/parsing-color-correction.html [ Skip ]
 
-# Skipped until LayoutTests/http/tests/resources/square100.png file is uploaded
-crbug.com/249504 http/tests/security/shape-inside-image-origin.html [ Skip ]
-
 # -----------------------------------------------------------------
 # TESTS TO FIX
 # -----------------------------------------------------------------
