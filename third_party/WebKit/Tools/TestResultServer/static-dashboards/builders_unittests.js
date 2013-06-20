@@ -42,15 +42,18 @@ test('loading steps', 4, function() {
     equal(master.name, name);
 });
 
-test('builders._builderFilter', 5, function() {
-    var filter = builders._builderFilter('@ToT Blink', 'layout-tests');
+test('builders._builderFilter', 6, function() {
+    var filter = builders._builderFilter('@ToT Blink', 'DummyMaster', 'layout-tests');
     equal(filter('WebKit (Content Shell) Linux'), true, 'show content shell builder');
     equal(filter('WebKit Linux'), true, 'show generic webkit builder');
     equal(filter('Android Tests (dbg) '), false, 'don\'t show android tests');
 
-    var filter = builders._builderFilter('@ToT Chromium', 'webkit_unit_tests');
+    var filter = builders._builderFilter('@ToT Chromium', 'DummyMaster', 'webkit_unit_tests');
     equal(filter('WebKit Win7 (deps)'), true, 'show DEPS builder');
     equal(filter('WebKit Win7'), false, 'don\'t show non-deps builder');
+
+    var filter = builders._builderFilter('@ToT Chromium', 'ChromiumWebkit', 'dummy_test_type');
+    equal(filter('Win7 (dbg)'), false, 'Should not show non deps ChromiumWebkit bots for test suites other than layout-tests or webkit_unit_tests');
 });
 
 test('builders.groupNamesForTestType', 4, function() {

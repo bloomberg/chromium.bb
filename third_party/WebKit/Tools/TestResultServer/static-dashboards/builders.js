@@ -61,7 +61,7 @@ builders.testTypeUploadsToFlakinessDashboardServer = function(testType)
 }
 
 var currentBuilderGroup = {};
-var testTypesThatRunToTBlinkBots = ['layout-tests', 'test_shell_tests', 'webkit_unit_tests'];
+var testTypesThatRunToTBlinkBots = ['layout-tests', 'webkit_unit_tests'];
 
 builders.getBuilderGroup = function(groupName, testType)
 {
@@ -84,10 +84,13 @@ function isChromiumWebkitDepsTestRunner(builder)
     return builder.indexOf('(deps)') != -1;
 }
 
-builders._builderFilter = function(groupName, testType)
+builders._builderFilter = function(groupName, masterName, testType)
 {
-    if (testTypesThatRunToTBlinkBots.indexOf(testType) == -1)
+    if (testTypesThatRunToTBlinkBots.indexOf(testType) == -1) {
+        if (masterName == 'ChromiumWebkit' && groupName != '@ToT Blink')
+            return function() { return false };
         return null;
+    }
 
     if (groupName == '@ToT Blink')
         return isChromiumWebkitTipOfTreeTestRunner;
@@ -139,7 +142,7 @@ builders.loadBuildersList = function(groupName, testType)
 
         if (hasTest && isInGroup) {
             var builderList = master.tests[testType].builders;
-            var builderFilter = builders._builderFilter(groupName, testType);
+            var builderFilter = builders._builderFilter(groupName, masterName, testType);
             if (builderFilter)
                 builderList = builderList.filter(builderFilter);
             builderGroup.append(builderList);
