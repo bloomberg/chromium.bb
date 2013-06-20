@@ -743,8 +743,11 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
   if (needs_external_surface_) {
     // VideoFrame::CreateHoleFrame is only defined under GOOGLE_TV.
 #if defined(GOOGLE_TV)
-    if (!natural_size_.isEmpty())
+    if (!natural_size_.isEmpty()) {
       current_frame_ = VideoFrame::CreateHoleFrame(natural_size_);
+      // Force the client to grab the hole frame.
+      client_->repaint();
+    }
 #else
     NOTIMPLEMENTED() << "Hole punching not supported outside of Google TV";
 #endif
