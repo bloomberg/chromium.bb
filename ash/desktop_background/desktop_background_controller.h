@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -16,6 +17,8 @@
 #include "ui/gfx/image/image_skia.h"
 
 typedef unsigned int SkColor;
+
+class CommandLine;
 
 namespace aura {
 class RootWindow;
@@ -27,9 +30,16 @@ class DesktopBackgroundControllerTest;
 }  // namespace internal
 
 enum WallpaperLayout {
+  // Center the wallpaper on the desktop without scaling it. The wallpaper
+  // may be cropped.
   WALLPAPER_LAYOUT_CENTER,
+  // Scale the wallpaper (while preserving its aspect ratio) to cover the
+  // desktop; the wallpaper may be cropped.
   WALLPAPER_LAYOUT_CENTER_CROPPED,
+  // Scale the wallpaper (without preserving its aspect ratio) to match the
+  // desktop's size.
   WALLPAPER_LAYOUT_STRETCH,
+  // Tile the wallpaper over the background without scaling it.
   WALLPAPER_LAYOUT_TILE,
 };
 
@@ -39,17 +49,6 @@ enum WallpaperResolution {
 };
 
 const SkColor kLoginWallpaperColor = 0xFEFEFE;
-
-// Encapsulates wallpaper infomation needed by desktop background controller.
-struct ASH_EXPORT WallpaperInfo {
-  int idr;
-  WallpaperLayout layout;
-};
-
-ASH_EXPORT extern const WallpaperInfo kDefaultLargeWallpaper;
-ASH_EXPORT extern const WallpaperInfo kDefaultSmallWallpaper;
-ASH_EXPORT extern const WallpaperInfo kGuestLargeWallpaper;
-ASH_EXPORT extern const WallpaperInfo kGuestSmallWallpaper;
 
 // The width and height of small/large resolution wallpaper. When screen size is
 // smaller than |kSmallWallpaperMaxWidth| and |kSmallWallpaperMaxHeight|, the
@@ -80,38 +79,36 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   DesktopBackgroundController();
   virtual ~DesktopBackgroundController();
 
-  // Gets the desktop background mode.
   BackgroundMode desktop_background_mode() const {
     return desktop_background_mode_;
+  }
+
+  void set_command_line_for_testing(CommandLine* command_line) {
+    command_line_for_testing_ = command_line;
   }
 
   // Add/Remove observers.
   void AddObserver(DesktopBackgroundControllerObserver* observer);
   void RemoveObserver(DesktopBackgroundControllerObserver* observer);
 
+  // Provides current image on the background, or empty gfx::ImageSkia if there
+  // is no image, e.g. background is solid color.
   gfx::ImageSkia GetWallpaper() const;
 
   WallpaperLayout GetWallpaperLayout() const;
 
-  // Provides current image on the background, or empty gfx::ImageSkia if there
-  // is no image, e.g. background is solid color.
-  gfx::ImageSkia GetCurrentWallpaperImage();
-
-  // Gets the IDR of current wallpaper. Returns -1 if current wallpaper is not
-  // a builtin wallpaper.
-  int GetWallpaperIDR() const;
-
   // Initialize root window's background.
   void OnRootWindowAdded(aura::RootWindow* root_window);
 
-  // Loads builtin wallpaper asynchronously and sets to current wallpaper after
-  // loaded.
-  void SetDefaultWallpaper(const WallpaperInfo& info);
+  // Loads builtin wallpaper asynchronously and sets to current wallpaper
+  // after loaded. Returns true if the controller started loading the
+  // wallpaper and false otherwise (i.e. the appropriate wallpaper was
+  // already loading or loaded).
+  bool SetDefaultWallpaper(bool is_guest);
 
   // Sets the user selected custom wallpaper. Called when user selected a file
   // from file system or changed the layout of wallpaper.
-  void SetCustomWallpaper(const gfx::ImageSkia& wallpaper,
-                          WallpaperLayout layout);
+  void SetCustomWallpaper(const gfx::ImageSkia& image, WallpaperLayout layout);
 
   // Cancels the current wallpaper loading operation.
   void CancelPendingWallpaperOperation();
@@ -148,13 +145,22 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // An operation to asynchronously loads wallpaper.
   class WallpaperLoader;
 
+  // Returns true if the specified default wallpaper is already being
+  // loaded by |wallpaper_loader_| or stored in |current_wallpaper_|.
+  bool DefaultWallpaperIsAlreadyLoadingOrLoaded(
+      const base::FilePath& image_file, int image_resource_id) const;
+
+  // Returns true if the specified custom wallpaper is already stored
+  // in |current_wallpaper_|.
+  bool CustomWallpaperIsAlreadyLoaded(const gfx::ImageSkia& image) const;
+
   // Creates view for all root windows, or notifies them to repaint if they
   // already exist.
   void SetDesktopBackgroundImageMode();
 
   // Creates a new background widget and sets the background mode to image mode.
-  // Called after wallpaper loaded successfully.
-  void OnWallpaperLoadCompleted(scoped_refptr<WallpaperLoader> wl);
+  // Called after a default wallpaper has been loaded successfully.
+  void OnDefaultWallpaperLoadCompleted(scoped_refptr<WallpaperLoader> loader);
 
   // Adds layer with solid |color| to container |container_id| in |root_window|.
   ui::Layer* SetColorLayerForContainer(SkColor color,
@@ -179,6 +185,9 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // Send notification that background animation finished.
   void NotifyAnimationFinished();
 
+  // If non-NULL, used in place of the real command line.
+  CommandLine* command_line_for_testing_;
+
   // Can change at runtime.
   bool locked_;
 
@@ -190,6 +199,12 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
 
   // The current wallpaper.
   scoped_ptr<WallpaperResizer> current_wallpaper_;
+
+  // If a default wallpaper is stored in |current_wallpaper_|, the path and
+  // resource ID that were passed to WallpaperLoader when loading it.
+  // Otherwise, empty and -1, respectively.
+  base::FilePath current_default_wallpaper_path_;
+  int current_default_wallpaper_resource_id_;
 
   scoped_refptr<WallpaperLoader> wallpaper_loader_;
 
