@@ -9,15 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "googleurl/src/gurl.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
-namespace net {
-class URLFetcher;
-}
+class TranslateURLFetcher;
 
 // The TranslateLanguageList class is responsible for maintaining the latest
 // supporting language list.
@@ -47,9 +42,9 @@ class TranslateLanguageList {
   // alpha language.
   bool IsAlphaLanguage(const std::string& language);
 
-  // Fetches the language list from the translate server. It will not retry
-  // more than kMaxRetryLanguageListFetch times. Do nothing if the list is
-  // already updated.
+  // Fetches the language list from the translate server. It will retry
+  // automatically when a server return 5xx errors and retry count doesn't
+  // reach to limits.
   void RequestLanguageList();
 
   // static const values shared with our browser tests.
@@ -57,58 +52,8 @@ class TranslateLanguageList {
   static const char kTargetLanguagesKey[];
 
  private:
-  // The LanguageListFetcher class implements a client to fetch a server
-  // supported language list. It also maintains the state to represent if the
-  // fetch is completed successfully to try again later.
-  class LanguageListFetcher : public net::URLFetcherDelegate {
-   public:
-    // Callback type for Request().
-    typedef base::Callback<void(bool, bool, const std::string&)> Callback;
-
-    // Represents internal state if the fetch is completed successfully.
-    enum State {
-      IDLE,        // No fetch request was issued.
-      REQUESTING,  // A fetch request was issued, but not finished yet.
-      COMPLETED,   // The last fetch request was finished successfully.
-      FAILED,      // The last fetch request was finished with a failure.
-    };
-
-    explicit LanguageListFetcher(bool include_alpha_languages);
-    virtual ~LanguageListFetcher();
-
-    // Requests to fetch a server supported language list. |callback| will be
-    // invoked when the function returns true, and the request is finished
-    // asynchronously.
-    // Returns false if the previous request is not finished, or the request
-    // is omitted due to retry limitation.
-    bool Request(const Callback& callback);
-
-    // Gets internal state.
-    State state() { return state_; }
-
-    // net::URLFetcherDelegate implementation:
-    virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
-   private:
-    // Represents if this instance should fetch a supported language list
-    // including alpha languages.
-    bool include_alpha_languages_;
-
-    // Internal state.
-    enum State state_;
-
-    // URLFetcher instance.
-    scoped_ptr<net::URLFetcher> fetcher_;
-
-    // Callback passed at Request(). It will be invoked when an asynchronous
-    // fetch operation is finished.
-    Callback callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(LanguageListFetcher);
-  };
-
-  // Callback function called when LanguageListFetcher::Request() is finished.
-  void OnLanguageListFetchComplete(bool include_alpha_languages,
+  // Callback function called when TranslateURLFetcher::Request() is finished.
+  void OnLanguageListFetchComplete(int id,
                                    bool success,
                                    const std::string& data);
 
@@ -128,11 +73,11 @@ class TranslateLanguageList {
 
   // A LanguageListFetcher instance to fetch a server providing supported
   // language list.
-  scoped_ptr<LanguageListFetcher> language_list_fetcher_;
+  scoped_ptr<TranslateURLFetcher> language_list_fetcher_;
 
   // A LanguageListFetcher instance to fetch a server providing supported alpha
   // language list.
-  scoped_ptr<LanguageListFetcher> alpha_language_list_fetcher_;
+  scoped_ptr<TranslateURLFetcher> alpha_language_list_fetcher_;
 
   // The last-updated time when the language list is sent.
   base::Time last_updated_;

@@ -2264,6 +2264,8 @@
         'browser/translate/translate_prefs.h',
         'browser/translate/translate_tab_helper.cc',
         'browser/translate/translate_tab_helper.h',
+        'browser/translate/translate_url_fetcher.cc',
+        'browser/translate/translate_url_fetcher.h',
         'browser/translate/translate_url_util.cc',
         'browser/translate/translate_url_util.h',
         'browser/undo/undo_service.cc',
