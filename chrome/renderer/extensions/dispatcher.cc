@@ -1077,12 +1077,14 @@ void Dispatcher::DidCreateScriptContext(
           ChromeRenderProcessObserver::is_incognito_process(),
           manifest_version, send_request_disabled)));
 
-
   // chrome.Event is part of the public API (although undocumented). Make it
-  // lazily evalulate to Event from event_bindings.js.
-  v8::Handle<v8::Object> chrome = AsObjectOrEmpty(GetOrCreateChrome(context));
-  if (!chrome.IsEmpty())
-    module_system->SetLazyField(chrome, "Event", kEventModule, "Event");
+  // lazily evalulate to Event from event_bindings.js. For extensions only
+  // though, not all webpages!
+  if (context->extension()) {
+    v8::Handle<v8::Object> chrome = AsObjectOrEmpty(GetOrCreateChrome(context));
+    if (!chrome.IsEmpty())
+      module_system->SetLazyField(chrome, "Event", kEventModule, "Event");
+  }
 
   AddOrRemoveBindingsForContext(context);
 
