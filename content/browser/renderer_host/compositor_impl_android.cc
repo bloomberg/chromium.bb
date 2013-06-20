@@ -33,6 +33,7 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
@@ -368,10 +369,22 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface() {
                                                   url,
                                                   factory,
                                                   weak_factory_.GetWeakPtr()));
-    if (!context->InitializeWithDefaultBufferSizes(
+    static const size_t kBytesPerPixel = 4;
+    gfx::DeviceDisplayInfo display_info;
+    size_t full_screen_texture_size_in_bytes =
+        display_info.GetDisplayHeight() *
+        display_info.GetDisplayWidth() *
+        kBytesPerPixel;
+    if (!context->Initialize(
         attrs,
         false,
-        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE)) {
+        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE,
+        64 * 1024,  // command buffer size
+        std::min(full_screen_texture_size_in_bytes,
+        kDefaultStartTransferBufferSize),
+        kDefaultMinTransferBufferSize,
+        std::min(3 * full_screen_texture_size_in_bytes,
+                 kDefaultMaxTransferBufferSize))) {
       LOG(ERROR) << "Failed to create 3D context for compositor.";
       return scoped_ptr<cc::OutputSurface>();
     }
