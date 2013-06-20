@@ -213,7 +213,6 @@ enum {
     NSViewAnimationEndFrameKey : [NSValue valueWithRect:newBounds],
     NSViewAnimationEffectKey : NSViewAnimationFadeInEffect
   };
-  DCHECK(!boundsAnimation_);
   boundsAnimation_.reset([[NSViewAnimation alloc]
       initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
   [boundsAnimation_ setDuration:[popupCollection_ popupAnimationDuration]];
@@ -238,7 +237,6 @@ enum {
     NSViewAnimationTargetKey : [self window],
     NSViewAnimationEffectKey : NSViewAnimationFadeOutEffect
   };
-  DCHECK(!boundsAnimation_);
   boundsAnimation_.reset([[NSViewAnimation alloc]
       initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
   [boundsAnimation_ setDuration:[popupCollection_ popupAnimationDuration]];
@@ -263,7 +261,6 @@ enum {
     NSViewAnimationTargetKey :   [self window],
     NSViewAnimationEndFrameKey : [NSValue valueWithRect:newBounds]
   };
-  DCHECK(!boundsAnimation_);
   boundsAnimation_.reset([[NSViewAnimation alloc]
       initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
   [boundsAnimation_ setDuration:[popupCollection_ popupAnimationDuration]];

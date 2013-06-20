@@ -311,7 +311,9 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
   EXPECT_EQ("3", [[popups objectAtIndex:2] notificationID]);
 }
 
-TEST_F(PopupCollectionTest, CloseCollectionBeforeNewPopupAnimationEnds) {
+// Test sometimes timesout. See http://crbug.com/249131
+TEST_F(PopupCollectionTest,
+       DISABLED_CloseCollectionBeforeNewPopupAnimationEnds) {
   // Add a notification and don't wait for the animation to finish.
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
