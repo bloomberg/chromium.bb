@@ -489,6 +489,15 @@ public class AwContents {
         return nativeGetAwDrawGLFunction();
     }
 
+    /**
+     * Intended for test code.
+     * @return the number of native instances of this class.
+     */
+    @VisibleForTesting
+    public static int getNativeInstanceCount() {
+        return nativeGetNativeInstanceCount();
+    }
+
     public int getAwDrawGLViewContext() {
         // Using the native pointer as the returned viewContext. This is matched by the
         // reinterpret_cast back to BrowserViewRenderer pointer in the native DrawGLFunction.
@@ -1449,6 +1458,7 @@ public class AwContents {
     private static native void nativeSetAwDrawSWFunctionTable(int functionTablePointer);
     private static native void nativeSetAwDrawGLFunctionTable(int functionTablePointer);
     private static native int nativeGetAwDrawGLFunction();
+    private static native int nativeGetNativeInstanceCount();
     private native void nativeSetJavaPeers(int nativeAwContents, AwContents awContents,
             AwWebContentsDelegate webViewWebContentsDelegate,
             AwContentsClientBridge contentsClientBridge,

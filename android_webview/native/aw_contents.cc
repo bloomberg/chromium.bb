@@ -22,6 +22,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
@@ -103,6 +104,8 @@ class AwContentsUserData : public base::SupportsUserData::Data {
   AwContents* contents_;
 };
 
+base::subtle::Atomic32 g_instance_count = 0;
+
 }  // namespace
 
 // static
@@ -127,6 +130,7 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
       browser_view_renderer_(
           new InProcessViewRenderer(this, java_renderer_helper(),
                                     web_contents_.get())) {
+  base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(kAwContentsUserDataKey,
@@ -212,6 +216,7 @@ AwContents::~AwContents() {
     find_helper_->SetListener(NULL);
   if (icon_helper_.get())
     icon_helper_->SetListener(NULL);
+  base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, -1);
 }
 
 jint AwContents::GetWebContents(JNIEnv* env, jobject obj) {
@@ -245,6 +250,11 @@ static void SetAwDrawGLFunctionTable(JNIEnv* env, jclass, jint function_table) {
 
 static jint GetAwDrawGLFunction(JNIEnv* env, jclass) {
   return reinterpret_cast<jint>(&DrawGLFunction);
+}
+
+// static
+jint GetNativeInstanceCount(JNIEnv* env, jclass) {
+  return base::subtle::NoBarrier_Load(&g_instance_count);
 }
 
 jint AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {

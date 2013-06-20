@@ -24,6 +24,7 @@ import org.chromium.net.test.util.TestWebServer;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
@@ -152,6 +153,46 @@ public class AwContentsTest extends AwTestBase {
             destroyAwContentsOnMainSync(views[i].getAwContents());
             views[i] = null;
         }
+    }
+
+    public void testCreateAndGcManyTimes() throws Throwable {
+        final int CONCURRENT_INSTANCES = 4;
+        final int REPETITIONS = 16;
+        // The system retains a strong ref to the last focused view (in InputMethodManager)
+        // so allow for 1 'leaked' instance.
+        final int MAX_IDLE_INSTANCES = 1;
+
+        System.gc();
+
+        assertTrue(pollOnUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return AwContents.getNativeInstanceCount() <= MAX_IDLE_INSTANCES;
+            }
+        }));
+        for (int i = 0; i < REPETITIONS; ++i) {
+            for (int j = 0; j < CONCURRENT_INSTANCES; ++j) {
+                AwTestContainerView view = createAwTestContainerViewOnMainSync(mContentsClient);
+                loadUrlAsync(view.getAwContents(), "about:blank");
+            }
+            assertTrue(AwContents.getNativeInstanceCount() >= CONCURRENT_INSTANCES);
+            assertTrue(AwContents.getNativeInstanceCount() <= (i + 1) * CONCURRENT_INSTANCES);
+            runTestOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    getActivity().removeAllViews();
+                }
+            });
+        }
+
+        System.gc();
+
+        assertTrue(pollOnUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return AwContents.getNativeInstanceCount() <= MAX_IDLE_INSTANCES;
+            }
+        }));
     }
 
     private int callDocumentHasImagesSync(final AwContents awContents)
