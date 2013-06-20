@@ -16,7 +16,6 @@
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
     '../crypto/crypto.gyp:crypto',
     '../ui/gl/gl.gyp:gl',
-    '../ui/surface/surface.gyp:surface',
     '../ui/ui.gyp:ui',
     '<(angle_path)/src/build_angle.gyp:translator_glsl',
     '../third_party/khronos/khronos.gyp:khronos_headers',
