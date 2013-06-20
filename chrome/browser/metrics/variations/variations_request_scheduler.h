@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_H_
 
 #include "base/bind.h"
+#include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "base/timer.h"
 
@@ -40,6 +41,9 @@ class VariationsRequestScheduler {
   base::Closure task() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(VariationsRequestSchedulerTest,
+                           ScheduleFetchShortly);
+
   // The task scheduled by this class.
   base::Closure task_;
 
