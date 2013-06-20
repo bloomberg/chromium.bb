@@ -1556,4 +1556,12 @@ bool WebTestProxyBase::willCheckAndDispatchMessageEvent(WebFrame*, WebFrame*, We
     return false;
 }
 
+void WebTestProxyBase::resetInputMethod()
+{
+    // If a composition text exists, then we need to let the browser process
+    // to cancel the input method's ongoing composition session.
+    if (m_webWidget)
+        m_webWidget->confirmComposition();
+}
+
 }

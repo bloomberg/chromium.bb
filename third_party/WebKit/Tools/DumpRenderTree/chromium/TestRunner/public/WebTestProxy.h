@@ -216,6 +216,7 @@ protected:
     void unableToImplementPolicyWithError(WebKit::WebFrame*, const WebKit::WebURLError&);
     WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame*, const WebKit::WebURLRequest&, WebKit::WebNavigationType, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect);
     bool willCheckAndDispatchMessageEvent(WebKit::WebFrame* sourceFrame, WebKit::WebFrame* targetFrame, WebKit::WebSecurityOrigin target, WebKit::WebDOMMessageEvent);
+    void resetInputMethod();
 
 private:
     template<class, typename, typename> friend class WebFrameTestProxy;
@@ -457,6 +458,10 @@ public:
     {
         WebTestProxyBase::setToolTipText(text, hint);
         Base::setToolTipText(text, hint);
+    }
+    virtual void resetInputMethod()
+    {
+        WebTestProxyBase::resetInputMethod();
     }
 
     // WebFrameClient implementation.
