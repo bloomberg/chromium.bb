@@ -125,23 +125,6 @@
       ],
     },  # target_name: message_center
     {
-      'target_name': 'message_center_test_support',
-      'type': 'static_library',
-      'dependencies': [
-        '../../base/base.gyp:base',
-        '../../base/base.gyp:test_support_base',
-        '../../skia/skia.gyp:skia',
-        '../ui.gyp:ui',
-        'message_center',
-      ],
-      'sources': [
-        'fake_message_center.h',
-        'fake_message_center.cc',
-        'fake_notifier_settings_provider.h',
-        'fake_notifier_settings_provider.cc',
-      ],
-    },  # target_name: message_center_test_support
-    {
       'target_name': 'message_center_unittests',
       'type': 'executable',
       'dependencies': [
@@ -152,7 +135,6 @@
         '../ui.gyp:run_ui_unittests',
         '../ui.gyp:ui',
         'message_center',
-        'message_center_test_support',
       ],
       'sources': [
         'cocoa/notification_controller_unittest.mm',
@@ -164,6 +146,10 @@
         'cocoa/tray_view_controller_unittest.mm',
         'message_center_tray_unittest.cc',
         'message_center_impl_unittest.cc',
+        'fake_message_center.h',
+        'fake_message_center.cc',
+        'fake_notifier_settings_provider.h',
+        'fake_notifier_settings_provider.cc',
         'notification_list_unittest.cc',
         'test/run_all_unittests.cc',
       ],

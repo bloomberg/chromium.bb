@@ -11,12 +11,7 @@
 class SkBitmap;
 
 namespace gfx {
-class Image;
 class ImageSkia;
-}
-
-namespace message_center {
-class MessageCenter;
 }
 
 namespace ash {
@@ -32,22 +27,10 @@ enum IconSet {
   ICON_DARK
 };
 
-class ASH_EXPORT TrayPower : public SystemTrayItem,
-                             public chromeos::PowerManagerHandler::Observer {
+class TrayPower : public SystemTrayItem,
+                  public chromeos::PowerManagerHandler::Observer {
  public:
-  // Visible for testing.
-  enum NotificationState {
-    NOTIFICATION_NONE,
-
-    // Low battery charge.
-    NOTIFICATION_LOW_POWER,
-
-    // Critically low battery charge.
-    NOTIFICATION_CRITICAL,
-  };
-
-  TrayPower(SystemTray* system_tray,
-            message_center::MessageCenter* message_center);
+  explicit TrayPower(SystemTray* system_tray);
   virtual ~TrayPower();
 
   // Gets whether battery charging is unreliable for |supply_status|.
@@ -75,9 +58,6 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
                                         bool charging_unreliable,
                                         IconSet icon_set);
 
-  // Returns an icon for the USB charger notification.
-  static gfx::Image GetUsbChargerNotificationImage();
-
   // Gets the battery accessible string for |supply_status|.
   static base::string16 GetAccessibleNameString(
       const chromeos::PowerSupplyStatus& supply_status);
@@ -86,7 +66,11 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   static int GetRoundedBatteryPercentage(double battery_percentage);
 
  private:
-  friend class TrayPowerTest;
+  enum NotificationState {
+    NOTIFICATION_NONE,
+    NOTIFICATION_LOW_POWER,
+    NOTIFICATION_CRITICAL
+  };
 
   // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
@@ -107,25 +91,15 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   // Requests a power status update.
   void RequestStatusUpdate() const;
 
-  // Show a notification that a low-power USB charger has been connected.
-  // Returns true if a notification was shown or explicitly hidden.
-  bool MaybeShowUsbChargerNotification(
-      const chromeos::PowerSupplyStatus& old_status,
-      const chromeos::PowerSupplyStatus& new_status);
-
   // Sets |notification_state_|. Returns true if a notification should be shown.
   bool UpdateNotificationState(const chromeos::PowerSupplyStatus& status);
   bool UpdateNotificationStateForRemainingTime(int remaining_seconds);
   bool UpdateNotificationStateForRemainingPercentage(
       double remaining_percentage);
 
-  message_center::MessageCenter* message_center_;  // Not owned.
   tray::PowerTrayView* power_tray_;
   tray::PowerNotificationView* notification_view_;
   NotificationState notification_state_;
-
-  // Power supply status at the last update.
-  chromeos::PowerSupplyStatus last_power_supply_status_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPower);
 };

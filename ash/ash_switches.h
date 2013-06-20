@@ -33,7 +33,6 @@ ASH_EXPORT extern const char kAshDisableDisplayRotation[];
 ASH_EXPORT extern const char kAshDisableDragAndDropAppListToLauncher[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshDisableSoftwareMirroring[];
-ASH_EXPORT extern const char kAshDisableUsbChargerNotification[];
 #endif
 ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
@@ -69,12 +68,6 @@ ASH_EXPORT bool ShowAudioDeviceMenu();
 
 // Returns true if the alternate shelf layout should be used.
 ASH_EXPORT bool UseAlternateShelfLayout();
-
-#if defined(OS_CHROMEOS)
-// Returns true if a notification should appear when a low-power USB charger
-// is connected.
-ASH_EXPORT bool UseUsbChargerNotification();
-#endif
 
 }  // namespace switches
 }  // namespace ash
