@@ -32,7 +32,6 @@ dumpToTextButton.addEventListener('click', function(event) {
   dataDump.textContent = data;
 });
 
-// TODO(mmontgomery): add SPECIFICS as an opt-in.
 var allFields = [
   'ID',
   'IS_UNSYNCED',
@@ -46,6 +45,8 @@ var allFields = [
   'IS_DEL',
   'SERVER_IS_DEL',
   'serverModelType',
+  'SERVER_SPECIFICS',
+  'SPECIFICS',
 ];
 
 function versionToDateString(version) {
@@ -65,6 +66,9 @@ function getFields(node) {
     } if (field == 'BASE_VERSION_TIME') {
       var version = node['BASE_VERSION'];
       fieldVal = versionToDateString(version);
+    } else if ((field == 'SERVER_SPECIFICS' || field == 'SPECIFICS') &&
+            $('include-specifics').checked) {
+      fieldVal = JSON.stringify(node[field]);
     } else {
       fieldVal = node[field];
     }
