@@ -123,5 +123,8 @@ message PowerManagementPolicy {
   // Logged by the power manager to aid in debugging.
   optional string reason = 8;
 
+  // DEPRECATED: Use |presentation_screen_dim_delay_factor| instead.
+  optional double presentation_idle_delay_factor = 7;
+
   // Next ID to use: 11
 }
