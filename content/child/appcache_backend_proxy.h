@@ -5,6 +5,8 @@
 #ifndef CONTENT_CHILD_APPCACHE_BACKEND_PROXY_H_
 #define CONTENT_CHILD_APPCACHE_BACKEND_PROXY_H_
 
+#include <vector>
+
 #include "ipc/ipc_sender.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 

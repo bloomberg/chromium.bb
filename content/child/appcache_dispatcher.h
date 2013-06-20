@@ -42,8 +42,7 @@ class AppCacheDispatcher : public IPC::Listener {
   void OnErrorEventRaised(const std::vector<int>& host_ids,
                           const std::string& message);
   void OnLogMessage(int host_id, int log_level, const std::string& message);
-  void OnContentBlocked(int host_id,
-                        const GURL& manifest_url);
+  void OnContentBlocked(int host_id, const GURL& manifest_url);
 
   AppCacheBackendProxy backend_proxy_;
   scoped_ptr<appcache::AppCacheFrontend> frontend_;
