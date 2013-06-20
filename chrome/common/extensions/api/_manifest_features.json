@@ -289,6 +289,10 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "platforms": {
+    "channel": "stable",
+    "extension_types": "all"
+  },
   "plugins": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "hosted_app"]
