@@ -50,6 +50,7 @@ enum e_type_values {
 enum e_machine_values {
   EM_NONE = 0, // No machine
   EM_386 = 3, // Intel Architecture
+  EM_ARM = 40, // ARM Architecture
   EM_x86_64 = 62, // Intel x86-64 Architecture
   // Other values skipped
 };
@@ -138,6 +139,10 @@ enum elf32_rel_386_type_values {
   R_386_GOTOFF = 9,
   R_386_GOTPC = 10,
   R_386_TLS_TPOFF = 14,
+};
+
+enum elf32_rel_arm_type_values {
+  R_ARM_RELATIVE = 23,
 };
 
 #endif  // COURGETTE_ELF_TYPES_H_
