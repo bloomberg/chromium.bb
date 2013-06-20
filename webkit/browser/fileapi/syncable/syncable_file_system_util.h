@@ -89,6 +89,18 @@ WEBKIT_STORAGE_BROWSER_EXPORT void SetEnableSyncFSDirectoryOperation(bool flag);
 // away when we fully support directory operations. (http://crbug.com/161442)
 WEBKIT_STORAGE_BROWSER_EXPORT bool IsSyncFSDirectoryOperationEnabled();
 
+// Enables directory operation for syncable filesystems temporarily for testing.
+class WEBKIT_STORAGE_BROWSER_EXPORT ScopedEnableSyncFSDirectoryOperation {
+ public:
+  ScopedEnableSyncFSDirectoryOperation();
+  ~ScopedEnableSyncFSDirectoryOperation();
+
+ private:
+  bool was_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedEnableSyncFSDirectoryOperation);
+};
+
 }  // namespace sync_file_system
 
 #endif  // WEBKIT_BROWSER_FILEAPI_SYNCABLE_SYNCABLE_FILE_SYSTEM_UTIL_H_

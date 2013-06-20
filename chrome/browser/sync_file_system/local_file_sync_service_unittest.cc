@@ -173,6 +173,7 @@ class LocalFileSyncServiceTest
     return file_system_->file_system_context()->change_tracker()->num_changes();
   }
 
+  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   TestingProfile profile_;
 
   MultiThreadTestHelper thread_helper_;

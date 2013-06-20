@@ -235,6 +235,8 @@ class SyncFileSystemServiceTest : public testing::Test {
     sync_service_->SetSyncEnabledForTesting(true);
   }
 
+  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
+
   MultiThreadTestHelper thread_helper_;
   TestingProfile profile_;
   scoped_ptr<CannedSyncableFileSystem> file_system_;

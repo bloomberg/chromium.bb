@@ -242,17 +242,12 @@ void CannedSyncableFileSystem::SetUp() {
       ScopedVector<fileapi::FileSystemMountPointProvider>(),
       data_dir_.path(), options);
 
-  // In testing we override this setting to support directory operations
-  // by default.
-  SetEnableSyncFSDirectoryOperation(true);
-
   is_filesystem_set_up_ = true;
 }
 
 void CannedSyncableFileSystem::TearDown() {
   quota_manager_ = NULL;
   file_system_context_ = NULL;
-  SetEnableSyncFSDirectoryOperation(false);
 
   // Make sure we give some more time to finish tasks on other threads.
   EnsureLastTaskRuns(io_task_runner_.get());

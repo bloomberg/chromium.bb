@@ -112,6 +112,7 @@ TEST(SyncableFileSystemUtilTest,
 }
 
 TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
+  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   const std::string serialized = kSyncableFileSystemRootURI +
       CreateNormalizedFilePath(kPath).AsUTF8Unsafe();
   FileSystemURL deserialized;

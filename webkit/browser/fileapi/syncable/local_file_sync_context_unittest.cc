@@ -188,6 +188,8 @@ class LocalFileSyncContextTest : public testing::Test {
     async_modify_finished_ = true;
   }
 
+  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
+
   // These need to remain until the very end.
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;

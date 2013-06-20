@@ -108,4 +108,14 @@ bool IsSyncFSDirectoryOperationEnabled() {
           kEnableSyncFSDirectoryOperation);
 }
 
+ScopedEnableSyncFSDirectoryOperation::ScopedEnableSyncFSDirectoryOperation() {
+  was_enabled_ = IsSyncFSDirectoryOperationEnabled();
+  SetEnableSyncFSDirectoryOperation(true);
+}
+
+ScopedEnableSyncFSDirectoryOperation::~ScopedEnableSyncFSDirectoryOperation() {
+  DCHECK(IsSyncFSDirectoryOperationEnabled());
+  SetEnableSyncFSDirectoryOperation(was_enabled_);
+}
+
 }  // namespace sync_file_system

@@ -100,6 +100,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
     change_tracker()->CollectLastDirtyChanges(file_system_context());
   }
 
+  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   base::MessageLoop message_loop_;
 
   CannedSyncableFileSystem file_system_;

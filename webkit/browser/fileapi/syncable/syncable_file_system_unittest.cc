@@ -91,6 +91,8 @@ class SyncableFileSystemTest : public testing::Test {
     return file_system_context()->change_tracker();
   }
 
+  ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
+
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
 
@@ -241,6 +243,7 @@ TEST_F(SyncableFileSystemTest, ChangeTrackerSimple) {
 
 // Make sure directory operation is disabled (when it's configured so).
 TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
+  bool was_enabled = IsSyncFSDirectoryOperationEnabled();
   SetEnableSyncFSDirectoryOperation(false);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.OpenFileSystem());
@@ -281,6 +284,7 @@ TEST_F(SyncableFileSystemTest, DisableDirectoryOperations) {
             file_system_.Copy(kSrcDir, URL("dest")));
 
   other_file_system_.TearDown();
+  SetEnableSyncFSDirectoryOperation(was_enabled);
 }
 
 }  // namespace sync_file_system
