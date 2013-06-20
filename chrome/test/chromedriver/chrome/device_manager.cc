@@ -41,7 +41,9 @@ Device::~Device() {
   release_callback_.Run();
 }
 
-Status Device::StartChrome(const std::string& package, int port) {
+Status Device::StartChrome(const std::string& package,
+                           int port,
+                           const std::string& args) {
   if (!active_package_.empty())
     return Status(kUnknownError,
         active_package_ + " was launched and has not been quit");
@@ -51,7 +53,7 @@ Status Device::StartChrome(const std::string& package, int port) {
   status = adb_->ClearAppData(serial_, package);
   if (!status.IsOk())
     return status;
-  status = adb_->SetChromeFlags(serial_);
+  status = adb_->SetChromeArgs(serial_, args);
   if (!status.IsOk())
     return status;
   status = adb_->Launch(serial_, package, GetActivityForPackage(package));

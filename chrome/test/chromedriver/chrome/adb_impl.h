@@ -31,7 +31,8 @@ class AdbImpl : public Adb {
   virtual Status ForwardPort(const std::string& device_serial,
                              int local_port,
                              const std::string& remote_abstract) OVERRIDE;
-  virtual Status SetChromeFlags(const std::string& device_serial) OVERRIDE;
+  virtual Status SetChromeArgs(const std::string& device_serial,
+                               const std::string& args) OVERRIDE;
   virtual Status CheckAppInstalled(const std::string& device_serial,
                                    const std::string& package) OVERRIDE;
   virtual Status ClearAppData(const std::string& device_serial,

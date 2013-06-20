@@ -112,13 +112,12 @@ Status AdbImpl::ForwardPort(
                 device_serial + ": " + response);
 }
 
-Status AdbImpl::SetChromeFlags(const std::string& device_serial) {
+Status AdbImpl::SetChromeArgs(const std::string& device_serial,
+                              const std::string& args) {
   std::string response;
   Status status = ExecuteHostShellCommand(
       device_serial,
-      "echo chrome --disable-fre --metrics-recording-only "
-          "--enable-remote-debugging > /data/local/chrome-command-line;"
-          "echo $?",
+      "echo chrome " + args + "> /data/local/chrome-command-line; echo $?",
       &response);
   if (!status.IsOk())
     return status;

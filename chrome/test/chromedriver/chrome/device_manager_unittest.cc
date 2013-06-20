@@ -16,8 +16,8 @@ namespace {
 
 class FakeAdb : public Adb {
  public:
-  FakeAdb() {};
-  virtual ~FakeAdb() {};
+  FakeAdb() {}
+  virtual ~FakeAdb() {}
 
   virtual Status GetDevices(std::vector<std::string>* devices) OVERRIDE {
     devices->push_back("a");
@@ -31,7 +31,8 @@ class FakeAdb : public Adb {
     return Status(kOk);
   }
 
-  virtual Status SetChromeFlags(const std::string& device_serial) OVERRIDE {
+  virtual Status SetChromeArgs(const std::string& device_serial,
+                               const std::string& args) OVERRIDE {
     return Status(kOk);
   }
 
@@ -94,7 +95,7 @@ TEST(Device, LaunchChrome) {
   scoped_ptr<Device> device1;
   ASSERT_TRUE(device_manager.AcquireDevice(&device1).IsOk());
   ASSERT_FALSE(device1->StopChrome().IsOk());
-  ASSERT_TRUE(device1->StartChrome("p", 0).IsOk());
-  ASSERT_FALSE(device1->StartChrome("p", 0).IsOk());
+  ASSERT_TRUE(device1->StartChrome("p", 0, std::string()).IsOk());
+  ASSERT_FALSE(device1->StartChrome("p", 0, std::string()).IsOk());
   ASSERT_TRUE(device1->StopChrome().IsOk());
 }

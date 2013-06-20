@@ -42,7 +42,9 @@ Status ParseLogPath(const base::Value& option, Capabilities* capabilities) {
   return Status(kOk);
 }
 
-Status ParseArgs(const base::Value& option, Capabilities* capabilities) {
+Status ParseArgs(bool is_android,
+                 const base::Value& option,
+                 Capabilities* capabilities) {
   const base::ListValue* args_list = NULL;
   if (!option.GetAsList(&args_list))
     return Status(kUnknownError, "'args' must be a list");
@@ -50,16 +52,20 @@ Status ParseArgs(const base::Value& option, Capabilities* capabilities) {
     std::string arg_string;
     if (!args_list->GetString(i, &arg_string))
       return Status(kUnknownError, "each argument must be a string");
-    size_t separator_index = arg_string.find("=");
-    if (separator_index != std::string::npos) {
-      CommandLine::StringType arg_string_native;
-      if (!args_list->GetString(i, &arg_string_native))
-        return Status(kUnknownError, "each argument must be a string");
-      capabilities->command.AppendSwitchNative(
-          arg_string.substr(0, separator_index),
-          arg_string_native.substr(separator_index + 1));
+    if (is_android) {
+      capabilities->android_args += "--" + arg_string + " ";
     } else {
-      capabilities->command.AppendSwitch(arg_string);
+      size_t separator_index = arg_string.find("=");
+      if (separator_index != std::string::npos) {
+        CommandLine::StringType arg_string_native;
+        if (!args_list->GetString(i, &arg_string_native))
+          return Status(kUnknownError, "each argument must be a string");
+        capabilities->command.AppendSwitchNative(
+            arg_string.substr(0, separator_index),
+            arg_string_native.substr(separator_index + 1));
+      } else {
+        capabilities->command.AppendSwitch(arg_string);
+      }
     }
   }
   return Status(kOk);
@@ -164,7 +170,7 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
   return Status(kOk);
 }
 
-Status ParseDesktopChromeOption(
+Status ParseDesktopChromeCapabilities(
     const base::Value& capability,
     Capabilities* capabilities) {
   const base::DictionaryValue* chrome_options = NULL;
@@ -176,7 +182,7 @@ Status ParseDesktopChromeOption(
   parser_map["detach"] = base::Bind(&ParseDetach);
   parser_map["binary"] = base::Bind(&ParseChromeBinary);
   parser_map["logPath"] = base::Bind(&ParseLogPath);
-  parser_map["args"] = base::Bind(&ParseArgs);
+  parser_map["args"] = base::Bind(&ParseArgs, false);
   parser_map["prefs"] = base::Bind(&ParsePrefs);
   parser_map["localState"] = base::Bind(&ParseLocalState);
   parser_map["extensions"] = base::Bind(&ParseExtensions);
@@ -209,15 +215,20 @@ Status ParseAndroidChromeCapabilities(const base::DictionaryValue& desired_caps,
         return Status(kUnknownError,
                       "'androidPackage' must be a non-empty string");
       }
-    }
 
-    const base::Value* device_serial_value;
-    if (chrome_options_dict->Get("deviceSerial", &device_serial_value)) {
-      if (!device_serial_value->GetAsString(&capabilities->device_serial) ||
-          capabilities->device_serial.empty()) {
-        return Status(kUnknownError,
-                      "'deviceSerial' must be a non-empty string");
+      const base::Value* device_serial_value;
+      if (chrome_options_dict->Get("androidDeviceSerial",
+                                   &device_serial_value)) {
+        if (!device_serial_value->GetAsString(&capabilities->device_serial) ||
+            capabilities->device_serial.empty()) {
+          return Status(kUnknownError,
+                        "'androidDeviceSerial' must be a non-empty string");
+        }
       }
+
+      const base::Value* args_value;
+      if (chrome_options_dict->Get("args", &args_value))
+        return ParseArgs(true, *args_value, capabilities);
     }
   }
   return Status(kOk);
@@ -262,7 +273,7 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
 
   std::map<std::string, Parser> parser_map;
   parser_map["proxy"] = base::Bind(&ParseProxy);
-  parser_map["chromeOptions"] = base::Bind(&ParseDesktopChromeOption);
+  parser_map["chromeOptions"] = base::Bind(&ParseDesktopChromeCapabilities);
   for (std::map<std::string, Parser>::iterator it = parser_map.begin();
        it != parser_map.end(); ++it) {
     const base::Value* capability = NULL;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -39,6 +40,9 @@
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 
 namespace {
+
+const char* kCommonSwitches[] = {
+  "ignore-certificate-errors", "metrics-recording-only"};
 
 Status UnpackAutomationExtension(const base::FilePath& temp_dir,
                                  base::FilePath* automation_extension) {
@@ -196,7 +200,8 @@ Status LaunchDesktopChrome(
   base::ScopedTempDir extension_dir;
   PrepareCommandLine(port, capabilities,
                      &command, &user_data_dir, &extension_dir);
-  command.AppendSwitch("ignore-certificate-errors");
+  for (size_t i = 0; i < arraysize(kCommonSwitches); i++)
+    command.AppendSwitch(kCommonSwitches[i]);
   base::LaunchOptions options;
 
 #if !defined(OS_WIN)
@@ -292,7 +297,13 @@ Status LaunchAndroidChrome(
   }
   if (!status.IsOk())
     return status;
-  status = device->StartChrome(capabilities.android_package, port);
+
+  std::string args(capabilities.android_args);
+  for (size_t i = 0; i < arraysize(kCommonSwitches); i++)
+    args += "--" + std::string(kCommonSwitches[i]) + " ";
+  args += "--disable-fre --enable-remote-debugging";
+
+  status = device->StartChrome(capabilities.android_package, port, args);
   if (!status.IsOk())
     return status;
 

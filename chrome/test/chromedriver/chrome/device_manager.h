@@ -22,7 +22,9 @@ class Device {
  public:
   ~Device();
 
-  Status StartChrome(const std::string& package, int port);
+  Status StartChrome(const std::string& package,
+                     int port,
+                     const std::string& args);
   Status StopChrome();
 
  private:

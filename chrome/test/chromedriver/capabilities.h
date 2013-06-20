@@ -34,6 +34,7 @@ struct Capabilities {
 
   std::string android_package;
   std::string device_serial;
+  std::string android_args;
 
   std::string log_path;
   CommandLine command;
