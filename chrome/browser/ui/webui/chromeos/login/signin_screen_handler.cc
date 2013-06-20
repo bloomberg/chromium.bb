@@ -1127,9 +1127,10 @@ void SigninScreenHandler::HandleLaunchIncognito() {
 }
 
 void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(::switches::kEnableManagedUsers))
+  if (!ManagedUserService::AreManagedUsersEnabled()) {
+    LOG(ERROR) << "Managed users disabled.";
     return;
+  }
   scoped_ptr<DictionaryValue> params(new DictionaryValue());
   LoginDisplayHostImpl::default_host()->
       StartWizard(WizardController::kLocallyManagedUserCreationScreenName,
