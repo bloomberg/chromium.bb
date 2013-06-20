@@ -1353,7 +1353,7 @@ crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
 crbug.com/238082 [ Win Mac Linux Debug ] media/media-continues-playing-after-replace-source.html [ Crash Pass Timeout ]
 crbug.com/88588 [ Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
 
-Bug(ojan) http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
+crbug.com/252344 http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
 
 webkit.org/b/92811 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 webkit.org/b/92811 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
@@ -1812,14 +1812,6 @@ crbug.com/248121 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure
 crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 crbug.com/230326 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Crash Pass ]
 crbug.com/249021 [ Debug ] http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Crash Pass ]
-
-Bug(ojan) fast/css/word-space-extra.html [ ImageOnlyFailure Failure Pass Missing ]
-Bug(ojan) fast/replaced/width100percent-image.html [ ImageOnlyFailure Failure Pass Missing ]
-Bug(ojan) fast/replaced/width100percent-menulist.html [ ImageOnlyFailure Failure Pass Missing ]
-Bug(ojan) fast/replaced/width100percent-searchfield.html [ ImageOnlyFailure Failure Pass Missing ]
-Bug(ojan) fast/replaced/width100percent-textarea.html [ ImageOnlyFailure Failure Pass Missing ]
-Bug(ojan) fast/replaced/width100percent-textfield.html [ ImageOnlyFailure Failure Pass Missing ]
-Bug(ojan) tables/mozilla/bugs/bug57828.html [ ImageOnlyFailure Failure Pass Missing ]
 
 crbug.com/248407 [ Debug ] compositing/reflections/animation-inside-reflection.html [ Pass Timeout ]
 
