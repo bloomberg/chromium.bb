@@ -83,6 +83,8 @@ public:
 
     RenderTable* table() const { return toRenderTable(parent()); }
 
+    typedef Vector<RenderTableCell*, 2> SpanningRenderTableCells;
+
     struct CellStruct {
         Vector<RenderTableCell*, 1> cells; 
         bool inColSpan; // true for columns after the first in a colspan
@@ -226,11 +228,17 @@ private:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
+    int borderSpacingForRow(unsigned row) const { return m_grid[row].rowRenderer ? table()->vBorderSpacing() : 0; }
+
     void ensureRows(unsigned);
+
+    void distributeRowSpanHeightToRows(SpanningRenderTableCells& rowSpanCells);
 
     void distributeExtraLogicalHeightToPercentRows(int& extraLogicalHeight, int totalPercent);
     void distributeExtraLogicalHeightToAutoRows(int& extraLogicalHeight, unsigned autoRowsCount);
     void distributeRemainingExtraLogicalHeight(int& extraLogicalHeight);
+
+    void updateBaselineForCell(RenderTableCell*, unsigned row, LayoutUnit& baselineDescent);
 
     bool hasOverflowingCell() const { return m_overflowingCells.size() || m_forceSlowPaintPathWithOverflowingCell; }
     void computeOverflowFromCells(unsigned totalRows, unsigned nEffCols);

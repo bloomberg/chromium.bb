@@ -255,6 +255,79 @@ void RenderTableSection::addCell(RenderTableCell* cell, RenderTableRow* row)
     cell->setCol(table()->effColToCol(col));
 }
 
+// Distribute rowSpan cell height in rows those comes in rowSpan cell based on the ratio of row's height if
+// 1. RowSpan cell height is greater then the total height of rows in rowSpan cell
+void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells& rowSpanCells)
+{
+    ASSERT(rowSpanCells.size());
+
+    // FIXME: For now, we handle the first rowspan cell in the table but this is wrong.
+    RenderTableCell* cell = rowSpanCells[0];
+
+    unsigned rowSpan = cell->rowSpan();
+    unsigned rowIndex = cell->rowIndex();
+    int initialPos = m_rowPos[rowIndex + rowSpan];
+
+    int totalRowsHeight = 0;
+    int rowSpanCellHeight = cell->logicalHeightForRowSizing();
+    Vector<int> rowsHeight(rowSpan);
+
+    // Getting height of rows in current rowSpan cell, getting total height of rows and adjusting rowSpan cell height with border spacing.
+    for (unsigned row = 0; row < rowSpan; row++) {
+        unsigned actualRow = row + rowIndex;
+        rowsHeight[row] = m_rowPos[actualRow + 1] - m_rowPos[actualRow] - borderSpacingForRow(actualRow);
+        totalRowsHeight += rowsHeight[row];
+        rowSpanCellHeight -= borderSpacingForRow(actualRow);
+    }
+    rowSpanCellHeight += borderSpacingForRow(rowIndex + rowSpan - 1);
+
+    if (!totalRowsHeight || rowSpanCellHeight <= totalRowsHeight)
+        return;
+
+    // Recalculating the height of rows based on rowSpan cell height if rowSpan cell height is more than total height of rows.
+    int remainingHeight = rowSpanCellHeight;
+
+    for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
+        int rowHeight = (rowSpanCellHeight * rowsHeight[row - rowIndex]) / totalRowsHeight;
+        remainingHeight -= rowHeight;
+        m_rowPos[row + 1] = m_rowPos[row] + rowHeight + borderSpacingForRow(row);
+    }
+    // Remaining height added in the last row under rowSpan cell
+    m_rowPos[rowIndex + rowSpan] += remainingHeight;
+
+    // Getting total changed height in the table
+    unsigned changedHeight = changedHeight = m_rowPos[rowIndex + rowSpan] - initialPos;
+
+    if (changedHeight) {
+        unsigned totalRows = m_grid.size();
+
+        // Apply changed height by rowSpan cells to rows present at the end of the table
+        for (unsigned row = rowIndex + rowSpan + 1; row <= totalRows; row++)
+            m_rowPos[row] += changedHeight;
+    }
+}
+
+// Find out the baseline of the cell
+// If the cell's baseline is more then the row's baseline then the cell's baseline become the row's baseline
+// and if the row's baseline goes out of the row's boundries then adjust row height accordingly.
+void RenderTableSection::updateBaselineForCell(RenderTableCell* cell, unsigned row, LayoutUnit& baselineDescent)
+{
+    if (!cell->isBaselineAligned())
+        return;
+
+    LayoutUnit baselinePosition = cell->cellBaselinePosition();
+    if (baselinePosition > cell->borderBefore() + cell->paddingBefore()) {
+        m_grid[row].baseline = max(m_grid[row].baseline, baselinePosition);
+
+        int cellStartRowBaselineDescent = 0;
+        if (cell->rowSpan() == 1) {
+            baselineDescent = max(baselineDescent, cell->logicalHeightForRowSizing() - (baselinePosition - cell->intrinsicPaddingBefore()));
+            cellStartRowBaselineDescent = baselineDescent;
+        }
+        m_rowPos[row + 1] = max<int>(m_rowPos[row + 1], m_rowPos[row] + m_grid[row].baseline + cellStartRowBaselineDescent);
+    }
+}
+
 int RenderTableSection::calcRowLogicalHeight()
 {
 #ifndef NDEBUG
@@ -264,14 +337,14 @@ int RenderTableSection::calcRowLogicalHeight()
     ASSERT(!needsLayout());
 
     RenderTableCell* cell;
-
-    int spacing = table()->vBorderSpacing();
     
     RenderView* viewRenderer = view();
     LayoutStateMaintainer statePusher(viewRenderer);
 
     m_rowPos.resize(m_grid.size() + 1);
-    m_rowPos[0] = spacing;
+    m_rowPos[0] = table()->vBorderSpacing();
+
+    SpanningRenderTableCells rowSpanCells;
 
     for (unsigned r = 0; r < m_grid.size(); r++) {
         m_grid[r].baseline = 0;
@@ -290,13 +363,18 @@ int RenderTableSection::calcRowLogicalHeight()
                 if (current.inColSpan && cell->rowSpan() == 1)
                     continue;
 
-                // FIXME: We are always adding the height of a rowspan to the last rows which doesn't match
-                // other browsers. See webkit.org/b/52185 for example.
-                if ((cell->rowIndex() + cell->rowSpan() - 1) != r)
-                    continue;
+                if (cell->rowSpan() > 1) {
+                    // For row spanning cells, we only handle them for the first row they span. This ensures we take their baseline into account.
+                    if (cell->rowIndex() == r) {
+                        rowSpanCells.append(cell);
 
-                // For row spanning cells, |r| is the last row in the span.
-                unsigned cellStartRow = cell->rowIndex();
+                        // Find out the baseline. The baseline is set on the first row in a rowSpan.
+                        updateBaselineForCell(cell, r, baselineDescent);
+                    }
+                    continue;
+                }
+
+                ASSERT(cell->rowSpan() == 1);
 
                 if (cell->hasOverrideHeight()) {
                     if (!statePusher.didPush()) {
@@ -310,32 +388,20 @@ int RenderTableSection::calcRowLogicalHeight()
                     cell->layoutIfNeeded();
                 }
 
-                int cellLogicalHeight = cell->logicalHeightForRowSizing();
-                m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[cellStartRow] + cellLogicalHeight);
+                m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[r] + cell->logicalHeightForRowSizing());
 
-                // Find out the baseline. The baseline is set on the first row in a rowspan.
-                if (cell->isBaselineAligned()) {
-                    LayoutUnit baselinePosition = cell->cellBaselinePosition();
-                    if (baselinePosition > cell->borderBefore() + cell->paddingBefore()) {
-                        m_grid[cellStartRow].baseline = max(m_grid[cellStartRow].baseline, baselinePosition);
-                        // The descent of a cell that spans multiple rows does not affect the height of the first row it spans, so don't let it
-                        // become the baseline descent applied to the rest of the row. Also we don't account for the baseline descent of
-                        // non-spanning cells when computing a spanning cell's extent.
-                        int cellStartRowBaselineDescent = 0;
-                        if (cell->rowSpan() == 1) {
-                            baselineDescent = max(baselineDescent, cellLogicalHeight - (baselinePosition - cell->intrinsicPaddingBefore()));
-                            cellStartRowBaselineDescent = baselineDescent;
-                        }
-                        m_rowPos[cellStartRow + 1] = max<int>(m_rowPos[cellStartRow + 1], m_rowPos[cellStartRow] + m_grid[cellStartRow].baseline + cellStartRowBaselineDescent);
-                    }
-                }
+                // Find out the baseline.
+                updateBaselineForCell(cell, r, baselineDescent);
             }
         }
 
         // Add the border-spacing to our final position.
-        m_rowPos[r + 1] += m_grid[r].rowRenderer ? spacing : 0;
+        m_rowPos[r + 1] += borderSpacingForRow(r);
         m_rowPos[r + 1] = max(m_rowPos[r + 1], m_rowPos[r]);
     }
+
+    if (!rowSpanCells.isEmpty())
+        distributeRowSpanHeightToRows(rowSpanCells);
 
     ASSERT(!needsLayout());
 
