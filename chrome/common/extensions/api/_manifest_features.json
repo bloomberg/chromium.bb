@@ -245,7 +245,10 @@
       "extension", "platform_app"
     ],
     "whitelist": [
-      "mdbihdcgjmagbcapkhhkjbbdlkflmbfo"  // Placeholder to activate whitelist.
+      "mdbihdcgjmagbcapkhhkjbbdlkflmbfo",  // unit_tests
+      "pmofbkohncoogjjhahejjfbppikbjigm",  // Google Now
+      "hkhhlkdconhgemhegnplaldnmnmkaemd",  // Get Started App
+      "nmmhkkegccagdldgiimedpiccmgmieda"  // In-app payments support app.
     ]
   },
   "offline_enabled": {
