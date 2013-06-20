@@ -12,7 +12,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Browser;
 class GURL;
 class Profile;
 
@@ -22,6 +21,8 @@ class BookmarkEditor {
  public:
   // An enumeration of the possible configurations offered.
   enum Configuration {
+    // If Configuration is SHOW_TREE, a tree is shown allowing the user to
+    // choose the parent of the node.
     SHOW_TREE,
     NO_TREE
   };
@@ -74,8 +75,8 @@ class BookmarkEditor {
     // If type == EXISTING_NODE this gives the existing node.
     const BookmarkNode* existing_node;
 
-    // If type == NEW_URL or type == NEW_FOLDER this gives the parent node
-    // to place the new node in.
+    // If type == NEW_URL or type == NEW_FOLDER this gives the initial parent
+    // node to place the new node in.
     const BookmarkNode* parent_node;
 
     // If type == NEW_URL or type == NEW_FOLDER this gives the index to insert
@@ -94,13 +95,9 @@ class BookmarkEditor {
     explicit EditDetails(Type node_type);
   };
 
-  // Shows the bookmark editor. If --use-more-webui is enabled use the bookmark
-  // manager to add or edit bookmarks. The bookmark editor allows editing an
-  // existing node or creating a new bookmark node (as determined by
-  // |details.type|). If |configuration| is SHOW_TREE, a tree is shown allowing
-  // the user to choose the parent of the node.
-  // |parent| gives the initial parent to select in the tree for the node.
-  // |parent| is only used if |details.existing_node| is null.
+  // Shows the bookmark editor. The bookmark editor allows editing an existing
+  // node or creating a new bookmark node (as determined by |details.type|).
+  // |details.parent_node| is only used if |details.existing_node| is null.
   static void Show(gfx::NativeWindow parent_window,
                    Profile* profile,
                    const EditDetails& details,
