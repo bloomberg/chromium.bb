@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/autofill/autocheckout_bubble_controller.h"
 
-#include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -22,9 +22,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/browser/autofill_common_test.h"
-#include "components/autofill/browser/autofill_profile.h"
-#include "components/autofill/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/autofill_common_test.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/resource/resource_bundle.h"
 

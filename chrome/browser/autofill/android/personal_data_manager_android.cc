@@ -11,8 +11,8 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/autofill/browser/field_types.h"
-#include "components/autofill/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "jni/PersonalDataManager_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;

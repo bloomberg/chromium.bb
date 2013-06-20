@@ -11,7 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -1,0 +1,68 @@
+include_rules = [
+  "+components/webdata/common",
+  "+crypto/random.h",
+  "+google_apis/gaia",
+  "+google_apis/google_api_keys.h",
+  "+net",
+  "+sql",
+  "+third_party/libjingle",
+  "+third_party/libphonenumber",  # For phone number i18n.
+
+  # TODO(blundell): Bring this list to zero.
+  #
+  # Do not add to the list of temporarily-allowed dependencies below,
+  # and please do not introduce more #includes of these files.
+  "!content/public/browser/android/content_view_core.h",
+  "!content/public/browser/browser_context.h",
+  "!content/public/browser/browser_thread.h",
+  "!content/public/browser/navigation_controller.h",
+  "!content/public/browser/navigation_details.h",
+  "!content/public/browser/notification_details.h",
+  "!content/public/browser/notification_observer.h",
+  "!content/public/browser/notification_registrar.h",
+  "!content/public/browser/notification_service.h",
+  "!content/public/browser/notification_source.h",
+  "!content/public/browser/notification_types.h",
+  "!content/public/browser/render_view_host.h",
+  "!content/public/browser/web_contents.h",
+  "!content/public/browser/web_contents_observer.h",
+  "!content/public/browser/web_contents_view.h",
+  "!content/public/common/frame_navigate_params.h",
+  "!content/public/common/url_constants.h",
+  "!third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h",
+  "!third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h",
+
+  # TODO(akalin): Remove this dependency.
+  "!sync/util/data_encryption_win.h",
+]
+
+specific_include_rules = {
+  '.*_[a-z]*test\.cc': [
+    "+content/public/test",
+
+    # TODO(joi): Bring this list to zero.
+    #
+    # Do not add to the list of temporarily-allowed dependencies below,
+    # and please do not introduce more #includes of these files.
+    "!chrome/browser/autofill/autofill_cc_infobar_delegate.h",
+    "!chrome/browser/autofill/personal_data_manager_factory.h",
+    "!chrome/browser/password_manager/encryptor.h",
+    "!chrome/browser/password_manager/password_manager.h",
+    "!chrome/browser/password_manager/password_manager_delegate_impl.h",
+    "!chrome/browser/profiles/profile.h",
+    "!chrome/browser/sync/profile_sync_service.h",
+    "!chrome/browser/sync/profile_sync_service_factory.h",
+    "!chrome/browser/translate/translate_infobar_delegate.h",
+    "!chrome/browser/translate/translate_manager.h",
+    "!chrome/browser/ui/autofill/tab_autofill_manager_delegate.h",
+    "!chrome/browser/ui/browser.h",
+    "!chrome/browser/ui/browser_tabstrip.h",
+    "!chrome/browser/ui/browser_window.h",
+    "!chrome/browser/ui/tabs/tab_strip_model.h",
+    "!chrome/browser/webdata/web_data_service.h",
+    "!chrome/browser/webdata/web_data_service_factory.h",
+    "!chrome/browser/webdata/web_data_service_test_util.h",
+    "!chrome/common/chrome_paths.h",
+    "!chrome/test/base",
+  ],
+}

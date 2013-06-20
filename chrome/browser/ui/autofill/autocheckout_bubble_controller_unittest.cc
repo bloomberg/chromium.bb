@@ -6,7 +6,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/autofill/autocheckout_bubble_controller.h"
-#include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 

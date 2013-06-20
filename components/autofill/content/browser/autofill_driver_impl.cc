@@ -4,9 +4,9 @@
 
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 
-#include "components/autofill/browser/autofill_external_delegate.h"
-#include "components/autofill/browser/autofill_manager.h"
-#include "components/autofill/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_external_delegate.h"
+#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 
 namespace autofill {

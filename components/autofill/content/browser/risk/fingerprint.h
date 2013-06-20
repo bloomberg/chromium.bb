@@ -17,7 +17,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/autofill/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_manager_delegate.h"
 
 class PrefService;
 

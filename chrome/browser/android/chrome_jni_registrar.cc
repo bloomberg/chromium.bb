@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
 #include "chrome/browser/ui/android/validation_message_bubble_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
-#include "components/autofill/browser/android/component_jni_registrar.h"
+#include "components/autofill/core/browser/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 

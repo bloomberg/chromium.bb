@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "components/autofill/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/browser/personal_data_manager_observer.h"
 
 namespace autofill {
 class PersonalDataManager;

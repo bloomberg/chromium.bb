@@ -6,7 +6,7 @@
 #define COMPONENTS_AUTOFILL_BROWSER_WALLET_FORM_FIELD_ERROR_H_
 
 #include "base/strings/string16.h"
-#include "components/autofill/browser/field_types.h"
+#include "components/autofill/core/browser/field_types.h"
 
 namespace base {
 class DictionaryValue;

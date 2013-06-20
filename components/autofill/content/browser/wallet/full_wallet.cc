@@ -8,7 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/browser/credit_card.h"
+#include "components/autofill/core/browser/credit_card.h"
 
 namespace {
 

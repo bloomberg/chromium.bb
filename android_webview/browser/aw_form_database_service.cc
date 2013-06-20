@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/aw_form_database_service.h"
 #include "base/logging.h"
-#include "components/autofill/browser/webdata/autofill_table.h"
+#include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/webdata/common/webdata_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util_android.h"

@@ -55,7 +55,7 @@
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/syncable_service.h"
 

@@ -11,10 +11,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/browser/autofill_manager.h"
-#include "components/autofill/browser/data_driven_test.h"
-#include "components/autofill/browser/form_structure.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/data_driven_test.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "googleurl/src/gurl.h"
 
 namespace autofill {

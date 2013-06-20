@@ -9,9 +9,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
-#include "components/autofill/browser/autofill_driver.h"
-#include "components/autofill/browser/autofill_external_delegate.h"
-#include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_external_delegate.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {

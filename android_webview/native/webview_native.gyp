@@ -12,7 +12,6 @@
       'dependencies': [
         '../../base/base.gyp:base_static',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../../components/components.gyp:autofill_browser',
         '../../components/components.gyp:autofill_content_browser',
         '../../components/components.gyp:web_contents_delegate_android',
         '../../cc/cc.gyp:cc',

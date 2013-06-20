@@ -6,9 +6,9 @@
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_REQUEST_MANAGER_H_
 
 #include "base/supports_user_data.h"
-#include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autocheckout_status.h"
 #include "googleurl/src/gurl.h"
 

@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
-#include "components/autofill/browser/field_types.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
+#include "components/autofill/core/browser/field_types.h"
 
 namespace gfx {
 class Image;

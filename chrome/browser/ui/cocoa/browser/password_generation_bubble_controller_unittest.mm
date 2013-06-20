@@ -10,7 +10,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#include "components/autofill/browser/password_generator.h"
+#include "components/autofill/core/browser/password_generator.h"
 #include "content/public/common/password_form.h"
 #include "testing/gtest_mac.h"
 

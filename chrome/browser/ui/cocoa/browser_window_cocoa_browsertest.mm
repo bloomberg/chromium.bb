@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/autofill/browser/password_generator.h"
+#include "components/autofill/core/browser/password_generator.h"
 #include "content/public/common/password_form.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"

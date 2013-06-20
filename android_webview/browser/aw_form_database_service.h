@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/synchronization/waitable_event.h"
-#include "components/autofill/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata/common/web_database_service.h"
 

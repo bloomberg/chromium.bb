@@ -9,9 +9,9 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/autofill/browser/autofill_common_test.h"
-#include "components/autofill/browser/autofill_profile.h"
-#include "components/autofill/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/browser/autofill_common_test.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/webdata/autofill_entry.h"
 
 using autofill::AutofillFieldType;
 using autofill::AutofillKey;

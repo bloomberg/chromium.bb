@@ -7,11 +7,11 @@
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/autofill/browser/autofill_profile.h"
-#include "components/autofill/browser/credit_card.h"
-#include "components/autofill/browser/personal_data_manager.h"
-#include "components/autofill/browser/webdata/autofill_entry.h"
-#include "components/autofill/browser/webdata/autofill_table.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/browser/webdata/autofill_table.h"
 
 using autofill::AutofillKey;
 using autofill::AutofillTable;

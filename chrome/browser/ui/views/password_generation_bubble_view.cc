@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/url_constants.h"
-#include "components/autofill/browser/password_generator.h"
+#include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/page_navigator.h"

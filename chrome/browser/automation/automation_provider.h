@@ -26,7 +26,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"
-#include "components/autofill/browser/field_types.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/trace_subscriber.h"

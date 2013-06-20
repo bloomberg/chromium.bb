@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "components/autofill/browser/autofill_manager_delegate.h"
 #include "components/autofill/content/browser/wallet/form_field_error.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
+#include "components/autofill/core/browser/autofill_manager_delegate.h"
 
 class AutofillMetrics;
 

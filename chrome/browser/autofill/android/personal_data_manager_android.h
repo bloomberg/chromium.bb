@@ -7,8 +7,8 @@
 
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
-#include "components/autofill/browser/personal_data_manager.h"
-#include "components/autofill/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/personal_data_manager_observer.h"
 
 namespace autofill {
 

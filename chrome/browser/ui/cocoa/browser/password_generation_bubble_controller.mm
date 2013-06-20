@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"
-#include "components/autofill/browser/password_generator.h"
+#include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/render_view_host.h"

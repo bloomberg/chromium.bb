@@ -9,11 +9,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/browser/autofill_country.h"
-#include "components/autofill/browser/autofill_profile.h"
-#include "components/autofill/browser/credit_card.h"
-#include "components/autofill/browser/validation.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
+#include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/validation.h"
 
 namespace autofill {
 namespace wallet {

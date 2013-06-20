@@ -4,7 +4,7 @@
 
 #include "components/autofill/content/browser/autocheckout_request_manager.h"
 
-#include "components/autofill/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "content/public/browser/browser_context.h"
 
 namespace {

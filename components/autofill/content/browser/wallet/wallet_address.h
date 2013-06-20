@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "components/autofill/browser/field_types.h"
+#include "components/autofill/core/browser/field_types.h"
 
 namespace base {
 class DictionaryValue;
@@ -23,7 +23,7 @@ class AutofillProfile;
 namespace wallet {
 
 // TODO(ahutter): This address is a lot like
-// components/autofill/browser/address.h.  There should be a super
+// components/autofill/core/browser/address.h.  There should be a super
 // class that both extend from to clean up duplicated code. See
 // http://crbug.com/164463.
 

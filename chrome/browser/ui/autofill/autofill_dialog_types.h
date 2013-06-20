@@ -10,8 +10,8 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
-#include "components/autofill/browser/autofill_metrics.h"
-#include "components/autofill/browser/field_types.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"

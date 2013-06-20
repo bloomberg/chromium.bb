@@ -90,7 +90,7 @@
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/metrics/entropy_provider.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/browser/autofill_manager.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/render_process_host.h"
 

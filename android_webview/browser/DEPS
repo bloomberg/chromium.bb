@@ -7,8 +7,8 @@ include_rules = [
   "+cc",
 
   "+components/auto_login_parser",
-  "+components/autofill/browser",
   "+components/autofill/content/browser",
+  "+components/autofill/core/browser",
   "+components/autofill/core/common",
   "+components/navigation_interception",
   "+components/user_prefs",

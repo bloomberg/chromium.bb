@@ -8,9 +8,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/browser/autofill_country.h"
-#include "components/autofill/browser/autofill_profile.h"
-#include "components/autofill/browser/state_names.h"
+#include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/state_names.h"
 
 namespace autofill {
 namespace wallet {
