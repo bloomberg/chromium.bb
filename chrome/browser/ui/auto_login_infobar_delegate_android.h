@@ -28,8 +28,6 @@ class AutoLoginInfoBarDelegateAndroid : public AutoLoginInfoBarDelegate {
   static bool Register(JNIEnv* env);
 
  private:
-  // Temporary friendship to allow a three way patch
-  friend class AutoLoginInfoBar;
   const std::string& realm() const { return params_.header.realm; }
   const std::string& account() const { return params_.header.account; }
   const std::string& args() const { return params_.header.args; }
