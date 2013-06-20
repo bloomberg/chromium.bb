@@ -4428,7 +4428,11 @@
                   '/ignore:4199',
                   '/ignore:4221',
                   '/nxcompat',
-                  '/largeaddressaware',
+                ],
+                'conditions': [
+                  ['asan==0', {
+                    'AdditionalOptions': ['/largeaddressaware'],
+                  }],
                 ],
               },
             },
