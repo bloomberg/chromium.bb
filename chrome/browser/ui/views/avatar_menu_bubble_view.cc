@@ -41,6 +41,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -553,7 +554,6 @@ gfx::Size AvatarMenuBubbleView::GetPreferredSize() {
     preferred_size.Enlarge(
         0,
         kSeparatorPaddingY * 4 + separator_->GetPreferredSize().height() * 2);
-
   }
 
   const int kBubbleViewMaxWidth = 800;
@@ -563,10 +563,12 @@ gfx::Size AvatarMenuBubbleView::GetPreferredSize() {
   // We have to do this after the final width is calculated, since the label
   // will wrap based on the width.
   if (managed_user_info_) {
+    int remaining_width =
+        preferred_size.width() - icon_view_->GetPreferredSize().width() -
+        views::kRelatedControlSmallHorizontalSpacing;
     preferred_size.Enlarge(
         0,
-        managed_user_info_->GetHeightForWidth(preferred_size.width()) +
-            kItemMarginY);
+        managed_user_info_->GetHeightForWidth(remaining_width) + kItemMarginY);
   }
 
   return preferred_size;
@@ -594,9 +596,15 @@ void AvatarMenuBubbleView::Layout() {
     buttons_view_->SetBounds(0, y,
         width(), buttons_view_->GetPreferredSize().height());
   } else if (managed_user_info_) {
-    managed_user_info_->SizeToFit(width());
-    int height = managed_user_info_->GetPreferredSize().height();
-    managed_user_info_->SetBounds(0, y, width(), height);
+    gfx::Size icon_size = icon_view_->GetPreferredSize();
+    gfx::Rect icon_bounds(0, y, icon_size.width(), icon_size.height());
+    icon_view_->SetBoundsRect(icon_bounds);
+    int info_width = width() - icon_bounds.right() -
+                     views::kRelatedControlSmallHorizontalSpacing;
+    int height = managed_user_info_->GetHeightForWidth(info_width);
+    managed_user_info_->SetBounds(
+        icon_bounds.right() + views::kRelatedControlSmallHorizontalSpacing,
+        y, info_width, height);
     y += height + kItemMarginY + kSeparatorPaddingY;
     separator_switch_users_->SetBounds(0, y, width(), separator_height);
     y += separator_height + kSeparatorPaddingY;
@@ -748,6 +756,11 @@ void AvatarMenuBubbleView::InitManagedUserContents(
   managed_user_info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   managed_user_info_->SetBackgroundColor(color());
   AddChildView(managed_user_info_);
+
+  // Add the managed user icon.
+  icon_view_ = new views::ImageView();
+  icon_view_->SetImage(avatar_menu_model_->GetManagedUserIcon().ToImageSkia());
+  AddChildView(icon_view_);
 
   // Add a link for switching profiles.
   separator_switch_users_ = new views::Separator(views::Separator::HORIZONTAL);

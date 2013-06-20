@@ -25,6 +25,7 @@ class WebContents;
 
 namespace views {
 class CustomButton;
+class ImageView;
 class Label;
 class Link;
 class Separator;
@@ -112,6 +113,7 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   // avatar_menu_model_->GetManagedUserInformation() returns a non-empty string.
   // See OnAvatarMenuModelChanged().
   views::Label* managed_user_info_;
+  views::ImageView* icon_view_;
   views::Separator* separator_switch_users_;
   views::Link* switch_profile_link_;
 
