@@ -343,15 +343,15 @@ testcase.intermediate.audioOpen = function(path) {
 testcase.intermediate.videoOpen = function(path) {
   var appId;
   var videoAppId;
-  var steps = [
+  StepsRunner.run([
     function() {
-      setupAndWaitUntilReady(path, steps.shift());
+      setupAndWaitUntilReady(path, this.next);
     },
     function(inAppId) {
       appId = inAppId;
       // Select the song.
       callRemoteTestUtil(
-          'selectFile', appId, ['world.ogv'], steps.shift());
+          'selectFile', appId, ['world.ogv'], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -360,7 +360,7 @@ testcase.intermediate.videoOpen = function(path) {
           'fakeMouseDoubleClick',
           appId,
           ['#file-list li.table-row[selected] .filename-label span'],
-          steps.shift());
+          this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -368,7 +368,7 @@ testcase.intermediate.videoOpen = function(path) {
       callRemoteTestUtil('waitForWindow',
                          null,
                          ['video_player.html'],
-                         steps.shift());
+                         this.next);
     },
     function(inAppId) {
       videoAppId = inAppId;
@@ -376,7 +376,7 @@ testcase.intermediate.videoOpen = function(path) {
       callRemoteTestUtil('waitForElement',
                          videoAppId,
                          ['video[src]'],
-                         steps.shift());
+                         this.next);
     },
     function(element) {
       chrome.test.assertEq(
@@ -388,14 +388,12 @@ testcase.intermediate.videoOpen = function(path) {
       callRemoteTestUtil('waitForWindowGeometry',
                          videoAppId,
                          [320, 192],
-                         steps.shift());
+                         this.next);
     },
     function(element) {
-      chrome.test.succeed();
+      checkIfNoErrorsOccured(this.next);
     }
-  ];
-  steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
-  steps.shift()();
+  ]);
 };
 
 /**
