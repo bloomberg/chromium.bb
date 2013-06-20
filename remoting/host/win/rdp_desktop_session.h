@@ -15,10 +15,6 @@
 #include "remoting/host/chromoting_lib.h"
 #include "remoting/host/win/rdp_client.h"
 
-namespace net {
-class IPEndPoint;
-}  // namespace net
-
 namespace remoting {
 
 // Implements IRdpDesktopSession interface providing a way to host RdpClient
@@ -43,7 +39,7 @@ class __declspec(uuid(RDP_DESKTOP_SESSION_CLSID)) RdpDesktopSession
   RdpDesktopSession();
 
   // IRdpDesktopSession implementation.
-  STDMETHOD(Connect)(long width, long height,
+  STDMETHOD(Connect)(long width, long height, BSTR terminal_id,
                      IRdpDesktopSessionEventHandler* event_handler);
   STDMETHOD(Disconnect)();
   STDMETHOD(ChangeResolution)(long width, long height);
@@ -53,7 +49,7 @@ class __declspec(uuid(RDP_DESKTOP_SESSION_CLSID)) RdpDesktopSession
 
  private:
   // RdpClient::EventHandler interface.
-  virtual void OnRdpConnected(const net::IPEndPoint& client_endpoint) OVERRIDE;
+  virtual void OnRdpConnected() OVERRIDE;
   virtual void OnRdpClosed() OVERRIDE;
 
   BEGIN_COM_MAP(RdpDesktopSession)

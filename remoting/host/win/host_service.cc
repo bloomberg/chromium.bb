@@ -84,12 +84,12 @@ int HostService::Run() {
   return (this->*run_routine_)();
 }
 
-bool HostService::AddWtsTerminalObserver(const net::IPEndPoint& client_endpoint,
-                                        WtsTerminalObserver* observer) {
+bool HostService::AddWtsTerminalObserver(const std::string& terminal_id,
+                                         WtsTerminalObserver* observer) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   RegisteredObserver registered_observer;
-  registered_observer.client_endpoint = client_endpoint;
+  registered_observer.terminal_id = terminal_id;
   registered_observer.session_id = kInvalidSessionId;
   registered_observer.observer = observer;
 
@@ -98,7 +98,7 @@ bool HostService::AddWtsTerminalObserver(const net::IPEndPoint& client_endpoint,
   for (i = observers_.begin(); i != observers_.end(); ++i) {
     // Get the attached session ID from another observer watching the same WTS
     // console if any.
-    if (i->client_endpoint == client_endpoint) {
+    if (i->terminal_id == terminal_id) {
       registered_observer.session_id = i->session_id;
       session_id_found = true;
     }
@@ -108,10 +108,10 @@ bool HostService::AddWtsTerminalObserver(const net::IPEndPoint& client_endpoint,
       return false;
   }
 
-  // If |client_endpoint| is new, enumerate all sessions to see if there is one
-  // attached to |client_endpoint|.
+  // If |terminal_id| is new, enumerate all sessions to see if there is one
+  // attached to |terminal_id|.
   if (!session_id_found)
-    registered_observer.session_id = GetSessionIdForEndpoint(client_endpoint);
+    registered_observer.session_id = LookupSessionId(terminal_id);
 
   observers_.push_back(registered_observer);
 
@@ -156,8 +156,8 @@ void HostService::OnSessionChange(uint32 event, uint32 session_id) {
 
   // Assuming that notification can arrive later query the current state of
   // |session_id|.
-  net::IPEndPoint client_endpoint;
-  bool attached = GetEndpointForSessionId(session_id, &client_endpoint);
+  std::string terminal_id;
+  bool attached = LookupTerminalId(session_id, &terminal_id);
 
   std::list<RegisteredObserver>::iterator i = observers_.begin();
   while (i != observers_.end()) {
@@ -167,7 +167,7 @@ void HostService::OnSessionChange(uint32 event, uint32 session_id) {
     // Issue a detach notification if the session was detached from a client or
     // if it is now attached to a different client.
     if (i->session_id == session_id &&
-        (!attached || !(i->client_endpoint == client_endpoint))) {
+        (!attached || !(i->terminal_id == terminal_id))) {
       i->session_id = kInvalidSessionId;
       i->observer->OnSessionDetached();
       i = next;
@@ -176,7 +176,7 @@ void HostService::OnSessionChange(uint32 event, uint32 session_id) {
 
     // The client currently attached to |session_id| was attached to a different
     // session before. Reconnect it to |session_id|.
-    if (attached && i->client_endpoint == client_endpoint &&
+    if (attached && i->terminal_id == terminal_id &&
         i->session_id != session_id) {
       WtsTerminalObserver* observer = i->observer;
 

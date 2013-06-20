@@ -36,9 +36,9 @@
   <?define ControllerProgid =
       "ChromotingElevatedController.ElevatedController" ?>
 
-  <?define IRdpDesktopSessionId = "{1d68cef0-dbc0-4745-9755-055b28d9e5cc}" ?>
+  <?define IRdpDesktopSessionId = "{6a7699f0-ee43-43e7-aa30-a6738f9bd470}" ?>
   <?define IRdpDesktopSessionEventHandlerId =
-      "{987bca97-9d40-42fc-a00d-e6a701261af5}" ?>
+      "{b59b96da-83cb-40ee-9b91-c377400fc3e3}" ?>
 
   <!--
     The long hex value(s) below are security descriptors generated from SDDL

@@ -13,7 +13,6 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
-#include "net/base/ip_endpoint.h"
 #include "remoting/host/win/message_window.h"
 #include "remoting/host/win/wts_terminal_monitor.h"
 
@@ -41,7 +40,7 @@ class HostService : public win::MessageWindow::Delegate,
   int Run();
 
   // WtsTerminalMonitor implementation
-  virtual bool AddWtsTerminalObserver(const net::IPEndPoint& client_endpoint,
+  virtual bool AddWtsTerminalObserver(const std::string& terminal_id,
                                       WtsTerminalObserver* observer) OVERRIDE;
   virtual void RemoveWtsTerminalObserver(
       WtsTerminalObserver* observer) OVERRIDE;
@@ -91,16 +90,15 @@ class HostService : public win::MessageWindow::Delegate,
   static VOID WINAPI ServiceMain(DWORD argc, WCHAR* argv[]);
 
   struct RegisteredObserver {
-    // Specifies the client address of an RDP connection or IPEndPoint() for
-    // the physical console.
-    net::IPEndPoint client_endpoint;
+    // Unique identifier of the terminal to observe.
+    std::string terminal_id;
 
     // Specifies ID of the attached session or |kInvalidSession| if no session
-    // is attached to the WTS console.
+    // is attached to the WTS terminal.
     uint32 session_id;
 
-    // Points to the observer receiving notifications about the WTS console
-    // identified by |client_endpoint|.
+    // Points to the observer receiving notifications about the WTS terminal
+    // identified by |terminal_id|.
     WtsTerminalObserver* observer;
   };
 

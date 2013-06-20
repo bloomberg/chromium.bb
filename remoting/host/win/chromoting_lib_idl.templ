@@ -66,20 +66,15 @@ interface IDaemonControl2 : IDaemonControl {
 
 [
   object,
-  uuid(987bca97-9d40-42fc-a00d-e6a701261af5),
+  uuid(b59b96da-83cb-40ee-9b91-c377400fc3e3),
   nonextensible,
   helpstring("IRdpDesktopSessionEventHandler Interface"),
   pointer_default(unique)
 ]
 interface IRdpDesktopSessionEventHandler : IUnknown {
   [ id(1), helpstring("Notifies that an RDP connection has been established "
-                      "successfully. The client's address and port are "
-                      " returned in |client_endpoint| as |SOCKADDR_STORAGE| "
-                      "structure. When this method is called multiple times, "
-                      "the most recent |client_endpoint| supersedes all "
-                      "previous ones.") ]
-  HRESULT OnRdpConnected([in, size_is(length)] byte* client_endpoint,
-                         [in] long length);
+                      "successfully.") ]
+  HRESULT OnRdpConnected();
 
   [ id(2), helpstring("Notifies the delegate that the RDP connection has been "
                       "closed.") ]
@@ -88,7 +83,7 @@ interface IRdpDesktopSessionEventHandler : IUnknown {
 
 [
   object,
-  uuid(1d68cef0-dbc0-4745-9755-055b28d9e5cc),
+  uuid(6a7699f0-ee43-43e7-aa30-a6738f9bd470),
   nonextensible,
   helpstring("IRdpDesktopSession Interface"),
   pointer_default(unique)
@@ -96,8 +91,9 @@ interface IRdpDesktopSessionEventHandler : IUnknown {
 interface IRdpDesktopSession : IUnknown {
   [ id(1), helpstring("Initiates a loopback RDP connection to spawn a new "
                       "Windows session. |width| and |height| specify the "
-                      "initial screen resolution.") ]
-  HRESULT Connect([in] long width, [in] long height,
+                      "initial screen resolution. |terminal_id| specifies a "
+                      "unique value to be used to identify this connection.") ]
+  HRESULT Connect([in] long width, [in] long height, [in] BSTR terminal_id,
                   [in] IRdpDesktopSessionEventHandler* event_handler);
 
   [ id(2), helpstring("Shuts down the connection created by Connect().") ]

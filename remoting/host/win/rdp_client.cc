@@ -5,17 +5,13 @@
 #include "remoting/host/win/rdp_client.h"
 
 #include <windows.h>
-#include <iphlpapi.h>
-#include <winsock2.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/win/registry.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
 #include "remoting/base/typed_buffer.h"
 #include "remoting/host/win/rdp_client_window.h"
 
@@ -23,11 +19,9 @@ namespace remoting {
 
 namespace {
 
-// The range of addresses RdpClient may use to distinguish client connections:
-// 127.0.0.2 - 127.255.255.254. 127.0.0.1 is explicitly blocked by the RDP
-// ActiveX control.
-const int kMinLoopbackAddress = 0x7f000002;
-const int kMaxLoopbackAddress = 0x7ffffffe;
+// 127.0.0.1 is explicitly blocked by the RDP ActiveX control, so we use
+// 127.0.0.2 instead.
+const unsigned char kRdpLoopbackAddress[] = { 127, 0, 0, 2 };
 
 const int kDefaultRdpPort = 3389;
 
@@ -51,7 +45,7 @@ class RdpClient::Core
       RdpClient::EventHandler* event_handler);
 
   // Initiates a loopback RDP connection.
-  void Connect(const SkISize& screen_size);
+  void Connect(const SkISize& screen_size, const std::string& terminal_id);
 
   // Initiates a graceful shutdown of the RDP connection.
   void Disconnect();
@@ -67,22 +61,9 @@ class RdpClient::Core
   friend class base::RefCountedThreadSafe<Core>;
   virtual ~Core();
 
-  // Returns the local address that is connected to |remote_endpoint|.
-  // The address is returned in |*local_endpoint|. The method fails if
-  // the connection could not be found in the table of TCP connections or there
-  // are more than one matching connection.
-  bool MatchRemoteEndpoint(const sockaddr_in& remote_endpoint,
-                           sockaddr_in* local_endpoint);
-
-  // Same as MatchRemoteEndpoint() but also uses the PID of the process bound
-  // to |local_endpoint| to match the connection.
-  bool MatchRemoteEndpointWithPid(const sockaddr_in& remote_endpoint,
-                                  DWORD local_pid,
-                                  sockaddr_in* local_endpoint);
-
   // Helpers for the event handler's methods that make sure that OnRdpClosed()
   // is the last notification delivered and is delevered only once.
-  void NotifyConnected(const net::IPEndPoint& client_endpoint);
+  void NotifyConnected();
   void NotifyClosed();
 
   // Task runner on which the caller expects |event_handler_| to be notified.
@@ -95,19 +76,8 @@ class RdpClient::Core
   // cleared when Disconnect() methods is called, stopping any further updates.
   RdpClient::EventHandler* event_handler_;
 
-  // Points to GetExtendedTcpTable().
-  typedef DWORD (WINAPI * GetExtendedTcpTableFn)(
-      PVOID, PDWORD, BOOL, ULONG, TCP_TABLE_CLASS, ULONG);
-  GetExtendedTcpTableFn get_extended_tcp_table_;
-
   // Hosts the RDP ActiveX control.
   scoped_ptr<RdpClientWindow> rdp_client_window_;
-
-  // The endpoint that |rdp_client_window_| connects to.
-  sockaddr_in server_address_;
-
-  // Same as |server_address_| but represented as net::IPEndPoint.
-  net::IPEndPoint server_endpoint_;
 
   // A self-reference to keep the object alive during connection shutdown.
   scoped_refptr<Core> self_;
@@ -119,11 +89,12 @@ RdpClient::RdpClient(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const SkISize& screen_size,
+    const std::string& terminal_id,
     EventHandler* event_handler) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   core_ = new Core(caller_task_runner, ui_task_runner, event_handler);
-  core_->Connect(screen_size);
+  core_->Connect(screen_size, terminal_id);
 }
 
 RdpClient::~RdpClient() {
@@ -144,14 +115,14 @@ RdpClient::Core::Core(
     RdpClient::EventHandler* event_handler)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
-      event_handler_(event_handler),
-      get_extended_tcp_table_(NULL) {
+      event_handler_(event_handler) {
 }
 
-void RdpClient::Core::Connect(const SkISize& screen_size) {
+void RdpClient::Core::Connect(const SkISize& screen_size,
+                              const std::string& terminal_id) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
-    ui_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&Core::Connect, this, screen_size));
+    ui_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Core::Connect, this, screen_size, terminal_id));
     return;
   }
 
@@ -159,38 +130,22 @@ void RdpClient::Core::Connect(const SkISize& screen_size) {
   DCHECK(!rdp_client_window_);
   DCHECK(!self_);
 
-  // This code link statically agains iphlpapi.dll, so it must be loaded
-  // already.
-  HMODULE iphlpapi_handle = GetModuleHandle(L"iphlpapi.dll");
-  CHECK(iphlpapi_handle != NULL);
-
-  // Get a pointer to GetExtendedTcpTable() which is available starting from
-  // XP SP2 / W2K3 SP1.
-  get_extended_tcp_table_ = reinterpret_cast<GetExtendedTcpTableFn>(
-      GetProcAddress(iphlpapi_handle, "GetExtendedTcpTable"));
-  CHECK(get_extended_tcp_table_);
-
   // Read the port number used by RDP.
-  DWORD port;
+  DWORD server_port;
   base::win::RegKey key(HKEY_LOCAL_MACHINE, kRdpPortKeyName, KEY_READ);
   if (!key.Valid() ||
-      (key.ReadValueDW(kRdpPortValueName, &port) != ERROR_SUCCESS)) {
-    port = kDefaultRdpPort;
+      (key.ReadValueDW(kRdpPortValueName, &server_port) != ERROR_SUCCESS)) {
+    server_port = kDefaultRdpPort;
   }
 
-  // Generate a random loopback address to connect to.
-  memset(&server_address_, 0, sizeof(server_address_));
-  server_address_.sin_family = AF_INET;
-  server_address_.sin_port = htons(port);
-  server_address_.sin_addr.S_un.S_addr = htonl(
-      base::RandInt(kMinLoopbackAddress, kMaxLoopbackAddress));
-
-  CHECK(server_endpoint_.FromSockAddr(
-      reinterpret_cast<struct sockaddr*>(&server_address_),
-      sizeof(server_address_)));
+  net::IPAddressNumber server_address(
+      kRdpLoopbackAddress,
+      kRdpLoopbackAddress + arraysize(kRdpLoopbackAddress));
+  net::IPEndPoint server_endpoint(server_address, server_port);
 
   // Create the ActiveX control window.
-  rdp_client_window_.reset(new RdpClientWindow(server_endpoint_, this));
+  rdp_client_window_.reset(new RdpClientWindow(server_endpoint, terminal_id,
+                                               this));
   if (!rdp_client_window_->Connect(screen_size)) {
     rdp_client_window_.reset();
 
@@ -230,29 +185,7 @@ void RdpClient::Core::OnConnected() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(rdp_client_window_);
 
-  // Now that the connection is established, map the server endpoint to
-  // the client one.
-  bool result;
-  sockaddr_in client_address;
-  if (get_extended_tcp_table_) {
-    result = MatchRemoteEndpointWithPid(server_address_, GetCurrentProcessId(),
-                                        &client_address);
-  } else {
-    result = MatchRemoteEndpoint(server_address_, &client_address);
-  }
-
-  if (!result) {
-    NotifyClosed();
-    Disconnect();
-    return;
-  }
-
-  net::IPEndPoint client_endpoint;
-  CHECK(client_endpoint.FromSockAddr(
-      reinterpret_cast<struct sockaddr*>(&client_address),
-      sizeof(client_address)));
-
-  NotifyConnected(client_endpoint);
+  NotifyConnected();
 }
 
 void RdpClient::Core::OnDisconnected() {
@@ -271,141 +204,15 @@ RdpClient::Core::~Core() {
   DCHECK(!rdp_client_window_);
 }
 
-bool RdpClient::Core::MatchRemoteEndpoint(
-    const sockaddr_in& remote_endpoint,
-    sockaddr_in* local_endpoint) {
-  TypedBuffer<MIB_TCPTABLE> tcp_table;
-  DWORD tcp_table_size = 0;
-
-  // Retrieve the size of the buffer needed for the IPv4 TCP connection table.
-  DWORD result = GetTcpTable(tcp_table.get(), &tcp_table_size, FALSE);
-  for (int retries = 0; retries < 5 && result == ERROR_INSUFFICIENT_BUFFER;
-       ++retries) {
-    // Allocate a buffer that is large enough.
-    TypedBuffer<MIB_TCPTABLE> buffer(tcp_table_size);
-    tcp_table.Swap(buffer);
-
-    // Get the list of TCP connections (IPv4 only).
-    result = GetTcpTable(tcp_table.get(), &tcp_table_size, FALSE);
-  }
-  if (result != ERROR_SUCCESS) {
-    SetLastError(result);
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to get the list of existing IPv4 TCP endpoints";
-    return false;
-  }
-
-  // Match the connection by the server endpoint.
-  bool found = false;
-  MIB_TCPROW* row = tcp_table->table;
-  MIB_TCPROW* row_end = row + tcp_table->dwNumEntries;
-  for (; row != row_end; ++row) {
-    if (row->dwRemoteAddr != remote_endpoint.sin_addr.S_un.S_addr ||
-        LOWORD(row->dwRemotePort) != remote_endpoint.sin_port) {
-      continue;
-    }
-
-    // Check if more than one connection has been matched.
-    if (found) {
-      LOG(ERROR) << "More than one connections matching "
-                 << server_endpoint_.ToString() << " found.";
-      return false;
-    }
-
-    memset(local_endpoint, 0, sizeof(*local_endpoint));
-    local_endpoint->sin_family = AF_INET;
-    local_endpoint->sin_addr.S_un.S_addr = row->dwLocalAddr;
-    local_endpoint->sin_port = LOWORD(row->dwLocalPort);
-    found = true;
-  }
-
-  if (!found) {
-    LOG(ERROR) << "No connection matching " << server_endpoint_.ToString()
-               << " found.";
-    return false;
-  }
-
-  return true;
-}
-
-bool RdpClient::Core::MatchRemoteEndpointWithPid(
-    const sockaddr_in& remote_endpoint,
-    DWORD local_pid,
-    sockaddr_in* local_endpoint) {
-  TypedBuffer<MIB_TCPTABLE_OWNER_PID> tcp_table;
-  DWORD tcp_table_size = 0;
-
-  // Retrieve the size of the buffer needed for the IPv4 TCP connection table.
-  DWORD result = get_extended_tcp_table_(tcp_table.get(),
-                                         &tcp_table_size,
-                                         FALSE,
-                                         AF_INET,
-                                         TCP_TABLE_OWNER_PID_CONNECTIONS,
-                                         0);
-  for (int retries = 0; retries < 5 && result == ERROR_INSUFFICIENT_BUFFER;
-       ++retries) {
-    // Allocate a buffer that is large enough.
-    TypedBuffer<MIB_TCPTABLE_OWNER_PID> buffer(tcp_table_size);
-    tcp_table.Swap(buffer);
-
-    // Get the list of TCP connections (IPv4 only).
-    result = get_extended_tcp_table_(tcp_table.get(),
-                                     &tcp_table_size,
-                                     FALSE,
-                                     AF_INET,
-                                     TCP_TABLE_OWNER_PID_CONNECTIONS,
-                                     0);
-  }
-  if (result != ERROR_SUCCESS) {
-    SetLastError(result);
-    LOG_GETLASTERROR(ERROR)
-        << "Failed to get the list of existing IPv4 TCP endpoints";
-    return false;
-  }
-
-  // Match the connection by the server endpoint.
-  bool found = false;
-  MIB_TCPROW_OWNER_PID* row = tcp_table->table;
-  MIB_TCPROW_OWNER_PID* row_end = row + tcp_table->dwNumEntries;
-  for (; row != row_end; ++row) {
-    if (row->dwRemoteAddr != remote_endpoint.sin_addr.S_un.S_addr ||
-        LOWORD(row->dwRemotePort) != remote_endpoint.sin_port ||
-        row->dwOwningPid != local_pid) {
-      continue;
-    }
-
-    // Check if more than one connection has been matched.
-    if (found) {
-      LOG(ERROR) << "More than one connections matching "
-                 << server_endpoint_.ToString() << " found.";
-      return false;
-    }
-
-    memset(local_endpoint, 0, sizeof(*local_endpoint));
-    local_endpoint->sin_family = AF_INET;
-    local_endpoint->sin_addr.S_un.S_addr = row->dwLocalAddr;
-    local_endpoint->sin_port = LOWORD(row->dwLocalPort);
-    found = true;
-  }
-
-  if (!found) {
-    LOG(ERROR) << "No connection matching " << server_endpoint_.ToString()
-               << " and PID " << local_pid << " found.";
-    return false;
-  }
-
-  return true;
-}
-
-void RdpClient::Core::NotifyConnected(const net::IPEndPoint& client_endpoint) {
+void RdpClient::Core::NotifyConnected() {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::NotifyConnected, this, client_endpoint));
+        FROM_HERE, base::Bind(&Core::NotifyConnected, this));
     return;
   }
 
   if (event_handler_)
-    event_handler_->OnRdpConnected(client_endpoint);
+    event_handler_->OnRdpConnected();
 }
 
 void RdpClient::Core::NotifyClosed() {

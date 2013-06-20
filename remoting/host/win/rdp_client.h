@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_WIN_RDP_CLIENT_H_
 #define REMOTING_HOST_WIN_RDP_CLIENT_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -13,10 +15,6 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-}  // namespace
-
-namespace net {
-class IPEndPoint;
 }  // namespace
 
 namespace remoting {
@@ -30,7 +28,7 @@ class RdpClient : public base::NonThreadSafe {
 
     // Notifies the event handler that an RDP connection has been established
     // successfully.
-    virtual void OnRdpConnected(const net::IPEndPoint& client_endpoint) = 0;
+    virtual void OnRdpConnected() = 0;
 
     // Notifies that the RDP connection has been closed.
     virtual void OnRdpClosed() = 0;
@@ -40,6 +38,7 @@ class RdpClient : public base::NonThreadSafe {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       const SkISize& screen_size,
+      const std::string& terminal_id,
       EventHandler* event_handler);
   virtual ~RdpClient();
 

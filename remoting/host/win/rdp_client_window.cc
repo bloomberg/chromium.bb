@@ -111,10 +111,12 @@ class RdpClientWindow::WindowHook
 };
 
 RdpClientWindow::RdpClientWindow(const net::IPEndPoint& server_endpoint,
+                                 const std::string& terminal_id,
                                  EventHandler* event_handler)
     : event_handler_(event_handler),
       screen_size_(SkISize::Make(0, 0)),
-      server_endpoint_(server_endpoint) {
+      server_endpoint_(server_endpoint),
+      terminal_id_(terminal_id) {
 }
 
 RdpClientWindow::~RdpClientWindow() {
@@ -236,9 +238,11 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   CAxWindow2 activex_window;
   base::win::ScopedComPtr<IUnknown> control;
   HRESULT result = E_FAIL;
-  base::win::ScopedComPtr<mstsc::IMsRdpClientSecuredSettings> secured_settings;
+  base::win::ScopedComPtr<mstsc::IMsTscSecuredSettings> secured_settings;
+  base::win::ScopedComPtr<mstsc::IMsRdpClientSecuredSettings> secured_settings2;
   base::win::ScopedBstr server_name(
       UTF8ToUTF16(server_endpoint_.ToStringWithoutPort()).c_str());
+  base::win::ScopedBstr terminal_id(UTF8ToUTF16(terminal_id_).c_str());
 
   // Create the child window that actually hosts the ActiveX control.
   RECT rect = { 0, 0, screen_size_.width(), screen_size_.height() };
@@ -339,12 +343,27 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   // Disable audio in the session.
   // TODO(alexeypa): re-enable audio redirection when http://crbug.com/242312 is
   // fixed.
-  result = client_->get_SecuredSettings2(secured_settings.Receive());
+  result = client_->get_SecuredSettings2(secured_settings2.Receive());
   if (SUCCEEDED(result)) {
-    result = secured_settings->put_AudioRedirectionMode(kRdpAudioModeNone);
+    result = secured_settings2->put_AudioRedirectionMode(kRdpAudioModeNone);
     if (FAILED(result))
       goto done;
   }
+
+  result = client_->get_SecuredSettings(secured_settings.Receive());
+  if (FAILED(result))
+    goto done;
+
+  // Set the terminal ID as the working directory for the initial program. It is
+  // observed that |WorkDir| is used only if an initial program is also
+  // specified, but is still passed to the RDP server and can then be read back
+  // from the session parameters. This makes it possible to use |WorkDir| to
+  // match the RDP connection with the session it is attached to.
+  //
+  // This code should be in sync with WtsTerminalMonitor::LookupTerminalId().
+  result = secured_settings->put_WorkDir(terminal_id);
+  if (FAILED(result))
+    goto done;
 
   result = client_->Connect();
   if (FAILED(result))

@@ -4,10 +4,7 @@
 
 #include "remoting/host/win/rdp_desktop_session.h"
 
-#include <winsock2.h>
-
-#include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/win/chromoting_module.h"
 
@@ -19,6 +16,7 @@ RdpDesktopSession::RdpDesktopSession() {
 STDMETHODIMP RdpDesktopSession::Connect(
     long width,
     long height,
+    BSTR terminal_id,
     IRdpDesktopSessionEventHandler* event_handler) {
   event_handler_ = event_handler;
 
@@ -27,7 +25,8 @@ STDMETHODIMP RdpDesktopSession::Connect(
   DCHECK(task_runner->BelongsToCurrentThread());
 
   client_.reset(new RdpClient(task_runner, task_runner,
-                              SkISize::Make(width, height), this));
+                              SkISize::Make(width, height),
+                              UTF16ToUTF8(terminal_id), this));
   return S_OK;
 }
 
@@ -47,12 +46,8 @@ STDMETHODIMP RdpDesktopSession::InjectSas() {
   return S_OK;
 }
 
-void RdpDesktopSession::OnRdpConnected(const net::IPEndPoint& client_endpoint) {
-  net::SockaddrStorage sockaddr;
-  CHECK(client_endpoint.ToSockAddr(sockaddr.addr, &sockaddr.addr_len));
-
-  HRESULT result = event_handler_->OnRdpConnected(
-      reinterpret_cast<byte*>(sockaddr.addr), sockaddr.addr_len);
+void RdpDesktopSession::OnRdpConnected() {
+  HRESULT result = event_handler_->OnRdpConnected();
   CHECK(SUCCEEDED(result)) << "OnRdpConnected() failed: 0x"
                            << std::hex << result << std::dec << ".";
 }

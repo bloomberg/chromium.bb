@@ -15,10 +15,6 @@
 #include "remoting/host/win/wts_terminal_observer.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
-namespace net {
-class IPEndPoint;
-}  // namespace net
-
 namespace tracked_objects {
 class Location;
 }  // namespace tracked_objects
@@ -76,8 +72,8 @@ class DesktopSessionWin
   // Called when |session_attach_timer_| expires.
   void OnSessionAttachTimeout();
 
-  // Starts monitoring for session attach/detach events for |client_endpoint|.
-  void StartMonitoring(const net::IPEndPoint& client_endpoint);
+  // Starts monitoring for session attach/detach events for |terminal_id|.
+  void StartMonitoring(const std::string& terminal_id);
 
   // Stops monitoring for session attach/detach events.
   void StopMonitoring();
