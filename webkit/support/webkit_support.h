@@ -72,11 +72,7 @@ base::FilePath GetChromiumRootDirFilePath();
 // SetUpTestEnvironmentForUnitTests() should be used when running in a
 // TestSuite, in which case no AtExitManager is created and ICU is not
 // initialized (as it is already done by the TestSuite).
-void SetUpTestEnvironment();
 void SetUpTestEnvironmentForUnitTests();
-void SetUpTestEnvironment(WebKit::Platform* shadow_platform_delegate);
-void SetUpTestEnvironmentForUnitTests(
-    WebKit::Platform* shadow_platform_delegate);
 void TearDownTestEnvironment();
 
 // Returns a pointer to a Platform implementation for
@@ -142,8 +138,6 @@ WebKit::WebLayerTreeView* CreateLayerTreeView(
     LayerTreeViewType type,
     DRTLayerTreeViewClient* client,
     WebKit::WebThread* thread);
-
-void SetThreadedCompositorEnabled(bool enabled);
 
 // ------- URL load mocking.
 // Registers the file at |file_path| to be served when |url| is requested.

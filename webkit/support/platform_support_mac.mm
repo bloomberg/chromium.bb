@@ -30,7 +30,7 @@ namespace webkit_support {
 
 static NSAutoreleasePool* autorelease_pool;
 
-void BeforeInitialize(bool unit_test_mode) {
+void BeforeInitialize() {
   [CrDrtApplication sharedApplication];
   autorelease_pool = [[NSAutoreleasePool alloc] init];
   DCHECK(autorelease_pool);
@@ -98,67 +98,20 @@ static void SwizzleNSPasteboard() {
 #endif
 }
 
-void AfterInitialize(bool unit_test_mode) {
+void AfterInitialize() {
   // Load a data pack.
   g_resource_data_pack = new ui::DataPack(ui::SCALE_FACTOR_100P);
   base::FilePath resources_pak_path;
-  if (unit_test_mode) {
-    PathService::Get(base::DIR_EXE, &resources_pak_path);
-    resources_pak_path = resources_pak_path.Append("Content Shell.app")
-        .Append("Contents")
-        .Append("Frameworks")
-        .Append("Content Shell Framework.framework")
-        .Append("Resources")
-        .Append("content_shell.pak");
-  } else {
-    NOTREACHED();
-  }
+  PathService::Get(base::DIR_EXE, &resources_pak_path);
+  resources_pak_path = resources_pak_path.Append("Content Shell.app")
+      .Append("Contents")
+      .Append("Frameworks")
+      .Append("Content Shell Framework.framework")
+      .Append("Resources")
+      .Append("content_shell.pak");
   if (!g_resource_data_pack->LoadFromPath(resources_pak_path)) {
     LOG(FATAL) << "failed to load DumpRenderTree.pak";
   }
-
-  if (unit_test_mode)
-    return;
-
-  // Load font files in the resource folder.
-  static const char* const fontFileNames[] = {
-      "AHEM____.TTF",
-      "WebKitWeightWatcher100.ttf",
-      "WebKitWeightWatcher200.ttf",
-      "WebKitWeightWatcher300.ttf",
-      "WebKitWeightWatcher400.ttf",
-      "WebKitWeightWatcher500.ttf",
-      "WebKitWeightWatcher600.ttf",
-      "WebKitWeightWatcher700.ttf",
-      "WebKitWeightWatcher800.ttf",
-      "WebKitWeightWatcher900.ttf",
-  };
-
-  NSMutableArray* font_urls = [NSMutableArray array];
-  NSURL* resources_directory = [[NSBundle mainBundle] resourceURL];
-  for (unsigned i = 0; i < arraysize(fontFileNames); ++i) {
-    NSURL* font_url = [resources_directory
-        URLByAppendingPathComponent:[NSString
-            stringWithUTF8String:fontFileNames[i]]];
-    [font_urls addObject:[font_url absoluteURL]];
-  }
-
-  CFArrayRef errors = 0;
-  if (!CTFontManagerRegisterFontsForURLs((CFArrayRef)font_urls,
-                                         kCTFontManagerScopeProcess,
-                                         &errors)) {
-    DLOG(FATAL) << "Fail to activate fonts.";
-    CFRelease(errors);
-  }
-
-  SwizzleNSPasteboard();
-
-  // Add <app bundle's parent dir>/plugins to the plugin path so we can load
-  // test plugins.
-  base::FilePath plugins_dir;
-  PathService::Get(base::DIR_EXE, &plugins_dir);
-  plugins_dir = plugins_dir.AppendASCII("../../../plugins");
-  webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
 }
 
 void BeforeShutdown() {

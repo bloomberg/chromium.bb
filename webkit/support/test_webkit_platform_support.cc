@@ -67,11 +67,7 @@
 using WebKit::WebScriptController;
 using webkit::WebLayerTreeViewImplForTesting;
 
-TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode,
-    WebKit::Platform* shadow_platform_delegate)
-    : unit_test_mode_(unit_test_mode),
-      shadow_platform_delegate_(shadow_platform_delegate),
-      threaded_compositing_enabled_(false) {
+TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);
@@ -256,8 +252,6 @@ void TestWebKitPlatformSupport::prefetchHostName(const WebKit::WebString&) {
 }
 
 WebKit::WebURLLoader* TestWebKitPlatformSupport::createURLLoader() {
-  if (!unit_test_mode_)
-    return webkit_glue::WebKitPlatformSupportImpl::createURLLoader();
   return url_loader_factory_.CreateURLLoader(
       webkit_glue::WebKitPlatformSupportImpl::createURLLoader());
 }
@@ -374,7 +368,7 @@ bool TestWebKitPlatformSupport::canAccelerate2dCanvas() {
 }
 
 bool TestWebKitPlatformSupport::isThreadedCompositingEnabled() {
-  return threaded_compositing_enabled_;
+  return false;
 }
 
 WebKit::WebCompositorSupport*
@@ -445,8 +439,6 @@ TestWebKitPlatformSupport::CreateWebSocketBridge(
 WebKit::WebMediaStreamCenter*
 TestWebKitPlatformSupport::createMediaStreamCenter(
     WebKit::WebMediaStreamCenterClient* client) {
-  if (shadow_platform_delegate_)
-    return shadow_platform_delegate_->createMediaStreamCenter(client);
 
   return webkit_glue::WebKitPlatformSupportImpl::createMediaStreamCenter(
       client);
@@ -455,8 +447,6 @@ TestWebKitPlatformSupport::createMediaStreamCenter(
 WebKit::WebRTCPeerConnectionHandler*
 TestWebKitPlatformSupport::createRTCPeerConnectionHandler(
     WebKit::WebRTCPeerConnectionHandlerClient* client) {
-  if (shadow_platform_delegate_)
-    return shadow_platform_delegate_->createRTCPeerConnectionHandler(client);
 
   return webkit_glue::WebKitPlatformSupportImpl::createRTCPeerConnectionHandler(
       client);

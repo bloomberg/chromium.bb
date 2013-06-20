@@ -39,8 +39,7 @@ class TestWebKitPlatformSupport :
     public WebKit::WebUnitTestSupport,
     public webkit_glue::WebKitPlatformSupportChildImpl {
  public:
-  TestWebKitPlatformSupport(bool unit_test_mode,
-                            WebKit::Platform* shadow_platform_delegate);
+  TestWebKitPlatformSupport();
   virtual ~TestWebKitPlatformSupport();
 
   virtual WebKit::WebMimeRegistry* mimeRegistry();
@@ -163,10 +162,6 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebLayerTreeView* createLayerTreeViewForTesting(
       TestViewType type);
 
-  void set_threaded_compositing_enabled(bool enabled) {
-    threaded_compositing_enabled_ = enabled;
-  }
-
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
@@ -181,10 +176,7 @@ class TestWebKitPlatformSupport :
   base::ScopedTempDir file_system_root_;
   webkit_glue::MockWebHyphenator hyphenator_;
   WebURLLoaderMockFactory url_loader_factory_;
-  bool unit_test_mode_;
   WebKit::WebGamepads gamepad_data_;
-  WebKit::Platform* shadow_platform_delegate_;
-  bool threaded_compositing_enabled_;
   webkit::WebCompositorSupportImpl compositor_support_;
 
   scoped_refptr<cc::ContextProvider> main_thread_contexts_;

@@ -4,7 +4,6 @@
 
 #include "webkit/support/webkit_support.h"
 
-#include "base/at_exit.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -14,7 +13,6 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -154,22 +152,12 @@ class TestEnvironment {
   typedef base::MessageLoopForUI MessageLoopType;
 #endif
 
-  TestEnvironment(bool unit_test_mode,
-                  base::AtExitManager* existing_at_exit_manager,
-                  WebKit::Platform* shadow_platform_delegate) {
-    if (unit_test_mode) {
-      logging::SetLogAssertHandler(UnitTestAssertHandler);
-    } else {
-      // The existing_at_exit_manager must be not NULL.
-      at_exit_manager_.reset(existing_at_exit_manager);
-      InitLogging();
-    }
+  TestEnvironment() {
+    logging::SetLogAssertHandler(UnitTestAssertHandler);
     main_message_loop_.reset(new MessageLoopType);
 
     // TestWebKitPlatformSupport must be instantiated after MessageLoopType.
-    webkit_platform_support_.reset(
-        new TestWebKitPlatformSupport(unit_test_mode,
-                                      shadow_platform_delegate));
+    webkit_platform_support_.reset(new TestWebKitPlatformSupport);
   }
 
   ~TestEnvironment() {
@@ -214,9 +202,6 @@ class TestEnvironment {
   }
 
  private:
-  // Data member at_exit_manager_ will take the ownership of the input
-  // AtExitManager and manage its lifecycle.
-  scoped_ptr<base::AtExitManager> at_exit_manager_;
   scoped_ptr<MessageLoopType> main_message_loop_;
   scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
 
@@ -283,8 +268,23 @@ class WebKitClientMessageLoopImpl
 
 TestEnvironment* test_environment;
 
-void SetUpTestEnvironmentImpl(bool unit_test_mode,
-                              WebKit::Platform* shadow_platform_delegate) {
+}  // namespace
+
+namespace webkit_support {
+
+base::FilePath GetChromiumRootDirFilePath() {
+  base::FilePath basePath;
+  PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
+  if (file_util::PathExists(
+          basePath.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
+    // We're in a WebKit-in-chrome checkout.
+    return basePath;
+  }
+  return GetWebKitRootDirFilePath()
+         .Append(FILE_PATH_LITERAL("Source/WebKit/chromium"));
+}
+
+void SetUpTestEnvironmentForUnitTests() {
   base::debug::EnableInProcessStackDumping();
   base::EnableTerminationOnHeapCorruption();
 
@@ -302,60 +302,11 @@ void SetUpTestEnvironmentImpl(bool unit_test_mode,
   // Otherwise crash may happend when different threads try to create a GURL
   // at same time.
   url_util::Initialize();
-  base::AtExitManager* at_exit_manager = NULL;
-  // In Android DumpRenderTree, AtExitManager is created in
-  // testing/android/native_test_wrapper.cc before main() is called.
-#if !defined(OS_ANDROID)
-  // Some initialization code may use a AtExitManager before initializing
-  // TestEnvironment, so we create a AtExitManager early and pass its ownership
-  // to TestEnvironment.
-  if (!unit_test_mode)
-    at_exit_manager = new base::AtExitManager;
-#endif
-  webkit_support::BeforeInitialize(unit_test_mode);
-  test_environment = new TestEnvironment(unit_test_mode, at_exit_manager,
-                                         shadow_platform_delegate);
-  webkit_support::AfterInitialize(unit_test_mode);
-  if (!unit_test_mode) {
-    // Load ICU data tables.  This has to run after TestEnvironment is created
-    // because on Linux, we need base::AtExitManager.
-    icu_util::Initialize();
-  }
+  webkit_support::BeforeInitialize();
+  test_environment = new TestEnvironment;
+  webkit_support::AfterInitialize();
   webkit_glue::SetUserAgent(webkit_glue::BuildUserAgentFromProduct(
       "DumpRenderTree/0.0.0.0"), false);
-}
-
-}  // namespace
-
-namespace webkit_support {
-
-base::FilePath GetChromiumRootDirFilePath() {
-  base::FilePath basePath;
-  PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
-  if (file_util::PathExists(
-          basePath.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
-    // We're in a WebKit-in-chrome checkout.
-    return basePath;
-  }
-  return GetWebKitRootDirFilePath()
-         .Append(FILE_PATH_LITERAL("Source/WebKit/chromium"));
-}
-
-void SetUpTestEnvironment() {
-  SetUpTestEnvironment(NULL);
-}
-
-void SetUpTestEnvironmentForUnitTests() {
-  SetUpTestEnvironmentForUnitTests(NULL);
-}
-
-void SetUpTestEnvironment(WebKit::Platform* shadow_platform_delegate) {
-  SetUpTestEnvironmentImpl(false, shadow_platform_delegate);
-}
-
-void SetUpTestEnvironmentForUnitTests(
-    WebKit::Platform* shadow_platform_delegate) {
-  SetUpTestEnvironmentImpl(true, shadow_platform_delegate);
 }
 
 void TearDownTestEnvironment() {
@@ -471,11 +422,6 @@ WebKit::WebLayerTreeView* CreateLayerTreeView(
   if (!view->Initialize())
     return NULL;
   return view.release();
-}
-
-void SetThreadedCompositorEnabled(bool enabled) {
-  test_environment->webkit_platform_support()->
-      set_threaded_compositing_enabled(enabled);
 }
 
 void RegisterMockedURL(const WebKit::WebURL& url,

@@ -19,10 +19,10 @@ namespace webkit_support {
 // TODO(tkent): Implement some of the followings for platform-dependent tasks
 // such as loading resource.
 
-void BeforeInitialize(bool unit_test_mode) {
+void BeforeInitialize() {
 }
 
-void AfterInitialize(bool unit_test_mode) {
+void AfterInitialize() {
   base::FilePath data_path;
   PathService::Get(base::DIR_EXE, &data_path);
   data_path = data_path.Append("DumpRenderTree.pak");

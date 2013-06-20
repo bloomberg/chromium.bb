@@ -7,10 +7,10 @@
 
 namespace webkit_support {
 // Called before WebKit::initialize().
-void BeforeInitialize(bool unit_test_mode);
+void BeforeInitialize();
 
 // Called after WebKit::initialize().
-void AfterInitialize(bool unit_test_mode);
+void AfterInitialize();
 
 // Called before WebKit::shutdown().
 void BeforeShutdown();
