@@ -387,7 +387,7 @@ const CGFloat kTrayBottomMargin = 75;
   [title_ setStringValue:
       l10n_util::GetNSString(IDS_MESSAGE_CENTER_FOOTER_TITLE)];
   [title_ setTextColor:gfx::SkColorToCalibratedNSColor(
-      message_center::kFooterTextColor)];
+      message_center::kRegularTextColor)];
   [title_ sizeToFit];
 
   NSRect titleFrame = [title_ frame];
