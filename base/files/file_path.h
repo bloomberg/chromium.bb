@@ -329,6 +329,9 @@ class BASE_EXPORT FilePath {
   // with "Unsafe" in the function name.
   std::string AsUTF8Unsafe() const;
 
+  // Similar to AsUTF8Unsafe, but returns UTF-16 instead.
+  string16 AsUTF16Unsafe() const;
+
   // Older Chromium code assumes that paths are always wstrings.
   // This function converts wstrings to FilePaths, and is
   // useful to smooth porting that old code to the FilePath API.
@@ -356,6 +359,9 @@ class BASE_EXPORT FilePath {
   // and Chrome OS, to mitigate the encoding issue. See the comment at
   // AsUTF8Unsafe() for details.
   static FilePath FromUTF8Unsafe(const std::string& utf8);
+
+  // Similar to FromUTF8Unsafe, but accepts UTF-16 instead.
+  static FilePath FromUTF16Unsafe(const string16& utf16);
 
   void WriteToPickle(Pickle* pickle) const;
   bool ReadFromPickle(PickleIterator* iter);

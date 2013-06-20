@@ -577,6 +577,14 @@ std::string FilePath::AsUTF8Unsafe() const {
 #endif
 }
 
+string16 FilePath::AsUTF16Unsafe() const {
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  return UTF8ToUTF16(value());
+#else
+  return WideToUTF16(SysNativeMBToWide(value()));
+#endif
+}
+
 // The *Hack functions are temporary while we fix the remainder of the code.
 // Remember to remove the #includes at the top when you remove these.
 
@@ -591,6 +599,15 @@ FilePath FilePath::FromUTF8Unsafe(const std::string& utf8) {
   return FilePath(utf8);
 #else
   return FilePath(SysWideToNativeMB(UTF8ToWide(utf8)));
+#endif
+}
+
+// static
+FilePath FilePath::FromUTF16Unsafe(const string16& utf16) {
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  return FilePath(UTF16ToUTF8(utf16));
+#else
+  return FilePath(SysWideToNativeMB(UTF16ToWide(utf16)));
 #endif
 }
 
@@ -609,6 +626,10 @@ std::string FilePath::AsUTF8Unsafe() const {
   return WideToUTF8(value());
 }
 
+string16 FilePath::AsUTF16Unsafe() const {
+  return value();
+}
+
 // static
 FilePath FilePath::FromWStringHack(const std::wstring& wstring) {
   return FilePath(wstring);
@@ -617,6 +638,11 @@ FilePath FilePath::FromWStringHack(const std::wstring& wstring) {
 // static
 FilePath FilePath::FromUTF8Unsafe(const std::string& utf8) {
   return FilePath(UTF8ToWide(utf8));
+}
+
+// static
+FilePath FilePath::FromUTF16Unsafe(const string16& utf16) {
+  return FilePath(utf16);
 }
 #endif
 
