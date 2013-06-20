@@ -267,7 +267,6 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
 {
     // This handles sheets added to the end of the stylesheet list only. In other cases the style resolver
     // needs to be reconstructed. To handle insertions too the rule order numbers would need to be updated.
-    ScopedStyleResolver* lastUpdatedResolver = 0;
     unsigned size = styleSheets.size();
     for (unsigned i = firstNew; i < size; ++i) {
         CSSStyleSheet* cssSheet = styleSheets[i].get();
@@ -280,14 +279,8 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
         ASSERT(resolver);
         resolver->addRulesFromSheet(sheet, *m_medium, this);
         m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
-
-        if (lastUpdatedResolver && lastUpdatedResolver != resolver)
-            lastUpdatedResolver->postAddRulesFromSheet();
-        lastUpdatedResolver = resolver;
     }
 
-    if (lastUpdatedResolver)
-        lastUpdatedResolver->postAddRulesFromSheet();
     collectFeatures();
 
     if (document()->renderer() && document()->renderer()->style())
@@ -310,7 +303,6 @@ static PassOwnPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
     OwnPtr<RuleSet> ruleSet = RuleSet::create();
     for (size_t i = 0; i < size; ++i)
         ruleSet->addRule(rules[i].rule, rules[i].selectorIndex, rules[i].hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState);
-    ruleSet->shrinkToFit();
     return ruleSet.release();
 }
 

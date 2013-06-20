@@ -45,7 +45,7 @@ void ShadowDistributedRules::addRule(StyleRule* rule, size_t selectorIndex, Cont
     if (m_shadowDistributedRuleSetMap.contains(scope))
         m_shadowDistributedRuleSetMap.get(scope)->addRule(rule, selectorIndex, addRuleFlags);
     else {
-        OwnPtr<RuleSet> ruleSetForScope = adoptPtr(new RuleSet());
+        OwnPtr<RuleSet> ruleSetForScope = RuleSet::create();
         ruleSetForScope->addRule(rule, selectorIndex, addRuleFlags);
         m_shadowDistributedRuleSetMap.add(scope, ruleSetForScope.release());
     }
@@ -84,7 +84,7 @@ void DocumentRuleSets::initUserStyle(DocumentStyleSheetCollection* styleSheetCol
         tempUserStyle->addRulesFromSheet(pageUserSheet->contents(), medium, &resolver);
     collectRulesFromUserStyleSheets(styleSheetCollection->injectedUserStyleSheets(), *tempUserStyle, medium, resolver);
     collectRulesFromUserStyleSheets(styleSheetCollection->documentUserStyleSheets(), *tempUserStyle, medium, resolver);
-    if (tempUserStyle->m_ruleCount > 0 || tempUserStyle->m_pageRules.size() > 0)
+    if (tempUserStyle->ruleCount() > 0 || tempUserStyle->pageRules().size() > 0)
         m_userStyle = tempUserStyle.release();
 }
 

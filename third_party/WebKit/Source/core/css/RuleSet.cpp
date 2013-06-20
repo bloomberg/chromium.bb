@@ -261,6 +261,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector* component, RuleData& rule
 
 void RuleSet::addRule(StyleRule* rule, unsigned selectorIndex, AddRuleFlags addRuleFlags)
 {
+    m_hasDirtyRules = true;
     RuleData ruleData(rule, selectorIndex, m_ruleCount++, addRuleFlags);
     collectFeaturesFromRuleData(m_features, ruleData);
 
@@ -272,11 +273,13 @@ void RuleSet::addRule(StyleRule* rule, unsigned selectorIndex, AddRuleFlags addR
 
 void RuleSet::addPageRule(StyleRulePage* rule)
 {
+    m_hasDirtyRules = true;
     m_pageRules.append(rule);
 }
 
 void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin)
 {
+    m_hasDirtyRules = true;
     OwnPtr<RuleSet> regionRuleSet = RuleSet::create();
     // The region rule set should take into account the position inside the parent rule set.
     // Otherwise, the rules inside region block might be incorrectly positioned before other similar rules from
@@ -368,9 +371,6 @@ void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvalu
     AddRuleFlags addRuleFlags = static_cast<AddRuleFlags>((hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : 0) | (!scope ? RuleCanUseFastCheckSelector : 0));
 
     addChildRules(sheet->childRules(), medium, resolver, scope, hasDocumentSecurityOrigin, addRuleFlags);
-
-    if (m_autoShrinkToFitEnabled)
-        shrinkToFit();
 }
 
 void RuleSet::addStyleRule(StyleRule* rule, AddRuleFlags addRuleFlags)
@@ -388,6 +388,7 @@ static inline void shrinkMapVectorsToFit(RuleSet::AtomRuleMap& map)
 
 void RuleSet::shrinkToFit()
 {
+    m_hasDirtyRules = false;
     shrinkMapVectorsToFit(m_idRules);
     shrinkMapVectorsToFit(m_classRules);
     shrinkMapVectorsToFit(m_tagRules);

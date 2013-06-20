@@ -85,7 +85,6 @@ public:
     void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles);
     void matchPageRules(PageRuleCollector&);
     void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver*);
-    void postAddRulesFromSheet() { m_authorStyle->shrinkToFit(); }
     void addHostRule(StyleRuleHost*, bool hasDocumentSecurityOrigin, const ContainerNode* scopingNode);
     void collectFeaturesTo(RuleFeatureSet&);
     void resetAuthorStyle();

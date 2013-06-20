@@ -242,7 +242,6 @@ void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features)
 void ScopedStyleResolver::resetAuthorStyle()
 {
     m_authorStyle = RuleSet::create();
-    m_authorStyle->disableAutoShrinkToFit();
     m_atHostRules.clear();
 }
 

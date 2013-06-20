@@ -128,7 +128,13 @@ public:
     MatchRequest(RuleSet* ruleSet, bool includeEmptyRules = false, const ContainerNode* scope = 0)
         : ruleSet(ruleSet)
         , includeEmptyRules(includeEmptyRules)
-        , scope(scope) { }
+        , scope(scope)
+    {
+        // Now that we're about to read from the RuleSet, we're done adding more
+        // rules to the set and we should make sure it's compacted.
+        ruleSet->compactRulesIfNeeded();
+    }
+
     const RuleSet* ruleSet;
     const bool includeEmptyRules;
     const ContainerNode* scope;
