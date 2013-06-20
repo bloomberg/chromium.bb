@@ -42,7 +42,7 @@ import parse_dsc
 import verify_filelist
 
 from build_paths import SCRIPT_DIR, SDK_SRC_DIR, SRC_DIR, NACL_DIR, OUT_DIR
-from build_paths import PPAPI_DIR, NACLPORTS_DIR, GSTORE
+from build_paths import NACLPORTS_DIR, GSTORE
 
 # Add SDK make tools scripts to the python path.
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
@@ -273,79 +273,6 @@ NACL_HEADER_MAP = {
   ],
   'host': []
 }
-
-# Source relative to 'ppapi' foler.  Destiniation relative
-# to SDK include folder.
-PPAPI_HEADER_MAP = [
-  # Copy the KHR headers
-  ('lib/gl/include/KHR/khrplatform.h',     'KHR/'),
-
-  # Copy the GLES2 headers
-  ('lib/gl/include/GLES2/gl2.h',           'GLES2/'),
-  ('lib/gl/include/GLES2/gl2ext.h',        'GLES2/'),
-  ('lib/gl/include/GLES2/gl2platform.h',   'GLES2/'),
-
-  # Copy the EGL headers
-  ('lib/gl/include/EGL/egl.h',             'EGL/'),
-  ('lib/gl/include/EGL/eglext.h',          'EGL/'),
-  ('lib/gl/include/EGL/eglplatform.h',     'EGL/'),
-
-  # Copy in the gles2 headers
-  ('lib/gl/gles2/gl2ext_ppapi.h',          'ppapi/gles2/'),
-  # Create a duplicate copy of this header
-  # TODO(sbc), remove this copy once we find a way to build gl2ext_ppapi.c.
-  ('lib/gl/gles2/gl2ext_ppapi.h',          'ppapi/lib/gl/gles2/'),
-
-  # Copy in the C++ headers
-  ('utility/graphics/paint_aggregator.h',  'ppapi/utility/graphics/'),
-  ('utility/graphics/paint_manager.h',     'ppapi/utility/graphics/'),
-  ('utility/threading/lock.h',             'ppapi/utility/threading/'),
-  ('utility/threading/simple_thread.h',    'ppapi/utility/threading/'),
-  ('utility/websocket/websocket_api.h',    'ppapi/utility/websocket/'),
-  ('utility/completion_callback_factory.h','ppapi/utility/'),
-  ('utility/completion_callback_factory_thread_traits.h', 'ppapi/utility/'),
-
-  # Copy in c, c/dev and c/extensions/dev headers
-  # TODO(sbc): remove the use of wildcards here so that we can more
-  # tightly control what ends up in the SDK.
-  ('c/*.h',                  'ppapi/c/'),
-  ('c/dev/*.h',              'ppapi/c/dev/'),
-  ('c/extensions/dev/*.h',   'ppapi/c/extensions/dev/'),
-
-  # Copy in cpp, cpp/dev, cpp/extensions/, cpp/extensions/dev
-  ('cpp/*.h',                'ppapi/cpp/'),
-  ('cpp/extensions/*.h',     'ppapi/cpp/extensions/'),
-  ('cpp/dev/*.h',            'ppapi/cpp/dev/'),
-  ('cpp/extensions/dev/*.h', 'ppapi/cpp/extensions/dev/'),
-
-  # Copy certain private headers (specifically these are the ones
-  # that are used by nacl-mounts)
-  ('cpp/private/ext_crx_file_system_private.h', 'ppapi/cpp/private/'),
-  ('cpp/private/file_io_private.h', 'ppapi/cpp/private/'),
-  ('cpp/private/net_address_private.h', 'ppapi/cpp/private/'),
-  ('cpp/private/tcp_server_socket_private.h', 'ppapi/cpp/private/'),
-  ('cpp/private/host_resolver_private.h', 'ppapi/cpp/private/'),
-  ('cpp/private/pass_file_handle.h', 'ppapi/cpp/private/'),
-  ('cpp/private/tcp_socket_private.h', 'ppapi/cpp/private/'),
-  ('cpp/private/udp_socket_private.h', 'ppapi/cpp/private/'),
-  ('cpp/private/x509_certificate_private.h', 'ppapi/cpp/private/'),
-
-  ('c/private/pp_file_handle.h', 'ppapi/c/private/'),
-  ('c/private/ppb_ext_crx_file_system_private.h', 'ppapi/c/private/'),
-  ('c/private/ppb_file_io_private.h', 'ppapi/c/private/'),
-  ('c/private/ppb_file_ref_private.h', 'ppapi/c/private/'),
-  ('c/private/ppb_host_resolver_private.h', 'ppapi/c/private/'),
-  ('c/private/ppb_tcp_server_socket_private.h', 'ppapi/c/private/'),
-  ('c/private/ppb_net_address_private.h', 'ppapi/c/private/'),
-  ('c/private/ppb_tcp_socket_private.h', 'ppapi/c/private/'),
-  ('c/private/ppb_udp_socket_private.h', 'ppapi/c/private/'),
-  ('c/private/ppb_x509_certificate_private.h', 'ppapi/c/private/'),
-]
-
-
-def InstallCommonHeaders(inc_path):
-  InstallFiles(PPAPI_DIR, inc_path, PPAPI_HEADER_MAP)
-
 
 def InstallFiles(src_root, dest_root, file_list):
   """Copy a set of files from src_root to dest_root according
@@ -997,7 +924,6 @@ def main(args):
 
   BuildStepCopyTextFiles(pepperdir, pepper_ver, clnumber)
   BuildStepBuildToolchains(pepperdir, platform, toolchains)
-  InstallCommonHeaders(os.path.join(pepperdir, 'include'))
 
   BuildStepUpdateHelpers(pepperdir, platform, True)
   BuildStepUpdateUserProjects(pepperdir, platform, toolchains,
