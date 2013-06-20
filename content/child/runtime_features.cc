@@ -24,10 +24,10 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #endif
 
 #if defined(OS_ANDROID)
-    bool enable_webaudio = true;
+  bool enable_webaudio = false;
 #if defined(ARCH_CPU_ARMEL)
-    enable_webaudio =
-        ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0);
+  enable_webaudio =
+      ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0);
 #endif
   WebRuntimeFeatures::enableWebAudio(enable_webaudio);
   // Android does not support the Gamepad API.
