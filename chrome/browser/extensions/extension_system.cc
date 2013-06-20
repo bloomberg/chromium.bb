@@ -204,14 +204,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // initialized (see issue 40144). Now that bookmarks aren't imported and
   // the event routers need to be initialized for every profile individually,
   // initialize them with the extension service.
-  // If import is going to run in a separate process (the profile itself is on
-  // the main process), wait for import to finish before initializing the
-  // routers.
-  if (g_browser_process->profile_manager()->will_import()) {
-    extension_service_->InitEventRoutersAfterImport();
-  } else {
-    extension_service_->InitEventRouters();
-  }
+  extension_service_->InitEventRouters();
 
   extension_warning_service_.reset(new ExtensionWarningService(profile_));
   extension_warning_badge_service_.reset(

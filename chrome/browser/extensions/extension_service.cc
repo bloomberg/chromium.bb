@@ -457,33 +457,6 @@ ExtensionService::~ExtensionService() {
   }
 }
 
-void ExtensionService::InitEventRoutersAfterImport() {
-  RegisterForImportFinished();
-}
-
-void ExtensionService::RegisterForImportFinished() {
-  if (!registrar_.IsRegistered(this, chrome::NOTIFICATION_IMPORT_FINISHED,
-                               content::Source<Profile>(profile_))) {
-    registrar_.Add(this, chrome::NOTIFICATION_IMPORT_FINISHED,
-                   content::Source<Profile>(profile_));
-  }
-}
-
-void ExtensionService::InitAfterImport() {
-  startup_metric_utils::ScopedSlowStartupUMA
-      scoped_timer("Startup.SlowStartupExtensionServiceInitAfterImport");
-  component_loader_->LoadAll();
-
-  CheckForExternalUpdates();
-
-  GarbageCollectExtensions();
-
-  // Idempotent, so although there is a possible race if the import
-  // process finished sometime in the middle of ProfileImpl::InitExtensions,
-  // it cannot happen twice.
-  InitEventRouters();
-}
-
 void ExtensionService::InitEventRouters() {
   if (event_routers_initialized_)
     return;
@@ -559,29 +532,20 @@ void ExtensionService::Init() {
   } else {
     // TODO(mek): It might be cleaner to do the FinishDelayedInstallInfo stuff
     // here instead of in installedloader.
-    if (g_browser_process->profile_manager() &&
-        g_browser_process->profile_manager()->will_import()) {
-      // Do not load any component extensions, since they may conflict with the
-      // import process.
 
-      extensions::InstalledLoader(this).LoadAllExtensions();
-      SetReadyAndNotifyListeners();
-      RegisterForImportFinished();
-    } else {
-      // In this case, LoadAllExtensions() calls OnLoadedInstalledExtensions().
-      component_loader_->LoadAll();
-      extensions::InstalledLoader(this).LoadAllExtensions();
-      SetReadyAndNotifyListeners();
+    // LoadAllExtensions() calls OnLoadedInstalledExtensions().
+    component_loader_->LoadAll();
+    extensions::InstalledLoader(this).LoadAllExtensions();
+    SetReadyAndNotifyListeners();
 
-      // TODO(erikkay) this should probably be deferred to a future point
-      // rather than running immediately at startup.
-      CheckForExternalUpdates();
+    // TODO(erikkay) this should probably be deferred to a future point
+    // rather than running immediately at startup.
+    CheckForExternalUpdates();
 
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
-          base::TimeDelta::FromSeconds(kGarbageCollectStartupDelay));
-    }
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
+        base::TimeDelta::FromSeconds(kGarbageCollectStartupDelay));
 
     if (extension_prefs_->NeedsStorageGarbageCollection()) {
       GarbageCollectIsolatedStorage();
@@ -2640,10 +2604,6 @@ void ExtensionService::Observe(int type,
           base::Bind(&ExtensionInfoMap::UnregisterAllExtensionsInProcess,
                      system_->info_map(),
                      process->GetID()));
-      break;
-    }
-    case chrome::NOTIFICATION_IMPORT_FINISHED: {
-      InitAfterImport();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
