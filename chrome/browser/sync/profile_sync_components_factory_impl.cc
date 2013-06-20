@@ -4,13 +4,16 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
@@ -185,7 +188,19 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new SessionDataTypeController(this, profile_, pss));
   }
 
+  // Migrate sync flags that should be prefs.
+  // TODO(pastarmovj): Remove this code once enough time has passed to not need
+  // to migrate anymore.
+  about_flags::PrefServiceFlagsStorage flags_storage(
+      g_browser_process->local_state());
   if (command_line_->HasSwitch(switches::kEnableSyncFavicons)) {
+    profile_->GetPrefs()->SetBoolean(prefs::kSyncFaviconsEnabled, true);
+    about_flags::SetExperimentEnabled(&flags_storage,
+                                      syncer::kFaviconSyncFlag,
+                                      false);
+  }
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncFaviconsEnabled)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(syncer::FAVICON_IMAGES,
                                  this,

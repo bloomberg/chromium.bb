@@ -10,7 +10,6 @@
 namespace syncer {
 
 const char kKeystoreEncryptionTag[] = "keystore_encryption";
-const char kKeystoreEncryptionFlag[] = "sync-keystore-encryption";
 const char kAutofillCullingTag[] = "autofill_culling";
 const char kFaviconSyncTag[] = "favicon_sync";
 const char kFaviconSyncFlag[] = "enable-sync-favicons";

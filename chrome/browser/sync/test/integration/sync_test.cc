@@ -205,10 +205,6 @@ void SyncTest::AddTestSwitches(CommandLine* cl) {
   if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);
 
-  // TODO(sync): remove this once keystore encryption is enabled by default.
-  if (!cl->HasSwitch(switches::kSyncKeystoreEncryption))
-    cl->AppendSwitch(switches::kSyncKeystoreEncryption);
-
   if (!cl->HasSwitch(switches::kSyncShortInitialRetryOverride))
     cl->AppendSwitch(switches::kSyncShortInitialRetryOverride);
 

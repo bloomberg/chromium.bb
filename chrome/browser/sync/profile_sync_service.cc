@@ -22,11 +22,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
-#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals.h"
@@ -890,14 +888,6 @@ void ProfileSyncService::ClearUnrecoverableError() {
   unrecoverable_error_location_ = tracked_objects::Location();
 }
 
-// static
-// TODO(sync): Consider having syncer::Experiments provide this.
-std::string ProfileSyncService::GetExperimentNameForDataType(
-    syncer::ModelType data_type) {
-  NOTREACHED();
-  return std::string();
-}
-
 void ProfileSyncService::RegisterNewDataType(syncer::ModelType data_type) {
   if (data_type_controllers_.count(data_type) > 0)
     return;
@@ -1094,24 +1084,11 @@ void ProfileSyncService::OnExperimentsChanged(
            << syncer::ModelTypeSetToString(to_add);
   DVLOG(2) << "Enabling types: " << syncer::ModelTypeSetToString(to_register);
 
-  about_flags::PrefServiceFlagsStorage flags_storage_(
-      g_browser_process->local_state());
-
   for (syncer::ModelTypeSet::Iterator it = to_register.First();
        it.Good(); it.Inc()) {
     // Received notice to enable experimental type. Check if the type is
     // registered, and if not register a new datatype controller.
     RegisterNewDataType(it.Get());
-    // Enable the about:flags switch for the experimental type so we don't have
-    // to always perform this reconfiguration. Once we set this, the type will
-    // remain registered on restart, so we will no longer go down this code
-    // path.
-    std::string experiment_name = GetExperimentNameForDataType(it.Get());
-    if (experiment_name.empty())
-      continue;
-    about_flags::SetExperimentEnabled(&flags_storage_,
-                                      experiment_name,
-                                      true);
   }
 
   // Check if the user has "Keep Everything Synced" enabled. If so, we want
@@ -1133,18 +1110,8 @@ void ProfileSyncService::OnExperimentsChanged(
     }
   }
 
-  // Now enable any non-datatype features.
-  if (experiments.keystore_encryption) {
-    about_flags::SetExperimentEnabled(&flags_storage_,
-                                      syncer::kKeystoreEncryptionFlag,
-                                      true);
-  }
-
-  if (experiments.favicon_sync) {
-    about_flags::SetExperimentEnabled(&flags_storage_,
-                                      syncer::kFaviconSyncFlag,
-                                      true);
-  }
+  if (experiments.favicon_sync)
+    profile_->GetPrefs()->SetBoolean(prefs::kSyncFaviconsEnabled, true);
 
   current_experiments_ = experiments;
 }
