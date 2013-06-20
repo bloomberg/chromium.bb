@@ -137,6 +137,7 @@ SlideMode.prototype.initDom_ = function() {
   this.mediaControls_ = new VideoControls(
       this.mediaToolbar_,
       this.showErrorBanner_.bind(this, 'VIDEO_ERROR'),
+      this.displayStringFunction_.bind(this),
       this.toggleFullScreen_.bind(this),
       this.container_);
 
@@ -761,11 +762,20 @@ SlideMode.prototype.onBeforeUnload = function() {
 
 /**
  * Click handler for the image container.
+ *
+ * @param {Event} event Mouse click event.
  * @private
  */
-SlideMode.prototype.onClick_ = function() {
-  if (this.isShowingVideo_())
+SlideMode.prototype.onClick_ = function(event) {
+  if (!this.isShowingVideo_())
+    return;
+  if (event.ctrlKey) {
+    this.mediaControls_.toggleLoopedModeWithFeedback(true);
+    if (!this.mediaControls_.isPlaying())
+      this.mediaControls_.togglePlayStateWithFeedback();
+  } else {
     this.mediaControls_.togglePlayStateWithFeedback();
+  }
 };
 
 /**

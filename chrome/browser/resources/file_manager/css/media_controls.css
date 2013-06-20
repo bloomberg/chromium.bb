@@ -536,6 +536,28 @@
   z-index: 2;
 }
 
+.text-banner {
+  background-color: black;
+  border-radius: 10px;
+  color: white;
+  font-size: 18px;
+  left: 50%;
+  margin-left: -250px;
+  opacity: 0;
+  padding: 10px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  text-shadow: 0 0 10px black;
+  top: 20%;
+  width: 500px;
+  z-index: 2;
+}
+
+.text-banner[visible] {
+  -webkit-animation: text-banner-blowup 3000ms;
+}
+
 .playback-state-icon[state] {
   -webkit-animation: blowup 500ms;
 }
@@ -543,6 +565,25 @@
 @-webkit-keyframes blowup {
   from {
     opacity: 1;
+  }
+  to {
+    -webkit-transform: scale(3);
+    opacity: 0;
+  }
+}
+
+@-webkit-keyframes text-banner-blowup {
+  from {
+    -webkit-transform: scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    -webkit-transform: scale(1);
+    opacity: 0.75;
+  }
+  80% {
+    -webkit-transform: scale(1);
+    opacity: 0.75;
   }
   to {
     -webkit-transform: scale(3);

@@ -50,6 +50,7 @@ function FullWindowVideoControls(
   VideoControls.call(this,
       controlsContainer,
       onPlaybackError,
+      loadTimeData.getString.bind(loadTimeData),
       this.toggleFullScreen_.bind(this),
       videoContainer);
 
@@ -71,8 +72,15 @@ function FullWindowVideoControls(
     }
   }.bind(this));
 
-  videoContainer.addEventListener('click',
-      this.togglePlayStateWithFeedback.bind(this));
+  videoContainer.addEventListener('click', function(e) {
+  if (event.ctrlKey) {
+    this.toggleLoopedModeWithFeedback(true);
+    if (!this.isPlaying())
+      this.togglePlayStateWithFeedback();
+  } else {
+    this.togglePlayStateWithFeedback();
+  }
+  }.bind(this));
 
   this.inactivityWatcher_ = new MouseInactivityWatcher(playerContainer);
   this.__defineGetter__('inactivityWatcher', function() {

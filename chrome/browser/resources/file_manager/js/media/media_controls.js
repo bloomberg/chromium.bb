@@ -165,7 +165,7 @@ MediaControls.prototype.togglePlayState = function() {
  */
 MediaControls.prototype.initPlayButton = function(opt_parent) {
   this.playButton_ = this.createButton('play media-control',
-      this.togglePlayState.bind(this), opt_parent, 3 /* States. */);
+      this.onPlayButtonClicked.bind(this), opt_parent, 3 /* States. */);
 };
 
 /*
@@ -961,21 +961,21 @@ MediaControls.PreciseSlider.prototype.onInputDrag_ = function(on) {
  *
  * @param {HTMLElement} containerElement The container for the controls.
  * @param {function} onMediaError Function to display an error message.
+ * @param {function(string):string} stringFunction Function providing localized
+ *     strings.
  * @param {function=} opt_fullScreenToggle Function to toggle fullscreen mode.
  * @param {HTMLElement=} opt_stateIconParent The parent for the icon that
  *     gives visual feedback when the playback state changes.
  * @constructor
  */
-function VideoControls(containerElement, onMediaError,
+function VideoControls(containerElement, onMediaError, stringFunction,
    opt_fullScreenToggle, opt_stateIconParent) {
   MediaControls.call(this, containerElement, onMediaError);
+  this.stringFunction_ = stringFunction;
 
   this.container_.classList.add('video-controls');
-
   this.initPlayButton();
-
   this.initTimeControls(true /* show seek mark */);
-
   this.initVolumeControls();
 
   if (opt_fullScreenToggle) {
@@ -986,6 +986,7 @@ function VideoControls(containerElement, onMediaError,
   if (opt_stateIconParent) {
     this.stateIcon_ = this.createControl(
         'playback-state-icon', opt_stateIconParent);
+    this.textBanner_ = this.createControl('text-banner', opt_stateIconParent);
   }
 
   var videoControls = this;
@@ -1011,6 +1012,47 @@ VideoControls.RESUME_REWIND = 5;  // seconds.
 VideoControls.prototype = { __proto__: MediaControls.prototype };
 
 /**
+ * Shows icon feedback for the current state of the video player.
+ * @private
+ */
+VideoControls.prototype.showIconFeedback_ = function() {
+  this.stateIcon_.removeAttribute('state');
+  setTimeout(function() {
+    this.stateIcon_.setAttribute('state', this.isPlaying() ? 'play' : 'pause');
+  }.bind(this), 0);
+};
+
+/**
+ * Shows a text banner.
+ *
+ * @param {string} identifier String identifier.
+ * @private
+ */
+VideoControls.prototype.showTextBanner_ = function(identifier) {
+  this.textBanner_.removeAttribute('visible');
+  this.textBanner_.textContent = this.stringFunction_(identifier);
+  setTimeout(function() {
+    this.textBanner_.setAttribute('visible', 'true');
+  }.bind(this), 0);
+};
+
+/**
+ * Toggle play/pause state on a mouse click on the play/pause button. Can be
+ * called externally.
+ *
+ * @param {Event} event Mouse click event.
+ */
+VideoControls.prototype.onPlayButtonClicked = function(event) {
+  if (event.ctrlKey) {
+    this.toggleLoopedModeWithFeedback(true);
+    if (!this.isPlaying())
+      this.togglePlayState();
+  } else {
+    this.togglePlayState();
+  }
+};
+
+/**
  * Media completion handler.
  */
 VideoControls.prototype.onMediaComplete = function() {
@@ -1019,33 +1061,51 @@ VideoControls.prototype.onMediaComplete = function() {
 };
 
 /**
- * Toggle play/pause state and flash an icon over the video.
+ * Toggles the looped mode with feedback.
+ * @param {boolean} on Whether enabled or not.
+ */
+VideoControls.prototype.toggleLoopedModeWithFeedback = function(on) {
+  if (!this.getMedia().duration)
+    return;
+
+  this.toggleLoopedMode(on);
+  if (on)
+    this.showTextBanner_('GALLERY_VIDEO_LOOPED_MODE');
+};
+
+/**
+ * Toggles the looped mode.
+ * @param {boolean} on Whether enabled or not.
+ */
+VideoControls.prototype.toggleLoopedMode = function(on) {
+  this.getMedia().loop = on;
+};
+
+/**
+ * Toggles play/pause state and flash an icon over the video.
  */
 VideoControls.prototype.togglePlayStateWithFeedback = function() {
   if (!this.getMedia().duration)
     return;
 
   this.togglePlayState();
-
-  this.stateIcon_.removeAttribute('state');
-  setTimeout(function() {
-    this.stateIcon_.setAttribute('state', this.isPlaying() ? 'play' : 'pause');
-  }.bind(this), 0);
+  this.showIconFeedback_();
 };
 
 /**
- * Toggle play/pause state.
+ * Toggles play/pause state.
  */
 VideoControls.prototype.togglePlayState = function() {
   if (this.isPlaying()) {
-    // User gave the Pause command.
+    // User gave the Pause command. Save the state and reset the loop mode.
+    this.toggleLoopedMode(false);
     this.savePosition();
   }
   MediaControls.prototype.togglePlayState.apply(this, arguments);
 };
 
 /**
- * Save the playback position to the persistent storage.
+ * Saves the playback position to the persistent storage.
  * @param {boolean=} opt_sync True if the position must be saved synchronously
  *     (required when closing app windows).
  */
@@ -1079,7 +1139,7 @@ VideoControls.prototype.savePosition = function(opt_sync) {
 };
 
 /**
- * Resume the playback position saved in the persistent storage.
+ * Resumes the playback position saved in the persistent storage.
  */
 VideoControls.prototype.restorePlayState = function() {
   if (this.media_.duration >= VideoControls.RESUME_THRESHOLD) {
@@ -1091,7 +1151,7 @@ VideoControls.prototype.restorePlayState = function() {
 };
 
 /**
- * Update style to best fit the size of the container.
+ * Updates style to best fit the size of the container.
  */
 VideoControls.prototype.updateStyle = function() {
   // We assume that the video controls element fills the parent container.
@@ -1115,7 +1175,7 @@ VideoControls.prototype.updateStyle = function() {
 };
 
 /**
- * Create audio controls.
+ * Creates audio controls.
  *
  * @param {HTMLElement} container Parent container.
  * @param {function(boolean)} advanceTrack Parameter: true=forward.
