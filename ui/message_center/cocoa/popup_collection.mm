@@ -228,7 +228,14 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
 }
 
 - (void)removeAllNotifications {
-  [popups_ makeObjectsPerformSelector:@selector(closeWithAnimation)];
+  // In rare cases, the popup collection would be gone while an animation is
+  // still playing. For exmaple, the test code could show a new notification
+  // and dispose the collection immediately. Close the popup without animation
+  // when this is the case.
+  if ([self isAnimating])
+    [popups_ makeObjectsPerformSelector:@selector(close)];
+  else
+    [popups_ makeObjectsPerformSelector:@selector(closeWithAnimation)];
   [popups_ makeObjectsPerformSelector:@selector(markPopupCollectionGone)];
   [popups_ removeAllObjects];
 }
@@ -370,6 +377,7 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
       popupFrame.origin.y -= newHeight - oldHeight;
       popupFrame.size.height += newHeight - oldHeight;
       [popup setBounds:popupFrame];
+      animatingNotificationIDs_.insert([popup notificationID]);
     }
   }
 
