@@ -54,24 +54,6 @@ bool BlockFiles::Init(bool create_files) {
   return true;
 }
 
-MappedFile* BlockFiles::GetFile(Addr address) {
-  DCHECK(thread_checker_->CalledOnValidThread());
-  DCHECK(block_files_.size() >= 4);
-  DCHECK(address.is_block_file() || !address.is_initialized());
-  if (!address.is_initialized())
-    return NULL;
-
-  int file_index = address.FileNumber();
-  if (static_cast<unsigned int>(file_index) >= block_files_.size() ||
-      !block_files_[file_index]) {
-    // We need to open the file
-    if (!OpenBlockFile(file_index))
-      return NULL;
-  }
-  DCHECK(block_files_.size() >= static_cast<unsigned int>(file_index));
-  return block_files_[file_index];
-}
-
 bool BlockFiles::CreateBlock(FileType block_type, int block_count,
                              Addr* block_address) {
   DCHECK(thread_checker_->CalledOnValidThread());
@@ -201,6 +183,24 @@ bool BlockFiles::IsValid(Addr address) {
 
   return rv;
 #endif
+}
+
+MappedFile* BlockFiles::GetFile(Addr address) {
+  DCHECK(thread_checker_->CalledOnValidThread());
+  DCHECK(block_files_.size() >= 4);
+  DCHECK(address.is_block_file() || !address.is_initialized());
+  if (!address.is_initialized())
+    return NULL;
+
+  int file_index = address.FileNumber();
+  if (static_cast<unsigned int>(file_index) >= block_files_.size() ||
+      !block_files_[file_index]) {
+    // We need to open the file
+    if (!OpenBlockFile(file_index))
+      return NULL;
+  }
+  DCHECK(block_files_.size() >= static_cast<unsigned int>(file_index));
+  return block_files_[file_index];
 }
 
 bool BlockFiles::GrowBlockFile(MappedFile* file, BlockFileHeader* header) {

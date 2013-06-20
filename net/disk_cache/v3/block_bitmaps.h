@@ -28,9 +28,6 @@ class NET_EXPORT_PRIVATE BlockFiles {
   // files should be created or just open.
   bool Init(bool create_files);
 
-  // Returns the file that stores a given address.
-  MappedFile* GetFile(Addr address);
-
   // Creates a new entry on a block file. block_type indicates the size of block
   // to be used (as defined on cache_addr.h), block_count is the number of
   // blocks to allocate, and block_address is the address of the new entry.
@@ -53,6 +50,9 @@ class NET_EXPORT_PRIVATE BlockFiles {
   bool IsValid(Addr address);
 
  private:
+  // Returns the file that stores a given address.
+  MappedFile* GetFile(Addr address);
+
   // Attemp to grow this file. Fails if the file cannot be extended anymore.
   bool GrowBlockFile(MappedFile* file, BlockFileHeader* header);
 
