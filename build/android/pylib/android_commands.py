@@ -219,7 +219,7 @@ class AndroidCommands(object):
     self.logcat_process = None
     self._logcat_tmpoutfile = None
     self._pushed_files = []
-    self._device_utc_offset = self.RunShellCommand('date +%z')[0]
+    self._device_utc_offset = None
     self._md5sum_build_dir = ''
     self._external_storage = ''
     self._util_wrapper = ''
@@ -848,7 +848,12 @@ class AndroidCommands(object):
                          '(?P<filename>[^\s]+)$')
     return _GetFilesFromRecursiveLsOutput(
         path, self.RunShellCommand('ls -lR %s' % path), re_file,
-        self._device_utc_offset)
+        self.GetUtcOffset())
+
+  def GetUtcOffset(self):
+    if not self._device_utc_offset:
+      self._device_utc_offset = self.RunShellCommand('date +%z')[0]
+    return self._device_utc_offset
 
   def SetJavaAssertsEnabled(self, enable):
     """Sets or removes the device java assertions property.
@@ -898,8 +903,17 @@ class AndroidCommands(object):
     assert build_type
     return build_type
 
+  def GetDescription(self):
+    """Returns the description of the system.
+
+    For example, "yakju-userdebug 4.1 JRN54F 364167 dev-keys".
+    """
+    description = self.RunShellCommand('getprop ro.build.description')[0]
+    assert description
+    return description
+
   def GetProductModel(self):
-    """Returns the namve of the product model (e.g. "Galaxy Nexus") """
+    """Returns the name of the product model (e.g. "Galaxy Nexus") """
     model = self.RunShellCommand('getprop ro.product.model')[0]
     assert model
     return model
