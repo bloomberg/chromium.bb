@@ -261,8 +261,7 @@
             '../third_party/skia/gyp/gpu.gypi',
           ],
           'sources': [
-            '<@(gr_sources)',
-            '<@(skgr_sources)',
+            '<@(skgpu_sources)',
           ],
           'include_dirs': [
             '../third_party/skia/include/gpu',
