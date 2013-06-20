@@ -42,8 +42,7 @@ class ProxyDecryptor : public media::MediaKeys {
 #endif
       const media::KeyAddedCB& key_added_cb,
       const media::KeyErrorCB& key_error_cb,
-      const media::KeyMessageCB& key_message_cb,
-      const media::NeedKeyCB& need_key_cb);
+      const media::KeyMessageCB& key_message_cb);
   virtual ~ProxyDecryptor();
 
   // Only call this once.
@@ -84,9 +83,6 @@ class ProxyDecryptor : public media::MediaKeys {
   void KeyMessage(const std::string& session_id,
                   const std::string& message,
                   const std::string& default_url);
-  void NeedKey(const std::string& session_id,
-               const std::string& type,
-               scoped_ptr<uint8[]> init_data, int init_data_size);
 
   base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;
 
@@ -107,7 +103,6 @@ class ProxyDecryptor : public media::MediaKeys {
   media::KeyAddedCB key_added_cb_;
   media::KeyErrorCB key_error_cb_;
   media::KeyMessageCB key_message_cb_;
-  media::NeedKeyCB need_key_cb_;
 
   // Protects the |decryptor_|. Note that |decryptor_| itself should be thread
   // safe as per the Decryptor interface.

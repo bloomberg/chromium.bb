@@ -176,8 +176,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
         frame,
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyAdded),
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyError),
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage),
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey)));
+        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage)));
   }
 
   // Use the null sink if no sink was provided.

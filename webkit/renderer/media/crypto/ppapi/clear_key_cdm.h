@@ -70,8 +70,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
     enum Status {
       kKeyAdded,
       kKeyError,
-      kKeyMessage,
-      kNeedKey
+      kKeyMessage
     };
 
     Client();
@@ -92,9 +91,6 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
     void KeyMessage(const std::string& session_id,
                     const std::string& message,
                     const std::string& default_url);
-    void NeedKey(const std::string& session_id,
-                 const std::string& type,
-                 scoped_ptr<uint8[]> init_data, int init_data_length);
 
    private:
     Status status_;

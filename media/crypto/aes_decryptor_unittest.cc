@@ -230,8 +230,7 @@ class AesDecryptorTest : public testing::Test {
       : decryptor_(
             base::Bind(&AesDecryptorTest::KeyAdded, base::Unretained(this)),
             base::Bind(&AesDecryptorTest::KeyError, base::Unretained(this)),
-            base::Bind(&AesDecryptorTest::KeyMessage, base::Unretained(this)),
-            NeedKeyCB()),
+            base::Bind(&AesDecryptorTest::KeyMessage, base::Unretained(this))),
         decrypt_cb_(base::Bind(&AesDecryptorTest::BufferDecrypted,
                                base::Unretained(this))),
         subsample_entries_(kSubsampleEntries,

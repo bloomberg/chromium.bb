@@ -181,21 +181,10 @@ void ClearKeyCdm::Client::KeyMessage(const std::string& session_id,
   default_url_ = default_url;
 }
 
-void ClearKeyCdm::Client::NeedKey(const std::string& session_id,
-                                  const std::string& type,
-                                  scoped_ptr<uint8[]> init_data,
-                                  int init_data_length) {
-  // In the current implementation of AesDecryptor, NeedKey is not used.
-  // If no key is available to decrypt an input buffer, it returns kNoKey to
-  // the caller instead of firing NeedKey.
-  NOTREACHED();
-}
-
 ClearKeyCdm::ClearKeyCdm(cdm::Host* host)
     : decryptor_(base::Bind(&Client::KeyAdded, base::Unretained(&client_)),
                  base::Bind(&Client::KeyError, base::Unretained(&client_)),
-                 base::Bind(&Client::KeyMessage, base::Unretained(&client_)),
-                 base::Bind(&Client::NeedKey, base::Unretained(&client_))),
+                 base::Bind(&Client::KeyMessage, base::Unretained(&client_))),
       host_(host),
       timer_delay_ms_(kInitialTimerDelayMs),
       timer_set_(false) {

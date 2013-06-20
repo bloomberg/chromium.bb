@@ -294,12 +294,10 @@ void ContentDecryptorDelegate::Initialize(const std::string& key_system) {
 void ContentDecryptorDelegate::SetKeyEventCallbacks(
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
-    const media::KeyMessageCB& key_message_cb,
-    const media::NeedKeyCB& need_key_cb) {
+    const media::KeyMessageCB& key_message_cb) {
   key_added_cb_ = key_added_cb;
   key_error_cb_ = key_error_cb;
   key_message_cb_ = key_message_cb;
-  need_key_cb_ = need_key_cb;
 }
 
 bool ContentDecryptorDelegate::GenerateKeyRequest(const std::string& type,

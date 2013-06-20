@@ -92,8 +92,6 @@ class FakeEncryptedMedia {
                    base::Bind(&FakeEncryptedMedia::KeyError,
                               base::Unretained(this)),
                    base::Bind(&FakeEncryptedMedia::KeyMessage,
-                              base::Unretained(this)),
-                   base::Bind(&FakeEncryptedMedia::NeedKey,
                               base::Unretained(this))),
         app_(app) {
   }

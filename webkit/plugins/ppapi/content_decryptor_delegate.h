@@ -43,8 +43,7 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
 
   void SetKeyEventCallbacks(const media::KeyAddedCB& key_added_cb,
                             const media::KeyErrorCB& key_error_cb,
-                            const media::KeyMessageCB& key_message_cb,
-                            const media::NeedKeyCB& need_key_cb);
+                            const media::KeyMessageCB& key_message_cb);
 
   // Provides access to PPP_ContentDecryptor_Private.
   bool GenerateKeyRequest(const std::string& type,
@@ -138,7 +137,6 @@ class WEBKIT_PLUGINS_EXPORT ContentDecryptorDelegate {
   media::KeyAddedCB key_added_cb_;
   media::KeyErrorCB key_error_cb_;
   media::KeyMessageCB key_message_cb_;
-  media::NeedKeyCB need_key_cb_;
 
   gfx::Size natural_size_;
 

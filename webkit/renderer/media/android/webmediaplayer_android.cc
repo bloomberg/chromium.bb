@@ -123,8 +123,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
         base::Bind(&WebMediaPlayerAndroid::OnKeyAdded, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyError, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
-                   base::Unretained(this)),
-        base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this))));
+                   base::Unretained(this))));
   }
 }
 

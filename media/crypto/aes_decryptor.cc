@@ -126,12 +126,10 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
 
 AesDecryptor::AesDecryptor(const KeyAddedCB& key_added_cb,
                            const KeyErrorCB& key_error_cb,
-                           const KeyMessageCB& key_message_cb,
-                           const NeedKeyCB& need_key_cb)
+                           const KeyMessageCB& key_message_cb)
     : key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
-      key_message_cb_(key_message_cb),
-      need_key_cb_(need_key_cb) {
+      key_message_cb_(key_message_cb) {
 }
 
 AesDecryptor::~AesDecryptor() {

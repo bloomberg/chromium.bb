@@ -28,7 +28,6 @@ scoped_ptr<webkit_media::PpapiDecryptor> PpapiDecryptor::Create(
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb,
-    const media::NeedKeyCB& need_key_cb,
     const base::Closure& destroy_plugin_cb) {
   webkit::ppapi::ContentDecryptorDelegate* plugin_cdm_delegate =
       plugin_instance->GetContentDecryptorDelegate();
@@ -45,7 +44,6 @@ scoped_ptr<webkit_media::PpapiDecryptor> PpapiDecryptor::Create(
                          key_added_cb,
                          key_error_cb,
                          key_message_cb,
-                         need_key_cb,
                          destroy_plugin_cb));
 }
 
@@ -55,14 +53,12 @@ PpapiDecryptor::PpapiDecryptor(
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb,
-    const media::NeedKeyCB& need_key_cb,
     const base::Closure& destroy_plugin_cb)
     : plugin_instance_(plugin_instance),
       plugin_cdm_delegate_(plugin_cdm_delegate),
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
-      need_key_cb_(need_key_cb),
       destroy_plugin_cb_(destroy_plugin_cb),
       render_loop_proxy_(base::MessageLoopProxy::current()),
       weak_ptr_factory_(this),
@@ -72,8 +68,7 @@ PpapiDecryptor::PpapiDecryptor(
   plugin_cdm_delegate_->SetKeyEventCallbacks(
       base::Bind(&PpapiDecryptor::KeyAdded, weak_this_),
       base::Bind(&PpapiDecryptor::KeyError, weak_this_),
-      base::Bind(&PpapiDecryptor::KeyMessage, weak_this_),
-      base::Bind(&PpapiDecryptor::NeedKey, weak_this_));
+      base::Bind(&PpapiDecryptor::KeyMessage, weak_this_));
 }
 
 PpapiDecryptor::~PpapiDecryptor() {
@@ -297,14 +292,6 @@ void PpapiDecryptor::KeyMessage(const std::string& session_id,
                                 const std::string& default_url) {
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   key_message_cb_.Run(session_id, message, default_url);
-}
-
-void PpapiDecryptor::NeedKey(const std::string& session_id,
-                             const std::string& type,
-                             scoped_ptr<uint8[]> init_data,
-                             int init_data_size) {
-  DCHECK(render_loop_proxy_->BelongsToCurrentThread());
-  need_key_cb_.Run(session_id, type, init_data.Pass(), init_data_size);
 }
 
 }  // namespace webkit_media

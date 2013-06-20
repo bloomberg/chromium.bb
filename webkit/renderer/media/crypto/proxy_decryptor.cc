@@ -66,8 +66,7 @@ ProxyDecryptor::ProxyDecryptor(
 #endif  // defined(OS_ANDROID) && !defined(GOOGLE_TV)
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
-    const media::KeyMessageCB& key_message_cb,
-    const media::NeedKeyCB& need_key_cb)
+    const media::KeyMessageCB& key_message_cb)
     : weak_ptr_factory_(this),
 #if defined(ENABLE_PEPPER_CDMS)
       web_media_player_client_(web_media_player_client),
@@ -79,8 +78,7 @@ ProxyDecryptor::ProxyDecryptor(
 #endif  // defined(OS_ANDROID) && !defined(GOOGLE_TV)
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
-      key_message_cb_(key_message_cb),
-      need_key_cb_(need_key_cb) {
+      key_message_cb_(key_message_cb) {
 }
 
 ProxyDecryptor::~ProxyDecryptor() {
@@ -180,7 +178,6 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreatePpapiDecryptor(
       base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::DestroyHelperPlugin,
                  weak_ptr_factory_.GetWeakPtr()));
 
@@ -198,8 +195,8 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
     return scoped_ptr<media::MediaKeys>(new media::AesDecryptor(
         base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr())));
+        base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr())
+        ));
   }
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -226,13 +223,6 @@ void ProxyDecryptor::KeyMessage(const std::string& session_id,
                                 const std::string& message,
                                 const std::string& default_url) {
   key_message_cb_.Run(session_id, message, default_url);
-}
-
-void ProxyDecryptor::NeedKey(const std::string& session_id,
-                             const std::string& type,
-                             scoped_ptr<uint8[]> init_data,
-                             int init_data_size) {
-  need_key_cb_.Run(session_id, type, init_data.Pass(), init_data_size);
 }
 
 }  // namespace webkit_media
