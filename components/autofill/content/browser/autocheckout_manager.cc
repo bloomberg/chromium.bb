@@ -63,14 +63,16 @@ FormData BuildAutocheckoutFormData() {
   formdata.fields.push_back(BuildField("cc-exp-month"));
   formdata.fields.push_back(BuildField("cc-exp-year"));
   formdata.fields.push_back(BuildField("cc-csc"));
-  formdata.fields.push_back(BuildField("billing street-address"));
+  formdata.fields.push_back(BuildField("billing address-line1"));
+  formdata.fields.push_back(BuildField("billing address-line2"));
   formdata.fields.push_back(BuildField("billing locality"));
   formdata.fields.push_back(BuildField("billing region"));
   formdata.fields.push_back(BuildField("billing country"));
   formdata.fields.push_back(BuildField("billing postal-code"));
   formdata.fields.push_back(BuildField("billing tel"));
   formdata.fields.push_back(BuildField("shipping name"));
-  formdata.fields.push_back(BuildField("shipping street-address"));
+  formdata.fields.push_back(BuildField("shipping address-line1"));
+  formdata.fields.push_back(BuildField("shipping address-line2"));
   formdata.fields.push_back(BuildField("shipping locality"));
   formdata.fields.push_back(BuildField("shipping region"));
   formdata.fields.push_back(BuildField("shipping country"));
