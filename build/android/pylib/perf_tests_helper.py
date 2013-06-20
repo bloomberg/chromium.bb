@@ -23,6 +23,17 @@ def _EscapePerfResult(s):
   return re.sub('[\:|=/#&,]', '_', s)
 
 
+def _Flatten(values):
+  """Returns a simple list without sub-lists."""
+  ret = []
+  for entry in values:
+    if isinstance(entry, list):
+      ret.extend(_Flatten(entry))
+    else:
+      ret.append(entry)
+  return ret
+
+
 def GeomMeanAndStdDevFromHistogram(histogram_json):
   histogram = json.loads(histogram_json)
   # Handle empty histograms gracefully.
@@ -82,7 +93,8 @@ def PrintPerfResult(measurement, trace, values, units, result_type='default',
   Args:
     measurement: A description of the quantity being measured, e.g. "vm_peak".
     trace: A description of the particular data point, e.g. "reference".
-    values: A list of numeric measured values.
+    values: A list of numeric measured values. An N-dimensional list will be
+        flattened and treated as a simple list.
     units: A description of the units of measure, e.g. "bytes".
     result_type: Accepts values of RESULT_TYPES.
     print_to_stdout: If True, prints the output in stdout instead of returning
@@ -99,7 +111,7 @@ def PrintPerfResult(measurement, trace, values, units, result_type='default',
     assert isinstance(values, list)
     assert len(values)
     assert '/' not in measurement
-    value, avg, sd = _MeanAndStdDevFromList(values)
+    value, avg, sd = _MeanAndStdDevFromList(_Flatten(values))
     output = '%s%s: %s%s%s %s' % (
         RESULT_TYPES[result_type],
         _EscapePerfResult(measurement),
