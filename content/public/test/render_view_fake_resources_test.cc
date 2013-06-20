@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "base/command_line.h"
 #include "base/process.h"
 #include "base/run_loop.h"
 #include "base/shared_memory.h"
@@ -28,6 +29,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/base/ui_base_switches.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -68,6 +70,9 @@ void RenderViewFakeResourcesTest::SetUp() {
   channel_.reset(new IPC::Channel(channel_id,
                                   IPC::Channel::MODE_SERVER, this));
   ASSERT_TRUE(channel_->Connect());
+
+  CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  command_line.AppendSwitchASCII(switches::kLang, "en-us");
 
   webkit_glue::SetJavaScriptFlags("--expose-gc");
   mock_process_.reset(new MockRenderProcess);
