@@ -145,9 +145,6 @@ public:
     const SkMatrix& getTotalMatrix() const;
     bool isPrintingDevice() const;
 
-    void setShadowsIgnoreTransforms(bool ignoreTransforms) { m_state->m_shadowsIgnoreTransforms = ignoreTransforms; }
-    bool shadowsIgnoreTransforms() const { return m_state->m_shadowsIgnoreTransforms; }
-
     void setShouldAntialias(bool antialias) { m_state->m_shouldAntialias = antialias; }
     bool shouldAntialias() const { return m_state->m_shouldAntialias; }
 
@@ -313,6 +310,7 @@ public:
 
     bool hasShadow() const;
     void setShadow(const FloatSize& offset, float blur, const Color&,
+        DrawLooper::ShadowTransformMode = DrawLooper::ShadowRespectsTransforms,
         DrawLooper::ShadowAlphaMode = DrawLooper::ShadowRespectsAlpha);
     void clearShadow() { clearDrawLooper(); }
 

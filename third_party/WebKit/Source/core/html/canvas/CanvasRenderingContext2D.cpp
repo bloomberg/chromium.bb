@@ -58,6 +58,7 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/FloatConversion.h"
+#include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -1163,10 +1164,12 @@ void CanvasRenderingContext2D::applyShadow()
     if (!c)
         return;
 
-    if (shouldDrawShadows())
-        c->setShadow(state().m_shadowOffset, state().m_shadowBlur, state().m_shadowColor);
-    else
+    if (shouldDrawShadows()) {
+        c->setShadow(state().m_shadowOffset, state().m_shadowBlur, state().m_shadowColor,
+            DrawLooper::ShadowIgnoresTransforms);
+    } else {
         c->clearShadow();
+    }
 }
 
 bool CanvasRenderingContext2D::shouldDrawShadows() const

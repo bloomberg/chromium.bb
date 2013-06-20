@@ -256,7 +256,9 @@ void GraphicsContext::setFillGradient(PassRefPtr<Gradient> gradient)
     m_state->m_fillPattern.clear();
 }
 
-void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color& color, DrawLooper::ShadowAlphaMode shadowAlphaMode)
+void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color& color,
+    DrawLooper::ShadowTransformMode shadowTransformMode,
+    DrawLooper::ShadowAlphaMode shadowAlphaMode)
 {
     if (paintingDisabled())
         return;
@@ -265,12 +267,6 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
         clearShadow();
         return;
     }
-
-    DrawLooper::ShadowTransformMode shadowTransformMode;
-    if (m_state->m_shadowsIgnoreTransforms)
-        shadowTransformMode = DrawLooper::ShadowIgnoresTransforms;
-    else
-        shadowTransformMode = DrawLooper::ShadowRespectsTransforms;
 
     DrawLooper drawLooper;
     drawLooper.addShadow(offset, blur, color, shadowTransformMode, shadowAlphaMode);

@@ -527,7 +527,8 @@ static void applyBoxShadowForBackground(GraphicsContext* context, RenderStyle* s
         boxShadow = boxShadow->next();
 
     FloatSize shadowOffset(boxShadow->x(), boxShadow->y());
-    context->setShadow(shadowOffset, boxShadow->blur(), boxShadow->color(), DrawLooper::ShadowIgnoresAlpha);
+    context->setShadow(shadowOffset, boxShadow->blur(), boxShadow->color(),
+        DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
 }
 
 void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, const Color& color, const FillLayer* bgLayer, const LayoutRect& rect,
