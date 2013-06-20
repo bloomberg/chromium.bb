@@ -52,7 +52,7 @@ CA_COMMON_NAME="2048 RSA Test Root CA" \
   try openssl req \
     -new \
     -key out/2048-rsa-root.key \
--extensions ca_cert \
+    -extensions ca_cert \
     -out out/2048-rsa-root.csr \
     -config ca.cnf
 
@@ -62,7 +62,7 @@ CA_COMMON_NAME="2048 RSA Test Root CA" \
   try openssl x509 \
     -req -days 3650 \
     -in out/2048-rsa-root.csr \
--extensions ca_cert \
+    -extensions ca_cert \
     -signkey out/2048-rsa-root.key \
     -out out/2048-rsa-root.pem
 

@@ -14,7 +14,7 @@
 TEST(X509CertificateModelTest, GetTypeCA) {
   scoped_refptr<net::X509Certificate> cert(
       net::ImportCertFromFile(net::GetTestCertsDirectory(),
-                              "root_ca_cert.crt"));
+                              "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
 
 #if defined(USE_OPENSSL)

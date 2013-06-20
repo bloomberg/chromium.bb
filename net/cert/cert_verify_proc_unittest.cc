@@ -820,7 +820,7 @@ TEST_F(CertVerifyProcTest, AdditionalTrustAnchors) {
 
   // |ca_cert| is the issuer of |cert|.
   CertificateList ca_cert_list = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "root_ca_cert.crt",
+      GetTestCertsDirectory(), "root_ca_cert.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, ca_cert_list.size());
   scoped_refptr<X509Certificate> ca_cert(ca_cert_list[0]);

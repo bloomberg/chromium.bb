@@ -267,7 +267,7 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12InvalidFile) {
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
   CertificateList certs = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "root_ca_cert.crt",
+      GetTestCertsDirectory(), "root_ca_cert.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
@@ -282,7 +282,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
   CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
-  EXPECT_EQ("Test CA", cert->subject().common_name);
+  EXPECT_EQ("Test Root CA", cert->subject().common_name);
 
   EXPECT_EQ(NSSCertDatabase::TRUSTED_SSL,
             cert_db_->GetCertTrust(cert.get(), CA_CERT));
@@ -298,7 +298,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
   CertificateList certs = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "root_ca_cert.crt",
+      GetTestCertsDirectory(), "root_ca_cert.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
@@ -313,7 +313,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
   CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
-  EXPECT_EQ("Test CA", cert->subject().common_name);
+  EXPECT_EQ("Test Root CA", cert->subject().common_name);
 
   EXPECT_EQ(NSSCertDatabase::TRUSTED_EMAIL,
             cert_db_->GetCertTrust(cert.get(), CA_CERT));
@@ -329,7 +329,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
   CertificateList certs = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "root_ca_cert.crt",
+      GetTestCertsDirectory(), "root_ca_cert.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   EXPECT_FALSE(certs[0]->os_cert_handle()->isperm);
@@ -344,7 +344,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
   CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
-  EXPECT_EQ("Test CA", cert->subject().common_name);
+  EXPECT_EQ("Test Root CA", cert->subject().common_name);
 
   EXPECT_EQ(NSSCertDatabase::TRUSTED_OBJ_SIGN,
             cert_db_->GetCertTrust(cert.get(), CA_CERT));
@@ -490,7 +490,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
 
 TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
   CertificateList certs = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "root_ca_cert.crt",
+      GetTestCertsDirectory(), "root_ca_cert.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, certs.size());
   ASSERT_TRUE(ReadCertIntoList("dod_ca_13_cert.der", &certs));
@@ -512,7 +512,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
 
   CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
   ASSERT_EQ(1U, cert_list.size());
-  EXPECT_EQ("Test CA", cert_list[0]->subject().common_name);
+  EXPECT_EQ("Test Root CA", cert_list[0]->subject().common_name);
 }
 
 // http://crbug.com/108009 - Disabled, as google.chain.pem is an expired
@@ -629,7 +629,7 @@ TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned_Trusted) {
 
 TEST_F(CertDatabaseNSSTest, ImportCaAndServerCert) {
   CertificateList ca_certs = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "root_ca_cert.crt",
+      GetTestCertsDirectory(), "root_ca_cert.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, ca_certs.size());
 
@@ -671,7 +671,7 @@ TEST_F(CertDatabaseNSSTest, ImportCaAndServerCert_DistrustServer) {
   }
 
   CertificateList ca_certs = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "root_ca_cert.crt",
+      GetTestCertsDirectory(), "root_ca_cert.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, ca_certs.size());
 

@@ -26,7 +26,7 @@
       'variables': {
         'isolate_dependency_tracked': [
           '../net/data/ssl/certificates/ok_cert.pem',
-          '../net/data/ssl/certificates/root_ca_cert.crt',
+          '../net/data/ssl/certificates/root_ca_cert.pem',
           '../net/tools/testserver/asn1.py',
           '../net/tools/testserver/echo_message.py',
           '../net/tools/testserver/minica.py',

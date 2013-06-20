@@ -296,7 +296,7 @@ bool BaseTestServer::LoadTestRootCert() const {
   }
 
   return root_certs->AddFromFile(
-      root_certificate_path.AppendASCII("root_ca_cert.crt"));
+      root_certificate_path.AppendASCII("root_ca_cert.pem"));
 }
 
 bool BaseTestServer::SetupWhenServerStarted() {

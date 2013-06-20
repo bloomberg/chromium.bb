@@ -55,7 +55,7 @@ std::string TestTCPSocketPrivateTrusted::TestGetServerCertificate() {
   const pp::X509CertificatePrivate& cert = socket.GetServerCertificate();
   ASSERT_EQ(
       cert.GetField(PP_X509CERTIFICATE_PRIVATE_ISSUER_COMMON_NAME).AsString(),
-      "Test CA");
+      "Test Root CA");
   ASSERT_EQ(
       cert.GetField(PP_X509CERTIFICATE_PRIVATE_SUBJECT_COMMON_NAME).AsString(),
       "127.0.0.1");

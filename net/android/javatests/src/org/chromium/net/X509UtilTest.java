@@ -36,7 +36,7 @@ public class X509UtilTest extends InstrumentationTestCase {
     private static final String NON_CRITICAL_CODE_SIGNING_EE = "non-crit-codeSigning-chain.pem";
     private static final String WEB_CLIENT_AUTH_EE = "invalid_key_usage_cert.der";
     private static final String OK_CERT = "ok_cert.pem";
-    private static final String GOOD_ROOT_CA = "root_ca_cert.crt";
+    private static final String GOOD_ROOT_CA = "root_ca_cert.pem";
 
     private static final String BEGIN_MARKER = "-----BEGIN CERTIFICATE-----";
     private static final String END_MARKER = "-----END CERTIFICATE-----";

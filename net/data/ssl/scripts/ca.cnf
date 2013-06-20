@@ -1,3 +1,10 @@
+# Defaults in the event they're not set in the environment
+CA_DIR    = out
+KEY_SIZE  = 2048
+ALGO      = sha1
+CERT_TYPE = root
+CA_NAME   = req_env_dn
+
 [ca]
 default_ca = CA_root
 preserve   = yes

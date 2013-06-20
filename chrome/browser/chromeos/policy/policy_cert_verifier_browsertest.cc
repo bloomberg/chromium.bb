@@ -152,7 +152,7 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
 TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
   // |ca_cert| is the issuer of |cert|.
   scoped_refptr<net::X509Certificate> ca_cert =
-      LoadCertificate("root_ca_cert.crt", net::CA_CERT);
+      LoadCertificate("root_ca_cert.pem", net::CA_CERT);
   ASSERT_TRUE(ca_cert.get());
   scoped_refptr<net::X509Certificate> cert =
       LoadCertificate("ok_cert.pem", net::SERVER_CERT);
@@ -206,7 +206,7 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
 
   // |ca_cert| is the issuer of |cert|.
   scoped_refptr<net::X509Certificate> ca_cert =
-      LoadCertificate("root_ca_cert.crt", net::CA_CERT);
+      LoadCertificate("root_ca_cert.pem", net::CA_CERT);
   ASSERT_TRUE(ca_cert.get());
   scoped_refptr<net::X509Certificate> cert =
       LoadCertificate("ok_cert.pem", net::SERVER_CERT);
@@ -251,7 +251,7 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
 
   // |ca_cert| is the issuer of |cert|.
   scoped_refptr<net::X509Certificate> ca_cert =
-      LoadCertificate("root_ca_cert.crt", net::CA_CERT);
+      LoadCertificate("root_ca_cert.pem", net::CA_CERT);
   ASSERT_TRUE(ca_cert.get());
   scoped_refptr<net::X509Certificate> cert =
       LoadCertificate("ok_cert.pem", net::SERVER_CERT);
