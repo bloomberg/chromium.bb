@@ -1110,6 +1110,11 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 
 	if (pointer->focus == NULL)
 		return;
+	/* pointer->focus->resource can be NULL. Surfaces like the
+	black_surface used in shell.c for fullscreen don't have
+	a resource, but can still have focus */
+	if (pointer->focus->resource == NULL)
+		return;
 	if (wl_resource_get_client(pointer->focus->resource) != client)
 		return;
 	if (pointer->focus_serial - serial > UINT32_MAX / 2)
