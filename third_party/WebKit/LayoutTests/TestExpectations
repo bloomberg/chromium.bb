@@ -1368,6 +1368,9 @@ crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 
+# Remove theses two line after animated WebP is enabled by default.
+crbug.com/229641 fast/images/webp-animation.html [ Skip ]
+crbug.com/229641 virtual/deferred/fast/images/webp-animation.html [ Skip ]
 
 crbug.com/240400 fast/dom/console-log-stack-overflow.html [ Failure Pass ]
 
