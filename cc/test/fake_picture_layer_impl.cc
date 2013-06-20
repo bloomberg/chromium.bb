@@ -14,7 +14,7 @@ FakePictureLayerImpl::FakePictureLayerImpl(
       append_quads_count_(0) {
   pile_ = pile;
   SetBounds(pile_->size());
-  CreateTilingSetIfNeeded();
+  CreateTilingSet();
 }
 
 FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id)

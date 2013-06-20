@@ -67,7 +67,8 @@ class CC_EXPORT PictureLayerImpl
   void SyncTiling(const PictureLayerTiling* tiling);
   void UpdateTwinLayer();
 
-  void CreateTilingSetIfNeeded();
+  void CreateTilingSet();
+  void TransferTilingSet(scoped_ptr<PictureLayerTilingSet> tilings);
 
   // Mask-related functions
   void SetIsMask(bool is_mask);
