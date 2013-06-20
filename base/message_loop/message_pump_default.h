@@ -20,6 +20,7 @@ class MessagePumpDefault : public MessagePump {
   virtual void Quit() OVERRIDE;
   virtual void ScheduleWork() OVERRIDE;
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 
  protected:
   virtual ~MessagePumpDefault() {}

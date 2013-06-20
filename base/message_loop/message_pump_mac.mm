@@ -207,6 +207,9 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
   CFRunLoopTimerSetNextFireDate(delayed_work_timer_, delayed_work_fire_time_);
 }
 
+void MessagePumpCFRunLoopBase::Shutdown() {
+}
+
 // Called from the run loop.
 // static
 void MessagePumpCFRunLoopBase::RunDelayedWorkTimer(CFRunLoopTimerRef timer,

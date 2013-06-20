@@ -82,4 +82,7 @@ void MessagePumpDefault::ScheduleDelayedWork(
   delayed_work_time_ = delayed_work_time;
 }
 
+void MessagePumpDefault::Shutdown() {
+}
+
 }  // namespace base

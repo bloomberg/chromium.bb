@@ -67,6 +67,10 @@ void MessagePumpWin::RunWithDispatcher(
   state_ = previous_state;
 }
 
+void MessagePumpWin::Run(Delegate* delegate) {
+  RunWithDispatcher(delegate, NULL);
+}
+
 void MessagePumpWin::Quit() {
   DCHECK(state_);
   state_->should_quit = true;
@@ -103,20 +107,32 @@ MessagePumpForUI::MessagePumpForUI()
 }
 
 MessagePumpForUI::~MessagePumpForUI() {
-  DestroyWindow(message_hwnd_);
-  UnregisterClass(MAKEINTATOM(atom_),
-                  GetModuleFromAddress(&WndProcThunk));
+  DCHECK(!atom_);
+  DCHECK(!message_hwnd_);
 }
 
 void MessagePumpForUI::ScheduleWork() {
   if (InterlockedExchange(&have_work_, 1))
     return;  // Someone else continued the pumping.
 
-  // Make sure the MessagePump does some work for us.
-  BOOL ret = PostMessage(message_hwnd_, kMsgHaveWork,
-                         reinterpret_cast<WPARAM>(this), 0);
-  if (ret)
-    return;  // There was room in the Window Message queue.
+  // If the attempt to acquire the lock fails, the message loop is shutting down
+  // and the message window is about to be destroyed as well.
+  if (!message_hwnd_lock_.Try())
+    return;
+
+  {
+    base::AutoLock lock(message_hwnd_lock_, base::AutoLock::AlreadyAcquired());
+
+    // Do nothing if the window has been destroyed already.
+    if (!message_hwnd_)
+      return;
+
+    // Make sure the MessagePump does some work for us.
+    if (PostMessage(message_hwnd_, kMsgHaveWork,
+                    reinterpret_cast<WPARAM>(this), 0)) {
+      return;
+    }
+  }
 
   // We have failed to insert a have-work message, so there is a chance that we
   // will starve tasks/timers while sitting in a nested message loop.  Nested
@@ -170,6 +186,24 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // TODO(jar): If we don't see this error, use a CHECK() here instead.
   UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", SET_TIMER_ERROR,
                             MESSAGE_LOOP_PROBLEM_MAX);
+}
+
+void MessagePumpForUI::Shutdown() {
+  HWND message_hwnd;
+  {
+    base::AutoLock lock(message_hwnd_lock_);
+
+    // Let ScheduleWork() know that the window has been destoyed.
+    message_hwnd = message_hwnd_;
+    message_hwnd_ = NULL;
+  }
+
+  // Destoy the window and its class. The destructor checks whether
+  // |message_hwnd_| and |atom_| are destroyed, so the variables should be
+  // cleared here.
+  DestroyWindow(message_hwnd);
+  UnregisterClass(MAKEINTATOM(atom_), GetModuleFromAddress(&WndProcThunk));
+  atom_ = 0;
 }
 
 void MessagePumpForUI::PumpOutPendingPaintMessages() {
@@ -478,7 +512,7 @@ void MessagePumpForIO::ScheduleWork() {
     return;  // Post worked perfectly.
 
   // See comment in MessagePumpForUI::ScheduleWork() for this error recovery.
-  InterlockedExchange(&have_work_, 0);  // Clarify that we didn't succeed.
+  InterlockedExchange(&have_work_, 0);
   UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", COMPLETION_POST_ERROR,
                             MESSAGE_LOOP_PROBLEM_MAX);
 }
@@ -488,6 +522,9 @@ void MessagePumpForIO::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // called on the same thread as Run, so we only need to update our record of
   // how long to sleep when we do sleep.
   delayed_work_time_ = delayed_work_time;
+}
+
+void MessagePumpForIO::Shutdown() {
 }
 
 void MessagePumpForIO::RegisterIOHandler(HANDLE file_handle,
