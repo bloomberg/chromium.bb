@@ -25,6 +25,7 @@ namespace message_center {
 class MessageCenter;
 class MessageCenterBubble;
 class MessageCenterTray;
+class MessageCenterView;
 class MessageView;
 class MessageListView;
 class NotifierSettingsView;
@@ -35,21 +36,27 @@ class NotifierSettingsView;
 // otherwise please refrain from using it :-).
 class MessageCenterButtonBar : public views::View {
  public:
-  explicit MessageCenterButtonBar(MessageCenter* message_center);
+  MessageCenterButtonBar(MessageCenterView* message_center_view,
+                         MessageCenter* message_center);
   virtual ~MessageCenterButtonBar();
+
+  virtual void SetAllButtonsEnabled(bool enabled);
 
   void SetCloseAllVisible(bool visible);
 
  protected:
-
-  MessageCenter* message_center() { return message_center_; }
-  MessageCenterTray* tray() { return tray_; }
-  views::Button* close_all_button() { return close_all_button_; }
+  MessageCenterView* message_center_view() const {
+    return message_center_view_;
+  }
+  MessageCenter* message_center() const { return message_center_; }
+  MessageCenterTray* tray() const { return tray_; }
+  views::Button* close_all_button() const { return close_all_button_; }
   void set_close_all_button(views::Button* button) {
     close_all_button_ = button;
   }
 
  private:
+  MessageCenterView* message_center_view_;  // Weak reference.
   MessageCenter* message_center_;  // Weak reference.
   MessageCenterTray* tray_;  // Weak reference.
   views::Button* close_all_button_;
@@ -70,6 +77,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   virtual ~MessageCenterView();
 
   void SetNotifications(const NotificationList::Notifications& notifications);
+
+  void ClearAllNotifications();
+  void OnAllNotificationsCleared();
 
   size_t NumMessageViewsForTest() const;
 
