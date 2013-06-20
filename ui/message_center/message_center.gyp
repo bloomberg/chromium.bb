@@ -107,7 +107,7 @@
             '../../third_party/GTM',
           ],
         }],
-        ['OS!="ios"', {
+        ['toolkit_views==1', {
           'dependencies': [
             '../compositor/compositor.gyp:compositor',
           ],

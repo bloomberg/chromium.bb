@@ -6,9 +6,12 @@
 #include "base/compiler_specific.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/compositor/compositor_setup.h"
 #include "ui/test/test_suite.h"
 #include "ui/views/view.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "ui/compositor/compositor_setup.h"
+#endif
 
 class MessageCenterTestSuite : public ui::test::UITestSuite {
  public:
@@ -27,7 +30,7 @@ class MessageCenterTestSuite : public ui::test::UITestSuite {
 void MessageCenterTestSuite::Initialize() {
   ui::test::UITestSuite::Initialize();
 
-#if !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS)
   ui::SetupTestCompositor();
 #endif
 }
