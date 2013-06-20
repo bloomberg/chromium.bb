@@ -169,10 +169,7 @@ CachedResource::~CachedResource()
 
 void CachedResource::failBeforeStarting()
 {
-    // FIXME: What if resources in other frames were waiting for this revalidation?
     LOG(ResourceLoading, "Cannot start loading '%s'", url().string().latin1().data());
-    if (m_resourceToRevalidate) 
-        revalidationFailed();
     error(CachedResource::LoadError);
 }
 
@@ -234,6 +231,9 @@ void CachedResource::error(CachedResource::Status status)
 {
     if (m_resourceToRevalidate)
         revalidationFailed();
+
+    if (!m_error.isNull() && (m_error.isCancellation() || !isPreloaded()))
+        memoryCache()->remove(this);
 
     setStatus(status);
     ASSERT(errorOccurred());
@@ -700,8 +700,6 @@ void CachedResource::revalidationFailed()
     LOG(ResourceLoading, "Revalidation failed for %p", this);
     ASSERT(resourceToRevalidate());
     clearResourceToRevalidate();
-    if (!m_error.isNull() && (m_error.isCancellation() || !isPreloaded()))
-        memoryCache()->remove(this);
 }
 
 void CachedResource::updateForAccess()
