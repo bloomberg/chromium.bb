@@ -1211,7 +1211,6 @@ internal_arm_paladin = internal_paladin.derive(arm)
 internal_arm_paladin.add_config('daisy-paladin',
   boards=['daisy'],
   paladin_builder_name='daisy paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
