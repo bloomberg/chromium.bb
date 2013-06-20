@@ -41,7 +41,7 @@ class PPB_TCPSocket_Private_Proxy : public InterfaceProxy {
   // Browser->plugin message handlers.
   void OnMsgConnectACK(uint32 plugin_dispatcher_id,
                        uint32 socket_id,
-                       bool succeeded,
+                       int32_t result,
                        const PP_NetAddress_Private& local_addr,
                        const PP_NetAddress_Private& remote_addr);
   void OnMsgSSLHandshakeACK(
@@ -51,15 +51,14 @@ class PPB_TCPSocket_Private_Proxy : public InterfaceProxy {
       const PPB_X509Certificate_Fields& certificate_fields);
   void OnMsgReadACK(uint32 plugin_dispatcher_id,
                     uint32 socket_id,
-                    bool succeeded,
+                    int32_t result,
                     const std::string& data);
   void OnMsgWriteACK(uint32 plugin_dispatcher_id,
                      uint32 socket_id,
-                     bool succeeded,
-                     int32_t bytes_written);
-  void OnMsgSetBoolOptionACK(uint32 plugin_dispatcher_id,
-                             uint32 socket_id,
-                             bool succeeded);
+                     int32_t result);
+  void OnMsgSetOptionACK(uint32 plugin_dispatcher_id,
+                         uint32 socket_id,
+                         int32_t result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_TCPSocket_Private_Proxy);
 };

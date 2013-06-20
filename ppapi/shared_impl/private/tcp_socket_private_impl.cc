@@ -4,6 +4,9 @@
 
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 
+#include "base/logging.h"
+#include "ppapi/c/pp_errors.h"
+
 namespace ppapi {
 
 TCPSocketPrivateImpl::TCPSocketPrivateImpl(PP_Instance instance,
@@ -85,11 +88,28 @@ int32_t TCPSocketPrivateImpl::SetOption(
     PP_TCPSocketOption_Private name,
     const PP_Var& value,
     scoped_refptr<TrackedCallback> callback) {
-  return SetOptionImpl(name, value, callback);
+  switch (name) {
+    case PP_TCPSOCKETOPTION_INVALID:
+      return PP_ERROR_BADARGUMENT;
+    case PP_TCPSOCKETOPTION_NO_DELAY:
+      return SetOptionImpl(PP_TCPSOCKET_OPTION_NO_DELAY, value, callback);
+    default:
+      NOTREACHED();
+      return PP_ERROR_BADARGUMENT;
+  }
 }
 
 Resource* TCPSocketPrivateImpl::GetOwnerResource() {
   return this;
+}
+
+int32_t TCPSocketPrivateImpl::OverridePPError(int32_t pp_error) {
+  // PPB_TCPSocket_Private treats all errors from the browser process as
+  // PP_ERROR_FAILED.
+  if (pp_error < 0)
+    return PP_ERROR_FAILED;
+
+  return pp_error;
 }
 
 }  // namespace ppapi

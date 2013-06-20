@@ -12,12 +12,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
+#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
 #include "ppapi/c/pp_stdint.h"
 
 struct PP_NetAddress_Private;
 
 namespace ppapi {
 class PPB_X509Certificate_Fields;
+class SocketOptionData;
 }
 
 namespace net {
@@ -32,13 +34,14 @@ namespace content {
 class PepperMessageFilter;
 
 // PepperTCPSocket is used by PepperMessageFilter to handle requests from
-// the Pepper TCP socket API (PPB_TCPSocket_Private).
+// the Pepper TCP socket API (PPB_TCPSocket and PPB_TCPSocket_Private).
 class PepperTCPSocket {
  public:
   PepperTCPSocket(PepperMessageFilter* manager,
                   int32 routing_id,
                   uint32 plugin_dispatcher_id,
-                  uint32 socket_id);
+                  uint32 socket_id,
+                  bool private_api);
 
   // Used for creation already connected sockets.  Takes ownership of
   // |socket|.
@@ -46,10 +49,12 @@ class PepperTCPSocket {
                   int32 routing_id,
                   uint32 plugin_dispatcher_id,
                   uint32 socket_id,
-                  net::StreamSocket* socket);
+                  net::StreamSocket* socket,
+                  bool private_api);
   ~PepperTCPSocket();
 
   int routing_id() { return routing_id_; }
+  bool private_api() const { return private_api_; }
 
   void Connect(const std::string& host, uint16_t port);
   void ConnectWithNetAddress(const PP_NetAddress_Private& net_addr);
@@ -60,9 +65,10 @@ class PepperTCPSocket {
       const std::vector<std::vector<char> >& untrusted_certs);
   void Read(int32 bytes_to_read);
   void Write(const std::string& data);
-  void SetBoolOption(uint32_t name, bool value);
+  void SetOption(PP_TCPSocket_Option_Dev name,
+                 const ppapi::SocketOptionData& value);
 
-  void SendConnectACKError();
+  void SendConnectACKError(int32_t error);
 
   // Extracts the certificate field data from a |net::X509Certificate| into
   // |PPB_X509Certificate_Fields|.
@@ -93,16 +99,16 @@ class PepperTCPSocket {
 
   void StartConnect(const net::AddressList& addresses);
 
-  void SendReadACKError();
-  void SendWriteACKError();
+  void SendReadACKError(int32_t error);
+  void SendWriteACKError(int32_t error);
   void SendSSLHandshakeACK(bool succeeded);
-  void SendSetBoolOptionACK(bool succeeded);
+  void SendSetOptionACK(int32_t result);
 
-  void OnResolveCompleted(int result);
-  void OnConnectCompleted(int result);
-  void OnSSLHandshakeCompleted(int result);
-  void OnReadCompleted(int result);
-  void OnWriteCompleted(int result);
+  void OnResolveCompleted(int net_result);
+  void OnConnectCompleted(int net_result);
+  void OnSSLHandshakeCompleted(int net_result);
+  void OnReadCompleted(int net_result);
+  void OnWriteCompleted(int net_result);
 
   bool IsConnected() const;
   bool IsSsl() const;
@@ -115,6 +121,7 @@ class PepperTCPSocket {
   int32 routing_id_;
   uint32 plugin_dispatcher_id_;
   uint32 socket_id_;
+  bool private_api_;
 
   ConnectionState connection_state_;
   bool end_of_file_reached_;

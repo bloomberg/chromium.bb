@@ -11,10 +11,12 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
+#include "ppapi/shared_impl/socket_option_data.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
@@ -24,6 +26,10 @@ namespace ppapi {
 
 const int32_t TCPSocketShared::kMaxReadSize = 1024 * 1024;
 const int32_t TCPSocketShared::kMaxWriteSize = 1024 * 1024;
+const int32_t TCPSocketShared::kMaxSendBufferSize =
+    1024 * TCPSocketShared::kMaxWriteSize;
+const int32_t TCPSocketShared::kMaxReceiveBufferSize =
+    1024 * TCPSocketShared::kMaxReadSize;
 
 TCPSocketShared::TCPSocketShared(ResourceObjectType resource_type,
                                  uint32 socket_id)
@@ -35,7 +41,7 @@ TCPSocketShared::~TCPSocketShared() {
 }
 
 void TCPSocketShared::OnConnectCompleted(
-    bool succeeded,
+    int32_t result,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
   if (connection_state_ != BEFORE_CONNECT ||
@@ -44,12 +50,13 @@ void TCPSocketShared::OnConnectCompleted(
     return;
   }
 
-  if (succeeded) {
+  result = OverridePPError(result);
+  if (result == PP_OK) {
     local_addr_ = local_addr;
     remote_addr_ = remote_addr;
     connection_state_ = CONNECTED;
   }
-  connect_callback_->Run(succeeded ? PP_OK : PP_ERROR_FAILED);
+  connect_callback_->Run(result);
 }
 
 void TCPSocketShared::OnSSLHandshakeCompleted(
@@ -78,13 +85,15 @@ void TCPSocketShared::OnSSLHandshakeCompleted(
   }
 }
 
-void TCPSocketShared::OnReadCompleted(bool succeeded,
+void TCPSocketShared::OnReadCompleted(int32_t result,
                                       const std::string& data) {
   if (!TrackedCallback::IsPending(read_callback_) || !read_buffer_) {
     NOTREACHED();
     return;
   }
 
+  result = OverridePPError(result);
+  bool succeeded = result == PP_OK;
   if (succeeded) {
     CHECK_LE(static_cast<int32_t>(data.size()), bytes_to_read_);
     if (!data.empty())
@@ -94,29 +103,35 @@ void TCPSocketShared::OnReadCompleted(bool succeeded,
   bytes_to_read_ = -1;
 
   read_callback_->Run(
-      succeeded ? static_cast<int32_t>(data.size()) :
-                  static_cast<int32_t>(PP_ERROR_FAILED));
+      succeeded ? static_cast<int32_t>(data.size()) : result);
 }
 
-void TCPSocketShared::OnWriteCompleted(bool succeeded,
-                                       int32_t bytes_written) {
-  if (!TrackedCallback::IsPending(write_callback_) ||
-      (succeeded && bytes_written < 0)) {
+void TCPSocketShared::OnWriteCompleted(int32_t result) {
+  if (!TrackedCallback::IsPending(write_callback_)) {
     NOTREACHED();
     return;
   }
 
-  write_callback_->Run(
-      succeeded ? bytes_written : static_cast<int32_t>(PP_ERROR_FAILED));
+  result = OverridePPError(result);
+  write_callback_->Run(result);
 }
 
-void TCPSocketShared::OnSetOptionCompleted(bool succeeded) {
-  if (!TrackedCallback::IsPending(set_option_callback_)) {
+void TCPSocketShared::OnSetOptionCompleted(int32_t result) {
+  if (set_option_callbacks_.empty()) {
     NOTREACHED();
     return;
   }
 
-  set_option_callback_->Run(succeeded ? PP_OK : PP_ERROR_FAILED);
+  result = OverridePPError(result);
+  scoped_refptr<TrackedCallback> callback = set_option_callbacks_.front();
+  set_option_callbacks_.pop();
+
+  if (TrackedCallback::IsPending(callback))
+    callback->Run(result);
+}
+
+int32_t TCPSocketShared::OverridePPError(int32_t pp_error) {
+  return pp_error;
 }
 
 int32_t TCPSocketShared::ConnectImpl(const char* host,
@@ -283,32 +298,42 @@ void TCPSocketShared::DisconnectImpl() {
   PostAbortIfNecessary(&ssl_handshake_callback_);
   PostAbortIfNecessary(&read_callback_);
   PostAbortIfNecessary(&write_callback_);
-  PostAbortIfNecessary(&set_option_callback_);
   read_buffer_ = NULL;
   bytes_to_read_ = -1;
   server_certificate_ = NULL;
 }
 
 int32_t TCPSocketShared::SetOptionImpl(
-    PP_TCPSocketOption_Private name,
+    PP_TCPSocket_Option_Dev name,
     const PP_Var& value,
     scoped_refptr<TrackedCallback> callback) {
   if (!IsConnected())
     return PP_ERROR_FAILED;
-  if (TrackedCallback::IsPending(set_option_callback_))
-    return PP_ERROR_INPROGRESS;
 
-  set_option_callback_ = callback;
-
+  SocketOptionData option_data;
   switch (name) {
-    case PP_TCPSOCKETOPTION_NO_DELAY:
+    case PP_TCPSOCKET_OPTION_NO_DELAY: {
       if (value.type != PP_VARTYPE_BOOL)
         return PP_ERROR_BADARGUMENT;
-      SendSetBoolOption(name, PP_ToBool(value.value.as_bool));
-      return PP_OK_COMPLETIONPENDING;
-    default:
+      option_data.SetBool(PP_ToBool(value.value.as_bool));
+      break;
+    }
+    case PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE:
+    case PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE: {
+      if (value.type != PP_VARTYPE_INT32)
+        return PP_ERROR_BADARGUMENT;
+      option_data.SetInt32(value.value.as_int);
+      break;
+    }
+    default: {
+      NOTREACHED();
       return PP_ERROR_BADARGUMENT;
+    }
   }
+
+  set_option_callbacks_.push(callback);
+  SendSetOption(name, option_data);
+  return PP_OK_COMPLETIONPENDING;
 }
 
 void TCPSocketShared::Init(uint32 socket_id) {

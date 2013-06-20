@@ -62,6 +62,9 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
   // TCPSocketShared implementation.
   virtual Resource* GetOwnerResource() OVERRIDE;
 
+  // TCPSocketShared overrides.
+  virtual int32_t OverridePPError(int32_t pp_error) OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TCPSocketPrivateImpl);
 };

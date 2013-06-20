@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_tcp_socket_dev.idl modified Wed Jun 12 11:16:37 2013. */
+/* From dev/ppb_tcp_socket_dev.idl modified Tue Jun 18 15:48:42 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_TCP_SOCKET_DEV_H_
 #define PPAPI_C_DEV_PPB_TCP_SOCKET_DEV_H_
@@ -31,16 +31,19 @@
  */
 typedef enum {
   /* Disables coalescing of small writes to make TCP segments, and instead
-   * deliver data immediately. Value type is PP_VARTYPE_BOOL. */
+   * deliver data immediately. Value type is PP_VARTYPE_BOOL.
+   * This option can only be set after a successful Connect() call. */
   PP_TCPSOCKET_OPTION_NO_DELAY = 0,
   /* Specifies the socket send buffer in bytes. Value's type should be
    * PP_VARTYPE_INT32.
+   * This option can only be set after a successful Connect() call.
    * Note: This is only treated as a hint for the browser to set the buffer
    * size. Even if SetOption() reports that this option has been successfully
    * set, the browser doesn't guarantee to conform to it. */
   PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE = 1,
   /* Specifies the socket receive buffer in bytes. Value's type should be
    * PP_VARTYPE_INT32.
+   * This option can only be set after a successful Connect() call.
    * Note: This is only treated as a hint for the browser to set the buffer
    * size. Even if SetOption() reports that this option has been successfully
    * set, the browser doesn't guarantee to conform to it. */
@@ -119,7 +122,7 @@ struct PPB_TCPSocket_Dev_0_1 {
    * Sets an option on |tcp_socket|.  Supported |name| and |value| parameters
    * are as described for PP_TCPSocketOption_Dev.  |callback| will be
    * invoked with PP_OK if setting the option succeeds, or an error code
-   * otherwise. The socket must be connected before SetOption is called.
+   * otherwise.
    */
   int32_t (*SetOption)(PP_Resource tcp_socket,
                        PP_TCPSocket_Option_Dev name,

@@ -17,10 +17,12 @@ label Chrome {
 enum PP_TCPSocket_Option_Dev {
   // Disables coalescing of small writes to make TCP segments, and instead
   // deliver data immediately. Value type is PP_VARTYPE_BOOL.
+  // This option can only be set after a successful Connect() call.
   PP_TCPSOCKET_OPTION_NO_DELAY = 0,
 
   // Specifies the socket send buffer in bytes. Value's type should be
   // PP_VARTYPE_INT32.
+  // This option can only be set after a successful Connect() call.
   // Note: This is only treated as a hint for the browser to set the buffer
   // size. Even if SetOption() reports that this option has been successfully
   // set, the browser doesn't guarantee to conform to it.
@@ -28,6 +30,7 @@ enum PP_TCPSocket_Option_Dev {
 
   // Specifies the socket receive buffer in bytes. Value's type should be
   // PP_VARTYPE_INT32.
+  // This option can only be set after a successful Connect() call.
   // Note: This is only treated as a hint for the browser to set the buffer
   // size. Even if SetOption() reports that this option has been successfully
   // set, the browser doesn't guarantee to conform to it.
@@ -106,7 +109,7 @@ interface PPB_TCPSocket_Dev {
    * Sets an option on |tcp_socket|.  Supported |name| and |value| parameters
    * are as described for PP_TCPSocketOption_Dev.  |callback| will be
    * invoked with PP_OK if setting the option succeeds, or an error code
-   * otherwise. The socket must be connected before SetOption is called.
+   * otherwise.
    */
   int32_t SetOption([in] PP_Resource tcp_socket,
                     [in] PP_TCPSocket_Option_Dev name,

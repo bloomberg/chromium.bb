@@ -23,6 +23,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_config_service.h"
+#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -42,6 +43,7 @@ class HostResolver;
 
 namespace ppapi {
 class PPB_X509Certificate_Fields;
+class SocketOptionData;
 }
 
 namespace content {
@@ -125,6 +127,9 @@ class PepperMessageFilter
   void OnTCPCreate(int32 routing_id,
                    uint32 plugin_dispatcher_id,
                    uint32* socket_id);
+  void OnTCPCreatePrivate(int32 routing_id,
+                          uint32 plugin_dispatcher_id,
+                          uint32* socket_id);
   void OnTCPConnect(int32 routing_id,
                     uint32 socket_id,
                     const std::string& host,
@@ -141,7 +146,9 @@ class PepperMessageFilter
   void OnTCPRead(uint32 socket_id, int32_t bytes_to_read);
   void OnTCPWrite(uint32 socket_id, const std::string& data);
   void OnTCPDisconnect(uint32 socket_id);
-  void OnTCPSetBoolOption(uint32 socket_id, uint32_t name, bool value);
+  void OnTCPSetOption(uint32 socket_id,
+                      PP_TCPSocket_Option_Dev name,
+                      const ppapi::SocketOptionData& value);
   void OnTCPServerListen(int32 routing_id,
                          uint32 plugin_dispatcher_id,
                          PP_Resource socket_resource,
@@ -153,15 +160,15 @@ class PepperMessageFilter
   void OnNetworkMonitorStart(uint32 plugin_dispatcher_id);
   void OnNetworkMonitorStop(uint32 plugin_dispatcher_id);
 
-  void DoTCPConnect(bool allowed,
-                    int32 routing_id,
+  void DoTCPConnect(int32 routing_id,
                     uint32 socket_id,
                     const std::string& host,
-                    uint16_t port);
-  void DoTCPConnectWithNetAddress(bool allowed,
-                                  int32 routing_id,
+                    uint16_t port,
+                    bool allowed);
+  void DoTCPConnectWithNetAddress(int32 routing_id,
                                   uint32 socket_id,
-                                  const PP_NetAddress_Private& net_addr);
+                                  const PP_NetAddress_Private& net_addr,
+                                  bool allowed);
   void DoTCPServerListen(bool allowed,
                          int32 routing_id,
                          uint32 plugin_dispatcher_id,
@@ -177,12 +184,16 @@ class PepperMessageFilter
 
   // Return true if render with given ID can use socket APIs.
   bool CanUseSocketAPIs(int32 render_id,
-      const content::SocketPermissionRequest& params);
+                        const content::SocketPermissionRequest& params,
+                        bool private_api);
 
   void GetAndSendNetworkList();
   void DoGetNetworkList();
   void SendNetworkList(scoped_ptr<net::NetworkInterfaceList> list);
-
+  void CreateTCPSocket(int32 routing_id,
+                       uint32 plugin_dispatcher_id,
+                       bool private_api,
+                       uint32* socket_id);
   enum PluginType {
     PLUGIN_TYPE_IN_PROCESS,
     PLUGIN_TYPE_OUT_OF_PROCESS,

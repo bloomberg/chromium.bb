@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 
+#include "ppapi/shared_impl/socket_option_data.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -110,14 +111,14 @@ void PPB_TCPSocket_Private_Impl::SendDisconnect() {
   plugin_delegate->TCPSocketDisconnect(socket_id_);
 }
 
-void PPB_TCPSocket_Private_Impl::SendSetBoolOption(
-    PP_TCPSocketOption_Private name,
-    bool value) {
+void PPB_TCPSocket_Private_Impl::SendSetOption(
+    PP_TCPSocket_Option_Dev name,
+    const ::ppapi::SocketOptionData& value) {
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPSocketSetBoolOption(socket_id_, name, value);
+  plugin_delegate->TCPSocketSetOption(socket_id_, name, value);
 }
 
 PluginDelegate* PPB_TCPSocket_Private_Impl::GetPluginDelegate(

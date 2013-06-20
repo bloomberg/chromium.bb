@@ -92,21 +92,52 @@ std::string TestTCPSocket::TestReadWrite() {
 
 std::string TestTCPSocket::TestSetOption() {
   pp::TCPSocket_Dev socket(instance_);
-  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+  TestCompletionCallback cb_1(instance_->pp_instance(), callback_type());
+  TestCompletionCallback cb_2(instance_->pp_instance(), callback_type());
+  TestCompletionCallback cb_3(instance_->pp_instance(), callback_type());
 
-  cb.WaitForResult(
-      socket.SetOption(PP_TCPSOCKET_OPTION_NO_DELAY, true, cb.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(cb);
-  ASSERT_EQ(PP_ERROR_FAILED, cb.result());
+  // These options cannot be set before the socket is connected.
+  int32_t result_1 = socket.SetOption(PP_TCPSOCKET_OPTION_NO_DELAY,
+                                      true, cb_1.GetCallback());
+  int32_t result_2 = socket.SetOption(PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE,
+                                      256, cb_2.GetCallback());
+  int32_t result_3 = socket.SetOption(PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE,
+                                      512, cb_3.GetCallback());
 
-  cb.WaitForResult(socket.Connect(addr_, cb.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(cb);
-  ASSERT_EQ(PP_OK, cb.result());
+  cb_1.WaitForResult(result_1);
+  CHECK_CALLBACK_BEHAVIOR(cb_1);
+  ASSERT_EQ(PP_ERROR_FAILED, cb_1.result());
 
-  cb.WaitForResult(
-      socket.SetOption(PP_TCPSOCKET_OPTION_NO_DELAY, true, cb.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(cb);
-  ASSERT_EQ(PP_OK, cb.result());
+  cb_2.WaitForResult(result_2);
+  CHECK_CALLBACK_BEHAVIOR(cb_2);
+  ASSERT_EQ(PP_ERROR_FAILED, cb_2.result());
+
+  cb_3.WaitForResult(result_3);
+  CHECK_CALLBACK_BEHAVIOR(cb_3);
+  ASSERT_EQ(PP_ERROR_FAILED, cb_3.result());
+
+  cb_1.WaitForResult(socket.Connect(addr_, cb_1.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(cb_1);
+  ASSERT_EQ(PP_OK, cb_1.result());
+
+  result_1 = socket.SetOption(PP_TCPSOCKET_OPTION_NO_DELAY,
+                              false, cb_1.GetCallback());
+  result_2 = socket.SetOption(PP_TCPSOCKET_OPTION_SEND_BUFFER_SIZE,
+                              512, cb_2.GetCallback());
+  result_3 = socket.SetOption(PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE,
+                              1024, cb_3.GetCallback());
+
+  cb_1.WaitForResult(result_1);
+  CHECK_CALLBACK_BEHAVIOR(cb_1);
+  ASSERT_EQ(PP_OK, cb_1.result());
+
+  cb_2.WaitForResult(result_2);
+  CHECK_CALLBACK_BEHAVIOR(cb_2);
+  ASSERT_EQ(PP_OK, cb_2.result());
+
+  cb_3.WaitForResult(result_3);
+  CHECK_CALLBACK_BEHAVIOR(cb_3);
+  ASSERT_EQ(PP_OK, cb_3.result());
 
   PASS();
 }

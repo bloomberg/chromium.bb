@@ -81,6 +81,7 @@
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/ppp_instance_combined.h"
 #include "ppapi/shared_impl/resource_tracker.h"
+#include "ppapi/shared_impl/socket_option_data.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_tcp_server_socket_private_api.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
@@ -1148,8 +1149,11 @@ PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
 }
 
 uint32 PepperPluginDelegateImpl::TCPSocketCreate() {
+  // This was used for PPB_TCPSocket_Private creation. And it shouldn't be
+  // needed anymore.
+  // TODO(yzshen): Remove TCP socket-related contents from the plugin delegate.
   uint32 socket_id = 0;
-  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_Create(
+  render_view_->Send(new PpapiHostMsg_PPBTCPSocket_CreatePrivate(
       render_view_->routing_id(), 0, &socket_id));
   return socket_id;
 }
@@ -1207,13 +1211,13 @@ void PepperPluginDelegateImpl::TCPSocketDisconnect(uint32 socket_id) {
     tcp_sockets_.Remove(socket_id);
 }
 
-void PepperPluginDelegateImpl::TCPSocketSetBoolOption(
+void PepperPluginDelegateImpl::TCPSocketSetOption(
     uint32 socket_id,
-    PP_TCPSocketOption_Private name,
-    bool value) {
+    PP_TCPSocket_Option_Dev name,
+    const ppapi::SocketOptionData& value) {
   DCHECK(tcp_sockets_.Lookup(socket_id));
   render_view_->Send(
-      new PpapiHostMsg_PPBTCPSocket_SetBoolOption(socket_id, name, value));
+      new PpapiHostMsg_PPBTCPSocket_SetOption(socket_id, name, value));
 }
 
 void PepperPluginDelegateImpl::RegisterTCPSocket(
@@ -1491,8 +1495,8 @@ bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
                         OnTCPSocketSSLHandshakeACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ReadACK, OnTCPSocketReadACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnTCPSocketWriteACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SetBoolOptionACK,
-                        OnTCPSocketSetBoolOptionACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SetOptionACK,
+                        OnTCPSocketSetOptionACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_ListenACK,
                         OnTCPServerSocketListenACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPServerSocket_AcceptACK,
@@ -1511,14 +1515,14 @@ void PepperPluginDelegateImpl::OnDestruct() {
 void PepperPluginDelegateImpl::OnTCPSocketConnectACK(
     uint32 plugin_dispatcher_id,
     uint32 socket_id,
-    bool succeeded,
+    int32_t result,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
   webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
       tcp_sockets_.Lookup(socket_id);
   if (socket)
-    socket->OnConnectCompleted(succeeded, local_addr, remote_addr);
-  if (!succeeded)
+    socket->OnConnectCompleted(result, local_addr, remote_addr);
+  if (result != PP_OK)
     tcp_sockets_.Remove(socket_id);
 }
 
@@ -1535,32 +1539,31 @@ void PepperPluginDelegateImpl::OnTCPSocketSSLHandshakeACK(
 
 void PepperPluginDelegateImpl::OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
                                                   uint32 socket_id,
-                                                  bool succeeded,
+                                                  int32_t result,
                                                   const std::string& data) {
   webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
       tcp_sockets_.Lookup(socket_id);
   if (socket)
-    socket->OnReadCompleted(succeeded, data);
+    socket->OnReadCompleted(result, data);
 }
 
 void PepperPluginDelegateImpl::OnTCPSocketWriteACK(uint32 plugin_dispatcher_id,
                                                    uint32 socket_id,
-                                                   bool succeeded,
-                                                   int32_t bytes_written) {
+                                                   int32_t result) {
   webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
       tcp_sockets_.Lookup(socket_id);
   if (socket)
-    socket->OnWriteCompleted(succeeded, bytes_written);
+    socket->OnWriteCompleted(result);
 }
 
-void PepperPluginDelegateImpl::OnTCPSocketSetBoolOptionACK(
+void PepperPluginDelegateImpl::OnTCPSocketSetOptionACK(
     uint32 plugin_dispatcher_id,
     uint32 socket_id,
-    bool succeeded) {
+    int32_t result) {
   webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
       tcp_sockets_.Lookup(socket_id);
   if (socket)
-    socket->OnSetOptionCompleted(succeeded);
+    socket->OnSetOptionCompleted(result);
 }
 
 void PepperPluginDelegateImpl::OnTCPServerSocketListenACK(

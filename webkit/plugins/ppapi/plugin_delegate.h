@@ -22,6 +22,7 @@
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
+#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_file_info.h"
@@ -69,6 +70,7 @@ struct Mailbox;
 namespace ppapi {
 class PepperFilePath;
 class PPB_X509Certificate_Fields;
+class SocketOptionData;
 struct DeviceRefData;
 struct HostPortPair;
 struct Preferences;
@@ -571,9 +573,9 @@ class PluginDelegate {
   virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) = 0;
   virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer) = 0;
   virtual void TCPSocketDisconnect(uint32 socket_id) = 0;
-  virtual void TCPSocketSetBoolOption(uint32 socket_id,
-                                      PP_TCPSocketOption_Private name,
-                                      bool value) = 0;
+  virtual void TCPSocketSetOption(uint32 socket_id,
+                                  PP_TCPSocket_Option_Dev name,
+                                  const ::ppapi::SocketOptionData& value) = 0;
   virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
                                  uint32 socket_id) = 0;
 

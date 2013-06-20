@@ -11,6 +11,7 @@
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/shared_impl/socket_option_data.h"
 #include "ppapi/shared_impl/tcp_socket_shared.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_net_address_api.h"
@@ -66,8 +67,8 @@ class TCPSocket : public thunk::PPB_TCPSocket_API,
   virtual void SendRead(int32_t bytes_to_read) OVERRIDE;
   virtual void SendWrite(const std::string& buffer) OVERRIDE;
   virtual void SendDisconnect() OVERRIDE;
-  virtual void SendSetBoolOption(PP_TCPSocketOption_Private name,
-                                 bool value) OVERRIDE;
+  virtual void SendSetOption(PP_TCPSocket_Option_Dev name,
+                             const SocketOptionData& value) OVERRIDE;
   virtual Resource* GetOwnerResource() OVERRIDE;
 
  private:
@@ -146,11 +147,7 @@ void TCPSocket::Close() {
 int32_t TCPSocket::SetOption(PP_TCPSocket_Option_Dev name,
                              const PP_Var& value,
                              scoped_refptr<TrackedCallback> callback) {
-  // TODO(yzshen): Add support for other options.
-  if (name == PP_TCPSOCKET_OPTION_NO_DELAY)
-    return SetOptionImpl(PP_TCPSOCKETOPTION_NO_DELAY, value, callback);
-
-  return PP_ERROR_NOTSUPPORTED;
+  return SetOptionImpl(name, value, callback);
 }
 
 void TCPSocket::SendConnect(const std::string& host, uint16_t port) {
@@ -186,9 +183,10 @@ void TCPSocket::SendDisconnect() {
   SendToBrowser(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id_));
 }
 
-void TCPSocket::SendSetBoolOption(PP_TCPSocketOption_Private name, bool value) {
+void TCPSocket::SendSetOption(PP_TCPSocket_Option_Dev name,
+                              const SocketOptionData& value) {
   SendToBrowser(
-      new PpapiHostMsg_PPBTCPSocket_SetBoolOption(socket_id_, name, value));
+      new PpapiHostMsg_PPBTCPSocket_SetOption(socket_id_, name, value));
 }
 
 Resource* TCPSocket::GetOwnerResource() {
@@ -234,8 +232,8 @@ bool PPB_TCPSocket_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgConnectACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ReadACK, OnMsgReadACK)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_WriteACK, OnMsgWriteACK)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SetBoolOptionACK,
-                        OnMsgSetBoolOptionACK)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_SetOptionACK,
+                        OnMsgSetOptionACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -244,7 +242,7 @@ bool PPB_TCPSocket_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_TCPSocket_Proxy::OnMsgConnectACK(
     uint32 /* plugin_dispatcher_id */,
     uint32 socket_id,
-    bool succeeded,
+    int32_t result,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
   if (!g_id_to_socket) {
@@ -254,12 +252,12 @@ void PPB_TCPSocket_Proxy::OnMsgConnectACK(
   IDToSocketMap::iterator iter = g_id_to_socket->find(socket_id);
   if (iter == g_id_to_socket->end())
     return;
-  iter->second->OnConnectCompleted(succeeded, local_addr, remote_addr);
+  iter->second->OnConnectCompleted(result, local_addr, remote_addr);
 }
 
 void PPB_TCPSocket_Proxy::OnMsgReadACK(uint32 /* plugin_dispatcher_id */,
                                        uint32 socket_id,
-                                       bool succeeded,
+                                       int32_t result,
                                        const std::string& data) {
   if (!g_id_to_socket) {
     NOTREACHED();
@@ -268,13 +266,12 @@ void PPB_TCPSocket_Proxy::OnMsgReadACK(uint32 /* plugin_dispatcher_id */,
   IDToSocketMap::iterator iter = g_id_to_socket->find(socket_id);
   if (iter == g_id_to_socket->end())
     return;
-  iter->second->OnReadCompleted(succeeded, data);
+  iter->second->OnReadCompleted(result, data);
 }
 
 void PPB_TCPSocket_Proxy::OnMsgWriteACK(uint32 /* plugin_dispatcher_id */,
                                         uint32 socket_id,
-                                        bool succeeded,
-                                        int32_t bytes_written) {
+                                        int32_t result) {
   if (!g_id_to_socket) {
     NOTREACHED();
     return;
@@ -282,13 +279,12 @@ void PPB_TCPSocket_Proxy::OnMsgWriteACK(uint32 /* plugin_dispatcher_id */,
   IDToSocketMap::iterator iter = g_id_to_socket->find(socket_id);
   if (iter == g_id_to_socket->end())
     return;
-  iter->second->OnWriteCompleted(succeeded, bytes_written);
+  iter->second->OnWriteCompleted(result);
 }
 
-void PPB_TCPSocket_Proxy::OnMsgSetBoolOptionACK(
-    uint32 /* plugin_dispatcher_id */,
-    uint32 socket_id,
-    bool succeeded) {
+void PPB_TCPSocket_Proxy::OnMsgSetOptionACK(uint32 /* plugin_dispatcher_id */,
+                                            uint32 socket_id,
+                                            int32_t result) {
   if (!g_id_to_socket) {
     NOTREACHED();
     return;
@@ -296,7 +292,7 @@ void PPB_TCPSocket_Proxy::OnMsgSetBoolOptionACK(
   IDToSocketMap::iterator iter = g_id_to_socket->find(socket_id);
   if (iter == g_id_to_socket->end())
     return;
-  iter->second->OnSetOptionCompleted(succeeded);
+  iter->second->OnSetOptionCompleted(result);
 }
 
 }  // namespace proxy

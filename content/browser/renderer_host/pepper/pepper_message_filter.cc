@@ -37,6 +37,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
+#include "ppapi/shared_impl/socket_option_data.h"
 
 using ppapi::NetAddressPrivateImpl;
 
@@ -96,11 +97,8 @@ PepperMessageFilter::PepperMessageFilter(
 void PepperMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
-  if (message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID ||
-      message.type() == PpapiHostMsg_PPBTCPSocket_Connect::ID ||
-      message.type() == PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress::ID) {
+  if (message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID)
     *thread = BrowserThread::UI;
-  }
 }
 
 bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
@@ -109,6 +107,8 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
   IPC_BEGIN_MESSAGE_MAP_EX(PepperMessageFilter, msg, *message_was_ok)
     // TCP messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Create, OnTCPCreate)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_CreatePrivate,
+                        OnTCPCreatePrivate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Connect, OnTCPConnect)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress,
                         OnTCPConnectWithNetAddress)
@@ -117,8 +117,7 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Read, OnTCPRead)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Write, OnTCPWrite)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_Disconnect, OnTCPDisconnect)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_SetBoolOption,
-                        OnTCPSetBoolOption)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPSocket_SetOption, OnTCPSetOption)
 
     // TCP Server messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTCPServerSocket_Listen,
@@ -170,16 +169,19 @@ uint32 PepperMessageFilter::AddAcceptedTCPSocket(
     int32 routing_id,
     uint32 plugin_dispatcher_id,
     net::StreamSocket* socket) {
-  scoped_ptr<net::StreamSocket>  s(socket);
+  scoped_ptr<net::StreamSocket> s(socket);
 
   uint32 tcp_socket_id = GenerateSocketID();
   if (tcp_socket_id != kInvalidSocketID) {
+    // Currently all TCP sockets created this way correspond to
+    // PPB_TCPSocket_Private.
     tcp_sockets_[tcp_socket_id] = linked_ptr<PepperTCPSocket>(
         new PepperTCPSocket(this,
                             routing_id,
                             plugin_dispatcher_id,
                             tcp_socket_id,
-                            s.release()));
+                            s.release(),
+                            true /* private_api */));
   }
   return tcp_socket_id;
 }
@@ -205,80 +207,103 @@ PepperMessageFilter::~PepperMessageFilter() {
 void PepperMessageFilter::OnTCPCreate(int32 routing_id,
                                       uint32 plugin_dispatcher_id,
                                       uint32* socket_id) {
-  *socket_id = GenerateSocketID();
-  if (*socket_id == kInvalidSocketID)
-    return;
+  CreateTCPSocket(routing_id, plugin_dispatcher_id, false, socket_id);
+}
 
-  tcp_sockets_[*socket_id] = linked_ptr<PepperTCPSocket>(
-      new PepperTCPSocket(this, routing_id, plugin_dispatcher_id, *socket_id));
+void PepperMessageFilter::OnTCPCreatePrivate(int32 routing_id,
+                                             uint32 plugin_dispatcher_id,
+                                             uint32* socket_id) {
+  CreateTCPSocket(routing_id, plugin_dispatcher_id, true, socket_id);
 }
 
 void PepperMessageFilter::OnTCPConnect(int32 routing_id,
                                        uint32 socket_id,
                                        const std::string& host,
                                        uint16_t port) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
+  if (iter == tcp_sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  // This is only supported by PPB_TCPSocket_Private.
+  if (!iter->second->private_api()) {
+    NOTREACHED();
+    return;
+  }
+
   content::SocketPermissionRequest params(
       content::SocketPermissionRequest::TCP_CONNECT, host, port);
-  bool allowed = CanUseSocketAPIs(routing_id, params);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PepperMessageFilter::CanUseSocketAPIs, this,
+                 routing_id, params, true /* private_api */),
       base::Bind(&PepperMessageFilter::DoTCPConnect, this,
-          allowed, routing_id, socket_id, host, port));
+                 routing_id, socket_id, host, port));
 }
 
-void PepperMessageFilter::DoTCPConnect(bool allowed,
-                                       int32 routing_id,
+void PepperMessageFilter::DoTCPConnect(int32 routing_id,
                                        uint32 socket_id,
                                        const std::string& host,
-                                       uint16_t port) {
+                                       uint16_t port,
+                                       bool allowed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
   if (iter == tcp_sockets_.end()) {
     // Due to current permission check process (IO -> UI -> IO) some
-    // calls to TCPSocketPrivate interface can be intermixed (like
-    // Connect and Close). So, NOTREACHED() is not needed there.
+    // calls to the TCP socket interface can be intermixed (like
+    // Connect and Close). So, NOTREACHED() is not appropriate here.
     return;
   }
 
   if (routing_id == iter->second->routing_id() && allowed)
     iter->second->Connect(host, port);
   else
-    iter->second->SendConnectACKError();
+    iter->second->SendConnectACKError(PP_ERROR_NOACCESS);
 }
 
 void PepperMessageFilter::OnTCPConnectWithNetAddress(
     int32 routing_id,
     uint32 socket_id,
     const PP_NetAddress_Private& net_addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool allowed = CanUseSocketAPIs(
-      routing_id,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
+  if (iter == tcp_sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  content::SocketPermissionRequest params =
       pepper_socket_utils::CreateSocketPermissionRequest(
-          content::SocketPermissionRequest::TCP_CONNECT, net_addr));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+          content::SocketPermissionRequest::TCP_CONNECT, net_addr);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PepperMessageFilter::CanUseSocketAPIs, this,
+                 routing_id, params, iter->second->private_api()),
       base::Bind(&PepperMessageFilter::DoTCPConnectWithNetAddress, this,
-          allowed, routing_id, socket_id, net_addr));
+                 routing_id, socket_id, net_addr));
 }
 
 void PepperMessageFilter::DoTCPConnectWithNetAddress(
-    bool allowed,
     int32 routing_id,
     uint32 socket_id,
-    const PP_NetAddress_Private& net_addr) {
+    const PP_NetAddress_Private& net_addr,
+    bool allowed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
   if (iter == tcp_sockets_.end()) {
     // Due to current permission check process (IO -> UI -> IO) some
-    // calls to TCPSocketPrivate interface can be intermixed (like
+    // calls to the TCP socket interface can be intermixed (like
     // ConnectWithNetAddress and Close). So, NOTREACHED() is not
-    // needed there.
+    // appropriate here.
     return;
   }
 
   if (routing_id == iter->second->routing_id() && allowed)
     iter->second->ConnectWithNetAddress(net_addr);
   else
-    iter->second->SendConnectACKError();
+    iter->second->SendConnectACKError(PP_ERROR_NOACCESS);
 }
 
 void PepperMessageFilter::OnTCPSSLHandshake(
@@ -289,6 +314,12 @@ void PepperMessageFilter::OnTCPSSLHandshake(
     const std::vector<std::vector<char> >& untrusted_certs) {
   TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
   if (iter == tcp_sockets_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  // This is only supported by PPB_TCPSocket_Private.
+  if (!iter->second->private_api()) {
     NOTREACHED();
     return;
   }
@@ -331,16 +362,16 @@ void PepperMessageFilter::OnTCPDisconnect(uint32 socket_id) {
   tcp_sockets_.erase(iter);
 }
 
-void PepperMessageFilter::OnTCPSetBoolOption(uint32 socket_id,
-                                             uint32_t name,
-                                             bool value) {
+void PepperMessageFilter::OnTCPSetOption(uint32 socket_id,
+                                         PP_TCPSocket_Option_Dev name,
+                                         const ppapi::SocketOptionData& value) {
   TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
   if (iter == tcp_sockets_.end()) {
     NOTREACHED();
     return;
   }
 
-  iter->second->SetBoolOption(name, value);
+  iter->second->SetOption(name, value);
 }
 
 void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
@@ -352,7 +383,8 @@ void PepperMessageFilter::OnTCPServerListen(int32 routing_id,
   bool allowed = CanUseSocketAPIs(
       routing_id,
       pepper_socket_utils::CreateSocketPermissionRequest(
-          content::SocketPermissionRequest::TCP_LISTEN, addr));
+          content::SocketPermissionRequest::TCP_LISTEN, addr),
+      true /* private_api */);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&PepperMessageFilter::DoTCPServerListen,
                                      this,
@@ -470,8 +502,10 @@ uint32 PepperMessageFilter::GenerateSocketID() {
   return socket_id;
 }
 
-bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id,
-    const content::SocketPermissionRequest& params) {
+bool PepperMessageFilter::CanUseSocketAPIs(
+    int32 render_id,
+    const content::SocketPermissionRequest& params,
+    bool private_api) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // External plugins always get their own PepperMessageFilter, initialized with
@@ -487,7 +521,7 @@ bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id,
       RenderViewHostImpl::FromID(process_id_, render_id);
 
   return pepper_socket_utils::CanUseSocketAPIs(external_plugin,
-                                               true,
+                                               private_api,
                                                params,
                                                render_view_host);
 }
@@ -537,6 +571,19 @@ void PepperMessageFilter::SendNetworkList(
     Send(new PpapiMsg_PPBNetworkMonitor_NetworkList(
         ppapi::API_ID_PPB_NETWORKMANAGER_PRIVATE, *it, *list_copy));
   }
+}
+
+void PepperMessageFilter::CreateTCPSocket(int32 routing_id,
+                                          uint32 plugin_dispatcher_id,
+                                          bool private_api,
+                                          uint32* socket_id) {
+  *socket_id = GenerateSocketID();
+  if (*socket_id == kInvalidSocketID)
+    return;
+
+  tcp_sockets_[*socket_id] = linked_ptr<PepperTCPSocket>(
+      new PepperTCPSocket(this, routing_id, plugin_dispatcher_id, *socket_id,
+                          private_api));
 }
 
 }  // namespace content
