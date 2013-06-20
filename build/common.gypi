@@ -4553,7 +4553,6 @@
         ],
       }],
       ['OS=="ios"', {
-        'ARCHS': '$(ARCHS_UNIVERSAL_IPHONE_OS)',
         # Just build armv7, until armv7s is correctly tested.
         'VALID_ARCHS': 'armv7 i386',
         # Target both iPhone and iPad.
