@@ -88,6 +88,10 @@ void WebRtcLoggingHandlerHost::OpenLogIfAllowed() {
 #if defined(OS_CHROMEOS)
   chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
                                             &enabled);
+#elif defined(OS_ANDROID)
+  // Android has its own settings for metrics / crash uploading.
+  enabled = g_browser_process->local_state()->GetBoolean(
+      prefs::kCrashReportingEnabled);
 #else
   enabled = g_browser_process->local_state()->GetBoolean(
       prefs::kMetricsReportingEnabled);
