@@ -51,52 +51,52 @@ int SocketStreamHost::SocketIdFromSocketStream(
 
 SocketStreamHost::~SocketStreamHost() {
   VLOG(1) << "SocketStreamHost destructed socket_id=" << socket_id_;
-  socket_->set_context(NULL);
-  socket_->DetachDelegate();
+  job_->set_context(NULL);
+  job_->DetachDelegate();
 }
 
 void SocketStreamHost::Connect(const GURL& url,
                                net::URLRequestContext* request_context) {
   VLOG(1) << "SocketStreamHost::Connect url=" << url;
-  socket_ = net::SocketStreamJob::CreateSocketStreamJob(
+  job_ = net::SocketStreamJob::CreateSocketStreamJob(
       url, delegate_, request_context->transport_security_state(),
       request_context->ssl_config_service());
-  socket_->set_context(request_context);
-  socket_->SetUserData(kSocketIdKey, new SocketStreamId(socket_id_));
-  socket_->Connect();
+  job_->set_context(request_context);
+  job_->SetUserData(kSocketIdKey, new SocketStreamId(socket_id_));
+  job_->Connect();
 }
 
 bool SocketStreamHost::SendData(const std::vector<char>& data) {
   VLOG(1) << "SocketStreamHost::SendData";
-  return socket_.get() && socket_->SendData(&data[0], data.size());
+  return job_.get() && job_->SendData(&data[0], data.size());
 }
 
 void SocketStreamHost::Close() {
   VLOG(1) << "SocketStreamHost::Close";
-  if (!socket_.get())
+  if (!job_.get())
     return;
-  socket_->Close();
+  job_->Close();
 }
 
 void SocketStreamHost::CancelWithError(int error) {
   VLOG(1) << "SocketStreamHost::CancelWithError: error=" << error;
-  if (!socket_.get())
+  if (!job_.get())
     return;
-  socket_->CancelWithError(error);
+  job_->CancelWithError(error);
 }
 
 void SocketStreamHost::CancelWithSSLError(const net::SSLInfo& ssl_info) {
   VLOG(1) << "SocketStreamHost::CancelWithSSLError";
-  if (!socket_.get())
+  if (!job_.get())
     return;
-  socket_->CancelWithSSLError(ssl_info);
+  job_->CancelWithSSLError(ssl_info);
 }
 
 void SocketStreamHost::ContinueDespiteError() {
   VLOG(1) << "SocketStreamHost::ContinueDespiteError";
-  if (!socket_.get())
+  if (!job_.get())
     return;
-  socket_->ContinueDespiteError();
+  job_->ContinueDespiteError();
 }
 
 }  // namespace content

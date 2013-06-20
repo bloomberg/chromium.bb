@@ -69,7 +69,7 @@ class SocketStreamHost {
   int render_view_id_;
   int socket_id_;
 
-  scoped_refptr<net::SocketStreamJob> socket_;
+  scoped_refptr<net::SocketStreamJob> job_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamHost);
 };
