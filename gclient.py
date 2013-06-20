@@ -1698,7 +1698,7 @@ def Parser():
   # cmp: 2013/06/19
   # Temporary workaround to lower bot-load on SVN server.
   if os.environ.get('CHROME_HEADLESS') == '1':
-    jobs = 1
+    jobs = 4
   gclientfile_default = os.environ.get('GCLIENT_FILE', '.gclient')
   parser.add_option('-j', '--jobs', default=jobs, type='int',
                     help='Specify how many SCM commands can run in parallel; '
