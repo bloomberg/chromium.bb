@@ -912,7 +912,8 @@ bool Node::isFocusable() const
 {
     if (!inDocument() || !supportsFocus())
         return false;
-
+    if (isElementNode() && toElement(this)->isInert())
+        return false;
     return rendererIsFocusable();
 }
 

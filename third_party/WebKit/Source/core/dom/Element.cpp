@@ -1207,7 +1207,9 @@ void Element::setChangedSinceLastFormControlChangeEvent(bool)
 bool Element::isInert() const
 {
     const Element* dialog = document()->activeModalDialog();
-    return dialog && !containsIncludingShadowDOM(dialog) && !dialog->containsIncludingShadowDOM(this);
+    if (dialog && !containsIncludingShadowDOM(dialog) && !dialog->containsIncludingShadowDOM(this))
+        return true;
+    return document()->ownerElement() && document()->ownerElement()->isInert();
 }
 
 Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertionPoint)
