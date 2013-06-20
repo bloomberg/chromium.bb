@@ -124,7 +124,7 @@ def generate_constructor_attribute_list(interface_name, extended_attributes):
     # on the ECMAScript global object.
     if 'NamedConstructor' in extended_attributes:
         named_constructor = extended_attributes['NamedConstructor']
-        # Extract function name, namely everything before opening '('
+        # Extract operation name, namely everything before opening '('
         constructor_name = re.sub(r'\(.*', '', named_constructor)
         # Note the reduplicated 'ConstructorConstructor'
         attribute_string = 'attribute %sConstructorConstructor %s' % (interface_name, constructor_name)

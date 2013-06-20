@@ -52,18 +52,18 @@ struct( domInterface => {
     name => '$',      # Class identifier
     parents => '@',      # List of strings
     constants => '@',    # List of 'domConstant'
-    functions => '@',    # List of 'domFunction'
+    operations => '@',    # List of 'domOperation'
     attributes => '@',    # List of 'domAttribute'    
     extendedAttributes => '$', # Extended attributes
-    constructors => '@', # Constructors, list of 'domFunction'
-    customConstructors => '@', # Custom constructors, list of 'domFunction'
+    constructors => '@', # Constructors, list of 'domOperation'
+    customConstructors => '@', # Custom constructors, list of 'domOperation'
     isException => '$', # Used for exception interfaces
     isCallback => '$', # Used for callback interfaces
     isPartial => '$', # Used for partial interfaces
 });
 
 # Used to represent domInterface contents
-struct( domFunction => {
+struct( domOperation => {
     isStatic => '$',
     name => '$',
     type => '$',
@@ -397,9 +397,9 @@ sub applyTypedefs
             foreach my $attribute (@{$definition->attributes}) {
                 $self->applyTypedefsForTypedObject($attribute);
             }
-            foreach my $function (@{$definition->functions}, @{$definition->constructors}, @{$definition->customConstructors}) {
-                $self->applyTypedefsForTypedObject($function);
-                foreach my $parameter (@{$function->parameters}) {
+            foreach my $operation (@{$definition->operations}, @{$definition->constructors}, @{$definition->customConstructors}) {
+                $self->applyTypedefsForTypedObject($operation);
+                foreach my $parameter (@{$operation->parameters}) {
                     $self->applyTypedefsForTypedObject($parameter);
                 }
             }
@@ -1124,11 +1124,11 @@ sub parseAttributeOrOperationRest
     }
     if ($next->type() == IdentifierToken || $next->value() =~ /$nextAttributeOrOperationRest_1/) {
         my $returnType = $self->parseReturnType();
-        my $function = $self->parseOperationRest($extendedAttributeList);
-        if (defined ($function)) {
-            $function->type($returnType);
+        my $operation = $self->parseOperationRest($extendedAttributeList);
+        if (defined ($operation)) {
+            $operation->type($returnType);
         }
-        return $function;
+        return $operation;
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);
 }
@@ -1229,12 +1229,12 @@ sub parseSpecialOperation
         my @specials = ();
         push(@specials, @{$self->parseSpecials()});
         my $returnType = $self->parseReturnType();
-        my $function = $self->parseOperationRest($extendedAttributeList);
-        if (defined ($function)) {
-            $function->type($returnType);
-            $function->specials(\@specials);
+        my $operation = $self->parseOperationRest($extendedAttributeList);
+        if (defined ($operation)) {
+            $operation->type($returnType);
+            $operation->specials(\@specials);
         }
-        return $function;
+        return $operation;
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);
 }
@@ -1347,7 +1347,7 @@ sub parseOperationRest
 
     my $next = $self->nextToken();
     if ($next->type() == IdentifierToken || $next->value() eq "(") {
-        my $newDataNode = domFunction->new();
+        my $newDataNode = domOperation->new();
         my $name = $self->parseOptionalIdentifier();
         $newDataNode->name($name);
         $self->assertTokenValue($self->getToken(), "(", __LINE__);
@@ -2186,8 +2186,8 @@ sub applyMemberList
             push(@{$interface->constants}, $item);
             next;
         }
-        if (ref($item) eq "domFunction") {
-            push(@{$interface->functions}, $item);
+        if (ref($item) eq "domOperation") {
+            push(@{$interface->operations}, $item);
             next;
         }
     }
@@ -2202,7 +2202,7 @@ sub applyExtendedAttributeList
         my @constructorParams = @{$extendedAttributeList->{"Constructors"}};
         my $index = (@constructorParams == 1) ? 0 : 1;
         foreach my $param (@constructorParams) {
-            my $constructor = domFunction->new();
+            my $constructor = domOperation->new();
             $constructor->name("Constructor");
             $constructor->extendedAttributes($extendedAttributeList);
             $constructor->parameters($param);
@@ -2212,7 +2212,7 @@ sub applyExtendedAttributeList
         delete $extendedAttributeList->{"Constructors"};
         $extendedAttributeList->{"Constructor"} = "VALUE_IS_MISSING";
     } elsif (defined $extendedAttributeList->{"NamedConstructor"}) {
-        my $newDataNode = domFunction->new();
+        my $newDataNode = domOperation->new();
         $newDataNode->name("NamedConstructor");
         $newDataNode->extendedAttributes($extendedAttributeList);
         my %attributes = %{$extendedAttributeList->{"NamedConstructor"}};
@@ -2226,7 +2226,7 @@ sub applyExtendedAttributeList
         my @customConstructorParams = @{$extendedAttributeList->{"CustomConstructors"}};
         my $index = (@customConstructorParams == 1) ? 0 : 1;
         foreach my $param (@customConstructorParams) {
-            my $customConstructor = domFunction->new();
+            my $customConstructor = domOperation->new();
             $customConstructor->name("CustomConstructor");
             $customConstructor->extendedAttributes($extendedAttributeList);
             $customConstructor->parameters($param);
