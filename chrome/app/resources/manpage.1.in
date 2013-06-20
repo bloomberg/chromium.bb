@@ -62,7 +62,7 @@ Examples:
   --proxy-server="socks://foobar:1080"
       Use the SOCKS v5 proxy "foobar:1080" to load all URLs.
 
-  --proxy-server="sock4://foobar:1080"
+  --proxy-server="socks4://foobar:1080"
       Use the SOCKS v4 proxy "foobar:1080" to load all URLs.
 
   --proxy-server="socks5://foobar:66"
