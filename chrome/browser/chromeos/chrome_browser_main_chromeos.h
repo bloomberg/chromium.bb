@@ -72,8 +72,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   virtual void SetupPlatformFieldTrials() OVERRIDE;
 
  private:
-  void SetupZramFieldTrial();
-
   scoped_ptr<contacts::ContactManager> contact_manager_;
   scoped_ptr<BrightnessObserver> brightness_observer_;
   scoped_ptr<DisplayConfigurationObserver> display_configuration_observer_;

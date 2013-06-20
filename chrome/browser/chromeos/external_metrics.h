@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTERNAL_METRICS_H_
 #define CHROME_BROWSER_CHROMEOS_EXTERNAL_METRICS_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
@@ -83,6 +85,11 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
 
   // Set containing known user actions.
   base::hash_set<std::string> valid_user_actions_;
+
+  // Calls setup methods for chromeOS field trials.  They are setup, here, so
+  // that we can make absolutely sure that they are setup before we gather UMA
+  // statistics from ChromeOS.
+  void SetupAllFieldTrials();
 
   // Used for testing only.
   RecorderType test_recorder_;
