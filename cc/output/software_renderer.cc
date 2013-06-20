@@ -456,12 +456,20 @@ void SoftwareRenderer::DrawUnsupportedQuad(const DrawingFrame* frame,
 void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
     DrawingFrame* frame,
     scoped_ptr<CopyOutputRequest> request) {
+  gfx::Rect copy_rect = frame->current_render_pass->output_rect;
+  if (request->has_area()) {
+    // Intersect with the request's area, positioned with its origin at the
+    // origin of the full copy_rect.
+    copy_rect.Intersect(request->area() - copy_rect.OffsetFromOrigin());
+  }
+  gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(copy_rect);
+
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    current_viewport_rect_.width(),
-                    current_viewport_rect_.height());
+                    window_copy_rect.width(),
+                    window_copy_rect.height());
   current_canvas_->readPixels(
-      bitmap.get(), current_viewport_rect_.x(), current_viewport_rect_.y());
+      bitmap.get(), window_copy_rect.x(), window_copy_rect.y());
 
   request->SendBitmapResult(bitmap.Pass());
 }

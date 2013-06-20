@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/rect.h"
 
 class SkBitmap;
 
@@ -35,14 +35,28 @@ class CC_EXPORT CopyOutputRequest {
   static scoped_ptr<CopyOutputRequest> CreateRelayRequest(
       const CopyOutputRequest& original_request,
       const CopyOutputRequestCallback& result_callback) {
-    return make_scoped_ptr(new CopyOutputRequest(
-        original_request.force_bitmap_result(), result_callback));
+    scoped_ptr<CopyOutputRequest> relay = CreateRequest(result_callback);
+    relay->force_bitmap_result_ = original_request.force_bitmap_result_;
+    relay->has_area_ = original_request.has_area_;
+    relay->area_ = original_request.area_;
+    return relay.Pass();
   }
 
   ~CopyOutputRequest();
 
   bool IsEmpty() const { return result_callback_.is_null(); }
+
   bool force_bitmap_result() const { return force_bitmap_result_; }
+
+  // By default copy requests copy the entire layer's subtree output. If an
+  // area is given, then the intersection of this rect (in layer space) with
+  // the layer's subtree output will be returned.
+  void set_area(gfx::Rect area) {
+    has_area_ = true;
+    area_ = area;
+  }
+  bool has_area() const { return has_area_; }
+  gfx::Rect area() const { return area_; }
 
   void SendResult(scoped_ptr<CopyOutputResult> result);
   void SendBitmapResult(scoped_ptr<SkBitmap> bitmap);
@@ -60,6 +74,8 @@ class CC_EXPORT CopyOutputRequest {
                              const CopyOutputRequestCallback& result_callback);
 
   bool force_bitmap_result_;
+  bool has_area_;
+  gfx::Rect area_;
   CopyOutputRequestCallback result_callback_;
 };
 

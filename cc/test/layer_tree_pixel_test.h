@@ -47,10 +47,19 @@ class LayerTreePixelTest : public LayerTreeTest {
       int border_width,
       SkColor border_color);
 
-  void RunPixelTest(scoped_refptr<Layer> content_root,
+  enum PixelTestType {
+    GL_WITH_DEFAULT,
+    GL_WITH_BITMAP,
+    SOFTWARE_WITH_DEFAULT,
+    SOFTWARE_WITH_BITMAP
+  };
+
+  void RunPixelTest(PixelTestType type,
+                    scoped_refptr<Layer> content_root,
                     base::FilePath file_name);
 
-  void RunPixelTestWithReadbackTarget(scoped_refptr<Layer> content_root,
+  void RunPixelTestWithReadbackTarget(PixelTestType type,
+                                      scoped_refptr<Layer> content_root,
                                       Layer* target,
                                       base::FilePath file_name);
 
@@ -68,7 +77,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   scoped_ptr<PixelComparator> pixel_comparator_;
 
  protected:
-  bool use_gl_;
+  PixelTestType test_type_;
   scoped_refptr<Layer> content_root_;
   Layer* readback_target_;
   base::FilePath ref_file_;

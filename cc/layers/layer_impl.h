@@ -84,7 +84,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void ClearChildList();
 
   void PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests);
-  void TakeCopyRequests(ScopedPtrVector<CopyOutputRequest>* request);
+  void TakeCopyRequestsAndTransformToTarget(
+      ScopedPtrVector<CopyOutputRequest>* request);
   bool HasCopyRequest() const { return !copy_requests_.empty(); }
 
   void SetMaskLayer(scoped_ptr<LayerImpl> mask_layer);

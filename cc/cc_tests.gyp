@@ -163,6 +163,8 @@
       'test/render_pass_test_utils.h',
       'test/scheduler_test_common.cc',
       'test/scheduler_test_common.h',
+      'test/solid_color_content_layer_client.h',
+      'test/solid_color_content_layer_client.cc',
       'test/skia_common.cc',
       'test/skia_common.h',
       'test/test_web_graphics_context_3d.cc',

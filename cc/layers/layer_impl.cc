@@ -114,12 +114,26 @@ void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
   NoteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::TakeCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
+void LayerImpl::TakeCopyRequestsAndTransformToTarget(
+    ScopedPtrVector<CopyOutputRequest>* requests) {
   if (copy_requests_.empty())
     return;
 
   requests->insert_and_take(requests->end(), copy_requests_);
   copy_requests_.clear();
+
+  for (size_t i = 0; i < requests->size(); ++i) {
+    CopyOutputRequest* request = requests->at(i);
+    if (!request->has_area())
+      continue;
+
+    gfx::Rect request_in_layer_space = request->area();
+    gfx::Rect request_in_content_space =
+        LayerRectToContentRect(request_in_layer_space);
+    request->set_area(
+        MathUtil::MapClippedRect(draw_properties_.target_space_transform,
+                                 request_in_content_space));
+  }
 }
 
 void LayerImpl::CreateRenderSurface() {

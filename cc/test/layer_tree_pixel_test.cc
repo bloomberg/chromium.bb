@@ -21,7 +21,8 @@
 namespace cc {
 
 LayerTreePixelTest::LayerTreePixelTest()
-    : pixel_comparator_(new ExactPixelComparator(true)), use_gl_(true) {}
+    : pixel_comparator_(new ExactPixelComparator(true)),
+      test_type_(GL_WITH_DEFAULT) {}
 
 LayerTreePixelTest::~LayerTreePixelTest() {}
 
@@ -30,23 +31,32 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
   gfx::Size surface_expansion_size(40, 60);
   scoped_ptr<PixelTestOutputSurface> output_surface;
 
-  if (!use_gl_) {
-    scoped_ptr<PixelTestSoftwareOutputDevice> software_output_device(
-        new PixelTestSoftwareOutputDevice);
-    software_output_device->set_surface_expansion_size(surface_expansion_size);
-    output_surface = make_scoped_ptr(
-        new PixelTestOutputSurface(
-            software_output_device.PassAs<SoftwareOutputDevice>()));
-  } else {
-    CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
+  switch (test_type_) {
+    case SOFTWARE_WITH_DEFAULT:
+    case SOFTWARE_WITH_BITMAP: {
+      scoped_ptr<PixelTestSoftwareOutputDevice> software_output_device(
+          new PixelTestSoftwareOutputDevice);
+      software_output_device->set_surface_expansion_size(
+          surface_expansion_size);
+      output_surface = make_scoped_ptr(
+          new PixelTestOutputSurface(
+              software_output_device.PassAs<SoftwareOutputDevice>()));
+      break;
+    }
 
-    using WebKit::WebGraphicsContext3D;
-    using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-    scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
-        WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-            WebGraphicsContext3D::Attributes()));
-    output_surface = make_scoped_ptr(
-        new PixelTestOutputSurface(context3d.PassAs<WebGraphicsContext3D>()));
+    case GL_WITH_DEFAULT:
+    case GL_WITH_BITMAP: {
+      CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
+
+      using WebKit::WebGraphicsContext3D;
+      using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
+          WebGraphicsContext3DInProcessCommandBufferImpl::
+              CreateOffscreenContext(WebGraphicsContext3D::Attributes()));
+      output_surface = make_scoped_ptr(
+          new PixelTestOutputSurface(context3d.PassAs<WebGraphicsContext3D>()));
+      break;
+    }
   }
 
   output_surface->set_viewport_offset(viewport_offset);
@@ -141,8 +151,10 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::
 }
 
 void LayerTreePixelTest::RunPixelTest(
+    PixelTestType test_type,
     scoped_refptr<Layer> content_root,
     base::FilePath file_name) {
+  test_type_ = test_type;
   content_root_ = content_root;
   readback_target_ = NULL;
   ref_file_ = file_name;
@@ -150,9 +162,11 @@ void LayerTreePixelTest::RunPixelTest(
 }
 
 void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
+    PixelTestType test_type,
     scoped_refptr<Layer> content_root,
     Layer* target,
     base::FilePath file_name) {
+  test_type_ = test_type;
   content_root_ = content_root;
   readback_target_ = target;
   ref_file_ = file_name;

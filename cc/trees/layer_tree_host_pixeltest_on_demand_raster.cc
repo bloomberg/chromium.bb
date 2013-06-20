@@ -99,7 +99,9 @@ TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
   layer->SetBounds(layer_rect.size());
   layer->SetPosition(layer_rect.origin());
 
-  RunPixelTest(layer, base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
+  RunPixelTest(GL_WITH_BITMAP,
+               layer,
+               base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
 }
 
 }  // namespace

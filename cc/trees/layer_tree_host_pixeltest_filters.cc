@@ -30,9 +30,9 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlur) {
   filters.append(WebKit::WebFilterOperation::createBlurFilter(2));
   blur->SetBackgroundFilters(filters);
 
-  RunPixelTest(background,
-               base::FilePath(FILE_PATH_LITERAL(
-                   "background_filter_blur.png")));
+  RunPixelTest(GL_WITH_BITMAP,
+               background,
+               base::FilePath(FILE_PATH_LITERAL("background_filter_blur.png")));
 }
 
 TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
@@ -55,7 +55,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOutsets) {
   filters.append(WebKit::WebFilterOperation::createBlurFilter(5));
   blur->SetBackgroundFilters(filters);
 
-  RunPixelTest(background,
+  RunPixelTest(GL_WITH_BITMAP,
+               background,
                base::FilePath(FILE_PATH_LITERAL(
                    "background_filter_blur_outsets.png")));
 }
@@ -108,7 +109,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
       small_error_allowed));
 #endif
 
-  RunPixelTest(background,
+  RunPixelTest(GL_WITH_BITMAP,
+               background,
                base::FilePath(FILE_PATH_LITERAL(
                    "background_filter_blur_off_axis.png")));
 }

@@ -641,7 +641,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     if (it.represents_target_render_surface()) {
       if (it->HasCopyRequest()) {
         have_copy_request = true;
-        it->TakeCopyRequests(&target_render_pass->copy_requests);
+        it->TakeCopyRequestsAndTransformToTarget(
+            &target_render_pass->copy_requests);
       }
     } else if (it.represents_contributing_render_surface()) {
       RenderPass::Id contributing_render_pass_id =
