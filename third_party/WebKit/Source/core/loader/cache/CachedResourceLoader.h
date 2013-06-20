@@ -55,6 +55,7 @@ class DocumentLoader;
 class Frame;
 class ImageLoader;
 class KURL;
+class ResourceTimingInfo;
 
 // The CachedResourceLoader provides a per-context interface to the MemoryCache
 // and enforces a bunch of security checks and rules for resource revalidation.
@@ -113,6 +114,7 @@ public:
 
     void loadDone(CachedResource*);
     void garbageCollectDocumentResources();
+    void redirectReceived(CachedResource*, const ResourceResponse&);
     
     void incrementRequestCount(const CachedResource*);
     void decrementRequestCount(const CachedResource*);
@@ -173,7 +175,8 @@ private:
 
     Timer<CachedResourceLoader> m_garbageCollectDocumentResourcesTimer;
 
-    HashMap<CachedResource*, CachedResourceInitiatorInfo> m_initiatorMap;
+    typedef HashMap<CachedResource*, RefPtr<ResourceTimingInfo> > ResourceTimingInfoMap;
+    ResourceTimingInfoMap m_resourceTimingInfoMap;
 
     // 29 bits left
     bool m_autoLoadImages : 1;

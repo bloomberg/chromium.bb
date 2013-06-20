@@ -52,7 +52,6 @@ void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsig
     m_frame->loader()->applyUserAgent(request);
     m_frame->loader()->client()->dispatchWillSendRequest(loader, identifier, request, redirectResponse);
     InspectorInstrumentation::willSendRequest(m_frame, identifier, loader, request, redirectResponse, initiatorInfo);
-    request.setReportLoadTiming(true);
 }
 
 void ResourceLoadNotifier::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)
