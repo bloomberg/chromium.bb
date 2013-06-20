@@ -280,28 +280,8 @@ class InstantController : public InstantPage::Delegate {
   UNIT_F(SwitchesToLocalNTPIfNoNTPReady);
   UNIT_F(SwitchesToLocalNTPIfPathBad);
 #undef UNIT_F
-  FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UsesOverlayIfTabNotReady);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           SearchQueryNotDisplayedForNavsuggest);
-  FRIEND_TEST_ALL_PREFIXES(InstantTest, SetWithTemplateURL);
-  FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);
-  FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefresh);
-  FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefreshDifferentOrder);
-  FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantRenderViewGone);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ExtendedModeIsOn);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, MostVisited);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, RestrictedItemReadback);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OmniboxFocusLoadsInstant);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           OmniboxTextUponFocusedCommittedSERP);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           NavigationSuggestionIsDiscardedUponSearchSuggestion);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           NavigateToURLSuggestionHitEnterAndLookForSubmit);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           MiddleClickOnSuggestionOpensInNewTab);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, SearchProviderRunsForFallback);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, NTPIsPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInNewTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, PreloadedNTPIsUsedInSameTab);
@@ -311,37 +291,23 @@ class InstantController : public InstantPage::Delegate {
                            PreloadedNTPDoesntSupportInstant);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, UnrelatedSiteInstance);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ValidatesSuggestions);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           OmniboxCommitsWhenShownFullHeight);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalOnlyNTPIsPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalOnlyNTPIsNotPreloaded);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OverlayRenderViewGone);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OverlayDoesntSupportInstant);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
-                           MANUAL_OmniboxFocusLoadsInstant);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
-                           MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, SearchProviderForLocalNTP);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            AcceptingURLSearchDoesNotNavigate);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, AcceptingJSSearchDoesNotRunJS);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            ReloadSearchAfterBackReloadsCorrectQuery);
-  FRIEND_TEST_ALL_PREFIXES(
-      InstantExtendedFirstTabTest, RedirectToLocalOnLoadFailure);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LogDropdownShown);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           OverlayDoesNotEchoSearchProviderNavsuggest);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedFirstTabTest,
+                           RedirectToLocalOnLoadFailure);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, KeyboardTogglesVoiceSearch);
-#if !defined(HTML_INSTANT_EXTENDED_POPUP)
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, HomeButtonAffectsMargin);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, SearchReusesInstantTab);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            SearchDoesntReuseInstantTabWithoutSupport);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            TypedSearchURLDoesntReuseInstantTab);
-#endif
 
   // Overridden from InstantPage::Delegate:
   // TODO(shishir): We assume that the WebContent's current RenderViewHost is

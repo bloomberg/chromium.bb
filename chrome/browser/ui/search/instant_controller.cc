@@ -433,7 +433,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
         if (UseTabForSuggestions()) {
           // On a search results page, tell it to clear old results.
           instant_tab_->Update(string16(), 0, 0, true);
-        } else if (search_mode_.is_origin_ntp()) {
+        } else if (overlay_ && search_mode_.is_origin_ntp()) {
           // On the NTP, tell the overlay to clear old results. Don't hide the
           // overlay so it can show a blank page or logo if it wants.
           overlay_->Update(string16(), 0, 0, true);
@@ -461,7 +461,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
       last_suggestion_ = InstantSuggestion();
       if (UseTabForSuggestions())
         instant_tab_->Update(string16(), 0, 0, true);
-      else if (search_mode_.is_origin_ntp())
+      else if (overlay_ && search_mode_.is_origin_ntp())
         overlay_->Update(string16(), 0, 0, true);
       else
         HideOverlay();
@@ -517,7 +517,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
 
   if (UseTabForSuggestions()) {
     instant_tab_->Update(user_text, selection_start, selection_end, verbatim);
-  } else {
+  } else if (overlay_) {
     allow_overlay_to_show_search_suggestions_ = true;
 
     overlay_->Update(extended_enabled() ? user_text : full_text,
@@ -670,7 +670,7 @@ void InstantController::HandleAutocompleteResults(
 
   if (UseTabForSuggestions())
     instant_tab_->SendAutocompleteResults(results);
-  else
+  else if (overlay_)
     overlay_->SendAutocompleteResults(results);
 
   content::NotificationService::current()->Notify(
@@ -706,7 +706,7 @@ bool InstantController::OnUpOrDownKeyPressed(int count) {
 
   if (UseTabForSuggestions())
     instant_tab_->UpOrDownKeyPressed(count);
-  else
+  else if (overlay_)
     overlay_->UpOrDownKeyPressed(count);
 
   return true;
@@ -736,7 +736,7 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
   if (UseTabForSuggestions()) {
     instant_tab_->CancelSelection(user_text, full_text.size(), user_text.size(),
                                   last_verbatim_);
-  } else {
+  } else if (overlay_) {
     overlay_->CancelSelection(user_text, full_text.size(), user_text.size(),
                               last_verbatim_);
   }
@@ -848,6 +848,9 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
     }
     return false;
   }
+
+  if (!overlay_)
+    return false;
 
   // If the overlay is not showing at all, don't commit it.
   if (!model_.mode().is_search_suggestions())
@@ -1122,7 +1125,7 @@ void InstantController::ReloadOverlayIfStale() {
 }
 
 void InstantController::OverlayLoadCompletedMainFrame() {
-  if (overlay_->supports_instant())
+  if (!overlay_ || overlay_->supports_instant())
     return;
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser_->profile());
@@ -1627,16 +1630,7 @@ bool InstantController::ShouldSwitchToLocalNTP() const {
 
 void InstantController::ResetOverlay(const std::string& instant_url) {
   HideInternal();
-  // If there's no active tab, the browser is opening or closing.
-  const content::WebContents* active_tab = browser_->GetActiveWebContents();
-  if (!active_tab || instant_url.empty()) {
-    overlay_.reset();
-  } else {
-    overlay_.reset(new InstantOverlay(this, instant_url));
-    overlay_->InitContents(browser_->profile(), active_tab);
-  }
-  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "ResetOverlay: instant_url='%s'", instant_url.c_str()));
+  overlay_.reset();
 }
 
 InstantController::InstantFallbackReason
@@ -1728,6 +1722,10 @@ void InstantController::HideInternal() {
 }
 
 void InstantController::ShowOverlay(int height, InstantSizeUnits units) {
+  // Nothing to see here.
+  if (!overlay_)
+    return;
+
   // If we are on a committed search results page, the |overlay_| is not in use.
   if (UseTabForSuggestions())
     return;
