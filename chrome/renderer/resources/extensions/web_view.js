@@ -43,9 +43,22 @@ var WEB_VIEW_EVENTS = {
   'unresponsive' : ['processId']
 };
 
-window.addEventListener('DOMContentLoaded', function() {
-  watchForTag('WEBVIEW', function(addedNode) { new WebView(addedNode); });
-});
+// The <webview> tags we wish to watch for (watchForTag) does not belong to the
+// current scope's "document" reference. We need to wait until the document
+// begins loading, since only then will the "document" reference
+// point to the page's document (it will be reset between now and then).
+// We can't listen for the "readystatechange" event on the document (because
+// the object that it's dispatched on doesn't exist yet), but we can instead
+// do it at the window level in the capturing phase.
+window.addEventListener('readystatechange', function(e) {
+  if (document.readyState != 'loading') {
+    return;
+  }
+
+  document.addEventListener('DOMContentLoaded', function(e) {
+    watchForTag('WEBVIEW', function(addedNode) { new WebView(addedNode); });
+  });
+}, true /* useCapture */);
 
 /**
  * @constructor

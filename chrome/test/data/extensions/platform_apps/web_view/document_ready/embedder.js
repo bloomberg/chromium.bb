@@ -4,6 +4,19 @@
 
 document.addEventListener('DOMContentLoaded', function(e) {
   var webview = document.querySelector('webview');
+
+  // App code is not expected to redefine property on WebView.
+  var canRedefineNameProperty = true;
+  try {
+    Object.defineProperty(webview, 'name', {
+      get: function() { return 'foo'; },
+      set: function(value) {},
+      enumerable: true
+    });
+  } catch (e) {
+    canRedefineNameProperty = false;
+  }
+
   webview.addEventListener('loadstop', function(e) {
     // Note that we are relying on .partition property to read the partition.
     // The other way would be to read this value from BrowserPluginGuest in cpp
@@ -11,12 +24,10 @@ document.addEventListener('DOMContentLoaded', function(e) {
     // test).
     var partitionName = webview.partition;
     chrome.test.runTests([
-      function checkPartition() {
-        if (partitionName == 'persist:test-partition') {
-          chrome.test.succeed();
-        } else {
-          chrome.test.fail();
-        }
+      function checkRedefinePropertyAndPartitionCorrectness() {
+        chrome.test.assertFalse(canRedefineNameProperty);
+        chrome.test.assertEq('persist:test-partition', partitionName);
+        chrome.test.succeed();
       }
     ]);
   });
