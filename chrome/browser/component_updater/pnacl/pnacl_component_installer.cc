@@ -150,7 +150,10 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
                                  Version* version_out) {
   // Make sure we have the right |manifest| file.
   std::string name;
-  manifest.GetStringASCII("name", &name);
+  if (!manifest.GetStringASCII("name", &name)) {
+    LOG(WARNING) << "'name' field is missing from manifest!";
+    return false;
+  }
   // For the webstore, we've given different names to each of the
   // architecture specific packages (and test/QA vs not test/QA)
   // so only part of it is the same.
@@ -162,7 +165,10 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
   }
 
   std::string proposed_version;
-  manifest.GetStringASCII("version", &proposed_version);
+  if (!manifest.GetStringASCII("version", &proposed_version)) {
+    LOG(WARNING) << "'version' field is missing from manifest!";
+    return false;
+  }
   Version version(proposed_version.c_str());
   if (!version.IsValid()) {
     LOG(WARNING) << "'version' field in manifest is invalid "
@@ -172,7 +178,10 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
 
   // Now check the |pnacl_manifest|.
   std::string arch;
-  pnacl_manifest.GetStringASCII("pnacl-arch", &arch);
+  if (!pnacl_manifest.GetStringASCII("pnacl-arch", &arch)) {
+    LOG(WARNING) << "'pnacl-arch' field is missing from pnacl-manifest!";
+    return false;
+  }
   if (arch.compare(OmahaQueryParams::getNaclArch()) != 0) {
     LOG(WARNING) << "'pnacl-arch' field in manifest is invalid ("
                  << arch << " vs " << OmahaQueryParams::getNaclArch() << ")";
@@ -334,8 +343,10 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
     // Check that the component manifest and PNaCl manifest files
     // are legit, and that the indicated version matches the one
     // encoded within the path name.
-    if (!CheckPnaclComponentManifest(*manifest, *pnacl_manifest,
-                                     &manifest_version)
+    if (manifest == NULL || pnacl_manifest == NULL
+        || !CheckPnaclComponentManifest(*manifest,
+                                        *pnacl_manifest,
+                                        &manifest_version)
         || !version.Equals(manifest_version)) {
       version = Version(kNullVersion);
     } else {
