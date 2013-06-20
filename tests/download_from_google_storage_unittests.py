@@ -28,7 +28,7 @@ TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class GsutilMock(object):
-  def __init__(self, path, boto_path=None, timeout=None):
+  def __init__(self, path, boto_path, timeout=None):
     self.path = path
     self.timeout = timeout
     self.boto_path = boto_path
@@ -69,14 +69,14 @@ class GstoolsUnitTests(unittest.TestCase):
     shutil.rmtree(self.temp_dir)
 
   def test_gsutil(self):
-    gsutil = download_from_google_storage.Gsutil(GSUTIL_DEFAULT_PATH)
+    gsutil = download_from_google_storage.Gsutil(GSUTIL_DEFAULT_PATH, None)
     self.assertEqual(gsutil.path, GSUTIL_DEFAULT_PATH)
     code, _, err = gsutil.check_call()
     self.assertEqual(code, 0)
     self.assertEqual(err, '')
 
   def test_gsutil_version(self):
-    gsutil = download_from_google_storage.Gsutil(GSUTIL_DEFAULT_PATH)
+    gsutil = download_from_google_storage.Gsutil(GSUTIL_DEFAULT_PATH, None)
     _, _, err = gsutil.check_call('version')
     err_lines = err.splitlines()
     self.assertEqual(err_lines[0], 'gsutil version 3.25')
@@ -122,7 +122,7 @@ class GstoolsUnitTests(unittest.TestCase):
 
 class DownloadTests(unittest.TestCase):
   def setUp(self):
-    self.gsutil = GsutilMock(GSUTIL_DEFAULT_PATH)
+    self.gsutil = GsutilMock(GSUTIL_DEFAULT_PATH, None)
     self.temp_dir = tempfile.mkdtemp(prefix='gstools_test')
     self.checkout_test_files = os.path.join(
         TEST_DIR, 'gstools', 'download_test_data')

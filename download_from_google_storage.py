@@ -35,7 +35,7 @@ class InvalidFileError(IOError):
 class Gsutil(object):
   """Call gsutil with some predefined settings.  This is a convenience object,
   and is also immutable."""
-  def __init__(self, path, boto_path=None, timeout=None):
+  def __init__(self, path, boto_path, timeout=None):
     if not os.path.exists(path):
       raise FileNotFoundError('GSUtil not found in %s' % path)
     self.path = path
@@ -313,12 +313,12 @@ def main(args):
 
   # Make sure we can find a working instance of gsutil.
   if os.path.exists(GSUTIL_DEFAULT_PATH):
-    gsutil = Gsutil(GSUTIL_DEFAULT_PATH)
+    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=options.boto)
   else:
     gsutil = None
     for path in os.environ["PATH"].split(os.pathsep):
       if os.path.exists(path) and 'gsutil' in os.listdir(path):
-        gsutil = Gsutil(os.path.join(path, 'gsutil'))
+        gsutil = Gsutil(os.path.join(path, 'gsutil'), boto_path=options.boto)
     if not gsutil:
       parser.error('gsutil not found in %s, bad depot_tools checkout?' %
                    GSUTIL_DEFAULT_PATH)
