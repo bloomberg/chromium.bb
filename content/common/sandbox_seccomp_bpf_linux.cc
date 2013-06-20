@@ -1281,10 +1281,6 @@ ErrorCode RestrictMprotectFlags(Sandbox* sandbox) {
 }
 
 ErrorCode RestrictFcntlCommands(Sandbox* sandbox) {
-  // For now, we're only sure this will work on x64. This is because of the
-  // use of TP_64BIT for a "long" argument. Ideally, the seccomp API would
-  // have a TP_LONG or TP_SIZET type.
-  DCHECK(IsArchitectureX86_64());
   // We allow F_GETFL, F_SETFL, F_GETFD, F_SETFD, F_DUPFD, F_DUPFD_CLOEXEC,
   // F_SETLK, F_SETLKW and F_GETLK.
   // We also restrict the flags in F_SETFL. We don't want to permit flags with
@@ -1293,8 +1289,17 @@ ErrorCode RestrictFcntlCommands(Sandbox* sandbox) {
   // operator.
   // Glibc overrides the kernel's O_LARGEFILE value. Account for this.
   int kOLargeFileFlag = O_LARGEFILE;
-  if (IsArchitectureX86_64())
+  if (IsArchitectureX86_64() || IsArchitectureI386())
     kOLargeFileFlag = 0100000;
+
+  // TODO(jln): add TP_LONG/TP_SIZET types.
+  ErrorCode::ArgType mask_long_type;
+  if (sizeof(long) == 8)
+    mask_long_type = ErrorCode::TP_64BIT;
+  else if (sizeof(long) == 4)
+    mask_long_type = ErrorCode::TP_32BIT;
+  else
+    NOTREACHED();
 
   unsigned long denied_mask = ~(O_ACCMODE | O_APPEND | O_NONBLOCK | O_SYNC |
                                 kOLargeFileFlag | O_CLOEXEC | O_NOATIME);
@@ -1303,7 +1308,7 @@ ErrorCode RestrictFcntlCommands(Sandbox* sandbox) {
                        ErrorCode(ErrorCode::ERR_ALLOWED),
          sandbox->Cond(1, ErrorCode::TP_32BIT,
                        ErrorCode::OP_EQUAL, F_SETFL,
-                       sandbox->Cond(2, ErrorCode::TP_64BIT,
+                       sandbox->Cond(2, mask_long_type,
                                      ErrorCode::OP_HAS_ANY_BITS, denied_mask,
                                      sandbox->Trap(CrashSIGSYS_Handler, NULL),
                                      ErrorCode(ErrorCode::ERR_ALLOWED)),
@@ -1394,16 +1399,12 @@ ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
   if (sysno == __NR_mprotect)
     return RestrictMprotectFlags(sandbox);
 
-  if (sysno == __NR_fcntl) {
-    if (IsArchitectureX86_64())
-      return RestrictFcntlCommands(sandbox);
-    else
-      return ErrorCode(ErrorCode::ERR_ALLOWED);
-  }
+  if (sysno == __NR_fcntl)
+    return RestrictFcntlCommands(sandbox);
 
 #if defined(__i386__) || defined(__arm__)
   if (sysno == __NR_fcntl64)
-    return ErrorCode(ErrorCode::ERR_ALLOWED);
+    return RestrictFcntlCommands(sandbox);
 #endif
 
   if (IsFileSystem(sysno) || IsCurrentDirectory(sysno)) {
