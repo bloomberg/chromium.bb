@@ -64,8 +64,8 @@ function Gallery(context) {
     return strf.apply(null, args);
   };
 
-  this.initListeners_();
   this.initDom_();
+  this.initListeners_();
 }
 
 /**

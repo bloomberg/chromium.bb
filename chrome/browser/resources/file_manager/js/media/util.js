@@ -44,6 +44,11 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
   });
 
   this.container_.addEventListener('mousemove', this.onMouseMove_.bind(this));
+  var tools = this.container_.querySelector('.tool');
+  for (var i = 0; i < tools.length; i++) {
+    tools[i].addEventListener('mouseover', this.onToolMouseOver_.bind(this));
+    tools[i].addEventListener('mouseout', this.onToolMouseOut_.bind(this));
+  }
 
   // Show tools when the user touches the screen.
   this.container_.addEventListener(
@@ -66,15 +71,6 @@ MouseInactivityWatcher.prototype.showTools = function(on) {
     this.container_.setAttribute('tools', 'true');
   else
     this.container_.removeAttribute('tools');
-};
-
-/**
- * @param {Element} element DOM element.
- * @return {boolean} True if the element is a tool. Tools should never be hidden
- *   while the mouse is over one of them.
- */
-MouseInactivityWatcher.prototype.isToolElement = function(element) {
-  return element.classList.contains('tool');
 };
 
 /**
@@ -142,19 +138,34 @@ MouseInactivityWatcher.prototype.onMouseMove_ = function(e) {
   this.clientX_ = e.clientX;
   this.clientY_ = e.clientY;
 
-  this.mouseOverTool_ = false;
-  for (var elem = e.target; elem != this.container_; elem = elem.parentNode) {
-    if (this.isToolElement(elem)) {
-      this.mouseOverTool_ = true;
-      break;
-    }
-  }
-
   if (this.disabled_)
     return;
 
-  this.activityStarted_();
-  this.activityStopped_();
+  this.kick();
+};
+
+/**
+ * Mouse over handler on a tool element.
+ *
+ * @param {Event} e Event.
+ * @private
+ */
+MouseInactivityWatcher.prototype.onToolMouseOver_ = function(e) {
+  this.mouseOverTool_ = true;
+  if (!this.disabled_)
+    this.kick();
+};
+
+/**
+ * Mouse out handler on a tool element.
+ *
+ * @param {Event} e Event.
+ * @private
+ */
+MouseInactivityWatcher.prototype.onToolMouseOut_ = function(e) {
+  this.mouseOverTool_ = false;
+  if (!this.disabled_)
+    this.kick();
 };
 
 /**
