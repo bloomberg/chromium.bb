@@ -422,9 +422,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Use to post mouse move event.
   base::WeakPtrFactory<RootWindow> event_factory_;
 
-  // ui::EventFlags containing the current state of the mouse buttons.
-  int mouse_button_flags_;
-
   // Touch ids that are currently down.
   uint32 touch_ids_down_;
 

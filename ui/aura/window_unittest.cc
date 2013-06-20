@@ -1166,9 +1166,11 @@ class MouseEnterExitWindowDelegate : public TestWindowDelegate {
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     switch (event->type()) {
       case ui::ET_MOUSE_ENTERED:
+        EXPECT_TRUE(event->flags() & ui::EF_IS_SYNTHESIZED);
         entered_ = true;
         break;
       case ui::ET_MOUSE_EXITED:
+        EXPECT_TRUE(event->flags() & ui::EF_IS_SYNTHESIZED);
         exited_ = true;
         break;
       default:

@@ -119,8 +119,11 @@ class TestEventHandler : public ui::EventHandler {
   virtual ~TestEventHandler() {}
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    if (event->flags() & ui::EF_IS_SYNTHESIZED &&
+        event->type() != ui::ET_MOUSE_EXITED &&
+        event->type() != ui::ET_MOUSE_ENTERED) {
       return;
+    }
     aura::Window* target = static_cast<aura::Window*>(event->target());
     mouse_location_ = event->root_location();
     target_root_ = target->GetRootWindow();

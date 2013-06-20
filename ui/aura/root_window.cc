@@ -145,7 +145,6 @@ RootWindow::RootWindow(const CreateParams& params)
       host_(CreateHost(this, params)),
       schedule_paint_factory_(this),
       event_factory_(this),
-      mouse_button_flags_(0),
       touch_ids_down_(0),
       last_cursor_(ui::kCursorNull),
       mouse_pressed_handler_(NULL),
@@ -751,7 +750,7 @@ void RootWindow::DispatchMouseEnterOrExit(const ui::MouseEvent& event,
                                   static_cast<Window*>(this),
                                   mouse_moved_handler_,
                                   type,
-                                  event.flags());
+                                  event.flags() | ui::EF_IS_SYNTHESIZED);
   ProcessEvent(mouse_moved_handler_, &translated_event);
 }
 
@@ -1060,14 +1059,13 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
       // sent to the wrong target.
       if (!(event->flags() & ui::EF_IS_NON_CLIENT) && !mouse_pressed_handler_)
         mouse_pressed_handler_ = target;
-      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
-      Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);
+      Env::GetInstance()->set_mouse_button_flags(
+          event->flags() & kMouseButtonFlagMask);
       break;
     case ui::ET_MOUSE_RELEASED:
       mouse_pressed_handler_ = NULL;
-      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask &
-          ~event->changed_button_flags();
-      Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);
+      Env::GetInstance()->set_mouse_button_flags(event->flags() &
+          kMouseButtonFlagMask & ~event->changed_button_flags());
       break;
     default:
       break;
@@ -1195,8 +1193,6 @@ void RootWindow::SynthesizeMouseMoveEvent() {
   gfx::Point host_mouse_location = root_mouse_location;
   ConvertPointToHost(&host_mouse_location);
 
-  // TODO(derat|oshima): Don't use mouse_button_flags_ as it's
-  // currently broken. See/ crbug.com/107931.
   ui::MouseEvent event(ui::ET_MOUSE_MOVED,
                        host_mouse_location,
                        host_mouse_location,
