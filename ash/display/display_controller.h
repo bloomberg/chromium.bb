@@ -231,6 +231,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
 
   void OnFadeOutForSwapDisplayFinished();
 
+  void UpdateHostWindowNames();
+
   bool in_bootstrap() const { return in_bootstrap_; }
 
   class DisplayChangeLimiter {

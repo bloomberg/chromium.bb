@@ -21,6 +21,12 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_X11)
+#include "ui/base/x/x11_util.h"
+#include <X11/Xlib.h>
+#undef RootWindow
+#endif
+
 namespace ash {
 namespace test {
 namespace {
@@ -183,6 +189,21 @@ gfx::Display::Rotation GetStoredRotation(int64 id) {
 float GetStoredUIScale(int64 id) {
   return Shell::GetInstance()->display_manager()->GetDisplayInfo(id).ui_scale();
 }
+
+#if defined(USE_X11)
+void GetPrimaryAndSeconary(aura::RootWindow** primary,
+                           aura::RootWindow** secondary) {
+  *primary = Shell::GetPrimaryRootWindow();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  *secondary = root_windows[0] == *primary ? root_windows[1] : root_windows[0];
+}
+
+std::string GetXWindowName(aura::RootWindow* window) {
+  char* name = NULL;
+  XFetchName(ui::GetXDisplay(), window->GetAcceleratedWidget(), &name);
+  return std::string(name);
+}
+#endif
 
 }  // namespace
 
@@ -932,6 +953,30 @@ TEST_F(DisplayControllerTest, ConvertHostToRootCoords) {
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
+
+#if defined(USE_X11)
+TEST_F(DisplayControllerTest, XWidowNameForRootWindow) {
+  EXPECT_EQ("aura_root_0", GetXWindowName(Shell::GetPrimaryRootWindow()));
+
+  // Multiple display.
+  UpdateDisplay("200x200,300x300");
+  aura::RootWindow* primary, *secondary;
+  GetPrimaryAndSeconary(&primary, &secondary);
+  EXPECT_EQ("aura_root_0", GetXWindowName(primary));
+  EXPECT_EQ("aura_root_x", GetXWindowName(secondary));
+
+  // Swap primary.
+  primary = secondary = NULL;
+  Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
+  GetPrimaryAndSeconary(&primary, &secondary);
+  EXPECT_EQ("aura_root_0", GetXWindowName(primary));
+  EXPECT_EQ("aura_root_x", GetXWindowName(secondary));
+
+  // Switching back to single display.
+  UpdateDisplay("300x400");
+  EXPECT_EQ("aura_root_0", GetXWindowName(Shell::GetPrimaryRootWindow()));
+}
+#endif
 
 }  // namespace test
 }  // namespace ash

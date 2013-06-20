@@ -413,15 +413,6 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
                   32,
                   PropModeReplace,
                   reinterpret_cast<unsigned char*>(&pid), 1);
-
-  // crbug.com/120229 - set the window title so gtalk can find the primary root
-  // window to broadcast.
-  // TODO(jhorwich) Remove this once Chrome supports window-based broadcasting.
-  static int root_window_number = 0;
-  std::string name = base::StringPrintf("aura_root_%d", root_window_number++);
-  XStoreName(xdisplay_, xwindow_, name.c_str());
-  XRRSelectInput(xdisplay_, x_root_window_,
-                 RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
   Env::GetInstance()->AddObserver(this);
 }
 

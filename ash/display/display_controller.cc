@@ -461,6 +461,7 @@ void DisplayController::InitSecondaryDisplays() {
         layout.primary_id == gfx::Display::kInvalidDisplayID ?
         pair.first : layout.primary_id);
   }
+  UpdateHostWindowNames();
 }
 
 void DisplayController::AddObserver(Observer* observer) {
@@ -1017,6 +1018,7 @@ void DisplayController::NotifyDisplayConfigurationChanged() {
     }
   }
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());
+  UpdateHostWindowNames();
 }
 
 void DisplayController::RegisterLayoutForDisplayIdPairInternal(
@@ -1033,6 +1035,22 @@ void DisplayController::OnFadeOutForSwapDisplayFinished() {
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
   Shell::GetInstance()->output_configurator_animation()->StartFadeInAnimation();
+#endif
+}
+
+void DisplayController::UpdateHostWindowNames() {
+#if defined(USE_X11)
+  // crbug.com/120229 - set the window title for the primary dislpay
+  // to "aura_root_0" so gtalk can find the primary root window to broadcast.
+  // TODO(jhorwich) Remove this once Chrome supports window-based broadcasting.
+  aura::RootWindow* primary = Shell::GetPrimaryRootWindow();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (size_t i = 0; i < root_windows.size(); ++i) {
+    std::string name =
+        root_windows[i] == primary ? "aura_root_0" : "aura_root_x";
+    gfx::AcceleratedWidget xwindow = root_windows[i]->GetAcceleratedWidget();
+    XStoreName(ui::GetXDisplay(), xwindow, name.c_str());
+  }
 #endif
 }
 
