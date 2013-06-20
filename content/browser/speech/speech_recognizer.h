@@ -23,7 +23,7 @@ class CONTENT_EXPORT SpeechRecognizer
     DCHECK(listener_);
   }
 
-  virtual void StartRecognition() = 0;
+  virtual void StartRecognition(const std::string& device_id) = 0;
   virtual void AbortRecognition() = 0;
   virtual void StopAudioCapture() = 0;
   virtual bool IsActive() const = 0;

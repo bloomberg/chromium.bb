@@ -209,7 +209,10 @@ SpeechRecognizerImpl::SpeechRecognizerImpl(
 // of causality between events and avoid interleaved event processing due to
 // synchronous callbacks.
 
-void SpeechRecognizerImpl::StartRecognition() {
+void SpeechRecognizerImpl::StartRecognition(const std::string& device_id) {
+  DCHECK(!device_id.empty());
+  device_id_ = device_id;
+
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SpeechRecognizerImpl::DispatchEvent,
                                      this, FSMEventArgs(EVENT_START)));
@@ -499,6 +502,8 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
   audio_level_ = 0;
   listener()->OnRecognitionStart(session_id());
 
+  // TODO(xians): Check if the OS has the device with |device_id_|, return
+  // |SPEECH_AUDIO_ERROR_DETAILS_NO_MIC| if the target device does not exist.
   if (!audio_manager->HasAudioInputDevices()) {
     return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO,
                                         SPEECH_AUDIO_ERROR_DETAILS_NO_MIC));
@@ -508,7 +513,7 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
 
   // TODO(xians): use the correct input device here.
   AudioParameters in_params = audio_manager->GetInputStreamParameters(
-      media::AudioManagerBase::kDefaultDeviceId);
+      device_id_);
   if (!in_params.IsValid() && !unit_test_is_active) {
     DLOG(ERROR) << "Invalid native audio input parameters";
     return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));
@@ -561,7 +566,7 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
 
   // TODO(xians): use the correct input device here.
   audio_controller_ = AudioInputController::Create(
-      audio_manager, this, input_parameters);
+      audio_manager, this, input_parameters, device_id_);
 
   if (!audio_controller_) {
     return Abort(SpeechRecognitionError(SPEECH_RECOGNITION_ERROR_AUDIO));

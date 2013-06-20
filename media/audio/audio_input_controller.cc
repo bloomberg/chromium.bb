@@ -55,7 +55,8 @@ AudioInputController::~AudioInputController() {
 scoped_refptr<AudioInputController> AudioInputController::Create(
     AudioManager* audio_manager,
     EventHandler* event_handler,
-    const AudioParameters& params) {
+    const AudioParameters& params,
+    const std::string& device_id) {
   DCHECK(audio_manager);
 
   if (!params.IsValid() || (params.channels() > kMaxInputChannels))
@@ -70,8 +71,7 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
   controller->message_loop_ = audio_manager->GetMessageLoop();
 
   // Create and open a new audio input stream from the existing
-  // audio-device thread. Use the default audio-input device.
-  std::string device_id = AudioManagerBase::kDefaultDeviceId;
+  // audio-device thread.
   if (!controller->message_loop_->PostTask(FROM_HERE,
           base::Bind(&AudioInputController::DoCreate, controller,
                      base::Unretained(audio_manager), params, device_id))) {

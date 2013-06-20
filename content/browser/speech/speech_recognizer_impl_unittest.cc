@@ -8,6 +8,7 @@
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_output_stream.h"
 #include "media/audio/mock_audio_manager.h"
@@ -184,7 +185,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
 
 TEST_F(SpeechRecognizerImplTest, StopNoData) {
   // Check for callbacks when stopping record before any audio gets recorded.
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   recognizer_->StopAudioCapture();
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(recognition_started_);
@@ -197,7 +198,7 @@ TEST_F(SpeechRecognizerImplTest, StopNoData) {
 TEST_F(SpeechRecognizerImplTest, CancelNoData) {
   // Check for callbacks when canceling recognition before any audio gets
   // recorded.
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   recognizer_->AbortRecognition();
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(recognition_started_);
@@ -210,7 +211,7 @@ TEST_F(SpeechRecognizerImplTest, CancelNoData) {
 TEST_F(SpeechRecognizerImplTest, StopWithData) {
   // Start recording, give some data and then stop. This should wait for the
   // network callback to arrive before completion.
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   base::MessageLoop::current()->RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
@@ -259,7 +260,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
 
 TEST_F(SpeechRecognizerImplTest, CancelWithData) {
   // Start recording, give some data and then cancel.
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   base::MessageLoop::current()->RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
@@ -280,7 +281,7 @@ TEST_F(SpeechRecognizerImplTest, CancelWithData) {
 TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   // Start recording, give some data and then stop. Issue the network callback
   // with a connection error and verify that the recognizer bubbles the error up
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   base::MessageLoop::current()->RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
@@ -318,7 +319,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
 TEST_F(SpeechRecognizerImplTest, ServerError) {
   // Start recording, give some data and then stop. Issue the network callback
   // with a 500 error and verify that the recognizer bubbles the error up
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   base::MessageLoop::current()->RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
@@ -354,7 +355,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
 
 TEST_F(SpeechRecognizerImplTest, AudioControllerErrorNoData) {
   // Check if things tear down properly if AudioInputController threw an error.
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   base::MessageLoop::current()->RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
@@ -371,7 +372,7 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorNoData) {
 TEST_F(SpeechRecognizerImplTest, AudioControllerErrorWithData) {
   // Check if things tear down properly if AudioInputController threw an error
   // after giving some audio data.
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   base::MessageLoop::current()->RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
@@ -391,7 +392,7 @@ TEST_F(SpeechRecognizerImplTest, AudioControllerErrorWithData) {
 TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackIssued) {
   // Start recording and give a lot of packets with audio samples set to zero.
   // This should trigger the no-speech detector and issue a callback.
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   base::MessageLoop::current()->RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
@@ -417,7 +418,7 @@ TEST_F(SpeechRecognizerImplTest, NoSpeechCallbackNotIssued) {
   // and then some more with reasonably loud audio samples. This should be
   // treated as normal speech input and the no-speech detector should not get
   // triggered.
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   base::MessageLoop::current()->RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();
@@ -455,7 +456,7 @@ TEST_F(SpeechRecognizerImplTest, SetInputVolumeCallback) {
   // and then some more with reasonably loud audio samples. Check that we don't
   // get the callback during estimation phase, then get zero for the silence
   // samples and proper volume for the loud audio.
-  recognizer_->StartRecognition();
+  recognizer_->StartRecognition(media::AudioManagerBase::kDefaultDeviceId);
   base::MessageLoop::current()->RunUntilIdle();
   TestAudioInputController* controller =
       audio_input_controller_factory_.controller();

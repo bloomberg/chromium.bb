@@ -564,7 +564,11 @@ SpeechRecognitionManagerImpl::GetSessionState(int session_id) const {
 
 void SpeechRecognitionManagerImpl::SessionStart(const Session& session) {
   DCHECK_EQ(primary_session_id_, session.id);
-  session.recognizer->StartRecognition();
+  const MediaStreamDevices& devices = session.context.devices;
+  DCHECK_EQ(1u, devices.size());
+  DCHECK_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, devices.front().type);
+
+  session.recognizer->StartRecognition(devices.front().id);
 }
 
 void SpeechRecognitionManagerImpl::SessionAbort(const Session& session) {

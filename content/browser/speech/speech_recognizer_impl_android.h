@@ -24,7 +24,7 @@ class CONTENT_EXPORT SpeechRecognizerImplAndroid : public SpeechRecognizer {
                               int session_id);
 
   // SpeechRecognizer methods.
-  virtual void StartRecognition() OVERRIDE;
+  virtual void StartRecognition(const std::string& device_id) OVERRIDE;
   virtual void AbortRecognition() OVERRIDE;
   virtual void StopAudioCapture() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;

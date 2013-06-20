@@ -44,7 +44,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
                        bool is_single_shot,
                        SpeechRecognitionEngine* engine);
 
-  virtual void StartRecognition() OVERRIDE;
+  virtual void StartRecognition(const std::string& device_id) OVERRIDE;
   virtual void AbortRecognition() OVERRIDE;
   virtual void StopAudioCapture() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
@@ -148,6 +148,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   bool is_dispatching_event_;
   bool is_single_shot_;
   FSMState state_;
+  std::string device_id_;
 
   class OnDataConverter;
 

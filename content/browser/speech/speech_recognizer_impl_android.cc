@@ -34,8 +34,10 @@ SpeechRecognizerImplAndroid::SpeechRecognizerImplAndroid(
 
 SpeechRecognizerImplAndroid::~SpeechRecognizerImplAndroid() { }
 
-void SpeechRecognizerImplAndroid::StartRecognition() {
+void SpeechRecognizerImplAndroid::StartRecognition(
+    const std::string& device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // TODO(xians): Open the correct device for speech on Android.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
       &SpeechRecognitionEventListener::OnRecognitionStart,
       base::Unretained(listener()),
