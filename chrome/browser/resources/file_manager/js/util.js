@@ -943,12 +943,12 @@ util.AppCache.cleanup_ = function(map) {
  *     cache.
  */
 util.loadImage = function(image, url, opt_options, opt_isValid) {
-  return ImageLoader.Client.loadToImage(url,
-                                        image,
-                                        opt_options || {},
-                                        function() { },
-                                        function() { image.onerror(); },
-                                        opt_isValid);
+  return ImageLoaderClient.loadToImage(url,
+                                      image,
+                                      opt_options || {},
+                                      function() {},
+                                      function() { image.onerror(); },
+                                      opt_isValid);
 };
 
 /**
@@ -956,7 +956,7 @@ util.loadImage = function(image, url, opt_options, opt_isValid) {
  * @param {number} taskId Task identifier returned by util.loadImage().
  */
 util.cancelLoadImage = function(taskId) {
-  ImageLoader.Client.getInstance().cancel(taskId);
+  ImageLoaderClient.getInstance().cancel(taskId);
 };
 
 /**

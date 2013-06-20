@@ -2,15 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var ImageLoader = ImageLoader || {};
-
-/**
- * Image loader's extension id.
- * @const
- * @type {string}
- */
-ImageLoader.EXTENSION_ID = 'pmfjbimdmchhbnneeidfognadeopoehp';
-
 /**
  * Client used to connect to the remote ImageLoader extension. Client class runs
  * in the extension, where the client.js is included (eg. Files.app).
@@ -21,7 +12,7 @@ ImageLoader.EXTENSION_ID = 'pmfjbimdmchhbnneeidfognadeopoehp';
  *
  * @constructor
  */
-ImageLoader.Client = function() {
+function ImageLoaderClient() {
   /**
    * Hash array with active tasks.
    * @type {Object}
@@ -37,20 +28,27 @@ ImageLoader.Client = function() {
 
   /**
    * LRU cache for images.
-   * @type {ImageLoader.Client.Cache}
+   * @type {ImageLoaderClient.Cache}
    * @private
    */
-  this.cache_ = new ImageLoader.Client.Cache();
-};
+  this.cache_ = new ImageLoaderClient.Cache();
+}
+
+/**
+ * Image loader's extension id.
+ * @const
+ * @type {string}
+ */
+ImageLoaderClient.EXTENSION_ID = 'pmfjbimdmchhbnneeidfognadeopoehp';
 
 /**
  * Returns a singleton instance.
- * @return {ImageLoader.Client} ImageLoader.Client instance.
+ * @return {Client} Client instance.
  */
-ImageLoader.Client.getInstance = function() {
-  if (!ImageLoader.Client.instance_)
-    ImageLoader.Client.instance_ = new ImageLoader.Client();
-  return ImageLoader.Client.instance_;
+ImageLoaderClient.getInstance = function() {
+  if (!ImageLoaderClient.instance_)
+    ImageLoaderClient.instance_ = new ImageLoaderClient();
+  return ImageLoaderClient.instance_;
 };
 
 /**
@@ -58,7 +56,7 @@ ImageLoader.Client.getInstance = function() {
  * @param {string} name Histogram's name.
  * @param {boolean} value True or false.
  */
-ImageLoader.Client.recordBinary = function(name, value) {
+ImageLoaderClient.recordBinary = function(name, value) {
   chrome.metricsPrivate.recordValue(
       { metricName: 'ImageLoader.Client.' + name,
         type: 'histogram-linear',
@@ -73,7 +71,7 @@ ImageLoader.Client.recordBinary = function(name, value) {
  * @param {string} name Histogram's name.
  * @param {number} value Value (0..100).
  */
-ImageLoader.Client.recordPercentage = function(name, value) {
+ImageLoaderClient.recordPercentage = function(name, value) {
   chrome.metricsPrivate.recordPercentage('ImageLoader.Client.' + name,
                                          Math.round(value));
 };
@@ -85,11 +83,11 @@ ImageLoader.Client.recordPercentage = function(name, value) {
  *     The response is passed as a hash array.
  * @private
  */
-ImageLoader.Client.sendMessage_ = function(request, opt_callback) {
+ImageLoaderClient.sendMessage_ = function(request, opt_callback) {
   opt_callback = opt_callback || function(response) {};
   var sendMessage = chrome.runtime ? chrome.runtime.sendMessage :
                                      chrome.extension.sendMessage;
-  sendMessage(ImageLoader.EXTENSION_ID, request, opt_callback);
+  sendMessage(ImageLoaderClient.EXTENSION_ID, request, opt_callback);
 };
 
 /**
@@ -99,7 +97,7 @@ ImageLoader.Client.sendMessage_ = function(request, opt_callback) {
  * @param {Object} message Response message as a hash array.
  * @private
  */
-ImageLoader.Client.prototype.handleMessage_ = function(message) {
+ImageLoaderClient.prototype.handleMessage_ = function(message) {
   if (!(message.taskId in this.tasks_)) {
     // This task has been canceled, but was already fetched, so it's result
     // should be discarded anyway.
@@ -127,13 +125,13 @@ ImageLoader.Client.prototype.handleMessage_ = function(message) {
  *     a request is not valid anymore, eg. parent node has been detached.
  * @return {?number} Remote task id or null if loaded from cache.
  */
-ImageLoader.Client.prototype.load = function(
+ImageLoaderClient.prototype.load = function(
     url, callback, opt_options, opt_isValid) {
   opt_options = opt_options || {};
   opt_isValid = opt_isValid || function() { return true; };
 
   // Record cache usage.
-  ImageLoader.Client.recordPercentage('Cache.Usage', this.cache_.getUsage());
+  ImageLoaderClient.recordPercentage('Cache.Usage', this.cache_.getUsage());
 
   // Cancel old, invalid tasks.
   var taskKeys = Object.keys(this.tasks_);
@@ -149,27 +147,27 @@ ImageLoader.Client.prototype.load = function(
 
   // Replace the extension id.
   var sourceId = chrome.i18n.getMessage('@@extension_id');
-  var targetId = ImageLoader.EXTENSION_ID;
+  var targetId = ImageLoaderClient.EXTENSION_ID;
 
   url = url.replace('filesystem:chrome-extension://' + sourceId,
                     'filesystem:chrome-extension://' + targetId);
 
   // Try to load from cache, if available.
-  var cacheKey = ImageLoader.Client.Cache.createKey(url, opt_options);
+  var cacheKey = ImageLoaderClient.Cache.createKey(url, opt_options);
   if (opt_options.cache) {
     // Load from cache.
-    ImageLoader.Client.recordBinary('Cached', 1);
+    ImageLoaderClient.recordBinary('Cached', 1);
     var cachedData = this.cache_.loadImage(cacheKey, opt_options.timestamp);
     if (cachedData) {
-      ImageLoader.Client.recordBinary('Cache.HitMiss', 1);
+      ImageLoaderClient.recordBinary('Cache.HitMiss', 1);
       callback({status: 'success', data: cachedData});
       return null;
     } else {
-      ImageLoader.Client.recordBinary('Cache.HitMiss', 0);
+      ImageLoaderClient.recordBinary('Cache.HitMiss', 0);
     }
   } else {
     // Remove from cache.
-    ImageLoader.Client.recordBinary('Cached', 0);
+    ImageLoaderClient.recordBinary('Cached', 0);
     this.cache_.removeImage(cacheKey);
   }
 
@@ -183,7 +181,7 @@ ImageLoader.Client.prototype.load = function(
   request.taskId = this.lastTaskId_;
   request.timestamp = opt_options.timestamp;
 
-  ImageLoader.Client.sendMessage_(
+  ImageLoaderClient.sendMessage_(
       request,
       function(result) {
         // Save to cache.
@@ -196,20 +194,20 @@ ImageLoader.Client.prototype.load = function(
 
 /**
  * Cancels the request.
- * @param {number} taskId Task id returned by ImageLoader.Client.load().
+ * @param {number} taskId Task id returned by ImageLoaderClient.load().
  */
-ImageLoader.Client.prototype.cancel = function(taskId) {
-  ImageLoader.Client.sendMessage_({taskId: taskId, cancel: true});
+ImageLoaderClient.prototype.cancel = function(taskId) {
+  ImageLoaderClient.sendMessage_({taskId: taskId, cancel: true});
 };
 
 /**
  * Least Recently Used (LRU) cache implementation to be used by
- * ImageLoader.Client class. It has memory constraints, so it will never
+ * Client class. It has memory constraints, so it will never
  * exceed specified memory limit defined in MEMORY_LIMIT.
  *
  * @constructor
  */
-ImageLoader.Client.Cache = function() {
+ImageLoaderClient.Cache = function() {
   this.images_ = [];
   this.size_ = 0;
 };
@@ -220,7 +218,7 @@ ImageLoader.Client.Cache = function() {
  * @const
  * @type {number}
  */
-ImageLoader.Client.Cache.MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
+ImageLoaderClient.Cache.MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
 
 /**
  * Creates a cache key.
@@ -229,7 +227,7 @@ ImageLoader.Client.Cache.MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
  * @param {Object=} opt_options Loader options as a hash array.
  * @return {string} Cache key.
  */
-ImageLoader.Client.Cache.createKey = function(url, opt_options) {
+ImageLoaderClient.Cache.createKey = function(url, opt_options) {
   opt_options = opt_options || {};
   return JSON.stringify({url: url,
                          orientation: opt_options.orientation,
@@ -246,14 +244,14 @@ ImageLoader.Client.Cache.createKey = function(url, opt_options) {
  * @param {number} size Requested size.
  * @private
  */
-ImageLoader.Client.Cache.prototype.evictCache_ = function(size) {
+ImageLoaderClient.Cache.prototype.evictCache_ = function(size) {
   // Sort from the most recent to the oldest.
   this.images_.sort(function(a, b) {
     return b.lastLoadTimestamp - a.lastLoadTimestamp;
   });
 
   while (this.images_.length > 0 &&
-         (ImageLoader.Client.Cache.MEMORY_LIMIT - this.size_ < size)) {
+         (ImageLoaderClient.Cache.MEMORY_LIMIT - this.size_ < size)) {
     var entry = this.images_.pop();
     this.size_ -= entry.data.length;
   }
@@ -267,20 +265,20 @@ ImageLoader.Client.Cache.prototype.evictCache_ = function(size) {
  * @param {number=} opt_timestamp Last modification timestamp. Used to detect
  *     if the cache entry becomes out of date.
  */
-ImageLoader.Client.Cache.prototype.saveImage = function(
+ImageLoaderClient.Cache.prototype.saveImage = function(
     key, data, opt_timestamp) {
   // If the image is currently in cache, then remove it.
   if (this.images_[key])
     this.removeImage(key);
 
-  if (ImageLoader.Client.Cache.MEMORY_LIMIT - this.size_ < data.length) {
-    ImageLoader.Client.recordBinary('Evicted', 1);
+  if (ImageLoaderClient.Cache.MEMORY_LIMIT - this.size_ < data.length) {
+    ImageLoaderClient.recordBinary('Evicted', 1);
     this.evictCache_(data.length);
   } else {
-    ImageLoader.Client.recordBinary('Evicted', 0);
+    ImageLoaderClient.recordBinary('Evicted', 0);
   }
 
-  if (ImageLoader.Client.Cache.MEMORY_LIMIT - this.size_ >= data.length) {
+  if (ImageLoaderClient.Cache.MEMORY_LIMIT - this.size_ >= data.length) {
     this.images_[key] = {lastLoadTimestamp: Date.now(),
                          timestamp: opt_timestamp ? opt_timestamp : null,
                          data: data};
@@ -296,7 +294,7 @@ ImageLoader.Client.Cache.prototype.saveImage = function(
  *     that the one in cache, then the entry will be invalidated.
  * @return {?string} Data of the loaded image or null.
  */
-ImageLoader.Client.Cache.prototype.loadImage = function(key, opt_timestamp) {
+ImageLoaderClient.Cache.prototype.loadImage = function(key, opt_timestamp) {
   if (!(key in this.images_))
     return null;
 
@@ -317,15 +315,15 @@ ImageLoader.Client.Cache.prototype.loadImage = function(key, opt_timestamp) {
  * Returns cache usage.
  * @return {number} Value in percent points (0..100).
  */
-ImageLoader.Client.Cache.prototype.getUsage = function() {
-  return this.size_ / ImageLoader.Client.Cache.MEMORY_LIMIT * 100.0;
+ImageLoaderClient.Cache.prototype.getUsage = function() {
+  return this.size_ / ImageLoaderClient.Cache.MEMORY_LIMIT * 100.0;
 };
 
 /**
  * Removes the image from the cache.
  * @param {string} key Cache key.
  */
-ImageLoader.Client.Cache.prototype.removeImage = function(key) {
+ImageLoaderClient.Cache.prototype.removeImage = function(key) {
   if (!(key in this.images_))
     return;
 
@@ -350,8 +348,8 @@ ImageLoader.Client.Cache.prototype.removeImage = function(key) {
  *     a request is not valid anymore, eg. parent node has been detached.
  * @return {?number} Remote task id or null if loaded from cache.
  */
-ImageLoader.Client.loadToImage = function(url, image, options, onSuccess,
-    onError, opt_isValid) {
+ImageLoaderClient.loadToImage = function(
+    url, image, options, onSuccess, onError, opt_isValid) {
   var callback = function(result) {
     if (result.status == 'error') {
       onError();
@@ -361,6 +359,6 @@ ImageLoader.Client.loadToImage = function(url, image, options, onSuccess,
     onSuccess();
   };
 
-  return ImageLoader.Client.getInstance().load(
+  return ImageLoaderClient.getInstance().load(
       url, callback, options, opt_isValid);
 };
