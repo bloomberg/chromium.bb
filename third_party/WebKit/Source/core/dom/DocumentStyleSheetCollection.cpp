@@ -319,7 +319,7 @@ void DocumentStyleSheetCollection::collectActiveStyleSheets(Vector<RefPtr<StyleS
             // (thus making it PREFERRED or ALTERNATE rather than
             // PERSISTENT).
             AtomicString rel = e->getAttribute(relAttr);
-            if (!enabledViaScript && !title.isEmpty()) {
+            if (!enabledViaScript && sheet && !title.isEmpty()) {
                 // Yes, we have a title.
                 if (m_preferredStylesheetSetName.isEmpty()) {
                     // No preferred set has been established. If
