@@ -41,6 +41,7 @@
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
+#include "WebHitTestResult.h"
 #include "WebInputEvent.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
@@ -225,6 +226,30 @@ TEST_F(WebViewTest, ActiveState)
 
     webView->setIsActive(true);
     EXPECT_TRUE(webView->isActive());
+
+    webView->close();
+}
+
+TEST_F(WebViewTest, HitTestResultAtWithPageScale)
+{
+    std::string url = m_baseURL + "specify_size.html?" + "50px" + ":" + "50px";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+    WebView* webView = FrameTestHelpers::createWebViewAndLoad(url, true, 0);
+    webView->resize(WebSize(100, 100));
+    WebPoint hitPoint(75, 75);
+
+    // Image is at top left quandrant, so should not hit it.
+    WebHitTestResult negativeResult = webView->hitTestResultAt(hitPoint);
+    ASSERT_EQ(WebNode::ElementNode, negativeResult.node().nodeType());
+    EXPECT_FALSE(negativeResult.node().to<WebElement>().hasTagName("img"));
+    negativeResult.reset();
+
+    // Scale page up 2x so image should occupy the whole viewport.
+    webView->setPageScaleFactor(2.0f, WebPoint(0, 0));
+    WebHitTestResult positiveResult = webView->hitTestResultAt(hitPoint);
+    ASSERT_EQ(WebNode::ElementNode, positiveResult.node().nodeType());
+    EXPECT_TRUE(positiveResult.node().to<WebElement>().hasTagName("img"));
+    positiveResult.reset();
 
     webView->close();
 }

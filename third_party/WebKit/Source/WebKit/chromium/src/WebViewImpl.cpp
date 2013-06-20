@@ -3166,7 +3166,9 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
 
 WebHitTestResult WebViewImpl::hitTestResultAt(const WebPoint& point)
 {
-    return hitTestResultForWindowPos(point);
+    IntPoint scaledPoint = point;
+    scaledPoint.scale(1 / pageScaleFactor(), 1 / pageScaleFactor());
+    return hitTestResultForWindowPos(scaledPoint);
 }
 
 void WebViewImpl::copyImageAt(const WebPoint& point)
