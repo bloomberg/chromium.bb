@@ -33,8 +33,6 @@ class MEDIA_EXPORT TrackRunIterator {
   TrackRunIterator(const Movie* moov, const LogCB& log_cb);
   ~TrackRunIterator();
 
-  void Reset();
-
   // Sets up the iterator to handle all the runs from the current fragment.
   bool Init(const MovieFragment& moof);
 

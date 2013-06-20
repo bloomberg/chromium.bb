@@ -71,7 +71,6 @@ void MP4StreamParser::Init(const InitCB& init_cb,
 
 void MP4StreamParser::Reset() {
   queue_.Reset();
-  moov_.reset();
   runs_.reset();
   moof_head_ = 0;
   mdat_tail_ = 0;
@@ -114,6 +113,7 @@ bool MP4StreamParser::Parse(const uint8* buf, int size) {
 
   if (err) {
     DLOG(ERROR) << "Error while parsing MP4";
+    moov_.reset();
     Reset();
     ChangeState(kError);
     return false;
@@ -159,7 +159,7 @@ bool MP4StreamParser::ParseBox(bool* err) {
 bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   moov_.reset(new Movie);
   RCHECK(moov_->Parse(reader));
-  runs_.reset(new TrackRunIterator(moov_.get(), log_cb_));
+  runs_.reset();
 
   has_audio_ = false;
   has_video_ = false;
@@ -320,6 +320,8 @@ bool MP4StreamParser::ParseMoof(BoxReader* reader) {
   RCHECK(moov_.get());  // Must already have initialization segment
   MovieFragment moof;
   RCHECK(moof.Parse(reader));
+  if (!runs_)
+    runs_.reset(new TrackRunIterator(moov_.get(), log_cb_));
   RCHECK(runs_->Init(moof));
   RCHECK(EmitNeedKeyIfNecessary(moof.pssh));
   new_segment_cb_.Run(runs_->GetMinDecodeTimestamp());

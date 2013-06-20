@@ -189,6 +189,23 @@ TEST_F(MP4StreamParserTest, TestMPEG2_AAC_LC) {
   ParseMP4File("bear-mpeg2-aac-only_frag.mp4", 512);
 }
 
+// Test that a moov box is not always required after Flush() is called.
+TEST_F(MP4StreamParserTest, TestNoMoovAfterFlush) {
+  InitializeParser();
+
+  scoped_refptr<DecoderBuffer> buffer =
+      ReadTestDataFile("bear-1280x720-av_frag.mp4");
+  EXPECT_TRUE(AppendDataInPieces(buffer->GetData(),
+                                 buffer->GetDataSize(),
+                                 512));
+  parser_->Flush();
+
+  const int kFirstMoofOffset = 1307;
+  EXPECT_TRUE(AppendDataInPieces(buffer->GetData() + kFirstMoofOffset,
+                                 buffer->GetDataSize() - kFirstMoofOffset,
+                                 512));
+}
+
 // TODO(strobe): Create and test media which uses CENC auxiliary info stored
 // inside a private box
 
