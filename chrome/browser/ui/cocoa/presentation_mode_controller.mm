@@ -53,7 +53,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 // duration may be less than |fullDuration|.
 - (id)initWithFraction:(CGFloat)fromFraction
           fullDuration:(CGFloat)fullDuration
-        animationCurve:(NSInteger)animationCurve
+        animationCurve:(NSAnimationCurve)animationCurve
             controller:(PresentationModeController*)controller;
 
 @end
@@ -65,7 +65,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 
 - (id)initWithFraction:(CGFloat)toFraction
           fullDuration:(CGFloat)fullDuration
-        animationCurve:(NSInteger)animationCurve
+        animationCurve:(NSAnimationCurve)animationCurve
             controller:(PresentationModeController*)controller {
   // Calculate the effective duration, based on the current shown fraction.
   DCHECK(controller);

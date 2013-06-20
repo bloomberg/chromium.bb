@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <OpenGL/gl.h>
 
 #include "base/mac/sdk_forward_declarations.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
