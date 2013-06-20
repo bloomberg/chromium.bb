@@ -347,7 +347,7 @@ static bool computeLength(CSSValue* value, bool strict, RenderStyle* style, Rend
     }
 
     if (primitiveValue->isLength()) {
-        result = primitiveValue->computeLength<int>(style, rootStyle);
+        result = primitiveValue->computeLength<int>(style, rootStyle, 1.0 /* multiplier */, true /* computingFontSize */);
         return true;
     }
 
