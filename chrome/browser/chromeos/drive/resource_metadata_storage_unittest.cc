@@ -28,10 +28,10 @@ class ResourceMetadataStorageTest : public testing::Test {
 
   // Overwrites |storage_|'s version.
   void SetDBVersion(int version) {
-    scoped_ptr<ResourceMetadataHeader> header = storage_->GetHeader();
-    ASSERT_TRUE(header);
-    header->set_version(version);
-    storage_->PutHeader(*header);
+    ResourceMetadataHeader header;
+    ASSERT_TRUE(storage_->GetHeader(&header));
+    header.set_version(version);
+    EXPECT_TRUE(storage_->PutHeader(header));
   }
 
   bool CheckValidity() {

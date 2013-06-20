@@ -230,8 +230,8 @@ bool ResourceMetadataStorage::Initialize() {
     resource_map_.reset(db);
 
     // Check the validity of existing DB.
-    scoped_ptr<ResourceMetadataHeader> header = GetHeader();
-    if (!header || header->version() != kDBVersion) {
+    ResourceMetadataHeader header;
+    if (!GetHeader(&header) || header.version() != kDBVersion) {
       open_existing_result = DB_INIT_INCOMPATIBLE;
       LOG(INFO) << "Reject incompatible DB.";
     } else if (!CheckValidity()) {
@@ -288,23 +288,23 @@ bool ResourceMetadataStorage::SetLargestChangestamp(
     int64 largest_changestamp) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  scoped_ptr<ResourceMetadataHeader> header = GetHeader();
-  if (!header) {
+  ResourceMetadataHeader header;
+  if (!GetHeader(&header)) {
     DLOG(ERROR) << "Failed to get the header.";
     return false;
   }
-  header->set_largest_changestamp(largest_changestamp);
-  return PutHeader(*header);
+  header.set_largest_changestamp(largest_changestamp);
+  return PutHeader(header);
 }
 
 int64 ResourceMetadataStorage::GetLargestChangestamp() {
   base::ThreadRestrictions::AssertIOAllowed();
-  scoped_ptr<ResourceMetadataHeader> header = GetHeader();
-  if (!header) {
+  ResourceMetadataHeader header;
+  if (!GetHeader(&header)) {
     DLOG(ERROR) << "Failed to get the header.";
     return 0;
   }
-  return header->largest_changestamp();
+  return header.largest_changestamp();
 }
 
 bool ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
@@ -492,8 +492,7 @@ bool ResourceMetadataStorage::PutHeader(
   return status.ok();
 }
 
-scoped_ptr<ResourceMetadataHeader>
-ResourceMetadataStorage::GetHeader() {
+bool ResourceMetadataStorage::GetHeader(ResourceMetadataHeader* header) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string serialized_header;
@@ -501,14 +500,7 @@ ResourceMetadataStorage::GetHeader() {
       leveldb::ReadOptions(),
       leveldb::Slice(GetHeaderDBKey()),
       &serialized_header);
-  if (!status.ok())
-    return scoped_ptr<ResourceMetadataHeader>();
-
-  scoped_ptr<ResourceMetadataHeader> header(
-      new ResourceMetadataHeader);
-  if (!header->ParseFromString(serialized_header))
-    return scoped_ptr<ResourceMetadataHeader>();
-  return header.Pass();
+  return status.ok() && header->ParseFromString(serialized_header);
 }
 
 bool ResourceMetadataStorage::CheckValidity() {

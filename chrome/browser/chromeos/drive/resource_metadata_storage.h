@@ -147,7 +147,7 @@ class ResourceMetadataStorage {
   bool PutHeader(const ResourceMetadataHeader& header);
 
   // Gets header.
-  scoped_ptr<ResourceMetadataHeader> GetHeader();
+  bool GetHeader(ResourceMetadataHeader* out_header);
 
   // Checks validity of the data.
   bool CheckValidity();
