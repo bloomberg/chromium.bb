@@ -887,7 +887,9 @@ bool PrerenderManager::IsValidHttpMethod(const std::string& method) {
 
 // static
 bool PrerenderManager::DoesURLHaveValidScheme(const GURL& url) {
-  return IsWebURL(url) || url.SchemeIs(extensions::kExtensionScheme);
+  return (IsWebURL(url) ||
+          url.SchemeIs(extensions::kExtensionScheme) ||
+          url.SchemeIs("data"));
 }
 
 DictionaryValue* PrerenderManager::GetAsValue() const {
