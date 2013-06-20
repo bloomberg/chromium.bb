@@ -88,7 +88,9 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                             const base::Callback<void(int)>& reply_callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, IsIndexFileCorrupt);
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, IsIndexFileStale);
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, Serialize);
 
   // Using the mtime of the file and its mtime, detects if the index file is
   // stale.
@@ -111,8 +113,6 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
       scoped_refptr<base::SingleThreadTaskRunner> response_thread,
       const SimpleIndexFile::IndexCompletionCallback& completion_callback);
 
-  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, Serialize);
-
   // Deserialize() is separate from LoadFromDisk() for easier testing.
   static scoped_ptr<SimpleIndex::EntrySet> Deserialize(const char* data,
                                                        int data_len);
@@ -127,6 +127,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
   const scoped_refptr<base::TaskRunner> worker_pool_;
   const base::FilePath index_file_path_;
+
+  static const char kIndexFileName[];
 
   DISALLOW_COPY_AND_ASSIGN(SimpleIndexFile);
 };

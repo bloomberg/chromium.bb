@@ -7,7 +7,9 @@
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/pickle.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
@@ -21,9 +23,7 @@ using disk_cache::SimpleIndex;
 
 namespace disk_cache {
 
-class IndexMetadataTest : public testing::Test {};
-
-TEST_F(IndexMetadataTest, Basics) {
+TEST(IndexMetadataTest, Basics) {
   SimpleIndexFile::IndexMetadata index_metadata;
 
   EXPECT_EQ(disk_cache::kSimpleIndexMagicNumber, index_metadata.magic_number_);
@@ -34,7 +34,7 @@ TEST_F(IndexMetadataTest, Basics) {
   EXPECT_TRUE(index_metadata.CheckIndexMetadata());
 }
 
-TEST_F(IndexMetadataTest, Serialize) {
+TEST(IndexMetadataTest, Serialize) {
   SimpleIndexFile::IndexMetadata index_metadata(123, 456);
   Pickle pickle;
   index_metadata.Serialize(&pickle);
@@ -58,6 +58,34 @@ class SimpleIndexFileTest : public testing::Test {
            a.entry_size_ == b.entry_size_;
   }
 
+  void IndexCompletionCallback(
+      scoped_ptr<SimpleIndex::EntrySet> index_file_entries,
+      bool force_index_flush) {
+    EXPECT_FALSE(callback_result_);
+    callback_result_.reset(
+        new IndexCompletionCallbackResult(index_file_entries.Pass(),
+                                          force_index_flush));
+  }
+
+ protected:
+  struct IndexCompletionCallbackResult {
+    IndexCompletionCallbackResult(
+        scoped_ptr<SimpleIndex::EntrySet> index_file_entries,
+        bool force_index_flush)
+        : index_file_entries(index_file_entries.Pass()),
+          force_index_flush(force_index_flush) {
+    }
+
+    const scoped_ptr<SimpleIndex::EntrySet> index_file_entries;
+    const bool force_index_flush;
+  };
+
+  IndexCompletionCallbackResult* callback_result() {
+    return callback_result_.get();
+  }
+
+ private:
+  scoped_ptr<IndexCompletionCallbackResult> callback_result_;
 };
 
 TEST_F(SimpleIndexFileTest, Serialize) {
@@ -121,4 +149,35 @@ TEST_F(SimpleIndexFileTest, IsIndexFileStale) {
   EXPECT_TRUE(SimpleIndexFile::IsIndexFileStale(index_path));
 }
 
+TEST_F(SimpleIndexFileTest, IsIndexFileCorrupt) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const base::FilePath index_path =
+      temp_dir.path().AppendASCII(SimpleIndexFile::kIndexFileName);
+  EXPECT_TRUE(SimpleIndexFile::IsIndexFileStale(index_path));
+  const std::string kDummyData = "nothing to be seen here";
+  EXPECT_EQ(static_cast<int>(kDummyData.size()),
+            file_util::WriteFile(index_path,
+                                 kDummyData.data(),
+                                 kDummyData.size()));
+  EXPECT_FALSE(SimpleIndexFile::IsIndexFileStale(index_path));
+
+  SimpleIndexFile simple_index_file(base::MessageLoopProxy::current(),
+                                    base::MessageLoopProxy::current(),
+                                    temp_dir.path());
+
+  SimpleIndexFile::IndexCompletionCallback callback =
+      base::Bind(&SimpleIndexFileTest::IndexCompletionCallback,
+                 base::Unretained(this));
+
+  simple_index_file.LoadIndexEntries(base::MessageLoopProxy::current(),
+                                     callback);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(callback_result());
+  EXPECT_TRUE(callback_result()->index_file_entries);
+  EXPECT_TRUE(callback_result()->force_index_flush);
 }
+
+}  // namespace disk_cache

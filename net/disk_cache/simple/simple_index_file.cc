@@ -70,6 +70,9 @@ void WriteToDiskInternal(const base::FilePath& index_filename,
 
 namespace disk_cache {
 
+// static
+const char SimpleIndexFile::kIndexFileName[] = "the-real-index";
+
 SimpleIndexFile::IndexMetadata::IndexMetadata() :
     magic_number_(kSimpleIndexMagicNumber),
     version_(kSimpleVersion),
@@ -111,7 +114,8 @@ SimpleIndexFile::SimpleIndexFile(
     const base::FilePath& index_file_directory)
     : cache_thread_(cache_thread),
       worker_pool_(worker_pool),
-      index_file_path_(index_file_directory.AppendASCII("the-real-index")) {}
+      index_file_path_(index_file_directory.AppendASCII(kIndexFileName)) {
+}
 
 SimpleIndexFile::~SimpleIndexFile() {}
 
@@ -266,7 +270,7 @@ void SimpleIndexFile::LoadIndexEntriesInternal(
     UMA_HISTOGRAM_TIMES("SimpleCache.IndexLoadTime",
                         base::TimeTicks::Now() - start);
     UMA_HISTOGRAM_COUNTS("SimpleCache.IndexEntriesLoaded",
-                         index_file_entries->size());
+                         index_file_entries ? index_file_entries->size() : 0);
   }
 
   UMA_HISTOGRAM_BOOLEAN("SimpleCache.IndexStale", index_stale);
