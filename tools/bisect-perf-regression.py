@@ -122,6 +122,10 @@ CROS_SCRIPT_KEY_PATH = os.path.join('..', 'cros', 'src', 'scripts',
                                     'mod_for_test_scripts', 'ssh_keys',
                                     'testing_rsa')
 
+BUILD_RESULT_SUCCEED = 0
+BUILD_RESULT_FAIL = 1
+BUILD_RESULT_SKIPPED = 2
+
 def CalculateTruncatedMean(data_set, truncate_percent):
   """Calculates the truncated mean of a set of values.
 
@@ -1187,7 +1191,31 @@ class BisectPerformanceMetrics(object):
       return self.CreateCrosChroot()
     return True
 
-  def SyncBuildAndRunRevision(self, revision, depot, command_to_run, metric):
+  def ShouldSkipRevision(self, depot, revision):
+    """Some commits can be safely skipped (such as a DEPS roll), since the tool
+    is git based those changes would have no effect.
+
+    Args:
+      depot: The depot being bisected.
+      revision: Current revision we're synced to.
+
+    Returns:
+      True if we should skip building/testing this revision.
+    """
+    if depot == 'chromium':
+      if self.source_control.IsGit():
+        cmd = ['diff-tree', '--no-commit-id', '--name-only', '-r', revision]
+        output = CheckRunGit(cmd)
+
+        files = output.splitlines()
+
+        if len(files) == 1 and files[0] == 'DEPS':
+          return True
+
+    return False
+
+  def SyncBuildAndRunRevision(self, revision, depot, command_to_run, metric,
+      skippable=False):
     """Performs a full sync/build/run of the specified revision.
 
     Args:
@@ -1209,10 +1237,10 @@ class BisectPerformanceMetrics(object):
     revisions_to_sync = self.FindAllRevisionsToSync(revision, depot)
 
     if not revisions_to_sync:
-      return ('Failed to resolve dependant depots.', 1)
+      return ('Failed to resolve dependant depots.', BUILD_RESULT_FAIL)
 
     if not self.PerformPreSyncCleanup(revision, depot):
-      return ('Failed to perform pre-sync cleanup.', 1)
+      return ('Failed to perform pre-sync cleanup.', BUILD_RESULT_FAIL)
 
     success = True
 
@@ -1232,6 +1260,10 @@ class BisectPerformanceMetrics(object):
       success = self.RunPostSync(depot)
 
       if success:
+        if skippable and self.ShouldSkipRevision(depot, revision):
+          return ('Skipped revision: [%s]' % str(revision),
+              BUILD_RESULT_SKIPPED)
+
         if self.BuildCurrentRevision(depot):
           results = self.RunPerformanceTestAndParseResults(command_to_run,
                                                            metric)
@@ -1243,15 +1275,18 @@ class BisectPerformanceMetrics(object):
             if external_revisions:
               return (results[0], results[1], external_revisions)
             else:
-              return ('Failed to parse DEPS file for external revisions.', 1)
+              return ('Failed to parse DEPS file for external revisions.',
+                  BUILD_RESULT_FAIL)
           else:
             return results
         else:
-          return ('Failed to build revision: [%s]' % (str(revision, )), 1)
+          return ('Failed to build revision: [%s]' % (str(revision, )),
+              BUILD_RESULT_FAIL)
       else:
-        return ('Failed to run [gclient runhooks].', 1)
+        return ('Failed to run [gclient runhooks].', BUILD_RESULT_FAIL)
     else:
-      return ('Failed to sync revision: [%s]' % (str(revision, )), 1)
+      return ('Failed to sync revision: [%s]' % (str(revision, )),
+          BUILD_RESULT_FAIL)
 
   def CheckIfRunPassed(self, current_value, known_good_value, known_bad_value):
     """Given known good and bad values, decide if the current_value passed
@@ -1701,7 +1736,7 @@ class BisectPerformanceMetrics(object):
         run_results = self.SyncBuildAndRunRevision(next_revision_id,
                                                    next_revision_depot,
                                                    command_to_run,
-                                                   metric)
+                                                   metric, skippable=True)
 
         if self.opts.output_buildbot_annotations:
           bisect_utils.OutputAnnotationStepClosed()
@@ -1724,7 +1759,10 @@ class BisectPerformanceMetrics(object):
           else:
             min_revision = next_revision_index
         else:
-          next_revision_data['passed'] = 'F'
+          if run_results[1] == BUILD_RESULT_SKIPPED:
+            next_revision_data['passed'] = 'Skipped'
+          elif run_results[1] == BUILD_RESULT_FAIL:
+            next_revision_data['passed'] = 'Failed'
 
           # If the build is broken, remove it and redo search.
           revision_list.pop(next_revision_index)
