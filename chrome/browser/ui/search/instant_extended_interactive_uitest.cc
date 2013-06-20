@@ -365,13 +365,15 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_UsesOverlayIfTabNotReady) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
-  // Open a new tab and start typing before InstantTab is properly hooked up.
-  // Should use the overlay.
+  // Open a new tab and navigate to instant URL. Start typing before InstantTab
+  // is properly hooked up. Should use the overlay.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+      instant_url(),
+      NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  browser()->tab_strip_model()->ActivateTabAt(1, false);
   ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
 
   // But Instant tab should still exist.
@@ -2767,30 +2769,27 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchReusesInstantTab) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
-  // Create an observer to wait for the instant tab to support Instant.
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
-
   SetOmniboxText("flowers");
-  browser()->window()->GetLocationBar()->AcceptInput();
+  PressEnterAndWaitForNavigation();
   observer.Wait();
 
   // Just did a regular search.
-  ASSERT_THAT(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
-      HasSubstr("q=flowers"));
-  ASSERT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=flowers"));
+  ASSERT_TRUE(UpdateSearchState(active_tab));
   ASSERT_EQ(0, submit_count_);
 
   SetOmniboxText("puppies");
-  browser()->window()->GetLocationBar()->AcceptInput();
+  PressEnterAndWaitForNavigation();
 
   // Should have reused the tab and sent an onsubmit message.
-  ASSERT_THAT(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
-      HasSubstr("q=flowers"));
-  ASSERT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=puppies"));
+  ASSERT_TRUE(UpdateSearchState(active_tab));
   EXPECT_EQ(1, submit_count_);
 }
 
@@ -2818,29 +2817,31 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
   // Create an observer to wait for the instant tab to support Instant.
-  content::WindowedNotificationObserver observer(
+  content::WindowedNotificationObserver observer_1(
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
-
   SetOmniboxText("flowers");
-  browser()->window()->GetLocationBar()->AcceptInput();
-  observer.Wait();
+  PressEnterAndWaitForNavigation();
+  observer_1.Wait();
 
   // Just did a regular search.
-  ASSERT_THAT(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
-      HasSubstr("q=flowers"));
-  ASSERT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=flowers"));
+  ASSERT_TRUE(UpdateSearchState(active_tab));
   ASSERT_EQ(0, submit_count_);
 
   // Typed in a search URL "by hand".
+  content::WindowedNotificationObserver observer_2(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
   SetOmniboxText(instant_url().spec() + "#q=puppies");
-  browser()->window()->GetLocationBar()->AcceptInput();
+  PressEnterAndWaitForNavigation();
+  observer_2.Wait();
 
   // Should not have reused the tab.
-  ASSERT_THAT(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
-      HasSubstr("q=puppies"));
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_THAT(active_tab->GetURL().spec(), HasSubstr("q=puppies"));
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxMarginSetForSearchURLs) {

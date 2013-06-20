@@ -14,8 +14,6 @@ InstantTab::~InstantTab() {
 
 void InstantTab::Init(content::WebContents* contents) {
   SetContents(contents);
-  if (!contents->IsWaitingForResponse())
-    DetermineIfPageSupportsInstant();
 }
 
 bool InstantTab::ShouldProcessAboutToNavigateMainFrame() {

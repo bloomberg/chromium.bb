@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -32,7 +33,8 @@ class Rect;
 // Instant/Embedded Search API (http://dev.chromium.org/embeddedsearch).
 // InstantPage is not used directly but via one of its derived classes:
 // InstantOverlay, InstantNTP and InstantTab.
-class InstantPage : public content::WebContentsObserver {
+class InstantPage : public content::WebContentsObserver,
+                    public SearchModelObserver {
  public:
   // InstantPage calls its delegate in response to messages received from the
   // page. Each method is called with the |contents| corresponding to the page
@@ -119,12 +121,6 @@ class InstantPage : public content::WebContentsObserver {
   // support suddenly).
   virtual bool supports_instant() const;
 
-  // True if Instant support has been tested and determined for this page at
-  // least once. Note that Instant support may change in the future.
-  bool instant_support_determined() const {
-    return instant_support_determined_;
-  }
-
   // Returns true if the page is the local NTP (i.e. its URL is
   // chrome::kChromeSearchLocalNTPURL).
   virtual bool IsLocal() const;
@@ -158,10 +154,6 @@ class InstantPage : public content::WebContentsObserver {
 
   // Tells the page about the font information.
   void InitializeFonts();
-
-  // Tells the renderer to determine if the page supports the Instant API, which
-  // results in a call to InstantSupportDetermined() when the reply is received.
-  void DetermineIfPageSupportsInstant();
 
   // Tells the page about the available autocomplete results.
   void SendAutocompleteResults(
@@ -204,9 +196,9 @@ class InstantPage : public content::WebContentsObserver {
  protected:
   InstantPage(Delegate* delegate, const std::string& instant_url);
 
-  // Sets |contents| as the page to communicate with. |contents| may be NULL,
-  // which effectively stops all communication.
-  void SetContents(content::WebContents* contents);
+  // Sets |web_contents| as the page to communicate with. |web_contents| may be
+  // NULL, which effectively stops all communication.
+  void SetContents(content::WebContents* web_contents);
 
   Delegate* delegate() const { return delegate_; }
 
@@ -240,11 +232,6 @@ class InstantPage : public content::WebContentsObserver {
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidFinishLoad(
-      int64 frame_id,
-      const GURL& validated_url,
-      bool is_main_frame,
-      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
@@ -264,9 +251,15 @@ class InstantPage : public content::WebContentsObserver {
       const string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
+  // Overridden from SearchModelObserver:
+  virtual void ModelChanged(const SearchModel::State& old_state,
+                            const SearchModel::State& new_state) OVERRIDE;
+
+  // Update the status of Instant support.
+  void InstantSupportDetermined(bool supports_instant);
+
   void OnSetSuggestions(int page_id,
                         const std::vector<InstantSuggestion>& suggestions);
-  void OnInstantSupportDetermined(int page_id, bool supports_instant);
   void OnShowInstantOverlay(int page_id,
                             int height,
                             InstantSizeUnits units);
@@ -280,10 +273,10 @@ class InstantPage : public content::WebContentsObserver {
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url);
   void OnUndoAllMostVisitedDeletions(int page_id);
 
+  void ClearContents();
+
   Delegate* const delegate_;
   const std::string instant_url_;
-  bool supports_instant_;
-  bool instant_support_determined_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantPage);
 };

@@ -7,6 +7,24 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 
+SearchModel::State::State()
+    : top_bars_visible(true),
+      instant_support(INSTANT_SUPPORT_UNKNOWN) {
+}
+
+SearchModel::State::State(const SearchMode& mode,
+                          bool top_bars_visible,
+                          InstantSupportState instant_support)
+    : mode(mode),
+      top_bars_visible(top_bars_visible),
+      instant_support(instant_support) {
+}
+
+bool SearchModel::State::operator==(const State& rhs) const {
+  return mode == rhs.mode && top_bars_visible == rhs.top_bars_visible &&
+      instant_support == rhs.instant_support;
+}
+
 SearchModel::SearchModel() {
 }
 
@@ -73,6 +91,20 @@ void SearchModel::SetTopBarsVisible(bool visible) {
   const State old_state = state_;
   state_.top_bars_visible = visible;
 
+  FOR_EACH_OBSERVER(SearchModelObserver, observers_,
+                    ModelChanged(old_state, state_));
+}
+
+void SearchModel::SetInstantSupportState(InstantSupportState instant_support) {
+  DCHECK(chrome::IsInstantExtendedAPIEnabled())
+      << "Please do not try to set the SearchModel mode without first "
+      << "checking if Search is enabled.";
+
+  if (state_.instant_support == instant_support)
+    return;
+
+  const State old_state = state_;
+  state_.instant_support = instant_support;
   FOR_EACH_OBSERVER(SearchModelObserver, observers_,
                     ModelChanged(old_state, state_));
 }

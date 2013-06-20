@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -275,26 +276,28 @@ void BrowserInstantController::ResetInstant(const std::string& pref_name) {
 void BrowserInstantController::ModelChanged(
     const SearchModel::State& old_state,
     const SearchModel::State& new_state) {
-  if (old_state.mode == new_state.mode)
-    return;
+  if (old_state.mode != new_state.mode) {
+    const SearchMode& new_mode = new_state.mode;
 
-  const SearchMode& new_mode = new_state.mode;
+    if (chrome::IsInstantExtendedAPIEnabled()) {
+      // Record some actions corresponding to the mode change. Note that to get
+      // the full story, it's necessary to look at other UMA actions as well,
+      // such as tab switches.
+      if (new_mode.is_search_results())
+        content::RecordAction(UserMetricsAction("InstantExtended.ShowSRP"));
+      else if (new_mode.is_ntp())
+        content::RecordAction(UserMetricsAction("InstantExtended.ShowNTP"));
+    }
 
-  if (chrome::IsInstantExtendedAPIEnabled()) {
-    // Record some actions corresponding to the mode change. Note that to get
-    // the full story, it's necessary to look at other UMA actions as well,
-    // such as tab switches.
-    if (new_mode.is_search_results())
-      content::RecordAction(UserMetricsAction("InstantExtended.ShowSRP"));
-    else if (new_mode.is_ntp())
-      content::RecordAction(UserMetricsAction("InstantExtended.ShowNTP"));
+    // If mode is now |NTP|, send theme-related information to Instant.
+    if (new_mode.is_ntp())
+      UpdateThemeInfo();
+
+    instant_.SearchModeChanged(old_state.mode, new_mode);
   }
 
-  // If mode is now |NTP|, send theme-related information to Instant.
-  if (new_mode.is_ntp())
-    UpdateThemeInfo();
-
-  instant_.SearchModeChanged(old_state.mode, new_mode);
+  if (old_state.instant_support != new_state.instant_support)
+    instant_.InstantSupportChanged(new_state.instant_support);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

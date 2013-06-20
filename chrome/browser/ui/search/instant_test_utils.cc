@@ -123,10 +123,8 @@ void InstantTestBase::FocusOmniboxAndWaitForInstantOverlaySupport() {
       chrome::NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
   FocusOmnibox();
-  if (!instant()->overlay() ||
-      !instant()->overlay()->instant_support_determined()) {
+  if (!instant()->overlay() || !instant()->overlay()->supports_instant())
     observer.Wait();
-  }
 }
 
 void InstantTestBase::FocusOmniboxAndWaitForInstantOverlayAndNTPSupport() {
@@ -137,14 +135,10 @@ void InstantTestBase::FocusOmniboxAndWaitForInstantOverlayAndNTPSupport() {
       chrome::NOTIFICATION_INSTANT_OVERLAY_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
   FocusOmnibox();
-  if (!instant()->ntp() ||
-      !instant()->ntp()->instant_support_determined()) {
+  if (!instant()->ntp() || !instant()->ntp()->supports_instant())
     ntp_observer.Wait();
-  }
-  if (!instant()->overlay() ||
-      !instant()->overlay()->instant_support_determined()) {
+  if (!instant()->overlay() || !instant()->overlay()->supports_instant())
     overlay_observer.Wait();
-  }
 }
 
 void InstantTestBase::SetOmniboxText(const std::string& text) {

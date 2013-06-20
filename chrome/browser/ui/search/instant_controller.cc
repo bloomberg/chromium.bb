@@ -1253,6 +1253,17 @@ void InstantController::InstantPageRenderViewCreated(
   UpdateMostVisitedItems();
 }
 
+void InstantController::InstantSupportChanged(
+    InstantSupportState instant_support) {
+  // Handle INSTANT_SUPPORT_YES here because InstantPage is not hooked up to the
+  // active tab. Search model changed listener in InstantPage will handle other
+  // cases.
+  if (instant_support != INSTANT_SUPPORT_YES)
+    return;
+
+  ResetInstantTab();
+}
+
 void InstantController::InstantSupportDetermined(
     const content::WebContents* contents,
     bool supports_instant) {

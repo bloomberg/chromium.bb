@@ -244,6 +244,10 @@ class InstantController : public InstantPage::Delegate {
   // happen through the InstantController interface.
   InstantOverlayModel* model() { return &model_; }
 
+  // Used by BrowserInstantController to notify InstantController about the
+  // instant support change event for the active web contents.
+  void InstantSupportChanged(InstantSupportState instant_support);
+
  protected:
   // Accessors are made protected for testing purposes.
   virtual bool extended_enabled() const;
