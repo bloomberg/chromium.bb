@@ -220,6 +220,8 @@ class AndroidCommands(object):
     self._logcat_tmpoutfile = None
     self._pushed_files = []
     self._device_utc_offset = None
+    self._potential_push_size = 0
+    self._actual_push_size = 0
     self._md5sum_build_dir = ''
     self._external_storage = ''
     self._util_wrapper = ''
@@ -708,8 +710,6 @@ class AndroidCommands(object):
     Returns:
       True if the md5sums match.
     """
-    assert os.path.exists(local_path), 'Local path not found %s' % local_path
-
     if not self._md5sum_build_dir:
       default_build_type = os.environ.get('BUILD_TYPE', 'Debug')
       build_dir = '%s/%s/' % (
@@ -723,7 +723,6 @@ class AndroidCommands(object):
       assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
       self._md5sum_build_dir = build_dir
 
-    self._pushed_files.append(device_path)
     hashes_on_device = _ComputeFileListHash(
         self.RunShellCommand(MD5SUM_LD_LIBRARY_PATH + ' ' + self._util_wrapper +
             ' ' + MD5SUM_DEVICE_PATH + ' ' + device_path))
@@ -746,9 +745,15 @@ class AndroidCommands(object):
 
     All pushed files can be removed by calling RemovePushedFiles().
     """
+    assert os.path.exists(local_path), 'Local path not found %s' % local_path
+    size = int(cmd_helper.GetCmdOutput(['du', '-sb', local_path]).split()[0])
+    self._pushed_files.append(device_path)
+    self._potential_push_size += size
+
     if self.CheckMd5Sum(local_path, device_path):
       return
 
+    self._actual_push_size += size
     # They don't match, so remove everything first and then create it.
     if os.path.isdir(local_path):
       self.RunShellCommand('rm -r %s' % device_path, timeout_time=2 * 60)
@@ -761,6 +766,15 @@ class AndroidCommands(object):
     output = self._adb.SendCommand(push_command, timeout_time=30 * 60)
     assert _HasAdbPushSucceeded(output)
 
+  def GetPushSizeInfo(self):
+    """Get total size of pushes to the device done via PushIfNeeded()
+
+    Returns:
+      A tuple:
+        1. Total size of push requests to PushIfNeeded (MB)
+        2. Total size that was actually pushed (MB)
+    """
+    return (self._potential_push_size, self._actual_push_size)
 
   def GetFileContents(self, filename, log_result=False):
     """Gets contents from the file specified by |filename|."""

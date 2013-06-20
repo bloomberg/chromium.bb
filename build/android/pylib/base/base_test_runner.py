@@ -93,11 +93,19 @@ class BaseTestRunner(object):
     """Run once before all tests are run."""
     Forwarder.KillDevice(self.adb, self.tool)
     self.InstallTestPackage()
+    push_size_before = self.adb.GetPushSizeInfo()
     if self._push_deps:
-      logging.info('Pushing data deps to device.')
+      logging.warning('Pushing data files to device.')
       self.PushDataDeps()
+      push_size_after = self.adb.GetPushSizeInfo()
+      logging.warning(
+          'Total data: %0.3fMB' %
+          ((push_size_after[0] - push_size_before[0]) / float(2 ** 20)))
+      logging.warning(
+          'Total data transferred: %0.3fMB' %
+          ((push_size_after[1] - push_size_before[1]) / float(2 ** 20)))
     else:
-      logging.warning('Skipping pushing data deps to device.')
+      logging.warning('Skipping pushing data to device.')
 
   def TearDown(self):
     """Run once after all tests are run."""
