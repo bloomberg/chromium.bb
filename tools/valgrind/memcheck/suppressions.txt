@@ -7222,38 +7222,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
    fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
    fun:_ZN3net10FileStream7Context14CloseAndDeleteEv
-   ...
-   fun:_ZN7fileapi18FileWriterDelegateD0Ev
-}
-{
-   bug_251004_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN3net10FileStream7Context14CloseAndDeleteEv
-   ...
-   fun:_ZN42LocalFileStreamWriterTest*
-}
-{
-   bug_251004_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN3net10FileStream7Context14CloseAndDeleteEv
-   ...
-   fun:_ZN11webkit_blob*LocalFileStreamReaderTest*
-}
-{
-   bug_251004_d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN3net10FileStream7Context14CloseAndDeleteEv
-   ...
-   fun:_ZN7fileapi33UploadFileSystemFileElementReaderD0Ev
 }
 {
    bug_252054
