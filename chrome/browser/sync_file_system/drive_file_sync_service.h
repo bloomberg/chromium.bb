@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/google_apis/drive_notification_observer.h"
+#include "chrome/browser/drive/drive_notification_observer.h"
 #include "chrome/browser/sync_file_system/drive/api_util_interface.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"

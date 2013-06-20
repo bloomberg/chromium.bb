@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/google_apis/event_logger.h"
+#include "chrome/browser/drive/event_logger.h"
 
 namespace drive {
 // Originally wanted to use 'logging' here, but it conflicts with

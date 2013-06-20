@@ -5,7 +5,7 @@
 #include "chrome/browser/drive/drive_notification_manager.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/google_apis/drive_notification_observer.h"
+#include "chrome/browser/drive/drive_notification_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"

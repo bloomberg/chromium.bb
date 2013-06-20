@@ -10,7 +10,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "chrome/browser/google_apis/event_logger.h"
+#include "chrome/browser/drive/event_logger.h"
 
 namespace sync_file_system {
 // Originally wanted to use 'logging' here, but it conflicts with

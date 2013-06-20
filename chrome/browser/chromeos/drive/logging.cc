@@ -6,7 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/google_apis/event_logger.h"
+#include "chrome/browser/drive/event_logger.h"
 
 namespace drive {
 namespace util {
