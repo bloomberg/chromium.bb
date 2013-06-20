@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/avatar_label.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -71,7 +72,7 @@ const int kNewTabCaptionMaximizedSpacing = 16;
 // is no avatar icon.
 const int kTabStripIndent = -6;
 
-}
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, public:
@@ -206,9 +207,11 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!browser_view()->IsBrowserTypeNormal() || !bounds().Contains(point))
     return HTNOWHERE;
 
-  // See if the point is within the avatar menu button.
-  if (avatar_button() &&
-      avatar_button()->GetMirroredBounds().Contains(point))
+  // See if the point is within the avatar menu button or within the avatar
+  // label.
+  if ((avatar_button() &&
+       avatar_button()->GetMirroredBounds().Contains(point)) ||
+      (avatar_label() && avatar_label()->GetMirroredBounds().Contains(point)))
     return HTCLIENT;
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);

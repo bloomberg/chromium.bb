@@ -12,6 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/avatar_label.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -321,9 +322,11 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;
 
-  // See if the point is within the avatar menu button.
-  if (avatar_button() &&
-      avatar_button()->GetMirroredBounds().Contains(point))
+  // See if the point is within the avatar menu button or within the avatar
+  // label.
+  if ((avatar_button() &&
+       avatar_button()->GetMirroredBounds().Contains(point)) ||
+      (avatar_label() && avatar_label()->GetMirroredBounds().Contains(point)))
     return HTCLIENT;
 
   int frame_component = frame()->client_view()->NonClientHitTest(point);

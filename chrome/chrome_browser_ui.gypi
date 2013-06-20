@@ -1533,6 +1533,8 @@
         'browser/ui/views/avatar_menu_bubble_view.h',
         'browser/ui/views/avatar_menu_button.cc',
         'browser/ui/views/avatar_menu_button.h',
+        'browser/ui/views/avatar_label.cc',
+        'browser/ui/views/avatar_label.cc',
         'browser/ui/views/bookmarks/bookmark_bar_instructions_view.cc',
         'browser/ui/views/bookmarks/bookmark_bar_instructions_view.h',
         'browser/ui/views/bookmarks/bookmark_bar_view.cc',

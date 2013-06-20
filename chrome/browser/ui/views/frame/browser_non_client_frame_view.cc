@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/views/avatar_label.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
@@ -21,7 +21,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/label.h"
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_service.h"
@@ -31,7 +30,9 @@
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
-      browser_view_(browser_view) {
+      browser_view_(browser_view),
+      avatar_button_(NULL),
+      avatar_label_(NULL) {
 }
 
 BrowserNonClientFrameView::~BrowserNonClientFrameView() {
@@ -48,54 +49,38 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
 }
 
 void BrowserNonClientFrameView::OnThemeChanged() {
-  UpdateAvatarLabelStyle();
-}
-
-void BrowserNonClientFrameView::UpdateAvatarLabelStyle() {
-  if (!avatar_label_.get())
-    return;
-
-  ui::ThemeProvider* tp = frame_->GetThemeProvider();
-  SkColor color_background = tp->GetColor(
-      ThemeProperties::COLOR_MANAGED_USER_LABEL_BACKGROUND);
-  avatar_label_->set_background(
-      views::Background::CreateSolidBackground(color_background));
-  avatar_label_->SetBackgroundColor(color_background);
-  SkColor color_label = tp->GetColor(
-      ThemeProperties::COLOR_MANAGED_USER_LABEL);
-  avatar_label_->SetEnabledColor(color_label);
+  if (avatar_label_)
+    avatar_label_->UpdateLabelStyle();
 }
 
 void BrowserNonClientFrameView::UpdateAvatarInfo() {
   if (browser_view_->ShouldShowAvatar()) {
-    if (!avatar_button_.get()) {
-      avatar_button_.reset(
-          new AvatarMenuButton(browser_view_->browser(),
-                               browser_view_->IsOffTheRecord()));
-      AddChildView(avatar_button_.get());
+    if (!avatar_button_) {
+      avatar_button_ = new AvatarMenuButton(browser_view_->browser(),
+                                            browser_view_->IsOffTheRecord());
+      AddChildView(avatar_button_);
 #if defined(ENABLE_MANAGED_USERS)
       Profile* profile = browser_view_->browser()->profile();
       ManagedUserService* service =
           ManagedUserServiceFactory::GetForProfile(profile);
-      if (service->ProfileIsManaged() && !avatar_label_.get()) {
-        ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-        avatar_label_.reset(new views::Label(
-            l10n_util::GetStringUTF16(IDS_MANAGED_USER_AVATAR_LABEL),
-            rb.GetFont(ui::ResourceBundle::BoldFont)));
-        UpdateAvatarLabelStyle();
-        AddChildView(avatar_label_.get());
+      if (service->ProfileIsManaged() && !avatar_label_) {
+        avatar_label_ =
+            new AvatarLabel(browser_view_, frame_->GetThemeProvider());
+        AddChildView(avatar_label_);
       }
 #endif
       frame_->GetRootView()->Layout();
     }
-  } else if (avatar_button_.get()) {
+  } else if (avatar_button_) {
     // The avatar label can just be there if there is also an avatar button.
-    if (avatar_label_.get()) {
-      RemoveChildView(avatar_label_.get());
-      avatar_label_.reset();
+    if (avatar_label_) {
+      RemoveChildView(avatar_label_);
+      delete avatar_label_;
+      avatar_label_ = NULL;
     }
-    RemoveChildView(avatar_button_.get());
-    avatar_button_.reset();
+    RemoveChildView(avatar_button_);
+    delete avatar_button_;
+    avatar_button_ = NULL;
     frame_->GetRootView()->Layout();
   }
 
@@ -118,7 +103,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     avatar = cache.GetAvatarIconOfProfileAtIndex(index);
     text = cache.GetNameOfProfileAtIndex(index);
   }
-  if (avatar_button_.get()) {
+  if (avatar_button_) {
     avatar_button_->SetAvatarIcon(avatar, is_gaia_picture);
     if (!text.empty())
       avatar_button_->SetText(text);
