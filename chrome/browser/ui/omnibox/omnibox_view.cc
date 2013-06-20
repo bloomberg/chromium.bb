@@ -128,9 +128,10 @@ void OmniboxView::CloseOmniboxPopup() {
 }
 
 bool OmniboxView::IsImeShowingPopup() const {
-  // Since not all the IMEs/platforms support the detection of a IME's popup
-  // window, falls back to IsImeComposing().
-  return IsImeComposing();
+  // Default to claiming that the IME is not showing a popup, since hiding the
+  // omnibox dropdown is a bad user experience when we don't know for sure that
+  // we have to.
+  return false;
 }
 
 bool OmniboxView::IsIndicatingQueryRefinement() const {

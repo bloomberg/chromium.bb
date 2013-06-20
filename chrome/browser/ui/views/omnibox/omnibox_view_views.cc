@@ -587,8 +587,7 @@ bool OmniboxViewViews::IsImeShowingPopup() const {
 #else
   // TODO(yukishiino): Implement detection of candidate windows on Windows.
   // We can detect whether any candidate window is open or not on Windows.
-  // Currently we simply fall back to IsImeComposing() as a second best way.
-  return IsImeComposing();
+  return OmniboxView::IsImeShowingPopup();
 #endif
 }
 

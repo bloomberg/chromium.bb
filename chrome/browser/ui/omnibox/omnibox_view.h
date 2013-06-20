@@ -209,8 +209,8 @@ class OmniboxView {
   // Returns true if the user is composing something in an IME.
   virtual bool IsImeComposing() const = 0;
 
-  // Returns true if an IME is showing a popup window, which may overlap
-  // the omnibox's popup window.
+  // Returns true if we know for sure that an IME is showing a popup window,
+  // which may overlap the omnibox's popup window.
   virtual bool IsImeShowingPopup() const;
 
   // Returns true if the view is displaying UI that indicates that query
