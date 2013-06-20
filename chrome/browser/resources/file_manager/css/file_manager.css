@@ -131,20 +131,6 @@ body {
   white-space: nowrap;
 }
 
-/* The top title of the dialog. */
-.dialog-title {
-  -webkit-padding-start: 15px;
-  background-image: linear-gradient(to bottom, #fff, #f6f6f6);
-  border-bottom: 1px rgb(214, 217, 227) solid;
-  box-sizing: border-box;
-  color: rgb(66, 80, 108);
-  font-size: 15px;
-  font-weight: bold;
-  height: 32px;
-  padding-bottom: 8px;
-  padding-top: 8px;
-}
-
 /* Main part of the dialog between header and footer. */
 .dialog-container {
   -webkit-box-align: stretch;
@@ -1696,8 +1682,6 @@ body[drive='error'] #unmounted-panel > .error,
   cursor: pointer;
   text-decoration: none;
 }
-
-body[ash] .dialog-title,
 
 body[type='folder'] [invisibleif~='folder'],
 body[type='saveas-file'] [invisibleif~='saveas-file'],

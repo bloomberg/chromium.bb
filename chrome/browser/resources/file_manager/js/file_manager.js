@@ -977,9 +977,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
-    if (loadTimeData.getBoolean('ASH'))
-      this.dialogDom_.setAttribute('ash', 'true');
-
     this.filePopup_ = null;
 
     this.searchBoxWrapper_ =
@@ -1770,10 +1767,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     this.okButton_.textContent = okLabel;
-
-    var dialogTitle = this.params_.title || defaultTitle;
-    this.dialogDom_.querySelector('.dialog-title').textContent = dialogTitle;
-
     this.dialogDom_.setAttribute('type', this.dialogType);
   };
 
