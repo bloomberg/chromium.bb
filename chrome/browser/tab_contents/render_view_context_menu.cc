@@ -596,7 +596,8 @@ void RenderViewContextMenu::InitMenu() {
     }
   }
 
-  if (has_link) {
+  // Do not show link related items for guest.
+  if (has_link && !is_guest_) {
     AppendLinkItems();
     if (params_.media_type != WebContextMenuData::MediaTypeNone)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
