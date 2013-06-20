@@ -371,6 +371,8 @@
         'browser/chromeos/input_method/component_extension_ime_manager_impl.h',
         'browser/chromeos/input_method/mock_ibus_controller.cc',
         'browser/chromeos/input_method/mock_ibus_controller.h',
+        'browser/chromeos/keyboard_driven_event_rewriter.cc',
+        'browser/chromeos/keyboard_driven_event_rewriter.h',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h',
         'browser/chromeos/kiosk_mode/kiosk_mode_screensaver.cc',

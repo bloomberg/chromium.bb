@@ -27,6 +27,7 @@
 
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
@@ -129,7 +130,6 @@ bool IsMod3UsedByCurrentInputMethod() {
       chromeos::input_method::InputMethodManager::Get();
   return manager->GetCurrentInputMethod().id() == kNeo2LayoutId ||
       manager->GetCurrentInputMethod().id() == kCaMultixLayoutId;
-
 }
 #endif
 
@@ -146,6 +146,8 @@ EventRewriter::EventRewriter()
     : last_device_id_(kBadDeviceId),
 #if defined(OS_CHROMEOS)
       xkeyboard_(NULL),
+      keyboard_driven_event_rewritter_(
+          new chromeos::KeyboardDrivenEventRewriter),
 #endif
       pref_service_(NULL) {
   // The ash shell isn't instantiated for our unit tests.
@@ -352,6 +354,11 @@ void EventRewriter::Rewrite(ui::KeyEvent* event) {
   // crbug.com/136465.
   if (event->native_event()->xkey.send_event)
     return;
+
+  // Keyboard driven rewriting needs to happen before RewriteExtendedKeys
+  // to handle Ctrl+Alt+Shift+(Up | Down) so that they are not translated
+  // to Home/End.
+  keyboard_driven_event_rewritter_->RewriteIfKeyboardDrivenOnLoginScreen(event);
 #endif
   RewriteModifiers(event);
   RewriteNumPadKeys(event);
@@ -449,11 +456,11 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   // restart chrome process. In future this is to be changed.
   // TODO(glotov): remove the following condition when we do not restart chrome
   // when user logs in as guest.
- #if defined(OS_CHROMEOS)
-   if (chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
-       chromeos::LoginDisplayHostImpl::default_host())
-     return false;
- #endif  // defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
+      chromeos::LoginDisplayHostImpl::default_host())
+    return false;
+#endif  // defined(OS_CHROMEOS)
   const PrefService* pref_service =
       pref_service_ ? pref_service_ : GetPrefService();
   if (!pref_service)

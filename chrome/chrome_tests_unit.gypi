@@ -638,6 +638,7 @@
         'browser/chromeos/input_method/input_method_manager_impl_unittest.cc',
         'browser/chromeos/input_method/input_method_persistence_unittest.cc',
         'browser/chromeos/input_method/input_method_util_unittest.cc',
+        'browser/chromeos/keyboard_driven_event_rewriter_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_settings_unittest.cc',
         'browser/chromeos/language_preferences_unittest.cc',
