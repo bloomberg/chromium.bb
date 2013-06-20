@@ -38,7 +38,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/SinglyLinkedList.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
