@@ -27,6 +27,8 @@ APP_LIST_EXPORT
   ui::ScopedCrTrackingArea trackingArea_;
 }
 
+@property(retain, nonatomic) NSString* buttonTitle;
+
 - (id)initWithSize:(NSSize)tileSize;
 
 - (void)setModel:(app_list::AppListItemModel*)itemModel;

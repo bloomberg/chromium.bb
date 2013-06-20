@@ -37,8 +37,6 @@ const int kProgressBarHorizontalPadding = 12;
 const int kProgressBarVerticalPadding = 4;
 const int kProgressBarHeight = 4;
 
-const SkColor kTitleColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
-const SkColor kTitleHoverColor = SkColorSetRGB(0x3C, 0x3C, 0x3C);
 const SkColor kDownloadProgressBackgroundColor =
     SkColorSetRGB(0x90, 0x90, 0x90);
 const SkColor kDownloadProgressColor = SkColorSetRGB(0x20, 0xAA, 0x20);
@@ -70,7 +68,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_->SetBackgroundColor(0);
   title_->SetAutoColorReadabilityEnabled(false);
-  title_->SetEnabledColor(kTitleColor);
+  title_->SetEnabledColor(kGridTitleColor);
   title_->SetFont(rb.GetFont(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->SetVisible(!model_->is_installing());
@@ -289,11 +287,11 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 void AppListItemView::StateChanged() {
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
     apps_grid_view_->SetSelectedView(this);
-    title_->SetEnabledColor(kTitleHoverColor);
+    title_->SetEnabledColor(kGridTitleHoverColor);
   } else {
     apps_grid_view_->ClearSelectedView(this);
     model_->SetHighlighted(false);
-    title_->SetEnabledColor(kTitleColor);
+    title_->SetEnabledColor(kGridTitleColor);
   }
   title_->Invalidate();
 }

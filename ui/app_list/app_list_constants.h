@@ -27,6 +27,9 @@ APP_LIST_EXPORT extern const SkColor kResultDefaultTextColor;
 APP_LIST_EXPORT extern const SkColor kResultDimmedTextColor;
 APP_LIST_EXPORT extern const SkColor kResultURLTextColor;
 
+APP_LIST_EXPORT extern const SkColor kGridTitleColor;
+APP_LIST_EXPORT extern const SkColor kGridTitleHoverColor;
+
 APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
 APP_LIST_EXPORT extern const int kOverscrollPageTransitionDurationMs;
 

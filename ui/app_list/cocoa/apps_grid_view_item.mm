@@ -73,7 +73,7 @@ void ItemModelObserverBridge::ItemIconChanged() {
 }
 
 void ItemModelObserverBridge::ItemTitleChanged() {
-  [[parent_ button] setTitle:base::SysUTF8ToNSString(model_->title())];
+  [parent_ setButtonTitle:base::SysUTF8ToNSString(model_->title())];
 }
 
 void ItemModelObserverBridge::ItemHighlightedChanged() {
@@ -122,9 +122,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 }
 
 - (void)setSelected:(BOOL)flag {
-  if (selected_ == flag)
-    return;
-
+  DCHECK(selected_ != flag);
   selected_ = flag;
   [self setNeedsDisplay:YES];
 }
@@ -185,11 +183,6 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
     [prototypeButton setButtonType:NSMomentaryChangeButton];
     [prototypeButton setBordered:NO];
 
-    [[prototypeButton cell]
-        setFont:ui::ResourceBundle::GetSharedInstance().GetFont(
-            app_list::kItemTextFontStyle).GetNativeFont()];
-    [[prototypeButton cell] setLineBreakMode:NSLineBreakByTruncatingTail];
-
     scoped_nsobject<AppsGridItemBackgroundView> prototypeButtonBackground(
         [[AppsGridItemBackgroundView alloc] initWithFrame:NSMakeRect(
             0, 0, tileSize.width, tileSize.height)]);
@@ -199,6 +192,29 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   return self;
 }
 
+- (NSString*)buttonTitle {
+  return [[[self button] attributedTitle] string];
+}
+
+- (void)setButtonTitle:(NSString*)newTitle {
+  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+      [[NSMutableParagraphStyle alloc] init]);
+  [paragraphStyle setLineBreakMode:NSLineBreakByTruncatingTail];
+  [paragraphStyle setAlignment:NSCenterTextAlignment];
+  NSDictionary* titleAttributes = @{
+    NSParagraphStyleAttributeName : paragraphStyle,
+    NSFontAttributeName : ui::ResourceBundle::GetSharedInstance().GetFont(
+        app_list::kItemTextFontStyle).GetNativeFont(),
+    NSForegroundColorAttributeName : [self isSelected] ?
+        gfx::SkColorToCalibratedNSColor(app_list::kGridTitleHoverColor) :
+        gfx::SkColorToCalibratedNSColor(app_list::kGridTitleColor)
+  };
+  scoped_nsobject<NSAttributedString> attributedTitle(
+      [[NSAttributedString alloc] initWithString:newTitle
+                                      attributes:titleAttributes]);
+  [[self button] setAttributedTitle:attributedTitle];
+}
+
 - (void)setModel:(app_list::AppListItemModel*)itemModel {
   if (!itemModel) {
     observerBridge_.reset();
@@ -206,7 +222,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   }
 
   NSButton* button = [self button];
-  [button setTitle:base::SysUTF8ToNSString(itemModel->title())];
+  [self setButtonTitle:base::SysUTF8ToNSString(itemModel->title())];
   [button setImage:gfx::NSImageFromImageSkia(itemModel->icon())];
   [[button cell] setHasShadow:itemModel->has_shadow()];
   observerBridge_.reset(new app_list::ItemModelObserverBridge(self, itemModel));
@@ -252,8 +268,12 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 }
 
 - (void)setSelected:(BOOL)flag {
+  if ([self isSelected] == flag)
+    return;
+
   [[self itemBackgroundView] setSelected:flag];
   [super setSelected:flag];
+  [self setButtonTitle:[self buttonTitle]];
 }
 
 @end

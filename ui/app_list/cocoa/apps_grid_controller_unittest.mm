@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "testing/gtest_mac.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
 #import "ui/app_list/cocoa/apps_collection_view_drag_manager.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
@@ -84,6 +87,13 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
 
   AppListTestViewDelegate* delegate() {
     return owned_delegate_.get();
+  }
+
+  NSColor* ButtonTitleColorAt(size_t index) {
+    NSDictionary* attributes =
+        [[[GetItemViewAt(index) cell] attributedTitle] attributesAtIndex:0
+                                                          effectiveRange:NULL];
+    return [attributes objectForKey:NSForegroundColorAttributeName];
   }
 
   virtual void SetUp() OVERRIDE {
@@ -252,6 +262,22 @@ TEST_F(AppsGridControllerTest, Pagination) {
   ReplaceTestModel(1);
   EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
   EXPECT_EQ(1u, [[GetPageAt(0) content] count]);
+}
+
+// Tests that selecting an item changes the text color correctly.
+TEST_F(AppsGridControllerTest, SelectionChangesTextColor) {
+  model()->PopulateApps(2);
+  [apps_grid_controller_ selectItemAtIndex:0];
+  EXPECT_NSEQ(ButtonTitleColorAt(0),
+              gfx::SkColorToCalibratedNSColor(app_list::kGridTitleHoverColor));
+  EXPECT_NSEQ(ButtonTitleColorAt(1),
+              gfx::SkColorToCalibratedNSColor(app_list::kGridTitleColor));
+
+  [apps_grid_controller_ selectItemAtIndex:1];
+  EXPECT_NSEQ(ButtonTitleColorAt(0),
+              gfx::SkColorToCalibratedNSColor(app_list::kGridTitleColor));
+  EXPECT_NSEQ(ButtonTitleColorAt(1),
+              gfx::SkColorToCalibratedNSColor(app_list::kGridTitleHoverColor));
 }
 
 // Tests basic keyboard navigation on the first page.

@@ -65,15 +65,15 @@ NSString* const kGrowAnimationKey = @"growAnimation";
   // Take a snapshot of the grid cell without the text label and hide the cell.
   // Also remove the cell highlight on the image, added when it was clicked.
   NSButton* button = [item button];
-  scoped_nsobject<NSString> oldTitle([[button title] retain]);
-  [button setTitle:[NSString string]];
+  scoped_nsobject<NSString> oldTitle([[item buttonTitle] retain]);
+  [item setButtonTitle:[NSString string]];
   [[button cell] setHighlighted:NO];
   NSBitmapImageRep* imageRep =
       [itemView bitmapImageRepForCachingDisplayInRect:[itemView visibleRect]];
   [itemView cacheDisplayInRect:[itemView visibleRect]
               toBitmapImageRep:imageRep];
   [button setHidden:YES];
-  [button setTitle:oldTitle];
+  [item setButtonTitle:oldTitle];
 
   [dragLayer_ setContents:reinterpret_cast<id>([imageRep CGImage])];
   [dragLayer_ setTransform:CATransform3DIdentity];
