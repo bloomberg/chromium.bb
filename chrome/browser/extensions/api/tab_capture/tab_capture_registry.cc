@@ -10,11 +10,13 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -109,7 +111,9 @@ TabCaptureRegistry::TabCaptureRegistry(Profile* profile)
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
-  // TODO(justinlin): Hook up HTML5 fullscreen.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_FULLSCREEN_CHANGED,
+                 content::NotificationService::AllSources());
 }
 
 TabCaptureRegistry::~TabCaptureRegistry() {
@@ -132,6 +136,7 @@ const TabCaptureRegistry::RegistryCaptureInfo
 void TabCaptureRegistry::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       // Cleanup all the requested media streams for this extension.
@@ -149,7 +154,36 @@ void TabCaptureRegistry::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_FULLSCREEN_CHANGED: {
-      // TODO(justinlin): Hook up HTML5 fullscreen.
+      FullscreenController* fullscreen_controller =
+          content::Source<FullscreenController>(source).ptr();
+      const bool is_fullscreen = *content::Details<bool>(details).ptr();
+      for (ScopedVector<TabCaptureRequest>::iterator it = requests_.begin();
+           it != requests_.end(); ++it) {
+        // If we are exiting fullscreen mode, we only need to check if any of
+        // the requests had the fullscreen flag toggled previously. The
+        // fullscreen controller no longer has the reference to the fullscreen
+        // web_contents here.
+        if (!is_fullscreen) {
+          if ((*it)->fullscreen) {
+            (*it)->fullscreen = false;
+            DispatchStatusChangeEvent(*it);
+            break;
+          }
+          continue;
+        }
+
+        // If we are entering fullscreen mode, find whether the web_contents we
+        // are capturing entered fullscreen mode.
+        content::RenderViewHost* const rvh =
+            content::RenderViewHost::FromID((*it)->render_process_id,
+                                            (*it)->render_view_id);
+        if (rvh && fullscreen_controller->IsFullscreenForTabOrPending(
+                content::WebContents::FromRenderViewHost(rvh))) {
+          (*it)->fullscreen = true;
+          DispatchStatusChangeEvent(*it);
+          break;
+        }
+      }
       break;
     }
   }
