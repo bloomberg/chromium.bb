@@ -7,9 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/base_requests.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace google_apis {
 
@@ -23,21 +20,21 @@ RequestSender::RequestSender(
       request_registry_(new RequestRegistry()),
       custom_user_agent_(custom_user_agent),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 RequestSender::~RequestSender() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void RequestSender::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   auth_service_->Initialize(profile_);
 }
 
 base::Closure RequestSender::StartRequestWithRetry(
     AuthenticatedRequestInterface* request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // TODO(kinaba): Stop relying on weak pointers. Move lifetime management
   // of the requests to request sender.
@@ -66,7 +63,7 @@ void RequestSender::OnAccessTokenFetched(
     const base::WeakPtr<AuthenticatedRequestInterface>& request,
     GDataErrorCode code,
     const std::string& /* access_token */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Do nothing if the request is canceled during authentication.
   if (!request.get())
@@ -81,7 +78,7 @@ void RequestSender::OnAccessTokenFetched(
 }
 
 void RequestSender::RetryRequest(AuthenticatedRequestInterface* request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   auth_service_->ClearAccessToken();
   // User authentication might have expired - rerun the request to force
@@ -91,7 +88,7 @@ void RequestSender::RetryRequest(AuthenticatedRequestInterface* request) {
 
 void RequestSender::CancelRequest(
     const base::WeakPtr<AuthenticatedRequestInterface>& request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Do nothing if the request is already finished.
   if (!request.get())

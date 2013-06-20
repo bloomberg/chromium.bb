@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class Profile;
@@ -80,6 +81,8 @@ class RequestSender {
   scoped_ptr<AuthService> auth_service_;
   scoped_ptr<RequestRegistry> request_registry_;
   const std::string custom_user_agent_;
+
+  base::ThreadChecker thread_checker_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
