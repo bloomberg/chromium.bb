@@ -99,8 +99,7 @@ class PageAllocator {
   // Checks whether the page allocator owns the passed-in pointer.
   // This method exists for testing pursposes only.
   bool OwnsPointer(const void* p) {
-    PageHeader* header = last_;
-    for (header = last_; header; header = header->next) {
+    for (PageHeader* header = last_; header; header = header->next) {
       const char* current = reinterpret_cast<char*>(header);
       if ((p >= current) && (p < current + header->num_pages * page_size_))
         return true;
