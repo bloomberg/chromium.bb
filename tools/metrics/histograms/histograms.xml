@@ -10729,11 +10729,21 @@ other types of suffix sets.
   <summary>The size of the cache at the beginning of an eviction.</summary>
 </histogram>
 
+<histogram name="SimpleCache.Eviction.CacheSizeOnStart2" units="KB">
+  <summary>The size of the cache at the beginning of an eviction.</summary>
+</histogram>
+
 <histogram name="SimpleCache.Eviction.EntryCount">
   <summary>The number of entries to be erased in an eviction.</summary>
 </histogram>
 
 <histogram name="SimpleCache.Eviction.MaxCacheSizeOnStart" units="bytes">
+  <summary>
+    The maximum allowed size of the cache at the beginning of an eviction.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.MaxCacheSizeOnStart2" units="KB">
   <summary>
     The maximum allowed size of the cache at the beginning of an eviction.
   </summary>
@@ -10747,7 +10757,15 @@ other types of suffix sets.
   <summary>The number of bytes to be erased in an eviction.</summary>
 </histogram>
 
+<histogram name="SimpleCache.Eviction.SizeOfEvicted2" units="KB">
+  <summary>The amount of memory freed in an eviction.</summary>
+</histogram>
+
 <histogram name="SimpleCache.Eviction.SizeWhenDone" units="bytes">
+  <summary>The size of the cache after running an eviction.</summary>
+</histogram>
+
+<histogram name="SimpleCache.Eviction.SizeWhenDone2" units="KB">
   <summary>The size of the cache after running an eviction.</summary>
 </histogram>
 

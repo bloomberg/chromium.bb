@@ -42,6 +42,8 @@ const int kDefaultWriteToDiskOnBackgroundDelayMSecs = 100;
 // is left.
 const uint32 kEvictionMarginDivisor = 20;
 
+const uint32 kBytesInKb = 1024;
+
 // Utility class used for timestamp comparisons in entry metadata while sorting.
 class CompareHashesForTimestamp {
   typedef disk_cache::SimpleIndex SimpleIndex;
@@ -259,8 +261,10 @@ void SimpleIndex::StartEvictionIfNeeded() {
   // Take all live key hashes from the index and sort them by time.
   eviction_in_progress_ = true;
   eviction_start_time_ = base::TimeTicks::Now();
-  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.CacheSizeOnStart", cache_size_);
-  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.MaxCacheSizeOnStart", max_size_);
+  UMA_HISTOGRAM_MEMORY_KB("SimpleCache.Eviction.CacheSizeOnStart2",
+                          cache_size_ / kBytesInKb);
+  UMA_HISTOGRAM_MEMORY_KB("SimpleCache.Eviction.MaxCacheSizeOnStart2",
+                          max_size_ / kBytesInKb);
   scoped_ptr<std::vector<uint64> > entry_hashes(new std::vector<uint64>());
   for (EntrySet::const_iterator it = entries_set_.begin(),
        end = entries_set_.end(); it != end; ++it) {
@@ -288,8 +292,8 @@ void SimpleIndex::StartEvictionIfNeeded() {
   UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.EntryCount", entry_hashes->size());
   UMA_HISTOGRAM_TIMES("SimpleCache.Eviction.TimeToSelectEntries",
                       base::TimeTicks::Now() - eviction_start_time_);
-  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.SizeOfEvicted",
-                       evicted_so_far_size);
+  UMA_HISTOGRAM_MEMORY_KB("SimpleCache.Eviction.SizeOfEvicted2",
+                          evicted_so_far_size / kBytesInKb);
 
   index_file_->DoomEntrySet(
       entry_hashes.Pass(),
@@ -316,7 +320,8 @@ void SimpleIndex::EvictionDone(int result) {
   UMA_HISTOGRAM_BOOLEAN("SimpleCache.Eviction.Result", result == net::OK);
   UMA_HISTOGRAM_TIMES("SimpleCache.Eviction.TimeToDone",
                       base::TimeTicks::Now() - eviction_start_time_);
-  UMA_HISTOGRAM_COUNTS("SimpleCache.Eviction.SizeWhenDone", cache_size_);
+  UMA_HISTOGRAM_MEMORY_KB("SimpleCache.Eviction.SizeWhenDone2",
+                          cache_size_ / kBytesInKb);
 }
 
 // static
