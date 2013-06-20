@@ -940,8 +940,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
   // TODO(xhwang): We assume all streams are from the same container (thus have
   // the same "type") for now. In the future, the "type" should be passed down
   // from the application.
-  if (!decryptor_->GenerateKeyRequest(key_system.utf8(),
-                                      init_data_type_,
+  if (!decryptor_->GenerateKeyRequest(init_data_type_,
                                       init_data, init_data_length)) {
     current_key_system_.reset();
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
