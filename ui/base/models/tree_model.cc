@@ -9,7 +9,7 @@
 namespace ui {
 
 void TreeModel::SetTitle(TreeModelNode* node,
-                         const string16& title) {
+                         const base::string16& title) {
   NOTREACHED();
 }
 

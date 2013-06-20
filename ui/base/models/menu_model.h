@@ -12,7 +12,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
-
 namespace gfx {
 class Font;
 class Image;
@@ -56,11 +55,11 @@ class UI_EXPORT MenuModel {
   virtual int GetCommandIdAt(int index) const = 0;
 
   // Returns the label of the item at the specified index.
-  virtual string16 GetLabelAt(int index) const = 0;
+  virtual base::string16 GetLabelAt(int index) const = 0;
 
   // Returns the sublabel of the item at the specified index. The sublabel
   // is rendered beneath the label and using the font GetSublabelFontAt().
-  virtual string16 GetSublabelAt(int index) const;
+  virtual base::string16 GetSublabelAt(int index) const;
 
   // Returns true if the menu item (label/sublabel/icon) at the specified
   // index can change over the course of the menu's lifetime. If this function

@@ -27,7 +27,7 @@ class UI_EXPORT ButtonMenuItemModel {
    public:
     // Some command ids have labels that change over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;
-    virtual string16 GetLabelForCommandId(int command_id) const;
+    virtual base::string16 GetLabelForCommandId(int command_id) const;
 
     // Performs the action associated with the specified command id.
     virtual void ExecuteCommand(int command_id, int event_flags) = 0;
@@ -69,7 +69,7 @@ class UI_EXPORT ButtonMenuItemModel {
   bool IsItemDynamicAt(int index) const;
 
   // Returns the current label value for the button at |index|.
-  string16 GetLabelAt(int index) const;
+  base::string16 GetLabelAt(int index) const;
 
   // If the button at |index| should have an icon instead, returns true and
   // sets the IDR |icon|.
@@ -94,11 +94,11 @@ class UI_EXPORT ButtonMenuItemModel {
   // Returns whether clicking on |command_id| dismisses the menu.
   bool DoesCommandIdDismissMenu(int command_id) const;
 
-  const string16& label() const { return item_label_; }
+  const base::string16& label() const { return item_label_; }
 
  private:
   // The non-clickable label to the left of the buttons.
-  string16 item_label_;
+  base::string16 item_label_;
 
   struct Item;
   std::vector<Item> items_;

@@ -13,9 +13,9 @@ bool ButtonMenuItemModel::Delegate::IsItemForCommandIdDynamic(
   return false;
 }
 
-string16 ButtonMenuItemModel::Delegate::GetLabelForCommandId(
+base::string16 ButtonMenuItemModel::Delegate::GetLabelForCommandId(
     int command_id) const {
-  return string16();
+  return base::string16();
 }
 
 bool ButtonMenuItemModel::Delegate::IsCommandIdEnabled(int command_id) const {
@@ -30,7 +30,7 @@ bool ButtonMenuItemModel::Delegate::DoesCommandIdDismissMenu(
 struct ButtonMenuItemModel::Item {
   int command_id;
   ButtonType type;
-  string16 label;
+  base::string16 label;
   int icon_idr;
   bool part_of_group;
 };
@@ -54,7 +54,7 @@ void ButtonMenuItemModel::AddGroupItemWithStringId(
 
 void ButtonMenuItemModel::AddItemWithImage(int command_id,
                                            int icon_idr) {
-  Item item = { command_id, TYPE_BUTTON, string16(), icon_idr, false };
+  Item item = { command_id, TYPE_BUTTON, base::string16(), icon_idr, false };
   items_.push_back(item);
 }
 
@@ -65,7 +65,7 @@ void ButtonMenuItemModel::AddButtonLabel(int command_id, int string_id) {
 }
 
 void ButtonMenuItemModel::AddSpace() {
-  Item item = { 0, TYPE_SPACE, string16(), -1, false };
+  Item item = { 0, TYPE_SPACE, base::string16(), -1, false };
   items_.push_back(item);
 }
 
@@ -88,7 +88,7 @@ bool ButtonMenuItemModel::IsItemDynamicAt(int index) const {
   return false;
 }
 
-string16 ButtonMenuItemModel::GetLabelAt(int index) const {
+base::string16 ButtonMenuItemModel::GetLabelAt(int index) const {
   if (IsItemDynamicAt(index))
     return delegate_->GetLabelForCommandId(GetCommandIdAt(index));
   return items_[index].label;

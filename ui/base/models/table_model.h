@@ -25,7 +25,7 @@ class UI_EXPORT TableModel {
   // See HasGroups, get GetGroupID for details as to how this is used.
   struct Group {
     // The title text for the group.
-    string16 title;
+    base::string16 title;
 
     // Unique id for the group.
     int id;
@@ -36,7 +36,7 @@ class UI_EXPORT TableModel {
   virtual int RowCount() = 0;
 
   // Returns the value at a particular location in text.
-  virtual string16 GetText(int row, int column_id) = 0;
+  virtual base::string16 GetText(int row, int column_id) = 0;
 
   // Returns the small icon (16x16) that should be displayed in the first
   // column before the text. This is only used when the TableView was created
@@ -47,7 +47,7 @@ class UI_EXPORT TableModel {
   // Returns the tooltip, if any, to show for a particular row.  If there are
   // multiple columns in the row, this will only be shown when hovering over
   // column zero.
-  virtual string16 GetTooltip(int row);
+  virtual base::string16 GetTooltip(int row);
 
   // If true, this row should be indented.
   virtual bool ShouldIndent(int row);
@@ -103,7 +103,7 @@ struct UI_EXPORT TableColumn {
   int id;
 
   // The title for the column.
-  string16 title;
+  base::string16 title;
 
   // Alignment for the content.
   Alignment alignment;

@@ -40,8 +40,8 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
 
     // Some command ids have labels, sublabels and icons that change over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;
-    virtual string16 GetLabelForCommandId(int command_id) const;
-    virtual string16 GetSublabelForCommandId(int command_id) const;
+    virtual base::string16 GetLabelForCommandId(int command_id) const;
+    virtual base::string16 GetSublabelForCommandId(int command_id) const;
     // Gets the icon for the item with the specified id, returning true if there
     // is an icon, false otherwise.
     virtual bool GetIconForCommandId(int command_id,
@@ -72,11 +72,11 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   virtual ~SimpleMenuModel();
 
   // Methods for adding items to the model.
-  void AddItem(int command_id, const string16& label);
+  void AddItem(int command_id, const base::string16& label);
   void AddItemWithStringId(int command_id, int string_id);
-  void AddCheckItem(int command_id, const string16& label);
+  void AddCheckItem(int command_id, const base::string16& label);
   void AddCheckItemWithStringId(int command_id, int string_id);
-  void AddRadioItem(int command_id, const string16& label, int group_id);
+  void AddRadioItem(int command_id, const base::string16& label, int group_id);
   void AddRadioItemWithStringId(int command_id, int string_id, int group_id);
 
   // Adds a separator of the specified type to the model.
@@ -93,21 +93,29 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   // These three methods take pointers to various sub-models. These models
   // should be owned by the same owner of this SimpleMenuModel.
   void AddButtonItem(int command_id, ButtonMenuItemModel* model);
-  void AddSubMenu(int command_id, const string16& label, MenuModel* model);
+  void AddSubMenu(int command_id,
+                  const base::string16& label,
+                  MenuModel* model);
   void AddSubMenuWithStringId(int command_id, int string_id, MenuModel* model);
 
   // Methods for inserting items into the model.
-  void InsertItemAt(int index, int command_id, const string16& label);
+  void InsertItemAt(int index, int command_id, const base::string16& label);
   void InsertItemWithStringIdAt(int index, int command_id, int string_id);
   void InsertSeparatorAt(int index, MenuSeparatorType separator_type);
-  void InsertCheckItemAt(int index, int command_id, const string16& label);
+  void InsertCheckItemAt(int index,
+                         int command_id,
+                         const base::string16& label);
   void InsertCheckItemWithStringIdAt(int index, int command_id, int string_id);
-  void InsertRadioItemAt(
-      int index, int command_id, const string16& label, int group_id);
+  void InsertRadioItemAt(int index,
+                         int command_id,
+                         const base::string16& label,
+                         int group_id);
   void InsertRadioItemWithStringIdAt(
       int index, int command_id, int string_id, int group_id);
-  void InsertSubMenuAt(
-      int index, int command_id, const string16& label, MenuModel* model);
+  void InsertSubMenuAt(int index,
+                       int command_id,
+                       const base::string16& label,
+                       MenuModel* model);
   void InsertSubMenuWithStringIdAt(
       int index, int command_id, int string_id, MenuModel* model);
 
@@ -115,7 +123,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   void SetIcon(int index, const gfx::Image& icon);
 
   // Sets the sublabel for the item at |index|.
-  void SetSublabel(int index, const string16& sublabel);
+  void SetSublabel(int index, const base::string16& sublabel);
 
   // Clears all items. Note that it does not free MenuModel of submenu.
   void Clear();
@@ -130,8 +138,8 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   virtual ItemType GetTypeAt(int index) const OVERRIDE;
   virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE;
   virtual int GetCommandIdAt(int index) const OVERRIDE;
-  virtual string16 GetLabelAt(int index) const OVERRIDE;
-  virtual string16 GetSublabelAt(int index) const OVERRIDE;
+  virtual base::string16 GetLabelAt(int index) const OVERRIDE;
+  virtual base::string16 GetSublabelAt(int index) const OVERRIDE;
   virtual bool IsItemDynamicAt(int index) const OVERRIDE;
   virtual bool GetAcceleratorAt(int index,
                                 ui::Accelerator* accelerator) const OVERRIDE;

@@ -17,7 +17,7 @@ class UI_EXPORT ComboboxModel {
   virtual int GetItemCount() const = 0;
 
   // Returns the string at the specified index.
-  virtual string16 GetItemAt(int index) = 0;
+  virtual base::string16 GetItemAt(int index) = 0;
 
   // Should return true if the item at |index| is a non-selectable separator
   // item.

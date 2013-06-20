@@ -281,7 +281,7 @@ TEST_F(TreeNodeModelTest, SetTitle) {
   TreeNodeModel<TestNode > model(root);
   model.AddObserver(this);
 
-  const string16 title(ASCIIToUTF16("root2"));
+  const base::string16 title(ASCIIToUTF16("root2"));
   model.SetTitle(root, title);
   EXPECT_EQ("added=0 removed=0 changed=1", GetObserverCountStateAndClear());
   EXPECT_EQ(title, root->GetTitle());

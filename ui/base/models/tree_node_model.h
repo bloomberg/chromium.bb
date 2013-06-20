@@ -65,7 +65,7 @@ class TreeNode : public TreeModelNode {
  public:
   TreeNode() : parent_(NULL) {}
 
-  explicit TreeNode(const string16& title)
+  explicit TreeNode(const base::string16& title)
       : title_(title), parent_(NULL) {}
 
   virtual ~TreeNode() {}
@@ -151,10 +151,10 @@ class TreeNode : public TreeModelNode {
   }
 
   // Sets the title of the node.
-  virtual void SetTitle(const string16& title) { title_ = title; }
+  virtual void SetTitle(const base::string16& title) { title_ = title; }
 
   // TreeModelNode:
-  virtual const string16& GetTitle() const OVERRIDE { return title_; }
+  virtual const base::string16& GetTitle() const OVERRIDE { return title_; }
 
   // Returns true if this == ancestor, or one of this nodes parents is
   // ancestor.
@@ -171,7 +171,7 @@ class TreeNode : public TreeModelNode {
 
  private:
   // Title displayed in the tree.
-  string16 title_;
+  base::string16 title_;
 
   // This node's parent.
   NodeType* parent_;
@@ -190,9 +190,9 @@ class TreeNodeWithValue : public TreeNode< TreeNodeWithValue<ValueType> > {
   TreeNodeWithValue() {}
 
   explicit TreeNodeWithValue(const ValueType& value)
-      : ParentType(string16()), value(value) {}
+      : ParentType(base::string16()), value(value) {}
 
-  TreeNodeWithValue(const string16& title, const ValueType& value)
+  TreeNodeWithValue(const base::string16& title, const ValueType& value)
       : ParentType(title), value(value) {}
 
   ValueType value;
@@ -283,7 +283,8 @@ class TreeNodeModel : public TreeModel {
     observer_list_.RemoveObserver(observer);
   }
 
-  virtual void SetTitle(TreeModelNode* node, const string16& title) OVERRIDE {
+  virtual void SetTitle(TreeModelNode* node,
+                        const base::string16& title) OVERRIDE {
     DCHECK(node);
     AsNode(node)->SetTitle(title);
     NotifyObserverTreeNodeChanged(node);

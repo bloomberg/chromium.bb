@@ -24,7 +24,7 @@ class TreeModel;
 class TreeModelNode {
  public:
   // Returns the title for the node.
-  virtual const string16& GetTitle() const = 0;
+  virtual const base::string16& GetTitle() const = 0;
 
  protected:
   virtual ~TreeModelNode() {}
@@ -81,7 +81,7 @@ class UI_EXPORT TreeModel {
 
   // Sets the title of |node|.
   // This is only invoked if the node is editable and the user edits a node.
-  virtual void SetTitle(TreeModelNode* node, const string16& title);
+  virtual void SetTitle(TreeModelNode* node, const base::string16& title);
 
   // Returns the set of icons for the nodes in the tree. You only need override
   // this if you don't want to use the default folder icons.

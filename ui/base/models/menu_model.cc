@@ -32,8 +32,8 @@ bool MenuModel::GetModelAndIndexForCommandId(int command_id,
   return false;
 }
 
-string16 MenuModel::GetSublabelAt(int index) const {
-  return string16();
+base::string16 MenuModel::GetSublabelAt(int index) const {
+  return base::string16();
 }
 
 const gfx::Font* MenuModel::GetLabelFontAt(int index) const {
