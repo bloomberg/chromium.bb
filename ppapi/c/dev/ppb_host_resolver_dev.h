@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_host_resolver_dev.idl modified Mon Jun 10 13:42:25 2013. */
+/* From dev/ppb_host_resolver_dev.idl modified Wed Jun 19 11:37:25 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_HOST_RESOLVER_DEV_H_
 #define PPAPI_C_DEV_PPB_HOST_RESOLVER_DEV_H_
@@ -34,17 +34,13 @@
 /**
  * The <code>PP_HostResolver_Flags_Dev</code> is an enumeration of the
  * different types of flags, that can be OR-ed and passed to host
- * resolver.
+ * resolver. Currently there is only one flag defined.
  */
 typedef enum {
   /**
    * AI_CANONNAME
    */
-  PP_HOSTRESOLVER_FLAGS_CANONNAME = 1 << 0,
-  /**
-   * Hint to the resolver that only loopback addresses are configured.
-   */
-  PP_HOSTRESOLVER_FLAGS_LOOPBACK_ONLY = 1 << 1
+  PP_HOSTRESOLVER_FLAGS_CANONNAME = 1 << 0
 } PP_HostResolver_Flags_Dev;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_HostResolver_Flags_Dev, 4);
 /**

@@ -35,8 +35,6 @@ PP_HostResolver_Private_Hint ConvertToHostResolverPrivateHint(
   private_hint.flags = 0;
   if (hint.flags & PP_HOSTRESOLVER_FLAGS_CANONNAME)
     private_hint.flags |= PP_HOST_RESOLVER_FLAGS_CANONNAME;
-  if (hint.flags & PP_HOSTRESOLVER_FLAGS_LOOPBACK_ONLY)
-    private_hint.flags |= PP_HOST_RESOLVER_FLAGS_LOOPBACK_ONLY;
 
   return private_hint;
 }

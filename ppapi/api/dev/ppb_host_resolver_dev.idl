@@ -17,18 +17,14 @@ label Chrome {
 /**
  * The <code>PP_HostResolver_Flags_Dev</code> is an enumeration of the
  * different types of flags, that can be OR-ed and passed to host
- * resolver.
+ * resolver. Currently there is only one flag defined.
  */
 [assert_size(4)]
 enum PP_HostResolver_Flags_Dev {
   /**
    * AI_CANONNAME
    */
-  PP_HOSTRESOLVER_FLAGS_CANONNAME = 1 << 0,
-  /**
-   * Hint to the resolver that only loopback addresses are configured.
-   */
-  PP_HOSTRESOLVER_FLAGS_LOOPBACK_ONLY = 1 << 1
+  PP_HOSTRESOLVER_FLAGS_CANONNAME = 1 << 0
 };
 
 [assert_size(8)]
