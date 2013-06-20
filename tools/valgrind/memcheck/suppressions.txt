@@ -7255,3 +7255,14 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    ...
    fun:_ZN7fileapi33UploadFileSystemFileElementReaderD0Ev
 }
+{
+   bug_252054
+   Memcheck:Unaddressable
+   fun:_ZNK7WebCore32PlatformSpeechSynthesisUtterance6clientEv
+   fun:_ZN7WebCore15SpeechSynthesis17didFinishSpeakingEN3WTF10PassRefPtrINS_32PlatformSpeechSynthesisUtteranceEEE
+   fun:_ZN7WebCore29PlatformSpeechSynthesizerMock16speakingFinishedEPNS_5TimerIS0_EE
+   fun:_ZN7WebCore5TimerINS_29PlatformSpeechSynthesizerMockEE5firedEv
+   fun:_ZN7WebCore12ThreadTimers24sharedTimerFiredInternalEv
+   fun:_ZN7WebCore12ThreadTimers16sharedTimerFiredEv
+   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl9DoTimeoutEv
+}
