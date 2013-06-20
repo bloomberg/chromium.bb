@@ -47,16 +47,10 @@
 #include "ash/test/ui_controls_factory_ash.h"
 #endif
 
-const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
-
 class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
  public:
   ChromeTestLauncherDelegate() {}
   virtual ~ChromeTestLauncherDelegate() {}
-
-  virtual std::string GetEmptyTestName() OVERRIDE {
-    return kEmptyTestName;
-  }
 
   virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
     return ChromeTestSuite(argc, argv).Run();

@@ -21,12 +21,7 @@ namespace content {
 class ContentMainDelegate;
 
 extern const char kEmptyTestName[];
-extern const char kGTestFilterFlag[];
 extern const char kGTestHelpFlag[];
-extern const char kGTestListTestsFlag[];
-extern const char kGTestRepeatFlag[];
-extern const char kGTestRunDisabledTestsFlag[];
-extern const char kGTestOutputFlag[];
 extern const char kHelpFlag[];
 extern const char kLaunchAsBrowser[];
 extern const char kRunManualTestsFlag[];
@@ -37,7 +32,6 @@ extern const char kWarmupFlag[];
 
 class TestLauncherDelegate {
  public:
-  virtual std::string GetEmptyTestName() = 0;
   virtual int RunTestSuite(int argc, char** argv) = 0;
   virtual bool AdjustChildProcessCommandLine(
       CommandLine* command_line,

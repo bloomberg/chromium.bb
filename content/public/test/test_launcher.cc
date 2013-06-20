@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
@@ -58,249 +59,13 @@ const char kManualTestPrefix[] = "MANUAL_";
 TestLauncherDelegate* g_launcher_delegate;
 }
 
-// The environment variable name for the total number of test shards.
-const char kTestTotalShards[] = "GTEST_TOTAL_SHARDS";
-// The environment variable name for the test shard index.
-const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
-
-// The default output file for XML output.
-const base::FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
-    "test_detail.xml");
-
-// Quit test execution after this number of tests has timed out.
-const int kMaxTimeouts = 5;  // 45s timeout * (5 + 1) = 270s max run time.
-
 namespace {
 
-// Parses the environment variable var as an Int32.  If it is unset, returns
-// default_val.  If it is set, unsets it then converts it to Int32 before
-// returning it.  If unsetting or converting to an Int32 fails, print an
-// error and exit with failure.
-int32 Int32FromEnvOrDie(const char* const var, int32 default_val) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string str_val;
-  int32 result;
-  if (!env->GetVar(var, &str_val))
-    return default_val;
-  if (!env->UnSetVar(var)) {
-    LOG(ERROR) << "Invalid environment: we could not unset " << var << ".\n";
-    exit(EXIT_FAILURE);
-  }
-  if (!base::StringToInt(str_val, &result)) {
-    LOG(ERROR) << "Invalid environment: " << var << " is not an integer.\n";
-    exit(EXIT_FAILURE);
-  }
-  return result;
-}
-
-// Checks whether sharding is enabled by examining the relevant
-// environment variable values.  If the variables are present,
-// but inconsistent (i.e., shard_index >= total_shards), prints
-// an error and exits.
-bool ShouldShard(int32* total_shards, int32* shard_index) {
-  *total_shards = Int32FromEnvOrDie(kTestTotalShards, -1);
-  *shard_index = Int32FromEnvOrDie(kTestShardIndex, -1);
-
-  if (*total_shards == -1 && *shard_index == -1) {
-    return false;
-  } else if (*total_shards == -1 && *shard_index != -1) {
-    LOG(ERROR) << "Invalid environment variables: you have "
-               << kTestShardIndex << " = " << *shard_index
-               << ", but have left " << kTestTotalShards << " unset.\n";
-    exit(EXIT_FAILURE);
-  } else if (*total_shards != -1 && *shard_index == -1) {
-    LOG(ERROR) << "Invalid environment variables: you have "
-               << kTestTotalShards << " = " << *total_shards
-               << ", but have left " << kTestShardIndex << " unset.\n";
-    exit(EXIT_FAILURE);
-  } else if (*shard_index < 0 || *shard_index >= *total_shards) {
-    LOG(ERROR) << "Invalid environment variables: we require 0 <= "
-               << kTestShardIndex << " < " << kTestTotalShards
-               << ", but you have " << kTestShardIndex << "=" << *shard_index
-               << ", " << kTestTotalShards << "=" << *total_shards << ".\n";
-    exit(EXIT_FAILURE);
-  }
-
-  return *total_shards > 1;
-}
-
-// Given the total number of shards, the shard index, and the test id, returns
-// true iff the test should be run on this shard.  The test id is some arbitrary
-// but unique non-negative integer assigned by this launcher to each test
-// method.  Assumes that 0 <= shard_index < total_shards, which is first
-// verified in ShouldShard().
-bool ShouldRunTestOnShard(int total_shards, int shard_index, int test_id) {
-  return (test_id % total_shards) == shard_index;
-}
-
-// A helper class to output results.
-// Note: as currently XML is the only supported format by gtest, we don't
-// check output format (e.g. "xml:" prefix) here and output an XML file
-// unconditionally.
-// Note: we don't output per-test-case or total summary info like
-// total failed_test_count, disabled_test_count, elapsed_time and so on.
-// Only each test (testcase element in the XML) will have the correct
-// failed/disabled/elapsed_time information. Each test won't include
-// detailed failure messages either.
-class ResultsPrinter {
- public:
-  explicit ResultsPrinter(const CommandLine& command_line);
-  ~ResultsPrinter();
-  void OnTestCaseStart(const char* name, int test_count) const;
-  void OnTestCaseEnd() const;
-
-  void OnTestEnd(const char* name, const char* case_name, bool run,
-                 bool failed, bool failure_ignored, double elapsed_time) const;
- private:
-  FILE* out_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResultsPrinter);
-};
-
-ResultsPrinter::ResultsPrinter(const CommandLine& command_line) : out_(NULL) {
-  if (!command_line.HasSwitch(kGTestOutputFlag))
-    return;
-  std::string flag = command_line.GetSwitchValueASCII(kGTestOutputFlag);
-  size_t colon_pos = flag.find(':');
-  base::FilePath path;
-  if (colon_pos != std::string::npos) {
-    base::FilePath flag_path =
-        command_line.GetSwitchValuePath(kGTestOutputFlag);
-    base::FilePath::StringType path_string = flag_path.value();
-    path = base::FilePath(path_string.substr(colon_pos + 1));
-    // If the given path ends with '/', consider it is a directory.
-    // Note: This does NOT check that a directory (or file) actually exists
-    // (the behavior is same as what gtest does).
-    if (path.EndsWithSeparator()) {
-      base::FilePath executable = command_line.GetProgram().BaseName();
-      path = path.Append(executable.ReplaceExtension(
-          base::FilePath::StringType(FILE_PATH_LITERAL("xml"))));
-    }
-  }
-  if (path.value().empty())
-    path = base::FilePath(kDefaultOutputFile);
-  base::FilePath dir_name = path.DirName();
-  if (!file_util::DirectoryExists(dir_name)) {
-    LOG(WARNING) << "The output directory does not exist. "
-                 << "Creating the directory: " << dir_name.value();
-    // Create the directory if necessary (because the gtest does the same).
-    file_util::CreateDirectory(dir_name);
-  }
-  out_ = file_util::OpenFile(path, "w");
-  if (!out_) {
-    LOG(ERROR) << "Cannot open output file: "
-               << path.value() << ".";
-    return;
-  }
-  fprintf(out_, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-  fprintf(out_, "<testsuites name=\"AllTests\" tests=\"\" failures=\"\""
-          " disabled=\"\" errors=\"\" time=\"\">\n");
-}
-
-ResultsPrinter::~ResultsPrinter() {
-  if (!out_)
-    return;
-  fprintf(out_, "</testsuites>\n");
-  fclose(out_);
-}
-
-void ResultsPrinter::OnTestCaseStart(const char* name, int test_count) const {
-  if (!out_)
-    return;
-  fprintf(out_, "  <testsuite name=\"%s\" tests=\"%d\" failures=\"\""
-          " disabled=\"\" errors=\"\" time=\"\">\n", name, test_count);
-}
-
-void ResultsPrinter::OnTestCaseEnd() const {
-  if (!out_)
-    return;
-  fprintf(out_, "  </testsuite>\n");
-}
-
-void ResultsPrinter::OnTestEnd(const char* name,
-                               const char* case_name,
-                               bool run,
-                               bool failed,
-                               bool failure_ignored,
-                               double elapsed_time) const {
-  if (!out_)
-    return;
-  fprintf(out_, "    <testcase name=\"%s\" status=\"%s\" time=\"%.3f\""
-          " classname=\"%s\"",
-          name, run ? "run" : "notrun", elapsed_time / 1000.0, case_name);
-  if (!failed) {
-    fprintf(out_, " />\n");
-    return;
-  }
-  fprintf(out_, ">\n");
-  fprintf(out_, "      <failure message=\"\" type=\"\"%s></failure>\n",
-          failure_ignored ? " ignored=\"true\"" : "");
-  fprintf(out_, "    </testcase>\n");
-}
-
-class TestCasePrinterHelper {
- public:
-  TestCasePrinterHelper(const ResultsPrinter& printer,
-                        const char* name,
-                        int total_test_count)
-      : printer_(printer) {
-    printer_.OnTestCaseStart(name, total_test_count);
-  }
-  ~TestCasePrinterHelper() {
-    printer_.OnTestCaseEnd();
-  }
- private:
-  const ResultsPrinter& printer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCasePrinterHelper);
-};
-
-// For a basic pattern matching for gtest_filter options.  (Copied from
-// gtest.cc, see the comment below and http://crbug.com/44497)
-bool PatternMatchesString(const char* pattern, const char* str) {
-  switch (*pattern) {
-    case '\0':
-    case ':':  // Either ':' or '\0' marks the end of the pattern.
-      return *str == '\0';
-    case '?':  // Matches any single character.
-      return *str != '\0' && PatternMatchesString(pattern + 1, str + 1);
-    case '*':  // Matches any string (possibly empty) of characters.
-      return (*str != '\0' && PatternMatchesString(pattern, str + 1)) ||
-          PatternMatchesString(pattern + 1, str);
-    default:  // Non-special character.  Matches itself.
-      return *pattern == *str &&
-          PatternMatchesString(pattern + 1, str + 1);
-  }
-}
-
-// TODO(phajdan.jr): Avoid duplicating gtest code. (http://crbug.com/44497)
-// For basic pattern matching for gtest_filter options.  (Copied from
-// gtest.cc)
-bool MatchesFilter(const std::string& name, const std::string& filter) {
-  const char *cur_pattern = filter.c_str();
-  for (;;) {
-    if (PatternMatchesString(cur_pattern, name.c_str())) {
-      return true;
-    }
-
-    // Finds the next pattern in the filter.
-    cur_pattern = strchr(cur_pattern, ':');
-
-    // Returns if no more pattern can be found.
-    if (cur_pattern == NULL) {
-      return false;
-    }
-
-    // Skips the pattern separater (the ':' character).
-    cur_pattern++;
-  }
-}
-
-int RunTestInternal(const testing::TestCase* test_case,
-                    const std::string& test_name,
-                    CommandLine* command_line,
-                    base::TimeDelta default_timeout,
-                    bool* was_timeout) {
+int DoRunTestInternal(const testing::TestCase* test_case,
+                      const std::string& test_name,
+                      CommandLine* command_line,
+                      base::TimeDelta default_timeout,
+                      bool* was_timeout) {
   if (test_case) {
     std::string pre_test_name = test_name;
     std::string replace_string = std::string(".") + kPreTestPrefix;
@@ -311,8 +76,11 @@ int RunTestInternal(const testing::TestCase* test_case,
       cur_test_name.append(".");
       cur_test_name.append(test_info->name());
       if (cur_test_name == pre_test_name) {
-        int exit_code = RunTestInternal(test_case, pre_test_name, command_line,
-                                        default_timeout, was_timeout);
+        int exit_code = DoRunTestInternal(test_case,
+                                          pre_test_name,
+                                          command_line,
+                                          default_timeout,
+                                          was_timeout);
         if (exit_code != 0)
           return exit_code;
       }
@@ -384,11 +152,11 @@ int RunTestInternal(const testing::TestCase* test_case,
 
 // Runs test specified by |test_name| in a child process,
 // and returns the exit code.
-int RunTest(TestLauncherDelegate* launcher_delegate,
-            const testing::TestCase* test_case,
-            const std::string& test_name,
-            base::TimeDelta default_timeout,
-            bool* was_timeout) {
+int DoRunTest(TestLauncherDelegate* launcher_delegate,
+              const testing::TestCase* test_case,
+              const std::string& test_name,
+              base::TimeDelta default_timeout,
+              bool* was_timeout) {
   if (was_timeout)
     *was_timeout = false;
 
@@ -405,12 +173,12 @@ int RunTest(TestLauncherDelegate* launcher_delegate,
   // Strip out gtest_output flag because otherwise we would overwrite results
   // of the previous test. We will generate the final output file later
   // in RunTests().
-  switches.erase(kGTestOutputFlag);
+  switches.erase(base::kGTestOutputFlag);
 
   // Strip out gtest_repeat flag because we can only run one test in the child
   // process (restarting the browser in the same process is illegal after it
   // has been shut down and will actually crash).
-  switches.erase(kGTestRepeatFlag);
+  switches.erase(base::kGTestRepeatFlag);
 
   for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
        iter != switches.end(); ++iter) {
@@ -429,147 +197,8 @@ int RunTest(TestLauncherDelegate* launcher_delegate,
     return -1;
   }
 
-  return RunTestInternal(
+  return DoRunTestInternal(
       test_case, test_name, &new_cmd_line, default_timeout, was_timeout);
-}
-
-bool RunTests(TestLauncherDelegate* launcher_delegate,
-              bool should_shard,
-              int total_shards,
-              int shard_index) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-  DCHECK(!command_line->HasSwitch(kGTestListTestsFlag));
-
-  testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
-
-  std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
-
-  // Split --gtest_filter at '-', if there is one, to separate into
-  // positive filter and negative filter portions.
-  std::string positive_filter = filter;
-  std::string negative_filter;
-  size_t dash_pos = filter.find('-');
-  if (dash_pos != std::string::npos) {
-    positive_filter = filter.substr(0, dash_pos);  // Everything up to the dash.
-    negative_filter = filter.substr(dash_pos + 1); // Everything after the dash.
-  }
-
-  int num_runnable_tests = 0;
-  int test_run_count = 0;
-  int timeout_count = 0;
-  std::vector<std::string> failed_tests;
-  std::set<std::string> ignored_tests;
-
-  ResultsPrinter printer(*command_line);
-  for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
-    const testing::TestCase* test_case = unit_test->GetTestCase(i);
-    TestCasePrinterHelper helper(printer, test_case->name(),
-                                 test_case->total_test_count());
-    for (int j = 0; j < test_case->total_test_count(); ++j) {
-      const testing::TestInfo* test_info = test_case->GetTestInfo(j);
-      std::string test_name = test_info->test_case_name();
-      test_name.append(".");
-      test_name.append(test_info->name());
-
-      // Skip our special test so it's not run twice. That confuses the log
-      // parser.
-      if (test_name == launcher_delegate->GetEmptyTestName())
-        continue;
-
-      // Skip disabled tests.
-      if (test_name.find("DISABLED") != std::string::npos &&
-          !command_line->HasSwitch(kGTestRunDisabledTestsFlag)) {
-        printer.OnTestEnd(test_info->name(), test_case->name(),
-                          false, false, false, 0);
-        continue;
-      }
-
-      if (StartsWithASCII(test_info->name(), kPreTestPrefix, true))
-        continue;
-
-      if (StartsWithASCII(test_info->name(), kManualTestPrefix, true) &&
-          !command_line->HasSwitch(kRunManualTestsFlag)) {
-        continue;
-      }
-
-      // Skip the test that doesn't match the filter string (if given).
-      if ((!positive_filter.empty() &&
-           !MatchesFilter(test_name, positive_filter)) ||
-          MatchesFilter(test_name, negative_filter)) {
-        printer.OnTestEnd(test_info->name(), test_case->name(),
-                          false, false, false, 0);
-        continue;
-      }
-
-      // Decide if this test should be run.
-      bool should_run = true;
-      if (should_shard) {
-        should_run = ShouldRunTestOnShard(total_shards, shard_index,
-                                          num_runnable_tests);
-      }
-      num_runnable_tests += 1;
-      // If sharding is enabled and the test should not be run, skip it.
-      if (!should_run) {
-        continue;
-      }
-
-      base::TimeTicks start_time = base::TimeTicks::Now();
-      ++test_run_count;
-      bool was_timeout = false;
-      int exit_code = RunTest(launcher_delegate,
-                              test_case,
-                              test_name,
-                              TestTimeouts::action_max_timeout(),
-                              &was_timeout);
-      if (exit_code == 0) {
-        // Test passed.
-        printer.OnTestEnd(
-            test_info->name(), test_case->name(), true, false,
-            false,
-            (base::TimeTicks::Now() - start_time).InMillisecondsF());
-      } else {
-        failed_tests.push_back(test_name);
-
-        bool ignore_failure = false;
-        printer.OnTestEnd(
-            test_info->name(), test_case->name(), true, true,
-            ignore_failure,
-            (base::TimeTicks::Now() - start_time).InMillisecondsF());
-        if (ignore_failure)
-          ignored_tests.insert(test_name);
-
-        if (was_timeout)
-          ++timeout_count;
-      }
-
-      if (timeout_count > kMaxTimeouts) {
-        printf("More than %d timeouts, aborting test case\n", kMaxTimeouts);
-        break;
-      }
-    }
-    if (timeout_count > kMaxTimeouts) {
-      printf("More than %d timeouts, aborting test\n", kMaxTimeouts);
-      break;
-    }
-  }
-
-  printf("%d test%s run\n", test_run_count, test_run_count > 1 ? "s" : "");
-  printf("%d test%s failed (%d ignored)\n",
-         static_cast<int>(failed_tests.size()),
-         failed_tests.size() != 1 ? "s" : "",
-         static_cast<int>(ignored_tests.size()));
-  if (failed_tests.size() == ignored_tests.size())
-    return true;
-
-  printf("Failing tests:\n");
-  for (std::vector<std::string>::const_iterator iter = failed_tests.begin();
-       iter != failed_tests.end(); ++iter) {
-    bool is_ignored = ignored_tests.find(*iter) != ignored_tests.end();
-    printf("%s%s\n", iter->c_str(), is_ignored ? " (ignored)" : "");
-  }
-
-  return false;
 }
 
 void PrintUsage() {
@@ -587,18 +216,84 @@ void PrintUsage() {
       "    Shows the gtest help message.\n");
 }
 
+// Implementation of base::TestLauncherDelegate. This is also a test launcher,
+// wrapping a lower-level test launcher with content-specific code.
+class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
+ public:
+  explicit WrapperTestLauncherDelegate(
+      content::TestLauncherDelegate* launcher_delegate)
+      : launcher_delegate_(launcher_delegate),
+        timeout_count_(0),
+        printed_timeout_message_(false) {
+  }
+
+  // base::TestLauncherDelegate:
+  virtual bool ShouldRunTest(const testing::TestCase* test_case,
+                             const testing::TestInfo* test_info) OVERRIDE;
+  virtual bool RunTest(const testing::TestCase* test_case,
+                       const testing::TestInfo* test_info) OVERRIDE;
+
+ private:
+  content::TestLauncherDelegate* launcher_delegate_;
+
+  // Number of times a test timeout occurred.
+  size_t timeout_count_;
+
+  // True after a message about too many timeouts has been printed,
+  // to avoid doing it more than once.
+  bool printed_timeout_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(WrapperTestLauncherDelegate);
+};
+
+bool WrapperTestLauncherDelegate::ShouldRunTest(
+    const testing::TestCase* test_case,
+    const testing::TestInfo* test_info) {
+  std::string test_name =
+      std::string(test_case->name()) + "." + test_info->name();
+
+  if (StartsWithASCII(test_info->name(), kPreTestPrefix, true))
+    return false;
+
+  if (StartsWithASCII(test_info->name(), kManualTestPrefix, true) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(kRunManualTestsFlag)) {
+    return false;
+  }
+
+  // Stop test execution after too many timeouts.
+  if (timeout_count_ > 5) {
+    if (!printed_timeout_message_) {
+      printed_timeout_message_ = true;
+      printf("Too many timeouts, aborting test\n");
+    }
+    return false;
+  }
+
+  return true;
+}
+
+bool WrapperTestLauncherDelegate::RunTest(const testing::TestCase* test_case,
+                                          const testing::TestInfo* test_info) {
+  bool was_timeout = false;
+  std::string test_name =
+      std::string(test_case->name()) + "." + test_info->name();
+  int exit_code = DoRunTest(launcher_delegate_,
+                            test_case,
+                            test_name,
+                            TestTimeouts::action_max_timeout(),
+                            &was_timeout);
+  if (was_timeout)
+    timeout_count_++;
+  return exit_code == 0;
+}
+
 }  // namespace
 
 // The following is kept for historical reasons (so people that are used to
 // using it don't get surprised).
 const char kChildProcessFlag[]   = "child";
 
-const char kGTestFilterFlag[] = "gtest_filter";
 const char kGTestHelpFlag[]   = "gtest_help";
-const char kGTestListTestsFlag[] = "gtest_list_tests";
-const char kGTestRepeatFlag[] = "gtest_repeat";
-const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
-const char kGTestOutputFlag[] = "gtest_output";
 
 const char kHelpFlag[]   = "help";
 
@@ -608,8 +303,6 @@ const char kLaunchAsBrowser[] = "as-browser";
 const char kRunManualTestsFlag[] = "run-manual";
 
 const char kSingleProcessTestsFlag[]   = "single_process";
-
-const char kWarmupFlag[] = "warmup";
 
 
 TestLauncherDelegate::~TestLauncherDelegate() {
@@ -661,8 +354,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   if (command_line->HasSwitch(kSingleProcessTestsFlag) ||
       (command_line->HasSwitch(switches::kSingleProcess) &&
-       command_line->HasSwitch(kGTestFilterFlag)) ||
-      command_line->HasSwitch(kGTestListTestsFlag) ||
+       command_line->HasSwitch(base::kGTestFilterFlag)) ||
+      command_line->HasSwitch(base::kGTestListTestsFlag) ||
       command_line->HasSwitch(kGTestHelpFlag)) {
 #if defined(OS_WIN)
     if (command_line->HasSwitch(kSingleProcessTestsFlag)) {
@@ -677,12 +370,6 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   if (ShouldRunContentMain())
     return RunContentMain(argc, argv, launcher_delegate);
 
-  base::AtExitManager at_exit;
-
-  int32 total_shards;
-  int32 shard_index;
-  bool should_shard = ShouldShard(&total_shards, &shard_index);
-
   fprintf(stdout,
       "Starting tests...\n"
       "IMPORTANT DEBUGGING NOTE: each test is run inside its own process.\n"
@@ -692,52 +379,12 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       "--single-process (to do the above, and also run Chrome in single-"
       "process mode).\n");
 
+  base::AtExitManager at_exit;
   testing::InitGoogleTest(&argc, argv);
   TestTimeouts::Initialize();
-  int exit_code = 0;
 
-  std::string empty_test = launcher_delegate->GetEmptyTestName();
-  if (!empty_test.empty()) {
-    // Make sure the entire browser code is loaded into memory. Reading it
-    // from disk may be slow on a busy bot, and can easily exceed the default
-    // timeout causing flaky test failures. Use an empty test that only starts
-    // and closes a browser with a long timeout to avoid those problems.
-    // NOTE: We don't do this when specifying a filter because this slows down
-    // the common case of running one test locally, and also on trybots when
-    // sharding as this one test runs ~200 times and wastes a few minutes.
-    bool warmup = command_line->HasSwitch(kWarmupFlag);
-    bool has_filter = command_line->HasSwitch(kGTestFilterFlag);
-    if (warmup || (!should_shard && !has_filter)) {
-      exit_code = RunTest(launcher_delegate,
-                          NULL,
-                          empty_test,
-                          TestTimeouts::large_test_timeout(),
-                          NULL);
-      if (exit_code != 0 || warmup)
-        return exit_code;
-    }
-  }
-
-  int cycles = 1;
-  if (command_line->HasSwitch(kGTestRepeatFlag)) {
-    base::StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag),
-                      &cycles);
-  }
-
-  while (cycles != 0) {
-    if (!RunTests(launcher_delegate,
-                  should_shard,
-                  total_shards,
-                  shard_index)) {
-      exit_code = 1;
-      break;
-    }
-
-    // Special value "-1" means "repeat indefinitely".
-    if (cycles != -1)
-      cycles--;
-  }
-  return exit_code;
+  WrapperTestLauncherDelegate delegate(launcher_delegate);
+  return base::LaunchTests(&delegate, argc, argv);
 }
 
 TestLauncherDelegate* GetCurrentTestLauncherDelegate() {

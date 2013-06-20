@@ -102,10 +102,6 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
   ContentTestLauncherDelegate() {}
   virtual ~ContentTestLauncherDelegate() {}
 
-  virtual std::string GetEmptyTestName() OVERRIDE {
-    return std::string();
-  }
-
   virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
     return ContentBrowserTestSuite(argc, argv).Run();
   }

@@ -1684,7 +1684,6 @@
         'test/base/chrome_render_view_test.cc',
         'test/base/chrome_render_view_test.h',
         'test/base/chrome_test_launcher.cc',
-        'test/base/empty_browser_test.cc',
         'test/base/web_ui_browsertest.cc',
         'test/base/web_ui_browsertest.h',
         'test/data/chromeos/oobe_webui_browsertest.js',
