@@ -165,7 +165,7 @@ private:
         // To make each minor GC time bounded, we might need to give up
         // traversing at some point for a large DOM tree. That being said,
         // I could not observe the need even in pathological test cases.
-        for (Node* node = rootNode; node; node = NodeTraversal::nextPostOrder(node)) {
+        for (Node* node = rootNode; node; node = NodeTraversal::next(node)) {
             if (node->containsWrapper()) {
                 // FIXME: Remove the special handling for image elements.
                 // The same special handling is in V8GCController::opaqueRootForGC().

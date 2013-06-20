@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+function createTree() {
+    var div = document.createElement("div");
+    div.appendChild(document.createElement("div"));
+    div.appendChild(document.createElement("div"));
+    div.appendChild(document.createElement("div"));
+}
+gc();
+var num1 = internals.numberOfLiveNodes();
+createTree();
+var num2 = internals.numberOfLiveNodes();
+minorGC();
+var num3 = internals.numberOfLiveNodes();
+shouldBe('num2', 'num1 + 4');
+shouldBe('num3', 'num1');
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
