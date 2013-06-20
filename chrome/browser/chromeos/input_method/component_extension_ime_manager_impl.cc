@@ -26,6 +26,11 @@ struct WhitelistedComponentExtensionIME {
   const char* id;
   const char* path;
 } whitelisted_component_extension[] = {
+  {
+    // ChromeOS Keyboards extension.
+    "jhffeifommiaekmbkkjlpmilogcfdohp",
+    "/usr/share/chromeos-assets/input_methods/keyboard_layouts",
+  },
 #if defined(OFFICIAL_BUILD)
   {
     // Official Google Japanese Input.
@@ -51,11 +56,6 @@ struct WhitelistedComponentExtensionIME {
     // Google Chinese Input (wubi)
     "jcffnbbngddhenhcnebafkbdomehdhpd",
     "/usr/share/chromeos-assets/input_methods/wubi",
-  },
-  {
-    // Chromeos Keyboard Layouts.
-    "jhffeifommiaekmbkkjlpmilogcfdohp",
-    "/usr/share/chromeos-assets/input_methods/keyboard_layouts",
   },
   {
     // Google input tools.
