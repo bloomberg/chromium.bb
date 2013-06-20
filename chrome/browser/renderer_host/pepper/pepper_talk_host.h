@@ -29,25 +29,25 @@ class PepperTalkHost : public ppapi::host::ResourceHost {
                  PP_Resource resource);
   virtual ~PepperTalkHost();
 
+ private:
   // ResourceHost override.
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
-  // Sends the reply.
-  void GotTalkPermission(ppapi::host::ReplyMessageContext reply);
+  int32_t OnRequestPermission(ppapi::host::HostMessageContext* context,
+                              PP_TalkPermission permission);
+  int32_t OnStartRemoting(ppapi::host::HostMessageContext* context);
+  int32_t OnStopRemoting(ppapi::host::HostMessageContext* context);
+  void OnRemotingStopEvent();
 
- private:
-  int32_t OnRequestPermission(
-      ppapi::host::HostMessageContext* context,
-      PP_TalkPermission permission);
-  int32_t OnStartRemoting(
-      ppapi::host::HostMessageContext* context);
-  int32_t OnStopRemoting(
-      ppapi::host::HostMessageContext* context);
+  void OnRequestPermissionCompleted(ppapi::host::ReplyMessageContext reply);
+  void OnStartRemotingCompleted(ppapi::host::ReplyMessageContext reply);
+  void OnStopRemotingCompleted(ppapi::host::ReplyMessageContext reply);
 
   base::WeakPtrFactory<PepperTalkHost> weak_factory_;
   content::BrowserPpapiHost* browser_ppapi_host_;
+  bool remoting_started_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTalkHost);
 };

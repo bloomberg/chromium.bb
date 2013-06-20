@@ -19,6 +19,7 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "ui/aura/window.h"
 #endif
@@ -28,6 +29,7 @@ namespace chrome {
 namespace {
 
 ppapi::host::ReplyMessageContext GetPermissionOnUIThread(
+    PP_TalkPermission permission,
     int render_process_id,
     int render_view_id,
     ppapi::host::ReplyMessageContext reply) {
@@ -40,13 +42,32 @@ ppapi::host::ReplyMessageContext GetPermissionOnUIThread(
     return reply;  // RVH destroyed while task was pending.
 
 #if defined(USE_ASH)
+  string16 title;
+  string16 message;
+
+  switch (permission) {
+    case PP_TALKPERMISSION_SCREENCAST:
+      title = l10n_util::GetStringUTF16(IDS_GTALK_SCREEN_SHARE_DIALOG_TITLE);
+      message = l10n_util::GetStringUTF16(
+          IDS_GTALK_SCREEN_SHARE_DIALOG_MESSAGE);
+      break;
+    case PP_TALKPERMISSION_REMOTING:
+      title = l10n_util::GetStringUTF16(IDS_GTALK_REMOTING_DIALOG_TITLE);
+      message = l10n_util::GetStringUTF16(
+          IDS_GTALK_REMOTING_DIALOG_MESSAGE);
+      break;
+    case PP_TALKPERMISSION_REMOTING_CONTINUE:
+      title = l10n_util::GetStringUTF16(IDS_GTALK_REMOTING_DIALOG_TITLE);
+      message = l10n_util::GetStringUTF16(
+          IDS_GTALK_REMOTING_CONTINUE_DIALOG_MESSAGE);
+      break;
+    default:
+      NOTREACHED();
+      return reply;
+  }
+
   // TODO(brettw). We should not be grabbing the active toplevel window, we
   // should use the toplevel window associated with the render view.
-  const string16 title = l10n_util::GetStringUTF16(
-      IDS_GTALK_SCREEN_SHARE_DIALOG_TITLE);
-  const string16 message = l10n_util::GetStringUTF16(
-      IDS_GTALK_SCREEN_SHARE_DIALOG_MESSAGE);
-
   aura::Window* parent = ash::Shell::GetContainer(
       ash::Shell::GetActiveRootWindow(),
       ash::internal::kShellWindowId_SystemModalContainer);
@@ -60,6 +81,57 @@ ppapi::host::ReplyMessageContext GetPermissionOnUIThread(
   return reply;
 }
 
+void OnTerminateRemotingEventOnUIThread(const base::Closure& stop_callback) {
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   stop_callback);
+}
+
+ppapi::host::ReplyMessageContext StartRemotingOnUIThread(
+    const base::Closure& stop_callback,
+    int render_process_id,
+    int render_view_id,
+    ppapi::host::ReplyMessageContext reply) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  content::RenderViewHost* render_view_host =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!render_view_host) {
+    reply.params.set_result(PP_ERROR_FAILED);
+    return reply;  // RVH destroyed while task was pending.
+  }
+
+#if defined(USE_ASH) && defined(OS_CHROMEOS)
+  base::Closure stop_callback_ui_thread = base::Bind(
+      &OnTerminateRemotingEventOnUIThread,
+      stop_callback);
+
+  ash::Shell::GetInstance()->system_tray_notifier()->NotifyScreenShareStart(
+      stop_callback_ui_thread, base::string16());
+  reply.params.set_result(PP_OK);
+#else
+  NOTIMPLEMENTED();
+  reply.params.set_result(PP_ERROR_NOTSUPPORTED);
+#endif
+  return reply;
+}
+
+void StopRemotingOnUIThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+#if defined(USE_ASH) && defined(OS_CHROMEOS)
+  if (ash::Shell::GetInstance()) {
+    ash::Shell::GetInstance()->system_tray_notifier()->NotifyScreenShareStop();
+  }
+#else
+  NOTIMPLEMENTED();
+#endif
+}
+
+ppapi::host::ReplyMessageContext StopRemotingOnUIThreadWithResult(
+    ppapi::host::ReplyMessageContext reply) {
+  reply.params.set_result(PP_OK);
+  StopRemotingOnUIThread();
+  return reply;
+}
+
 }  // namespace
 
 PepperTalkHost::PepperTalkHost(content::BrowserPpapiHost* host,
@@ -67,10 +139,16 @@ PepperTalkHost::PepperTalkHost(content::BrowserPpapiHost* host,
                                PP_Resource resource)
     : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource),
       weak_factory_(this),
-      browser_ppapi_host_(host) {
+      browser_ppapi_host_(host),
+      remoting_started_(false) {
 }
 
 PepperTalkHost::~PepperTalkHost() {
+  if (remoting_started_) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&StopRemotingOnUIThread));
+  }
 }
 
 int32_t PepperTalkHost::OnResourceMessageReceived(
@@ -90,8 +168,8 @@ int32_t PepperTalkHost::OnResourceMessageReceived(
 int32_t PepperTalkHost::OnRequestPermission(
     ppapi::host::HostMessageContext* context,
     PP_TalkPermission permission) {
-  // TODO(dcaiafa): Implement support for other permission types.
-  if (permission != PP_TALKPERMISSION_SCREENCAST)
+  if (permission < PP_TALKPERMISSION_SCREENCAST ||
+      permission >= PP_TALKPERMISSION_NUM_PERMISSIONS)
     return PP_ERROR_BADARGUMENT;
 
   int render_process_id = 0;
@@ -101,31 +179,73 @@ int32_t PepperTalkHost::OnRequestPermission(
 
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetPermissionOnUIThread, render_process_id, render_view_id,
-                 context->MakeReplyMessageContext()),
-      base::Bind(&PepperTalkHost::GotTalkPermission,
+      base::Bind(&GetPermissionOnUIThread, permission, render_process_id,
+                 render_view_id, context->MakeReplyMessageContext()),
+      base::Bind(&PepperTalkHost::OnRequestPermissionCompleted,
                  weak_factory_.GetWeakPtr()));
   return PP_OK_COMPLETIONPENDING;
 }
 
-void PepperTalkHost::GotTalkPermission(
+int32_t PepperTalkHost::OnStartRemoting(
+    ppapi::host::HostMessageContext* context) {
+  int render_process_id = 0;
+  int render_view_id = 0;
+  browser_ppapi_host_->GetRenderViewIDsForInstance(
+      pp_instance(), &render_process_id, &render_view_id);
+
+  base::Closure remoting_stop_callback = base::Bind(
+      &PepperTalkHost::OnRemotingStopEvent,
+      weak_factory_.GetWeakPtr());
+
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&StartRemotingOnUIThread, remoting_stop_callback,
+                 render_process_id, render_view_id,
+                 context->MakeReplyMessageContext()),
+      base::Bind(&PepperTalkHost::OnStartRemotingCompleted,
+                 weak_factory_.GetWeakPtr()));
+  return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t PepperTalkHost::OnStopRemoting(
+    ppapi::host::HostMessageContext* context) {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&StopRemotingOnUIThreadWithResult,
+                 context->MakeReplyMessageContext()),
+      base::Bind(&PepperTalkHost::OnStopRemotingCompleted,
+                 weak_factory_.GetWeakPtr()));
+  return PP_OK_COMPLETIONPENDING;
+}
+
+void PepperTalkHost::OnRemotingStopEvent() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  remoting_started_ = false;
+  host()->SendUnsolicitedReply(
+      pp_resource(), PpapiPluginMsg_Talk_NotifyEvent(PP_TALKEVENT_TERMINATE));
+}
+
+void PepperTalkHost::OnRequestPermissionCompleted(
     ppapi::host::ReplyMessageContext reply) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   host()->SendReply(reply, PpapiPluginMsg_Talk_RequestPermissionReply());
 }
 
-int32_t PepperTalkHost::OnStartRemoting(
-    ppapi::host::HostMessageContext* context) {
-  // TODO(dcaiafa): Request IPC audit when this is implemented
-  NOTIMPLEMENTED();
-  return PP_ERROR_FAILED;
+void PepperTalkHost::OnStartRemotingCompleted(
+    ppapi::host::ReplyMessageContext reply) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  // Remember to hide remoting UI when resource is deleted.
+  if (reply.params.result() == PP_OK)
+    remoting_started_ = true;
+
+  host()->SendReply(reply, PpapiPluginMsg_Talk_StartRemotingReply());
 }
 
-int32_t PepperTalkHost::OnStopRemoting(
-    ppapi::host::HostMessageContext* context) {
-  // TODO(dcaiafa): Request IPC audit when this is implemented
-  NOTIMPLEMENTED();
-  return PP_ERROR_FAILED;
+void PepperTalkHost::OnStopRemotingCompleted(
+    ppapi::host::ReplyMessageContext reply) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  remoting_started_ = false;
+  host()->SendReply(reply, PpapiPluginMsg_Talk_StopRemotingReply());
 }
 
 }  // namespace chrome
