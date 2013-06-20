@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/drive_api_util.h"
+#include "chrome/browser/drive/drive_api_util.h"
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/google_apis/drive_switches.h"
+#include "chrome/browser/drive/drive_switches.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "third_party/re2/re2/re2.h"

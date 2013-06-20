@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/drive_api_util.h"
+#include "chrome/browser/drive/drive_api_util.h"
 
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"

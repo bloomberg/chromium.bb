@@ -16,8 +16,8 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
-#include "chrome/browser/google_apis/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 

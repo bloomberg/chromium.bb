@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_DRIVE_SWITCHES_H_
-#define CHROME_BROWSER_GOOGLE_APIS_DRIVE_SWITCHES_H_
+#include "chrome/browser/drive/drive_switches.h"
 
 namespace google_apis {
 namespace switches {
 
-extern const char kEnableDriveV2Api[];
+// Enables Drive v2 API instead of Google Documents List API.
+const char kEnableDriveV2Api[] = "enable-drive-v2-api";
 
 }  // namespace switches
 }  // namespace google_apis
-
-#endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_SWITCHES_H_
