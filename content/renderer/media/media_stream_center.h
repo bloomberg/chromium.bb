@@ -25,9 +25,6 @@ class CONTENT_EXPORT MediaStreamCenter
   MediaStreamCenter(WebKit::WebMediaStreamCenterClient* client,
                     MediaStreamDependencyFactory* factory);
 
-  virtual void queryMediaStreamSources(
-      const WebKit::WebMediaStreamSourcesRequest& request) OVERRIDE;
-
   virtual void didEnableMediaStreamTrack(
       const WebKit::WebMediaStream& stream,
       const WebKit::WebMediaStreamTrack& component) OVERRIDE;

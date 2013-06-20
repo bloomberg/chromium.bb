@@ -136,9 +136,7 @@ void MediaStreamImpl::OnLocalMediaStreamStop(
 }
 
 void MediaStreamImpl::requestUserMedia(
-    const WebKit::WebUserMediaRequest& user_media_request,
-    const WebKit::WebVector<WebKit::WebMediaStreamSource>& audio_sources,
-    const WebKit::WebVector<WebKit::WebMediaStreamSource>& video_sources) {
+    const WebKit::WebUserMediaRequest& user_media_request) {
   // Save histogram data so we can see how much GetUserMedia is used.
   // The histogram counts the number of calls to the JS API
   // webGetUserMedia.
@@ -153,10 +151,8 @@ void MediaStreamImpl::requestUserMedia(
   // if it isNull.
   if (user_media_request.isNull()) {
     // We are in a test.
-    if (audio_sources.size() > 0)
-      options.audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;
-    if (video_sources.size() > 0)
-      options.video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
+    options.audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;
+    options.video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
   } else {
     if (user_media_request.audio())
       options.audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;

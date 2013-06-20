@@ -17,7 +17,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSourcesRequest.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -52,12 +51,6 @@ static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(
 MediaStreamCenter::MediaStreamCenter(WebKit::WebMediaStreamCenterClient* client,
                                      MediaStreamDependencyFactory* factory)
     : rtc_factory_(factory) {
-}
-
-void MediaStreamCenter::queryMediaStreamSources(
-    const WebKit::WebMediaStreamSourcesRequest& request) {
-  WebKit::WebVector<WebKit::WebMediaStreamSource> audioSources, videoSources;
-  request.didCompleteQuery(audioSources, videoSources);
 }
 
 void MediaStreamCenter::didEnableMediaStreamTrack(
