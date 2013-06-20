@@ -177,13 +177,28 @@
                 '../build/linux/system.gyp:libgcrypt',
               ],
             }],
-            ['cups_version=="1.6"', {
+            ['cups_version in ["1.6", "1.7"]', {
               'cflags': [
                 # CUPS 1.6 deprecated the PPD APIs, but we will stay with this
                 # API for now as supported Linux and Mac OS'es are still using
                 # older versions of CUPS. More info: crbug.com/226176
                 '-Wno-deprecated-declarations',
+                # CUPS 1.7 deprecates httpConnectEncrypt(), see the mac section
+                # below.
               ],
+            }],
+            ['OS=="mac" and mac_sdk=="10.9"', {
+              # The 10.9 SDK includes cups 1.7, which deprecates
+              # httpConnectEncrypt() in favor of httpConnect2(). hhttpConnect2()
+              # is new in 1.7, so it doesn't exist on OS X 10.6-10.8 and we
+              # can't use it until 10.9 is our minimum system version.
+              # (cups_version isn't reliable on OS X, so key the check off of
+              # mac_sdk).
+              'xcode_settings': {
+                'WARNING_CFLAGS':  [
+                  '-Wno-deprecated-declarations',
+                ],
+              },
             }],
           ],
           'defines': [
