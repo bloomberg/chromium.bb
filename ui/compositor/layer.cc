@@ -47,6 +47,7 @@ Layer::Layer()
       compositor_(NULL),
       parent_(NULL),
       visible_(true),
+      is_drawn_(true),
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
@@ -71,6 +72,7 @@ Layer::Layer(LayerType type)
       compositor_(NULL),
       parent_(NULL),
       visible_(true),
+      is_drawn_(true),
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
@@ -140,6 +142,7 @@ void Layer::Add(Layer* child) {
   children_.push_back(child);
   cc_layer_->AddChild(child->cc_layer_);
   child->OnDeviceScaleFactorChanged(device_scale_factor_);
+  child->UpdateIsDrawn();
   if (GetCompositor())
     child->SendPendingThreadedAnimations();
 }
@@ -367,10 +370,21 @@ bool Layer::GetTargetVisibility() const {
 }
 
 bool Layer::IsDrawn() const {
-  const Layer* layer = this;
-  while (layer && layer->visible_)
-    layer = layer->parent_;
-  return layer == NULL;
+  return is_drawn_;
+}
+
+void Layer::UpdateIsDrawn() {
+  bool updated_is_drawn = visible_ && (!parent_ || parent_->IsDrawn());
+
+  if (updated_is_drawn == is_drawn_)
+    return;
+
+  is_drawn_ = updated_is_drawn;
+  cc_layer_->SetIsDrawable(is_drawn_ && type_ != LAYER_NOT_DRAWN);
+
+  for (size_t i = 0; i < children_.size(); ++i) {
+    children_[i]->UpdateIsDrawn();
+  }
 }
 
 bool Layer::ShouldDraw() const {
@@ -464,7 +478,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   cc_layer_->SetAnchorPoint(gfx::PointF());
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetForceRenderSurface(force_render_surface_);
-  cc_layer_->SetHideLayerAndSubtree(!visible_);
+  cc_layer_->SetIsDrawable(IsDrawn());
 }
 
 void Layer::SwitchCCLayerForTest() {
@@ -737,7 +751,7 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
   if (was_move) {
     // Don't schedule a draw if we're invisible. We'll schedule one
     // automatically when we get visible.
-    if (visible_)
+    if (IsDrawn())
       ScheduleDraw();
   } else {
     // Always schedule a paint, even if we're invisible.
@@ -759,7 +773,7 @@ void Layer::SetVisibilityImmediately(bool visible) {
     return;
 
   visible_ = visible;
-  cc_layer_->SetHideLayerAndSubtree(!visible_);
+  UpdateIsDrawn();
 }
 
 void Layer::SetBrightnessImmediately(float brightness) {

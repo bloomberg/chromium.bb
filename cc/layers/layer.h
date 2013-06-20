@@ -268,9 +268,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void SetIsDrawable(bool is_drawable);
 
-  void SetHideLayerAndSubtree(bool hide);
-  bool hide_layer_and_subtree() const { return hide_layer_and_subtree_; }
-
   void SetReplicaLayer(Layer* layer);
   Layer* replica_layer() { return replica_layer_.get(); }
   const Layer* replica_layer() const { return replica_layer_.get(); }
@@ -468,7 +465,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool is_container_for_fixed_position_layers_;
   LayerPositionConstraint position_constraint_;
   bool is_drawable_;
-  bool hide_layer_and_subtree_;
   bool masks_to_bounds_;
   bool contents_opaque_;
   bool double_sided_;
