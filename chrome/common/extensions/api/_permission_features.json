@@ -211,7 +211,9 @@
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],
     "whitelist": [
-      "7910EAFDAF64B947E1CB31B333A9BD14CA556B6C" // Feedback UI.
+      "7910EAFDAF64B947E1CB31B333A9BD14CA556B6C",  // Feedback UI.
+      "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578",  // http://crbug.com/234235
+      "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB"   // http://crbug.com/234235
     ]
   },
   "fileBrowserHandler": {
