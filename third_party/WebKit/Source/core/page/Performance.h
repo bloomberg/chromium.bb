@@ -49,7 +49,6 @@ namespace WebCore {
 class Document;
 class ResourceRequest;
 class ResourceResponse;
-class ResourceTimingInfo;
 class UserTiming;
 
 class Performance : public ScriptWrappable, public RefCounted<Performance>, public DOMWindowProperty, public EventTarget {
@@ -74,7 +73,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitresourcetimingbufferfull);
 
-    void addResourceTiming(const ResourceTimingInfo&, Document*);
+    void addResourceTiming(const String& initiatorName, Document*, const ResourceRequest&, const ResourceResponse&, double initiationTime, double finishTime);
 
     using RefCounted<Performance>::ref;
     using RefCounted<Performance>::deref;
@@ -93,7 +92,6 @@ private:
     virtual EventTargetData* eventTargetData();
     virtual EventTargetData* ensureEventTargetData();
     bool isResourceTimingBufferFull();
-    void addResourceTimingBuffer(PassRefPtr<PerformanceEntry>);
 
     EventTargetData m_eventTargetData;
 

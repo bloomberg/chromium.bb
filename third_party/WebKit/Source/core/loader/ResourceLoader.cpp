@@ -277,7 +277,6 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
             cancel();
             return;
         }
-        m_documentLoader->cachedResourceLoader()->redirectReceived(m_resource, redirectResponse);
         m_resource->willSendRequest(request, redirectResponse);
     }
 
@@ -288,8 +287,6 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
         frameLoader()->notifier()->dispatchWillSendRequest(m_documentLoader.get(), m_resource->identifier(), request, redirectResponse, m_options.initiatorInfo);
     else
         InspectorInstrumentation::willSendRequest(m_frame.get(), m_resource->identifier(), m_documentLoader.get(), request, redirectResponse, m_options.initiatorInfo);
-
-    request.setReportLoadTiming(true);
 
     m_request = request;
 
