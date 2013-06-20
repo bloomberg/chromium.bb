@@ -7,9 +7,7 @@
 #include <algorithm>
 
 #include "base/chromeos/chromeos_version.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
@@ -48,16 +46,6 @@ void LoadNSSCertificates(net::CertificateList* cert_list) {
     net::NSSCertDatabase::GetInstance()->ListCerts(cert_list);
 }
 
-void CallOpenPersistentNSSDB() {
-  // Called from crypto_task_runner_.
-  VLOG(1) << "CallOpenPersistentNSSDB";
-
-  // Ensure we've opened the user's key/certificate database.
-  crypto::OpenPersistentNSSDB();
-  if (base::chromeos::IsRunningOnChromeOS())
-    crypto::EnableTPMTokenForNSS();
-}
-
 }  // namespace
 
 CertLoader::CertLoader()
@@ -70,18 +58,10 @@ CertLoader::CertLoader()
           base::TimeDelta::FromMilliseconds(kInitialRequestDelayMs)),
       initialize_token_factory_(this),
       update_certificates_factory_(this) {
-}
-
-void CertLoader::Init() {
   net::CertDatabase::GetInstance()->AddObserver(this);
   if (LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
-}
-
-void CertLoader::SetCryptoTaskRunner(
-    const scoped_refptr<base::SequencedTaskRunner>& crypto_task_runner) {
-  crypto_task_runner_ = crypto_task_runner;
-  MaybeRequestCertificates();
+  RequestCertificates();
 }
 
 CertLoader::~CertLoader() {
@@ -106,42 +86,36 @@ bool CertLoader::IsHardwareBacked() const {
   return !tpm_token_name_.empty();
 }
 
-void CertLoader::MaybeRequestCertificates() {
+void CertLoader::RequestCertificates() {
   CHECK(thread_checker_.CalledOnValidThread());
-  if (certificates_requested_ || !crypto_task_runner_.get())
-    return;
-
   const bool logged_in = LoginState::IsInitialized() ?
       LoginState::Get()->IsUserLoggedIn() : false;
   VLOG(1) << "RequestCertificates: " << logged_in;
-  if (!logged_in)
+  if (certificates_requested_ || !logged_in)
     return;
 
   certificates_requested_ = true;
 
-  // This is the entry point to the TPM token initialization process,
-  // which we should do at most once.
-  DCHECK_EQ(tpm_token_state_, TPM_STATE_UNKNOWN);
+  // Ensure we've opened the user's key/certificate database.
+  crypto::OpenPersistentNSSDB();
+  if (base::chromeos::IsRunningOnChromeOS())
+    crypto::EnableTPMTokenForNSS();
+
+  // This is the entry point to the TPM token initialization process, which we
+  // should do at most once.
+  DCHECK(!initialize_token_factory_.HasWeakPtrs());
   InitializeTokenAndLoadCertificates();
 }
 
 void CertLoader::InitializeTokenAndLoadCertificates() {
   CHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "InitializeTokenAndLoadCertificates: " << tpm_token_state_;
+  VLOG(1) << "InitializeTokenAndLoadCertificates";
 
   switch (tpm_token_state_) {
     case TPM_STATE_UNKNOWN: {
-      crypto_task_runner_->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&CallOpenPersistentNSSDB),
-          base::Bind(&CertLoader::OnPersistentNSSDBOpened,
-                     initialize_token_factory_.GetWeakPtr()));
-      return;
-    }
-    case TPM_DB_OPENED: {
       DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(
-          base::Bind(&CertLoader::OnTpmIsEnabled,
-                     initialize_token_factory_.GetWeakPtr()));
+      base::Bind(&CertLoader::OnTpmIsEnabled,
+                 initialize_token_factory_.GetWeakPtr()));
       return;
     }
     case TPM_DISABLED: {
@@ -164,20 +138,10 @@ void CertLoader::InitializeTokenAndLoadCertificates() {
       return;
     }
     case TPM_TOKEN_INFO_RECEIVED: {
-      if (base::chromeos::IsRunningOnChromeOS()) {
-        base::PostTaskAndReplyWithResult(
-            crypto_task_runner_.get(),
-            FROM_HERE,
-            base::Bind(&crypto::InitializeTPMToken,
-                       tpm_token_name_, tpm_user_pin_),
-            base::Bind(&CertLoader::OnTPMTokenInitialized,
-                       initialize_token_factory_.GetWeakPtr()));
-        return;
-      }
-      tpm_token_state_ = TPM_TOKEN_INITIALIZED;
-      // FALL_THROUGH_INTENDED
+      InitializeNSSForTPMToken();
+      return;
     }
-    case TPM_TOKEN_INITIALIZED: {
+    case TPM_TOKEN_NSS_INITIALIZED: {
       StartLoadCertificates();
       return;
     }
@@ -185,7 +149,6 @@ void CertLoader::InitializeTokenAndLoadCertificates() {
 }
 
 void CertLoader::RetryTokenInitializationLater() {
-  CHECK(thread_checker_.CalledOnValidThread());
   LOG(WARNING) << "Re-Requesting Certificates later.";
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
@@ -193,12 +156,6 @@ void CertLoader::RetryTokenInitializationLater() {
                  initialize_token_factory_.GetWeakPtr()),
       tpm_request_delay_);
   tpm_request_delay_ = GetNextRequestDelayMs(tpm_request_delay_);
-}
-
-void CertLoader::OnPersistentNSSDBOpened() {
-  VLOG(1) << "PersistentNSSDBOpened";
-  tpm_token_state_ = TPM_DB_OPENED;
-  InitializeTokenAndLoadCertificates();
 }
 
 // For background see this discussion on dev-tech-crypto.lists.mozilla.org:
@@ -277,19 +234,21 @@ void CertLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
   InitializeTokenAndLoadCertificates();
 }
 
-void CertLoader::OnTPMTokenInitialized(bool success) {
-  VLOG(1) << "OnTPMTokenInitialized: " << success;
-  if (!success) {
+void CertLoader::InitializeNSSForTPMToken() {
+  VLOG(1) << "InitializeNSSForTPMToken";
+
+  if (base::chromeos::IsRunningOnChromeOS() &&
+      !crypto::InitializeTPMToken(tpm_token_name_, tpm_user_pin_)) {
     RetryTokenInitializationLater();
     return;
   }
-  tpm_token_state_ = TPM_TOKEN_INITIALIZED;
+
+  tpm_token_state_ = TPM_TOKEN_NSS_INITIALIZED;
   InitializeTokenAndLoadCertificates();
 }
 
 void CertLoader::StartLoadCertificates() {
-  CHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "StartLoadCertificates: " << certificates_update_running_;
+  VLOG(1) << "StartLoadCertificates";
 
   if (certificates_update_running_) {
     certificates_update_required_ = true;
@@ -344,7 +303,7 @@ void CertLoader::OnCertRemoved(const net::X509Certificate* cert) {
 
 void CertLoader::LoggedInStateChanged(LoginState::LoggedInState state) {
   VLOG(1) << "LoggedInStateChanged: " << state;
-  MaybeRequestCertificates();
+  RequestCertificates();
 }
 
 }  // namespace chromeos
