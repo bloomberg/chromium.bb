@@ -13,6 +13,8 @@ import sys
 EXCLUDE_PROJECT_CHECKS_DIRS = [
     # The following contain test data (including automatically generated),
     # and do not follow our conventions.
+    'src/trusted/validator_ragel/testdata/32',
+    'src/trusted/validator_ragel/testdata/64',
     'src/trusted/validator_x86/testdata/32',
     'src/trusted/validator_x86/testdata/64',
     'src/trusted/validator/x86/decoder/generator/testdata/32',
