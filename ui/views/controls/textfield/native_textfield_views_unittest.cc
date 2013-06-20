@@ -1891,6 +1891,7 @@ TEST_F(NativeTextfieldViewsTest, TouchSelectionAndDraggingTest) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchDragDrop);
   textfield_view_->OnGestureEvent(&tap_down);
+
   // Create a new long press event since the previous one is not marked handled.
   GestureEventForTest long_press2(ui::ET_GESTURE_LONG_PRESS, eventX, eventY, 0);
   textfield_view_->OnGestureEvent(&long_press2);
@@ -1899,4 +1900,24 @@ TEST_F(NativeTextfieldViewsTest, TouchSelectionAndDraggingTest) {
 }
 #endif
 
+// Long_Press gesture in NativeTextfieldViews can initiate a drag and drop now.
+TEST_F(NativeTextfieldViewsTest, TestLongPressInitiatesDragDrop) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("Hello string world"));
+
+  // Ensure the textfield will provide selected text for drag data.
+  textfield_->SelectRange(ui::Range(6, 12));
+  const gfx::Point kStringPoint(GetCursorPositionX(9), 0);
+
+  // Enable touch-drag-drop to make long press effective.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableTouchDragDrop);
+
+  // Create a long press event in the selected region should start a drag.
+  GestureEventForTest long_press(ui::ET_GESTURE_LONG_PRESS,
+      kStringPoint.x(), kStringPoint.y(), 0);
+  textfield_view_->OnGestureEvent(&long_press);
+  EXPECT_TRUE(textfield_view_->CanStartDragForView(NULL,
+      kStringPoint, kStringPoint));
+}
 }  // namespace views

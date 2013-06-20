@@ -221,6 +221,7 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
         if (touch_selection_controller_.get())
           event->SetHandled();
       } else if (switches::IsTouchDragDropEnabled()) {
+        initiating_drag_ = true;
         touch_selection_controller_.reset();
       } else {
         if (!touch_selection_controller_.get())
