@@ -119,12 +119,6 @@ class BASE_EXPORT MessagePump : public RefCountedThreadSafe<MessagePump> {
   // used on the thread that called Run.
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) = 0;
 
-  // Stops the pump after exiting the last run loop. This method must be used on
-  // the same thread that called Run(). The method frees any resources
-  // affinitized to that thread because ~MessagePump() might be invoked on an
-  // arbitrary thread.
-  virtual void Shutdown() = 0;
-
  protected:
   virtual ~MessagePump();
   friend class RefCountedThreadSafe<MessagePump>;

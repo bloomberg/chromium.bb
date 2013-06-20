@@ -16,7 +16,6 @@
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "base/message_loop/message_pump_observer.h"
 #include "base/observer_list.h"
-#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "base/win/scoped_handle.h"
 
@@ -46,8 +45,8 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
   void RunWithDispatcher(Delegate* delegate, MessagePumpDispatcher* dispatcher);
 
   // MessagePump methods:
-  virtual void Run(Delegate* delegate) OVERRIDE;
-  virtual void Quit() OVERRIDE;
+  virtual void Run(Delegate* delegate) { RunWithDispatcher(delegate, NULL); }
+  virtual void Quit();
 
  protected:
   struct RunState {
@@ -167,9 +166,8 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   void SetMessageFilter(scoped_ptr<MessageFilter> message_filter);
 
   // MessagePump methods:
-  virtual void ScheduleWork() OVERRIDE;
-  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
+  virtual void ScheduleWork();
+  virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time);
 
   // Applications can call this to encourage us to process all pending WM_PAINT
   // messages.  This method will process all paint messages the Windows Message
@@ -195,9 +193,6 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
 
   // A hidden message-only window.
   HWND message_hwnd_;
-
-  // Protectes access to |message_hwnd_|.
-  base::Lock message_hwnd_lock_;
 
   scoped_ptr<MessageFilter> message_filter_;
 };
@@ -332,7 +327,6 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   // MessagePump methods:
   virtual void ScheduleWork();
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time);
-  virtual void Shutdown() OVERRIDE;
 
   // Register the handler to be used when asynchronous IO for the given file
   // completes. The registration persists as long as |file_handle| is valid, so

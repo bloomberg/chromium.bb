@@ -221,9 +221,6 @@ MessageLoop::~MessageLoop() {
       WillDestroyCurrentMessageLoop();
   message_loop_proxy_ = NULL;
 
-  // Stop the message pump and free any thread-bound resources.
-  pump_->Shutdown();
-
   // OK, now make it so that no one can find us.
   lazy_tls_ptr.Pointer()->Set(NULL);
 

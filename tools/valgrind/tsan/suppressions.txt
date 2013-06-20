@@ -1126,3 +1126,34 @@
   ...
   fun:media::FFmpegVideoDecoder::Decode
 }
+{
+  bug_241939a
+  ThreadSanitizer:Race
+  fun:CreateDialogParamW
+  fun:CharPrevW
+  fun:SystemParametersInfoW
+  fun:RegisterClassExW
+  fun:base::MessagePumpForUI::InitMessageWnd
+  fun:base::MessagePumpForUI::MessagePumpForUI
+  fun:base::MessageLoop::MessageLoop
+  fun:remoting::AutoThread::ThreadMain
+}
+{
+  bug_241939b
+  ThreadSanitizer:Race
+  fun:GetWindowLongW
+  fun:GetWindowLongW
+  fun:GetWindowLongW
+  fun:PostMessageW
+  fun:PostMessageW
+  fun:SetWindowTextW
+  fun:KiUserCallbackDispatcher
+  fun:LoadStringA
+  fun:LoadStringA
+  fun:LoadStringA
+  fun:CreateWindowExW
+  fun:base::MessagePumpForUI::InitMessageWnd
+  fun:base::MessagePumpForUI::MessagePumpForUI
+  fun:base::MessageLoop::MessageLoop
+  fun:remoting::AutoThread::ThreadMain
+}

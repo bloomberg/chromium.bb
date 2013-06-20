@@ -302,9 +302,6 @@ void MessagePumpLibevent::ScheduleDelayedWork(
   delayed_work_time_ = delayed_work_time;
 }
 
-void MessagePumpLibevent::Shutdown() {
-}
-
 void MessagePumpLibevent::WillProcessIOEvent() {
   FOR_EACH_OBSERVER(IOObserver, io_observers_, WillProcessIOEvent());
 }

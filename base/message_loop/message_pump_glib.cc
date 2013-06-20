@@ -320,9 +320,6 @@ void MessagePumpGlib::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   ScheduleWork();
 }
 
-void MessagePumpGlib::Shutdown() {
-}
-
 MessagePumpGlib::~MessagePumpGlib() {
   g_source_destroy(work_source_);
   g_source_unref(work_source_);

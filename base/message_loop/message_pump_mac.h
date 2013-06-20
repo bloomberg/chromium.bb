@@ -73,7 +73,6 @@ class MessagePumpCFRunLoopBase : public MessagePump {
 
   virtual void ScheduleWork() OVERRIDE;
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
 
  protected:
   virtual ~MessagePumpCFRunLoopBase();
