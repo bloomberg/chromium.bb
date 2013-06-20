@@ -5,9 +5,7 @@
 #include "ash/desktop_background/wallpaper_resizer.h"
 
 #include "ash/desktop_background/wallpaper_resizer_observer.h"
-#include "base/message_loop/message_loop.h"
-#include "content/public/test/test_browser_thread.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "ash/test/ash_test_base.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
 using aura::RootWindow;
@@ -57,19 +55,17 @@ bool IsColor(const gfx::ImageSkia& image, const uint32_t expect) {
 namespace ash {
 namespace internal {
 
-class WallpaperResizerTest : public testing::Test,
+class WallpaperResizerTest : public test::AshTestBase,
                              public WallpaperResizerObserver {
  public:
-  WallpaperResizerTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
+  WallpaperResizerTest() {}
   virtual ~WallpaperResizerTest() {}
 
-  gfx::ImageSkia Resize(const gfx::ImageSkia& image,
+  gfx::ImageSkia Resize(const WallpaperInfo& info,
                         const gfx::Size& target_size,
-                        WallpaperLayout layout) {
+                        const gfx::ImageSkia& image) {
     scoped_ptr<WallpaperResizer> resizer;
-    resizer.reset(new WallpaperResizer(image, target_size, layout));
+    resizer.reset(new WallpaperResizer(info, target_size, image));
     resizer->AddObserver(this);
     resizer->StartResize();
     WaitForResize();
@@ -78,17 +74,14 @@ class WallpaperResizerTest : public testing::Test,
   }
 
   void WaitForResize() {
-    message_loop_.Run();
+    base::MessageLoop::current()->Run();
   }
 
   virtual void OnWallpaperResized() OVERRIDE {
-    message_loop_.Quit();
+    base::MessageLoop::current()->Quit();
   }
 
  private:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(WallpaperResizerTest);
 };
 
@@ -104,18 +97,19 @@ TEST_F(WallpaperResizerTest, BasicResize) {
 
   for (int i = 0; i < length; i++) {
     WallpaperLayout layout = layouts[i];
+    WallpaperInfo info = { 0, layout };
     gfx::ImageSkia small_image(gfx::ImageSkiaRep(gfx::Size(10, 20),
                                                  ui::SCALE_FACTOR_100P));
 
-    gfx::ImageSkia resized_small = Resize(small_image, gfx::Size(800, 600),
-                                          layout);
+    gfx::ImageSkia resized_small = Resize(info, gfx::Size(800, 600),
+                                          small_image);
     EXPECT_EQ(10, resized_small.width());
     EXPECT_EQ(20, resized_small.height());
 
     gfx::ImageSkia large_image(gfx::ImageSkiaRep(gfx::Size(1000, 1000),
                                                  ui::SCALE_FACTOR_100P));
-    gfx::ImageSkia resized_large = Resize(large_image, gfx::Size(800, 600),
-                                          layout);
+    gfx::ImageSkia resized_large = Resize(info, gfx::Size(800, 600),
+                                          large_image);
     EXPECT_EQ(800, resized_large.width());
     EXPECT_EQ(600, resized_large.height());
   }
@@ -128,14 +122,18 @@ TEST_F(WallpaperResizerTest, AllLayoutDifferent) {
       gfx::Size(kTestImageWidth, kTestImageHeight));
 
   gfx::Size target_size = gfx::Size(kTargetWidth, kTargetHeight);
-  gfx::ImageSkia center = Resize(image, target_size, WALLPAPER_LAYOUT_CENTER);
+  WallpaperInfo info_center = { 0, WALLPAPER_LAYOUT_CENTER };
+  gfx::ImageSkia center = Resize(info_center, target_size, image);
 
-  gfx::ImageSkia center_cropped = Resize(image, target_size,
-                                         WALLPAPER_LAYOUT_CENTER_CROPPED);
+  WallpaperInfo info_center_cropped = { 0, WALLPAPER_LAYOUT_CENTER_CROPPED };
+  gfx::ImageSkia center_cropped = Resize(info_center_cropped, target_size,
+                                         image);
 
-  gfx::ImageSkia stretch = Resize(image, target_size, WALLPAPER_LAYOUT_STRETCH);
+  WallpaperInfo info_stretch = { 0, WALLPAPER_LAYOUT_STRETCH };
+  gfx::ImageSkia stretch = Resize(info_stretch, target_size, image);
 
-  gfx::ImageSkia tile = Resize(image, target_size, WALLPAPER_LAYOUT_TILE);
+  WallpaperInfo info_tile = { 0, WALLPAPER_LAYOUT_TILE };
+  gfx::ImageSkia tile = Resize(info_tile, target_size, image);
 
   EXPECT_TRUE(IsColor(center, kExpectedCenter));
   EXPECT_TRUE(IsColor(center_cropped, kExpectedCenterCropped));

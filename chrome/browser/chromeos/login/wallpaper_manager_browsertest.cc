@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 
-#include "ash/ash_resources/grit/ash_wallpaper_resources.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/display/display_manager.h"
@@ -32,13 +31,19 @@ namespace chromeos {
 
 namespace {
 
-const int kLargeWallpaperResourceId = IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE;
-const int kSmallWallpaperResourceId = IDR_AURA_WALLPAPERS_5_GRADIENT5_SMALL;
-
-int kLargeWallpaperWidth = 256;
-int kLargeWallpaperHeight = ash::kLargeWallpaperMaxHeight;
-int kSmallWallpaperWidth = 256;
-int kSmallWallpaperHeight = ash::kSmallWallpaperMaxHeight;
+#if defined(GOOGLE_CHROME_BUILD)
+int kExpectedSmallWallpaperWidth = ash::kSmallWallpaperMaxWidth;
+int kExpectedSmallWallpaperHeight = ash::kSmallWallpaperMaxHeight;
+int kExpectedLargeWallpaperWidth = ash::kLargeWallpaperMaxWidth;
+int kExpectedLargeWallpaperHeight = ash::kLargeWallpaperMaxHeight;
+#else
+// The defualt wallpaper for non official build is a gradient wallpaper which
+// stretches to fit screen.
+int kExpectedSmallWallpaperWidth = 256;
+int kExpectedSmallWallpaperHeight = ash::kSmallWallpaperMaxHeight;
+int kExpectedLargeWallpaperWidth = 256;
+int kExpectedLargeWallpaperHeight = ash::kLargeWallpaperMaxHeight;
+#endif
 
 const char kTestUser1[] = "test@domain.com";
 
@@ -90,8 +95,8 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
  protected:
   // Return custom wallpaper path. Create directory if not exist.
   base::FilePath GetCustomWallpaperPath(const char* sub_dir,
-                                        const std::string& email,
-                                        const std::string& id) {
+                                  const std::string& email,
+                                  const std::string& id) {
     base::FilePath wallpaper_path =
         WallpaperManager::Get()->GetCustomWallpaperPath(sub_dir, email, id);
     if (!file_util::DirectoryExists(wallpaper_path.DirName()))
@@ -130,8 +135,57 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(WallpaperManagerBrowserTest);
 };
 
-// Tests that the appropriate custom wallpaper (large vs. small) is loaded
-// depending on the desktop resolution.
+// The large resolution wallpaper should be loaded when a large external screen
+// is hooked up. If the external screen is smaller than small wallpaper
+// resolution, do not load large resolution wallpaper.
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
+                       LoadLargeWallpaperForLargeExternalScreen) {
+  LogIn(kTestUser1);
+  WaitAsyncWallpaperLoad();
+  gfx::ImageSkia wallpaper = controller_->GetWallpaper();
+
+  // Display is initialized to 800x600. The small resolution default wallpaper
+  // is expected.
+  EXPECT_EQ(kExpectedSmallWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedSmallWallpaperHeight, wallpaper.height());
+
+  // Hook up another 800x600 display.
+  UpdateDisplay("800x600,800x600");
+#if !defined(GOOGLE_CHROME_BUILD)
+  // wallpaper.width() < 800, expect to reload wallpaper.
+  WaitAsyncWallpaperLoad();
+#endif
+  // The small resolution wallpaper is expected.
+  EXPECT_EQ(kExpectedSmallWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedSmallWallpaperHeight, wallpaper.height());
+
+  // Detach the secondary display.
+  UpdateDisplay("800x600");
+  // Hook up a 2000x2000 display. The large resolution default wallpaper should
+  // be loaded.
+  UpdateDisplay("800x600,2000x2000");
+  WaitAsyncWallpaperLoad();
+  wallpaper = controller_->GetWallpaper();
+
+  // The large resolution default wallpaper is expected.
+  EXPECT_EQ(kExpectedLargeWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedLargeWallpaperHeight, wallpaper.height());
+
+  // Detach the secondary display.
+  UpdateDisplay("800x600");
+  // Hook up the 2000x2000 display again. The large resolution default wallpaper
+  // should persist. Test for crbug/165788.
+  UpdateDisplay("800x600,2000x2000");
+  WaitAsyncWallpaperLoad();
+  wallpaper = controller_->GetWallpaper();
+
+  // The large resolution default wallpaper is expected.
+  EXPECT_EQ(kExpectedLargeWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedLargeWallpaperHeight, wallpaper.height());
+}
+
+// This test is similar to LoadLargeWallpaperForExternalScreen test. Instead of
+// testing default wallpaper, it tests custom wallpaper.
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        LoadCustomLargeWallpaperForLargeExternalScreen) {
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
@@ -152,10 +206,10 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // wallpaper paths.
   SaveUserWallpaperData(kTestUser1,
                         small_wallpaper_path,
-                        kSmallWallpaperResourceId);
+                        ash::kDefaultSmallWallpaper.idr);
   SaveUserWallpaperData(kTestUser1,
                         large_wallpaper_path,
-                        kLargeWallpaperResourceId);
+                        ash::kDefaultLargeWallpaper.idr);
 
   // Saves wallpaper info to local state for user |kTestUser1|.
   WallpaperInfo info = {
@@ -173,15 +227,18 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
 
   // Display is initialized to 800x600. The small resolution custom wallpaper is
   // expected.
-  EXPECT_EQ(kSmallWallpaperWidth, wallpaper.width());
-  EXPECT_EQ(kSmallWallpaperHeight, wallpaper.height());
+  EXPECT_EQ(kExpectedSmallWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedSmallWallpaperHeight, wallpaper.height());
 
   // Hook up another 800x600 display.
   UpdateDisplay("800x600,800x600");
+#if !defined(GOOGLE_CHROME_BUILD)
+  // wallpaper.width() < 800, expect to reload wallpaper.
   WaitAsyncWallpaperLoad();
+#endif
   // The small resolution custom wallpaper is expected.
-  EXPECT_EQ(kSmallWallpaperWidth, wallpaper.width());
-  EXPECT_EQ(kSmallWallpaperHeight, wallpaper.height());
+  EXPECT_EQ(kExpectedSmallWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedSmallWallpaperHeight, wallpaper.height());
 
   // Detach the secondary display.
   UpdateDisplay("800x600");
@@ -192,8 +249,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   wallpaper = controller_->GetWallpaper();
 
   // The large resolution custom wallpaper is expected.
-  EXPECT_EQ(kLargeWallpaperWidth, wallpaper.width());
-  EXPECT_EQ(kLargeWallpaperHeight, wallpaper.height());
+  EXPECT_EQ(kExpectedLargeWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedLargeWallpaperHeight, wallpaper.height());
 
   // Detach the secondary display.
   UpdateDisplay("800x600");
@@ -204,8 +261,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   wallpaper = controller_->GetWallpaper();
 
   // The large resolution custom wallpaper is expected.
-  EXPECT_EQ(kLargeWallpaperWidth, wallpaper.width());
-  EXPECT_EQ(kLargeWallpaperHeight, wallpaper.height());
+  EXPECT_EQ(kExpectedLargeWallpaperWidth, wallpaper.width());
+  EXPECT_EQ(kExpectedLargeWallpaperHeight, wallpaper.height());
 }
 
 // If chrome tries to reload the same wallpaper twice, the latter request should
@@ -236,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
       id);
   SaveUserWallpaperData(kTestUser1,
                         small_wallpaper_path,
-                        kSmallWallpaperResourceId);
+                        ash::kDefaultSmallWallpaper.idr);
 
   // Saves wallpaper info to local state for user |kTestUser1|.
   WallpaperInfo info = {
@@ -271,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
       GetOriginalWallpaperPathForUser(kTestUser1);
   SaveUserWallpaperData(kTestUser1,
                         old_wallpaper_path,
-                        kSmallWallpaperResourceId);
+                        ash::kDefaultSmallWallpaper.idr);
   // Saves wallpaper info to local state for user |kTestUser1|.
   WallpaperInfo info = {
       "DUMMY",
@@ -406,4 +463,4 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
   // can not handle pre migrated user profile (M21 profile or older).
 }
 
-}  // namespace chromeos
+}  // namepace chromeos
