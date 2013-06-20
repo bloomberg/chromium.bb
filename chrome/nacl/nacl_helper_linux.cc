@@ -28,6 +28,7 @@
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/rand_util.h"
 #include "chrome/nacl/nacl_listener.h"
+#include "chrome/nacl/nacl_sandbox_linux.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
@@ -38,13 +39,17 @@ namespace {
 // The child must mimic the behavior of zygote_main_linux.cc on the child
 // side of the fork. See zygote_main_linux.cc:HandleForkRequest from
 //   if (!child) {
-// Note: this code doesn't attempt to support the SECCOMP sandbox.
 void BecomeNaClLoader(const std::vector<int>& child_fds,
                       size_t prereserved_sandbox_size) {
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
   // don't need zygote FD any more
   if (HANDLE_EINTR(close(kNaClZygoteDescriptor)) != 0)
     LOG(ERROR) << "close(kNaClZygoteDescriptor) failed.";
+  bool sandbox_initialized = InitializeBpfSandbox();
+  if (!sandbox_initialized) {
+    LOG(ERROR) << "Could not initialize NaCl's second "
+      << "layer sandbox (seccomp-bpf).";
+  }
   base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
                                               child_fds[kNaClBrowserFDIndex]);
 
