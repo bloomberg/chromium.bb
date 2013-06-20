@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
 #include "net/dns/dns_protocol.h"
