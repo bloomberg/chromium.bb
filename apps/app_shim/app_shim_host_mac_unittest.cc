@@ -7,7 +7,6 @@
 #include "apps/app_shim/app_shim_messages.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/test/base/testing_profile.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +14,7 @@ namespace {
 
 class TestingAppShimHost : public AppShimHost {
  public:
-  explicit TestingAppShimHost(Profile* profile);
+  TestingAppShimHost() {}
   virtual ~TestingAppShimHost() {}
 
   bool ReceiveMessage(IPC::Message* message);
@@ -24,28 +23,14 @@ class TestingAppShimHost : public AppShimHost {
     return sent_messages_.get();
   }
 
-  void set_fails_profile(bool fails_profile) {
-    fails_profile_ = fails_profile;
-  }
-
  protected:
-  virtual Profile* FetchProfileForDirectory(const base::FilePath& profile_dir)
-      OVERRIDE;
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
  private:
-  Profile* test_profile_;
-  bool fails_profile_;
-
   ScopedVector<IPC::Message> sent_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingAppShimHost);
 };
-
-TestingAppShimHost::TestingAppShimHost(Profile* profile)
-    : test_profile_(profile),
-      fails_profile_(false) {
-}
 
 bool TestingAppShimHost::ReceiveMessage(IPC::Message* message) {
   bool handled = OnMessageReceived(*message);
@@ -58,13 +43,8 @@ bool TestingAppShimHost::Send(IPC::Message* message) {
   return true;
 }
 
-Profile* TestingAppShimHost::FetchProfileForDirectory(
-    const base::FilePath& profile_dir) {
-  return fails_profile_ ? NULL : test_profile_;
-}
-
 const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-const char kTestProfileDir[] = "Default";
+const char kTestProfileDir[] = "Profile 1";
 
 class AppShimHostTest : public testing::Test,
                         public apps::AppShimHandler {
@@ -77,7 +57,6 @@ class AppShimHostTest : public testing::Test,
                       quit_count_(0) {}
 
   TestingAppShimHost* host() { return host_.get(); }
-  TestingProfile* profile() { return profile_.get(); }
 
   void LaunchApp(bool launch_now) {
     EXPECT_TRUE(host()->ReceiveMessage(new AppShimHostMsg_LaunchApp(
@@ -122,12 +101,10 @@ class AppShimHostTest : public testing::Test,
  private:
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
-    profile_.reset(new TestingProfile);
-    host_.reset(new TestingAppShimHost(profile()));
+    host_.reset(new TestingAppShimHost());
   }
 
   scoped_ptr<TestingAppShimHost> host_;
-  scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
 };
@@ -168,12 +145,6 @@ TEST_F(AppShimHostTest, TestNoLaunchNow) {
   EXPECT_EQ(0, focus_count_);
   EXPECT_EQ(0, close_count_);
   apps::AppShimHandler::RemoveHandler(kTestAppId);
-}
-
-TEST_F(AppShimHostTest, TestFailProfile) {
-  host()->set_fails_profile(true);
-  LaunchApp(true);
-  ASSERT_FALSE(LaunchWasSuccessful());
 }
 
 TEST_F(AppShimHostTest, TestFailLaunch) {

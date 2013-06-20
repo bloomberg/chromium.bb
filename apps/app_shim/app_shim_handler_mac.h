@@ -8,6 +8,7 @@
 #include <string>
 
 #include "apps/app_shim/app_shim_launch.h"
+#include "base/files/file_path.h"
 
 class Profile;
 
@@ -23,7 +24,7 @@ class AppShimHandler {
     virtual void OnAppClosed() = 0;
 
     // Allows the handler to determine which app this host corresponds to.
-    virtual Profile* GetProfile() const = 0;
+    virtual base::FilePath GetProfilePath() const = 0;
     virtual std::string GetAppId() const = 0;
 
    protected:

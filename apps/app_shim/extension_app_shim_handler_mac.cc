@@ -7,10 +7,12 @@
 #include "apps/app_shim/app_shim_messages.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
@@ -24,7 +26,23 @@
 
 namespace apps {
 
-ExtensionAppShimHandler::ExtensionAppShimHandler() {
+bool ExtensionAppShimHandler::ProfileManagerFacade::ProfileExistsForPath(
+    const base::FilePath& path) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // Check for the profile name in the profile info cache to ensure that we
+  // never access any directory that isn't a known profile.
+  base::FilePath full_path = profile_manager->user_data_dir().Append(path);
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  return cache.GetIndexOfProfileWithPath(full_path) != std::string::npos;
+}
+
+Profile* ExtensionAppShimHandler::ProfileManagerFacade::ProfileForPath(
+    const base::FilePath& path) {
+  return g_browser_process->profile_manager()->GetProfile(path);
+}
+
+ExtensionAppShimHandler::ExtensionAppShimHandler()
+    : profile_manager_facade_(new ProfileManagerFacade) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
@@ -39,8 +57,18 @@ ExtensionAppShimHandler::~ExtensionAppShimHandler() {
 
 bool ExtensionAppShimHandler::OnShimLaunch(Host* host,
                                            AppShimLaunchType launch_type) {
-  Profile* profile = host->GetProfile();
-  DCHECK(profile);
+  const base::FilePath& profile_path = host->GetProfilePath();
+  DCHECK(!profile_path.empty());
+
+  if (!profile_manager_facade_->ProfileExistsForPath(profile_path)) {
+    // User may have deleted the profile this shim was originally created for.
+    // TODO(jackhou): Add some UI for this case and remove the LOG.
+    LOG(ERROR) << "Requested directory is not a known profile '"
+               << profile_path.value() << "'.";
+    return false;
+  }
+
+  Profile* profile = profile_manager_facade_->ProfileForPath(profile_path);
 
   const std::string& app_id = host->GetAppId();
   if (!extensions::Extension::IdIsValid(app_id)) {
@@ -48,6 +76,7 @@ bool ExtensionAppShimHandler::OnShimLaunch(Host* host,
     return false;
   }
 
+  // TODO(jackhou): Add some UI for this case and remove the LOG.
   if (!LaunchApp(profile, app_id, launch_type))
     return false;
 
@@ -69,8 +98,12 @@ bool ExtensionAppShimHandler::OnShimLaunch(Host* host,
 }
 
 void ExtensionAppShimHandler::OnShimClose(Host* host) {
-  HostMap::iterator it = hosts_.find(make_pair(host->GetProfile(),
-                                               host->GetAppId()));
+  DCHECK(profile_manager_facade_->ProfileExistsForPath(
+      host->GetProfilePath()));
+  Profile* profile =
+      profile_manager_facade_->ProfileForPath(host->GetProfilePath());
+
+  HostMap::iterator it = hosts_.find(make_pair(profile, host->GetAppId()));
   // Any hosts other than the main host will still call OnShimClose, so ignore
   // them.
   if (it != hosts_.end() && it->second == host)
@@ -78,11 +111,13 @@ void ExtensionAppShimHandler::OnShimClose(Host* host) {
 }
 
 void ExtensionAppShimHandler::OnShimFocus(Host* host) {
-  if (!host->GetProfile())
-    return;
+  DCHECK(profile_manager_facade_->ProfileExistsForPath(
+      host->GetProfilePath()));
+  Profile* profile =
+      profile_manager_facade_->ProfileForPath(host->GetProfilePath());
 
   extensions::ShellWindowRegistry* registry =
-      extensions::ShellWindowRegistry::Get(host->GetProfile());
+      extensions::ShellWindowRegistry::Get(profile);
   const extensions::ShellWindowRegistry::ShellWindowList windows =
       registry->GetShellWindowsForApp(host->GetAppId());
   std::set<gfx::NativeWindow> native_windows;
@@ -94,16 +129,23 @@ void ExtensionAppShimHandler::OnShimFocus(Host* host) {
 }
 
 void ExtensionAppShimHandler::OnShimQuit(Host* host) {
-  if (!host->GetProfile())
-    return;
+  DCHECK(profile_manager_facade_->ProfileExistsForPath(
+      host->GetProfilePath()));
+  Profile* profile =
+      profile_manager_facade_->ProfileForPath(host->GetProfilePath());
 
   extensions::ShellWindowRegistry::ShellWindowList windows =
-      extensions::ShellWindowRegistry::Get(host->GetProfile())->
+      extensions::ShellWindowRegistry::Get(profile)->
           GetShellWindowsForApp(host->GetAppId());
   for (extensions::ShellWindowRegistry::const_iterator it = windows.begin();
        it != windows.end(); ++it) {
     (*it)->GetBaseWindow()->Close();
   }
+}
+
+void ExtensionAppShimHandler::set_profile_manager_facade(
+    ProfileManagerFacade* profile_manager_facade) {
+  profile_manager_facade_.reset(profile_manager_facade);
 }
 
 bool ExtensionAppShimHandler::LaunchApp(Profile* profile,

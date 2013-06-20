@@ -14,8 +14,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
-class Profile;
-
 namespace IPC {
 struct ChannelHandle;
 class ChannelProxy;
@@ -40,10 +38,6 @@ class AppShimHost : public IPC::Listener,
   void ServeChannel(const IPC::ChannelHandle& handle);
 
  protected:
-
-  // Used internally; virtual so they can be mocked for testing.
-  virtual Profile* FetchProfileForDirectory(const base::FilePath& profile_dir);
-
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
@@ -70,7 +64,7 @@ class AppShimHost : public IPC::Listener,
 
   // apps::AppShimHandler::Host overrides:
   virtual void OnAppClosed() OVERRIDE;
-  virtual Profile* GetProfile() const OVERRIDE;
+  virtual base::FilePath GetProfilePath() const OVERRIDE;
   virtual std::string GetAppId() const OVERRIDE;
 
   // Closes the channel and destroys the AppShimHost.
@@ -78,7 +72,7 @@ class AppShimHost : public IPC::Listener,
 
   scoped_ptr<IPC::ChannelProxy> channel_;
   std::string app_id_;
-  Profile* profile_;
+  base::FilePath profile_path_;
 };
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_APP_SHIM_HOST_MAC_H_

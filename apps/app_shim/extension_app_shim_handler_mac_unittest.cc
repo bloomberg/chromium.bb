@@ -9,18 +9,32 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace apps {
 
+using ::testing::Return;
+
+class MockProfileManagerFacade
+    : public ExtensionAppShimHandler::ProfileManagerFacade {
+ public:
+  virtual ~MockProfileManagerFacade() {}
+
+  MOCK_METHOD1(ProfileExistsForPath, bool(const base::FilePath& path));
+  MOCK_METHOD1(ProfileForPath, Profile*(const base::FilePath& path));
+};
+
 class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
  public:
-  explicit TestingExtensionAppShimHandler() : fails_launch_(false) {}
+  TestingExtensionAppShimHandler(ProfileManagerFacade* profile_manager_facade) {
+    set_profile_manager_facade(profile_manager_facade);
+  }
   virtual ~TestingExtensionAppShimHandler() {}
 
-  void set_fails_launch(bool fails_launch) {
-    fails_launch_ = fails_launch;
-  }
+  MOCK_METHOD3(LaunchApp, bool(Profile*,
+                               const std::string&,
+                               AppShimLaunchType));
 
   AppShimHandler::Host* FindHost(Profile* profile,
                                  const std::string& app_id) {
@@ -30,16 +44,7 @@ class TestingExtensionAppShimHandler : public ExtensionAppShimHandler {
 
   content::NotificationRegistrar& GetRegistrar() { return registrar(); }
 
- protected:
-  virtual bool LaunchApp(Profile* profile,
-                         const std::string& app_id,
-                         AppShimLaunchType launch_type) OVERRIDE {
-    return !fails_launch_;
-  }
-
  private:
-  bool fails_launch_;
-
   DISALLOW_COPY_AND_ASSIGN(TestingExtensionAppShimHandler);
 };
 
@@ -48,10 +53,10 @@ const char kTestAppIdB[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
 class FakeHost : public apps::AppShimHandler::Host {
  public:
-  FakeHost(Profile* profile,
-           std::string app_id,
+  FakeHost(const base::FilePath& profile_path,
+           const std::string& app_id,
            TestingExtensionAppShimHandler* handler)
-      : profile_(profile),
+      : profile_path_(profile_path),
         app_id_(app_id),
         handler_(handler),
         close_count_(0) {}
@@ -60,13 +65,15 @@ class FakeHost : public apps::AppShimHandler::Host {
     handler_->OnShimClose(this);
     ++close_count_;
   }
-  virtual Profile* GetProfile() const OVERRIDE { return profile_; }
+  virtual base::FilePath GetProfilePath() const OVERRIDE {
+    return profile_path_;
+  }
   virtual std::string GetAppId() const OVERRIDE { return app_id_; }
 
   int close_count() { return close_count_; }
 
  private:
-  Profile* profile_;
+  base::FilePath profile_path_;
   std::string app_id_;
   TestingExtensionAppShimHandler* handler_;
   int close_count_;
@@ -77,13 +84,28 @@ class FakeHost : public apps::AppShimHandler::Host {
 class ExtensionAppShimHandlerTest : public testing::Test {
  protected:
   ExtensionAppShimHandlerTest()
-      : handler_(new TestingExtensionAppShimHandler),
-        host_aa_(&profile_a_, kTestAppIdA, handler_.get()),
-        host_ab_(&profile_a_, kTestAppIdB, handler_.get()),
-        host_bb_(&profile_b_, kTestAppIdB, handler_.get()),
-        host_aa_duplicate_(&profile_a_, kTestAppIdA, handler_.get()) {}
+      : profile_manager_facade_(new MockProfileManagerFacade),
+        handler_(new TestingExtensionAppShimHandler(profile_manager_facade_)),
+        profile_path_a_("Profile A"),
+        profile_path_b_("Profile B"),
+        host_aa_(profile_path_a_, kTestAppIdA, handler_.get()),
+        host_ab_(profile_path_a_, kTestAppIdB, handler_.get()),
+        host_bb_(profile_path_b_, kTestAppIdB, handler_.get()),
+        host_aa_duplicate_(profile_path_a_, kTestAppIdA, handler_.get()) {
+    EXPECT_CALL(*profile_manager_facade_, ProfileExistsForPath(profile_path_a_))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*profile_manager_facade_, ProfileForPath(profile_path_a_))
+        .WillRepeatedly(Return(&profile_a_));
+    EXPECT_CALL(*profile_manager_facade_, ProfileExistsForPath(profile_path_b_))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*profile_manager_facade_, ProfileForPath(profile_path_b_))
+        .WillRepeatedly(Return(&profile_b_));
+  }
 
+  MockProfileManagerFacade* profile_manager_facade_;
   scoped_ptr<TestingExtensionAppShimHandler> handler_;
+  base::FilePath profile_path_a_;
+  base::FilePath profile_path_b_;
   TestingProfile profile_a_;
   TestingProfile profile_b_;
   FakeHost host_aa_;
@@ -97,20 +119,32 @@ class ExtensionAppShimHandlerTest : public testing::Test {
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   // If launch fails, the host is not added to the map.
-  handler_->set_fails_launch(true);
+  EXPECT_CALL(*handler_,
+              LaunchApp(&profile_a_, kTestAppIdA, APP_SHIM_LAUNCH_NORMAL))
+      .WillOnce(Return(false));
   EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL));
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Normal startup.
-  handler_->set_fails_launch(false);
+  EXPECT_CALL(*handler_,
+              LaunchApp(&profile_a_, kTestAppIdA, APP_SHIM_LAUNCH_NORMAL))
+      .WillOnce(Return(true));
   EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL));
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
   EXPECT_TRUE(handler_->GetRegistrar().IsRegistered(
       handler_.get(),
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::Source<Profile>(&profile_a_)));
+
+  EXPECT_CALL(*handler_,
+              LaunchApp(&profile_a_, kTestAppIdB, APP_SHIM_LAUNCH_NORMAL))
+      .WillOnce(Return(true));
   EXPECT_EQ(true, handler_->OnShimLaunch(&host_ab_, APP_SHIM_LAUNCH_NORMAL));
   EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
+
+  EXPECT_CALL(*handler_,
+              LaunchApp(&profile_b_, kTestAppIdB, APP_SHIM_LAUNCH_NORMAL))
+      .WillOnce(Return(true));
   EXPECT_EQ(true, handler_->OnShimLaunch(&host_bb_, APP_SHIM_LAUNCH_NORMAL));
   EXPECT_EQ(&host_bb_, handler_->FindHost(&profile_b_, kTestAppIdB));
   EXPECT_TRUE(handler_->GetRegistrar().IsRegistered(
@@ -119,6 +153,9 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
       content::Source<Profile>(&profile_b_)));
 
   // Starting and closing a second host does nothing.
+  EXPECT_CALL(*handler_,
+              LaunchApp(&profile_a_, kTestAppIdA, APP_SHIM_LAUNCH_NORMAL))
+      .WillOnce(Return(false));
   EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_duplicate_,
                                           APP_SHIM_LAUNCH_NORMAL));
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));

@@ -9,10 +9,15 @@
 #include <string>
 
 #include "apps/app_shim/app_shim_handler_mac.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
+
+namespace base {
+class FilePath;
+}
 
 namespace extensions {
 class Extension;
@@ -25,6 +30,13 @@ namespace apps {
 class ExtensionAppShimHandler : public AppShimHandler,
                                 public content::NotificationObserver {
  public:
+  class ProfileManagerFacade {
+   public:
+    virtual ~ProfileManagerFacade() {}
+    virtual bool ProfileExistsForPath(const base::FilePath& path);
+    virtual Profile* ProfileForPath(const base::FilePath& path);
+  };
+
   ExtensionAppShimHandler();
   virtual ~ExtensionAppShimHandler();
 
@@ -39,6 +51,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
       HostMap;
 
   // Exposed for testing.
+  void set_profile_manager_facade(ProfileManagerFacade* profile_manager_facade);
   HostMap& hosts() { return hosts_; }
   content::NotificationRegistrar& registrar() { return registrar_; }
 
@@ -59,6 +72,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
 
   void CloseShim(Profile* profile, const std::string& app_id);
 
+  scoped_ptr<ProfileManagerFacade> profile_manager_facade_;
   HostMap hosts_;
 
   content::NotificationRegistrar registrar_;
