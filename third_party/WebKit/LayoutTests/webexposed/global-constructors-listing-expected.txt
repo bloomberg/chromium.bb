@@ -398,6 +398,7 @@ SpeechSynthesisEvent
 SpeechSynthesisUtterance
 Storage
 StorageEvent
+Stream
 String
 StyleSheet
 StyleSheetList

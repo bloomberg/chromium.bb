@@ -69,6 +69,7 @@ SessionStorage status=stable
 SharedWorker custom
 SpeechInput status=stable
 SpeechSynthesis status=experimental
+Stream status=experimental
 StyleScoped status=experimental
 Touch status=stable
 Vibration status=test
