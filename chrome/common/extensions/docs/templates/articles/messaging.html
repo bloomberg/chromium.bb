@@ -278,9 +278,8 @@ example of the manifest file:
   <dt>Windows:</dt>
     <dd>The manifest file can be located anywhere in the file system.
      The application installer must create registry key
-     <code>HKEY_LOCAL_MACHINE\SOFTWARE\Google\Chrome\NativeMessagingHosts</code>
-     (if it didn't exist), and then create string value with the same name as
-     the name of the host and set it to the full path to the host manifest file.
+     <code>HKEY_LOCAL_MACHINE\SOFTWARE\Google\Chrome\NativeMessagingHosts\<em>host_name</em></code>
+     and set default value of that key to the full path to the manifest file.
     </dd>
 
   <dt>OSX:</dt>

@@ -23,36 +23,41 @@ namespace extensions {
 const wchar_t kNativeMessagingRegistryKey[] =
     L"SOFTWARE\\Google\\Chrome\\NativeMessagingHosts";
 
+namespace {
+
+// Reads path to the native messaging host manifest from the registry. Returns
+// empty string if the path isn't found.
+string16 GetManifestPath(const string16& native_host_name, DWORD flags) {
+  base::win::RegKey key;
+  string16 result;
+
+  if (key.Open(HKEY_LOCAL_MACHINE, kNativeMessagingRegistryKey,
+               KEY_QUERY_VALUE | flags) != ERROR_SUCCESS ||
+      key.OpenKey(native_host_name.c_str(),
+                  KEY_QUERY_VALUE | flags) != ERROR_SUCCESS ||
+      key.ReadValue(NULL, &result) != ERROR_SUCCESS) {
+    return string16();
+  }
+
+  return result;
+}
+
+}  // namespace
+
 // static
 scoped_ptr<NativeMessagingHostManifest>
 NativeProcessLauncher::FindAndLoadManifest(
     const std::string& native_host_name,
     std::string* error_message) {
-  base::win::RegKey key;
-
-  string16 manifest_path;
   string16 native_host_name_wide = UTF8ToUTF16(native_host_name);
 
-  bool found = false;
-
   // First check 32-bit registry and then try 64-bit.
-  if (key.Open(HKEY_LOCAL_MACHINE, kNativeMessagingRegistryKey,
-               KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
-    if (key.ReadValue(native_host_name_wide.c_str(), &manifest_path) ==
-        ERROR_SUCCESS) {
-      found = true;
-    }
-  }
+  string16 manifest_path =
+      GetManifestPath(native_host_name_wide, KEY_WOW64_32KEY);
+  if (manifest_path.empty())
+    manifest_path = GetManifestPath(native_host_name_wide, KEY_WOW64_64KEY);
 
-  if (!found && key.Open(HKEY_LOCAL_MACHINE, kNativeMessagingRegistryKey,
-                         KEY_QUERY_VALUE | KEY_WOW64_64KEY) == ERROR_SUCCESS) {
-    if (key.ReadValue(native_host_name_wide.c_str(), &manifest_path) ==
-        ERROR_SUCCESS) {
-      found = true;
-    }
-  }
-
-  if (!found) {
+  if (manifest_path.empty()) {
     *error_message = "Native messaging host " + native_host_name +
         " is not registered";
     return scoped_ptr<NativeMessagingHostManifest>();
