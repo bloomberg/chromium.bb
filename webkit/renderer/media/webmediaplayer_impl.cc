@@ -437,9 +437,6 @@ double WebMediaPlayerImpl::duration() const {
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return std::numeric_limits<double>::quiet_NaN();
 
-  if (chunk_demuxer_)
-    return chunk_demuxer_->GetDuration();
-
   return GetPipelineDuration();
 }
 
