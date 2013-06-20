@@ -39,7 +39,8 @@ bool AppListControllerDelegateAsh::CanPin() {
   return ChromeLauncherController::instance()->CanPin();
 }
 
-bool AppListControllerDelegateAsh::CanShowCreateShortcutsDialog() {
+bool AppListControllerDelegateAsh::CanDoCreateShortcutsFlow(
+    bool is_platform_app) {
   return false;
 }
 

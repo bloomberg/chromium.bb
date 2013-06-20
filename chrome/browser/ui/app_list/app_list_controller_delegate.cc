@@ -27,7 +27,7 @@ void AppListControllerDelegate::PinApp(const std::string& extension_id) {}
 
 void AppListControllerDelegate::UnpinApp(const std::string& extension_id) {}
 
-void AppListControllerDelegate::ShowCreateShortcutsDialog(
+void AppListControllerDelegate::DoCreateShortcutsFlow(
     Profile* profile,
     const std::string& extension_id) {}
 

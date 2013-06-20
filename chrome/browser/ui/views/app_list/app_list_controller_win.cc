@@ -22,6 +22,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -257,10 +258,9 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual bool CanPin() OVERRIDE;
   virtual void OnShowExtensionPrompt() OVERRIDE;
   virtual void OnCloseExtensionPrompt() OVERRIDE;
-  virtual bool CanShowCreateShortcutsDialog() OVERRIDE;
-  virtual void ShowCreateShortcutsDialog(
-      Profile* profile,
-      const std::string& extension_id) OVERRIDE;
+  virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) OVERRIDE;
+  virtual void DoCreateShortcutsFlow(Profile* profile,
+                                     const std::string& extension_id) OVERRIDE;
   virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
@@ -431,14 +431,16 @@ void AppListControllerDelegateWin::OnCloseExtensionPrompt() {
   AppListController::GetInstance()->set_can_close(true);
 }
 
-bool AppListControllerDelegateWin::CanShowCreateShortcutsDialog() {
+bool AppListControllerDelegateWin::CanDoCreateShortcutsFlow(
+    bool is_platform_app) {
   return true;
 }
 
-void AppListControllerDelegateWin::ShowCreateShortcutsDialog(
+void AppListControllerDelegateWin::DoCreateShortcutsFlow(
     Profile* profile,
     const std::string& extension_id) {
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(service);
   const extensions::Extension* extension = service->GetInstalledExtension(
       extension_id);

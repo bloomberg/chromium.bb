@@ -11,11 +11,14 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
 #include "chrome/common/chrome_switches.h"
@@ -92,7 +95,9 @@ class AppListControllerDelegateCocoa : public AppListControllerDelegate {
   virtual void DismissView() OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual bool CanPin() OVERRIDE;
-  virtual bool CanShowCreateShortcutsDialog() OVERRIDE;
+  virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) OVERRIDE;
+  virtual void DoCreateShortcutsFlow(Profile* profile,
+                                     const std::string& extension_id) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
                            const extensions::Extension* extension,
                            int event_flags) OVERRIDE;
@@ -181,6 +186,12 @@ void CheckAppListShimOnFileThread(const base::FilePath& profile_path) {
   file_util::Delete(install_path, true /* recursive */);
 }
 
+void CreateShortcutsInDefaultLocation(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  web_app::CreateShortcuts(shortcut_info,
+                           ShellIntegration::ShortcutLocations());
+}
+
 AppListControllerDelegateCocoa::AppListControllerDelegateCocoa() {}
 
 AppListControllerDelegateCocoa::~AppListControllerDelegateCocoa() {}
@@ -197,9 +208,23 @@ bool AppListControllerDelegateCocoa::CanPin() {
   return false;
 }
 
-bool AppListControllerDelegateCocoa::CanShowCreateShortcutsDialog() {
-  // TODO(tapted): Return true when create shortcuts menu is tested on mac.
-  return false;
+bool AppListControllerDelegateCocoa::CanDoCreateShortcutsFlow(
+    bool is_platform_app) {
+  return is_platform_app &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppShims);
+}
+
+void AppListControllerDelegateCocoa::DoCreateShortcutsFlow(
+    Profile* profile, const std::string& extension_id) {
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  DCHECK(service);
+  const extensions::Extension* extension =
+      service->GetInstalledExtension(extension_id);
+  DCHECK(extension);
+
+  web_app::UpdateShortcutInfoAndIconForApp(
+      *extension, profile, base::Bind(&CreateShortcutsInDefaultLocation));
 }
 
 void AppListControllerDelegateCocoa::ActivateApp(

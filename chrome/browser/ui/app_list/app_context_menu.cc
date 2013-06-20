@@ -185,7 +185,7 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
               IDS_APP_LIST_CONTEXT_MENU_PIN);
     }
 
-    if (controller_->CanShowCreateShortcutsDialog()) {
+    if (controller_->CanDoCreateShortcutsFlow(is_platform_app_)) {
       menu_model_->AddItemWithStringId(CREATE_SHORTCUTS,
                                        IDS_NEW_TAB_APP_CREATE_SHORTCUT);
     }
@@ -202,6 +202,12 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
       if (!ash::Shell::IsForcedMaximizeMode())
 #endif
       {
+#if defined(OS_MACOSX)
+        // Mac does not support standalone web app browser windows or maximize.
+        menu_model_->AddCheckItemWithStringId(
+            LAUNCH_TYPE_FULLSCREEN,
+            IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
+#else
         menu_model_->AddCheckItemWithStringId(
             LAUNCH_TYPE_WINDOW,
             IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
@@ -210,6 +216,7 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
         menu_model_->AddCheckItemWithStringId(
             LAUNCH_TYPE_FULLSCREEN,
             IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
+#endif
       }
       menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
       menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
@@ -346,7 +353,7 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     else
       controller_->PinApp(app_id_);
   } else if (command_id == CREATE_SHORTCUTS) {
-    controller_->ShowCreateShortcutsDialog(profile_, app_id_);
+    controller_->DoCreateShortcutsFlow(profile_, app_id_);
   } else if (command_id >= LAUNCH_TYPE_START &&
              command_id < LAUNCH_TYPE_LAST) {
     SetExtensionLaunchType(profile_,
