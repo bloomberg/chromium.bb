@@ -15,15 +15,25 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/cras_audio_handler.h"
+
+namespace {
+
+std::string GetDeviceIdString(const chromeos::AudioDevice& device) {
+  return device.display_name + " : " +
+         base::UintToString((device.id & ((1ul << 32) - 1)));
+}
+
+}
 
 namespace chromeos {
 
 double AudioDevicesPrefHandlerImpl::GetVolumeGainValue(
-    uint64 device_id) {
+    const AudioDevice& device) {
   UpdateDevicesVolumePref();
 
-  std::string device_id_str = base::Uint64ToString(device_id);
+  std::string device_id_str = GetDeviceIdString(device);
   if (!device_volume_settings_->HasKey(device_id_str))
     MigrateDeviceVolumeSettings(device_id_str);
 
@@ -34,17 +44,17 @@ double AudioDevicesPrefHandlerImpl::GetVolumeGainValue(
 }
 
 void AudioDevicesPrefHandlerImpl::SetVolumeGainValue(
-    uint64 device_id, double value) {
+    const AudioDevice& device, double value) {
   value = std::min(std::max(value, 0.0), 100.0);
-  device_volume_settings_->SetDouble(base::Uint64ToString(device_id), value);
+  device_volume_settings_->SetDouble(GetDeviceIdString(device), value);
 
   SaveDevicesVolumePref();
 }
 
-bool AudioDevicesPrefHandlerImpl::GetMuteValue(uint64 device_id) {
+bool AudioDevicesPrefHandlerImpl::GetMuteValue(const AudioDevice& device) {
   UpdateDevicesMutePref();
 
-  std::string device_id_str = base::Uint64ToString(device_id);
+  std::string device_id_str = GetDeviceIdString(device);
   if (!device_mute_settings_->HasKey(device_id_str))
     MigrateDeviceMuteSettings(device_id_str);
 
@@ -54,9 +64,9 @@ bool AudioDevicesPrefHandlerImpl::GetMuteValue(uint64 device_id) {
   return (mute == kPrefMuteOn);
 }
 
-void AudioDevicesPrefHandlerImpl::SetMuteValue(uint64 device_id,
+void AudioDevicesPrefHandlerImpl::SetMuteValue(const AudioDevice& device,
                                                bool mute) {
-  device_mute_settings_->SetInteger(base::Uint64ToString(device_id),
+  device_mute_settings_->SetInteger(GetDeviceIdString(device),
                                     mute ? kPrefMuteOn : kPrefMuteOff);
   SaveDevicesMutePref();
 }

@@ -104,7 +104,10 @@ bool CrasAudioHandler::IsOutputMuted() {
 }
 
 bool CrasAudioHandler::IsOutputMutedForDevice(uint64 device_id) {
-  return audio_pref_handler_->GetMuteValue(device_id);
+  const AudioDevice* device = GetDeviceFromId(device_id);
+  if (!device)
+    return false;
+  return audio_pref_handler_->GetMuteValue(*device);
 }
 
 bool CrasAudioHandler::IsOutputVolumeBelowDefaultMuteLvel() {
@@ -116,7 +119,10 @@ bool CrasAudioHandler::IsInputMuted() {
 }
 
 bool CrasAudioHandler::IsInputMutedForDevice(uint64 device_id) {
-  return audio_pref_handler_->GetMuteValue(device_id);
+  const AudioDevice* device = GetDeviceFromId(device_id);
+  if (!device)
+    return false;
+  return audio_pref_handler_->GetMuteValue(*device);
 }
 
 int CrasAudioHandler::GetOutputVolumePercent() {
@@ -124,10 +130,14 @@ int CrasAudioHandler::GetOutputVolumePercent() {
 }
 
 int CrasAudioHandler::GetOutputVolumePercentForDevice(uint64 device_id) {
-  if (device_id == active_output_node_id_)
+  if (device_id == active_output_node_id_) {
     return output_volume_;
-  else
-    return (int) audio_pref_handler_->GetVolumeGainValue(device_id);
+  } else {
+    const AudioDevice* device = GetDeviceFromId(device_id);
+    if (!device)
+      return kDefaultVolumeGainPercent;
+    return static_cast<int>(audio_pref_handler_->GetVolumeGainValue(*device));
+  }
 }
 
 int CrasAudioHandler::GetInputGainPercent() {
@@ -135,10 +145,14 @@ int CrasAudioHandler::GetInputGainPercent() {
 }
 
 int CrasAudioHandler::GetInputGainPercentForDevice(uint64 device_id) {
-  if (device_id == active_input_node_id_)
+  if (device_id == active_input_node_id_) {
     return input_gain_;
-  else
-    return (int) audio_pref_handler_->GetVolumeGainValue(device_id);
+  } else {
+    const AudioDevice* device = GetDeviceFromId(device_id);
+    if (!device)
+      return kDefaultVolumeGainPercent;
+    return static_cast<int>(audio_pref_handler_->GetVolumeGainValue(*device));
+  }
 }
 
 uint64 CrasAudioHandler::GetActiveOutputNode() const {
@@ -150,18 +164,17 @@ uint64 CrasAudioHandler::GetActiveInputNode() const {
 }
 
 void CrasAudioHandler::GetAudioDevices(AudioDeviceList* device_list) const {
-  for (size_t i = 0; i < audio_devices_.size(); ++i)
-    device_list->push_back(audio_devices_[i]);
+  for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
+       it != audio_devices_.end(); ++it)
+    device_list->push_back(it->second);
 }
 
 bool CrasAudioHandler::GetActiveOutputDevice(AudioDevice* device) const {
-  for (size_t i = 0; i < audio_devices_.size(); ++i) {
-    if (audio_devices_[i].id == active_output_node_id_) {
-      *device = audio_devices_[i];
-      return true;
-    }
-  }
-  return false;
+  const AudioDevice* active_device = GetDeviceFromId(active_output_node_id_);
+  if (!device)
+    return false;
+  *device = *active_device;
+  return true;
 }
 
 bool CrasAudioHandler::has_alternative_input() const {
@@ -177,8 +190,10 @@ void CrasAudioHandler::SetOutputVolumePercent(int volume_percent) {
   if (volume_percent <= kMuteThresholdPercent)
     volume_percent = 0;
   output_volume_ = volume_percent;
-  audio_pref_handler_->SetVolumeGainValue(active_output_node_id_,
-                                          output_volume_);
+
+  if (const AudioDevice* device = GetDeviceFromId(active_output_node_id_))
+    audio_pref_handler_->SetVolumeGainValue(*device, output_volume_);
+
   SetOutputVolumeInternal(output_volume_);
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnOutputVolumeChanged());
 }
@@ -188,7 +203,10 @@ void CrasAudioHandler::SetInputGainPercent(int gain_percent) {
   if (gain_percent <= kMuteThresholdPercent)
     gain_percent = 0;
   input_gain_ = gain_percent;
-  audio_pref_handler_->SetVolumeGainValue(active_input_node_id_, input_gain_);
+
+  if (const AudioDevice* device = GetDeviceFromId(active_input_node_id_))
+    audio_pref_handler_->SetVolumeGainValue(*device, input_gain_);
+
   SetInputGainInternal(input_gain_);
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnInputGainChanged());
 }
@@ -202,7 +220,10 @@ void CrasAudioHandler::SetOutputMute(bool mute_on) {
     return;
 
   output_mute_on_ = mute_on;
-  audio_pref_handler_->SetMuteValue(active_output_node_id_, output_mute_on_);
+
+  if (const AudioDevice* device = GetDeviceFromId(active_output_node_id_))
+    audio_pref_handler_->SetMuteValue(*device, output_mute_on_);
+
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnOutputMuteChanged());
 }
 
@@ -219,7 +240,12 @@ void CrasAudioHandler::SetInputMute(bool mute_on) {
     return;
 
   input_mute_on_ = mute_on;
-  audio_pref_handler_->SetMuteValue(active_input_node_id_, input_mute_on_);
+
+  AudioDevice device;
+  if (const AudioDevice* device = GetDeviceFromId(active_input_node_id_))
+    audio_pref_handler_->SetMuteValue(*device, input_mute_on_);
+
+
   FOR_EACH_OBSERVER(AudioObserver, observers_, OnInputMuteChanged());
 }
 
@@ -247,7 +273,8 @@ void CrasAudioHandler::SetVolumeGainPercentForDevice(uint64 device_id,
   if (value <= kMuteThresholdPercent)
     value = 0;
 
-  audio_pref_handler_->SetVolumeGainValue(device_id, value);
+  if (const AudioDevice* device = GetDeviceFromId(device_id))
+    audio_pref_handler_->SetVolumeGainValue(*device, value);
 }
 
 void CrasAudioHandler::SetMuteForDevice(uint64 device_id, bool mute_on) {
@@ -258,7 +285,10 @@ void CrasAudioHandler::SetMuteForDevice(uint64 device_id, bool mute_on) {
     SetInputMute(mute_on);
     return;
   }
-  audio_pref_handler_->SetMuteValue(device_id, mute_on);
+
+  AudioDevice device;
+  if (const AudioDevice* device = GetDeviceFromId(device_id))
+    audio_pref_handler_->SetMuteValue(*device, mute_on);
 }
 
 CrasAudioHandler::CrasAudioHandler(
@@ -360,12 +390,20 @@ void CrasAudioHandler::OnAudioPolicyPrefChanged() {
   ApplyAudioPolicy();
 }
 
+const AudioDevice* CrasAudioHandler::GetDeviceFromId(uint64 device_id) const {
+  AudioDeviceMap::const_iterator it = audio_devices_.find(device_id);
+  if (it == audio_devices_.end())
+    return NULL;
+
+  return &(it->second);
+}
+
 void CrasAudioHandler::SetupAudioInputState() {
   // Set the initial audio state to the ones read from audio prefs.
-  if (active_input_node_id_) {
-    input_mute_on_ = audio_pref_handler_->GetMuteValue(active_input_node_id_);
-    input_gain_ = audio_pref_handler_->GetVolumeGainValue(
-        active_input_node_id_);
+  const AudioDevice* device = GetDeviceFromId(active_input_node_id_);
+  if (device) {
+    input_mute_on_ = audio_pref_handler_->GetMuteValue(*device);
+    input_gain_ = audio_pref_handler_->GetVolumeGainValue(*device);
   } else {
     input_mute_on_ = kPrefMuteOff;
     input_gain_ = kDefaultVolumeGainPercent;
@@ -376,10 +414,10 @@ void CrasAudioHandler::SetupAudioInputState() {
 }
 
 void CrasAudioHandler::SetupAudioOutputState() {
-  if (active_output_node_id_) {
-    output_mute_on_ = audio_pref_handler_->GetMuteValue(active_output_node_id_);
-    output_volume_ = audio_pref_handler_->GetVolumeGainValue(
-        active_output_node_id_);
+  const AudioDevice* device = GetDeviceFromId(active_output_node_id_);
+  if (device) {
+    output_mute_on_ = audio_pref_handler_->GetMuteValue(*device);
+    output_volume_ = audio_pref_handler_->GetVolumeGainValue(*device);
   } else {
     output_mute_on_ = kPrefMuteOff;
     output_volume_ = kDefaultVolumeGainPercent;
@@ -494,7 +532,7 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     else if (!nodes[i].is_input && nodes[i].active)
       active_output_node_id_ = nodes[i].id;
     AudioDevice device(nodes[i]);
-    audio_devices_.push_back(device);
+    audio_devices_[device.id] = device;
 
     if (!has_alternative_input_ &&
         device.is_input &&

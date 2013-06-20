@@ -92,9 +92,9 @@ AudioDevice::AudioDevice(const AudioNode& node) {
   id = node.id;
   type = GetAudioType(node.type);
   if (!node.name.empty() && node.name != "(default)")
-    display_name = UTF8ToUTF16(node.name);
+    display_name = node.name;
   else
-    display_name = UTF8ToUTF16(node.device_name);
+    display_name = node.device_name;
   priority = GetDevicePriority(type);
   active = node.active;
   plugged_time = node.plugged_time;
@@ -110,7 +110,7 @@ std::string AudioDevice::ToString() const {
                       base::Uint64ToString(id).c_str());
   base::StringAppendF(&result,
                       "display_name = %s ",
-                      UTF16ToUTF8(display_name).c_str());
+                      display_name.c_str());
   base::StringAppendF(&result,
                       "type = %s ",
                       GetTypeString(type).c_str());

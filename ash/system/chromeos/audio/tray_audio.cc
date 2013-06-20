@@ -444,7 +444,7 @@ class AudioDetailedView : public TrayDetailsView,
         false);  /* no checkmark */
     for (size_t i = 0; i < output_devices_.size(); ++i) {
       HoverHighlightView* container = AddScrollListItem(
-          output_devices_[i].display_name,
+          UTF8ToUTF16(output_devices_[i].display_name),
           gfx::Font::NORMAL,
           output_devices_[i].active);  /* checkmark if active */
       device_map_[container] = output_devices_[i];
@@ -459,7 +459,7 @@ class AudioDetailedView : public TrayDetailsView,
         false);  /* no checkmark */
     for (size_t i = 0; i < input_devices_.size(); ++i) {
       HoverHighlightView* container = AddScrollListItem(
-          input_devices_[i].display_name,
+          UTF8ToUTF16(input_devices_[i].display_name),
           gfx::Font::NORMAL,
           input_devices_[i].active);  /* checkmark if active */
       device_map_[container] = input_devices_[i];

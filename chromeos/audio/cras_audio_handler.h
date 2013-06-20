@@ -193,6 +193,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void SetupAudioInputState();
   void SetupAudioOutputState();
 
+  const AudioDevice* GetDeviceFromId(uint64 device_id) const;
+
   // Initializes audio state, which should only be called when CrasAudioHandler
   // is created or cras audio client is restarted.
   void InitializeAudioState();
@@ -232,7 +234,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   ObserverList<AudioObserver> observers_;
 
   // Audio data and state.
-  AudioDeviceList audio_devices_;
+  AudioDeviceMap audio_devices_;
 
   AudioDevicePriorityQueue input_devices_pq_;
   AudioDevicePriorityQueue output_devices_pq_;
