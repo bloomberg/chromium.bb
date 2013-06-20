@@ -1901,3 +1901,15 @@ crbug.com/251091 [ Mac ] http/tests/xmlviewer/dumpAsText/xmlviewer.xml [ Pass Cr
 crbug.com/251149 [ Mac Win Debug ] media/media-constants.html [ Pass Crash ]
 
 crbug.com/252038 [ Debug ] editing/selection/fake-doubleclick.html [ Pass Failure ]
+
+crbug.com/252052 [ Linux ] fast/canvas/image-pattern-rotate.html [ Pass ImageOnlyFailure ]
+crbug.com/252052 [ Linux ] svg/W3C-SVG-1.1/filters-example-01-b.svg [ Pass ImageOnlyFailure ]
+crbug.com/252052 [ Linux ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ Pass Failure ]
+crbug.com/252052 [ Linux ] svg/custom/marker-orient-auto.html [ Pass ImageOnlyFailure ]
+crbug.com/252052 [ Linux ] svg/custom/svg-curve-with-relative-cordinates.html [ Pass ImageOnlyFailure ]
+crbug.com/252052 [ Linux ] svg/custom/use-on-symbol-inside-pattern.svg [ Pass Failure ]
+crbug.com/252052 [ Linux ] webaudio/oscillator-custom.html [ Pass Failure ]
+crbug.com/252052 [ Linux ] webaudio/oscillator-sawtooth.html [ Pass Failure ]
+crbug.com/252052 [ Linux ] webaudio/oscillator-sine.html [ Pass Failure ]
+crbug.com/252052 [ Linux ] webaudio/oscillator-square.html [ Pass Failure ]
+crbug.com/252052 [ Linux ] webaudio/oscillator-triangle.html [ Pass Failure ]
