@@ -241,9 +241,16 @@ base::FilePath WebAppShortcutCreator::GetShortcutPath() const {
   if (dst_path.empty())
     return dst_path;
 
-  base::FilePath app_name = internals::GetSanitizedFileName(UTF8ToUTF16(
-      info_.profile_path.BaseName().value() + " " + info_.extension_id));
-  return dst_path.Append(app_name.ReplaceExtension("app"));
+  std::string app_name;
+  // Check if there should be a separate shortcut made for different profiles.
+  // Such shortcuts will have a |profile_name| set on the ShortcutInfo,
+  // otherwise it will be empty.
+  if (!info_.profile_name.empty()) {
+    app_name += info_.profile_path.BaseName().value();
+    app_name += ' ';
+  }
+  app_name += info_.extension_id;
+  return dst_path.Append(app_name).ReplaceExtension("app");
 }
 
 bool WebAppShortcutCreator::CreateShortcut() {

@@ -107,6 +107,23 @@ TEST(WebAppShortcutCreatorTest, CreateShortcut) {
   }
 }
 
+TEST(WebAppShortcutCreatorTest, CreateAppListShortcut) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath dst_folder = scoped_temp_dir.path();
+  ShellIntegration::ShortcutInfo info = GetShortcutInfo();
+
+  // With an empty |profile_name|, the shortcut path should not have the profile
+  // directory prepended to the extension id on the app bundle name.
+  info.profile_name.clear();
+  base::FilePath dst_path = dst_folder.Append(info.extension_id + ".app");
+
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(base::FilePath(), info);
+  EXPECT_CALL(shortcut_creator, GetDestinationPath())
+      .WillRepeatedly(Return(dst_folder));
+  EXPECT_EQ(dst_path.value(), shortcut_creator.GetShortcutPath().value());
+}
+
 TEST(WebAppShortcutCreatorTest, RunShortcut) {
   base::ScopedTempDir temp_app_data_path;
   EXPECT_TRUE(temp_app_data_path.CreateUniqueTempDir());
