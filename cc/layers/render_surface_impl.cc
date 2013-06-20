@@ -58,60 +58,6 @@ std::string RenderSurfaceImpl::Name() const {
                             owning_layer_->debug_name().data());
 }
 
-static std::string IndentString(int indent) {
-  std::string str;
-  for (int i = 0; i != indent; ++i)
-    str.append("  ");
-  return str;
-}
-
-void RenderSurfaceImpl::DumpSurface(std::string* str, int indent) const {
-  std::string indent_str = IndentString(indent);
-  str->append(indent_str);
-  base::StringAppendF(str, "%s\n", Name().data());
-
-  indent_str.append("  ");
-  str->append(indent_str);
-  base::StringAppendF(str,
-                      "content_rect: (%d, %d, %d, %d)\n",
-                      content_rect_.x(),
-                      content_rect_.y(),
-                      content_rect_.width(),
-                      content_rect_.height());
-
-  str->append(indent_str);
-  base::StringAppendF(str,
-                      "draw_transform: "
-                      "%f, %f, %f, %f, "
-                      "%f, %f, %f, %f, "
-                      "%f, %f, %f, %f, "
-                      "%f, %f, %f, %f\n",
-                      draw_transform_.matrix().getDouble(0, 0),
-                      draw_transform_.matrix().getDouble(0, 1),
-                      draw_transform_.matrix().getDouble(0, 2),
-                      draw_transform_.matrix().getDouble(0, 3),
-                      draw_transform_.matrix().getDouble(1, 0),
-                      draw_transform_.matrix().getDouble(1, 1),
-                      draw_transform_.matrix().getDouble(1, 2),
-                      draw_transform_.matrix().getDouble(1, 3),
-                      draw_transform_.matrix().getDouble(2, 0),
-                      draw_transform_.matrix().getDouble(2, 1),
-                      draw_transform_.matrix().getDouble(2, 2),
-                      draw_transform_.matrix().getDouble(2, 3),
-                      draw_transform_.matrix().getDouble(3, 0),
-                      draw_transform_.matrix().getDouble(3, 1),
-                      draw_transform_.matrix().getDouble(3, 2),
-                      draw_transform_.matrix().getDouble(3, 3));
-
-  str->append(indent_str);
-  base::StringAppendF(str,
-                      "current_damage_rect is pos(%f, %f), size(%f, %f)\n",
-                      damage_tracker_->current_damage_rect().x(),
-                      damage_tracker_->current_damage_rect().y(),
-                      damage_tracker_->current_damage_rect().width(),
-                      damage_tracker_->current_damage_rect().height());
-}
-
 int RenderSurfaceImpl::OwningLayerId() const {
   return owning_layer_ ? owning_layer_->id() : 0;
 }

@@ -47,8 +47,6 @@ CC_EXPORT extern const char kUIEnablePerTilePainting[];
 // Debug visualizations.
 CC_EXPORT extern const char kShowCompositedLayerBorders[];
 CC_EXPORT extern const char kUIShowCompositedLayerBorders[];
-CC_EXPORT extern const char kShowCompositedLayerTree[];
-CC_EXPORT extern const char kUIShowCompositedLayerTree[];
 CC_EXPORT extern const char kShowFPSCounter[];
 CC_EXPORT extern const char kUIShowFPSCounter[];
 CC_EXPORT extern const char kShowPropertyChangedRects[];

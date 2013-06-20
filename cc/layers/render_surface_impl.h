@@ -34,7 +34,6 @@ class CC_EXPORT RenderSurfaceImpl {
   virtual ~RenderSurfaceImpl();
 
   std::string Name() const;
-  void DumpSurface(std::string* str, int indent) const;
 
   gfx::PointF ContentRectCenter() const {
     return gfx::RectF(content_rect_).CenterPoint();

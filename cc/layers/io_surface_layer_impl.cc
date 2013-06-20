@@ -122,16 +122,6 @@ void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
   quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
 }
 
-void IOSurfaceLayerImpl::DumpLayerProperties(std::string* str,
-                                             int indent) const {
-  str->append(IndentString(indent));
-  base::StringAppendF(str,
-                      "iosurface id: %u texture id: %u\n",
-                      io_surface_id_,
-                      io_surface_texture_id_);
-  LayerImpl::DumpLayerProperties(str, indent);
-}
-
 void IOSurfaceLayerImpl::DidLoseOutputSurface() {
   // We don't have a valid texture ID in the new context; however,
   // the IOSurface is still valid.

@@ -34,8 +34,6 @@ class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
                         ResourceProvider* resource_provider) OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
 
-  virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
-
  private:
   IOSurfaceLayerImpl(LayerTreeImpl* tree_impl, int id);
 

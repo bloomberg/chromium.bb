@@ -33,8 +33,6 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
 
   virtual ResourceProvider::ResourceId ContentsResourceId() const OVERRIDE;
 
-  virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
-
   void set_skips_draw(bool skips_draw) { skips_draw_ = skips_draw; }
   void SetTilingData(const LayerTilingData& tiler);
   void PushTileProperties(int i,

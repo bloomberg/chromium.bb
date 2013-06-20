@@ -216,7 +216,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool CanDraw();
   OutputSurface* output_surface() const { return output_surface_.get(); }
 
-  std::string LayerTreeAsText() const;
   std::string LayerTreeAsJson() const;
 
   void FinishAllRendering();
@@ -433,10 +432,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void AnimateScrollbarsRecursive(LayerImpl* layer,
                                   base::TimeTicks time);
-
-  void DumpRenderSurfaces(std::string* str,
-                          int indent,
-                          const LayerImpl* layer) const;
 
   static LayerImpl* GetNonCompositedContentLayerRecursive(LayerImpl* layer);
 

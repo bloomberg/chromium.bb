@@ -71,12 +71,6 @@ ResourceProvider::ResourceId TiledLayerImpl::ContentsResourceId() const {
   return resource_id;
 }
 
-void TiledLayerImpl::DumpLayerProperties(std::string* str, int indent) const {
-  str->append(IndentString(indent));
-  base::StringAppendF(str, "skipsDraw: %d\n", (!tiler_ || skips_draw_));
-  LayerImpl::DumpLayerProperties(str, indent);
-}
-
 bool TiledLayerImpl::HasTileAt(int i, int j) const {
   return !!tiler_->TileAt(i, j);
 }

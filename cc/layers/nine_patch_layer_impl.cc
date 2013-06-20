@@ -274,16 +274,6 @@ const char* NinePatchLayerImpl::LayerTypeAsString() const {
   return "cc::NinePatchLayerImpl";
 }
 
-void NinePatchLayerImpl::DumpLayerProperties(std::string* str, int indent)
-    const {
-  str->append(IndentString(indent));
-  base::StringAppendF(
-      str, "imageAperture: %s\n", image_aperture_.ToString().c_str());
-  base::StringAppendF(
-      str, "image_bounds: %s\n", image_bounds_.ToString().c_str());
-  LayerImpl::DumpLayerProperties(str, indent);
-}
-
 base::DictionaryValue* NinePatchLayerImpl::LayerTreeAsJson() const {
   base::DictionaryValue* result = LayerImpl::LayerTreeAsJson();
 

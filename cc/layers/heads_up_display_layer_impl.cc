@@ -220,9 +220,6 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) const {
   if (debug_state.ShowHudRects())
     DrawDebugRects(canvas, layer_tree_impl()->debug_rect_history());
 
-  if (debug_state.show_platform_layer_tree)
-    DrawPlatformLayerTree(canvas);
-
   SkRect area = SkRect::MakeEmpty();
   if (debug_state.continuous_painting) {
     // Don't show the FPS display when continuous painting is enabled, because
@@ -299,33 +296,6 @@ void HeadsUpDisplayLayerImpl::DrawGraphLines(SkCanvas* canvas,
                    bounds.top() + indicator_top,
                    *paint);
   paint->setXfermode(NULL);
-}
-
-void HeadsUpDisplayLayerImpl::DrawPlatformLayerTree(SkCanvas* canvas) const {
-  const int kFontHeight = 14;
-  SkPaint paint = CreatePaint();
-  DrawGraphBackground(
-      canvas,
-      &paint,
-      SkRect::MakeXYWH(0, 0, bounds().width(), bounds().height()));
-
-  std::string layer_tree = layer_tree_impl()->layer_tree_as_text();
-  std::vector<std::string> lines;
-  base::SplitString(layer_tree, '\n', &lines);
-
-  paint.setColor(DebugColors::PlatformLayerTreeTextColor());
-  for (size_t i = 0;
-       i < lines.size() &&
-           static_cast<int>(2 + i * kFontHeight) < bounds().height();
-       ++i) {
-    DrawText(canvas,
-             &paint,
-             lines[i],
-             SkPaint::kLeft_Align,
-             kFontHeight,
-             2,
-             2 + (i + 1) * kFontHeight);
-  }
 }
 
 SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(

@@ -2168,16 +2168,6 @@ void LayerTreeHostImpl::ClearRenderSurfaces() {
     pending_tree_->ClearRenderSurfaces();
 }
 
-std::string LayerTreeHostImpl::LayerTreeAsText() const {
-  std::string str;
-  if (active_tree_->root_layer()) {
-    str = active_tree_->root_layer()->LayerTreeAsText();
-    str +=  "RenderSurfaces:\n";
-    DumpRenderSurfaces(&str, 1, active_tree_->root_layer());
-  }
-  return str;
-}
-
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {
   std::string str;
   if (active_tree_->root_layer()) {
@@ -2186,16 +2176,6 @@ std::string LayerTreeHostImpl::LayerTreeAsJson() const {
         json.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &str);
   }
   return str;
-}
-
-void LayerTreeHostImpl::DumpRenderSurfaces(std::string* str,
-                                           int indent,
-                                           const LayerImpl* layer) const {
-  if (layer->render_surface())
-    layer->render_surface()->DumpSurface(str, indent);
-
-  for (size_t i = 0; i < layer->children().size(); ++i)
-    DumpRenderSurfaces(str, indent, layer->children()[i]);
 }
 
 int LayerTreeHostImpl::SourceAnimationFrameNumber() const {

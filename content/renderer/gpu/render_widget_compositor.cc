@@ -194,8 +194,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       cmd->HasSwitch(cc::switches::kShowFPSCounter);
   settings.initial_debug_state.show_paint_rects =
       cmd->HasSwitch(switches::kShowPaintRects);
-  settings.initial_debug_state.show_platform_layer_tree =
-      cmd->HasSwitch(cc::switches::kShowCompositedLayerTree);
   settings.initial_debug_state.show_property_changed_rects =
       cmd->HasSwitch(cc::switches::kShowPropertyChangedRects);
   settings.initial_debug_state.show_surface_damage_rects =

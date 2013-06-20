@@ -299,10 +299,6 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   CleanUpTilingsOnActiveLayer(seen_tilings);
 }
 
-void PictureLayerImpl::DumpLayerProperties(std::string*, int indent) const {
-  // TODO(enne): implement me
-}
-
 void PictureLayerImpl::UpdateTilePriorities() {
   if (!tilings_->num_tilings())
     return;

@@ -118,15 +118,6 @@ void TextureLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   external_texture_resource_ = 0;
 }
 
-void TextureLayerImpl::DumpLayerProperties(std::string* str, int indent) const {
-  str->append(IndentString(indent));
-  base::StringAppendF(str,
-                      "texture layer texture id: %u premultiplied: %d\n",
-                      texture_id_,
-                      premultiplied_alpha_);
-  LayerImpl::DumpLayerProperties(str, indent);
-}
-
 void TextureLayerImpl::DidLoseOutputSurface() {
   if (external_texture_resource_ && !uses_mailbox_) {
     ResourceProvider* resource_provider =

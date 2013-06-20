@@ -11,7 +11,6 @@ namespace cc {
 // IMPORTANT: new fields must be added to Equal() and Unite()
 LayerTreeDebugState::LayerTreeDebugState()
     : show_fps_counter(false),
-      show_platform_layer_tree(false),
       show_debug_borders(false),
       continuous_painting(false),
       show_paint_rects(false),
@@ -37,7 +36,7 @@ bool LayerTreeDebugState::RecordRenderingStats() const {
 }
 
 bool LayerTreeDebugState::ShowHudInfo() const {
-  return show_fps_counter || show_platform_layer_tree || continuous_painting ||
+  return show_fps_counter || continuous_painting ||
          ShowHudRects();
 }
 
@@ -55,7 +54,6 @@ bool LayerTreeDebugState::ShowMemoryStats() const {
 bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
                                 const LayerTreeDebugState& b) {
   return (a.show_fps_counter == b.show_fps_counter &&
-          a.show_platform_layer_tree == b.show_platform_layer_tree &&
           a.show_debug_borders == b.show_debug_borders &&
           a.continuous_painting == b.continuous_painting &&
           a.show_paint_rects == b.show_paint_rects &&
@@ -78,7 +76,6 @@ LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
   LayerTreeDebugState r(a);
 
   r.show_fps_counter |= b.show_fps_counter;
-  r.show_platform_layer_tree |= b.show_platform_layer_tree;
   r.show_debug_borders |= b.show_debug_borders;
   r.continuous_painting |= b.continuous_painting;
 

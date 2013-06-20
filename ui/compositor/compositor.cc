@@ -507,8 +507,6 @@ Compositor::Compositor(CompositorDelegate* delegate,
       command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   settings.initial_debug_state.show_paint_rects =
       command_line->HasSwitch(switches::kUIShowPaintRects);
-  settings.initial_debug_state.show_platform_layer_tree =
-      command_line->HasSwitch(cc::switches::kUIShowCompositedLayerTree);
   settings.initial_debug_state.show_property_changed_rects =
       command_line->HasSwitch(cc::switches::kUIShowPropertyChangedRects);
   settings.initial_debug_state.show_surface_damage_rects =

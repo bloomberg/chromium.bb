@@ -34,7 +34,6 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
 
   virtual void DidLoseOutputSurface() OVERRIDE;
 
-  virtual void DumpLayerProperties(std::string* str, int indent) const OVERRIDE;
   virtual void DidBecomeActive() OVERRIDE;
 
   unsigned texture_id() const { return texture_id_; }

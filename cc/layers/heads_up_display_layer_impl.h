@@ -93,7 +93,6 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                       const SkRect& bounds,
                       const Graph& graph) const;
 
-  void DrawPlatformLayerTree(SkCanvas* canvas) const;
   SkRect DrawFPSDisplay(SkCanvas* canvas,
                         const FrameRateCounter* fps_counter,
                         int right,

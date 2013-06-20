@@ -379,7 +379,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   }
   const gfx::RectF& update_rect() const { return update_rect_; }
 
-  std::string LayerTreeAsText() const;
   virtual base::DictionaryValue* LayerTreeAsJson() const;
 
   void SetStackingOrderChanged(bool stacking_order_changed);
@@ -453,9 +452,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
                              SkColor color,
                              float width) const;
 
-  virtual void DumpLayerProperties(std::string* str, int indent) const;
-  static std::string IndentString(int indent);
-
   virtual void AsValueInto(base::DictionaryValue* dict) const;
 
   void NoteLayerSurfacePropertyChanged();
@@ -469,8 +465,6 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void UpdateScrollbarPositions();
 
   virtual const char* LayerTypeAsString() const;
-
-  void DumpLayer(std::string* str, int indent) const;
 
   // Properties internal to LayerImpl
   LayerImpl* parent_;

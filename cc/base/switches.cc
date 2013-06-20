@@ -90,11 +90,6 @@ const char kUIEnablePerTilePainting[] = "ui-enable-per-tile-painting";
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";
 const char kUIShowCompositedLayerBorders[] = "ui-show-layer-borders";
 
-// Draws a textual dump of the compositor layer tree to help debug and study
-// layer compositing.
-const char kShowCompositedLayerTree[] = "show-composited-layer-tree";
-const char kUIShowCompositedLayerTree[] = "ui-show-layer-tree";
-
 // Draws a FPS indicator
 const char kShowFPSCounter[] = "show-fps-counter";
 const char kUIShowFPSCounter[] = "ui-show-fps-counter";
