@@ -7,6 +7,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm/event_rewriter_event_filter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
@@ -161,6 +162,7 @@ AccessibilityManager* AccessibilityManager::Get() {
 AccessibilityManager::AccessibilityManager()
     : profile_(NULL),
       large_cursor_enabled_(false),
+      sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE) {
@@ -214,6 +216,35 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 
 bool AccessibilityManager::IsLargeCursorEnabled() {
   return large_cursor_enabled_;
+}
+
+void AccessibilityManager::EnableStickyKeys(bool enabled) {
+  if (!profile_)
+    return;
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kStickyKeysEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+bool AccessibilityManager::IsStickyKeysEnabled() {
+  return sticky_keys_enabled_;
+}
+
+void AccessibilityManager::UpdateStickyKeysFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kStickyKeysEnabled);
+
+  if (sticky_keys_enabled_ == enabled)
+    return;
+
+  sticky_keys_enabled_ = enabled;
+#if defined(USE_ASH)
+  // Sticky keys is implemented only in ash.
+  ash::Shell::GetInstance()->event_rewriter_filter()->EnableStickyKeys(enabled);
+#endif
 }
 
 void AccessibilityManager::EnableSpokenFeedback(
@@ -418,6 +449,10 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::Bind(&AccessibilityManager::UpdateLargeCursorFromPref,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
+        prefs::kStickyKeysEnabled,
+        base::Bind(&AccessibilityManager::UpdateStickyKeysFromPref,
+                   base::Unretained(this)));
+    pref_change_registrar_->Add(
         prefs::kSpokenFeedbackEnabled,
         base::Bind(&AccessibilityManager::UpdateSpokenFeedbackFromPref,
                    base::Unretained(this)));
@@ -441,6 +476,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
 
   profile_ = profile;
   UpdateLargeCursorFromPref();
+  UpdateStickyKeysFromPref();
   UpdateSpokenFeedbackFromPref();
   UpdateHighContrastFromPref();
 }

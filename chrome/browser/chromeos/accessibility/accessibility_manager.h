@@ -48,6 +48,12 @@ class AccessibilityManager : public content::NotificationObserver {
   // Returns true if the large cursor is enabled, or false if not.
   bool IsLargeCursorEnabled();
 
+  // Enables or disable Sticky Keys.
+  void EnableStickyKeys(bool enabled);
+
+  // Returns true if the Sticky Keys is enabled, or false if not.
+  bool IsStickyKeysEnabled();
+
   // Enables or disables spoken feedback. Enabling spoken feedback installs the
   // ChromeVox component extension.
   void EnableSpokenFeedback(bool enabled,
@@ -79,6 +85,7 @@ class AccessibilityManager : public content::NotificationObserver {
 
  private:
   void UpdateLargeCursorFromPref();
+  void UpdateStickyKeysFromPref();
   void UpdateSpokenFeedbackFromPref();
   void UpdateHighContrastFromPref();
   void LocalePrefChanged();
@@ -98,6 +105,7 @@ class AccessibilityManager : public content::NotificationObserver {
   scoped_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
 
   bool large_cursor_enabled_;
+  bool sticky_keys_enabled_;
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
 
