@@ -1155,6 +1155,7 @@
             'android/java/src/org/chromium/base/PathUtils.java',
             'android/java/src/org/chromium/base/PowerMonitor.java',
             'android/java/src/org/chromium/base/SystemMessageHandler.java',
+            'android/java/src/org/chromium/base/SysUtils.java',
             'android/java/src/org/chromium/base/ThreadUtils.java',
           ],
           'conditions': [

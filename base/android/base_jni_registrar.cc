@@ -13,6 +13,7 @@
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/android/path_service_android.h"
 #include "base/android/path_utils.h"
+#include "base/android/sys_utils.h"
 #include "base/android/thread_utils.h"
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
@@ -40,6 +41,7 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
   { "PathService", base::android::RegisterPathService },
   { "PathUtils", base::android::RegisterPathUtils },
   { "SystemMessageHandler", base::MessagePumpForUI::RegisterBindings },
+  { "SysUtils", base::android::SysUtils::Register },
   { "PowerMonitor", base::RegisterPowerMonitor },
   { "ThreadUtils", base::RegisterThreadUtils },
 };
