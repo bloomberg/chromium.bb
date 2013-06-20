@@ -91,6 +91,13 @@ void SetOutputValue(const DetailInputs& inputs,
   }
 }
 
+scoped_ptr<wallet::WalletItems> CompleteAndValidWalletItems() {
+  scoped_ptr<wallet::WalletItems> items = wallet::GetTestWalletItems();
+  items->AddInstrument(wallet::GetTestMaskedInstrument());
+  items->AddAddress(wallet::GetTestShippingAddress());
+  return items.Pass();
+}
+
 scoped_ptr<wallet::FullWallet> CreateFullWallet(const char* required_action) {
   base::DictionaryValue dict;
   scoped_ptr<base::ListValue> list(new base::ListValue());
@@ -410,6 +417,16 @@ class AutofillDialogControllerTest : public testing::Test {
     ValidityData validity_data =
         controller()->InputsAreValid(section, outputs, VALIDATE_FINAL);
     EXPECT_EQ(should_pass ? 0U : 1U, validity_data.count(CREDIT_CARD_NUMBER));
+  }
+
+  void SubmitWithWalletItems(scoped_ptr<wallet::WalletItems> wallet_items) {
+    controller()->OnDidGetWalletItems(wallet_items.Pass());
+    AcceptAndLoadFakeFingerprint();
+  }
+
+  void AcceptAndLoadFakeFingerprint() {
+    controller()->OnAccept();
+    controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
   }
 
   TestAutofillDialogController* controller() { return controller_.get(); }
@@ -964,10 +981,8 @@ TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
               GetFullWallet(_)).Times(1);
   EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items = CompleteAndValidWalletItems();
   wallet_items->AddLegalDocument(wallet::GetTestLegalDocument());
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
   controller()->OnDidAcceptLegalDocuments();
@@ -1063,8 +1078,7 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
   ui::MenuModel* shipping_model =
       controller()->MenuModelForSection(SECTION_SHIPPING);
   shipping_model->ActivatedAt(shipping_model->GetItemCount() - 1);
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrument) {
@@ -1074,9 +1088,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrument) {
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  SubmitWithWalletItems(wallet_items.Pass());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
@@ -1087,9 +1099,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrumentInvalid());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  SubmitWithWalletItems(wallet_items.Pass());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
@@ -1097,8 +1107,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
               SaveInstrumentAndAddress(_, _, _, _)).Times(1);
 
   controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 }
 
 // Tests that editing an address (in wallet mode0 and submitting the dialog
@@ -1107,27 +1116,19 @@ TEST_F(AutofillDialogControllerTest, UpdateAddress) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               UpdateAddress(_, _)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
 
   controller()->EditClickedForSection(SECTION_SHIPPING);
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 }
 
 // Tests that editing an instrument (CC + address) in wallet mode updates an
 // existing instrument on the server via WalletClient.
 TEST_F(AutofillDialogControllerTest, UpdateInstrument) {
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
 
   controller()->EditClickedForSection(SECTION_CC_BILLING);
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 
   EXPECT_TRUE(
       controller()->GetTestingWalletClient()->updated_billing_address());
@@ -1144,8 +1145,7 @@ TEST_F(AutofillDialogControllerTest, UpdateInstrumentSaveAddress) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
   controller()->EditClickedForSection(SECTION_CC_BILLING);
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 
   EXPECT_TRUE(
       controller()->GetTestingWalletClient()->updated_billing_address());
@@ -1164,8 +1164,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentUpdateAddress) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
   controller()->EditClickedForSection(SECTION_SHIPPING);
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 }
 
 MATCHER(UsesLocalBillingAddress, "uses the local billing address") {
@@ -1178,16 +1177,11 @@ TEST_F(AutofillDialogControllerTest, BillingForShipping) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveAddress(_, _)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   // Select "Same as billing" in the address menu.
   UseBillingForShipping();
 
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 }
 
 // Tests that when using billing address for shipping, and there is an exact
@@ -1211,8 +1205,7 @@ TEST_F(AutofillDialogControllerTest, BillingForShippingHasMatch) {
   // Select "Same as billing" in the address menu.
   UseBillingForShipping();
 
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 }
 
 // Tests that adding new instrument and also using billing address for shipping,
@@ -1228,8 +1221,7 @@ TEST_F(AutofillDialogControllerTest, BillingForShippingNewInstrument) {
   // Select "Same as billing" in the address menu.
   UseBillingForShipping();
 
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 }
 
 // Test that the local view contents is used when saving a new instrument and
@@ -1254,8 +1246,7 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentSameAsBilling) {
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               SaveAddress(UsesLocalBillingAddress(), _)).Times(1);
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  AcceptAndLoadFakeFingerprint();
 
   EXPECT_TRUE(
       controller()->GetTestingWalletClient()->updated_billing_address());
@@ -1468,12 +1459,7 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               AuthenticateInstrument(_, _, _)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  SubmitWithWalletItems(CompleteAndValidWalletItems());
 
   EXPECT_TRUE(NotificationsOfType(DialogNotification::REQUIRED_ACTION).empty());
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
@@ -1507,12 +1493,7 @@ TEST_F(AutofillDialogControllerTest, ErrorDuringSubmit) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  SubmitWithWalletItems(CompleteAndValidWalletItems());
 
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -1528,12 +1509,7 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringSubmit) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  SubmitWithWalletItems(CompleteAndValidWalletItems());
 
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
@@ -1549,12 +1525,7 @@ TEST_F(AutofillDialogControllerTest, ErrorDuringVerifyCvv) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  SubmitWithWalletItems(CompleteAndValidWalletItems());
   controller()->OnDidGetFullWallet(CreateFullWallet("verify_cvv"));
 
   ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
@@ -1571,12 +1542,7 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringVerifyCvv) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
 
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  SubmitWithWalletItems(CompleteAndValidWalletItems());
   controller()->OnDidGetFullWallet(CreateFullWallet("verify_cvv"));
 
   ASSERT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
@@ -1645,10 +1611,7 @@ TEST_F(AutofillDialogControllerTest, WalletBanners) {
       DialogNotification::WALLET_USAGE_CONFIRMATION).size());
 
   // Sign in a user with a completed account.
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
 
   // Full account; should show "Details from Wallet" message.
   EXPECT_EQ(1U, NotificationsOfType(
@@ -1669,7 +1632,7 @@ TEST_F(AutofillDialogControllerTest, WalletBanners) {
   prefs->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet, true);
 
   // Sign in a user with a incomplete account.
-  wallet_items = wallet::GetTestWalletItems();
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
 
@@ -1707,10 +1670,7 @@ TEST_F(AutofillDialogControllerTest, WalletBanners) {
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::WALLET_USAGE_CONFIRMATION).size());
 
-  wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
 
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::EXPLANATORY_MESSAGE).size());
@@ -1844,9 +1804,7 @@ TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
   SwitchToWallet();
 
   // Setup some wallet state, submit, and get a full wallet to end the flow.
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  scoped_ptr<wallet::WalletItems> wallet_items = CompleteAndValidWalletItems();
 
   // Filling |form_structure()| depends on the current username and wallet items
   // being fetched. Until both of these have occurred, the user should not be
@@ -2053,12 +2011,7 @@ TEST_F(AutofillDialogControllerTest, WalletExpiredCard) {
 }
 
 TEST_F(AutofillDialogControllerTest, ChooseAnotherInstrumentOrAddress) {
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
-  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  controller()->OnAccept();
-  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+  SubmitWithWalletItems(CompleteAndValidWalletItems());
 
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::REQUIRED_ACTION).size());
