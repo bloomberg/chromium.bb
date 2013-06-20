@@ -65,6 +65,25 @@ uint32 GetActualBufferSize(uint32 param_count, void* buffer_base) {
   }
 }
 
+// Verifies that the declared sizes of an IPC buffer are within range.
+bool IsSizeWithinRange(uint32 buffer_size, uint32 min_declared_size,
+                       uint32 declared_size) {
+  if ((buffer_size < min_declared_size) ||
+      (sizeof(CrossCallParamsEx) > min_declared_size)) {
+    // Minimal computed size bigger than existing buffer or param_count
+    // integer overflow.
+    return false;
+  }
+
+  if ((declared_size > buffer_size) || (declared_size < min_declared_size)) {
+    // Declared size is bigger than buffer or smaller than computed size
+    // or param_count is equal to 0 or bigger than 9.
+    return false;
+  }
+
+  return true;
+}
+
 CrossCallParamsEx::CrossCallParamsEx()
   :CrossCallParams(0, 0) {
 }
@@ -117,22 +136,11 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     min_declared_size = sizeof(CrossCallParams) +
                         ((param_count + 1) * sizeof(ParamInfo));
 
-    if ((buffer_size < min_declared_size) ||
-        (sizeof(CrossCallParamsEx) > min_declared_size)) {
-      // Minimal computed size bigger than existing buffer or param_count
-      // integer overflow.
-      return NULL;
-    }
-
     // Retrieve the declared size which if it fails returns 0.
     declared_size = GetActualBufferSize(param_count, buffer_base);
 
-    if ((declared_size > buffer_size) ||
-        (declared_size < min_declared_size)) {
-      // Declared size is bigger than buffer or smaller than computed size
-      // or param_count 0 or bigger than 9.
+    if (!IsSizeWithinRange(buffer_size, min_declared_size, declared_size))
       return NULL;
-    }
 
     // Now we copy the actual amount of the message.
     *output_size = declared_size;
@@ -140,8 +148,18 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     copied_params = reinterpret_cast<CrossCallParamsEx*>(backing_mem);
     memcpy(backing_mem, call_params, declared_size);
 
-    // Check params count in case it got changed right before the memcpy.
-    if (copied_params->GetParamsCount() != param_count) {
+    // Avoid compiler optimizations across this point. Any value stored in
+    // memory should be stored for real, and values previously read from memory
+    // should be actually read.
+    _ReadWriteBarrier();
+
+    min_declared_size = sizeof(CrossCallParams) +
+                        ((param_count + 1) * sizeof(ParamInfo));
+
+    // Check that the copied buffer is still valid.
+    if (copied_params->GetParamsCount() != param_count ||
+        GetActualBufferSize(param_count, backing_mem) != declared_size ||
+        !IsSizeWithinRange(buffer_size, min_declared_size, declared_size)) {
       delete [] backing_mem;
       return NULL;
     }
