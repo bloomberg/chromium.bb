@@ -11288,7 +11288,14 @@ other types of suffix sets.
     enum="TranslateLanguageVerification">
   <summary>
     For each page load, measures whether the provided Content-Language header
-    matches the language determined by CLD.
+    matches the language determined by CLD.  Beyond directly matching or
+    mismatching the Content-Language header, CLD can complement the
+    Content-Language.  For example, suppose the Content-Language header
+    specifies 'zh' (general Chinese), a language code that the Translate server
+    does not support.  In this case, CLD can detect a subcode like '-TW' or
+    '-CN', resulting in language codes 'zh-TW' and 'zh-CN', which the Translate
+    server supports.  This is referred to as &quot;complementing a language
+    subcode&quot;.
   </summary>
 </histogram>
 
@@ -17952,6 +17959,8 @@ other types of suffix sets.
   <int value="2" label="CLD can not determine a language"/>
   <int value="3" label="CLD agrees with Content-Language"/>
   <int value="4" label="CLD disagrees with Content-Language"/>
+  <int value="5" label="CLD can be trusted"/>
+  <int value="6" label="CLD can complement a sub code"/>
 </enum>
 
 <enum name="TranslateScheme" type="int">

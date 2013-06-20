@@ -392,6 +392,16 @@ bool TranslateHelper::MaybeServerWrongConfiguration(
 }
 
 // static
+bool TranslateHelper::CanCLDComplementSubCode(
+    const std::string& page_language, const std::string& cld_language) {
+  // Translate server cannot treat general Chinese. If Content-Language and
+  // CLD agree that the language is Chinese and Content-Language doesn't know
+  // which dialect is used, CLD language has priority.
+  // TODO(hajimehoshi): How about the other dialects like zh-MO?
+  return page_language == "zh" && StartsWithASCII(cld_language, "zh-", false);
+}
+
+// static
 std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
                                                    const std::string& html_lang,
                                                    const string16& contents,
@@ -445,13 +455,19 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
   if (cld_language == chrome::kUnknownLanguageCode) {
     TranslateHelperMetrics::ReportLanguageVerification(
         TranslateHelperMetrics::LANGUAGE_VERIFICATION_UNKNOWN);
+    return language;
   } else if (IsSameOrSimilarLanguages(language, cld_language)) {
     TranslateHelperMetrics::ReportLanguageVerification(
         TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_AGREE);
+    return language;
   } else if (MaybeServerWrongConfiguration(language, cld_language)) {
-    language = cld_language;
     TranslateHelperMetrics::ReportLanguageVerification(
         TranslateHelperMetrics::LANGUAGE_VERIFICATION_TRUST_CLD);
+    return cld_language;
+  } else if (CanCLDComplementSubCode(language, cld_language)) {
+    TranslateHelperMetrics::ReportLanguageVerification(
+        TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_COMPLEMENT_SUB_CODE);
+    return cld_language;
   } else {
     TranslateHelperMetrics::ReportLanguageVerification(
         TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE);

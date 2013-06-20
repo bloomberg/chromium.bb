@@ -123,6 +123,11 @@ class TranslateHelper : public content::RenderViewObserver {
   static bool MaybeServerWrongConfiguration(const std::string& page_language,
                                             const std::string& cld_language);
 
+  // Checks if CLD can complement a sub code when the page language doesn't
+  // know the sub code.
+  static bool CanCLDComplementSubCode(const std::string& page_language,
+                                      const std::string& cld_language);
+
   // Determines content page language from Content-Language code and contents.
   static std::string DeterminePageLanguage(const std::string& code,
                                            const std::string& html_lang,
