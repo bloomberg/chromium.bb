@@ -19,7 +19,11 @@
 //    ASan for each malloc/free) to 5. These stack traces tend to accumulate
 //    very fast in applications using JIT (v8 in Chrome's case), see
 //    https://code.google.com/p/address-sanitizer/issues/detail?id=177
-const char *kAsanDefaultOptions = "malloc_context_size=5 strict_memcmp=0";
+//  - disable the in-process symbolization, which isn't 100% compatible with
+//    the existing sandboxes and doesn't make much sense for stripped official
+//    binaries.
+const char *kAsanDefaultOptions =
+    "malloc_context_size=5 strict_memcmp=0 symbolize=false";
 
 // Override the default ASan options for the Google Chrome executable.
 // __asan_default_options should not be instrumented, because it is called
