@@ -60,6 +60,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
     , m_deferredImageDecodingEnabled(false)
     , m_doubleTapToZoomEnabled(false)
     , m_supportDeprecatedTargetDensityDPI(false)
+    , m_pinchOverlayScrollbarThickness(0)
 {
     ASSERT(settings);
 }
@@ -681,6 +682,11 @@ void WebSettingsImpl::setSelectionIncludesAltImageText(bool enabled)
 void WebSettingsImpl::setSmartInsertDeleteEnabled(bool enabled)
 {
     m_settings->setSmartInsertDeleteEnabled(enabled);
+}
+
+void WebSettingsImpl::setPinchOverlayScrollbarThickness(int thickness)
+{
+    m_pinchOverlayScrollbarThickness = thickness;
 }
 
 void WebSettingsImpl::setPinchVirtualViewportEnabled(bool enabled)

@@ -103,7 +103,6 @@ public:
     virtual void setCSSStickyPositionEnabled(bool) = 0;
     virtual void setExperimentalWebGLEnabled(bool) = 0;
     virtual void setExperimentalWebSocketEnabled(bool) = 0;
-    virtual void setPinchVirtualViewportEnabled(bool) = 0;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setFixedPositionCreatesStackingContext(bool) = 0;
@@ -134,6 +133,8 @@ public:
     virtual void setPasswordEchoEnabled(bool) = 0;
     virtual void setPerTilePaintingEnabled(bool) = 0;
     virtual void setPictographFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
+    virtual void setPinchOverlayScrollbarThickness(int) = 0;
+    virtual void setPinchVirtualViewportEnabled(bool) = 0;
     virtual void setPluginsEnabled(bool) = 0;
     virtual void setPrivilegedWebGLExtensionsEnabled(bool) = 0;
     virtual void setRenderVSyncNotificationEnabled(bool) = 0;

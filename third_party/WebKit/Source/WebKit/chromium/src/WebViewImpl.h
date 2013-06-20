@@ -81,6 +81,7 @@ class PlatformKeyboardEvent;
 class PopupContainer;
 class PopupMenuClient;
 class Range;
+class RenderLayerCompositor;
 class RenderTheme;
 class TextFieldDecorator;
 class Widget;
@@ -94,6 +95,7 @@ class ContextMenuClientImpl;
 class DeviceOrientationClientProxy;
 class GeolocationClientProxy;
 class LinkHighlight;
+class PinchViewports;
 class PrerendererClientImpl;
 class SpeechInputClientImpl;
 class SpeechRecognitionClientProxy;
@@ -516,6 +518,7 @@ public:
     void scheduleCompositingLayerSync();
     void scrollRootLayerRect(const WebCore::IntSize& scrollDelta, const WebCore::IntRect& clipRect);
     WebCore::GraphicsLayerFactory* graphicsLayerFactory() const;
+    WebCore::RenderLayerCompositor* compositor() const;
     void registerForAnimations(WebLayer*);
     void scheduleAnimation();
 
@@ -812,6 +815,7 @@ private:
     // If true, the graphics context is being restored.
     bool m_recreatingGraphicsContext;
     static const WebInputEvent* m_currentInputEvent;
+    OwnPtr<PinchViewports> m_pinchViewports;
 
 #if ENABLE(INPUT_SPEECH)
     OwnPtr<SpeechInputClientImpl> m_speechInputClient;

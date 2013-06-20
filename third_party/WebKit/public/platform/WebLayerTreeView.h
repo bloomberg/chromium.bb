@@ -121,6 +121,15 @@ public:
     // been added to the tree.
     virtual void registerForAnimations(WebLayer* layer) { }
 
+    // Identify key layers to the compositor when using the pinch virtual viewport.
+    virtual void registerPinchViewportLayers(
+        const WebLayer* innerViewportClipLayer,
+        const WebLayer* pageScaleLayerLayer,
+        const WebLayer* innerViewportScrollLayer,
+        const WebLayer* outerViewportScrollLayer,
+        const WebLayer* innerViewportHorizontalScrollbarLayer,
+        const WebLayer* innerViewportVerticalScrollbarLayer) { }
+    virtual void clearPinchViewportLayers() { }
 
     // Debugging / dangerous ---------------------------------------------
 

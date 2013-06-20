@@ -352,6 +352,8 @@
                 'src/PageOverlayList.h',
                 'src/PageWidgetDelegate.cpp',
                 'src/PageWidgetDelegate.h',
+                'src/PinchViewports.cpp',
+                'src/PinchViewports.h',
                 'src/PopupContainer.cpp',
                 'src/PopupContainer.h',
                 'src/PopupMenuChromium.cpp',

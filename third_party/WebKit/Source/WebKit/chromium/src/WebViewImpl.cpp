@@ -57,6 +57,7 @@
 #include "HTMLNames.h"
 #include "LinkHighlight.h"
 #include "PageWidgetDelegate.h"
+#include "PinchViewports.h"
 #include "PopupContainer.h"
 #include "PrerendererClientImpl.h"
 #include "SpeechInputClientImpl.h"
@@ -149,7 +150,6 @@
 #include "core/platform/graphics/chromium/LayerPainterChromium.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "core/platform/network/ResourceHandle.h"
-#include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
@@ -1612,8 +1612,11 @@ void WebViewImpl::resize(const WebSize& newSize)
         agentPrivate->webViewResized(newSize);
     if (!agentPrivate || !agentPrivate->metricsOverridden()) {
         WebFrameImpl* webFrame = mainFrameImpl();
-        if (webFrame->frameView())
+        if (webFrame->frameView()) {
             webFrame->frameView()->resize(m_size);
+            if (m_pinchViewports)
+                m_pinchViewports->setViewportSize(m_size);
+        }
     }
 
     if (settings()->viewportEnabled()) {
@@ -3817,8 +3820,25 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
     suppressInvalidations(true);
 
-    m_rootGraphicsLayer = layer;
-    m_rootLayer = layer ? layer->platformLayer() : 0;
+    if (page()->settings()->pinchVirtualViewportEnabled()) {
+        if (!m_pinchViewports)
+            m_pinchViewports = PinchViewports::create(this);
+
+        m_pinchViewports->setOverflowControlsHostLayer(layer);
+        m_pinchViewports->setViewportSize(mainFrameImpl()->frame()->view()->frameRect().size());
+        if (layer) {
+            m_rootGraphicsLayer = m_pinchViewports->rootGraphicsLayer();
+            m_rootLayer = m_pinchViewports->rootGraphicsLayer()->platformLayer();
+            m_pinchViewports->registerViewportLayersWithTreeView(m_layerTreeView);
+        } else {
+            m_rootGraphicsLayer = 0;
+            m_rootLayer = 0;
+            m_pinchViewports->clearViewportLayersForTreeView(m_layerTreeView);
+        }
+    } else {
+        m_rootGraphicsLayer = layer;
+        m_rootLayer = layer ? layer->platformLayer() : 0;
+    }
 
     setIsAcceleratedCompositingActive(layer);
 
@@ -3854,6 +3874,16 @@ void WebViewImpl::invalidateRect(const IntRect& rect)
 WebCore::GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
 {
     return m_graphicsLayerFactory.get();
+}
+
+WebCore::RenderLayerCompositor* WebViewImpl::compositor() const
+{
+    if (!page()
+        || !page()->mainFrame()
+        || !page()->mainFrame()->document()
+        || !page()->mainFrame()->document()->renderView())
+        return 0;
+    return page()->mainFrame()->document()->renderView()->compositor();
 }
 
 void WebViewImpl::registerForAnimations(WebLayer* layer)
