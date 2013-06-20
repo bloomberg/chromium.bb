@@ -106,15 +106,9 @@ class RuleSet {
 public:
     static PassOwnPtr<RuleSet> create() { return adoptPtr(new RuleSet); }
 
-    typedef HashMap<AtomicStringImpl*, OwnPtr<Vector<RuleData> > > AtomRuleMap;
-
     void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver* = 0, const ContainerNode* = 0);
-
     void addStyleRule(StyleRule*, AddRuleFlags);
     void addRule(StyleRule*, unsigned selectorIndex, AddRuleFlags);
-    void addPageRule(StyleRulePage*);
-    void addToRuleSet(AtomicStringImpl* key, AtomRuleMap&, const RuleData&);
-    void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
     const RuleFeatureSet& features() const { return m_features; }
 
@@ -151,16 +145,23 @@ public:
     Vector<RuleSetSelectorPair> m_regionSelectorsAndRuleSets;
 
 private:
+    typedef HashMap<AtomicStringImpl*, OwnPtr<Vector<RuleData> > > AtomRuleMap;
+
     RuleSet()
         : m_ruleCount(0)
         , m_hasDirtyRules(false)
     {
     }
 
+    void addToRuleSet(AtomicStringImpl* key, AtomRuleMap&, const RuleData&);
+    void addPageRule(StyleRulePage*);
+    void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
+
     void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, StyleResolver*, const ContainerNode* scope, bool hasDocumentSecurityOrigin, AddRuleFlags);
     bool findBestRuleSetAndAdd(const CSSSelector*, RuleData&);
 
     void shrinkToFit();
+    static inline void shrinkMapVectorsToFit(AtomRuleMap&);
 
     AtomRuleMap m_idRules;
     AtomRuleMap m_classRules;

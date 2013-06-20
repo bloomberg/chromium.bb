@@ -379,7 +379,7 @@ void RuleSet::addStyleRule(StyleRule* rule, AddRuleFlags addRuleFlags)
         addRule(rule, selectorIndex, addRuleFlags);
 }
 
-static inline void shrinkMapVectorsToFit(RuleSet::AtomRuleMap& map)
+void RuleSet::shrinkMapVectorsToFit(AtomRuleMap& map)
 {
     RuleSet::AtomRuleMap::iterator end = map.end();
     for (RuleSet::AtomRuleMap::iterator it = map.begin(); it != end; ++it)
