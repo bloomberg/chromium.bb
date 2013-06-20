@@ -191,8 +191,9 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
 
 NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
     : provider_(provider) {
-  DCHECK(provider_);
-  provider_->AddObserver(this);
+  // |provider_| may be NULL in tests.
+  if (provider_)
+    provider_->AddObserver(this);
 
   set_focusable(true);
   set_focus_border(NULL);
@@ -251,7 +252,8 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   contents_view->AddChildView(new EntryView(top_label));
 
   std::vector<Notifier*> notifiers;
-  provider_->GetNotifierList(&notifiers);
+  if (provider_)
+    provider_->GetNotifierList(&notifiers);
   views::View* first_view = NULL;
   views::View* last_view = NULL;
   for (size_t i = 0; i < notifiers.size(); ++i) {
@@ -272,7 +274,9 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
 }
 
 NotifierSettingsView::~NotifierSettingsView() {
-  provider_->RemoveObserver(this);
+  // |provider_| may be NULL in tests.
+  if (provider_)
+    provider_->RemoveObserver(this);
 }
 
 bool NotifierSettingsView::IsScrollable() {
