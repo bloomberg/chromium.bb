@@ -17,14 +17,17 @@
 
 namespace content {
 
+// static
 scoped_refptr<CompositingIOSurfaceContext>
 CompositingIOSurfaceContext::Get(int window_number) {
   TRACE_EVENT0("browser", "CompositingIOSurfaceContext::Get");
 
   // Return the context for this window_number, if it exists.
   WindowMap::iterator found = window_map()->find(window_number);
-  if (found != window_map()->end())
+  if (found != window_map()->end()) {
+    DCHECK(found->second->can_be_shared_);
     return found->second;
+  }
 
   std::vector<NSOpenGLPixelFormatAttribute> attributes;
   attributes.push_back(NSOpenGLPFADoubleBuffer);
@@ -89,6 +92,16 @@ CompositingIOSurfaceContext::Get(int window_number) {
       shader_program_cache.Pass());
 }
 
+// static
+void CompositingIOSurfaceContext::MarkExistingContextsAsNotShareable() {
+  for (WindowMap::iterator it = window_map()->begin();
+       it != window_map()->end();
+       ++it) {
+    it->second->can_be_shared_ = false;
+  }
+  window_map()->clear();
+}
+
 CompositingIOSurfaceContext::CompositingIOSurfaceContext(
     int window_number,
     NSOpenGLContext* nsgl_context,
@@ -99,7 +112,8 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
       nsgl_context_(nsgl_context),
       cgl_context_(cgl_context),
       is_vsync_disabled_(is_vsync_disabled),
-      shader_program_cache_(shader_program_cache.Pass()) {
+      shader_program_cache_(shader_program_cache.Pass()),
+      can_be_shared_(true) {
   DCHECK(window_map()->find(window_number_) == window_map()->end());
   window_map()->insert(std::make_pair(window_number_, this));
 }
@@ -108,9 +122,15 @@ CompositingIOSurfaceContext::~CompositingIOSurfaceContext() {
   CGLSetCurrentContext(cgl_context_);
   shader_program_cache_->Reset();
   CGLSetCurrentContext(0);
-  DCHECK(window_map()->find(window_number_) != window_map()->end());
-  DCHECK(window_map()->find(window_number_)->second == this);
-  window_map()->erase(window_number_);
+  if (can_be_shared_) {
+    DCHECK(window_map()->find(window_number_) != window_map()->end());
+    DCHECK(window_map()->find(window_number_)->second == this);
+    window_map()->erase(window_number_);
+  } else {
+    WindowMap::const_iterator found = window_map()->find(window_number_);
+    if (found != window_map()->end())
+      DCHECK(found->second != this);
+  }
 }
 
 // static

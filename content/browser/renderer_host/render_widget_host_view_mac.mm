@@ -1348,8 +1348,15 @@ void RenderWidgetHostViewMac::ThrottledAckPendingSwapBuffers() {
 void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
   AckPendingSwapBuffers();
   DestroyCompositedIOSurfaceAndLayer();
-  // TODO(ccameron): force the renderer to recreate its output surface, and
-  // potentially fall back to software mode.
+  // The existing GL contexts may be in a bad state, so don't re-use any of the
+  // existing ones anymore, rather, allocate new ones.
+  CompositingIOSurfaceContext::MarkExistingContextsAsNotShareable();
+  // Request that a new frame be generated.
+  if (render_widget_host_)
+    render_widget_host_->ScheduleComposite();
+  // TODO(ccameron): It may be a good idea to request that the renderer recreate
+  // its GL context as well, and fall back to software if this happens
+  // repeatedly.
 }
 
 void RenderWidgetHostViewMac::GetVSyncParameters(
