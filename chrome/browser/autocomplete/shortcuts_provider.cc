@@ -185,6 +185,9 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   match.contents_class = shortcut.contents_class;
   match.description = shortcut.description;
   match.description_class = shortcut.description_class;
+  match.RecordAdditionalInfo("number of hits", shortcut.number_of_hits);
+  match.RecordAdditionalInfo("last access time", shortcut.last_access_time);
+  match.RecordAdditionalInfo("original input text", UTF16ToUTF8(shortcut.text));
 
   // Try to mark pieces of the contents and description as matches if they
   // appear in |term_string|.
