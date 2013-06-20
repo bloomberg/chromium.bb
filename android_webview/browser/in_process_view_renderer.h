@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
+#include "ui/gfx/vector2d_f.h"
 
 namespace content {
 class SynchronousCompositor;
@@ -36,7 +37,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // BrowserViewRenderer overrides
   virtual bool OnDraw(jobject java_canvas,
                       bool is_hardware_canvas,
-                      const gfx::Point& scroll,
+                      const gfx::Vector2d& scroll_,
                       const gfx::Rect& clip) OVERRIDE;
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
   virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() OVERRIDE;
@@ -44,8 +45,10 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual void OnVisibilityChanged(
       bool view_visible, bool window_visible) OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
+  virtual void ScrollTo(gfx::Vector2d new_value) OVERRIDE;
   virtual void OnAttachedToWindow(int width, int height) OVERRIDE;
   virtual void OnDetachedFromWindow() OVERRIDE;
+  virtual void SetDipScale(float dip_scale) OVERRIDE;
   virtual bool IsAttachedToWindow() OVERRIDE;
   virtual bool IsViewVisible() OVERRIDE;
   virtual gfx::Rect GetScreenRect() OVERRIDE;
@@ -56,7 +59,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual void DidDestroyCompositor(
       content::SynchronousCompositor* compositor) OVERRIDE;
   virtual void SetContinuousInvalidate(bool invalidate) OVERRIDE;
-  virtual void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value) OVERRIDE;
+  virtual void SetTotalRootLayerScrollOffset(
+      gfx::Vector2dF new_value_css) OVERRIDE;
   virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() OVERRIDE;
 
   void WebContentsGone();
@@ -74,6 +78,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   content::SynchronousCompositor* compositor_;
 
   bool view_visible_;
+  float dip_scale_;
 
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation.
@@ -95,9 +100,10 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   EGLContext last_egl_context_;
 
   // Last View scroll when View.onDraw() was called.
-  gfx::Point scroll_at_start_of_frame_;
+  gfx::Vector2d scroll_at_start_of_frame_;
 
-  gfx::Vector2dF scroll_offset_;
+  // Current scroll offset in CSS pixels.
+  gfx::Vector2dF scroll_offset_css_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessViewRenderer);
 };

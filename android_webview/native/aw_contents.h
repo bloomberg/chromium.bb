@@ -149,10 +149,14 @@ class AwContents : public FindHelper::Listener,
   virtual void PostInvalidate() OVERRIDE;
   virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;
+  virtual void ScrollContainerViewTo(gfx::Vector2d new_value) OVERRIDE;
 
   void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
   jint ReleasePopupAwContents(JNIEnv* env, jobject obj);
+
+  void ScrollTo(JNIEnv* env, jobject obj, jint xPix, jint yPix);
+  void SetDipScale(JNIEnv* env, jobject obj, jfloat dipScale);
 
   void SetSaveFormData(bool enabled);
 

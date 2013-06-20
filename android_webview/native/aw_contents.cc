@@ -646,7 +646,7 @@ bool AwContents::OnDraw(JNIEnv* env,
                         jint clip_bottom) {
   return browser_view_renderer_->OnDraw(canvas,
                                         is_hardware_accelerated,
-                                        gfx::Point(scroll_x, scroll_y),
+                                        gfx::Vector2d(scroll_x, scroll_y),
                                         gfx::Rect(clip_left,
                                                   clip_top,
                                                   clip_right - clip_left,
@@ -684,6 +684,24 @@ gfx::Point AwContents::GetLocationOnScreen() {
       Java_AwContents_getLocationOnScreen(env, obj.obj()).obj(),
       &location);
   return gfx::Point(location[0], location[1]);
+}
+
+void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_AwContents_scrollContainerViewTo(
+      env, obj.obj(), new_value.x(), new_value.y());
+}
+
+
+void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dipScale) {
+  browser_view_renderer_->SetDipScale(dipScale);
+}
+
+void AwContents::ScrollTo(JNIEnv* env, jobject obj, jint xPix, jint yPix) {
+  browser_view_renderer_->ScrollTo(gfx::Vector2d(xPix, yPix));
 }
 
 void AwContents::OnPageScaleFactorChanged(float page_scale_factor) {

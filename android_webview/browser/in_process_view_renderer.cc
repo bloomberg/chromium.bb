@@ -25,6 +25,7 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
+#include "ui/gfx/vector2d_conversions.h"
 #include "ui/gfx/vector2d_f.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -306,6 +307,7 @@ InProcessViewRenderer::InProcessViewRenderer(
       web_contents_(web_contents),
       compositor_(NULL),
       view_visible_(false),
+      dip_scale_(0.0),
       continuous_invalidate_(false),
       block_invalidates_(false),
       width_(0),
@@ -341,7 +343,7 @@ void InProcessViewRenderer::WebContentsGone() {
 
 bool InProcessViewRenderer::OnDraw(jobject java_canvas,
                                    bool is_hardware_canvas,
-                                   const gfx::Point& scroll,
+                                   const gfx::Vector2d& scroll,
                                    const gfx::Rect& clip) {
   scroll_at_start_of_frame_  = scroll;
   if (is_hardware_canvas && attached_to_window_ && compositor_ &&
@@ -643,14 +645,49 @@ void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
   EnsureContinuousInvalidation(NULL);
 }
 
+void InProcessViewRenderer::SetDipScale(float dip_scale) {
+  dip_scale_ = dip_scale;
+  CHECK(dip_scale_ > 0);
+}
+
+void InProcessViewRenderer::ScrollTo(gfx::Vector2d new_value) {
+  DCHECK(dip_scale_ > 0);
+  // In general we don't guarantee that the scroll offset transforms are
+  // symmetrical. That is if scrolling from JS to offset1 results in a native
+  // offset2 then scrolling from UI to offset2 results in JS being scrolled to
+  // offset1 again.
+  // The reason we explicitly do rounding here is that it seems to yeld the
+  // most stabile transformation.
+  gfx::Vector2dF new_value_css = gfx::ToRoundedVector2d(
+      gfx::ScaleVector2d(new_value, 1.0f / dip_scale_));
+
+  DCHECK(scroll_offset_css_ != new_value_css);
+
+  scroll_offset_css_ = new_value_css;
+
+  if (compositor_)
+    compositor_->DidChangeRootLayerScrollOffset();
+}
+
 void InProcessViewRenderer::SetTotalRootLayerScrollOffset(
-    gfx::Vector2dF new_value) {
-  // TODO(mkosiba): Plumb this all the way through to the view.
-  scroll_offset_ = new_value;
+    gfx::Vector2dF new_value_css) {
+  // TOOD(mkosiba): Add a DCHECK to say that this does _not_ get called during
+  // DrawGl when http://crbug.com/249972 is fixed.
+  if (scroll_offset_css_ == new_value_css)
+    return;
+
+  scroll_offset_css_ = new_value_css;
+
+  DCHECK(dip_scale_ > 0);
+
+  gfx::Vector2d scroll_offset =
+      gfx::ToRoundedVector2d(gfx::ScaleVector2d(new_value_css, dip_scale_));
+
+  client_->ScrollContainerViewTo(scroll_offset);
 }
 
 gfx::Vector2dF InProcessViewRenderer::GetTotalRootLayerScrollOffset() {
-  return scroll_offset_;
+  return scroll_offset_css_;
 }
 
 void InProcessViewRenderer::EnsureContinuousInvalidation(

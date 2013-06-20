@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/vector2d_f.h"
 
 namespace ui {
 struct LatencyInfo;
@@ -15,10 +16,6 @@ struct LatencyInfo;
 
 namespace cc {
 class InputHandler;
-}
-
-namespace gfx {
-class Vector2dF;
 }
 
 namespace WebKit {

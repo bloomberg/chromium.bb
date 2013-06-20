@@ -153,11 +153,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         void super_onConfigurationChanged(Configuration newConfig);
 
         /**
-         * @see View#onScrollChanged(int, int, int, int)
-         */
-        void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);
-
-        /**
          * @see View#awakenScrollBars()
          */
         boolean awakenScrollBars();
@@ -2148,14 +2143,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         final boolean needTemporarilyHideHandles = scrollChanged;
 
         if (needHidePopupZoomer) mPopupZoomer.hide(true);
-
-        if (scrollChanged) {
-            mContainerViewInternals.onScrollChanged(
-                    (int) mRenderCoordinates.fromLocalCssToPix(scrollOffsetX),
-                    (int) mRenderCoordinates.fromLocalCssToPix(scrollOffsetY),
-                    (int) mRenderCoordinates.getScrollXPix(),
-                    (int) mRenderCoordinates.getScrollYPix());
-        }
 
         if (pageScaleChanged) {
             // This function should be called back from native as soon

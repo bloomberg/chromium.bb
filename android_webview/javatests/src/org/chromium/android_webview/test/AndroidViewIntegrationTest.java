@@ -65,11 +65,14 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         }
     }
 
-    private class DependencyFactory extends TestDependencyFactory {
-        @Override
-        public AwLayoutSizer createLayoutSizer() {
-            return new TestAwLayoutSizer();
-        }
+    @Override
+    protected TestDependencyFactory createTestDependencyFactory() {
+        return new TestDependencyFactory() {
+            @Override
+            public AwLayoutSizer createLayoutSizer() {
+                return new TestAwLayoutSizer();
+            }
+        };
     }
 
     final LinearLayout.LayoutParams wrapContentLayoutParams =
@@ -82,8 +85,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                testContainerView.set(createAwTestContainerView(awContentsClient,
-                        new DependencyFactory()));
+                testContainerView.set(createAwTestContainerView(awContentsClient));
                 testContainerView.get().setLayoutParams(wrapContentLayoutParams);
                 testContainerView.get().setVisibility(visibility);
             }
@@ -98,8 +100,7 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                testContainerView.set(createDetachedAwTestContainerView(awContentsClient,
-                        new DependencyFactory()));
+                testContainerView.set(createDetachedAwTestContainerView(awContentsClient));
             }
         });
         return testContainerView.get();

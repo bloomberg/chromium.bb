@@ -92,6 +92,14 @@ public class AwContents {
      */
     public interface InternalAccessDelegate extends ContentViewCore.InternalAccessDelegate {
         /**
+         * @see View#onScrollChanged(int, int, int, int)
+         *
+         * TODO(mkosiba): WebViewClassic calls this, AwContents doesn't. Check if there
+         * are any cases we're missing, if not - remove.
+         */
+        void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);
+
+        /**
          * @see View#setMeasuredDimension(int, int)
          */
         void setMeasuredDimension(int measuredWidth, int measuredHeight);
@@ -119,6 +127,7 @@ public class AwContents {
     private final InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private final InternalAccessDelegate mInternalAccessAdapter;
     private final AwLayoutSizer mLayoutSizer;
+    private final AwScrollOffsetManager mScrollOffsetManager;
     private final AwZoomControls mZoomControls;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
@@ -280,6 +289,30 @@ public class AwContents {
     }
 
     //--------------------------------------------------------------------------------------------
+    private class AwScrollOffsetManagerDelegate implements AwScrollOffsetManager.Delegate {
+        @Override
+        public boolean scrollContainerViewTo(int x, int y) {
+            mContainerView.scrollTo(x, y);
+            return (x == mContainerView.getScrollX() && y == mContainerView.getScrollY());
+        }
+
+        @Override
+        public void scrollNativeTo(int x, int y) {
+            nativeScrollTo(mNativeAwContents, x, y);
+        }
+
+        @Override
+        public int getContainerViewScrollX() {
+            return mContainerView.getScrollX();
+        }
+
+        @Override
+        public int getContainerViewScrollY() {
+            return mContainerView.getScrollY();
+        }
+    }
+
+    //--------------------------------------------------------------------------------------------
     private class AwPinchGestureStateListener implements ContentViewCore.PinchGestureStateListener {
         @Override
         public void onPinchGestureStart() {
@@ -384,6 +417,7 @@ public class AwContents {
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
         mContentsClient.setDIPScale(mDIPScale);
+        mScrollOffsetManager = new AwScrollOffsetManager(new AwScrollOffsetManagerDelegate());
 
         setNewAwContents(nativeInit(browserContext));
     }
@@ -421,6 +455,7 @@ public class AwContents {
                 mIoThreadClient, mInterceptNavigationDelegate);
         mContentsClient.installWebContentsObserver(mContentViewCore);
         mSettings.setWebContents(nativeWebContents);
+        nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
    }
 
     /**
@@ -554,6 +589,13 @@ public class AwContents {
 
     public int getContentWidthCss() {
         return (int) Math.ceil(mContentViewCore.getContentWidthCss());
+    }
+
+    /**
+     * Called by the embedder when the scroll offset of the containing view has changed.
+     */
+    public void onContainerViewScrollChanged(int l, int t, int oldl, int oldt) {
+        mScrollOffsetManager.onContainerViewScrollChanged(l, t);
     }
 
     public Picture capturePicture() {
@@ -1398,6 +1440,11 @@ public class AwContents {
         mLayoutSizer.onPageScaleChanged(pageScaleFactor);
     }
 
+    @CalledByNative
+    private void scrollContainerViewTo(int x, int y) {
+        mScrollOffsetManager.scrollContainerViewTo(x, y);
+    }
+
     // -------------------------------------------------------------------------------------------
     // Helper methods
     // -------------------------------------------------------------------------------------------
@@ -1485,10 +1532,12 @@ public class AwContents {
     private native void nativeUpdateLastHitTestData(int nativeAwContents);
 
     private native void nativeOnSizeChanged(int nativeAwContents, int w, int h, int ow, int oh);
+    private native void nativeScrollTo(int nativeAwContents, int x, int y);
     private native void nativeSetWindowViewVisibility(int nativeAwContents, boolean windowVisible,
             boolean viewVisible);
     private native void nativeOnAttachedToWindow(int nativeAwContents, int w, int h);
     private native void nativeOnDetachedFromWindow(int nativeAwContents);
+    private native void nativeSetDipScale(int nativeAwContents, float dipScale);
 
     // Returns null if save state fails.
     private native byte[] nativeGetOpaqueState(int nativeAwContents);

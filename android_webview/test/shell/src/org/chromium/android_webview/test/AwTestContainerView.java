@@ -56,16 +56,19 @@ public class AwTestContainerView extends FrameLayout {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
         mAwContents.onConfigurationChanged(newConfig);
     }
 
     @Override
     public void onAttachedToWindow() {
+        super.onAttachedToWindow();
         mAwContents.onAttachedToWindow();
     }
 
     @Override
     public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
         mAwContents.onDetachedFromWindow();
     }
 
@@ -97,27 +100,40 @@ public class AwTestContainerView extends FrameLayout {
 
     @Override
     public void onSizeChanged(int w, int h, int ow, int oh) {
+        super.onSizeChanged(w, h, ow, oh);
         mAwContents.onSizeChanged(w, h, ow, oh);
     }
 
     @Override
+    public void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+        if (mAwContents != null) {
+            mAwContents.onContainerViewScrollChanged(l, t, oldl, oldt);
+        }
+    }
+
+    @Override
     public void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
         mAwContents.onVisibilityChanged(changedView, visibility);
     }
 
     @Override
     public void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
         mAwContents.onWindowVisibilityChanged(visibility);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        super.onTouchEvent(ev);
         return mAwContents.onTouchEvent(ev);
     }
 
     @Override
     public void onDraw(Canvas canvas) {
         mAwContents.onDraw(canvas);
+        super.onDraw(canvas);
     }
 
     // TODO: AwContents could define a generic class that holds an implementation similar to
