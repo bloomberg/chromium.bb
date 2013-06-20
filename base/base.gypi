@@ -267,6 +267,7 @@
           'mac/scoped_nsautorelease_pool.mm',
           'mac/scoped_nsexception_enabler.h',
           'mac/scoped_nsexception_enabler.mm',
+          'mac/scoped_nsobject.h',
           'mac/scoped_sending_event.h',
           'mac/scoped_sending_event.mm',
           'mac/sdk_forward_declarations.h',
