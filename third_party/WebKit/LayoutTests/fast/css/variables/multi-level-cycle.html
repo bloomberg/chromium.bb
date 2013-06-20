@@ -1,14 +1,14 @@
 <style>
 .a {
-    -webkit-var-a: -webkit-var(b);
-    -webkit-var-b: red;
+    var-a: var(b);
+    var-b: red;
 }
 .b {
-    -webkit-var-b: -webkit-var(a);
+    var-b: var(a);
 }
 .c {
-    -webkit-var-c: -webkit-var(a);
-    color: -webkit-var(c);
+    var-c: var(a);
+    color: var(c);
 }
 </style>
 <div id="a">

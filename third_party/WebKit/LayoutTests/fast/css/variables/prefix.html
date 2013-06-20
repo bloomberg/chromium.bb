@@ -1,0 +1,18 @@
+<style>
+#outer {
+    color: white;
+    background-color: green;
+}
+#inner {
+    -webkit-var-test: red;
+    background-color: -webkit-var(test);
+}
+</style>
+<div id="outer">
+    <div id="inner">This text should be white on a green background.</div>
+</div>
+<div id="inline" style="var-test: 123">This text should end in an unprefixed CSS variable property: </div>
+<script>
+var div = document.querySelector("#inline");
+div.innerHTML += div.style[0];
+</script>

@@ -1066,7 +1066,7 @@ String CSSPrimitiveValue::customCssText() const
             text = formatNumber(m_value.num, "vmax");
             break;
         case CSS_VARIABLE_NAME:
-            text = "-webkit-var(" + String(m_value.string) + ")";
+            text = "var(" + String(m_value.string) + ")";
             break;
     }
 

@@ -4,11 +4,11 @@
 div {
   border-color: green;
   border-style: solid;
-  border-width: -webkit-calc(-webkit-var(a) + -webkit-var(b)) -webkit-calc(-webkit-var(c) * -webkit-var(d));
-  -webkit-var-a: 2px;
-  -webkit-var-b: 1px;
-  -webkit-var-c: 5;
-  -webkit-var-d: 2px;
+  border-width: -webkit-calc(var(a) + var(b)) -webkit-calc(var(c) * var(d));
+  var-a: 2px;
+  var-b: 1px;
+  var-c: 5;
+  var-d: 2px;
 
 }
 </style>

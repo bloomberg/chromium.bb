@@ -213,7 +213,7 @@ PASS Setting color to url(http://127.0.0.1:8080/) was not set (as expected).
 PASS Setting color to inherited was not set (as expected).
 PASS Setting color to #100% was not set (as expected).
 PASS Setting color to #100px was not set (as expected).
-PASS Setting color to -webkit-var("test") was not set (as expected).
+PASS Setting color to var("test") was not set (as expected).
 PASS successfullyParsed is true
 
 TEST COMPLETE

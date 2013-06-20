@@ -6,8 +6,8 @@ if (window.testRunner)
 </script>
 <style>
 body {
-  -webkit-var-a: url(1);
-  -webkit-filter: -webkit-var(a);
+  var-a: url(1);
+  -webkit-filter: var(a);
 }
 </style>
 This test is successful if it does not crash.

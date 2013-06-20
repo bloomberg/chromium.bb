@@ -3049,7 +3049,7 @@ void CSSParser::storeVariableDeclaration(const CSSParserString& name, PassOwnPtr
     if (!value)
         return;
 
-    static const unsigned prefixLength = sizeof("-webkit-var-") - 1;
+    static const unsigned prefixLength = sizeof("var-") - 1;
 
     ASSERT(name.length() > prefixLength);
     AtomicString variableName = name.atomicSubstring(prefixLength, name.length() - prefixLength);
@@ -9871,6 +9871,10 @@ inline bool CSSParser::detectFunctionTypeToken(int length)
             m_token = CUEFUNCTION;
             return true;
         }
+        if (RuntimeEnabledFeatures::cssVariablesEnabled() && isASCIIAlphaCaselessEqual(name[0], 'v') && isASCIIAlphaCaselessEqual(name[1], 'a') && isASCIIAlphaCaselessEqual(name[2], 'r')) {
+            m_token = VARFUNCTION;
+            return true;
+        }
         return false;
 
     case 4:
@@ -10067,8 +10071,6 @@ inline void CSSParser::detectDashToken(int length)
             m_token = MINFUNCTION;
         else if (isASCIIAlphaCaselessEqual(name[10], 'x') && isEqualToCSSIdentifier(name + 1, "webkit-ma"))
             m_token = MAXFUNCTION;
-        else if (RuntimeEnabledFeatures::cssVariablesEnabled() && isASCIIAlphaCaselessEqual(name[10], 'r') && isEqualToCSSIdentifier(name + 1, "webkit-va"))
-            m_token = VARFUNCTION;
     } else if (length == 12 && isEqualToCSSIdentifier(name + 1, "webkit-calc"))
         m_token = CALCFUNCTION;
     else if (length == 19 && isEqualToCSSIdentifier(name + 1, "webkit-distributed"))
@@ -10314,15 +10316,16 @@ inline void CSSParser::detectSupportsToken(int length)
 }
 
 template <typename CharacterType>
-inline bool CSSParser::detectCSSVariablesToken(int length)
+inline void CSSParser::detectCSSVariableDefinitionToken(int length)
 {
-    ASSERT(tokenStart<CharacterType>()[0] == '-');
-    if (length < sizeof("-webkit-var-*") - 1)
-        return false;
+    static const unsigned prefixLength = sizeof("var-") - 1;
+    if (length <= prefixLength)
+        return;
     CharacterType* name = tokenStart<CharacterType>();
-    return name[11] == '-' && isIdentifierStartAfterDash(name + 12) && isEqualToCSSCaseSensitiveIdentifier(name + 1, "webkit-var");
+    COMPILE_ASSERT(prefixLength > 0, CSS_variable_prefix_must_be_nonempty);
+    if (name[prefixLength - 1] == '-' && isIdentifierStartAfterDash(name + prefixLength) && isEqualToCSSCaseSensitiveIdentifier(name, "var"))
+        m_token = VAR_DEFINITION;
 }
-
 
 template <typename SrcCharacterType>
 int CSSParser::realLex(void* yylvalWithoutType)
@@ -10412,6 +10415,8 @@ restartAfterComment:
                     }
                 }
             }
+        } else if (UNLIKELY(RuntimeEnabledFeatures::cssVariablesEnabled())) {
+            detectCSSVariableDefinitionToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>());
         }
         break;
 
@@ -10498,9 +10503,7 @@ restartAfterComment:
             parseIdentifier(result, resultString, hasEscape);
             m_token = IDENT;
 
-            if (RuntimeEnabledFeatures::cssVariablesEnabled() && detectCSSVariablesToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>()))
-                m_token = VAR_DEFINITION;
-            else if (*currentCharacter<SrcCharacterType>() == '(') {
+            if (*currentCharacter<SrcCharacterType>() == '(') {
                 m_token = FUNCTION;
                 if (!hasEscape)
                     detectDashToken<SrcCharacterType>(result - tokenStart<SrcCharacterType>());

@@ -77,6 +77,7 @@ static inline bool isCSSTokenAString(int yytype)
     case CALCFUNCTION:
     case MINFUNCTION:
     case MAXFUNCTION:
+    case VARFUNCTION:
     case VAR_DEFINITION:
     case UNICODERANGE:
         return true;
@@ -132,7 +133,6 @@ inline static CSSParserValue makeOperatorValue(int value)
 %token HOST_SYM
 %token CHARSET_SYM
 %token NAMESPACE_SYM
-%token VARFUNCTION
 %token VIEWPORT_RULE_SYM
 %token INTERNAL_DECLS_SYM
 %token INTERNAL_MEDIALIST_SYM
@@ -214,6 +214,7 @@ inline static CSSParserValue makeOperatorValue(int value)
 %token <string> CALCFUNCTION
 %token <string> MINFUNCTION
 %token <string> MAXFUNCTION
+%token <string> VARFUNCTION
 %token <string> VAR_DEFINITION
 
 %token <string> UNICODERANGE
@@ -1639,6 +1640,9 @@ term:
       $$.id = CSSValueInvalid;
       $$.string = $3;
       $$.unit = CSSPrimitiveValue::CSS_VARIABLE_NAME;
+  }
+  | VARFUNCTION maybe_space expr_recovery closing_parenthesis {
+      YYERROR;
   }
   /* FIXME: according to the specs a function can have a unary_operator in front. I know no case where this makes sense */
   | function maybe_space {

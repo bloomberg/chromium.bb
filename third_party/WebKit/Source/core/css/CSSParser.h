@@ -507,7 +507,7 @@ private:
     template <typename CharacterType>
     inline void detectSupportsToken(int);
     template <typename CharacterType>
-    inline bool detectCSSVariablesToken(int);
+    inline void detectCSSVariableDefinitionToken(int);
 
     void setStyleSheet(StyleSheetContents* styleSheet) { m_styleSheet = styleSheet; }
 
