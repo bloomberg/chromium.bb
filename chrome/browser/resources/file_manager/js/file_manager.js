@@ -1534,7 +1534,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.grid_.relayout();
     else
       this.table_.relayout();
-    this.directoryTree_.relayout();
+
+    // May not be available during initialization.
+    if (this.directoryTree_)
+      this.directoryTree_.relayout();
 
     // TODO(mtomasz, yoshiki): Initialize volume list earlier, before
     // file system is available.
