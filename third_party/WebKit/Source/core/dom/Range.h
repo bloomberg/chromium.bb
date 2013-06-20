@@ -27,7 +27,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
-#include "core/dom/FragmentScriptingPermission.h"
+#include "core/dom/ParserContentPolicy.h"
 #include "core/dom/RangeBoundaryPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/IntRect.h"

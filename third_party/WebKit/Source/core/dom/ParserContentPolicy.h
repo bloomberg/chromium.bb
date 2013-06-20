@@ -23,8 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// FIXME: Move this file to ParserContentPolicy.h.
-
 #ifndef ParserContentPolicy_h
 #define ParserContentPolicy_h
 
@@ -37,7 +35,7 @@ enum ParserContentPolicy {
     AllowScriptingContentAndDoNotMarkAlreadyStarted,
 };
 
-static inline bool scriptingContentIsAllowed(ParserContentPolicy parserContentPolicy) 
+static inline bool scriptingContentIsAllowed(ParserContentPolicy parserContentPolicy)
 {
     return parserContentPolicy == AllowScriptingContent || parserContentPolicy == AllowScriptingContentAndDoNotMarkAlreadyStarted;
 }
