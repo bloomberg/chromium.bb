@@ -213,6 +213,13 @@ class OmniboxView {
   // the omnibox's popup window.
   virtual bool IsImeShowingPopup() const;
 
+  // Returns true if the view is displaying UI that indicates that query
+  // refinement will take place when the user selects the current match.  For
+  // search matches, this will cause the omnibox to search over the existing
+  // corpus (e.g. Images) rather than start a new Web search.  This method will
+  // only ever return true on mobile ports.
+  virtual bool IsIndicatingQueryRefinement() const;
+
 #if defined(TOOLKIT_VIEWS)
   virtual int GetMaxEditWidth(int entry_width) const = 0;
 

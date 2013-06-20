@@ -467,10 +467,14 @@ void OmniboxEditModel::StartAutocomplete(
     cursor_position = user_text_.length();
   }
 
+  GURL current_url =
+      (delegate_->CurrentPageExists() && view_->IsIndicatingQueryRefinement()) ?
+      delegate_->GetURL() : GURL();
   bool keyword_is_selected = KeywordIsSelected();
   omnibox_controller_->StartAutocomplete(
       user_text_,
       cursor_position,
+      current_url,
       prevent_inline_autocomplete || just_deleted_text_ ||
       (has_selected_text && inline_autocomplete_text_.empty()) ||
       (paste_state_ != NONE),

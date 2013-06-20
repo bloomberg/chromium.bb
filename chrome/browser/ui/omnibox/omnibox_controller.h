@@ -41,8 +41,10 @@ class OmniboxController : public AutocompleteControllerDelegate {
                     Profile* profile);
   virtual ~OmniboxController();
 
+  // |current_url| is only set for mobile ports.
   void StartAutocomplete(string16 user_text,
                          size_t cursor_position,
+                         const GURL& current_url,
                          bool prevent_inline_autocomplete,
                          bool prefer_keyword,
                          bool allow_exact_keyword_match,

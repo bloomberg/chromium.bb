@@ -133,6 +133,12 @@ bool OmniboxView::IsImeShowingPopup() const {
   return IsImeComposing();
 }
 
+bool OmniboxView::IsIndicatingQueryRefinement() const {
+  // The default implementation always returns false.  Mobile ports can override
+  // this method and implement as needed.
+  return false;
+}
+
 OmniboxView::OmniboxView(Profile* profile,
                          OmniboxEditController* controller,
                          ToolbarModel* toolbar_model,

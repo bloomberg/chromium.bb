@@ -59,6 +59,7 @@ OmniboxController::~OmniboxController() {
 void OmniboxController::StartAutocomplete(
     string16 user_text,
     size_t cursor_position,
+    const GURL& current_url,
     bool prevent_inline_autocomplete,
     bool prefer_keyword,
     bool allow_exact_keyword_match,
@@ -88,7 +89,7 @@ void OmniboxController::StartAutocomplete(
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.
   autocomplete_controller_->Start(AutocompleteInput(
-      user_text, cursor_position, string16(), GURL(),
+      user_text, cursor_position, string16(), current_url,
       prevent_inline_autocomplete, prefer_keyword, allow_exact_keyword_match,
       AutocompleteInput::ALL_MATCHES));
 }
