@@ -1,0 +1,20 @@
+Name: Polymer
+URL: http://www.polymer-project.org
+Version: 0
+Revision: 434cd0b3e8d81699760c75043ab6f7c5676db006
+License: BSD
+License File: LICENSE
+Security Critical: no
+
+Description:
+This directory contains a copy of polymer.min.js file. It is a minified version
+of javascript library Polymer. Polymer is comprised of two efforts:
+1. A set of core platform features (Shadow DOM, Custom Elements, MDV).
+Initially, these core features will be enabled with a set of polyfills. As
+browsers begin to implement these new primitives, the polyfill platform layer
+becomes smaller and better over time.
+2. A next-generation web application framework built upon these core
+technologies called the Polymer.
+
+This is checked out from polymer stable branch. See build.log and README.md for
+how the minified file is generated.
