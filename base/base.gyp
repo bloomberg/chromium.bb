@@ -40,16 +40,6 @@
             ['chromeos==1', {
               'sources/': [ ['include', '_chromeos\\.cc$'] ]
             }],
-            ['linux_use_tcmalloc==0', {
-              'defines': [
-                'NO_TCMALLOC',
-              ],
-              'direct_dependent_settings': {
-                'defines': [
-                  'NO_TCMALLOC',
-                ],
-              },
-            }],
             ['toolkit_uses_gtk==1', {
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
@@ -187,6 +177,18 @@
               '-ldl',
             ],
           },
+          'conditions': [
+            ['linux_use_tcmalloc==0', {
+              'defines': [
+                'NO_TCMALLOC',
+              ],
+              'direct_dependent_settings': {
+                'defines': [
+                  'NO_TCMALLOC',
+                ],
+              },
+            }],
+          ],
         }],
         ['OS == "mac" or (OS == "ios" and _toolset == "host")', {
           'link_settings': {
@@ -726,12 +728,6 @@
             'file_version_info_unittest.cc',
           ],
           'conditions': [
-            [ 'linux_use_tcmalloc==1', {
-                'dependencies': [
-                  'allocator/allocator.gyp:allocator',
-                ],
-              },
-            ],
             [ 'toolkit_uses_gtk==1', {
               'sources': [
                 'nix/xdg_util_unittest.cc',
@@ -756,6 +752,12 @@
             'message_loop/message_pump_glib_unittest.cc',
           ]
         }],
+        ['OS == "linux" and linux_use_tcmalloc==1', {
+            'dependencies': [
+              'allocator/allocator.gyp:allocator',
+            ],
+          },
+        ],
         ['OS == "win"', {
           # This is needed to trigger the dll copy step on windows.
           # TODO(mark): This should not be necessary.
