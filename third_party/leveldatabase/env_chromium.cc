@@ -630,7 +630,7 @@ Status ChromiumEnv::CreateDir(const std::string& name) {
       return result;
   } while (retrier.ShouldKeepTrying(error));
   result = MakeIOError(name, "Could not create directory.", kCreateDir);
-  RecordErrorAt(kCreateDir);
+  RecordOSError(kCreateDir, error);
   return result;
 }
 

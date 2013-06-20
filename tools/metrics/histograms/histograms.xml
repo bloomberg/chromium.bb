@@ -18624,6 +18624,7 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="LevelDBEnvPlatformFileErrors" separator="">
+  <group name="CreateDir" label="ChromiumEnv::CreateDir"/>
   <group name="LockFile" label="ChromiumEnv::LockFile"/>
   <group name="NewRandomAccessFile" label="ChromiumEnv::NewRandomAccessFile"/>
   <group name="RenameFile" label="ChromiumEnv::RenameFile"/>
