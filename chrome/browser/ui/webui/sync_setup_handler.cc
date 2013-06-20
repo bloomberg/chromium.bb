@@ -652,7 +652,7 @@ void SyncSetupHandler::RecordSignin() {
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
-  CloseSyncSetup();
+  CloseOverlay();
 }
 
 void SyncSetupHandler::SyncStartupFailed() {
@@ -1094,9 +1094,6 @@ LoginUIService* SyncSetupHandler::GetLoginUIService() const {
 }
 
 void SyncSetupHandler::CloseOverlay() {
-  // Stop a timer to handle timeout in waiting for sync setup.
-  backend_start_timer_.reset();
-
   CloseSyncSetup();
   web_ui()->CallJavascriptFunction("OptionsPage.closeOverlay");
 }
