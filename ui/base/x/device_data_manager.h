@@ -23,6 +23,12 @@ typedef union _XEvent XEvent;
 
 namespace ui {
 
+// CrOS touchpad metrics gesture types
+enum GestureMetricsType {
+  kGestureMetricsTypeNoisyGround = 0,
+  kGestureMetricsTypeUnknown,
+};
+
 // A class that extracts and tracks the input events data. It currently handles
 // mouse, touchpad and touchscreen devices.
 class UI_EXPORT DeviceDataManager {
@@ -47,6 +53,11 @@ class UI_EXPORT DeviceDataManager {
     DT_CMT_FLING_Y,       // Fling amount on the Y (vertical) direction.
     DT_CMT_FLING_STATE,   // The state of fling gesture (whether the user just
                           // start flinging or that he/she taps down).
+    DT_CMT_METRICS_TYPE,  // Metrics type of the metrics gesture, which are
+                          // used to wrap interesting patterns that we would
+                          // like to track via the UMA system.
+    DT_CMT_METRICS_DATA1, // Complementary data 1 of the metrics gesture.
+    DT_CMT_METRICS_DATA2, // Complementary data 2 of the metrics gesture.
     DT_CMT_FINGER_COUNT,  // Finger counts in the current gesture. A same type
                           // of gesture can have very different meanings based
                           // on that (e.g. 2f scroll v.s. 3f swipe).
@@ -140,6 +151,7 @@ class UI_EXPORT DeviceDataManager {
   // Returns true if the event is of the specific type, false if not.
   bool IsScrollEvent(const base::NativeEvent& native_event) const;
   bool IsFlingEvent(const base::NativeEvent& native_event) const;
+  bool IsCMTMetricsEvent(const base::NativeEvent& native_event) const;
 
   // Returns true if the event has CMT start/end timestamps.
   bool HasGestureTimes(const base::NativeEvent& native_event) const;
@@ -162,6 +174,13 @@ class UI_EXPORT DeviceDataManager {
                     float* vx_ordinal,
                     float* vy_ordinal,
                     bool* is_cancel);
+
+  // Extract data from a CrOS metrics gesture event. User must first verify
+  // the event type with IsCMTMetricsEvent. Pointers shouldn't be NULL.
+  void GetMetricsData(const base::NativeEvent& native_event,
+                      GestureMetricsType* type,
+                      float* data1,
+                      float* data2);
 
   // Extract the start/end timestamps from CMT events. User must first verify
   // the event with HasGestureTimes. Pointers shouldn't be NULL.

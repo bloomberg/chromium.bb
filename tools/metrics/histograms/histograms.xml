@@ -11167,6 +11167,13 @@ other types of suffix sets.
   <summary>Tracks touchpad device state.</summary>
 </histogram>
 
+<histogram name="Touchpad.Metrics" enum="TouchpadProblemType">
+  <summary>
+    Tracks unusual CrOS touchpad operational states (e.g. running into the noisy
+    ground issue). This is sampled at every touchpad event.
+  </summary>
+</histogram>
+
 <histogram name="Touchpad.NaturalScroll.Changed" enum="BooleanEnabled">
   <summary>Tracks touchpad natural scroll setting changes by the user.</summary>
 </histogram>
@@ -17879,6 +17886,16 @@ other types of suffix sets.
   </int>
   <int value="5" label="TP_PRESENT_TP_EXPECTED_RESUME">
     Built-in touchpad detected at resume time on a device with built-in touchpad
+  </int>
+</enum>
+
+<enum name="TouchpadProblemType" type="int">
+  <int value="0" label="All events">
+    All observed input events from touchpad. Serves as a reference.
+  </int>
+  <int value="1" label="Noisy Ground">
+    The touchpad noise events (e.g. abrupt cursor jumps) caused by the noisy
+    ground.
   </int>
 </enum>
 

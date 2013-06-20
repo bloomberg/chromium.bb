@@ -211,6 +211,8 @@
         'browser/chromeos/dbus/proxy_resolution_service_provider.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider.h',
         'browser/chromeos/device_hierarchy_observer.h',
+        'browser/chromeos/device_uma.cc',
+        'browser/chromeos/device_uma.h',
         'browser/chromeos/drive/change_list_loader.cc',
         'browser/chromeos/drive/change_list_loader.h',
         'browser/chromeos/drive/change_list_loader_observer.h',
@@ -821,6 +823,12 @@
             'browser/chromeos/extensions/wallpaper_manager_util.h',
             'browser/chromeos/extensions/wallpaper_private_api.cc',
             'browser/chromeos/extensions/wallpaper_private_api.h',
+          ],
+        }],
+        ['use_x11==0', {
+          'sources!': [
+            'browser/chromeos/device_uma.cc',
+            'browser/chromeos/device_uma.h',
           ],
         }],
         ['use_cras==1', {

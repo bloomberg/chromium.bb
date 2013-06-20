@@ -120,6 +120,11 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 
+// Exclude X11 dependents for ozone
+#if defined(USE_X11)
+#include "chrome/browser/chromeos/device_uma.h"
+#endif
+
 namespace chromeos {
 
 namespace {
@@ -721,6 +726,11 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // reasons, see http://crosbug.com/24833.
   XInputHierarchyChangedEventListener::GetInstance();
 
+#if defined(USE_X11)
+  // Start the CrOS input device UMA watcher
+  DeviceUMA::GetInstance();
+#endif
+
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately after ChildProcess::WaitForDebugger().
 
@@ -790,6 +800,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.
   XInputHierarchyChangedEventListener::GetInstance()->Stop();
+
+#if defined(USE_X11)
+  DeviceUMA::GetInstance()->Stop();
+#endif
 
   // SystemKeyEventListener::Shutdown() is always safe to call,
   // even if Initialize() wasn't called.

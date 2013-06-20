@@ -41,6 +41,11 @@
 
 #define AXIS_LABEL_PROP_ABS_FINGER_COUNT   "Abs Finger Count"
 
+// Cros metrics gesture from touchpad
+#define AXIS_LABEL_PROP_ABS_METRICS_TYPE      "Abs Metrics Type"
+#define AXIS_LABEL_PROP_ABS_DBL_METRICS_DATA1 "Abs Dbl Metrics Data 1"
+#define AXIS_LABEL_PROP_ABS_DBL_METRICS_DATA2 "Abs Dbl Metrics Data 2"
+
 // Touchscreen multi-touch
 #define AXIS_LABEL_ABS_MT_TOUCH_MAJOR "Abs MT Touch Major"
 #define AXIS_LABEL_ABS_MT_TOUCH_MINOR "Abs MT Touch Minor"
@@ -63,6 +68,9 @@ const char* kCachedAtoms[] = {
   AXIS_LABEL_PROP_ABS_DBL_FLING_VX,
   AXIS_LABEL_PROP_ABS_DBL_FLING_VY,
   AXIS_LABEL_PROP_ABS_FLING_STATE,
+  AXIS_LABEL_PROP_ABS_METRICS_TYPE,
+  AXIS_LABEL_PROP_ABS_DBL_METRICS_DATA1,
+  AXIS_LABEL_PROP_ABS_DBL_METRICS_DATA2,
   AXIS_LABEL_PROP_ABS_FINGER_COUNT,
   AXIS_LABEL_ABS_MT_TOUCH_MAJOR,
   AXIS_LABEL_ABS_MT_TOUCH_MINOR,
@@ -285,7 +293,8 @@ bool DeviceDataManager::IsCMTDeviceEvent(
 bool DeviceDataManager::IsCMTGestureEvent(
     const base::NativeEvent& native_event) const {
   return (IsScrollEvent(native_event) ||
-          IsFlingEvent(native_event));
+          IsFlingEvent(native_event) ||
+          IsCMTMetricsEvent(native_event));
 }
 
 bool DeviceDataManager::HasEventData(
@@ -315,6 +324,18 @@ bool DeviceDataManager::IsFlingEvent(
   return (HasEventData(xiev, DT_CMT_FLING_X) &&
           HasEventData(xiev, DT_CMT_FLING_Y) &&
           HasEventData(xiev, DT_CMT_FLING_STATE));
+}
+
+bool DeviceDataManager::IsCMTMetricsEvent(
+    const base::NativeEvent& native_event) const {
+  if (!IsCMTDeviceEvent(native_event))
+    return false;
+
+  XIDeviceEvent* xiev =
+      static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+  return (HasEventData(xiev, DT_CMT_METRICS_TYPE) &&
+          HasEventData(xiev, DT_CMT_METRICS_DATA1) &&
+          HasEventData(xiev, DT_CMT_METRICS_DATA2));
 }
 
 bool DeviceDataManager::HasGestureTimes(
@@ -383,6 +404,29 @@ void DeviceDataManager::GetFlingData(const base::NativeEvent& native_event,
     *vx_ordinal = data[DT_CMT_ORDINAL_X] * natural_scroll_factor;
   if (data.find(DT_CMT_ORDINAL_Y) != data.end())
     *vy_ordinal = data[DT_CMT_ORDINAL_Y] * natural_scroll_factor;
+}
+
+void DeviceDataManager::GetMetricsData(const base::NativeEvent& native_event,
+                                       GestureMetricsType* type,
+                                       float* data1, float* data2) {
+  *type = kGestureMetricsTypeUnknown;
+  *data1 = 0;
+  *data2 = 0;
+
+  EventData data;
+  GetEventRawData(*native_event, &data);
+
+  if (data.find(DT_CMT_METRICS_TYPE) != data.end()) {
+    int val = static_cast<int>(data[DT_CMT_METRICS_TYPE]);
+    if (val == 0)
+      *type = kGestureMetricsTypeNoisyGround;
+    else
+      *type = kGestureMetricsTypeUnknown;
+  }
+  if (data.find(DT_CMT_METRICS_DATA1) != data.end())
+    *data1 = data[DT_CMT_METRICS_DATA1];
+  if (data.find(DT_CMT_METRICS_DATA2) != data.end())
+    *data2 = data[DT_CMT_METRICS_DATA2];
 }
 
 void DeviceDataManager::GetGestureTimes(const base::NativeEvent& native_event,

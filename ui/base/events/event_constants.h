@@ -58,6 +58,10 @@ enum EventType {
   // drop or menus, should stop.
   ET_CANCEL_MODE,
 
+  // Sent by the CrOS gesture library for interesting patterns that we want
+  // to track with the UMA system.
+  ET_UMA_DATA,
+
   // Must always be last. User namespace starts above this value.
   // See ui::RegisterCustomEventType().
   ET_LAST

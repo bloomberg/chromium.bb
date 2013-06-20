@@ -344,6 +344,9 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
           } else if (DeviceDataManager::GetInstance()->IsScrollEvent(
               native_event)) {
             return IsTouchpadEvent(native_event) ? ET_SCROLL : ET_MOUSEWHEEL;
+          } else if (DeviceDataManager::GetInstance()->IsCMTMetricsEvent(
+              native_event)) {
+            return ET_UMA_DATA;
           } else if (GetButtonMaskForX2Event(xievent)) {
             return ET_MOUSE_DRAGGED;
           } else {

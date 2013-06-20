@@ -1027,6 +1027,8 @@ void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
       delegate_->OnHostScrollEvent(&scrollev);
       break;
     }
+    case ui::ET_UMA_DATA:
+      break;
     case ui::ET_UNKNOWN:
       break;
     default:
