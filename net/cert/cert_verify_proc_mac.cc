@@ -593,11 +593,10 @@ int CertVerifyProcMac::VerifyInternal(
       // the user has not explicitly set a trust setting)
       break;
 
+    // According to SecTrust.h, kSecTrustResultConfirm isn't returned on 10.5+,
+    // and it is marked deprecated in the 10.9 SDK.
     case kSecTrustResultDeny:
-    case kSecTrustResultConfirm:
-      // Certificate chain is explicitly untrusted. For kSecTrustResultConfirm,
-      // we're following what Secure Transport does and treating it as
-      // "deny".
+      // Certificate chain is explicitly untrusted.
       verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
       break;
 

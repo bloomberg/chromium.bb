@@ -5,14 +5,20 @@
 #ifndef NET_HTTP_HTTP_AUTH_GSSAPI_POSIX_H_
 #define NET_HTTP_HTTP_AUTH_GSSAPI_POSIX_H_
 
-#include <gssapi.h>
-
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/native_library.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
+
+#if defined(OS_MACOSX) && defined(MAC_OS_X_VERSION_10_9) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_9
+// Including gssapi.h directly is deprecated in the 10.9 SDK.
+#include <GSS/gssapi.h>
+#else
+#include <gssapi.h>
+#endif
 
 namespace net {
 

@@ -5,13 +5,19 @@
 #ifndef NET_HTTP_MOCK_GSSAPI_LIBRARY_POSIX_H_
 #define NET_HTTP_MOCK_GSSAPI_LIBRARY_POSIX_H_
 
-#include <gssapi.h>
-
 #include <list>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "net/http/http_auth_gssapi_posix.h"
+
+#if defined(OS_MACOSX) && defined(MAC_OS_X_VERSION_10_9) && \
+    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_9
+// Including gssapi.h directly is deprecated in the 10.9 SDK.
+#include <GSS/gssapi.h>
+#else
+#include <gssapi.h>
+#endif
 
 namespace net {
 
