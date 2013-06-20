@@ -11,13 +11,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/web_resource/resource_request_allowed_notifier.h"
 
 class TranslateURLFetcher;
 
 // The TranslateLanguageList class is responsible for maintaining the latest
 // supporting language list.
 // This class is defined to be owned only by TranslateManager.
-class TranslateLanguageList {
+class TranslateLanguageList : public ResourceRequestAllowedNotifier::Observer {
  public:
   TranslateLanguageList();
   virtual ~TranslateLanguageList();
@@ -46,6 +47,12 @@ class TranslateLanguageList {
   // automatically when a server return 5xx errors and retry count doesn't
   // reach to limits.
   void RequestLanguageList();
+
+  // ResourceRequestAllowedNotifier::Observer implementation:
+  virtual void OnResourceRequestsAllowed() OVERRIDE;
+
+  // Disables the language list updater. This is used only for testing now.
+  static void DisableUpdate();
 
   // static const values shared with our browser tests.
   static const char kLanguageListCallbackName[];
@@ -81,6 +88,9 @@ class TranslateLanguageList {
 
   // The last-updated time when the language list is sent.
   base::Time last_updated_;
+
+  // Helper class to know if it's allowed to make network resource requests.
+  ResourceRequestAllowedNotifier resource_request_allowed_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateLanguageList);
 };

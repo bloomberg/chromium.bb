@@ -55,6 +55,9 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
   // fetch operation is finished.
   Callback callback_;
 
+  // Counts how many times did it try to fetch the language list.
+  int retry_count_;
+
   DISALLOW_COPY_AND_ASSIGN(TranslateURLFetcher);
 };
 

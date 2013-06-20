@@ -1554,14 +1554,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
       }
 
-#if !defined(OS_CHROMEOS)
-      // TODO(mad): Move this call in a proper place on CrOS.
-      // http://crosbug.com/17687
       if (translate_manager_ != NULL) {
         translate_manager_->FetchLanguageListFromTranslateServer(
             profile_->GetPrefs());
       }
-#endif
     }
 
     run_message_loop_ = true;

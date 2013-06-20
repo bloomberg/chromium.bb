@@ -13,13 +13,15 @@
 namespace {
 
 // Retry parameter for fetching.
-const int kMaxRetry = 5;
+const int kMaxRetryOn5xx = 5;
+const int kMaxRetry = 16;
 
 }  // namespace
 
 TranslateURLFetcher::TranslateURLFetcher(int id)
     : id_(id),
-      state_(IDLE) {
+      state_(IDLE),
+      retry_count_(0) {
 }
 
 TranslateURLFetcher::~TranslateURLFetcher() {
@@ -28,12 +30,16 @@ TranslateURLFetcher::~TranslateURLFetcher() {
 bool TranslateURLFetcher::Request(
     const GURL& url,
     const TranslateURLFetcher::Callback& callback) {
-  // This function is not supporsed to be called before previous operaion is not
+  // This function is not supposed to be called before previous operaion is not
   // finished.
   if (state_ == REQUESTING) {
     NOTREACHED();
     return false;
   }
+
+  if (retry_count_ >= kMaxRetry)
+    return false;
+  retry_count_++;
 
   state_ = REQUESTING;
   url_ = url;
@@ -47,7 +53,10 @@ bool TranslateURLFetcher::Request(
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetRequestContext(g_browser_process->system_request_context());
-  fetcher_->SetMaxRetriesOn5xx(kMaxRetry);
+  // Set retry parameter for HTTP status code 5xx. This doesn't work against
+  // 106 (net::ERR_INTERNET_DISCONNECTED) and so on.
+  // TranslateLanguageList handles network status, and implements retry.
+  fetcher_->SetMaxRetriesOn5xx(kMaxRetryOn5xx);
   fetcher_->Start();
 
   return true;
@@ -65,6 +74,7 @@ void TranslateURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     state_ = FAILED;
   }
 
+  // Transfer URLFetcher's ownership before invoking a callback.
   scoped_ptr<const net::URLFetcher> delete_ptr(fetcher_.release());
   callback_.Run(id_, state_ == COMPLETED, data);
 }

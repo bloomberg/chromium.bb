@@ -10,6 +10,7 @@
 #import "chrome/app/chrome_command_ids.h"  // For translate menu command ids.
 #include "chrome/browser/infobars/infobar_service.h"
 #import "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/browser/translate/translate_language_list.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar.h"
@@ -61,6 +62,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
   // Each test gets a single Mock translate delegate for the lifetime of
   // the test.
   virtual void SetUp() {
+    TranslateLanguageList::DisableUpdate();
     CocoaProfileTest::SetUp();
     web_contents_.reset(
         WebContents::Create(WebContents::CreateParams(profile())));

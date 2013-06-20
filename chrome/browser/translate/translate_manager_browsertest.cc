@@ -632,16 +632,12 @@ TEST_F(TranslateManagerBrowserTest, FetchLanguagesFromTranslateServer) {
   server_languages.push_back("fr-FR");
   server_languages.push_back("xx");
 
-  // First, get the default languages list:
+  // First, get the default languages list. Note that calling
+  // GetSupportedLanguages() invokes RequestLanguageList() internally.
   std::vector<std::string> default_supported_languages;
   TranslateManager::GetSupportedLanguages(&default_supported_languages);
   // To make sure we got the defaults and don't confuse them with the mocks.
   ASSERT_NE(default_supported_languages.size(), server_languages.size());
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  PrefService* prefs = profile->GetPrefs();
-  TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(prefs);
 
   // Check that we still get the defaults until the URLFetch has completed.
   std::vector<std::string> current_supported_languages;
@@ -655,7 +651,6 @@ TEST_F(TranslateManagerBrowserTest, FetchLanguagesFromTranslateServer) {
   EXPECT_EQ(default_supported_languages, current_supported_languages);
 
   // Now check that we got the appropriate set of languages from the server.
-  TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(prefs);
   SimulateSupportedLanguagesURLFetch(true, server_languages);
   current_supported_languages.clear();
   TranslateManager::GetSupportedLanguages(&current_supported_languages);
