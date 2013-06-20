@@ -5,11 +5,11 @@
 #include "content/renderer/renderer_webcookiejar_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/cookie_data.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebCookie.h"
-#include "webkit/glue/webcookie.h"
 
 using WebKit::WebCookie;
 using WebKit::WebString;
@@ -50,23 +50,22 @@ WebString RendererWebCookieJarImpl::cookieRequestHeaderFieldValue(
 void RendererWebCookieJarImpl::rawCookies(
     const WebURL& url, const WebURL& first_party_for_cookies,
     WebVector<WebCookie>& raw_cookies) {
-  std::vector<webkit_glue::WebCookie> cookies;
+  std::vector<CookieData> cookies;
   // NOTE: This may pump events (see RenderThread::Send).
   sender_->Send(new ViewHostMsg_GetRawCookies(
       url, first_party_for_cookies, &cookies));
 
   WebVector<WebCookie> result(cookies.size());
-  int i = 0;
-  for (std::vector<webkit_glue::WebCookie>::iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
-     result[i++] = WebCookie(WebString::fromUTF8(it->name),
-                             WebString::fromUTF8(it->value),
-                             WebString::fromUTF8(it->domain),
-                             WebString::fromUTF8(it->path),
-                             it->expires,
-                             it->http_only,
-                             it->secure,
-                             it->session);
+  for (size_t i = 0; i < cookies.size(); ++i) {
+    const CookieData& c = cookies[i];
+    result[i] = WebCookie(WebString::fromUTF8(c.name),
+                          WebString::fromUTF8(c.value),
+                          WebString::fromUTF8(c.domain),
+                          WebString::fromUTF8(c.path),
+                          c.expires,
+                          c.http_only,
+                          c.secure,
+                          c.session);
   }
   raw_cookies.swap(result);
 }

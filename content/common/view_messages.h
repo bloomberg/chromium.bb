@@ -14,6 +14,7 @@
 #include "content/common/browser_rendering_stats.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
+#include "content/common/cookie_data.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/common/view_message_enums.h"
@@ -57,7 +58,6 @@
 #include "ui/gfx/vector2d_f.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "webkit/common/webmenuitem.h"
-#include "webkit/glue/webcookie.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_MACOSX)
@@ -267,7 +267,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(touchscreen_fling_profile)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebCookie)
+IPC_STRUCT_TRAITS_BEGIN(content::CookieData)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(value)
   IPC_STRUCT_TRAITS_MEMBER(domain)
@@ -1650,7 +1650,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetCookies,
 IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetRawCookies,
                             GURL /* url */,
                             GURL /* first_party_for_cookies */,
-                            std::vector<webkit_glue::WebCookie>
+                            std::vector<content::CookieData>
                                 /* raw_cookies */)
 
 // Used to delete cookie for the given URL and name

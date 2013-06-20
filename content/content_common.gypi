@@ -147,6 +147,8 @@
     'common/content_param_traits.h',
     'common/content_param_traits_macros.h',
     'common/content_paths.cc',
+    'common/cookie_data.cc',
+    'common/cookie_data.h',
     'common/database_messages.h',
     'common/db_message_filter.cc',
     'common/db_message_filter.h',

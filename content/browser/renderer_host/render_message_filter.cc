@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/cookie_data.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/media/media_param_traits.h"
 #include "content/common/view_messages.h"
@@ -62,7 +63,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/gfx/color_profile.h"
-#include "webkit/glue/webcookie.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/plugin_constants.h"
@@ -1058,9 +1058,9 @@ void RenderMessageFilter::SendGetCookiesResponse(IPC::Message* reply_msg,
 void RenderMessageFilter::SendGetRawCookiesResponse(
     IPC::Message* reply_msg,
     const net::CookieList& cookie_list) {
-  std::vector<webkit_glue::WebCookie> cookies;
+  std::vector<CookieData> cookies;
   for (size_t i = 0; i < cookie_list.size(); ++i)
-    cookies.push_back(webkit_glue::WebCookie(cookie_list[i]));
+    cookies.push_back(CookieData(cookie_list[i]));
   ViewHostMsg_GetRawCookies::WriteReplyParams(reply_msg, cookies);
   Send(reply_msg);
 }

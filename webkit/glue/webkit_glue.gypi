@@ -291,8 +291,6 @@
         'simple_webmimeregistry_impl.h',
         'webclipboard_impl.cc',
         'webclipboard_impl.h',
-        'webcookie.cc',
-        'webcookie.h',
         'webfileutilities_impl.cc',
         'webfileutilities_impl.h',
         'webkit_glue.cc',
