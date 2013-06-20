@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_MAC_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_MAC_H_
 
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
@@ -38,23 +40,24 @@ class WebAppShortcutCreator {
   WebAppShortcutCreator(
       const base::FilePath& app_data_path,
       const ShellIntegration::ShortcutInfo& shortcut_info,
-      const string16& chrome_bundle_id);
+      const std::string& chrome_bundle_id);
 
   virtual ~WebAppShortcutCreator();
 
-  // Returns a path to the destination where the app should be written to.
-  base::FilePath GetShortcutPath() const;
+  // Returns the base name for the shortcut.
+  base::FilePath GetShortcutName() const;
 
-  // Copies the app launcher template into place and fills in all relevant
-  // information.
-  bool CreateShortcut();
+  // Returns a path to the Chrome Apps folder in the relevant applications
+  // folder. E.g. ~/Applications or /Applications.
+  virtual base::FilePath GetDestinationPath() const;
+
+  bool CreateShortcuts();
+  void DeleteShortcuts();
+  bool UpdateShortcuts();
 
  protected:
   // Returns a path to the app loader.
   base::FilePath GetAppLoaderPath() const;
-
-  // Returns a path to the destination where the app should be written to.
-  virtual base::FilePath GetDestinationPath() const;
 
   // Updates the plist inside |app_path| with information about the app.
   bool UpdatePlist(const base::FilePath& app_path) const;
@@ -62,21 +65,38 @@ class WebAppShortcutCreator {
   // Updates the icon for the shortcut.
   bool UpdateIcon(const base::FilePath& app_path) const;
 
+  // Returns a path to an app bundle with the given id. Or an empty path if no
+  // matching bundle was found.
+  // Protected and virtual so it can be mocked out for testing.
+  virtual base::FilePath GetAppBundleById(const std::string& bundle_id) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateIcon);
+  FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateShortcuts);
+
+  // Copies the app loader template into a temporary directory and fills in all
+  // relevant information.
+  bool BuildShortcut(const base::FilePath& staging_path) const;
+
+  // Builds a shortcut and copies it into the given destination folders.
+  // Returns with the number of successful copies. Returns on the first failure.
+  size_t CreateShortcutsIn(const std::vector<base::FilePath>& folders) const;
 
   // Updates the InfoPlist.string inside |app_path| with the display name for
   // the app.
   bool UpdateDisplayName(const base::FilePath& app_path) const;
 
+  // Updates the bundle id of the internal copy of the app shim bundle.
+  bool UpdateInternalBundleIdentifier() const;
+
   // Returns the bundle identifier to use for this app bundle.
-  // |plist| is a dictionary containg a copy of the template plist file to
-  // be used for creating the app bundle.
-  NSString* GetBundleIdentifier(NSDictionary* plist) const;
+  std::string GetBundleIdentifier() const;
+
+  // Returns the bundle identifier for the internal copy of the bundle.
+  std::string GetInternalBundleIdentifier() const;
 
   // Show the bundle we just generated in the Finder.
-  virtual void RevealGeneratedBundleInFinder(
-      const base::FilePath& generated_bundle) const;
+  virtual void RevealAppShimInFinder() const;
 
   // Path to the data directory for this app. For example:
   // ~/Library/Application Support/Chromium/Default/Web Applications/_crx_abc/
@@ -86,7 +106,7 @@ class WebAppShortcutCreator {
   ShellIntegration::ShortcutInfo info_;
 
   // The CFBundleIdentifier of the Chrome browser bundle.
-  string16 chrome_bundle_id_;
+  std::string chrome_bundle_id_;
 };
 
 }  // namespace web_app
