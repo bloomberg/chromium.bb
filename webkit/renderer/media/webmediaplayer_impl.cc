@@ -868,7 +868,11 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
       }
       break;
     case media::Pipeline::kPrerollCompleted:
-      SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+      // Only transition to ReadyStateHaveEnoughData if we don't have
+      // any pending seeks because the transition can cause Blink to
+      // report that the most recent seek has completed.
+      if (!pending_seek_)
+        SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
       break;
   }
 
