@@ -69,6 +69,11 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
     EXPECT_FALSE(reader_->IsInMemory());
   }
 
+ virtual void TearDown() OVERRIDE {
+    reader_.reset();
+    base::MessageLoop::current()->RunUntilIdle();
+ }
+
  protected:
   GURL GetFileSystemURL(const std::string& filename) {
     return GURL(file_system_root_url_.spec() + filename);
