@@ -407,7 +407,7 @@ LayoutSize RenderBoxModelObject::paintOffset() const
     LayoutSize offset = offsetForInFlowPosition();
 
     if (isBox() && isFloating())
-        if (ExclusionShapeOutsideInfo* shapeOutside = toRenderBox(this)->exclusionShapeOutsideInfo())
+        if (ShapeOutsideInfo* shapeOutside = toRenderBox(this)->shapeOutsideInfo())
             offset -= shapeOutside->shapeLogicalOffset();
 
     return offset;

@@ -28,25 +28,25 @@
  */
 
 #include "config.h"
-#include "core/rendering/exclusions/ExclusionShapeOutsideInfo.h"
+#include "core/rendering/shapes/ShapeOutsideInfo.h"
 
 #include "core/rendering/RenderBox.h"
 
 namespace WebCore {
-bool ExclusionShapeOutsideInfo::isEnabledFor(const RenderBox* box)
+bool ShapeOutsideInfo::isEnabledFor(const RenderBox* box)
 {
-    ExclusionShapeValue* value = box->style()->shapeOutside();
-    if (!box->isFloatingWithShapeOutside() || value->type() != ExclusionShapeValue::Shape)
+    ShapeValue* value = box->style()->shapeOutside();
+    if (!box->isFloatingWithShapeOutside() || value->type() != ShapeValue::Shape)
         return false;
 
     BasicShape* shape = value->shape();
     return shape && shape->type() != BasicShape::BasicShapeInsetRectangleType;
 }
 
-bool ExclusionShapeOutsideInfo::computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight)
+bool ShapeOutsideInfo::computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight)
 {
     if (shapeSizeDirty() || m_lineTop != lineTop || m_lineHeight != lineHeight) {
-        if (ExclusionShapeInfo<RenderBox, &RenderStyle::shapeOutside, &ExclusionShape::getExcludedIntervals>::computeSegmentsForLine(lineTop, lineHeight)) {
+        if (ShapeInfo<RenderBox, &RenderStyle::shapeOutside, &Shape::getExcludedIntervals>::computeSegmentsForLine(lineTop, lineHeight)) {
             m_leftSegmentShapeBoundingBoxDelta = m_segments[0].logicalLeft - shapeLogicalLeft();
             m_rightSegmentShapeBoundingBoxDelta = m_segments[m_segments.size()-1].logicalRight - shapeLogicalRight();
         } else {

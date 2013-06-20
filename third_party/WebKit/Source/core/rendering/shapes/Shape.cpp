@@ -28,40 +28,40 @@
  */
 
 #include "config.h"
-#include "core/rendering/exclusions/ExclusionShape.h"
+#include "core/rendering/shapes/Shape.h"
 
 #include "core/css/LengthFunctions.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/WindRule.h"
-#include "core/rendering/exclusions/ExclusionPolygon.h"
-#include "core/rendering/exclusions/ExclusionRectangle.h"
-#include <wtf/MathExtras.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "core/rendering/shapes/PolygonShape.h"
+#include "core/rendering/shapes/RectangleShape.h"
+#include "wtf/MathExtras.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-static PassOwnPtr<ExclusionShape> createExclusionRectangle(const FloatRect& bounds, const FloatSize& radii)
+static PassOwnPtr<Shape> createRectangleShape(const FloatRect& bounds, const FloatSize& radii)
 {
     ASSERT(bounds.width() >= 0 && bounds.height() >= 0 && radii.width() >= 0 && radii.height() >= 0);
-    return adoptPtr(new ExclusionRectangle(bounds, radii));
+    return adoptPtr(new RectangleShape(bounds, radii));
 }
 
-static PassOwnPtr<ExclusionShape> createExclusionCircle(const FloatPoint& center, float radius)
+static PassOwnPtr<Shape> createCircleShape(const FloatPoint& center, float radius)
 {
     ASSERT(radius >= 0);
-    return adoptPtr(new ExclusionRectangle(FloatRect(center.x() - radius, center.y() - radius, radius*2, radius*2), FloatSize(radius, radius)));
+    return adoptPtr(new RectangleShape(FloatRect(center.x() - radius, center.y() - radius, radius*2, radius*2), FloatSize(radius, radius)));
 }
 
-static PassOwnPtr<ExclusionShape> createExclusionEllipse(const FloatPoint& center, const FloatSize& radii)
+static PassOwnPtr<Shape> createEllipseShape(const FloatPoint& center, const FloatSize& radii)
 {
     ASSERT(radii.width() >= 0 && radii.height() >= 0);
-    return adoptPtr(new ExclusionRectangle(FloatRect(center.x() - radii.width(), center.y() - radii.height(), radii.width()*2, radii.height()*2), radii));
+    return adoptPtr(new RectangleShape(FloatRect(center.x() - radii.width(), center.y() - radii.height(), radii.width()*2, radii.height()*2), radii));
 }
 
-static PassOwnPtr<ExclusionShape> createExclusionPolygon(PassOwnPtr<Vector<FloatPoint> > vertices, WindRule fillRule)
+static PassOwnPtr<Shape> createPolygonShape(PassOwnPtr<Vector<FloatPoint> > vertices, WindRule fillRule)
 {
-    return adoptPtr(new ExclusionPolygon(vertices, fillRule));
+    return adoptPtr(new PolygonShape(vertices, fillRule));
 }
 
 static inline FloatRect physicalRectToLogical(const FloatRect& rect, float logicalBoxHeight, WritingMode writingMode)
@@ -89,14 +89,14 @@ static inline FloatSize physicalSizeToLogical(const FloatSize& size, WritingMode
     return size.transposedSize();
 }
 
-PassOwnPtr<ExclusionShape> ExclusionShape::createExclusionShape(const BasicShape* basicShape, const LayoutSize& logicalBoxSize, WritingMode writingMode, Length margin, Length padding)
+PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutSize& logicalBoxSize, WritingMode writingMode, Length margin, Length padding)
 {
     ASSERT(basicShape);
 
     bool horizontalWritingMode = isHorizontalWritingMode(writingMode);
     float boxWidth = horizontalWritingMode ? logicalBoxSize.width() : logicalBoxSize.height();
     float boxHeight = horizontalWritingMode ? logicalBoxSize.height() : logicalBoxSize.width();
-    OwnPtr<ExclusionShape> exclusionShape;
+    OwnPtr<Shape> shape;
 
     switch (basicShape->type()) {
 
@@ -114,7 +114,7 @@ PassOwnPtr<ExclusionShape> ExclusionShape::createExclusionShape(const BasicShape
             radiusYLength.isUndefined() ? 0 : floatValueForLength(radiusYLength, boxHeight));
         FloatRect logicalBounds = physicalRectToLogical(bounds, logicalBoxSize.height(), writingMode);
 
-        exclusionShape = createExclusionRectangle(logicalBounds, physicalSizeToLogical(cornerRadii, writingMode));
+        shape = createRectangleShape(logicalBounds, physicalSizeToLogical(cornerRadii, writingMode));
         break;
     }
 
@@ -125,7 +125,7 @@ PassOwnPtr<ExclusionShape> ExclusionShape::createExclusionShape(const BasicShape
         float radius = floatValueForLength(circle->radius(), std::min(boxHeight, boxWidth));
         FloatPoint logicalCenter = physicalPointToLogical(FloatPoint(centerX, centerY), logicalBoxSize.height(), writingMode);
 
-        exclusionShape = createExclusionCircle(logicalCenter, radius);
+        shape = createCircleShape(logicalCenter, radius);
         break;
     }
 
@@ -138,7 +138,7 @@ PassOwnPtr<ExclusionShape> ExclusionShape::createExclusionShape(const BasicShape
         FloatPoint logicalCenter = physicalPointToLogical(FloatPoint(centerX, centerY), logicalBoxSize.height(), writingMode);
         FloatSize logicalRadii = physicalSizeToLogical(FloatSize(radiusX, radiusY), writingMode);
 
-        exclusionShape = createExclusionEllipse(logicalCenter, logicalRadii);
+        shape = createEllipseShape(logicalCenter, logicalRadii);
         break;
     }
 
@@ -154,7 +154,7 @@ PassOwnPtr<ExclusionShape> ExclusionShape::createExclusionShape(const BasicShape
                 floatValueForLength(values.at(i + 1), boxHeight));
             (*vertices)[i / 2] = physicalPointToLogical(vertex, logicalBoxSize.height(), writingMode);
         }
-        exclusionShape = createExclusionPolygon(vertices.release(), polygon->windRule());
+        shape = createPolygonShape(vertices.release(), polygon->windRule());
         break;
     }
 
@@ -162,11 +162,11 @@ PassOwnPtr<ExclusionShape> ExclusionShape::createExclusionShape(const BasicShape
         ASSERT_NOT_REACHED();
     }
 
-    exclusionShape->m_writingMode = writingMode;
-    exclusionShape->m_margin = floatValueForLength(margin, 0);
-    exclusionShape->m_padding = floatValueForLength(padding, 0);
+    shape->m_writingMode = writingMode;
+    shape->m_margin = floatValueForLength(margin, 0);
+    shape->m_padding = floatValueForLength(padding, 0);
 
-    return exclusionShape.release();
+    return shape.release();
 }
 
 } // namespace WebCore

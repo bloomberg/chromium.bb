@@ -28,31 +28,31 @@
  */
 
 #include "config.h"
-#include "core/rendering/exclusions/ExclusionShapeInfo.h"
+#include "core/rendering/shapes/ShapeInfo.h"
 
 #include "core/rendering/RenderRegion.h"
-#include "core/rendering/exclusions/ExclusionShape.h"
+#include "core/rendering/shapes/Shape.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
-template<class RenderType, ExclusionShapeValue* (RenderStyle::*shapeGetter)() const, void (ExclusionShape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
-const ExclusionShape* ExclusionShapeInfo<RenderType, shapeGetter, intervalGetter>::computedShape() const
+template<class RenderType, ShapeValue* (RenderStyle::*shapeGetter)() const, void (Shape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
+const Shape* ShapeInfo<RenderType, shapeGetter, intervalGetter>::computedShape() const
 {
-    if (ExclusionShape* exclusionShape = m_shape.get())
-        return exclusionShape;
+    if (Shape* shape = m_shape.get())
+        return shape;
 
-    ExclusionShapeValue* shapeValue = (m_renderer->style()->*shapeGetter)();
-    BasicShape* shape = (shapeValue && shapeValue->type() == ExclusionShapeValue::Shape) ? shapeValue->shape() : 0;
+    ShapeValue* shapeValue = (m_renderer->style()->*shapeGetter)();
+    BasicShape* shape = (shapeValue && shapeValue->type() == ShapeValue::Shape) ? shapeValue->shape() : 0;
 
     ASSERT(shape);
 
-    m_shape = ExclusionShape::createExclusionShape(shape, LayoutSize(m_shapeLogicalWidth, m_shapeLogicalHeight), m_renderer->style()->writingMode(), m_renderer->style()->shapeMargin(), m_renderer->style()->shapePadding());
+    m_shape = Shape::createShape(shape, LayoutSize(m_shapeLogicalWidth, m_shapeLogicalHeight), m_renderer->style()->writingMode(), m_renderer->style()->shapeMargin(), m_renderer->style()->shapePadding());
     ASSERT(m_shape);
     return m_shape.get();
 }
 
-template<class RenderType, ExclusionShapeValue* (RenderStyle::*shapeGetter)() const, void (ExclusionShape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
-LayoutUnit ExclusionShapeInfo<RenderType, shapeGetter, intervalGetter>::logicalTopOffset() const
+template<class RenderType, ShapeValue* (RenderStyle::*shapeGetter)() const, void (Shape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
+LayoutUnit ShapeInfo<RenderType, shapeGetter, intervalGetter>::logicalTopOffset() const
 {
     LayoutUnit logicalTopOffset = m_renderer->style()->boxSizing() == CONTENT_BOX ? m_renderer->borderBefore() + m_renderer->paddingBefore() : LayoutUnit();
     // Content in a flow thread is relative to the beginning of the thread, but the shape calculation should be relative to the current region.
@@ -61,8 +61,8 @@ LayoutUnit ExclusionShapeInfo<RenderType, shapeGetter, intervalGetter>::logicalT
     return logicalTopOffset;
 }
 
-template<class RenderType, ExclusionShapeValue* (RenderStyle::*shapeGetter)() const, void (ExclusionShape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
-bool ExclusionShapeInfo<RenderType, shapeGetter, intervalGetter>::computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight)
+template<class RenderType, ShapeValue* (RenderStyle::*shapeGetter)() const, void (Shape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
+bool ShapeInfo<RenderType, shapeGetter, intervalGetter>::computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight)
 {
     ASSERT(lineHeight >= 0);
     m_shapeLineTop = lineTop - logicalTopOffset();
@@ -81,6 +81,6 @@ bool ExclusionShapeInfo<RenderType, shapeGetter, intervalGetter>::computeSegment
     return m_segments.size();
 }
 
-template class ExclusionShapeInfo<RenderBlock, &RenderStyle::resolvedShapeInside, &ExclusionShape::getIncludedIntervals>;
-template class ExclusionShapeInfo<RenderBox, &RenderStyle::shapeOutside, &ExclusionShape::getExcludedIntervals>;
+template class ShapeInfo<RenderBlock, &RenderStyle::resolvedShapeInside, &Shape::getIncludedIntervals>;
+template class ShapeInfo<RenderBox, &RenderStyle::shapeOutside, &Shape::getExcludedIntervals>;
 }

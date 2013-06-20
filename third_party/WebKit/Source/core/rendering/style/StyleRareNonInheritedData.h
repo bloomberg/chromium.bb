@@ -30,13 +30,13 @@
 #include "core/rendering/style/CounterDirectives.h"
 #include "core/rendering/style/CursorData.h"
 #include "core/rendering/style/DataRef.h"
-#include "core/rendering/style/ExclusionShapeValue.h"
 #include "core/rendering/style/FillLayer.h"
 #include "core/rendering/style/LineClampValue.h"
 #include "core/rendering/style/NinePieceImage.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
+#include "core/rendering/style/ShapeValue.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -125,8 +125,8 @@ public:
 
     LengthSize m_pageSize;
 
-    RefPtr<ExclusionShapeValue> m_shapeInside;
-    RefPtr<ExclusionShapeValue> m_shapeOutside;
+    RefPtr<ShapeValue> m_shapeInside;
+    RefPtr<ShapeValue> m_shapeOutside;
     Length m_shapeMargin;
     Length m_shapePadding;
 

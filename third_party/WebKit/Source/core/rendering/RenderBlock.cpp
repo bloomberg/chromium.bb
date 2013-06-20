@@ -42,8 +42,6 @@
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/ColumnInfo.h"
-#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
-#include "core/rendering/exclusions/ExclusionShapeOutsideInfo.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineIterator.h"
@@ -62,6 +60,8 @@
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/shapes/ShapeInsideInfo.h"
+#include "core/rendering/shapes/ShapeOutsideInfo.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -353,9 +353,7 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     
     RenderStyle* newStyle = style();
 
-    // FIXME: Bug 89993: Style changes should affect the ExclusionShapeInsideInfos for other render blocks that
-    // share the same ExclusionShapeInsideInfo
-    updateExclusionShapeInsideInfoAfterStyleChange(newStyle->resolvedShapeInside(), oldStyle ? oldStyle->resolvedShapeInside() : 0);
+    updateShapeInsideInfoAfterStyleChange(newStyle->resolvedShapeInside(), oldStyle ? oldStyle->resolvedShapeInside() : 0);
 
     if (!isAnonymousBlock()) {
         // Ensure that all of our continuation blocks pick up the new style.
@@ -1427,35 +1425,35 @@ void RenderBlock::layout()
     invalidateBackgroundObscurationStatus();
 }
 
-void RenderBlock::updateExclusionShapeInsideInfoAfterStyleChange(const ExclusionShapeValue* shapeInside, const ExclusionShapeValue* oldShapeInside)
+void RenderBlock::updateShapeInsideInfoAfterStyleChange(const ShapeValue* shapeInside, const ShapeValue* oldShapeInside)
 {
     // FIXME: A future optimization would do a deep comparison for equality.
     if (shapeInside == oldShapeInside)
         return;
 
     if (shapeInside) {
-        ExclusionShapeInsideInfo* exclusionShapeInsideInfo = ensureExclusionShapeInsideInfo();
-        exclusionShapeInsideInfo->dirtyShapeSize();
+        ShapeInsideInfo* shapeInsideInfo = ensureShapeInsideInfo();
+        shapeInsideInfo->dirtyShapeSize();
     } else {
-        setExclusionShapeInsideInfo(nullptr);
+        setShapeInsideInfo(nullptr);
         markShapeInsideDescendantsForLayout();
     }
 }
 
-static inline bool exclusionInfoRequiresRelayout(const RenderBlock* block)
+static inline bool shapeInfoRequiresRelayout(const RenderBlock* block)
 {
-    ExclusionShapeInsideInfo* info = block->exclusionShapeInsideInfo();
+    ShapeInsideInfo* info = block->shapeInsideInfo();
     if (info)
         info->setNeedsLayout(info->shapeSizeDirty());
     else
-        info = block->layoutExclusionShapeInsideInfo();
+        info = block->layoutShapeInsideInfo();
     return info && info->needsLayout();
 }
 
-bool RenderBlock::updateRegionsAndExclusionsLogicalSize(RenderFlowThread* flowThread)
+bool RenderBlock::updateRegionsAndShapesLogicalSize(RenderFlowThread* flowThread)
 {
-    if (!flowThread && !exclusionShapeInsideInfo())
-        return exclusionInfoRequiresRelayout(this);
+    if (!flowThread && !shapeInsideInfo())
+        return shapeInfoRequiresRelayout(this);
 
     LayoutUnit oldHeight = logicalHeight();
     LayoutUnit oldTop = logicalTop();
@@ -1465,7 +1463,7 @@ bool RenderBlock::updateRegionsAndExclusionsLogicalSize(RenderFlowThread* flowTh
     setLogicalHeight(LayoutUnit::max() / 2);
     updateLogicalHeight();
 
-    computeExclusionShapeSize();
+    computeShapeSize();
 
     // Set our start and end regions. No regions above or below us will be considered by our children. They are
     // effectively clamped to our region range.
@@ -1474,22 +1472,22 @@ bool RenderBlock::updateRegionsAndExclusionsLogicalSize(RenderFlowThread* flowTh
     setLogicalHeight(oldHeight);
     setLogicalTop(oldTop);
     
-    return exclusionInfoRequiresRelayout(this);
+    return shapeInfoRequiresRelayout(this);
 }
 
-void RenderBlock::computeExclusionShapeSize()
+void RenderBlock::computeShapeSize()
 {
-    ExclusionShapeInsideInfo* exclusionShapeInsideInfo = this->exclusionShapeInsideInfo();
-    if (exclusionShapeInsideInfo) {
+    ShapeInsideInfo* shapeInsideInfo = this->shapeInsideInfo();
+    if (shapeInsideInfo) {
         bool percentageLogicalHeightResolvable = percentageLogicalHeightIsResolvableFromBlock(this, false);
-        exclusionShapeInsideInfo->setShapeSize(logicalWidth(), percentageLogicalHeightResolvable ? logicalHeight() : LayoutUnit());
+        shapeInsideInfo->setShapeSize(logicalWidth(), percentageLogicalHeightResolvable ? logicalHeight() : LayoutUnit());
     }
 }
 
-void RenderBlock::updateRegionsAndExclusionsAfterChildLayout(RenderFlowThread* flowThread, bool heightChanged)
+void RenderBlock::updateRegionsAndShapesAfterChildLayout(RenderFlowThread* flowThread, bool heightChanged)
 {
     // A previous sibling has changed dimension, so we need to relayout the shape with the content
-    ExclusionShapeInsideInfo* shapeInsideInfo = layoutExclusionShapeInsideInfo();
+    ShapeInsideInfo* shapeInsideInfo = layoutShapeInsideInfo();
     if (heightChanged && shapeInsideInfo)
         shapeInsideInfo->dirtyShapeSize();
 
@@ -1580,7 +1578,7 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     if (logicalWidthChangedInRegions(flowThread))
         relayoutChildren = true;
-    if (updateRegionsAndExclusionsLogicalSize(flowThread))
+    if (updateRegionsAndShapesLogicalSize(flowThread))
         relayoutChildren = true;
 
     // We use four values, maxTopPos, maxTopNeg, maxBottomPos, and maxBottomNeg, to track
@@ -1650,7 +1648,7 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
 
     layoutPositionedObjects(relayoutChildren || isRoot());
 
-    updateRegionsAndExclusionsAfterChildLayout(flowThread, heightChanged);
+    updateRegionsAndShapesAfterChildLayout(flowThread, heightChanged);
 
     // Add overflow from children (unless we're multi-column, since in that case all our child overflow is clipped anyway).
     computeOverflow(oldClientAfterEdge);
@@ -3910,10 +3908,10 @@ RenderBlock::FloatingObject* RenderBlock::insertFloatingObject(RenderBox* o)
         o->computeAndSetBlockDirectionMargins(this);
     }
 
-    ExclusionShapeOutsideInfo* shapeOutside = o->exclusionShapeOutsideInfo();
+    ShapeOutsideInfo* shapeOutside = o->shapeOutsideInfo();
     if (shapeOutside) {
         shapeOutside->setShapeSize(o->logicalWidth(), o->logicalHeight());
-        // The CSS Exclusions specification says that the margins are ignored
+        // The CSS Shapes specification says that the margins are ignored
         // when a float has a shape outside.
         setLogicalWidthForFloat(newObj, shapeOutside->shapeLogicalWidth());
     } else
@@ -3989,7 +3987,7 @@ LayoutPoint RenderBlock::computeLogicalLocationForFloat(const FloatingObject* fl
     LayoutUnit logicalLeftOffset = logicalLeftOffsetForContent(logicalTopOffset); // Constant part of left offset.
     LayoutUnit logicalRightOffset; // Constant part of right offset.
     // FIXME Bug 102948: This only works for shape outside directly set on this block.
-    ExclusionShapeInsideInfo* shapeInsideInfo = exclusionShapeInsideInfo();
+    ShapeInsideInfo* shapeInsideInfo = this->shapeInsideInfo();
     // FIXME Bug 102846: Take into account the height of the content. The offset should be
     // equal to the maximum segment length.
     if (shapeInsideInfo && shapeInsideInfo->hasSegments() && shapeInsideInfo->segments().size() == 1) {
@@ -4142,8 +4140,8 @@ bool RenderBlock::positionNewFloats()
         }
 
         setLogicalTopForFloat(floatingObject, floatLogicalLocation.y());
-        if (childBox->exclusionShapeOutsideInfo())
-            setLogicalHeightForFloat(floatingObject, childBox->exclusionShapeOutsideInfo()->shapeLogicalHeight());
+        if (childBox->shapeOutsideInfo())
+            setLogicalHeightForFloat(floatingObject, childBox->shapeOutsideInfo()->shapeLogicalHeight());
         else
             setLogicalHeightForFloat(floatingObject, logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
 
@@ -4324,7 +4322,7 @@ LayoutUnit RenderBlock::logicalLeftOffsetForLine(LayoutUnit logicalTop, LayoutUn
         m_floatingObjects->placedFloatsTree().allOverlapsWithAdapter(adapter);
 
         if (const FloatingObject* lastFloat = adapter.lastFloat()) {
-            if (ExclusionShapeOutsideInfo* shapeOutside = lastFloat->renderer()->exclusionShapeOutsideInfo()) {
+            if (ShapeOutsideInfo* shapeOutside = lastFloat->renderer()->shapeOutsideInfo()) {
                 shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat) + shapeOutside->shapeLogicalTop(), logicalHeight);
                 left += shapeOutside->rightSegmentShapeBoundingBoxDelta();
             }
@@ -4377,7 +4375,7 @@ LayoutUnit RenderBlock::logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutU
         m_floatingObjects->placedFloatsTree().allOverlapsWithAdapter(adapter);
 
         if (const FloatingObject* lastFloat = adapter.lastFloat()) {
-            if (ExclusionShapeOutsideInfo* shapeOutside = lastFloat->renderer()->exclusionShapeOutsideInfo()) {
+            if (ShapeOutsideInfo* shapeOutside = lastFloat->renderer()->shapeOutsideInfo()) {
                 shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat) + shapeOutside->shapeLogicalTop(), logicalHeight);
                 rightFloatOffset += shapeOutside->leftSegmentShapeBoundingBoxDelta();
             }

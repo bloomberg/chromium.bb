@@ -27,14 +27,14 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ExclusionShape_h
-#define ExclusionShape_h
+#ifndef Shape_h
+#define Shape_h
 
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/text/WritingMode.h"
 #include "core/rendering/style/BasicShapes.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -57,11 +57,11 @@ typedef Vector<LineSegment> SegmentList;
 // computed segments are returned as pairs of logical X coordinates. The BasicShape itself is defined in
 // physical coordinates.
 
-class ExclusionShape {
+class Shape {
 public:
-    static PassOwnPtr<ExclusionShape> createExclusionShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, Length margin, Length padding);
+    static PassOwnPtr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, Length margin, Length padding);
 
-    virtual ~ExclusionShape() { }
+    virtual ~Shape() { }
 
     virtual LayoutRect shapeMarginLogicalBoundingBox() const = 0;
     virtual LayoutRect shapePaddingLogicalBoundingBox() const = 0;
@@ -82,4 +82,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ExclusionShape_h
+#endif // Shape_h

@@ -43,10 +43,10 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/CursorList.h"
-#include "core/rendering/style/ExclusionShapeValue.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/UnusedParam.h>
+#include "core/rendering/style/ShapeValue.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/UnusedParam.h"
 
 using namespace std;
 
@@ -1537,10 +1537,10 @@ public:
     }
 };
 
-template <ExclusionShapeValue* (RenderStyle::*getterFunction)() const, void (RenderStyle::*setterFunction)(PassRefPtr<ExclusionShapeValue>), ExclusionShapeValue* (*initialFunction)()>
-class ApplyPropertyExclusionShape {
+template <ShapeValue* (RenderStyle::*getterFunction)() const, void (RenderStyle::*setterFunction)(PassRefPtr<ShapeValue>), ShapeValue* (*initialFunction)()>
+class ApplyPropertyShape {
 public:
-    static void setValue(RenderStyle* style, PassRefPtr<ExclusionShapeValue> value) { (style->*setterFunction)(value); }
+    static void setValue(RenderStyle* style, PassRefPtr<ShapeValue> value) { (style->*setterFunction)(value); }
     static void applyValue(CSSPropertyID property, StyleResolver* styleResolver, CSSValue* value)
     {
         if (value->isPrimitiveValue()) {
@@ -1549,19 +1549,19 @@ public:
                 setValue(styleResolver->style(), 0);
             // FIXME Bug 102571: Layout for the value 'outside-shape' is not yet implemented
             else if (primitiveValue->getValueID() == CSSValueOutsideShape)
-                setValue(styleResolver->style(), ExclusionShapeValue::createOutsideValue());
+                setValue(styleResolver->style(), ShapeValue::createOutsideValue());
             else if (primitiveValue->isShape()) {
-                RefPtr<ExclusionShapeValue> shape = ExclusionShapeValue::createShapeValue(basicShapeForValue(styleResolver, primitiveValue->getShapeValue()));
+                RefPtr<ShapeValue> shape = ShapeValue::createShapeValue(basicShapeForValue(styleResolver, primitiveValue->getShapeValue()));
                 setValue(styleResolver->style(), shape.release());
             }
         } else if (value->isImageValue()) {
-            RefPtr<ExclusionShapeValue> shape = ExclusionShapeValue::createImageValue(styleResolver->styleImage(property, value));
+            RefPtr<ShapeValue> shape = ShapeValue::createImageValue(styleResolver->styleImage(property, value));
             setValue(styleResolver->style(), shape.release());
         }
     }
     static PropertyHandler createHandler()
     {
-        PropertyHandler handler = ApplyPropertyDefaultBase<ExclusionShapeValue*, getterFunction, PassRefPtr<ExclusionShapeValue>, setterFunction, ExclusionShapeValue*, initialFunction>::createHandler();
+        PropertyHandler handler = ApplyPropertyDefaultBase<ShapeValue*, getterFunction, PassRefPtr<ShapeValue>, setterFunction, ShapeValue*, initialFunction>::createHandler();
         return PropertyHandler(handler.inheritFunction(), handler.initialFunction(), &applyValue);
     }
 };
@@ -1700,8 +1700,8 @@ DeprecatedStyleBuilder::DeprecatedStyleBuilder()
     setPropertyHandler(CSSPropertyWebkitTransitionProperty, ApplyPropertyAnimation<CSSPropertyID, &CSSAnimationData::property, &CSSAnimationData::setProperty, &CSSAnimationData::isPropertySet, &CSSAnimationData::clearProperty, &CSSAnimationData::initialAnimationProperty, &CSSToStyleMap::mapAnimationProperty, &RenderStyle::accessTransitions, &RenderStyle::transitions>::createHandler());
     setPropertyHandler(CSSPropertyWebkitTransitionTimingFunction, ApplyPropertyAnimation<const PassRefPtr<TimingFunction>, &CSSAnimationData::timingFunction, &CSSAnimationData::setTimingFunction, &CSSAnimationData::isTimingFunctionSet, &CSSAnimationData::clearTimingFunction, &CSSAnimationData::initialAnimationTimingFunction, &CSSToStyleMap::mapAnimationTimingFunction, &RenderStyle::accessTransitions, &RenderStyle::transitions>::createHandler());
     setPropertyHandler(CSSPropertyWebkitClipPath, ApplyPropertyClipPath<&RenderStyle::clipPath, &RenderStyle::setClipPath, &RenderStyle::initialClipPath>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitShapeInside, ApplyPropertyExclusionShape<&RenderStyle::shapeInside, &RenderStyle::setShapeInside, &RenderStyle::initialShapeInside>::createHandler());
-    setPropertyHandler(CSSPropertyWebkitShapeOutside, ApplyPropertyExclusionShape<&RenderStyle::shapeOutside, &RenderStyle::setShapeOutside, &RenderStyle::initialShapeOutside>::createHandler());
+    setPropertyHandler(CSSPropertyWebkitShapeInside, ApplyPropertyShape<&RenderStyle::shapeInside, &RenderStyle::setShapeInside, &RenderStyle::initialShapeInside>::createHandler());
+    setPropertyHandler(CSSPropertyWebkitShapeOutside, ApplyPropertyShape<&RenderStyle::shapeOutside, &RenderStyle::setShapeOutside, &RenderStyle::initialShapeOutside>::createHandler());
     setPropertyHandler(CSSPropertyWordSpacing, ApplyPropertyComputeLength<int, &RenderStyle::wordSpacing, &RenderStyle::setWordSpacing, &RenderStyle::initialLetterWordSpacing, NormalEnabled, ThicknessDisabled, SVGZoomEnabled>::createHandler());
 }
 

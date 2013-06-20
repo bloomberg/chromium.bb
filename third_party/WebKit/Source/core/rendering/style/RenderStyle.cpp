@@ -1553,9 +1553,9 @@ void RenderStyle::setBorderImageOutset(LengthBox outset)
     surround.access()->border.m_image.setOutset(outset);
 }
 
-ExclusionShapeValue* RenderStyle::initialShapeInside()
+ShapeValue* RenderStyle::initialShapeInside()
 {
-    DEFINE_STATIC_LOCAL(RefPtr<ExclusionShapeValue>, sOutsideValue, (ExclusionShapeValue::createOutsideValue()));
+    DEFINE_STATIC_LOCAL(RefPtr<ShapeValue>, sOutsideValue, (ShapeValue::createOutsideValue()));
     return sOutsideValue.get();
 }
 

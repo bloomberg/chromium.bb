@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
+#include "core/rendering/shapes/ShapeInsideInfo.h"
 
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/RenderBlock.h"
@@ -41,19 +41,19 @@ LineSegmentRange::LineSegmentRange(const InlineIterator& start, const InlineIter
     {
     }
 
-bool ExclusionShapeInsideInfo::isEnabledFor(const RenderBlock* renderer)
+bool ShapeInsideInfo::isEnabledFor(const RenderBlock* renderer)
 {
-    ExclusionShapeValue* shapeValue = renderer->style()->resolvedShapeInside();
-    if (!shapeValue || shapeValue->type() != ExclusionShapeValue::Shape)
+    ShapeValue* shapeValue = renderer->style()->resolvedShapeInside();
+    if (!shapeValue || shapeValue->type() != ShapeValue::Shape)
         return false;
 
     BasicShape* shape = shapeValue->shape();
     return shape && shape->type() != BasicShape::BasicShapeInsetRectangleType;
 }
 
-bool ExclusionShapeInsideInfo::adjustLogicalLineTop(float minSegmentWidth)
+bool ShapeInsideInfo::adjustLogicalLineTop(float minSegmentWidth)
 {
-    const ExclusionShape* shape = computedShape();
+    const Shape* shape = computedShape();
     if (!shape || m_lineHeight <= 0 || logicalLineTop() > shapeLogicalBottom())
         return false;
 

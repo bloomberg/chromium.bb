@@ -27,16 +27,16 @@
 * SUCH DAMAGE.
 */
 
-#ifndef ExclusionShapeInfo_h
-#define ExclusionShapeInfo_h
+#ifndef ShapeInfo_h
+#define ShapeInfo_h
 
 #include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/FloatRect.h"
-#include "core/rendering/exclusions/ExclusionShape.h"
-#include "core/rendering/style/ExclusionShapeValue.h"
+#include "core/rendering/shapes/Shape.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
+#include "core/rendering/style/ShapeValue.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -62,11 +62,11 @@ private:
     }
 };
 
-template<class RenderType, ExclusionShapeValue* (RenderStyle::*shapeGetter)() const, void (ExclusionShape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
-class ExclusionShapeInfo {
+template<class RenderType, ShapeValue* (RenderStyle::*shapeGetter)() const, void (Shape::*intervalGetter)(LayoutUnit, LayoutUnit, SegmentList&) const>
+class ShapeInfo {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    virtual ~ExclusionShapeInfo() { }
+    virtual ~ShapeInfo() { }
 
     void setShapeSize(LayoutUnit logicalWidth, LayoutUnit logicalHeight)
     {
@@ -101,9 +101,9 @@ public:
     const RenderType* owner() const { return m_renderer; }
 
 protected:
-    ExclusionShapeInfo(const RenderType* renderer): m_renderer(renderer) { }
+    ShapeInfo(const RenderType* renderer): m_renderer(renderer) { }
 
-    const ExclusionShape* computedShape() const;
+    const Shape* computedShape() const;
     virtual LayoutRect computedShapeLogicalBoundingBox() const = 0;
 
     LayoutUnit logicalTopOffset() const;
@@ -114,7 +114,7 @@ protected:
     SegmentList m_segments;
 
 private:
-    mutable OwnPtr<ExclusionShape> m_shape;
+    mutable OwnPtr<Shape> m_shape;
 
     LayoutUnit m_shapeLogicalWidth;
     LayoutUnit m_shapeLogicalHeight;

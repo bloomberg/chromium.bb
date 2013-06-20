@@ -63,9 +63,9 @@
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CounterContent.h"
 #include "core/rendering/style/CursorList.h"
-#include "core/rendering/style/ExclusionShapeValue.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <wtf/text/StringBuilder.h>
+#include "core/rendering/style/ShapeValue.h"
+#include "wtf/text/StringBuilder.h"
 
 #include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
@@ -2576,24 +2576,24 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitShapeInside:
             if (!style->shapeInside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
-            if (style->shapeInside()->type() == ExclusionShapeValue::Outside)
+            if (style->shapeInside()->type() == ShapeValue::Outside)
                 return cssValuePool().createIdentifierValue(CSSValueOutsideShape);
-            if (style->shapeInside()->type() == ExclusionShapeValue::Image) {
+            if (style->shapeInside()->type() == ShapeValue::Image) {
                 if (style->shapeInside()->image())
                     return style->shapeInside()->image()->cssValue();
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             }
-            ASSERT(style->shapeInside()->type() == ExclusionShapeValue::Shape);
+            ASSERT(style->shapeInside()->type() == ShapeValue::Shape);
             return valueForBasicShape(style->shapeInside()->shape());
         case CSSPropertyWebkitShapeOutside:
             if (!style->shapeOutside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
-            if (style->shapeOutside()->type() == ExclusionShapeValue::Image) {
+            if (style->shapeOutside()->type() == ShapeValue::Image) {
                 if (style->shapeOutside()->image())
                     return style->shapeOutside()->image()->cssValue();
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             }
-            ASSERT(style->shapeOutside()->type() == ExclusionShapeValue::Shape);
+            ASSERT(style->shapeOutside()->type() == ShapeValue::Shape);
             return valueForBasicShape(style->shapeOutside()->shape());
         case CSSPropertyWebkitWrapThrough:
             return cssValuePool().createValue(style->wrapThrough());

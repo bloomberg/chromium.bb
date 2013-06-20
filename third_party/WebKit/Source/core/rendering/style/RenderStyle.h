@@ -46,13 +46,13 @@
 #include "core/rendering/style/BorderValue.h"
 #include "core/rendering/style/CounterDirectives.h"
 #include "core/rendering/style/DataRef.h"
-#include "core/rendering/style/ExclusionShapeValue.h"
 #include "core/rendering/style/LineClampValue.h"
 #include "core/rendering/style/NinePieceImage.h"
 #include "core/rendering/style/OutlineValue.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/style/ShadowData.h"
+#include "core/rendering/style/ShapeValue.h"
 #include "core/rendering/style/StyleBackgroundData.h"
 #include "core/rendering/style/StyleBoxData.h"
 #include "core/rendering/style/StyleDeprecatedFlexibleBoxData.h"
@@ -1349,31 +1349,31 @@ public:
     SVGLength kerning() const { return svgStyle()->kerning(); }
     void setKerning(SVGLength k) { accessSVGStyle()->setKerning(k); }
 
-    void setShapeInside(PassRefPtr<ExclusionShapeValue> value)
+    void setShapeInside(PassRefPtr<ShapeValue> value)
     {
         if (rareNonInheritedData->m_shapeInside == value)
             return;
         rareNonInheritedData.access()->m_shapeInside = value;
     }
-    ExclusionShapeValue* shapeInside() const { return rareNonInheritedData->m_shapeInside.get(); }
-    ExclusionShapeValue* resolvedShapeInside() const
+    ShapeValue* shapeInside() const { return rareNonInheritedData->m_shapeInside.get(); }
+    ShapeValue* resolvedShapeInside() const
     {
-        ExclusionShapeValue* shapeInside = this->shapeInside();
-        if (shapeInside && shapeInside->type() == ExclusionShapeValue::Outside)
+        ShapeValue* shapeInside = this->shapeInside();
+        if (shapeInside && shapeInside->type() == ShapeValue::Outside)
             return shapeOutside();
         return shapeInside;
     }
 
-    void setShapeOutside(PassRefPtr<ExclusionShapeValue> value)
+    void setShapeOutside(PassRefPtr<ShapeValue> value)
     {
         if (rareNonInheritedData->m_shapeOutside == value)
             return;
         rareNonInheritedData.access()->m_shapeOutside = value;
     }
-    ExclusionShapeValue* shapeOutside() const { return rareNonInheritedData->m_shapeOutside.get(); }
+    ShapeValue* shapeOutside() const { return rareNonInheritedData->m_shapeOutside.get(); }
 
-    static ExclusionShapeValue* initialShapeInside();
-    static ExclusionShapeValue* initialShapeOutside() { return 0; }
+    static ShapeValue* initialShapeInside();
+    static ShapeValue* initialShapeOutside() { return 0; }
 
     void setClipPath(PassRefPtr<ClipPathOperation> operation)
     {

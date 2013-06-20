@@ -27,17 +27,17 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ExclusionShapeOutsideInfo_h
-#define ExclusionShapeOutsideInfo_h
+#ifndef ShapeOutsideInfo_h
+#define ShapeOutsideInfo_h
 
 #include "core/platform/graphics/LayoutSize.h"
-#include "core/rendering/exclusions/ExclusionShapeInfo.h"
+#include "core/rendering/shapes/ShapeInfo.h"
 
 namespace WebCore {
 
 class RenderBox;
 
-class ExclusionShapeOutsideInfo : public ExclusionShapeInfo<RenderBox, &RenderStyle::shapeOutside, &ExclusionShape::getExcludedIntervals>, public MappedInfo<RenderBox, ExclusionShapeOutsideInfo> {
+class ShapeOutsideInfo : public ShapeInfo<RenderBox, &RenderStyle::shapeOutside, &Shape::getExcludedIntervals>, public MappedInfo<RenderBox, ShapeOutsideInfo> {
 public:
     LayoutSize shapeLogicalOffset() const { return LayoutSize(shapeLogicalLeft(), shapeLogicalTop()); }
 
@@ -46,14 +46,14 @@ public:
 
     virtual bool computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight) OVERRIDE;
 
-    static PassOwnPtr<ExclusionShapeOutsideInfo> createInfo(const RenderBox* renderer) { return adoptPtr(new ExclusionShapeOutsideInfo(renderer)); }
+    static PassOwnPtr<ShapeOutsideInfo> createInfo(const RenderBox* renderer) { return adoptPtr(new ShapeOutsideInfo(renderer)); }
     static bool isEnabledFor(const RenderBox*);
 
 protected:
     virtual LayoutRect computedShapeLogicalBoundingBox() const OVERRIDE { return computedShape()->shapeMarginLogicalBoundingBox(); }
 
 private:
-    ExclusionShapeOutsideInfo(const RenderBox* renderer) : ExclusionShapeInfo<RenderBox, &RenderStyle::shapeOutside, &ExclusionShape::getExcludedIntervals>(renderer) { }
+    ShapeOutsideInfo(const RenderBox* renderer) : ShapeInfo<RenderBox, &RenderStyle::shapeOutside, &Shape::getExcludedIntervals>(renderer) { }
 
     LayoutUnit m_leftSegmentShapeBoundingBoxDelta;
     LayoutUnit m_rightSegmentShapeBoundingBoxDelta;

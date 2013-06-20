@@ -27,12 +27,12 @@
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/ColumnInfo.h"
-#include "core/rendering/exclusions/ExclusionShapeInsideInfo.h"
 #include "core/rendering/GapRects.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLineBoxList.h"
 #include "core/rendering/RootInlineBox.h"
-#include "core/rendering/style/ExclusionShapeValue.h"
+#include "core/rendering/shapes/ShapeInsideInfo.h"
+#include "core/rendering/style/ShapeValue.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/OwnPtr.h>
 
@@ -439,24 +439,24 @@ public:
     void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0) const;
 #endif
 
-    ExclusionShapeInsideInfo* ensureExclusionShapeInsideInfo()
+    ShapeInsideInfo* ensureShapeInsideInfo()
     {
         if (!m_rareData || !m_rareData->m_shapeInsideInfo)
-            setExclusionShapeInsideInfo(ExclusionShapeInsideInfo::createInfo(this));
+            setShapeInsideInfo(ShapeInsideInfo::createInfo(this));
         return m_rareData->m_shapeInsideInfo.get();
     }
-    ExclusionShapeInsideInfo* exclusionShapeInsideInfo() const
+    ShapeInsideInfo* shapeInsideInfo() const
     {
-        return m_rareData && m_rareData->m_shapeInsideInfo && ExclusionShapeInsideInfo::isEnabledFor(this) ? m_rareData->m_shapeInsideInfo.get() : 0;
+        return m_rareData && m_rareData->m_shapeInsideInfo && ShapeInsideInfo::isEnabledFor(this) ? m_rareData->m_shapeInsideInfo.get() : 0;
     }
-    void setExclusionShapeInsideInfo(PassOwnPtr<ExclusionShapeInsideInfo> value)
+    void setShapeInsideInfo(PassOwnPtr<ShapeInsideInfo> value)
     {
         if (!m_rareData)
             m_rareData = adoptPtr(new RenderBlockRareData(this));
         m_rareData->m_shapeInsideInfo = value;
     }
-    ExclusionShapeInsideInfo* layoutExclusionShapeInsideInfo() const;
-    bool allowsExclusionShapeInsideInfoSharing() const { return !isInline() && !isFloating(); }
+    ShapeInsideInfo* layoutShapeInsideInfo() const;
+    bool allowsShapeInsideInfoSharing() const { return !isInline() && !isFloating(); }
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
     static void reportStaticMembersMemoryUsage(MemoryInstrumentation*);
@@ -564,7 +564,7 @@ protected:
         layoutInlineChildren(true, repaintLogicalTop, repaintLogicalBottom);
     }
 
-    bool updateRegionsAndExclusionsLogicalSize(RenderFlowThread*);
+    bool updateRegionsAndShapesLogicalSize(RenderFlowThread*);
     void computeRegionRangeForBlock(RenderFlowThread*);
 
     void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox*);
@@ -572,9 +572,9 @@ protected:
     virtual void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
 
 private:
-    void computeExclusionShapeSize();
-    void updateRegionsAndExclusionsAfterChildLayout(RenderFlowThread*, bool);
-    void updateExclusionShapeInsideInfoAfterStyleChange(const ExclusionShapeValue*, const ExclusionShapeValue* oldExclusionShape);
+    void computeShapeSize();
+    void updateRegionsAndShapesAfterChildLayout(RenderFlowThread*, bool);
+    void updateShapeInsideInfoAfterStyleChange(const ShapeValue*, const ShapeValue* oldShape);
 
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
@@ -777,7 +777,7 @@ private:
 
     LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
-        ExclusionShapeOutsideInfo *shapeOutside = child->renderer()->exclusionShapeOutsideInfo();
+        ShapeOutsideInfo *shapeOutside = child->renderer()->shapeOutsideInfo();
         if (shapeOutside)
             return child->x();
 
@@ -789,7 +789,7 @@ private:
         
     LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
-        ExclusionShapeOutsideInfo *shapeOutside = child->renderer()->exclusionShapeOutsideInfo();
+        ShapeOutsideInfo *shapeOutside = child->renderer()->shapeOutsideInfo();
         if (shapeOutside)
             return child->y();
 
@@ -1264,7 +1264,7 @@ public:
         RootInlineBox* m_lineGridBox;
 
         RootInlineBox* m_lineBreakToAvoidWidow;
-        OwnPtr<ExclusionShapeInsideInfo> m_shapeInsideInfo;
+        OwnPtr<ShapeInsideInfo> m_shapeInsideInfo;
         bool m_shouldBreakAtLineToAvoidWidow : 1;
         bool m_discardMarginBefore : 1;
         bool m_discardMarginAfter : 1;
