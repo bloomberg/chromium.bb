@@ -632,7 +632,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   status_bounds.set_y(status_bounds.y() +
                       target_bounds.shelf_bounds_in_root.y());
   layer->SetBounds(status_bounds);
-  layer->SetOpacity(target_bounds.opacity);
+  layer->SetOpacity(target_bounds.status_opacity);
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
       root_window_, target_bounds.work_area_insets);
   UpdateHitTestBounds();
@@ -738,6 +738,10 @@ void ShelfLayoutManager::CalculateTargetBounds(
       (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
        state.visibility_state == SHELF_VISIBLE ||
        state.visibility_state == SHELF_AUTO_HIDE) ? 1.0f : 0.0f;
+  target_bounds->status_opacity =
+      (state.visibility_state == SHELF_AUTO_HIDE &&
+       state.auto_hide_state == SHELF_AUTO_HIDE_HIDDEN) ?
+      0.0f : target_bounds->opacity;
 
   if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS)
     UpdateTargetBoundsForGesture(target_bounds);

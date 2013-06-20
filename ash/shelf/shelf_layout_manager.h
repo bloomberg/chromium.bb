@@ -207,6 +207,7 @@ class ASH_EXPORT ShelfLayoutManager :
     ~TargetBounds();
 
     float opacity;
+    float status_opacity;
     gfx::Rect shelf_bounds_in_root;
     gfx::Rect launcher_bounds_in_shelf;
     gfx::Rect status_bounds_in_shelf;
