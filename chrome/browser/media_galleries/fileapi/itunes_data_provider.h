@@ -12,8 +12,6 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/files/file_path_watcher.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_library_parser.h"
 
 namespace itunes {
@@ -66,8 +64,6 @@ class ITunesDataProvider {
 
   bool ParseLibrary();
 
-  void OnLibraryChanged(const base::FilePath& path, bool error);
-
   // Path to the library XML file.
   const base::FilePath library_path_;
 
@@ -80,11 +76,6 @@ class ITunesDataProvider {
   // True if |library_| contain valid data.  False at construction and if
   // reading or parsing the XML file fails.
   bool is_valid_;
-
-  // A watcher on the library xml file.
-  base::FilePathWatcher library_watcher_;
-
-  base::WeakPtrFactory<ITunesDataProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ITunesDataProvider);
 };
