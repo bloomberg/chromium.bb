@@ -130,9 +130,6 @@
                     },
                 }],
                 ['toolkit_uses_gtk == 1', {
-                    'defines': [
-                        'WTF_USE_GTK=1',
-                    ],
                     'dependencies': [
                         '<(DEPTH)/build/linux/system.gyp:gtk',
                     ],

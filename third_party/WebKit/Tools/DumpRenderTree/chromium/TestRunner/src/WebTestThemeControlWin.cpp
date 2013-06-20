@@ -34,7 +34,6 @@
 // platform-specific rendering differences due to themes, colors, etc.
 //
 
-#include "config.h"
 #include "WebTestThemeControlWin.h"
 
 #include "TestCommon.h"

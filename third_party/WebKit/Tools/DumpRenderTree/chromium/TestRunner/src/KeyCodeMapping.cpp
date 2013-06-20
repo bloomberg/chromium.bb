@@ -28,14 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "KeyCodeMapping.h"
+
+#include "TestCommon.h"
 
 namespace WebTestRunner {
 
 int NativeKeyCodeForWindowsKeyCode(int keysym)
 {
-#if defined(__linux__) && USE(GTK)
+#if defined(__linux__) && defined(TOOLKIT_GTK)
     // See /usr/share/X11/xkb/keycodes/*
     static const int asciiToKeyCode[] = {
         0,

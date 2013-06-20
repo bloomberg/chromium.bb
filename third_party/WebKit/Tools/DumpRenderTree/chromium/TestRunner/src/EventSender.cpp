@@ -40,7 +40,6 @@
 // The behavior of queuing events and replaying them can be disabled by a
 // layout test by setting eventSender.dragMode to false.
 
-#include "config.h"
 #include "EventSender.h"
 
 #include <deque>
@@ -638,7 +637,7 @@ void EventSender::keyDown(const CppArgumentList& arguments, CppVariant* result)
     eventDown.type = WebInputEvent::RawKeyDown;
     eventDown.modifiers = 0;
     eventDown.windowsKeyCode = code;
-#if defined(__linux__) && USE(GTK)
+#if defined(__linux__) && defined(TOOLKIT_GTK)
     eventDown.nativeKeyCode = NativeKeyCodeForWindowsKeyCode(code);
 #endif
 

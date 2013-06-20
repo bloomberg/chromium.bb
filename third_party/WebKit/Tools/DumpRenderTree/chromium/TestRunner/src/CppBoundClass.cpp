@@ -39,7 +39,6 @@
 //   name in its internal map of methods, and then calls the appropriate
 //   method.
 
-#include "config.h"
 #include "CppBoundClass.h"
 
 #include "TestCommon.h"
