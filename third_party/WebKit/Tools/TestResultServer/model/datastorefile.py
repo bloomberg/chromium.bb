@@ -31,7 +31,7 @@ import logging
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
-MAX_DATA_ENTRY_PER_FILE = 10
+MAX_DATA_ENTRY_PER_FILE = 20
 MAX_ENTRY_LEN = 1000 * 1000
 
 
