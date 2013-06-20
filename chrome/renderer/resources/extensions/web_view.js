@@ -303,7 +303,7 @@ WebView.prototype.setupNewWindowEvent_ = function() {
     var evt = new Event('newwindow', { bubbles: true, cancelable: true });
     var detail = e.detail ? JSON.parse(e.detail) : {};
 
-    NEW_WINDOW_EVENT_ATTRIBUTES.forEach(function(attribName) {
+    $Array.forEach(NEW_WINDOW_EVENT_ATTRIBUTES, function(attribName) {
       evt[attribName] = detail[attribName];
     });
     var requestId = detail.requestId;
