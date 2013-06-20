@@ -279,10 +279,12 @@ class Manifest(object):
     assert remote in self.remotes
     remote_name = self.remotes[remote]['alias']
 
-    local_rev = rev = attrs['revision']
+    # 'repo manifest -r' adds an 'upstream' attribute to the project tag for the
+    # manifests it generates.  We can use the attribute to get a valid branch
+    # instead of a sha1 for these types of manifests.
+    local_rev = rev = attrs.get('upstream', attrs['revision'])
     if rev.startswith('refs/heads/'):
       local_rev = 'refs/remotes/%s/%s' % (remote_name, StripRefsHeads(rev))
-
     attrs['local_revision'] = local_rev
 
     attrs['pushable'] = remote in constants.CROS_REMOTES
