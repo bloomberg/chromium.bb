@@ -91,7 +91,8 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                      dialog_type,
                                      base::Bind(&MockCallback)),
         metric_logger_(metric_logger),
-        message_loop_runner_(runner) {}
+        message_loop_runner_(runner),
+        use_validation_(false) {}
 
   virtual ~TestAutofillDialogController() {}
 
@@ -104,14 +105,20 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
       DialogSection section,
       AutofillFieldType type,
       const string16& value) OVERRIDE {
-    return string16();
+    if (!use_validation_)
+      return string16();
+    return AutofillDialogControllerImpl::InputValidityMessage(
+        section, type, value);
   }
 
   virtual ValidityData InputsAreValid(
       DialogSection section,
       const DetailOutputMap& inputs,
       ValidationType validation_type) OVERRIDE {
-    return ValidityData();
+    if (!use_validation_)
+      return ValidityData();
+    return AutofillDialogControllerImpl::InputsAreValid(
+        section, inputs, validation_type);
   }
 
   // Saving to Chrome is tested in AutofillDialogController unit tests.
@@ -139,6 +146,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   using AutofillDialogControllerImpl::DisableWallet;
   using AutofillDialogControllerImpl::IsEditingExistingData;
 
+  void set_use_validation(bool use_validation) {
+    use_validation_ = use_validation;
+  }
+
  protected:
   virtual PersonalDataManager* GetManager() OVERRIDE {
     return &test_manager_;
@@ -153,6 +164,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   const AutofillMetrics& metric_logger_;
   TestPersonalDataManager test_manager_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool use_validation_;
 
   // A list of notifications to show in the notification area of the dialog.
   // This is used to control what |CurrentNotifications()| returns for testing.
@@ -567,6 +579,19 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
 
   EXPECT_EQ(no_notification_size.width(),
             controller()->view()->GetTestableView()->GetSize().width());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
+  controller()->set_use_validation(true);
+
+  CreditCard credit_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+  EXPECT_FALSE(controller()->IsEditingExistingData(SECTION_CC));
+
+  ASSERT_NO_FATAL_FAILURE(
+      controller()->view()->GetTestableView()->SubmitForTesting());
 }
 #endif  // defined(TOOLKIT_VIEWS)
 

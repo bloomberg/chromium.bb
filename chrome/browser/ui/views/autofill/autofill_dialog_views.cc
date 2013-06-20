@@ -1748,6 +1748,11 @@ void AutofillDialogViews::MarkInputsInvalid(DialogSection section,
           base::Unretained(this),
           iter->second);
     }
+  } else if (section == SECTION_CC) {
+    field_map[CREDIT_CARD_VERIFICATION_CODE] = base::Bind(
+        &AutofillDialogViews::SetValidityForInput<DecoratedTextfield>,
+        base::Unretained(this),
+        group.suggested_info->decorated_textfield());
   }
 
   // Flag invalid fields, removing them from |field_map|.
