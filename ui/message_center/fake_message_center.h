@@ -12,7 +12,7 @@ namespace message_center {
 class NotificationDelegate;
 
 // MessageCenter implementation of doing nothing. Useful for tests.
-class FakeMessageCenter : public MessageCenter {
+class MESSAGE_CENTER_EXPORT FakeMessageCenter : public MessageCenter {
  public:
   FakeMessageCenter();
   virtual ~FakeMessageCenter();
