@@ -4852,7 +4852,7 @@ void RenderViewImpl::SyncSelectionIfRequired() {
 
     range = ui::Range(location, location + length);
 
-    if (webview()->textInputType() != WebKit::WebTextInputTypeNone) {
+    if (webview()->textInputInfo().type != WebKit::WebTextInputTypeNone) {
       // If current focused element is editable, we will send 100 more chars
       // before and after selection. It is for input method surrounding text
       // feature.

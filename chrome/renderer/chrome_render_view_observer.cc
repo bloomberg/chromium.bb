@@ -666,7 +666,7 @@ void ChromeRenderViewObserver::DidHandleGestureEvent(
     return;
 
   WebKit::WebTextInputType text_input_type =
-      render_view()->GetWebView()->textInputType();
+      render_view()->GetWebView()->textInputInfo().type;
 
   render_view()->Send(new ChromeViewHostMsg_FocusedNodeTouched(
       routing_id(),
