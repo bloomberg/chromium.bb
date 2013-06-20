@@ -17,6 +17,7 @@ Scheduler::Scheduler(SchedulerClient* client,
       weak_factory_(this),
       last_set_needs_begin_frame_(false),
       has_pending_begin_frame_(false),
+      safe_to_expect_begin_frame_(false),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false) {
   DCHECK(client_);
