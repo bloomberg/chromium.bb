@@ -78,6 +78,8 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual void SetUp() OVERRIDE {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
+    settings.impl_side_painting = true;
+    settings.solid_color_scrollbars = true;
 
     host_impl_ = LayerTreeHostImpl::Create(settings,
                                            this,
@@ -5930,13 +5932,15 @@ class CountingSoftwareDevice : public SoftwareOutputDevice {
 };
 
 TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
+  // No main thread evictions in resourceless software mode.
+  set_reduce_memory_result(false);
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   CountingSoftwareDevice* software_device = new CountingSoftwareDevice();
   FakeOutputSurface* output_surface = FakeOutputSurface::CreateDeferredGL(
-      scoped_ptr<WebKit::WebGraphicsContext3D>(),
       scoped_ptr<SoftwareOutputDevice>(software_device)).release();
-  host_impl_->InitializeRenderer(scoped_ptr<OutputSurface>(output_surface));
+  EXPECT_TRUE(host_impl_->InitializeRenderer(
+      scoped_ptr<OutputSurface>(output_surface)));
 
   output_surface->set_forced_draw_to_software_device(true);
   EXPECT_TRUE(output_surface->ForcedDrawToSoftwareDevice());
@@ -5956,8 +5960,8 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
 
 TEST_F(LayerTreeHostImplTest,
        ForcedDrawToSoftwareDeviceSkipsUnsupportedLayers) {
+  set_reduce_memory_result(false);
   FakeOutputSurface* output_surface = FakeOutputSurface::CreateDeferredGL(
-      scoped_ptr<WebKit::WebGraphicsContext3D>(),
       scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice())).release();
   host_impl_->InitializeRenderer(
       scoped_ptr<OutputSurface>(output_surface));
@@ -5989,12 +5993,13 @@ TEST_F(LayerTreeHostImplTest,
 }
 
 TEST_F(LayerTreeHostImplTest, DeferredInitializeSmoke) {
-  host_impl_->InitializeRenderer(
-      scoped_ptr<OutputSurface>(FakeOutputSurface::CreateDeferredGL(
-          scoped_ptr<WebKit::WebGraphicsContext3D>(
-              TestWebGraphicsContext3D::Create(
-                  WebKit::WebGraphicsContext3D::Attributes())),
-          scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice()))));
+  set_reduce_memory_result(false);
+  scoped_ptr<FakeOutputSurface> output_surface(
+      FakeOutputSurface::CreateDeferredGL(
+          scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice())));
+  FakeOutputSurface* output_surface_ptr = output_surface.get();
+  EXPECT_TRUE(
+      host_impl_->InitializeRenderer(output_surface.PassAs<OutputSurface>()));
 
   // Add two layers.
   scoped_ptr<SolidColorLayerImpl> root_layer =
@@ -6013,7 +6018,9 @@ TEST_F(LayerTreeHostImplTest, DeferredInitializeSmoke) {
 
   // DeferredInitialize and hardware draw.
   EXPECT_FALSE(did_try_initialize_renderer_);
-  host_impl_->DeferredInitialize(scoped_refptr<ContextProvider>());
+  EXPECT_TRUE(output_surface_ptr->SetAndInitializeContext3D(
+      scoped_ptr<WebKit::WebGraphicsContext3D>(
+          TestWebGraphicsContext3D::Create())));
   EXPECT_TRUE(did_try_initialize_renderer_);
 
   // Defer intialized GL draw.

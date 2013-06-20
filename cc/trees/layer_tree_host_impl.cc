@@ -191,6 +191,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       last_sent_memory_visible_bytes_(0),
       last_sent_memory_visible_and_nearby_bytes_(0),
       last_sent_memory_use_bytes_(0),
+      zero_budget_(false),
       device_scale_factor_(1.f),
       overdraw_bottom_height_(0.f),
       animation_registrar_(AnimationRegistrar::Create()),
@@ -1031,6 +1032,9 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
   if (managed_memory_policy_ == policy)
     return;
 
+  if (zero_budget_)
+    DCHECK_EQ(0u, policy.bytes_limit_when_visible);
+
   // If there is already enough memory to draw everything imaginable and the
   // new memory limit does not change this, then do not re-commit. Don't bother
   // skipping commits if this is not visible (commits don't happen when not
@@ -1436,19 +1440,61 @@ ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   return actual;
 }
 
+void LayerTreeHostImpl::ReleaseTreeResources() {
+  if (active_tree_->root_layer())
+    ClearRenderSurfaces();
+  if (active_tree_->root_layer())
+    SendReleaseResourcesRecursive(active_tree_->root_layer());
+  if (pending_tree_ && pending_tree_->root_layer())
+    SendReleaseResourcesRecursive(pending_tree_->root_layer());
+  if (recycle_tree_ && recycle_tree_->root_layer())
+    SendReleaseResourcesRecursive(recycle_tree_->root_layer());
+}
+
+void LayerTreeHostImpl::CreateAndSetRenderer(
+    OutputSurface* output_surface,
+    ResourceProvider* resource_provider) {
+  DCHECK(!renderer_);
+  if (output_surface->capabilities().delegated_rendering) {
+    renderer_ =
+        DelegatingRenderer::Create(this, output_surface, resource_provider);
+  } else if (output_surface->context3d()) {
+    renderer_ = GLRenderer::Create(this,
+                                   output_surface,
+                                   resource_provider,
+                                   settings_.highp_threshold_min,
+                                   settings_.force_direct_layer_drawing);
+  } else if (output_surface->software_device()) {
+    renderer_ =
+        SoftwareRenderer::Create(this, output_surface, resource_provider);
+  }
+
+  if (renderer_)
+    renderer_->SetVisible(visible_);
+}
+
+void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
+  if (zero_budget_ == zero_budget)
+    return;
+
+  zero_budget_ = zero_budget;
+
+  ManagedMemoryPolicy new_policy = managed_memory_policy_;
+  if (zero_budget_) {
+    new_policy.bytes_limit_when_visible = 0;
+  } else {
+    new_policy.bytes_limit_when_visible =
+        PrioritizedResourceManager::DefaultMemoryAllocationLimit();
+  }
+  SetManagedMemoryPolicy(new_policy);
+}
+
 bool LayerTreeHostImpl::InitializeRenderer(
     scoped_ptr<OutputSurface> output_surface) {
   // Since we will create a new resource provider, we cannot continue to use
   // the old resources (i.e. render_surfaces and texture IDs). Clear them
   // before we destroy the old resource provider.
-  if (active_tree_->root_layer())
-    ClearRenderSurfaces();
-  if (active_tree_->root_layer())
-    SendDidLoseOutputSurfaceRecursive(active_tree_->root_layer());
-  if (pending_tree_ && pending_tree_->root_layer())
-    SendDidLoseOutputSurfaceRecursive(pending_tree_->root_layer());
-  if (recycle_tree_ && recycle_tree_->root_layer())
-    SendDidLoseOutputSurfaceRecursive(recycle_tree_->root_layer());
+  ReleaseTreeResources();
   if (resource_provider_)
     resource_provider_->DidLoseOutputSurface();
 
@@ -1461,53 +1507,28 @@ bool LayerTreeHostImpl::InitializeRenderer(
   if (!output_surface->BindToClient(this))
     return false;
 
-  return DoInitializeRenderer(output_surface.Pass(),
-                              false /* is_deferred_init */);
-}
+  scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
+      output_surface.get(), settings_.highp_threshold_min);
+  if (!resource_provider)
+    return false;
 
-bool LayerTreeHostImpl::DoInitializeRenderer(
-    scoped_ptr<OutputSurface> output_surface,
-    bool is_deferred_init) {
-  if (output_surface->capabilities().deferred_gl_initialization &&
-      !is_deferred_init) {
-    // TODO(joth): Defer creating the Renderer too, until GL is initialized.
-    // See http://crbug.com/230197
-    renderer_ = SoftwareRenderer::Create(this, output_surface.get(), NULL);
-  } else {
-    scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
-        output_surface.get(), settings_.highp_threshold_min);
-    if (!resource_provider)
-      return false;
+  if (output_surface->capabilities().deferred_gl_initialization)
+    EnforceZeroBudget(true);
 
-    if (output_surface->capabilities().delegated_rendering) {
-      renderer_ = DelegatingRenderer::Create(this, output_surface.get(),
-                                             resource_provider.get());
-    } else if (output_surface->context3d()) {
-      renderer_ = GLRenderer::Create(this,
-                                     output_surface.get(),
-                                     resource_provider.get(),
-                                     settings_.highp_threshold_min,
-                                     settings_.force_direct_layer_drawing);
-    } else if (output_surface->software_device()) {
-      renderer_ = SoftwareRenderer::Create(this,
-                                           output_surface.get(),
-                                           resource_provider.get());
-    }
-    if (!renderer_)
-      return false;
+  CreateAndSetRenderer(output_surface.get(), resource_provider.get());
 
-    if (settings_.impl_side_painting) {
-      bool using_map_image = GetRendererCapabilities().using_map_image;
-      tile_manager_ = TileManager::Create(this,
-                                          resource_provider.get(),
-                                          settings_.num_raster_threads,
-                                          settings_.use_color_estimator,
-                                          rendering_stats_instrumentation_,
-                                          using_map_image);
-      UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
-    }
+  if (!renderer_)
+    return false;
 
-    resource_provider_ = resource_provider.Pass();
+  if (settings_.impl_side_painting) {
+    bool using_map_image = GetRendererCapabilities().using_map_image;
+    tile_manager_ = TileManager::Create(this,
+                                        resource_provider.get(),
+                                        settings_.num_raster_threads,
+                                        settings_.use_color_estimator,
+                                        rendering_stats_instrumentation_,
+                                        using_map_image);
+    UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
   }
 
   // Setup BeginFrameEmulation if it's not supported natively
@@ -1529,10 +1550,8 @@ bool LayerTreeHostImpl::DoInitializeRenderer(
     max_frames_pending = OutputSurface::DEFAULT_MAX_FRAMES_PENDING;
   output_surface->SetMaxFramesPending(max_frames_pending);
 
+  resource_provider_ = resource_provider.Pass();
   output_surface_ = output_surface.Pass();
-
-  if (!visible_)
-    renderer_->SetVisible(visible_);
 
   client_->OnCanDrawStateChanged(CanDraw());
 
@@ -1548,16 +1567,22 @@ bool LayerTreeHostImpl::DoInitializeRenderer(
 bool LayerTreeHostImpl::DeferredInitialize(
     scoped_refptr<ContextProvider> offscreen_context_provider) {
   DCHECK(output_surface_->capabilities().deferred_gl_initialization);
+  DCHECK(settings_.impl_side_painting);
+  DCHECK(settings_.solid_color_scrollbars);
   DCHECK(output_surface_->context3d());
 
-  // TODO(boliu): This is temporary until proper resource clean up is possible
-  // without resetting |tile_manager_| or |resource_provider_|.
-  DCHECK(!resource_provider_);
+  ReleaseTreeResources();
+  renderer_.reset();
+  resource_provider_->Reinitialize(settings_.highp_threshold_min);
+  CreateAndSetRenderer(output_surface_.get(), resource_provider_.get());
 
-  bool success =
-      DoInitializeRenderer(output_surface_.Pass(), true /* is_deferred_init */);
+  bool success = !!renderer_.get();
   client_->DidTryInitializeRendererOnImplThread(success,
                                                 offscreen_context_provider);
+  if (success) {
+    EnforceZeroBudget(false);
+    client_->SetNeedsCommitOnImplThread();
+  }
   return success;
 }
 
@@ -2121,15 +2146,16 @@ base::TimeDelta LayerTreeHostImpl::LowFrequencyAnimationInterval() const {
   return base::TimeDelta::FromSeconds(1);
 }
 
-void LayerTreeHostImpl::SendDidLoseOutputSurfaceRecursive(LayerImpl* current) {
+void LayerTreeHostImpl::SendReleaseResourcesRecursive(LayerImpl* current) {
   DCHECK(current);
+  // TODO(boliu): Rename DidLoseOutputSurface to ReleaseResources.
   current->DidLoseOutputSurface();
   if (current->mask_layer())
-    SendDidLoseOutputSurfaceRecursive(current->mask_layer());
+    SendReleaseResourcesRecursive(current->mask_layer());
   if (current->replica_layer())
-    SendDidLoseOutputSurfaceRecursive(current->replica_layer());
+    SendReleaseResourcesRecursive(current->replica_layer());
   for (size_t i = 0; i < current->children().size(); ++i)
-    SendDidLoseOutputSurfaceRecursive(current->children()[i]);
+    SendReleaseResourcesRecursive(current->children()[i]);
 }
 
 void LayerTreeHostImpl::ClearRenderSurfaces() {

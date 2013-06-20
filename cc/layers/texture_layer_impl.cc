@@ -128,6 +128,11 @@ void TextureLayerImpl::DumpLayerProperties(std::string* str, int indent) const {
 }
 
 void TextureLayerImpl::DidLoseOutputSurface() {
+  if (external_texture_resource_ && !uses_mailbox_) {
+    ResourceProvider* resource_provider =
+        layer_tree_impl()->resource_provider();
+    resource_provider->DeleteResource(external_texture_resource_);
+  }
   texture_id_ = 0;
   external_texture_resource_ = 0;
 }

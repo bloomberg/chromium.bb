@@ -647,7 +647,7 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface)
       lost_output_surface_(false),
       next_id_(1),
       next_child_(1),
-      default_resource_type_(output_surface->context3d() ? GLTexture : Bitmap),
+      default_resource_type_(GLTexture),
       use_texture_storage_ext_(false),
       use_texture_usage_hint_(false),
       use_shallow_flush_(false),
@@ -659,12 +659,15 @@ bool ResourceProvider::Initialize(int highp_threshold_min) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   if (!context3d) {
+    default_resource_type_ = Bitmap;
     max_texture_size_ = INT_MAX / 2;
     best_texture_format_ = GL_RGBA;
     return true;
   }
   if (!context3d->makeContextCurrent())
     return false;
+
+  default_resource_type_ = GLTexture;
 
   std::string extensions_string =
       UTF16ToASCII(context3d->getString(GL_EXTENSIONS));
@@ -697,7 +700,18 @@ bool ResourceProvider::Initialize(int highp_threshold_min) {
                                         &max_texture_size_));
   best_texture_format_ =
       PlatformColor::BestTextureFormat(context3d, use_bgra);
+
   return true;
+}
+
+bool ResourceProvider::Reinitialize(int highp_threshold_min) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Only supports reinitializing from software mode.
+  DCHECK(!texture_uploader_);
+  DCHECK(!texture_copier_);
+
+  return Initialize(highp_threshold_min);
 }
 
 int ResourceProvider::CreateChild() {

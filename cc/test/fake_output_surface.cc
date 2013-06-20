@@ -91,4 +91,10 @@ bool FakeOutputSurface::ForcedDrawToSoftwareDevice() const {
   return forced_draw_to_software_device_;
 }
 
+bool FakeOutputSurface::SetAndInitializeContext3D(
+    scoped_ptr<WebKit::WebGraphicsContext3D> context3d) {
+  return InitializeAndSetContext3D(context3d.Pass(),
+                                   scoped_refptr<ContextProvider>());
+}
+
 }  // namespace cc

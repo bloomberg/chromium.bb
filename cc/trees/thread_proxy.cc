@@ -615,7 +615,10 @@ void ThreadProxy::ScheduledActionSendBeginFrameToMainThread() {
       layer_tree_host_impl_->CurrentPhysicalTimeTicks();
   begin_frame_state->scroll_info =
       layer_tree_host_impl_->ProcessScrollDeltas();
-  DCHECK_GT(layer_tree_host_impl_->memory_allocation_limit_bytes(), 0u);
+
+  if (!layer_tree_host_impl_->settings().impl_side_painting) {
+    DCHECK_GT(layer_tree_host_impl_->memory_allocation_limit_bytes(), 0u);
+  }
   begin_frame_state->memory_allocation_limit_bytes =
       layer_tree_host_impl_->memory_allocation_limit_bytes();
   Proxy::MainThread()->PostTask(

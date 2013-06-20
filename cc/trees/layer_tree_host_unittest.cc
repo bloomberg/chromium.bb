@@ -2798,6 +2798,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     // PictureLayer can only be used with impl side painting enabled.
     settings->impl_side_painting = true;
+    settings->solid_color_scrollbars = true;
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -2817,7 +2818,6 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
     context3d->set_support_swapbuffers_complete_callback(false);
 
     return FakeOutputSurface::CreateDeferredGL(
-        context3d.PassAs<WebKit::WebGraphicsContext3D>(),
         scoped_ptr<SoftwareOutputDevice>(new SoftwareOutputDevice))
         .PassAs<OutputSurface>();
   }
@@ -2839,8 +2839,10 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   }
 
   void DeferredInitializeAndRedraw(LayerTreeHostImpl* host_impl) {
-    EXPECT_TRUE(
-        host_impl->DeferredInitialize(scoped_refptr<ContextProvider>()));
+    EXPECT_TRUE(static_cast<FakeOutputSurface*>(host_impl->output_surface())
+                    ->SetAndInitializeContext3D(
+                          scoped_ptr<WebKit::WebGraphicsContext3D>(
+                              TestWebGraphicsContext3D::Create())));
     initialized_gl_ = true;
 
     // Force redraw again.

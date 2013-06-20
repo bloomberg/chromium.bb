@@ -399,8 +399,10 @@ class CC_EXPORT LayerTreeHostImpl
   Proxy* proxy_;
 
  private:
-  bool DoInitializeRenderer(scoped_ptr<OutputSurface> output_surface,
-                            bool is_deffered_init);
+  void CreateAndSetRenderer(OutputSurface* output_surface,
+                            ResourceProvider* resource_provider);
+  void ReleaseTreeResources();
+  void EnforceZeroBudget(bool zero_budget);
 
   void AnimatePageScale(base::TimeTicks monotonic_time);
   void AnimateScrollbars(base::TimeTicks monotonic_time);
@@ -424,7 +426,7 @@ class CC_EXPORT LayerTreeHostImpl
   // if this helper function is called.
   bool CalculateRenderPasses(FrameData* frame);
 
-  void SendDidLoseOutputSurfaceRecursive(LayerImpl* current);
+  void SendReleaseResourcesRecursive(LayerImpl* current);
   void ClearRenderSurfaces();
   bool EnsureRenderSurfaceLayerList();
   void ClearCurrentlyScrollingLayer();
@@ -504,6 +506,7 @@ class CC_EXPORT LayerTreeHostImpl
   size_t last_sent_memory_visible_bytes_;
   size_t last_sent_memory_visible_and_nearby_bytes_;
   size_t last_sent_memory_use_bytes_;
+  bool zero_budget_;
 
   // Viewport size passed in from the main thread, in physical pixels.
   gfx::Size device_viewport_size_;
