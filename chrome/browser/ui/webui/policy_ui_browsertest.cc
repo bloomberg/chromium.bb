@@ -122,7 +122,7 @@ void PolicyUITest::VerifyPolicies(
   // Retrieve the text contents of the policy table cells for all policies.
   const std::string javascript =
       "var entries = document.querySelectorAll("
-      "    'table#policy-table > tbody');"
+      "    'section.policy-table-section > * > tbody');"
       "var policies = [];"
       "for (var i = 0; i < entries.length; ++i) {"
       "  var items = entries[i].querySelectorAll('tr > td');"

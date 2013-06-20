@@ -15,6 +15,8 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
@@ -32,6 +34,9 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -286,6 +291,14 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // information is sent.
   void SendStatus() const;
 
+  // Inserts a description of each policy in |policy_map| into |values|, using
+  // the optional errors in |errors| to determine the status of each policy.
+  void GetPolicyValues(const policy::PolicyMap& policy_map,
+                       policy::PolicyErrorMap* errors,
+                       base::DictionaryValue* values) const;
+
+  void GetChromePolicyValues(base::DictionaryValue* values) const;
+
   void HandleInitialized(const base::ListValue* args);
   void HandleReloadPolicies(const base::ListValue* args);
 
@@ -425,6 +438,7 @@ PolicyUIHandler::PolicyUIHandler()
 
 PolicyUIHandler::~PolicyUIHandler() {
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
+  GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 }
 
 void PolicyUIHandler::RegisterMessages() {
@@ -472,6 +486,7 @@ void PolicyUIHandler::RegisterMessages() {
   user_status_provider_->SetStatusChangeCallback(update_callback);
   device_status_provider_->SetStatusChangeCallback(update_callback);
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
+  GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
   web_ui()->RegisterMessageCallback(
       "initialized",
@@ -485,8 +500,6 @@ void PolicyUIHandler::RegisterMessages() {
 void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                       const policy::PolicyMap& previous,
                                       const policy::PolicyMap& current) {
-  DCHECK_EQ(policy::POLICY_DOMAIN_CHROME, ns.domain);
-  DCHECK(ns.component_id.empty());
   SendPolicyValues();
 }
 
@@ -502,24 +515,56 @@ void PolicyUIHandler::SendPolicyNames() const {
 }
 
 void PolicyUIHandler::SendPolicyValues() const {
-  // Make a copy that can be modified, since some policy values are modified
-  // before being displayed.
-  policy::PolicyMap map;
-  map.CopyFrom(GetPolicyService()->GetPolicies(policy::PolicyNamespace(
-      policy::POLICY_DOMAIN_CHROME, std::string())));
+  base::DictionaryValue all_policies;
 
-  // Get a list of all the errors in the policy values.
-  const policy::ConfigurationPolicyHandlerList* handler_list =
-      g_browser_process->browser_policy_connector()->GetHandlerList();
-  policy::PolicyErrorMap errors;
-  handler_list->ApplyPolicySettings(map, NULL, &errors);
+  // Add chrome policies.
+  base::DictionaryValue* chrome_policies = new base::DictionaryValue;
+  GetChromePolicyValues(chrome_policies);
+  all_policies.Set("chromePolicies", chrome_policies);
 
-  // Convert dictionary values to strings for display.
-  handler_list->PrepareForDisplaying(&map);
+  // Get extensions.
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()));
+  const ExtensionSet* extensions =
+      extension_system->extension_service()->extensions();
 
-  base::DictionaryValue values;
+  // Add policies for each extension.
+  base::DictionaryValue* extension_values = new base::DictionaryValue;
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    const extensions::Extension* extension = *it;
+
+    // Skip this extension if it's a component extension.
+    if (extension->location() == extensions::Manifest::COMPONENT)
+      continue;
+
+    base::DictionaryValue* extension_value = new base::DictionaryValue;
+
+    // Add name.
+    extension_value->SetString("name", extension->name());
+
+    // Add policies.
+    base::DictionaryValue* extension_policies = new base::DictionaryValue;
+    policy::PolicyNamespace policy_namespace = policy::PolicyNamespace(
+        policy::POLICY_DOMAIN_EXTENSIONS, extension->id());
+    policy::PolicyErrorMap empty_error_map;
+    GetPolicyValues(GetPolicyService()->GetPolicies(policy_namespace),
+                    &empty_error_map, extension_policies);
+    extension_value->Set("policies", extension_policies);
+
+    // Add entry to the dictionary.
+    extension_values->Set(extension->id(), extension_value);
+  }
+  all_policies.Set("extensionPolicies", extension_values);
+
+  web_ui()->CallJavascriptFunction("policy.Page.setPolicyValues", all_policies);
+}
+
+void PolicyUIHandler::GetPolicyValues(const policy::PolicyMap& map,
+                                      policy::PolicyErrorMap* errors,
+                                      base::DictionaryValue* values) const {
   for (policy::PolicyMap::const_iterator entry = map.begin();
-      entry != map.end(); ++entry) {
+       entry != map.end(); ++entry) {
     base::DictionaryValue* value = new base::DictionaryValue;
     value->Set("value", entry->second.value->DeepCopy());
     if (entry->second.scope == policy::POLICY_SCOPE_USER)
@@ -530,13 +575,33 @@ void PolicyUIHandler::SendPolicyValues() const {
       value->SetString("level", "recommended");
     else
       value->SetString("level", "mandatory");
-    string16 error = errors.GetErrors(entry->first);
+    string16 error = errors->GetErrors(entry->first);
     if (!error.empty())
       value->SetString("error", error);
-    values.Set(entry->first, value);
+    values->Set(entry->first, value);
   }
+}
 
-  web_ui()->CallJavascriptFunction("policy.Page.setPolicyValues", values);
+void PolicyUIHandler::GetChromePolicyValues(
+    base::DictionaryValue* values) const {
+  policy::PolicyService* policy_service = GetPolicyService();
+  policy::PolicyMap map;
+
+  // Make a copy that can be modified, since some policy values are modified
+  // before being displayed.
+  map.CopyFrom(policy_service->GetPolicies(
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string())));
+
+  // Get a list of all the errors in the policy values.
+  const policy::ConfigurationPolicyHandlerList* handler_list =
+      g_browser_process->browser_policy_connector()->GetHandlerList();
+  policy::PolicyErrorMap errors;
+  handler_list->ApplyPolicySettings(map, NULL, &errors);
+
+  // Convert dictionary values to strings for display.
+  handler_list->PrepareForDisplaying(&map);
+
+  GetPolicyValues(map, &errors, values);
 }
 
 void PolicyUIHandler::SendStatus() const {

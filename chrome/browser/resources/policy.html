@@ -29,33 +29,23 @@
     <header>
       <h1 i18n-content="title"></h1>
     </header>
-    <section>
-      <button id="reload-policies" i18n-content="reloadPolicies"></button>
-    </section>
-    <section id="status" hidden>
-      <h3 i18n-content="status"></h3>
-      <div id="status-box-container"></span>
-    </section>
-    <section class="empty">
-      <h3 i18n-content="title"></h3>
-      <div id="show-unset-container">
+    <section class="reload-show-unset-section">
+      <div class="reload-policies-button">
+        <button id="reload-policies" i18n-content="reloadPolicies"></button>
+      </div>
+      <div id="show-unset-container" class="show-unset-checkbox">
         <label>
           <input id="show-unset" type="checkbox"></input>
           <span i18n-content="showUnset"></span>
         </label>
       </div>
-      <div class="no-policies-set" i18n-content="noPoliciesSet"></div>
-      <table id="policy-table">
-        <thead>
-          <tr>
-            <th i18n-content="headerScope"></th>
-            <th i18n-content="headerLevel"></th>
-            <th i18n-content="headerName"></th>
-            <th i18n-content="headerValue"></th>
-            <th i18n-content="headerStatus"></th>
-          </tr>
-        </thead>
-      </table>
+    </section>
+    <section id="status-section" class="status-box-section" hidden>
+      <h3 i18n-content="status"></h3>
+      <div id="status-box-container"></div>
+    </section>
+    <section id="main-section" class="empty">
+      <!--  This is where policy tables get dynamically added. -->
     </section>
   </div>
   <div hidden>
@@ -104,7 +94,7 @@
               <button class="toggle-expanded-value link-button"></button>
             </div>
           </td>
-          <td>
+          <td class="status-container">
             <div class="status elide"></div>
           </td>
         </tr>

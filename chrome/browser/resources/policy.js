@@ -88,8 +88,9 @@ cr.define('policy', function() {
      * @param {string} name The policy name.
      * @param {Object} value Dictionary with information about the policy value.
      * @param {boolean} unknown Whether the policy name is not recognized.
+     * @param {boolean} includeStatus Whether the table has a status column.
      */
-    initialize: function(name, value, unknown) {
+    initialize: function(name, value, unknown, includeStatus) {
       this.name = name;
       this.unset = !value;
 
@@ -109,23 +110,29 @@ cr.define('policy', function() {
         this.querySelector('.expanded-value').textContent = value.value;
       }
 
-      // Populate the status column.
-      var status;
-      if (!value) {
-        // If the policy value has not been set, show an error message.
-        status = loadTimeData.getString('unset');
-      } else if (unknown) {
-        // If the policy name is not recognized, show an error message.
-        status = loadTimeData.getString('unknown');
-      } else if (value.error) {
-        // If an error occurred while parsing the policy value, show the error
-        // message.
-        status = value.error;
+      if (includeStatus) {
+        // Populate the status column.
+        var status;
+        if (!value) {
+          // If the policy value has not been set, show an error message.
+          status = loadTimeData.getString('unset');
+        } else if (unknown) {
+          // If the policy name is not recognized, show an error message.
+          status = loadTimeData.getString('unknown');
+        } else if (value.error) {
+          // If an error occurred while parsing the policy value, show the error
+          // message.
+          status = value.error;
+        } else {
+          // Otherwise, indicate that the policy value was parsed correctly.
+          status = loadTimeData.getString('ok');
+        }
+        this.querySelector('.status').textContent = status;
       } else {
-        // Otherwise, indicate that the policy value was parsed correctly.
-        status = loadTimeData.getString('ok');
+        // Remove status column.
+        this.querySelector('.status-container').remove();
+        this.querySelector('.expanded-value').setAttribute('colspan', 4);
       }
-      this.querySelector('.status').textContent = status;
     },
 
     /**
@@ -298,7 +305,8 @@ cr.define('policy', function() {
      */
     setPolicyValue_: function(name, value, unknown) {
       var policy = new Policy;
-      policy.initialize(name, value, unknown);
+      var includeStatus = this.querySelector('.status-column') != null;
+      policy.initialize(name, value, unknown, includeStatus);
       this.appendChild(policy);
     },
   };
@@ -319,7 +327,8 @@ cr.define('policy', function() {
    * @param {Object} names Dictionary containing all known policy names.
    */
   Page.setPolicyNames = function(names) {
-    this.getInstance().policyTable.setPolicyNames(names);
+    var table = this.getInstance().policyTables['chrome'];
+    table.setPolicyNames(names);
   };
 
   /**
@@ -329,7 +338,21 @@ cr.define('policy', function() {
    * @param {Object} values Dictionary containing the current policy values.
    */
   Page.setPolicyValues = function(values) {
-    this.getInstance().policyTable.setPolicyValues(values);
+    var page = this.getInstance();
+
+    if (values.hasOwnProperty('chromePolicies')) {
+      var table = page.policyTables['chrome'];
+      table.setPolicyValues(values.chromePolicies);
+    }
+
+    if (values.hasOwnProperty('extensionPolicies')) {
+      for (var extensionId in values.extensionPolicies) {
+        var tableName = values.extensionPolicies[extensionId].name;
+        var table = page.getOrCreateTable('extension-' + extensionId, tableName,
+                                          'ID: ' + extensionId, false);
+        table.setPolicyValues(values.extensionPolicies[extensionId].policies);
+      }
+    }
   };
 
   /**
@@ -355,26 +378,126 @@ cr.define('policy', function() {
      */
     initialize: function() {
       uber.onContentFrameLoaded();
-      this.policyTable = $('policy-table');
-      cr.ui.decorate(this.policyTable, PolicyTable);
+
+      this.mainSection = $('main-section');
+      this.policyTables = {};
+
+      var chromeTable = this.getOrCreateTable('chrome', 'Chrome policies', '',
+                                              true);
 
       // Place the initial focus on the filter input field.
       $('filter').focus();
 
       var self = this;
       $('filter').onsearch = function(event) {
-        self.policyTable.setFilterPattern(this.value);
+        for (policyTable in self.policyTables) {
+          self.policyTables[policyTable].setFilterPattern(this.value);
+        }
       };
       $('reload-policies').onclick = function(event) {
         this.disabled = true;
         chrome.send('reloadPolicies');
       };
-      $('show-unset').onchange = this.policyTable.filter.bind(this.policyTable);
+
+      $('show-unset').onchange = function() {
+        for (policyTable in self.policyTables) {
+          self.policyTables[policyTable].filter();
+        }
+      };
 
       // Notify the browser that the page has loaded, causing it to send the
       // list of all known policies, the current policy values and the cloud
       // policy status.
       chrome.send('initialized');
+    },
+
+    /**
+     * Gets the existing policy table for the given id, or if none exists,
+     * creates a new policy table section, adds the section to the page,
+     * and returns the new table from that section.
+     * @param {string} id The key for the table in policyTables.
+     * @param {string} label_title Title for this policy table.
+     * @param {string} label_content Description for the policy table.
+     * @return {Element} Policy table associated with the given id.
+     */
+    getOrCreateTable: function(id, label_title, label_content, includeStatus) {
+      if (!this.policyTables.hasOwnProperty(id)) {
+        var newSection = this.createPolicyTableSection(id, label_title,
+          label_content, includeStatus);
+        this.mainSection.appendChild(newSection);
+      }
+      return this.policyTables[id];
+    },
+
+    /**
+     * Creates a new section containing a title, description and table of
+     * policies.
+     * @param {string} id Used as key when storing new table in policyTables.
+     * @param {string} label_title Title for this policy table.
+     * @param {string} label_content Description for the policy table.
+     * @param {boolean} includeStatus Whether to display a status column.
+     * @return {Element} The newly created section.
+     */
+    createPolicyTableSection: function(id, label_title, label_content,
+                                       includeStatus) {
+      var section = document.createElement('section');
+      section.setAttribute('class', 'policy-table-section');
+
+      // Add title and description.
+      var title = window.document.createElement('h3');
+      title.textContent = label_title;
+      section.appendChild(title);
+
+      if (label_content) {
+        var description = window.document.createElement('div');
+        description.classList.add('table-description');
+        description.textContent = label_content;
+        section.appendChild(description);
+      }
+
+      // Add 'No Policies Set' element.
+      var noPolicies = window.document.createElement('div');
+      noPolicies.classList.add('no-policies-set');
+      noPolicies.textContent = loadTimeData.getString('noPoliciesSet');
+      section.appendChild(noPolicies);
+
+      // Add table of policies.
+      var newTable = this.createPolicyTable(includeStatus);
+      this.policyTables[id] = newTable;
+      section.appendChild(newTable);
+
+      return section;
+    },
+
+    /**
+     * Creates a new table for displaying policies.
+     * @param {boolean} includeStatus Whether to include a status column.
+     * @return {Element} The newly created table.
+     */
+    createPolicyTable: function(includeStatus) {
+      var newTable = window.document.createElement('table');
+      var tableHead = window.document.createElement('thead');
+      var tableRow = window.document.createElement('tr');
+      var tableHeadings = ['headerScope', 'headerLevel',
+                           'headerName', 'headerValue'];
+
+      for (var i = 0; i < tableHeadings.length; i++) {
+        var tableHeader = window.document.createElement('th');
+        tableHeader.textContent = loadTimeData.getString(tableHeadings[i]);
+        tableRow.appendChild(tableHeader);
+      }
+
+      if (includeStatus) {
+        var statusHeader = window.document.createElement('th');
+        statusHeader.classList.add('status-column');
+        statusHeader.textContent = loadTimeData.getString('headerStatus');
+        tableRow.appendChild(statusHeader);
+      }
+
+      tableHead.appendChild(tableRow);
+      newTable.appendChild(tableHead);
+      cr.ui.decorate(newTable, PolicyTable);
+      return newTable;
     },
 
     /**
@@ -388,7 +511,7 @@ cr.define('policy', function() {
       while (container.firstChild)
         container.removeChild(container.firstChild);
       // Hide the status section.
-      var section = $('status');
+      var section = $('status-section');
       section.hidden = true;
 
       // Add a status box for each scope that has a cloud policy status.
