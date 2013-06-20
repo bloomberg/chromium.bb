@@ -134,7 +134,7 @@ const CGFloat kButtonStripPadding = 20;
   gfx::ScopedNSGraphicsContextSaveGState context;
   NSRect clipRect = NSMakeRect(
       frame.origin.x + kButtonStripPadding / 2,
-      frame.origin.y + (frame.size.height - kButtonHeight) / 2,
+      floor(frame.origin.y + (frame.size.height - kButtonHeight) / 2),
       frame.size.width - kButtonStripPadding,
       kButtonHeight);
   [[NSBezierPath bezierPathWithRoundedRect:clipRect
