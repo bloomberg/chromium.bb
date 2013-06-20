@@ -155,15 +155,15 @@ foreach my $idlFile (@supplementedIdlFiles) {
                 push(@{$targetDataNode->attributes}, $attribute);
             }
 
-            # Support for operations of partial interfaces.
-            foreach my $operation (@{$interface->operations}) {
-                # Record that this operations is implemented by $interfaceName.
-                $operation->extendedAttributes->{"ImplementedBy"} = $interfaceName if $interface->isPartial;
+            # Support for methods of partial interfaces.
+            foreach my $function (@{$interface->functions}) {
+                # Record that this method is implemented by $interfaceName.
+                $function->extendedAttributes->{"ImplementedBy"} = $interfaceName if $interface->isPartial;
 
-                # Add interface-wide extended attributes to each operation.
-                applyInterfaceExtendedAttributes($interface, $operation->extendedAttributes);
+                # Add interface-wide extended attributes to each method.
+                applyInterfaceExtendedAttributes($interface, $function->extendedAttributes);
 
-                push(@{$targetDataNode->operations}, $operation);
+                push(@{$targetDataNode->functions}, $function);
             }
 
             # Support for constants of partial interfaces.
@@ -263,9 +263,9 @@ sub checkIDLAttributes
             checkIfIDLAttributesExists($idlAttributes, $attribute->extendedAttributes, $idlFile);
         }
 
-        foreach my $operation (@{$interface->operations}) {
-            checkIfIDLAttributesExists($idlAttributes, $operation->extendedAttributes, $idlFile);
-            foreach my $parameter (@{$operation->parameters}) {
+        foreach my $function (@{$interface->functions}) {
+            checkIfIDLAttributesExists($idlAttributes, $function->extendedAttributes, $idlFile);
+            foreach my $parameter (@{$function->parameters}) {
                 checkIfIDLAttributesExists($idlAttributes, $parameter->extendedAttributes, $idlFile);
             }
         }
