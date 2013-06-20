@@ -23,18 +23,11 @@
               'binaries/ppapi/linux_x64/manifest.json',
             ],
           }],
-          [ 'OS == "mac" and target_arch == "ia32"', {
+          [ 'OS == "mac"', {
             'flapper_version_h_file%': 'symbols/ppapi/mac/flapper_version.h',
             'flapper_binary_files%': [
               'binaries/ppapi/mac/PepperFlashPlayer.plugin',
               'binaries/ppapi/mac/manifest.json',
-            ],
-          }],
-          [ 'OS == "mac" and target_arch == "x64"', {
-            'flapper_version_h_file%': 'symbols/ppapi/mac_64/flapper_version.h',
-            'flapper_binary_files%': [
-              'binaries/ppapi/mac_64/PepperFlashPlayer.plugin',
-              'binaries/ppapi/mac_64/manifest.json',
             ],
           }],
           [ 'OS == "win"', {
