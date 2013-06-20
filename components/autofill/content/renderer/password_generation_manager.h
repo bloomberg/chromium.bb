@@ -11,8 +11,8 @@
 
 #include "content/public/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextFieldDecoratorClient.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebTextFieldDecoratorClient.h"
 
 namespace WebKit {
 class WebCString;

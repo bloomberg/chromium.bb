@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
 
 namespace WebKit {
 class WebInputElement;

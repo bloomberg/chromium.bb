@@ -30,7 +30,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/forms_seen_state.h"
 #include "content/public/common/ssl_status.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
+#include "third_party/WebKit/public/web/WebFormElement.h"
 
 class GURL;
 

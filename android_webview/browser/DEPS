@@ -30,7 +30,7 @@ include_rules = [
   "!grit/ui_resources.h",
 
   # POD structure required by the find-in-page IPC messages.
-  "+third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h",
+  "+third_party/WebKit/public/web/WebFindOptions.h",
   # Interface required for in-process input event handling.
-  "+third_party/WebKit/Source/WebKit/chromium/public/WebCompositorInputHandler.h"
+  "+third_party/WebKit/public/web/WebCompositorInputHandler.h"
 ]

@@ -7,8 +7,8 @@ include_rules = [
 
   "+content/public/renderer",
 
-  "+third_party/WebKit/Source/WebKit/chromium/public",
   "+third_party/WebKit/public/platform",
+  "+third_party/WebKit/public/web",
 
   "+ui/gl/gpu_memory_buffer.h",
 ]

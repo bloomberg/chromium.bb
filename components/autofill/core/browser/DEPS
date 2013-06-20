@@ -29,8 +29,8 @@ include_rules = [
   "!content/public/browser/web_contents_view.h",
   "!content/public/common/frame_navigate_params.h",
   "!content/public/common/url_constants.h",
-  "!third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h",
-  "!third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h",
+  "!third_party/WebKit/public/web/WebAutofillClient.h",
+  "!third_party/WebKit/public/web/WebInputElement.h",
 
   # TODO(akalin): Remove this dependency.
   "!sync/util/data_encryption_win.h",

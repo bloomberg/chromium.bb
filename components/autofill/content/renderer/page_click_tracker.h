@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEventListener.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/public/web/WebDOMEventListener.h"
+#include "third_party/WebKit/public/web/WebNode.h"
 
 namespace autofill {
 

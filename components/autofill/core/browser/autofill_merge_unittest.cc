@@ -16,7 +16,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
 
 namespace autofill {
 

@@ -22,7 +22,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
+#include "third_party/WebKit/public/web/WebFormElement.h"
 #include "ui/gfx/rect.h"
 
 #define IPC_MESSAGE_START AutofillMsgStart

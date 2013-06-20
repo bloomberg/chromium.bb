@@ -13,7 +13,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
 
 using WebKit::WebInputElement;
 

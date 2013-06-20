@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/shared_memory.h"
 #include "components/visitedlink/common/visitedlink_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 using WebKit::WebView;
 

@@ -17,9 +17,9 @@
 #include "components/autofill/content/renderer/page_click_listener.h"
 #include "components/autofill/core/common/forms_seen_state.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
+#include "third_party/WebKit/public/web/WebFormElement.h"
+#include "third_party/WebKit/public/web/WebInputElement.h"
 
 namespace WebKit {
 class WebNode;

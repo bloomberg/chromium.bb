@@ -56,7 +56,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/component_strings.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 

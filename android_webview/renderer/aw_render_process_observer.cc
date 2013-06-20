@@ -6,7 +6,7 @@
 
 #include "android_webview/common/render_view_messages.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/public/web/WebCache.h"
 
 namespace android_webview {
 
