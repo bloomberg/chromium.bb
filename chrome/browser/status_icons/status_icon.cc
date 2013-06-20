@@ -30,6 +30,9 @@ void StatusIcon::DispatchClickEvent() {
 }
 
 void StatusIcon::SetContextMenu(ui::MenuModel* menu) {
+  // The UI may been showing a menu for the current model, don't destroy it
+  // until we've notified the UI of the change.
+  scoped_ptr<ui::MenuModel> old_menu = context_menu_contents_.Pass();
   context_menu_contents_.reset(menu);
   UpdatePlatformContextMenu(menu);
 }
