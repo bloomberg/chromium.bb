@@ -318,6 +318,24 @@ if ragel_involved:
       SideEffect('check_validator', regular_instructions_test)
       dfacheckvalidator_tests.append(regular_instructions_test)
 
+      regular_instructions_old_test = env.AutoDepsCommand(
+        'regular_instructions_old_test_x86_%s.out' % bitness,
+        ['${PYTHON}',
+         env.File('verify_regular_instructions_old.py'),
+         xml,
+         '--bitness', bitness,
+         '--gas', gas,
+         '--objdump', objdump,
+         '--validator_dll', validator_dll,
+         '--ncval32', old_ncval32,
+         '--ncval64', old_ncval64,
+         '--errors', '${TARGET}'])
+
+      # Never run decoder tests in parallel because they can take all CPU.
+      env.AlwaysBuild(regular_instructions_old_test)
+      SideEffect('check_validator', regular_instructions_old_test)
+      dfacheckvalidator_tests.append(regular_instructions_old_test)
+
     # There are three categories of protected files: validator files, generated
     # files (those of validator files that lie withing 'gen' directory) and
     # generating files (programs and input data used to produce generated
