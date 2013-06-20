@@ -338,6 +338,7 @@ namespace message_center {
 // static
 MessageView* NotificationView::Create(const Notification& notification,
                                       MessageCenter* message_center,
+                                      MessageCenterTray* tray,
                                       bool expanded,
                                       bool top_level) {
   // Use MessageSimpleView for simple notifications unless rich style
@@ -366,7 +367,7 @@ MessageView* NotificationView::Create(const Notification& notification,
 
   // Currently all roads lead to the generic NotificationView.
   MessageView* notification_view =
-      new NotificationView(notification, message_center, expanded);
+      new NotificationView(notification, message_center, tray, expanded);
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Don't create shadows for notification toasts on linux wih aura.
@@ -382,8 +383,9 @@ MessageView* NotificationView::Create(const Notification& notification,
 
 NotificationView::NotificationView(const Notification& notification,
                                    MessageCenter* message_center,
+                                   MessageCenterTray* tray,
                                    bool expanded)
-    : MessageView(notification, message_center, expanded) {
+    : MessageView(notification, message_center, tray, expanded) {
   std::vector<string16> accessible_lines;
 
   // Create the opaque background that's above the view's shadow.

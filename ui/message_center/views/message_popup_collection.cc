@@ -43,9 +43,11 @@ const int kToastMargin = kMarginBetweenItems;
 }  // namespace.
 
 MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
-                                               MessageCenter* message_center)
+                                               MessageCenter* message_center,
+                                               MessageCenterTray* tray)
     : parent_(parent),
       message_center_(message_center),
+      tray_(tray),
       defer_counter_(0),
       latest_toast_entered_(NULL),
       user_is_closing_toasts_by_clicking_(false) {
@@ -98,6 +100,7 @@ void MessagePopupCollection::UpdateWidgets() {
     MessageView* view =
         NotificationView::Create(*(*iter),
                                  message_center_,
+                                 tray_,
                                  true,  // Create expanded.
                                  true); // Create top-level notification.
     int view_height = ToastContentsView::GetToastSizeForView(view).height();
@@ -292,6 +295,7 @@ void MessagePopupCollection::OnNotificationUpdated(
     MessageView* view =
         NotificationView::Create(*(*iter),
                                  message_center_,
+                                 tray_,
                                  true,  // Create expanded.
                                  true); // Create top-level notification.
     (*toast_iter)->SetContents(view);

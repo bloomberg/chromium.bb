@@ -59,7 +59,7 @@ MockNotificationView::MockNotificationView(const Notification& notification,
                                            MessageCenter* message_center,
                                            Test* test,
                                            int view_id)
-    : NotificationView(notification, message_center, true),
+    : NotificationView(notification, message_center, NULL, true),
       test_(test),
       id_(view_id) {
 }
@@ -142,7 +142,8 @@ void MessageCenterViewTest::SetUp() {
   notifications.insert(&notification);
 
   // Then create a new MessageCenterView with that single notification.
-  message_center_view_.reset(new MessageCenterView(&message_center_, 100));
+  message_center_view_.reset(new MessageCenterView(
+      &message_center_, NULL, 100, false));
   message_center_view_->SetNotifications(notifications);
 
   // Remove and delete the NotificationView now owned by the MessageCenterView's

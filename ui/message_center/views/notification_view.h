@@ -29,6 +29,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
   // notifications on Linux with Aura.
   static MessageView* Create(const Notification& notification,
                              MessageCenter* message_center,
+                             MessageCenterTray* tray,
                              bool expanded,
                              bool top_level);
 
@@ -51,6 +52,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView {
  protected:
   NotificationView(const Notification& notification,
                    MessageCenter* message_center,
+                   MessageCenterTray* tray,
                    bool expanded);
 
  private:

@@ -49,6 +49,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray
   // Returns whether the popup was visible before.
   bool HidePopupBubble();
 
+  // Toggles the visibility of the settings view in the message center bubble.
+  void ShowNotifierSettingsBubble();
+
   // Creates the menu model for quiet mode and returns it. The caller must
   // take the ownership of the return value.
   ui::MenuModel* CreateQuietModeMenu();

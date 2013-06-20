@@ -28,6 +28,14 @@ void FakeNotifierSettingsProvider::OnNotifierSettingsClosing() {
   closed_called_count_++;
 }
 
+void FakeNotifierSettingsProvider::AddObserver(
+    NotifierSettingsObserver* observer) {
+}
+
+void FakeNotifierSettingsProvider::RemoveObserver(
+    NotifierSettingsObserver* observer) {
+}
+
 bool FakeNotifierSettingsProvider::WasEnabled(const Notifier& notifier) {
   return enabled_[&notifier];
 }

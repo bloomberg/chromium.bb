@@ -38,6 +38,7 @@ class MessagePopupCollectionWidgetsTest;
 }
 
 class MessageCenter;
+class MessageCenterTray;
 class ToastContentsView;
 
 // Container for popup toasts. Because each toast is a frameless window rather
@@ -52,7 +53,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // |parent| specifies the parent widget of the toast windows. The default
   // parent will be used for NULL.
   MessagePopupCollection(gfx::NativeView parent,
-                         MessageCenter* message_center);
+                         MessageCenter* message_center,
+                         MessageCenterTray* tray);
   virtual ~MessagePopupCollection();
 
   // Called by ToastContentsView when its window is closed.
@@ -126,6 +128,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   gfx::NativeView parent_;
   MessageCenter* message_center_;
+  MessageCenterTray* tray_;
   Toasts toasts_;
   gfx::Rect work_area_;
 

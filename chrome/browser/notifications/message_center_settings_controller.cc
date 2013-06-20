@@ -27,6 +27,11 @@
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_style.h"
 
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ash/system/web_notification/web_notification_tray.h"
+#endif
+
 using message_center::Notifier;
 
 namespace {
@@ -50,17 +55,20 @@ bool SimpleCompareNotifiers(Notifier* n1, Notifier* n2) {
 
 }  // namespace
 
-MessageCenterSettingsController::MessageCenterSettingsController()
-    : delegate_(NULL) {
+MessageCenterSettingsController::MessageCenterSettingsController() {
 }
 
 MessageCenterSettingsController::~MessageCenterSettingsController() {
 }
 
-message_center::NotifierSettingsDelegate*
-MessageCenterSettingsController::ShowSettingsDialog(gfx::NativeView context) {
-  delegate_ = message_center::ShowSettings(this, context);
-  return delegate_;
+void MessageCenterSettingsController::AddObserver(
+    message_center::NotifierSettingsObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MessageCenterSettingsController::RemoveObserver(
+    message_center::NotifierSettingsObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void MessageCenterSettingsController::GetNotifierList(
@@ -212,7 +220,6 @@ void MessageCenterSettingsController::SetNotifierEnabled(
 }
 
 void MessageCenterSettingsController::OnNotifierSettingsClosing() {
-  delegate_ = NULL;
   DCHECK(favicon_tracker_.get());
   favicon_tracker_->TryCancelAll();
   patterns_.clear();
@@ -221,15 +228,15 @@ void MessageCenterSettingsController::OnNotifierSettingsClosing() {
 void MessageCenterSettingsController::OnFaviconLoaded(
     const GURL& url,
     const chrome::FaviconImageResult& favicon_result) {
-  if (!delegate_)
-    return;
-  delegate_->UpdateFavicon(url, favicon_result.image);
+  FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
+                    observers_,
+                    UpdateFavicon(url, favicon_result.image));
 }
 
 
 void MessageCenterSettingsController::SetAppImage(const std::string& id,
                                                   const gfx::ImageSkia& image) {
-  if (!delegate_)
-    return;
-  delegate_->UpdateIconImage(id, gfx::Image(image) );
+  FOR_EACH_OBSERVER(message_center::NotifierSettingsObserver,
+                    observers_,
+                    UpdateIconImage(id, gfx::Image(image)));
 }

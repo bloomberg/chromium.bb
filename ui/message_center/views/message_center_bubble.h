@@ -18,9 +18,11 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
     : public MessageBubbleBase,
       public base::SupportsWeakPtr<MessageCenterBubble> {
  public:
-  explicit MessageCenterBubble(MessageCenter* message_center);
+  MessageCenterBubble(MessageCenter* message_center, MessageCenterTray* tray);
 
   virtual ~MessageCenterBubble();
+
+  void SetSettingsVisible();
 
   // Overridden from MessageBubbleBase:
   virtual views::TrayBubbleView::InitParams GetInitParams(
@@ -38,6 +40,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
 
   // The maximum height
   int max_height_;
+
+  // Use settings view as the initially visible content if true.
+  bool initially_settings_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterBubble);
 };

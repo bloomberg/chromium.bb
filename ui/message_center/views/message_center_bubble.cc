@@ -57,12 +57,21 @@ void ContentsView::ChildPreferredSizeChanged(View* child) {
 
 // MessageCenterBubble /////////////////////////////////////////////////////////
 
-MessageCenterBubble::MessageCenterBubble(MessageCenter* message_center)
-    : MessageBubbleBase(message_center),
-      message_center_view_(NULL) {
+MessageCenterBubble::MessageCenterBubble(MessageCenter* message_center,
+                                         MessageCenterTray* tray)
+    : MessageBubbleBase(message_center, tray),
+      message_center_view_(NULL),
+      initially_settings_visible_(false) {
 }
 
 MessageCenterBubble::~MessageCenterBubble() {
+}
+
+void MessageCenterBubble::SetSettingsVisible() {
+  if (message_center_view_)
+    message_center_view_->SetSettingsVisible(true);
+  else
+    initially_settings_visible_ = true;
 }
 
 views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
@@ -81,7 +90,8 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
 void MessageCenterBubble::InitializeContents(
     views::TrayBubbleView* new_bubble_view) {
   set_bubble_view(new_bubble_view);
-  message_center_view_ = new MessageCenterView(message_center(), max_height());
+  message_center_view_ = new MessageCenterView(
+      message_center(), tray(), max_height(), initially_settings_visible_);
   bubble_view()->AddChildView(new ContentsView(this, message_center_view_));
   // Resize the content of the bubble view to the given bubble size. This is
   // necessary in case of the bubble border forcing a bigger size then the

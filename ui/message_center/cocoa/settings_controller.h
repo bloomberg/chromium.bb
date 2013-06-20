@@ -17,15 +17,13 @@
 namespace message_center {
 
 // Bridge class between C++ and Cocoa world.
-class NotifierSettingsDelegateMac : public NotifierSettingsDelegate {
+class NotifierSettingsObserverMac : public NotifierSettingsObserver {
  public:
-  NotifierSettingsDelegateMac(MCSettingsController* settings_controller)
+  NotifierSettingsObserverMac(MCSettingsController* settings_controller)
       : settings_controller_(settings_controller) {}
-  virtual ~NotifierSettingsDelegateMac();
+  virtual ~NotifierSettingsObserverMac();
 
-  MCSettingsController* cocoa_controller() { return settings_controller_; }
-
-  // Overridden from NotifierSettingsDelegate:
+  // Overridden from NotifierSettingsObserver:
   virtual void UpdateIconImage(const std::string& id,
                                const gfx::Image& icon) OVERRIDE;
   virtual void UpdateFavicon(const GURL& url, const gfx::Image& icon) OVERRIDE;
@@ -33,7 +31,7 @@ class NotifierSettingsDelegateMac : public NotifierSettingsDelegate {
  private:
   MCSettingsController* settings_controller_;  // weak, owns this
 
-  DISALLOW_COPY_AND_ASSIGN(NotifierSettingsDelegateMac);
+  DISALLOW_COPY_AND_ASSIGN(NotifierSettingsObserverMac);
 };
 
 }  // namespace message_center
@@ -43,7 +41,7 @@ class NotifierSettingsDelegateMac : public NotifierSettingsDelegate {
 MESSAGE_CENTER_EXPORT
 @interface MCSettingsController : NSViewController {
  @private
-  scoped_ptr<message_center::NotifierSettingsDelegateMac> delegate_;
+  scoped_ptr<message_center::NotifierSettingsObserverMac> observer_;
   message_center::NotifierSettingsProvider* provider_;
 
   // The "Settings" text at the top.
@@ -60,9 +58,6 @@ MESSAGE_CENTER_EXPORT
 
 // Designated initializer.
 - (id)initWithProvider:(message_center::NotifierSettingsProvider*)provider;
-
-// Returns the bridge object for this controller.
-- (message_center::NotifierSettingsDelegateMac*)delegate;
 
 @end
 

@@ -67,6 +67,7 @@ void PopupBubbleContentsView::Update(
     content_->AddChildView(
         NotificationView::Create(*(*iter),
                                  message_center_,
+                                 NULL,
                                  true,    // Create expanded.
                                  false)); // Not creating a top-level
                                           // notification.
@@ -130,7 +131,7 @@ void MessagePopupBubble::AutocloseTimer::Suspend() {
 
 // MessagePopupBubble
 MessagePopupBubble::MessagePopupBubble(MessageCenter* message_center)
-    : MessageBubbleBase(message_center),
+    : MessageBubbleBase(message_center, NULL),
       contents_view_(NULL) {
 }
 

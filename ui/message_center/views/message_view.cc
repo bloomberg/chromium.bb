@@ -16,6 +16,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
@@ -203,6 +204,7 @@ class MenuModel : public ui::SimpleMenuModel,
                   public ui::SimpleMenuModel::Delegate {
  public:
   MenuModel(message_center::MessageCenter* message_center,
+            message_center::MessageCenterTray* tray,
             const std::string& notification_id,
             const string16& display_source,
             const std::string& extension_id);
@@ -219,17 +221,20 @@ class MenuModel : public ui::SimpleMenuModel,
 
  private:
   message_center::MessageCenter* message_center_;  // Weak reference.
+  message_center::MessageCenterTray* tray_;  // Weak reference.
   std::string notification_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuModel);
 };
 
 MenuModel::MenuModel(message_center::MessageCenter* message_center,
+                     message_center::MessageCenterTray* tray,
                      const std::string& notification_id,
                      const string16& display_source,
                      const std::string& extension_id)
     : ui::SimpleMenuModel(this),
       message_center_(message_center),
+      tray_(tray),
       notification_id_(notification_id) {
   // Add 'disable notifications' menu item.
   if (!extension_id.empty() && !display_source.empty()) {
@@ -277,8 +282,9 @@ void MenuModel::ExecuteCommand(int command_id, int event_flags) {
       message_center_->DisableNotificationsByUrl(notification_id_);
       break;
     case kShowSettingsCommand:
-      if (message_center::IsRichNotificationEnabled())
-        message_center_->ShowNotificationSettingsDialog(NULL);
+      // |tray_| may be NULL in tests.
+      if (message_center::IsRichNotificationEnabled() && tray_)
+        tray_->ShowNotifierSettingsBubble();
       else
         message_center_->ShowNotificationSettings(notification_id_);
       break;
@@ -294,7 +300,8 @@ namespace message_center {
 class MessageViewContextMenuController : public views::ContextMenuController {
  public:
   MessageViewContextMenuController(
-      message_center::MessageCenter* message_center,
+      MessageCenter* message_center,
+      MessageCenterTray* tray,
       const Notification& notification);
   virtual ~MessageViewContextMenuController();
 
@@ -304,16 +311,19 @@ class MessageViewContextMenuController : public views::ContextMenuController {
                                       const gfx::Point& point,
                                       ui::MenuSourceType source_type) OVERRIDE;
 
-  message_center::MessageCenter* message_center_;
+  MessageCenter* message_center_;  // Weak reference.
+  MessageCenterTray* tray_;  // Weak reference.
   std::string notification_id_;
   string16 display_source_;
   std::string extension_id_;
 };
 
 MessageViewContextMenuController::MessageViewContextMenuController(
-    message_center::MessageCenter* message_center,
+    MessageCenter* message_center,
+    MessageCenterTray* tray,
     const Notification& notification)
     : message_center_(message_center),
+      tray_(tray),
       notification_id_(notification.id()),
       display_source_(notification.display_source()),
       extension_id_(notification.extension_id()) {
@@ -326,7 +336,7 @@ void MessageViewContextMenuController::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  MenuModel menu_model(message_center_, notification_id_,
+  MenuModel menu_model(message_center_, tray_, notification_id_,
                        display_source_, extension_id_);
   if (menu_model.GetItemCount() == 0)
     return;
@@ -344,11 +354,12 @@ void MessageViewContextMenuController::ShowContextMenuForView(
 
 MessageView::MessageView(const Notification& notification,
                          MessageCenter* message_center,
+                         MessageCenterTray* tray,
                          bool expanded)
     : message_center_(message_center),
       notification_id_(notification.id()),
       context_menu_controller_(new MessageViewContextMenuController(
-          message_center, notification)),
+          message_center, tray, notification)),
       scroller_(NULL),
       is_expanded_(expanded) {
   set_focusable(true);

@@ -24,7 +24,6 @@ base::TimeDelta GetTimeoutForPriority(int priority) {
 }  // namespace
 
 namespace message_center {
-
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,7 +192,8 @@ void PopupTimersController::OnNotificationRemoved(const std::string& id,
 MessageCenterImpl::MessageCenterImpl()
     : MessageCenter(),
       popup_timers_controller_(new internal::PopupTimersController(this)),
-      delegate_(NULL) {
+      delegate_(NULL),
+      settings_provider_(NULL) {
   notification_list_.reset(new NotificationList());
 }
 
@@ -401,13 +401,6 @@ void MessageCenterImpl::ShowNotificationSettings(const std::string& id) {
     delegate_->ShowSettings(id);
 }
 
-NotifierSettingsDelegate* MessageCenterImpl::ShowNotificationSettingsDialog(
-    gfx::NativeView context) {
-  if (delegate_)
-    return delegate_->ShowSettingsDialog(context);
-  return NULL;
-}
-
 void MessageCenterImpl::ExpandNotification(const std::string& id) {
   if (!HasNotification(id))
     return;
@@ -465,6 +458,15 @@ void MessageCenterImpl::DisplayedNotification(const std::string& id) {
     delegate->Display();
   FOR_EACH_OBSERVER(
       MessageCenterObserver, observer_list_, OnNotificationDisplayed(id));
+}
+
+void MessageCenterImpl::SetNotifierSettingsProvider(
+    NotifierSettingsProvider* provider) {
+  settings_provider_ = provider;
+}
+
+NotifierSettingsProvider* MessageCenterImpl::GetNotifierSettingsProvider() {
+  return settings_provider_;
 }
 
 void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {

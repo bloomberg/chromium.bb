@@ -20,6 +20,7 @@ class ScrollView;
 namespace message_center {
 
 class MessageCenter;
+class MessageCenterTray;
 class MessageViewContextMenuController;
 
 // Individual notifications constants.
@@ -34,6 +35,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
  public:
   MessageView(const Notification& notification,
               MessageCenter* message_center,
+              MessageCenterTray* tray,
               bool expanded);
   virtual ~MessageView();
 

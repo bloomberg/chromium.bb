@@ -164,8 +164,6 @@ class MessageCenterImpl : public MessageCenter {
   virtual void DisableNotificationsByExtension(const std::string& id) OVERRIDE;
   virtual void DisableNotificationsByUrl(const std::string& id) OVERRIDE;
   virtual void ShowNotificationSettings(const std::string& id) OVERRIDE;
-  virtual NotifierSettingsDelegate* ShowNotificationSettingsDialog(
-      gfx::NativeView context) OVERRIDE;
   virtual void ExpandNotification(const std::string& id) OVERRIDE;
   virtual void ClickOnNotification(const std::string& id) OVERRIDE;
   virtual void ClickOnNotificationButton(const std::string& id,
@@ -173,6 +171,9 @@ class MessageCenterImpl : public MessageCenter {
   virtual void MarkSinglePopupAsShown(const std::string& id,
                                       bool mark_notification_as_read) OVERRIDE;
   virtual void DisplayedNotification(const std::string& id) OVERRIDE;
+  virtual void SetNotifierSettingsProvider(
+      NotifierSettingsProvider* provider) OVERRIDE;
+  virtual NotifierSettingsProvider* GetNotifierSettingsProvider() OVERRIDE;
   virtual void SetQuietMode(bool in_quiet_mode) OVERRIDE;
   virtual void EnterQuietModeWithExpire(
       const base::TimeDelta& expires_in) OVERRIDE;
@@ -187,6 +188,7 @@ class MessageCenterImpl : public MessageCenter {
   ObserverList<MessageCenterObserver> observer_list_;
   scoped_ptr<internal::PopupTimersController> popup_timers_controller_;
   Delegate* delegate_;
+  NotifierSettingsProvider* settings_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImpl);
 };

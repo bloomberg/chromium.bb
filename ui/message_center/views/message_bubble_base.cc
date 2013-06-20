@@ -22,8 +22,10 @@ namespace message_center {
 const SkColor MessageBubbleBase::kBackgroundColor =
     SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
-MessageBubbleBase::MessageBubbleBase(MessageCenter* message_center)
+MessageBubbleBase::MessageBubbleBase(MessageCenter* message_center,
+                                     MessageCenterTray* tray)
     : message_center_(message_center),
+      tray_(tray),
       bubble_view_(NULL),
       weak_ptr_factory_(this),
       max_height_(kMessageBubbleBaseDefaultMaxHeight) {

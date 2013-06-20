@@ -95,6 +95,13 @@ bool MessageCenterTray::HidePopupBubble() {
   return true;
 }
 
+void MessageCenterTray::ShowNotifierSettingsBubble() {
+  if (popups_visible_)
+    HidePopupBubble();
+
+  message_center_visible_ = delegate_->ShowNotifierSettings();
+}
+
 ui::MenuModel* MessageCenterTray::CreateQuietModeMenu() {
   ui::SimpleMenuModel* menu = new ui::SimpleMenuModel(this);
 

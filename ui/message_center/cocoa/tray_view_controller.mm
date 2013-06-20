@@ -18,6 +18,7 @@
 #import "ui/message_center/cocoa/settings_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/notifier_settings.h"
 
 const int kBackButtonSize = 16;
 
@@ -279,19 +280,10 @@ const CGFloat kTrayBottomMargin = 75;
   if (settingsController_)
     return [self hideSettings:sender];
 
-  {
-    // ShowNotificationSettingsDialog() returns an object owned by an
-    // autoreleased controller. Use a local autorelease pool to make sure this
-    // controller doesn't outlive self if self destroyed before the runloop
-    // flushes autoreleased objects (for example, in tests).
-    base::mac::ScopedNSAutoreleasePool pool;
-    // This ends up calling message_center::ShowSettings() and will set up the
-    // NotifierSettingsProvider along the way.
-    message_center::NotifierSettingsDelegateMac* delegate =
-        static_cast<message_center::NotifierSettingsDelegateMac*>(
-            messageCenter_->ShowNotificationSettingsDialog([self view]));
-    settingsController_.reset([delegate->cocoa_controller() retain]);
-  }
+  message_center::NotifierSettingsProvider* provider =
+      messageCenter_->GetNotifierSettingsProvider();
+  settingsController_.reset(
+      [[MCSettingsController alloc] initWithProvider:provider]);
 
   [[self view] addSubview:[settingsController_ view]];
 

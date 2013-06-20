@@ -32,6 +32,7 @@ namespace message_center {
 class MessageCenterObserver;
 class NotificationList;
 class NotifierSettingsDelegate;
+class NotifierSettingsProvider;
 
 class MESSAGE_CENTER_EXPORT MessageCenter {
  public:
@@ -58,15 +59,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
     // Request to show the notification settings (|notification_id| is used
     // to identify the requesting browser context).
     virtual void ShowSettings(const std::string& notification_id) = 0;
-
-    // Request to show the notification settings dialog. |context| is necessary
-    // to create a new window. Returns the NotifierSettingsDelegate belonging to
-    // the settings dialog.   On platforms where the dialog is a standalone
-    // window, this is owned by  the window and valid while the window is open.
-    // On platforms where the  settings dialog is shown in the tray, this is
-    // owned by the tray and valid  while the tray is showing settings.
-    virtual NotifierSettingsDelegate* ShowSettingsDialog(
-        gfx::NativeView context) = 0;
   };
 
   // Called to set the delegate.  Generally called only once, except in tests.
@@ -135,10 +127,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // given notification id).
   virtual void ShowNotificationSettings(const std::string& id) = 0;
 
-  // Shows the rich notification settings dialog.
-  virtual NotifierSettingsDelegate* ShowNotificationSettingsDialog(
-      gfx::NativeView context) = 0;
-
   // Reformat a notification to show its entire text content.
   virtual void ExpandNotification(const std::string& id) = 0;
 
@@ -164,6 +152,13 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // to the user, in order to decrement the unread_count for the tray, and to
   // notify observers that the notification is visible.
   virtual void DisplayedNotification(const std::string& id) = 0;
+
+  // Setter/getter of notifier settings provider. This will be a weak reference.
+  // This should be set at the initialization process. The getter may return
+  // NULL for tests.
+  virtual void SetNotifierSettingsProvider(
+      NotifierSettingsProvider* provider) = 0;
+  virtual NotifierSettingsProvider* GetNotifierSettingsProvider() = 0;
 
   // This can be called to change the quiet mode state (without a timeout).
   virtual void SetQuietMode(bool in_quiet_mode) = 0;

@@ -17,13 +17,6 @@ namespace message_center {
 class NotifierSettingsDelegate;
 class NotifierSettingsProvider;
 
-// Brings up the settings dialog and returns a weak reference to the delegate,
-// which is typically the view. If the dialog already exists, it is brought to
-// the front, otherwise it is created.
-MESSAGE_CENTER_EXPORT NotifierSettingsDelegate* ShowSettings(
-    NotifierSettingsProvider* provider,
-    gfx::NativeView context);
-
 // The struct to hold the information of notifiers. The information will be
 // used by NotifierSettingsView.
 struct MESSAGE_CENTER_EXPORT Notifier {
@@ -81,10 +74,26 @@ MESSAGE_CENTER_EXPORT std::string ToString(
 MESSAGE_CENTER_EXPORT Notifier::SystemComponentNotifierType
     ParseSystemComponentName(const std::string& name);
 
+// An observer class implemented by the view of the NotifierSettings to get
+// notified when the controller has changed data.
+class MESSAGE_CENTER_EXPORT NotifierSettingsObserver {
+ public:
+  // Called when an icon in the controller has been updated.
+  virtual void UpdateIconImage(const std::string& id,
+                               const gfx::Image& icon) = 0;
+
+  // Called when the controller detects that a favicon has changed.
+  virtual void UpdateFavicon(const GURL& url, const gfx::Image& icon) = 0;
+};
+
 // A class used by NotifierSettingsView to integrate with a setting system
 // for the clients of this module.
 class MESSAGE_CENTER_EXPORT NotifierSettingsProvider {
  public:
+  // Sets the delegate.
+  virtual void AddObserver(NotifierSettingsObserver* observer) = 0;
+  virtual void RemoveObserver(NotifierSettingsObserver* observer) = 0;
+
   // Collects the current notifier list and fills to |notifiers|. Caller takes
   // the ownership of the elements of |notifiers|.
   virtual void GetNotifierList(std::vector<Notifier*>* notifiers) = 0;
@@ -95,18 +104,6 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsProvider {
 
   // Called when the settings window is closed.
   virtual void OnNotifierSettingsClosing() = 0;
-};
-
-// A delegate class implemented by the view of the NotifierSettings to get
-// notified when the controller has changed data.
-class MESSAGE_CENTER_EXPORT NotifierSettingsDelegate {
- public:
-  // Called when an icon in the controller has been updated.
-  virtual void UpdateIconImage(const std::string& id,
-                               const gfx::Image& icon) = 0;
-
-  // Called when the controller detects that a favicon has changed.
-  virtual void UpdateFavicon(const GURL& url, const gfx::Image& icon) = 0;
 };
 
 }  // namespace message_center

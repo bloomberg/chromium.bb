@@ -145,20 +145,21 @@ message_center::MessageCenter* WebNotificationTray::message_center() {
 }
 
 bool WebNotificationTray::ShowPopups() {
-  popup_collection_.reset(
-      new message_center::MessagePopupCollection(NULL, message_center()));
+  popup_collection_.reset(new message_center::MessagePopupCollection(
+      NULL, message_center(), message_center_tray_.get()));
   return true;
 }
 
 void WebNotificationTray::HidePopups() { popup_collection_.reset(); }
 
-bool WebNotificationTray::ShowMessageCenter() {
+bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   content::RecordAction(UserMetricsAction("Notifications.ShowMessageCenter"));
 
   // Using MessageBubbleBase instead of MessageCenterBubble to
   // remove dependence on implicit type conversion
-  scoped_ptr<message_center::MessageBubbleBase> bubble(
-      new message_center::MessageCenterBubble(message_center()));
+  scoped_ptr<message_center::MessageCenterBubble> bubble(
+      new message_center::MessageCenterBubble(message_center(),
+                                              message_center_tray_.get()));
 
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
@@ -183,12 +184,18 @@ bool WebNotificationTray::ShowMessageCenter() {
     }
   }
   bubble->SetMaxHeight(max_height);
+  if (show_settings)
+    bubble->SetSettingsVisible();
 
   message_center_bubble_.reset(new internal::NotificationBubbleWrapper(
       this,
-      bubble.Pass(),
+      bubble.PassAs<message_center::MessageBubbleBase>(),
       internal::NotificationBubbleWrapper::BUBBLE_TYPE_MESSAGE_CENTER));
   return true;
+}
+
+bool WebNotificationTray::ShowMessageCenter() {
+  return ShowMessageCenterInternal(false /* show_settings */);
 }
 
 void WebNotificationTray::HideMessageCenter() {
@@ -201,6 +208,15 @@ void WebNotificationTray::UpdatePopups() {
   // TODO(mukai): remove this method (currently this is used by
   // non-rich-notifications in ChromeOS).
 };
+
+bool WebNotificationTray::ShowNotifierSettings() {
+  if (message_center_bubble_) {
+    static_cast<MessageCenterBubble*>(
+        message_center_bubble_->bubble())->SetSettingsVisible();
+    return true;
+  }
+  return ShowMessageCenterInternal(true /* show_settings */);
+}
 
 void WebNotificationTray::OnMessageCenterTrayChanged() {
   // See the comments in ash/system/web_notification/web_notification_tray.cc

@@ -31,6 +31,7 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
       settings_controller_(new MessageCenterSettingsController) {
   message_center_->SetDelegate(this);
   message_center_->AddObserver(this);
+  message_center_->SetNotifierSettingsProvider(settings_controller_.get());
 
 #if defined(OS_WIN) || defined(OS_MACOSX) \
   || (defined(USE_AURA) && !defined(USE_ASH))
@@ -255,11 +256,6 @@ void MessageCenterNotificationManager::ShowSettings(
     chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   else
     chrome::ShowExtensions(browser, std::string());
-}
-
-message_center::NotifierSettingsDelegate*
-MessageCenterNotificationManager::ShowSettingsDialog(gfx::NativeView context) {
-  return settings_controller_->ShowSettingsDialog(context);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

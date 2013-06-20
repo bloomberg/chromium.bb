@@ -22,6 +22,8 @@ class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
                                   bool enabled) OVERRIDE;
 
   virtual void OnNotifierSettingsClosing() OVERRIDE;
+  virtual void AddObserver(NotifierSettingsObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(NotifierSettingsObserver* observer) OVERRIDE;
 
   bool WasEnabled(const Notifier& notifier);
   int closed_called_count();

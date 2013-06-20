@@ -198,18 +198,17 @@ WebNotificationTray::~WebNotificationTray() {
 
 // Public methods.
 
-bool WebNotificationTray::ShowMessageCenter() {
+bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   if (!ShouldShowMessageCenter())
     return false;
 
   should_block_shelf_auto_hide_ = true;
   message_center::MessageCenterBubble* message_center_bubble =
-      new message_center::MessageCenterBubble(message_center());
+      new message_center::MessageCenterBubble(message_center(),
+                                              message_center_tray_.get());
 
-  // TODO(mukai): move this to WebNotificationBubbleWrapper if it's safe
-  // to set the height of the popup.
   int max_height = 0;
-  aura::Window* status_area_window = status_area_widget()->GetNativeWindow();
+  aura::Window* status_area_window = status_area_widget()->GetNativeView();
   switch (GetShelfLayoutManager()->GetAlignment()) {
     case SHELF_ALIGNMENT_BOTTOM: {
       gfx::Rect shelf_bounds = GetShelfLayoutManager()->GetIdealBounds();
@@ -232,8 +231,10 @@ bool WebNotificationTray::ShowMessageCenter() {
     default:
       NOTREACHED();
   }
-  max_height = std::max(0, max_height - kTraySpacing);
-  message_center_bubble->SetMaxHeight(max_height);
+
+  message_center_bubble->SetMaxHeight(std::max(0, max_height - kTraySpacing));
+  if (show_settings)
+    message_center_bubble->SetSettingsVisible();
   message_center_bubble_.reset(
       new internal::WebNotificationBubbleWrapper(this, message_center_bubble));
 
@@ -241,6 +242,10 @@ bool WebNotificationTray::ShowMessageCenter() {
   GetShelfLayoutManager()->UpdateAutoHideState();
   button_->SetBubbleVisible(true);
   return true;
+}
+
+bool WebNotificationTray::ShowMessageCenter() {
+  return ShowMessageCenterInternal(false /* show_settings */);
 }
 
 void WebNotificationTray::HideMessageCenter() {
@@ -274,7 +279,8 @@ bool WebNotificationTray::ShowPopups() {
         ash::Shell::GetContainer(
             GetWidget()->GetNativeView()->GetRootWindow(),
             internal::kShellWindowId_StatusContainer),
-        message_center()));
+        message_center(),
+        message_center_tray_.get()));
   } else {
     message_center::MessagePopupBubble* popup_bubble =
         new message_center::MessagePopupBubble(message_center());
@@ -454,6 +460,15 @@ void WebNotificationTray::HideBubble(const views::TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
+bool WebNotificationTray::ShowNotifierSettings() {
+  if (message_center_bubble()) {
+    static_cast<message_center::MessageCenterBubble*>(
+        message_center_bubble()->bubble())->SetSettingsVisible();
+    return true;
+  }
+  return ShowMessageCenterInternal(true /* show_settings */);
+}
+
 void WebNotificationTray::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   DCHECK_EQ(button_, sender);
@@ -490,9 +505,10 @@ void WebNotificationTray::UpdateTrayContent() {
 }
 
 bool WebNotificationTray::ClickedOutsideBubble() {
-  // Only hide the message center.
+  // Only hide the message center
   if (!message_center_bubble())
     return false;
+
   message_center_tray_->HideMessageCenterBubble();
   return true;
 }

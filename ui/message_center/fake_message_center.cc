@@ -92,11 +92,6 @@ void FakeMessageCenter::DisableNotificationsByUrl(const std::string& id) {
 void FakeMessageCenter::ShowNotificationSettings(const std::string& id) {
 }
 
-NotifierSettingsDelegate* FakeMessageCenter::ShowNotificationSettingsDialog(
-    gfx::NativeView context) {
-  return NULL;
-}
-
 void FakeMessageCenter::ExpandNotification(const std::string& id) {
 }
 
@@ -112,6 +107,14 @@ void FakeMessageCenter::MarkSinglePopupAsShown(const std::string& id,
 }
 
 void FakeMessageCenter::DisplayedNotification(const std::string& id) {
+}
+
+void FakeMessageCenter::SetNotifierSettingsProvider(
+    NotifierSettingsProvider* provider) {
+}
+
+NotifierSettingsProvider* FakeMessageCenter::GetNotifierSettingsProvider() {
+  return NULL;
 }
 
 void FakeMessageCenter::SetQuietMode(bool in_quiet_mode) {

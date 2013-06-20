@@ -83,6 +83,12 @@ void MessageCenterTrayBridge::HideMessageCenter() {
   tray_controller_.autorelease();
 }
 
+bool MessageCenterTrayBridge::ShowNotifierSettings() {
+  // This method needs to be implemented when the context menu of each
+  // notification is ready and it contains 'settings' menu item.
+  return false;
+}
+
 void MessageCenterTrayBridge::UpdateStatusItem() {
   // Only show the status item if there are notifications.
   if (message_center_->NotificationCount() == 0) {

@@ -11,10 +11,11 @@
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace message_center {
+class MessageCenterTray;
 
 class MESSAGE_CENTER_EXPORT MessageBubbleBase {
  public:
-  explicit MessageBubbleBase(MessageCenter* message_center);
+  MessageBubbleBase(MessageCenter* message_center, MessageCenterTray* tray);
 
   virtual ~MessageBubbleBase();
 
@@ -60,12 +61,14 @@ class MESSAGE_CENTER_EXPORT MessageBubbleBase {
   views::TrayBubbleView::InitParams GetDefaultInitParams(
       views::TrayBubbleView::AnchorAlignment anchor_alignment);
   MessageCenter* message_center() { return message_center_; }
+  MessageCenterTray* tray() { return tray_; }
   void set_bubble_view(views::TrayBubbleView* bubble_view) {
     bubble_view_ = bubble_view;
   }
 
  private:
   MessageCenter* message_center_;
+  MessageCenterTray* tray_;
   views::TrayBubbleView* bubble_view_;
   base::WeakPtrFactory<MessageBubbleBase> weak_ptr_factory_;
   int max_height_;

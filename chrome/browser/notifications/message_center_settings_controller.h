@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/common/content_settings.h"
 #include "ui/message_center/notifier_settings.h"
@@ -29,13 +30,11 @@ class MessageCenterSettingsController
   MessageCenterSettingsController();
   virtual ~MessageCenterSettingsController();
 
-  // Shows a new settings dialog window with specified |context|. If there's
-  // already an existing dialog, it raises the dialog instead of creating a new
-  // one.
-  message_center::NotifierSettingsDelegate* ShowSettingsDialog(
-      gfx::NativeView context);
-
-  // Overridden from message_center::NotifierSettingsViewDelegate.
+  // Overridden from message_center::NotifierSettingsProvider.
+  virtual void AddObserver(
+      message_center::NotifierSettingsObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      message_center::NotifierSettingsObserver* observer) OVERRIDE;
   virtual void GetNotifierList(
       std::vector<message_center::Notifier*>* notifiers)
       OVERRIDE;
@@ -52,9 +51,8 @@ class MessageCenterSettingsController
   void OnFaviconLoaded(const GURL& url,
                        const chrome::FaviconImageResult& favicon_result);
 
-  // The view displaying notifier settings. NULL if the settings are not
-  // visible.
-  message_center::NotifierSettingsDelegate* delegate_;
+  // The views displaying notifier settings.
+  ObserverList<message_center::NotifierSettingsObserver> observers_;
 
   // The task tracker for loading favicons.
   scoped_ptr<CancelableTaskTracker> favicon_tracker_;

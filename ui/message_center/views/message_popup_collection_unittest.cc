@@ -25,7 +25,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
     MessageCenter::Initialize();
     collection_.reset(
-        new MessagePopupCollection(GetContext(), MessageCenter::Get()));
+        new MessagePopupCollection(GetContext(), MessageCenter::Get(), NULL));
     // This size fits test machines resolution and also can keep a few toasts
     // w/o ill effects of hitting the screen overflow. This allows us to assume
     // and verify normal layout of the toast stack.

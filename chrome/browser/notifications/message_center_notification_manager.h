@@ -52,8 +52,6 @@ class MessageCenterNotificationManager
   virtual void DisableNotificationsFromSource(
       const std::string& notification_id) OVERRIDE;
   virtual void ShowSettings(const std::string& notification_id) OVERRIDE;
-  virtual message_center::NotifierSettingsDelegate* ShowSettingsDialog(
-      gfx::NativeView context) OVERRIDE;
 
   // MessageCenterObserver
   virtual void OnNotificationRemoved(const std::string& notification_id,

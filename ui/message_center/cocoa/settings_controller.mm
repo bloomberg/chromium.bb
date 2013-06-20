@@ -102,25 +102,16 @@ const int kCorrectedCheckmarkPadding =
 
 namespace message_center {
 
-NotifierSettingsDelegateMac::~NotifierSettingsDelegateMac() {}
+NotifierSettingsObserverMac::~NotifierSettingsObserverMac() {}
 
-void NotifierSettingsDelegateMac::UpdateIconImage(const std::string& id,
+void NotifierSettingsObserverMac::UpdateIconImage(const std::string& id,
                                                   const gfx::Image& icon) {
-  [cocoa_controller() setIcon:icon.AsNSImage() forAppId:id];
+  [settings_controller_ setIcon:icon.AsNSImage() forAppId:id];
 }
 
-void NotifierSettingsDelegateMac::UpdateFavicon(const GURL& url,
+void NotifierSettingsObserverMac::UpdateFavicon(const GURL& url,
                                                 const gfx::Image& icon) {
-  [cocoa_controller() setIcon:icon.AsNSImage() forURL:url];
-}
-
-NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
-                                       gfx::NativeView context) {
-  // The caller of this function (the tray) retains |controller| while it's
-  // visible.
-  MCSettingsController* controller =
-      [[[MCSettingsController alloc] initWithProvider:provider] autorelease];
-  return [controller delegate];
+  [settings_controller_ setIcon:icon.AsNSImage() forURL:url];
 }
 
 }  // namespace message_center
@@ -129,13 +120,15 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
 
 - (id)initWithProvider:(message_center::NotifierSettingsProvider*)provider {
   if ((self = [super initWithNibName:nil bundle:nil])) {
-    delegate_.reset(new message_center::NotifierSettingsDelegateMac(self));
+    observer_.reset(new message_center::NotifierSettingsObserverMac(self));
     provider_ = provider;
+    provider_->AddObserver(observer_.get());
   }
   return self;
 }
 
 - (void)dealloc {
+  provider_->RemoveObserver(observer_.get());
   provider_->OnNotifierSettingsClosing();
   [super dealloc];
 }
@@ -275,10 +268,6 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
 - (void)checkboxClicked:(id)sender {
   provider_->SetNotifierEnabled(*notifiers_[[sender tag]],
                                 [sender state] == NSOnState);
-}
-
-- (message_center::NotifierSettingsDelegateMac*)delegate {
-  return delegate_.get();
 }
 
 // Testing API /////////////////////////////////////////////////////////////////

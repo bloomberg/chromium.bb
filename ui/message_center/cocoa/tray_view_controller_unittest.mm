@@ -203,25 +203,6 @@ namespace message_center {
 
 namespace {
 
-class FakeDelegate : public MessageCenter::Delegate {
- public:
-  FakeDelegate(NotifierSettingsProvider* provider) : provider_(provider) {}
-
-  virtual NotifierSettingsDelegate* ShowSettingsDialog(
-        gfx::NativeView context) OVERRIDE {
-    return message_center::ShowSettings(provider_, context);
-  }
-
-  virtual void DisableExtension(const std::string& notification_id) OVERRIDE {}
-  virtual void DisableNotificationsFromSource(
-      const std::string& notification_id) OVERRIDE {}
-  virtual void ShowSettings(const std::string& notification_id) OVERRIDE {}
-
-
-
-  NotifierSettingsProvider* provider_;
-};
-
 Notifier* NewNotifier(const std::string& id,
                       const std::string& title,
                       bool enabled) {
@@ -237,9 +218,7 @@ TEST_F(TrayViewControllerTest, Settings) {
   notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/false));
 
   FakeNotifierSettingsProvider provider(notifiers);
-  FakeDelegate delegate(&provider);
-
-  center_->SetDelegate(&delegate);
+  center_->SetNotifierSettingsProvider(&provider);
 
   CGFloat trayHeight = NSHeight([[tray_ view] frame]);
   EXPECT_EQ(0, provider.closed_called_count());
