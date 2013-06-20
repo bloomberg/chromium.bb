@@ -32,6 +32,10 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#endif
+
 namespace em = enterprise_management;
 
 namespace {
@@ -364,6 +368,13 @@ void UserPolicySigninService::Observe(
     return;
   }
 
+#if defined(ENABLE_MANAGED_USERS)
+  if (ManagedUserService::ProfileIsManaged(profile_)) {
+    registrar_.RemoveAll();
+    return;
+  }
+#endif
+
   // If using a TestingProfile with no SigninManager or UserCloudPolicyManager,
   // skip initialization.
   if (!GetManager() || !SigninManagerFactory::GetForProfile(profile_)) {
@@ -399,7 +410,7 @@ void UserPolicySigninService::Observe(
           *(content::Details<const TokenService::TokenAvailableDetails>(
               details).ptr());
       if (token_details.service() ==
-          GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
+              GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
         SigninManager* signin_manager =
             SigninManagerFactory::GetForProfile(profile_);
         std::string username = signin_manager->GetAuthenticatedUsername();

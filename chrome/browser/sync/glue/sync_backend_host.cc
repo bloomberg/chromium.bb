@@ -31,6 +31,7 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/browser/sync/glue/dummy_invalidator.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -60,6 +61,10 @@
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/nigori.h"
+
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#endif
 
 static const int kSaveChangesIntervalSeconds = 10;
 static const base::FilePath::CharType kSyncDataFolderName[] =
@@ -461,6 +466,12 @@ void SyncBackendHost::Initialize(
         InternalComponentsFactoryImpl::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
   }
 
+  bool create_invalidator = true;
+#if defined(ENABLE_MANAGED_USERS)
+  if (ManagedUserService::ProfileIsManaged(profile_))
+    create_invalidator = false;
+#endif
+
   initialization_state_ = CREATING_SYNC_MANAGER;
   InitCore(DoInitializeOptions(
       sync_thread_.message_loop(),
@@ -483,7 +494,8 @@ void SyncBackendHost::Initialize(
       new InternalComponentsFactoryImpl(factory_switches),
       unrecoverable_error_handler,
       report_unrecoverable_error_function,
-      !cl->HasSwitch(switches::kSyncDisableOAuth2Token)));
+      !cl->HasSwitch(switches::kSyncDisableOAuth2Token),
+      create_invalidator));
 }
 
 void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
@@ -968,7 +980,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function,
-    bool use_oauth2_token)
+    bool use_oauth2_token,
+    bool create_invalidator)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -989,7 +1002,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       unrecoverable_error_handler(unrecoverable_error_handler),
       report_unrecoverable_error_function(
           report_unrecoverable_error_function),
-      use_oauth2_token(use_oauth2_token) {
+      use_oauth2_token(use_oauth2_token),
+      create_invalidator(create_invalidator) {
 }
 
 SyncBackendHost::DoInitializeOptions::~DoInitializeOptions() {}
@@ -1240,34 +1254,37 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
   sync_manager_ = options.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
-  sync_manager_->Init(
-      sync_data_folder_path_,
-      options.event_handler,
-      options.service_url.host() + options.service_url.path(),
-      options.service_url.EffectiveIntPort(),
-      options.service_url.SchemeIsSecure(),
-      options.make_http_bridge_factory_fn.Run().Pass(),
-      options.workers,
-      options.extensions_activity_monitor,
-      options.registrar /* as SyncManager::ChangeDelegate */,
-      options.credentials,
+  scoped_ptr<syncer::Invalidator> invalidator;
+  if (options.create_invalidator) {
 #if defined(OS_ANDROID)
-      scoped_ptr<syncer::Invalidator>(
-          new AndroidInvalidatorBridgeProxy(
-              options.android_invalidator_bridge)),
+    invalidator.reset(
+        new AndroidInvalidatorBridgeProxy(options.android_invalidator_bridge));
 #else
-      scoped_ptr<syncer::Invalidator>(
-          options.invalidator_factory->CreateInvalidator()),
+    invalidator.reset(options.invalidator_factory->CreateInvalidator());
 #endif
-      options.invalidator_factory->GetInvalidatorClientId(),
-      options.restored_key_for_bootstrapping,
-      options.restored_keystore_key_for_bootstrapping,
-      scoped_ptr<InternalComponentsFactory>(
-          options.internal_components_factory),
-      &encryptor_,
-      options.unrecoverable_error_handler,
-      options.report_unrecoverable_error_function,
-      options.use_oauth2_token);
+  } else {
+    invalidator.reset(new DummyInvalidator());
+  }
+  sync_manager_->Init(sync_data_folder_path_,
+                      options.event_handler,
+                      options.service_url.host() + options.service_url.path(),
+                      options.service_url.EffectiveIntPort(),
+                      options.service_url.SchemeIsSecure(),
+                      options.make_http_bridge_factory_fn.Run().Pass(),
+                      options.workers,
+                      options.extensions_activity_monitor,
+                      options.registrar /* as SyncManager::ChangeDelegate */,
+                      options.credentials,
+                      invalidator.Pass(),
+                      options.invalidator_factory->GetInvalidatorClientId(),
+                      options.restored_key_for_bootstrapping,
+                      options.restored_keystore_key_for_bootstrapping,
+                      scoped_ptr<InternalComponentsFactory>(
+                          options.internal_components_factory),
+                      &encryptor_,
+                      options.unrecoverable_error_handler,
+                      options.report_unrecoverable_error_function,
+                      options.use_oauth2_token);
 
   // |sync_manager_| may end up being NULL here in tests (in
   // synchronous initialization mode).

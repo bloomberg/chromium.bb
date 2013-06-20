@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -39,6 +40,7 @@ class PrefRegistrySyncable;
 // manual whitelist/blacklist overrides).
 class ManagedUserService : public BrowserContextKeyedService,
                            public extensions::ManagementPolicy::Provider,
+                           public ProfileSyncServiceObserver,
                            public content::NotificationObserver {
  public:
   typedef std::vector<string16> CategoryList;
@@ -51,6 +53,9 @@ class ManagedUserService : public BrowserContextKeyedService,
 
   explicit ManagedUserService(Profile* profile);
   virtual ~ManagedUserService();
+
+  // ProfileKeyedService override:
+  virtual void Shutdown() OVERRIDE;
 
   bool ProfileIsManaged() const;
 
@@ -109,9 +114,9 @@ class ManagedUserService : public BrowserContextKeyedService,
   // Marks the profile as managed and initializes it.
   void InitForTesting();
 
-  // Initializes this profile for syncing, using the provided |token| to
-  // authenticate requests.
-  void InitSync(const std::string& token);
+  // Initializes this profile for syncing, using the provided |refresh_token| to
+  // mint access tokens for Sync.
+  void InitSync(const std::string& refresh_token);
 
   // Convenience method that registers this managed user with
   // |registration_service| and initializes sync with the returned token.
@@ -137,6 +142,9 @@ class ManagedUserService : public BrowserContextKeyedService,
                            string16* error) const OVERRIDE;
   virtual bool UserMayModifySettings(const extensions::Extension* extension,
                                      string16* error) const OVERRIDE;
+
+  // ProfileSyncServiceObserver implementation:
+  virtual void OnStateChanged() OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
@@ -181,6 +189,8 @@ class ManagedUserService : public BrowserContextKeyedService,
                                const GoogleServiceAuthError& auth_error,
                                const std::string& token);
 
+  void SetupSync();
+
   // Internal implementation for ExtensionManagementPolicy::Delegate methods.
   // If |error| is not NULL, it will be filled with an error message if the
   // requested extension action (install, modify status, etc.) is not permitted.
@@ -212,6 +222,9 @@ class ManagedUserService : public BrowserContextKeyedService,
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
+
+  // True iff we're waiting for the Sync service to be initialized.
+  bool waiting_for_sync_initialization_;
 
   // Sets a profile in elevated state for testing if set to true.
   bool elevated_for_testing_;

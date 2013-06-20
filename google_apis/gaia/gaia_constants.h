@@ -21,6 +21,7 @@ extern const char kRemotingService[];
 extern const char kDeviceManagementServiceOAuth[];
 extern const char kAnyApiOAuth2Scope[];
 extern const char kChromeSyncOAuth2Scope[];
+extern const char kChromeSyncManagedOAuth2Scope[];
 extern const char kGoogleTalkOAuth2Scope[];
 extern const char kLSOService[];
 

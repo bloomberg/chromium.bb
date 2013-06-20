@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -25,6 +26,7 @@
 
 using base::Time;
 using gaia::GaiaOAuthClient;
+using GaiaConstants::kChromeSyncManagedOAuth2Scope;
 using net::URLFetcher;
 using net::URLFetcherDelegate;
 using net::URLRequestContextGetter;
@@ -32,9 +34,6 @@ using net::URLRequestContextGetter;
 namespace {
 
 const int kNumRetries = 1;
-
-static const char kChromeSyncManagedScope[] =
-    "https://www.googleapis.com/auth/chromesync_playpen";
 
 static const char kIssueTokenBodyFormat[] =
     "client_id=%s"
@@ -161,7 +160,7 @@ void ManagedUserRefreshTokenFetcherImpl::OnGetTokenSuccess(
       kIssueTokenBodyFormat,
       net::EscapeUrlEncodedData(
           GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true).c_str(),
-      net::EscapeUrlEncodedData(kChromeSyncManagedScope, true).c_str(),
+      net::EscapeUrlEncodedData(kChromeSyncManagedOAuth2Scope, true).c_str(),
       net::EscapeUrlEncodedData(managed_user_id_, true).c_str(),
       net::EscapeUrlEncodedData(UTF16ToUTF8(name_), true).c_str(),
       net::EscapeUrlEncodedData(device_name_, true).c_str());

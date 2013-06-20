@@ -139,9 +139,20 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
 ManagedUserService::ManagedUserService(Profile* profile)
     : weak_ptr_factory_(this),
       profile_(profile),
-      elevated_for_testing_(false) {}
+      waiting_for_sync_initialization_(false),
+      elevated_for_testing_(false) {
+}
 
 ManagedUserService::~ManagedUserService() {}
+
+void ManagedUserService::Shutdown() {
+  if (!waiting_for_sync_initialization_)
+    return;
+
+  ProfileSyncService* sync_service =
+        ProfileSyncServiceFactory::GetForProfile(profile_);
+  sync_service->RemoveObserver(this);
+}
 
 bool ManagedUserService::ProfileIsManaged() const {
   return ProfileIsManaged(profile_);
@@ -269,6 +280,21 @@ bool ManagedUserService::UserMayModifySettings(
       extension ? extension->id() : std::string(), error);
 }
 
+void ManagedUserService::OnStateChanged() {
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (waiting_for_sync_initialization_ && service->sync_initialized()) {
+    SetupSync();
+    service->RemoveObserver(this);
+    waiting_for_sync_initialization_ = false;
+    return;
+  }
+
+  DLOG_IF(ERROR, service->GetAuthError().state() ==
+                     GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)
+      << "Credentials rejected";
+}
+
 void ManagedUserService::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
@@ -294,6 +320,21 @@ void ManagedUserService::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void ManagedUserService::SetupSync() {
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  DCHECK(service->sync_initialized());
+
+  bool sync_everything = false;
+  syncer::ModelTypeSet synced_datatypes;
+  synced_datatypes.Put(syncer::MANAGED_USER_SETTINGS);
+  service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
+
+  // Notify ProfileSyncService that we are done with configuration.
+  service->SetSetupInProgress(false);
+  service->SetSyncSetupCompleted();
 }
 
 bool ManagedUserService::ExtensionManagementPolicyImpl(
@@ -413,25 +454,24 @@ void ManagedUserService::InitForTesting() {
   Init();
 }
 
-void ManagedUserService::InitSync(const std::string& sync_token) {
+void ManagedUserService::InitSync(const std::string& refresh_token) {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  DCHECK(!service->sync_initialized());
   // Tell the sync service that setup is in progress so we don't start syncing
   // until we've finished configuration.
   service->SetSetupInProgress(true);
 
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  token_service->AddAuthTokenManually(GaiaConstants::kSyncService, sync_token);
+  token_service->UpdateCredentialsWithOAuth2(
+      GaiaAuthConsumer::ClientOAuthResult(refresh_token, std::string(), 0));
 
-  bool sync_everything = false;
-  syncer::ModelTypeSet synced_datatypes;
-  synced_datatypes.Put(syncer::MANAGED_USER_SETTINGS);
-  service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
-
-  // Notify ProfileSyncService that we are done with configuration.
-  service->SetSetupInProgress(false);
-  service->SetSyncSetupCompleted();
+  // Continue in SetupSync() once the Sync backend has been initialized.
+  if (service->sync_initialized()) {
+    SetupSync();
+  } else {
+    ProfileSyncServiceFactory::GetForProfile(profile_)->AddObserver(this);
+    waiting_for_sync_initialization_ = true;
+  }
 }
 
 // static
@@ -453,6 +493,11 @@ void ManagedUserService::Init() {
     InitSync(
         command_line->GetSwitchValueASCII(switches::kManagedUserSyncToken));
   }
+
+  // TokenService only loads tokens automatically if we're signed in, so we have
+  // to nudge it ourselves.
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  token_service->LoadTokensFromDB();
 
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile_);

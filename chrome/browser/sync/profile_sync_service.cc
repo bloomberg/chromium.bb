@@ -120,6 +120,9 @@ static const char* kOAuth2Scopes[] = {
   GaiaConstants::kGoogleTalkOAuth2Scope
 };
 
+static const char* kManagedOAuth2Scopes[] = {
+  GaiaConstants::kChromeSyncManagedOAuth2Scope
+};
 
 static const char* kSyncUnrecoverableErrorHistogram =
     "Sync.UnrecoverableErrors";
@@ -1923,8 +1926,18 @@ void ProfileSyncService::RequestAccessToken() {
     return;
   request_access_token_retry_timer_.Stop();
   OAuth2TokenService::ScopeSet oauth2_scopes;
-  for (size_t i = 0; i < arraysize(kOAuth2Scopes); i++)
-    oauth2_scopes.insert(kOAuth2Scopes[i]);
+  bool is_managed = false;
+#if defined(ENABLE_MANAGED_USERS)
+  is_managed = ManagedUserService::ProfileIsManaged(profile_);
+#endif
+  if (is_managed) {
+    for (size_t i = 0; i < arraysize(kManagedOAuth2Scopes); i++)
+      oauth2_scopes.insert(kManagedOAuth2Scopes[i]);
+  } else {
+    for (size_t i = 0; i < arraysize(kOAuth2Scopes); i++)
+      oauth2_scopes.insert(kOAuth2Scopes[i]);
+  }
+
   OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   // Invalidate previous token, otherwise token service will return the same
