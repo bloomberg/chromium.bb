@@ -549,9 +549,11 @@ static sqlite3_pcache *pcache1Create(int szPage, int bPurgeable){
   int sz;               /* Bytes of memory required to allocate the new cache */
 
   /*
-  ** The seperateCache variable is true if each PCache has its own private
+  ** The separateCache variable is true if each PCache has its own private
   ** PGroup.  In other words, separateCache is true for mode (1) where no
   ** mutexing is required.
+  **
+  **   *  Always use separate caches (mode-1) if SQLITE_SEPARATE_CACHE_POOLS
   **
   **   *  Always use a unified cache (mode-2) if ENABLE_MEMORY_MANAGEMENT
   **
@@ -560,7 +562,9 @@ static sqlite3_pcache *pcache1Create(int szPage, int bPurgeable){
   **   *  Otherwise (if multi-threaded and ENABLE_MEMORY_MANAGEMENT is off)
   **      use separate caches (mode-1)
   */
-#if defined(SQLITE_ENABLE_MEMORY_MANAGEMENT) || SQLITE_THREADSAFE==0
+#ifdef SQLITE_SEPARATE_CACHE_POOLS
+  const int separateCache = 1;
+#elif defined(SQLITE_ENABLE_MEMORY_MANAGEMENT) || SQLITE_THREADSAFE==0
   const int separateCache = 0;
 #else
   int separateCache = sqlite3GlobalConfig.bCoreMutex>0;
