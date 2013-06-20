@@ -32,13 +32,18 @@ RendererDateTimePicker::~RendererDateTimePicker() {
 bool RendererDateTimePicker::Open() {
   DateTimeFormatter parser(chooser_params_);
   ViewHostMsg_DateTimeDialogValue_Params message;
-  message.year =  parser.GetYear();
-  message.month =  parser.GetMonth();
-  message.day =  parser.GetDay();
-  message.hour =  parser.GetHour();
-  message.minute = parser.GetMinute();
-  message.second = parser.GetSecond();
   message.dialog_type = parser.GetType();
+  if (message.dialog_type == ui::TEXT_INPUT_TYPE_WEEK) {
+    message.year = parser.GetWeekYear();
+    message.week = parser.GetWeek();
+  } else {
+    message.year = parser.GetYear();
+    message.month = parser.GetMonth();
+    message.day = parser.GetDay();
+    message.hour = parser.GetHour();
+    message.minute = parser.GetMinute();
+    message.second = parser.GetSecond();
+  }
   message.minimum = chooser_params_.minimum;
   message.maximum = chooser_params_.maximum;
   Send(new ViewHostMsg_OpenDateTimeDialog(routing_id(), message));
@@ -62,7 +67,7 @@ void RendererDateTimePicker::OnReplaceDateTime(
   DateTimeFormatter formatter(
       static_cast<ui::TextInputType>(value.dialog_type),
       value.year, value.month, value.day,
-      value.hour, value.minute, value.second);
+      value.hour, value.minute, value.second, value.year, value.week);
 
   if (chooser_completion_)
     chooser_completion_->didChooseValue(WebString::fromUTF8(

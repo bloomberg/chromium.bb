@@ -27,7 +27,8 @@ class CONTENT_EXPORT DateTimeFormatter {
   explicit DateTimeFormatter(const WebKit::WebDateTimeChooserParams& source);
   DateTimeFormatter(
       ui::TextInputType type,
-      int year, int month, int day, int hour, int minute, int second);
+      int year, int month, int day, int hour, int minute, int second,
+      int week_year, int week);
   ~DateTimeFormatter();
 
   int GetYear() const;
@@ -36,6 +37,8 @@ class CONTENT_EXPORT DateTimeFormatter {
   int GetHour() const;
   int GetMinute() const;
   int GetSecond() const;
+  int GetWeekYear() const;
+  int GetWeek() const;
   ui::TextInputType GetType() const;
   const std::string& GetFormattedValue() const;
 
@@ -56,6 +59,8 @@ class CONTENT_EXPORT DateTimeFormatter {
   int hour_;
   int minute_;
   int second_;
+  int week_year_;
+  int week_;
   const icu::UnicodeString* pattern_;
   std::string formatted_string_;
 

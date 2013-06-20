@@ -24,7 +24,7 @@ class DateTimeChooserAndroid::DateTimeIPCSender :
   explicit DateTimeIPCSender(RenderViewHost* sender);
   virtual ~DateTimeIPCSender() {}
   void ReplaceDateTime(int dialog_type,
-      int year, int month, int day, int hour, int minute, int second);
+      int year, int month, int day, int hour, int minute, int second, int week);
   void CancelDialog();
 
  private:
@@ -38,7 +38,7 @@ DateTimeChooserAndroid::DateTimeIPCSender::DateTimeIPCSender(
 
 void DateTimeChooserAndroid::DateTimeIPCSender::ReplaceDateTime(
     int dialog_type,
-    int year, int month, int day, int hour, int minute, int second) {
+    int year, int month, int day, int hour, int minute, int second, int week) {
   ViewHostMsg_DateTimeDialogValue_Params value;
   value.year = year;
   value.month = month;
@@ -46,6 +46,7 @@ void DateTimeChooserAndroid::DateTimeIPCSender::ReplaceDateTime(
   value.hour = hour;
   value.minute = minute;
   value.second = second;
+  value.week = week;
   value.dialog_type = dialog_type;
   Send(new ViewMsg_ReplaceDateTime(routing_id(), value));
 }
@@ -66,20 +67,20 @@ DateTimeChooserAndroid::~DateTimeChooserAndroid() {
 void DateTimeChooserAndroid::InitializeDateInputTypes(
       int text_input_type_date, int text_input_type_date_time,
       int text_input_type_date_time_local, int text_input_type_month,
-      int text_input_type_time) {
+      int text_input_type_time, int text_input_type_week) {
   JNIEnv* env = AttachCurrentThread();
   Java_DateTimeChooserAndroid_initializeDateInputTypes(
          env,
          text_input_type_date, text_input_type_date_time,
          text_input_type_date_time_local, text_input_type_month,
-         text_input_type_time);
+         text_input_type_time, text_input_type_week);
 }
 
 void DateTimeChooserAndroid::ReplaceDateTime(
     JNIEnv* env, jobject, int dialog_type,
-    int year, int month, int day, int hour, int minute, int second) {
+    int year, int month, int day, int hour, int minute, int second, int week) {
   sender_->ReplaceDateTime(
-      dialog_type, year, month, day, hour, minute, second);
+      dialog_type, year, month, day, hour, minute, second, week);
 }
 
 void DateTimeChooserAndroid::CancelDialog(JNIEnv* env, jobject) {
@@ -89,7 +90,7 @@ void DateTimeChooserAndroid::CancelDialog(JNIEnv* env, jobject) {
 void DateTimeChooserAndroid::ShowDialog(
     ContentViewCore* content, RenderViewHost* sender,
     int type, int year, int month, int day,
-    int hour, int minute, int second, double min, double max) {
+    int hour, int minute, int second, int week, double min, double max) {
   if (sender_)
     delete sender_;
   sender_ = new DateTimeIPCSender(sender);
@@ -98,7 +99,7 @@ void DateTimeChooserAndroid::ShowDialog(
   j_date_time_chooser_.Reset(Java_DateTimeChooserAndroid_createDateTimeChooser(
       env, content->GetJavaObject().obj(),
       reinterpret_cast<intptr_t>(this),
-      type, year, month, day, hour, minute, second, min, max));
+      type, year, month, day, hour, minute, second, week, min, max));
 }
 
 // ----------------------------------------------------------------------------
@@ -112,7 +113,8 @@ bool RegisterDateTimeChooserAndroid(JNIEnv* env) {
         ui::TEXT_INPUT_TYPE_DATE_TIME,
         ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL,
         ui::TEXT_INPUT_TYPE_MONTH,
-        ui::TEXT_INPUT_TYPE_TIME);
+        ui::TEXT_INPUT_TYPE_TIME,
+        ui::TEXT_INPUT_TYPE_WEEK);
   return registered;
 }
 

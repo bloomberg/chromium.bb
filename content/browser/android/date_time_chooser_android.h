@@ -25,12 +25,13 @@ class DateTimeChooserAndroid {
   void ShowDialog(ContentViewCore* content,
                   RenderViewHost* sender,
                   int type, int year, int month, int day,
-                  int hour, int minute, int second, double min, double max);
+                  int hour, int minute, int second, int week,
+                  double min, double max);
 
   // Replaces the current value with the one passed the different fields
   void ReplaceDateTime(JNIEnv* env, jobject, jint dialog_type,
                        jint year, jint month, jint day,
-                       jint hour, jint minute, jint second);
+                       jint hour, jint minute, jint second, jint week);
 
   // Closes the dialog without propagating any changes.
   void CancelDialog(JNIEnv* env, jobject);
@@ -40,7 +41,7 @@ class DateTimeChooserAndroid {
   static void InitializeDateInputTypes(
        int text_input_type_date, int text_input_type_date_time,
        int text_input_type_date_time_local, int text_input_type_month,
-       int text_input_type_time);
+       int text_input_type_time, int text_input_type_week);
 
  private:
   class DateTimeIPCSender;

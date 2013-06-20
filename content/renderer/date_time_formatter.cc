@@ -25,6 +25,7 @@ void DateTimeFormatter::CreatePatternMap() {
   patterns_[ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL] =  "yyyy-MM-dd'T'HH:mm";
   patterns_[ui::TEXT_INPUT_TYPE_MONTH] = "yyyy-MM";
   patterns_[ui::TEXT_INPUT_TYPE_TIME] = "HH:mm";
+  patterns_[ui::TEXT_INPUT_TYPE_WEEK] = "Y-'W'ww";
 }
 
 DateTimeFormatter::DateTimeFormatter(
@@ -41,14 +42,17 @@ DateTimeFormatter::DateTimeFormatter(
 
 DateTimeFormatter::DateTimeFormatter(
     ui::TextInputType type,
-    int year, int month, int day, int hour, int minute, int second)
+    int year, int month, int day, int hour, int minute, int second,
+    int week_year, int week)
   : type_(type),
     year_(year),
     month_(month),
     day_(day),
     hour_(hour),
     minute_(minute),
-    second_(second) {
+    second_(second),
+    week_year_(week_year),
+    week_(week) {
   CreatePatternMap();
   pattern_ = type_ > 0 && type_ <= ui::TEXT_INPUT_TYPE_MAX ?
       &patterns_[type_] : &patterns_[ui::TEXT_INPUT_TYPE_NONE];
@@ -83,6 +87,14 @@ int DateTimeFormatter::GetSecond() const {
   return second_;
 }
 
+int DateTimeFormatter::GetWeekYear() const {
+  return week_year_;
+}
+
+int DateTimeFormatter::GetWeek() const {
+  return week_;
+}
+
 ui::TextInputType DateTimeFormatter::GetType() const {
   return type_;
 }
@@ -94,14 +106,30 @@ const std::string& DateTimeFormatter::GetFormattedValue() const {
 const std::string DateTimeFormatter::FormatString() const {
   UErrorCode success = U_ZERO_ERROR;
   if (year_ == 0 && month_ == 0 && day_ == 0 &&
-      hour_ == 0 && minute_ == 0 && second_ == 0) {
+      hour_ == 0 && minute_ == 0 && second_ == 0 &&
+      week_year_ == 0 && week_ == 0) {
     return std::string();
   }
 
   std::string result;
-  const icu::GregorianCalendar calendar(
-      year_, month_, day_, hour_, minute_, second_, success);
+  icu::GregorianCalendar calendar(success);
   if (success <= U_ZERO_ERROR) {
+    if (type_ == ui::TEXT_INPUT_TYPE_WEEK) {
+      // An ISO week starts with Monday.
+      calendar.setFirstDayOfWeek(UCAL_MONDAY);
+      // ISO 8601 defines that the week with the year's first Thursday is the
+      // first week.
+      calendar.setMinimalDaysInFirstWeek(4);
+      calendar.set(UCAL_YEAR_WOY, week_year_);
+      calendar.set(UCAL_WEEK_OF_YEAR, week_);
+    } else {
+      calendar.set(UCAL_YEAR, year_);
+      calendar.set(UCAL_MONTH, month_);
+      calendar.set(UCAL_DATE, day_);
+      calendar.set(UCAL_HOUR_OF_DAY, hour_);
+      calendar.set(UCAL_MINUTE, minute_);
+      calendar.set(UCAL_SECOND, second_);
+    }
     UDate time = calendar.getTime(success);
     icu::SimpleDateFormat formatter(*pattern_, success);
     icu::UnicodeString formatted_time;
@@ -134,7 +162,9 @@ void DateTimeFormatter::ExtractType(
     case WebKit::WebDateTimeInputTypeTime:
       type_ = ui::TEXT_INPUT_TYPE_TIME;
       break;
-    case WebKit::WebDateTimeInputTypeWeek: // Not implemented
+    case WebKit::WebDateTimeInputTypeWeek:
+      type_ = ui::TEXT_INPUT_TYPE_WEEK;
+      break;
     case WebKit::WebDateTimeInputTypeNone:
     default:
       type_ = ui::TEXT_INPUT_TYPE_NONE;
@@ -176,6 +206,8 @@ bool DateTimeFormatter::ParseValues() {
       hour_ = ExtractValue(cal, UCAL_HOUR_OF_DAY);  // 24h format
       minute_ = ExtractValue(cal, UCAL_MINUTE);
       second_ = ExtractValue(cal, UCAL_SECOND);
+      week_year_ = ExtractValue(cal, UCAL_YEAR_WOY);
+      week_ = ExtractValue(cal, UCAL_WEEK_OF_YEAR);
     }
   }
 
@@ -189,6 +221,8 @@ void DateTimeFormatter::ClearAll() {
   hour_ = 0;
   minute_ = 0;
   second_ = 0;
+  week_year_ = 0;
+  week_ = 0;
 }
 
 }  // namespace content
