@@ -43,6 +43,7 @@
 #if defined(OS_WIN)
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/web_applications/web_app_win.h"
 #include "ui/gfx/icon_util.h"
 #endif
 

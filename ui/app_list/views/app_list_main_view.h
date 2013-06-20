@@ -69,6 +69,9 @@ class AppListMainView : public views::View,
 
   // Overridden from AppsGridViewDelegate:
   virtual void ActivateApp(AppListItemModel* item, int event_flags) OVERRIDE;
+  virtual void GetShortcutPathForApp(
+      const std::string& app_id,
+      const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
 
   // Overridden from SearchBoxViewDelegate:
   virtual void QueryChanged(SearchBoxView* sender) OVERRIDE;

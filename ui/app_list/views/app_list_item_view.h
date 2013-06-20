@@ -48,6 +48,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   const views::Label* title() const { return title_; }
 
+  gfx::ImageSkia GetDragImage();
+
  private:
   enum UIState {
     UI_STATE_NORMAL,    // Normal UI (icon + label)

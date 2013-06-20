@@ -2316,6 +2316,7 @@
         'browser/web_applications/web_app_linux.cc',
         'browser/web_applications/web_app_mac.h',
         'browser/web_applications/web_app_mac.mm',
+        'browser/web_applications/web_app_win.h',
         'browser/web_applications/web_app_win.cc',
         'browser/web_resource/eula_accepted_notifier.cc',
         'browser/web_resource/eula_accepted_notifier.h',

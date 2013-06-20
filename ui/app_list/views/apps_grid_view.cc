@@ -24,6 +24,16 @@
 #include "ui/aura/root_window.h"
 #endif
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/win/shortcut.h"
+#include "ui/base/dragdrop/drag_utils.h"
+#include "ui/base/dragdrop/drop_target_win.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+#endif
+
 namespace {
 
 // Padding space in pixels for fixed layout.
@@ -105,6 +115,121 @@ class RowMoveAnimationDelegate
 }  // namespace
 
 namespace app_list {
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+// Interprets drag events sent from Windows via the drag/drop API and forwards
+// them to AppsGridView.
+// On Windows, in order to have the OS perform the drag properly we need to
+// provide it with a shortcut file which may or may not exist at the time the
+// drag is started. Therefore while waiting for that shortcut to be located we
+// just do a regular "internal" drag and transition into the synchronous drag
+// when the shortcut is found/created. Hence a synchronous drag is an optional
+// phase of a regular drag and non-Windows platforms drags are equivalent to a
+// Windows drag that never enters the synchronous drag phase.
+class SynchronousDrag : public ui::DragSourceWin {
+ public:
+  SynchronousDrag(app_list::AppsGridView* grid_view,
+              app_list::AppListItemView* drag_view,
+              const gfx::Point& drag_view_offset)
+      : grid_view_(grid_view),
+        drag_view_(drag_view),
+        drag_view_offset_(drag_view_offset),
+        has_shortcut_path_(false),
+        running_(false),
+        canceled_(false) {
+  }
+
+  void set_shortcut_path(const base::FilePath& shortcut_path) {
+    has_shortcut_path_ = true;
+    shortcut_path_ = shortcut_path;
+  }
+
+  bool CanRun() {
+    return has_shortcut_path_ && !running_;
+  }
+
+  void Run() {
+    DCHECK(CanRun());
+    running_ = true;
+
+    ui::OSExchangeData data;
+    SetupExchangeData(&data);
+
+    // Hide the dragged view because the OS is going to create its own.
+    const gfx::Size drag_view_size = drag_view_->size();
+    drag_view_->SetSize(gfx::Size(0, 0));
+
+    // Blocks until the drag is finished. Calls into the ui::DragSourceWin
+    // methods.
+    DWORD effects;
+    DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
+               this, DROPEFFECT_MOVE | DROPEFFECT_LINK, &effects);
+
+    // Restore the dragged view to its original size.
+    drag_view_->SetSize(drag_view_size);
+
+    grid_view_->EndDrag(canceled_ || !IsCursorWithinGridView());
+  }
+
+ private:
+  // Overridden from ui::DragSourceWin.
+  virtual void OnDragSourceCancel() OVERRIDE {
+    canceled_ = true;
+  }
+
+  virtual void OnDragSourceDrop() OVERRIDE {
+  }
+
+  virtual void OnDragSourceMove() OVERRIDE {
+    grid_view_->UpdateDrag(app_list::AppsGridView::MOUSE,
+                           GetCursorInGridViewCoords());
+
+    // Don't turn pages if the cursor is dragged outside the view.
+    if (!IsCursorWithinGridView())
+      grid_view_->StopPageFlipTimer();
+  }
+
+  void SetupExchangeData(ui::OSExchangeData* data) {
+    data->SetFilename(shortcut_path_);
+    gfx::ImageSkia image(drag_view_->GetDragImage());
+    gfx::Size image_size(image.size());
+    drag_utils::SetDragImageOnDataObject(
+        image,
+        image.size(),
+        gfx::Vector2d(drag_view_offset_.x(), drag_view_offset_.y()),
+        data);
+  }
+
+  HWND GetGridViewHWND() {
+    return grid_view_->GetWidget()->GetTopLevelWidget()->GetNativeView();
+  }
+
+  bool IsCursorWithinGridView() {
+    POINT p;
+    GetCursorPos(&p);
+    return GetGridViewHWND() == WindowFromPoint(p);
+  }
+
+  gfx::Point GetCursorInGridViewCoords() {
+    POINT p;
+    GetCursorPos(&p);
+    ScreenToClient(GetGridViewHWND(), &p);
+    gfx::Point grid_view_pt(p.x, p.y);
+    views::View::ConvertPointFromWidget(grid_view_, &grid_view_pt);
+    return grid_view_pt;
+  }
+
+  app_list::AppsGridView* grid_view_;
+  app_list::AppListItemView* drag_view_;
+  gfx::Point drag_view_offset_;
+  bool has_shortcut_path_;
+  base::FilePath shortcut_path_;
+  bool running_;
+  bool canceled_;
+
+  DISALLOW_COPY_AND_ASSIGN(SynchronousDrag);
+};
+#endif // defined(OS_WIN) && !defined(USE_AURA)
 
 AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
                            PaginationModel* pagination_model)
@@ -217,32 +342,87 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
                                              kDragAndDropProxyScale);
     HideView(drag_view_, true);
   }
-  drag_start_ = event.location();
+  drag_view_offset_ = event.location();
+  ExtractDragLocation(event, &drag_start_grid_view_);
+  drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
 }
 
-void AppsGridView::UpdateDrag(AppListItemView* view,
-                              Pointer pointer,
-                              const ui::LocatedEvent& event) {
+void AppsGridView::OnGotShortcutPath(const base::FilePath& path) {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Drag may have ended before we get the shortcut path.
+  if (!synchronous_drag_)
+    return;
+  // Setting the shortcut path here means the next time we hit UpdateDrag()
+  // we'll enter the synchronous drag.
+  // NOTE we don't Run() the drag here because that causes animations not to
+  // update for some reason.
+  synchronous_drag_->set_shortcut_path(path);
+  DCHECK(synchronous_drag_->CanRun());
+#endif
+}
+
+void AppsGridView::StartSettingUpSynchronousDrag() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  delegate_->GetShortcutPathForApp(
+    drag_view_->model()->app_id(),
+    base::Bind(&AppsGridView::OnGotShortcutPath, base::Unretained(this)));
+  synchronous_drag_ = new SynchronousDrag(this, drag_view_, drag_view_offset_);
+#endif
+}
+
+bool AppsGridView::RunSynchronousDrag() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  if (synchronous_drag_ && synchronous_drag_->CanRun()) {
+    synchronous_drag_->Run();
+    synchronous_drag_ = NULL;
+    return true;
+  }
+#endif
+  return false;
+}
+
+void AppsGridView::CleanUpSynchronousDrag() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  synchronous_drag_ = NULL;
+#endif
+}
+
+void AppsGridView::UpdateDragFromItem(Pointer pointer,
+                                      const ui::LocatedEvent& event) {
+  gfx::Point drag_point_in_grid_view;
+  ExtractDragLocation(event, &drag_point_in_grid_view);
+  UpdateDrag(pointer, drag_point_in_grid_view);
+
+  // If a drag and drop host is provided, see if the drag operation needs to be
+  // forwarded.
+  DispatchDragEventToDragAndDropHost(event.root_location());
+  if (drag_and_drop_host_)
+    drag_and_drop_host_->UpdateDragIconProxy(event.root_location());
+}
+
+void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
   // EndDrag was called before if |drag_view_| is NULL.
   if (!drag_view_)
     return;
 
-  if (!dragging() && ExceededDragThreshold(event.location() - drag_start_)) {
+  if (RunSynchronousDrag())
+    return;
+
+  gfx::Vector2d drag_vector(point - drag_start_grid_view_);
+  if (!dragging() && ExceededDragThreshold(drag_vector)) {
     drag_pointer_ = pointer;
     // Move the view to the front so that it appears on top of other views.
     ReorderChildView(drag_view_, -1);
     bounds_animator_.StopAnimatingView(drag_view_);
+    StartSettingUpSynchronousDrag();
   }
+
   if (drag_pointer_ != pointer)
     return;
 
-  ExtractDragLocation(event, &last_drag_point_);
+  last_drag_point_ = point;
   const Index last_drop_target = drop_target_;
   CalculateDropTarget(last_drag_point_, false);
-
-  // If a drag and drop host is provided, see if the drag operation needs to be
-  // forwarded.
-  DispatchDragEventToDragAndDropHost(event);
 
   MaybeStartPageFlipTimer(last_drag_point_);
 
@@ -254,11 +434,7 @@ void AppsGridView::UpdateDrag(AppListItemView* view,
   if (last_drop_target != drop_target_)
     AnimateToIdealBounds();
 
-  if (drag_and_drop_host_)
-    drag_and_drop_host_->UpdateDragIconProxy(event.root_location());
-
-  drag_view_->SetPosition(
-      gfx::PointAtOffsetFromOrigin(last_drag_point_ - drag_start_));
+  drag_view_->SetPosition(drag_view_start_ + drag_vector);
 }
 
 void AppsGridView::EndDrag(bool cancel) {
@@ -282,11 +458,19 @@ void AppsGridView::EndDrag(bool cancel) {
     HideView(drag_view_, false);
   }
 
+  // The drag can be ended after the synchronous drag is created but before it
+  // is Run().
+  CleanUpSynchronousDrag();
+
   drag_pointer_ = NONE;
   drop_target_ = Index();
   drag_view_ = NULL;
   AnimateToIdealBounds();
 
+  StopPageFlipTimer();
+}
+
+void AppsGridView::StopPageFlipTimer() {
   page_flip_timer_.Stop();
   page_flip_target_ = -1;
 }
@@ -321,6 +505,22 @@ gfx::Size AppsGridView::GetPreferredSize() {
       tile_size.width() * cols_ + insets.width(),
       tile_size.height() * rows_per_page_ +
           page_switcher_height + insets.height());
+}
+
+bool AppsGridView::GetDropFormats(
+    int* formats,
+    std::set<OSExchangeData::CustomFormat>* custom_formats) {
+  // TODO(koz): Only accept a specific drag type for app shortcuts.
+  *formats = OSExchangeData::FILE_NAME;
+  return true;
+}
+
+bool AppsGridView::CanDrop(const OSExchangeData& data) {
+  return true;
+}
+
+int AppsGridView::OnDragUpdated(const ui::DropTargetEvent& event) {
+  return ui::DragDropTypes::DRAG_MOVE;
 }
 
 void AppsGridView::Layout() {
@@ -747,7 +947,7 @@ void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point,
 }
 
 void AppsGridView::DispatchDragEventToDragAndDropHost(
-    const ui::LocatedEvent& event) {
+    const gfx::Point& point) {
   if (!drag_view_ || !drag_and_drop_host_)
     return;
   if (bounds().Contains(last_drag_point_)) {
@@ -762,19 +962,18 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
     // The event happened outside our app menu and we might need to dispatch.
     if (forward_events_to_drag_and_drop_host_) {
       // Dispatch since we have already started.
-      if (!drag_and_drop_host_->Drag(event.root_location())) {
+      if (!drag_and_drop_host_->Drag(point)) {
         // The host is not active any longer and we cancel the operation.
         forward_events_to_drag_and_drop_host_ = false;
         drag_and_drop_host_->EndDrag(true);
       }
     } else {
       if (drag_and_drop_host_->StartDrag(drag_view_->model()->app_id(),
-                                         event.root_location())) {
+                                         point)) {
         // From now on we forward the drag events.
         forward_events_to_drag_and_drop_host_ = true;
         // Any flip operations are stopped.
-        page_flip_timer_.Stop();
-        page_flip_target_ = -1;
+        StopPageFlipTimer();
       }
     }
   }

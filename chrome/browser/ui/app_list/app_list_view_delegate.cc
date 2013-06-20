@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/feedback/feedback_util.h"
@@ -16,14 +18,38 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
 #endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/web_applications/web_app_win.h"
+#endif
+
+namespace {
+
+#if defined(OS_WIN)
+void CreateShortcutInWebAppDir(
+    const base::FilePath& app_data_dir,
+    base::Callback<void(const base::FilePath&)> callback,
+    const ShellIntegration::ShortcutInfo& info) {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(web_app::CreateShortcutInWebAppDir, app_data_dir, info),
+      callback);
+}
+#endif
+
+}  // namespace
 
 AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller,
                                          Profile* profile)
@@ -66,6 +92,30 @@ void AppListViewDelegate::ActivateAppListItem(
     int event_flags) {
   content::RecordAction(content::UserMetricsAction("AppList_ClickOnApp"));
   static_cast<ChromeAppListItem*>(item)->Activate(event_flags);
+}
+
+void AppListViewDelegate::GetShortcutPathForApp(
+    const std::string& app_id,
+    const base::Callback<void(const base::FilePath&)>& callback) {
+#if defined(OS_WIN)
+  ExtensionService* service = profile_->GetExtensionService();
+  DCHECK(service);
+  const extensions::Extension* extension =
+      service->GetInstalledExtension(app_id);
+  DCHECK(extension);
+
+  base::FilePath app_data_dir(
+      web_app::GetWebAppDataDirectory(profile_->GetPath(),
+                                      extension->id(),
+                                      GURL()));
+
+  web_app::UpdateShortcutInfoAndIconForApp(
+      *extension,
+      profile_,
+      base::Bind(CreateShortcutInWebAppDir, app_data_dir, callback));
+#else
+  callback.Run(base::FilePath());
+#endif
 }
 
 void AppListViewDelegate::StartSearch() {

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -18,6 +19,10 @@ class Profile;
 
 namespace app_list {
 class SearchController;
+}
+
+namespace base {
+class FilePath;
 }
 
 namespace gfx {
@@ -38,6 +43,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   // Overridden from app_list::AppListViewDelegate:
   virtual void SetModel(app_list::AppListModel* model) OVERRIDE;
   virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE;
+  virtual void GetShortcutPathForApp(
+      const std::string& app_id,
+      const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
   virtual void ActivateAppListItem(app_list::AppListItemModel* item,
                                    int event_flags) OVERRIDE;
   virtual void StartSearch() OVERRIDE;

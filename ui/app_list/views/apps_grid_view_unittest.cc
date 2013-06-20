@@ -148,7 +148,7 @@ class AppsGridViewTest : public testing::Test {
 
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
                               translated_to, to, 0);
-    apps_grid_view_->UpdateDrag(view, pointer, drag_event);
+    apps_grid_view_->UpdateDragFromItem(pointer, drag_event);
   }
 
   void SimulateKeyPress(ui::KeyboardCode key_code) {

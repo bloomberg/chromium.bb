@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_win.h"
 
 #include <shlobj.h>
 
@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/util_constants.h"
@@ -137,7 +138,8 @@ std::vector<base::FilePath> MatchingShortcutsForProfileAndExtension(
 bool CreateShortcutsInPaths(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info,
-    const std::vector<base::FilePath>& shortcut_paths) {
+    const std::vector<base::FilePath>& shortcut_paths,
+    std::vector<base::FilePath>* out_filenames) {
   // Ensure web_app_path exists.
   if (!file_util::PathExists(web_app_path) &&
       !file_util::CreateDirectory(web_app_path)) {
@@ -215,6 +217,8 @@ bool CreateShortcutsInPaths(
     success = base::win::CreateOrUpdateShortcutLink(
         shortcut_file, shortcut_properties,
         base::win::SHORTCUT_CREATE_ALWAYS) && success;
+    if (out_filenames)
+      out_filenames->push_back(shortcut_file);
   }
 
   return success;
@@ -286,6 +290,17 @@ void GetShortcutLocationsAndDeleteShortcuts(
 
 namespace web_app {
 
+base::FilePath CreateShortcutInWebAppDir(
+    const base::FilePath& web_app_dir,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  std::vector<base::FilePath> paths;
+  paths.push_back(web_app_dir);
+  std::vector<base::FilePath> out_filenames;
+  CreateShortcutsInPaths(web_app_dir, shortcut_info, paths, &out_filenames);
+  DCHECK_EQ(out_filenames.size(), 1u);
+  return out_filenames[0];
+}
+
 namespace internals {
 
 // Saves |image| to |icon_file| if the file is outdated and refresh shell's
@@ -331,7 +346,8 @@ bool CreatePlatformShortcuts(
   if (shortcut_paths.empty())
     return false;
 
-  if (!CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths))
+  if (!CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths,
+                              NULL))
     return false;
 
   if (pin_to_taskbar) {
@@ -367,7 +383,7 @@ void UpdatePlatformShortcuts(
     GetShortcutLocationsAndDeleteShortcuts(
         web_app_path, shortcut_info.profile_path, old_app_title,
         &was_pinned_to_taskbar, &shortcut_paths);
-    CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths);
+    CreateShortcutsInPaths(web_app_path, shortcut_info, shortcut_paths, NULL);
     // If the shortcut was pinned to the taskbar,
     // GetShortcutLocationsAndDeleteShortcuts will have deleted it. In that
     // case, re-pin it.

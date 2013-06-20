@@ -4,6 +4,8 @@
 
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace app_list {
@@ -19,6 +21,12 @@ AppListTestViewDelegate::~AppListTestViewDelegate() {}
 
 SigninDelegate* AppListTestViewDelegate::GetSigninDelegate() {
   return NULL;
+}
+
+void AppListTestViewDelegate::GetShortcutPathForApp(
+    const std::string& app_id,
+    const base::Callback<void(const base::FilePath&)>& callback) {
+  callback.Run(base::FilePath());
 }
 
 void AppListTestViewDelegate::ActivateAppListItem(AppListItemModel* item,

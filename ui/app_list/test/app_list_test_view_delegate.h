@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_TEST_APP_LIST_TEST_VIEW_DELEGATE_H_
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "ui/app_list/app_list_view_delegate.h"
 
@@ -24,6 +25,9 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   // AppListViewDelegate overrides:
   virtual void SetModel(AppListModel* model) OVERRIDE {}
   virtual SigninDelegate* GetSigninDelegate() OVERRIDE;
+  virtual void GetShortcutPathForApp(
+      const std::string& app_id,
+      const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;
   virtual void ActivateAppListItem(AppListItemModel* item,
                                    int event_flags) OVERRIDE;
   virtual void StartSearch() OVERRIDE {}

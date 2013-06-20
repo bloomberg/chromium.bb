@@ -18,12 +18,20 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "ui/base/dragdrop/drag_source_win.h"
+#endif
+
 namespace views {
 class ButtonListener;
 class DragImageView;
 }
 
 namespace app_list {
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+class SynchronousDrag;
+#endif
 
 namespace test {
 class AppsGridViewTestApi;
@@ -70,11 +78,21 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void InitiateDrag(AppListItemView* view,
                     Pointer pointer,
                     const ui::LocatedEvent& event);
-  void UpdateDrag(AppListItemView* view,
-                  Pointer pointer,
-                  const ui::LocatedEvent& event);
+
+  // Called from AppListItemView when it receives a drag event.
+  void UpdateDragFromItem(Pointer pointer,
+                          const ui::LocatedEvent& event);
+
+  // Called when the user is dragging an app. |point| is in grid view
+  // coordinates.
+  void UpdateDrag(Pointer pointer, const gfx::Point& point);
   void EndDrag(bool cancel);
   bool IsDraggedView(const views::View* view) const;
+
+  void StartSettingUpSynchronousDrag();
+  bool RunSynchronousDrag();
+  void CleanUpSynchronousDrag();
+  void OnGotShortcutPath(const base::FilePath& path);
 
   // Set the drag and drop host for application links.
   void SetDragAndDropHostOfCurrentAppList(
@@ -93,6 +111,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
+  virtual bool GetDropFormats(
+      int* formats,
+      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
+
+  // Stops the timer that triggers a page flip during a drag.
+  void StopPageFlipTimer();
 
   // Get the last grid view which was created.
   static AppsGridView* GetLastGridViewForTest();
@@ -177,7 +203,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                            bool use_page_button_hovering);
 
   // Dispatch the drag and drop update event to the dnd host (if needed).
-  void DispatchDragEventToDragAndDropHost(const ui::LocatedEvent& event);
+  void DispatchDragEventToDragAndDropHost(const gfx::Point& point);
 
   // Starts the page flip timer if |drag_point| is in left/right side page flip
   // zone or is over page switcher.
@@ -229,7 +255,22 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   views::View* selected_view_;
 
   AppListItemView* drag_view_;
-  gfx::Point drag_start_;
+
+  // The point where the drag started in AppListItemView coordinates.
+  gfx::Point drag_view_offset_;
+
+  // The point where the drag started in GridView coordinates.
+  gfx::Point drag_start_grid_view_;
+
+  // The location of |drag_view_| when the drag started.
+  gfx::Point drag_view_start_;
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Created when a drag is started (ie: drag exceeds the drag threshold), but
+  // not Run() until supplied with a shortcut path.
+  scoped_refptr<SynchronousDrag> synchronous_drag_;
+#endif
+
   Pointer drag_pointer_;
   Index drop_target_;
 

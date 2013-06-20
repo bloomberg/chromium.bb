@@ -5,8 +5,13 @@
 #ifndef UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 
+#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
+
+namespace base {
+class FilePath;
+}
 
 namespace gfx {
 class ImageSkia;
@@ -30,6 +35,12 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Gets the SigninDelegate for the app list. Owned by the AppListViewDelegate.
   virtual SigninDelegate* GetSigninDelegate() = 0;
+
+  // Gets a path to a shortcut for the given app. Returns asynchronously as the
+  // shortcut may not exist yet.
+  virtual void GetShortcutPathForApp(
+      const std::string& app_id,
+      const base::Callback<void(const base::FilePath&)>& callback) = 0;
 
   // Invoked when an AppListeItemModelView is activated by click or enter key.
   virtual void ActivateAppListItem(AppListItemModel* item,

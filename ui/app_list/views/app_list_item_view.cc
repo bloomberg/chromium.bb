@@ -14,6 +14,7 @@
 #include "ui/app_list/views/cached_label.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -25,6 +26,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/drag_controller.h"
 
 namespace app_list {
 
@@ -168,6 +170,14 @@ void AppListItemView::OnMouseDragTimer() {
 
 void AppListItemView::Prerender() {
   title_->PaintToBackingImage();
+}
+
+gfx::ImageSkia AppListItemView::GetDragImage() {
+  gfx::Canvas canvas(size(), ui::SCALE_FACTOR_100P, false /* is_opaque */);
+  gfx::Rect bounds(size());
+  canvas.DrawColor(SK_ColorTRANSPARENT);
+  PaintChildren(&canvas);
+  return gfx::ImageSkia(canvas.ExtractImageRep());
 }
 
 void AppListItemView::ItemIconChanged() {
@@ -340,15 +350,20 @@ void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void AppListItemView::OnMouseCaptureLost() {
+  // We don't cancel the dag on mouse capture lost for windows as entering a
+  // synchronous drag causes mouse capture to be lost and pressing escape
+  // dismisses the app list anyway.
+#if !defined(OS_WIN)
   CustomButton::OnMouseCaptureLost();
   apps_grid_view_->EndDrag(true);
   mouse_drag_timer_.Stop();
   SetUIState(UI_STATE_NORMAL);
+#endif
 }
 
 bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
-  apps_grid_view_->UpdateDrag(this, AppsGridView::MOUSE, event);
+  apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, event);
 
   // Shows dragging UI when it's confirmed without waiting for the timer.
   if (ui_state_ != UI_STATE_DRAGGING &&
@@ -370,7 +385,7 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (touch_dragging_) {
-        apps_grid_view_->UpdateDrag(this, AppsGridView::TOUCH, *event);
+        apps_grid_view_->UpdateDragFromItem(AppsGridView::TOUCH, *event);
         event->SetHandled();
       }
       break;

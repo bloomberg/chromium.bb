@@ -9,6 +9,8 @@
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/strings/string_util.h"
@@ -229,6 +231,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE {
     return NULL;
+  }
+
+  virtual void GetShortcutPathForApp(
+      const std::string& app_id,
+      const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE {
   }
 
   virtual void ActivateAppListItem(app_list::AppListItemModel* item,

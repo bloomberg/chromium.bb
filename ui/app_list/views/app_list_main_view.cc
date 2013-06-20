@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
@@ -186,6 +188,16 @@ void AppListMainView::OnItemIconLoaded(IconLoader* loader) {
 void AppListMainView::ActivateApp(AppListItemModel* item, int event_flags) {
   if (delegate_)
     delegate_->ActivateAppListItem(item, event_flags);
+}
+
+void AppListMainView::GetShortcutPathForApp(
+    const std::string& app_id,
+    const base::Callback<void(const base::FilePath&)>& callback) {
+  if (delegate_) {
+    delegate_->GetShortcutPathForApp(app_id, callback);
+    return;
+  }
+  callback.Run(base::FilePath());
 }
 
 void AppListMainView::QueryChanged(SearchBoxView* sender) {
