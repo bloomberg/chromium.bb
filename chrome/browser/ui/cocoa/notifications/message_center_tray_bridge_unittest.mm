@@ -7,7 +7,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "ui/message_center/cocoa/status_item_view.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"

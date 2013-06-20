@@ -5,7 +5,7 @@
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"

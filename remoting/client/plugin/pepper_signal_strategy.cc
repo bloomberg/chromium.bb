@@ -4,7 +4,7 @@
 
 #include "remoting/client/plugin/pepper_signal_strategy.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {

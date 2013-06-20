@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
-#include "base/string_piece.h"
+#include "base/strings/string_piece.h"
 #include "media/audio/audio_parameters.h"
 
 namespace base {
