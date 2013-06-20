@@ -18,9 +18,6 @@ package sync_pb;
 
 // An AutofillProfile.
 message AutofillProfileSpecifics {
-  // User-defined label.
-  optional string label = 1;
-
   optional string guid = 15;
 
   // Contact info.
@@ -42,6 +39,7 @@ message AutofillProfileSpecifics {
   repeated string phone_home_whole_number = 13;
 
   // Deprecated.
+  optional string label = 1 [deprecated=true];
   optional string phone_fax_whole_number = 14 [deprecated=true];
 }
 
@@ -62,4 +60,3 @@ message AutofillSpecifics {
   // optional bytes deprecated_encrypted_credit_card = 5;
   // optional AutofillCreditCardSpecifics deprecated_credit_card = 6;
 }
-

@@ -285,7 +285,6 @@ base::DictionaryValue* AutofillSpecificsToValue(
 base::DictionaryValue* AutofillProfileSpecificsToValue(
     const sync_pb::AutofillProfileSpecifics& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
-  SET_STR(label);
   SET_STR(guid);
 
   SET_STR_REP(name_first);
