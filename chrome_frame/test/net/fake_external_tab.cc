@@ -319,7 +319,10 @@ void FilterDisabledTests() {
     "HTTPSRequestTest.TLSv1Fallback",
     "HTTPSOCSPTest.*",
     "HTTPSEVCRLSetTest.*",
-    "HTTPSCRLSetTest.*"
+    "HTTPSCRLSetTest.*",
+
+    // Chrome Frame doesn't support GetFullRequestHeaders.
+    "URLRequestTest*.*_GetFullRequestHeaders"
   };
 
   const char* ie9_disabled_tests[] = {

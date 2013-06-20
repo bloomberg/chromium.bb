@@ -362,6 +362,13 @@ int HttpNetworkTransaction::Read(IOBuffer* buf, int buf_len,
   return rv;
 }
 
+bool HttpNetworkTransaction::GetFullRequestHeaders(
+    HttpRequestHeaders* headers) const {
+  // TODO(ttuttle): Make sure we've populated request_headers_.
+  *headers = request_headers_;
+  return true;
+}
+
 const HttpResponseInfo* HttpNetworkTransaction::GetResponseInfo() const {
   return ((headers_valid_ && response_.headers.get()) ||
           response_.ssl_info.cert.get() || response_.cert_request_info.get())

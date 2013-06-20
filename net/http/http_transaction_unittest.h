@@ -26,6 +26,7 @@
 #include "net/http/http_response_info.h"
 
 namespace net {
+class HttpRequestHeaders;
 class IOBuffer;
 }
 
@@ -187,6 +188,9 @@ class MockNetworkTransaction
                    const net::CompletionCallback& callback) OVERRIDE;
 
   virtual void StopCaching() OVERRIDE;
+
+  virtual bool GetFullRequestHeaders(
+      net::HttpRequestHeaders* headers) const OVERRIDE;
 
   virtual void DoneReading() OVERRIDE;
 

@@ -250,6 +250,17 @@ void CheckSSLInfo(const SSLInfo& ssl_info) {
   EXPECT_NE(0, cipher_suite);
 }
 
+void CheckFullRequestHeaders(const HttpRequestHeaders& headers,
+                             const GURL& host_url) {
+  std::string sent_value;
+
+  EXPECT_TRUE(headers.GetHeader("Host", &sent_value));
+  EXPECT_EQ(GetHostAndOptionalPort(host_url), sent_value);
+
+  EXPECT_TRUE(headers.GetHeader("Connection", &sent_value));
+  EXPECT_EQ("keep-alive", sent_value);
+}
+
 bool FingerprintsEqual(const HashValueVector& a, const HashValueVector& b) {
   size_t size = a.size();
 
@@ -617,6 +628,9 @@ TEST_F(URLRequestTest, AboutBlankTest) {
     EXPECT_EQ(d.bytes_received(), 0);
     EXPECT_EQ("", r.GetSocketAddress().host());
     EXPECT_EQ(0, r.GetSocketAddress().port());
+
+    HttpRequestHeaders headers;
+    EXPECT_FALSE(r.GetFullRequestHeaders(&headers));
   }
 }
 
@@ -657,6 +671,9 @@ TEST_F(URLRequestTest, DataURLImageTest) {
     EXPECT_EQ(d.bytes_received(), 911);
     EXPECT_EQ("", r.GetSocketAddress().host());
     EXPECT_EQ(0, r.GetSocketAddress().port());
+
+    HttpRequestHeaders headers;
+    EXPECT_FALSE(r.GetFullRequestHeaders(&headers));
   }
 }
 
@@ -683,6 +700,9 @@ TEST_F(URLRequestTest, FileTest) {
     EXPECT_EQ(d.bytes_received(), static_cast<int>(file_size));
     EXPECT_EQ("", r.GetSocketAddress().host());
     EXPECT_EQ(0, r.GetSocketAddress().port());
+
+    HttpRequestHeaders headers;
+    EXPECT_FALSE(r.GetFullRequestHeaders(&headers));
   }
 }
 
@@ -699,7 +719,7 @@ TEST_F(URLRequestTest, FileTestCancel) {
     EXPECT_TRUE(r.is_pending());
     r.Cancel();
   }
-  // Async cancelation should be safe even when URLRequest has been already
+  // Async cancellation should be safe even when URLRequest has been already
   // destroyed.
   base::MessageLoop::current()->RunUntilIdle();
 }
@@ -2817,6 +2837,44 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateOnAuthRequiredSyncNoAction) {
     GURL url(test_server_.GetURL("auth-basic"));
     URLRequest r(url, &d, &context);
     r.Start();
+
+    base::MessageLoop::current()->Run();
+
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(0, r.status().error());
+    EXPECT_EQ(200, r.GetResponseCode());
+    EXPECT_TRUE(d.auth_required_called());
+    EXPECT_EQ(1, network_delegate.created_requests());
+    EXPECT_EQ(0, network_delegate.destroyed_requests());
+  }
+  EXPECT_EQ(1, network_delegate.destroyed_requests());
+}
+
+TEST_F(URLRequestTestHTTP,
+    NetworkDelegateOnAuthRequiredSyncNoAction_GetFullRequestHeaders) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  d.set_credentials(AuthCredentials(kUser, kSecret));
+
+  {
+    GURL url(test_server_.GetURL("auth-basic"));
+    URLRequest r(url, &d, &context);
+    r.Start();
+
+    {
+      HttpRequestHeaders headers;
+      EXPECT_TRUE(r.GetFullRequestHeaders(&headers));
+      EXPECT_FALSE(headers.HasHeader("Authorization"));
+    }
+
     base::MessageLoop::current()->Run();
 
     EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
@@ -2859,6 +2917,47 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateOnAuthRequiredSyncSetAuth) {
     EXPECT_FALSE(d.auth_required_called());
     EXPECT_EQ(1, network_delegate.created_requests());
     EXPECT_EQ(0, network_delegate.destroyed_requests());
+  }
+  EXPECT_EQ(1, network_delegate.destroyed_requests());
+}
+
+// Same as above, but also tests that GetFullRequestHeaders returns the proper
+// headers (for the first or second request) when called at the proper times.
+TEST_F(URLRequestTestHTTP,
+    NetworkDelegateOnAuthRequiredSyncSetAuth_GetFullRequestHeaders) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  BlockingNetworkDelegate network_delegate(
+      BlockingNetworkDelegate::SYNCHRONOUS);
+  network_delegate.set_block_on(BlockingNetworkDelegate::ON_AUTH_REQUIRED);
+  network_delegate.set_auth_retval(
+      NetworkDelegate::AUTH_REQUIRED_RESPONSE_SET_AUTH);
+
+  network_delegate.set_auth_credentials(AuthCredentials(kUser, kSecret));
+
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  {
+    GURL url(test_server_.GetURL("auth-basic"));
+    URLRequest r(url, &d, &context);
+    r.Start();
+    base::MessageLoop::current()->Run();
+
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(0, r.status().error());
+    EXPECT_EQ(200, r.GetResponseCode());
+    EXPECT_FALSE(d.auth_required_called());
+    EXPECT_EQ(1, network_delegate.created_requests());
+    EXPECT_EQ(0, network_delegate.destroyed_requests());
+
+    {
+      HttpRequestHeaders headers;
+      EXPECT_TRUE(r.GetFullRequestHeaders(&headers));
+      EXPECT_TRUE(headers.HasHeader("Authorization"));
+    }
   }
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 }
@@ -3248,6 +3347,35 @@ TEST_F(URLRequestTestHTTP, GetTest) {
               r.GetSocketAddress().host());
     EXPECT_EQ(test_server_.host_port_pair().port(),
               r.GetSocketAddress().port());
+  }
+}
+
+TEST_F(URLRequestTestHTTP, GetTest_GetFullRequestHeaders) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  {
+    GURL test_url(test_server_.GetURL(std::string()));
+    URLRequest r(test_url, &d, &default_context_);
+
+    HttpRequestHeaders headers;
+    EXPECT_FALSE(r.GetFullRequestHeaders(&headers));
+
+    r.Start();
+    EXPECT_TRUE(r.is_pending());
+
+    base::MessageLoop::current()->Run();
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_FALSE(d.received_data_before_response());
+    EXPECT_NE(0, d.bytes_received());
+    EXPECT_EQ(test_server_.host_port_pair().host(),
+              r.GetSocketAddress().host());
+    EXPECT_EQ(test_server_.host_port_pair().port(),
+              r.GetSocketAddress().port());
+
+    EXPECT_TRUE(d.have_full_request_headers());
+    CheckFullRequestHeaders(d.full_request_headers(), test_url);
   }
 }
 
@@ -3999,8 +4127,9 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect) {
   TestDelegate d;
   {
     d.set_quit_on_redirect(true);
-    URLRequest req(
-        test_server_.GetURL("files/redirect-test.html"), &d, &default_context_);
+    GURL test_url(test_server_.GetURL("files/redirect-test.html"));
+    URLRequest req(test_url, &d, &default_context_);
+
     req.Start();
     base::MessageLoop::current()->Run();
 
@@ -4010,6 +4139,48 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect) {
     base::MessageLoop::current()->Run();
 
     EXPECT_EQ(1, d.response_started_count());
+    EXPECT_FALSE(d.received_data_before_response());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, req.status().status());
+
+    base::FilePath path;
+    PathService::Get(base::DIR_SOURCE_ROOT, &path);
+    path = path.Append(FILE_PATH_LITERAL("net"));
+    path = path.Append(FILE_PATH_LITERAL("data"));
+    path = path.Append(FILE_PATH_LITERAL("url_request_unittest"));
+    path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
+
+    std::string contents;
+    EXPECT_TRUE(file_util::ReadFileToString(path, &contents));
+    EXPECT_EQ(contents, d.data_received());
+  }
+}
+
+TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  {
+    d.set_quit_on_redirect(true);
+    GURL test_url(test_server_.GetURL("files/redirect-test.html"));
+    URLRequest req(test_url, &d, &default_context_);
+
+    EXPECT_FALSE(d.have_full_request_headers());
+
+    req.Start();
+    base::MessageLoop::current()->Run();
+
+    EXPECT_EQ(1, d.received_redirect_count());
+    EXPECT_TRUE(d.have_full_request_headers());
+    CheckFullRequestHeaders(d.full_request_headers(), test_url);
+    d.ClearFullRequestHeaders();
+
+    req.FollowDeferredRedirect();
+    base::MessageLoop::current()->Run();
+
+    GURL target_url(test_server_.GetURL("files/with-headers.html"));
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_TRUE(d.have_full_request_headers());
+    CheckFullRequestHeaders(d.full_request_headers(), target_url);
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(URLRequestStatus::SUCCESS, req.status().status());
 

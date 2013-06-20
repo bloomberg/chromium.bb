@@ -325,6 +325,11 @@ int MockNetworkTransaction::Read(net::IOBuffer* buf, int buf_len,
 
 void MockNetworkTransaction::StopCaching() {}
 
+bool MockNetworkTransaction::GetFullRequestHeaders(
+    net::HttpRequestHeaders* headers) const {
+  return false;
+}
+
 void MockNetworkTransaction::DoneReading() {
   if (transaction_factory_.get())
     transaction_factory_->TransactionDoneReading();
