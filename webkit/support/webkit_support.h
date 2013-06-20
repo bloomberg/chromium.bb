@@ -30,8 +30,6 @@ class WebFileSystemCallbacks;
 class WebFrame;
 class WebGamepads;
 class WebLayerTreeView;
-class WebMediaPlayer;
-class WebMediaPlayerClient;
 class WebPlugin;
 class WebStorageNamespace;
 class WebString;
@@ -41,10 +39,6 @@ class WebURLResponse;
 class WebView;
 struct WebPluginParams;
 struct WebURLError;
-}
-
-namespace webkit_media {
-class MediaStreamClient;
 }
 
 // This package provides functions used by DumpRenderTree/chromium.
@@ -83,22 +77,6 @@ WebKit::Platform* GetWebKitPlatformSupport();
 // This is used by WebFrameClient::createPlugin().
 WebKit::WebPlugin* CreateWebPlugin(WebKit::WebFrame* frame,
                                    const WebKit::WebPluginParams& params);
-
-// TODO(wjia): remove CreateMediaPlayer once
-// https://bugs.webkit.org/show_bug.cgi?id=113633 is fixed, since it has been
-// moved into webkit/mocks.
-// This is used by WebFrameClient::createMediaPlayer().
-WebKit::WebMediaPlayer* CreateMediaPlayer(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURL& url,
-    WebKit::WebMediaPlayerClient* client,
-    webkit_media::MediaStreamClient* media_stream_client);
-
-// This is used by WebFrameClient::createMediaPlayer().
-WebKit::WebMediaPlayer* CreateMediaPlayer(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURL& url,
-    WebKit::WebMediaPlayerClient* client);
 
 // This is used by WebFrameClient::createApplicationCacheHost().
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(

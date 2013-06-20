@@ -1,12 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/mocks/test_media_stream_client.h"
+#include "content/shell/renderer/shell_media_stream_client.h"
 
 #include "googleurl/src/gurl.h"
-#include "media/base/media_log.h"
-#include "media/base/pipeline.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -38,18 +36,18 @@ bool IsMockMediaStreamWithVideo(const WebURL& url) {
 
 }  // namespace
 
-namespace webkit_glue {
+namespace content {
 
-TestMediaStreamClient::TestMediaStreamClient() {}
+ShellMediaStreamClient::ShellMediaStreamClient() {}
 
-TestMediaStreamClient::~TestMediaStreamClient() {}
+ShellMediaStreamClient::~ShellMediaStreamClient() {}
 
-bool TestMediaStreamClient::IsMediaStream(const GURL& url) {
+bool ShellMediaStreamClient::IsMediaStream(const GURL& url) {
   return IsMockMediaStreamWithVideo(url);
 }
 
 scoped_refptr<webkit_media::VideoFrameProvider>
-TestMediaStreamClient::GetVideoFrameProvider(
+ShellMediaStreamClient::GetVideoFrameProvider(
     const GURL& url,
     const base::Closure& error_cb,
     const webkit_media::VideoFrameProvider::RepaintCB& repaint_cb) {
@@ -64,8 +62,8 @@ TestMediaStreamClient::GetVideoFrameProvider(
 }
 
 scoped_refptr<webkit_media::MediaStreamAudioRenderer>
-TestMediaStreamClient::GetAudioRenderer(const GURL& url) {
+ShellMediaStreamClient::GetAudioRenderer(const GURL& url) {
   return NULL;
 }
 
-}  // namespace webkit_glue
+}  // namespace content

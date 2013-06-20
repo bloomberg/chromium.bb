@@ -29,11 +29,8 @@ namespace WebTestRunner {
 class WebTestProxyBase;
 }
 
-namespace webkit_glue {
-class TestMediaStreamClient;
-}
-
 namespace content {
+class ShellMediaStreamClient;
 
 // This is the renderer side of the webkit test runner.
 class WebKitTestRunner : public RenderViewObserver,
@@ -137,7 +134,7 @@ class WebKitTestRunner : public RenderViewObserver,
 
   bool focus_on_next_commit_;
 
-  scoped_ptr<webkit_glue::TestMediaStreamClient> test_media_stream_client_;
+  scoped_ptr<ShellMediaStreamClient> shell_media_stream_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };

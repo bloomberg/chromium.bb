@@ -24,6 +24,7 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/webkit_test_helpers.h"
+#include "content/shell/renderer/shell_media_stream_client.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
@@ -60,7 +61,6 @@
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/mocks/test_media_stream_client.h"
 #include "webkit/renderer/media/webmediaplayer_impl.h"
 #include "webkit/renderer/media/webmediaplayer_ms.h"
 #include "webkit/renderer/media/webmediaplayer_params.h"
@@ -521,17 +521,16 @@ void WebKitTestRunner::captureHistoryForWindow(
 WebMediaPlayer* WebKitTestRunner::createWebMediaPlayer(
     WebFrame* frame, const WebURL& url, WebMediaPlayerClient* client)
 {
-  if (!test_media_stream_client_) {
-    test_media_stream_client_.reset(
-        new webkit_glue::TestMediaStreamClient());
+  if (!shell_media_stream_client_) {
+    shell_media_stream_client_.reset(new ShellMediaStreamClient());
   }
 
-  if (test_media_stream_client_->IsMediaStream(url)) {
+  if (shell_media_stream_client_->IsMediaStream(url)) {
     return new webkit_media::WebMediaPlayerMS(
         frame,
         client,
         base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-        test_media_stream_client_.get(),
+        shell_media_stream_client_.get(),
         new media::MediaLog());
   }
 

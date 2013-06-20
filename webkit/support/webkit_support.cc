@@ -28,8 +28,6 @@
 #include "base/time.h"
 #include "googleurl/src/url_util.h"
 #include "grit/webkit_chromium_resources.h"
-#include "media/base/filter_collection.h"
-#include "media/base/media_log.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -63,10 +61,6 @@
 #include "webkit/plugins/webplugininfo.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/renderer/media/media_stream_client.h"
-#include "webkit/renderer/media/webmediaplayer_impl.h"
-#include "webkit/renderer/media/webmediaplayer_ms.h"
-#include "webkit/renderer/media/webmediaplayer_params.h"
 #include "webkit/support/platform_support.h"
 #include "webkit/support/simple_appcache_system.h"
 #include "webkit/support/simple_database_system.h"
@@ -79,7 +73,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/test/test_support_android.h"
-#include "webkit/support/test_stream_texture_factory_android.h"
 #endif
 
 using WebKit::WebCString;
@@ -87,7 +80,6 @@ using WebKit::WebDevToolsAgentClient;
 using WebKit::WebFileSystem;
 using WebKit::WebFileSystemCallbacks;
 using WebKit::WebFrame;
-using WebKit::WebMediaPlayerClient;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
 using WebKit::WebString;
@@ -193,19 +185,9 @@ class TestEnvironment {
   }
 #endif
 
-  scoped_refptr<base::MessageLoopProxy> GetMediaThreadMessageLoopProxy() {
-    if (!media_thread_) {
-      media_thread_.reset(new base::Thread("Media"));
-      CHECK(media_thread_->Start());
-    }
-    return media_thread_->message_loop_proxy();
-  }
-
  private:
   scoped_ptr<MessageLoopType> main_message_loop_;
   scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
-
-  scoped_ptr<base::Thread> media_thread_;
 
 #if defined(OS_ANDROID)
   base::FilePath mock_current_directory_;
@@ -344,41 +326,6 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
   new_params.mimeType = WebString::fromUTF8(mime_types.front());
   return new WebPluginImplWithPageDelegate(
       frame, new_params, plugins.front().path);
-}
-
-WebKit::WebMediaPlayer* CreateMediaPlayer(
-    WebFrame* frame,
-    const WebURL& url,
-    WebMediaPlayerClient* client,
-    webkit_media::MediaStreamClient* media_stream_client) {
-  if (media_stream_client && media_stream_client->IsMediaStream(url)) {
-    return new webkit_media::WebMediaPlayerMS(
-        frame,
-        client,
-        base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-        media_stream_client,
-        new media::MediaLog());
-  }
-
-#if defined(OS_ANDROID)
-  return NULL;
-#else
-  webkit_media::WebMediaPlayerParams params(
-      test_environment->GetMediaThreadMessageLoopProxy(),
-      NULL, NULL, new media::MediaLog());
-  return new webkit_media::WebMediaPlayerImpl(
-      frame,
-      client,
-      base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
-      params);
-#endif
-}
-
-WebKit::WebMediaPlayer* CreateMediaPlayer(
-    WebFrame* frame,
-    const WebURL& url,
-    WebMediaPlayerClient* client) {
-  return CreateMediaPlayer(frame, url, client, NULL);
 }
 
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(

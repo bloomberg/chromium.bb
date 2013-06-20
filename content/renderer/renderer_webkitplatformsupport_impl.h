@@ -104,6 +104,10 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       double sample_rate, WebKit::WebAudioDevice::RenderCallback* callback,
       const WebKit::WebString& input_device_id);
 
+  virtual bool loadAudioResource(
+      WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
+      size_t data_size, double sample_rate);
+
   virtual WebKit::WebContentDecryptionModule* createContentDecryptionModule(
       const WebKit::WebString& key_system);
 

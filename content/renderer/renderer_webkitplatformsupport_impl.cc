@@ -57,6 +57,7 @@
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/renderer/media/audio_decoder.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
@@ -730,6 +731,35 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
 
   return new RendererWebAudioDeviceImpl(params, callback, session_id);
 }
+
+#if defined(OS_ANDROID)
+static void RunWebAudioMediaCodec(base::SharedMemoryHandle encoded_data_handle,
+                                  base::FileDescriptor pcm_output,
+                                  uint32_t data_size) {
+  RenderThread::Get()->Send(new ViewHostMsg_RunWebAudioMediaCodec(
+      encoded_data_handle, pcm_output, data_size));
+}
+
+bool RendererWebKitPlatformSupportImpl::loadAudioResource(
+    WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
+    size_t data_size, double sample_rate) {
+  return webkit_media::DecodeAudioFileData(
+      destination_bus,
+      audio_file_data,
+      data_size,
+      sample_rate,
+      base::Bind(&RunWebAudioMediaCodec));
+}
+#else
+bool RendererWebKitPlatformSupportImpl::loadAudioResource(
+    WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
+    size_t data_size, double sample_rate) {
+  return webkit_media::DecodeAudioFileData(destination_bus,
+                                           audio_file_data,
+                                           data_size,
+                                           sample_rate);
+}
+#endif  // defined(OS_ANDROID)
 
 //------------------------------------------------------------------------------
 

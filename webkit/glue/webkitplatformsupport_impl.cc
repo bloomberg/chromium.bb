@@ -49,7 +49,6 @@
 #include "webkit/glue/weburlloader_impl.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/webplugininfo.h"
-#include "webkit/renderer/media/audio_decoder.h"
 
 using WebKit::WebAudioBus;
 using WebKit::WebCookie;
@@ -112,14 +111,6 @@ class MemoryUsageCache {
 
   base::Lock lock_;
 };
-
-#if defined(OS_ANDROID)
-void NullRunWebAudioMediaCodec(
-    base::SharedMemoryHandle encoded_data_handle,
-    base::FileDescriptor pcm_output,
-    size_t data_size) {
-}
-#endif
 
 }  // anonymous namespace
 
@@ -692,25 +683,6 @@ WebData WebKitPlatformSupportImpl::loadResource(const char* name) {
   return WebData();
 }
 
-bool WebKitPlatformSupportImpl::loadAudioResource(
-    WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
-    size_t data_size, double sample_rate) {
-#if !defined(OS_ANDROID)
-  return webkit_media::DecodeAudioFileData(destination_bus,
-                                           audio_file_data,
-                                           data_size,
-                                           sample_rate);
-#else
-  webkit_media::WebAudioMediaCodecRunner runner = GetWebAudioMediaCodecRunner();
-  return webkit_media::DecodeAudioFileData(
-      destination_bus,
-      audio_file_data,
-      data_size,
-      sample_rate,
-      runner);
-#endif
-}
-
 WebString WebKitPlatformSupportImpl::queryLocalizedString(
     WebLocalizedString::Name name) {
   int message_id = ToMessageID(name);
@@ -918,12 +890,5 @@ void WebKitPlatformSupportImpl::ResumeSharedTimer() {
         shared_timer_fire_time_ - monotonicallyIncreasingTime());
   }
 }
-
-#if defined(OS_ANDROID)
-webkit_media::WebAudioMediaCodecRunner
-    WebKitPlatformSupportImpl::GetWebAudioMediaCodecRunner() {
-  return base::Bind(&NullRunWebAudioMediaCodec);
-}
-#endif
 
 }  // namespace webkit_glue

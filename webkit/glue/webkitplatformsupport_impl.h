@@ -15,10 +15,6 @@
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue_export.h"
 
-#if defined(OS_ANDROID)
-#include "webkit/renderer/media/audio_decoder.h"
-#endif
-
 namespace base {
 class MessageLoop;
 }
@@ -93,9 +89,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
       const unsigned long long* arg_values,
       unsigned char flags);
   virtual WebKit::WebData loadResource(const char* name);
-  virtual bool loadAudioResource(
-      WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
-      size_t data_size, double sample_rate);
   virtual WebKit::WebString queryLocalizedString(
       WebKit::WebLocalizedString::Name name);
   virtual WebKit::WebString queryLocalizedString(
@@ -143,10 +136,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   void ResumeSharedTimer();
   virtual void OnStartSharedTimer(base::TimeDelta delay) {}
 
-#if defined(OS_ANDROID)
-  virtual webkit_media::WebAudioMediaCodecRunner
-      GetWebAudioMediaCodecRunner();
-#endif
  private:
   void DoTimeout() {
     if (shared_timer_func_ && !shared_timer_suspended_)
