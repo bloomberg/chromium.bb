@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/pending_task.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -79,16 +80,16 @@ void RunBlockingPoolTask() {
 
     TaskObserver task_observer;
     base::MessageLoop::current()->AddTaskObserver(&task_observer);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     base::MessageLoop::current()->RemoveTaskObserver(&task_observer);
     if (!task_observer.posted())
       break;
   }
 }
 
-void RunAndQuit(const base::Closure& closure) {
+void RunAndQuit(base::RunLoop* run_loop, const base::Closure& closure) {
   closure.Run();
-  base::MessageLoop::current()->Quit();
+  run_loop->Quit();
 }
 
 bool WriteStringToFile(const base::FilePath& file_path,

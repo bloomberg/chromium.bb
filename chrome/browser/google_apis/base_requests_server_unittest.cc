@@ -7,8 +7,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/values.h"
+#include "base/run_loop.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/task_util.h"
@@ -85,19 +84,22 @@ class BaseRequestsServerTest : public testing::Test {
 TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   base::FilePath temp_file;
-  DownloadFileRequest* request = new DownloadFileRequest(
-      request_sender_.get(),
-      request_context_getter_.get(),
-      CreateComposedCallback(
-          base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&result_code, &temp_file)),
-      GetContentCallback(),
-      ProgressCallback(),
-      test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
-      GetTestCachedFilePath(
-          base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    DownloadFileRequest* request = new DownloadFileRequest(
+        request_sender_.get(),
+        request_context_getter_.get(),
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&result_code, &temp_file)),
+        GetContentCallback(),
+        ProgressCallback(),
+        test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
+        GetTestCachedFilePath(
+            base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   std::string contents;
   file_util::ReadFileToString(temp_file, &contents);
@@ -117,20 +119,22 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
 TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   base::FilePath temp_file;
-  DownloadFileRequest* request = new DownloadFileRequest(
-      request_sender_.get(),
-      request_context_getter_.get(),
-      CreateComposedCallback(
-          base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&result_code, &temp_file)),
-      GetContentCallback(),
-      ProgressCallback(),
-      test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
-      GetTestCachedFilePath(
-          base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
-
+  {
+    base::RunLoop run_loop;
+    DownloadFileRequest* request = new DownloadFileRequest(
+        request_sender_.get(),
+        request_context_getter_.get(),
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&result_code, &temp_file)),
+        GetContentCallback(),
+        ProgressCallback(),
+        test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
+        GetTestCachedFilePath(
+            base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
   EXPECT_EQ("/files/chromeos/gdata/no-such-file.txt",

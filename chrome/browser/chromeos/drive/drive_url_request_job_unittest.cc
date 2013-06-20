@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -156,14 +156,17 @@ class DriveURLRequestJobTest : public testing::Test {
         worker_thread->message_loop_proxy()));
     int error = net::ERR_FAILED;
     scoped_ptr<ResourceEntry> entry;
-    reader->Initialize(
-        file_path,
-        net::HttpByteRange(),
-        google_apis::CreateComposedCallback(
-            base::Bind(&google_apis::test_util::RunAndQuit),
-            google_apis::test_util::CreateCopyResultCallback(
-                &error, &entry)));
-    base::MessageLoop::current()->Run();
+    {
+      base::RunLoop run_loop;
+      reader->Initialize(
+          file_path,
+          net::HttpByteRange(),
+          google_apis::test_util::CreateQuitCallback(
+              &run_loop,
+              google_apis::test_util::CreateCopyResultCallback(
+                  &error, &entry)));
+      run_loop.Run();
+    }
     if (error != net::OK || !entry)
       return false;
 
@@ -197,7 +200,7 @@ TEST_F(DriveURLRequestJobTest, NonGetMethod) {
   request.set_method("POST");  // Set non "GET" method.
   request.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_METHOD_NOT_SUPPORTED, request.status().error());
@@ -214,7 +217,7 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
         url_request_context_.get(), test_network_delegate_.get());
     request.Start();
 
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
     // It looks weird, but the mime type for the "File 1.txt" is "audio/mpeg"
@@ -239,7 +242,7 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
         url_request_context_.get(), test_network_delegate_.get());
     request.Start();
 
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
     std::string mime_type;
@@ -261,7 +264,7 @@ TEST_F(DriveURLRequestJobTest, HostedDocument) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
   // Make sure that a hosted document triggers redirection.
@@ -276,7 +279,7 @@ TEST_F(DriveURLRequestJobTest, RootDirectory) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_FAILED, request.status().error());
@@ -288,7 +291,7 @@ TEST_F(DriveURLRequestJobTest, Directory) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_FAILED, request.status().error());
@@ -300,7 +303,7 @@ TEST_F(DriveURLRequestJobTest, NonExistingFile) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request.status().error());
@@ -312,7 +315,7 @@ TEST_F(DriveURLRequestJobTest, WrongFormat) {
       url_request_context_.get(), test_network_delegate_.get());
   request.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_INVALID_URL, request.status().error());
@@ -327,7 +330,7 @@ TEST_F(DriveURLRequestJobTest, Cancel) {
   request.Start();
   request.Cancel();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(net::URLRequestStatus::CANCELED, request.status().status());
 }
@@ -345,7 +348,7 @@ TEST_F(DriveURLRequestJobTest, RangeHeader) {
       "Range", "bytes=3-5", false /* overwrite */);
   request.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
 
@@ -368,7 +371,7 @@ TEST_F(DriveURLRequestJobTest, WrongRangeHeader) {
       "Range", "Wrong Range Header Value", false /* overwrite */);
   request.Start();
 
-  base::MessageLoop::current()->Run();
+  base::RunLoop().Run();
 
   EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, request.status().error());

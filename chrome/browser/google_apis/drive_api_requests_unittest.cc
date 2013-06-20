@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/auth_service.h"
@@ -13,7 +13,6 @@
 #include "chrome/browser/google_apis/drive_api_requests.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/request_sender.h"
-#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -318,15 +317,18 @@ TEST_F(DriveApiRequestsTest, GetAboutRequest_ValidJson) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AboutResource> about_resource;
 
-  GetAboutRequest* request = new GetAboutRequest(
-      request_sender_.get(),
-      request_context_getter_.get(),
-      *url_generator_,
-      CreateComposedCallback(
-          base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&error, &about_resource)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    GetAboutRequest* request = new GetAboutRequest(
+        request_sender_.get(),
+        request_context_getter_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &about_resource)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -350,15 +352,18 @@ TEST_F(DriveApiRequestsTest, GetAboutRequest_InvalidJson) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<AboutResource> about_resource;
 
-  GetAboutRequest* request = new GetAboutRequest(
-      request_sender_.get(),
-      request_context_getter_.get(),
-      *url_generator_,
-      CreateComposedCallback(
-          base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&error, &about_resource)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    GetAboutRequest* request = new GetAboutRequest(
+        request_sender_.get(),
+        request_context_getter_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &about_resource)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   // "parse error" should be returned, and the about resource should be NULL.
   EXPECT_EQ(GDATA_PARSE_ERROR, error);
@@ -375,15 +380,18 @@ TEST_F(DriveApiRequestsTest, GetApplistRequest) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result;
 
-  GetApplistRequest* request = new GetApplistRequest(
-      request_sender_.get(),
-      request_context_getter_.get(),
-      *url_generator_,
-      CreateComposedCallback(
-          base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&error, &result)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    GetApplistRequest* request = new GetApplistRequest(
+        request_sender_.get(),
+        request_context_getter_.get(),
+        *url_generator_,
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &result)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -399,18 +407,21 @@ TEST_F(DriveApiRequestsTest, GetChangelistRequest) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result;
 
-  GetChangelistRequest* request = new GetChangelistRequest(
-      request_sender_.get(),
-      request_context_getter_.get(),
-      *url_generator_,
-      true,  // include deleted
-      100,  // start changestamp
-      500,  // max results
-      CreateComposedCallback(
-          base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&error, &result)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    GetChangelistRequest* request = new GetChangelistRequest(
+        request_sender_.get(),
+        request_context_getter_.get(),
+        *url_generator_,
+        true,  // include deleted
+        100,  // start changestamp
+        500,  // max results
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &result)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -427,17 +438,20 @@ TEST_F(DriveApiRequestsTest, GetFilelistRequest) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result;
 
-  GetFilelistRequest* request = new GetFilelistRequest(
-      request_sender_.get(),
-      request_context_getter_.get(),
-      *url_generator_,
-      "\"abcde\" in parents",
-      50,  // max results
-      CreateComposedCallback(
-          base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&error, &result)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    GetFilelistRequest* request = new GetFilelistRequest(
+        request_sender_.get(),
+        request_context_getter_.get(),
+        *url_generator_,
+        "\"abcde\" in parents",
+        50,  // max results
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &result)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -454,16 +468,19 @@ TEST_F(DriveApiRequestsTest, ContinueGetFileListRequest) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result;
 
-  drive::ContinueGetFileListRequest* request =
-      new drive::ContinueGetFileListRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          test_server_.GetURL("/continue/get/file/list"),
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &result)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::ContinueGetFileListRequest* request =
+        new drive::ContinueGetFileListRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            test_server_.GetURL("/continue/get/file/list"),
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &result)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
@@ -480,18 +497,21 @@ TEST_F(DriveApiRequestsTest, CreateDirectoryRequest) {
   scoped_ptr<FileResource> file_resource;
 
   // Create "new directory" in the root directory.
-  drive::CreateDirectoryRequest* request =
-      new drive::CreateDirectoryRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          "root",
-          "new directory",
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &file_resource)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::CreateDirectoryRequest* request =
+        new drive::CreateDirectoryRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            "root",
+            "new directory",
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &file_resource)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -522,18 +542,21 @@ TEST_F(DriveApiRequestsTest, RenameResourceRequest) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
 
   // Create "new directory" in the root directory.
-  drive::RenameResourceRequest* request =
-      new drive::RenameResourceRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          "resource_id",
-          "new name",
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::RenameResourceRequest* request =
+        new drive::RenameResourceRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            "resource_id",
+            "new name",
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_PATCH, http_request_.method);
@@ -557,18 +580,21 @@ TEST_F(DriveApiRequestsTest, TouchResourceRequest) {
       {2013, 7, 0, 19, 15, 59, 13, 123};
 
   // Touch a file with |resource_id|.
-  drive::TouchResourceRequest* request = new drive::TouchResourceRequest(
-      request_sender_.get(),
-      request_context_getter_.get(),
-      *url_generator_,
-      "resource_id",
-      base::Time::FromUTCExploded(kModifiedDate),
-      base::Time::FromUTCExploded(kLastViewedByMeDate),
-      CreateComposedCallback(
-          base::Bind(&test_util::RunAndQuit),
-          test_util::CreateCopyResultCallback(&error, &file_resource)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::TouchResourceRequest* request = new drive::TouchResourceRequest(
+        request_sender_.get(),
+        request_context_getter_.get(),
+        *url_generator_,
+        "resource_id",
+        base::Time::FromUTCExploded(kModifiedDate),
+        base::Time::FromUTCExploded(kLastViewedByMeDate),
+        test_util::CreateQuitCallback(
+            &run_loop,
+            test_util::CreateCopyResultCallback(&error, &file_resource)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_PATCH, http_request_.method);
@@ -593,19 +619,22 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest) {
   scoped_ptr<FileResource> file_resource;
 
   // Copy the file to a new file named "new name".
-  drive::CopyResourceRequest* request =
-      new drive::CopyResourceRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          "resource_id",
-          "parent_resource_id",
-          "new name",
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &file_resource)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::CopyResourceRequest* request =
+        new drive::CopyResourceRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            "resource_id",
+            "parent_resource_id",
+            "new name",
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &file_resource)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -629,19 +658,22 @@ TEST_F(DriveApiRequestsTest, CopyResourceRequest_EmptyParentResourceId) {
   scoped_ptr<FileResource> file_resource;
 
   // Copy the file to a new file named "new name".
-  drive::CopyResourceRequest* request =
-      new drive::CopyResourceRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          "resource_id",
-          std::string(),  // parent resource id.
-          "new name",
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &file_resource)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::CopyResourceRequest* request =
+        new drive::CopyResourceRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            "resource_id",
+            std::string(),  // parent resource id.
+            "new name",
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &file_resource)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -662,17 +694,20 @@ TEST_F(DriveApiRequestsTest, TrashResourceRequest) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
 
   // Trash a resource with the given resource id.
-  drive::TrashResourceRequest* request =
-      new drive::TrashResourceRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          "resource_id",
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::TrashResourceRequest* request =
+        new drive::TrashResourceRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            "resource_id",
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -690,18 +725,21 @@ TEST_F(DriveApiRequestsTest, InsertResourceRequest) {
 
   // Add a resource with "resource_id" to a directory with
   // "parent_resource_id".
-  drive::InsertResourceRequest* request =
-      new drive::InsertResourceRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          "parent_resource_id",
-          "resource_id",
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::InsertResourceRequest* request =
+        new drive::InsertResourceRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            "parent_resource_id",
+            "resource_id",
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(net::test_server::METHOD_POST, http_request_.method);
@@ -718,18 +756,21 @@ TEST_F(DriveApiRequestsTest, DeleteResourceRequest) {
 
   // Remove a resource with "resource_id" from a directory with
   // "parent_resource_id".
-  drive::DeleteResourceRequest* request =
-      new drive::DeleteResourceRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          "parent_resource_id",
-          "resource_id",
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::DeleteResourceRequest* request =
+        new drive::DeleteResourceRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            "parent_resource_id",
+            "resource_id",
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_NO_CONTENT, error);
   EXPECT_EQ(net::test_server::METHOD_DELETE, http_request_.method);
@@ -753,20 +794,23 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
 
   // Initiate uploading a new file to the directory with
   // "parent_resource_id".
-  drive::InitiateUploadNewFileRequest* request =
-      new drive::InitiateUploadNewFileRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          kTestContentType,
-          kTestContent.size(),
-          "parent_resource_id",  // The resource id of the parent directory.
-          "new file title",  // The title of the file being uploaded.
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &upload_url)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::InitiateUploadNewFileRequest* request =
+        new drive::InitiateUploadNewFileRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            kTestContentType,
+            kTestContent.size(),
+            "parent_resource_id",  // The resource id of the parent directory.
+            "new file title",  // The title of the file being uploaded.
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
@@ -790,22 +834,25 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
-  drive::ResumeUploadRequest* resume_request =
-      new drive::ResumeUploadRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          upload_url,
-          0,  // start_position
-          kTestContent.size(),  // end_position (exclusive)
-          kTestContent.size(),  // content_length,
-          kTestContentType,
-          kTestFilePath,
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&response, &new_entry)),
-          ProgressCallback());
-  request_sender_->StartRequestWithRetry(resume_request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::ResumeUploadRequest* resume_request =
+        new drive::ResumeUploadRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            upload_url,
+            0,  // start_position
+            kTestContent.size(),  // end_position (exclusive)
+            kTestContent.size(),  // content_length,
+            kTestContentType,
+            kTestFilePath,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&response, &new_entry)),
+            ProgressCallback());
+    request_sender_->StartRequestWithRetry(resume_request);
+    run_loop.Run();
+  }
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -841,20 +888,23 @@ TEST_F(DriveApiRequestsTest, UploadNewEmptyFileRequest) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadNewFileRequest* request =
-      new drive::InitiateUploadNewFileRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          kTestContentType,
-          0,
-          "parent_resource_id",  // The resource id of the parent directory.
-          "new file title",  // The title of the file being uploaded.
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &upload_url)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::InitiateUploadNewFileRequest* request =
+        new drive::InitiateUploadNewFileRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            kTestContentType,
+            0,
+            "parent_resource_id",  // The resource id of the parent directory.
+            "new file title",  // The title of the file being uploaded.
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
@@ -877,22 +927,25 @@ TEST_F(DriveApiRequestsTest, UploadNewEmptyFileRequest) {
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
-  drive::ResumeUploadRequest* resume_request =
-      new drive::ResumeUploadRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          upload_url,
-          0,  // start_position
-          0,  // end_position (exclusive)
-          0,  // content_length,
-          kTestContentType,
-          kTestFilePath,
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&response, &new_entry)),
-          ProgressCallback());
-  request_sender_->StartRequestWithRetry(resume_request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::ResumeUploadRequest* resume_request =
+        new drive::ResumeUploadRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            upload_url,
+            0,  // start_position
+            0,  // end_position (exclusive)
+            0,  // content_length,
+            kTestContentType,
+            kTestFilePath,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&response, &new_entry)),
+            ProgressCallback());
+    request_sender_->StartRequestWithRetry(resume_request);
+    run_loop.Run();
+  }
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -926,20 +979,23 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadNewFileRequest* request =
-      new drive::InitiateUploadNewFileRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          kTestContentType,
-          kTestContent.size(),
-          "parent_resource_id",  // The resource id of the parent directory.
-          "new file title",  // The title of the file being uploaded.
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &upload_url)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::InitiateUploadNewFileRequest* request =
+        new drive::InitiateUploadNewFileRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            kTestContentType,
+            kTestContent.size(),
+            "parent_resource_id",  // The resource id of the parent directory.
+            "new file title",  // The title of the file being uploaded.
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadNewFilePath, upload_url.path());
@@ -966,17 +1022,20 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     scoped_ptr<FileResource> new_entry;
 
     // Check the response by GetUploadStatusRequest.
-    drive::GetUploadStatusRequest* get_upload_status_request =
-        new drive::GetUploadStatusRequest(
-            request_sender_.get(),
-            request_context_getter_.get(),
-            upload_url,
-            kTestContent.size(),
-            CreateComposedCallback(
-                base::Bind(&test_util::RunAndQuit),
-                test_util::CreateCopyResultCallback(&response, &new_entry)));
-    request_sender_->StartRequestWithRetry(get_upload_status_request);
-    base::MessageLoop::current()->Run();
+    {
+      base::RunLoop run_loop;
+      drive::GetUploadStatusRequest* get_upload_status_request =
+          new drive::GetUploadStatusRequest(
+              request_sender_.get(),
+              request_context_getter_.get(),
+              upload_url,
+              kTestContent.size(),
+              test_util::CreateQuitCallback(
+                  &run_loop,
+                  test_util::CreateCopyResultCallback(&response, &new_entry)));
+      request_sender_->StartRequestWithRetry(get_upload_status_request);
+      run_loop.Run();
+    }
 
     // METHOD_PUT should be used to upload data.
     EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1005,22 +1064,25 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     UploadRangeResponse response;
     scoped_ptr<FileResource> new_entry;
 
-    drive::ResumeUploadRequest* resume_request =
-        new drive::ResumeUploadRequest(
-            request_sender_.get(),
-            request_context_getter_.get(),
-            upload_url,
-            start_position,
-            end_position,
-            kTestContent.size(),  // content_length,
-            kTestContentType,
-            kTestFilePath,
-            CreateComposedCallback(
-                base::Bind(&test_util::RunAndQuit),
-                test_util::CreateCopyResultCallback(&response, &new_entry)),
-            ProgressCallback());
-    request_sender_->StartRequestWithRetry(resume_request);
-    base::MessageLoop::current()->Run();
+    {
+      base::RunLoop run_loop;
+      drive::ResumeUploadRequest* resume_request =
+          new drive::ResumeUploadRequest(
+              request_sender_.get(),
+              request_context_getter_.get(),
+              upload_url,
+              start_position,
+              end_position,
+              kTestContent.size(),  // content_length,
+              kTestContentType,
+              kTestFilePath,
+              test_util::CreateQuitCallback(
+                  &run_loop,
+                  test_util::CreateCopyResultCallback(&response, &new_entry)),
+              ProgressCallback());
+      request_sender_->StartRequestWithRetry(resume_request);
+      run_loop.Run();
+    }
 
     // METHOD_PUT should be used to upload data.
     EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1052,17 +1114,20 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     EXPECT_EQ(static_cast<int64>(end_position), response.end_position_received);
 
     // Check the response by GetUploadStatusRequest.
-    drive::GetUploadStatusRequest* get_upload_status_request =
-        new drive::GetUploadStatusRequest(
-            request_sender_.get(),
-            request_context_getter_.get(),
-            upload_url,
-            kTestContent.size(),
-            CreateComposedCallback(
-                base::Bind(&test_util::RunAndQuit),
-                test_util::CreateCopyResultCallback(&response, &new_entry)));
-    request_sender_->StartRequestWithRetry(get_upload_status_request);
-    base::MessageLoop::current()->Run();
+    {
+      base::RunLoop run_loop;
+      drive::GetUploadStatusRequest* get_upload_status_request =
+          new drive::GetUploadStatusRequest(
+              request_sender_.get(),
+              request_context_getter_.get(),
+              upload_url,
+              kTestContent.size(),
+              test_util::CreateQuitCallback(
+                  &run_loop,
+                  test_util::CreateCopyResultCallback(&response, &new_entry)));
+      request_sender_->StartRequestWithRetry(get_upload_status_request);
+      run_loop.Run();
+    }
 
     // METHOD_PUT should be used to upload data.
     EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1096,20 +1161,23 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadExistingFileRequest* request =
-      new drive::InitiateUploadExistingFileRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          kTestContentType,
-          kTestContent.size(),
-          "resource_id",  // The resource id of the file to be overwritten.
-          std::string(),  // No etag.
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &upload_url)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::InitiateUploadExistingFileRequest* request =
+        new drive::InitiateUploadExistingFileRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            kTestContentType,
+            kTestContent.size(),
+            "resource_id",  // The resource id of the file to be overwritten.
+            std::string(),  // No etag.
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
@@ -1128,22 +1196,25 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
-  drive::ResumeUploadRequest* resume_request =
-      new drive::ResumeUploadRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          upload_url,
-          0,  // start_position
-          kTestContent.size(),  // end_position (exclusive)
-          kTestContent.size(),  // content_length,
-          kTestContentType,
-          kTestFilePath,
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&response, &new_entry)),
-          ProgressCallback());
-  request_sender_->StartRequestWithRetry(resume_request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::ResumeUploadRequest* resume_request =
+        new drive::ResumeUploadRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            upload_url,
+            0,  // start_position
+            kTestContent.size(),  // end_position (exclusive)
+            kTestContent.size(),  // content_length,
+            kTestContentType,
+            kTestFilePath,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&response, &new_entry)),
+            ProgressCallback());
+    request_sender_->StartRequestWithRetry(resume_request);
+    run_loop.Run();
+  }
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1179,20 +1250,23 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETag) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadExistingFileRequest* request =
-      new drive::InitiateUploadExistingFileRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          kTestContentType,
-          kTestContent.size(),
-          "resource_id",  // The resource id of the file to be overwritten.
-          kTestETag,
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &upload_url)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::InitiateUploadExistingFileRequest* request =
+        new drive::InitiateUploadExistingFileRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            kTestContentType,
+            kTestContent.size(),
+            "resource_id",  // The resource id of the file to be overwritten.
+            kTestETag,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(kTestUploadExistingFilePath, upload_url.path());
@@ -1211,22 +1285,25 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETag) {
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
-  drive::ResumeUploadRequest* resume_request =
-      new drive::ResumeUploadRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          upload_url,
-          0,  // start_position
-          kTestContent.size(),  // end_position (exclusive)
-          kTestContent.size(),  // content_length,
-          kTestContentType,
-          kTestFilePath,
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&response, &new_entry)),
-          ProgressCallback());
-  request_sender_->StartRequestWithRetry(resume_request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::ResumeUploadRequest* resume_request =
+        new drive::ResumeUploadRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            upload_url,
+            0,  // start_position
+            kTestContent.size(),  // end_position (exclusive)
+            kTestContent.size(),  // content_length,
+            kTestContentType,
+            kTestFilePath,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&response, &new_entry)),
+            ProgressCallback());
+    request_sender_->StartRequestWithRetry(resume_request);
+    run_loop.Run();
+  }
 
   // METHOD_PUT should be used to upload data.
   EXPECT_EQ(net::test_server::METHOD_PUT, http_request_.method);
@@ -1259,20 +1336,23 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETagConflicting) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadExistingFileRequest* request =
-      new drive::InitiateUploadExistingFileRequest(
-          request_sender_.get(),
-          request_context_getter_.get(),
-          *url_generator_,
-          kTestContentType,
-          kTestContent.size(),
-          "resource_id",  // The resource id of the file to be overwritten.
-          "Conflicting-etag",
-          CreateComposedCallback(
-              base::Bind(&test_util::RunAndQuit),
-              test_util::CreateCopyResultCallback(&error, &upload_url)));
-  request_sender_->StartRequestWithRetry(request);
-  base::MessageLoop::current()->Run();
+  {
+    base::RunLoop run_loop;
+    drive::InitiateUploadExistingFileRequest* request =
+        new drive::InitiateUploadExistingFileRequest(
+            request_sender_.get(),
+            request_context_getter_.get(),
+            *url_generator_,
+            kTestContentType,
+            kTestContent.size(),
+            "resource_id",  // The resource id of the file to be overwritten.
+            "Conflicting-etag",
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &upload_url)));
+    request_sender_->StartRequestWithRetry(request);
+    run_loop.Run();
+  }
 
   EXPECT_EQ(HTTP_PRECONDITION, error);
   EXPECT_EQ(kTestContentType, http_request_.headers["X-Upload-Content-Type"]);

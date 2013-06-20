@@ -16,11 +16,13 @@
 #include "base/template_util.h"
 #include "chrome/browser/google_apis/base_requests.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "chrome/browser/google_apis/task_util.h"
 
 class GURL;
 
 namespace base {
 class FilePath;
+class RunLoop;
 class Value;
 }
 
@@ -33,15 +35,6 @@ struct HttpRequest;
 }
 
 namespace google_apis {
-
-class AboutResource;
-class AccountMetadata;
-class AppList;
-class AuthenticatedRequestInterface;
-class ResourceEntry;
-class ResourceList;
-struct UploadRangeResponse;
-
 namespace test_util {
 
 // Runs a task posted to the blocking pool, including subsequent tasks posted
@@ -53,8 +46,15 @@ namespace test_util {
 // repeatedly.
 void RunBlockingPoolTask();
 
-// Runs the closure, and then quits the current MessageLoop.
-void RunAndQuit(const base::Closure& closure);
+// Runs the closure, and then quits the |run_loop|.
+void RunAndQuit(base::RunLoop* run_loop, const base::Closure& closure);
+
+// Returns callback which runs the given |callback| and then quits |run_loop|.
+template<typename CallbackType>
+CallbackType CreateQuitCallback(base::RunLoop* run_loop,
+                                const CallbackType& callback) {
+  return CreateComposedCallback(base::Bind(&RunAndQuit, run_loop), callback);
+}
 
 // Removes |prefix| from |input| and stores the result in |output|. Returns
 // true if the prefix is removed.
