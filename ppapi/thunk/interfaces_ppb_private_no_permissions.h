@@ -52,4 +52,9 @@ PROXIED_IFACE(NoAPIName, PPB_EXT_CRXFILESYSTEM_PRIVATE_INTERFACE_0_1,
 PROXIED_IFACE(NoAPIName, PPB_FILEIO_PRIVATE_INTERFACE_0_1,
               PPB_FileIO_Private_0_1)
 
+PROXIED_IFACE(NoAPIName, PPB_VIDEODESTINATION_PRIVATE_INTERFACE_0_1,
+              PPB_VideoDestination_Private_0_1)
+PROXIED_IFACE(NoAPIName, PPB_VIDEOSOURCE_PRIVATE_INTERFACE_0_1,
+              PPB_VideoSource_Private_0_1)
+
 #include "ppapi/thunk/interfaces_postamble.h"

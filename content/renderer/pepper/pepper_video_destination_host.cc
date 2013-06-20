@@ -37,7 +37,7 @@ int32_t PepperVideoDestinationHost::OnResourceMessageReceived(
     HostMessageContext* context) {
   IPC_BEGIN_MESSAGE_MAP(PepperVideoDestinationHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoDestination_Open,
-                                        OnHostMsgOpen)
+                                      OnHostMsgOpen)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoDestination_PutFrame,
                                       OnHostMsgPutFrame)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoDestination_Close,

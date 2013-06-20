@@ -143,6 +143,8 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateUDPSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateVideoDestination(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateVideoSource(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateWebSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateX509CertificatePrivate(
       PP_Instance instance) OVERRIDE;
@@ -170,8 +172,6 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_Instance instance,
       PP_Resource context3d_id,
       PP_VideoDecoder_Profile profile) OVERRIDE;
-  virtual PP_Resource CreateVideoDestination(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateVideoSource(PP_Instance instance) OVERRIDE;
 #endif  // !defined(OS_NACL)
 
   virtual bool Send(IPC::Message* msg) OVERRIDE;

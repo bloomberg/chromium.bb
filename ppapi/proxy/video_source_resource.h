@@ -52,7 +52,6 @@ class PPAPI_PROXY_EXPORT VideoSourceResource
       const ResourceMessageReplyParams& reply_params,
       const HostResource& image_data,
       const PP_ImageDataDesc& image_desc_data,
-      int fd,
       PP_TimeTicks timestamp);
 
   scoped_refptr<TrackedCallback> open_callback_;

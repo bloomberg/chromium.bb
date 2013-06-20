@@ -1652,6 +1652,30 @@ IPC_SYNC_MESSAGE_CONTROL2_2(PpapiHostMsg_SharedMemory_CreateSharedMemory,
                             int /* host_handle_id */,
                             ppapi::proxy::SerializedHandle /* plugin_handle */)
 
+// MediaStream -----------------------------------------------------------------
+
+// VideoDestination Private.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDestination_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoDestination_Open,
+                     std::string /* stream_url */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoDestination_OpenReply)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_VideoDestination_PutFrame,
+                     ppapi::HostResource /* image_data */,
+                     PP_TimeTicks /* timestamp */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDestination_Close)
+
+// VideoSource Private.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoSource_Open,
+                     std::string /* stream_url */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoSource_OpenReply)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_GetFrame)
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_VideoSource_GetFrameReply,
+                     ppapi::HostResource /* resource_id */,
+                     PP_ImageDataDesc /* image_data_desc */,
+                     PP_TimeTicks /* timestamp */)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_Close)
+
 // WebSocket -------------------------------------------------------------------
 
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_WebSocket_Create)
@@ -1987,30 +2011,5 @@ IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Talk_StartRemotingReply)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Talk_StopRemoting)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Talk_StopRemotingReply)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Talk_NotifyEvent, PP_TalkEvent /* event */)
-
-// MediaStream -----------------------------------------------------------------
-
-// VideoDestination Private.
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDestination_Create)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoDestination_Open,
-                     std::string /* stream_url */)
-IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoDestination_OpenReply)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_VideoDestination_PutFrame,
-                     ppapi::HostResource /* image_data */,
-                     PP_TimeTicks /* timestamp */)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDestination_Close)
-
-// VideoSource Private.
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_Create)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoSource_Open,
-                     std::string /* stream_url */)
-IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoSource_OpenReply)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_GetFrame)
-IPC_MESSAGE_CONTROL4(PpapiPluginMsg_VideoSource_GetFrameReply,
-                     ppapi::HostResource /* resource_id */,
-                     PP_ImageDataDesc /* image_data_desc */,
-                     int /* fd */,
-                     PP_TimeTicks /* timestamp */)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoSource_Close)
 
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)

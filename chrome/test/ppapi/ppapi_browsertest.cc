@@ -1399,9 +1399,11 @@ TEST_PPAPI_NACL(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(TrueTypeFont)
 TEST_PPAPI_NACL(TrueTypeFont)
 
-TEST_PPAPI_OUT_OF_PROCESS(VideoSource)
-
 TEST_PPAPI_OUT_OF_PROCESS(VideoDestination)
+TEST_PPAPI_NACL(VideoDestination)
+
+TEST_PPAPI_OUT_OF_PROCESS(VideoSource)
+TEST_PPAPI_NACL(VideoSource)
 
 // PPB_Printing only implemented for out of process.
 TEST_PPAPI_OUT_OF_PROCESS(Printing)

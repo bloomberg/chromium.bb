@@ -240,8 +240,6 @@
               'proxy/serialized_flash_menu.cc',
               'proxy/talk_resource.cc',
               'proxy/video_capture_resource.cc',
-              'proxy/video_destination_resource.cc',
-              'proxy/video_source_resource.cc',
             ],
           }],
         ],

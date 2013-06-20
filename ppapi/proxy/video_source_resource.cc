@@ -66,7 +66,6 @@ int32_t VideoSourceResource::GetFrame(
     return PP_ERROR_INPROGRESS;
 
   get_frame_callback_ = callback;
-
   Call<PpapiPluginMsg_VideoSource_GetFrameReply>(RENDERER,
       PpapiHostMsg_VideoSource_GetFrame(),
       base::Bind(&VideoSourceResource::OnPluginMsgGetFrameComplete, this,
@@ -98,7 +97,6 @@ void VideoSourceResource::OnPluginMsgGetFrameComplete(
     const ResourceMessageReplyParams& reply_params,
     const HostResource& image_data,
     const PP_ImageDataDesc& image_desc,
-    int fd,
     PP_TimeTicks timestamp) {
   // The callback may have been aborted by Close().
   if (TrackedCallback::IsPending(get_frame_callback_)) {
@@ -107,21 +105,12 @@ void VideoSourceResource::OnPluginMsgGetFrameComplete(
         PPB_ImageData_Shared::IsImageDataDescValid(image_desc)) {
       frame->timestamp = timestamp;
 
-#if defined(OS_ANDROID)
-      frame->image_data = 0;
-#elif defined(TOOLKIT_GTK)
-      frame->image_data =
-          (new PlatformImageData(image_data, image_desc, fd))->GetReference();
-#elif defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
       base::SharedMemoryHandle handle;
       if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &handle))
         frame->image_data = 0;
       frame->image_data =
-          (new PlatformImageData(
+          (new SimpleImageData(
               image_data, image_desc, handle))->GetReference();
-#else
-#error Not implemented.
-#endif
     }
     get_frame_callback_->Run(result);
   }

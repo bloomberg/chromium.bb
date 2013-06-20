@@ -329,6 +329,17 @@ PP_Resource ResourceCreationProxy::CreateUDPSocketPrivate(
       GetConnection(), instance))->GetReference();
 }
 
+PP_Resource ResourceCreationProxy::CreateVideoDestination(
+    PP_Instance instance) {
+  return (new VideoDestinationResource(GetConnection(),
+                                       instance))->GetReference();
+}
+
+PP_Resource ResourceCreationProxy::CreateVideoSource(
+    PP_Instance instance) {
+  return (new VideoSourceResource(GetConnection(), instance))->GetReference();
+}
+
 PP_Resource ResourceCreationProxy::CreateWebSocket(PP_Instance instance) {
   return (new WebSocketResource(GetConnection(), instance))->GetReference();
 }
@@ -416,17 +427,6 @@ PP_Resource ResourceCreationProxy::CreateVideoDecoder(
     PP_VideoDecoder_Profile profile) {
   return PPB_VideoDecoder_Proxy::CreateProxyResource(
       instance, context3d_id, profile);
-}
-
-PP_Resource ResourceCreationProxy::CreateVideoDestination(
-    PP_Instance instance) {
-  return (new VideoDestinationResource(GetConnection(),
-                                       instance))->GetReference();
-}
-
-PP_Resource ResourceCreationProxy::CreateVideoSource(
-    PP_Instance instance) {
-  return (new VideoSourceResource(GetConnection(), instance))->GetReference();
 }
 
 #endif  // !defined(OS_NACL)

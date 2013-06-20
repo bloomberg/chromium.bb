@@ -106,8 +106,7 @@ int32_t PepperVideoSourceHost::OnHostMsgOpen(HostMessageContext* context,
   return PP_OK_COMPLETIONPENDING;
 }
 
-int32_t PepperVideoSourceHost::OnHostMsgGetFrame(
-    HostMessageContext* context) {
+int32_t PepperVideoSourceHost::OnHostMsgGetFrame(HostMessageContext* context) {
   if (!source_handler_.get())
     return PP_ERROR_FAILED;
   if (get_frame_pending_)
@@ -137,7 +136,6 @@ void PepperVideoSourceHost::SendGetFrameReply() {
 
   int32_t width = base::checked_numeric_cast<int32_t>(frame->GetWidth());
   int32_t height = base::checked_numeric_cast<int32_t>(frame->GetHeight());
-  // Create an image data resource to hold the frame pixels.
   PP_ImageDataDesc image_desc;
   IPC::PlatformFileForTransit image_handle;
   uint32_t byte_count;
@@ -145,7 +143,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
       ppapi::ScopedPPResource::PassRef(),
       ppapi::proxy::PPB_ImageData_Proxy::CreateImageData(
           pp_instance(),
-          ppapi::PPB_ImageData_Shared::PLATFORM,
+          ppapi::PPB_ImageData_Shared::SIMPLE,
           PP_IMAGEDATAFORMAT_BGRA_PREMUL,
           PP_MakeSize(width, height),
           false /* init_to_zero */,
@@ -197,35 +195,14 @@ void PepperVideoSourceHost::SendGetFrameReply() {
       frame->GetTimeStamp() / base::Time::kNanosecondsPerMicrosecond);
   PP_TimeTicks timestamp = time_delta.InSecondsF();
 
-  reply_context_.params.set_result(PP_OK);
-
-#if defined(TOOLKIT_GTK)
-  // For GTK, we pass the SysV shared memory key in the message.
-  PpapiPluginMsg_VideoSource_GetFrameReply reply_msg(host_resource,
-                                                     image_desc,
-                                                     image_handle.fd,
-                                                     timestamp);
-#elif defined(OS_POSIX) || defined(OS_WIN)
   ppapi::proxy::SerializedHandle serialized_handle;
-  PpapiPluginMsg_VideoSource_GetFrameReply reply_msg(host_resource,
-                                                     image_desc,
-                                                     0,
-                                                     timestamp);
   serialized_handle.set_shmem(image_handle, byte_count);
   reply_context_.params.AppendHandle(serialized_handle);
-#else
-  // Not supported on other platforms.
-  // This is a stub reply_msg to not break the build.
-  PpapiPluginMsg_VideoSource_GetFrameReply reply_msg(host_resource,
-                                                     image_desc,
-                                                     0,
-                                                     timestamp);
-  NOTIMPLEMENTED();
-  SendGetFrameErrorReply(PP_ERROR_NOTSUPPORTED);
-  return;
-#endif
 
-  host()->SendReply(reply_context_, reply_msg);
+  host()->SendReply(reply_context_,
+                    PpapiPluginMsg_VideoSource_GetFrameReply(host_resource,
+                                                             image_desc,
+                                                             timestamp));
 
   reply_context_ = ppapi::host::ReplyMessageContext();
 
@@ -237,8 +214,9 @@ void PepperVideoSourceHost::SendGetFrameErrorReply(int32_t error) {
   reply_context_.params.set_result(error);
   host()->SendReply(
       reply_context_,
-      PpapiPluginMsg_VideoSource_GetFrameReply(
-          ppapi::HostResource(), PP_ImageDataDesc(), -1, 0.0));
+      PpapiPluginMsg_VideoSource_GetFrameReply(ppapi::HostResource(),
+                                               PP_ImageDataDesc(),
+                                               0.0 /* timestamp */));
   reply_context_ = ppapi::host::ReplyMessageContext();
 }
 
