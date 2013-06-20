@@ -46,7 +46,7 @@
 #endif
 #endif // OS(UNIX)
 
-#if defined(NDEBUG)
+#if defined(NDEBUG) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 namespace {
 
@@ -382,4 +382,4 @@ TEST(WTF_PartitionAlloc, MappingCollision)
 
 } // namespace
 
-#endif // defined(NDEBUG)
+#endif // defined(NDEBUG) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
