@@ -134,8 +134,8 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
   default_match_ = begin();
 
   // Set the alternate nav URL.
-  alternate_nav_url_ = default_match_ == end() ? GURL() :
-      ComputeAlternateNavUrl(input, *default_match_);
+  alternate_nav_url_ = (default_match_ == end()) ?
+      GURL() : ComputeAlternateNavUrl(input, *default_match_);
 }
 
 bool AutocompleteResult::HasCopiedMatches() const {
@@ -207,10 +207,10 @@ void AutocompleteResult::Validate() const {
 GURL AutocompleteResult::ComputeAlternateNavUrl(
     const AutocompleteInput& input,
     const AutocompleteMatch& match) {
-  return (input.type() == AutocompleteInput::UNKNOWN &&
-          AutocompleteMatch::IsSearchType(match.type) &&
-          match.transition != content::PAGE_TRANSITION_KEYWORD &&
-          input.canonicalized_url() != match.destination_url) ?
+  return ((input.type() == AutocompleteInput::UNKNOWN) &&
+          (AutocompleteMatch::IsSearchType(match.type)) &&
+          (match.transition != content::PAGE_TRANSITION_KEYWORD) &&
+          (input.canonicalized_url() != match.destination_url)) ?
       input.canonicalized_url() : GURL();
 }
 

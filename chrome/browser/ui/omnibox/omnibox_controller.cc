@@ -254,17 +254,6 @@ void OmniboxController::InvalidateCurrentMatch() {
   current_match_ = AutocompleteMatch();
 }
 
-const AutocompleteMatch& OmniboxController::CurrentMatch(
-    GURL* alternate_nav_url) const {
-  if (alternate_nav_url && current_match_.destination_url.is_valid()) {
-    *alternate_nav_url = AutocompleteResult::ComputeAlternateNavUrl(
-        autocomplete_controller_->input(), current_match_);
-  }
-
-  return current_match_;
-}
-
-
 void OmniboxController::ClearPopupKeywordMode() const {
   if (popup_->IsOpen() &&
       popup_->selected_line_state() == OmniboxPopupModel::KEYWORD)

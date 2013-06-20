@@ -187,10 +187,14 @@ void OmniboxEditModel::RestoreState(const State& state) {
 AutocompleteMatch OmniboxEditModel::CurrentMatch(
     GURL* alternate_nav_url) const {
   // If we have a valid match use it. Otherwise get one for the current text.
-  AutocompleteMatch match =
-      omnibox_controller_->CurrentMatch(alternate_nav_url);
-  if (!match.destination_url.is_valid())
+  AutocompleteMatch match = omnibox_controller_->current_match();
+
+  if (!match.destination_url.is_valid()) {
     GetInfoForCurrentText(&match, alternate_nav_url);
+  } else if (alternate_nav_url) {
+    *alternate_nav_url = AutocompleteResult::ComputeAlternateNavUrl(
+        autocomplete_controller()->input(), match);
+  }
   return match;
 }
 
@@ -1130,7 +1134,7 @@ void OmniboxEditModel::OnCurrentMatchChanged(bool is_temporary_set_by_instant) {
   has_temporary_text_ = is_temporary_set_by_instant;
   is_temporary_text_set_by_instant_ = is_temporary_set_by_instant;
 
-  const AutocompleteMatch& match = omnibox_controller_->CurrentMatch(NULL);
+  const AutocompleteMatch& match = omnibox_controller_->current_match();
 
   if (is_temporary_set_by_instant) {
     view_->OnTemporaryTextMaybeChanged(

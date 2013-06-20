@@ -86,9 +86,9 @@ class OmniboxController : public AutocompleteControllerDelegate {
   // LocationBarView, making this accessor unnecessary.
   OmniboxPopupModel* popup_model() const { return popup_; }
 
-  const string16& gray_suggestion() const { return gray_suggestion_; }
+  const AutocompleteMatch& current_match() const { return current_match_; }
 
-  const AutocompleteMatch& CurrentMatch(GURL* alternate_nav_url) const;
+  const string16& gray_suggestion() const { return gray_suggestion_; }
 
   // Turns off keyword mode for the current match.
   void ClearPopupKeywordMode() const;
