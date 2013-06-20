@@ -1288,158 +1288,19 @@ static void Pnacl_M14_PPP_Messaging_HandleMessage(PP_Instance instance, struct P
 
 /* Not generating wrapper methods for PPP_MouseLock_1_0 */
 
-/* Begin wrapper methods for PPB_BrokerTrusted_0_2 */
+/* Not generating wrapper methods for PPB_BrokerTrusted_0_2 */
 
-static PP_Resource Pnacl_M14_PPB_BrokerTrusted_CreateTrusted(PP_Instance instance) {
-  const struct PPB_BrokerTrusted_0_2 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2.real_iface;
-  return iface->CreateTrusted(instance);
-}
+/* Not generating wrapper methods for PPB_BrokerTrusted_0_3 */
 
-static PP_Bool Pnacl_M14_PPB_BrokerTrusted_IsBrokerTrusted(PP_Resource resource) {
-  const struct PPB_BrokerTrusted_0_2 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2.real_iface;
-  return iface->IsBrokerTrusted(resource);
-}
+/* Not generating wrapper methods for PPB_BrowserFont_Trusted_1_0 */
 
-static int32_t Pnacl_M14_PPB_BrokerTrusted_Connect(PP_Resource broker, struct PP_CompletionCallback* connect_callback) {
-  const struct PPB_BrokerTrusted_0_2 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2.real_iface;
-  return iface->Connect(broker, *connect_callback);
-}
+/* Not generating wrapper methods for PPB_CharSet_Trusted_1_0 */
 
-static int32_t Pnacl_M14_PPB_BrokerTrusted_GetHandle(PP_Resource broker, int32_t* handle) {
-  const struct PPB_BrokerTrusted_0_2 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2.real_iface;
-  return iface->GetHandle(broker, handle);
-}
+/* Not generating wrapper methods for PPB_FileChooserTrusted_0_5 */
 
-/* End wrapper methods for PPB_BrokerTrusted_0_2 */
+/* Not generating wrapper methods for PPB_FileChooserTrusted_0_6 */
 
-/* Begin wrapper methods for PPB_BrokerTrusted_0_3 */
-
-static PP_Resource Pnacl_M25_PPB_BrokerTrusted_CreateTrusted(PP_Instance instance) {
-  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
-  return iface->CreateTrusted(instance);
-}
-
-static PP_Bool Pnacl_M25_PPB_BrokerTrusted_IsBrokerTrusted(PP_Resource resource) {
-  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
-  return iface->IsBrokerTrusted(resource);
-}
-
-static int32_t Pnacl_M25_PPB_BrokerTrusted_Connect(PP_Resource broker, struct PP_CompletionCallback* connect_callback) {
-  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
-  return iface->Connect(broker, *connect_callback);
-}
-
-static int32_t Pnacl_M25_PPB_BrokerTrusted_GetHandle(PP_Resource broker, int32_t* handle) {
-  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
-  return iface->GetHandle(broker, handle);
-}
-
-static PP_Bool Pnacl_M25_PPB_BrokerTrusted_IsAllowed(PP_Resource broker) {
-  const struct PPB_BrokerTrusted_0_3 *iface = Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3.real_iface;
-  return iface->IsAllowed(broker);
-}
-
-/* End wrapper methods for PPB_BrokerTrusted_0_3 */
-
-/* Begin wrapper methods for PPB_BrowserFont_Trusted_1_0 */
-
-static void Pnacl_M19_PPB_BrowserFont_Trusted_GetFontFamilies(struct PP_Var* _struct_result, PP_Instance instance) {
-  const struct PPB_BrowserFont_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0.real_iface;
-  *_struct_result = iface->GetFontFamilies(instance);
-}
-
-static PP_Resource Pnacl_M19_PPB_BrowserFont_Trusted_Create(PP_Instance instance, const struct PP_BrowserFont_Trusted_Description* description) {
-  const struct PPB_BrowserFont_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0.real_iface;
-  return iface->Create(instance, description);
-}
-
-static PP_Bool Pnacl_M19_PPB_BrowserFont_Trusted_IsFont(PP_Resource resource) {
-  const struct PPB_BrowserFont_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0.real_iface;
-  return iface->IsFont(resource);
-}
-
-static PP_Bool Pnacl_M19_PPB_BrowserFont_Trusted_Describe(PP_Resource font, struct PP_BrowserFont_Trusted_Description* description, struct PP_BrowserFont_Trusted_Metrics* metrics) {
-  const struct PPB_BrowserFont_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0.real_iface;
-  return iface->Describe(font, description, metrics);
-}
-
-static PP_Bool Pnacl_M19_PPB_BrowserFont_Trusted_DrawTextAt(PP_Resource font, PP_Resource image_data, const struct PP_BrowserFont_Trusted_TextRun* text, const struct PP_Point* position, uint32_t color, const struct PP_Rect* clip, PP_Bool image_data_is_opaque) {
-  const struct PPB_BrowserFont_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0.real_iface;
-  return iface->DrawTextAt(font, image_data, text, position, color, clip, image_data_is_opaque);
-}
-
-static int32_t Pnacl_M19_PPB_BrowserFont_Trusted_MeasureText(PP_Resource font, const struct PP_BrowserFont_Trusted_TextRun* text) {
-  const struct PPB_BrowserFont_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0.real_iface;
-  return iface->MeasureText(font, text);
-}
-
-static uint32_t Pnacl_M19_PPB_BrowserFont_Trusted_CharacterOffsetForPixel(PP_Resource font, const struct PP_BrowserFont_Trusted_TextRun* text, int32_t pixel_position) {
-  const struct PPB_BrowserFont_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0.real_iface;
-  return iface->CharacterOffsetForPixel(font, text, pixel_position);
-}
-
-static int32_t Pnacl_M19_PPB_BrowserFont_Trusted_PixelOffsetForCharacter(PP_Resource font, const struct PP_BrowserFont_Trusted_TextRun* text, uint32_t char_offset) {
-  const struct PPB_BrowserFont_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0.real_iface;
-  return iface->PixelOffsetForCharacter(font, text, char_offset);
-}
-
-/* End wrapper methods for PPB_BrowserFont_Trusted_1_0 */
-
-/* Begin wrapper methods for PPB_CharSet_Trusted_1_0 */
-
-static PP_Bool Pnacl_M18_PPB_CharSet_Trusted_UTF16ToCharSet(const uint16_t utf16[], uint32_t utf16_len, const char* output_char_set, PP_CharSet_Trusted_ConversionError on_error, char* output_buffer, uint32_t* output_length) {
-  const struct PPB_CharSet_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0.real_iface;
-  return iface->UTF16ToCharSet(utf16, utf16_len, output_char_set, on_error, output_buffer, output_length);
-}
-
-static PP_Bool Pnacl_M18_PPB_CharSet_Trusted_CharSetToUTF16(const char* input, uint32_t input_len, const char* input_char_set, PP_CharSet_Trusted_ConversionError on_error, uint16_t* output_buffer, uint32_t* output_utf16_length) {
-  const struct PPB_CharSet_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0.real_iface;
-  return iface->CharSetToUTF16(input, input_len, input_char_set, on_error, output_buffer, output_utf16_length);
-}
-
-static void Pnacl_M18_PPB_CharSet_Trusted_GetDefaultCharSet(struct PP_Var* _struct_result, PP_Instance instance) {
-  const struct PPB_CharSet_Trusted_1_0 *iface = Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0.real_iface;
-  *_struct_result = iface->GetDefaultCharSet(instance);
-}
-
-/* End wrapper methods for PPB_CharSet_Trusted_1_0 */
-
-/* Begin wrapper methods for PPB_FileChooserTrusted_0_5 */
-
-static int32_t Pnacl_M16_PPB_FileChooserTrusted_ShowWithoutUserGesture(PP_Resource chooser, PP_Bool save_as, struct PP_Var* suggested_file_name, struct PP_CompletionCallback* callback) {
-  const struct PPB_FileChooserTrusted_0_5 *iface = Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_5.real_iface;
-  return iface->ShowWithoutUserGesture(chooser, save_as, *suggested_file_name, *callback);
-}
-
-/* End wrapper methods for PPB_FileChooserTrusted_0_5 */
-
-/* Begin wrapper methods for PPB_FileChooserTrusted_0_6 */
-
-static int32_t Pnacl_M20_PPB_FileChooserTrusted_ShowWithoutUserGesture(PP_Resource chooser, PP_Bool save_as, struct PP_Var* suggested_file_name, struct PP_ArrayOutput* output, struct PP_CompletionCallback* callback) {
-  const struct PPB_FileChooserTrusted_0_6 *iface = Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6.real_iface;
-  return iface->ShowWithoutUserGesture(chooser, save_as, *suggested_file_name, *output, *callback);
-}
-
-/* End wrapper methods for PPB_FileChooserTrusted_0_6 */
-
-/* Begin wrapper methods for PPB_FileIOTrusted_0_4 */
-
-static int32_t Pnacl_M14_PPB_FileIOTrusted_GetOSFileDescriptor(PP_Resource file_io) {
-  const struct PPB_FileIOTrusted_0_4 *iface = Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4.real_iface;
-  return iface->GetOSFileDescriptor(file_io);
-}
-
-static int32_t Pnacl_M14_PPB_FileIOTrusted_WillWrite(PP_Resource file_io, int64_t offset, int32_t bytes_to_write, struct PP_CompletionCallback* callback) {
-  const struct PPB_FileIOTrusted_0_4 *iface = Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4.real_iface;
-  return iface->WillWrite(file_io, offset, bytes_to_write, *callback);
-}
-
-static int32_t Pnacl_M14_PPB_FileIOTrusted_WillSetLength(PP_Resource file_io, int64_t length, struct PP_CompletionCallback* callback) {
-  const struct PPB_FileIOTrusted_0_4 *iface = Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4.real_iface;
-  return iface->WillSetLength(file_io, length, *callback);
-}
-
-/* End wrapper methods for PPB_FileIOTrusted_0_4 */
+/* Not generating wrapper methods for PPB_FileIOTrusted_0_4 */
 
 /* Not generating wrapper methods for PPB_URLLoaderTrusted_0_3 */
 
@@ -4180,51 +4041,19 @@ struct PPP_Messaging_1_0 Pnacl_Wrappers_PPP_Messaging_1_0 = {
 
 /* Not generating wrapper interface for PPP_MouseLock_1_0 */
 
-struct PPB_BrokerTrusted_0_2 Pnacl_Wrappers_PPB_BrokerTrusted_0_2 = {
-    .CreateTrusted = (PP_Resource (*)(PP_Instance instance))&Pnacl_M14_PPB_BrokerTrusted_CreateTrusted,
-    .IsBrokerTrusted = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_BrokerTrusted_IsBrokerTrusted,
-    .Connect = (int32_t (*)(PP_Resource broker, struct PP_CompletionCallback connect_callback))&Pnacl_M14_PPB_BrokerTrusted_Connect,
-    .GetHandle = (int32_t (*)(PP_Resource broker, int32_t* handle))&Pnacl_M14_PPB_BrokerTrusted_GetHandle
-};
+/* Not generating wrapper interface for PPB_BrokerTrusted_0_2 */
 
-struct PPB_BrokerTrusted_0_3 Pnacl_Wrappers_PPB_BrokerTrusted_0_3 = {
-    .CreateTrusted = (PP_Resource (*)(PP_Instance instance))&Pnacl_M25_PPB_BrokerTrusted_CreateTrusted,
-    .IsBrokerTrusted = (PP_Bool (*)(PP_Resource resource))&Pnacl_M25_PPB_BrokerTrusted_IsBrokerTrusted,
-    .Connect = (int32_t (*)(PP_Resource broker, struct PP_CompletionCallback connect_callback))&Pnacl_M25_PPB_BrokerTrusted_Connect,
-    .GetHandle = (int32_t (*)(PP_Resource broker, int32_t* handle))&Pnacl_M25_PPB_BrokerTrusted_GetHandle,
-    .IsAllowed = (PP_Bool (*)(PP_Resource broker))&Pnacl_M25_PPB_BrokerTrusted_IsAllowed
-};
+/* Not generating wrapper interface for PPB_BrokerTrusted_0_3 */
 
-struct PPB_BrowserFont_Trusted_1_0 Pnacl_Wrappers_PPB_BrowserFont_Trusted_1_0 = {
-    .GetFontFamilies = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M19_PPB_BrowserFont_Trusted_GetFontFamilies,
-    .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_BrowserFont_Trusted_Description* description))&Pnacl_M19_PPB_BrowserFont_Trusted_Create,
-    .IsFont = (PP_Bool (*)(PP_Resource resource))&Pnacl_M19_PPB_BrowserFont_Trusted_IsFont,
-    .Describe = (PP_Bool (*)(PP_Resource font, struct PP_BrowserFont_Trusted_Description* description, struct PP_BrowserFont_Trusted_Metrics* metrics))&Pnacl_M19_PPB_BrowserFont_Trusted_Describe,
-    .DrawTextAt = (PP_Bool (*)(PP_Resource font, PP_Resource image_data, const struct PP_BrowserFont_Trusted_TextRun* text, const struct PP_Point* position, uint32_t color, const struct PP_Rect* clip, PP_Bool image_data_is_opaque))&Pnacl_M19_PPB_BrowserFont_Trusted_DrawTextAt,
-    .MeasureText = (int32_t (*)(PP_Resource font, const struct PP_BrowserFont_Trusted_TextRun* text))&Pnacl_M19_PPB_BrowserFont_Trusted_MeasureText,
-    .CharacterOffsetForPixel = (uint32_t (*)(PP_Resource font, const struct PP_BrowserFont_Trusted_TextRun* text, int32_t pixel_position))&Pnacl_M19_PPB_BrowserFont_Trusted_CharacterOffsetForPixel,
-    .PixelOffsetForCharacter = (int32_t (*)(PP_Resource font, const struct PP_BrowserFont_Trusted_TextRun* text, uint32_t char_offset))&Pnacl_M19_PPB_BrowserFont_Trusted_PixelOffsetForCharacter
-};
+/* Not generating wrapper interface for PPB_BrowserFont_Trusted_1_0 */
 
-struct PPB_CharSet_Trusted_1_0 Pnacl_Wrappers_PPB_CharSet_Trusted_1_0 = {
-    .UTF16ToCharSet = (PP_Bool (*)(const uint16_t utf16[], uint32_t utf16_len, const char* output_char_set, PP_CharSet_Trusted_ConversionError on_error, char* output_buffer, uint32_t* output_length))&Pnacl_M18_PPB_CharSet_Trusted_UTF16ToCharSet,
-    .CharSetToUTF16 = (PP_Bool (*)(const char* input, uint32_t input_len, const char* input_char_set, PP_CharSet_Trusted_ConversionError on_error, uint16_t* output_buffer, uint32_t* output_utf16_length))&Pnacl_M18_PPB_CharSet_Trusted_CharSetToUTF16,
-    .GetDefaultCharSet = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M18_PPB_CharSet_Trusted_GetDefaultCharSet
-};
+/* Not generating wrapper interface for PPB_CharSet_Trusted_1_0 */
 
-struct PPB_FileChooserTrusted_0_5 Pnacl_Wrappers_PPB_FileChooserTrusted_0_5 = {
-    .ShowWithoutUserGesture = (int32_t (*)(PP_Resource chooser, PP_Bool save_as, struct PP_Var suggested_file_name, struct PP_CompletionCallback callback))&Pnacl_M16_PPB_FileChooserTrusted_ShowWithoutUserGesture
-};
+/* Not generating wrapper interface for PPB_FileChooserTrusted_0_5 */
 
-struct PPB_FileChooserTrusted_0_6 Pnacl_Wrappers_PPB_FileChooserTrusted_0_6 = {
-    .ShowWithoutUserGesture = (int32_t (*)(PP_Resource chooser, PP_Bool save_as, struct PP_Var suggested_file_name, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M20_PPB_FileChooserTrusted_ShowWithoutUserGesture
-};
+/* Not generating wrapper interface for PPB_FileChooserTrusted_0_6 */
 
-struct PPB_FileIOTrusted_0_4 Pnacl_Wrappers_PPB_FileIOTrusted_0_4 = {
-    .GetOSFileDescriptor = (int32_t (*)(PP_Resource file_io))&Pnacl_M14_PPB_FileIOTrusted_GetOSFileDescriptor,
-    .WillWrite = (int32_t (*)(PP_Resource file_io, int64_t offset, int32_t bytes_to_write, struct PP_CompletionCallback callback))&Pnacl_M14_PPB_FileIOTrusted_WillWrite,
-    .WillSetLength = (int32_t (*)(PP_Resource file_io, int64_t length, struct PP_CompletionCallback callback))&Pnacl_M14_PPB_FileIOTrusted_WillSetLength
-};
+/* Not generating wrapper interface for PPB_FileIOTrusted_0_4 */
 
 /* Not generating wrapper interface for PPB_URLLoaderTrusted_0_3 */
 
@@ -5177,43 +5006,43 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_MouseLock_1_0 = {
 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2 = {
   .iface_macro = PPB_BROKER_TRUSTED_INTERFACE_0_2,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_BrokerTrusted_0_2,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3 = {
   .iface_macro = PPB_BROKER_TRUSTED_INTERFACE_0_3,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_BrokerTrusted_0_3,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0 = {
   .iface_macro = PPB_BROWSERFONT_TRUSTED_INTERFACE_1_0,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_BrowserFont_Trusted_1_0,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0 = {
   .iface_macro = PPB_CHARSET_TRUSTED_INTERFACE_1_0,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_CharSet_Trusted_1_0,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_5 = {
   .iface_macro = PPB_FILECHOOSER_TRUSTED_INTERFACE_0_5,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileChooserTrusted_0_5,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6 = {
   .iface_macro = PPB_FILECHOOSER_TRUSTED_INTERFACE_0_6,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileChooserTrusted_0_6,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4 = {
   .iface_macro = PPB_FILEIOTRUSTED_INTERFACE_0_4,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileIOTrusted_0_4,
+  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 

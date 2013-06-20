@@ -57,6 +57,8 @@ class PnaclGen(WrapperGen):
     """
     if self._skip_opt:
       return True
+    if iface.GetName().endswith('Trusted'):
+      return False
     for member in iface.GetListOf('Member'):
       release = member.GetRelease(version)
       if self.MemberNeedsWrapping(member, release):
