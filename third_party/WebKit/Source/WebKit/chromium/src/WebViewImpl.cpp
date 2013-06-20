@@ -524,7 +524,7 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
     if (event.button == WebMouseEvent::ButtonLeft) {
         IntPoint point(event.x, event.y);
         point = m_page->mainFrame()->view()->windowToContents(point);
-        HitTestResult result(m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(point));
+        HitTestResult result(m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(point, HitTestRequest::ReadOnly | HitTestRequest::Active));
         Node* hitNode = result.innerNonSharedNode();
 
         // Take capture on a mouse down on a plugin so we can send it mouse events.
