@@ -82,7 +82,7 @@
             if (isBinary) {
                 response = new Uint8Array(response);
             }
-            callback(new Uint8Array(response));
+            callback(response);
         });
         request.onerror = test.step_func(function(event)
         {
@@ -172,8 +172,9 @@
     };
 
     window['MediaSourceUtil'] = MediaSourceUtil;
-    window['mediasource_test'] = function(testFunction, description)
+    window['mediasource_test'] = function(testFunction, description, options)
     {
+        options = options || {};
         return async_test(function(test) {
             var mediaTag = document.createElement("video");
             document.body.appendChild(mediaTag);
@@ -196,7 +197,7 @@
             {
                 testFunction(test, mediaTag, mediaSource);
             });
-        }, description);
+        }, description, options);
 
     };
 })(window);
