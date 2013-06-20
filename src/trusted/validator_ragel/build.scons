@@ -294,29 +294,24 @@ if ragel_involved:
       env.AlwaysBuild(superinstruction_verified)
       dfacheckvalidator_tests.append(superinstruction_verified)
 
-      env32 = env.Clone(BUILD_TARGET_NAME='x86-32')
-      env64 = env.Clone(BUILD_TARGET_NAME='x86-64')
-      old_ncval32 = env32.File('$STAGING_DIR/ncval$PROGSUFFIX')
-      old_ncval64 = env64.File('$STAGING_DIR/ncval$PROGSUFFIX')
-
       regular_instructions_test = env.AutoDepsCommand(
         'regular_instructions_test_x86_%s.out' % bitness,
         ['${PYTHON}',
          env.File('verify_regular_instructions.py'),
          xml,
          '--bitness', bitness,
-         '--gas', gas,
-         '--objdump', objdump,
          '--validator_dll', validator_dll,
-         '--decoder_dll', decoder_dll,
-         '--ncval32', old_ncval32,
-         '--ncval64', old_ncval64,
-         '--errors', '${TARGET}'])
+         '--decoder_dll', decoder_dll])
 
-      # Never run decoder tests in parallel because they can take all CPU.
+      # Never run exhaustive tests in parallel because they can take all CPU.
       env.AlwaysBuild(regular_instructions_test)
       SideEffect('check_validator', regular_instructions_test)
       dfacheckvalidator_tests.append(regular_instructions_test)
+
+      env32 = env.Clone(BUILD_TARGET_NAME='x86-32')
+      env64 = env.Clone(BUILD_TARGET_NAME='x86-64')
+      old_ncval32 = env32.File('$STAGING_DIR/ncval$PROGSUFFIX')
+      old_ncval64 = env64.File('$STAGING_DIR/ncval$PROGSUFFIX')
 
       regular_instructions_old_test = env.AutoDepsCommand(
         'regular_instructions_old_test_x86_%s.out' % bitness,
@@ -331,7 +326,7 @@ if ragel_involved:
          '--ncval64', old_ncval64,
          '--errors', '${TARGET}'])
 
-      # Never run decoder tests in parallel because they can take all CPU.
+      # Never run exhaustive tests in parallel because they can take all CPU.
       env.AlwaysBuild(regular_instructions_old_test)
       SideEffect('check_validator', regular_instructions_old_test)
       dfacheckvalidator_tests.append(regular_instructions_old_test)
