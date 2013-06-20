@@ -811,6 +811,7 @@ AutofillDialogViews::SuggestionView::SuggestionView(
 
   label_line_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_line_2_->SetVisible(false);
+  label_line_2_->SetMultiLine(true);
   AddChildView(label_line_2_);
 
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
