@@ -263,12 +263,31 @@ PP_Resource ResourceCreationProxy::CreateHostResolverPrivate(
 
 PP_Resource ResourceCreationProxy::CreateImageData(
     PP_Instance instance,
-    PPB_ImageData_Shared::ImageDataType type,
     PP_ImageDataFormat format,
     const PP_Size* size,
     PP_Bool init_to_zero) {
-  return PPB_ImageData_Proxy::CreateProxyResource(instance, type,
-                                                  format, *size, init_to_zero);
+  // On the plugin side, we create PlatformImageData resources for trusted
+  // plugins and SimpleImageData resources for untrusted ones.
+  PPB_ImageData_Shared::ImageDataType type =
+#if !defined(OS_NACL)
+      PPB_ImageData_Shared::PLATFORM;
+#else
+      PPB_ImageData_Shared::SIMPLE;
+#endif
+  return PPB_ImageData_Proxy::CreateProxyResource(
+      instance, type,
+      format, *size, init_to_zero);
+}
+
+PP_Resource ResourceCreationProxy::CreateImageDataSimple(
+    PP_Instance instance,
+    PP_ImageDataFormat format,
+    const PP_Size* size,
+    PP_Bool init_to_zero) {
+  return PPB_ImageData_Proxy::CreateProxyResource(
+      instance,
+      PPB_ImageData_Shared::SIMPLE,
+      format, *size, init_to_zero);
 }
 
 PP_Resource ResourceCreationProxy::CreateNetAddressFromIPv4Address(

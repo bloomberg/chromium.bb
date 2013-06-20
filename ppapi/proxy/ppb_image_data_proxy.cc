@@ -570,12 +570,25 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
     return 0;
 
   PP_Bool pp_init_to_zero = init_to_zero ? PP_TRUE : PP_FALSE;
-  ppapi::ScopedPPResource resource(
-      ppapi::ScopedPPResource::PassRef(),
-      enter.functions()->CreateImageData(instance, type,
-                                         format, &size, pp_init_to_zero));
-  if (!resource.get())
+  PP_Resource pp_resource = 0;
+  switch (type) {
+    case PPB_ImageData_Shared::SIMPLE: {
+      pp_resource = enter.functions()->CreateImageDataSimple(
+          instance, format, &size, pp_init_to_zero);
+      break;
+    }
+    case PPB_ImageData_Shared::PLATFORM: {
+      pp_resource = enter.functions()->CreateImageData(
+          instance, format, &size, pp_init_to_zero);
+      break;
+    }
+  }
+
+  if (!pp_resource)
     return 0;
+
+  ppapi::ScopedPPResource resource(ppapi::ScopedPPResource::PassRef(),
+                                   pp_resource);
 
   thunk::EnterResourceNoLock<PPB_ImageData_API> enter_resource(resource.get(),
                                                                false);

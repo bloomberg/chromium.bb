@@ -6,6 +6,7 @@
 
 #include "ppapi/c/pp_size.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
+#include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/var.h"
@@ -136,11 +137,21 @@ PP_Resource ResourceCreationImpl::CreateHostResolverPrivate(
 
 PP_Resource ResourceCreationImpl::CreateImageData(
     PP_Instance instance,
-    ::ppapi::PPB_ImageData_Shared::ImageDataType type,
     PP_ImageDataFormat format,
     const PP_Size* size,
     PP_Bool init_to_zero) {
-  return PPB_ImageData_Impl::Create(instance, type,
+  return PPB_ImageData_Impl::Create(instance,
+                                    ::ppapi::PPB_ImageData_Shared::PLATFORM,
+                                    format, *size, init_to_zero);
+}
+
+PP_Resource ResourceCreationImpl::CreateImageDataSimple(
+    PP_Instance instance,
+    PP_ImageDataFormat format,
+    const PP_Size* size,
+    PP_Bool init_to_zero) {
+  return PPB_ImageData_Impl::Create(instance,
+                                    ::ppapi::PPB_ImageData_Shared::SIMPLE,
                                     format, *size, init_to_zero);
 }
 
