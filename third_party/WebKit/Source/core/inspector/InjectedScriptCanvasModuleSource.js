@@ -33,7 +33,7 @@
  * @param {Window} inspectedWindow
  * @param {number} injectedScriptId
  */
-(function (InjectedScriptHost, inspectedWindow, injectedScriptId) {
+(function (InjectedScriptHost, inspectedWindow, injectedScriptId, injectedScript) {
 
 var TypeUtils = {
     /**
@@ -2672,14 +2672,27 @@ CallFormatter.prototype = {
     /**
      * @param {*} value
      * @return {!CanvasAgent.CallArgument}
+     * @suppress {checkTypes}
      */
     formatValue: function(value)
     {
-        if (value instanceof ReplayableResource)
-            var description = value.description();
-        else
-            var description = "" + value;
-        return { description: description };
+        if (value instanceof ReplayableResource) {
+            return {
+                description: value.description(),
+                resourceId: CallFormatter.makeStringResourceId(value.id())
+            };
+        }
+
+        var remoteObject = injectedScript.wrapObject(value, "", true, false);
+        var result = {
+            description: remoteObject.description || ("" + value),
+            type: remoteObject.type
+        };
+        if (remoteObject.subtype)
+            result.subtype = remoteObject.subtype;
+        if (remoteObject.objectId)
+            injectedScript.releaseObject(remoteObject.objectId);
+        return result;
     }
 }
 
@@ -2711,6 +2724,15 @@ CallFormatter.formatCall = function(replayableCall)
         formatter = CallFormatter._formatters[contextResource.name()] || new CallFormatter();
     }
     return formatter.formatCall(replayableCall);
+}
+
+/**
+ * @param {number} resourceId
+ * @return {CanvasAgent.ResourceId}
+ */
+CallFormatter.makeStringResourceId = function(resourceId)
+{
+    return "{\"injectedScriptId\":" + injectedScriptId + ",\"resourceId\":" + resourceId + "}";
 }
 
 /**
@@ -3408,7 +3430,7 @@ InjectedCanvasModule.prototype = {
             var stackTrace = call.stackTrace();
             var callFrame = stackTrace ? stackTrace.callFrame(0) || {} : {};
             var item = CallFormatter.formatCall(call);
-            item.contextId = this._makeStringResourceId(contextResource.id());
+            item.contextId = CallFormatter.makeStringResourceId(contextResource.id());
             item.sourceURL = callFrame.sourceURL;
             item.lineNumber = callFrame.lineNumber;
             item.columnNumber = callFrame.columnNumber;
@@ -3416,19 +3438,6 @@ InjectedCanvasModule.prototype = {
             result.calls.push(item);
         }
         return result;
-    },
-
-    /**
-     * @param {*} obj
-     * @return {!CanvasAgent.CallArgument}
-     */
-    _makeCallArgument: function(obj)
-    {
-        if (obj instanceof ReplayableResource)
-            var description = obj.description();
-        else
-            var description = "" + obj;
-        return { description: description };
     },
 
     /**
@@ -3449,7 +3458,7 @@ InjectedCanvasModule.prototype = {
             resource = resource.contextResource();
             dataURL = resource.toDataURL();
         }
-        return this._makeResourceState(this._makeStringResourceId(resource.id()), traceLogId, dataURL);
+        return this._makeResourceState(CallFormatter.makeStringResourceId(resource.id()), traceLogId, dataURL);
     },
 
     /**
@@ -3511,15 +3520,6 @@ InjectedCanvasModule.prototype = {
     _makeTraceLogId: function()
     {
         return "{\"injectedScriptId\":" + injectedScriptId + ",\"traceLogId\":" + (++this._lastTraceLogId) + "}";
-    },
-
-    /**
-     * @param {number} resourceId
-     * @return {CanvasAgent.ResourceId}
-     */
-    _makeStringResourceId: function(resourceId)
-    {
-        return "{\"injectedScriptId\":" + injectedScriptId + ",\"resourceId\":" + resourceId + "}";
     },
 
     /**

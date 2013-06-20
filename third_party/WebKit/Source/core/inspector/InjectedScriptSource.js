@@ -650,7 +650,7 @@ InjectedScript.prototype = {
                 return "Could not find call frame with given id";
             setter = callFrame.setVariableValue.bind(callFrame);    
         } else {
-            var parsedFunctionId = this._parseObjectId(/** @type {string} */(functionObjectId));
+            var parsedFunctionId = this._parseObjectId(/** @type {string} */ (functionObjectId));
             var func = this._objectForId(parsedFunctionId);
             if (typeof func !== "function")
                 return "Cannot resolve function by id.";
@@ -744,7 +744,7 @@ InjectedScript.prototype = {
             inspectedWindow.console.error("Web Inspector error: A function was expected for module %s evaluation", name);
             return null;
         }
-        var module = moduleFunction.call(inspectedWindow, InjectedScriptHost, inspectedWindow, injectedScriptId);
+        var module = moduleFunction.call(inspectedWindow, InjectedScriptHost, inspectedWindow, injectedScriptId, this);
         this._modules[name] = module;
         return module;
     },
@@ -769,7 +769,7 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {Object=} obj
+     * @param {*} obj
      * @return {string?}
      */
     _subtype: function(obj)
@@ -808,8 +808,6 @@ InjectedScript.prototype = {
     {
         if (this.isPrimitiveValue(obj))
             return null;
-
-        obj = /** @type {Object} */ (obj);
 
         // Type is object, get subtype.
         var subtype = this._subtype(obj);
@@ -868,7 +866,7 @@ InjectedScript.prototype = {
 }
 
 /**
- * @type {InjectedScript}
+ * @type {!InjectedScript}
  * @const
  */
 var injectedScript = new InjectedScript();
@@ -886,15 +884,15 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
     this.type = typeof object;
     if (injectedScript.isPrimitiveValue(object) || object === null || forceValueType) {
         // We don't send undefined values over JSON.
-        if (typeof object !== "undefined")
+        if (this.type !== "undefined")
             this.value = object;
 
-        // Null object is object with 'null' subtype'
+        // Null object is object with 'null' subtype.
         if (object === null)
             this.subtype = "null";
 
         // Provide user-friendly number values.
-        if (typeof object === "number")
+        if (this.type === "number")
             this.description = object + "";
         return;
     }
@@ -947,7 +945,7 @@ InjectedScript.RemoteObject.prototype = {
      */
     _generateProtoPreview: function(object, preview, propertiesThreshold, firstLevelKeys, secondLevelKeys)
     {
-        var propertyNames = firstLevelKeys ? firstLevelKeys : Object.keys(/** @type {!Object} */(object));
+        var propertyNames = firstLevelKeys ? firstLevelKeys : Object.keys(/** @type {!Object} */ (object));
         try {
             for (var i = 0; i < propertyNames.length; ++i) {
                 if (!propertiesThreshold.properties || !propertiesThreshold.indexes) {
@@ -959,7 +957,7 @@ InjectedScript.RemoteObject.prototype = {
                 if (this.subtype === "array" && name === "length")
                     continue;
 
-                var descriptor = Object.getOwnPropertyDescriptor(/** @type {!Object} */(object), name);
+                var descriptor = Object.getOwnPropertyDescriptor(/** @type {!Object} */ (object), name);
                 if (!("value" in descriptor) || !descriptor.enumerable) {
                     preview.lossless = false;
                     continue;

@@ -6,7 +6,7 @@ Tests WebGL enum formatting.
   {Call}  functionName:"activeTexture"  arguments:[TEXTURE2]
   {Call}  functionName:"createBuffer"  arguments:[]  result:WebGLBuffer@1
   {Call}  functionName:"bindBuffer"  arguments:[ARRAY_BUFFER,WebGLBuffer@1]
-  {Call}  functionName:"bufferData"  arguments:[ARRAY_BUFFER,[object Float32Array],STATIC_DRAW]
+  {Call}  functionName:"bufferData"  arguments:[ARRAY_BUFFER,Float32Array[6],STATIC_DRAW]
   {Call}  functionName:"createFramebuffer"  arguments:[]  result:WebGLFramebuffer@1
   {Call}  functionName:"bindFramebuffer"  arguments:[FRAMEBUFFER,WebGLFramebuffer@1]
   {Call}  functionName:"pixelStorei"  arguments:[UNPACK_FLIP_Y_WEBGL,true]
@@ -35,5 +35,5 @@ Tests WebGL enum formatting.
   {Call}  functionName:"getParameter"  arguments:[BLEND_EQUATION]  result:32774
   {Call}  functionName:"createTexture"  arguments:[]  result:WebGLTexture@2
   {Call}  functionName:"bindTexture"  arguments:[TEXTURE_2D,WebGLTexture@2]
-  {Call}  functionName:"texImage2D"  arguments:[TEXTURE_2D,0,RGBA,RGBA,UNSIGNED_BYTE,[object HTMLImageElement]]
+  {Call}  functionName:"texImage2D"  arguments:[TEXTURE_2D,0,RGBA,RGBA,UNSIGNED_BYTE,img]
 
