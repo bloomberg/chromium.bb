@@ -5,9 +5,6 @@
 #include "chrome/browser/google_apis/task_util.h"
 
 #include "base/location.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace google_apis {
 
@@ -19,11 +16,6 @@ void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
     const bool posted = relay_proxy->PostTask(FROM_HERE, task);
     DCHECK(posted);
   }
-}
-
-void RunTaskOnUIThread(const base::Closure& task) {
-  RunTaskOnThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI), task);
 }
 
 }  // namespace google_apis

@@ -29,6 +29,12 @@ int FileErrorToNetError(FileError error) {
   return net::PlatformFileErrorToNetError(FileErrorToPlatformError(error));
 }
 
+// Runs task on UI thread.
+void RunTaskOnUIThread(const base::Closure& task) {
+  google_apis::RunTaskOnThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI), task);
+}
+
 }  // namespace
 
 namespace internal {
@@ -372,8 +378,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
     reader_proxy_.reset(
         new internal::NetworkReaderProxy(
             byte_range.first_byte_position(), range_length,
-            base::Bind(&google_apis::RunTaskOnUIThread,
-                       ui_cancel_download_closure)));
+            base::Bind(&RunTaskOnUIThread, ui_cancel_download_closure)));
     callback.Run(net::OK, entry.Pass());
     return;
   }

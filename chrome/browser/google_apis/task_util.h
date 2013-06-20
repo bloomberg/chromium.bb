@@ -14,9 +14,6 @@ namespace google_apis {
 void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
                      const base::Closure& task);
 
-// Runs task on UI thread.
-void RunTaskOnUIThread(const base::Closure& task);
-
 namespace internal {
 
 // Implementation of the composed callback, whose signature is |Sig|.
