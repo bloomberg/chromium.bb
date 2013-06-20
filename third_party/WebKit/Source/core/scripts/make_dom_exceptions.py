@@ -52,10 +52,6 @@ enum ExceptionType {
 struct ExceptionCodeDescription {
     explicit ExceptionCodeDescription(ExceptionCode);
 
-    // |typeName| has spaces and is suitable for use in exception
-    // description strings; maximum length is 10 characters.
-    const char* typeName;
-
     // |name| is the exception name, also intended for use in exception
     // description strings; 0 if name not known; maximum length is 27
     // characters.

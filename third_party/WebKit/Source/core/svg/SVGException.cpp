@@ -46,7 +46,6 @@ bool SVGException::initializeDescription(ExceptionCode ec, ExceptionCodeDescript
     if (ec < SVGExceptionOffset || ec > SVGExceptionMax)
         return false;
 
-    description->typeName = "DOM SVG";
     description->code = ec - SVGExceptionOffset;
     description->type = SVGExceptionType;
 

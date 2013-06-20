@@ -41,7 +41,7 @@ ExceptionBase::ExceptionBase(const ExceptionCodeDescription& description)
     if (description.name)
         m_name = description.name;
     else
-        m_name = description.typeName;
+        m_name = "Error";
 }
 
 String ExceptionBase::toString() const

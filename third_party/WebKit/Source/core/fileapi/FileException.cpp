@@ -55,7 +55,6 @@ bool FileException::initializeDescription(ExceptionCode ec, ExceptionCodeDescrip
     if (ec < FileExceptionOffset || ec > FileExceptionMax)
         return false;
 
-    description->typeName = "DOM File";
     description->code = ec - FileExceptionOffset;
     description->type = FileExceptionType;
 

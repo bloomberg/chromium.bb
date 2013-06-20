@@ -51,7 +51,6 @@ bool SQLException::initializeDescription(ExceptionCode ec, ExceptionCodeDescript
     if (ec < SQLExceptionOffset || ec > SQLExceptionMax)
         return false;
 
-    description->typeName = "DOM SQL";
     description->code = ec - SQLExceptionOffset;
     description->type = SQLExceptionType;
 

@@ -67,7 +67,6 @@ static struct CoreException {
 
 bool DOMCoreException::initializeDescription(ExceptionCode ec, ExceptionCodeDescription* description)
 {
-    description->typeName = "DOM";
     description->code = ec;
     description->type = DOMCoreExceptionType;
 
