@@ -300,6 +300,7 @@
         'browser/ui/autofill/tab_autofill_manager_delegate.h',
         'browser/ui/auto_login_infobar_delegate.cc',
         'browser/ui/auto_login_infobar_delegate.h',
+        'browser/ui/auto_login_infobar_delegate_android.h',
         'browser/ui/auto_login_prompter.cc',
         'browser/ui/auto_login_prompter.h',
         'browser/ui/blocked_content/blocked_content_container.cc',

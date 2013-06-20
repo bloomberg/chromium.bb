@@ -39,6 +39,10 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/auto_login_infobar_delegate_android.h"
+#endif
+
 using content::NavigationController;
 using content::NotificationSource;
 using content::NotificationDetails;
@@ -131,7 +135,7 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
       std::string());
 }
 
-}  // namepsace
+}  // namespace
 
 
 // AutoLoginInfoBarDelegate::Params -------------------------------------------
@@ -146,13 +150,12 @@ AutoLoginInfoBarDelegate::Params::~Params() {}
 void AutoLoginInfoBarDelegate::Create(InfoBarService* infobar_service,
                                       const Params& params) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new AutoLoginInfoBarDelegate(infobar_service, params)));
-}
-
-string16 AutoLoginInfoBarDelegate::GetMessageText(
-    const std::string& username) const {
-  return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
-                                    UTF8ToUTF16(username));
+#if defined(OS_ANDROID)
+      new AutoLoginInfoBarDelegateAndroid(infobar_service, params)
+#else
+      new AutoLoginInfoBarDelegate(infobar_service, params)
+#endif
+      ));
 }
 
 AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
@@ -192,7 +195,8 @@ AutoLoginInfoBarDelegate*
 }
 
 string16 AutoLoginInfoBarDelegate::GetMessageText() const {
-  return GetMessageText(params_.username);
+  return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
+                                    UTF8ToUTF16(params_.username));
 }
 
 string16 AutoLoginInfoBarDelegate::GetButtonLabel(

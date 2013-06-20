@@ -6558,6 +6558,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_AUTOLOGIN_NAME" desc="Title for the flag to auto-login the user">
         Enable auto-login
       </message>
+      <message desc="Message to display when auto-login fails. [CHAR-LIMIT=64]" name="IDS_AUTO_LOGIN_FAILED">
+        Automatic sign in failed
+      </message>
       <message name="IDS_FLAGS_ENABLE_AUTOLOGIN_DESCRIPTION" desc="Description for the flag to pre-login the user">
         When enabled, visiting a Google account login page will trigger an infobar allowing easy sign in with the Google account connected to the profile.
         Auto-login is always disabled if the profile is not connected to an account, regardless of this flag.
