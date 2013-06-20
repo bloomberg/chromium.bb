@@ -97,6 +97,7 @@
 #define HEAP_PROFILE_MMAP "heapprof.mmap"
 #define HEAP_PROFILE_ONLY_MMAP "heapprof.only_mmap"
 #define DEEP_HEAP_PROFILE "heapprof.deep_heap_profile"
+#define DEEP_HEAP_PROFILE_PAGEFRAME "heapprof.deep.pageframe"
 #define HEAP_PROFILE_TYPE_STATISTICS "heapprof.type_statistics"
 #else  // defined(__ANDROID__) || defined(ANDROID)
 #define HEAPPROFILE "HEAPPROFILE"
@@ -108,6 +109,7 @@
 #define HEAP_PROFILE_MMAP "HEAP_PROFILE_MMAP"
 #define HEAP_PROFILE_ONLY_MMAP "HEAP_PROFILE_ONLY_MMAP"
 #define DEEP_HEAP_PROFILE "DEEP_HEAP_PROFILE"
+#define DEEP_HEAP_PROFILE_PAGEFRAME "DEEP_HEAP_PROFILE_PAGEFRAME"
 #define HEAP_PROFILE_TYPE_STATISTICS "HEAP_PROFILE_TYPE_STATISTICS"
 #endif  // defined(__ANDROID__) || defined(ANDROID)
 
@@ -154,7 +156,11 @@ DEFINE_bool(only_mmap_profile,
             "do not profile malloc/new/etc");
 DEFINE_bool(deep_heap_profile,
             EnvToBool(DEEP_HEAP_PROFILE, false),
-            "If heap-profiling is on, profile deeper (only on Linux)");
+            "If heap-profiling is on, profile deeper (Linux and Android)");
+DEFINE_int32(deep_heap_profile_pageframe,
+             EnvToInt(DEEP_HEAP_PROFILE_PAGEFRAME, 0),
+             "Needs deeper profile. If 1, dump page frame numbers (PFNs). "
+             "If 2, dump page counts (/proc/kpagecount) with PFNs.");
 #if defined(TYPE_PROFILING)
 DEFINE_bool(heap_profile_type_statistics,
             EnvToBool(HEAP_PROFILE_TYPE_STATISTICS, false),
@@ -522,7 +528,8 @@ extern "C" void HeapProfilerStart(const char* prefix) {
     // Initialize deep memory profiler
     RAW_VLOG(0, "[%d] Starting a deep memory profiler", getpid());
     deep_profile = new(ProfilerMalloc(sizeof(DeepHeapProfile)))
-        DeepHeapProfile(heap_profile, prefix);
+        DeepHeapProfile(heap_profile, prefix, DeepHeapProfile::PageFrameType(
+            FLAGS_deep_heap_profile_pageframe));
   }
 
   // We do not reset dump_count so if the user does a sequence of

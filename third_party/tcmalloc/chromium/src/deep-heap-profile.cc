@@ -19,6 +19,18 @@
 #include <unistd.h>  // for getpagesize and getpid
 #endif  // HAVE_UNISTD_H
 
+#if defined(__linux__)
+#include <endian.h>
+#if !defined(__LITTLE_ENDIAN__) and !defined(__BIG_ENDIAN__)
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define __BIG_ENDIAN__
+#endif  // __BYTE_ORDER == __BIG_ENDIAN
+#endif  // !defined(__LITTLE_ENDIAN__) and !defined(__BIG_ENDIAN__)
+#if defined(__BIG_ENDIAN__)
+#include <byteswap.h>
+#endif  // defined(__BIG_ENDIAN__)
+#endif  // defined(__linux__)
+
 #include "base/cycleclock.h"
 #include "base/sysinfo.h"
 #include "internal_logging.h"  // for ASSERT, etc
@@ -27,6 +39,7 @@ static const int kProfilerBufferSize = 1 << 20;
 static const int kHashTableSize = 179999;  // Same as heap-profile-table.cc.
 
 static const int PAGEMAP_BYTES = 8;
+static const int KPAGECOUNT_BYTES = 8;
 static const uint64 MAX_ADDRESS = kuint64max;
 
 // Tag strings in heap profile dumps.
@@ -78,60 +91,32 @@ bool DeepHeapProfile::AppendCommandLine(TextBuffer* buffer) {
 
 #endif  // defined(__linux__)
 
-namespace {
-
 #if defined(__linux__)
 
-// Implements MemoryResidenceInfoGetterInterface for Linux.
-class MemoryInfoGetterLinux :
-    public DeepHeapProfile::MemoryResidenceInfoGetterInterface {
- public:
-  MemoryInfoGetterLinux(): fd_(kIllegalRawFD) {}
-  virtual ~MemoryInfoGetterLinux() {}
-
-  // Opens /proc/<pid>/pagemap and stores its file descriptor.
-  // It keeps open while the process is running.
-  //
-  // Note that file descriptors need to be refreshed after fork.
-  virtual void Initialize();
-
-  // Returns the number of resident (including swapped) bytes of the given
-  // memory region from |first_address| to |last_address| inclusive.
-  virtual size_t CommittedSize(uint64 first_address, uint64 last_address) const;
-
- private:
-  struct State {
-    bool is_committed;  // Currently, we use only this
-    bool is_present;
-    bool is_swapped;
-    bool is_shared;
-    bool is_mmap;
-  };
-
-  // Seeks to the offset of the open pagemap file.
-  // It returns true if succeeded.
-  bool Seek(uint64 address) const;
-
-  // Reads a pagemap state from the current offset.
-  // It returns true if succeeded.
-  bool Read(State* state) const;
-
-  RawFD fd_;
-};
-
-void MemoryInfoGetterLinux::Initialize() {
+void DeepHeapProfile::MemoryInfoGetterLinux::Initialize() {
   char filename[100];
   snprintf(filename, sizeof(filename), "/proc/%d/pagemap",
            static_cast<int>(getpid()));
-  fd_ = open(filename, O_RDONLY);
-  RAW_DCHECK(fd_ != -1, "Failed to open /proc/self/pagemap");
+  pagemap_fd_ = open(filename, O_RDONLY);
+  RAW_CHECK(pagemap_fd_ != -1, "Failed to open /proc/self/pagemap");
+
+  if (pageframe_type_ == DUMP_PAGECOUNT) {
+    snprintf(filename, sizeof(filename), "/proc/kpagecount",
+             static_cast<int>(getpid()));
+    kpagecount_fd_ = open(filename, O_RDONLY);
+    if (kpagecount_fd_ == -1)
+      RAW_LOG(0, "Failed to open /proc/kpagecount");
+  }
 }
 
-size_t MemoryInfoGetterLinux::CommittedSize(
-    uint64 first_address, uint64 last_address) const {
+size_t DeepHeapProfile::MemoryInfoGetterLinux::CommittedSize(
+    uint64 first_address,
+    uint64 last_address,
+    DeepHeapProfile::TextBuffer* buffer) const {
   int page_size = getpagesize();
   uint64 page_address = (first_address / page_size) * page_size;
   size_t committed_size = 0;
+  size_t pageframe_list_length = 0;
 
   Seek(first_address);
 
@@ -141,13 +126,43 @@ size_t MemoryInfoGetterLinux::CommittedSize(
     State state;
     // TODO(dmikurube): Read pagemap in bulk for speed.
     // TODO(dmikurube): Consider using mincore(2).
-    if (Read(&state) == false) {
+    if (Read(&state, pageframe_type_ != DUMP_NO_PAGEFRAME) == false) {
       // We can't read the last region (e.g vsyscall).
 #ifndef NDEBUG
       RAW_LOG(0, "pagemap read failed @ %#llx %"PRId64" bytes",
               first_address, last_address - first_address + 1);
 #endif
       return 0;
+    }
+
+    // Dump pageframes of resident pages.  Non-resident pages are just skipped.
+    if (pageframe_type_ != DUMP_NO_PAGEFRAME &&
+        buffer != NULL && state.pfn != 0) {
+      if (pageframe_list_length == 0) {
+        buffer->AppendString("  PF:", 0);
+        pageframe_list_length = 5;
+      }
+      buffer->AppendChar(' ');
+      if (page_address < first_address)
+        buffer->AppendChar('<');
+      buffer->AppendBase64(state.pfn, 4);
+      pageframe_list_length += 5;
+      if (pageframe_type_ == DUMP_PAGECOUNT && IsPageCountAvailable()) {
+        uint64 pagecount = ReadPageCount(state.pfn);
+        // Assume pagecount == 63 if the pageframe is mapped more than 63 times.
+        if (pagecount > 63)
+          pagecount = 63;
+        buffer->AppendChar('#');
+        buffer->AppendBase64(pagecount, 1);
+        pageframe_list_length += 2;
+      }
+      if (last_address < page_address - 1 + page_size)
+        buffer->AppendChar('>');
+      // Begins a new line every 94 characters.
+      if (pageframe_list_length > 94) {
+        buffer->AppendChar('\n');
+        pageframe_list_length = 0;
+      }
     }
 
     if (state.is_committed) {
@@ -172,17 +187,37 @@ size_t MemoryInfoGetterLinux::CommittedSize(
     page_address += page_size;
   }
 
+  if (pageframe_type_ != DUMP_NO_PAGEFRAME &&
+      buffer != NULL && pageframe_list_length != 0) {
+    buffer->AppendChar('\n');
+  }
+
   return committed_size;
 }
 
-bool MemoryInfoGetterLinux::Seek(uint64 address) const {
+uint64 DeepHeapProfile::MemoryInfoGetterLinux::ReadPageCount(uint64 pfn) const {
+  int64 index = pfn * KPAGECOUNT_BYTES;
+  int64 offset = lseek64(kpagecount_fd_, index, SEEK_SET);
+  RAW_DCHECK(offset == index, "Failed in seeking in kpagecount.");
+
+  uint64 kpagecount_value;
+  int result = read(kpagecount_fd_, &kpagecount_value, KPAGECOUNT_BYTES);
+  if (result != KPAGECOUNT_BYTES)
+    return 0;
+
+  return kpagecount_value;
+}
+
+bool DeepHeapProfile::MemoryInfoGetterLinux::Seek(uint64 address) const {
   int64 index = (address / getpagesize()) * PAGEMAP_BYTES;
-  int64 offset = lseek64(fd_, index, SEEK_SET);
+  RAW_DCHECK(pagemap_fd_ != -1, "Failed to seek in /proc/self/pagemap");
+  int64 offset = lseek64(pagemap_fd_, index, SEEK_SET);
   RAW_DCHECK(offset == index, "Failed in seeking.");
   return offset >= 0;
 }
 
-bool MemoryInfoGetterLinux::Read(State* state) const {
+bool DeepHeapProfile::MemoryInfoGetterLinux::Read(
+    State* state, bool get_pfn) const {
   static const uint64 U64_1 = 1;
   static const uint64 PFN_FILTER = (U64_1 << 55) - U64_1;
   static const uint64 PAGE_PRESENT = U64_1 << 63;
@@ -193,7 +228,8 @@ bool MemoryInfoGetterLinux::Read(State* state) const {
   static const uint64 FLAG_MMAP = U64_1 << 11;
 
   uint64 pagemap_value;
-  int result = read(fd_, &pagemap_value, PAGEMAP_BYTES);
+  RAW_DCHECK(pagemap_fd_ != -1, "Failed to read from /proc/self/pagemap");
+  int result = read(pagemap_fd_, &pagemap_value, PAGEMAP_BYTES);
   if (result != PAGEMAP_BYTES) {
     return false;
   }
@@ -205,12 +241,19 @@ bool MemoryInfoGetterLinux::Read(State* state) const {
   state->is_swapped = (pagemap_value & PAGE_SWAP);
   state->is_shared = false;
 
+  if (get_pfn && state->is_present && !state->is_swapped)
+    state->pfn = (pagemap_value & PFN_FILTER);
+  else
+    state->pfn = 0;
+
   return true;
 }
 
-#endif  // defined(__linux__)
+bool DeepHeapProfile::MemoryInfoGetterLinux::IsPageCountAvailable() const {
+  return kpagecount_fd_ != -1;
+}
 
-}  // anonymous namespace
+#endif  // defined(__linux__)
 
 DeepHeapProfile::MemoryResidenceInfoGetterInterface::
     MemoryResidenceInfoGetterInterface() {}
@@ -219,23 +262,26 @@ DeepHeapProfile::MemoryResidenceInfoGetterInterface::
     ~MemoryResidenceInfoGetterInterface() {}
 
 DeepHeapProfile::MemoryResidenceInfoGetterInterface*
-    DeepHeapProfile::MemoryResidenceInfoGetterInterface::Create() {
+    DeepHeapProfile::MemoryResidenceInfoGetterInterface::Create(
+        PageFrameType pageframe_type) {
 #if defined(__linux__)
-  return new MemoryInfoGetterLinux();
+  return new MemoryInfoGetterLinux(pageframe_type);
 #else
   return NULL;
 #endif
 }
 
 DeepHeapProfile::DeepHeapProfile(HeapProfileTable* heap_profile,
-                                 const char* prefix)
+                                 const char* prefix,
+                                 enum PageFrameType pageframe_type)
     : memory_residence_info_getter_(
-          MemoryResidenceInfoGetterInterface::Create()),
+          MemoryResidenceInfoGetterInterface::Create(pageframe_type)),
       most_recent_pid_(-1),
       stats_(),
       dump_count_(0),
       filename_prefix_(NULL),
       deep_table_(kHashTableSize, heap_profile->alloc_, heap_profile->dealloc_),
+      pageframe_type_(pageframe_type),
       heap_profile_(heap_profile) {
   // Copy filename prefix.
   const int prefix_length = strlen(prefix);
@@ -311,6 +357,16 @@ void DeepHeapProfile::DumpOrderedProfile(const char* reason,
   buffer.AppendString("PageSize: ", 0);
   buffer.AppendInt(getpagesize(), 0, 0);
   buffer.AppendChar('\n');
+
+  // Assumes the physical memory <= 64GB (PFN < 2^24).
+  if (pageframe_type_ == DUMP_PAGECOUNT &&
+      memory_residence_info_getter_->IsPageCountAvailable()) {
+    buffer.AppendString("PageFrame: 24,Base64,PageCount", 0);
+    buffer.AppendChar('\n');
+  } else if (pageframe_type_ != DUMP_NO_PAGEFRAME) {
+    buffer.AppendString("PageFrame: 24,Base64", 0);
+    buffer.AppendChar('\n');
+  }
 
   // Fill buffer with the global stats.
   buffer.AppendString(kMMapListHeader, 0);
@@ -436,6 +492,19 @@ bool DeepHeapProfile::TextBuffer::AppendPtr(uint64 value, int width) {
   else
     appended = snprintf(position, available, "%0*"PRIx64, width, value);
   return ForwardCursor(appended);
+}
+
+bool DeepHeapProfile::TextBuffer::AppendBase64(uint64 value, int width) {
+  static const char base64[65] =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+#if defined(__BIG_ENDIAN__)
+  value = bswap_64(value);
+#endif
+  for (int shift = (width - 1) * 6; shift >= 0; shift -= 6) {
+    if (!AppendChar(base64[(value >> shift) & 0x3f]))
+      return false;
+  }
+  return true;
 }
 
 bool DeepHeapProfile::TextBuffer::ForwardCursor(int appended) {
@@ -650,11 +719,13 @@ void DeepHeapProfile::RegionStats::Initialize() {
 uint64 DeepHeapProfile::RegionStats::Record(
     const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
     uint64 first_address,
-    uint64 last_address) {
+    uint64 last_address,
+    TextBuffer* buffer) {
   uint64 committed;
   virtual_bytes_ += static_cast<size_t>(last_address - first_address + 1);
   committed = memory_residence_info_getter->CommittedSize(first_address,
-                                                          last_address);
+                                                          last_address,
+                                                          buffer);
   committed_bytes_ += committed;
   return committed;
 }
@@ -754,7 +825,7 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
     // TODO(dmikurube): This |all_| count should be removed in future soon.
     // See http://crbug.com/245603.
     uint64 vma_total = all_[type].Record(
-        memory_residence_info_getter, vma_start_addr, vma_last_addr);
+        memory_residence_info_getter, vma_start_addr, vma_last_addr, NULL);
     uint64 vma_subtotal = 0;
 
     // TODO(dmikurube): Stop double-counting pagemap.
@@ -794,7 +865,8 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
           uint64 committed_size = unhooked_[type].Record(
               memory_residence_info_getter,
               cursor,
-              last_address_of_unhooked);
+              last_address_of_unhooked,
+              mmap_dump_buffer);
           vma_subtotal += committed_size;
           if (mmap_dump_buffer) {
             mmap_dump_buffer->AppendString("  ", 0);
@@ -826,7 +898,7 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
           else
             partial_last_address = mmap_iter->end_addr - 1;
           uint64 committed_size = memory_residence_info_getter->CommittedSize(
-              partial_first_address, partial_last_address);
+              partial_first_address, partial_last_address, mmap_dump_buffer);
           vma_subtotal += committed_size;
           mmap_dump_buffer->AppendString(trailing ? " (" : "  ", 0);
           mmap_dump_buffer->AppendPtr(mmap_iter->start_addr, 0);
@@ -956,7 +1028,7 @@ void DeepHeapProfile::GlobalStats::RecordAlloc(const void* pointer,
                                                DeepHeapProfile* deep_profile) {
   uint64 address = reinterpret_cast<uintptr_t>(pointer);
   size_t committed = deep_profile->memory_residence_info_getter_->CommittedSize(
-      address, address + alloc_value->bytes - 1);
+      address, address + alloc_value->bytes - 1, NULL);
 
   DeepBucket* deep_bucket = deep_profile->deep_table_.Lookup(
       alloc_value->bucket(),
@@ -975,7 +1047,7 @@ DeepHeapProfile::DeepBucket*
         const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
         DeepHeapProfile* deep_profile) {
   size_t committed = deep_profile->memory_residence_info_getter_->
-      CommittedSize(mmap_iter->start_addr, mmap_iter->end_addr - 1);
+      CommittedSize(mmap_iter->start_addr, mmap_iter->end_addr - 1, NULL);
 
   // TODO(dmikurube): Store a reference to the bucket in region.
   Bucket* bucket = MemoryRegionMap::GetBucket(

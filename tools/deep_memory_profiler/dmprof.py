@@ -1080,6 +1080,11 @@ class Dump(object):
             current_vma[key] = value
         ln += 1
         continue
+
+      if self._lines[ln].startswith('  PF: '):
+        ln += 1
+        continue
+
       matched = self._HOOK_PATTERN.match(self._lines[ln])
       if not matched:
         break

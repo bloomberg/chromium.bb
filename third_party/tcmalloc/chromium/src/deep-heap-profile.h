@@ -46,24 +46,10 @@
 
 class DeepHeapProfile {
  public:
-  // Defines an interface for getting info about memory residence.
-  class MemoryResidenceInfoGetterInterface {
-   public:
-    virtual ~MemoryResidenceInfoGetterInterface();
-
-    // Initializes the instance.
-    virtual void Initialize() = 0;
-
-    // Returns the number of resident (including swapped) bytes of the given
-    // memory region from |first_address| to |last_address| inclusive.
-    virtual size_t CommittedSize(
-        uint64 first_address, uint64 last_address) const = 0;
-
-    // Creates a new platform specific MemoryResidenceInfoGetterInterface.
-    static MemoryResidenceInfoGetterInterface* Create();
-
-   protected:
-    MemoryResidenceInfoGetterInterface();
+  enum PageFrameType {
+    DUMP_NO_PAGEFRAME = 0,  // Dumps nothing about pageframes
+    DUMP_PFN = 1,           // Dumps only pageframe numbers (PFNs)
+    DUMP_PAGECOUNT = 2,     // Dumps PFNs and pagecounts
   };
 
   // Constructs a DeepHeapProfile instance.  It works as a wrapper of
@@ -73,7 +59,10 @@ class DeepHeapProfile {
   // data in |heap_profile| and forwards operations to |heap_profile| if
   // DeepHeapProfile is not available (non-Linux).
   // |prefix| is a prefix of dumped file names.
-  DeepHeapProfile(HeapProfileTable* heap_profile, const char* prefix);
+  // |pageframe_type| means what information is dumped for pageframes.
+  DeepHeapProfile(HeapProfileTable* heap_profile,
+                  const char* prefix,
+                  enum PageFrameType pageframe_type);
   ~DeepHeapProfile();
 
   // Dumps a deep profile into |fd| with using |raw_buffer| of |buffer_size|.
@@ -140,6 +129,7 @@ class DeepHeapProfile {
     bool AppendLong(long value, int width);
     bool AppendUnsignedLong(unsigned long value, int width);
     bool AppendInt64(int64 value, int width);
+    bool AppendBase64(uint64 value, int width);
     bool AppendPtr(uint64 value, int width);
 
    private:
@@ -151,6 +141,80 @@ class DeepHeapProfile {
     RawFD fd_;
     DISALLOW_COPY_AND_ASSIGN(TextBuffer);
   };
+
+  // Defines an interface for getting info about memory residence.
+  class MemoryResidenceInfoGetterInterface {
+   public:
+    virtual ~MemoryResidenceInfoGetterInterface();
+
+    // Initializes the instance.
+    virtual void Initialize() = 0;
+
+    // Returns the number of resident (including swapped) bytes of the given
+    // memory region from |first_address| to |last_address| inclusive.
+    virtual size_t CommittedSize(uint64 first_address,
+                                 uint64 last_address,
+                                 TextBuffer* buffer) const = 0;
+
+    // Creates a new platform specific MemoryResidenceInfoGetterInterface.
+    static MemoryResidenceInfoGetterInterface* Create(
+        PageFrameType pageframe_type);
+
+    virtual bool IsPageCountAvailable() const = 0;
+
+   protected:
+    MemoryResidenceInfoGetterInterface();
+  };
+
+#if defined(__linux__)
+  // Implements MemoryResidenceInfoGetterInterface for Linux.
+  class MemoryInfoGetterLinux : public MemoryResidenceInfoGetterInterface {
+   public:
+    MemoryInfoGetterLinux(PageFrameType pageframe_type)
+        : pageframe_type_(pageframe_type),
+          pagemap_fd_(kIllegalRawFD),
+          kpagecount_fd_(kIllegalRawFD) {}
+    virtual ~MemoryInfoGetterLinux() {}
+
+    // Opens /proc/<pid>/pagemap and stores its file descriptor.
+    // It keeps open while the process is running.
+    //
+    // Note that file descriptors need to be refreshed after fork.
+    virtual void Initialize();
+
+    // Returns the number of resident (including swapped) bytes of the given
+    // memory region from |first_address| to |last_address| inclusive.
+    virtual size_t CommittedSize(uint64 first_address,
+                                 uint64 last_address,
+                                 TextBuffer* buffer) const;
+
+    virtual bool IsPageCountAvailable() const;
+
+   private:
+    struct State {
+      uint64 pfn;
+      bool is_committed;  // Currently, we use only this
+      bool is_present;
+      bool is_swapped;
+      bool is_shared;
+      bool is_mmap;
+    };
+
+    uint64 ReadPageCount(uint64 pfn) const;
+
+    // Seeks to the offset of the open pagemap file.
+    // It returns true if succeeded.
+    bool Seek(uint64 address) const;
+
+    // Reads a pagemap state from the current offset.
+    // It returns true if succeeded.
+    bool Read(State* state, bool get_pfn) const;
+
+    PageFrameType pageframe_type_;
+    RawFD pagemap_fd_;
+    RawFD kpagecount_fd_;
+  };
+#endif  // defined(__linux__)
 
   // Contains extended information for HeapProfileTable::Bucket.  These objects
   // are managed in a hash table (DeepBucketTable) whose key is an address of
@@ -228,7 +292,8 @@ class DeepHeapProfile {
     uint64 Record(
         const MemoryResidenceInfoGetterInterface* memory_residence_info_getter,
         uint64 first_address,
-        uint64 last_address);
+        uint64 last_address,
+        TextBuffer* buffer);
 
     // Writes stats of the region into |buffer| with |name|.
     void Unparse(const char* name, TextBuffer* buffer);
@@ -312,6 +377,8 @@ class DeepHeapProfile {
   char* filename_prefix_;  // Output file prefix.
 
   DeepBucketTable deep_table_;
+
+  enum PageFrameType pageframe_type_;
 #endif  // USE_DEEP_HEAP_PROFILE
 
   HeapProfileTable* heap_profile_;
