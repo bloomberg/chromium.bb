@@ -313,7 +313,6 @@ TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {
 
   // Supported cases (samples).
   EXPECT_EQ("us", util_.GetKeyboardLayoutName(pinyin_ime_id));
-  EXPECT_EQ("us", util_.GetKeyboardLayoutName("m17n:ar:kbd"));
   EXPECT_EQ("es", util_.GetKeyboardLayoutName("xkb:es::spa"));
   EXPECT_EQ("es(cat)", util_.GetKeyboardLayoutName("xkb:es:cat:cat"));
   EXPECT_EQ("gb(extd)", util_.GetKeyboardLayoutName("xkb:gb:extd:eng"));
@@ -448,7 +447,8 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Th) {
   util_.GetFirstLoginInputMethodIds("th", *descriptor, &input_method_ids);
   ASSERT_EQ(2U, input_method_ids.size());
   EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
-  EXPECT_EQ("m17n:th:kesmanee", input_method_ids[1]);  // Kesmanee.
+  EXPECT_EQ("_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_th",
+            input_method_ids[1]);  // Kesmanee.
 }
 
 // US keyboard + Vietnamese = US keyboard + TCVN6064.
@@ -460,7 +460,8 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Vi) {
   util_.GetFirstLoginInputMethodIds("vi", *descriptor, &input_method_ids);
   ASSERT_EQ(2U, input_method_ids.size());
   EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
-  EXPECT_EQ("m17n:vi:tcvn", input_method_ids[1]);  // TCVN6064.
+  EXPECT_EQ("_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_vi_tcvn",
+            input_method_ids[1]);  // TCVN6064.
 }
 
 TEST_F(InputMethodUtilTest, TestGetLanguageCodesFromInputMethodIds) {

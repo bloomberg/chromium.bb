@@ -1183,16 +1183,16 @@ TEST_F(InputMethodManagerImplTest,
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   std::vector<std::string> ids;
   ids.push_back(nacl_mozc_us_id);
-  ids.push_back("m17n:kn:itrans");
+  ids.push_back(nacl_mozc_jp_id);
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   manager_->ChangeInputMethod(nacl_mozc_us_id);
-  manager_->ChangeInputMethod("m17n:kn:itrans");
+  manager_->ChangeInputMethod(nacl_mozc_jp_id);
 
   InitComponentExtension();
   InitIBusBus();
   EXPECT_EQ(1, mock_ibus_client_->set_global_engine_call_count());
-  EXPECT_EQ("m17n:kn:itrans", mock_ibus_client_->latest_global_engine_name());
+  EXPECT_EQ(nacl_mozc_jp_id, mock_ibus_client_->latest_global_engine_name());
 }
 
 TEST_F(InputMethodManagerImplTest,

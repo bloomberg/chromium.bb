@@ -118,6 +118,8 @@ const struct {
   { "zh-CN", "us", "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin" },
   { "zh-TW", "us",
     "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und" },
+  { "th", "us", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_th" },
+  { "vi", "us", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_vi_tcvn" },
 };
 
 }  // namespace
