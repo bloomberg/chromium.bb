@@ -28,6 +28,13 @@
 
 using extensions::Extension;
 
+namespace {
+
+// The time delta between clicks in which clicks to launch V2 apps are ignored.
+const int kClickSuppressionInMS = 1000;
+
+}  // namespace
+
 // Item controller for an app shortcut. Shortcuts track app and launcher ids,
 // but do not have any associated windows (opening a shortcut will replace the
 // item with the appropriate LauncherItemController type).
@@ -88,12 +95,17 @@ void AppShortcutLauncherItemController::Launch(int event_flags) {
 void AppShortcutLauncherItemController::Activate() {
   content::WebContents* content = GetLRUApplication();
   if (!content) {
-    // The initial launch of a V2 app will be done by this controller. Starting
-    // a hosted application takes time and if the user clicks fast, he can come
-    // here multiple times before the ShellLauncherItemController takes control.
-    // To avoid that situation we check for running applications.
-    if (!IsV2AppAndRunning())
-      Launch(ui::EF_NONE);
+    if (IsV2App()) {
+      // Ideally we come here only once. After that ShellLauncherItemController
+      // will take over when the shell window gets opened. However there are
+      // apps which take a lot of time for pre-processing (like the files app)
+      // before they open a window. Since there is currently no other way to
+      // detect if an app was started we suppress any further clicks within a
+      // special time out.
+      if (!AllowNextLaunchAttempt())
+        return;
+    }
+    Launch(ui::EF_NONE);
     return;
   }
   ActivateContent(content);
@@ -282,12 +294,17 @@ bool AppShortcutLauncherItemController::AdvanceToNextApp() {
   return false;
 }
 
-bool AppShortcutLauncherItemController::IsV2AppAndRunning() {
-  const Extension* extension =
-      app_controller_->GetExtensionForAppID(app_id());
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(app_controller_->profile());
-  return extension && extension->is_platform_app() && extension_system &&
-         extension_system->process_manager()->GetBackgroundHostForExtension(
-             app_id());
+bool AppShortcutLauncherItemController::IsV2App() {
+  const Extension* extension = app_controller_->GetExtensionForAppID(app_id());
+  return extension && extension->is_platform_app();
+}
+
+bool AppShortcutLauncherItemController::AllowNextLaunchAttempt() {
+  if (last_launch_attempt_.is_null() ||
+      last_launch_attempt_ + base::TimeDelta::FromMilliseconds(
+          kClickSuppressionInMS) < base::Time::Now()) {
+    last_launch_attempt_ = base::Time::Now();
+    return true;
+  }
+  return false;
 }
