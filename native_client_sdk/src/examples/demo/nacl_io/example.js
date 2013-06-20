@@ -8,10 +8,10 @@ function moduleDidLoad() {
 
 // Called by the common.js module.
 function domContentLoaded(name, tc, config, width, height) {
-  window.webkitStorageInfo.requestQuota(window.PERSISTENT, 1024*1024,
+  navigator.webkitPersistentStorage.requestQuota(1024 * 1024,
       function(bytes) {
         common.updateStatus(
-            'Allocated '+bytes+' bytes of persistant storage.');
+            'Allocated ' + bytes + ' bytes of persistant storage.');
         common.createNaClModule(name, tc, config, width, height);
         common.attachDefaultListeners();
       },
@@ -78,7 +78,7 @@ function fopen(e) {
 function fopenResult(filename, filehandle) {
   filehandle_map[filehandle] = filename;
 
-  addFilenameToSelectElements(filehandle, filename)
+  addFilenameToSelectElements(filehandle, filename);
   common.logMessage('File ' + filename + ' opened successfully.\n');
 }
 
@@ -143,6 +143,7 @@ function statResult(filename, size) {
  *
  * @param {string} s The string to search.
  * @param {string} prefix The prefix to search for in |s|.
+ * @return {boolean} Whether |s| starts with |prefix|.
  */
 function startsWith(s, prefix) {
   // indexOf would search the entire string, lastIndexOf(p, 0) only checks at

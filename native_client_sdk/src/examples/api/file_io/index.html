@@ -18,21 +18,65 @@
   <p>The File IO example demonstrates saving, loading, and deleting files
      from the persistent file store.</p>
 
-  <textarea id="fileEditor"
-    cols="40"
-    rows="10"
-    wrap="hard"
-    placeholder="Enter some text to save in a file..."></textarea>
-  <br>File Name
-  <input type="text" id="fileName" action="" value="/filename.txt">
-  <button id="saveButton" action="">Save</button>
-  <button id="loadButton" action="">Load</button>
-  <button id="deleteButton" action="">Delete</button>
+  <div>
+    <span>
+      <input type="radio" id="radio_saveFile" name="group" checked="checked">
+        Save File
+      <input type="radio" id="radio_loadFile" name="group">Load File
+      <input type="radio" id="radio_delete" name="group">Delete File/Directory
+      <input type="radio" id="radio_listDir" name="group">List Directory
+      <input type="radio" id="radio_makeDir" name="group">Make Directory
+    </span>
+  </div>
+  <div class="function" id="saveFile">
+    <div>
+      <span>
+        Filename:
+        <input type="text" value="/filename.txt">
+        <button>Save</button>
+      </span>
+    </div>
+    <textarea id="saveFileEditor" cols="40" rows="10" wrap="hard"
+      placeholder="Enter some text to save in a file..."></textarea>
+  </div>
+  <div class="function" id="loadFile" hidden>
+    <div>
+      <span>
+        Filename:
+        <input type="text" value="/filename.txt">
+        <button>Load</button>
+      </span>
+    </div>
+    <textarea cols="40" rows="10" wrap="hard"></textarea>
+  </div>
+  <div class="function" id="delete" hidden>
+    <span>
+      Filename/Directory:
+      <input type="text" value="/filename.txt">
+      <button>Delete</button>
+    </span>
+  </div>
+  <div class="function" id="listDir" hidden>
+    <div>
+      <span>
+        Directory:
+        <input type="text" value="/">
+        <button>List Directory</button>
+      </span>
+    </div>
+    Result:
+    <ul id="listDirOutput">
+    </ul>
+  </div>
+  <div class="function" id="makeDir" hidden>
+    <span>
+      Directory:
+      <input type="text" value="/directory">
+      <button>Make Directory</button>
+    </span>
+  </div>
 
-  <br>Directory Name
-  <input type="text" id="dirName" action="" value="/">
-  <button id="listButton" action="">List</button>
-
+  <pre id="log" style="font-weight: bold"></pre>
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->
   <div id="listener"></div>
