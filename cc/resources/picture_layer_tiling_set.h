@@ -19,9 +19,16 @@ class CC_EXPORT PictureLayerTilingSet {
   ~PictureLayerTilingSet();
 
   void SetClient(PictureLayerTilingClient* client);
+  const PictureLayerTilingClient* client() const { return client_; }
 
-  void AddTilingsToMatchScales(
+  // Make this set of tilings match the same set of content scales from |other|.
+  // Delete any tilings that don't meet |minimum_contents_scale|.  Recreate
+  // any tiles that intersect |layer_invalidation|.  Update the size of all
+  // tilings to |new_layer_bounds|.
+  void SyncTilings(
      const PictureLayerTilingSet& other,
+     gfx::Size new_layer_bounds,
+     const Region& layer_invalidation,
      float minimum_contents_scale);
 
   gfx::Size layer_bounds() const { return layer_bounds_; }
@@ -34,6 +41,8 @@ class CC_EXPORT PictureLayerTilingSet {
   const PictureLayerTiling* tiling_at(size_t idx) const {
     return tilings_[idx];
   }
+
+  PictureLayerTiling* TilingAtScale(float scale) const;
 
   // Remove all tilings.
   void RemoveAllTilings();

@@ -138,6 +138,7 @@ class PictureLayerTilingIteratorTest : public testing::Test {
   FakePictureLayerTilingClient client_;
   scoped_ptr<TestablePictureLayerTiling> tiling_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PictureLayerTilingIteratorTest);
 };
 
@@ -682,7 +683,8 @@ TEST_F(PictureLayerTilingIteratorTest, AddTilingsToMatchScale) {
 
   // Add the same tilings to the pending set.
   PictureLayerTilingSet pending_set(&client_, layer_bounds);
-  pending_set.AddTilingsToMatchScales(active_set, 0.f);
+  Region invalidation;
+  pending_set.SyncTilings(active_set, layer_bounds, invalidation, 0.f);
 
   // The pending tiling starts with no tiles.
   VerifyTiles(pending_set.tiling_at(0),
