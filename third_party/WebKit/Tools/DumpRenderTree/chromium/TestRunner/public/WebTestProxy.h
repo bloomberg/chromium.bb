@@ -183,6 +183,11 @@ protected:
     void didFocus();
     void didBlur();
     void setToolTipText(const WebKit::WebString&, WebKit::WebTextDirection);
+    void didAddMessageToConsole(const WebKit::WebConsoleMessage&, const WebKit::WebString& sourceName, unsigned sourceLine);
+    void runModalAlertDialog(WebKit::WebFrame*, const WebKit::WebString&);
+    bool runModalConfirmDialog(WebKit::WebFrame*, const WebKit::WebString&);
+    bool runModalPromptDialog(WebKit::WebFrame*, const WebKit::WebString& message, const WebKit::WebString& defaultValue, WebKit::WebString* actualValue);
+    bool runModalBeforeUnloadDialog(WebKit::WebFrame*, const WebKit::WebString&);
 
     void willPerformClientRedirect(WebKit::WebFrame*, const WebKit::WebURL& from, const WebKit::WebURL& to, double interval, double fire_time);
     void didCancelClientRedirect(WebKit::WebFrame*);
@@ -209,15 +214,11 @@ protected:
     void didFinishResourceLoad(WebKit::WebFrame*, unsigned identifier);
     void didFailResourceLoad(WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLError&);
     void unableToImplementPolicyWithError(WebKit::WebFrame*, const WebKit::WebURLError&);
-    void didAddMessageToConsole(const WebKit::WebConsoleMessage&, const WebKit::WebString& sourceName, unsigned sourceLine);
-    void runModalAlertDialog(WebKit::WebFrame*, const WebKit::WebString&);
-    bool runModalConfirmDialog(WebKit::WebFrame*, const WebKit::WebString&);
-    bool runModalPromptDialog(WebKit::WebFrame*, const WebKit::WebString& message, const WebKit::WebString& defaultValue, WebKit::WebString* actualValue);
-    bool runModalBeforeUnloadDialog(WebKit::WebFrame*, const WebKit::WebString&);
     WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame*, const WebKit::WebURLRequest&, WebKit::WebNavigationType, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect);
     bool willCheckAndDispatchMessageEvent(WebKit::WebFrame* sourceFrame, WebKit::WebFrame* targetFrame, WebKit::WebSecurityOrigin target, WebKit::WebDOMMessageEvent);
 
 private:
+    template<class, typename, typename> friend class WebFrameTestProxy;
     void locationChangeDone(WebKit::WebFrame*);
     void paintRect(const WebKit::WebRect&);
     void paintInvalidatedRegion();

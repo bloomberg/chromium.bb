@@ -1,6 +1,7 @@
 {
     'variables': {
         'test_runner_files': [
+            'chromium/TestRunner/public/WebFrameTestProxy.h',
             'chromium/TestRunner/public/WebTestDelegate.h',
             'chromium/TestRunner/public/WebPreferences.h',
             'chromium/TestRunner/public/WebTask.h',
