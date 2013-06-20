@@ -25,7 +25,7 @@
 #include "chrome/test/base/model_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_iterator.h"
@@ -868,9 +868,7 @@ void PopulateBookmarkNode(TestNode* parent,
 class BookmarkModelTestWithProfile : public testing::Test {
  public:
   BookmarkModelTestWithProfile()
-      : bb_model_(NULL),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {}
+      : bb_model_(NULL) {}
 
   // testing::Test:
   virtual void TearDown() OVERRIDE {
@@ -925,9 +923,7 @@ class BookmarkModelTestWithProfile : public testing::Test {
   BookmarkModel* bb_model_;
 
  private:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 // Creates a set of nodes in the bookmark bar model, then recreates the

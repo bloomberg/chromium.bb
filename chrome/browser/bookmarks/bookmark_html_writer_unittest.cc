@@ -6,8 +6,8 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/time_formatting.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,7 +23,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -128,7 +128,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
 // Class that will notify message loop when file is written.
 class BookmarksObserver : public BookmarksExportObserver {
  public:
-  explicit BookmarksObserver(base::MessageLoop* loop) : loop_(loop) {
+  explicit BookmarksObserver(base::RunLoop* loop) : loop_(loop) {
     DCHECK(loop);
   }
 
@@ -137,17 +137,15 @@ class BookmarksObserver : public BookmarksExportObserver {
   }
 
  private:
-  base::MessageLoop* loop_;
+  base::RunLoop* loop_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarksObserver);
 };
 
 // Tests bookmark_html_writer by populating a BookmarkModel, writing it out by
 // way of bookmark_html_writer, then using the importer to read it back in.
 TEST_F(BookmarkHTMLWriterTest, Test) {
-  base::MessageLoop message_loop;
-  content::TestBrowserThread fake_ui_thread(BrowserThread::UI, &message_loop);
-  content::TestBrowserThread fake_file_thread(BrowserThread::FILE,
-                                              &message_loop);
+  content::TestBrowserThreadBundle thread_bundle;
 
   TestingProfile profile;
   profile.CreateHistoryService(true, false);
@@ -209,7 +207,6 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
       &profile, Profile::EXPLICIT_ACCESS)->SetFavicons(
           url1, url1_favicon, chrome::FAVICON,
           gfx::Image::CreateFrom1xBitmap(bitmap));
-  message_loop.RunUntilIdle();
   const BookmarkNode* f2 = model->AddFolder(f1, 1, f2_title);
   model->AddURLWithCreationTime(f2, 0, url2_title, url2, t2);
   model->AddURLWithCreationTime(model->bookmark_bar_node(),
@@ -226,16 +223,17 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   model->AddURLWithCreationTime(model->mobile_node(), 1, unnamed_bookmark_title,
                                 unnamed_bookmark_url, t2);
 
+  base::RunLoop run_loop;
+
   // Write to a temp file.
-  BookmarksObserver observer(&message_loop);
+  BookmarksObserver observer(&run_loop);
   bookmark_html_writer::WriteBookmarks(&profile, path_, &observer);
-  message_loop.Run();
+  run_loop.Run();
 
   // Clear favicon so that it would be read from file.
   FaviconServiceFactory::GetForProfile(
       &profile, Profile::EXPLICIT_ACCESS)->SetFavicons(
           url1, url1_favicon, chrome::FAVICON, gfx::Image());
-  message_loop.RunUntilIdle();
 
   // Read the bookmarks back in.
   std::vector<ImportedBookmarkEntry> parsed_bookmarks;

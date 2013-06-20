@@ -9,10 +9,8 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 class BookmarkExpandedStateTrackerTest : public testing::Test {
  public:
@@ -26,17 +24,12 @@ class BookmarkExpandedStateTrackerTest : public testing::Test {
 
  private:
   scoped_ptr<TestingProfile> profile_;
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkExpandedStateTrackerTest);
 };
 
-BookmarkExpandedStateTrackerTest::BookmarkExpandedStateTrackerTest()
-    : ui_thread_(BrowserThread::UI, &message_loop_),
-      file_thread_(BrowserThread::FILE, &message_loop_) {
-}
+BookmarkExpandedStateTrackerTest::BookmarkExpandedStateTrackerTest() {}
 
 void BookmarkExpandedStateTrackerTest::SetUp() {
   profile_.reset(new TestingProfile);

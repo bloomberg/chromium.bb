@@ -20,10 +20,8 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 class BookmarkIndexTest : public testing::Test {
  public:
@@ -235,9 +233,7 @@ TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
 TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   // This ensures MessageLoop::current() will exist, which is needed by
   // TestingProfile::BlockUntilHistoryProcessesPendingRequests().
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &loop);
-  content::TestBrowserThread file_thread(BrowserThread::FILE, &loop);
+  content::TestBrowserThreadBundle thread_bundle;
 
   TestingProfile profile;
   profile.CreateHistoryService(true, false);
