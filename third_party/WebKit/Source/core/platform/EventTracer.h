@@ -33,11 +33,10 @@
 
 namespace WebCore {
 
-typedef long int TraceEventAPIAtomicWord;
-
-extern TraceEventAPIAtomicWord* traceSamplingState0;
-extern TraceEventAPIAtomicWord* traceSamplingState1;
-extern TraceEventAPIAtomicWord* traceSamplingState2;
+// FIXME: Make these global variables thread-safe. Make a value update atomic.
+extern long* traceSamplingState0;
+extern long* traceSamplingState1;
+extern long* traceSamplingState2;
 
 class EventTracer {
 public:

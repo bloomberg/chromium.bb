@@ -347,7 +347,8 @@ void V8GCController::gcPrologue(v8::GCType type, v8::GCCallbackFlags flags)
 
 void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 {
-    TRACE_EVENT_BEGIN0("v8", "GC");
+    TRACE_EVENT_BEGIN0("v8", "minorGC");
+    TraceEvent::SamplingState0Scope("V8\0V8MinorGC");
 
     if (isMainThread()) {
         v8::HandleScope scope;
@@ -361,7 +362,8 @@ void V8GCController::minorGCPrologue(v8::Isolate* isolate)
 // Create object groups for DOM tree nodes.
 void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos)
 {
-    TRACE_EVENT_BEGIN0("v8", "GC");
+    TRACE_EVENT_BEGIN0("v8", "majorGC");
+    TraceEvent::SamplingState0Scope("V8\0V8MajorGC");
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope;

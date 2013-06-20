@@ -32,18 +32,29 @@
 #include "core/platform/EventTracer.h"
 
 #include "public/platform/Platform.h"
+#include <stdio.h>
 
 namespace WebCore {
 
-TraceEventAPIAtomicWord* traceSamplingState0;
-TraceEventAPIAtomicWord* traceSamplingState1;
-TraceEventAPIAtomicWord* traceSamplingState2;
+// The dummy variable is needed to avoid a crash when someone updates the state variables
+// before EventTracer::initialize() is called.
+long dummyTraceSamplingState = 0;
+long* traceSamplingState0 = &dummyTraceSamplingState;
+long* traceSamplingState1 = &dummyTraceSamplingState;
+long* traceSamplingState2 = &dummyTraceSamplingState;
 
 void EventTracer::initialize()
 {
     traceSamplingState0 = WebKit::Platform::current()->getTraceSamplingState(0);
+    // FIXME: traceSamplingState0 can be 0 in split-dll build. http://crbug.com/237249
+    if (!traceSamplingState0)
+        traceSamplingState0 = &dummyTraceSamplingState;
     traceSamplingState1 = WebKit::Platform::current()->getTraceSamplingState(1);
+    if (!traceSamplingState1)
+        traceSamplingState1 = &dummyTraceSamplingState;
     traceSamplingState2 = WebKit::Platform::current()->getTraceSamplingState(2);
+    if (!traceSamplingState2)
+        traceSamplingState2 = &dummyTraceSamplingState;
 }
 
 const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* categoryName)

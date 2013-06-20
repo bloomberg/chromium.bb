@@ -40,6 +40,7 @@
 #include "XMLNames.h"
 #include "core/css/MediaFeatureNames.h"
 #include "core/dom/Node.h"
+#include "core/platform/EventTracer.h"
 #include "wtf/text/StringStatics.h"
 
 namespace WebCore {
@@ -63,6 +64,7 @@ void init()
     WTF::StringStatics::init();
     QualifiedName::init();
     Node::init();
+    EventTracer::initialize();
 }
 
 void shutdown()
