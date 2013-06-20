@@ -1,6 +1,7 @@
 /*
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2004, 2005, 2006, 2008, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -154,7 +155,7 @@ public:
     unsigned propertyCount() const { return m_arraySize; }
 
     const CSSValue** valueArray() const;
-    const StylePropertyMetadata* metadataArray() const;
+    const uint16_t* metadataArray() const;
 
     void* m_storage;
 
@@ -167,9 +168,9 @@ inline const CSSValue** ImmutableStylePropertySet::valueArray() const
     return reinterpret_cast<const CSSValue**>(const_cast<const void**>((&static_cast<const ImmutableStylePropertySet*>(this)->m_storage)));
 }
 
-inline const StylePropertyMetadata* ImmutableStylePropertySet::metadataArray() const
+inline const uint16_t* ImmutableStylePropertySet::metadataArray() const
 {
-    return reinterpret_cast<const StylePropertyMetadata*>(&reinterpret_cast<const char*>((&static_cast<const ImmutableStylePropertySet*>(this)->m_storage))[m_arraySize * sizeof(CSSValue*)]);
+    return reinterpret_cast<const uint16_t*>(&reinterpret_cast<const char*>((&static_cast<const ImmutableStylePropertySet*>(this)->m_storage))[m_arraySize * sizeof(CSSValue*)]);
 }
 
 class MutableStylePropertySet : public StylePropertySet {
@@ -230,7 +231,8 @@ inline StylePropertyMetadata StylePropertySet::PropertyReference::propertyMetada
 {
     if (m_propertySet.isMutable())
         return static_cast<const MutableStylePropertySet&>(m_propertySet).m_propertyVector.at(m_index).metadata();
-    return static_cast<const ImmutableStylePropertySet&>(m_propertySet).metadataArray()[m_index];
+    const StylePropertyMetadata* metadata = reinterpret_cast<const StylePropertyMetadata*>(&static_cast<const ImmutableStylePropertySet&>(m_propertySet).metadataArray()[m_index]);
+    return *metadata;
 }
 
 inline const CSSValue* StylePropertySet::PropertyReference::propertyValue() const
