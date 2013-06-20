@@ -888,6 +888,7 @@ void ExtensionService::DisableExtension(
   // |extension| can be NULL if sync disables an extension that is not
   // installed yet.
   if (extension &&
+      disable_reason != Extension::DISABLE_RELOAD &&
       !system_->management_policy()->UserMayModifySettings(extension, NULL)) {
     return;
   }
