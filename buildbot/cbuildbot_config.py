@@ -1071,9 +1071,11 @@ internal_pre_cq.add_group(constants.PRE_CQ_BUILDER_NAME,
     # run in parallel. TODO(sosa): Re-enable when crbug.com/236465 is fixed.
     unittest_blacklist=['chromeos-base/update_engine'],
   ),
-  internal_pre_cq.add_config('stout-pre-cq', boards=['stout']),
+  internal_pre_cq.add_config('lumpy-pre-cq', boards=['lumpy']),
   internal_pre_cq.add_config('daisy_spring-pre-cq',
                              arm, boards=['daisy_spring']),
+  internal_pre_cq.add_config('peach_pit-pre-cq',
+                             arm, boards=['peach_pit']),
 )
 
 internal_paladin.add_config('pre-cq-launcher',
