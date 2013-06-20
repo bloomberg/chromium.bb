@@ -134,6 +134,65 @@ bool ResourceMetadataStorage::Iterator::HasError() const {
   return !it_->status().ok();
 }
 
+ResourceMetadataStorage::CacheEntryIterator::CacheEntryIterator(
+    scoped_ptr<leveldb::Iterator> it) : it_(it.Pass()) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(it_);
+
+  it_->SeekToFirst();
+  AdvanceInternal();
+}
+
+ResourceMetadataStorage::CacheEntryIterator::~CacheEntryIterator() {
+  base::ThreadRestrictions::AssertIOAllowed();
+}
+
+bool ResourceMetadataStorage::CacheEntryIterator::IsAtEnd() const {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return !it_->Valid();
+}
+
+const std::string& ResourceMetadataStorage::CacheEntryIterator::GetID() const {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsAtEnd());
+  return resource_id_;
+}
+
+const FileCacheEntry&
+ResourceMetadataStorage::CacheEntryIterator::GetValue() const {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsAtEnd());
+  return entry_;
+}
+
+void ResourceMetadataStorage::CacheEntryIterator::Advance() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(!IsAtEnd());
+
+  it_->Next();
+  AdvanceInternal();
+}
+
+bool ResourceMetadataStorage::CacheEntryIterator::HasError() const {
+  base::ThreadRestrictions::AssertIOAllowed();
+  return !it_->status().ok();
+}
+
+void ResourceMetadataStorage::CacheEntryIterator::AdvanceInternal() {
+  for (; it_->Valid(); it_->Next()) {
+    // Skip unparsable broken entries.
+    // TODO(hashimoto): Broken entries should be cleaned up at some point.
+    if (IsCacheEntryKey(it_->key()) &&
+        entry_.ParseFromArray(it_->value().data(), it_->value().size())) {
+      // Drop the suffix |kDBKeyDelimeter + kCacheEntryKeySuffix| from the key.
+      const size_t kSuffixLength = arraysize(kCacheEntryKeySuffix) - 1;
+      const int id_length = it_->key().size() - 1 - kSuffixLength;
+      resource_id_.assign(it_->key().data(), id_length);
+      break;
+    }
+  }
+}
+
 ResourceMetadataStorage::ResourceMetadataStorage(
     const base::FilePath& directory_path)
     : directory_path_(directory_path) {
@@ -394,6 +453,15 @@ bool ResourceMetadataStorage::RemoveCacheEntry(const std::string& resource_id) {
       leveldb::WriteOptions(),
       leveldb::Slice(GetCacheEntryKey(resource_id)));
   return status.ok();
+}
+
+scoped_ptr<ResourceMetadataStorage::CacheEntryIterator>
+ResourceMetadataStorage::GetCacheEntryIterator() {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  scoped_ptr<leveldb::Iterator> it(
+      resource_map_->NewIterator(leveldb::ReadOptions()));
+  return make_scoped_ptr(new CacheEntryIterator(it.Pass()));
 }
 
 // static

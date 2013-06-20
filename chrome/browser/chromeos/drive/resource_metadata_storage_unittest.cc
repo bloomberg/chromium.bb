@@ -195,6 +195,45 @@ TEST_F(ResourceMetadataStorageTest, PutCacheEntry) {
   EXPECT_FALSE(storage_->GetCacheEntry(key2, &entry));
 }
 
+TEST_F(ResourceMetadataStorageTest, CacheEntryIterator) {
+  // Prepare data.
+  std::map<std::string, FileCacheEntry> entries;
+  FileCacheEntry cache_entry;
+
+  cache_entry.set_md5("aA");
+  entries["entry1"] = cache_entry;
+  cache_entry.set_md5("bB");
+  entries["entry2"] = cache_entry;
+  cache_entry.set_md5("cC");
+  entries["entry3"] = cache_entry;
+  cache_entry.set_md5("dD");
+  entries["entry4"] = cache_entry;
+
+  for (std::map<std::string, FileCacheEntry>::iterator it = entries.begin();
+       it != entries.end(); ++it)
+    EXPECT_TRUE(storage_->PutCacheEntry(it->first, it->second));
+
+  // Insert some dummy entries.
+  ResourceEntry entry;
+  entry.set_resource_id("entry1");
+  EXPECT_TRUE(storage_->PutEntry(entry));
+  entry.set_resource_id("entry2");
+  EXPECT_TRUE(storage_->PutEntry(entry));
+
+  // Iterate and check the result.
+  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
+      storage_->GetCacheEntryIterator();
+  ASSERT_TRUE(it);
+  size_t num_entries = 0;
+  for (; !it->IsAtEnd(); it->Advance()) {
+    EXPECT_EQ(1U, entries.count(it->GetID()));
+    EXPECT_EQ(entries[it->GetID()].md5(), it->GetValue().md5());
+    ++num_entries;
+  }
+  EXPECT_FALSE(it->HasError());
+  EXPECT_EQ(entries.size(), num_entries);
+}
+
 TEST_F(ResourceMetadataStorageTest, GetChildren) {
   const std::string parents_id[] = { "mercury", "venus", "mars", "jupiter",
                                      "saturn" };

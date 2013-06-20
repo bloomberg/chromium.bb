@@ -31,12 +31,14 @@ class ResourceMetadataStorage {
   // format.
   static const int kDBVersion = 6;
 
+  // Object to iterate over entries stored in this storage.
   class Iterator {
    public:
     explicit Iterator(scoped_ptr<leveldb::Iterator> it);
     ~Iterator();
 
-    // Returns true if this iterator cannot advance any more.
+    // Returns true if this iterator cannot advance any more and does not point
+    // to a valid entry. Get() and Advance() should not be called in such cases.
     bool IsAtEnd() const;
 
     // Returns the entry currently pointed by this object.
@@ -53,6 +55,40 @@ class ResourceMetadataStorage {
     scoped_ptr<leveldb::Iterator> it_;
 
     DISALLOW_COPY_AND_ASSIGN(Iterator);
+  };
+
+  // Object to iterate over cache entries stored in this storage.
+  class CacheEntryIterator {
+   public:
+    explicit CacheEntryIterator(scoped_ptr<leveldb::Iterator> it);
+    ~CacheEntryIterator();
+
+    // Returns true if this iterator cannot advance any more and does not point
+    // to a valid entry. GetID(), GetValue() and Advance() should not be called
+    // in such cases.
+    bool IsAtEnd() const;
+
+    // Returns the ID of the entry currently pointed by this object.
+    const std::string& GetID() const;
+
+    // Returns the value of the entry currently pointed by this object.
+    const FileCacheEntry& GetValue() const;
+
+    // Advances to the next entry.
+    void Advance();
+
+    // Returns true if this object has encountered any error.
+    bool HasError() const;
+
+   private:
+    // Used to implement Advance().
+    void AdvanceInternal();
+
+    scoped_ptr<leveldb::Iterator> it_;
+    std::string resource_id_;
+    FileCacheEntry entry_;
+
+    DISALLOW_COPY_AND_ASSIGN(CacheEntryIterator);
   };
 
   explicit ResourceMetadataStorage(const base::FilePath& directory_path);
@@ -96,6 +132,9 @@ class ResourceMetadataStorage {
 
   // Removes a cache entry from this storage.
   bool RemoveCacheEntry(const std::string& resource_id);
+
+  // Returns an object to iterate over cache entries stored in this storage.
+  scoped_ptr<CacheEntryIterator> GetCacheEntryIterator();
 
  private:
   friend class ResourceMetadataStorageTest;
