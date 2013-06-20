@@ -66,9 +66,39 @@ from chromite.lib import commandline
 
 
 def FindTarget(target):
-  # Turn the path into something we can import from the chromite tree.
-  parent, target = os.path.split(target)
-  parent = os.path.realpath(parent)
+  """Turn the path into something we can import from the chromite tree.
+
+  This supports a variety of ways of running chromite programs:
+  # Loaded via depot_tools in $PATH.
+  $ cros_sdk --help
+  # Loaded via .../chromite/bin in $PATH.
+  $ cros --help
+  # No $PATH needed.
+  $ ./bin/cros --help
+  # Loaded via ~/bin in $PATH to chromite bin/ subdir.
+  $ ln -s $PWD/bin/cros ~/bin; cros --help
+  # No $PATH needed.
+  $ ./buildbot/cbuildbot_config --help
+  # No $PATH needed, but symlink inside of chromite dir.
+  $ ln -s ./buildbot/cbuildbot_config; ./cbuildbot_config --help
+  # Loaded via ~/bin in $PATH to non-chromite bin/ subdir.
+  $ ln -s $PWD/buildbot/cbuildbot_config ~/bin/; cbuildbot_config --help
+  # No $PATH needed, but a relative symlink to a symlink to the chromite dir.
+  $ cd ~; ln -s bin/cbuildbot_config ./; ./cbuildbot_config --help
+
+  Args:
+    target: Path to the script we're trying to run.
+  Returns:
+    The module main functor.
+  """
+  while True:
+    # Walk back one symlink at a time until we get into the chromite dir.
+    parent, base = os.path.split(target)
+    parent = os.path.realpath(parent)
+    if parent.startswith(CHROMITE_PATH):
+      target = base
+      break
+    target = os.path.join(os.path.dirname(target), os.readlink(target))
   assert parent.startswith(CHROMITE_PATH), (
       'could not figure out leading path\n'
       '\tparent: %s\n'
