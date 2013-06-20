@@ -29,13 +29,18 @@
  */
 
 #include "config.h"
-#include "core/fileapi/ThreadableBlobRegistry.h"
+#include "core/fileapi/BlobRegistry.h"
 
 #include "core/fileapi/BlobURL.h"
 #include "core/platform/network/BlobData.h"
-#include "core/platform/network/BlobRegistry.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebBlobData.h"
+#include "public/platform/WebBlobRegistry.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebThreadSafeData.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityOriginCache.h"
+#include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/MainThread.h"
 #include "wtf/RefPtr.h"
@@ -43,6 +48,9 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
+using WebKit::WebBlobData;
+using WebKit::WebBlobRegistry;
+using WebKit::WebThreadSafeData;
 using WTF::ThreadSpecific;
 
 namespace WebCore {
@@ -93,6 +101,12 @@ public:
     String type;
 };
 
+static WebBlobRegistry* blobRegistry()
+{
+    ASSERT(isMainThread());
+    return WebKit::Platform::current()->blobRegistry();
+}
+
 typedef HashMap<String, RefPtr<SecurityOrigin> > BlobURLOriginMap;
 static ThreadSpecific<BlobURLOriginMap>& originMap()
 {
@@ -106,14 +120,20 @@ static ThreadSpecific<BlobURLOriginMap>& originMap()
 static void registerBlobURLTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
-    blobRegistry().registerBlobURL(blobRegistryContext->url, blobRegistryContext->blobData.release());
+    if (WebBlobRegistry* registry = blobRegistry()) {
+        WebBlobData webBlobData(blobRegistryContext->blobData.release());
+        registry->registerBlobURL(blobRegistryContext->url, webBlobData);
+    }
 }
 
-void ThreadableBlobRegistry::registerBlobURL(const KURL& url, PassOwnPtr<BlobData> blobData)
+void BlobRegistry::registerBlobURL(const KURL& url, PassOwnPtr<BlobData> blobData)
 {
-    if (isMainThread())
-        blobRegistry().registerBlobURL(url, blobData);
-    else {
+    if (isMainThread()) {
+        if (WebBlobRegistry* registry = blobRegistry()) {
+            WebBlobData webBlobData(blobData);
+            registry->registerBlobURL(url, webBlobData);
+        }
+    } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, blobData));
         callOnMainThread(&registerBlobURLTask, context.leakPtr());
     }
@@ -122,13 +142,15 @@ void ThreadableBlobRegistry::registerBlobURL(const KURL& url, PassOwnPtr<BlobDat
 static void registerStreamURLTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
-    blobRegistry().registerStreamURL(blobRegistryContext->url, blobRegistryContext->type);
+    if (WebBlobRegistry* registry = blobRegistry())
+        registry->registerStreamURL(blobRegistryContext->url, blobRegistryContext->type);
 }
 
-void ThreadableBlobRegistry::registerStreamURL(const KURL& url, const String& type)
+void BlobRegistry::registerStreamURL(const KURL& url, const String& type)
 {
     if (isMainThread()) {
-        blobRegistry().registerStreamURL(url, type);
+        if (WebBlobRegistry* registry = blobRegistry())
+            registry->registerStreamURL(url, type);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, type));
         callOnMainThread(&registerStreamURLTask, context.leakPtr());
@@ -138,10 +160,11 @@ void ThreadableBlobRegistry::registerStreamURL(const KURL& url, const String& ty
 static void registerBlobURLFromTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
-    blobRegistry().registerBlobURL(blobRegistryContext->url, blobRegistryContext->srcURL);
+    if (WebBlobRegistry* registry = blobRegistry())
+        registry->registerBlobURL(blobRegistryContext->url, blobRegistryContext->srcURL);
 }
 
-void ThreadableBlobRegistry::registerBlobURL(SecurityOrigin* origin, const KURL& url, const KURL& srcURL)
+void BlobRegistry::registerBlobURL(SecurityOrigin* origin, const KURL& url, const KURL& srcURL)
 {
     // If the blob URL contains null origin, as in the context with unique
     // security origin or file URL, save the mapping between url and origin so
@@ -149,9 +172,10 @@ void ThreadableBlobRegistry::registerBlobURL(SecurityOrigin* origin, const KURL&
     if (origin && BlobURL::getOrigin(url) == "null")
         originMap()->add(url.string(), origin);
 
-    if (isMainThread())
-        blobRegistry().registerBlobURL(url, srcURL);
-    else {
+    if (isMainThread()) {
+        if (WebBlobRegistry* registry = blobRegistry())
+            registry->registerBlobURL(url, srcURL);
+    } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, srcURL));
         callOnMainThread(&registerBlobURLFromTask, context.leakPtr());
     }
@@ -160,13 +184,19 @@ void ThreadableBlobRegistry::registerBlobURL(SecurityOrigin* origin, const KURL&
 static void addDataToStreamTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
-    blobRegistry().addDataToStream(blobRegistryContext->url, blobRegistryContext->streamData);
+    if (WebBlobRegistry* registry = blobRegistry()) {
+        WebThreadSafeData webThreadSafeData(blobRegistryContext->streamData);
+        registry->addDataToStream(blobRegistryContext->url, webThreadSafeData);
+    }
 }
 
-void ThreadableBlobRegistry::addDataToStream(const KURL& url, PassRefPtr<RawData> streamData)
+void BlobRegistry::addDataToStream(const KURL& url, PassRefPtr<RawData> streamData)
 {
     if (isMainThread()) {
-        blobRegistry().addDataToStream(url, streamData);
+        if (WebBlobRegistry* registry = blobRegistry()) {
+            WebThreadSafeData webThreadSafeData(streamData);
+            registry->addDataToStream(url, webThreadSafeData);
+        }
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url, streamData));
         callOnMainThread(&addDataToStreamTask, context.leakPtr());
@@ -176,13 +206,15 @@ void ThreadableBlobRegistry::addDataToStream(const KURL& url, PassRefPtr<RawData
 static void finalizeStreamTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
-    blobRegistry().finalizeStream(blobRegistryContext->url);
+    if (WebBlobRegistry* registry = blobRegistry())
+        registry->finalizeStream(blobRegistryContext->url);
 }
 
-void ThreadableBlobRegistry::finalizeStream(const KURL& url)
+void BlobRegistry::finalizeStream(const KURL& url)
 {
     if (isMainThread()) {
-        blobRegistry().finalizeStream(url);
+        if (WebBlobRegistry* registry = blobRegistry())
+            registry->finalizeStream(url);
     } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
         callOnMainThread(&finalizeStreamTask, context.leakPtr());
@@ -192,17 +224,19 @@ void ThreadableBlobRegistry::finalizeStream(const KURL& url)
 static void unregisterBlobURLTask(void* context)
 {
     OwnPtr<BlobRegistryContext> blobRegistryContext = adoptPtr(static_cast<BlobRegistryContext*>(context));
-    blobRegistry().unregisterBlobURL(blobRegistryContext->url);
+    if (WebBlobRegistry* registry = blobRegistry())
+        registry->unregisterBlobURL(blobRegistryContext->url);
 }
 
-void ThreadableBlobRegistry::unregisterBlobURL(const KURL& url)
+void BlobRegistry::unregisterBlobURL(const KURL& url)
 {
     if (BlobURL::getOrigin(url) == "null")
         originMap()->remove(url.string());
 
-    if (isMainThread())
-        blobRegistry().unregisterBlobURL(url);
-    else {
+    if (isMainThread()) {
+        if (WebBlobRegistry* registry = blobRegistry())
+            registry->unregisterBlobURL(url);
+    } else {
         OwnPtr<BlobRegistryContext> context = adoptPtr(new BlobRegistryContext(url));
         callOnMainThread(&unregisterBlobURLTask, context.leakPtr());
     }

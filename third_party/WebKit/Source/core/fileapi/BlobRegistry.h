@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ThreadableBlobRegistry_h
-#define ThreadableBlobRegistry_h
+#ifndef BlobRegistry_h
+#define BlobRegistry_h
 
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -42,7 +42,7 @@ class KURL;
 class RawData;
 class SecurityOrigin;
 
-class ThreadableBlobRegistry {
+class BlobRegistry {
 public:
     static void registerBlobURL(const KURL&, PassOwnPtr<BlobData>);
     static void registerStreamURL(const KURL&, const String&);
@@ -54,4 +54,4 @@ public:
 
 } // namespace WebCore
 
-#endif // ThreadableBlobRegistry_h
+#endif // BlobRegistry_h

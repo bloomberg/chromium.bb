@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/fileapi/Blob.h"
 
+#include "core/fileapi/BlobRegistry.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/fileapi/File.h"
-#include "core/fileapi/ThreadableBlobRegistry.h"
 
 namespace WebCore {
 
@@ -49,12 +49,12 @@ public:
 void BlobURLRegistry::registerURL(SecurityOrigin* origin, const KURL& publicURL, URLRegistrable* blob)
 {
     ASSERT(&blob->registry() == this);
-    ThreadableBlobRegistry::registerBlobURL(origin, publicURL, static_cast<Blob*>(blob)->url());
+    BlobRegistry::registerBlobURL(origin, publicURL, static_cast<Blob*>(blob)->url());
 }
 
 void BlobURLRegistry::unregisterURL(const KURL& url)
 {
-    ThreadableBlobRegistry::unregisterBlobURL(url);
+    BlobRegistry::unregisterBlobURL(url);
 }
 
 URLRegistry& BlobURLRegistry::registry()
@@ -72,7 +72,7 @@ Blob::Blob()
 
     // Create a new internal URL and register it with the provided blob data.
     m_internalURL = BlobURL::createInternalURL();
-    ThreadableBlobRegistry::registerBlobURL(m_internalURL, blobData.release());
+    BlobRegistry::registerBlobURL(m_internalURL, blobData.release());
 }
 
 Blob::Blob(PassOwnPtr<BlobData> blobData, long long size)
@@ -84,7 +84,7 @@ Blob::Blob(PassOwnPtr<BlobData> blobData, long long size)
 
     // Create a new internal URL and register it with the provided blob data.
     m_internalURL = BlobURL::createInternalURL();
-    ThreadableBlobRegistry::registerBlobURL(m_internalURL, blobData);
+    BlobRegistry::registerBlobURL(m_internalURL, blobData);
 }
 
 Blob::Blob(const KURL& srcURL, const String& type, long long size)
@@ -95,12 +95,12 @@ Blob::Blob(const KURL& srcURL, const String& type, long long size)
 
     // Create a new internal URL and register it with the same blob data as the source URL.
     m_internalURL = BlobURL::createInternalURL();
-    ThreadableBlobRegistry::registerBlobURL(0, m_internalURL, srcURL);
+    BlobRegistry::registerBlobURL(0, m_internalURL, srcURL);
 }
 
 Blob::~Blob()
 {
-    ThreadableBlobRegistry::unregisterBlobURL(m_internalURL);
+    BlobRegistry::unregisterBlobURL(m_internalURL);
 }
 
 PassRefPtr<Blob> Blob::slice(long long start, long long end, const String& contentType) const
