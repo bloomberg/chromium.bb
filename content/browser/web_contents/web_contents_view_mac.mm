@@ -511,18 +511,6 @@ void WebContentsViewMac::CloseTab() {
   [dragSource_ moveDragTo:screenPoint];
 }
 
-// Called when we're informed where a file should be dropped.
-- (NSArray*)namesOfPromisedFilesDroppedAtDestination:(NSURL*)dropDest {
-  if (![dropDest isFileURL])
-    return nil;
-
-  NSString* file_name = [dragSource_ dragPromisedFileTo:[dropDest path]];
-  if (!file_name)
-    return nil;
-
-  return [NSArray arrayWithObject:file_name];
-}
-
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {

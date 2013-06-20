@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
@@ -90,11 +91,40 @@ void PromiseWriterHelper(const WebDropData& drop_data,
                          drop_data.file_contents.length());
 }
 
+// Returns the drop location from a pasteboard.
+NSString* GetDropLocation(NSPasteboard* pboard) {
+  // The API to get the drop location during a callback from
+  // kPasteboardTypeFileURLPromise is PasteboardCopyPasteLocation, which takes
+  // a PasteboardRef, which isn't bridged with NSPasteboard. Ugh.
+
+  PasteboardRef pb_ref = NULL;
+  OSStatus status = PasteboardCreate(base::mac::NSToCFCast([pboard name]),
+                                     &pb_ref);
+  if (status != noErr || !pb_ref) {
+    OSSTATUS_DCHECK(false, status) << "Error finding Carbon pasteboard";
+    return nil;
+  }
+  base::mac::ScopedCFTypeRef<PasteboardRef> pb_ref_scoper(pb_ref);
+  PasteboardSynchronize(pb_ref);
+
+  CFURLRef drop_url = NULL;
+  status = PasteboardCopyPasteLocation(pb_ref, &drop_url);
+  if (status != noErr || !drop_url) {
+    OSSTATUS_DCHECK(false, status) << "Error finding drop location";
+    return nil;
+  }
+  base::mac::ScopedCFTypeRef<CFURLRef> drop_url_scoper(drop_url);
+
+  NSString* drop_path = [base::mac::CFToNSCast(drop_url) path];
+  return drop_path;
+}
+
 }  // namespace
 
 
 @interface WebDragSource(Private)
 
+- (void)writePromisedFileTo:(NSString*)path;
 - (void)fillPasteboard;
 - (NSImage*)dragImage;
 
@@ -211,6 +241,18 @@ void PromiseWriterHelper(const WebDropData& drop_data,
     [pboard setData:[NSData data]
             forType:ui::kChromeDragDummyPboardType];
 
+  // File promise.
+  } else if ([type isEqualToString:
+                 base::mac::CFToNSCast(kPasteboardTypeFileURLPromise)]) {
+    NSString* destination = GetDropLocation(pboard);
+    if (destination) {
+      [self writePromisedFileTo:destination];
+
+      // And set some data.
+      [pboard setData:[NSData data]
+              forType:base::mac::CFToNSCast(kPasteboardTypeFileURLPromise)];
+    }
+
   // Oops!
   } else {
     // Unknown drag pasteboard type.
@@ -312,17 +354,19 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   }
 }
 
-- (NSString*)dragPromisedFileTo:(NSString*)path {
+@end  // @implementation WebDragSource
+
+@implementation WebDragSource (Private)
+
+- (void)writePromisedFileTo:(NSString*)path {
   // Be extra paranoid; avoid crashing.
   if (!dropData_) {
     NOTREACHED() << "No drag-and-drop data available for promised file.";
-    return nil;
+    return;
   }
 
-  base::FilePath fileName = downloadFileName_.empty() ?
-      GetFileNameFromDragData(*dropData_) : downloadFileName_;
   base::FilePath filePath(SysNSStringToUTF8(path));
-  filePath = filePath.Append(fileName);
+  filePath = filePath.Append(downloadFileName_);
 
   // CreateFileStreamForDrop() will call file_util::PathExists(),
   // which is blocking.  Since this operation is already blocking the
@@ -331,7 +375,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   scoped_ptr<FileStream> fileStream(content::CreateFileStreamForDrop(
       &filePath, content::GetContentClient()->browser()->GetNetLog()));
   if (!fileStream)
-    return nil;
+    return;
 
   if (downloadURL_.is_valid()) {
     scoped_refptr<DragDownloadFile> dragFileDownloader(new DragDownloadFile(
@@ -352,15 +396,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
                                        *dropData_,
                                        base::Passed(&fileStream)));
   }
-
-  // Once we've created the file, we should return the file name.
-  return SysUTF8ToNSString(filePath.BaseName().value());
 }
-
-@end  // @implementation WebDragSource
-
-
-@implementation WebDragSource (Private)
 
 - (void)fillPasteboard {
   DCHECK(pasteboard_.get());
@@ -377,15 +413,12 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   // MIME type.
   std::string mimeType;
 
-  // File extension.
-  std::string fileExtension;
-
   // File.
   if (!dropData_->file_contents.empty() ||
       !dropData_->download_metadata.empty()) {
     if (dropData_->download_metadata.empty()) {
-      fileExtension = GetFileNameFromDragData(*dropData_).Extension();
-      net::GetMimeTypeFromExtension(fileExtension, &mimeType);
+      downloadFileName_ = GetFileNameFromDragData(*dropData_);
+      net::GetMimeTypeFromExtension(downloadFileName_.Extension(), &mimeType);
     } else {
       string16 mimeType16;
       base::FilePath fileName;
@@ -398,15 +431,14 @@ void PromiseWriterHelper(const WebDropData& drop_data,
         // name.
         std::string defaultName =
             content::GetContentClient()->browser()->GetDefaultDownloadName();
+        mimeType = UTF16ToUTF8(mimeType16);
         downloadFileName_ =
             net::GenerateFileName(downloadURL_,
                                   std::string(),
                                   std::string(),
                                   fileName.value(),
-                                  UTF16ToUTF8(mimeType16),
+                                  mimeType,
                                   defaultName);
-        mimeType = UTF16ToUTF8(mimeType16);
-        fileExtension = downloadFileName_.Extension();
       }
     }
 
@@ -416,14 +448,13 @@ void PromiseWriterHelper(const WebDropData& drop_data,
       fileUTI_.reset(UTTypeCreatePreferredIdentifierForTag(
           kUTTagClassMIMEType, mimeTypeCF.get(), NULL));
 
-      // File (HFS) promise.
-      // TODO(avi): Can we switch to kPasteboardTypeFilePromiseContent?
-      NSArray* types = @[NSFilesPromisePboardType];
+      NSArray* types =
+          @[base::mac::CFToNSCast(kPasteboardTypeFileURLPromise),
+            base::mac::CFToNSCast(kPasteboardTypeFilePromiseContent)];
       [pasteboard_ addTypes:types owner:contentsView_];
 
-      // For the file promise, we need to specify the extension.
-      [pasteboard_ setPropertyList:@[SysUTF8ToNSString(fileExtension.substr(1))]
-                           forType:NSFilesPromisePboardType];
+      [pasteboard_ setPropertyList:@[base::mac::CFToNSCast(fileUTI_.get())]
+              forType:base::mac::CFToNSCast(kPasteboardTypeFilePromiseContent)];
 
       if (!dropData_->file_contents.empty()) {
         NSArray* types = @[base::mac::CFToNSCast(fileUTI_.get())];
