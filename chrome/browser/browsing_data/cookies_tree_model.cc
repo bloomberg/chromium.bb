@@ -189,7 +189,7 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitDatabase(
     const BrowsingDataDatabaseHelper::DatabaseInfo* database_info) {
   Init(TYPE_DATABASE);
   this->database_info = database_info;
-  origin = GURL(database_info->origin);
+  origin = database_info->identifier.ToOrigin();
   return *this;
 }
 
@@ -342,7 +342,7 @@ void CookieTreeDatabaseNode::DeleteStoredObjects() {
 
   if (container) {
     container->database_helper_->DeleteDatabase(
-        database_info_->origin_identifier, database_info_->database_name);
+        database_info_->identifier.ToString(), database_info_->database_name);
     container->database_info_list_.erase(database_info_);
   }
 }
@@ -1113,7 +1113,7 @@ void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
            container->database_info_list_.begin();
        database_info != container->database_info_list_.end();
        ++database_info) {
-    GURL origin(database_info->origin);
+    GURL origin(database_info->identifier.ToOrigin());
 
     if (!filter.size() ||
         (CookieTreeHostNode::TitleForUrl(origin).find(filter) !=

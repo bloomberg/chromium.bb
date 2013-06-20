@@ -30,13 +30,15 @@ void MockBrowsingDataDatabaseHelper::DeleteDatabase(
 }
 
 void MockBrowsingDataDatabaseHelper::AddDatabaseSamples() {
+  webkit_database::DatabaseIdentifier id1 =
+      webkit_database::DatabaseIdentifier::Parse("http_gdbhost1_1");
   response_.push_back(BrowsingDataDatabaseHelper::DatabaseInfo(
-      "gdbhost1", "db1", "http_gdbhost1_1", "description 1",
-      "http://gdbhost1:1/", 1, base::Time()));
+      id1, "db1", "description 1", 1, base::Time()));
   databases_["http_gdbhost1_1:db1"] = true;
+  webkit_database::DatabaseIdentifier id2 =
+      webkit_database::DatabaseIdentifier::Parse("http_gdbhost2_2");
   response_.push_back(BrowsingDataDatabaseHelper::DatabaseInfo(
-      "gdbhost2", "db2", "http_gdbhost2_2", "description 2",
-      "http://gdbhost2:2/", 2, base::Time()));
+      id2, "db2", "description 2", 2, base::Time()));
   databases_["http_gdbhost2_2:db2"] = true;
 }
 

@@ -71,7 +71,7 @@ class StopTestOnCallback {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ASSERT_EQ(1UL, database_info_list.size());
     EXPECT_EQ(std::string(kTestIdentifier1),
-              database_info_list.begin()->origin_identifier);
+              database_info_list.begin()->identifier.ToString());
     base::MessageLoop::current()->Quit();
   }
 
@@ -117,13 +117,13 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedAddDatabase) {
   ASSERT_EQ(3u, result.size());
   std::list<BrowsingDataDatabaseHelper::DatabaseInfo>::iterator info =
       result.begin();
-  EXPECT_STREQ(origin_str1, info->origin_identifier.c_str());
+  EXPECT_EQ(origin_str1, info->identifier.ToString());
   EXPECT_STREQ(db1, info->database_name.c_str());
   info++;
-  EXPECT_STREQ(origin_str1, info->origin_identifier.c_str());
+  EXPECT_EQ(origin_str1, info->identifier.ToString());
   EXPECT_STREQ(db2, info->database_name.c_str());
   info++;
-  EXPECT_STREQ(origin_str2, info->origin_identifier.c_str());
+  EXPECT_EQ(origin_str2, info->identifier.ToString());
   EXPECT_STREQ(db3, info->database_name.c_str());
 }
 
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedUnique) {
       callback.result();
 
   ASSERT_EQ(1u, result.size());
-  EXPECT_STREQ(origin_str, result.begin()->origin_identifier.c_str());
+  EXPECT_EQ(origin_str, result.begin()->identifier.ToString());
   EXPECT_STREQ(db, result.begin()->database_name.c_str());
 }
 }  // namespace

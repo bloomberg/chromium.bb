@@ -16,6 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/browser/database/database_tracker.h"
+#include "webkit/common/database/database_identifier.h"
 
 class Profile;
 
@@ -29,20 +30,16 @@ class BrowsingDataDatabaseHelper
  public:
   // Contains detailed information about a web database.
   struct DatabaseInfo {
-    DatabaseInfo(const std::string& host,
+    DatabaseInfo(const webkit_database::DatabaseIdentifier& identifier,
                  const std::string& database_name,
-                 const std::string& origin_identifier,
                  const std::string& description,
-                 const std::string& origin,
                  int64 size,
                  base::Time last_modified);
     ~DatabaseInfo();
 
-    std::string host;
+    webkit_database::DatabaseIdentifier identifier;
     std::string database_name;
-    std::string origin_identifier;
     std::string description;
-    std::string origin;
     int64 size;
     base::Time last_modified;
   };
@@ -57,7 +54,7 @@ class BrowsingDataDatabaseHelper
 
   // Requests a single database to be deleted in the FILE thread. This must be
   // called in the UI thread.
-  virtual void DeleteDatabase(const std::string& origin,
+  virtual void DeleteDatabase(const std::string& origin_identifier,
                               const std::string& name);
 
  protected:
@@ -149,14 +146,6 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
  private:
   virtual ~CannedBrowsingDataDatabaseHelper();
 
-  // Converts the pending database info structs to database info structs.
-  void ConvertInfoInWebKitThread();
-
-  // Used to protect access to pending_database_info_.
-  mutable base::Lock lock_;
-
-  // Access to |pending_database_info_| is protected by |lock_| since it may
-  // be accessed on the UI or the WEBKIT thread.
   std::set<PendingDatabaseInfo> pending_database_info_;
 
   Profile* profile_;

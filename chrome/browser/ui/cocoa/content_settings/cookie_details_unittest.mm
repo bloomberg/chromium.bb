@@ -54,14 +54,14 @@ TEST_F(CookiesDetailsTest, CreateForCookie) {
 
 TEST_F(CookiesDetailsTest, CreateForTreeDatabase) {
   scoped_nsobject<CocoaCookieDetails> details;
-  std::string host("http://chromium.org");
+  GURL origin("http://chromium.org");
   std::string database_name("sassolungo");
-  std::string origin_identifier("dolomites");
   std::string description("a great place to climb");
   int64 size = 1234;
   base::Time last_modified = base::Time::Now();
-  BrowsingDataDatabaseHelper::DatabaseInfo info(host, database_name,
-      origin_identifier, description, host, size, last_modified);
+  BrowsingDataDatabaseHelper::DatabaseInfo info(
+      webkit_database::DatabaseIdentifier::CreateFromOrigin(origin),
+      database_name, description, size, last_modified);
   details.reset([[CocoaCookieDetails alloc] initWithDatabase:&info]);
 
   EXPECT_EQ([details.get() type], kCocoaCookieDetailsTypeTreeDatabase);
