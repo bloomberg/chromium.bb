@@ -595,6 +595,10 @@
           "output": "emelésszerű"
         }, 
         {
+          "input": "⠑⠫⠧⠑⠎⠜⠊⠝⠪⠗", 
+          "output": "enyveszsinór"
+        }, 
+        {
           "input": "⠑⠏⠕⠱⠱⠁⠇", 
           "output": "eposszal"
         }, 
@@ -609,6 +613,10 @@
         {
           "input": "⠡⠗⠉⠎⠁⠎", 
           "output": "ércsas"
+        }, 
+        {
+          "input": "⠡⠗⠉⠎⠁⠗⠥⠅⠅⠁⠇", 
+          "output": "ércsarukkal"
         }, 
         {
           "input": "⠡⠗⠉⠎⠑⠸⠑⠍", 
@@ -1005,6 +1013,10 @@
         {
           "input": "⠓⠁⠗⠁⠛⠕⠎⠣⠟⠇⠙", 
           "output": "haragoszöld"
+        }, 
+        {
+          "input": "⠓⠁⠗⠁⠝⠛⠹⠈⠗⠕⠎⠕⠅", 
+          "output": "haranggyárosok"
         }, 
         {
           "input": "⠓⠁⠗⠉⠕⠎⠱⠑⠇⠇⠑⠍", 
@@ -1633,6 +1645,14 @@
         {
           "input": "⠅⠕⠎⠱⠑⠍", 
           "output": "kosszem"
+        }, 
+        {
+          "input": "⠅⠕⠗⠞⠈⠗⠎⠣⠑⠝⠑⠊", 
+          "output": "kortárszenei"
+        }, 
+        {
+          "input": "⠅⠪⠗⠥⠎⠣⠑⠝⠑", 
+          "output": "kóruszene"
         }, 
         {
           "input": "⠅⠟⠓⠟⠛⠡⠎⠱⠑⠗⠾", 
@@ -2295,6 +2315,10 @@
           "output": "népességgyarapodás"
         }, 
         {
+          "input": "⠝⠑⠥⠞⠗⠕⠝⠫⠁⠇⠈⠃⠕⠅⠁⠞", 
+          "output": "neutronnyalábokat"
+        }, 
+        {
           "input": "⠫⠁⠗⠛⠕⠝⠉⠩⠊⠣⠍⠁", 
           "output": "nyargonccsizma"
         }, 
@@ -2399,12 +2423,16 @@
           "output": "önállásszerű"
         }, 
         {
-          "input": "⠟⠝⠫⠕⠍⠈⠎⠁⠂", 
-          "output": "önnyomása,"
+          "input": "⠟⠝⠫⠕⠍⠈⠎⠁", 
+          "output": "önnyomása"
         }, 
         {
           "input": "⠟⠝⠫⠕⠍⠁⠞⠬ ", 
           "output": "önnyomatú "
+        }, 
+        {
+          "input": "⠟⠝⠫⠥⠛⠙⠌⠚⠁⠣⠈⠎⠈⠞", 
+          "output": "önnyugdíjazását"
         }, 
         {
           "input": "⠟⠗⠟⠅⠎⠡⠛⠹⠾⠚⠞⠑⠍⠡⠫⠃⠑⠝", 
@@ -4418,6 +4446,10 @@
           "output": "⠑⠍⠑⠇⠡⠎⠱⠑⠗⠾"
         }, 
         {
+          "input": "enyveszsinór", 
+          "output": "⠑⠫⠧⠑⠎⠜⠊⠝⠪⠗"
+        }, 
+        {
           "input": "eposszal", 
           "output": "⠑⠏⠕⠱⠱⠁⠇"
         }, 
@@ -4432,6 +4464,10 @@
         {
           "input": "ércsas", 
           "output": "⠡⠗⠉⠎⠁⠎"
+        }, 
+        {
+          "input": "ércsarukkal", 
+          "output": "⠡⠗⠉⠎⠁⠗⠥⠅⠅⠁⠇"
         }, 
         {
           "input": "ércselyem", 
@@ -4828,6 +4864,10 @@
         {
           "input": "haragoszöld", 
           "output": "⠓⠁⠗⠁⠛⠕⠎⠣⠟⠇⠙"
+        }, 
+        {
+          "input": "haranggyárosok", 
+          "output": "⠓⠁⠗⠁⠝⠛⠹⠈⠗⠕⠎⠕⠅"
         }, 
         {
           "input": "harcosszellem", 
@@ -5456,6 +5496,14 @@
         {
           "input": "kosszem", 
           "output": "⠅⠕⠎⠱⠑⠍"
+        }, 
+        {
+          "input": "kortárszenei", 
+          "output": "⠅⠕⠗⠞⠈⠗⠎⠣⠑⠝⠑⠊"
+        }, 
+        {
+          "input": "kóruszene", 
+          "output": "⠅⠪⠗⠥⠎⠣⠑⠝⠑"
         }, 
         {
           "input": "köhögésszerű", 
@@ -6118,6 +6166,10 @@
           "output": "⠝⠡⠏⠑⠎⠎⠡⠛⠹⠁⠗⠁⠏⠕⠙⠈⠎"
         }, 
         {
+          "input": "neutronnyalábokat", 
+          "output": "⠝⠑⠥⠞⠗⠕⠝⠫⠁⠇⠈⠃⠕⠅⠁⠞"
+        }, 
+        {
           "input": "nyargonccsizma", 
           "output": "⠫⠁⠗⠛⠕⠝⠉⠩⠊⠣⠍⠁"
         }, 
@@ -6222,12 +6274,16 @@
           "output": "⠟⠝⠈⠇⠇⠈⠎⠱⠑⠗⠾"
         }, 
         {
-          "input": "önnyomása,", 
-          "output": "⠟⠝⠫⠕⠍⠈⠎⠁⠂"
+          "input": "önnyomása", 
+          "output": "⠟⠝⠫⠕⠍⠈⠎⠁"
         }, 
         {
           "input": "önnyomatú ", 
           "output": "⠟⠝⠫⠕⠍⠁⠞⠬ "
+        }, 
+        {
+          "input": "önnyugdíjazását", 
+          "output": "⠟⠝⠫⠥⠛⠙⠌⠚⠁⠣⠈⠎⠈⠞"
         }, 
         {
           "input": "örökséggyűjteményben", 

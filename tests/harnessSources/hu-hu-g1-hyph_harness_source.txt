@@ -444,6 +444,9 @@ testmode: hyphenate
 emelésszerű
 
 testmode: hyphenate
+enyveszsinór
+
+testmode: hyphenate
 erőforrászabáló
 
 testmode: hyphenate
@@ -466,6 +469,9 @@ testmode: hyphenate
 
 testmode: hyphenate
 ércsas
+
+testmode: hyphenate
+ércsarukkal
 
 testmode: hyphenate
 ércselyem
@@ -763,6 +769,9 @@ hányásszag
 
 testmode: hyphenate
 haragoszöld
+
+testmode: hyphenate
+haranggyárosok
 
 testmode: hyphenate
 harcosszellem
@@ -1237,6 +1246,12 @@ kosszarv
 
 testmode: hyphenate
 kosszem
+
+testmode: hyphenate
+kortárszenei
+
+testmode: hyphenate
+kóruszene
 
 testmode: hyphenate
 köhögésszerű
@@ -1731,6 +1746,9 @@ testmode: hyphenate
 népességgyarapodás
 
 testmode: hyphenate
+neutronnyalábokat
+
+testmode: hyphenate
 nyargonccsizma
 
 testmode: hyphenate
@@ -1819,6 +1837,9 @@ testmode: hyphenate
 
 testmode: hyphenate
 önnyomatú
+
+testmode: hyphenate
+önnyugdíjazását
 
 testmode: hyphenate
 örökséggyűjteményben

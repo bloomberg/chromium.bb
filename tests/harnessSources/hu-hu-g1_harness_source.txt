@@ -735,6 +735,11 @@ emelésszerű
 testmode: backtranslate
 emelésszerű
 
+enyveszsinór
+
+testmode: backtranslate
+enyveszsinór
+
 eposszal
 
 testmode: backtranslate
@@ -754,6 +759,11 @@ testmode: backtranslate
 
 testmode: backtranslate
 ércsas
+
+ércsarukkal
+
+testmode: backtranslate
+ércsarukkal
 
 ércselyem
 
@@ -1250,6 +1260,11 @@ haragoszöld
 testmode: backtranslate
 haragoszöld
 
+haranggyárosok
+
+testmode: backtranslate
+haranggyárosok
+
 harcosszellem
 
 testmode: backtranslate
@@ -2034,6 +2049,16 @@ kosszem
 
 testmode: backtranslate
 kosszem
+
+kortárszenei
+
+testmode: backtranslate
+kortárszenei
+
+kóruszene
+
+testmode: backtranslate
+kóruszene
 
 köhögésszerű
 
@@ -2860,6 +2885,11 @@ népességgyarapodás
 testmode: backtranslate
 népességgyarapodás
 
+neutronnyalábokat
+
+testmode: backtranslate
+neutronnyalábokat
+
 nyargonccsizma
 
 testmode: backtranslate
@@ -2990,15 +3020,20 @@ testmode: backtranslate
 testmode: backtranslate
 önállásszerű
 
-önnyomása,
+önnyomása
 
 testmode: backtranslate
-önnyomása,
+önnyomása
 
 önnyomatú 
 
 testmode: backtranslate
 önnyomatú 
+
+önnyugdíjazását
+
+testmode: backtranslate
+önnyugdíjazását
 
 örökséggyűjteményben
 
@@ -3006,7 +3041,6 @@ testmode: backtranslate
 örökséggyűjteményben
 
 örvénylésszerű
-
 
 testmode: backtranslate
 örvénylésszerű

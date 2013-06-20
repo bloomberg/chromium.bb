@@ -117,6 +117,7 @@ begword láncsá 123-4-1345-146-4	An old hungarian word related need this except
 partword láncsor =	For example karakterláncsor word related need this exception
 partword ketrec =	For example ketreccsapda, ketrecsor words related need this general exception
 begword spicc =	For example spiccszűrőbe word related need this general exception
+begword ércsar 16-1235-14-234-1-1235	For example ércsarukkal word
 
 #gy, ggy related exceptions
 #This exception section containing word parts and full words with need marking ggy letter pairs with single g and gy braille dot combination
@@ -228,6 +229,7 @@ begword szeggyá 156-15-1245-1456-4	For example szeggyár word
 partword tisztséggy 2345-24-156-2345-234-16-1245-1456	For example tisztséggyűjtemény word
 begword szalaggyakor 156-1-123-1-1245-1456-1-13-135-1235	For example szalaggyakorlatát word
 begword szalaggyűj 156-1-123-1-1245-1456-23456-245	For example szalaggyűjteménye word
+partword harang =	For example haranggyártás, haranggyárosok words related need this general exception
 
 #ny, nny related exceptions
 #Following exception parts need marking nny letter pairs with single n and nny braille dot combinations
@@ -303,6 +305,8 @@ partword magánnyar 134-1-1245-4-1345-1246-1-1235	For example magánnyaralók wo
 always szénnyom 156-16-1345-1246-135-134	For example szénnyomokat word
 partword arzénny 1-1235-126-16-1345-1246	For example arzénnyom word
 begword bánnyíre 12-4-1345-1246-34-1235-15	For example Bánnyíres town name related need this general exception
+partword neutron =	For example neutronnyalábokat word related need this general exception
+begword önnyug 12345-1345-1246-136-1245	For example önnyugdíjazását word related need this general exception
 
 #ly related exceptions
 #This exception parts need marking ly letters with two single l and y letter combination
@@ -389,6 +393,10 @@ partword település =	For example települészónájára word
 partword utasítás =	For example törzsutasításszavakkal, utasításszavakkal related words need this exception
 partword turizmussz 2345-136-1235-24-126-134-136-234-156	For example turizmusszektor, turizmusszerű words
 begword adászár 1-145-4-234-126-4-1235	For example adászárásig word
+begword enyves 15-1246-1236-15-234	For example enyveszsinór word related need this exception
+partword kortárs =	For example kortárszenei word related need this general exception
+
+partword kórus =	For example kóruszene word related need this general exception
 
 #ssz related exceptions
 #Following exception words and word parts need writing one s and one sz braille letter
@@ -746,6 +754,7 @@ begword vörössz 1236-12345-1235-12345-234-156	For example vörösszakállú, v
 begword zavarossz 126-1-1236-1-1235-135-234-156	For example zavarosszürke word
 begword gázspra 1245-4-126-234-1234-1235-1	For example gázspray word
 always gázstop 1245-4-126-234-2345-135-1234	For example the gázstop word need this general exception
+begword gázsuga 1245-4-126-234-136-1245-1	For example gázsugarak word
 partword zsugár 126-234-136-1245-4-1235	For example gázsugár word
 begword ágyússz 4-1456-346-234-156	For example ágyússzekerek word
 begword alásszolg 1-123-4-234-156-135-123-1245	For example alásszolgája, alásszolgájuk words
@@ -910,6 +919,12 @@ word feszty 124-15-156-2345-13456	Single Feszty historical name related need thi
 begword feszty 124-15-156-2345-13456	If a word beginning with Feszty historical name and have suffixes, need this exception. Always or partword opcode too risk this situation
 always kismarty =	For example Kismarty-Lechner Jenő, Kismarty-Lechner Zita names related need this exception
 always tyrannosauru =
+always haraszty 125-1-1235-1-156-2345-13456	For example Haraszty Árpád, Haraszty István names related need this general exception
+always huszty 125-136-156-2345-13456	For example Huszt István name related need this general exception
+always kmety =	For example Kmety György Hungarian army generaly name related need this general exception
+word lacsny 123-1-146-1345-13456	For example Lacsny Miklós name related need this general exception
+begword lacsny 123-1-146-1345-13456	Same exception for Lacsny Miklós name related if the name containing suffixes. Partword or always opcode too risk this exception
+
 #zs, zzs related exceptions
 partword ínházsi 34-1345-125-4-345-24
 always topáz 2345-135-1234-4-126	For example topázsárgája word
@@ -988,6 +1003,7 @@ always vörösmarty =	Mihály Vörösmarty is a very important author for hungar
 partword indszenty 24-1345-145-156-15-1345-2345-13456
 always anonymu =
 always kiszely 13-24-156-15-123-13456	For example István Kiszely name related need this exception
+always hatvany =
 
 #Town names related exceptions
 #Following section containing hungarian town names

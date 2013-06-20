@@ -600,6 +600,10 @@
           "output": "eme-lés-sze-rű"
         }, 
         {
+          "input": "enyveszsinór", 
+          "output": "eny-ves-zsi-nór"
+        }, 
+        {
           "input": "erőforrászabáló", 
           "output": "erő-for-rás-za-bá-ló"
         }, 
@@ -625,11 +629,15 @@
         }, 
         {
           "input": "ércsalak", 
-          "output": "ér-cs-a-lak"
+          "output": "érc-sa-lak"
         }, 
         {
           "input": "ércsas", 
-          "output": "ér-csas"
+          "output": "érc-sas"
+        }, 
+        {
+          "input": "ércsarukkal", 
+          "output": "érc-sa-ruk-kal"
         }, 
         {
           "input": "ércselyem", 
@@ -1026,6 +1034,10 @@
         {
           "input": "haragoszöld", 
           "output": "ha-ra-gos-zöld"
+        }, 
+        {
+          "input": "haranggyárosok", 
+          "output": "ha-rang-gyá-ro-sok"
         }, 
         {
           "input": "harcosszellem", 
@@ -1658,6 +1670,14 @@
         {
           "input": "kosszem", 
           "output": "kos-szem"
+        }, 
+        {
+          "input": "kortárszenei", 
+          "output": "kor-társ-ze-nei"
+        }, 
+        {
+          "input": "kóruszene", 
+          "output": "kó-rus-ze-ne"
         }, 
         {
           "input": "köhögésszerű", 
@@ -2316,6 +2336,10 @@
           "output": "né-pes-ség-gya-ra-po-dás"
         }, 
         {
+          "input": "neutronnyalábokat", 
+          "output": "ne-ut-ron-nya-lá-bo-kat"
+        }, 
+        {
           "input": "nyargonccsizma", 
           "output": "nyar-gonc-csiz-ma"
         }, 
@@ -2434,6 +2458,10 @@
         {
           "input": "önnyomatú", 
           "output": "ön-nyo-ma-tú"
+        }, 
+        {
+          "input": "önnyugdíjazását", 
+          "output": "ön-nyug-dí-ja-zá-sát"
         }, 
         {
           "input": "örökséggyűjteményben", 
