@@ -46,7 +46,6 @@ specific_include_rules = {
     "!chrome/browser/webdata/web_data_service_factory.h",
     "!chrome/browser/webdata/web_data_service_test_util.h",
     "!chrome/common/chrome_paths.h",
-    "!chrome/common/pref_names.h",
     "!chrome/test/base",
   ],
 }
