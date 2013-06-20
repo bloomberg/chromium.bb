@@ -246,7 +246,8 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
 
     if (!shouldCreateRenderer())
         return;
-    m_style = element->styleForRenderer();
+    if (!m_style)
+        m_style = element->styleForRenderer();
     ASSERT(m_style);
 
     moveToFlowThreadIfNeeded();

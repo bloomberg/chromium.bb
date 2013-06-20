@@ -914,8 +914,11 @@ inline void Node::lazyReattachIfAttached()
 
 inline void Node::lazyReattach(ShouldSetAttached shouldSetAttached)
 {
+    AttachContext context;
+    context.performingReattach = true;
+
     if (attached())
-        detach();
+        detach(context);
     lazyAttach(shouldSetAttached);
 }
 

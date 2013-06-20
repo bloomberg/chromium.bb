@@ -31,9 +31,16 @@
 	<script src="../js/resources/js-test-pre.js"></script>
 </head>
 
+<script type="text/javascript">
+	function elementHovered() {
+		if (window.testRunner)
+			document.getElementById("hoverTest").style.display = "none";
+	}
+</script>
+
 <body>
 	<div id="dummy" class="box"></div>
-	<div id="hoverTest" class="box">When hovered, this box's display will switch from <b>block</b> to <b>none</b> (click on it and keep the mouse button pushed to avoid flicker and get a more clear view)</div>
+	<div id="hoverTest" class="box" onmouseover="elementHovered()">When hovered, this box's display will switch from <b>block</b> to <b>none</b> (click on it and keep the mouse button pushed to avoid flicker and get a more clear view)</div>
 	<div id="after_hoverTest" class="box">This is here to show the layout being recomputed</div>
 
 	<script type="text/javascript">
