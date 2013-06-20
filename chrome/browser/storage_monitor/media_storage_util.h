@@ -57,6 +57,10 @@ class MediaStorageUtil {
                                         const std::string& device_uuid,
                                         const string16& device_label);
 
+  // Returns true if the |id| is both a removable device and also
+  // currently attached.
+  static bool IsRemovableStorageAttached(const std::string& id);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MediaStorageUtil);
 };

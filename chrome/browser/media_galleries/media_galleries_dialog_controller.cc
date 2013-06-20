@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 
-#include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,19 +27,6 @@ namespace chrome {
 
 namespace {
 
-bool IsAttachedDevice(const std::string& device_id) {
-  if (!StorageInfo::IsRemovableDevice(device_id))
-    return false;
-
-  std::vector<StorageInfo> storages =
-      StorageMonitor::GetInstance()->GetAllAvailableStorages();
-  for (size_t i = 0; i < storages.size(); ++i) {
-    if (storages[i].device_id() == device_id)
-      return true;
-  }
-  return false;
-}
-
 // Comparator for sorting GalleryPermissionsVector -- sorts
 // allowed galleries low, and then sorts by absolute path.
 bool GalleriesVectorComparator(
@@ -52,41 +38,6 @@ bool GalleriesVectorComparator(
     return false;
 
   return a.pref_info.AbsolutePath() < b.pref_info.AbsolutePath();
-}
-
-string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
-                                 const string16& name) {
-  DCHECK(!name.empty());
-  return (storage_size_in_bytes == 0) ?
-      name : ui::FormatBytes(storage_size_in_bytes) + ASCIIToUTF16(" ") + name;
-}
-
-
-// For a device with |device_name| and a relative path |sub_folder|, construct
-// a display name. If |sub_folder| is empty, then just return |device_name|.
-string16 GetDisplayNameForSubFolder(const string16& device_name,
-                                    const base::FilePath& sub_folder) {
-  if (sub_folder.empty())
-    return device_name;
-  return (sub_folder.BaseName().LossyDisplayName() +
-          ASCIIToUTF16(" - ") +
-          device_name);
-}
-
-string16 GetFullProductName(const string16& vendor_name,
-                            const string16& model_name) {
-  if (vendor_name.empty() && model_name.empty())
-    return string16();
-
-  string16 product_name;
-  if (vendor_name.empty())
-    product_name = model_name;
-  else if (model_name.empty())
-    product_name = vendor_name;
-  else if (!vendor_name.empty() && !model_name.empty())
-    product_name = vendor_name + UTF8ToUTF16(", ") + model_name;
-
-  return product_name;
 }
 
 }  // namespace
@@ -133,88 +84,6 @@ MediaGalleriesDialogController::~MediaGalleriesDialogController() {
     select_folder_dialog_->ListenerDestroyed();
 }
 
-// static
-string16 MediaGalleriesDialogController::GetGalleryDisplayName(
-    const MediaGalleryPrefInfo& gallery) {
-  string16 name = gallery.display_name;
-  if (IsAttachedDevice(gallery.device_id)) {
-    name += ASCIIToUTF16(" ");
-    name +=
-        l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_DEVICE_ATTACHED);
-  }
-  return name;
-}
-
-// TODO(gbillock): Move this function and attendant helpers somewhere else,
-// probably to StorageInfo.
-// static
-string16 MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
-    const MediaGalleryPrefInfo& gallery) {
-  if (!StorageInfo::IsRemovableDevice(gallery.device_id)) {
-    // For fixed storage, the name is the directory name, or, in the case
-    // of a root directory, the root directory name.
-    // TODO(gbillock): Using only the BaseName can lead to ambiguity. The
-    // tooltip resolves it. Is that enough?
-    base::FilePath path = gallery.AbsolutePath();
-    if (!gallery.display_name.empty())
-      return gallery.display_name;
-    if (path == path.DirName())
-      return path.LossyDisplayName();
-    return path.BaseName().LossyDisplayName();
-  }
-
-  string16 name = gallery.display_name;
-  if (name.empty())
-    name = gallery.volume_label;
-  if (name.empty())
-    name = GetFullProductName(gallery.vendor_name, gallery.model_name);
-  if (name.empty())
-    name = l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_UNLABELED_DEVICE);
-
-  name = GetDisplayNameForDevice(gallery.total_size_in_bytes, name);
-
-  if (!gallery.path.empty())
-    name = GetDisplayNameForSubFolder(name, gallery.path);
-
-  return name;
-}
-
-// static
-string16 MediaGalleriesDialogController::GetGalleryTooltip(
-    const MediaGalleryPrefInfo& gallery) {
-  return gallery.AbsolutePath().LossyDisplayName();
-}
-
-// static
-bool MediaGalleriesDialogController::GetGalleryAttached(
-    const MediaGalleryPrefInfo& gallery) {
-  return !StorageInfo::IsRemovableDevice(gallery.device_id) ||
-         IsAttachedDevice(gallery.device_id);
-}
-
-// static
-string16 MediaGalleriesDialogController::GetGalleryAdditionalDetails(
-    const MediaGalleryPrefInfo& gallery) {
-  string16 attached;
-  if (StorageInfo::IsRemovableDevice(gallery.device_id)) {
-    if (IsAttachedDevice(gallery.device_id)) {
-      attached = l10n_util::GetStringUTF16(
-          IDS_MEDIA_GALLERIES_DIALOG_DEVICE_ATTACHED);
-    } else if (!gallery.last_attach_time.is_null()) {
-      attached = l10n_util::GetStringFUTF16(
-          IDS_MEDIA_GALLERIES_LAST_ATTACHED,
-          base::TimeFormatShortDateNumeric(gallery.last_attach_time));
-    } else {
-      attached = l10n_util::GetStringUTF16(
-          IDS_MEDIA_GALLERIES_DIALOG_DEVICE_NOT_ATTACHED);
-    }
-  }
-
-  // TODO(gbillock): This is a placeholder. Need to actually get the
-  // right text here.
-  return attached;
-}
-
 string16 MediaGalleriesDialogController::GetHeader() const {
   return l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_HEADER);
 }
@@ -252,15 +121,15 @@ void MediaGalleriesDialogController::FillPermissions(
     const {
   for (KnownGalleryPermissions::const_iterator iter = known_galleries_.begin();
        iter != known_galleries_.end(); ++iter) {
-    if ((attached && GetGalleryAttached(iter->second.pref_info)) ||
-        (!attached && !GetGalleryAttached(iter->second.pref_info))) {
+    if ((attached && iter->second.pref_info.IsGalleryAvailable()) ||
+        (!attached && !iter->second.pref_info.IsGalleryAvailable())) {
       permissions->push_back(iter->second);
     }
   }
   for (GalleryPermissionsVector::const_iterator iter = new_galleries_.begin();
        iter != new_galleries_.end(); ++iter) {
-    if ((attached && GetGalleryAttached(iter->pref_info)) ||
-        (!attached && !GetGalleryAttached(iter->pref_info))) {
+    if ((attached && iter->pref_info.IsGalleryAvailable()) ||
+        (!attached && !iter->pref_info.IsGalleryAvailable())) {
       permissions->push_back(*iter);
     }
   }

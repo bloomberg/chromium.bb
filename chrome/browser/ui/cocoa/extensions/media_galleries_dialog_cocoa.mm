@@ -299,10 +299,8 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
   [checkboxes_ addObject:checkbox];
 
   [checkbox setTitle:base::SysUTF16ToNSString(
-      MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
-          gallery))];
-  [checkbox setToolTip:base::SysUTF16ToNSString(
-      MediaGalleriesDialogController::GetGalleryTooltip(gallery))];
+      gallery.GetGalleryDisplayName())];
+  [checkbox setToolTip:base::SysUTF16ToNSString(gallery.GetGalleryTooltip())];
   [checkbox setState:permitted ? NSOnState : NSOffState];
 
   [checkbox sizeToFit];
@@ -320,9 +318,7 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
   [details setBezeled:NO];
   [details setAttributedStringValue:
       constrained_window::GetAttributedLabelString(
-          base::SysUTF16ToNSString(
-              MediaGalleriesDialogController::GetGalleryAdditionalDetails(
-                  gallery)),
+          base::SysUTF16ToNSString(gallery.GetGalleryAdditionalDetails()),
           chrome_style::kTextFontStyle,
           NSNaturalTextAlignment,
           NSLineBreakByClipping

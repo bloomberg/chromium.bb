@@ -180,8 +180,7 @@ void MediaGalleriesDialogGtk::UpdateGalleryInContainer(
   g_signal_connect(widget, "toggled", G_CALLBACK(OnToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(checkbox_container), hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
-  std::string details = UTF16ToUTF8(
-      MediaGalleriesDialogController::GetGalleryAdditionalDetails(gallery));
+  std::string details = UTF16ToUTF8(gallery.GetGalleryAdditionalDetails());
   GtkWidget* details_label = gtk_label_new(details.c_str());
   gtk_label_set_line_wrap(GTK_LABEL(details_label), FALSE);
   gtk_util::SetLabelColor(details_label, &kDeemphasizedTextColor);
@@ -190,14 +189,11 @@ void MediaGalleriesDialogGtk::UpdateGalleryInContainer(
   gtk_widget_show(hbox);
   checkbox_map_[gallery.pref_id] = widget;
 
-  std::string tooltip_text = UTF16ToUTF8(
-      MediaGalleriesDialogController::GetGalleryTooltip(gallery));
+  std::string tooltip_text = UTF16ToUTF8(gallery.GetGalleryTooltip());
   gtk_widget_set_tooltip_text(widget, tooltip_text.c_str());
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), permitted);
-  std::string label = UTF16ToUTF8(
-      MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
-          gallery));
+  std::string label = UTF16ToUTF8(gallery.GetGalleryDisplayName());
   gtk_button_set_label(GTK_BUTTON(widget), label.c_str());
 }
 

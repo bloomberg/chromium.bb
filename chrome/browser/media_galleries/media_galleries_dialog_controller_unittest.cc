@@ -12,10 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 std::string GalleryName(const chrome::MediaGalleryPrefInfo& gallery) {
-  using chrome::MediaGalleriesDialogController;
-  string16 name =
-      MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
-          gallery);
+  string16 name = gallery.GetGalleryDisplayName();
   return UTF16ToASCII(name);
 }
 

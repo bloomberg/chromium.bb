@@ -72,17 +72,6 @@ class MediaGalleriesDialogController
                                  const extensions::Extension& extension,
                                  const base::Closure& on_finish);
 
-  // Called by the view to provide details for a particular gallery
-  // permission entry.
-  static string16 GetGalleryDisplayName(
-      const MediaGalleryPrefInfo& gallery);
-  static string16 GetGalleryDisplayNameNoAttachment(
-      const MediaGalleryPrefInfo& gallery);
-  static string16 GetGalleryTooltip(const MediaGalleryPrefInfo& gallery);
-  static bool GetGalleryAttached(const MediaGalleryPrefInfo& gallery);
-  static string16 GetGalleryAdditionalDetails(
-      const MediaGalleryPrefInfo& gallery);
-
   // The title of the dialog view.
   string16 GetHeader() const;
 

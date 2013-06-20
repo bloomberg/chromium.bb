@@ -49,17 +49,6 @@ void ValidatePathOnFileThread(
 
 typedef std::vector<StorageInfo> StorageInfoList;
 
-bool IsRemovableStorageAttached(const std::string& id) {
-  StorageInfoList devices =
-      StorageMonitor::GetInstance()->GetAllAvailableStorages();
-  for (StorageInfoList::const_iterator it = devices.begin();
-       it != devices.end(); ++it) {
-    if (StorageInfo::IsRemovableDevice(id) && it->device_id() == id)
-      return true;
-  }
-  return false;
-}
-
 base::FilePath::StringType FindRemovableStorageLocationById(
     const std::string& device_id) {
   StorageInfoList devices =
@@ -95,7 +84,7 @@ void FilterAttachedDevicesOnFileThread(MediaStorageUtil::DeviceIdSet* devices) {
       continue;
     }
 
-    if (!IsRemovableStorageAttached(*it))
+    if (!MediaStorageUtil::IsRemovableStorageAttached(*it))
       missing_devices.insert(*it);
   }
 
@@ -250,6 +239,17 @@ void MediaStorageUtil::RecordDeviceInfoHistogram(bool mass_storage,
   }
   UMA_HISTOGRAM_ENUMERATION("MediaDeviceNotifications.DeviceInfo", event,
                             DEVICE_INFO_BUCKET_BOUNDARY);
+}
+
+bool MediaStorageUtil::IsRemovableStorageAttached(const std::string& id) {
+  StorageInfoList devices =
+      StorageMonitor::GetInstance()->GetAllAvailableStorages();
+  for (StorageInfoList::const_iterator it = devices.begin();
+       it != devices.end(); ++it) {
+    if (StorageInfo::IsRemovableDevice(id) && it->device_id() == id)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace chrome

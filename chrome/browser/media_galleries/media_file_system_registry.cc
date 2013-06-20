@@ -341,8 +341,7 @@ class ExtensionGalleriesHost
         continue;
 
       MediaFileSystemInfo new_entry(
-          MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
-              gallery_info),
+          gallery_info.GetGalleryDisplayName(),
           path,
           fsid,
           pref_id,

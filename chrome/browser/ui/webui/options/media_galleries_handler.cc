@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
-#include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
@@ -24,7 +23,6 @@
 
 namespace options {
 
-using chrome::MediaGalleriesDialogController;
 using chrome::MediaGalleriesPreferences;
 using chrome::MediaGalleriesPrefInfoMap;
 using chrome::MediaGalleryPrefInfo;
@@ -106,9 +104,7 @@ void MediaGalleriesHandler::OnGalleriesChanged() {
       continue;
 
     DictionaryValue* dict = new DictionaryValue();
-    dict->SetString("displayName",
-        MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
-            gallery));
+    dict->SetString("displayName", gallery.GetGalleryDisplayName());
     dict->SetString("path", gallery.AbsolutePath().LossyDisplayName());
     dict->SetString("id", base::Uint64ToString(gallery.pref_id));
     list.Append(dict);

@@ -103,6 +103,15 @@ struct MediaGalleryPrefInfo {
   // 1 if the display_name is only set externally when it is overriding
   // the name constructed from volume metadata.
   int prefs_version;
+
+  // Called by views to provide details for the gallery permission entries.
+  string16 GetGalleryDisplayName() const;
+  string16 GetGalleryTooltip() const;
+  string16 GetGalleryAdditionalDetails() const;
+
+  // Returns true if the gallery is currently a removable device gallery which
+  // is now attached, or a fixed storage gallery.
+  bool IsGalleryAvailable() const;
 };
 
 typedef std::map<MediaGalleryPrefId, MediaGalleryPrefInfo>

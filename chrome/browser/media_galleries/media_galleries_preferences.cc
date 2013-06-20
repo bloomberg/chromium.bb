@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 
+#include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -30,6 +31,9 @@
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -217,6 +221,40 @@ bool GetMediaGalleryPermissionFromDictionary(
   return false;
 }
 
+string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
+                                 const string16& name) {
+  DCHECK(!name.empty());
+  return (storage_size_in_bytes == 0) ?
+      name : ui::FormatBytes(storage_size_in_bytes) + ASCIIToUTF16(" ") + name;
+}
+
+// For a device with |device_name| and a relative path |sub_folder|, construct
+// a display name. If |sub_folder| is empty, then just return |device_name|.
+string16 GetDisplayNameForSubFolder(const string16& device_name,
+                                    const base::FilePath& sub_folder) {
+  if (sub_folder.empty())
+    return device_name;
+  return (sub_folder.BaseName().LossyDisplayName() +
+          ASCIIToUTF16(" - ") +
+          device_name);
+}
+
+string16 GetFullProductName(const string16& vendor_name,
+                            const string16& model_name) {
+  if (vendor_name.empty() && model_name.empty())
+    return string16();
+
+  string16 product_name;
+  if (vendor_name.empty())
+    product_name = model_name;
+  else if (model_name.empty())
+    product_name = vendor_name;
+  else if (!vendor_name.empty() && !model_name.empty())
+    product_name = vendor_name + UTF8ToUTF16(", ") + model_name;
+
+  return product_name;
+}
+
 }  // namespace
 
 MediaGalleryPrefInfo::MediaGalleryPrefInfo()
@@ -233,6 +271,64 @@ base::FilePath MediaGalleryPrefInfo::AbsolutePath() const {
   base::FilePath base_path = MediaStorageUtil::FindDevicePathById(device_id);
   DCHECK(!path.IsAbsolute());
   return base_path.empty() ? base_path : base_path.Append(path);
+}
+
+string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
+  if (!StorageInfo::IsRemovableDevice(device_id)) {
+    // For fixed storage, the name is the directory name, or, in the case
+    // of a root directory, the root directory name.
+    // TODO(gbillock): Using only the BaseName can lead to ambiguity. The
+    // tooltip resolves it. Is that enough?
+    base::FilePath path = AbsolutePath();
+    if (!display_name.empty())
+      return display_name;
+    if (path == path.DirName())
+      return path.LossyDisplayName();
+    return path.BaseName().LossyDisplayName();
+  }
+
+  string16 name = display_name;
+  if (name.empty())
+    name = volume_label;
+  if (name.empty())
+    name = GetFullProductName(vendor_name, model_name);
+  if (name.empty())
+    name = l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_UNLABELED_DEVICE);
+
+  name = GetDisplayNameForDevice(total_size_in_bytes, name);
+
+  if (!path.empty())
+    name = GetDisplayNameForSubFolder(name, path);
+
+  return name;
+}
+
+string16 MediaGalleryPrefInfo::GetGalleryTooltip() const {
+  return AbsolutePath().LossyDisplayName();
+}
+
+string16 MediaGalleryPrefInfo::GetGalleryAdditionalDetails() const {
+  string16 attached;
+  if (StorageInfo::IsRemovableDevice(device_id)) {
+    if (MediaStorageUtil::IsRemovableStorageAttached(device_id)) {
+      attached = l10n_util::GetStringUTF16(
+          IDS_MEDIA_GALLERIES_DIALOG_DEVICE_ATTACHED);
+    } else if (!last_attach_time.is_null()) {
+      attached = l10n_util::GetStringFUTF16(
+          IDS_MEDIA_GALLERIES_LAST_ATTACHED,
+          base::TimeFormatShortDateNumeric(last_attach_time));
+    } else {
+      attached = l10n_util::GetStringUTF16(
+          IDS_MEDIA_GALLERIES_DIALOG_DEVICE_NOT_ATTACHED);
+    }
+  }
+
+  return attached;
+}
+
+bool MediaGalleryPrefInfo::IsGalleryAvailable() const {
+  return !StorageInfo::IsRemovableDevice(device_id) ||
+         MediaStorageUtil::IsRemovableStorageAttached(device_id);
 }
 
 MediaGalleriesPreferences::GalleryChangeObserver::~GalleryChangeObserver() {}

@@ -23,8 +23,10 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "grit/generated_resources.h"
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -807,6 +809,48 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   std::string new_device_id =
       StorageInfo::MakeDeviceId(StorageInfo::PICASA, path.AsUTF8Unsafe());
   EXPECT_FALSE(UpdateDeviceIDForSingletonType(new_device_id));
+}
+
+TEST(MediaGalleryPrefInfoTest, NameGeneration) {
+  test::TestStorageMonitor monitor;
+
+  MediaGalleryPrefInfo info;
+  info.pref_id = 1;
+  info.display_name = ASCIIToUTF16("override");
+  info.device_id = StorageInfo::MakeDeviceId(
+      StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, "unique");
+
+  EXPECT_EQ(ASCIIToUTF16("override"), info.GetGalleryDisplayName());
+
+  info.display_name = ASCIIToUTF16("o2");
+  EXPECT_EQ(ASCIIToUTF16("o2"), info.GetGalleryDisplayName());
+
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_MEDIA_GALLERIES_DIALOG_DEVICE_NOT_ATTACHED),
+            info.GetGalleryAdditionalDetails());
+
+  info.last_attach_time = base::Time::Now();
+  EXPECT_NE(l10n_util::GetStringUTF16(
+                IDS_MEDIA_GALLERIES_DIALOG_DEVICE_NOT_ATTACHED),
+            info.GetGalleryAdditionalDetails());
+  EXPECT_NE(l10n_util::GetStringUTF16(
+                IDS_MEDIA_GALLERIES_DIALOG_DEVICE_ATTACHED),
+            info.GetGalleryAdditionalDetails());
+
+  info.volume_label = ASCIIToUTF16("vol");
+  info.vendor_name = ASCIIToUTF16("vendor");
+  info.model_name = ASCIIToUTF16("model");
+  EXPECT_EQ(ASCIIToUTF16("o2"), info.GetGalleryDisplayName());
+
+  info.display_name = string16();
+  EXPECT_EQ(ASCIIToUTF16("vol"), info.GetGalleryDisplayName());
+  info.volume_label = string16();
+  EXPECT_EQ(ASCIIToUTF16("vendor, model"), info.GetGalleryDisplayName());
+
+  info.device_id = StorageInfo::MakeDeviceId(
+      StorageInfo::FIXED_MASS_STORAGE, "unique");
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("unique")).AsUTF8Unsafe(),
+            UTF16ToUTF8(info.GetGalleryTooltip()));
 }
 
 }  // namespace chrome
