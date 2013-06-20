@@ -154,6 +154,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   scoped_ptr<FrameRateController> frame_rate_controller_;
   int max_frames_pending_;
   int pending_swap_buffers_;
+  bool needs_begin_frame_;
   bool begin_frame_pending_;
 
   // Forwarded to OutputSurfaceClient but threaded through OutputSurface
@@ -167,11 +168,18 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   void SetExternalDrawConstraints(const gfx::Transform& transform,
                                   gfx::Rect viewport);
 
+  // virtual for testing.
+  virtual base::TimeDelta RetroactiveBeginFramePeriod();
+  virtual void PostCheckForRetroactiveBeginFrame();
+  void CheckForRetroactiveBeginFrame();
+
  private:
   OutputSurfaceClient* client_;
   friend class OutputSurfaceCallbacks;
 
   void SetContext3D(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
+
+  BeginFrameArgs skipped_begin_frame_args_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };

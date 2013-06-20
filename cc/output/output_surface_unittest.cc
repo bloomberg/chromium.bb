@@ -43,7 +43,7 @@ class TestOutputSurface : public OutputSurface {
   }
 
   void BeginFrameForTesting() {
-    BeginFrame(BeginFrameArgs::CreateForTesting());
+    OutputSurface::BeginFrame(BeginFrameArgs::CreateExpiredForTesting());
   }
 
   void DidSwapBuffersForTesting() {
@@ -57,6 +57,22 @@ class TestOutputSurface : public OutputSurface {
   void OnSwapBuffersCompleteForTesting() {
     OnSwapBuffersComplete(NULL);
   }
+
+  void SetRetroactiveBeginFramePeriod(base::TimeDelta period) {
+    retroactive_begin_frame_period_ = period;
+  }
+
+ protected:
+  virtual void PostCheckForRetroactiveBeginFrame() OVERRIDE {
+    // For testing purposes, we check immediately rather than posting a task.
+    CheckForRetroactiveBeginFrame();
+  }
+
+  virtual base::TimeDelta RetroactiveBeginFramePeriod() OVERRIDE {
+    return retroactive_begin_frame_period_;
+  }
+
+  base::TimeDelta retroactive_begin_frame_period_;
 };
 
 class FakeOutputSurfaceClient : public OutputSurfaceClient {
@@ -221,6 +237,8 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
       display_refresh_interval);
 
   output_surface.SetMaxFramesPending(2);
+  output_surface.SetRetroactiveBeginFramePeriod(
+      base::TimeDelta::FromSeconds(-1));
 
   // We should start off with 0 BeginFrames
   EXPECT_EQ(client.begin_frame_count(), 0);
@@ -278,27 +296,60 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
   EXPECT_FALSE(task_runner->HasPendingTask());
   EXPECT_EQ(client.begin_frame_count(), 4);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
+}
 
-  // Optimistically injected BeginFrames without a SetNeedsBeginFrame should be
-  // allowed.
+TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
+  scoped_ptr<TestWebGraphicsContext3D> context3d =
+      TestWebGraphicsContext3D::Create();
+
+  TestOutputSurface output_surface(
+      context3d.PassAs<WebKit::WebGraphicsContext3D>());
+  EXPECT_FALSE(output_surface.HasClientForTesting());
+
+  FakeOutputSurfaceClient client;
+  EXPECT_TRUE(output_surface.BindToClient(&client));
+  EXPECT_TRUE(output_surface.HasClientForTesting());
+  EXPECT_FALSE(client.deferred_initialize_called());
+
+  output_surface.SetMaxFramesPending(2);
+
+  // Enable retroactive BeginFrames.
+  output_surface.SetRetroactiveBeginFramePeriod(
+    base::TimeDelta::FromSeconds(100000));
+
+  // Optimistically injected BeginFrames should be throttled if
+  // SetNeedsBeginFrame is false...
+  output_surface.SetNeedsBeginFrame(false);
   output_surface.BeginFrameForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 5);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
+  EXPECT_EQ(client.begin_frame_count(), 0);
+  // ...and retroactively triggered by a SetNeedsBeginFrame.
+  output_surface.SetNeedsBeginFrame(true);
+  EXPECT_EQ(client.begin_frame_count(), 1);
 
-  // Optimistically injected BeginFrames without a SetNeedsBeginFrame should
-  // still be throttled by pending begin frames however.
+  // Optimistically injected BeginFrames should be throttled by pending
+  // BeginFrames...
   output_surface.BeginFrameForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 5);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
-
-  // Optimistically injected BeginFrames without a SetNeedsBeginFrame should
-  // also be throttled by pending swap buffers.
+  EXPECT_EQ(client.begin_frame_count(), 1);
+  // ...and retroactively triggered by a SetNeedsBeginFrame.
+  output_surface.SetNeedsBeginFrame(true);
+  EXPECT_EQ(client.begin_frame_count(), 2);
+  // ...or retroactively triggered by a Swap.
+  output_surface.BeginFrameForTesting();
+  EXPECT_EQ(client.begin_frame_count(), 2);
   output_surface.DidSwapBuffersForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 5);
+  EXPECT_EQ(client.begin_frame_count(), 3);
+  EXPECT_EQ(output_surface.pending_swap_buffers(), 1);
+
+  // Optimistically injected BeginFrames should be by throttled by pending
+  // swap buffers...
+  output_surface.DidSwapBuffersForTesting();
+  EXPECT_EQ(client.begin_frame_count(), 3);
   EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
   output_surface.BeginFrameForTesting();
-  EXPECT_EQ(client.begin_frame_count(), 5);
-  EXPECT_EQ(output_surface.pending_swap_buffers(), 2);
+  EXPECT_EQ(client.begin_frame_count(), 3);
+  // ...and retroactively triggered by OnSwapBuffersComplete
+  output_surface.OnSwapBuffersCompleteForTesting();
+  EXPECT_EQ(client.begin_frame_count(), 4);
 }
 
 }  // namespace

@@ -42,7 +42,10 @@ class CC_EXPORT FrameRateController {
 
   void SetClient(FrameRateControllerClient* client) { client_ = client; }
 
-  void SetActive(bool active);
+  // Returns a valid BeginFrame on activation to potentially be used
+  // retroactively.
+  BeginFrameArgs SetActive(bool active);
+
   bool IsActive() { return active_; }
 
   // Use the following methods to adjust target frame rate.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_BEGIN_FRAME_H_
-#define CC_OUTPUT_BEGIN_FRAME_H_
+#ifndef CC_OUTPUT_BEGIN_FRAME_ARGS_H_
+#define CC_OUTPUT_BEGIN_FRAME_ARGS_H_
 
 #include "base/time.h"
 #include "cc/base/cc_export.h"
@@ -21,6 +21,7 @@ struct CC_EXPORT BeginFrameArgs {
                                base::TimeDelta interval);
   static BeginFrameArgs CreateForSynchronousCompositor();
   static BeginFrameArgs CreateForTesting();
+  static BeginFrameArgs CreateExpiredForTesting();
 
   // This is the default delta that will be used to adjust the deadline when
   // proper draw-time estimations are not yet available.
@@ -30,8 +31,14 @@ struct CC_EXPORT BeginFrameArgs {
   // magic numbers.
   static base::TimeDelta DefaultInterval();
 
-  bool IsInvalid() const {
-    return interval < base::TimeDelta();
+  // This is the default amount of time after the frame_time to retroactively
+  // send a BeginFrame that had been skipped. This only has an effect if the
+  // deadline has passed, since the deadline is also used to trigger BeginFrame
+  // retroactively.
+  static base::TimeDelta DefaultRetroactiveBeginFramePeriod();
+
+  bool IsValid() const {
+    return interval >= base::TimeDelta();
   }
 
   base::TimeTicks frame_time;
@@ -46,4 +53,4 @@ struct CC_EXPORT BeginFrameArgs {
 
 }  // namespace cc
 
-#endif  // CC_OUTPUT_BEGIN_FRAME_H_
+#endif  // CC_OUTPUT_BEGIN_FRAME_ARGS_H_

@@ -65,10 +65,11 @@ FrameRateController::~FrameRateController() {
     time_source_->SetActive(false);
 }
 
-void FrameRateController::SetActive(bool active) {
+BeginFrameArgs FrameRateController::SetActive(bool active) {
   if (active_ == active)
-    return;
+    return BeginFrameArgs();
   TRACE_EVENT1("cc", "FrameRateController::SetActive", "active", active);
+  bool just_activated = active && !active_;
   active_ = active;
 
   if (is_time_source_throttling_) {
@@ -79,6 +80,14 @@ void FrameRateController::SetActive(bool active) {
     else
       weak_factory_.InvalidateWeakPtrs();
   }
+
+  if (just_activated) {
+    // TODO(brianderson): Use an adaptive parent compositor deadline.
+    base::TimeTicks frame_time = NextTickTime() - interval_;
+    base::TimeTicks deadline = NextTickTime();
+    return BeginFrameArgs::Create(frame_time, deadline, interval_);
+  }
+  return BeginFrameArgs();
 }
 
 void FrameRateController::SetMaxSwapsPending(int max_swaps_pending) {

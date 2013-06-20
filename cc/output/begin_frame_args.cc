@@ -9,8 +9,7 @@ namespace cc {
 BeginFrameArgs::BeginFrameArgs()
   : frame_time(base::TimeTicks()),
     deadline(base::TimeTicks()),
-    interval(base::TimeDelta::FromMicroseconds(-1))
-{
+    interval(base::TimeDelta::FromMicroseconds(-1)) {
 }
 
 BeginFrameArgs::BeginFrameArgs(base::TimeTicks frame_time,
@@ -42,6 +41,13 @@ BeginFrameArgs BeginFrameArgs::CreateForTesting() {
                         DefaultInterval());
 }
 
+BeginFrameArgs BeginFrameArgs::CreateExpiredForTesting() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  return BeginFrameArgs(now,
+                        now - DefaultInterval(),
+                        DefaultInterval());
+}
+
 base::TimeDelta BeginFrameArgs::DefaultDeadlineAdjustment() {
   // Using a large deadline adjustment will effectively revert BeginFrame
   // scheduling to the hard vsync scheduling we used to have.
@@ -51,5 +57,10 @@ base::TimeDelta BeginFrameArgs::DefaultDeadlineAdjustment() {
 base::TimeDelta BeginFrameArgs::DefaultInterval() {
   return base::TimeDelta::FromMicroseconds(16666);
 }
+
+base::TimeDelta BeginFrameArgs::DefaultRetroactiveBeginFramePeriod() {
+  return base::TimeDelta::FromMicroseconds(4444);
+}
+
 
 }  // namespace cc

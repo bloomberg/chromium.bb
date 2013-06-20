@@ -58,6 +58,7 @@ OutputSurface::OutputSurface(
       weak_ptr_factory_(this),
       max_frames_pending_(0),
       pending_swap_buffers_(0),
+      needs_begin_frame_(false),
       begin_frame_pending_(false),
       client_(NULL) {
 }
@@ -71,6 +72,7 @@ OutputSurface::OutputSurface(
       weak_ptr_factory_(this),
       max_frames_pending_(0),
       pending_swap_buffers_(0),
+      needs_begin_frame_(false),
       begin_frame_pending_(false),
       client_(NULL) {
 }
@@ -86,6 +88,7 @@ OutputSurface::OutputSurface(
       weak_ptr_factory_(this),
       max_frames_pending_(0),
       pending_swap_buffers_(0),
+      needs_begin_frame_(false),
       begin_frame_pending_(false),
       client_(NULL) {
 }
@@ -94,7 +97,7 @@ void OutputSurface::InitializeBeginFrameEmulation(
     base::SingleThreadTaskRunner* task_runner,
     bool throttle_frame_production,
     base::TimeDelta interval) {
-  if (throttle_frame_production){
+  if (throttle_frame_production) {
     frame_rate_controller_.reset(
         new FrameRateController(
             DelayBasedTimeSource::Create(interval, task_runner)));
@@ -132,7 +135,9 @@ void OutputSurface::OnVSyncParametersChanged(base::TimeTicks timebase,
 void OutputSurface::FrameRateControllerTick(bool throttled,
                                             const BeginFrameArgs& args) {
   DCHECK(frame_rate_controller_);
-  if (!throttled)
+  if (throttled)
+    skipped_begin_frame_args_ = args;
+  else
     BeginFrame(args);
 }
 
@@ -144,20 +149,58 @@ void OutputSurface::SetNeedsRedrawRect(gfx::Rect damage_rect) {
 
 void OutputSurface::SetNeedsBeginFrame(bool enable) {
   TRACE_EVENT1("cc", "OutputSurface::SetNeedsBeginFrame", "enable", enable);
+  needs_begin_frame_ = enable;
   begin_frame_pending_ = false;
-  if (frame_rate_controller_)
-    frame_rate_controller_->SetActive(enable);
+  if (frame_rate_controller_) {
+    BeginFrameArgs skipped = frame_rate_controller_->SetActive(enable);
+    if (skipped.IsValid())
+      skipped_begin_frame_args_ = skipped;
+  }
+  if (needs_begin_frame_)
+    PostCheckForRetroactiveBeginFrame();
 }
 
 void OutputSurface::BeginFrame(const BeginFrameArgs& args) {
   TRACE_EVENT2("cc", "OutputSurface::BeginFrame",
                "begin_frame_pending_", begin_frame_pending_,
                "pending_swap_buffers_", pending_swap_buffers_);
-  if (begin_frame_pending_ ||
-      (pending_swap_buffers_ >= max_frames_pending_ && max_frames_pending_ > 0))
+  if (!needs_begin_frame_ || begin_frame_pending_ ||
+      (pending_swap_buffers_ >= max_frames_pending_ &&
+       max_frames_pending_ > 0)) {
+    skipped_begin_frame_args_ = args;
+  } else {
+    begin_frame_pending_ = true;
+    client_->BeginFrame(args);
+    // args might be an alias for skipped_begin_frame_args_.
+    // Do not reset it before calling BeginFrame!
+    skipped_begin_frame_args_ = BeginFrameArgs();
+  }
+}
+
+base::TimeDelta OutputSurface::RetroactiveBeginFramePeriod() {
+  return BeginFrameArgs::DefaultRetroactiveBeginFramePeriod();
+}
+
+void OutputSurface::PostCheckForRetroactiveBeginFrame() {
+  if (!skipped_begin_frame_args_.IsValid())
     return;
-  begin_frame_pending_ = true;
-  client_->BeginFrame(args);
+
+  base::MessageLoop::current()->PostTask(
+     FROM_HERE,
+     base::Bind(&OutputSurface::CheckForRetroactiveBeginFrame,
+                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void OutputSurface::CheckForRetroactiveBeginFrame() {
+  TRACE_EVENT0("cc", "OutputSurface::CheckForRetroactiveBeginFrame");
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks alternative_deadline =
+      skipped_begin_frame_args_.frame_time +
+      RetroactiveBeginFramePeriod();
+  if (now < skipped_begin_frame_args_.deadline ||
+      now < alternative_deadline) {
+    BeginFrame(skipped_begin_frame_args_);
+  }
 }
 
 void OutputSurface::DidSwapBuffers() {
@@ -167,6 +210,7 @@ void OutputSurface::DidSwapBuffers() {
                "pending_swap_buffers_", pending_swap_buffers_);
   if (frame_rate_controller_)
     frame_rate_controller_->DidSwapBuffers();
+  PostCheckForRetroactiveBeginFrame();
 }
 
 void OutputSurface::OnSwapBuffersComplete(const CompositorFrameAck* ack) {
@@ -176,6 +220,7 @@ void OutputSurface::OnSwapBuffersComplete(const CompositorFrameAck* ack) {
   client_->OnSwapBuffersComplete(ack);
   if (frame_rate_controller_)
     frame_rate_controller_->DidSwapBuffersComplete();
+  PostCheckForRetroactiveBeginFrame();
 }
 
 void OutputSurface::DidLoseOutputSurface() {
