@@ -226,6 +226,12 @@ void CannedSyncableFileSystem::SetUp() {
                                     base::MessageLoopProxy::current().get(),
                                     storage_policy.get());
 
+  std::vector<std::string> additional_allowed_schemes;
+  additional_allowed_schemes.push_back(origin_.scheme());
+  fileapi::FileSystemOptions options(
+      fileapi::FileSystemOptions::PROFILE_MODE_NORMAL,
+      additional_allowed_schemes);
+
   file_system_context_ = new FileSystemContext(
       make_scoped_ptr(
           new fileapi::FileSystemTaskRunners(io_task_runner_.get(),
@@ -234,8 +240,7 @@ void CannedSyncableFileSystem::SetUp() {
       storage_policy.get(),
       quota_manager_->proxy(),
       ScopedVector<fileapi::FileSystemMountPointProvider>(),
-      data_dir_.path(),
-      fileapi::CreateAllowFileAccessOptions());
+      data_dir_.path(), options);
 
   // In testing we override this setting to support directory operations
   // by default.
