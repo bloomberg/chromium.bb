@@ -861,6 +861,87 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     args.GetReturnValue().Set(wrapper);
 }
 
+static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
+        return;
+    if (info.Holder()->HasRealNamedCallbackProperty(name))
+        return;
+    if (info.Holder()->HasRealNamedProperty(name))
+        return;
+
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
+    TestInterface* collection = V8TestInterface::toNative(info.Holder());
+    AtomicString propertyName = toWebCoreAtomicString(name);
+    bool element0Enabled = false;
+    RefPtr<Node> element0;
+    bool element1Enabled = false;
+    RefPtr<NodeList> element1;
+    collection->getItem(propertyName, element0Enabled, element0, element1Enabled, element1);
+    if (element0Enabled) {
+        v8SetReturnValue(info, toV8Fast(element0.release(), info, collection));
+        return;
+    }
+
+    if (element1Enabled) {
+        v8SetReturnValue(info, toV8Fast(element1.release(), info, collection));
+        return;
+    }
+
+    return;
+}
+
+static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceV8Internal::namedPropertyGetter(name, info);
+}
+
+static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    V8TestInterface::namedPropertySetterCustom(name, value, info);
+}
+
+static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    ExceptionCode ec = 0;
+    TestInterface* collection = V8TestInterface::toNative(info.Holder());
+    Vector<String> names;
+    collection->namedPropertyEnumerator(names, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return;
+    }
+    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+        v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+    v8SetReturnValue(info, v8names);
+}
+
+static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TestInterface* collection = V8TestInterface::toNative(info.Holder());
+    AtomicString propertyName = toWebCoreAtomicString(name);
+    ExceptionCode ec = 0;
+    bool result = collection->namedPropertyQuery(propertyName, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return;
+    }
+    if (!result)
+        return;
+    v8SetReturnValueInt(info, v8::None);
+}
+
+static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    TestInterfaceV8Internal::namedPropertyEnumerator(info);
+}
+
+static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TestInterfaceV8Internal::namedPropertyQuery(name, info);
+}
+
 } // namespace TestInterfaceV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestInterfaceAttrs[] = {
@@ -973,67 +1054,6 @@ void V8TestInterface::constructorCallback(const v8::FunctionCallbackInfo<v8::Val
     TestInterfaceV8Internal::constructor(args);
 }
 
-void V8TestInterface::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
-    if (info.Holder()->HasRealNamedProperty(name))
-        return;
-
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
-    TestInterface* collection = toNative(info.Holder());
-    AtomicString propertyName = toWebCoreAtomicString(name);
-    bool element0Enabled = false;
-    RefPtr<Node> element0;
-    bool element1Enabled = false;
-    RefPtr<NodeList> element1;
-    collection->getItem(propertyName, element0Enabled, element0, element1Enabled, element1);
-    if (element0Enabled) {
-        v8SetReturnValue(info, toV8Fast(element0.release(), info, collection));
-        return;
-    }
-
-    if (element1Enabled) {
-        v8SetReturnValue(info, toV8Fast(element1.release(), info, collection));
-        return;
-    }
-
-    return;
-}
-
-void V8TestInterface::namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    ExceptionCode ec = 0;
-    TestInterface* collection = toNative(info.Holder());
-    Vector<String> names;
-    collection->namedPropertyEnumerator(names, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
-        return;
-    }
-    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
-    for (size_t i = 0; i < names.size(); ++i)
-        v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
-    v8SetReturnValue(info, v8names);
-}
-
-void V8TestInterface::namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    TestInterface* collection = toNative(info.Holder());
-    AtomicString propertyName = toWebCoreAtomicString(name);
-    ExceptionCode ec = 0;
-    bool result = collection->namedPropertyQuery(propertyName, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
-        return;
-    }
-    if (!result)
-        return;
-    v8SetReturnValueInt(info, v8::None);
-}
-
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -1069,7 +1089,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Han
     }
 
 #endif // ENABLE(Condition22) || ENABLE(Condition23)
-    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestInterface::namedPropertyGetter, V8TestInterface::namedPropertySetter, V8TestInterface::namedPropertyQuery, 0, V8TestInterface::namedPropertyEnumerator);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(TestInterfaceV8Internal::namedPropertyGetterCallback, TestInterfaceV8Internal::namedPropertySetterCallback, TestInterfaceV8Internal::namedPropertyQueryCallback, 0, TestInterfaceV8Internal::namedPropertyEnumeratorCallback);
 #if ENABLE(Condition11) || ENABLE(Condition12)
 
     // Custom Signature 'supplementalMethod2'

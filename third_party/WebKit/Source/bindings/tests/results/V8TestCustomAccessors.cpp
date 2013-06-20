@@ -78,6 +78,46 @@ static void anotherFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Val
     TestCustomAccessorsV8Internal::anotherFunctionMethod(args);
 }
 
+static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    V8TestCustomAccessors::indexedPropertyGetterCustom(index, info);
+}
+
+static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    V8TestCustomAccessors::indexedPropertySetterCustom(index, value, info);
+}
+
+static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    V8TestCustomAccessors::indexedPropertyDeleterCustom(index, info);
+}
+
+static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    V8TestCustomAccessors::namedPropertyGetterCustom(name, info);
+}
+
+static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    V8TestCustomAccessors::namedPropertySetterCustom(name, value, info);
+}
+
+static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
+{
+    V8TestCustomAccessors::namedPropertyDeleterCustom(name, info);
+}
+
+static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    V8TestCustomAccessors::namedPropertyEnumeratorCustom(info);
+}
+
+static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    V8TestCustomAccessors::namedPropertyQueryCustom(name, info);
+}
+
 } // namespace TestCustomAccessorsV8Internal
 
 static const V8DOMConfiguration::BatchedMethod V8TestCustomAccessorsMethods[] = {
@@ -97,8 +137,8 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestCustomAccessorsTemplate(v
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
-    desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestCustomAccessors::indexedPropertyGetter, V8TestCustomAccessors::indexedPropertySetter, 0, V8TestCustomAccessors::indexedPropertyDeleter);
-    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestCustomAccessors::namedPropertyGetter, V8TestCustomAccessors::namedPropertySetter, V8TestCustomAccessors::namedPropertyQuery, V8TestCustomAccessors::namedPropertyDeleter, V8TestCustomAccessors::namedPropertyEnumerator);
+    desc->InstanceTemplate()->SetIndexedPropertyHandler(TestCustomAccessorsV8Internal::indexedPropertyGetterCallback, TestCustomAccessorsV8Internal::indexedPropertySetterCallback, 0, TestCustomAccessorsV8Internal::indexedPropertyDeleterCallback);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(TestCustomAccessorsV8Internal::namedPropertyGetterCallback, TestCustomAccessorsV8Internal::namedPropertySetterCallback, TestCustomAccessorsV8Internal::namedPropertyQueryCallback, TestCustomAccessorsV8Internal::namedPropertyDeleterCallback, TestCustomAccessorsV8Internal::namedPropertyEnumeratorCallback);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

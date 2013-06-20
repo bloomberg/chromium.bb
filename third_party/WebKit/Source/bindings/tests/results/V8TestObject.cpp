@@ -4605,6 +4605,85 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     args.GetReturnValue().Set(wrapper);
 }
 
+static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
+    TestObj* collection = V8TestObject::toNative(info.Holder());
+    RefPtr<Node> element = collection->item(index);
+    if (!element)
+        return;
+    v8SetReturnValue(info, toV8Fast(element.release(), info, collection));
+}
+
+static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjV8Internal::indexedPropertyGetter(index, info);
+}
+
+static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
+        return;
+    if (info.Holder()->HasRealNamedCallbackProperty(name))
+        return;
+    if (info.Holder()->HasRealNamedProperty(name))
+        return;
+
+    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
+    TestObj* collection = V8TestObject::toNative(info.Holder());
+    AtomicString propertyName = toWebCoreAtomicString(name);
+    String element = collection->namedItem(propertyName);
+    if (element.isNull())
+        return;
+    v8SetReturnValue(info, v8String(element, info.GetIsolate()));
+}
+
+static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjV8Internal::namedPropertyGetter(name, info);
+}
+
+static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    ExceptionCode ec = 0;
+    TestObj* collection = V8TestObject::toNative(info.Holder());
+    Vector<String> names;
+    collection->namedPropertyEnumerator(names, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return;
+    }
+    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
+    for (size_t i = 0; i < names.size(); ++i)
+        v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+    v8SetReturnValue(info, v8names);
+}
+
+static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TestObj* collection = V8TestObject::toNative(info.Holder());
+    AtomicString propertyName = toWebCoreAtomicString(name);
+    ExceptionCode ec = 0;
+    bool result = collection->namedPropertyQuery(propertyName, ec);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return;
+    }
+    if (!result)
+        return;
+    v8SetReturnValueInt(info, v8::None);
+}
+
+static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)
+{
+    TestObjV8Internal::namedPropertyEnumerator(info);
+}
+
+static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+{
+    TestObjV8Internal::namedPropertyQuery(name, info);
+}
+
 } // namespace TestObjV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestObjectAttrs[] = {
@@ -4925,65 +5004,6 @@ void V8TestObject::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
     TestObjV8Internal::constructor(args);
 }
 
-void V8TestObject::indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
-    TestObj* collection = toNative(info.Holder());
-    RefPtr<Node> element = collection->item(index);
-    if (!element)
-        return;
-    v8SetReturnValue(info, toV8Fast(element.release(), info, collection));
-}
-
-void V8TestObject::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
-    if (info.Holder()->HasRealNamedProperty(name))
-        return;
-
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
-    TestObj* collection = toNative(info.Holder());
-    AtomicString propertyName = toWebCoreAtomicString(name);
-    String element = collection->namedItem(propertyName);
-    if (element.isNull())
-        return;
-    v8SetReturnValue(info, v8String(element, info.GetIsolate()));
-}
-
-void V8TestObject::namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
-{
-    ExceptionCode ec = 0;
-    TestObj* collection = toNative(info.Holder());
-    Vector<String> names;
-    collection->namedPropertyEnumerator(names, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
-        return;
-    }
-    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
-    for (size_t i = 0; i < names.size(); ++i)
-        v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
-    v8SetReturnValue(info, v8names);
-}
-
-void V8TestObject::namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
-{
-    TestObj* collection = toNative(info.Holder());
-    AtomicString propertyName = toWebCoreAtomicString(name);
-    ExceptionCode ec = 0;
-    bool result = collection->namedPropertyQuery(propertyName, ec);
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
-        return;
-    }
-    if (!result)
-        return;
-    v8SetReturnValueInt(info, v8::None);
-}
-
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     desc->ReadOnlyPrototype();
@@ -5011,8 +5031,8 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
         {"enabledAtRuntimeAttr2", TestObjV8Internal::enabledAtRuntimeAttr2AttrGetterCallback, TestObjV8Internal::enabledAtRuntimeAttr2AttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::configureAttribute(instance, proto, attrData, isolate, currentWorldType);
     }
-    desc->InstanceTemplate()->SetIndexedPropertyHandler(V8TestObject::indexedPropertyGetter, 0, 0, 0, nodeCollectionIndexedPropertyEnumerator<TestObj>);
-    desc->InstanceTemplate()->SetNamedPropertyHandler(V8TestObject::namedPropertyGetter, 0, V8TestObject::namedPropertyQuery, 0, V8TestObject::namedPropertyEnumerator);
+    desc->InstanceTemplate()->SetIndexedPropertyHandler(TestObjV8Internal::indexedPropertyGetterCallback, 0, 0, 0, nodeCollectionIndexedPropertyEnumerator<TestObj>);
+    desc->InstanceTemplate()->SetNamedPropertyHandler(TestObjV8Internal::namedPropertyGetterCallback, 0, TestObjV8Internal::namedPropertyQueryCallback, 0, TestObjV8Internal::namedPropertyEnumeratorCallback);
 
     // Custom Signature 'voidMethodWithArgs'
     const int voidMethodWithArgsArgc = 3;

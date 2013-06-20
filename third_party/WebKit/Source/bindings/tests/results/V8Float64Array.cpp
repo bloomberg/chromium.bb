@@ -101,6 +101,16 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     return constructWebGLArray<Float64Array, V8Float64Array, double>(args, &V8Float64Array::info, v8::kExternalDoubleArray);
 }
 
+static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    V8Float64Array::indexedPropertyGetterCustom(index, info);
+}
+
+static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    V8Float64Array::indexedPropertySetterCustom(index, value, info);
+}
+
 } // namespace Float64ArrayV8Internal
 
 v8::Handle<v8::Object> wrap(Float64Array* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -146,7 +156,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8Float64ArrayTemplate(v8::Hand
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
-    desc->InstanceTemplate()->SetIndexedPropertyHandler(V8Float64Array::indexedPropertyGetter, V8Float64Array::indexedPropertySetter, 0, 0, nodeCollectionIndexedPropertyEnumerator<Float64Array>);
+    desc->InstanceTemplate()->SetIndexedPropertyHandler(Float64ArrayV8Internal::indexedPropertyGetterCallback, Float64ArrayV8Internal::indexedPropertySetterCallback, 0, 0, nodeCollectionIndexedPropertyEnumerator<Float64Array>);
 
     // Custom Signature 'foo'
     const int fooArgc = 1;

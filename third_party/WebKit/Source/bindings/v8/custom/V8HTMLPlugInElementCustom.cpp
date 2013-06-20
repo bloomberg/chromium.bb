@@ -73,32 +73,32 @@ static void npObjectNamedSetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     npObjectSetNamedProperty(instance, name, value, info);
 }
 
-void V8HTMLAppletElement::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLAppletElement::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectNamedGetter<V8HTMLAppletElement>(name, info);
 }
 
-void V8HTMLEmbedElement::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLEmbedElement::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectNamedGetter<V8HTMLEmbedElement>(name, info);
 }
 
-void V8HTMLObjectElement::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLObjectElement::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectNamedGetter<V8HTMLObjectElement>(name, info);
 }
 
-void V8HTMLAppletElement::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLAppletElement::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectNamedSetter<V8HTMLAppletElement>(name, value, info);
 }
 
-void V8HTMLEmbedElement::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLEmbedElement::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectNamedSetter<V8HTMLEmbedElement>(name, value, info);
 }
 
-void V8HTMLObjectElement::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLObjectElement::namedPropertySetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     return npObjectNamedSetter<V8HTMLObjectElement>(name, value, info);
 }
@@ -148,32 +148,32 @@ void npObjectIndexedSetter(uint32_t index, v8::Local<v8::Value> value, const v8:
     npObjectSetIndexedProperty(instance, index, value, info);
 }
 
-void V8HTMLAppletElement::indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLAppletElement::indexedPropertyGetterCustom(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectIndexedGetter<V8HTMLAppletElement>(index, info);
 }
 
-void V8HTMLEmbedElement::indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLEmbedElement::indexedPropertyGetterCustom(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectIndexedGetter<V8HTMLEmbedElement>(index, info);
 }
 
-void V8HTMLObjectElement::indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLObjectElement::indexedPropertyGetterCustom(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectIndexedGetter<V8HTMLObjectElement>(index, info);
 }
 
-void V8HTMLAppletElement::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLAppletElement::indexedPropertySetterCustom(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectIndexedSetter<V8HTMLAppletElement>(index, value, info);
 }
 
-void V8HTMLEmbedElement::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLEmbedElement::indexedPropertySetterCustom(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectIndexedSetter<V8HTMLEmbedElement>(index, value, info);
 }
 
-void V8HTMLObjectElement::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8HTMLObjectElement::indexedPropertySetterCustom(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     npObjectIndexedSetter<V8HTMLObjectElement>(index, value, info);
 }

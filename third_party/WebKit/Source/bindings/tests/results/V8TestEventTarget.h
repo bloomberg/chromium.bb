@@ -40,13 +40,6 @@ public:
     static void derefObject(void*);
     static WrapperTypeInfo info;
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
-    static void indexedPropertyGetter(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
-    static void indexedPropertyDeleter(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
-    static void namedPropertyGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>&);
-    static void namedPropertySetter(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
-    static void namedPropertyDeleter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Boolean>&);
-    static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>&);
-    static void namedPropertyQuery(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Integer>&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
     static void installPerContextProperties(v8::Handle<v8::Object>, TestEventTarget*, v8::Isolate*) { }

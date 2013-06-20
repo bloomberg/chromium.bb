@@ -41,8 +41,8 @@ public:
     static void derefObject(void*);
     static WrapperTypeInfo info;
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void indexedPropertyGetter(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
-    static void indexedPropertySetter(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
+    static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static void installPerContextProperties(v8::Handle<v8::Object>, Float64Array*, v8::Isolate*) { }
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }

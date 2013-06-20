@@ -428,7 +428,7 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
     v8SetReturnValue(args, toV8Fast(openedWindow.release(), args, impl));
 }
 
-void V8Window::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
 
     DOMWindow* window = V8Window::toNative(info.Holder());

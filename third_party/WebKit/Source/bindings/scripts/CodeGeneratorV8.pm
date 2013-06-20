@@ -979,63 +979,53 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $interface = shift;
 
     my $indexedGetterFunction = GetIndexedGetterFunction($interface);
-    my $hasCustomIndexedGetter = $indexedGetterFunction ? $indexedGetterFunction->extendedAttributes->{"Custom"} : 0;
+    my $hasCustomIndexedGetter = $indexedGetterFunction && $indexedGetterFunction->extendedAttributes->{"Custom"};
 
     my $indexedSetterFunction = GetIndexedSetterFunction($interface);
-    my $hasCustomIndexedSetter = $indexedSetterFunction ? $indexedSetterFunction->extendedAttributes->{"Custom"} : 0;
+    my $hasCustomIndexedSetter = $indexedSetterFunction && $indexedSetterFunction->extendedAttributes->{"Custom"};
 
     my $indexedDeleterFunction = GetIndexedDeleterFunction($interface);
-    my $hasCustomIndexedDeleters = $indexedDeleterFunction ? $indexedDeleterFunction->extendedAttributes->{"Custom"} : 0;
+    my $hasCustomIndexedDeleters = $indexedDeleterFunction && $indexedDeleterFunction->extendedAttributes->{"Custom"};
 
     my $namedGetterFunction = GetNamedGetterFunction($interface);
-    my $hasCustomNamedGetter = $namedGetterFunction ? $namedGetterFunction->extendedAttributes->{"Custom"} : 0;
+    my $hasCustomNamedGetter = $namedGetterFunction && $namedGetterFunction->extendedAttributes->{"Custom"};
 
     my $namedSetterFunction = GetNamedSetterFunction($interface);
-    my $hasCustomNamedSetter = $namedSetterFunction ? $namedSetterFunction->extendedAttributes->{"Custom"} : 0;
+    my $hasCustomNamedSetter = $namedSetterFunction && $namedSetterFunction->extendedAttributes->{"Custom"};
 
     my $namedDeleterFunction = GetNamedDeleterFunction($interface);
-    my $hasCustomNamedDeleter = $namedDeleterFunction ? $namedDeleterFunction->extendedAttributes->{"Custom"} : 0;
+    my $hasCustomNamedDeleter = $namedDeleterFunction && $namedDeleterFunction->extendedAttributes->{"Custom"};
 
-    my $namedEnumeratorFunction = $namedGetterFunction;
-    $namedEnumeratorFunction = 0 if $namedGetterFunction && $namedGetterFunction->extendedAttributes->{"NotEnumerable"};
-    my $hasCustomNamedEnumerator = 1 if $namedGetterFunction && $namedGetterFunction->extendedAttributes->{"CustomEnumerateProperty"};
+    my $namedEnumeratorFunction = $namedGetterFunction && !$namedGetterFunction->extendedAttributes->{"NotEnumerable"};
+    my $hasCustomNamedEnumerator = $namedGetterFunction && $namedGetterFunction->extendedAttributes->{"CustomEnumerateProperty"};
 
-    if ($indexedGetterFunction) {
-        $header{classPublic}->add(<<END);
-    static void indexedPropertyGetter(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
-END
+    if ($hasCustomIndexedGetter) {
+        $header{classPublic}->add("    static void indexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);\n");
     }
 
-    if ($indexedSetterFunction) {
-        $header{classPublic}->add(<<END);
-    static void indexedPropertySetter(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
-END
+    if ($hasCustomIndexedSetter) {
+        $header{classPublic}->add("    static void indexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);\n");
     }
-    if ($indexedDeleterFunction) {
-        $header{classPublic}->add(<<END);
-    static void indexedPropertyDeleter(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
-END
+
+    if ($hasCustomIndexedDeleters) {
+        $header{classPublic}->add("    static void indexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);\n");
     }
-    if ($namedGetterFunction) {
-        $header{classPublic}->add(<<END);
-    static void namedPropertyGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>&);
-END
+
+    if ($hasCustomNamedGetter) {
+        $header{classPublic}->add("    static void namedPropertyGetterCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>&);\n");
     }
-    if ($namedSetterFunction) {
-        $header{classPublic}->add(<<END);
-    static void namedPropertySetter(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
-END
+
+    if ($hasCustomNamedSetter) {
+        $header{classPublic}->add("    static void namedPropertySetterCustom(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);\n");
     }
-    if ($namedDeleterFunction) {
-        $header{classPublic}->add(<<END);
-    static void namedPropertyDeleter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Boolean>&);
-END
+
+    if ($hasCustomNamedDeleter) {
+        $header{classPublic}->add("    static void namedPropertyDeleterCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Boolean>&);\n");
     }
-    if ($namedEnumeratorFunction) {
-        $header{classPublic}->add(<<END);
-    static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>&);
-    static void namedPropertyQuery(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Integer>&);
-END
+
+    if ($hasCustomNamedEnumerator) {
+        $header{classPublic}->add("    static void namedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>&);\n");
+        $header{classPublic}->add("    static void namedPropertyQueryCustom(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Integer>&);\n");
     }
 }
 
@@ -3172,21 +3162,30 @@ sub GenerateImplementationIndexedPropertyAccessors
     my $v8ClassName = GetV8ClassName($interface);
 
     my $indexedGetterFunction = GetIndexedGetterFunction($interface);
-    my $hasCustomIndexedGetter = $indexedGetterFunction ? $indexedGetterFunction->extendedAttributes->{"Custom"} : 0;
-    if ($indexedGetterFunction && !$hasCustomIndexedGetter) {
-        GenerateImplementationIndexedPropertyGetter($interface, $indexedGetterFunction);
+    if ($indexedGetterFunction) {
+        my $hasCustomIndexedGetter = $indexedGetterFunction->extendedAttributes->{"Custom"};
+        if (!$hasCustomIndexedGetter) {
+            GenerateImplementationIndexedPropertyGetter($interface, $indexedGetterFunction);
+        }
+        GenerateImplementationIndexedPropertyGetterCallback($interface, $hasCustomIndexedGetter);
     }
 
     my $indexedSetterFunction = GetIndexedSetterFunction($interface);
-    my $hasCustomIndexedSetter = $indexedSetterFunction ? $indexedSetterFunction->extendedAttributes->{"Custom"} : 0;
-    if ($indexedSetterFunction && !$hasCustomIndexedSetter) {
-        GenerateImplementationIndexedPropertySetter($interface, $indexedSetterFunction);
+    if ($indexedSetterFunction) {
+        my $hasCustomIndexedSetter = $indexedSetterFunction->extendedAttributes->{"Custom"};
+        if (!$hasCustomIndexedSetter) {
+            GenerateImplementationIndexedPropertySetter($interface, $indexedSetterFunction);
+        }
+        GenerateImplementationIndexedPropertySetterCallback($interface, $hasCustomIndexedSetter);
     }
 
     my $indexedDeleterFunction = GetIndexedDeleterFunction($interface);
-    my $hasCustomIndexedDeleter = $indexedDeleterFunction ? $indexedDeleterFunction->extendedAttributes->{"Custom"} : 0;
-    if ($indexedDeleterFunction && !$hasCustomIndexedDeleter) {
-        GenerateImplementationIndexedPropertyDeleter($interface, $indexedDeleterFunction);
+    if ($indexedDeleterFunction) {
+        my $hasCustomIndexedDeleter = $indexedDeleterFunction->extendedAttributes->{"Custom"};
+        if (!$hasCustomIndexedDeleter) {
+            GenerateImplementationIndexedPropertyDeleter($interface, $indexedDeleterFunction);
+        }
+        GenerateImplementationIndexedPropertyDeleterCallback($interface, $hasCustomIndexedDeleter);
     }
 
     my $indexedEnumeratorFunction = $indexedGetterFunction;
@@ -3208,10 +3207,10 @@ sub GenerateImplementationIndexedPropertyAccessors
 
     my $code = "";
     if ($indexedGetterFunction || $indexedSetterFunction || $indexedDeleterFunction || $indexedEnumeratorFunction || $hasQuery) {
-        $code .= "    desc->${setOn}Template()->SetIndexedPropertyHandler(${v8ClassName}::indexedPropertyGetter";
-        $code .= $indexedSetterFunction ? ", ${v8ClassName}::indexedPropertySetter" : ", 0";
+        $code .= "    desc->${setOn}Template()->SetIndexedPropertyHandler(${implClassName}V8Internal::indexedPropertyGetterCallback";
+        $code .= $indexedSetterFunction ? ", ${implClassName}V8Internal::indexedPropertySetterCallback" : ", 0";
         $code .= ", 0"; # IndexedPropertyQuery -- not being used at the moment.
-        $code .= $indexedDeleterFunction ? ", ${v8ClassName}::indexedPropertyDeleter" : ", 0";
+        $code .= $indexedDeleterFunction ? ", ${implClassName}V8Internal::indexedPropertyDeleterCallback" : ", 0";
         $code .= ", nodeCollectionIndexedPropertyEnumerator<${implClassName}>" if $indexedEnumeratorFunction;
         $code .= ");\n";
     }
@@ -3236,10 +3235,10 @@ sub GenerateImplementationIndexedPropertyGetter
     my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->type, $indexedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "", "return");
     my $raisesExceptions = $indexedGetterFunction->extendedAttributes->{"RaisesException"};
     my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index", $raisesExceptions);
-    my $getterCode = "void ${v8ClassName}::indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    my $getterCode = "static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $getterCode .= "{\n";
     $getterCode .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
-    $getterCode .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    $getterCode .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     if ($raisesExceptions) {
         $getterCode .= "    ExceptionCode ec = 0;\n";
     }
@@ -3259,7 +3258,61 @@ sub GenerateImplementationIndexedPropertyGetter
         $getterCode .= $returnJSValueCode . "\n";
     }
     $getterCode .= "}\n\n";
-    $implementation{nameSpaceWebCore}->add($getterCode);
+    $implementation{nameSpaceInternal}->add($getterCode);
+}
+
+sub GenerateImplementationIndexedPropertyGetterCallback
+{
+    my $interface = shift;
+    my $hasCustom = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    my $code = "static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    $code .= "{\n";
+    if ($hasCustom) {
+        $code .= "    ${v8ClassName}::indexedPropertyGetterCustom(index, info);\n";
+    } else {
+        $code .= "    ${implClassName}V8Internal::indexedPropertyGetter(index, info);\n";
+    }
+    $code .= "}\n\n";
+    $implementation{nameSpaceInternal}->add($code);
+}
+
+sub GenerateImplementationIndexedPropertySetterCallback
+{
+    my $interface = shift;
+    my $hasCustom = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    my $code = "static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    $code .= "{\n";
+    if ($hasCustom) {
+        $code .= "    ${v8ClassName}::indexedPropertySetterCustom(index, value, info);\n";
+    } else {
+        $code .= "    ${implClassName}V8Internal::indexedPropertySetter(index, value, info);\n";
+    }
+    $code .= "}\n\n";
+    $implementation{nameSpaceInternal}->add($code);
+}
+
+sub GenerateImplementationIndexedPropertyDeleterCallback
+{
+    my $interface = shift;
+    my $hasCustom = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    my $code = "static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
+    $code .= "{\n";
+    if ($hasCustom) {
+        $code .= "    ${v8ClassName}::indexedPropertyDeleterCustom(index, info);\n";
+    } else {
+        $code .= "    ${implClassName}V8Internal::indexedPropertyDeleter(index, info);\n";
+    }
+    $code .= "}\n\n";
+    $implementation{nameSpaceInternal}->add($code);
 }
 
 sub GenerateImplementationIndexedPropertySetter
@@ -3275,9 +3328,9 @@ sub GenerateImplementationIndexedPropertySetter
     my $raisesExceptions = $indexedSetterFunction->extendedAttributes->{"RaisesException"};
     my $treatNullAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
     my $treatUndefinedAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
-    my $code = "void ${v8ClassName}::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    my $code = "static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
-    $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= GenerateNativeValueDefinition($indexedSetterFunction, $indexedSetterFunction->parameters->[1], "value", "propertyValue", "info.GetIsolate()");
 
     my $extraArguments = "";
@@ -3312,7 +3365,7 @@ sub GenerateImplementationIndexedPropertySetter
     }
     $code .= "    v8SetReturnValue(info, value);\n";
     $code .= "}\n\n";
-    $implementation{nameSpaceWebCore}->add($code);
+    $implementation{nameSpaceInternal}->add($code);
 }
 
 sub GenerateImplementationNamedPropertyAccessors
@@ -3324,40 +3377,45 @@ sub GenerateImplementationNamedPropertyAccessors
     my $v8ClassName = GetV8ClassName($interface);
 
     my $namedGetterFunction = GetNamedGetterFunction($interface);
-    my $hasCustomNamedGetter = $namedGetterFunction ? $namedGetterFunction->extendedAttributes->{"Custom"} : 0;
-    if ($namedGetterFunction && !$hasCustomNamedGetter) {
-        GenerateImplementationNamedPropertyGetter($interface, $namedGetterFunction);
+    if ($namedGetterFunction) {
+        my $hasCustomNamedGetter = $namedGetterFunction->extendedAttributes->{"Custom"};
+        if (!$hasCustomNamedGetter) {
+            GenerateImplementationNamedPropertyGetter($interface, $namedGetterFunction);
+        }
+        GenerateImplementationNamedPropertyGetterCallback($interface, $hasCustomNamedGetter);
     }
 
     my $namedSetterFunction = GetNamedSetterFunction($interface);
-    my $hasCustomNamedSetter = $namedSetterFunction ? $namedSetterFunction->extendedAttributes->{"Custom"} : 0;
-    if ($namedSetterFunction && !$hasCustomNamedSetter) {
-        GenerateImplementationNamedPropertySetter($interface, $namedSetterFunction);
+    if ($namedSetterFunction) {
+        my $hasCustomNamedSetter = $namedSetterFunction->extendedAttributes->{"Custom"};
+        if (!$hasCustomNamedSetter) {
+            GenerateImplementationNamedPropertySetter($interface, $namedSetterFunction);
+        }
+        GenerateImplementationNamedPropertySetterCallback($interface, $hasCustomNamedSetter);
     }
 
     my $namedDeleterFunction = GetNamedDeleterFunction($interface);
-    my $hasCustomNamedDeleter = $namedDeleterFunction ? $namedDeleterFunction->extendedAttributes->{"Custom"} : 0;
-    if ($namedDeleterFunction && !$hasCustomNamedDeleter) {
-        GenerateImplementationNamedPropertyDeleter($interface, $namedDeleterFunction);
-    }
-    my $hasDeleter = $namedDeleterFunction;
-
-    my $namedEnumeratorFunction = $namedGetterFunction;
-    $namedEnumeratorFunction = 0 if $namedGetterFunction && $namedGetterFunction->extendedAttributes->{"NotEnumerable"};
-    my $hasCustomNamedEnumerator = 1 if $namedGetterFunction && $namedGetterFunction->extendedAttributes->{"CustomEnumerateProperty"};
-    if ($namedEnumeratorFunction && !$hasCustomNamedEnumerator) {
-        GenerateImplementationNamedPropertyEnumerator($interface);
+    if ($namedDeleterFunction) {
+        my $hasCustomNamedDeleter = $namedDeleterFunction->extendedAttributes->{"Custom"};
+        if (!$hasCustomNamedDeleter) {
+            GenerateImplementationNamedPropertyDeleter($interface, $namedDeleterFunction);
+        }
+        GenerateImplementationNamedPropertyDeleterCallback($interface, $hasCustomNamedDeleter);
     }
 
-    # If there is an enumerator, there MUST be a query method to properly communicate property attributes.
-    my $hasQuery = $namedEnumeratorFunction;
-    my $hasCustomNamedQuery = $hasCustomNamedEnumerator;
-    if ($hasQuery && !$hasCustomNamedQuery) {
-        GenerateImplementationNamedPropertyQuery($interface);
+    my $namedEnumeratorFunction = $namedGetterFunction && !$namedGetterFunction->extendedAttributes->{"NotEnumerable"};
+    if ($namedEnumeratorFunction) {
+        my $hasCustomNamedEnumerator = $namedGetterFunction->extendedAttributes->{"CustomEnumerateProperty"};
+        if (!$hasCustomNamedEnumerator) {
+            GenerateImplementationNamedPropertyEnumerator($interface);
+            GenerateImplementationNamedPropertyQuery($interface);
+        }
+        GenerateImplementationNamedPropertyEnumeratorCallback($interface, $hasCustomNamedEnumerator);
+        GenerateImplementationNamedPropertyQueryCallback($interface, $hasCustomNamedEnumerator);
     }
 
     my $subCode = "";
-    if ($namedGetterFunction || $namedSetterFunction || $namedDeleterFunction || $namedEnumeratorFunction || $hasQuery) {
+    if ($namedGetterFunction || $namedSetterFunction || $namedDeleterFunction || $namedEnumeratorFunction) {
         my $setOn = "Instance";
 
         # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on Window
@@ -3369,15 +3427,105 @@ sub GenerateImplementationNamedPropertyAccessors
         }
 
         $subCode .= "    desc->${setOn}Template()->SetNamedPropertyHandler(";
-        $subCode .= $namedGetterFunction ? "${v8ClassName}::namedPropertyGetter, " : "0, ";
-        $subCode .= $namedSetterFunction ? "${v8ClassName}::namedPropertySetter, " : "0, ";
-        $subCode .= $hasQuery ? "${v8ClassName}::namedPropertyQuery, " : "0, ";
-        $subCode .= $hasDeleter ? "${v8ClassName}::namedPropertyDeleter, " : "0, ";
-        $subCode .= $namedEnumeratorFunction ? "${v8ClassName}::namedPropertyEnumerator" : "0";
+        $subCode .= $namedGetterFunction ? "${implClassName}V8Internal::namedPropertyGetterCallback, " : "0, ";
+        $subCode .= $namedSetterFunction ? "${implClassName}V8Internal::namedPropertySetterCallback, " : "0, ";
+        $subCode .= $namedEnumeratorFunction ? "${implClassName}V8Internal::namedPropertyQueryCallback, " : "0, ";
+        $subCode .= $namedDeleterFunction ? "${implClassName}V8Internal::namedPropertyDeleterCallback, " : "0, ";
+        $subCode .= $namedEnumeratorFunction ? "${implClassName}V8Internal::namedPropertyEnumeratorCallback" : "0";
         $subCode .= ");\n";
     }
 
     return $subCode;
+}
+
+sub GenerateImplementationNamedPropertyGetterCallback
+{
+    my $interface = shift;
+    my $hasCustom = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    my $code = "static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    $code .= "{\n";
+    if ($hasCustom) {
+        $code .= "    ${v8ClassName}::namedPropertyGetterCustom(name, info);\n";
+    } else {
+        $code .= "    ${implClassName}V8Internal::namedPropertyGetter(name, info);\n";
+    }
+    $code .= "}\n\n";
+    $implementation{nameSpaceInternal}->add($code);
+}
+
+sub GenerateImplementationNamedPropertySetterCallback
+{
+    my $interface = shift;
+    my $hasCustom = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    my $code = "static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    $code .= "{\n";
+    if ($hasCustom) {
+        $code .= "    ${v8ClassName}::namedPropertySetterCustom(name, value, info);\n";
+    } else {
+        $code .= "    ${implClassName}V8Internal::namedPropertySetter(name, value, info);\n";
+    }
+    $code .= "}\n\n";
+    $implementation{nameSpaceInternal}->add($code);
+}
+
+sub GenerateImplementationNamedPropertyDeleterCallback
+{
+    my $interface = shift;
+    my $hasCustom = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    my $code = "static void namedPropertyDeleterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
+    $code .= "{\n";
+    if ($hasCustom) {
+        $code .= "    ${v8ClassName}::namedPropertyDeleterCustom(name, info);\n";
+    } else {
+        $code .= "    ${implClassName}V8Internal::namedPropertyDeleter(name, info);\n";
+    }
+    $code .= "}\n\n";
+    $implementation{nameSpaceInternal}->add($code);
+}
+
+sub GenerateImplementationNamedPropertyEnumeratorCallback
+{
+    my $interface = shift;
+    my $hasCustom = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    my $code = "static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info)\n";
+    $code .= "{\n";
+    if ($hasCustom) {
+        $code .= "    ${v8ClassName}::namedPropertyEnumeratorCustom(info);\n";
+    } else {
+        $code .= "    ${implClassName}V8Internal::namedPropertyEnumerator(info);\n";
+    }
+    $code .= "}\n\n";
+    $implementation{nameSpaceInternal}->add($code);
+}
+
+sub GenerateImplementationNamedPropertyQueryCallback
+{
+    my $interface = shift;
+    my $hasCustom = shift;
+    my $implClassName = GetImplName($interface);
+    my $v8ClassName = GetV8ClassName($interface);
+
+    my $code = "static void namedPropertyQueryCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)\n";
+    $code .= "{\n";
+    if ($hasCustom) {
+        $code .= "    ${v8ClassName}::namedPropertyQueryCustom(name, info);\n";
+    } else {
+        $code .= "    ${implClassName}V8Internal::namedPropertyQuery(name, info);\n";
+    }
+    $code .= "}\n\n";
+    $implementation{nameSpaceInternal}->add($code);
 }
 
 sub GenerateMethodCall
@@ -3433,7 +3581,7 @@ sub GenerateImplementationNamedPropertyGetter
     my $raisesExceptions = $namedGetterFunction->extendedAttributes->{"RaisesException"};
     my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "propertyName", $raisesExceptions);
 
-    my $code = "void ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    my $code = "static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
     if (!$namedGetterFunction->extendedAttributes->{"OverrideBuiltins"}) {
         $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
@@ -3445,7 +3593,7 @@ sub GenerateImplementationNamedPropertyGetter
     }
     $code .= "\n";
     $code .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
-    $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
     if ($raisesExceptions) {
         $code .= "    ExceptionCode ec = 0;\n";
@@ -3466,7 +3614,7 @@ sub GenerateImplementationNamedPropertyGetter
         $code .= $returnJSValueCode . "\n";
     }
     $code .= "}\n\n";
-    $implementation{nameSpaceWebCore}->add($code);
+    $implementation{nameSpaceInternal}->add($code);
 }
 
 sub GenerateNativeValueDefinition
@@ -3510,7 +3658,7 @@ sub GenerateImplementationNamedPropertySetter
     my $treatNullAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
     my $treatUndefinedAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
 
-    my $code = "void ${v8ClassName}::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
+    my $code = "static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
     if (!$namedSetterFunction->extendedAttributes->{"OverrideBuiltins"}) {
         $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
@@ -3520,7 +3668,7 @@ sub GenerateImplementationNamedPropertySetter
         $code .= "    if (info.Holder()->HasRealNamedProperty(name))\n";
         $code .= "        return;\n";
     }
-    $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= GenerateNativeValueDefinition($namedSetterFunction, $namedSetterFunction->parameters->[0], "name", "propertyName", "info.GetIsolate()");
     $code .= GenerateNativeValueDefinition($namedSetterFunction, $namedSetterFunction->parameters->[1], "value", "propertyValue", "info.GetIsolate()");
     my $extraArguments = "";
@@ -3553,7 +3701,7 @@ sub GenerateImplementationNamedPropertySetter
     }
     $code .= "    v8SetReturnValue(info, value);\n";
     $code .= "}\n\n";
-    $implementation{nameSpaceWebCore}->add($code);
+    $implementation{nameSpaceInternal}->add($code);
 }
 
 sub GenerateImplementationIndexedPropertyDeleter
@@ -3566,9 +3714,9 @@ sub GenerateImplementationIndexedPropertyDeleter
 
     my $raisesExceptions = $indexedDeleterFunction->extendedAttributes->{"RaisesException"};
 
-    my $code = "void ${v8ClassName}::indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
+    my $code = "static void indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
-    $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
         $code .= "    ExceptionCode ec = 0;\n";
@@ -3583,7 +3731,7 @@ sub GenerateImplementationIndexedPropertyDeleter
     }
     $code .= "    return v8SetReturnValueBool(info, result);\n";
     $code .= "}\n\n";
-    $implementation{nameSpaceWebCore}->add($code);
+    $implementation{nameSpaceInternal}->add($code);
 }
 
 sub GenerateImplementationNamedPropertyDeleter
@@ -3596,9 +3744,9 @@ sub GenerateImplementationNamedPropertyDeleter
 
     my $raisesExceptions = $namedDeleterFunction->extendedAttributes->{"RaisesException"};
 
-    my $code = "void ${v8ClassName}::namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
+    my $code = "static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
-    $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
+    $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
@@ -3614,7 +3762,7 @@ sub GenerateImplementationNamedPropertyDeleter
     }
     $code .= "    return v8SetReturnValueBool(info, result);\n";
     $code .= "}\n\n";
-    $implementation{nameSpaceWebCore}->add($code);
+    $implementation{nameSpaceInternal}->add($code);
 }
 
 sub GenerateImplementationNamedPropertyEnumerator
@@ -3623,11 +3771,11 @@ sub GenerateImplementationNamedPropertyEnumerator
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
-    $implementation{nameSpaceWebCore}->add(<<END);
-void ${v8ClassName}::namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
+    $implementation{nameSpaceInternal}->add(<<END);
+static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ExceptionCode ec = 0;
-    ${implClassName}* collection = toNative(info.Holder());
+    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
     Vector<String> names;
     collection->namedPropertyEnumerator(names, ec);
     if (ec) {
@@ -3649,10 +3797,10 @@ sub GenerateImplementationNamedPropertyQuery
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
-    $implementation{nameSpaceWebCore}->add(<<END);
-void ${v8ClassName}::namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
+    $implementation{nameSpaceInternal}->add(<<END);
+static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    ${implClassName}* collection = toNative(info.Holder());
+    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
     ExceptionCode ec = 0;
     bool result = collection->namedPropertyQuery(propertyName, ec);
