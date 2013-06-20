@@ -15,7 +15,6 @@ SingletonHwnd* SingletonHwnd::GetInstance() {
 }
 
 void SingletonHwnd::AddObserver(Observer* observer) {
-
   if (!hwnd()) {
     if (!base::MessageLoop::current() ||
         base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI) {

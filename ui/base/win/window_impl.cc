@@ -9,6 +9,7 @@
 #include "base/debug/alias.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/base/win/hwnd_util.h"
 
@@ -42,6 +43,7 @@ struct ClassInfo {
   }
 };
 
+// WARNING: this class may be used on multiple threads.
 class ClassRegistrar {
  public:
   ~ClassRegistrar();
@@ -73,6 +75,8 @@ class ClassRegistrar {
   // Counter of how many classes have been registered so far.
   int registered_count_;
 
+  base::Lock lock_;
+
   DISALLOW_COPY_AND_ASSIGN(ClassRegistrar);
 };
 
@@ -85,6 +89,7 @@ ClassRegistrar* ClassRegistrar::GetInstance() {
 }
 
 ATOM ClassRegistrar::RetrieveClassAtom(const ClassInfo& class_info) {
+  base::AutoLock auto_lock(lock_);
   for (RegisteredClasses::const_iterator i = registered_classes_.begin();
        i != registered_classes_.end(); ++i) {
     if (class_info.Equals(i->info))
@@ -123,7 +128,7 @@ ClassRegistrar::RegisteredClass::RegisteredClass(const ClassInfo& info,
     : info(info),
       atom(atom) {}
 
-ClassRegistrar::ClassRegistrar() : registered_count_(0) { }
+ClassRegistrar::ClassRegistrar() : registered_count_(0) {}
 
 
 ///////////////////////////////////////////////////////////////////////////////
