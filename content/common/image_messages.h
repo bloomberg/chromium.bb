@@ -16,12 +16,16 @@
 
 // Requests the renderer to download the specified image, decode it,
 // and send the image data back via ImageHostMsg_DidDownloadImage.
-IPC_MESSAGE_ROUTED4(ImageMsg_DownloadImage,
+IPC_MESSAGE_ROUTED5(ImageMsg_DownloadImage,
                     int /* identifier for the request */,
                     GURL /* URL of the image */,
                     bool /* is favicon (turn off cookies) */,
-                    int /* Preferred image size. Passed on to
-                           ImageHostMsg_DidDownloadFavicon, unused otherwise */)
+                    uint32_t /* Preferred image size. Passed on to
+                                ImageHostMsg_DidDownloadFavicon, unused
+                                otherwise */,
+                    uint32_t /* Maximal image size. Filter result with it, and
+                                resize resulting image if no bitmap fit. 0 means
+                                unlimited. */)
 
 // Messages sent from the renderer to the browser.
 
@@ -29,6 +33,6 @@ IPC_MESSAGE_ROUTED5(ImageHostMsg_DidDownloadImage,
                     int /* Identifier of the request */,
                     int /* HTTP response status */,
                     GURL /* URL of the image */,
-                    int /* Preferred image size passed to
-                           ImageMsg_DownloadImage */,
+                    uint32_t /* Preferred image size passed to
+                                ImageMsg_DownloadImage */,
                     std::vector<SkBitmap> /* image_data */)

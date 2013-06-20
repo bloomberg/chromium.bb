@@ -60,8 +60,9 @@ void IconHelper::DidUpdateFaviconURL(int32 page_id,
         // (currently that is, the app has called WebIconDatabase.open()
         // but we should decouple that setting via a boolean setting)
         web_contents()->DownloadImage(i->icon_url,
-            true,
-            0,
+            true,  // Is a favicon
+            0,  // No preferred size
+            0,  // No maximum size
             base::Bind(
                 &IconHelper::DownloadFaviconCallback, base::Unretained(this)));
         break;

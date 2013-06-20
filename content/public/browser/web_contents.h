@@ -434,12 +434,15 @@ class WebContents : public PageNavigator,
   // id of the download request. When the download is finished, |callback| will
   // be called with the bitmaps received from the renderer. If |is_favicon| is
   // true, the cookies are not sent and not accepted during download. Note that
-  // |image_size| is a hint for images with multiple sizes. The downloaded image
-  // is not resized to the given image_size. If 0 is passed, the first frame of
-  // the image is returned.
+  // |preferred_image_size| is a hint for images with multiple sizes. The
+  // downloaded image is not resized to the given image_size. If 0 is passed,
+  // the first frame of the image is returned.
+  // |max_image_size| is the maximal size of the returned image. It will be
+  // resized if needed. If 0 is passed, the maximal size is unlimited.
   virtual int DownloadImage(const GURL& url,
                             bool is_favicon,
-                            int image_size,
+                            uint32_t preferred_image_size,
+                            uint32_t max_image_size,
                             const ImageDownloadCallback& callback) = 0;
 
  private:

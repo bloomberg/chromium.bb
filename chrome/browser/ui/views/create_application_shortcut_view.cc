@@ -456,11 +456,13 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
   if (unprocessed_icons_.empty())  // No icons to fetch.
     return;
 
+  int preferred_size = std::max(unprocessed_icons_.back().width,
+                                unprocessed_icons_.back().height);
   pending_download_id_ = web_contents_->DownloadImage(
       unprocessed_icons_.back().url,
-      true,
-      std::max(unprocessed_icons_.back().width,
-               unprocessed_icons_.back().height),
+      true,  // is a favicon
+      preferred_size,
+      0,  // no maximum size
       base::Bind(&CreateUrlApplicationShortcutView::DidDownloadFavicon,
                  base::Unretained(this)));
 

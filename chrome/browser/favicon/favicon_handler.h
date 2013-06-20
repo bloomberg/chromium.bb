@@ -122,7 +122,9 @@ class FaviconHandler {
   virtual content::NavigationEntry* GetEntry();
 
   // Asks the render to download favicon, returns the request id.
-  virtual int DownloadFavicon(const GURL& image_url, int image_size);
+  virtual int DownloadFavicon(const GURL& image_url,
+                              int image_size,
+                              chrome::IconType icon_type);
 
   // Ask the favicon from history
   virtual void UpdateFaviconMappingAndFetch(

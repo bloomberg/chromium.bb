@@ -377,8 +377,9 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
 
   contents->DownloadImage(
       url,
-      false,
-      size,
+      false,  // Not a favicon
+      size,  // Preferred size
+      0,  // No maximum size
       base::Bind(
           &MessageCenterNotificationManager::ImageDownloads::DownloadComplete,
           AsWeakPtr(),

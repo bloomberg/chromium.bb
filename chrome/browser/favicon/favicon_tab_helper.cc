@@ -134,7 +134,9 @@ NavigationEntry* FaviconTabHelper::GetActiveEntry() {
   return web_contents()->GetController().GetActiveEntry();
 }
 
-int FaviconTabHelper::StartDownload(const GURL& url, int image_size) {
+int FaviconTabHelper::StartDownload(const GURL& url,
+                                    int preferred_image_size,
+                                    int max_image_size) {
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
   if (favicon_service && favicon_service->WasUnableToDownloadFavicon(url)) {
@@ -145,7 +147,8 @@ int FaviconTabHelper::StartDownload(const GURL& url, int image_size) {
   return web_contents()->DownloadImage(
       url,
       true,
-      image_size,
+      preferred_image_size,
+      max_image_size,
       base::Bind(&FaviconTabHelper::DidDownloadFavicon,base::Unretained(this)));
 }
 

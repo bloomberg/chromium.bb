@@ -161,13 +161,15 @@ g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 static int StartDownload(content::RenderViewHost* rvh,
                          const GURL& url,
                          bool is_favicon,
-                         int image_size) {
+                         uint32_t preferred_image_size,
+                         uint32_t max_image_size) {
   static int g_next_image_download_id = 0;
   rvh->Send(new ImageMsg_DownloadImage(rvh->GetRoutingID(),
                                        ++g_next_image_download_id,
                                        url,
                                        is_favicon,
-                                       image_size));
+                                       preferred_image_size,
+                                       max_image_size));
   return g_next_image_download_id;
 }
 
@@ -2074,10 +2076,12 @@ void WebContentsImpl::DidEndColorChooser() {
 
 int WebContentsImpl::DownloadImage(const GURL& url,
                                    bool is_favicon,
-                                   int image_size,
+                                   uint32_t preferred_image_size,
+                                   uint32_t max_image_size,
                                    const ImageDownloadCallback& callback) {
   RenderViewHost* host = GetRenderViewHost();
-  int id = StartDownload(host, url, is_favicon, image_size);
+  int id = StartDownload(
+      host, url, is_favicon, preferred_image_size, max_image_size);
   image_download_map_[id] = callback;
   return id;
 }

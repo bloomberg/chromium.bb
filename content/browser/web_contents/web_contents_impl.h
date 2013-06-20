@@ -285,7 +285,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidEndColorChooser() OVERRIDE;
   virtual int DownloadImage(const GURL& url,
                             bool is_favicon,
-                            int image_size,
+                            uint32_t preferred_image_size,
+                            uint32_t max_image_size,
                             const ImageDownloadCallback& callback) OVERRIDE;
 
   // Implementation of PageNavigator.

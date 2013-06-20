@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 #include "net/base/data_url.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -26,6 +27,64 @@ using WebKit::WebVector;
 using WebKit::WebURL;
 using WebKit::WebURLRequest;
 
+namespace {
+
+//  Proportionally resizes the |image| to fit in a box of size
+// |max_image_size|.
+SkBitmap ResizeImage(const SkBitmap& image, uint32_t max_image_size) {
+  if (max_image_size == 0)
+    return image;
+  uint32_t max_dimension = std::max(image.width(), image.height());
+  if (max_dimension <= max_image_size)
+    return image;
+  // Proportionally resize the minimal image to fit in a box of size
+  // max_image_size.
+  return skia::ImageOperations::Resize(
+      image,
+      skia::ImageOperations::RESIZE_BEST,
+      static_cast<uint64_t>(image.width()) * max_image_size / max_dimension,
+      static_cast<uint64_t>(image.height()) * max_image_size / max_dimension);
+}
+
+// Filters the array of bitmaps, removing all images that do not fit in a box of
+// size |max_image_size|. Returns the result if it is not empty. Otherwise,
+// find the smallest image in the array and resize it proportionally to fit
+// in a box of size |max_image_size|.
+std::vector<SkBitmap> FilterAndResizeImageForMaximalSize(
+    const std::vector<SkBitmap>& images,
+    uint32_t max_image_size) {
+  if (!images.size() || max_image_size == 0)
+    return images;
+  std::vector<SkBitmap> result;
+  const SkBitmap* min_image = NULL;
+  uint32_t min_image_size = std::numeric_limits<uint32_t>::max();
+  // Filter the images by |max_image_size|, and also identify the smallest image
+  // in case all the images are bigger than |max_image_size|.
+  for (std::vector<SkBitmap>::const_iterator it = images.begin();
+       it != images.end();
+       ++it) {
+    const SkBitmap& image = *it;
+    uint32_t current_size = std::max(it->width(), it->height());
+    if (current_size < min_image_size) {
+      min_image = &image;
+      min_image_size = current_size;
+    }
+    if (static_cast<uint32_t>(image.width()) <= max_image_size &&
+        static_cast<uint32_t>(image.height()) <= max_image_size) {
+      result.push_back(image);
+    }
+  }
+  DCHECK(min_image);
+  if (result.size())
+    return result;
+  // Proportionally resize the minimal image to fit in a box of size
+  // max_image_size.
+  result.push_back(ResizeImage(*min_image, max_image_size));
+  return result;
+}
+
+}  // namespace
+
 namespace content {
 
 ImageLoadingHelper::ImageLoadingHelper(RenderView* render_view)
@@ -38,14 +97,16 @@ ImageLoadingHelper::~ImageLoadingHelper() {
 void ImageLoadingHelper::OnDownloadImage(int id,
                                          const GURL& image_url,
                                          bool is_favicon,
-                                         int image_size) {
+                                         uint32_t preferred_image_size,
+                                         uint32_t max_image_size) {
   std::vector<SkBitmap> result_images;
   if (image_url.SchemeIs(chrome::kDataScheme)) {
     SkBitmap data_image = ImageFromDataUrl(image_url);
     if (!data_image.empty())
-      result_images.push_back(data_image);
+      result_images.push_back(ResizeImage(data_image, max_image_size));
   } else {
-    if (DownloadImage(id, image_url, is_favicon, image_size)) {
+    if (DownloadImage(
+            id, image_url, is_favicon, preferred_image_size, max_image_size)) {
       // Will complete asynchronously via ImageLoadingHelper::DidDownloadImage
       return;
     }
@@ -55,14 +116,15 @@ void ImageLoadingHelper::OnDownloadImage(int id,
                                          id,
                                          0,
                                          image_url,
-                                         image_size,
+                                         preferred_image_size,
                                          result_images));
 }
 
 bool ImageLoadingHelper::DownloadImage(int id,
                                        const GURL& image_url,
                                        bool is_favicon,
-                                       int image_size) {
+                                       uint32_t preferred_image_size,
+                                       uint32_t max_image_size) {
   // Make sure webview was not shut down.
   if (!render_view()->GetWebView())
     return false;
@@ -74,21 +136,25 @@ bool ImageLoadingHelper::DownloadImage(int id,
       is_favicon ? WebURLRequest::TargetIsFavicon :
                    WebURLRequest::TargetIsImage,
       base::Bind(&ImageLoadingHelper::DidDownloadImage,
-                 base::Unretained(this), image_size)));
+                 base::Unretained(this),
+                 preferred_image_size,
+                 max_image_size)));
   return true;
 }
 
 void ImageLoadingHelper::DidDownloadImage(
-    int requested_size,
+    uint32_t preferred_image_size,
+    uint32_t max_image_size,
     MultiResolutionImageResourceFetcher* fetcher,
     const std::vector<SkBitmap>& images) {
   // Notify requester of image download status.
-  Send(new ImageHostMsg_DidDownloadImage(routing_id(),
-                                         fetcher->id(),
-                                         fetcher->http_status_code(),
-                                         fetcher->image_url(),
-                                         requested_size,
-                                         images));
+  Send(new ImageHostMsg_DidDownloadImage(
+      routing_id(),
+      fetcher->id(),
+      fetcher->http_status_code(),
+      fetcher->image_url(),
+      preferred_image_size,
+      FilterAndResizeImageForMaximalSize(images, max_image_size)));
 
   // Remove the image fetcher from our pending list. We're in the callback from
   // MultiResolutionImageResourceFetcher, best to delay deletion.
@@ -125,4 +191,3 @@ bool ImageLoadingHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 }  // namespace content
-

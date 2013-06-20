@@ -415,7 +415,10 @@ void ShellWindow::SetAppIconUrl(const GURL& url) {
 
   app_icon_url_ = url;
   web_contents()->DownloadImage(
-      url, true, kPreferredIconSize,
+      url,
+      true,  // is a favicon
+      kPreferredIconSize,
+      0,  // no maximum size
       base::Bind(&ShellWindow::DidDownloadFavicon,
                  image_loader_ptr_factory_.GetWeakPtr()));
 }

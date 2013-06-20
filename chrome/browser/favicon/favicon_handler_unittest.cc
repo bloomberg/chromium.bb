@@ -178,7 +178,9 @@ class TestFaviconHandlerDelegate : public FaviconHandlerDelegate {
     return NULL;
   }
 
-  virtual int StartDownload(const GURL& url, int image_size) OVERRIDE {
+  virtual int StartDownload(const GURL& url,
+                            int preferred_image_size,
+                            int max_image_size) OVERRIDE {
     ADD_FAILURE() << "TestFaviconHandlerDelegate::StartDownload() "
                   << "should never be called in tests.";
     return -1;
@@ -270,7 +272,9 @@ class TestFaviconHandler : public FaviconHandler {
                                                      icon_types, callback));
   }
 
-  virtual int DownloadFavicon(const GURL& image_url, int image_size) OVERRIDE {
+  virtual int DownloadFavicon(const GURL& image_url,
+                              int image_size,
+                              chrome::IconType icon_type) OVERRIDE {
     download_id_++;
     download_handler_->AddDownload(download_id_, image_url, image_size);
     return download_id_;
@@ -1056,7 +1060,7 @@ TEST_F(FaviconHandlerTest, UnableToDownloadFavicon) {
   int download_id = 0;
 
   // Try to download missing icon.
-  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0);
+  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0, 0);
   EXPECT_NE(0, download_id);
   EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
 
@@ -1067,7 +1071,7 @@ TEST_F(FaviconHandlerTest, UnableToDownloadFavicon) {
   EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
 
   // Try to download again.
-  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0);
+  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0, 0);
   EXPECT_NE(0, download_id);
   EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
 
@@ -1078,13 +1082,13 @@ TEST_F(FaviconHandlerTest, UnableToDownloadFavicon) {
   EXPECT_TRUE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
 
   // Try to download again.
-  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0);
+  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0, 0);
   // Download is not started and Icon is still marked as UnableToDownload.
   EXPECT_EQ(0, download_id);
   EXPECT_TRUE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
 
   // Try to download another icon.
-  download_id = favicon_tab_helper->StartDownload(another_icon_url, 0);
+  download_id = favicon_tab_helper->StartDownload(another_icon_url, 0, 0);
   // Download is started as another icon URL is not same as missing_icon_url.
   EXPECT_NE(0, download_id);
   EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(another_icon_url));
@@ -1095,7 +1099,7 @@ TEST_F(FaviconHandlerTest, UnableToDownloadFavicon) {
   EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(another_icon_url));
 
   // Try to download again.
-  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0);
+  download_id = favicon_tab_helper->StartDownload(missing_icon_url, 0, 0);
   EXPECT_NE(0, download_id);
   // Report download success with HTTP 200 status.
   favicon_tab_helper->DidDownloadFavicon(download_id, 200, missing_icon_url,

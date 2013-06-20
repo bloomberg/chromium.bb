@@ -30,6 +30,10 @@ using content::NavigationEntry;
 
 namespace {
 
+// Size (along each axis) of a touch icon. This currently corresponds to
+// the apple touch icon for iPad.
+const int kTouchIconSize = 72;
+
 // Returns chrome::IconType the given icon_type corresponds to.
 chrome::IconType ToHistoryIconType(FaviconURL::IconType icon_type) {
   switch (icon_type) {
@@ -45,6 +49,25 @@ chrome::IconType ToHistoryIconType(FaviconURL::IconType icon_type) {
   NOTREACHED();
   // Shouldn't reach here, just make compiler happy.
   return chrome::INVALID_ICON;
+}
+
+// Get the maximal icon size in pixels for a icon of type |icon_type| for the
+// current platform.
+int GetMaximalIconSize(chrome::IconType icon_type) {
+  int base_size = 0;
+  switch (icon_type) {
+    case chrome::FAVICON:
+      base_size = gfx::kFaviconSize;
+      break;
+    case chrome::TOUCH_ICON:
+    case chrome::TOUCH_PRECOMPOSED_ICON:
+      base_size = kTouchIconSize;
+      break;
+    case chrome::INVALID_ICON:
+      base_size = 0;
+      break;
+  }
+  return ui::GetScaleFactorScale(ui::GetMaxScaleFactor()) * base_size;
 }
 
 bool DoUrlAndIconMatch(const FaviconURL& favicon_url,
@@ -406,12 +429,15 @@ NavigationEntry* FaviconHandler::GetEntry() {
   return NULL;
 }
 
-int FaviconHandler::DownloadFavicon(const GURL& image_url, int image_size) {
+int FaviconHandler::DownloadFavicon(const GURL& image_url,
+                                    int image_size,
+                                    chrome::IconType icon_type) {
   if (!image_url.is_valid()) {
     NOTREACHED();
     return 0;
   }
-  int id = delegate_->StartDownload(image_url, image_size);
+  int id = delegate_->StartDownload(
+      image_url, image_size, GetMaximalIconSize(icon_type));
   return id;
 }
 
@@ -590,7 +616,7 @@ int FaviconHandler::ScheduleDownload(
     const GURL& image_url,
     int image_size,
     chrome::IconType icon_type) {
-  const int download_id = DownloadFavicon(image_url, image_size);
+  const int download_id = DownloadFavicon(image_url, image_size, icon_type);
   if (download_id) {
     // Download ids should be unique.
     DCHECK(download_requests_.find(download_id) == download_requests_.end());
