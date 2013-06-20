@@ -436,7 +436,6 @@ class RenderWidgetHostViewAura
   // Called after async thumbnailer task completes.  Used to call
   // AdjustSurfaceProtection.
   static void CopyFromCompositingSurfaceFinished(
-      base::WeakPtr<RenderWidgetHostViewAura> render_widget_host_view,
       const SkBitmap& bitmap,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       bool result);
@@ -501,11 +500,6 @@ class RenderWidgetHostViewAura
   // windows and constrained windows.
   void UpdateCutoutRects();
 #endif
-
-  void CopyFromCompositingSurfaceHelper(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size_in_pixel,
-      const base::Callback<void(bool, const SkBitmap&)>& callback);
 
   // The model object.
   RenderWidgetHostImpl* host_;
@@ -579,8 +573,6 @@ class RenderWidgetHostViewAura
   // size changes between front- and backbuffer.
   gfx::Size last_swapped_surface_size_;
   float last_swapped_surface_scale_factor_;
-
-  int pending_thumbnail_tasks_;
 
   gfx::GLSurfaceHandle shared_surface_handle_;
 

@@ -1161,13 +1161,17 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
   return new BackingStoreAura(host_, size);
 }
 
-void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHelper(
+void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size_in_pixel,
+    const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
+
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
+  if (!current_surface_.get())
+    return;
 
+  const gfx::Size& dst_size_in_pixel = ConvertViewSizeToPixel(this, dst_size);
   SkBitmap output;
   output.setConfig(SkBitmap::kARGB_8888_Config,
                    dst_size_in_pixel.width(), dst_size_in_pixel.height());
@@ -1186,10 +1190,8 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHelper(
   // own completion handlers (where we can try to free the frontbuffer).
   base::Callback<void(bool)> wrapper_callback = base::Bind(
       &RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished,
-      AsWeakPtr(),
       output,
       callback);
-  ++pending_thumbnail_tasks_;
 
   // Convert |src_subrect| from the views coordinate (upper-left origin) into
   // the OpenGL coordinate (lower-left origin).
@@ -1206,20 +1208,6 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHelper(
       dst_size_in_pixel,
       addr,
       wrapper_callback);
-}
-
-void RenderWidgetHostViewAura::CopyFromCompositingSurface(
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
-    const base::Callback<void(bool, const SkBitmap&)>& callback) {
-  if (!current_surface_.get()) {
-    callback.Run(false, SkBitmap());
-    return;
-  }
-
-  CopyFromCompositingSurfaceHelper(src_subrect,
-                                   ConvertViewSizeToPixel(this, dst_size),
-                                   callback);
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
@@ -1778,15 +1766,10 @@ void RenderWidgetHostViewAura::SetSurfaceNotInUseByCompositor(
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinished(
-    base::WeakPtr<RenderWidgetHostViewAura> render_widget_host_view,
     const SkBitmap& bitmap,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     bool result) {
   callback.Run(result, bitmap);
-
-  if (!render_widget_host_view)
-    return;
-  --render_widget_host_view->pending_thumbnail_tasks_;
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {
