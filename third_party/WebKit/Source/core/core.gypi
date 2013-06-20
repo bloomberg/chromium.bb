@@ -455,6 +455,7 @@
             'svg/SVGTitleElement.idl',
             'svg/SVGTransform.idl',
             'svg/SVGTransformList.idl',
+            'svg/SVGURIReference.idl',
             'svg/SVGUnitTypes.idl',
             'svg/SVGUseElement.idl',
             'svg/SVGViewElement.idl',

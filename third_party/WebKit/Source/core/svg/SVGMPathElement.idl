@@ -24,7 +24,6 @@
  */
 
 interface SVGMPathElement : SVGElement,
-                            SVGURIReference,
                             SVGExternalResourcesRequired {
 };
 

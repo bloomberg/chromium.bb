@@ -25,7 +25,6 @@
  */
 
 interface SVGFilterElement : SVGStyledElement,
-                             SVGURIReference,
                              SVGLangSpace,
                              SVGExternalResourcesRequired
                              /* SVGUnitTypes */ {

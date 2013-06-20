@@ -24,7 +24,6 @@
  */
 
 interface SVGCursorElement : SVGElement,
-                             SVGURIReference,
                              SVGTests,
                              SVGExternalResourcesRequired {
     readonly attribute SVGAnimatedLength x;

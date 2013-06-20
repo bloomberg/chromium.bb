@@ -24,7 +24,6 @@
  */
 
 interface SVGFEImageElement : SVGStyledElement,
-                              SVGURIReference,
                               SVGLangSpace,
                               SVGExternalResourcesRequired,
                               SVGFilterPrimitiveStandardAttributes {

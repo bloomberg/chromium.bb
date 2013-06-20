@@ -24,7 +24,6 @@
  */
 
 interface SVGAElement : SVGStyledElement,
-                        SVGURIReference,
                         SVGTests,
                         SVGLangSpace,
                         SVGExternalResourcesRequired,

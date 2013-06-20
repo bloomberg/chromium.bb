@@ -26,7 +26,6 @@
 [
     DoNotCheckConstants
 ] interface SVGGradientElement : SVGStyledElement,
-                                 SVGURIReference,
                                  SVGExternalResourcesRequired
                                  /* SVGUnitTypes */ {
     // Spread Method Types
