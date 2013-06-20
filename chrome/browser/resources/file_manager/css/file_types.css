@@ -5,110 +5,276 @@
 /* Small icons for file types, used in lists and menus. */
 [file-type-icon] {
   background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC@2x') 2x);
+      url('../images/files/file_types/100/generic.png') 1x,
+      url('../images/files/file_types/200/generic.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
 }
 
+tree:focus [selected] [file-type-icon],
+list:focus [selected] [file-type-icon],
+list.autocomplete-suggestions [selected] [file-type-icon] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/generic_white.png') 1x,
+    url('../images/files/file_types/200/generic_white.png') 2x);
+}
+
 [file-type-icon='archive'] {
   background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE@2x') 2x);
+    url('../images/files/file_types/100/archive.png') 1x,
+    url('../images/files/file_types/200/archive.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='archive'],
+list:focus [selected] [file-type-icon='archive'],
+list.autocomplete-suggestions [selected] [file-type-icon='archive'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/archive_white.png') 1x,
+    url('../images/files/file_types/200/archive_white.png') 2x);
 }
 
 [file-type-icon='audio'] {
   background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO@2x') 2x);
+    url('../images/files/file_types/100/audio.png') 1x,
+    url('../images/files/file_types/200/audio.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='audio'],
+list:focus [selected] [file-type-icon='audio'],
+list.autocomplete-suggestions [selected] [file-type-icon='audio'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/audio_white.png') 1x,
+    url('../images/files/file_types/200/audio_white.png') 2x);
+}
+
+[file-type-icon='excel'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/excel.png') 1x,
+    url('../images/files/file_types/200/excel.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='excel'],
+list:focus [selected] [file-type-icon='excel'],
+list.autocomplete-suggestions [selected] [file-type-icon='excel'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/excel_white.png') 1x,
+    url('../images/files/file_types/200/excel_white.png') 2x);
+}
+
+[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/folder.png') 1x,
+    url('../images/files/file_types/200/folder.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='folder'],
+list:focus [selected] [file-type-icon='folder'],
+list.autocomplete-suggestions [selected] [file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/folder_white.png') 1x,
+    url('../images/files/file_types/200/folder_white.png') 2x);
+}
+
+[file-type-icon='form'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/form.png') 1x,
+    url('../images/files/file_types/200/form.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='form'],
+list:focus [selected] [file-type-icon='form'],
+list.autocomplete-suggestions [selected] [file-type-icon='form'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/form_white.png') 1x,
+    url('../images/files/file_types/200/form_white.png') 2x);
+}
+
+[file-type-icon='gdoc'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gdoc.png') 1x,
+    url('../images/files/file_types/200/gdoc.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='gdoc'],
+list:focus [selected] [file-type-icon='gdoc'],
+list.autocomplete-suggestions [selected] [file-type-icon='gdoc'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gdoc_white.png') 1x,
+    url('../images/files/file_types/200/gdoc_white.png') 2x);
+}
+
+[file-type-icon='gdraw'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gdraw.png') 1x,
+    url('../images/files/file_types/200/gdraw.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='gdraw'],
+list:focus [selected] [file-type-icon='gdraw'],
+list.autocomplete-suggestions [selected] [file-type-icon='gdraw'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gdraw_white.png') 1x,
+    url('../images/files/file_types/200/gdraw_white.png') 2x);
+}
+
+[file-type-icon='glink'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/glink.png') 1x,
+    url('../images/files/file_types/200/glink.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='glink'],
+list:focus [selected] [file-type-icon='glink'],
+list.autocomplete-suggestions [selected] [file-type-icon='glink'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/glink_white.png') 1x,
+    url('../images/files/file_types/200/glink_white.png') 2x);
+}
+
+[file-type-icon='gsheet'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gsheet.png') 1x,
+    url('../images/files/file_types/200/gsheet.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='gsheet'],
+list:focus [selected] [file-type-icon='gsheet'],
+list.autocomplete-suggestions [selected] [file-type-icon='gsheet'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gsheet_white.png') 1x,
+    url('../images/files/file_types/200/gsheet_white.png') 2x);
+}
+
+[file-type-icon='gslides'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gslides.png') 1x,
+    url('../images/files/file_types/200/gslides.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='gslides'],
+list:focus [selected] [file-type-icon='gslides'],
+list.autocomplete-suggestions [selected] [file-type-icon='gslides'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gslides_white.png') 1x,
+    url('../images/files/file_types/200/gslides_white.png') 2x);
+}
+
+[file-type-icon='gtable'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gtable.png') 1x,
+    url('../images/files/file_types/200/gtable.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='gtable'],
+list:focus [selected] [file-type-icon='gtable'],
+list.autocomplete-suggestions [selected] [file-type-icon='gtable'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/gtable_white.png') 1x,
+    url('../images/files/file_types/200/gtable_white.png') 2x);
+}
+
+[file-type-icon='image'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/image.png') 1x,
+    url('../images/files/file_types/200/image.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='image'],
+list:focus [selected] [file-type-icon='image'],
+list.autocomplete-suggestions [selected] [file-type-icon='image'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/image_white.png') 1x,
+    url('../images/files/file_types/200/image_white.png') 2x);
+}
+
+[file-type-icon='pdf'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/pdf.png') 1x,
+    url('../images/files/file_types/200/pdf.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='pdf'],
+list:focus [selected] [file-type-icon='pdf'],
+list.autocomplete-suggestions [selected] [file-type-icon='pdf'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/pdf_white.png') 1x,
+    url('../images/files/file_types/200/pdf_white.png') 2x);
+}
+
+[file-type-icon='ppt'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/ppt.png') 1x,
+    url('../images/files/file_types/200/ppt.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='ppt'],
+list:focus [selected] [file-type-icon='ppt'],
+list.autocomplete-suggestions [selected] [file-type-icon='ppt'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/ppt_white.png') 1x,
+    url('../images/files/file_types/200/ppt_white.png') 2x);
+}
+
+[file-type-icon='script'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/script.png') 1x,
+    url('../images/files/file_types/200/script.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='script'],
+list:focus [selected] [file-type-icon='script'],
+list.autocomplete-suggestions [selected] [file-type-icon='script'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/script_white.png') 1x,
+    url('../images/files/file_types/200/script_white.png') 2x);
+}
+
+[file-type-icon='sites'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/sites.png') 1x,
+    url('../images/files/file_types/200/sites.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='sites'],
+list:focus [selected] [file-type-icon='sites'],
+list.autocomplete-suggestions [selected] [file-type-icon='sites'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/sites_white.png') 1x,
+    url('../images/files/file_types/200/sites_white.png') 2x);
+}
+
+[file-type-icon='video'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/video.png') 1x,
+    url('../images/files/file_types/200/video.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='video'],
+list:focus [selected] [file-type-icon='video'],
+list.autocomplete-suggestions [selected] [file-type-icon='video'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/video_white.png') 1x,
+    url('../images/files/file_types/200/video_white.png') 2x);
+}
+
+[file-type-icon='word'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/word.png') 1x,
+    url('../images/files/file_types/200/word.png') 2x);
+}
+
+tree:focus [selected] [file-type-icon='word'],
+list:focus [selected] [file-type-icon='word'],
+list.autocomplete-suggestions [selected] [file-type-icon='word'] {
+  background-image: -webkit-image-set(
+    url('../images/files/file_types/100/word_white.png') 1x,
+    url('../images/files/file_types/200/word_white.png') 2x);
 }
 
 [file-type-icon='drive'] {
   background-image: -webkit-image-set(
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_DRIVE') 1x,
     url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_DRIVE@2x') 2x);
-}
-
-[file-type-icon='excel'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_EXCEL') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_EXCEL@2x') 2x);
-}
-
-/* TODO(mtomasz): Move all assets from themes to local resources. */
-/* TODO(mtomasz): Add inverted icons for other file types. */
-[file-type-icon='folder'] {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/black_folder.png') 1x,
-    url('../images/files/ui/new-ui/2x/black_folder.png') 2x);
-}
-
-tree:focus .tree-item[selected] > .tree-row > [file-type-icon='folder'],
-list.autocomplete-suggestions li[selected] [file-type-icon='folder'],
-list:focus li[selected] [file-type-icon='folder'] {
-  background-image: -webkit-image-set(
-    url('../images/files/ui/new-ui/white_folder.png') 1x,
-    url('../images/files/ui/new-ui/2x/white_folder.png') 2x);
-}
-
-[file-type-icon='gdoc'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDOC') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDOC@2x') 2x);
-}
-
-[file-type-icon='gdraw'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDRAW') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GDRAW@2x') 2x);
-}
-
-[file-type-icon='gsheet'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSHEET') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSHEET@2x') 2x);
-}
-
-[file-type-icon='gslides'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSLIDES') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GSLIDES@2x') 2x);
-}
-
-[file-type-icon='gtable'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GTABLE') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_GTABLE@2x') 2x);
-}
-
-[file-type-icon='image'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE@2x') 2x);
-}
-
-[file-type-icon='pdf'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PDF') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PDF@2x') 2x);
-}
-
-[file-type-icon='ppt'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PPT') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_PPT@2x') 2x);
-}
-
-[file-type-icon='video'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO@2x') 2x);
-}
-
-[file-type-icon='word'] {
-  background-image: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_WORD') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_WORD@2x') 2x);
 }
 
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
