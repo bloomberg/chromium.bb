@@ -123,6 +123,12 @@ SandboxFileSystemTestHelper::NewOperationContext() {
   return context;
 }
 
+void SandboxFileSystemTestHelper::AddFileChangeObserver(
+    FileChangeObserver* observer) {
+  file_system_context_->sandbox_provider()->
+      AddFileChangeObserver(type_, observer, NULL);
+}
+
 FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
   return file_system_context()->sandbox_provider()->usage_cache();
 }

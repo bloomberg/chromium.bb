@@ -12,6 +12,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
+#include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/common/quota/quota_types.h"
@@ -73,6 +74,8 @@ class SandboxFileSystemTestHelper {
 
   FileSystemOperationRunner* operation_runner();
   FileSystemOperationContext* NewOperationContext();
+
+  void AddFileChangeObserver(FileChangeObserver* observer);
 
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();

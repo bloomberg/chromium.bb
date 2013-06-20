@@ -27,7 +27,6 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
@@ -53,7 +52,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     file_system_context_ = CreateFileSystemContextForTesting(
         NULL, temp_dir_.path());
 
-    file_system_context_->sandbox_provider()->OpenFileSystem(
+    file_system_context_->OpenFileSystem(
         GURL("http://remote/"), kFileSystemTypeTemporary,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&FileSystemDirURLRequestJobTest::OnOpenFileSystem,
@@ -73,7 +72,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     ClearUnusedJob();
   }
 
-  void OnOpenFileSystem(base::PlatformFileError result) {
+  void OnOpenFileSystem(base::PlatformFileError result,
+                        const std::string& name,
+                        const GURL& root_url) {
     ASSERT_EQ(base::PLATFORM_FILE_OK, result);
   }
 
@@ -198,8 +199,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   FileSystemFileUtil* file_util() {
-    return file_system_context_->sandbox_provider()->GetFileUtil(
-        kFileSystemTypeTemporary);
+    return file_system_context_->GetFileUtil(kFileSystemTypeTemporary);
   }
 
   // Put the message loop at the top, so that it's the last thing deleted.

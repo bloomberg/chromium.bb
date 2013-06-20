@@ -129,6 +129,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   FileSystemMountPointProvider* GetMountPointProvider(
       FileSystemType type) const;
 
+  // Returns true for sandboxed filesystems. Currently this does
+  // the same as GetQuotaUtil(type) != NULL. (In an assumption that
+  // all sandboxed filesystems must cooperate with QuotaManager so that
+  // they can get deleted)
+  bool IsSandboxFileSystem(FileSystemType type) const;
+
   // Returns observers for the given filesystem type.
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
   const AccessObserverList* GetAccessObservers(FileSystemType type) const;

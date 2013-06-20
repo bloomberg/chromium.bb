@@ -68,10 +68,7 @@ class LocalFileSystemOperationTest
     quota_manager_proxy_ = new quota::MockQuotaManagerProxy(
         quota_manager(), base::MessageLoopProxy::current().get());
     sandbox_file_system_.SetUp(base_dir, quota_manager_proxy_.get());
-    sandbox_file_system_.file_system_context()->sandbox_provider()->
-        AddFileChangeObserver(sandbox_file_system_.type(),
-                              &change_observer_,
-                              NULL);
+    sandbox_file_system_.AddFileChangeObserver(&change_observer_);
   }
 
   virtual void TearDown() OVERRIDE {

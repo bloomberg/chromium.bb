@@ -188,6 +188,10 @@ FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
   return NULL;
 }
 
+bool FileSystemContext::IsSandboxFileSystem(FileSystemType type) const {
+  return GetQuotaUtil(type) != NULL;
+}
+
 const UpdateObserverList* FileSystemContext::GetUpdateObservers(
     FileSystemType type) const {
   // Currently update observer is only available in SandboxMountPointProvider
@@ -195,8 +199,8 @@ const UpdateObserverList* FileSystemContext::GetUpdateObservers(
   // TODO(kinuko): Probably GetUpdateObservers() virtual method should be
   // added to FileSystemMountPointProvider interface and be called like
   // other GetFoo() methods do.
-  if (SandboxMountPointProvider::IsSandboxType(type))
-    return sandbox_provider()->GetUpdateObservers(type);
+  if (sandbox_provider_->CanHandleType(type))
+    return sandbox_provider_->GetUpdateObservers(type);
   if (type != kFileSystemTypeTest)
     return NULL;
   FileSystemMountPointProvider* mount_point_provider =
@@ -208,8 +212,8 @@ const UpdateObserverList* FileSystemContext::GetUpdateObservers(
 const AccessObserverList* FileSystemContext::GetAccessObservers(
     FileSystemType type) const {
   // Currently access observer is only available in SandboxMountPointProvider.
-  if (SandboxMountPointProvider::IsSandboxType(type))
-    return sandbox_provider()->GetAccessObservers(type);
+  if (sandbox_provider_->CanHandleType(type))
+    return sandbox_provider_->GetAccessObservers(type);
   return NULL;
 }
 

@@ -17,7 +17,6 @@
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/common/quota/quota_types.h"
@@ -147,8 +146,7 @@ class FileSystemQuotaClientTest : public testing::Test {
       return false;
 
     FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
-    FileSystemFileUtil* file_util = file_system_context_->
-        sandbox_provider()->GetFileUtil(type);
+    FileSystemFileUtil* file_util = file_system_context_->GetFileUtil(type);
 
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL(origin_url), type, file_path);

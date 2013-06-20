@@ -32,7 +32,6 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 
 namespace fileapi {
 namespace {
@@ -62,7 +61,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     file_system_context_ =
         CreateFileSystemContextForTesting(NULL, temp_dir_.path());
 
-    file_system_context_->sandbox_provider()->OpenFileSystem(
+    file_system_context_->OpenFileSystem(
         GURL("http://remote/"), kFileSystemTypeTemporary,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&FileSystemURLRequestJobTest::OnOpenFileSystem,
@@ -84,7 +83,9 @@ class FileSystemURLRequestJobTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  void OnOpenFileSystem(base::PlatformFileError result) {
+  void OnOpenFileSystem(base::PlatformFileError result,
+                        const std::string& name,
+                        const GURL& root_url) {
     ASSERT_EQ(base::PLATFORM_FILE_OK, result);
   }
 
@@ -123,8 +124,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
   }
 
   void CreateDirectory(const base::StringPiece& dir_name) {
-    FileSystemFileUtil* file_util = file_system_context_->
-        sandbox_provider()->GetFileUtil(kFileSystemTypeTemporary);
+    FileSystemFileUtil* file_util = file_system_context_->GetFileUtil(
+        kFileSystemTypeTemporary);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"),
         kFileSystemTypeTemporary,
@@ -142,8 +143,8 @@ class FileSystemURLRequestJobTest : public testing::Test {
 
   void WriteFile(const base::StringPiece& file_name,
                  const char* buf, int buf_size) {
-    FileSystemFileUtil* file_util = file_system_context_->
-        sandbox_provider()->GetFileUtil(kFileSystemTypeTemporary);
+    FileSystemFileUtil* file_util = file_system_context_->GetFileUtil(
+        kFileSystemTypeTemporary);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"),
         kFileSystemTypeTemporary,

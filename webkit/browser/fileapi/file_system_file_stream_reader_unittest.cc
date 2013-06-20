@@ -20,7 +20,6 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 
 namespace fileapi {
 
@@ -70,7 +69,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
     file_system_context_ = CreateFileSystemContextForTesting(
         NULL, temp_dir_.path());
 
-    file_system_context_->sandbox_provider()->OpenFileSystem(
+    file_system_context_->OpenFileSystem(
         GURL(kURLOrigin), kFileSystemTypeTemporary,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&OnOpenFileSystem));
@@ -103,8 +102,8 @@ class FileSystemFileStreamReaderTest : public testing::Test {
                  const char* buf,
                  int buf_size,
                  base::Time* modification_time) {
-    FileSystemFileUtil* file_util = file_system_context_->
-        sandbox_provider()->GetFileUtil(kFileSystemTypeTemporary);
+    FileSystemFileUtil* file_util = file_system_context_->GetFileUtil(
+        kFileSystemTypeTemporary);
     FileSystemURL url = GetFileSystemURL(file_name);
 
     FileSystemOperationContext context(file_system_context_.get());
@@ -134,7 +133,9 @@ class FileSystemFileStreamReaderTest : public testing::Test {
   }
 
  private:
-  static void OnOpenFileSystem(base::PlatformFileError result) {
+  static void OnOpenFileSystem(base::PlatformFileError result,
+                               const std::string& name,
+                               const GURL& root_url) {
     ASSERT_EQ(base::PLATFORM_FILE_OK, result);
   }
 

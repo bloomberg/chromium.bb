@@ -19,10 +19,10 @@
 #include "content/public/common/url_constants.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
+#include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
-#include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 namespace content {
@@ -106,7 +106,7 @@ bool CheckFileSystemPermissionsForProcess(
       *error = base::PLATFORM_FILE_ERROR_SECURITY;
       return false;
     case fileapi::FILE_PERMISSION_ALWAYS_ALLOW:
-      CHECK(mount_point_provider == context->sandbox_provider());
+      CHECK(context->IsSandboxFileSystem(url.type()));
       return true;
     case fileapi::FILE_PERMISSION_USE_FILE_PERMISSION: {
       const bool success = policy->HasPermissionsForFile(
