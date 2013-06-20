@@ -2,15 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdio.h>
-#if defined(OS_POSIX)
-#include <unistd.h>
-#elif defined(OS_WIN)
-#include <windows.h>
-#endif
-
-#define TELEMETRY 1
-
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 
 namespace {
@@ -28,7 +19,6 @@ namespace {
 #define MAYBE_CrossOriginFail DISABLED_CrossOriginFail
 #define MAYBE_SameOriginCookie DISABLED_SameOriginCookie
 #define MAYBE_CORSNoCookie DISABLED_CORSNoCookie
-#define MAYBE_SysconfNprocessorsOnln DISABLED_SysconfNprocessorsOnln
 #else
 #define MAYBE_SimpleLoad SimpleLoad
 #define MAYBE_ExitStatus0 ExitStatus0
@@ -41,7 +31,6 @@ namespace {
 #define MAYBE_CrossOriginFail CrossOriginFail
 #define MAYBE_SameOriginCookie SameOriginCookie
 #define MAYBE_CORSNoCookie CORSNoCookie
-#define MAYBE_SysconfNprocessorsOnln SysconfNprocessorsOnln
 #endif
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SimpleLoad, {
@@ -73,61 +62,6 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ProgressEvents, {
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_PnaclMimeType, {
   RunLoadTest(FILE_PATH_LITERAL("pnacl_mime_type.html"));
-})
-
-// Some versions of Visual Studio does not like preprocessor
-// conditionals inside the argument of a macro, so we put the
-// conditionals on a helper function.  We are already in an anonymous
-// namespace, so the name of the helper is not visible in external
-// scope.
-#if defined(OS_POSIX)
-base::FilePath::StringType NumberOfCoresAsFilePathString() {
-  char string_rep[23];
-  long nprocessors = sysconf(_SC_NPROCESSORS_ONLN);
-#if TELEMETRY
-  fprintf(stderr, "browser says nprocessors = %ld\n", nprocessors);
-  fflush(NULL);
-#endif
-  snprintf(string_rep, sizeof string_rep, "%ld", nprocessors);
-  return string_rep;
-}
-#elif defined(OS_WIN)
-base::FilePath::StringType NumberOfCoresAsFilePathString() {
-  wchar_t string_rep[23];
-  SYSTEM_INFO system_info;
-  GetSystemInfo(&system_info);
-#if TELEMETRY
-  fprintf(stderr, "browser says nprocessors = %d\n",
-          system_info.dwNumberOfProcessors);
-  fflush(NULL);
-#endif
-  _snwprintf_s(string_rep, sizeof string_rep, _TRUNCATE, L"%u",
-               system_info.dwNumberOfProcessors);
-  return string_rep;
-}
-#endif
-
-#if TELEMETRY
-static void PathTelemetry(base::FilePath::StringType const &path) {
-# if defined(OS_WIN)
-    fwprintf(stderr, L"path = %s\n", path.c_str());
-# else
-    fprintf(stderr, "path = %s\n", path.c_str());
-# endif
-    fflush(NULL);
-}
-#else
-static void PathTelemetry(base::FilePath::StringType const &path) {
-  (void) path;
-}
-#endif
-
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SysconfNprocessorsOnln, {
-    base::FilePath::StringType path =
-      FILE_PATH_LITERAL("sysconf_nprocessors_onln_test.html?cpu_count=");
-    path = path + NumberOfCoresAsFilePathString();
-    PathTelemetry(path);
-    RunNaClIntegrationTest(path);
 })
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CrossOriginCORS) {
