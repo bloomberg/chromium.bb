@@ -68,8 +68,8 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
     TRACE_EVENT0("v8", "v8.compile");
     TraceEvent::SamplingState0Scope("V8\0V8Compile");
     v8::Handle<v8::String> name = v8String(fileName, isolate);
-    v8::Handle<v8::Integer> line = v8Integer(scriptStartPosition.m_line.zeroBasedInt(), isolate);
-    v8::Handle<v8::Integer> column = v8Integer(scriptStartPosition.m_column.zeroBasedInt(), isolate);
+    v8::Handle<v8::Integer> line = v8::Integer::New(scriptStartPosition.m_line.zeroBasedInt(), isolate);
+    v8::Handle<v8::Integer> column = v8::Integer::New(scriptStartPosition.m_column.zeroBasedInt(), isolate);
     v8::ScriptOrigin origin(name, line, column);
     return v8::Script::Compile(code, &origin, scriptData);
 }

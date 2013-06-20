@@ -80,30 +80,6 @@ private:
     RefPtr<StringImpl> m_lastStringImpl;
 };
 
-const int numberOfCachedSmallIntegers = 64;
-
-class IntegerCache {
-public:
-    IntegerCache();
-
-    v8::Handle<v8::Integer> v8Integer(int value, v8::Isolate* isolate)
-    {
-        if (0 <= value && value < numberOfCachedSmallIntegers)
-            return m_smallIntegers[value].get();
-        return v8::Integer::New(value, isolate);
-    }
-
-    v8::Handle<v8::Integer> v8UnsignedInteger(unsigned value, v8::Isolate* isolate)
-    {
-        if (value < static_cast<unsigned>(numberOfCachedSmallIntegers))
-            return m_smallIntegers[value].get();
-        return v8::Integer::NewFromUnsigned(value, isolate);
-    }
-
-private:
-    ScopedPersistent<v8::Integer> m_smallIntegers[numberOfCachedSmallIntegers];
-};
-
 } // namespace WebCore
 
 #endif // V8ValueCache_h

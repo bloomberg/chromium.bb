@@ -3784,7 +3784,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     }
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
-        v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+        v8names->Set(v8::Integer::New(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
     v8SetReturnValue(info, v8names);
 }
 
@@ -5361,20 +5361,18 @@ sub NativeToJSValue
     if ($extendedAttributes->{"Reflect"} and ($type eq "unsigned long" or $type eq "unsigned short")) {
         $nativeValue =~ s/getUnsignedIntegralAttribute/getIntegralAttribute/g;
         return "${indent}v8SetReturnValueUnsigned(${getHolderContainer}, std::max(0, ${nativeValue}));" if $isReturnValue;
-        return "$indent$receiver v8UnsignedInteger(std::max(0, " . $nativeValue . "), $getIsolate);";
+        return "$indent$receiver v8::Integer::NewFromUnsigned(std::max(0, " . $nativeValue . "), $getIsolate);";
     }
 
-    # For all the types where we use 'int' as the representation type,
-    # we use v8Integer() which has a fast small integer conversion check.
     my $nativeType = GetNativeType($type);
     if ($nativeType eq "int") {
         return "${indent}v8SetReturnValueInt(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
-        return "$indent$receiver v8Integer($nativeValue, $getIsolate);";
+        return "$indent$receiver v8::Integer::New($nativeValue, $getIsolate);";
     }
 
     if ($nativeType eq "unsigned") {
         return "${indent}v8SetReturnValueUnsigned(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
-        return "$indent$receiver v8UnsignedInteger($nativeValue, $getIsolate);";
+        return "$indent$receiver v8::Integer::NewFromUnsigned($nativeValue, $getIsolate);";
     }
 
     if ($type eq "Date") {

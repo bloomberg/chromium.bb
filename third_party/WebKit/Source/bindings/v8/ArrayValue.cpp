@@ -62,7 +62,7 @@ bool ArrayValue::get(size_t index, Dictionary& value) const
 
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
-    v8::Local<v8::Value> indexedValue = m_array->Get(v8UnsignedInteger(index, m_isolate));
+    v8::Local<v8::Value> indexedValue = m_array->Get(v8::Integer::NewFromUnsigned(index, m_isolate));
     if (indexedValue.IsEmpty() || !indexedValue->IsObject())
         return false;
 

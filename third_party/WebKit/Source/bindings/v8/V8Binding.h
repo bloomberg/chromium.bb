@@ -205,17 +205,6 @@ namespace WebCore {
         return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), handleType, isolate);
     }
 
-    inline v8::Handle<v8::Integer> v8Integer(int value, v8::Isolate* isolate)
-    {
-        return V8PerIsolateData::from(isolate)->integerCache()->v8Integer(value, isolate);
-    }
-
-    inline v8::Handle<v8::Integer> v8UnsignedInteger(unsigned value, v8::Isolate* isolate)
-    {
-        ASSERT(isolate);
-        return V8PerIsolateData::from(isolate)->integerCache()->v8UnsignedInteger(value, isolate);
-    }
-
     inline v8::Handle<v8::Value> v8Undefined()
     {
         return v8::Handle<v8::Value>();
@@ -241,7 +230,7 @@ namespace WebCore {
     struct V8ValueTraits<unsigned long> {
         static inline v8::Handle<v8::Value> arrayV8Value(const unsigned long& value, v8::Isolate* isolate)
         {
-            return v8UnsignedInteger(value, isolate);
+            return v8::Integer::NewFromUnsigned(value, isolate);
         }
     };
 
@@ -269,7 +258,7 @@ namespace WebCore {
         typename Vector<T, inlineCapacity>::const_iterator end = iterator.end();
         typedef V8ValueTraits<T> TraitsType;
         for (typename Vector<T, inlineCapacity>::const_iterator iter = iterator.begin(); iter != end; ++iter)
-            result->Set(v8Integer(index++, isolate), TraitsType::arrayV8Value(*iter, isolate));
+            result->Set(v8::Integer::New(index++, isolate), TraitsType::arrayV8Value(*iter, isolate));
         return result;
     }
 

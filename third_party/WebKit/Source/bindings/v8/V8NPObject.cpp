@@ -372,9 +372,9 @@ void npObjectPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info,
             for (uint32_t i = 0; i < count; ++i) {
                 IdentifierRep* identifier = static_cast<IdentifierRep*>(identifiers[i]);
                 if (namedProperty)
-                    properties->Set(v8Integer(i, info.GetIsolate()), v8::String::NewSymbol(identifier->string()));
+                    properties->Set(v8::Integer::New(i, info.GetIsolate()), v8::String::NewSymbol(identifier->string()));
                 else
-                    properties->Set(v8Integer(i, info.GetIsolate()), v8Integer(identifier->number(), info.GetIsolate()));
+                    properties->Set(v8::Integer::New(i, info.GetIsolate()), v8::Integer::New(identifier->number(), info.GetIsolate()));
             }
 
             v8SetReturnValue(info, properties);
