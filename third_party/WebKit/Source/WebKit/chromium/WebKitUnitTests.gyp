@@ -63,7 +63,11 @@
                 'src',
             ],
             'conditions': [
-                ['component!="shared_library"', {
+                ['component=="shared_library"', {
+                    'defines': [
+                        'WEBKIT_DLL_UNITTEST',
+                    ],
+                }, {
                     'dependencies': [
                         '../../core/core.gyp:webcore',
                     ],
