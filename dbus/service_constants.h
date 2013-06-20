@@ -1222,6 +1222,8 @@ const char kGetStatus[] = "GetStatus";
 const char kGetTrack[] = "GetTrack";
 const char kRebootIfNeeded[] = "RebootIfNeeded";
 const char kSetTrack[] = "SetTrack";
+const char kSetChannel[] = "SetChannel";
+const char kGetChannel[] = "GetChannel";
 
 // Signals.
 const char kStatusUpdate[] = "StatusUpdate";
