@@ -194,7 +194,9 @@ int MapOpenSSLError(int err, const crypto::OpenSSLErrStackTracer& tracer) {
     case SSL_ERROR_WANT_WRITE:
       return ERR_IO_PENDING;
     case SSL_ERROR_SYSCALL:
-      DVLOG(1) << "OpenSSL SYSCALL error, errno " << errno;
+      LOG(ERROR) << "OpenSSL SYSCALL error, earliest error code in "
+                    "error queue: " << ERR_peek_error() << ", errno: "
+                 << errno;
       return ERR_SSL_PROTOCOL_ERROR;
     case SSL_ERROR_SSL:
       return MapOpenSSLErrorSSL();
@@ -530,8 +532,9 @@ bool SSLClientSocketOpenSSL::Init() {
   STACK_OF(SSL_CIPHER)* ciphers = SSL_get_ciphers(ssl_);
   DCHECK(ciphers);
   // See SSLConfig::disabled_cipher_suites for description of the suites
-  // disabled by default.
-  std::string command("DEFAULT:!NULL:!aNULL:!IDEA:!FZA");
+  // disabled by default. Note that !SHA384 only removes HMAC-SHA384 cipher
+  // suites, not GCM cipher suites with SHA384 as the handshake hash.
+  std::string command("DEFAULT:!NULL:!aNULL:!IDEA:!FZA:!SRP:!SHA384:!aECDH");
   // Walk through all the installed ciphers, seeing if any need to be
   // appended to the cipher removal |command|.
   for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
