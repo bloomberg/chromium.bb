@@ -11,6 +11,11 @@ found in the LICENSE file.
   <title>{{title}}</title>
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="example.js"></script>
+  <style>
+    .result { padding-left: 10px; }
+    .ok { background-color: #0f0; }
+    .failed { background-color: #f00; }
+  </style>
 </head>
 <body {{attrs}}>
   <h1>{{title}}</h1>
@@ -18,6 +23,6 @@ found in the LICENSE file.
   <!-- The NaCl plugin will be embedded inside the element with id "listener".
       See common.js.-->
   <div id="listener"></div>
-  <pre id="log"></pre>
+  <ul id="tests" style="list-style:none;"></ul>
 </body>
 </html>

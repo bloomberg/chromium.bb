@@ -6,19 +6,77 @@ function moduleDidLoad() {
   // The module is not hidden by default so we can easily see if the plugin
   // failed to load.
   common.hideModule();
-  common.naclModule.postMessage('RunGTest');
+}
+
+var currentTestEl = null;
+
+function startCommand(testName) {
+  var testListEl = document.getElementById('tests');
+  var testEl = document.createElement('li');
+  var testRowEl = document.createElement('div');
+  var testNameEl = document.createElement('span');
+  var testResultEl = document.createElement('span');
+  testRowEl.classList.add('row');
+  testNameEl.classList.add('name');
+  testNameEl.textContent = testName;
+  testResultEl.classList.add('result');
+  testRowEl.appendChild(testNameEl);
+  testRowEl.appendChild(testResultEl);
+  testEl.appendChild(testRowEl);
+  testListEl.appendChild(testEl);
+
+  currentTestEl = testEl;
+}
+
+function failCommand(fileName, lineNumber, summary) {
+  var testMessageEl = document.createElement('pre');
+  testMessageEl.textContent += fileName + ':' + lineNumber + ': ' + summary;
+  currentTestEl.appendChild(testMessageEl);
+}
+
+function endCommand(testName, testResult) {
+  var testRowEl = currentTestEl.querySelector('.row');
+  var testResultEl = currentTestEl.querySelector('.result');
+  testRowEl.classList.add(testResult);
+  testResultEl.textContent = testResult;
 }
 
 function handleMessage(event) {
-  var logEl = document.getElementById('log');
   var msg = event.data;
+  var firstColon = msg.indexOf(':');
+  var cmd = msg.substr(0, firstColon);
+  var cmdFunctionName = cmd + 'Command';
+  var cmdFunction = window[cmdFunctionName];
 
-  // Perform some basic escaping.
-  msg = msg.replace(/&/g, '&amp;')
-           .replace(/</g, '&lt;')
-           .replace(/>/g, '&gt;')
-           .replace(/"/g, '&quot;')
-           .replace(/'/g, '&apos;');
+  if (typeof(cmdFunction) !== 'function') {
+    console.log('Unknown command: ' + cmd);
+    console.log('  message: ' + msg);
+    return;
+  }
 
-  logEl.innerHTML += msg + '\n';
+  var argCount = cmdFunction.length;
+
+  // Don't use split, because it will split all commas (for example any commas
+  // in the test failure summary).
+  var argList = msg.substr(firstColon + 1);
+  args = [];
+  for (var i = 0; i < argCount; ++i) {
+    var arg;
+    var comma = argList.indexOf(',');
+    if (comma === -1) {
+      if (i !== argCount - 1) {
+        console.log('Bad arg count to command "' + cmd + '", expected ' +
+                    argCount);
+        console.log('  message: ' + msg);
+      } else {
+        arg = argList;
+      }
+    } else {
+      arg = argList.substr(0, comma);
+      argList = argList.substr(comma + 1);
+    }
+    args.push(arg);
+  }
+
+  cmdFunction.apply(null, args);
 }

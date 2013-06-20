@@ -13,8 +13,8 @@
         'kernel_proxy_mock.h',
         'kernel_proxy_test.cc',
         'kernel_wrap_test.cc',
+        'main.cc',
         'mock_util.h',
-        'module.cc',
         'mount_node_test.cc',
         'mount_html5fs_test.cc',
         'mount_http_test.cc',
@@ -23,10 +23,10 @@
         'pepper_interface_mock.cc',
         'pepper_interface_mock.h',
       ],
-      'DEPS': ['nacl_io'],
+      'DEPS': ['ppapi_simple', 'nacl_io'],
       # Order matters here: gtest has a "main" function that will be used if
       # referenced before ppapi.
-      'LIBS': ['gtest_ppapi', 'gmock', 'ppapi_cpp', 'ppapi', 'gtest', 'pthread'],
+      'LIBS': ['gmock', 'ppapi_cpp', 'ppapi', 'gtest', 'pthread'],
       'INCLUDES': ['$(NACL_SDK_ROOT)/include/gtest/internal'],
     }
   ],

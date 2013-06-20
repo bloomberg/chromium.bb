@@ -85,11 +85,33 @@ extern void* PSUserCreateInstance(PP_Instance inst);
  * configuration information and optional extra arguments which are passed to
  * the 'main' function.  See the appropriate ppapi_simple_main(XX).h header.
  */
+#if defined(WIN32)
+
+/* In MSVC, ##__VA_ARGS does not remove the following comma, only the
+ * previous one. As a result, passing no extra arguments to
+ * PPAPI_SIMPLE_USE_MAIN yields:
+ *
+ * static const char* params[] = { , NULL, NULL };
+ *
+ * We work around this by always preceding it with a "NULL,". That way the
+ * previous comma is removed and the following comma takes its place. We then
+ * skip this initial bogus value when passing the array to the factory.
+ */
+#define PPAPI_SIMPLE_USE_MAIN(factory, func, ...)                         \
+void* PSUserCreateInstance(PP_Instance inst) {                            \
+  PPAPI_SIMPLE_DECLARE_PARAMS(params, NULL, ##__VA_ARGS__, NULL, NULL)    \
+  return factory(inst, func, params + 1);                                 \
+}
+
+#else
+
 #define PPAPI_SIMPLE_USE_MAIN(factory, func, ...)                   \
 void* PSUserCreateInstance(PP_Instance inst) {                      \
   PPAPI_SIMPLE_DECLARE_PARAMS(params, ##__VA_ARGS__, NULL, NULL)    \
   return factory(inst, func, params);                               \
 }
+
+#endif
 
 
 /**

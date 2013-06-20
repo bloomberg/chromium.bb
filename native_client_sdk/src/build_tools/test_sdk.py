@@ -25,17 +25,6 @@ sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 
 
-TEST_EXAMPLE_LIST = [
-  'nacl_io_test',
-]
-
-TEST_LIBRARY_LIST = [
-  'gmock',
-  'gtest',
-  'gtest_ppapi',
-]
-
-
 def BuildStepBuildExamples(pepperdir, platform):
   for config in ('Debug', 'Release'):
     build_sdk.BuildStepMakeAll(pepperdir, platform, 'examples',

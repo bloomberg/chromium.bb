@@ -565,6 +565,7 @@ lib/glibc_x86_64/Release/libsdk_util.so
 [win]lib/${PLATFORM}_x86_32_host/Debug/ppapi_cpp_private.lib
 [win]lib/${PLATFORM}_x86_32_host/Debug/ppapi_gles2.lib
 [win]lib/${PLATFORM}_x86_32_host/Debug/ppapi.lib
+[win]lib/${PLATFORM}_x86_32_host/Debug/ppapi_simple.lib
 [win]lib/${PLATFORM}_x86_32_host/Debug/pthread.lib
 [win]lib/${PLATFORM}_x86_32_host/Release/jsoncpp.lib
 [win]lib/${PLATFORM}_x86_32_host/Release/nacl_io.lib
@@ -572,6 +573,7 @@ lib/glibc_x86_64/Release/libsdk_util.so
 [win]lib/${PLATFORM}_x86_32_host/Release/ppapi_cpp_private.lib
 [win]lib/${PLATFORM}_x86_32_host/Release/ppapi_gles2.lib
 [win]lib/${PLATFORM}_x86_32_host/Release/ppapi.lib
+[win]lib/${PLATFORM}_x86_32_host/Release/ppapi_simple.lib
 [win]lib/${PLATFORM}_x86_32_host/Release/pthread.lib
 [win]lib/${PLATFORM}_x86_32_host/Debug/sdk_util.lib
 [win]lib/${PLATFORM}_x86_32_host/Release/sdk_util.lib

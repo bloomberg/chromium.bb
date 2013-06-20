@@ -33,6 +33,11 @@
 #include "ppapi_simple/ps_instance.h"
 #include "ppapi_simple/ps_main.h"
 
+#if defined(WIN32)
+#define open _open
+#define dup2 _dup2
+#endif
+
 static PSInstance* s_InstanceObject = NULL;
 
 PSInstance* PSInstance::GetInstance() {
@@ -216,8 +221,10 @@ bool PSInstance::ProcessProperties() {
   dup2(fd2, 2);
 
   // Set line buffering on stdout and stderr
+#if !defined(WIN32)
   setvbuf(stderr, NULL, _IOLBF, 0);
   setvbuf(stdout, NULL, _IOLBF, 0);
+#endif
   return true;
 }
 
