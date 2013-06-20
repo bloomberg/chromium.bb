@@ -47,8 +47,6 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
-#include "chrome/browser/chromeos/system/statistics_provider.h"
-#include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -187,18 +185,8 @@ void WizardController::Init(
   screen_parameters_ = screen_parameters.Pass();
 
   bool oobe_complete = StartupUtils::IsOobeCompleted();
-  if (!oobe_complete || first_screen_name == kOutOfBoxScreenName) {
+  if (!oobe_complete || first_screen_name == kOutOfBoxScreenName)
     is_out_of_box_ = true;
-
-    bool keyboard_driven_oobe = false;
-    system::StatisticsProvider::GetInstance()->GetMachineFlag(
-        chromeos::system::kOemKeyboardDrivenOobeKey,
-        &keyboard_driven_oobe);
-    if (keyboard_driven_oobe) {
-      focus_ring_controller_.reset(new FocusRingController);
-      focus_ring_controller_->SetVisible(true);
-    }
-  }
 
   AdvanceToScreen(first_screen_name);
   content::NotificationService::current()->Notify(

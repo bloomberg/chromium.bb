@@ -27,8 +27,9 @@ void FocusRingController::SetVisible(bool visible) {
 
   if (visible_) {
     views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
-    SetWidget(views::Widget::GetWidgetForNativeWindow(
-        ash::wm::GetActiveWindow()));
+    aura::Window* active_window = ash::wm::GetActiveWindow();
+    if (active_window)
+      SetWidget(views::Widget::GetWidgetForNativeWindow(active_window));
   } else {
     views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
     SetWidget(NULL);
@@ -86,7 +87,8 @@ void FocusRingController::OnWidgetBoundsChanged(views::Widget* widget,
 
 void FocusRingController::OnNativeFocusChange(gfx::NativeView focused_before,
                                               gfx::NativeView focused_now) {
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(focused_now);
+  views::Widget* widget =
+      focused_now ? views::Widget::GetWidgetForNativeWindow(focused_now) : NULL;
   SetWidget(widget);
 }
 

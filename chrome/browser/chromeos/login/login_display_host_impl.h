@@ -29,6 +29,7 @@ class AutoEnrollmentClient;
 
 namespace chromeos {
 
+class FocusRingController;
 class OobeUI;
 class WebUILoginDisplay;
 class WebUILoginView;
@@ -220,6 +221,10 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Active instance of authentication prewarmer.
   scoped_ptr<AuthPrewarmer> auth_prewarmer_;
+
+  // A focus ring controller to draw focus ring around view for keyboard
+  // driven oobe.
+  scoped_ptr<FocusRingController> focus_ring_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostImpl);
 };

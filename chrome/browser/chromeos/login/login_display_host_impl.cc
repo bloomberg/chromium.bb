@@ -42,6 +42,7 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -263,8 +264,12 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   system::StatisticsProvider::GetInstance()->GetMachineFlag(
       chromeos::system::kOemKeyboardDrivenOobeKey,
       &keyboard_driven_oobe);
-  if (keyboard_driven_oobe)
+  if (keyboard_driven_oobe) {
     views::FocusManager::set_arrow_key_traversal_enabled(true);
+
+    focus_ring_controller_.reset(new FocusRingController);
+    focus_ring_controller_->SetVisible(true);
+  }
 }
 
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {
