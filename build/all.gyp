@@ -227,6 +227,7 @@
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components.gyp:components_unittests',
             '../content/content.gyp:content_browsertests',
+            '../content/content.gyp:content_shell',
             '../content/content.gyp:content_unittests',
             '../device/device.gyp:device_unittests',
             '../gpu/gpu.gyp:gpu_unittests',
