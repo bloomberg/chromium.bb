@@ -76,7 +76,10 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   virtual ~IdentityGetAuthTokenFunction();
 
  private:
-  friend class GetAuthTokenFunctionTest;
+  FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest,
+                           ComponentWithChromeClientId);
+  FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest,
+                           ComponentWithNormalClientId);
   friend class MockGetAuthTokenFunction;
 
   // ExtensionFunction:
@@ -130,12 +133,15 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   // developer in chrome.runtime.lastError.
   std::string MapOAuth2ErrorToDescription(const std::string& error);
 
+  std::string GetOAuth2ClientId() const;
+
   bool should_prompt_for_scopes_;
   IdentityMintRequestQueue::MintType mint_token_flow_type_;
   scoped_ptr<OAuth2MintTokenFlow> mint_token_flow_;
   std::string refresh_token_;
   bool should_prompt_for_signin_;
 
+  std::string oauth2_client_id_;
   // When launched in interactive mode, and if there is no existing grant,
   // a permissions prompt will be popped up to the user.
   IssueAdviceInfo issue_advice_;

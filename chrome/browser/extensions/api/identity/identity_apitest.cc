@@ -315,7 +315,8 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
   enum OAuth2Fields {
     NONE = 0,
     CLIENT_ID = 1,
-    SCOPES = 2
+    SCOPES = 2,
+    AS_COMPONENT = 4
   };
 
   virtual ~GetAuthTokenFunctionTest() {}
@@ -323,10 +324,17 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
   // Helper to create an extension with specific OAuth2Info fields set.
   // |fields_to_set| should be computed by using fields of Oauth2Fields enum.
   const Extension* CreateExtension(int fields_to_set) {
-    const Extension* ext = LoadExtension(
-        test_data_dir_.AppendASCII("platform_apps/oauth2"));
-    OAuth2Info& oauth2_info = const_cast<OAuth2Info&>(
-        OAuth2Info::GetOAuth2Info(ext));
+    const Extension* ext;
+    base::FilePath manifest_path =
+        test_data_dir_.AppendASCII("platform_apps/oauth2");
+    base::FilePath component_manifest_path =
+        test_data_dir_.AppendASCII("packaged_app/component_oauth2");
+    if ((fields_to_set & AS_COMPONENT) == 0)
+      ext = LoadExtension(manifest_path);
+    else
+      ext = LoadExtensionAsComponent(component_manifest_path);
+    OAuth2Info& oauth2_info =
+        const_cast<OAuth2Info&>(OAuth2Info::GetOAuth2Info(ext));
     if ((fields_to_set & CLIENT_ID) != 0)
       oauth2_info.client_id = "client1";
     if ((fields_to_set & SCOPES) != 0) {
@@ -932,6 +940,25 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             id_api()->GetCachedToken(extension->id(),
                                      oauth2_info.scopes).status());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithChromeClientId) {
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(
+      CreateExtension(SCOPES | AS_COMPONENT));
+  func->set_extension(extension.get());
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
+  EXPECT_TRUE(oauth2_info.client_id.empty());
+  EXPECT_FALSE(func->GetOAuth2ClientId().empty());
+  EXPECT_NE("client1", func->GetOAuth2ClientId());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithNormalClientId) {
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  scoped_refptr<const Extension> extension(
+      CreateExtension(CLIENT_ID | SCOPES | AS_COMPONENT));
+  func->set_extension(extension.get());
+  EXPECT_EQ("client1", func->GetOAuth2ClientId());
 }
 
 class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {

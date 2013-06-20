@@ -31,6 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -88,7 +89,8 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
 
   // Check that the necessary information is present in the manifest.
-  if (oauth2_info.client_id.empty()) {
+  oauth2_client_id_ = GetOAuth2ClientId();
+  if (oauth2_client_id_.empty()) {
     error_ = identity_constants::kInvalidClientId;
     return false;
   }
@@ -330,8 +332,6 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowFailure(
       error = MapOAuth2ErrorToDescription(oauth_error);
       break;
 
-      // TODO(courage): load failure tests
-
     case GaiaWebAuthFlow::LOAD_FAILED:
       error = identity_constants::kPageLoadFailure;
       break;
@@ -387,6 +387,7 @@ void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
 OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
     OAuth2MintTokenFlow::Mode mode) {
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+
   OAuth2MintTokenFlow* mint_token_flow =
       new OAuth2MintTokenFlow(
           profile()->GetRequestContext(),
@@ -394,7 +395,7 @@ OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
           OAuth2MintTokenFlow::Parameters(
               refresh_token_,
               GetExtension()->id(),
-              oauth2_info.client_id,
+              oauth2_client_id_,
               oauth2_info.scopes,
               mode));
 #if defined(OS_CHROMEOS)
@@ -427,6 +428,19 @@ std::string IdentityGetAuthTokenFunction::MapOAuth2ErrorToDescription(
     return std::string(identity_constants::kInvalidScopes);
   else
     return std::string(identity_constants::kAuthFailure) + error;
+}
+
+std::string IdentityGetAuthTokenFunction::GetOAuth2ClientId() const {
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  std::string client_id = oauth2_info.client_id;
+
+  // Component apps using auto_approve may use Chrome's client ID by
+  // omitting the field.
+  if (client_id.empty() && GetExtension()->location() == Manifest::COMPONENT &&
+      oauth2_info.auto_approve) {
+    client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+  }
+  return client_id;
 }
 
 IdentityRemoveCachedAuthTokenFunction::IdentityRemoveCachedAuthTokenFunction() {

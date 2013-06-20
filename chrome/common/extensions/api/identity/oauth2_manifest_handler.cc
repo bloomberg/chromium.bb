@@ -48,9 +48,26 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
                                   string16* error) {
   scoped_ptr<OAuth2Info> info(new OAuth2Info);
   const base::DictionaryValue* dict = NULL;
-  if (!extension->manifest()->GetDictionary(keys::kOAuth2, &dict) ||
-      !dict->GetString(kClientId, &info->client_id) ||
-      info->client_id.empty()) {
+  if (!extension->manifest()->GetDictionary(keys::kOAuth2, &dict)) {
+    *error = ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
+    return false;
+  }
+
+  // HasPath checks for whether the manifest is allowed to have
+  // oauth2.auto_approve based on whitelist, and if it is present.
+  // GetBoolean reads the value of auto_approve directly from dict to prevent
+  // duplicate checking.
+  if (extension->manifest()->HasPath(keys::kOAuth2AutoApprove) &&
+      !dict->GetBoolean(kAutoApprove, &info->auto_approve)) {
+    *error = ASCIIToUTF16(errors::kInvalidOAuth2AutoApprove);
+    return false;
+  }
+
+  // Component apps using auto_approve may use Chrome's client ID by
+  // omitting the field.
+  if ((!dict->GetString(kClientId, &info->client_id) ||
+       info->client_id.empty()) &&
+      (extension->location() != Manifest::COMPONENT || !info->auto_approve)) {
     *error = ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
     return false;
   }
@@ -68,16 +85,6 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
       return false;
     }
     info->scopes.push_back(scope);
-  }
-
-  // HasPath checks for whether the manifest is allowed to have
-  // oauth2.auto_approve based on whitelist, and if it is present.
-  // GetBoolean reads the value of auto_approve directly from dict to prevent
-  // duplicate checking.
-  if (extension->manifest()->HasPath(keys::kOAuth2AutoApprove) &&
-      !dict->GetBoolean(kAutoApprove, &info->auto_approve)) {
-    *error = ASCIIToUTF16(errors::kInvalidOAuth2AutoApprove);
-    return false;
   }
 
   extension->SetManifestData(keys::kOAuth2, info.release());
