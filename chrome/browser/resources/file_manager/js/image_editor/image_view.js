@@ -429,9 +429,8 @@ ImageView.prototype.load = function(url, metadata, effect,
   }
 
   function displayMainImage(loadType, previewShown, content, opt_error) {
-    if (opt_error) {
+    if (opt_error)
       loadType = ImageView.LOAD_TYPE_ERROR;
-    }
 
     // If we already displayed the preview we should not replace the content if:
     //   1. The full content failed to load.
@@ -550,6 +549,7 @@ ImageView.prototype.replaceContent_ = function(
     this.videoElement_ = content;
     this.screenImage_ = content;
     this.screenImage_.className = 'image';
+    this.videoElement_.play();
     return;
   }
 
@@ -638,6 +638,7 @@ ImageView.prototype.replace = function(
   if (!opt_effect) {
     if (oldScreenImage)
       oldScreenImage.parentNode.removeChild(oldScreenImage);
+    this.container_.appendChild(content);
     return;
   }
 
