@@ -7266,3 +7266,11 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7WebCore12ThreadTimers16sharedTimerFiredEv
    fun:_ZN11webkit_glue25WebKitPlatformSupportImpl9DoTimeoutEv
 }
+{
+   bug_251827
+   Memcheck:Leak
+   fun:_Zna*
+   fun:_ZN5media*scoped_refptrINS_11AudioBufferEENS_12SampleFormatEiT_S5_iN4base9TimeDeltaE
+   fun:_ZN5media*AudioBufferTest*
+}
+
