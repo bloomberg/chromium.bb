@@ -568,6 +568,16 @@ void PanelView::FullScreenModeChanged(bool is_full_screen) {
       window_->Hide();
   } else {
     ShowPanelInactive();
+
+#if defined(OS_WIN)
+    // When hiding and showing again a top-most window that belongs to a
+    // background application (i.e. the application is not a foreground one),
+    // the window may loose top-most placement even though its WS_EX_TOPMOST
+    // bit is still set. Re-issuing SetWindowsPos() returns the window to its
+    // top-most placement.
+    if (always_on_top_)
+      window_->SetAlwaysOnTop(true);
+#endif
   }
 }
 
