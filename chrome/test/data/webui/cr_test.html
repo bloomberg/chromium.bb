@@ -3,23 +3,18 @@
 <head>
 <title></title>
 <style>
-
 </style>
-<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
-<script src="cr.js"></script>
-<script src="cr/event_target.js"></script>
-<script>
-
-goog.require('goog.testing.jsunit');
-
-</script>
-
+<script src="webui_resource_test.js"></script>
 </head>
 <body>
 
 <script>
 
-const EventTarget = cr.EventTarget;
+var EventTarget;
+
+function setUp() {
+  EventTarget = cr.EventTarget;
+}
 
 function testDefineProperty() {
   var obj = new EventTarget;
@@ -39,7 +34,7 @@ function testDefinePropertyOnClass() {
   cr.defineProperty(C, 'test');
 
   var obj = new C;
-  assertUndefined(obj.test);
+  assertEquals(undefined, obj.test);
 
   obj.test = 1;
   assertEquals(1, obj.test);
@@ -53,7 +48,7 @@ function testDefinePropertyWithSetter() {
   function onTestSet(value, oldValue) {
     assertEquals(obj, this);
     assertEquals(2, this.test);
-    assertUndefined(oldValue);
+    assertEquals(undefined, oldValue);
     assertEquals(2, value);
     hit = true;
   }
@@ -79,7 +74,7 @@ function testDefinePropertyEvent() {
   obj.addEventListener('testChange', f);
   obj.test = 2;
   assertEquals(2, obj.test);
-  assertEquals('Should have called the property change listener', 1, count);
+  assertEquals(1, count, 'Should have called the property change listener');
 
   obj.test = 2;
   assertEquals(1, count);
@@ -93,7 +88,7 @@ function testDefinePropertyEventWithDefault() {
   function f(e) {
     assertEquals('testChange', e.type);
     assertEquals('test', e.propertyName);
-    assertUndefined(e.oldValue);
+    assertEquals(undefined, e.oldValue);
     assertEquals(2, e.newValue);
     count++;
   }
@@ -101,11 +96,11 @@ function testDefinePropertyEventWithDefault() {
   obj.addEventListener('testChange', f);
 
   obj.test = undefined;
-  assertEquals('Should not have called the property change listener', 0, count);
+  assertEquals(0, count, 'Should not have called the property change listener');
 
   obj.test = 2;
   assertEquals(2, obj.test);
-  assertEquals('Should have called the property change listener', 1, count);
+  assertEquals(1, count, 'Should have called the property change listener');
 
   obj.test = 2;
   assertEquals(1, count);
@@ -120,7 +115,7 @@ function testDefinePropertyAttr() {
   assertEquals('a', obj.getAttribute('test'));
 
   obj.test = undefined;
-  assertEquals(undefined, obj.test);
+  assertEquals(null, obj.test);
   assertFalse(obj.hasAttribute('test'));
 }
 
@@ -135,7 +130,7 @@ function testDefinePropertyAttrOnClass() {
   assertEquals('a', obj.getAttribute('test'));
 
   obj.test = undefined;
-  assertEquals(undefined, obj.test);
+  assertEquals(null, obj.test);
   assertFalse(obj.hasAttribute('test'));
 }
 
@@ -171,11 +166,11 @@ function testDefinePropertyAttrEvent() {
   obj.addEventListener('testChange', f);
 
   obj.test = null;
-  assertEquals('Should not have called the property change listener', 0, count);
+  assertEquals(0, count, 'Should not have called the property change listener');
 
   obj.test = 'b';
   assertEquals('b', obj.test);
-  assertEquals('Should have called the property change listener', 1, count);
+  assertEquals(1, count, 'Should have called the property change listener');
 
   obj.test = 'b';
   assertEquals(1, count);
@@ -213,7 +208,7 @@ function testDefinePropertyBoolAttrEvent() {
   obj.addEventListener('testChange', f);
   obj.test = true;
   assertTrue(obj.test);
-  assertEquals('Should have called the property change listener', 1, count);
+  assertEquals(1, count, 'Should have called the property change listener');
 
   obj.test = true;
   assertEquals(1, count);
@@ -238,33 +233,24 @@ function testAddSingletonGetter() {
   function Foo() {};
   cr.addSingletonGetter(Foo);
 
-  assertNotNull('Should add get instance function', Foo.getInstance);
+  assertEquals('function', typeof Foo.getInstance,
+      'Should add get instance function');
 
   var x = Foo.getInstance();
-  assertNotNull('Should successfully create an object', x);
+  assertEquals('object', typeof x, 'Should successfully create an object');
+  assertNotEqual(null, x, 'Created object should not be null');
 
   var y = Foo.getInstance();
-  assertEquals('Should return the same object', x, y);
+  assertEquals(x, y, 'Should return the same object');
 
   delete Foo.instance_;
 
   var z = Foo.getInstance();
-  assertNotNull('Should work after clearing for testing', z);
+  assertEquals('object', typeof z, 'Should work after clearing for testing');
+  assertNotEqual(null, z, 'Created object should not be null');
 
-  assertNotEquals('Should return a different object after clearing for testing',
-      x, z);
-}
-
-function testWithDoc() {
-  var d = {};
-
-  assertEquals(document, cr.doc);
-
-  cr.withDoc(d, function() {
-    assertEquals(d, cr.doc);
-  });
-
-  assertEquals(document, cr.doc);
+  assertNotEqual(x, z, 
+      'Should return a different object after clearing for testing');
 }
 
 function testDefineWithGetter() {

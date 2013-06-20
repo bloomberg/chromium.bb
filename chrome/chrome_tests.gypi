@@ -1165,6 +1165,7 @@
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
+        '../ui/ui.gyp:webui_test_support',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/plugins/webkit_plugins.gyp:test_mock_plugin_list',
         # Runtime dependencies
@@ -1724,6 +1725,7 @@
         'test/data/webui/print_preview.h',
         'test/data/webui/print_preview.js',
         'test/data/webui/sandboxstatus_browsertest.js',
+        'test/data/webui/webui_resource_browsertest.cc',
         'test/gpu/gpu_feature_browsertest.cc',
         'test/gpu/webgl_infobar_browsertest.cc',
         'test/ppapi/ppapi_browsertest.cc',

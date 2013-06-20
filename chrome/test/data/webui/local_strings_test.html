@@ -2,11 +2,7 @@
 <html>
 <head>
 <title>LocalStrings Tests</title>
-<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
-<script src="local_strings.js"></script>
-<script>
-goog.require('goog.testing.jsunit');
-</script>
+<script src="webui_resource_test.js"></script>
 </head>
 <body>
 <script>
@@ -19,7 +15,19 @@ function testGetString() {
   };
   assertEquals(localStrings.getString('a'), 'apple');
   assertEquals(localStrings.getString('b'), 'banana');
-  assertEquals(localStrings.getString('c'), '');
+
+  var warnings = [];
+  var consoleWarn = console.warn;
+  console.warn = function(n) {
+    warnings.push(n);
+  };
+  try {
+    assertEquals(localStrings.getString('blah'), undefined);
+  } finally {
+    console.warn = consoleWarn;
+  }
+  assertEquals(1, warnings.length);
+  assertTrue(warnings[0].indexOf('blah') > 0);
 }
 
 function testGetStringF() {
@@ -40,7 +48,9 @@ function testGetStringF() {
                'Aundefinedundefined');
   assertEquals(localStrings.getStringF('d', 'A', 'B', 'C',
                'D', 'E', 'F', 'G', 'H', 'I'), 'ABCDEFGHI');
-  assertEquals(localStrings.getStringF('e', 'A'), '');
+  assertThrows(function() {
+    localStrings.getStringF('e', 'A');
+  });
 }
 
 </script>
