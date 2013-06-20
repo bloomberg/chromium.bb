@@ -37,7 +37,7 @@ const char kRemoteContent[] = "World!";
 
 // SyncClientTestDriveService will return GDATA_CANCELLED when a request is
 // made with the specified resource ID.
-class SyncClientTestDriveService : public google_apis::FakeDriveService {
+class SyncClientTestDriveService : public ::drive::FakeDriveService {
  public:
   // FakeDriveService override:
   virtual google_apis::CancelCallback GetResourceEntry(

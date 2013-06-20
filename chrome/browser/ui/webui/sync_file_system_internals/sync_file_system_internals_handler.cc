@@ -20,7 +20,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 
-using google_apis::EventLogger;
+using drive::EventLogger;
 using sync_file_system::SyncFileSystemServiceFactory;
 using sync_file_system::SyncServiceState;
 
@@ -90,8 +90,8 @@ void SyncFileSystemInternalsHandler::GetServiceStatus(
 
 void SyncFileSystemInternalsHandler::GetNotificationSource(
     const base::ListValue* args) {
-  google_apis::DriveNotificationManager* drive_notification_manager =
-      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
+  drive::DriveNotificationManager* drive_notification_manager =
+      drive::DriveNotificationManagerFactory::GetForProfile(profile_);
   bool xmpp_enabled = drive_notification_manager->push_notification_enabled();
   std::string notification_source = xmpp_enabled ? "XMPP" : "Polling";
   web_ui()->CallJavascriptFunction("SyncService.onGetNotificationSource",

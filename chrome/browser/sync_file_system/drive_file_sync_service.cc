@@ -121,8 +121,8 @@ DriveFileSyncService::~DriveFileSyncService() {
   if (api_util_)
     api_util_->RemoveObserver(this);
 
-  google_apis::DriveNotificationManager* drive_notification_manager =
-      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
+  ::drive::DriveNotificationManager* drive_notification_manager =
+      ::drive::DriveNotificationManagerFactory::GetForProfile(profile_);
   if (drive_notification_manager)
     drive_notification_manager->RemoveObserver(this);
 }
@@ -437,8 +437,8 @@ void DriveFileSyncService::DidInitializeMetadataStore(
   callback.Run(status);
   may_have_unfetched_changes_ = true;
 
-  google_apis::DriveNotificationManager* drive_notification_manager =
-      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
+  ::drive::DriveNotificationManager* drive_notification_manager =
+      ::drive::DriveNotificationManagerFactory::GetForProfile(profile_);
   if (drive_notification_manager)
     drive_notification_manager->AddObserver(this);
 }
@@ -1684,7 +1684,7 @@ bool DriveFileSyncService::GetOriginForEntry(
       continue;
 
     std::string resource_id(
-        google_apis::drive::util::ExtractResourceIdFromUrl((*itr)->href()));
+        ::drive::util::ExtractResourceIdFromUrl((*itr)->href()));
     if (resource_id.empty())
       continue;
 

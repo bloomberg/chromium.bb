@@ -72,7 +72,7 @@ void GetFileCallbackToFileOperationCallbackAdapter(
 FileSystem::FileSystem(
     Profile* profile,
     internal::FileCache* cache,
-    google_apis::DriveServiceInterface* drive_service,
+    DriveServiceInterface* drive_service,
     JobScheduler* scheduler,
     internal::ResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner,

@@ -57,7 +57,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
                              public SyncTaskManager::Client,
                              public base::NonThreadSafe,
                              public base::SupportsWeakPtr<DriveFileSyncService>,
-                             public google_apis::DriveNotificationObserver {
+                             public ::drive::DriveNotificationObserver {
  public:
   enum ConflictResolutionResult {
     CONFLICT_RESOLUTION_MARK_CONFLICT,
@@ -130,7 +130,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual void OnAuthenticated() OVERRIDE;
   virtual void OnNetworkConnected() OVERRIDE;
 
-  // google_apis::DriveNotificationObserver implementation.
+  // ::drive::DriveNotificationObserver implementation.
   virtual void OnNotificationReceived() OVERRIDE;
   virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
 

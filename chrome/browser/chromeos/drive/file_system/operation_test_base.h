@@ -20,12 +20,9 @@ namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace google_apis {
-class FakeDriveService;
-}  // namespace google_apis
-
 namespace drive {
 
+class FakeDriveService;
 class FakeFreeDiskSpaceGetter;
 class JobScheduler;
 
@@ -84,7 +81,7 @@ class OperationTestBase : public testing::Test {
                                   ResourceEntry* entry);
 
   // Accessors for the components.
-  google_apis::FakeDriveService* fake_service() {
+  FakeDriveService* fake_service() {
     return fake_drive_service_.get();
   }
   LoggingObserver* observer() { return &observer_; }
@@ -105,7 +102,7 @@ class OperationTestBase : public testing::Test {
   base::ScopedTempDir temp_dir_;
 
   LoggingObserver observer_;
-  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       metadata_;

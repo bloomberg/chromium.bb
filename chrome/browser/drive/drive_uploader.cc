@@ -18,8 +18,22 @@
 #include "content/public/browser/power_save_blocker.h"
 
 using content::BrowserThread;
+using google_apis::CancelCallback;
+using google_apis::GDATA_CANCELLED;
+using google_apis::GDataErrorCode;
+using google_apis::GDATA_NO_SPACE;
+using google_apis::HTTP_CONFLICT;
+using google_apis::HTTP_CREATED;
+using google_apis::HTTP_FORBIDDEN;
+using google_apis::HTTP_NOT_FOUND;
+using google_apis::HTTP_PRECONDITION;
+using google_apis::HTTP_RESUME_INCOMPLETE;
+using google_apis::HTTP_SUCCESS;
+using google_apis::ProgressCallback;
+using google_apis::ResourceEntry;
+using google_apis::UploadRangeResponse;
 
-namespace google_apis {
+namespace drive {
 
 // Structure containing current upload information of file, passed between
 // DriveServiceInterface methods and callbacks.
@@ -408,4 +422,4 @@ void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
       error, upload_file_info->upload_location, scoped_ptr<ResourceEntry>());
 }
 
-}  // namespace google_apis
+}  // namespace drive

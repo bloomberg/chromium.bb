@@ -339,7 +339,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
   // DriveIntegrationService factory function for this test.
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
-    fake_drive_service_ = new google_apis::FakeDriveService;
+    fake_drive_service_ = new drive::FakeDriveService;
     fake_drive_service_->LoadResourceListForWapi(kTestRootFeed);
     fake_drive_service_->LoadAccountMetadataForWapi(
         "chromeos/gdata/account_metadata.json");
@@ -352,7 +352,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
   }
 
   base::ScopedTempDir test_cache_root_;
-  google_apis::FakeDriveService* fake_drive_service_;
+  drive::FakeDriveService* fake_drive_service_;
 };
 
 //

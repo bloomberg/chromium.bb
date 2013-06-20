@@ -24,8 +24,50 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using google_apis::AppList;
+using google_apis::AuthorizeAppCallback;
+using google_apis::CancelCallback;
+using google_apis::ChangeList;
+using google_apis::DownloadActionCallback;
+using google_apis::DownloadFileRequest;
+using google_apis::EntryActionCallback;
+using google_apis::FileList;
+using google_apis::FileResource;
+using google_apis::GDATA_OTHER_ERROR;
+using google_apis::GDATA_PARSE_ERROR;
+using google_apis::GDataErrorCode;
+using google_apis::GetAboutRequest;
+using google_apis::GetAboutResourceCallback;
+using google_apis::GetAppListCallback;
+using google_apis::GetApplistRequest;
+using google_apis::GetChangelistRequest;
+using google_apis::GetContentCallback;
+using google_apis::GetFileRequest;
+using google_apis::GetFilelistRequest;
+using google_apis::GetResourceEntryCallback;
+using google_apis::GetResourceListCallback;
+using google_apis::HTTP_SUCCESS;
+using google_apis::InitiateUploadCallback;
+using google_apis::ProgressCallback;
+using google_apis::RequestSender;
+using google_apis::ResourceEntry;
+using google_apis::ResourceList;
+using google_apis::UploadRangeCallback;
+using google_apis::UploadRangeResponse;
+using google_apis::drive::ContinueGetFileListRequest;
+using google_apis::drive::CopyResourceRequest;
+using google_apis::drive::CreateDirectoryRequest;
+using google_apis::drive::DeleteResourceRequest;
+using google_apis::drive::GetUploadStatusRequest;
+using google_apis::drive::InitiateUploadExistingFileRequest;
+using google_apis::drive::InitiateUploadNewFileRequest;
+using google_apis::drive::InsertResourceRequest;
+using google_apis::drive::RenameResourceRequest;
+using google_apis::drive::ResumeUploadRequest;
+using google_apis::drive::TouchResourceRequest;
+using google_apis::drive::TrashResourceRequest;
 
-namespace google_apis {
+namespace drive {
 
 namespace {
 
@@ -391,7 +433,7 @@ CancelCallback DriveAPIService::ContinueGetResourceList(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::ContinueGetFileListRequest(
+      new ContinueGetFileListRequest(
           sender_.get(),
           url_request_context_getter_,
           override_url,
@@ -464,7 +506,7 @@ CancelCallback DriveAPIService::DeleteResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(new drive::TrashResourceRequest(
+  return sender_->StartRequestWithRetry(new TrashResourceRequest(
       sender_.get(),
       url_request_context_getter_,
       url_generator_,
@@ -480,7 +522,7 @@ CancelCallback DriveAPIService::AddNewDirectory(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::CreateDirectoryRequest(
+      new CreateDirectoryRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -498,7 +540,7 @@ CancelCallback DriveAPIService::CopyResource(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::CopyResourceRequest(
+      new CopyResourceRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -516,7 +558,7 @@ CancelCallback DriveAPIService::CopyHostedDocument(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::CopyResourceRequest(
+      new CopyResourceRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -534,7 +576,7 @@ CancelCallback DriveAPIService::RenameResource(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::RenameResourceRequest(
+      new RenameResourceRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -554,7 +596,7 @@ CancelCallback DriveAPIService::TouchResource(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::TouchResourceRequest(
+      new TouchResourceRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -572,7 +614,7 @@ CancelCallback DriveAPIService::AddResourceToDirectory(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::InsertResourceRequest(
+      new InsertResourceRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -589,7 +631,7 @@ CancelCallback DriveAPIService::RemoveResourceFromDirectory(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::DeleteResourceRequest(
+      new DeleteResourceRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -609,7 +651,7 @@ CancelCallback DriveAPIService::InitiateUploadNewFile(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::InitiateUploadNewFileRequest(
+      new InitiateUploadNewFileRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -631,7 +673,7 @@ CancelCallback DriveAPIService::InitiateUploadExistingFile(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::InitiateUploadExistingFileRequest(
+      new InitiateUploadExistingFileRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -656,7 +698,7 @@ CancelCallback DriveAPIService::ResumeUpload(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new drive::ResumeUploadRequest(
+      new ResumeUploadRequest(
           sender_.get(),
           url_request_context_getter_,
           upload_url,
@@ -677,7 +719,7 @@ CancelCallback DriveAPIService::GetUploadStatus(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithRetry(new drive::GetUploadStatusRequest(
+  return sender_->StartRequestWithRetry(new GetUploadStatusRequest(
       sender_.get(),
       url_request_context_getter_,
       upload_url,
@@ -733,4 +775,4 @@ void DriveAPIService::OnOAuth2RefreshTokenChanged() {
   }
 }
 
-}  // namespace google_apis
+}  // namespace drive

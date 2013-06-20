@@ -34,13 +34,13 @@ struct UploadNewFileParams {
   base::FilePath local_file_path;
   std::string title;
   std::string content_type;
-  google_apis::UploadCompletionCallback callback;
+  UploadCompletionCallback callback;
   google_apis::ProgressCallback progress_callback;
 };
 
 // Helper function to work around the arity limitation of base::Bind.
 google_apis::CancelCallback RunUploadNewFile(
-    google_apis::DriveUploaderInterface* uploader,
+    DriveUploaderInterface* uploader,
     const UploadNewFileParams& params) {
   return uploader->UploadNewFile(params.parent_resource_id,
                                  params.drive_file_path,
@@ -58,13 +58,13 @@ struct UploadExistingFileParams {
   base::FilePath local_file_path;
   std::string content_type;
   std::string etag;
-  google_apis::UploadCompletionCallback callback;
+  UploadCompletionCallback callback;
   google_apis::ProgressCallback progress_callback;
 };
 
 // Helper function to work around the arity limitation of base::Bind.
 google_apis::CancelCallback RunUploadExistingFile(
-    google_apis::DriveUploaderInterface* uploader,
+    DriveUploaderInterface* uploader,
     const UploadExistingFileParams& params) {
   return uploader->UploadExistingFile(params.resource_id,
                                       params.drive_file_path,
@@ -81,13 +81,13 @@ struct ResumeUploadFileParams {
   base::FilePath drive_file_path;
   base::FilePath local_file_path;
   std::string content_type;
-  google_apis::UploadCompletionCallback callback;
+  UploadCompletionCallback callback;
   google_apis::ProgressCallback progress_callback;
 };
 
 // Helper function to adjust the return type.
 google_apis::CancelCallback RunResumeUploadFile(
-    google_apis::DriveUploaderInterface* uploader,
+    DriveUploaderInterface* uploader,
     const ResumeUploadFileParams& params) {
   return uploader->ResumeUploadFile(params.upload_location,
                                     params.drive_file_path,
@@ -123,11 +123,11 @@ struct JobScheduler::ResumeUploadParams {
 
 JobScheduler::JobScheduler(
     Profile* profile,
-    google_apis::DriveServiceInterface* drive_service)
+    DriveServiceInterface* drive_service)
     : throttle_count_(0),
       disable_throttling_(false),
       drive_service_(drive_service),
-      uploader_(new google_apis::DriveUploader(drive_service)),
+      uploader_(new DriveUploader(drive_service)),
       profile_(profile),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -193,7 +193,7 @@ void JobScheduler::GetAboutResource(
 
   JobEntry* new_job = CreateNewJob(TYPE_GET_ABOUT_RESOURCE);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::GetAboutResource,
+      &DriveServiceInterface::GetAboutResource,
       base::Unretained(drive_service_),
       base::Bind(&JobScheduler::OnGetAboutResourceJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -209,7 +209,7 @@ void JobScheduler::GetAppList(
 
   JobEntry* new_job = CreateNewJob(TYPE_GET_APP_LIST);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::GetAppList,
+      &DriveServiceInterface::GetAppList,
       base::Unretained(drive_service_),
       base::Bind(&JobScheduler::OnGetAppListJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -225,7 +225,7 @@ void JobScheduler::GetAllResourceList(
 
   JobEntry* new_job = CreateNewJob(TYPE_GET_ALL_RESOURCE_LIST);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::GetAllResourceList,
+      &DriveServiceInterface::GetAllResourceList,
       base::Unretained(drive_service_),
       base::Bind(&JobScheduler::OnGetResourceListJobDone,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -243,7 +243,7 @@ void JobScheduler::GetResourceListInDirectory(
   JobEntry* new_job = CreateNewJob(
       TYPE_GET_RESOURCE_LIST_IN_DIRECTORY);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::GetResourceListInDirectory,
+      &DriveServiceInterface::GetResourceListInDirectory,
       base::Unretained(drive_service_),
       directory_resource_id,
       base::Bind(&JobScheduler::OnGetResourceListJobDone,
@@ -261,7 +261,7 @@ void JobScheduler::Search(
 
   JobEntry* new_job = CreateNewJob(TYPE_SEARCH);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::Search,
+      &DriveServiceInterface::Search,
       base::Unretained(drive_service_),
       search_query,
       base::Bind(&JobScheduler::OnGetResourceListJobDone,
@@ -279,7 +279,7 @@ void JobScheduler::GetChangeList(
 
   JobEntry* new_job = CreateNewJob(TYPE_GET_CHANGE_LIST);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::GetChangeList,
+      &DriveServiceInterface::GetChangeList,
       base::Unretained(drive_service_),
       start_changestamp,
       base::Bind(&JobScheduler::OnGetResourceListJobDone,
@@ -297,7 +297,7 @@ void JobScheduler::ContinueGetResourceList(
 
   JobEntry* new_job = CreateNewJob(TYPE_CONTINUE_GET_RESOURCE_LIST);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::ContinueGetResourceList,
+      &DriveServiceInterface::ContinueGetResourceList,
       base::Unretained(drive_service_),
       next_url,
       base::Bind(&JobScheduler::OnGetResourceListJobDone,
@@ -317,7 +317,7 @@ void JobScheduler::GetResourceEntry(
   JobEntry* new_job = CreateNewJob(TYPE_GET_RESOURCE_ENTRY);
   new_job->context = context;
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::GetResourceEntry,
+      &DriveServiceInterface::GetResourceEntry,
       base::Unretained(drive_service_),
       resource_id,
       base::Bind(&JobScheduler::OnGetResourceEntryJobDone,
@@ -335,7 +335,7 @@ void JobScheduler::DeleteResource(
 
   JobEntry* new_job = CreateNewJob(TYPE_DELETE_RESOURCE);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::DeleteResource,
+      &DriveServiceInterface::DeleteResource,
       base::Unretained(drive_service_),
       resource_id,
       "",  // etag
@@ -356,7 +356,7 @@ void JobScheduler::CopyResource(
 
   JobEntry* new_job = CreateNewJob(TYPE_COPY_RESOURCE);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::CopyResource,
+      &DriveServiceInterface::CopyResource,
       base::Unretained(drive_service_),
       resource_id,
       parent_resource_id,
@@ -377,7 +377,7 @@ void JobScheduler::CopyHostedDocument(
 
   JobEntry* new_job = CreateNewJob(TYPE_COPY_HOSTED_DOCUMENT);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::CopyHostedDocument,
+      &DriveServiceInterface::CopyHostedDocument,
       base::Unretained(drive_service_),
       resource_id,
       new_name,
@@ -397,7 +397,7 @@ void JobScheduler::RenameResource(
 
   JobEntry* new_job = CreateNewJob(TYPE_RENAME_RESOURCE);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::RenameResource,
+      &DriveServiceInterface::RenameResource,
       base::Unretained(drive_service_),
       resource_id,
       new_name,
@@ -418,7 +418,7 @@ void JobScheduler::TouchResource(
 
   JobEntry* new_job = CreateNewJob(TYPE_TOUCH_RESOURCE);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::TouchResource,
+      &DriveServiceInterface::TouchResource,
       base::Unretained(drive_service_),
       resource_id,
       modified_date,
@@ -439,7 +439,7 @@ void JobScheduler::AddResourceToDirectory(
 
   JobEntry* new_job = CreateNewJob(TYPE_ADD_RESOURCE_TO_DIRECTORY);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::AddResourceToDirectory,
+      &DriveServiceInterface::AddResourceToDirectory,
       base::Unretained(drive_service_),
       parent_resource_id,
       resource_id,
@@ -458,7 +458,7 @@ void JobScheduler::RemoveResourceFromDirectory(
 
   JobEntry* new_job = CreateNewJob(TYPE_REMOVE_RESOURCE_FROM_DIRECTORY);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::RemoveResourceFromDirectory,
+      &DriveServiceInterface::RemoveResourceFromDirectory,
       base::Unretained(drive_service_),
       parent_resource_id,
       resource_id,
@@ -477,7 +477,7 @@ void JobScheduler::AddNewDirectory(
 
   JobEntry* new_job = CreateNewJob(TYPE_ADD_NEW_DIRECTORY);
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::AddNewDirectory,
+      &DriveServiceInterface::AddNewDirectory,
       base::Unretained(drive_service_),
       parent_resource_id,
       directory_name,
@@ -501,7 +501,7 @@ JobID JobScheduler::DownloadFile(
   new_job->job_info.file_path = virtual_path;
   new_job->context = context;
   new_job->task = base::Bind(
-      &google_apis::DriveServiceInterface::DownloadFile,
+      &DriveServiceInterface::DownloadFile,
       base::Unretained(drive_service_),
       virtual_path,
       local_cache_path,

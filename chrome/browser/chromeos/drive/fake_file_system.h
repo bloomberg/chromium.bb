@@ -18,7 +18,6 @@
 namespace google_apis {
 
 class AboutResource;
-class DriveServiceInterface;
 class ResourceEntry;
 class ResourceList;
 
@@ -26,6 +25,7 @@ class ResourceList;
 
 namespace drive {
 
+class DriveServiceInterface;
 class FileSystemObserver;
 class ResourceEntry;
 
@@ -39,8 +39,7 @@ namespace test_util {
 // Currently most methods are empty (not implemented).
 class FakeFileSystem : public FileSystemInterface {
  public:
-  explicit FakeFileSystem(
-      google_apis::DriveServiceInterface* drive_service);
+  explicit FakeFileSystem(DriveServiceInterface* drive_service);
   virtual ~FakeFileSystem();
 
   // Initialization for testing. This can be called instead of Initialize
@@ -197,7 +196,7 @@ class FakeFileSystem : public FileSystemInterface {
       google_apis::GDataErrorCode gdata_error,
       scoped_ptr<google_apis::ResourceList> resource_list);
 
-  google_apis::DriveServiceInterface* drive_service_;  // Not owned.
+  DriveServiceInterface* drive_service_;  // Not owned.
   base::ScopedTempDir cache_dir_;
 
   // Note: This should remain the last member so it'll be destroyed and

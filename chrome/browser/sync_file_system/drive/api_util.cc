@@ -56,7 +56,7 @@ bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
        itr != links.end(); ++itr) {
     if ((*itr)->type() == google_apis::Link::LINK_PARENT) {
       has_parent = true;
-      if (google_apis::drive::util::ExtractResourceIdFromUrl((*itr)->href()) ==
+      if (::drive::util::ExtractResourceIdFromUrl((*itr)->href()) ==
           parent_resource_id)
         return true;
     }
@@ -137,12 +137,12 @@ APIUtil::APIUtil(Profile* profile)
           GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
       upload_next_key_(0) {
   if (IsDriveAPIDisabled()) {
-    drive_service_.reset(new google_apis::GDataWapiService(
+    drive_service_.reset(new ::drive::GDataWapiService(
         profile->GetRequestContext(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         std::string() /* custom_user_agent */));
   } else {
-    drive_service_.reset(new google_apis::DriveAPIService(
+    drive_service_.reset(new ::drive::DriveAPIService(
         profile->GetRequestContext(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         std::string() /* custom_user_agent */));
@@ -152,13 +152,13 @@ APIUtil::APIUtil(Profile* profile)
   drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
-  drive_uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
+  drive_uploader_.reset(new ::drive::DriveUploader(drive_service_.get()));
 }
 
 scoped_ptr<APIUtil> APIUtil::CreateForTesting(
     Profile* profile,
-    scoped_ptr<google_apis::DriveServiceInterface> drive_service,
-    scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader) {
+    scoped_ptr< ::drive::DriveServiceInterface> drive_service,
+    scoped_ptr< ::drive::DriveUploaderInterface> drive_uploader) {
   return make_scoped_ptr(new APIUtil(
       profile,
       GURL(kFakeServerBaseUrl),
@@ -168,8 +168,8 @@ scoped_ptr<APIUtil> APIUtil::CreateForTesting(
 
 APIUtil::APIUtil(Profile* profile,
                  const GURL& base_url,
-                 scoped_ptr<google_apis::DriveServiceInterface> drive_service,
-                 scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader)
+                 scoped_ptr< ::drive::DriveServiceInterface> drive_service,
+                 scoped_ptr< ::drive::DriveUploaderInterface> drive_uploader)
     : wapi_url_generator_(base_url),
       drive_api_url_generator_(base_url),
       upload_next_key_(0) {
@@ -1064,7 +1064,7 @@ void APIUtil::CancelAllUploads(google_apis::GDataErrorCode error) {
     iter->second.Run(error, std::string(), std::string());
   }
   upload_callback_map_.clear();
-  drive_uploader_.reset(new google_apis::DriveUploader(drive_service_.get()));
+  drive_uploader_.reset(new ::drive::DriveUploader(drive_service_.get()));
 }
 
 std::string APIUtil::GetRootResourceId() const {

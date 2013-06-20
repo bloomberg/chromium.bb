@@ -40,7 +40,7 @@ SyncFileSystemServiceFactory::SyncFileSystemServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "SyncFileSystemService",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(google_apis::DriveNotificationManagerFactory::GetInstance());
+  DependsOn(::drive::DriveNotificationManagerFactory::GetInstance());
 }
 
 SyncFileSystemServiceFactory::~SyncFileSystemServiceFactory() {}

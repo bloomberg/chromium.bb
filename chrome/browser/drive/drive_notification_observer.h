@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_DRIVE_DRIVE_NOTIFICATION_OBSERVER_H_
 #define CHROME_BROWSER_DRIVE_DRIVE_NOTIFICATION_OBSERVER_H_
 
-namespace google_apis {
+namespace drive {
 
 // Interface for classes which need to know when to check Google Drive for
 // updates.
@@ -21,6 +21,6 @@ class DriveNotificationObserver {
   virtual ~DriveNotificationObserver() {}
 };
 
-}  // namespace google_apis
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_DRIVE_DRIVE_NOTIFICATION_OBSERVER_H_

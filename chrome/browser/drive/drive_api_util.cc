@@ -17,7 +17,7 @@
 #include "net/base/escape.h"
 #include "third_party/re2/re2/re2.h"
 
-namespace google_apis {
+namespace drive {
 namespace util {
 
 bool IsDriveV2ApiEnabled() {
@@ -34,11 +34,6 @@ bool IsDriveV2ApiEnabled() {
   DCHECK(value.empty() || value == "true" || value == "false");
   return value != "false";
 }
-
-}  // namespace util
-
-namespace drive {
-namespace util {
 
 std::string EscapeQueryStringValue(const std::string& str) {
   std::string result;
@@ -135,4 +130,3 @@ std::string CanonicalizeResourceId(const std::string& resource_id) {
 
 }  // namespace util
 }  // namespace drive
-}  // namespace google_apis

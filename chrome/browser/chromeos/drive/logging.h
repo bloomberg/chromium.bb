@@ -21,7 +21,7 @@ void Log(const char* format, ...) PRINTF_FORMAT(1, 2);
 
 // Returns the log history.
 // This function can be called from any thread.
-std::vector<google_apis::EventLogger::Event> GetLogHistory();
+std::vector<EventLogger::Event> GetLogHistory();
 
 }  // namespace util
 }  // namespace drive

@@ -5,7 +5,7 @@
 #include "chrome/browser/sync_file_system/logger.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using google_apis::EventLogger;
+using drive::EventLogger;
 
 namespace sync_file_system {
 

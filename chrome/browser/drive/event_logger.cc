@@ -6,7 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 
-namespace google_apis {
+namespace drive {
 
 EventLogger::Event::Event(int id, const std::string& what)
     : id(id),
@@ -51,4 +51,4 @@ std::vector<EventLogger::Event> EventLogger::GetHistory() {
 }
 
 
-}  // namespace google_apis
+}  // namespace drive

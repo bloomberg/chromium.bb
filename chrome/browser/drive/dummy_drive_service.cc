@@ -4,7 +4,20 @@
 
 #include "chrome/browser/drive/dummy_drive_service.h"
 
-namespace google_apis {
+using google_apis::AuthorizeAppCallback;
+using google_apis::CancelCallback;
+using google_apis::DownloadActionCallback;
+using google_apis::EntryActionCallback;
+using google_apis::GetAboutResourceCallback;
+using google_apis::GetAppListCallback;
+using google_apis::GetContentCallback;
+using google_apis::GetResourceEntryCallback;
+using google_apis::GetResourceListCallback;
+using google_apis::InitiateUploadCallback;
+using google_apis::ProgressCallback;
+using google_apis::UploadRangeCallback;
+
+namespace drive {
 
 DummyDriveService::DummyDriveService() {}
 
@@ -157,4 +170,4 @@ CancelCallback DummyDriveService::AuthorizeApp(
     const std::string& app_id,
     const AuthorizeAppCallback& callback) { return CancelCallback(); }
 
-}  // namespace google_apis
+}  // namespace drive

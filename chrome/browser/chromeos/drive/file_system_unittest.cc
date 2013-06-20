@@ -66,7 +66,7 @@ class FileSystemTest : public testing::Test {
     profile_.reset(new TestingProfile);
 
     // The fake object will be manually deleted in TearDown().
-    fake_drive_service_.reset(new google_apis::FakeDriveService);
+    fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "chromeos/gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
@@ -281,7 +281,7 @@ class FileSystemTest : public testing::Test {
 
   scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FileSystem> file_system_;
-  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;

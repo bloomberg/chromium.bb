@@ -26,12 +26,12 @@ class SequencedTaskRunner;
 
 namespace google_apis {
 class AboutResource;
-class DriveServiceInterface;
 class ResourceEntry;
 }
 
 namespace drive {
 
+class DriveServiceInterface;
 class FileCacheEntry;
 class FileSystemObserver;
 class JobScheduler;
@@ -62,7 +62,7 @@ class FileSystem : public FileSystemInterface,
  public:
   FileSystem(Profile* profile,
              internal::FileCache* cache,
-             google_apis::DriveServiceInterface* drive_service,
+             DriveServiceInterface* drive_service,
              JobScheduler* scheduler,
              internal::ResourceMetadata* resource_metadata,
              base::SequencedTaskRunner* blocking_task_runner,
@@ -358,7 +358,7 @@ class FileSystem : public FileSystemInterface,
 
   // Sub components owned by DriveIntegrationService.
   internal::FileCache* cache_;
-  google_apis::DriveServiceInterface* drive_service_;
+  DriveServiceInterface* drive_service_;
   JobScheduler* scheduler_;
   internal::ResourceMetadata* resource_metadata_;
 

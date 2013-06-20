@@ -23,8 +23,38 @@
 #include "net/base/url_util.h"
 
 using content::BrowserThread;
+using google_apis::AboutResource;
+using google_apis::AccountMetadata;
+using google_apis::AppList;
+using google_apis::AuthorizeAppCallback;
+using google_apis::CancelCallback;
+using google_apis::DownloadActionCallback;
+using google_apis::EntryActionCallback;
+using google_apis::GDataErrorCode;
+using google_apis::GDATA_FILE_ERROR;
+using google_apis::GDATA_NO_CONNECTION;
+using google_apis::GetAboutResourceCallback;
+using google_apis::GetAppListCallback;
+using google_apis::GetContentCallback;
+using google_apis::GetResourceEntryCallback;
+using google_apis::GetResourceListCallback;
+using google_apis::HTTP_BAD_REQUEST;
+using google_apis::HTTP_CREATED;
+using google_apis::HTTP_NOT_FOUND;
+using google_apis::HTTP_PRECONDITION;
+using google_apis::HTTP_RESUME_INCOMPLETE;
+using google_apis::HTTP_SUCCESS;
+using google_apis::InitiateUploadCallback;
+using google_apis::Link;
+using google_apis::ProgressCallback;
+using google_apis::ResourceEntry;
+using google_apis::ResourceList;
+using google_apis::UploadRangeCallback;
+using google_apis::UploadRangeResponse;
+namespace test_util = google_apis::test_util;
+namespace util = google_apis::util;
 
-namespace google_apis {
+namespace drive {
 namespace {
 
 // Rel property of upload link in the entries dictionary value.
@@ -1447,4 +1477,4 @@ void FakeDriveService::GetResourceListInternal(
                  base::Passed(&resource_list)));
 }
 
-}  // namespace google_apis
+}  // namespace drive

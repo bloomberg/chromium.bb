@@ -9,16 +9,11 @@
 
 class GURL;
 
-namespace google_apis {
+namespace drive {
 namespace util {
 
 // Returns true if Drive v2 API is enabled via commandline switch.
 bool IsDriveV2ApiEnabled();
-
-}  // namespace util
-
-namespace drive {
-namespace util {
 
 // Escapes ' to \' in the |str|. This is designed to use for string value of
 // search parameter on Drive API v2.
@@ -44,6 +39,5 @@ std::string CanonicalizeResourceId(const std::string& resource_id);
 
 }  // namespace util
 }  // namespace drive
-}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_DRIVE_DRIVE_API_UTIL_H_

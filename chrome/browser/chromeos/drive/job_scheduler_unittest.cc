@@ -107,7 +107,7 @@ class JobSchedulerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     fake_network_change_notifier_.reset(new FakeNetworkChangeNotifier);
 
-    fake_drive_service_.reset(new google_apis::FakeDriveService());
+    fake_drive_service_.reset(new FakeDriveService());
     fake_drive_service_->LoadResourceListForWapi(
         "chromeos/gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
@@ -164,7 +164,7 @@ class JobSchedulerTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<FakeNetworkChangeNotifier> fake_network_change_notifier_;
-  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeDriveService> fake_drive_service_;
 };
 
 TEST_F(JobSchedulerTest, GetAboutResource) {

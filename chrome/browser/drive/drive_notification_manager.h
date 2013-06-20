@@ -15,7 +15,7 @@
 class Profile;
 class ProfileSyncService;
 
-namespace google_apis {
+namespace drive {
 
 // Informs observers when they should check Google Drive for updates.
 // Conditions under which updates should be searched:
@@ -90,6 +90,6 @@ class DriveNotificationManager
   DISALLOW_COPY_AND_ASSIGN(DriveNotificationManager);
 };
 
-}  // namespace google_apis
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_DRIVE_DRIVE_NOTIFICATION_MANAGER_H_

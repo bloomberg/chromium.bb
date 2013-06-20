@@ -29,7 +29,7 @@ class FileManagerEventRouter
       public drive::DriveIntegrationServiceObserver,
       public drive::FileSystemObserver,
       public drive::JobListObserver,
-      public google_apis::DriveServiceObserver {
+      public drive::DriveServiceObserver {
  public:
   // Interface that should keep track of the system state in regards to system
   // suspend and resume events.

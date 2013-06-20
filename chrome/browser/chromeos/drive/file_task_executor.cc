@@ -82,7 +82,7 @@ void FileTaskExecutor::OnFileEntryFetched(FileError error,
     return;
   }
 
-  google_apis::DriveServiceInterface* drive_service =
+  DriveServiceInterface* drive_service =
       integration_service->drive_service();
 
   // Send off a request for the drive service to authorize the apps for the

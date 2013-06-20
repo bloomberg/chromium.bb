@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace google_apis {
+namespace drive {
 
 TEST(EventLoggerTest, BasicLogging) {
   EventLogger logger;
@@ -40,4 +40,4 @@ TEST(EventLoggerTest, BasicLogging) {
   EXPECT_EQ("fourth", history[2].what);
 }
 
-}   // namespace google_apis
+}   // namespace drive

@@ -12,7 +12,7 @@
 
 class Profile;
 
-namespace google_apis {
+namespace drive {
 
 // Observer interface for DriveServiceInterface.
 class DriveServiceObserver {
@@ -80,8 +80,8 @@ class DriveServiceInterface {
   // ContinueGetResourceList.
   //
   // |callback| must not be null.
-  virtual CancelCallback GetAllResourceList(
-      const GetResourceListCallback& callback) = 0;
+  virtual google_apis::CancelCallback GetAllResourceList(
+      const google_apis::GetResourceListCallback& callback) = 0;
 
   // Fetches a resource list in the directory with |directory_resource_id|.
   // |callback| will be called upon completion.
@@ -91,9 +91,9 @@ class DriveServiceInterface {
   //
   // |directory_resource_id| must not be empty.
   // |callback| must not be null.
-  virtual CancelCallback GetResourceListInDirectory(
+  virtual google_apis::CancelCallback GetResourceListInDirectory(
       const std::string& directory_resource_id,
-      const GetResourceListCallback& callback) = 0;
+      const google_apis::GetResourceListCallback& callback) = 0;
 
   // Searches the resources for the |search_query| from all the user's
   // resources. |callback| will be called upon completion.
@@ -103,9 +103,9 @@ class DriveServiceInterface {
   //
   // |search_query| must not be empty.
   // |callback| must not be null.
-  virtual CancelCallback Search(
+  virtual google_apis::CancelCallback Search(
       const std::string& search_query,
-      const GetResourceListCallback& callback) = 0;
+      const google_apis::GetResourceListCallback& callback) = 0;
 
   // Searches the resources with the |title|.
   // |directory_resource_id| is an optional parameter. If it is empty,
@@ -116,10 +116,10 @@ class DriveServiceInterface {
   // ContinueGetResourceList.
   //
   // |title| must not be empty, and |callback| must not be null.
-  virtual CancelCallback SearchByTitle(
+  virtual google_apis::CancelCallback SearchByTitle(
       const std::string& title,
       const std::string& directory_resource_id,
-      const GetResourceListCallback& callback) = 0;
+      const google_apis::GetResourceListCallback& callback) = 0;
 
   // Fetches change list since |start_changestamp|. |callback| will be
   // called upon completion.
@@ -128,9 +128,9 @@ class DriveServiceInterface {
   // ContinueGetResourceList.
   //
   // |callback| must not be null.
-  virtual CancelCallback GetChangeList(
+  virtual google_apis::CancelCallback GetChangeList(
       int64 start_changestamp,
-      const GetResourceListCallback& callback) = 0;
+      const google_apis::GetResourceListCallback& callback) = 0;
 
   // Requests returning GetResourceList may be paged. In such a case,
   // a URL to fetch remaining result is returned. The URL can be used for this
@@ -138,38 +138,39 @@ class DriveServiceInterface {
   //
   // |override_url| must not be empty.
   // |callback| must not be null.
-  virtual CancelCallback ContinueGetResourceList(
+  virtual google_apis::CancelCallback ContinueGetResourceList(
       const GURL& override_url,
-      const GetResourceListCallback& callback) = 0;
+      const google_apis::GetResourceListCallback& callback) = 0;
 
   // Fetches single entry metadata from server. The entry's resource id equals
   // |resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual CancelCallback GetResourceEntry(
+  virtual google_apis::CancelCallback GetResourceEntry(
       const std::string& resource_id,
-      const GetResourceEntryCallback& callback) = 0;
+      const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Gets the about resource information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual CancelCallback GetAboutResource(
-      const GetAboutResourceCallback& callback) = 0;
+  virtual google_apis::CancelCallback GetAboutResource(
+      const google_apis::GetAboutResourceCallback& callback) = 0;
 
   // Gets the application information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual CancelCallback GetAppList(const GetAppListCallback& callback) = 0;
+  virtual google_apis::CancelCallback GetAppList(
+      const google_apis::GetAppListCallback& callback) = 0;
 
   // Deletes a resource identified by its |resource_id|.
   // If |etag| is not empty and did not match, the deletion fails with
   // HTTP_PRECONDITION error.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual CancelCallback DeleteResource(
+  virtual google_apis::CancelCallback DeleteResource(
       const std::string& resource_id,
       const std::string& etag,
-      const EntryActionCallback& callback) = 0;
+      const google_apis::EntryActionCallback& callback) = 0;
 
   // Makes a copy of a resource with |resource_id|.
   // The new resource will be put under a directory with |parent_resource_id|,
@@ -178,11 +179,11 @@ class DriveServiceInterface {
   // doesn't support the function unfortunately.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual CancelCallback CopyResource(
+  virtual google_apis::CancelCallback CopyResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_name,
-      const GetResourceEntryCallback& callback) = 0;
+      const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Makes a copy of a hosted document identified by its |resource_id|.
   // The copy is named as the UTF-8 encoded |new_name| and is not added to any
@@ -192,47 +193,48 @@ class DriveServiceInterface {
   // |callback| must not be null.
   // TODO(hidehiko): After the migration to Drive API v2, remove this method,
   // because we can use CopyResource instead.
-  virtual CancelCallback CopyHostedDocument(
+  virtual google_apis::CancelCallback CopyHostedDocument(
       const std::string& resource_id,
       const std::string& new_name,
-      const GetResourceEntryCallback& callback) = 0;
+      const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Renames a document or collection identified by its |resource_id|
   // to the UTF-8 encoded |new_name|. Upon completion,
   // invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual CancelCallback RenameResource(const std::string& resource_id,
-                                       const std::string& new_name,
-                                       const EntryActionCallback& callback) = 0;
+  virtual google_apis::CancelCallback RenameResource(
+      const std::string& resource_id,
+      const std::string& new_name,
+      const google_apis::EntryActionCallback& callback) = 0;
 
   // Touches the resource with |resource_id|.
   // Its modifiedDate and lastViewedByMeDate fields on the server will be
   // updated to |modified_date| and |last_viewed_by_me_date| respectively.
   // Upon completion, invokes |callback| with the updated resource data.
   // |modified_date|, |last_viewed_by_me_date| and |callback| must not be null.
-  virtual CancelCallback TouchResource(
+  virtual google_apis::CancelCallback TouchResource(
       const std::string& resource_id,
       const base::Time& modified_date,
       const base::Time& last_viewed_by_me_date,
-      const GetResourceEntryCallback& callback) = 0;
+      const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Adds a resource (document, file, or collection) identified by its
   // |resource_id| to a collection represented by the |parent_resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual CancelCallback AddResourceToDirectory(
+  virtual google_apis::CancelCallback AddResourceToDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
-      const EntryActionCallback& callback) = 0;
+      const google_apis::EntryActionCallback& callback) = 0;
 
   // Removes a resource (document, file, collection) identified by its
   // |resource_id| from a collection represented by the |parent_resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual CancelCallback RemoveResourceFromDirectory(
+  virtual google_apis::CancelCallback RemoveResourceFromDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
-      const EntryActionCallback& callback) = 0;
+      const google_apis::EntryActionCallback& callback) = 0;
 
   // Adds new collection with |directory_name| under parent directory
   // identified with |parent_resource_id|. |parent_resource_id| can be the
@@ -242,10 +244,10 @@ class DriveServiceInterface {
   // This function cannot be named as "CreateDirectory" as it conflicts with
   // a macro on Windows.
   // |callback| must not be null.
-  virtual CancelCallback AddNewDirectory(
+  virtual google_apis::CancelCallback AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_name,
-      const GetResourceEntryCallback& callback) = 0;
+      const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Downloads a file from |download_url|. The downloaded file will
   // be stored at |local_cache_path| location. Upon completion, invokes
@@ -258,41 +260,41 @@ class DriveServiceInterface {
   //
   // |download_action_callback| must not be null.
   // |get_content_callback| and |progress_callback| may be null.
-  virtual CancelCallback DownloadFile(
+  virtual google_apis::CancelCallback DownloadFile(
       const base::FilePath& virtual_path,
       const base::FilePath& local_cache_path,
       const GURL& download_url,
-      const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback,
-      const ProgressCallback& progress_callback) = 0;
+      const google_apis::DownloadActionCallback& download_action_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const google_apis::ProgressCallback& progress_callback) = 0;
 
   // Initiates uploading of a new document/file.
   // |content_type| and |content_length| should be the ones of the file to be
   // uploaded.
   // |callback| must not be null.
-  virtual CancelCallback InitiateUploadNewFile(
+  virtual google_apis::CancelCallback InitiateUploadNewFile(
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
-      const InitiateUploadCallback& callback) = 0;
+      const google_apis::InitiateUploadCallback& callback) = 0;
 
   // Initiates uploading of an existing document/file.
   // |content_type| and |content_length| should be the ones of the file to be
   // uploaded.
   // |callback| must not be null.
-  virtual CancelCallback InitiateUploadExistingFile(
+  virtual google_apis::CancelCallback InitiateUploadExistingFile(
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
       const std::string& etag,
-      const InitiateUploadCallback& callback) = 0;
+      const google_apis::InitiateUploadCallback& callback) = 0;
 
   // Resumes uploading of a document/file on the calling thread.
   // |callback| must not be null. |progress_callback| may be null.
-  virtual CancelCallback ResumeUpload(
+  virtual google_apis::CancelCallback ResumeUpload(
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
@@ -300,28 +302,28 @@ class DriveServiceInterface {
       int64 content_length,
       const std::string& content_type,
       const base::FilePath& local_file_path,
-      const UploadRangeCallback& callback,
-      const ProgressCallback& progress_callback) = 0;
+      const google_apis::UploadRangeCallback& callback,
+      const google_apis::ProgressCallback& progress_callback) = 0;
 
   // Gets the current status of the uploading to |upload_url| from the server.
   // |drive_file_path| and |content_length| should be set to the same value
   // which is used for ResumeUpload.
   // |callback| must not be null.
-  virtual CancelCallback GetUploadStatus(
+  virtual google_apis::CancelCallback GetUploadStatus(
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,
-      const UploadRangeCallback& callback) = 0;
+      const google_apis::UploadRangeCallback& callback) = 0;
 
   // Authorizes a Drive app with the id |app_id| to open the given file.
   // Upon completion, invokes |callback| with the link to open the file with
   // the provided app. |callback| must not be null.
-  virtual CancelCallback AuthorizeApp(
+  virtual google_apis::CancelCallback AuthorizeApp(
       const std::string& resource_id,
       const std::string& app_id,
-      const AuthorizeAppCallback& callback) = 0;
+      const google_apis::AuthorizeAppCallback& callback) = 0;
 };
 
-}  // namespace google_apis
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_DRIVE_DRIVE_SERVICE_INTERFACE_H_

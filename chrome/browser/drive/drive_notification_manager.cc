@@ -11,7 +11,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "google/cacheinvalidation/types.pb.h"
 
-namespace google_apis {
+namespace drive {
 
 namespace {
 
@@ -160,4 +160,4 @@ std::string DriveNotificationManager::NotificationSourceToString(
   return "";
 }
 
-}  // namespace google_apis
+}  // namespace drive

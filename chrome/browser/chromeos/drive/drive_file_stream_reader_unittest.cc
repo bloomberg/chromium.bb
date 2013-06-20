@@ -295,7 +295,7 @@ class DriveFileStreamReaderTest : public ::testing::Test {
     ASSERT_TRUE(worker_thread_->Start());
 
     // Initialize FakeDriveService.
-    fake_drive_service_.reset(new google_apis::FakeDriveService);
+    fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "chromeos/gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
@@ -327,7 +327,7 @@ class DriveFileStreamReaderTest : public ::testing::Test {
 
   scoped_ptr<base::Thread> worker_thread_;
 
-  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<test_util::FakeFileSystem> fake_file_system_;
 };
 

@@ -24,8 +24,7 @@ namespace test_util {
 
 using content::BrowserThread;
 
-FakeFileSystem::FakeFileSystem(
-    google_apis::DriveServiceInterface* drive_service)
+FakeFileSystem::FakeFileSystem(DriveServiceInterface* drive_service)
     : drive_service_(drive_service),
       weak_ptr_factory_(this) {
 }

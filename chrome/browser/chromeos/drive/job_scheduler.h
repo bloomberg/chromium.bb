@@ -48,7 +48,7 @@ class JobScheduler
       public JobListInterface {
  public:
   JobScheduler(Profile* profile,
-               google_apis::DriveServiceInterface* drive_service);
+               DriveServiceInterface* drive_service);
   virtual ~JobScheduler();
 
   // JobListInterface overrides.
@@ -332,8 +332,8 @@ class JobScheduler
   // The list of observers for the scheduler.
   ObserverList<JobListObserver> observer_list_;
 
-  google_apis::DriveServiceInterface* drive_service_;
-  scoped_ptr<google_apis::DriveUploaderInterface> uploader_;
+  DriveServiceInterface* drive_service_;
+  scoped_ptr<DriveUploaderInterface> uploader_;
 
   Profile* profile_;
 

@@ -17,7 +17,21 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 
-namespace google_apis {
+using google_apis::CancelCallback;
+using google_apis::DownloadActionCallback;
+using google_apis::EntryActionCallback;
+using google_apis::GDataErrorCode;
+using google_apis::GDATA_FILE_ERROR;
+using google_apis::GetContentCallback;
+using google_apis::GetResourceEntryCallback;
+using google_apis::GetResourceListCallback;
+using google_apis::HTTP_SUCCESS;
+using google_apis::ProgressCallback;
+using google_apis::ResourceEntry;
+using google_apis::ResourceList;
+namespace test_util = google_apis::test_util;
+
+namespace drive {
 
 MockDriveService::MockDriveService() {
   ON_CALL(*this, GetChangeList(_, _))
@@ -141,4 +155,4 @@ CancelCallback MockDriveService::DownloadFileStub(
   return CancelCallback();
 }
 
-}  // namespace google_apis
+}  // namespace drive

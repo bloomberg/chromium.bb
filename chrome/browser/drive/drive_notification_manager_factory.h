@@ -10,7 +10,7 @@
 
 class Profile;
 
-namespace google_apis {
+namespace drive {
 
 class DriveNotificationManager;
 
@@ -34,6 +34,6 @@ class DriveNotificationManagerFactory
       content::BrowserContext* profile) const OVERRIDE;
 };
 
-}  // namespace google_apis
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_DRIVE_DRIVE_NOTIFICATION_MANAGER_FACTORY_H_

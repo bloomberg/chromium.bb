@@ -10,7 +10,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
-namespace google_apis {
+namespace drive {
 
 // static
 DriveNotificationManager*
@@ -43,4 +43,4 @@ DriveNotificationManagerFactory::BuildServiceInstanceFor(
   return new DriveNotificationManager(static_cast<Profile*>(profile));
 }
 
-}  // namespace google_apis
+}  // namespace drive

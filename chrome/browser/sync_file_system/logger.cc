@@ -14,7 +14,7 @@ namespace sync_file_system {
 namespace util {
 namespace {
 
-static base::LazyInstance<google_apis::EventLogger> g_logger =
+static base::LazyInstance<drive::EventLogger> g_logger =
     LAZY_INSTANCE_INITIALIZER;
 
 const char* LogSeverityToString(logging::LogSeverity level) {
@@ -36,7 +36,7 @@ const char* LogSeverityToString(logging::LogSeverity level) {
 }  // namespace
 
 void ClearLog() {
-  g_logger.Pointer()->SetHistorySize(google_apis::kDefaultHistorySize);
+  g_logger.Pointer()->SetHistorySize(::drive::kDefaultHistorySize);
 }
 
 void Log(logging::LogSeverity severity,
@@ -62,7 +62,7 @@ void Log(logging::LogSeverity severity,
   // Log to WebUI regardless of LogSeverity (e.g. ignores command line flags).
   // On thread-safety: LazyInstance guarantees thread-safety for the object
   // creation. EventLogger::Log() internally maintains the lock.
-  google_apis::EventLogger* ptr = g_logger.Pointer();
+  drive::EventLogger* ptr = g_logger.Pointer();
   ptr->Log("%s", log_output.c_str());
 
   // Log to console if the severity is at or above the min level.
@@ -76,8 +76,8 @@ void Log(logging::LogSeverity severity,
       .stream() << what;
 }
 
-std::vector<google_apis::EventLogger::Event> GetLogHistory() {
-  google_apis::EventLogger* ptr = g_logger.Pointer();
+std::vector<drive::EventLogger::Event> GetLogHistory() {
+  drive::EventLogger* ptr = g_logger.Pointer();
   return ptr->GetHistory();
 }
 

@@ -19,7 +19,7 @@ class FakeFileSystemTest : public ::testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     // Initialize FakeDriveService.
-    fake_drive_service_.reset(new google_apis::FakeDriveService);
+    fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
         "chromeos/gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
@@ -31,7 +31,7 @@ class FakeFileSystemTest : public ::testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<FakeFileSystem> fake_file_system_;
 };
 

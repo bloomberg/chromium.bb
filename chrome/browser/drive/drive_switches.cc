@@ -4,11 +4,11 @@
 
 #include "chrome/browser/drive/drive_switches.h"
 
-namespace google_apis {
+namespace drive {
 namespace switches {
 
 // Enables Drive v2 API instead of Google Documents List API.
 const char kEnableDriveV2Api[] = "enable-drive-v2-api";
 
 }  // namespace switches
-}  // namespace google_apis
+}  // namespace drive

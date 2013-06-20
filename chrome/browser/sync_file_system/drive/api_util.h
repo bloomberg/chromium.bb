@@ -18,7 +18,7 @@
 class GURL;
 class Profile;
 
-namespace google_apis { class DriveUploaderInterface; }
+namespace drive { class DriveUploaderInterface; }
 
 namespace sync_file_system {
 namespace drive {
@@ -27,7 +27,7 @@ namespace drive {
 // Drive directories, files and metadata.
 // This class is owned by DriveFileSyncService.
 class APIUtil : public drive::APIUtilInterface,
-                public google_apis::DriveServiceObserver,
+                public ::drive::DriveServiceObserver,
                 public net::NetworkChangeNotifier::ConnectionTypeObserver,
                 public base::NonThreadSafe,
                 public base::SupportsWeakPtr<APIUtil> {
@@ -51,8 +51,8 @@ class APIUtil : public drive::APIUtilInterface,
 
   static scoped_ptr<APIUtil> CreateForTesting(
       Profile* profile,
-      scoped_ptr<google_apis::DriveServiceInterface> drive_service,
-      scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader);
+      scoped_ptr< ::drive::DriveServiceInterface> drive_service,
+      scoped_ptr< ::drive::DriveUploaderInterface> drive_uploader);
 
   // APIUtilInterface overrides.
   virtual void GetDriveDirectoryForSyncRoot(const ResourceIdCallback& callback)
@@ -116,8 +116,8 @@ class APIUtil : public drive::APIUtilInterface,
   // Constructor for test use.
   APIUtil(Profile* profile,
           const GURL& base_url,
-          scoped_ptr<google_apis::DriveServiceInterface> drive_service,
-          scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader);
+          scoped_ptr< ::drive::DriveServiceInterface> drive_service,
+          scoped_ptr< ::drive::DriveUploaderInterface> drive_uploader);
 
   void GetDriveRootResourceId(const GDataErrorCallback& callback);
   void DidGetDriveRootResourceId(
@@ -233,8 +233,8 @@ class APIUtil : public drive::APIUtilInterface,
 
   std::string GetRootResourceId() const;
 
-  scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
-  scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader_;
+  scoped_ptr< ::drive::DriveServiceInterface> drive_service_;
+  scoped_ptr< ::drive::DriveUploaderInterface> drive_uploader_;
 
   google_apis::GDataWapiUrlGenerator wapi_url_generator_;
   google_apis::DriveApiUrlGenerator drive_api_url_generator_;

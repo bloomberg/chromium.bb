@@ -23,8 +23,45 @@
 #include "net/base/url_util.h"
 
 using content::BrowserThread;
+using google_apis::AboutResource;
+using google_apis::AccountMetadata;
+using google_apis::AddResourceToDirectoryRequest;
+using google_apis::AppList;
+using google_apis::AuthorizeAppCallback;
+using google_apis::AuthorizeAppRequest;
+using google_apis::AuthService;
+using google_apis::CancelCallback;
+using google_apis::CopyHostedDocumentRequest;
+using google_apis::CreateDirectoryRequest;
+using google_apis::DeleteResourceRequest;
+using google_apis::DownloadActionCallback;
+using google_apis::DownloadFileRequest;
+using google_apis::EntryActionCallback;
+using google_apis::GDataErrorCode;
+using google_apis::GDATA_PARSE_ERROR;
+using google_apis::GetAboutResourceCallback;
+using google_apis::GetAccountMetadataRequest;
+using google_apis::GetAppListCallback;
+using google_apis::GetContentCallback;
+using google_apis::GetResourceEntryCallback;
+using google_apis::GetResourceEntryRequest;
+using google_apis::GetResourceListCallback;
+using google_apis::GetResourceListRequest;
+using google_apis::GetUploadStatusRequest;
+using google_apis::HTTP_NOT_IMPLEMENTED;
+using google_apis::InitiateUploadCallback;
+using google_apis::InitiateUploadExistingFileRequest;
+using google_apis::InitiateUploadNewFileRequest;
+using google_apis::ProgressCallback;
+using google_apis::RemoveResourceFromDirectoryRequest;
+using google_apis::RenameResourceRequest;
+using google_apis::RequestSender;
+using google_apis::ResourceEntry;
+using google_apis::ResumeUploadRequest;
+using google_apis::SearchByTitleRequest;
+using google_apis::UploadRangeCallback;
 
-namespace google_apis {
+namespace drive {
 
 namespace {
 
@@ -595,4 +632,4 @@ void GDataWapiService::OnOAuth2RefreshTokenChanged() {
   }
 }
 
-}  // namespace google_apis
+}  // namespace drive

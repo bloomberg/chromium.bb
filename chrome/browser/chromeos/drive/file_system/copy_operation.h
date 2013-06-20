@@ -18,12 +18,12 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace google_apis {
-class DriveServiceInterface;
 class ResourceEntry;
 }  // namespace google_apis
 
 namespace drive {
 
+class DriveServiceInterface;
 class JobScheduler;
 class ResourceEntry;
 
@@ -48,7 +48,7 @@ class CopyOperation {
                 JobScheduler* scheduler,
                 internal::ResourceMetadata* metadata,
                 internal::FileCache* cache,
-                google_apis::DriveServiceInterface* drive_service,
+                DriveServiceInterface* drive_service,
                 const base::FilePath& temporary_file_directory);
   ~CopyOperation();
 
@@ -179,7 +179,7 @@ class CopyOperation {
   JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
-  google_apis::DriveServiceInterface* drive_service_;
+  DriveServiceInterface* drive_service_;
 
   // Uploading a new file is internally implemented by creating a dirty file.
   scoped_ptr<CreateFileOperation> create_file_operation_;

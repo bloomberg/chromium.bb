@@ -12,7 +12,7 @@ namespace drive {
 namespace util {
 namespace {
 
-static base::LazyInstance<google_apis::EventLogger> g_logger =
+static base::LazyInstance<EventLogger> g_logger =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -27,12 +27,12 @@ void Log(const char* format, ...) {
 
   // On thread-safety: LazyInstance guarantees thread-safety for the object
   // creation. EventLogger::Log() internally maintains the lock.
-  google_apis::EventLogger* ptr = g_logger.Pointer();
+  EventLogger* ptr = g_logger.Pointer();
   ptr->Log("%s", what.c_str());
 }
 
-std::vector<google_apis::EventLogger::Event> GetLogHistory() {
-  google_apis::EventLogger* ptr = g_logger.Pointer();
+std::vector<EventLogger::Event> GetLogHistory() {
+  EventLogger* ptr = g_logger.Pointer();
   return ptr->GetHistory();
 }
 

@@ -104,7 +104,7 @@ class DriveURLRequestJobTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     // Initialize FakeDriveService.
-    fake_drive_service_.reset(new google_apis::FakeDriveService);
+    fake_drive_service_.reset(new FakeDriveService);
     ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
         "chromeos/gdata/root_feed.json"));
     ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
@@ -181,7 +181,7 @@ class DriveURLRequestJobTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<test_util::FakeFileSystem> fake_file_system_;
 
   scoped_ptr<net::TestNetworkDelegate> test_network_delegate_;

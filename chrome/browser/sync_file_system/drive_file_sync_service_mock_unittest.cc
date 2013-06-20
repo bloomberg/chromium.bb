@@ -54,9 +54,10 @@ using ::testing::Sequence;
 using ::testing::StrictMock;
 using ::testing::_;
 
+using ::drive::DriveServiceInterface;
+using ::drive::DriveUploaderInterface;
+
 using google_apis::ResourceEntry;
-using google_apis::DriveServiceInterface;
-using google_apis::DriveUploaderInterface;
 using google_apis::test_util::LoadJSONFile;
 
 using extensions::Extension;
@@ -271,7 +272,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     SetDisableDriveAPI(true);
     RegisterSyncableFileSystem();
 
-    mock_drive_service_ = new NiceMock<google_apis::MockDriveService>;
+    mock_drive_service_ = new NiceMock< ::drive::MockDriveService>;
 
     EXPECT_CALL(*mock_drive_service(), Initialize(profile_.get()));
     EXPECT_CALL(*mock_drive_service(), AddObserver(_));
@@ -377,7 +378,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     return sync_service_->metadata_store_.get();
   }
 
-  NiceMock<google_apis::MockDriveService>* mock_drive_service() {
+  NiceMock< ::drive::MockDriveService>* mock_drive_service() {
     return mock_drive_service_;
   }
 
@@ -576,7 +577,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
   ExtensionService* extension_service_;
 
   // Owned by |api_util_|.
-  NiceMock<google_apis::MockDriveService>* mock_drive_service_;
+  NiceMock< ::drive::MockDriveService>* mock_drive_service_;
 
   StrictMock<MockRemoteServiceObserver> mock_remote_observer_;
   StrictMock<MockFileStatusObserver> mock_file_status_observer_;

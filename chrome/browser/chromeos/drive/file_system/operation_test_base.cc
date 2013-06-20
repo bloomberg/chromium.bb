@@ -51,7 +51,7 @@ void OperationTestBase::SetUp() {
   profile_.reset(new TestingProfile);
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-  fake_drive_service_.reset(new google_apis::FakeDriveService);
+  fake_drive_service_.reset(new FakeDriveService);
   fake_drive_service_->LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json");
   fake_drive_service_->LoadAccountMetadataForWapi(

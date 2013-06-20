@@ -17,7 +17,7 @@ namespace base {
 class FilePath;
 }
 
-namespace google_apis {
+namespace drive {
 
 class MockDriveService : public DriveServiceInterface {
  public:
@@ -28,111 +28,134 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_METHOD1(Initialize, void(Profile* profile));
   MOCK_METHOD1(AddObserver, void(DriveServiceObserver* observer));
   MOCK_METHOD1(RemoveObserver,
-      void(DriveServiceObserver* observer));
+               void(DriveServiceObserver* observer));
   MOCK_CONST_METHOD0(CanSendRequest, bool());
   MOCK_CONST_METHOD1(CanonicalizeResourceId,
                      std::string(const std::string& resource_id));
   MOCK_CONST_METHOD0(GetRootResourceId, std::string());
   MOCK_METHOD1(GetAllResourceList,
-      CancelCallback(const GetResourceListCallback& callback));
+               google_apis::CancelCallback(
+                   const google_apis::GetResourceListCallback& callback));
   MOCK_METHOD2(GetResourceListInDirectory,
-      CancelCallback(const std::string& directory_resource_id,
-                     const GetResourceListCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& directory_resource_id,
+                   const google_apis::GetResourceListCallback& callback));
   MOCK_METHOD2(Search,
-      CancelCallback(const std::string& search_query,
-                     const GetResourceListCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& search_query,
+                   const google_apis::GetResourceListCallback& callback));
   MOCK_METHOD3(SearchByTitle,
-      CancelCallback(const std::string& title,
-                     const std::string& directory_resource_id,
-                     const GetResourceListCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& title,
+                   const std::string& directory_resource_id,
+                   const google_apis::GetResourceListCallback& callback));
   MOCK_METHOD2(GetChangeList,
-      CancelCallback(int64 start_changestamp,
-                    const GetResourceListCallback& callback));
+               google_apis::CancelCallback(
+                   int64 start_changestamp,
+                   const google_apis::GetResourceListCallback& callback));
   MOCK_METHOD2(ContinueGetResourceList,
-      CancelCallback(const GURL& override_url,
-                     const GetResourceListCallback& callback));
+               google_apis::CancelCallback(
+                   const GURL& override_url,
+                   const google_apis::GetResourceListCallback& callback));
   MOCK_METHOD2(GetResourceEntry,
-      CancelCallback(const std::string& resource_id,
-                     const GetResourceEntryCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& resource_id,
+                   const google_apis::GetResourceEntryCallback& callback));
   MOCK_METHOD1(GetAboutResource,
-      CancelCallback(const GetAboutResourceCallback& callback));
+               google_apis::CancelCallback(
+                   const google_apis::GetAboutResourceCallback& callback));
   MOCK_METHOD1(GetAppList,
-      CancelCallback(const GetAppListCallback& callback));
+               google_apis::CancelCallback(
+                   const google_apis::GetAppListCallback& callback));
   MOCK_METHOD3(DeleteResource,
-      CancelCallback(const std::string& resource_id,
-                     const std::string& etag,
-                     const EntryActionCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& resource_id,
+                   const std::string& etag,
+                   const google_apis::EntryActionCallback& callback));
   MOCK_METHOD4(CopyResource,
-      CancelCallback(const std::string& resource_id,
-                     const std::string& parent_resource_id,
-                     const std::string& new_name,
-                     const GetResourceEntryCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& resource_id,
+                   const std::string& parent_resource_id,
+                   const std::string& new_name,
+                   const google_apis::GetResourceEntryCallback& callback));
   MOCK_METHOD3(CopyHostedDocument,
-      CancelCallback(const std::string& resource_id,
-                     const std::string& new_name,
-                     const GetResourceEntryCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& resource_id,
+                   const std::string& new_name,
+                   const google_apis::GetResourceEntryCallback& callback));
   MOCK_METHOD3(RenameResource,
-      CancelCallback(const std::string& resource_id,
-                     const std::string& new_name,
-                     const EntryActionCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& resource_id,
+                   const std::string& new_name,
+                   const google_apis::EntryActionCallback& callback));
   MOCK_METHOD4(TouchResource,
-      CancelCallback(const std::string& resource_id,
-                     const base::Time& modified_date,
-                     const base::Time& last_viewed_by_me_date,
-                     const GetResourceEntryCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& resource_id,
+                   const base::Time& modified_date,
+                   const base::Time& last_viewed_by_me_date,
+                   const google_apis::GetResourceEntryCallback& callback));
   MOCK_METHOD3(AddResourceToDirectory,
-      CancelCallback(const std::string& parent_resource_id,
-                     const std::string& resource_id,
-                     const EntryActionCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& parent_resource_id,
+                   const std::string& resource_id,
+                   const google_apis::EntryActionCallback& callback));
   MOCK_METHOD3(RemoveResourceFromDirectory,
-      CancelCallback(const std::string& parent_resource_id,
-                     const std::string& resource_id,
-                     const EntryActionCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& parent_resource_id,
+                   const std::string& resource_id,
+                   const google_apis::EntryActionCallback& callback));
   MOCK_METHOD3(AddNewDirectory,
-      CancelCallback(const std::string& parent_resource_id,
-                     const std::string& directory_name,
-                     const GetResourceEntryCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& parent_resource_id,
+                   const std::string& directory_name,
+                   const google_apis::GetResourceEntryCallback& callback));
   MOCK_METHOD6(
       DownloadFile,
-      CancelCallback(const base::FilePath& virtual_path,
-                     const base::FilePath& local_cache_path,
-                     const GURL& download_url,
-                     const DownloadActionCallback& donwload_action_callback,
-                     const GetContentCallback& get_content_callback,
-                     const ProgressCallback& progress_callback));
+      google_apis::CancelCallback(
+          const base::FilePath& virtual_path,
+          const base::FilePath& local_cache_path,
+          const GURL& download_url,
+          const google_apis::DownloadActionCallback& donwload_action_callback,
+          const google_apis::GetContentCallback& get_content_callback,
+          const google_apis::ProgressCallback& progress_callback));
   MOCK_METHOD6(InitiateUploadNewFile,
-      CancelCallback(const base::FilePath& drive_file_path,
-                     const std::string& content_type,
-                     int64 content_length,
-                     const std::string& parent_resource_id,
-                     const std::string& title,
-                     const InitiateUploadCallback& callback));
+               google_apis::CancelCallback(
+                   const base::FilePath& drive_file_path,
+                   const std::string& content_type,
+                   int64 content_length,
+                   const std::string& parent_resource_id,
+                   const std::string& title,
+                   const google_apis::InitiateUploadCallback& callback));
   MOCK_METHOD6(InitiateUploadExistingFile,
-      CancelCallback(const base::FilePath& drive_file_path,
-                     const std::string& content_type,
-                     int64 content_length,
-                     const std::string& resource_id,
-                     const std::string& etag,
-                     const InitiateUploadCallback& callback));
+               google_apis::CancelCallback(
+                   const base::FilePath& drive_file_path,
+                   const std::string& content_type,
+                   int64 content_length,
+                   const std::string& resource_id,
+                   const std::string& etag,
+                   const google_apis::InitiateUploadCallback& callback));
   MOCK_METHOD9(ResumeUpload,
-      CancelCallback(const base::FilePath& drive_file_path,
-                     const GURL& upload_url,
-                     int64 start_position,
-                     int64 end_position,
-                     int64 content_length,
-                     const std::string& content_type,
-                     const base::FilePath& local_file_path,
-                     const UploadRangeCallback& callback,
-                     const ProgressCallback& progress_callback));
+               google_apis::CancelCallback(
+                   const base::FilePath& drive_file_path,
+                   const GURL& upload_url,
+                   int64 start_position,
+                   int64 end_position,
+                   int64 content_length,
+                   const std::string& content_type,
+                   const base::FilePath& local_file_path,
+                   const google_apis::UploadRangeCallback& callback,
+                   const google_apis::ProgressCallback& progress_callback));
   MOCK_METHOD4(GetUploadStatus,
-      CancelCallback(const base::FilePath& drive_file_path,
-                     const GURL& upload_url,
-                     int64 content_length,
-                     const UploadRangeCallback& callback));
+               google_apis::CancelCallback(
+                   const base::FilePath& drive_file_path,
+                   const GURL& upload_url,
+                   int64 content_length,
+                   const google_apis::UploadRangeCallback& callback));
   MOCK_METHOD3(AuthorizeApp,
-      CancelCallback(const std::string& resource_id,
-                     const std::string& app_id,
-                     const AuthorizeAppCallback& callback));
+               google_apis::CancelCallback(
+                   const std::string& resource_id,
+                   const std::string& app_id,
+                   const google_apis::AuthorizeAppCallback& callback));
   MOCK_CONST_METHOD0(HasAccessToken, bool());
   MOCK_CONST_METHOD0(HasRefreshToken, bool());
   MOCK_METHOD0(ClearAccessToken, void());
@@ -147,58 +170,58 @@ class MockDriveService : public DriveServiceInterface {
   // the callbacks get called with testable results.
 
   // Will call |callback| with HTTP_SUCCESS and a empty ResourceList.
-  CancelCallback GetChangeListStub(
+  google_apis::CancelCallback GetChangeListStub(
       int64 start_changestamp,
-      const GetResourceListCallback& callback);
+      const google_apis::GetResourceListCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS.
-  CancelCallback DeleteResourceStub(
+  google_apis::CancelCallback DeleteResourceStub(
       const std::string& resource_id,
       const std::string& etag,
-      const EntryActionCallback& callback);
+      const google_apis::EntryActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and the current value of
   // |document_data_|.
-  CancelCallback CopyHostedDocumentStub(
+  google_apis::CancelCallback CopyHostedDocumentStub(
       const std::string& resource_id,
       const std::string& new_name,
-      const GetResourceEntryCallback& callback);
+      const google_apis::GetResourceEntryCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS.
-  CancelCallback RenameResourceStub(
+  google_apis::CancelCallback RenameResourceStub(
       const std::string& resource_id,
       const std::string& new_name,
-      const EntryActionCallback& callback);
+      const google_apis::EntryActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS.
-  CancelCallback AddResourceToDirectoryStub(
+  google_apis::CancelCallback AddResourceToDirectoryStub(
       const std::string& parent_resource_id,
       const std::string& resource_id,
-      const EntryActionCallback& callback);
+      const google_apis::EntryActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS.
-  CancelCallback RemoveResourceFromDirectoryStub(
+  google_apis::CancelCallback RemoveResourceFromDirectoryStub(
       const std::string& parent_resource_id,
       const std::string& resource_id,
-      const EntryActionCallback& callback);
+      const google_apis::EntryActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and the current value of
   // |directory_data_|.
-  CancelCallback CreateDirectoryStub(
+  google_apis::CancelCallback CreateDirectoryStub(
       const std::string& parent_resource_id,
       const std::string& directory_name,
-      const GetResourceEntryCallback& callback);
+      const google_apis::GetResourceEntryCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS, the given URL, and the host+path
   // portion of the URL as the temporary file path. If |file_data_| is not null,
   // |file_data_| is written to the temporary file.
-  CancelCallback DownloadFileStub(
+  google_apis::CancelCallback DownloadFileStub(
       const base::FilePath& virtual_path,
       const base::FilePath& local_tmp_path,
       const GURL& download_url,
-      const DownloadActionCallback& download_action_callback,
-      const GetContentCallback& get_content_callback,
-      const ProgressCallback& progress_callback);
+      const google_apis::DownloadActionCallback& download_action_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const google_apis::ProgressCallback& progress_callback);
 
   // JSON data to be returned from CreateDirectory.
   scoped_ptr<base::Value> directory_data_;
@@ -211,6 +234,6 @@ class MockDriveService : public DriveServiceInterface {
   scoped_ptr<std::string> file_data_;
 };
 
-}  // namespace google_apis
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_DRIVE_MOCK_DRIVE_SERVICE_H_

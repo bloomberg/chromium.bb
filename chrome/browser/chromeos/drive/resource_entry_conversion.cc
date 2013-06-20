@@ -54,9 +54,8 @@ ResourceEntry ConvertToResourceEntry(
   const google_apis::Link* parent_link =
       input.GetLinkByType(google_apis::Link::LINK_PARENT);
   if (parent_link) {
-    output.set_parent_resource_id(
-        google_apis::drive::util::ExtractResourceIdFromUrl(
-            parent_link->href()));
+    output.set_parent_resource_id(util::ExtractResourceIdFromUrl(
+        parent_link->href()));
   }
   // Apply mapping from an empty parent to the special dummy directory.
   if (output.parent_resource_id().empty())

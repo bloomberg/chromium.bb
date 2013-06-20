@@ -129,7 +129,7 @@ FileError InitializeMetadata(const base::FilePath& cache_root_directory,
 
 DriveIntegrationService::DriveIntegrationService(
     Profile* profile,
-    google_apis::DriveServiceInterface* test_drive_service,
+    DriveServiceInterface* test_drive_service,
     const base::FilePath& test_cache_root,
     FileSystemInterface* test_file_system)
     : profile_(profile),
@@ -145,13 +145,13 @@ DriveIntegrationService::DriveIntegrationService(
 
   if (test_drive_service) {
     drive_service_.reset(test_drive_service);
-  } else if (google_apis::util::IsDriveV2ApiEnabled()) {
-    drive_service_.reset(new google_apis::DriveAPIService(
+  } else if (util::IsDriveV2ApiEnabled()) {
+    drive_service_.reset(new DriveAPIService(
         g_browser_process->system_request_context(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         GetDriveUserAgent()));
   } else {
-    drive_service_.reset(new google_apis::GDataWapiService(
+    drive_service_.reset(new GDataWapiService(
         g_browser_process->system_request_context(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         GetDriveUserAgent()));
@@ -207,8 +207,8 @@ void DriveIntegrationService::Initialize() {
 void DriveIntegrationService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  google_apis::DriveNotificationManager* drive_notification_manager =
-      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
+  DriveNotificationManager* drive_notification_manager =
+      DriveNotificationManagerFactory::GetForProfile(profile_);
   if (drive_notification_manager)
     drive_notification_manager->RemoveObserver(this);
 
@@ -356,8 +356,8 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
       cache_root_directory_.Append(util::kTemporaryFileDirectory));
 
   // Register for Google Drive invalidation notifications.
-  google_apis::DriveNotificationManager* drive_notification_manager =
-      google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
+  DriveNotificationManager* drive_notification_manager =
+      DriveNotificationManagerFactory::GetForProfile(profile_);
   if (drive_notification_manager) {
     drive_notification_manager->AddObserver(this);
     const bool registered =
@@ -437,7 +437,7 @@ DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "DriveIntegrationService",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(google_apis::DriveNotificationManagerFactory::GetInstance());
+  DependsOn(DriveNotificationManagerFactory::GetInstance());
   DependsOn(DownloadServiceFactory::GetInstance());
 }
 

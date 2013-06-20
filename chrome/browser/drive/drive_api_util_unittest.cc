@@ -7,7 +7,6 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace google_apis {
 namespace drive {
 namespace util {
 
@@ -77,4 +76,3 @@ TEST(FileSystemUtilTest, CanonicalizeResourceId) {
 
 }  // namespace util
 }  // namespace drive
-}  // namespace google_apis

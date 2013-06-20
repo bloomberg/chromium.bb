@@ -256,7 +256,7 @@ class DriveTestVolume {
 
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
-    fake_drive_service_ = new google_apis::FakeDriveService;
+    fake_drive_service_ = new drive::FakeDriveService;
     fake_drive_service_->LoadResourceListForWapi(
         "chromeos/gdata/empty_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
@@ -272,7 +272,7 @@ class DriveTestVolume {
 
  private:
   base::ScopedTempDir test_cache_root_;
-  google_apis::FakeDriveService* fake_drive_service_;
+  drive::FakeDriveService* fake_drive_service_;
   drive::DriveIntegrationService* integration_service_;
 };
 

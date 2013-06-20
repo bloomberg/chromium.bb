@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_DRIVE_DRIVE_SWITCHES_H_
 #define CHROME_BROWSER_DRIVE_DRIVE_SWITCHES_H_
 
-namespace google_apis {
+namespace drive {
 namespace switches {
 
 extern const char kEnableDriveV2Api[];
 
 }  // namespace switches
-}  // namespace google_apis
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_DRIVE_DRIVE_SWITCHES_H_

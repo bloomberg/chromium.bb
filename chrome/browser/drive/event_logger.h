@@ -15,7 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 
-namespace google_apis {
+namespace drive {
 
 // The default history size used by EventLogger.
 const int kDefaultHistorySize = 1000;
@@ -60,6 +60,6 @@ class EventLogger {
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };
 
-}  // namespace google_apis
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_DRIVE_EVENT_LOGGER_H_

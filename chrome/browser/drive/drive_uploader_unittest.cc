@@ -20,7 +20,24 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace google_apis {
+using google_apis::CancelCallback;
+using google_apis::GDataErrorCode;
+using google_apis::GDATA_NO_CONNECTION;
+using google_apis::GDATA_OTHER_ERROR;
+using google_apis::HTTP_CONFLICT;
+using google_apis::HTTP_CREATED;
+using google_apis::HTTP_NOT_FOUND;
+using google_apis::HTTP_PRECONDITION;
+using google_apis::HTTP_RESUME_INCOMPLETE;
+using google_apis::HTTP_SUCCESS;
+using google_apis::InitiateUploadCallback;
+using google_apis::ProgressCallback;
+using google_apis::ResourceEntry;
+using google_apis::UploadRangeCallback;
+using google_apis::UploadRangeResponse;
+namespace test_util = google_apis::test_util;
+
+namespace drive {
 
 namespace {
 
@@ -542,4 +559,4 @@ TEST_F(DriveUploaderTest, ResumeUpload) {
             upload_progress_values[0]);
 }
 
-}  // namespace google_apis
+}  // namespace drive

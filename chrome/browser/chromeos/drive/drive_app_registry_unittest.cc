@@ -21,7 +21,7 @@ class DriveAppRegistryTest : public testing::Test {
     profile_.reset(new TestingProfile);
 
     // The fake object will be manually deleted in TearDown().
-    fake_drive_service_.reset(new google_apis::FakeDriveService);
+    fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
 
     scheduler_.reset(
@@ -58,7 +58,7 @@ class DriveAppRegistryTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
+  scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveAppRegistry> web_apps_registry_;
 };

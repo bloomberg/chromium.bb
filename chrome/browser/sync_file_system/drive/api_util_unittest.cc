@@ -23,13 +23,13 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-using google_apis::FakeDriveService;
-using google_apis::ResourceEntry;
-using google_apis::ResourceList;
-using google_apis::DriveServiceInterface;
-using google_apis::DriveUploaderInterface;
+using ::drive::DriveServiceInterface;
+using ::drive::DriveUploaderInterface;
+using ::drive::FakeDriveService;
 using google_apis::GDataErrorCode;
 using google_apis::Link;
+using google_apis::ResourceEntry;
+using google_apis::ResourceList;
 using google_apis::test_util::LoadJSONFile;
 
 namespace sync_file_system {
@@ -129,7 +129,7 @@ class FakeDriveUploader : public DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
-      const google_apis::UploadCompletionCallback& callback,
+      const ::drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) OVERRIDE {
     DCHECK(!callback.is_null());
 
@@ -164,7 +164,7 @@ class FakeDriveUploader : public DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const std::string& etag,
-      const google_apis::UploadCompletionCallback& callback,
+      const ::drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) OVERRIDE {
     DCHECK(!callback.is_null());
 
@@ -189,7 +189,7 @@ class FakeDriveUploader : public DriveUploaderInterface {
       const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
-      const google_apis::UploadCompletionCallback& callback,
+      const ::drive::UploadCompletionCallback& callback,
       const google_apis::ProgressCallback& progress_callback) OVERRIDE {
     NOTREACHED();
     return google_apis::CancelCallback();
