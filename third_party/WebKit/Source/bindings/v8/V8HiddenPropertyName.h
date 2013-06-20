@@ -42,6 +42,7 @@ namespace WebCore {
     V(detail) \
     V(document) \
     V(event) \
+    V(isCustomElementInterfacePrototypeObject) \
     V(listener) \
     V(name) \
     V(namespaceURI) \

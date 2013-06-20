@@ -138,7 +138,7 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
     RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, tagName.localName(), tagName.namespaceURI());
 
     if (!constructorBuilder->createConstructor(document(), definition.get())) {
-        ec = INVALID_STATE_ERR;
+        ec = NOT_SUPPORTED_ERR;
         return;
     }
 

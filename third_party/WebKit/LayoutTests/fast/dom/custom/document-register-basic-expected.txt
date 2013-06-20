@@ -3,17 +3,19 @@ Testing document.register() basic behaviors.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS document.register('foo', createRegisterParamters()) threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS document.register('xfoo', createRegisterParamters()) threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
-PASS document.register('missing-glyph', createRegisterParamters()) threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
+PASS document.register('foo', createRegisterParameters()) threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
+PASS document.register('xfoo', createRegisterParameters()) threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
+PASS document.register('missing-glyph', createRegisterParameters()) threw exception InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name..
 PASS typeof fooConstructor is 'function'
 PASS fooConstructor.prototype.__proto__ is HTMLElement.prototype
 PASS fooConstructor.prototype.thisIsPrototype is true
-PASS document.register('x-foo', createRegisterParamters()) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS document.register('X-FOO', createRegisterParamters()) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS document.register('x-bad-a', { prototype: HTMLElement.prototype }) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS document.register('x-bad-b', { prototype: {} }) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS document.register('x-bad-c', { prototype: Object.create(Document.prototype) }) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS document.register('x-foo', createRegisterParameters()) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS document.register('X-FOO', createRegisterParameters()) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS document.register('x-bad-a', HTMLElement) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS document.register('x-bad-b', fooConstructor) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS document.register('x-bad-c', { prototype: proto }) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS document.register('x-bad-d', { prototype: {} }) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS document.register('x-bad-e', { prototype: Object.create(Document.prototype) }) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 PASS fooConstructor() threw exception TypeError: DOM object constructor cannot be called as a function..
 PASS createdFoo.__proto__ is fooConstructor.prototype
 PASS createdFoo.constructor is fooConstructor
@@ -36,10 +38,10 @@ PASS container.firstChild.constructor is barConstructor
 PASS container.firstChild.tagName is 'X-BAR'
 PASS container.lastChild.constructor is barConstructor
 PASS container.lastChild.tagName is 'X-BAR'
-PASS (new (document.register('y-bar', createRegisterParamters()))()).tagName is 'Y-BAR'
-PASS (new (document.register('yz-bar', createRegisterParamters()))()).tagName is 'YZ-BAR'
-PASS (new (document.register('y-z-bar', createRegisterParamters()))()).tagName is 'Y-Z-BAR'
-PASS (new (document.register('y--bar', createRegisterParamters()))()).tagName is 'Y--BAR'
+PASS (new (document.register('y-bar', createRegisterParameters()))()).tagName is 'Y-BAR'
+PASS (new (document.register('yz-bar', createRegisterParameters()))()).tagName is 'YZ-BAR'
+PASS (new (document.register('y-z-bar', createRegisterParameters()))()).tagName is 'Y-Z-BAR'
+PASS (new (document.register('y--bar', createRegisterParameters()))()).tagName is 'Y--BAR'
 PASS (new fooConstructor).tagName is 'X-FOO'
 PASS (new barConstructor).tagName is 'X-BAR'
 PASS (new bazConstructor).tagName is 'X-BAZ'

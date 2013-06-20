@@ -74,6 +74,7 @@ public:
 
 private:
     bool hasValidPrototypeChainFor(WrapperTypeInfo*) const;
+    bool prototypeIsValid() const;
 
     v8::Handle<v8::Context> m_context;
     const Dictionary* m_options;

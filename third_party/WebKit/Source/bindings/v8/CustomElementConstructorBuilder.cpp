@@ -138,6 +138,9 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
     v8::Isolate* isolate = m_context->GetIsolate();
 
+    if (!prototypeIsValid())
+        return false;
+
     v8::Local<v8::FunctionTemplate> constructorTemplate = v8::FunctionTemplate::New();
     constructorTemplate->SetCallHandler(constructCustomElement);
     m_constructor = constructorTemplate->GetFunction();
@@ -154,16 +157,34 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "name", v8Name);
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "type", v8Type);
 
-    // Neither Object::ForceSet nor Object::SetAccessor can set the
-    // "prototype" property of function objects, so we use Set()
-    // instead. This is safe because each function has "prototype"
-    // property from birth so the Function, etc. prototypes will not
-    // intercept the property access.
     v8::Handle<v8::String> prototypeKey = v8String("prototype", isolate);
     ASSERT(m_constructor->HasOwnProperty(prototypeKey));
-    m_constructor->Set(prototypeKey, m_prototype, v8::ReadOnly);
+    // This sets the property *value*; calling Set is safe because
+    // "prototype" is a non-configurable data property so there can be
+    // no side effects.
+    m_constructor->Set(prototypeKey, m_prototype);
+    // This *configures* the property. ForceSet of a function's
+    // "prototype" does not affect the value, but can reconfigure the
+    // property.
+    m_constructor->ForceSet(prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete));
 
-    m_prototype->ForceSet(v8String("constructor", isolate), m_constructor, v8::ReadOnly);
+    V8HiddenPropertyName::setNamedHiddenReference(m_prototype, "isCustomElementInterfacePrototypeObject", v8::True());
+    m_prototype->ForceSet(v8String("constructor", isolate), m_constructor, v8::DontEnum);
+
+    return true;
+}
+
+bool CustomElementConstructorBuilder::prototypeIsValid() const
+{
+    if (m_prototype->InternalFieldCount() || !m_prototype->GetHiddenValue(V8HiddenPropertyName::isCustomElementInterfacePrototypeObject()).IsEmpty()) {
+        // Already an interface prototype object.
+        return false;
+    }
+
+    if (m_prototype->GetPropertyAttributes(v8String("constructor", m_context->GetIsolate())) & v8::DontDelete) {
+        // "constructor" is not configurable.
+        return false;
+    }
 
     return true;
 }
@@ -195,10 +216,6 @@ ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const
 
 bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(WrapperTypeInfo* typeInfo) const
 {
-    // document.register() sets the constructor property, so the prototype shouldn't have one.
-    if (m_prototype->HasOwnProperty(v8String("constructor", m_context->GetIsolate())))
-        return false;
-
     v8::Handle<v8::Object> elementConstructor = v8::Handle<v8::Object>::Cast(V8PerContextData::from(m_context)->constructorForType(typeInfo));
     if (elementConstructor.IsEmpty())
         return false;
