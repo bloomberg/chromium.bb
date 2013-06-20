@@ -16,7 +16,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
-#include "cc/base/thread_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/output/context_provider.h"
@@ -523,13 +522,10 @@ Compositor::Compositor(CompositorDelegate* delegate,
   settings.initial_debug_state.show_non_occluding_rects =
       command_line->HasSwitch(cc::switches::kUIShowNonOccludingRects);
 
-  scoped_ptr<cc::Thread> thread;
-  if (g_compositor_thread) {
-    thread = cc::ThreadImpl::CreateForDifferentThread(
-        g_compositor_thread->message_loop_proxy());
-  }
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
+      g_compositor_thread ? g_compositor_thread->message_loop_proxy() : NULL;
 
-  host_ = cc::LayerTreeHost::Create(this, settings, thread.Pass());
+  host_ = cc::LayerTreeHost::Create(this, settings, compositor_task_runner);
   host_->SetRootLayer(root_web_layer_);
   host_->SetLayerTreeHostClientReady();
 }

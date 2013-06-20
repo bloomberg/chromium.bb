@@ -14,9 +14,9 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "cc/base/thread_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/output/context_provider.h"
@@ -227,12 +227,11 @@ void CompositorImpl::SetVisible(bool visible) {
     if (UsesDirectGL())
       settings.should_clear_root_render_pass = false;
 
-    scoped_ptr<cc::Thread> impl_thread;
-    if (g_impl_thread)
-      impl_thread = cc::ThreadImpl::CreateForDifferentThread(
-          g_impl_thread->message_loop()->message_loop_proxy());
+    scoped_refptr<base::SingleThreadTaskRunner> impl_thread_task_runner =
+        g_impl_thread ? g_impl_thread->message_loop()->message_loop_proxy()
+                      : NULL;
 
-    host_ = cc::LayerTreeHost::Create(this, settings, impl_thread.Pass());
+    host_ = cc::LayerTreeHost::Create(this, settings, impl_thread_task_runner);
     host_->SetRootLayer(root_layer_);
 
     host_->SetVisible(true);

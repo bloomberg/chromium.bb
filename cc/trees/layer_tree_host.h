@@ -85,9 +85,10 @@ struct CC_EXPORT RendererCapabilities {
 
 class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
  public:
-  static scoped_ptr<LayerTreeHost> Create(LayerTreeHostClient* client,
-                                          const LayerTreeSettings& settings,
-                                          scoped_ptr<Thread> impl_thread);
+  static scoped_ptr<LayerTreeHost> Create(
+      LayerTreeHostClient* client,
+      const LayerTreeSettings& settings,
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
   virtual ~LayerTreeHost();
 
   void SetLayerTreeHostClientReady();
@@ -261,7 +262,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
  protected:
   LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings);
-  bool Initialize(scoped_ptr<Thread> impl_thread);
+  bool Initialize(scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
   bool InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing);
 
  private:

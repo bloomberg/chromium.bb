@@ -18,6 +18,8 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
 
+namespace base { class SingleThreadTaskRunner; }
+
 namespace cc {
 
 class ContextProvider;
@@ -26,15 +28,15 @@ class LayerTreeHost;
 class ResourceUpdateQueue;
 class Scheduler;
 class ScopedThreadProxy;
-class Thread;
 
 class ThreadProxy : public Proxy,
                     LayerTreeHostImplClient,
                     SchedulerClient,
                     ResourceUpdateControllerClient {
  public:
-  static scoped_ptr<Proxy> Create(LayerTreeHost* layer_tree_host,
-                                  scoped_ptr<Thread> impl_thread);
+  static scoped_ptr<Proxy> Create(
+      LayerTreeHost* layer_tree_host,
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
 
   virtual ~ThreadProxy();
 
@@ -108,7 +110,8 @@ class ThreadProxy : public Proxy,
   virtual void ReadyToFinalizeTextureUpdates() OVERRIDE;
 
  private:
-  ThreadProxy(LayerTreeHost* layer_tree_host, scoped_ptr<Thread> impl_thread);
+  ThreadProxy(LayerTreeHost* layer_tree_host,
+              scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
 
   struct BeginFrameAndCommitState {
     BeginFrameAndCommitState();

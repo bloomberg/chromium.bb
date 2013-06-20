@@ -17,7 +17,6 @@
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
-#include "cc/base/thread.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/input/top_controls_manager.h"
@@ -65,10 +64,10 @@ bool LayerTreeHost::AnyLayerTreeHostInstanceExists() {
 scoped_ptr<LayerTreeHost> LayerTreeHost::Create(
     LayerTreeHostClient* client,
     const LayerTreeSettings& settings,
-    scoped_ptr<Thread> impl_thread) {
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
   scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(client,
                                                               settings));
-  if (!layer_tree_host->Initialize(impl_thread.Pass()))
+  if (!layer_tree_host->Initialize(impl_task_runner))
     return scoped_ptr<LayerTreeHost>();
   return layer_tree_host.Pass();
 }
@@ -106,9 +105,10 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       debug_state_.RecordRenderingStats());
 }
 
-bool LayerTreeHost::Initialize(scoped_ptr<Thread> impl_thread) {
-  if (impl_thread)
-    return InitializeProxy(ThreadProxy::Create(this, impl_thread.Pass()));
+bool LayerTreeHost::Initialize(
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+  if (impl_task_runner)
+    return InitializeProxy(ThreadProxy::Create(this, impl_task_runner));
   else
     return InitializeProxy(SingleThreadProxy::Create(this));
 }
@@ -485,7 +485,7 @@ void LayerTreeHost::SetNeedsRedraw() {
 
 void LayerTreeHost::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   proxy_->SetNeedsRedraw(damage_rect);
-  if (!proxy_->ImplThread())
+  if (!proxy_->HasImplThread())
     client_->ScheduleComposite();
 }
 
@@ -997,7 +997,7 @@ void LayerTreeHost::StartRateLimiter(WebKit::WebGraphicsContext3D* context3d) {
     it->second->Start();
   } else {
     scoped_refptr<RateLimiter> rate_limiter =
-        RateLimiter::Create(context3d, this, proxy_->MainThread());
+        RateLimiter::Create(context3d, this, proxy_->MainThreadTaskRunner());
     rate_limiters_[context3d] = rate_limiter;
     rate_limiter->Start();
   }
@@ -1041,7 +1041,8 @@ void LayerTreeHost::UpdateTopControlsState(TopControlsState constraints,
     return;
 
   // Top controls are only used in threaded mode.
-  proxy_->ImplThread()->PostTask(
+  proxy_->ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&TopControlsManager::UpdateTopControlsState,
                  top_controls_manager_weak_ptr_,
                  constraints,

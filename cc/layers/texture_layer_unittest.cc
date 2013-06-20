@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "cc/base/thread.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -33,7 +32,7 @@ class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(LayerTreeHostClient* client)
       : LayerTreeHost(client, LayerTreeSettings()) {
-    Initialize(scoped_ptr<Thread>());
+    Initialize(NULL);
   }
 
   MOCK_METHOD0(AcquireLayerTextures, void());

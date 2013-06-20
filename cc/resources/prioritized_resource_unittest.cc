@@ -17,8 +17,7 @@ namespace cc {
 class PrioritizedResourceTest : public testing::Test {
  public:
   PrioritizedResourceTest()
-      : proxy_(scoped_ptr<Thread>()),
-        texture_size_(256, 256),
+      : texture_size_(256, 256),
         texture_format_(GL_RGBA),
         output_surface_(CreateFakeOutputSurface()) {
     DebugScopedSetImplThread impl_thread(&proxy_);

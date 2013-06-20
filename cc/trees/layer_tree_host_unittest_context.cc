@@ -5,7 +5,6 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/basictypes.h"
-#include "cc/base/thread_impl.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/io_surface_layer.h"
@@ -135,7 +134,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
   virtual scoped_refptr<cc::ContextProvider>
   OffscreenContextProviderForMainThread() OVERRIDE {
-    DCHECK(!ImplThread());
+    DCHECK(!HasImplThread());
 
     if (!offscreen_contexts_main_thread_.get() ||
         offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
@@ -151,7 +150,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
   virtual scoped_refptr<cc::ContextProvider>
   OffscreenContextProviderForCompositorThread() OVERRIDE {
-    DCHECK(ImplThread());
+    DCHECK(HasImplThread());
 
     if (!offscreen_contexts_compositor_thread_.get() ||
         offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
@@ -829,8 +828,9 @@ class LayerTreeHostContextTestLostContextAndEvictTextures
   }
 
   void PostEvictTextures() {
-    if (ImplThread()) {
-      ImplThread()->PostTask(
+    if (HasImplThread()) {
+      ImplThreadTaskRunner()->PostTask(
+          FROM_HERE,
           base::Bind(
               &LayerTreeHostContextTestLostContextAndEvictTextures::
               EvictTexturesOnImplThread,
@@ -1576,18 +1576,18 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
                bool delegating_renderer,
                bool impl_side_painting) {
     scoped_ptr<base::Thread> impl_thread;
-    scoped_ptr<cc::Thread> impl_ccthread;
     if (threaded) {
       impl_thread.reset(new base::Thread("LayerTreeTest"));
-      impl_ccthread = cc::ThreadImpl::CreateForDifferentThread(
-          impl_thread->message_loop_proxy());
-      ASSERT_TRUE(impl_ccthread);
+      ASSERT_TRUE(impl_thread->Start());
+      ASSERT_TRUE(impl_thread->message_loop_proxy());
     }
 
     LayerTreeSettings settings;
     settings.impl_side_painting = impl_side_painting;
-    scoped_ptr<LayerTreeHost> layer_tree_host =
-        LayerTreeHost::Create(this, settings, impl_ccthread.Pass());
+    scoped_ptr<LayerTreeHost> layer_tree_host = LayerTreeHost::Create(
+        this,
+        settings,
+        impl_thread ? impl_thread->message_loop_proxy() : NULL);
     EXPECT_FALSE(layer_tree_host);
   }
 };

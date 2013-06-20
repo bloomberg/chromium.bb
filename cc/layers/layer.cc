@@ -6,11 +6,12 @@
 
 #include <algorithm>
 
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/layer_animation_controller.h"
-#include "cc/base/thread.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -657,12 +658,14 @@ static void RunCopyCallbackOnMainThread(scoped_ptr<CopyOutputRequest> request,
   request->SendResult(result.Pass());
 }
 
-static void PostCopyCallbackToMainThread(Thread* main_thread,
-                                         scoped_ptr<CopyOutputRequest> request,
-                                         scoped_ptr<CopyOutputResult> result) {
-  main_thread->PostTask(base::Bind(&RunCopyCallbackOnMainThread,
-                                   base::Passed(&request),
-                                   base::Passed(&result)));
+static void PostCopyCallbackToMainThread(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+    scoped_ptr<CopyOutputRequest> request,
+    scoped_ptr<CopyOutputResult> result) {
+  main_thread_task_runner->PostTask(FROM_HERE,
+                                    base::Bind(&RunCopyCallbackOnMainThread,
+                                               base::Passed(&request),
+                                               base::Passed(&result)));
 }
 
 void Layer::PushPropertiesTo(LayerImpl* layer) {
@@ -712,13 +715,15 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   for (ScopedPtrVector<CopyOutputRequest>::iterator it = copy_requests_.begin();
        it != copy_requests_.end();
        ++it) {
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
+        layer_tree_host()->proxy()->MainThreadTaskRunner();
     scoped_ptr<CopyOutputRequest> original_request = copy_requests_.take(it);
     const CopyOutputRequest& original_request_ref = *original_request;
     scoped_ptr<CopyOutputRequest> main_thread_request =
         CopyOutputRequest::CreateRelayRequest(
             original_request_ref,
             base::Bind(&PostCopyCallbackToMainThread,
-                       layer_tree_host()->proxy()->MainThread(),
+                       main_thread_task_runner,
                        base::Passed(&original_request)));
     main_thread_copy_requests.push_back(main_thread_request.Pass());
   }

@@ -8,8 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "cc/base/switches.h"
-#include "cc/base/thread.h"
-#include "cc/base/thread_impl.h"
 #include "cc/debug/fake_web_graphics_context_3d.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
@@ -43,8 +41,7 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
 
 WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
 
-bool WebLayerTreeViewImplForTesting::Initialize(
-    scoped_ptr<cc::Thread> compositor_thread) {
+bool WebLayerTreeViewImplForTesting::Initialize() {
   cc::LayerTreeSettings settings;
 
   // For web contents, layer transforms should scale up the contents of layers
@@ -55,8 +52,7 @@ bool WebLayerTreeViewImplForTesting::Initialize(
   // tests.
   settings.accelerated_animation_enabled =
       type_ == webkit_support::FAKE_CONTEXT;
-  layer_tree_host_ =
-      cc::LayerTreeHost::Create(this, settings, compositor_thread.Pass());
+  layer_tree_host_ = cc::LayerTreeHost::Create(this, settings, NULL);
   if (!layer_tree_host_)
     return false;
   return true;

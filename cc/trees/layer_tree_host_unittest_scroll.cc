@@ -5,7 +5,6 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/memory/weak_ptr.h"
-#include "cc/base/thread_impl.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -726,9 +725,7 @@ void BindInputHandlerOnCompositorThread(
 
 TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   base::Thread impl_thread("cc");
-  impl_thread.Start();
-  scoped_ptr<Thread> impl_ccthread =
-      ThreadImpl::CreateForDifferentThread(impl_thread.message_loop_proxy());
+  ASSERT_TRUE(impl_thread.Start());
 
   bool received_stop_flinging = false;
   LayerTreeSettings settings;
@@ -737,8 +734,11 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
           impl_thread.message_loop_proxy().get(), &received_stop_flinging);
   FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
+  ASSERT_TRUE(impl_thread.message_loop_proxy());
   scoped_ptr<LayerTreeHost> layer_tree_host =
-      LayerTreeHost::Create(&client, settings, impl_ccthread.Pass());
+      LayerTreeHost::Create(&client,
+                            settings,
+                            impl_thread.message_loop_proxy());
 
   impl_thread.message_loop_proxy()
       ->PostTask(FROM_HERE,

@@ -14,7 +14,6 @@
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/math_util.h"
-#include "cc/base/thread.h"
 #include "cc/base/util.h"
 #include "cc/debug/debug_rect_history.h"
 #include "cc/debug/frame_rate_counter.h"
@@ -768,6 +767,8 @@ void LayerTreeHostImpl::MainThreadHasStoppedFlinging() {
 
 void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
     bool should_background_tick) {
+  DCHECK(proxy_->IsImplThread());
+
   bool enabled = should_background_tick &&
                  !animation_registrar_->active_animation_controllers().empty();
 
@@ -776,8 +777,10 @@ void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
   if (!time_source_client_adapter_) {
     time_source_client_adapter_ = LayerTreeHostImplTimeSourceAdapter::Create(
         this,
-        DelayBasedTimeSource::Create(LowFrequencyAnimationInterval(),
-                                     proxy_->CurrentThread()->TaskRunner()));
+        DelayBasedTimeSource::Create(
+            LowFrequencyAnimationInterval(),
+            proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
+                                    : proxy_->MainThreadTaskRunner()));
   }
 
   time_source_client_adapter_->SetActive(enabled);
@@ -1539,7 +1542,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
           settings_.refresh_rate);
 
     output_surface->InitializeBeginFrameEmulation(
-        proxy_->ImplThread() ? proxy_->ImplThread()->TaskRunner() : NULL,
+        proxy_->ImplThreadTaskRunner(),
         settings_.throttle_frame_production,
         display_refresh_interval);
   }

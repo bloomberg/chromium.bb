@@ -10,7 +10,6 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "cc/base/thread_impl.h"
 #include "cc/output/context_provider.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
@@ -512,7 +511,7 @@ WebKit::WebLayerTreeView*
       new WebLayerTreeViewImplForTesting(
           webkit_support::FAKE_CONTEXT, NULL));
 
-  if (!view->Initialize(scoped_ptr<cc::Thread>()))
+  if (!view->Initialize())
     return NULL;
   return view.release();
 }

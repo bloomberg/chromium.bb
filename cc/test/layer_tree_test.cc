@@ -10,7 +10,6 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/switches.h"
-#include "cc/base/thread_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/layer.h"
@@ -179,10 +178,10 @@ class LayerTreeHostForTesting : public cc::LayerTreeHost {
       TestHooks* test_hooks,
       cc::LayerTreeHostClient* host_client,
       const cc::LayerTreeSettings& settings,
-      scoped_ptr<cc::Thread> impl_thread) {
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
     scoped_ptr<LayerTreeHostForTesting> layer_tree_host(
         new LayerTreeHostForTesting(test_hooks, host_client, settings));
-    bool success = layer_tree_host->Initialize(impl_thread.Pass());
+    bool success = layer_tree_host->Initialize(impl_task_runner);
     EXPECT_TRUE(success);
     return layer_tree_host.Pass();
   }
@@ -325,19 +324,22 @@ void LayerTreeTest::EndTest() {
   } else if (proxy()) {
     // Racy timeouts and explicit EndTest calls might have cleaned up
     // the tree host. Should check proxy first.
-    proxy()->MainThread()->PostTask(
+    proxy()->MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
         base::Bind(&LayerTreeTest::RealEndTest, main_thread_weak_ptr_));
   }
 }
 
 void LayerTreeTest::EndTestAfterDelay(int delay_milliseconds) {
-  proxy()->MainThread()->PostTask(
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::EndTest, main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostAddAnimationToMainThread(
     Layer* layer_to_receive_animation) {
-  proxy()->MainThread()->PostTask(
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchAddAnimation,
                  main_thread_weak_ptr_,
                  base::Unretained(layer_to_receive_animation)));
@@ -345,38 +347,44 @@ void LayerTreeTest::PostAddAnimationToMainThread(
 
 void LayerTreeTest::PostAddInstantAnimationToMainThread(
     Layer* layer_to_receive_animation) {
-  proxy()->MainThread()->PostTask(
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchAddInstantAnimation,
                  main_thread_weak_ptr_,
                  base::Unretained(layer_to_receive_animation)));
 }
 
 void LayerTreeTest::PostSetNeedsCommitToMainThread() {
-  proxy()->MainThread()->PostTask(
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchSetNeedsCommit,
                  main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostAcquireLayerTextures() {
-  proxy()->MainThread()->PostTask(
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchAcquireLayerTextures,
                  main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostSetNeedsRedrawToMainThread() {
-  proxy()->MainThread()->PostTask(
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchSetNeedsRedraw,
                  main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostSetNeedsRedrawRectToMainThread(gfx::Rect damage_rect) {
-  proxy()->MainThread()->PostTask(
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchSetNeedsRedrawRect,
                  main_thread_weak_ptr_, damage_rect));
 }
 
 void LayerTreeTest::PostSetVisibleToMainThread(bool visible) {
-  proxy()->MainThread()->PostTask(
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchSetVisible,
                  main_thread_weak_ptr_,
                  visible));
@@ -385,15 +393,12 @@ void LayerTreeTest::PostSetVisibleToMainThread(bool visible) {
 void LayerTreeTest::DoBeginTest() {
   client_ = LayerTreeHostClientForTesting::Create(this);
 
-  scoped_ptr<cc::Thread> impl_ccthread;
-  if (impl_thread_) {
-    impl_ccthread = cc::ThreadImpl::CreateForDifferentThread(
-        impl_thread_->message_loop_proxy());
-  }
-  layer_tree_host_ = LayerTreeHostForTesting::Create(this,
-                                                     client_.get(),
-                                                     settings_,
-                                                     impl_ccthread.Pass());
+  DCHECK(!impl_thread_ || impl_thread_->message_loop_proxy());
+  layer_tree_host_ = LayerTreeHostForTesting::Create(
+      this,
+      client_.get(),
+      settings_,
+      impl_thread_ ? impl_thread_->message_loop_proxy() : NULL);
   ASSERT_TRUE(layer_tree_host_);
 
   started_ = true;
@@ -439,7 +444,8 @@ void LayerTreeTest::ScheduleComposite() {
   if (!started_ || scheduled_)
     return;
   scheduled_ = true;
-  proxy()->MainThread()->PostTask(
+  proxy()->MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchComposite, main_thread_weak_ptr_));
 }
 
@@ -447,7 +453,8 @@ void LayerTreeTest::RealEndTest() {
   ended_ = true;
 
   if (layer_tree_host_ && proxy()->CommitPendingForTesting()) {
-    proxy()->MainThread()->PostTask(
+    proxy()->MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
         base::Bind(&LayerTreeTest::RealEndTest, main_thread_weak_ptr_));
     return;
   }
@@ -548,7 +555,8 @@ void LayerTreeTest::RunTest(bool threaded,
     ASSERT_TRUE(impl_thread_->Start());
   }
 
-  main_ccthread_ = cc::ThreadImpl::CreateForCurrentThread();
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_ =
+      base::MessageLoopProxy::current();
 
   delegating_renderer_ = delegating_renderer;
 
@@ -562,12 +570,14 @@ void LayerTreeTest::RunTest(bool threaded,
   }
   InitializeSettings(&settings_);
 
-  main_ccthread_->PostTask(
+  main_task_runner_->PostTask(
+      FROM_HERE,
       base::Bind(&LayerTreeTest::DoBeginTest, base::Unretained(this)));
 
   if (timeout_seconds_) {
     timeout_.Reset(base::Bind(&LayerTreeTest::Timeout, base::Unretained(this)));
-    main_ccthread_->PostDelayedTask(
+    main_task_runner_->PostDelayedTask(
+        FROM_HERE,
         timeout_.callback(),
         base::TimeDelta::FromSeconds(timeout_seconds_));
   }

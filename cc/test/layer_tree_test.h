@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
-#include "cc/base/thread.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -141,7 +140,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
                        bool delegating_renderer,
                        bool impl_side_painting);
 
-  Thread* ImplThread() { return proxy() ? proxy()->ImplThread() : NULL; }
+  bool HasImplThread() { return proxy() ? proxy()->HasImplThread() : false; }
+  base::SingleThreadTaskRunner* ImplThreadTaskRunner() {
+    return proxy() ? proxy()->ImplThreadTaskRunner() : NULL;
+  }
   Proxy* proxy() const {
     return layer_tree_host_ ? layer_tree_host_->proxy() : NULL;
   }
@@ -174,7 +176,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   int timeout_seconds_;
 
-  scoped_ptr<Thread> main_ccthread_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_ptr<base::Thread> impl_thread_;
   base::CancelableClosure timeout_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;

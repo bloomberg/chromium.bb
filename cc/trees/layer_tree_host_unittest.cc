@@ -718,7 +718,7 @@ class LayerTreeHostTestFrameTimeUpdatesAfterDraw : public LayerTreeHostTest {
     // commit isn't required for updating the current frame time. We can
     // only check for this in the multi-threaded case, since in the single-
     // threaded case there will always be a commit between consecutive draws.
-    if (ImplThread())
+    if (HasImplThread())
       EXPECT_EQ(0, frame_);
   }
 
@@ -1626,8 +1626,9 @@ class LayerTreeHostTestEvictTextures : public LayerTreeHostTest {
   }
 
   void PostEvictTextures() {
-    DCHECK(ImplThread());
-    ImplThread()->PostTask(
+    DCHECK(HasImplThread());
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE,
         base::Bind(&LayerTreeHostTestEvictTextures::EvictTexturesOnImplThread,
                    base::Unretained(this)));
   }
@@ -1880,8 +1881,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
   {
     FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
-    scoped_ptr<FakeProxy> proxy =
-        make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
+    scoped_ptr<FakeProxy> proxy(new FakeProxy);
     proxy->GetRendererCapabilities().allow_partial_texture_updates = false;
     proxy->SetMaxPartialTextureUpdates(5);
 
@@ -1899,8 +1899,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
   {
     FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
-    scoped_ptr<FakeProxy> proxy =
-        make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
+    scoped_ptr<FakeProxy> proxy(new FakeProxy);
     proxy->GetRendererCapabilities().allow_partial_texture_updates = true;
     proxy->SetMaxPartialTextureUpdates(5);
 
@@ -1918,8 +1917,7 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
   {
     FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
-    scoped_ptr<FakeProxy> proxy =
-        make_scoped_ptr(new FakeProxy(scoped_ptr<Thread>()));
+    scoped_ptr<FakeProxy> proxy(new FakeProxy);
     proxy->GetRendererCapabilities().allow_partial_texture_updates = true;
     proxy->SetMaxPartialTextureUpdates(20);
 
@@ -1940,7 +1938,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
   settings.max_partial_texture_updates = 4;
 
   scoped_ptr<LayerTreeHost> host =
-      LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
+      LayerTreeHost::Create(&client, settings, NULL);
   EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
   EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
 }
@@ -1952,7 +1950,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
   settings.max_partial_texture_updates = 4;
 
   scoped_ptr<LayerTreeHost> host =
-      LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
+      LayerTreeHost::Create(&client, settings, NULL);
   EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
   EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
 }
@@ -1964,7 +1962,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
   settings.max_partial_texture_updates = 4;
 
   scoped_ptr<LayerTreeHost> host =
-      LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
+      LayerTreeHost::Create(&client, settings, NULL);
   EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
   EXPECT_EQ(0u, host->settings().max_partial_texture_updates);
 }
@@ -1977,7 +1975,7 @@ TEST(LayerTreeHostTest,
   settings.max_partial_texture_updates = 4;
 
   scoped_ptr<LayerTreeHost> host =
-      LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
+      LayerTreeHost::Create(&client, settings, NULL);
   EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
   EXPECT_EQ(0u, host->settings().max_partial_texture_updates);
 }
@@ -2258,9 +2256,10 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     // The BeginFrame notification is turned off now but will get enabled
     // once we return. End test while it's enabled.
-    ImplThread()->PostTask(base::Bind(
-        &LayerTreeHostTestBeginFrameNotification::EndTest,
-        base::Unretained(this)));
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostTestBeginFrameNotification::EndTest,
+                   base::Unretained(this)));
   }
 
   virtual void AfterTest() OVERRIDE {}
@@ -2828,7 +2827,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
         static_cast<FakePictureLayerImpl*>(host_impl->RootLayer());
     if (!initialized_gl_) {
       EXPECT_EQ(1u, layer_impl->append_quads_count());
-      ImplThread()->PostTask(base::Bind(
+      ImplThreadTaskRunner()->PostTask(FROM_HERE, base::Bind(
           &LayerTreeHostTestDeferredInitialize::DeferredInitializeAndRedraw,
           base::Unretained(this),
           base::Unretained(host_impl)));

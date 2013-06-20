@@ -12,7 +12,6 @@
 
 namespace cc {
 class LayerTreeHost;
-class Thread;
 }
 
 namespace WebKit { class WebLayer; }
@@ -27,7 +26,7 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
       webkit_support::DRTLayerTreeViewClient* client);
   virtual ~WebLayerTreeViewImplForTesting();
 
-  bool Initialize(scoped_ptr<cc::Thread> compositor_thread);
+  bool Initialize();
 
   // WebKit::WebLayerTreeView implementation.
   virtual void setSurfaceReady();

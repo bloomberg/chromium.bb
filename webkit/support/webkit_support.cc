@@ -28,7 +28,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
-#include "cc/base/thread_impl.h"
 #include "googleurl/src/url_util.h"
 #include "grit/webkit_chromium_resources.h"
 #include "media/base/filter_collection.h"
@@ -464,16 +463,12 @@ WebKit::WebLayerTreeView* CreateLayerTreeView(
     LayerTreeViewType type,
     DRTLayerTreeViewClient* client,
     WebKit::WebThread* thread) {
-  scoped_ptr<cc::Thread> compositor_thread;
-  if (thread)
-    compositor_thread = cc::ThreadImpl::CreateForDifferentThread(
-        static_cast<webkit_glue::WebThreadImpl*>(thread)->
-        message_loop()->message_loop_proxy());
+  DCHECK(!thread);
 
   scoped_ptr<webkit::WebLayerTreeViewImplForTesting> view(
       new webkit::WebLayerTreeViewImplForTesting(type, client));
 
-  if (!view->Initialize(compositor_thread.Pass()))
+  if (!view->Initialize())
     return NULL;
   return view.release();
 }
