@@ -894,6 +894,11 @@ crbug.com/251239 css3/compositing/background-blend-mode-gradient-color.html [ Mi
 crbug.com/251239 css3/compositing/background-blend-mode-gradient-gradient.html [ Missing ]
 crbug.com/251239 css3/compositing/background-blend-mode-gradient-image.html [ Missing ]
 crbug.com/251239 css3/compositing/background-blend-mode-multiple-background-layers.html [ Missing ]
+crbug.com/251727 css3/compositing/background-blend-mode-default-value.html [ Missing ]
+crbug.com/251727 css3/compositing/background-blend-mode-different-image-formats.html [ Missing ]
+crbug.com/251727 css3/compositing/background-blend-mode-image-color.html [ Missing ]
+crbug.com/251727 css3/compositing/background-blend-mode-image-image.html [ Missing ]
+crbug.com/251727 css3/compositing/background-blend-mode-single-layer-no-blending.html [ Missing ]
 
 # IETC grid layout
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
