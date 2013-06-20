@@ -12,10 +12,12 @@
 
 @interface BackgroundGradientView (Private)
 - (void)commonInit;
-- (NSColor*)backgroundImageColor;
++ (NSColor*)backgroundImageColorForView:(NSView*)view;
+- (void)windowFocusDidChange:(NSNotification*)notification;
 @end
 
 @implementation BackgroundGradientView
+
 @synthesize showsDivider = showsDivider_;
 
 - (id)initWithFrame:(NSRect)frameRect {
@@ -51,15 +53,9 @@
            object:NSApp];
 }
 
-- (void)setShowsDivider:(BOOL)show {
-  if (showsDivider_ == show)
-    return;
-  showsDivider_ = show;
-  [self setNeedsDisplay:YES];
-}
-
-- (void)drawBackgroundWithOpaque:(BOOL)opaque {
-  const NSRect bounds = [self bounds];
++ (void)drawBackgroundWithOpaque:(BOOL)opaque
+                         forView:(NSView*)view {
+  const NSRect bounds = [view bounds];
 
   if (opaque) {
     // If the background image is semi transparent then we need something
@@ -68,17 +64,15 @@
     NSRectFill(bounds);
   }
 
-  [[self backgroundImageColor] set];
+  [[self backgroundImageColorForView:view] set];
   NSRectFillUsingOperation(bounds, NSCompositeSourceOver);
+}
 
-  if (showsDivider_) {
-    // Draw bottom stroke
-    [[self strokeColor] set];
-    NSRect borderRect, contentRect;
-    NSDivideRect(bounds, &borderRect, &contentRect, [self cr_lineWidth],
-                 NSMinYEdge);
-    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
-  }
+- (void)setShowsDivider:(BOOL)show {
+  if (showsDivider_ == show)
+    return;
+  showsDivider_ = show;
+  [self setNeedsDisplay:YES];
 }
 
 - (NSColor*)strokeColor {
@@ -91,15 +85,29 @@
                  ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE, true);
 }
 
-- (NSColor*)backgroundImageColor {
+- (void)drawBackgroundWithOpaque:(BOOL)opaque {
+  [[self class] drawBackgroundWithOpaque:opaque forView:self];
+
+  if (showsDivider_) {
+    // Draw bottom stroke
+    [[self strokeColor] set];
+    NSRect borderRect, contentRect;
+    const NSRect bounds = [self bounds];
+    NSDivideRect(bounds, &borderRect, &contentRect, [self cr_lineWidth],
+                 NSMinYEdge);
+    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+  }
+}
+
++ (NSColor*)backgroundImageColorForView:(NSView*)view {
   ThemeService* themeProvider =
-      static_cast<ThemeService*>([[self window] themeProvider]);
+      static_cast<ThemeService*>([[view window] themeProvider]);
   if (!themeProvider)
-    return [[self window] backgroundColor];
+    return [[view window] backgroundColor];
 
   // Themes don't have an inactive image so only look for one if there's no
   // theme.
-  if (![[self window] isMainWindow] && themeProvider->UsingDefaultTheme()) {
+  if (![[view window] isMainWindow] && themeProvider->UsingDefaultTheme()) {
     NSColor* color = themeProvider->GetNSImageColorNamed(
         IDR_THEME_TOOLBAR_INACTIVE, true);
     if (color)

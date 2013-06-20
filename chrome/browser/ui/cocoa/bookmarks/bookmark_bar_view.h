@@ -17,7 +17,7 @@
 @class BookmarkBarItemContainer;
 @class BookmarkBarTextField;
 
-@interface BookmarkBarView : BackgroundGradientView {
+@interface BookmarkBarView : NSView {
  @private
   BOOL dropIndicatorShown_;
   CGFloat dropIndicatorPosition_;  // x position
