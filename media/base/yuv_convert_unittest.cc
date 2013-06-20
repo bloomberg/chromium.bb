@@ -76,6 +76,15 @@ static void ReadYUY2Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_YUY2.yuv"), kYUY2Size, data);
 }
 
+#if defined(OS_ANDROID)
+// Helper for swapping red and blue channels of RGBA or BGRA.
+static void SwapRedAndBlueChannels(unsigned char* pixels, size_t buffer_size) {
+  for (size_t i = 0; i < buffer_size; i += 4) {
+    std::swap(pixels[i], pixels[i + 2]);
+  }
+}
+#endif
+
 namespace media {
 
 TEST(YUVConvertTest, YV12) {
@@ -97,6 +106,10 @@ TEST(YUVConvertTest, YV12) {
                            kSourceWidth / 2,                     // UVStride
                            kSourceWidth * kBpp,                  // RGBStride
                            media::YV12);
+
+#if defined(OS_ANDROID)
+  SwapRedAndBlueChannels(rgb_converted_bytes.get(), kRGBSizeConverted);
+#endif
 
   uint32 rgb_hash = DJB2Hash(rgb_converted_bytes.get(), kRGBSizeConverted,
                              kDJB2HashSeed);
@@ -122,6 +135,10 @@ TEST(YUVConvertTest, YV16) {
                            kSourceWidth / 2,                       // UVStride
                            kSourceWidth * kBpp,                    // RGBStride
                            media::YV16);
+
+#if defined(OS_ANDROID)
+  SwapRedAndBlueChannels(rgb_converted_bytes.get(), kRGBSizeConverted);
+#endif
 
   uint32 rgb_hash = DJB2Hash(rgb_converted_bytes.get(), kRGBSizeConverted,
                              kDJB2HashSeed);
@@ -217,6 +234,10 @@ TEST_P(YUVScaleTest, Normal) {
                          media::ROTATE_0,
                          GetParam().scale_filter);
 
+#if defined(OS_ANDROID)
+  SwapRedAndBlueChannels(rgb_bytes_.get(), kRGBSizeScaled);
+#endif
+
   uint32 rgb_hash = DJB2Hash(rgb_bytes_.get(), kRGBSizeScaled, kDJB2HashSeed);
   EXPECT_EQ(GetParam().rgb_hash, rgb_hash);
 }
@@ -303,6 +324,10 @@ TEST(YUVConvertTest, Clamp) {
                            0,        // UVStride
                            0,        // RGBStride
                            media::YV12);
+
+#if defined(OS_ANDROID)
+  SwapRedAndBlueChannels(rgb, kBpp);
+#endif
 
   int expected_test = memcmp(rgb, expected, sizeof(expected));
   EXPECT_EQ(0, expected_test);
