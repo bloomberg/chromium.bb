@@ -37,7 +37,6 @@ namespace InspectorInstrumentation {
 
 bool profilerEnabledImpl(InstrumentingAgents*);
 bool isDebuggerPausedImpl(InstrumentingAgents*);
-InspectorInstrumentationCookie willProcessRuleImpl(InstrumentingAgents*, StyleRule*, StyleResolver*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
 
 bool canvasAgentEnabled(ScriptExecutionContext*);
@@ -57,16 +56,6 @@ inline bool isDebuggerPaused(Frame* frame)
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForFrame(frame))
         return isDebuggerPausedImpl(instrumentingAgents);
     return false;
-}
-
-inline InspectorInstrumentationCookie willProcessRule(Document* document, StyleRule* rule, StyleResolver* styleResolver)
-{
-    FAST_RETURN_IF_NO_FRONTENDS(InspectorInstrumentationCookie());
-    if (!rule)
-        return InspectorInstrumentationCookie();
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
-        return willProcessRuleImpl(instrumentingAgents, rule, styleResolver);
-    return InspectorInstrumentationCookie();
 }
 
 inline bool collectingHTMLParseErrors(Page* page)

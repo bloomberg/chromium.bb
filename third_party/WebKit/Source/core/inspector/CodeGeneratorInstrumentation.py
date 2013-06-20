@@ -277,6 +277,10 @@ class Method:
         else:
             fast_return = ""
 
+        for param in self.params:
+            if "FastReturn" in param.options:
+                fast_return += "\n    if (!%s)\n        return %s;" % (param.name, self.default_return_value)
+
         if self.accepts_cookie:
             condition = "%s.isValid()" % self.params_impl[0].name
             template = template_inline

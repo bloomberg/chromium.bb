@@ -36,7 +36,7 @@
 *
 * The syntax for an instrumentation method is as follows:
 *
-*    [methodAttributes] returnValue methodName([paramAttributes] paramList)
+*    [methodAttributes] returnValue methodName([paramAttr1] param1, [paramAttr2] param2, ...)
 *
 * Where:
 *   methodAttributes - optional list of method attributes.
@@ -48,8 +48,9 @@
 *       Attributes without "=" are the names of the agents to be invoked.
 *           Examples: DOM, Page, Debugger.
 *
-*   paramAttributes - options list of attributes controlling the parameters handling.
+*   paramAttr - optional attribute controlling the parameters handling (one attribute per parameter max).
 *       Keep - pass first parameter (used to access the InstrumentingAgents instance) to agents.
+*       FastReturn - return early from the inline method if this parameter is 0/false.
 *
 *   returnValue: C++ return value. Only "void" and "InspectorInstrumentationCookie" are supported.
 *
@@ -225,8 +226,8 @@ interface InspectorInstrumentation {
     [CSS, Inline=FastReturn]
     void didMatchRule(const InspectorInstrumentationCookie&, bool matched);
 
-    [CSS, Inline=Custom]
-    InspectorInstrumentationCookie willProcessRule(Document* document, StyleRule* rule, StyleResolver* styleResolver);
+    [CSS, Inline=FastReturn]
+    InspectorInstrumentationCookie willProcessRule(Document* document, [FastReturn] StyleRule* rule, StyleResolver* styleResolver);
 
     [CSS, Inline=FastReturn]
     void didProcessRule(const InspectorInstrumentationCookie&);
