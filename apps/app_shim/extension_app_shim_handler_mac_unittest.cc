@@ -118,46 +118,34 @@ class ExtensionAppShimHandlerTest : public testing::Test {
 };
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
+  const AppShimLaunchType normal_launch = APP_SHIM_LAUNCH_NORMAL;
+
   // If launch fails, the host is not added to the map.
-  EXPECT_CALL(*handler_,
-              LaunchApp(&profile_a_, kTestAppIdA, APP_SHIM_LAUNCH_NORMAL))
+  EXPECT_CALL(*handler_, LaunchApp(&profile_a_, kTestAppIdA, normal_launch))
       .WillOnce(Return(false));
-  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL));
+  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_, normal_launch));
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
 
   // Normal startup.
-  EXPECT_CALL(*handler_,
-              LaunchApp(&profile_a_, kTestAppIdA, APP_SHIM_LAUNCH_NORMAL))
+  EXPECT_CALL(*handler_, LaunchApp(&profile_a_, kTestAppIdA, normal_launch))
       .WillOnce(Return(true));
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_, APP_SHIM_LAUNCH_NORMAL));
+  EXPECT_EQ(true, handler_->OnShimLaunch(&host_aa_, normal_launch));
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
-  EXPECT_TRUE(handler_->GetRegistrar().IsRegistered(
-      handler_.get(),
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      content::Source<Profile>(&profile_a_)));
 
-  EXPECT_CALL(*handler_,
-              LaunchApp(&profile_a_, kTestAppIdB, APP_SHIM_LAUNCH_NORMAL))
+  EXPECT_CALL(*handler_, LaunchApp(&profile_a_, kTestAppIdB, normal_launch))
       .WillOnce(Return(true));
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_ab_, APP_SHIM_LAUNCH_NORMAL));
+  EXPECT_EQ(true, handler_->OnShimLaunch(&host_ab_, normal_launch));
   EXPECT_EQ(&host_ab_, handler_->FindHost(&profile_a_, kTestAppIdB));
 
-  EXPECT_CALL(*handler_,
-              LaunchApp(&profile_b_, kTestAppIdB, APP_SHIM_LAUNCH_NORMAL))
+  EXPECT_CALL(*handler_, LaunchApp(&profile_b_, kTestAppIdB, normal_launch))
       .WillOnce(Return(true));
-  EXPECT_EQ(true, handler_->OnShimLaunch(&host_bb_, APP_SHIM_LAUNCH_NORMAL));
+  EXPECT_EQ(true, handler_->OnShimLaunch(&host_bb_, normal_launch));
   EXPECT_EQ(&host_bb_, handler_->FindHost(&profile_b_, kTestAppIdB));
-  EXPECT_TRUE(handler_->GetRegistrar().IsRegistered(
-      handler_.get(),
-      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-      content::Source<Profile>(&profile_b_)));
 
   // Starting and closing a second host does nothing.
-  EXPECT_CALL(*handler_,
-              LaunchApp(&profile_a_, kTestAppIdA, APP_SHIM_LAUNCH_NORMAL))
+  EXPECT_CALL(*handler_, LaunchApp(&profile_a_, kTestAppIdA, normal_launch))
       .WillOnce(Return(false));
-  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_duplicate_,
-                                          APP_SHIM_LAUNCH_NORMAL));
+  EXPECT_EQ(false, handler_->OnShimLaunch(&host_aa_duplicate_, normal_launch));
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
   handler_->OnShimClose(&host_aa_duplicate_);
   EXPECT_EQ(&host_aa_, handler_->FindHost(&profile_a_, kTestAppIdA));
@@ -169,11 +157,6 @@ TEST_F(ExtensionAppShimHandlerTest, LaunchAndCloseShim) {
   // Closing the second host afterward does nothing.
   handler_->OnShimClose(&host_aa_duplicate_);
   EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
-
-  // Destruction sends OnAppClose to remaining hosts.
-  handler_.reset();
-  EXPECT_EQ(1, host_ab_.close_count());
-  EXPECT_EQ(1, host_bb_.close_count());
 }
 
 }  // namespace apps

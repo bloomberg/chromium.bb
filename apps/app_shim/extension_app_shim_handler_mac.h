@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "apps/app_lifetime_monitor.h"
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
@@ -28,7 +29,8 @@ namespace apps {
 // This app shim handler that handles events for app shims that correspond to an
 // extension.
 class ExtensionAppShimHandler : public AppShimHandler,
-                                public content::NotificationObserver {
+                                public content::NotificationObserver,
+                                public AppLifetimeMonitor::Observer {
  public:
   class ProfileManagerFacade {
    public:
@@ -45,6 +47,15 @@ class ExtensionAppShimHandler : public AppShimHandler,
   virtual void OnShimClose(Host* host) OVERRIDE;
   virtual void OnShimFocus(Host* host) OVERRIDE;
   virtual void OnShimQuit(Host* host) OVERRIDE;
+
+  // AppLifetimeMonitor::Observer overrides:
+  virtual void OnAppStart(Profile* profile, const std::string& app_id) OVERRIDE;
+  virtual void OnAppActivated(Profile* profile,
+                              const std::string& app_id) OVERRIDE;
+  virtual void OnAppDeactivated(Profile* profile,
+                                const std::string& app_id) OVERRIDE;
+  virtual void OnAppStop(Profile* profile, const std::string& app_id) OVERRIDE;
+  virtual void OnChromeTerminating() OVERRIDE;
 
  protected:
   typedef std::map<std::pair<Profile*, std::string>, AppShimHandler::Host*>
@@ -68,11 +79,8 @@ class ExtensionAppShimHandler : public AppShimHandler,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  void StartShim(Profile* profile, const extensions::Extension* extension);
-
-  void CloseShim(Profile* profile, const std::string& app_id);
-
   scoped_ptr<ProfileManagerFacade> profile_manager_facade_;
+
   HostMap hosts_;
 
   content::NotificationRegistrar registrar_;
