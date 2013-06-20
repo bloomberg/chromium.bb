@@ -278,7 +278,6 @@ SVGElement
 SVGElementInstance
 SVGElementInstanceList
 SVGEllipseElement
-SVGException
 SVGFEBlendElement
 SVGFEColorMatrixElement
 SVGFEComponentTransferElement

@@ -6,7 +6,6 @@ function shouldBeDefined(a)
     shouldBe("" + a + ".toString()", constructorString);
 }
 
-shouldBeDefined("SVGException");
 shouldBeDefined("SVGElement");
 shouldBeDefined("SVGAnimatedBoolean");
 shouldBeDefined("SVGAnimatedString");

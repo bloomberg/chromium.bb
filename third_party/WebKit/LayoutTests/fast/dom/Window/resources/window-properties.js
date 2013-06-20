@@ -128,7 +128,6 @@ var propertyInfo = [
     ["Rect", "object"],
     ["SVGAngle", "object"],
     ["SVGColor", "object"],
-    ["SVGException", "object"],
     ["SVGGradientElement", "object"],
     ["SVGLength", "object"],
     ["SVGMarkerElement", "object"],

@@ -1,2 +1,2 @@
-Caught exception: SVG_WRONG_TYPE_ERR: An object of the wrong type was passed to an operation.
+Caught exception: TypeError: Type error
 PASSED -- WebKit did not crash!

@@ -23,6 +23,7 @@
 
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/svg/SVGMatrix.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

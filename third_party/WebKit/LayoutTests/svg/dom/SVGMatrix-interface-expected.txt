@@ -192,7 +192,7 @@ PASS parseFloat(m.e) is 10
 PASS parseFloat(m.f) is 20
 
 Test throwing exception from inverse
-PASS m.inverse() threw exception SVG_MATRIX_NOT_INVERTABLE: An attempt was made to invert a matrix that is not invertible..
+PASS m.inverse() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 
 PASS successfullyParsed is true
 

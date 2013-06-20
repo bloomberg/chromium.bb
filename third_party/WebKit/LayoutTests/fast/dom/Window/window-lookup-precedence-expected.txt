@@ -258,8 +258,6 @@ PASS 'function SVGAngle() { [native code] }' is 'function SVGAngle() { [native c
 PASS 'function SVGAngle() { [native code] }' is 'function SVGAngle() { [native code] }'
 PASS 'function SVGColor() { [native code] }' is 'function SVGColor() { [native code] }'
 PASS 'function SVGColor() { [native code] }' is 'function SVGColor() { [native code] }'
-PASS 'function SVGException() { [native code] }' is 'function SVGException() { [native code] }'
-PASS 'function SVGException() { [native code] }' is 'function SVGException() { [native code] }'
 PASS 'function SVGGradientElement() { [native code] }' is 'function SVGGradientElement() { [native code] }'
 PASS 'function SVGGradientElement() { [native code] }' is 'function SVGGradientElement() { [native code] }'
 PASS 'function SVGLength() { [native code] }' is 'function SVGLength() { [native code] }'

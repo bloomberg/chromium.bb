@@ -20,7 +20,7 @@
 #ifndef SVGAnimatedEnumerationPropertyTearOff_h
 #define SVGAnimatedEnumerationPropertyTearOff_h
 
-#include "core/svg/SVGException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/svg/properties/SVGAnimatedStaticPropertyTearOff.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 
@@ -33,7 +33,7 @@ public:
     {
         // All SVG enumeration values, that are allowed to be set via SVG DOM start with 1, 0 corresponds to unknown and is not settable through SVG DOM.
         if (!property || property > SVGPropertyTraits<EnumType>::highestEnumValue()) {
-            ec = SVGException::SVG_INVALID_VALUE_ERR;
+            ec = TypeError;
             return;
         }
         SVGAnimatedStaticPropertyTearOff<unsigned>::setBaseVal(property, ec);

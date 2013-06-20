@@ -20,7 +20,7 @@
 #ifndef SVGListProperty_h
 #define SVGListProperty_h
 
-#include "core/svg/SVGException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
@@ -147,7 +147,7 @@ public:
 
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            ec = SVGException::SVG_WRONG_TYPE_ERR;
+            ec = TypeError;
             return 0;
         }
 
@@ -241,7 +241,7 @@ public:
 
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            ec = SVGException::SVG_WRONG_TYPE_ERR;
+            ec = TypeError;
             return 0;
         }
 
@@ -314,7 +314,7 @@ public:
 
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            ec = SVGException::SVG_WRONG_TYPE_ERR;
+            ec = TypeError;
             return 0;
         }
 
@@ -417,7 +417,7 @@ public:
 
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            ec = SVGException::SVG_WRONG_TYPE_ERR;
+            ec = TypeError;
             return 0;
         }
 

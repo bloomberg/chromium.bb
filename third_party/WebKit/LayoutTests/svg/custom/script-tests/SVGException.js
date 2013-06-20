@@ -1,25 +1,19 @@
-description("Tests the properties of the SVGException object.")
+description("Tests the properties of the exception thrown by rotateFromVector.")
 
 var e;
 try {
     var svgDoc = document.implementation.createDocument("http://www.w3.org/2000/svg", "svg", null);
     var matrix = svgDoc.documentElement.createSVGMatrix();
     matrix.rotateFromVector(0, 0)
-    // raises a SVG_INVALID_VALUE_ERR
+    // raises a InvalidAccessError
 } catch (err) {
     e = err;
 }
 
-shouldBeEqualToString("e.toString()", "SVG_INVALID_VALUE_ERR: An invalid value was passed to an operation or assigned to an attribute.");
-shouldBeEqualToString("Object.prototype.toString.call(e)", "[object SVGException]");
-shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object SVGExceptionPrototype]");
-shouldBeEqualToString("e.constructor.toString()", "function SVGException() { [native code] }");
-shouldBe("e.constructor", "window.SVGException");
-shouldBe("e.SVG_WRONG_TYPE_ERR", "e.constructor.SVG_WRONG_TYPE_ERR");
-shouldBe("e.SVG_WRONG_TYPE_ERR", "0");
-shouldBe("e.SVG_INVALID_VALUE_ERR", "e.constructor.SVG_INVALID_VALUE_ERR");
-shouldBe("e.SVG_INVALID_VALUE_ERR", "1");
-shouldBe("e.SVG_MATRIX_NOT_INVERTABLE", "e.constructor.SVG_MATRIX_NOT_INVERTABLE");
-shouldBe("e.SVG_MATRIX_NOT_INVERTABLE", "2");
+shouldBeEqualToString("e.toString()", "InvalidAccessError: A parameter or an operation was not supported by the underlying object.");
+shouldBeEqualToString("Object.prototype.toString.call(e)", "[object DOMException]");
+shouldBeEqualToString("Object.prototype.toString.call(e.__proto__)", "[object DOMExceptionPrototype]");
+shouldBeEqualToString("e.constructor.toString()", "function DOMException() { [native code] }");
+shouldBe("e.constructor", "window.DOMException");
 
 var successfullyParsed = true;

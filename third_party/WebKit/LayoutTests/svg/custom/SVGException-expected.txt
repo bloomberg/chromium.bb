@@ -1,19 +1,13 @@
-Tests the properties of the SVGException object.
+Tests the properties of the exception thrown by rotateFromVector.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS e.toString() is "SVG_INVALID_VALUE_ERR: An invalid value was passed to an operation or assigned to an attribute."
-PASS Object.prototype.toString.call(e) is "[object SVGException]"
-FAIL Object.prototype.toString.call(e.__proto__) should be [object SVGExceptionPrototype]. Was [object Object].
-PASS e.constructor.toString() is "function SVGException() { [native code] }"
-PASS e.constructor is window.SVGException
-PASS e.SVG_WRONG_TYPE_ERR is e.constructor.SVG_WRONG_TYPE_ERR
-PASS e.SVG_WRONG_TYPE_ERR is 0
-PASS e.SVG_INVALID_VALUE_ERR is e.constructor.SVG_INVALID_VALUE_ERR
-PASS e.SVG_INVALID_VALUE_ERR is 1
-PASS e.SVG_MATRIX_NOT_INVERTABLE is e.constructor.SVG_MATRIX_NOT_INVERTABLE
-PASS e.SVG_MATRIX_NOT_INVERTABLE is 2
+PASS e.toString() is "InvalidAccessError: A parameter or an operation was not supported by the underlying object."
+PASS Object.prototype.toString.call(e) is "[object DOMException]"
+FAIL Object.prototype.toString.call(e.__proto__) should be [object DOMExceptionPrototype]. Was [object Object].
+PASS e.constructor.toString() is "function DOMException() { [native code] }"
+PASS e.constructor is window.DOMException
 PASS successfullyParsed is true
 
 TEST COMPLETE
