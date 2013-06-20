@@ -2,7 +2,6 @@
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2011 Research In Motion Limited. All rights reserved.
- * Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -54,7 +53,7 @@ static PropertySetCSSOMWrapperMap& propertySetCSSOMWrapperMap()
 
 static size_t sizeForImmutableStylePropertySetWithPropertyCount(unsigned count)
 {
-    return sizeof(ImmutableStylePropertySet) - sizeof(void*) + sizeof(CSSValue*) * count + sizeof(uint16_t) * count;
+    return sizeof(ImmutableStylePropertySet) - sizeof(void*) + sizeof(CSSValue*) * count + sizeof(StylePropertyMetadata) * count;
 }
 
 PassRefPtr<ImmutableStylePropertySet> ImmutableStylePropertySet::create(const CSSProperty* properties, unsigned count, CSSParserMode cssParserMode)
@@ -82,11 +81,10 @@ MutableStylePropertySet::MutableStylePropertySet(const CSSProperty* properties, 
 ImmutableStylePropertySet::ImmutableStylePropertySet(const CSSProperty* properties, unsigned length, CSSParserMode cssParserMode)
     : StylePropertySet(cssParserMode, length)
 {
-    uint16_t* metadataArray = const_cast<uint16_t*>(this->metadataArray());
+    StylePropertyMetadata* metadataArray = const_cast<StylePropertyMetadata*>(this->metadataArray());
     CSSValue** valueArray = const_cast<CSSValue**>(this->valueArray());
     for (unsigned i = 0; i < length; ++i) {
-        StylePropertyMetadata metadata = properties[i].metadata();
-        metadataArray[i] = *(reinterpret_cast<uint16_t*>(&metadata));
+        metadataArray[i] = properties[i].metadata();
         valueArray[i] = properties[i].value();
         valueArray[i]->ref();
     }
