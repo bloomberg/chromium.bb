@@ -19,6 +19,11 @@
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
+#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
+#include "webkit/renderer/media/android/proxy_media_keys.h"
+#include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
+#endif  // defined(OS_ANDROID) && !defined(GOOGLE_TV)
+
 namespace webkit_media {
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -51,19 +56,31 @@ void ProxyDecryptor::DestroyHelperPlugin() {
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 ProxyDecryptor::ProxyDecryptor(
+#if defined(ENABLE_PEPPER_CDMS)
     WebKit::WebMediaPlayerClient* web_media_player_client,
     WebKit::WebFrame* web_frame,
+#endif  // defined(ENABLE_PEPPER_CDMS)
+#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
+    WebMediaPlayerProxyAndroid* proxy,
+    int media_keys_id,
+#endif  // defined(OS_ANDROID) && !defined(GOOGLE_TV)
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb,
     const media::NeedKeyCB& need_key_cb)
-    : web_media_player_client_(web_media_player_client),
+    : weak_ptr_factory_(this),
+#if defined(ENABLE_PEPPER_CDMS)
+      web_media_player_client_(web_media_player_client),
       web_frame_(web_frame),
+#endif  // defined(ENABLE_PEPPER_CDMS)
+#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
+      proxy_(proxy),
+      media_keys_id_(media_keys_id),
+#endif  // defined(OS_ANDROID) && !defined(GOOGLE_TV)
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
-      need_key_cb_(need_key_cb),
-      weak_ptr_factory_(this) {
+      need_key_cb_(need_key_cb) {
 }
 
 ProxyDecryptor::~ProxyDecryptor() {
@@ -186,13 +203,13 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
   }
 
 #if defined(ENABLE_PEPPER_CDMS)
-  // We only support AesDecryptor and PpapiDecryptor. So if we cannot
-  // use the AesDecryptor, then we'll try to create a PpapiDecryptor for given
-  // |key_system|.
   return CreatePpapiDecryptor(key_system);
+#elif defined(OS_ANDROID) && !defined(GOOGLE_TV)
+  return scoped_ptr<media::MediaKeys>(
+      new ProxyMediaKeys(proxy_, media_keys_id_));
 #else
   return scoped_ptr<media::MediaKeys>();
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif
 }
 
 void ProxyDecryptor::KeyAdded(const std::string& session_id) {

@@ -48,6 +48,8 @@
         'android/webmediaplayer_manager_android.h',
         'android/webmediaplayer_proxy_android.cc',
         'android/webmediaplayer_proxy_android.h',
+        'android/proxy_media_keys.cc',
+        'android/proxy_media_keys.h',
         'active_loader.cc',
         'active_loader.h',
         'audio_decoder.cc',

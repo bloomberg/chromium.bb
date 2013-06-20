@@ -86,18 +86,21 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       stream_texture_factory_(factory),
       needs_external_surface_(false),
       video_frame_provider_client_(NULL),
+#if defined(GOOGLE_TV)
+      demuxer_(NULL),
+#endif  // defined(GOOGLE_TV)
       source_type_(MediaPlayerAndroid::SOURCE_TYPE_URL),
       proxy_(proxy),
       current_time_(0),
       media_log_(media_log),
       media_stream_client_(NULL) {
   DCHECK(proxy_);
+  DCHECK(manager_);
 
   // We want to be notified of |main_loop_| destruction.
   base::MessageLoop::current()->AddDestructionObserver(this);
 
-  if (manager_)
-    player_id_ = manager_->RegisterMediaPlayer(this);
+  player_id_ = manager_->RegisterMediaPlayer(this);
 
   if (stream_texture_factory_) {
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
@@ -105,21 +108,24 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     ReallocateVideoFrame();
   }
 
-#if defined(GOOGLE_TV)
   if (WebKit::WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()) {
     // |decryptor_| is owned, so Unretained() is safe here.
     decryptor_.reset(new ProxyDecryptor(
+#if defined(ENABLE_PEPPER_CDMS)
         client,
         frame,
+#endif  // defined(ENABLE_PEPPER_CDMS)
+#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
+        proxy_,
+        player_id_,  // TODO(xhwang): Use media_keys_id when MediaKeys are
+                     // separated from WebMediaPlayer.
+#endif // defined(OS_ANDROID) && !defined(GOOGLE_TV)
         base::Bind(&WebMediaPlayerAndroid::OnKeyAdded, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyError, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
                    base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this))));
   }
-
-  demuxer_ = NULL;
-#endif  // defined(GOOGLE_TV)
 }
 
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
@@ -929,17 +935,13 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
 
   // We do not support run-time switching between key systems for now.
   if (current_key_system_.isEmpty()) {
-#if defined(GOOGLE_TV)
     if (!decryptor_->InitializeCDM(key_system.utf8()))
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-#endif  // defined(GOOGLE_TV
     current_key_system_ = key_system;
-  }
-  else if (key_system != current_key_system_) {
+  } else if (key_system != current_key_system_) {
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
   }
 
-#if defined(GOOGLE_TV)
   // TODO(xhwang): We assume all streams are from the same container (thus have
   // the same "type") for now. In the future, the "type" should be passed down
   // from the application.
@@ -948,12 +950,6 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     current_key_system_.reset();
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
   }
-#else
-  proxy_->GenerateKeyRequest(
-      player_id_,
-      init_data_type_,
-      std::vector<uint8>(init_data, init_data + init_data_length));
-#endif  // defined(GOOGLE_TV)
 
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
@@ -993,16 +989,8 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::AddKeyInternal(
   if (current_key_system_.isEmpty() || key_system != current_key_system_)
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
-#if defined(GOOGLE_TV)
   decryptor_->AddKey(key, key_length, init_data, init_data_length,
                      session_id.utf8());
-#else
-  proxy_->AddKey(player_id_,
-                 std::vector<uint8>(key, key + key_length),
-                 std::vector<uint8>(init_data, init_data + init_data_length),
-                 session_id.utf8());
-#endif  // #if defined(GOOGLE_TV)
-
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -1025,12 +1013,7 @@ WebMediaPlayerAndroid::CancelKeyRequestInternal(
   if (current_key_system_.isEmpty() || key_system != current_key_system_)
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
-#if defined(GOOGLE_TV)
   decryptor_->CancelKeyRequest(session_id.utf8());
-#else
-  proxy_->CancelKeyRequest(player_id_, session_id.utf8());
-#endif  // #if defined(GOOGLE_TV)
-
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
