@@ -831,7 +831,12 @@ void ExternalTabContainerWin::CanDownload(
 void ExternalTabContainerWin::RegisterRenderViewHostForAutomation(
     bool pending_view,
     RenderViewHost* render_view_host) {
-  if (render_view_host) {
+  if (!GetTabHandle()) {
+    // This method is being called when it shouldn't be on the win_rel trybot;
+    // see http://crbug.com/250965. Don't crash release builds in that case
+    // until the root cause can be diagnosed and fixed. TODO(grt): fix this.
+    DLOG(FATAL) << "tab_handle_ unset";
+  } else if (render_view_host) {
     AutomationResourceMessageFilter::RegisterRenderView(
         render_view_host->GetProcess()->GetID(),
         render_view_host->GetRoutingID(),
