@@ -71,6 +71,7 @@ void PageRuleCollector::matchPageRules(RuleSet* rules)
     if (!rules)
         return;
 
+    rules->compactRulesIfNeeded();
     Vector<StyleRulePage*> matchedPageRules;
     matchPageRulesForList(matchedPageRules, rules->pageRules(), m_isLeftPage, m_isFirstPage, m_pageName);
     if (matchedPageRules.isEmpty())
