@@ -34,6 +34,9 @@
 #include "ui/aura/test/test_screen.h"
 #endif
 
+namespace content {
+
+namespace {
 // ViewDelegate implementation for aura content shell
 class ShellViewsDelegateAura : public views::DesktopTestViewsDelegate {
  public:
@@ -58,13 +61,10 @@ class ShellViewsDelegateAura : public views::DesktopTestViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegateAura);
 };
 
-// TODO(beng): This stuff should NOT be in the views namespace!
-namespace views {
-
 // Maintain the UI controls and web view for content shell
-class ShellWindowDelegateView : public WidgetDelegateView,
-                                public TextfieldController,
-                                public ButtonListener {
+class ShellWindowDelegateView : public views::WidgetDelegateView,
+                                public views::TextfieldController,
+                                public views::ButtonListener {
  public:
   enum UIControl {
     BACK_BUTTON,
@@ -72,7 +72,7 @@ class ShellWindowDelegateView : public WidgetDelegateView,
     STOP_BUTTON
   };
 
-  ShellWindowDelegateView(content::Shell* shell)
+  ShellWindowDelegateView(Shell* shell)
     : shell_(shell),
       toolbar_view_(new View),
       contents_view_(new View) {
@@ -83,9 +83,9 @@ class ShellWindowDelegateView : public WidgetDelegateView,
   void SetAddressBarURL(const GURL& url) {
     url_entry_->SetText(ASCIIToUTF16(url.spec()));
   }
-  void SetWebContents(content::WebContents* web_contents) {
-    contents_view_->SetLayoutManager(new FillLayout());
-    web_view_ = new WebView(web_contents->GetBrowserContext());
+  void SetWebContents(WebContents* web_contents) {
+    contents_view_->SetLayoutManager(new views::FillLayout());
+    web_view_ = new views::WebView(web_contents->GetBrowserContext());
     web_view_->SetWebContents(web_contents);
     web_contents->GetView()->Focus();
     contents_view_->AddChildView(web_view_);
@@ -94,29 +94,29 @@ class ShellWindowDelegateView : public WidgetDelegateView,
   void SetWindowTitle(const string16& title) { title_ = title; }
   void EnableUIControl(UIControl control, bool is_enabled) {
     if (control == BACK_BUTTON) {
-      back_button_->SetState(is_enabled ? CustomButton::STATE_NORMAL
-          : CustomButton::STATE_DISABLED);
+      back_button_->SetState(is_enabled ? views::CustomButton::STATE_NORMAL
+          : views::CustomButton::STATE_DISABLED);
     } else if (control == FORWARD_BUTTON) {
-      forward_button_->SetState(is_enabled ? CustomButton::STATE_NORMAL
-          : CustomButton::STATE_DISABLED);
+      forward_button_->SetState(is_enabled ? views::CustomButton::STATE_NORMAL
+          : views::CustomButton::STATE_DISABLED);
     } else if (control == STOP_BUTTON) {
-      stop_button_->SetState(is_enabled ? CustomButton::STATE_NORMAL
-          : CustomButton::STATE_DISABLED);
+      stop_button_->SetState(is_enabled ? views::CustomButton::STATE_NORMAL
+          : views::CustomButton::STATE_DISABLED);
     }
   }
 
  private:
   // Initialize the UI control contained in shell window
   void InitShellWindow() {
-    set_background(Background::CreateStandardPanelBackground());
+    set_background(views::Background::CreateStandardPanelBackground());
 
-    GridLayout* layout = new GridLayout(this);
+    views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
 
-    ColumnSet* column_set = layout->AddColumnSet(0);
+    views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddPaddingColumn(0, 2);
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                          GridLayout::USE_PREF, 0, 0);
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                          views::GridLayout::USE_PREF, 0, 0);
     column_set->AddPaddingColumn(0, 2);
 
     layout->AddPaddingRow(0, 2);
@@ -124,54 +124,54 @@ class ShellWindowDelegateView : public WidgetDelegateView,
     // Add toolbar buttons and URL text field
     {
       layout->StartRow(0, 0);
-      GridLayout* toolbar_layout = new GridLayout(toolbar_view_);
+      views::GridLayout* toolbar_layout = new views::GridLayout(toolbar_view_);
       toolbar_view_->SetLayoutManager(toolbar_layout);
 
-      ColumnSet* toolbar_column_set =
+      views::ColumnSet* toolbar_column_set =
           toolbar_layout->AddColumnSet(0);
       // Back button
-      back_button_ = new LabelButton(this, ASCIIToUTF16("Back"));
+      back_button_ = new views::LabelButton(this, ASCIIToUTF16("Back"));
       back_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size back_button_size = back_button_->GetPreferredSize();
-      toolbar_column_set->AddColumn(GridLayout::CENTER,
-                                    GridLayout::CENTER, 0,
-                                    GridLayout::FIXED,
+      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
+                                    views::GridLayout::CENTER, 0,
+                                    views::GridLayout::FIXED,
                                     back_button_size.width(),
                                     back_button_size.width() / 2);
       // Forward button
-      forward_button_ = new LabelButton(this, ASCIIToUTF16("Forward"));
+      forward_button_ = new views::LabelButton(this, ASCIIToUTF16("Forward"));
       forward_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size forward_button_size = forward_button_->GetPreferredSize();
-      toolbar_column_set->AddColumn(GridLayout::CENTER,
-                                    GridLayout::CENTER, 0,
-                                    GridLayout::FIXED,
+      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
+                                    views::GridLayout::CENTER, 0,
+                                    views::GridLayout::FIXED,
                                     forward_button_size.width(),
                                     forward_button_size.width() / 2);
       // Refresh button
-      refresh_button_ = new LabelButton(this, ASCIIToUTF16("Refresh"));
+      refresh_button_ = new views::LabelButton(this, ASCIIToUTF16("Refresh"));
       refresh_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size refresh_button_size = refresh_button_->GetPreferredSize();
-      toolbar_column_set->AddColumn(GridLayout::CENTER,
-                                    GridLayout::CENTER, 0,
-                                    GridLayout::FIXED,
+      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
+                                    views::GridLayout::CENTER, 0,
+                                    views::GridLayout::FIXED,
                                     refresh_button_size.width(),
                                     refresh_button_size.width() / 2);
       // Stop button
-      stop_button_ = new LabelButton(this, ASCIIToUTF16("Stop"));
+      stop_button_ = new views::LabelButton(this, ASCIIToUTF16("Stop"));
       stop_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size stop_button_size = stop_button_->GetPreferredSize();
-      toolbar_column_set->AddColumn(GridLayout::CENTER,
-                                    GridLayout::CENTER, 0,
-                                    GridLayout::FIXED,
+      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
+                                    views::GridLayout::CENTER, 0,
+                                    views::GridLayout::FIXED,
                                     stop_button_size.width(),
                                     stop_button_size.width() / 2);
       toolbar_column_set->AddPaddingColumn(0, 2);
       // URL entry
-      url_entry_ = new Textfield();
+      url_entry_ = new views::Textfield();
       url_entry_->SetController(this);
-      toolbar_column_set->AddColumn(GridLayout::FILL,
-                                    GridLayout::FILL, 1,
-                                    GridLayout::USE_PREF, 0, 0);
+      toolbar_column_set->AddColumn(views::GridLayout::FILL,
+                                    views::GridLayout::FILL, 1,
+                                    views::GridLayout::USE_PREF, 0, 0);
 
       // Fill up the first row
       toolbar_layout->StartRow(0, 0);
@@ -195,10 +195,10 @@ class ShellWindowDelegateView : public WidgetDelegateView,
     layout->AddPaddingRow(0, 5);
   }
   // Overridden from TextfieldController
-  virtual void ContentsChanged(Textfield* sender,
+  virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) OVERRIDE {
   }
-  virtual bool HandleKeyEvent(Textfield* sender,
+  virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE {
    if (sender == url_entry_ && key_event.key_code() == ui::VKEY_RETURN) {
      std::string text = UTF16ToUTF8(url_entry_->text());
@@ -214,7 +214,8 @@ class ShellWindowDelegateView : public WidgetDelegateView,
   }
 
   // Overridden from ButtonListener
-  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE {
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE {
     if (sender == back_button_)
       shell_->GoBackOrForward(-1);
     else if (sender == forward_button_)
@@ -249,31 +250,27 @@ class ShellWindowDelegateView : public WidgetDelegateView,
 
  private:
   // Hold a reference of Shell for deleting it when the window is closing
-  content::Shell* shell_;
+  Shell* shell_;
 
   // Window title
   string16 title_;
 
   // Toolbar view contains forward/backward/reload button and URL entry
   View* toolbar_view_;
-  LabelButton* back_button_;
-  LabelButton* forward_button_;
-  LabelButton* refresh_button_;
-  LabelButton* stop_button_;
-  Textfield* url_entry_;
+  views::LabelButton* back_button_;
+  views::LabelButton* forward_button_;
+  views::LabelButton* refresh_button_;
+  views::LabelButton* stop_button_;
+  views::Textfield* url_entry_;
 
   // Contents view contains the web contents view
   View* contents_view_;
-  WebView* web_view_;
+  views::WebView* web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowDelegateView);
 };
 
-}  // namespace views
-
-using views::ShellWindowDelegateView;
-
-namespace content {
+}  // namespace
 
 #if defined(OS_CHROMEOS)
 MinimalAsh* Shell::minimal_ash_ = NULL;
