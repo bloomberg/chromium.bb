@@ -1,5 +1,0 @@
-{
-  "program": {
-    "portable": {"pnacl-translate": {"url": "program_fragment.o"}}
-  }
-}

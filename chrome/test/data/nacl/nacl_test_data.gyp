@@ -116,42 +116,19 @@
       'target_name': 'pnacl_error_handling_test',
       'type': 'none',
       'variables': {
-        'nexe_target': 'pnacl_error_handling',
         'build_pnacl_newlib': 1,
         'nexe_destination_dir': 'nacl_test_data',
-        'sources': [
-          'pnacl_error_handling/program_fragment.cc',
-        ],
-        # Only compile the program_fragment and avoid linking so that
-        # it will be just a program fragment to test error handling
-        # of link failures.
-        'extra_args': [
-          '--compile',
-        ],
-        # Explicitly state the name of the gyp output.  The default is a
-        # ".pexe" and --compile causes the compilation to stop with a ".o".
-        'out_pnacl_newlib': '>(nacl_pnacl_newlib_out_dir)/program_fragment.o',
-        'objdir_pnacl_newlib': '>(nacl_pnacl_newlib_out_dir)',
-        # Keep debug metadata out, so that the "program" can roughly
-        # follow the PNaCl stable ABI.
-        'compile_flags!': [
-          '-g',
-        ],
-        # Need to not translate this program_fragment since linking will fail.
+        # No need to translate AOT.
         'enable_x86_32': 0,
         'enable_x86_64': 0,
         'enable_arm': 0,
-        # Use a prebuilt nmf file referring to the .o file instead of
-        # trying to use the generate NMF rules, which will look for a .pexe.
+        # Use prebuilt NMF files.
         'generate_nmf': 0,
         'test_files': [
           'pnacl_error_handling/pnacl_error_handling.html',
           'pnacl_error_handling/bad.pexe',
-          'pnacl_error_handling/bad2.pexe',
           'pnacl_error_handling/pnacl_bad_pexe.nmf',
-          'pnacl_error_handling/pnacl_bad2_pexe.nmf',
           'pnacl_error_handling/pnacl_bad_doesnotexist.nmf',
-          'pnacl_error_handling/pnacl_bad_pexe_undefined_syms.nmf',
         ],
       },
       'dependencies': [

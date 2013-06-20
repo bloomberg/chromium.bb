@@ -29,23 +29,6 @@ function declareTests(tester) {
       'application/x-pnacl',
       'NaCl module load failed: PnaclCoordinator: compile failed.');
 
-  // 'bad_pexe' loads a manifest, then loads a pexe that is truncated.
-  badLoadTest(
-      tester,
-      'bad2_pexe',
-      'pnacl_bad2_pexe.nmf',
-      'application/x-pnacl',
-      'NaCl module load failed: PnaclCoordinator: compile failed.');
-
-  // 'bad_pexe_undefined' loads a manifest, then loads a pexe that compiles
-  // but will result in undefined symbols, causing the link to fail.
-  badLoadTest(
-      tester,
-      'bad_pexe_undefined_syms',
-      'pnacl_bad_pexe_undefined_syms.nmf',
-      'application/x-pnacl',
-      'NaCl module load failed: PnaclCoordinator: link failed.');
-
   // 'nonexistent_pexe' loads a manifest, then tries to to load a nonexistent
   // pexe and fails.
   badLoadTest(
