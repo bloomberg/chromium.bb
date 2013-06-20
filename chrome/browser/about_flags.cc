@@ -1452,13 +1452,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableTcpFastOpen)
   },
   {
-    "enable-webp-in-accept-header",
-    IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_NAME,
-    IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableWebPInAcceptHeader)
-  },
-  {
     "apps-use-native-frame",
     IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_NAME,
     IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_DESCRIPTION,

@@ -6901,12 +6901,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_DESCRIPTION" desc="Description for the flag to enable native style frames for apps.">
         Use native-style window decorations for packaged app windows.
       </message>
-      <message name="IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_NAME" desc="Title for the flag to enable 'image/webp' in accept header.">
-        Enable 'image/webp' accept header
-      </message>
-      <message name="IDS_FLAGS_ENABLE_WEBP_IN_ACCEPT_HEADER_DESCRIPTION" desc="Description for the flag to enable 'image/webp' in accept header.">
-        Enables 'image/webp' accept header in HTTP requests for images, to denote WebP image support.
-      </message>
       <message name="IDS_FLAGS_ENABLE_RESET_PROFILE_SETTINGS_NAME" desc="Title for the flag to enable a feature to reset profile settings that are often modified by malware.">
         Enable reset profile settings
       </message>

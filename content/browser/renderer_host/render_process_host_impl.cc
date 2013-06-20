@@ -869,7 +869,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSpeechSynthesis,
     switches::kEnableTouchDragDrop,
     switches::kEnableTouchEditing,
-    switches::kEnableWebPInAcceptHeader,
 #if defined(ENABLE_WEBRTC)
     switches::kEnableWebRtcAecRecordings,
     switches::kEnableWebRtcTcpServerSocket,

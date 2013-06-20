@@ -859,9 +859,6 @@ const char kOverscrollHistoryNavigation[] =
 // Forward overscroll event data from the renderer to the browser.
 const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
 
-// Enables 'image/webp' accept header for image requests.
-const char kEnableWebPInAcceptHeader[] = "enable-webp-in-accept-header";
-
 // Enables WebGL extensions not yet approved by the community.
 const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";
 
