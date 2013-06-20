@@ -4,7 +4,9 @@
 
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 
+#include <stdlib.h>
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/values.h"
@@ -17,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 #include "webkit/plugins/webplugininfo.h"
-
 
 typedef TestMessageHandler::MessageResponse MessageResponse;
 
@@ -285,6 +286,11 @@ bool NaClBrowserTestPnacl::IsPnacl() {
 void NaClBrowserTestPnacl::SetUpCommandLine(CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnablePnacl);
+}
+
+NaClBrowserTestPnaclWithNewCache::NaClBrowserTestPnaclWithNewCache() {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar("PNACL_USE_NEW_CACHE", "true");
 }
 
 base::FilePath::StringType NaClBrowserTestStatic::Variant() {

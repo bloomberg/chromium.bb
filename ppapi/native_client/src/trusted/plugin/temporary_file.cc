@@ -24,7 +24,8 @@ namespace plugin {
 
 uint32_t TempFile::next_identifier = 0;
 
-TempFile::TempFile(Plugin* plugin) : plugin_(plugin) {
+TempFile::TempFile(Plugin* plugin) : plugin_(plugin),
+                                     existing_handle_(PP_kInvalidFileHandle) {
   PLUGIN_PRINTF(("TempFile::TempFile\n"));
   ++next_identifier;
   SNPRINTF(reinterpret_cast<char *>(identifier_), sizeof identifier_,
@@ -35,10 +36,23 @@ TempFile::~TempFile() {
   PLUGIN_PRINTF(("TempFile::~TempFile\n"));
 }
 
-void TempFile::Open(const pp::CompletionCallback& cb) {
+bool TempFile::SetExistingFd(PP_FileHandle handle) {
+  // Check if we got a bad handle or if Open has already been called.
+  if (handle == PP_kInvalidFileHandle || read_wrapper_.get() != NULL)
+    return false;
+  existing_handle_ = handle;
+  return true;
+}
+
+void TempFile::Open(const pp::CompletionCallback& cb, bool writeable) {
   PLUGIN_PRINTF(("TempFile::Open\n"));
-  PP_FileHandle file_handle =
-      plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance());
+  PP_FileHandle file_handle;
+  if (existing_handle_ == PP_kInvalidFileHandle) {
+    file_handle =
+        plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance());
+  } else {
+    file_handle = existing_handle_;
+  }
 
   pp::Core* core = pp::Module::Get()->core();
   if (file_handle == PP_kInvalidFileHandle) {
@@ -50,8 +64,9 @@ void TempFile::Open(const pp::CompletionCallback& cb) {
   HANDLE handle = file_handle;
 
   //////// Now try the posix view.
+  int rdwr_flag = writeable ? _O_RDWR : _O_RDONLY;
   int32_t posix_desc = _open_osfhandle(reinterpret_cast<intptr_t>(handle),
-                                       _O_RDWR | _O_BINARY
+                                       rdwr_flag | _O_BINARY
                                        | _O_TEMPORARY | _O_SHORT_LIVED );
   if (posix_desc == -1) {
     PLUGIN_PRINTF(("TempFile::Open failed to convert HANDLE to posix\n"));
@@ -81,8 +96,10 @@ void TempFile::Open(const pp::CompletionCallback& cb) {
   }
 
   // The descriptor for a writeable file needs to have quota management.
-  write_wrapper_.reset(
-      plugin_->wrapper_factory()->MakeFileDescQuota(fd, O_RDWR, identifier_));
+  if (writeable) {
+    write_wrapper_.reset(
+        plugin_->wrapper_factory()->MakeFileDescQuota(fd, O_RDWR, identifier_));
+  }
   read_wrapper_.reset(
       plugin_->wrapper_factory()->MakeFileDesc(read_fd, O_RDONLY));
   core->CallOnMainThread(0, cb, PP_OK);
@@ -90,10 +107,10 @@ void TempFile::Open(const pp::CompletionCallback& cb) {
 
 bool TempFile::Reset() {
   PLUGIN_PRINTF(("TempFile::Reset\n"));
-  // Use the write_wrapper_ to reset the file pos.  The read_wrapper_ is also
+  // Use the read_wrapper_ to reset the file pos.  The write_wrapper_ is also
   // backed by the same file, so it should also reset.
-  CHECK(write_wrapper_.get() != NULL);
-  nacl_off64_t newpos = write_wrapper_->Seek(0, SEEK_SET);
+  CHECK(read_wrapper_.get() != NULL);
+  nacl_off64_t newpos = read_wrapper_->Seek(0, SEEK_SET);
   return newpos >= 0;
 }
 

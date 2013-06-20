@@ -108,6 +108,24 @@ interface PPB_NaCl_Private {
    */
   PP_FileHandle CreateTemporaryFile([in] PP_Instance instance);
 
+  /* Create a temporary file, which will be deleted by the time the last
+   * handle is closed (or earlier on POSIX systems), to use for the nexe
+   * with the cache key given by |cache_key|. If the nexe is already present
+   * in the cache, |is_hit| is set to PP_TRUE and the contents of the nexe
+   * will be copied into the temporary file. Otherwise |is_hit| is set to
+   * PP_FALSE and the temporary file will be writeable.
+   * Currently the implementation is a stub, which always sets is_hit to false
+   * and calls the implementation of CreateTemporaryFile. In a subsequent CL
+   * it will call into the browser which will remember the association between
+   * the cache key and the fd, and copy the nexe into the cache after the
+   * translation finishes.
+  */
+  int32_t GetNexeFd([in] PP_Instance instance,
+                    [in] str_t cache_key,
+                    [out] PP_Bool is_hit,
+                    [out] PP_FileHandle nexe_handle,
+                    [in] PP_CompletionCallback callback);
+
   /* Return true if we are off the record.
    */
   PP_Bool IsOffTheRecord();

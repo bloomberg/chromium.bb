@@ -3,12 +3,13 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Jun  7 17:01:22 2013. */
+/* From private/ppb_nacl_private.idl modified Wed Jun 19 13:46:04 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
@@ -125,6 +126,23 @@ struct PPB_NaCl_Private_1_0 {
    * returns a posix handle to that temporary file.
    */
   PP_FileHandle (*CreateTemporaryFile)(PP_Instance instance);
+  /* Create a temporary file, which will be deleted by the time the last
+   * handle is closed (or earlier on POSIX systems), to use for the nexe
+   * with the cache key given by |cache_key|. If the nexe is already present
+   * in the cache, |is_hit| is set to PP_TRUE and the contents of the nexe
+   * will be copied into the temporary file. Otherwise |is_hit| is set to
+   * PP_FALSE and the temporary file will be writeable.
+   * Currently the implementation is a stub, which always sets is_hit to false
+   * and calls the implementation of CreateTemporaryFile. In a subsequent CL
+   * it will call into the browser which will remember the association between
+   * the cache key and the fd, and copy the nexe into the cache after the
+   * translation finishes.
+   */
+  int32_t (*GetNexeFd)(PP_Instance instance,
+                       const char* cache_key,
+                       PP_Bool* is_hit,
+                       PP_FileHandle* nexe_handle,
+                       struct PP_CompletionCallback callback);
   /* Return true if we are off the record.
    */
   PP_Bool (*IsOffTheRecord)(void);

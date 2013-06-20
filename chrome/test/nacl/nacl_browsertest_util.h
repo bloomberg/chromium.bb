@@ -123,6 +123,13 @@ class NaClBrowserTestPnacl : public NaClBrowserTestBase {
   virtual bool IsPnacl() OVERRIDE;
 };
 
+// Temporary class for running tests with the new cache enabled. Once all the
+// pieces land, this will go away and the new cache will be on by default.
+class NaClBrowserTestPnaclWithNewCache : public NaClBrowserTestPnacl {
+ public:
+  NaClBrowserTestPnaclWithNewCache();
+};
+
 // A NaCl browser test only using static files.
 class NaClBrowserTestStatic : public NaClBrowserTestBase {
  public:

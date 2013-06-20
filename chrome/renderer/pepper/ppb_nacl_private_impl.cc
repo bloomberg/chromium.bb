@@ -25,6 +25,7 @@
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -248,6 +249,24 @@ PP_FileHandle CreateTemporaryFile(PP_Instance instance) {
   return handle;
 }
 
+int32_t GetNexeFd(PP_Instance instance,
+                  const char* cache_key,
+                  PP_Bool* is_hit,
+                  PP_FileHandle* handle,
+                  struct PP_CompletionCallback callback) {
+  // Check the instance. Once the call into the browser is hooked up, will need
+  // to do it again before calling the callback in case the plugin goes away.
+  ppapi::thunk::EnterInstance enter(instance, callback);
+  if (enter.failed())
+    return enter.retval();
+  // stubbed out implementation for testing.
+  *is_hit = PP_FALSE;
+  *handle = CreateTemporaryFile(instance);
+  enter.callback()->PostRun(PP_OK);
+  enter.SetResult(PP_OK_COMPLETIONPENDING);
+  return enter.retval();
+}
+
 PP_Bool IsOffTheRecord() {
   return PP_FromBool(ChromeRenderProcessObserver::is_incognito_process());
 }
@@ -311,6 +330,7 @@ const PPB_NaCl_Private nacl_interface = {
   &BrokerDuplicateHandle,
   &GetReadonlyPnaclFD,
   &CreateTemporaryFile,
+  &GetNexeFd,
   &IsOffTheRecord,
   &IsPnaclEnabled,
   &ReportNaClError,

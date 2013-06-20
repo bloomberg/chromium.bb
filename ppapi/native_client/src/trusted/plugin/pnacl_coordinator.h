@@ -63,21 +63,17 @@ class TempFile;
 // The coordinator proceeds through several states.  They are
 // LOAD_TRANSLATOR_BINARIES
 //     Complete when ResourcesDidLoad is invoked.
+// OPEN_BITCODE_STREAM
+//       Complete when BitcodeStreamDidOpen is invoked
+// GET_NEXE_FD
+//       Get an FD which contains the cached nexe, or is writeable for
+//       translation output. Complete when NexeFdDidOpen is called.
 //
-// If cache is enabled:
-//   OPEN_LOCAL_FILE_SYSTEM
-//       Complete when FileSystemDidOpen is invoked.
-//   CREATED_PNACL_TEMP_DIRECTORY
-//       Complete when DirectoryWasCreated is invoked.
-//   CACHED_FILE_OPEN
-//       Complete with success if cached version is available and jump to end.
-//       Otherwise, proceed with usual pipeline of translation.
-//
+// If there was a cache hit, go to OPEN_NEXE_FOR_SEL_LDR, otherwise,
+// continue streaming the bitcode, and:
 // OPEN_TMP_FOR_LLC_TO_LD_COMMUNICATION
 //     Complete when ObjectFileDidOpen is invoked.
-// OPEN_TMP_FOR_LD_WRITING
-//     Complete when NexeWriteDidOpen is invoked.
-// PREPARE_PEXE_FOR_STREAMING
+// OPEN_NEXE_FD_FOR_WRITING
 //     Complete when RunTranslate is invoked.
 // START_LD_AND_LLC_SUBPROCESS_AND_INITIATE_TRANSLATION
 //     Complete when RunTranslate returns.
@@ -85,12 +81,7 @@ class TempFile;
 //     Complete when TranslateFinished is invoked.
 //
 // If cache is enabled:
-//   OPEN_CACHE_FOR_WRITE
-//     Complete when CachedNexeOpenedForWrite is invoked
-//   COPY_NEXE_TO_CACHE
-//     Complete when NexeWasCopiedToCache is invoked.
-//   RENAME_CACHE_FILE
-//     Complete when NexeFileWasRenamed is invoked.
+// TODO: notify browser of finished translation (and re-open read-only?)
 //
 // OPEN_NEXE_FOR_SEL_LDR
 //   Complete when NexeReadDidOpen is invoked.
@@ -175,6 +166,9 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // Invoked when we've started an URL fetch for the pexe to check for
   // caching metadata.
   void BitcodeStreamDidOpen(int32_t pp_error);
+  // Invoked when we've gotten a temp FD for the nexe, either with the nexe
+  // data, or a writeable fd to save to.
+  void NexeFdDidOpen(int32_t pp_error);
   // Invoked after we have checked the PNaCl cache for a translated version.
   void CachedFileDidOpen(int32_t pp_error);
   // Invoked when a pexe data chunk arrives (when using streaming translation)
@@ -250,6 +244,15 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // not have a writeable cache file.  That is currently the case when
   // off_the_record_ is true.
   nacl::scoped_ptr<LocalTempFile> cached_nexe_file_;
+  // True if the new cache flow is enabled. Currently set by an environment
+  // variable on construction. TODO(dschuff): remove old cache stuff.
+  bool use_new_cache_;
+  // Passed to the browser, which sets it to true if there is a translation
+  // cache hit.
+  PP_Bool is_cache_hit_;
+  // Passed to the browser, which sets it to the handle for the nexe file
+  // (either the translated nexe from the cache, or a temp file to write to).
+  PP_FileHandle nexe_handle_;
 
   // Downloader for streaming translation
   nacl::scoped_ptr<FileDownloader> streaming_downloader_;
