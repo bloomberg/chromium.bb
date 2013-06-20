@@ -254,7 +254,7 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(const GURL& url,
 
 // Test that we don't replace any URLs when the query extraction is disabled.
 TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionDisabled) {
-  ASSERT_FALSE(chrome::IsQueryExtractionEnabled(profile()))
+  ASSERT_FALSE(chrome::IsQueryExtractionEnabled())
       << "This test expects query extraction to be disabled.";
   ResetDefaultTemplateURL();
   AddTab(browser(), GURL(content::kAboutBlankURL));
