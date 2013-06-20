@@ -46,6 +46,7 @@ class BrowserTestBase;
 class GLHelper;
 class GpuChannelHost;
 class RenderWidgetHelper;
+class ScopedAllowWaitForAndroidLayoutTests;
 class TextInputClientMac;
 }
 namespace dbus {
@@ -172,6 +173,7 @@ class BASE_EXPORT ThreadRestrictions {
   // BEGIN ALLOWED USAGE.
   friend class content::BrowserTestBase;
   friend class content::RenderWidgetHelper;
+  friend class content::ScopedAllowWaitForAndroidLayoutTests;
   friend class ::HistogramSynchronizer;
   friend class ::ScopedAllowWaitForLegacyWebViewApi;
   friend class ::TestingAutomationProvider;

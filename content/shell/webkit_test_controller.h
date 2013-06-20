@@ -20,11 +20,26 @@
 #include "ui/gfx/size.h"
 #include "webkit/common/webpreferences.h"
 
+#if defined(OS_ANDROID)
+#include "base/threading/thread_restrictions.h"
+#endif
+
 class SkBitmap;
 
 namespace content {
 
 class Shell;
+
+#if defined(OS_ANDROID)
+// Android uses a nested message loop for running layout tests because the
+// default message loop, provided by the system, does not offer a blocking
+// Run() method. The loop itself, implemented as NestedMessagePumpAndroid,
+// uses a base::WaitableEvent allowing it to sleep until more events arrive.
+class ScopedAllowWaitForAndroidLayoutTests {
+ private:
+  base::ThreadRestrictions::ScopedAllowWait wait;
+};
+#endif
 
 class WebKitTestResultPrinter {
  public:
@@ -188,6 +203,12 @@ class WebKitTestController : public base::NonThreadSafe,
   WebPreferences prefs_;
 
   NotificationRegistrar registrar_;
+
+#if defined(OS_ANDROID)
+  // Because of the nested message pump implementation, Android needs to allow
+  // waiting on the UI thread while layout tests are being ran.
+  ScopedAllowWaitForAndroidLayoutTests reduced_restrictions_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestController);
 };
