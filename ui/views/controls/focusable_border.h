@@ -18,7 +18,7 @@ class Insets;
 namespace views {
 
 // A Border class to draw a focused border around a field (e.g textfield).
-class FocusableBorder : public Border {
+class VIEWS_EXPORT FocusableBorder : public Border {
  public:
   FocusableBorder();
 

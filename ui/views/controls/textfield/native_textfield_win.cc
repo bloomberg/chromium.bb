@@ -232,10 +232,6 @@ void NativeTextfieldWin::UpdateBorder() {
                SWP_NOOWNERZORDER | SWP_NOSIZE);
 }
 
-void NativeTextfieldWin::UpdateBorderColor() {
-  NOTIMPLEMENTED();
-}
-
 void NativeTextfieldWin::UpdateTextColor() {
   CHARFORMAT cf = {0};
   cf.dwMask = CFM_COLOR;

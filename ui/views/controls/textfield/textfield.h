@@ -166,13 +166,6 @@ class VIEWS_EXPORT Textfield : public View {
   bool draw_border() const { return draw_border_; }
   void RemoveBorder();
 
-  // Sets the border color (if one is in use).
-  void SetBorderColor(SkColor color);
-  // Reverts the textfield to the system default border color.
-  void UseDefaultBorderColor();
-  SkColor border_color() const { return border_color_; }
-  bool use_default_border_color() const { return use_default_border_color_; }
-
   // Sets the text to display when empty.
   void set_placeholder_text(const string16& text) {
     placeholder_text_ = text;
@@ -188,10 +181,6 @@ class VIEWS_EXPORT Textfield : public View {
   void set_placeholder_text_color(SkColor color) {
     placeholder_text_color_ = color;
   }
-
-  // Adds an icon which displays inside the border on the right side of the view
-  // (left in RTL).
-  void SetIcon(const gfx::ImageSkia& icon);
 
   // Getter for the horizontal margins that were set. Returns false if
   // horizontal margins weren't set.
@@ -294,6 +283,9 @@ class VIEWS_EXPORT Textfield : public View {
   NativeTextfieldWrapper* native_wrapper_;
 
  private:
+  // Returns the insets to the rectangle where text is actually painted.
+  gfx::Insets GetTextInsets() const;
+
   // This is the current listener for events from this Textfield.
   TextfieldController* controller_;
 
@@ -328,16 +320,6 @@ class VIEWS_EXPORT Textfield : public View {
   // Should we use the system background color instead of |background_color_|?
   bool use_default_background_color_;
 
-  // Border color.  Only used if |use_default_border_color_| is false.
-  SkColor border_color_;
-
-  // Should we use the system border color instead of |border_color_|?
-  bool use_default_border_color_;
-
-  // TODO(beng): remove this once NativeTextfieldWin subclasses
-  //             NativeControlWin.
-  bool initialized_;
-
   // Holds inner textfield margins.
   gfx::Insets margins_;
 
@@ -353,9 +335,6 @@ class VIEWS_EXPORT Textfield : public View {
 
   // Placeholder text color.
   SkColor placeholder_text_color_;
-
-  // When non-NULL, an icon to display inside the border of the textfield.
-  views::ImageView* icon_view_;
 
   // The accessible name of the text field.
   string16 accessible_name_;

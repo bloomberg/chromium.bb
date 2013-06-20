@@ -20,6 +20,7 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
@@ -36,6 +37,7 @@ class Image;
 namespace views {
 class Checkbox;
 class Combobox;
+class FocusableBorder;
 class FocusManager;
 class ImageButton;
 class ImageView;
@@ -43,7 +45,6 @@ class Label;
 class Link;
 class MenuRunner;
 class StyledLabel;
-class Textfield;
 class WebView;
 class Widget;
 }  // namespace views
@@ -211,28 +212,35 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // A class which holds a textfield and draws extra stuff on top, like
   // invalid content indications.
-  class DecoratedTextfield : public views::View {
+  class DecoratedTextfield : public views::Textfield {
    public:
     DecoratedTextfield(const string16& default_value,
                        const string16& placeholder,
                        views::TextfieldController* controller);
     virtual ~DecoratedTextfield();
 
-    // The wrapped text field.
-    views::Textfield* textfield() { return textfield_; }
-
     // Sets whether to indicate the textfield has invalid content.
     void SetInvalid(bool invalid);
     bool invalid() const { return invalid_; }
+
+    // Sets the icon to be displayed inside the textfield at the end of the
+    // text.
+    void SetIcon(const gfx::Image& icon);
 
     // views::View implementation.
     virtual const char* GetClassName() const OVERRIDE;
     virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-    virtual void RequestFocus() OVERRIDE;
 
    private:
-    views::Textfield* textfield_;
+    // We draw the border.
+    views::FocusableBorder* border_;  // Weak.
+
+    // The icon that goes at the right side of the textfield.
+    gfx::Image icon_;
+
+    // Whether the text contents are "invalid" (i.e. should special markers be
+    // shown to indicate invalidness).
     bool invalid_;
 
     DISALLOW_COPY_AND_ASSIGN(DecoratedTextfield);
@@ -379,7 +387,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // Shows an auxiliary textfield to the right of the suggestion icon and
     // text. This is currently only used to show a CVC field for the CC section.
     void ShowTextfield(const string16& placeholder_text,
-                       const gfx::ImageSkia& icon);
+                       const gfx::Image& icon);
 
     DecoratedTextfield* decorated_textfield() { return decorated_; }
 

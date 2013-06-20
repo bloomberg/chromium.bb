@@ -39,6 +39,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -65,6 +66,9 @@ const int kMinimumContentsHeight = 100;
 
 // Horizontal padding between text and other elements (in pixels).
 const int kAroundTextPadding = 4;
+
+// Padding around icons inside DecoratedTextfields.
+const size_t kTextfieldIconPadding = 3;
 
 // Size of the triangular mark that indicates an invalid textfield (in pixels).
 const size_t kDogEarSize = 10;
@@ -429,13 +433,15 @@ AutofillDialogViews::DecoratedTextfield::DecoratedTextfield(
     const string16& default_value,
     const string16& placeholder,
     views::TextfieldController* controller)
-    : textfield_(new views::Textfield()),
+    : border_(new views::FocusableBorder()),
       invalid_(false) {
-  textfield_->set_placeholder_text(placeholder);
-  textfield_->SetText(default_value);
-  textfield_->SetController(controller);
-  SetLayoutManager(new views::FillLayout());
-  AddChildView(textfield_);
+  set_border(border_);
+  // Removes the border from |native_wrapper_|.
+  RemoveBorder();
+  set_placeholder_text(placeholder);
+  SetText(default_value);
+  SetController(controller);
+  SetHorizontalMargins(0, 0);
 }
 
 AutofillDialogViews::DecoratedTextfield::~DecoratedTextfield() {}
@@ -443,9 +449,21 @@ AutofillDialogViews::DecoratedTextfield::~DecoratedTextfield() {}
 void AutofillDialogViews::DecoratedTextfield::SetInvalid(bool invalid) {
   invalid_ = invalid;
   if (invalid)
-    textfield_->SetBorderColor(kWarningColor);
+    border_->SetColor(kWarningColor);
   else
-    textfield_->UseDefaultBorderColor();
+    border_->UseDefaultColor();
+  SchedulePaint();
+}
+
+void AutofillDialogViews::DecoratedTextfield::SetIcon(const gfx::Image& icon) {
+  int icon_space = icon.IsEmpty() ? 0 :
+                                    icon.Width() + 2 * kTextfieldIconPadding;
+  int left = base::i18n::IsRTL() ? icon_space : 0;
+  int right = base::i18n::IsRTL() ? 0 : icon_space;
+  SetHorizontalMargins(left, right);
+  icon_ = icon;
+
+  PreferredSizeChanged();
   SchedulePaint();
 }
 
@@ -458,16 +476,27 @@ void AutofillDialogViews::DecoratedTextfield::PaintChildren(
 
 void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
   // Draw the textfield first.
-  canvas->Save();
-  if (FlipCanvasOnPaintForRTLUI()) {
-    canvas->Translate(gfx::Vector2d(width(), 0));
-    canvas->Scale(-1, 1);
-  }
   views::View::PaintChildren(canvas);
-  canvas->Restore();
+
+  border_->set_has_focus(HasFocus());
+  OnPaintBorder(canvas);
+
+  if (!icon_.IsEmpty()) {
+    gfx::Rect bounds = GetContentsBounds();
+    int x = base::i18n::IsRTL() ?
+        kTextfieldIconPadding :
+        bounds.right() - icon_.Width() - kTextfieldIconPadding;
+    canvas->DrawImageInt(icon_.AsImageSkia(), x,
+                         bounds.y() + (bounds.height() - icon_.Height()) / 2);
+  }
 
   // Then draw extra stuff on top.
   if (invalid_) {
+    if (base::i18n::IsRTL()) {
+      canvas->Translate(gfx::Vector2d(width(), 0));
+      canvas->Scale(-1, 1);
+    }
+
     SkPath dog_ear;
     dog_ear.moveTo(width() - kDogEarSize, 0);
     dog_ear.lineTo(width(), 0);
@@ -476,10 +505,6 @@ void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
     canvas->ClipPath(dog_ear);
     canvas->DrawColor(kWarningColor);
   }
-}
-
-void AutofillDialogViews::DecoratedTextfield::RequestFocus() {
-  textfield()->RequestFocus();
 }
 
 // AutofillDialogViews::AccountChooser -----------------------------------------
@@ -806,7 +831,7 @@ AutofillDialogViews::SuggestionView::SuggestionView(
   label_container_->AddChildView(decorated_);
   decorated_->SetVisible(false);
   // TODO(estade): get the sizing and spacing right on this textfield.
-  decorated_->textfield()->set_default_width_in_chars(10);
+  decorated_->set_default_width_in_chars(10);
   AddChildView(label_container_);
 
   label_line_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -846,9 +871,9 @@ void AutofillDialogViews::SuggestionView::SetSuggestionIcon(
 
 void AutofillDialogViews::SuggestionView::ShowTextfield(
     const string16& placeholder_text,
-    const gfx::ImageSkia& icon) {
-  decorated_->textfield()->set_placeholder_text(placeholder_text);
-  decorated_->textfield()->SetIcon(icon);
+    const gfx::Image& icon) {
+  decorated_->set_placeholder_text(placeholder_text);
+  decorated_->SetIcon(icon);
   decorated_->SetVisible(true);
   // The textfield will increase the height of the first row and cause the
   // label to be aligned properly, so the border is not necessary.
@@ -1013,7 +1038,7 @@ void AutofillDialogViews::FillSection(DialogSection section,
   TextfieldMap::iterator text_mapping =
       group->textfields.find(&originating_input);
   if (text_mapping != group->textfields.end())
-    text_mapping->second->textfield()->SetText(string16());
+    text_mapping->second->SetText(string16());
 
   // If the Autofill data comes from a credit card, make sure to overwrite the
   // CC comboboxes (even if they already have something in them). If the
@@ -1036,7 +1061,7 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
   DetailsGroup* group = GroupForSection(section);
   for (TextfieldMap::const_iterator it = group->textfields.begin();
        it != group->textfields.end(); ++it) {
-    output->insert(std::make_pair(it->first, it->second->textfield()->text()));
+    output->insert(std::make_pair(it->first, it->second->text()));
   }
   for (ComboboxMap::const_iterator it = group->comboboxes.begin();
        it != group->comboboxes.end(); ++it) {
@@ -1049,7 +1074,7 @@ string16 AutofillDialogViews::GetCvc() {
   DialogSection billing_section = controller_->SectionIsActive(SECTION_CC) ?
       SECTION_CC : SECTION_CC_BILLING;
   return GroupForSection(billing_section)->suggested_info->
-      decorated_textfield()->textfield()->text();
+      decorated_textfield()->text();
 }
 
 bool AutofillDialogViews::SaveDetailsLocally() {
@@ -1573,7 +1598,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
 
       gfx::Image icon =
           controller_->IconForField(input.type, input.initial_value);
-      field->textfield()->SetIcon(icon.AsImageSkia());
+      field->SetIcon(icon);
 
       textfields->insert(std::make_pair(&input, field));
       view_to_add = field;
@@ -1603,12 +1628,12 @@ void AutofillDialogViews::UpdateSectionImpl(
     TextfieldMap::iterator text_mapping = group->textfields.find(&input);
 
     if (text_mapping != group->textfields.end()) {
-      views::Textfield* textfield = text_mapping->second->textfield();
-      textfield->SetEnabled(input.editable);
-      if (textfield->text().empty() || clobber_inputs) {
-        textfield->SetText(iter->initial_value);
-        textfield->SetIcon(controller_->IconForField(
-            input.type, textfield->text()).AsImageSkia());
+      DecoratedTextfield* decorated = text_mapping->second;
+      decorated->SetEnabled(input.editable);
+      if (decorated->text().empty() || clobber_inputs) {
+        decorated->SetText(iter->initial_value);
+        decorated->SetIcon(
+            controller_->IconForField(input.type, decorated->text()));
       }
     }
 
@@ -1643,7 +1668,7 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   if (!suggestion_state.extra_text.empty()) {
     group.suggested_info->ShowTextfield(
         suggestion_state.extra_text,
-        suggestion_state.extra_icon.AsImageSkia());
+        suggestion_state.extra_icon);
   }
 
   group.manual_input->SetVisible(!show_suggestions);
@@ -1690,18 +1715,13 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
   if (!view->GetWidget())
     return;
 
-  views::View* input =
-      view->GetAncestorWithClassName(kDecoratedTextfieldClassName);
-  if (!input)
-    input = view;
-
-  if (error_bubble_ && error_bubble_->anchor() == input)
+  if (error_bubble_ && error_bubble_->anchor() == view)
     return;
 
   std::map<views::View*, string16>::iterator error_message =
-      validity_map_.find(input);
+      validity_map_.find(view);
   if (error_message != validity_map_.end())
-    error_bubble_.reset(new ErrorBubble(input, error_message->second));
+    error_bubble_.reset(new ErrorBubble(view, error_message->second));
 }
 
 void AutofillDialogViews::MarkInputsInvalid(DialogSection section,
@@ -1758,7 +1778,7 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
       if (!iter->first->editable)
         continue;
 
-      detail_outputs[iter->first] = iter->second->textfield()->text();
+      detail_outputs[iter->first] = iter->second->text();
     }
     for (ComboboxMap::const_iterator iter = group.comboboxes.begin();
          iter != group.comboboxes.end(); ++iter) {
@@ -1775,7 +1795,7 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
         group.suggested_info->decorated_textfield();
     cvc_input.reset(new DetailInput);
     cvc_input->type = CREDIT_CARD_VERIFICATION_CODE;
-    detail_outputs[cvc_input.get()] = decorated_cvc->textfield()->text();
+    detail_outputs[cvc_input.get()] = decorated_cvc->text();
   }
 
   ValidityData invalid_inputs = controller_->InputsAreValid(
@@ -1811,13 +1831,11 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   DecoratedTextfield* decorated = NULL;
 
   // Look for the input in the manual inputs.
-  views::View* ancestor =
-      textfield->GetAncestorWithClassName(kDecoratedTextfieldClassName);
   for (TextfieldMap::const_iterator iter = group->textfields.begin();
        iter != group->textfields.end();
        ++iter) {
     decorated = iter->second;
-    if (decorated == ancestor) {
+    if (decorated == textfield) {
       controller_->UserEditedOrActivatedInput(group->section,
                                               iter->first,
                                               GetWidget()->GetNativeView(),
@@ -1829,7 +1847,7 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
     }
   }
 
-  if (ancestor == group->suggested_info->decorated_textfield()) {
+  if (textfield == group->suggested_info->decorated_textfield()) {
     decorated = group->suggested_info->decorated_textfield();
     type = CREDIT_CARD_VERIFICATION_CODE;
   }
@@ -1853,7 +1871,7 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
   }
 
   gfx::Image icon = controller_->IconForField(type, textfield->text());
-  textfield->SetIcon(icon.AsImageSkia());
+  decorated->SetIcon(icon);
 }
 
 void AutofillDialogViews::UpdateSaveInChromeCheckbox() {
@@ -1879,25 +1897,23 @@ AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForSection(
 }
 
 AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForView(
-  views::View* view) {
+    views::View* view) {
   DCHECK(view);
-  // Textfields are treated slightly differently. For them, inspect
-  // the DecoratedTextfield ancestor, not the actual control.
-  views::View* ancestor =
-      view->GetAncestorWithClassName(kDecoratedTextfieldClassName);
 
-  views::View* control = ancestor ? ancestor : view;
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     DetailsGroup* group = &iter->second;
-    if (control->parent() == group->manual_input)
+    if (view->parent() == group->manual_input)
       return group;
+
+    views::View* decorated =
+        view->GetAncestorWithClassName(kDecoratedTextfieldClassName);
 
     // Textfields need to check a second case, since they can be
     // suggested inputs instead of directly editable inputs. Those are
     // accessed via |suggested_info|.
-    if (ancestor &&
-        ancestor == group->suggested_info->decorated_textfield()) {
+    if (decorated &&
+        decorated == group->suggested_info->decorated_textfield()) {
       return group;
     }
   }
@@ -1911,7 +1927,7 @@ views::Textfield* AutofillDialogViews::TextfieldForInput(
     const DetailsGroup& group = iter->second;
     TextfieldMap::const_iterator text_mapping = group.textfields.find(&input);
     if (text_mapping != group.textfields.end())
-      return text_mapping->second->textfield();
+      return text_mapping->second;
   }
 
   return NULL;

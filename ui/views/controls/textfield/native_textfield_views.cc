@@ -560,16 +560,6 @@ void NativeTextfieldViews::UpdateBorder() {
     text_border_->SetInsets(0, 0, 0, 0);
   UpdateHorizontalMargins();
   UpdateVerticalMargins();
-  UpdateBorderColor();
-}
-
-void NativeTextfieldViews::UpdateBorderColor() {
-  if (textfield_->use_default_border_color())
-    text_border_->UseDefaultColor();
-  else
-    text_border_->SetColor(textfield_->border_color());
-
-  SchedulePaint();
 }
 
 void NativeTextfieldViews::UpdateTextColor() {
