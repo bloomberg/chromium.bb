@@ -84,7 +84,7 @@ IPC_ENUM_TRAITS(PP_FlashSetting)
 IPC_ENUM_TRAITS(PP_ImageDataFormat)
 IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
 IPC_ENUM_TRAITS(PP_InputEvent_Type)
-IPC_ENUM_TRAITS(PP_NetAddressFamily_Private)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_NetAddressFamily_Private, PP_NETADDRESSFAMILY_IPV6)
 IPC_ENUM_TRAITS(PP_NetworkListState_Private)
 IPC_ENUM_TRAITS(PP_NetworkListType_Private)
 IPC_ENUM_TRAITS(PP_PrintOrientation_Dev)
@@ -1543,12 +1543,22 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_TrueTypeFont_GetTable,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_TrueTypeFont_GetTableReply,
                      std::string /* data */)
 
-// HostResolverPrivate, plugin -> host -> plugin
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_HostResolverPrivate_Create)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_HostResolverPrivate_Resolve,
+// Host Resolver ---------------------------------------------------------------
+// Creates a PPB_HostResolver resource.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_HostResolver_Create)
+
+// Creates a PPB_HostResolver_Private resource.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_HostResolver_CreatePrivate)
+
+// Resolves the given hostname.
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_HostResolver_Resolve,
                      ppapi::HostPortPair /* host_port */,
                      PP_HostResolver_Private_Hint /* hint */)
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_HostResolverPrivate_ResolveReply,
+
+// This message is a reply to HostResolver_Resolve. On success,
+// |canonical_name| contains the canonical name of the host; |net_address_list|
+// is a list of network addresses. On failure, both fields are set to empty.
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_HostResolver_ResolveReply,
                      std::string /* canonical_name */,
                      std::vector<PP_NetAddress_Private> /* net_address_list */)
 

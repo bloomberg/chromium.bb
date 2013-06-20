@@ -10,7 +10,7 @@
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
-#include "content/browser/renderer_host/pepper/pepper_host_resolver_private_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_host_resolver_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list_host.h"
@@ -78,6 +78,13 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   // Dev interfaces.
   if (GetPermissions().HasPermission(ppapi::PERMISSION_DEV)) {
     switch (message.type()) {
+      case PpapiHostMsg_HostResolver_Create::ID: {
+        scoped_refptr<ResourceMessageFilter> host_resolver(
+            new PepperHostResolverMessageFilter(host_, instance, false));
+        return scoped_ptr<ResourceHost>(new MessageFilterHost(
+            host_->GetPpapiHost(), instance, params.pp_resource(),
+            host_resolver));
+      }
       case PpapiHostMsg_Printing_Create::ID: {
          scoped_ptr<PepperPrintSettingsManager> manager(
              new PepperPrintSettingsManagerImpl());
@@ -113,9 +120,9 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   // thread). Currently these interfaces are available only for
   // whitelisted apps which may not have access to the other private
   // interfaces.
-  if (message.type() == PpapiHostMsg_HostResolverPrivate_Create::ID) {
+  if (message.type() == PpapiHostMsg_HostResolver_CreatePrivate::ID) {
     scoped_refptr<ResourceMessageFilter> host_resolver(
-        new PepperHostResolverPrivateMessageFilter(host_, instance));
+        new PepperHostResolverMessageFilter(host_, instance, true));
     return scoped_ptr<ResourceHost>(new MessageFilterHost(
         host_->GetPpapiHost(), instance, params.pp_resource(), host_resolver));
   }

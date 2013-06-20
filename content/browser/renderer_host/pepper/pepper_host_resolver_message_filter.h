@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_HOST_RESOLVER_PRIVATE_MESSAGE_FILTER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_HOST_RESOLVER_PRIVATE_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_HOST_RESOLVER_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_HOST_RESOLVER_MESSAGE_FILTER_H_
 
 #include <string>
 #include <vector>
@@ -35,14 +35,15 @@ namespace content {
 class BrowserPpapiHostImpl;
 class ResourceContext;
 
-class CONTENT_EXPORT PepperHostResolverPrivateMessageFilter
+class CONTENT_EXPORT PepperHostResolverMessageFilter
     : public ppapi::host::ResourceMessageFilter {
  public:
-  PepperHostResolverPrivateMessageFilter(BrowserPpapiHostImpl* host,
-                                         PP_Instance instance);
+  PepperHostResolverMessageFilter(BrowserPpapiHostImpl* host,
+                                  PP_Instance instance,
+                                  bool private_api);
 
  protected:
-  virtual ~PepperHostResolverPrivateMessageFilter();
+  virtual ~PepperHostResolverMessageFilter();
 
  private:
   typedef std::vector<PP_NetAddress_Private> NetAddressList;
@@ -65,22 +66,24 @@ class CONTENT_EXPORT PepperHostResolverPrivateMessageFilter
                  const PP_HostResolver_Private_Hint& hint,
                  ResourceContext* resource_context);
 
-  void OnLookupFinished(int result,
+  void OnLookupFinished(int net_result,
                         const net::AddressList& addresses,
                         const ppapi::host::ReplyMessageContext& bound_info);
-  void SendResolveReply(int result,
+  void SendResolveReply(int32_t result,
                         const std::string& canonical_name,
                         const NetAddressList& net_address_list,
                         const ppapi::host::ReplyMessageContext& context);
-  void SendResolveError(const ppapi::host::ReplyMessageContext& context);
+  void SendResolveError(int32_t error,
+                        const ppapi::host::ReplyMessageContext& context);
 
   bool external_plugin_;
+  bool private_api_;
   int render_process_id_;
   int render_view_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(PepperHostResolverPrivateMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(PepperHostResolverMessageFilter);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_HOST_RESOLVER_PRIVATE_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_HOST_RESOLVER_MESSAGE_FILTER_H_

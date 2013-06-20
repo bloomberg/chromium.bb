@@ -43,7 +43,7 @@ PP_HostResolver_Private_Hint ConvertToHostResolverPrivateHint(
 
 HostResolverResource::HostResolverResource(Connection connection,
                                            PP_Instance instance)
-    : HostResolverResourceBase(connection, instance) {
+    : HostResolverResourceBase(connection, instance, false) {
 }
 
 HostResolverResource::~HostResolverResource() {

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/pepper/pepper_host_resolver_private_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_host_resolver_message_filter.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,10 +20,12 @@
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/host/dispatch_host_message.h"
+#include "ppapi/host/error_conversion.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 
+using ppapi::host::NetErrorToPepperError;
 using ppapi::host::ReplyMessageContext;
 
 namespace content {
@@ -77,9 +79,12 @@ void CreateNetAddressListFromAddressList(
 
 }  // namespace
 
-PepperHostResolverPrivateMessageFilter::PepperHostResolverPrivateMessageFilter(
-    BrowserPpapiHostImpl* host, PP_Instance instance)
+PepperHostResolverMessageFilter::PepperHostResolverMessageFilter(
+    BrowserPpapiHostImpl* host,
+    PP_Instance instance,
+    bool private_api)
     : external_plugin_(host->external_plugin()),
+      private_api_(private_api),
       render_process_id_(0),
       render_view_id_(0) {
   DCHECK(host);
@@ -92,29 +97,28 @@ PepperHostResolverPrivateMessageFilter::PepperHostResolverPrivateMessageFilter(
   }
 }
 
-PepperHostResolverPrivateMessageFilter::
-~PepperHostResolverPrivateMessageFilter() {
+PepperHostResolverMessageFilter::~PepperHostResolverMessageFilter() {
 }
 
 scoped_refptr<base::TaskRunner>
-PepperHostResolverPrivateMessageFilter::OverrideTaskRunnerForMessage(
+PepperHostResolverMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
-  if (message.type() == PpapiHostMsg_HostResolverPrivate_Resolve::ID)
+  if (message.type() == PpapiHostMsg_HostResolver_Resolve::ID)
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
   return NULL;
 }
 
-int32_t PepperHostResolverPrivateMessageFilter::OnResourceMessageReceived(
+int32_t PepperHostResolverMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperHostResolverPrivateMessageFilter, msg)
+  IPC_BEGIN_MESSAGE_MAP(PepperHostResolverMessageFilter, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-        PpapiHostMsg_HostResolverPrivate_Resolve, OnMsgResolve)
+        PpapiHostMsg_HostResolver_Resolve, OnMsgResolve)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-int32_t PepperHostResolverPrivateMessageFilter::OnMsgResolve(
+int32_t PepperHostResolverMessageFilter::OnMsgResolve(
     const ppapi::host::HostMessageContext* context,
     const ppapi::HostPortPair& host_port,
     const PP_HostResolver_Private_Hint& hint) {
@@ -122,15 +126,15 @@ int32_t PepperHostResolverPrivateMessageFilter::OnMsgResolve(
 
   // Check plugin permissions.
   SocketPermissionRequest request(
-      content::SocketPermissionRequest::TCP_CONNECT, std::string(), 0);
+      SocketPermissionRequest::RESOLVE_HOST, host_port.host, host_port.port);
   RenderViewHost* render_view_host =
       RenderViewHost::FromID(render_process_id_, render_view_id_);
   if (!render_view_host ||
       !pepper_socket_utils::CanUseSocketAPIs(external_plugin_,
-                                             true,
+                                             private_api_,
                                              request,
                                              render_view_host)) {
-    return PP_ERROR_FAILED;
+    return PP_ERROR_NOACCESS;
   }
 
   RenderProcessHost* render_process_host =
@@ -143,7 +147,7 @@ int32_t PepperHostResolverPrivateMessageFilter::OnMsgResolve(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PepperHostResolverPrivateMessageFilter::DoResolve, this,
+      base::Bind(&PepperHostResolverMessageFilter::DoResolve, this,
                  context->MakeReplyMessageContext(),
                  host_port,
                  hint,
@@ -151,7 +155,7 @@ int32_t PepperHostResolverPrivateMessageFilter::OnMsgResolve(
   return PP_OK_COMPLETIONPENDING;
 }
 
-void PepperHostResolverPrivateMessageFilter::DoResolve(
+void PepperHostResolverMessageFilter::DoResolve(
     const ReplyMessageContext& context,
     const ppapi::HostPortPair& host_port,
     const PP_HostResolver_Private_Hint& hint,
@@ -160,7 +164,7 @@ void PepperHostResolverPrivateMessageFilter::DoResolve(
 
   net::HostResolver* host_resolver = resource_context->GetHostResolver();
   if (!host_resolver) {
-    SendResolveError(context);
+    SendResolveError(PP_ERROR_FAILED, context);
     return;
   }
 
@@ -176,43 +180,43 @@ void PepperHostResolverPrivateMessageFilter::DoResolve(
           host_resolver,
           request_info,
           bound_info.release(),
-          base::Bind(&PepperHostResolverPrivateMessageFilter::OnLookupFinished,
-                     this));
+          base::Bind(&PepperHostResolverMessageFilter::OnLookupFinished, this));
   lookup_request->Start();
 }
 
-void PepperHostResolverPrivateMessageFilter::OnLookupFinished(
-    int result,
+void PepperHostResolverMessageFilter::OnLookupFinished(
+    int net_result,
     const net::AddressList& addresses,
     const ReplyMessageContext& context) {
-  if (result != net::OK) {
-    SendResolveError(context);
+  if (net_result != net::OK) {
+    SendResolveError(NetErrorToPepperError(net_result), context);
   } else {
     const std::string& canonical_name = addresses.canonical_name();
     NetAddressList net_address_list;
     CreateNetAddressListFromAddressList(addresses, &net_address_list);
     if (net_address_list.empty())
-      SendResolveError(context);
+      SendResolveError(PP_ERROR_FAILED, context);
     else
       SendResolveReply(PP_OK, canonical_name, net_address_list, context);
   }
 }
 
-void PepperHostResolverPrivateMessageFilter::SendResolveReply(
-    int result,
+void PepperHostResolverMessageFilter::SendResolveReply(
+    int32_t result,
     const std::string& canonical_name,
     const NetAddressList& net_address_list,
     const ReplyMessageContext& context) {
   ReplyMessageContext reply_context = context;
   reply_context.params.set_result(result);
   SendReply(reply_context,
-            PpapiPluginMsg_HostResolverPrivate_ResolveReply(
+            PpapiPluginMsg_HostResolver_ResolveReply(
                 canonical_name, net_address_list));
 }
 
-void PepperHostResolverPrivateMessageFilter::SendResolveError(
+void PepperHostResolverMessageFilter::SendResolveError(
+    int32_t error,
     const ReplyMessageContext& context) {
-  SendResolveReply(PP_ERROR_FAILED, std::string(), NetAddressList(), context);
+  SendResolveReply(error, std::string(), NetAddressList(), context);
 }
 
 }  // namespace content

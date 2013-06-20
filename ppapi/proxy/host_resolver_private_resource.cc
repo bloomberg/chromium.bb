@@ -12,7 +12,7 @@ namespace proxy {
 
 HostResolverPrivateResource::HostResolverPrivateResource(Connection connection,
                                                          PP_Instance instance)
-    : HostResolverResourceBase(connection, instance) {
+    : HostResolverResourceBase(connection, instance, true) {
 }
 
 HostResolverPrivateResource::~HostResolverPrivateResource() {

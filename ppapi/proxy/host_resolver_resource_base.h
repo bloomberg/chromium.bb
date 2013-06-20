@@ -30,7 +30,9 @@ class NetAddressResource;
 
 class PPAPI_PROXY_EXPORT HostResolverResourceBase: public PluginResource {
  public:
-  HostResolverResourceBase(Connection connection, PP_Instance instance);
+  HostResolverResourceBase(Connection connection,
+                           PP_Instance instance,
+                           bool private_api);
   virtual ~HostResolverResourceBase();
 
   int32_t ResolveImpl(const char* host,
@@ -52,6 +54,8 @@ class PPAPI_PROXY_EXPORT HostResolverResourceBase: public PluginResource {
                    const PP_HostResolver_Private_Hint* hint);
 
   bool ResolveInProgress() const;
+
+  bool private_api_;
 
   scoped_refptr<TrackedCallback> resolve_callback_;
 
