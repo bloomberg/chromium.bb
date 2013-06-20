@@ -23,7 +23,7 @@ class RecordParsed;
 // by querying the network (it may choose to query either or both based on its
 // creation flags, see MDnsTransactionFlags). Network-based transactions will
 // time out after a reasonable number of seconds.
-class MDnsTransaction {
+class NET_EXPORT MDnsTransaction {
  public:
   // Used to signify what type of result the transaction has recieved.
   enum Result {
@@ -79,7 +79,7 @@ class MDnsTransaction {
 // A listener listens for updates regarding a specific record or set of records.
 // Created by the MDnsClient (see |MDnsClient::CreateListener|) and used to keep
 // track of listeners.
-class MDnsListener {
+class NET_EXPORT MDnsListener {
  public:
   // Used in the MDnsListener delegate to signify what type of change has been
   // made to a record.
@@ -124,7 +124,7 @@ class MDnsListener {
 // of new records, or by creating an |MDnsTransaction| to look up the value of a
 // specific records. When all listeners and active transactions are destroyed,
 // the client stops listening on the network and destroys the cache.
-class MDnsClient {
+class NET_EXPORT MDnsClient {
  public:
   virtual ~MDnsClient() {}
 
