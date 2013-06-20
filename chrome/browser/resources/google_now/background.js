@@ -68,6 +68,20 @@ var RETRY_DISMISS_TASK_NAME = 'retry-dismiss';
 
 var LOCATION_WATCH_NAME = 'location-watch';
 
+var WELCOME_TOAST_NOTIFICATION_ID = 'enable-now-toast';
+
+/**
+ * The indices of the buttons that are displayed on the welcome toast.
+ * @enum {number}
+ */
+var ToastButtonIndex = {YES: 0, NO: 1};
+
+/**
+ * The action that the user performed on the welcome toast.
+ * @enum {number}
+ */
+var ToastOptionResponse = {CHOSE_YES: 1, CHOSE_NO: 2};
+
 /**
  * Checks if a new task can't be scheduled when another task is already
  * scheduled.
@@ -522,6 +536,28 @@ function onNotificationClicked(notificationId, selector) {
 }
 
 /**
+ * Responds to a click of one of the buttons on the welcome toast.
+ * @param {number} buttonIndex The index of the button which was clicked.
+ */
+function onToastNotificationClicked(buttonIndex) {
+  if (buttonIndex == ToastButtonIndex.YES) {
+    chrome.metricsPrivate.recordUserAction('GoogleNow.WelcomeToastClickedYes');
+    storage.set({toastState: ToastOptionResponse.CHOSE_YES});
+
+    // TODO(zturner): Update chrome geolocation setting once the settings
+    // API is in place.
+    startPollingCards();
+  } else {
+    chrome.metricsPrivate.recordUserAction('GoogleNow.WelcomeToastClickedNo');
+    storage.set({toastState: ToastOptionResponse.CHOSE_NO});
+  }
+
+  chrome.notifications.clear(
+      WELCOME_TOAST_NOTIFICATION_ID,
+      function(wasCleared) {});
+}
+
+/**
  * Callback for chrome.notifications.onClosed event.
  * @param {string} notificationId Unique identifier of the notification.
  * @param {boolean} byUser Whether the notification was closed by the user.
@@ -530,6 +566,15 @@ function onNotificationClosed(notificationId, byUser) {
   if (!byUser)
     return;
 
+  if (notificationId == WELCOME_TOAST_NOTIFICATION_ID) {
+    // Even though they only closed the notification without clicking no, treat
+    // it as though they clicked No anwyay, and don't show the toast again.
+    chrome.metricsPrivate.recordUserAction('GoogleNow.WelcomeToastDismissed');
+    storage.set({toastState: ToastOptionResponse.CHOSE_NO});
+    return;
+  }
+
+  // At this point we are guaranteed that the notification is a now card.
   chrome.metricsPrivate.recordUserAction('GoogleNow.Dismissed');
 
   tasks.add(DISMISS_CARD_TASK_NAME, function(callback) {
@@ -557,14 +602,54 @@ function onNotificationClosed(notificationId, byUser) {
 }
 
 /**
- * Initializes the event page on install or on browser startup.
+ * Initializes the polling system to start monitoring location and fetching
+ * cards.
  */
-function initialize() {
+function startPollingCards() {
   // Create an update timer for a case when for some reason location request
   // gets stuck.
   updateCardsAttempts.start(MAXIMUM_POLLING_PERIOD_SECONDS);
 
   requestLocation();
+}
+
+/**
+ * Initializes the event page on install or on browser startup.
+ */
+function initialize() {
+  storage.get('toastState', function(items) {
+    // The toast state might be undefined (e.g. not in storage yet) if this is
+    // the first time ever being prompted.
+
+    // TODO(zturner): Get the value of isGeolocationEnabled from the settings
+    // api and additionally make sure it is true.
+    if (!items.toastState) {
+      showWelcomeToast();
+    } else if (items.toastState == ToastOptionResponse.CHOSE_YES) {
+      startPollingCards();
+    }
+  });
+}
+
+/**
+ * Displays a toast to the user asking if they want to opt in to receiving
+ * Google Now cards.
+ */
+function showWelcomeToast() {
+  // TODO(zturner): Localize this once the component extension localization
+  // api is complete.
+  // TODO(zturner): Add icons.
+  var buttons = [{title: 'Yes'}, {title: 'No'}];
+  var options = {
+    type: 'basic',
+    title: 'Enable Google Now Cards',
+    message: 'Would you like to be shown Google Now cards?',
+    iconUrl: 'http://www.gstatic.com/googlenow/chrome/default.png',
+    priority: 2,
+    buttons: buttons
+  };
+  chrome.notifications.create(WELCOME_TOAST_NOTIFICATION_ID, options,
+      function(notificationId) {});
 }
 
 chrome.runtime.onInstalled.addListener(function(details) {
@@ -589,14 +674,18 @@ chrome.notifications.onClicked.addListener(
 
 chrome.notifications.onButtonClicked.addListener(
     function(notificationId, buttonIndex) {
-      chrome.metricsPrivate.recordUserAction(
-          'GoogleNow.ButtonClicked' + buttonIndex);
-      onNotificationClicked(notificationId, function(actionUrls) {
-        if (!Array.isArray(actionUrls.buttonUrls))
-          return undefined;
+      if (notificationId == WELCOME_TOAST_NOTIFICATION_ID) {
+        onToastNotificationClicked(buttonIndex);
+      } else {
+        chrome.metricsPrivate.recordUserAction(
+            'GoogleNow.ButtonClicked' + buttonIndex);
+        onNotificationClicked(notificationId, function(actionUrls) {
+          if (!Array.isArray(actionUrls.buttonUrls))
+            return undefined;
 
-        return actionUrls.buttonUrls[buttonIndex];
-      });
+          return actionUrls.buttonUrls[buttonIndex];
+        });
+      }
     });
 
 chrome.notifications.onClosed.addListener(onNotificationClosed);

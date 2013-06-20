@@ -427,6 +427,9 @@
 0xc06f4ecf7cf01b27	GoogleNow.ButtonClicked1
 0x813aeef215b68741	GoogleNow.Dismissed
 0x436c20892470d838	GoogleNow.MessageClicked
+0x80726a05369be7ca	GoogleNow.WelcomeToastClickedNo
+0x1e6b0ae24163b1e8	GoogleNow.WelcomeToastClickedYes
+0x7813d5bea46a5fa8	GoogleNow.WelcomeToastDismissed
 0xd6c29b06a8c7e3e2	GpuAccelerationDisabled
 0xd18fed7efb6cf062	GpuAccelerationEnabled
 0x696c3c52634726aa	HiliteColor
@@ -1558,6 +1561,7 @@
 0x852721aa5fc738df	Underline
 0x1cdc076b28f70afa	Undo
 0xc1a39b6a60f8b2f8	Unlink
+0x46b816f573557a53	Unselect
 0xbcd41ce97e3c5568	UpdateChrome
 0x0746723e6884a2fb	Updater.ServerCertificateChanged
 0x169dd0fd613963e8	Updater.ServerCertificateFailed

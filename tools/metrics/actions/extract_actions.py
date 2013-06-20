@@ -352,6 +352,9 @@ def AddExtensionActions(actions):
   actions.add('GoogleNow.MessageClicked')
   actions.add('GoogleNow.ButtonClicked0')
   actions.add('GoogleNow.ButtonClicked1')
+  actions.add('GoogleNow.WelcomeToastClickedYes')
+  actions.add('GoogleNow.WelcomeToastClickedNo')
+  actions.add('GoogleNow.WelcomeToastDismissed')
   actions.add('GoogleNow.Dismissed')
 
 def GrepForActions(path, actions):
