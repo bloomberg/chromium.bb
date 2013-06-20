@@ -51,7 +51,7 @@ class StatsCollector(object):
     pixels_rasterized = 0
     while self.index < len(self.events):
       event = self.seekToNextEvent()
-      if event["name"] == "TileManager::RunRasterTask":
+      if event["name"] == "RasterWorkerPoolTaskImpl::RunRasterOnThread":
         break
       elif event["name"] == "Picture::Raster":
         if event["ph"] == "B":
@@ -113,7 +113,8 @@ class StatsCollector(object):
 
     while self.index < stop_event_index and self.index < len(self.events):
       event = self.seekToNextEvent()
-      if event["name"] == "TileManager::RunRasterTask" and event["ph"] == "B":
+      if event["name"] == "RasterWorkerPoolTaskImpl::RunRasterOnThread" \
+           and event["ph"] == "B":
         source_frame_number = event["args"]["metadata"]["source_frame_number"]
         if source_frame_number == frame_number:
           best_rasterize_time, pixels_rasterized = self.gatherRasterStats()
