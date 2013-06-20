@@ -16,7 +16,7 @@
           "openerTabId": {"type": "integer", "minimum": 0, "optional": true, "description": "The ID of the tab that opened this tab, if any. This will only be present if the opener tab still exists."},
           "selected": {"type": "boolean", "description": "Whether the tab is selected.", "nodoc": true},
           "highlighted": {"type": "boolean", "description": "Whether the tab is highlighted."},
-          "active": {"type": "boolean", "description": "Whether the tab is active in its window."},
+          "active": {"type": "boolean", "description": "Whether the tab is active in its window. (Does not necessarily mean the window is focused.)"},
           "pinned": {"type": "boolean", "description": "Whether the tab is pinned."},
           "url": {"type": "string", "optional": true, "description": "The URL the tab is displaying. This will only be present if the extension has the 'tabs' or 'webNavigation' permission."},
           "title": {"type": "string", "optional": true, "optional": true, "description": "The title of the tab. This will only be present if the extension has the 'tabs' or 'webNavigation' permission. It may also be an empty string if the tab is loading."},
@@ -237,7 +237,7 @@
               "active": {
                 "type": "boolean",
                 "optional": true,
-                "description": "Whether the tab should become the active tab in the window. Defaults to <var>true</var>"
+                "description": "Whether the tab should become the active tab in the window. Does not affect whether the window is focused (see $ref:windows.update). Defaults to <var>true</var>."
               },
               "selected": {
                 "nodoc": true,
@@ -444,7 +444,7 @@
               "active": {
                 "type": "boolean",
                 "optional": true,
-                "description": "Whether the tab should be active."
+                "description": "Whether the tab should be active. Does not affect whether the window is focused (see $ref:windows.update)."
               },
               "highlighted": {
                 "type": "boolean",
