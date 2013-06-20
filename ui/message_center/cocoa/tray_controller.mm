@@ -48,8 +48,25 @@
     NSView* contentView = [viewController_ view];
     [window setFrame:[contentView frame] display:NO];
     [window setContentView:contentView];
+
+    // The global event monitor will close the tray in response to events
+    // delivered to other applications, and -windowDidResignKey: will catch
+    // events within the application.
+    __block typeof(self) weakSelf = self;
+    clickEventMonitor_ =
+        [NSEvent addGlobalMonitorForEventsMatchingMask:NSLeftMouseDownMask |
+                                                       NSRightMouseDownMask |
+                                                       NSOtherMouseDownMask
+            handler:^(NSEvent* event) {
+                [weakSelf windowDidResignKey:nil];
+            }];
   }
   return self;
+}
+
+- (void)dealloc {
+  [NSEvent removeMonitor:clickEventMonitor_];
+  [super dealloc];
 }
 
 - (void)close {
