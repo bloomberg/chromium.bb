@@ -10328,10 +10328,16 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_RELAUNCH_BUTTON" desc="Titlecase: The label for the relaunch button that relaunches the browser once update is complete">
           Restart
         </message>
+        <message name="IDS_RELAUNCH_AND_POWERWASH_BUTTON" desc="Titlecase: The label for the  button that relaunches and powerwashes the browser once update is complete">
+          Relaunch and Powerwash
+        </message>
       </if>
       <if expr="pp_ifdef('chromeos') and not pp_ifdef('use_titlecase')">
         <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
           Restart
+        </message>
+        <message name="IDS_RELAUNCH_AND_POWERWASH_BUTTON" desc="Titlecase: The label for the  button that relaunches and powerwashes the browser once update is complete">
+          Relaunch and Powerwash
         </message>
       </if>
       <if expr="pp_ifdef('chromeos')">
