@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,6 +21,7 @@
 #include "ui/base/gestures/gesture_sequence.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
@@ -592,7 +594,18 @@ class TestEventHandler : public ui::EventHandler {
 
 }  // namespace
 
-typedef AuraTestBase GestureRecognizerTest;
+class GestureRecognizerTest : public AuraTestBase {
+ public:
+  GestureRecognizerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableScrollPrediction);
+    AuraTestBase::SetUp();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(GestureRecognizerTest);
+};
 
 // Check that appropriate touch events generate tap gesture events.
 TEST_F(GestureRecognizerTest, GestureEventTap) {
@@ -940,6 +953,79 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
                   ui::ET_SCROLL_FLING_START,
                   ui::ET_GESTURE_END);
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
+}
+
+// Check that predicted scroll update positions are correct.
+TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
+  const double prediction_interval = 0.03;
+  ui::GestureConfiguration::set_scroll_prediction_seconds(prediction_interval);
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  TimedEvents tes;
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  const int kTouchId = 5;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, root_window()));
+
+  delegate->Reset();
+  // Tracks the total scroll since we want to verify that the correct position
+  // will be scrolled to throughout the prediction.
+  gfx::Vector2dF total_scroll;
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                       kTouchId, tes.Now());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  EXPECT_2_EVENTS(delegate->events(),
+                  ui::ET_GESTURE_BEGIN,
+                  ui::ET_GESTURE_TAP_DOWN);
+
+  // Move the touch-point enough so that it is considered as a scroll. This
+  // should generate both SCROLL_BEGIN and SCROLL_UPDATE gestures.
+  // The first movement is diagonal, to ensure that we have a free scroll,
+  // and not a rail scroll.
+  tes.LeapForward(30);
+  tes.SendScrollEvent(root_window(), 130, 230, kTouchId, delegate.get());
+  EXPECT_3_EVENTS(delegate->events(),
+                  ui::ET_GESTURE_TAP_CANCEL,
+                  ui::ET_GESTURE_SCROLL_BEGIN,
+                  ui::ET_GESTURE_SCROLL_UPDATE);
+  EXPECT_GT(delegate->scroll_velocity_x(), 0);
+  EXPECT_GT(delegate->scroll_velocity_y(), 0);
+  total_scroll.set_x(total_scroll.x() + delegate->scroll_x());
+  total_scroll.set_y(total_scroll.y() + delegate->scroll_y());
+  EXPECT_EQ((int)(29 + delegate->scroll_velocity_x() * prediction_interval),
+            (int)(total_scroll.x()));
+  EXPECT_EQ((int)(29 + delegate->scroll_velocity_y() * prediction_interval),
+            (int)(total_scroll.y()));
+
+  // Move some more to generate a few more scroll updates.
+  tes.LeapForward(30);
+  tes.SendScrollEvent(root_window(), 110, 211, kTouchId, delegate.get());
+  EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
+  total_scroll.set_x(total_scroll.x() + delegate->scroll_x());
+  total_scroll.set_y(total_scroll.y() + delegate->scroll_y());
+  EXPECT_EQ((int)(9 + delegate->scroll_velocity_x() * prediction_interval),
+            (int)(total_scroll.x()));
+  EXPECT_EQ((int)(10 + delegate->scroll_velocity_y() * prediction_interval),
+            (int)(total_scroll.y()));
+
+  tes.LeapForward(30);
+  tes.SendScrollEvent(root_window(), 140, 215, kTouchId, delegate.get());
+  EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
+  total_scroll.set_x(total_scroll.x() + delegate->scroll_x());
+  total_scroll.set_y(total_scroll.y() + delegate->scroll_y());
+  EXPECT_EQ((int)(39 + delegate->scroll_velocity_x() * prediction_interval),
+            (int)(total_scroll.x()));
+  EXPECT_EQ((int)(14 + delegate->scroll_velocity_y() * prediction_interval),
+            (int)(total_scroll.y()));
+
+  // Release the touch. This should end the scroll.
+  delegate->Reset();
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                         kTouchId,
+                         tes.LeapForward(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
 }
 
 // Check that the bounding box during a scroll event is correct.

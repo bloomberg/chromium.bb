@@ -903,6 +903,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSpellingAutoCorrect)
   },
   {
+    "enable-scroll-prediction",
+    IDS_FLAGS_ENABLE_SCROLL_PREDICTION_NAME,
+    IDS_FLAGS_ENABLE_SCROLL_PREDICTION_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableScrollPrediction)
+  },
+  {
     "touch-events",
     IDS_TOUCH_EVENTS_NAME,
     IDS_TOUCH_EVENTS_DESCRIPTION,

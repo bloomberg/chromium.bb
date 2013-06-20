@@ -54,7 +54,7 @@ GeneralConfig.prototype = {
       var units = row.querySelector('.row-units');
 
       label.setAttribute('for', field.key);
-      label.textContent = field.label;
+      label.innerHTML = field.label;
       input.id = field.key;
       input.min = field.min || 0;
 
@@ -225,6 +225,14 @@ function GestureConfig() {
       key: 'min_scroll_delta_squared',
       label: 'Minimum Scroll Delta Squared',
       units: ''
+    },
+    {
+      key: 'scroll_prediction_seconds',
+      label: 'Scroll prediction interval<br>' +
+          '(Enable scroll prediction in ' +
+              '<a href="chrome://flags">chrome://flags</a>)',
+      units: 'seconds',
+      step: 0.01
     },
     {
       key: 'min_swipe_speed',

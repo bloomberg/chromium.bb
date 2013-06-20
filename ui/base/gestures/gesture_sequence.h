@@ -187,6 +187,11 @@ class UI_EXPORT GestureSequence {
   // update gesture.
   gfx::Point latest_multi_scroll_update_location_;
 
+  // The last scroll update prediction offset. This is removed from the scroll
+  // distance on the next update since the page has already been scrolled this
+  // distance.
+  gfx::Vector2dF last_scroll_prediction_offset_;
+
   // For pinch, the 'distance' represents the diagonal distance of
   // |bounding_box_|.
 

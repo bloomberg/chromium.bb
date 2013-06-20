@@ -27,6 +27,9 @@ const char kDisableViewsTextfield[] = "disable-views-textfield";
 // Enables the new visual style for application dialogs and controls.
 const char kEnableNewDialogStyle[] = "enable-new-dialog-style";
 
+// Enable scroll prediction for scroll update events.
+const char kEnableScrollPrediction[] = "enable-scroll-prediction";
+
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 

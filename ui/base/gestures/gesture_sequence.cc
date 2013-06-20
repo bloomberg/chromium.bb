@@ -7,6 +7,7 @@
 #include <cmath>
 #include <stdlib.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,6 +16,7 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/gestures/gesture_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -724,6 +726,8 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
                                              float y_velocity) {
   float railed_x_velocity = x_velocity;
   float railed_y_velocity = y_velocity;
+  last_scroll_prediction_offset_.set_x(0);
+  last_scroll_prediction_offset_.set_y(0);
 
   if (scroll_type_ == ST_HORIZONTAL)
     railed_y_velocity = 0;
@@ -752,7 +756,9 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
 
 void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
                                                 Gestures* gestures) {
-  gfx::Vector2d d;
+  static bool use_scroll_prediction = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableScrollPrediction);
+  gfx::Vector2dF d;
   gfx::Point location;
   if (point_count_ == 1) {
     d = point.ScrollDelta();
@@ -762,6 +768,20 @@ void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
     d = location - latest_multi_scroll_update_location_;
     latest_multi_scroll_update_location_ = location;
   }
+
+  if (use_scroll_prediction) {
+    // Remove the extra distance added by the last scroll prediction and add
+    // the new prediction offset.
+    d -= last_scroll_prediction_offset_;
+    last_scroll_prediction_offset_.set_x(
+        GestureConfiguration::scroll_prediction_seconds() * point.XVelocity());
+    last_scroll_prediction_offset_.set_y(
+        GestureConfiguration::scroll_prediction_seconds() * point.YVelocity());
+    d += last_scroll_prediction_offset_;
+    location += gfx::Vector2d(last_scroll_prediction_offset_.x(),
+                              last_scroll_prediction_offset_.y());
+  }
+
   if (scroll_type_ == ST_HORIZONTAL)
     d.set_y(0);
   else if (scroll_type_ == ST_VERTICAL)

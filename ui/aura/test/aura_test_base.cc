@@ -53,6 +53,7 @@ void AuraTestBase::SetUp() {
   ui::GestureConfiguration::set_points_buffered_for_velocity(10);
   ui::GestureConfiguration::set_rail_break_proportion(15);
   ui::GestureConfiguration::set_rail_start_proportion(2);
+  ui::GestureConfiguration::set_scroll_prediction_seconds(0);
   ui::GestureConfiguration::set_default_radius(0);
   ui::GestureConfiguration::set_fling_acceleration_curve_coefficients(
       0, 0.0166667f);

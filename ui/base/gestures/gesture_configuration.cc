@@ -31,6 +31,7 @@ double GestureConfiguration::min_scroll_delta_squared_ = 4 * 4;
 int GestureConfiguration::min_scroll_successive_velocity_events_ = 3;
 float GestureConfiguration::min_scroll_velocity_ = 30.0f;
 double GestureConfiguration::min_swipe_speed_ = 20;
+double GestureConfiguration::scroll_prediction_seconds_ = 0.03;
 double
   GestureConfiguration::min_touch_down_duration_in_seconds_for_click_ = 0.01;
 

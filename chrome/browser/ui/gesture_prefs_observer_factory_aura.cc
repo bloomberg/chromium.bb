@@ -311,6 +311,8 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_rail_start_proportion(
       prefs_->GetDouble(
           prefs::kRailStartProportion));
+  GestureConfiguration::set_scroll_prediction_seconds(
+      prefs_->GetDouble(prefs::kScrollPredictionSeconds));
 
   UpdateOverscrollPrefs();
   UpdateImmersiveModePrefs();
@@ -559,6 +561,10 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
   registry->RegisterDoublePref(
       prefs::kRailStartProportion,
       GestureConfiguration::rail_start_proportion(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(
+      prefs::kScrollPredictionSeconds,
+      GestureConfiguration::scroll_prediction_seconds(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // Register for migration.
