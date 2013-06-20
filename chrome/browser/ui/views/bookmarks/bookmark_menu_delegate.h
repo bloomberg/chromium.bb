@@ -62,7 +62,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
             const BookmarkNode* node,
             int start_child_index,
             ShowOptions show_options,
-            bookmark_utils::BookmarkLaunchLocation);
+            bookmark_utils::BookmarkLaunchLocation location);
 
   // Sets the PageNavigator.
   void SetPageNavigator(content::PageNavigator* navigator);

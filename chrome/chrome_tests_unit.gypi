@@ -1541,6 +1541,7 @@
         'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
+        'browser/ui/views/bookmarks/bookmark_menu_delegate_unittest.cc',
         'browser/ui/views/confirm_bubble_views_unittest.cc',
         'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',

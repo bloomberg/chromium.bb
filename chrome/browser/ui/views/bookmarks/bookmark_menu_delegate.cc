@@ -9,7 +9,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -106,7 +105,12 @@ string16 BookmarkMenuDelegate::GetTooltipText(
     int id,
     const gfx::Point& screen_loc) const {
   MenuIDToNodeMap::const_iterator i = menu_id_to_node_map_.find(id);
-  DCHECK(i != menu_id_to_node_map_.end());
+  // When removing bookmarks it may be possible to end up here without a node.
+  if (i == menu_id_to_node_map_.end()) {
+    DCHECK(is_mutating_model_);
+    return string16();
+  }
+
   const BookmarkNode* node = i->second;
   if (node->is_url()) {
     return BookmarkBarView::CreateToolTipForURLAndTitle(
@@ -369,10 +373,6 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
   // is the DCHECK.
   DCHECK(changed_parent_menus.size() <= 1);
 
-  for (std::set<MenuItemView*>::const_iterator i(changed_parent_menus.begin());
-       i != changed_parent_menus.end(); ++i)
-    (*i)->ChildrenChanged();
-
   // Remove any descendants of the removed nodes in |node_to_menu_map_|.
   for (NodeToMenuMap::iterator i(node_to_menu_map_.begin());
        i != node_to_menu_map_.end(); ) {
@@ -391,6 +391,10 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
       ++i;
     }
   }
+
+  for (std::set<MenuItemView*>::const_iterator i(changed_parent_menus.begin());
+       i != changed_parent_menus.end(); ++i)
+    (*i)->ChildrenChanged();
 }
 
 void BookmarkMenuDelegate::DidRemoveBookmarks() {
