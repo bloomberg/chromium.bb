@@ -20,7 +20,6 @@ GPUInfo::GPUInfo()
       lenovo_dcute(false),
       adapter_luid(0),
       can_lose_context(false),
-      gpu_accessible(true),
       software_rendering(false),
       sandboxed(false) {
 }

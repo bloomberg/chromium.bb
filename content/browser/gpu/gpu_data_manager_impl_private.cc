@@ -378,7 +378,7 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
   if (use_swiftshader_)
     return true;
 
-  if (!gpu_info_.gpu_accessible) {
+  if (!gpu_process_accessible_) {
     if (reason) {
       *reason = "GPU process launch failed.";
     }
@@ -946,7 +946,8 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
       window_count_(0),
       domain_blocking_enabled_(true),
       owner_(owner),
-      display_count_(0) {
+      display_count_(0),
+      gpu_process_accessible_(true) {
   DCHECK(owner_);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
@@ -1186,6 +1187,14 @@ void GpuDataManagerImplPrivate::Notify3DAPIBlocked(const GURL& url,
   GpuDataManagerImpl::UnlockedSession session(owner_);
   observer_list_->Notify(&GpuDataManagerObserver::DidBlock3DAPIs,
                          url, render_process_id, render_view_id, requester);
+}
+
+void GpuDataManagerImplPrivate::OnGpuProcessInitFailure() {
+  gpu_process_accessible_ = false;
+  gpu_info_.finalized = true;
+  complete_gpu_info_already_requested_ = true;
+  // Some observers might be waiting.
+  NotifyGpuInfoUpdate();
 }
 
 }  // namespace content

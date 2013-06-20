@@ -236,7 +236,6 @@ int GpuMain(const MainFunctionParams& parameters) {
         base::ThreadRestrictions::AssertIOAllowed();
         if (access("/dev/nvidiactl", R_OK) != 0) {
           VLOG(1) << "NVIDIA device file /dev/nvidiactl access denied";
-          gpu_info.gpu_accessible = false;
           dead_on_arrival = true;
         }
       }
@@ -245,8 +244,6 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif  // !defined(OS_MACOSX)
     } else {
       VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
-      gpu_info.gpu_accessible = false;
-      gpu_info.finalized = true;
       dead_on_arrival = true;
     }
 

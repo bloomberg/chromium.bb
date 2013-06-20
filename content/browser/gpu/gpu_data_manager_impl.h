@@ -172,6 +172,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void SetDisplayCount(unsigned int display_count);
   unsigned int GetDisplayCount() const;
 
+  // Called when GPU process initialization failed.
+  void OnGpuProcessInitFailure();
+
  private:
   friend class GpuDataManagerImplPrivate;
   friend class GpuDataManagerImplPrivateTest;

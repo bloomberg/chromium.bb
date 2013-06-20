@@ -780,6 +780,9 @@ void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {
   if (kind_ == GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED)
     AcceleratedPresenter::SetAdapterLUID(gpu_info.adapter_luid);
 #endif
+
+  if (!initialized_)
+    GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
 }
 
 void GpuProcessHost::OnChannelEstablished(
