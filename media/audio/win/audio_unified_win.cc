@@ -221,8 +221,16 @@ bool WASAPIUnifiedStream::Open() {
   }
 
   AudioParameters hw_input_params;
-  hr = CoreAudioUtil::GetPreferredAudioParameters(
-      eCapture, eConsole, &hw_input_params);
+  if (input_device_id_ == AudioManagerBase::kDefaultDeviceId) {
+    // Query native parameters for the default capture device.
+    hr = CoreAudioUtil::GetPreferredAudioParameters(
+        eCapture, eConsole, &hw_input_params);
+  } else {
+    // Query native parameters for the capture device given by
+    // |input_device_id_|.
+    hr = CoreAudioUtil::GetPreferredAudioParameters(
+        input_device_id_, &hw_input_params);
+  }
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get preferred input audio parameters.";
     return false;
@@ -333,10 +341,15 @@ bool WASAPIUnifiedStream::Open() {
     return false;
 
   // Capture side (always event driven but format depends on varispeed or not):
-  // TODO(henrika): Open the correct input device with |input_device_id_|,
-  // http://crbug.com/147327.
-  ScopedComPtr<IAudioClient> audio_input_client =
-      CoreAudioUtil::CreateDefaultClient(eCapture, eConsole);
+
+  ScopedComPtr<IAudioClient> audio_input_client;
+  if (input_device_id_ == AudioManagerBase::kDefaultDeviceId) {
+    audio_input_client = CoreAudioUtil::CreateDefaultClient(eCapture, eConsole);
+  } else {
+    ScopedComPtr<IMMDevice> audio_input_device(
+      CoreAudioUtil::CreateDevice(input_device_id_));
+    audio_input_client = CoreAudioUtil::CreateClient(audio_input_device);
+  }
   if (!audio_input_client)
     return false;
 

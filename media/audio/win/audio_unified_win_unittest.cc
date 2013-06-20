@@ -108,9 +108,9 @@ class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
 
     // Play out the recorded audio samples in loop back. Perform channel mixing
     // if required using a channel mixer which is created only if needed.
-    if (source->channels() == dest->channels())
+    if (source->channels() == dest->channels()) {
       source->CopyTo(dest);
-    else {
+    } else {
       // A channel mixer is required for converting audio between two different
       // channel layouts.
       if (!channel_mixer_) {
@@ -145,7 +145,7 @@ class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
 // Convenience method which ensures that we fulfill all required conditions
 // to run unified audio tests on Windows.
 static bool CanRunUnifiedAudioTests(AudioManager* audio_man) {
- if (!CoreAudioUtil::IsSupported()) {
+  if (!CoreAudioUtil::IsSupported()) {
     LOG(WARNING) << "This tests requires Windows Vista or higher.";
     return false;
   }
@@ -178,13 +178,6 @@ class AudioUnifiedStreamWrapper {
     EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
         eRender, eConsole, &out_params)));
 
-    // We use the number of channels for the input side to signal that
-    // unified audio is requested. The audio manager will create a unified
-    // audio backend only if in_params.channels() is larger than zero.M
-    AudioParameters in_params;
-    EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
-        eCapture, eConsole, &in_params)));
-
     // WebAudio is the only real user of unified audio and it always asks
     // for stereo.
     // TODO(henrika): extend support to other input channel layouts as well.
@@ -201,9 +194,15 @@ class AudioUnifiedStreamWrapper {
 
   ~AudioUnifiedStreamWrapper() {}
 
-  // Creates AudioOutputStream object using default parameters.
+  // Creates an AudioOutputStream object using default parameters.
   WASAPIUnifiedStream* Create() {
     return static_cast<WASAPIUnifiedStream*> (CreateOutputStream());
+  }
+
+  // Creates an AudioOutputStream object using default parameters but a
+  // specified input device.
+  WASAPIUnifiedStream* Create(const std::string device_id) {
+    return static_cast<WASAPIUnifiedStream*> (CreateOutputStream(device_id));
   }
 
   AudioParameters::Format format() const { return params_.format(); }
@@ -216,8 +215,28 @@ class AudioUnifiedStreamWrapper {
 
  private:
   AudioOutputStream* CreateOutputStream() {
+    // Get the unique device ID of the default capture device instead of using
+    // AudioManagerBase::kDefaultDeviceId since it provides slightly better
+    // test coverage and will utilize the same code path as if a non default
+    // input device was used.
+    ScopedComPtr<IMMDevice> audio_device =
+      CoreAudioUtil::CreateDefaultDevice(eCapture, eConsole);
+    AudioDeviceName name;
+    EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetDeviceName(audio_device, &name)));
+    const std::string& device_id = name.unique_id;
+    EXPECT_TRUE(CoreAudioUtil::DeviceIsDefault(eCapture, eConsole, device_id));
+
+    // Create the unified audio I/O stream using the default input device.
     AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(params_,
-                                                               std::string());
+                                                               device_id);
+    EXPECT_TRUE(aos);
+    return aos;
+  }
+
+  AudioOutputStream* CreateOutputStream(const std::string& device_id) {
+    // Create the unified audio I/O stream using the specified input device.
+    AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(params_,
+                                                               device_id);
     EXPECT_TRUE(aos);
     return aos;
   }
@@ -234,6 +253,14 @@ static WASAPIUnifiedStream* CreateDefaultUnifiedStream(
   return aosw.Create();
 }
 
+// Convenience method which creates a default WASAPIUnifiedStream object but
+// with a specified audio input device.
+static WASAPIUnifiedStream* CreateDefaultUnifiedStream(
+    AudioManager* audio_manager, const std::string& device_id) {
+  AudioUnifiedStreamWrapper aosw(audio_manager);
+  return aosw.Create(device_id);
+}
+
 // Test Open(), Close() calling sequence.
 TEST(WASAPIUnifiedStreamTest, OpenAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
@@ -243,6 +270,23 @@ TEST(WASAPIUnifiedStreamTest, OpenAndClose) {
   WASAPIUnifiedStream* wus = CreateDefaultUnifiedStream(audio_manager.get());
   EXPECT_TRUE(wus->Open());
   wus->Close();
+}
+
+// Test Open(), Close() calling sequence for all available capture devices.
+TEST(WASAPIUnifiedStreamTest, OpenAndCloseForAllInputDevices) {
+  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  if (!CanRunUnifiedAudioTests(audio_manager.get()))
+    return;
+
+  AudioDeviceNames device_names;
+  audio_manager->GetAudioInputDeviceNames(&device_names);
+  for (AudioDeviceNames::iterator i = device_names.begin();
+       i != device_names.end(); ++i) {
+    WASAPIUnifiedStream* wus = CreateDefaultUnifiedStream(
+        audio_manager.get(), i->unique_id);
+    EXPECT_TRUE(wus->Open());
+    wus->Close();
+  }
 }
 
 // Test Open(), Start(), Close() calling sequence.

@@ -75,7 +75,7 @@ class MEDIA_EXPORT CoreAudioUtil {
   // Returns true if the provided unique |device_id| corresponds to the current
   // default device for the specified by a data-flow direction and role.
   static bool DeviceIsDefault(
-      EDataFlow flow, ERole role, std::string device_id);
+      EDataFlow flow, ERole role, const std::string& device_id);
 
   // Query if the audio device is a rendering device or a capture device.
   static EDataFlow GetDataFlow(IMMDevice* device);
@@ -137,12 +137,15 @@ class MEDIA_EXPORT CoreAudioUtil {
                                  REFERENCE_TIME* device_period);
 
   // Get the preferred audio parameters for the specified |client| or the
-  // given direction and role is define by |data_flow| and |role|.
+  // given direction and role is define by |data_flow| and |role|, or the
+  // unique device id given by |device_id|.
   // The acquired values should only be utilized for shared mode streamed since
   // there are no preferred settings for an exclusive mode stream.
   static HRESULT GetPreferredAudioParameters(IAudioClient* client,
                                              AudioParameters* params);
   static HRESULT GetPreferredAudioParameters(EDataFlow data_flow, ERole role,
+                                             AudioParameters* params);
+  static HRESULT GetPreferredAudioParameters(const std::string& device_id,
                                              AudioParameters* params);
 
   // After activating an IAudioClient interface on an audio endpoint device,

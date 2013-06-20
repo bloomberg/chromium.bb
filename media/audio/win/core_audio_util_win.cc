@@ -333,7 +333,7 @@ std::string CoreAudioUtil::GetFriendlyName(const std::string& device_id) {
 
 bool CoreAudioUtil::DeviceIsDefault(EDataFlow flow,
                                     ERole role,
-                                    std::string device_id) {
+                                    const std::string& device_id) {
   DCHECK(IsSupported());
   ScopedComPtr<IMMDevice> device = CreateDefaultDevice(flow, role);
   if (!device)
@@ -571,6 +571,25 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
     EDataFlow data_flow, ERole role, AudioParameters* params) {
   DCHECK(IsSupported());
   ScopedComPtr<IAudioClient> client(CreateDefaultClient(data_flow, role));
+  if (!client) {
+    // Map NULL-pointer to new error code which can be different from the
+    // actual error code. The exact value is not important here.
+    return AUDCLNT_E_ENDPOINT_CREATE_FAILED;
+  }
+  return GetPreferredAudioParameters(client, params);
+}
+
+HRESULT CoreAudioUtil::GetPreferredAudioParameters(
+    const std::string& device_id, AudioParameters* params) {
+  DCHECK(IsSupported());
+  ScopedComPtr<IMMDevice> device(CreateDevice(device_id));
+  if (!device) {
+    // Map NULL-pointer to new error code which can be different from the
+    // actual error code. The exact value is not important here.
+    return AUDCLNT_E_DEVICE_INVALIDATED;
+  }
+
+  ScopedComPtr<IAudioClient> client(CreateClient(device));
   if (!client) {
     // Map NULL-pointer to new error code which can be different from the
     // actual error code. The exact value is not important here.
