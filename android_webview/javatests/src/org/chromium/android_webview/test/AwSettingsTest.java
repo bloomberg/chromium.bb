@@ -1742,12 +1742,8 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING, getTitleOnUiThread(awContents));
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    Flaky test that times out on pooForCriteria. crbug.com/243094
-     */
-    @DisabledTest
     public void testBlockNetworkImagesBlocksNetworkImageAndReloadInPlace() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1778,7 +1774,7 @@ public class AwSettingsTest extends AwTestBase {
                 @Override
                 public boolean isSatisfied() {
                     try {
-                        return ImagePageGenerator.IMAGE_NOT_LOADED_STRING.equals(
+                        return ImagePageGenerator.IMAGE_LOADED_STRING.equals(
                             getTitleOnUiThread(awContents));
                     } catch (Throwable t) {
                         t.printStackTrace();
