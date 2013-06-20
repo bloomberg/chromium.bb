@@ -59,7 +59,21 @@
     "metricsPrivate",
     "streamsPrivate",
     "unlimitedStorage"],
-  "version": "2.9.2.14",
+  "platforms": [
+    {
+      "nacl_arch": "x86-32",
+      "sub_package_path": "_platform_specific/x86_32/"
+    },
+    {
+      "nacl_arch": "x86-64",
+      "sub_package_path": "_platform_specific/x86_64/"
+    },
+    {
+      "nacl_arch": "arm",
+      "sub_package_path": "_platform_specific/arm/"
+    }
+  ],
+  "version": "2.9.2.35",
   "web_accessible_resources": [
     "views/qowt.html"]
 }
