@@ -179,6 +179,16 @@
       model->GetIconAt(modelIndex, &icon);
       [(id)item setImage:icon.IsEmpty() ? nil : icon.ToNSImage()];
     }
+    const gfx::Font* font = model->GetLabelFontAt(modelIndex);
+    if (font) {
+      NSDictionary *attributes =
+          [NSDictionary dictionaryWithObject:font->GetNativeFont()
+                                      forKey:NSFontAttributeName];
+      scoped_nsobject<NSAttributedString> title(
+          [[NSAttributedString alloc] initWithString:[(id)item title]
+                                          attributes:attributes]);
+      [(id)item setAttributedTitle:title.get()];
+    }
     return model->IsEnabledAt(modelIndex);
   }
   return NO;

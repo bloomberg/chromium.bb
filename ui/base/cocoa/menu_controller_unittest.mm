@@ -108,6 +108,25 @@ class DynamicDelegate : public Delegate {
   gfx::Image icon_;
 };
 
+// Menu model that returns a gfx::Font object for one of the items in the menu.
+class FontMenuModel : public SimpleMenuModel {
+ public:
+  FontMenuModel(SimpleMenuModel::Delegate* delegate,
+                const gfx::Font* font, int index)
+      : SimpleMenuModel(delegate),
+        font_(font),
+        index_(index) {
+  }
+  virtual ~FontMenuModel() {}
+  virtual const gfx::Font* GetLabelFontAt(int index) const OVERRIDE {
+    return (index == index_) ? font_ : NULL;
+  }
+
+ private:
+  const gfx::Font* font_;
+  const int index_;
+};
+
 TEST_F(MenuControllerTest, EmptyMenu) {
   Delegate delegate;
   SimpleMenuModel model(&delegate);
@@ -248,6 +267,24 @@ TEST_F(MenuControllerTest, Validate) {
   EXPECT_EQ([[menu menu] numberOfItems], 3);
 
   Validate(menu.get(), [menu menu]);
+}
+
+// Tests that items which have a font set actually use that font.
+TEST_F(MenuControllerTest, LabelFont) {
+  Delegate delegate;
+  gfx::Font bold = (gfx::Font()).DeriveFont(0, gfx::Font::BOLD);
+  FontMenuModel model(&delegate, &bold, 0);
+  model.AddItem(1, ASCIIToUTF16("one"));
+  model.AddItem(2, ASCIIToUTF16("two"));
+
+  scoped_nsobject<MenuController> menu(
+      [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
+  EXPECT_EQ([[menu menu] numberOfItems], 2);
+
+  Validate(menu.get(), [menu menu]);
+
+  EXPECT_TRUE([[[menu menu] itemAtIndex:0] attributedTitle] != nil);
+  EXPECT_TRUE([[[menu menu] itemAtIndex:1] attributedTitle] == nil);
 }
 
 TEST_F(MenuControllerTest, DefaultInitializer) {

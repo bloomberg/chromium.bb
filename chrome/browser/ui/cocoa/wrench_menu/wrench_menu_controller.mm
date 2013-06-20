@@ -148,6 +148,32 @@ class ZoomLevelObserver {
   [menu insertItem:customItem.get() atIndex:index];
 }
 
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  const BOOL enabled = [super validateUserInterfaceItem:item];
+
+  NSMenuItem* menuItem = (id)item;
+  ui::MenuModel* model =
+      static_cast<ui::MenuModel*>(
+          [[menuItem representedObject] pointerValue]);
+
+  // The section headers in the recent tabs submenu should be bold and black if
+  // a font is specified for the items (bold is already applied in the
+  // |MenuController| as the font returned by |GetLabelFontAt| is bold).
+  if (model && model == [self recentTabsMenuModel] &&
+      model->GetLabelFontAt([item tag])) {
+    DCHECK([menuItem attributedTitle]);
+    scoped_nsobject<NSMutableAttributedString> title(
+        [[NSMutableAttributedString alloc] initWithAttributedString:
+            [menuItem attributedTitle]]);
+    [title addAttribute:NSForegroundColorAttributeName
+                  value:[NSColor blackColor]
+                  range:NSMakeRange(0, [title length])];
+    [menuItem setAttributedTitle:title.get()];
+  }
+
+  return enabled;
+}
+
 - (NSMenu*)bookmarkSubMenu {
   NSString* title = l10n_util::GetNSStringWithFixup(IDS_BOOKMARKS_MENU);
   return [[[self menu] itemWithTitle:title] submenu];
