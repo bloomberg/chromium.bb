@@ -76,6 +76,7 @@ HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document* doc
     , m_originClean(true)
     , m_hasCreatedImageBuffer(false)
     , m_didClearImageBuffer(false)
+    , m_accelerationDisabled(false)
 {
     ASSERT(hasTagName(canvasTag));
     ScriptWrappable::init(this);
@@ -456,6 +457,9 @@ StyleResolver* HTMLCanvasElement::styleResolver()
 bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const
 {
     if (m_context && !m_context->is2d())
+        return false;
+
+    if (m_accelerationDisabled)
         return false;
 
     Settings* settings = document()->settings();

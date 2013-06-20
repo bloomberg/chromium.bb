@@ -73,6 +73,8 @@ public:
 
     void setWidth(int);
     void setHeight(int);
+    void setAccelerationDisabled(bool accelerationDisabled) { m_accelerationDisabled = accelerationDisabled; }
+    bool accelerationDisabled() const { return m_accelerationDisabled; }
 
     void setSize(const IntSize& newSize)
     { 
@@ -161,6 +163,7 @@ private:
     bool m_rendererIsCanvas;
 
     bool m_ignoreReset;
+    bool m_accelerationDisabled;
     FloatRect m_dirtyRect;
 
     float m_deviceScaleFactor;

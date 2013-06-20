@@ -4480,8 +4480,10 @@ CanvasRenderingContext* Document::getCSSCanvasContext(const String& type, const 
 HTMLCanvasElement* Document::getCSSCanvasElement(const String& name)
 {
     RefPtr<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, 0).iterator->value;
-    if (!element)
+    if (!element) {
         element = HTMLCanvasElement::create(this);
+        element->setAccelerationDisabled(true);
+    }
     return element.get();
 }
 
