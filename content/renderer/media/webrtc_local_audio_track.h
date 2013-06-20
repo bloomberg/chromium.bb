@@ -14,6 +14,9 @@
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreamtrack.h"
 
+namespace cricket {
+class AudioRenderer;
+}
 
 namespace content {
 
@@ -74,6 +77,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
 
   // webrtc::AudioTrackInterface implementation.
   virtual webrtc::AudioSourceInterface* GetSource() const OVERRIDE;
+  virtual cricket::AudioRenderer* FrameInput() OVERRIDE;
 
   // webrtc::MediaStreamTrack implementation.
   virtual std::string kind() const OVERRIDE;

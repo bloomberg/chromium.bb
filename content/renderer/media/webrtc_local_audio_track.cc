@@ -6,6 +6,7 @@
 
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_capturer_sink_owner.h"
+#include "third_party/libjingle/source/talk/media/base/audiorenderer.h"
 
 namespace content {
 
@@ -83,6 +84,10 @@ void WebRtcLocalAudioTrack::SetCaptureFormat(
 // webrtc::AudioTrackInterface implementation.
 webrtc::AudioSourceInterface* WebRtcLocalAudioTrack::GetSource() const {
   return track_source_;
+}
+
+cricket::AudioRenderer* WebRtcLocalAudioTrack::FrameInput() {
+  return NULL;
 }
 
 std::string WebRtcLocalAudioTrack::kind() const {
