@@ -316,11 +316,6 @@ bool WebPopupMenuImpl::compositionRange(size_t* location, size_t* length)
     return false;
 }
 
-WebTextInputType WebPopupMenuImpl::textInputType()
-{
-    return WebTextInputTypeNone;
-}
-
 bool WebPopupMenuImpl::caretOrSelectionRange(size_t* location, size_t* length)
 {
     *location = 0;

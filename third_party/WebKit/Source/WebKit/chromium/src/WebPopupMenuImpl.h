@@ -82,7 +82,6 @@ public:
     virtual bool confirmComposition() OVERRIDE;
     virtual bool confirmComposition(const WebString& text) OVERRIDE;
     virtual bool compositionRange(size_t* location, size_t* length) OVERRIDE;
-    virtual WebTextInputType textInputType() OVERRIDE;
     virtual bool caretOrSelectionRange(size_t* location, size_t* length) OVERRIDE;
     virtual void setTextDirection(WebTextDirection) OVERRIDE;
     virtual bool isAcceleratedCompositingActive() const OVERRIDE { return false; }

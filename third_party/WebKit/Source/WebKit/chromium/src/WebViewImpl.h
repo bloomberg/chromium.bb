@@ -164,7 +164,6 @@ public:
     virtual bool confirmComposition(const WebString& text);
     virtual bool compositionRange(size_t* location, size_t* length);
     virtual WebTextInputInfo textInputInfo();
-    virtual WebTextInputType textInputType();
     virtual bool setEditableSelectionOffsets(int start, int end);
     virtual bool setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines);
     virtual void extendSelectionAndDelete(int before, int after);
@@ -599,6 +598,8 @@ private:
 
     WebViewImpl(WebViewClient*);
     virtual ~WebViewImpl();
+
+    WebTextInputType textInputType();
 
     // Returns true if the event was actually processed.
     bool keyEventDefault(const WebKeyboardEvent&);

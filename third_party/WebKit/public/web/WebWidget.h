@@ -189,10 +189,6 @@ public:
     // Returns information about the current text input of this WebWidget.
     virtual WebTextInputInfo textInputInfo() { return WebTextInputInfo(); }
 
-    // Returns the current text input type of this WebWidget.
-    // FIXME: Remove this method. It's redundant with textInputInfo().
-    virtual WebTextInputType textInputType() { return WebTextInputTypeNone; }
-
     // Returns the anchor and focus bounds of the current selection.
     // If the selection range is empty, it returns the caret bounds.
     virtual bool selectionBounds(WebRect& anchor, WebRect& focus) const { return false; }
