@@ -58,9 +58,14 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
 
-  // Returns true if |window| is minimized and will restore to a window which
-  // exists in its own workspace.
-  static bool WillRestoreToWorkspace(aura::Window* window);
+  // Returns true if |window| is considered maximized and should exist in its
+  // own workspace.
+  static bool IsMaximized(aura::Window* window);
+  static bool IsMaximizedState(ui::WindowShowState state);
+
+  // Returns true if |window| is minimized and will restore to a maximized
+  // window.
+  static bool WillRestoreMaximized(aura::Window* window);
 
   // Returns the current window state.
   WorkspaceWindowState GetWindowState() const;
@@ -111,13 +116,10 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
     SWITCH_WINDOW_MADE_ACTIVE,
     SWITCH_WINDOW_REMOVED,
     SWITCH_VISIBILITY_CHANGED,
-    SWITCH_BACKGROUND_ONLY_WITHIN_DESKTOP,
     SWITCH_MINIMIZED,
     SWITCH_MAXIMIZED_OR_RESTORED,
-    // Switch a normal window in a fullscreen workspace to get fullscreen.
-    // TODO(mukai): this should be removed in the future. Normal windows should
-    // not be in a fullscreen workspace.  See crbug.com/249154
-    SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE,
+    // Switch a normal window in a maximized workspace to maximized.
+    SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE,
     SWITCH_TRACKED_BY_WORKSPACE_CHANGED,
 
     // Switch as the result of DoInitialAnimation(). This isn't a real switch,
@@ -155,7 +157,7 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
 
   // Creates a new workspace. The Workspace is not added to anything and is
   // owned by the caller.
-  Workspace* CreateWorkspace(bool fullscren);
+  Workspace* CreateWorkspace(bool maximized);
 
   // Moves all the non-maximized child windows of |workspace| to the desktop
   // stacked beneath |stack_beneath| (if non-NULL). After moving child windows

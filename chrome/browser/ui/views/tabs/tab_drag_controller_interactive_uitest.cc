@@ -1073,7 +1073,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   Browser* new_browser = native_browser_list->get(1);
   ASSERT_TRUE(new_browser->window()->IsActive());
 
-  EXPECT_TRUE(browser()->window()->GetNativeWindow()->IsVisible());
+  // Only the new browser should be visible.
+  EXPECT_FALSE(browser()->window()->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(new_browser->window()->GetNativeWindow()->IsVisible());
 
   EXPECT_TRUE(GetTrackedByWorkspace(browser()));

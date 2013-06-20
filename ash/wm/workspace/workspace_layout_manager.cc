@@ -74,11 +74,6 @@ void ResetConstrainedWindowBoundsIfNecessary(const BoundsMap& bounds_map,
     ResetConstrainedWindowBoundsIfNecessary(bounds_map, window->children()[i]);
 }
 
-bool IsMaximizedState(ui::WindowShowState state) {
-  return state == ui::SHOW_STATE_MAXIMIZED ||
-      state == ui::SHOW_STATE_FULLSCREEN;
-}
-
 }  // namespace
 
 WorkspaceLayoutManager::WorkspaceLayoutManager(Workspace* workspace)
@@ -173,8 +168,8 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
         window->GetProperty(aura::client::kShowStateKey);
     if (old_state != ui::SHOW_STATE_MINIMIZED &&
         GetRestoreBoundsInScreen(window) == NULL &&
-        IsMaximizedState(new_state) &&
-        !IsMaximizedState(old_state)) {
+        WorkspaceManager::IsMaximizedState(new_state) &&
+        !WorkspaceManager::IsMaximizedState(old_state)) {
       SetRestoreBoundsInParent(window, window->bounds());
     }
     // When restoring from a minimized state, we want to restore to the
@@ -191,18 +186,17 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
       SetRestoreBoundsInScreen(window, window->GetBoundsInScreen());
     }
 
-    // If the new state requires |window| to be in a workspace, clone the layer.
-    // WorkspaceManager will use it (and take ownership of it) when animating.
-    // Ideally we could use that of BaseLayoutManager, but that proves
-    // problematic. In particular when restoring we need to animate on top of
-    // the workspace animating in.
+    // If maximizing or restoring, clone the layer. WorkspaceManager will use it
+    // (and take ownership of it) when animating. Ideally we could use that of
+    // BaseLayoutManager, but that proves problematic. In particular when
+    // restoring we need to animate on top of the workspace animating in.
     ui::Layer* cloned_layer = NULL;
     BoundsMap bounds_map;
     if (wm::IsActiveWindow(window) &&
-        ((new_state == ui::SHOW_STATE_FULLSCREEN &&
+        ((WorkspaceManager::IsMaximizedState(new_state) &&
           wm::IsWindowStateNormal(old_state)) ||
-         (new_state != ui::SHOW_STATE_FULLSCREEN &&
-          old_state == ui::SHOW_STATE_FULLSCREEN &&
+         (!WorkspaceManager::IsMaximizedState(new_state) &&
+          WorkspaceManager::IsMaximizedState(old_state) &&
           new_state != ui::SHOW_STATE_MINIMIZED))) {
       BuildWindowBoundsMap(window, &bounds_map);
       cloned_layer = views::corewm::RecreateWindowLayers(window, false);
@@ -230,11 +224,6 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
   if (key == internal::kWindowTrackedByWorkspaceKey &&
       GetTrackedByWorkspace(window)) {
     workspace_manager()->OnTrackedByWorkspaceChanged(workspace_, window);
-    if (wm::IsWindowMaximized(window)) {
-      SetChildBoundsDirect(
-          window, ScreenAsh::GetMaximizedWindowBoundsInParent(
-              window->parent()->parent()));
-    }
   }
 
   if (key == aura::client::kAlwaysOnTopKey &&

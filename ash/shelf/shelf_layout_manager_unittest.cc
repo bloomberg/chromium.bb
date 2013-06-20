@@ -1400,27 +1400,34 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
   // Both windows are maximized. They should be of the same size.
   EXPECT_EQ(widget_one->GetNativeWindow()->bounds().ToString(),
             widget_two->GetNativeWindow()->bounds().ToString());
-  int area_when_shelf_shown =
-      widget_one->GetNativeWindow()->bounds().size().GetArea();
 
   // Now hide the shelf.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
-  // Both windows should be resized according to the shelf status.
+  // The active maximized window will get resized to the new work area. However,
+  // the inactive window should not get resized.
+  EXPECT_NE(widget_one->GetNativeWindow()->bounds().ToString(),
+            widget_two->GetNativeWindow()->bounds().ToString());
+
+  // Activate the first window. Now, both windows should be of the same size
+  // again.
+  widget_one->Activate();
   EXPECT_EQ(widget_one->GetNativeWindow()->bounds().ToString(),
             widget_two->GetNativeWindow()->bounds().ToString());
-  // Resized to small.
-  EXPECT_LT(area_when_shelf_shown,
-            widget_one->GetNativeWindow()->bounds().size().GetArea());
 
   // Now show the shelf.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
-  // Again both windows should be of the same size.
+  // The active maximized window will get resized to the new work area. However,
+  // the inactive window should not get resized.
+  EXPECT_NE(widget_one->GetNativeWindow()->bounds().ToString(),
+            widget_two->GetNativeWindow()->bounds().ToString());
+
+  // Activate the first window. Now, both windows should be of the same size
+  // again.
+  widget_two->Activate();
   EXPECT_EQ(widget_one->GetNativeWindow()->bounds().ToString(),
             widget_two->GetNativeWindow()->bounds().ToString());
-  EXPECT_EQ(area_when_shelf_shown,
-            widget_one->GetNativeWindow()->bounds().size().GetArea());
 }
 
 // Confirm that the shelf is dimmed only when content is maximized and
