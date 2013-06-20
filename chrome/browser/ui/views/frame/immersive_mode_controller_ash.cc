@@ -585,6 +585,9 @@ void ImmersiveModeControllerAsh::AnimationProgressed(
 void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
                                                          const void* key,
                                                          intptr_t old) {
+  if (!enabled_)
+    return;
+
   if (key == aura::client::kShowStateKey) {
     // Disable immersive mode when the user exits fullscreen without going
     // through FullscreenController::ToggleFullscreenMode(). This is the case
@@ -597,6 +600,15 @@ void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
           FROM_HERE,
           base::Bind(&ImmersiveModeControllerAsh::MaybeExitImmersiveFullscreen,
                      weak_ptr_factory_.GetWeakPtr()));
+    }
+
+    ui::WindowShowState show_state = native_window_->GetProperty(
+        aura::client::kShowStateKey);
+    if (show_state == ui::SHOW_STATE_FULLSCREEN &&
+        old == ui::SHOW_STATE_MINIMIZED) {
+      // Relayout in case there was a layout while the window show state was
+      // ui::SHOW_STATE_MINIMIZED.
+      LayoutBrowserRootView();
     }
   }
 }
