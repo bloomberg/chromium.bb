@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
 namespace net {
@@ -32,10 +33,12 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
   // (like "filesystem:chrome-extension://id/external/drive/...") that
   // starts writing from |offset|. When invalid parameters are set, the first
   // call to Write() method fails.
+  // Uses |local_task_runner| for local file operations.
   RemoteFileStreamWriter(
       const scoped_refptr<RemoteFileSystemProxyInterface>& remote_filesystem,
       const FileSystemURL& url,
-      int64 offset);
+      int64 offset,
+      base::TaskRunner* local_task_runner);
   virtual ~RemoteFileStreamWriter();
 
   // FileWriter override.
@@ -58,6 +61,7 @@ class RemoteFileStreamWriter : public fileapi::FileStreamWriter {
   void InvokePendingCancelCallback(int result);
 
   scoped_refptr<RemoteFileSystemProxyInterface> remote_filesystem_;
+  scoped_refptr<base::TaskRunner> local_task_runner_;
   const FileSystemURL url_;
   const int64 initial_offset_;
   scoped_ptr<fileapi::FileStreamWriter> local_file_writer_;

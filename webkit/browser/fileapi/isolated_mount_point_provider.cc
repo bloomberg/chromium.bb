@@ -141,8 +141,8 @@ scoped_ptr<FileStreamWriter> IsolatedMountPointProvider::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  return scoped_ptr<FileStreamWriter>(
-      new LocalFileStreamWriter(url.path(), offset));
+  return scoped_ptr<FileStreamWriter>(new LocalFileStreamWriter(
+      context->task_runners()->file_task_runner(), url.path(), offset));
 }
 
 FileSystemQuotaUtil* IsolatedMountPointProvider::GetQuotaUtil() {

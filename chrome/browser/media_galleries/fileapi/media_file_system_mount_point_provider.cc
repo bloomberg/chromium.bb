@@ -185,7 +185,9 @@ MediaFileSystemMountPointProvider::CreateFileStreamWriter(
     int64 offset,
     FileSystemContext* context) const {
   return scoped_ptr<fileapi::FileStreamWriter>(
-      new fileapi::LocalFileStreamWriter(url.path(), offset));
+      new fileapi::LocalFileStreamWriter(
+          context->task_runners()->file_task_runner(),
+          url.path(), offset));
 }
 
 fileapi::FileSystemQuotaUtil*

@@ -323,7 +323,9 @@ CrosMountPointProvider::CreateFileStreamWriter(
     if (!remote_proxy)
       return scoped_ptr<fileapi::FileStreamWriter>();
     return scoped_ptr<fileapi::FileStreamWriter>(
-        new fileapi::RemoteFileStreamWriter(remote_proxy, url, offset));
+        new fileapi::RemoteFileStreamWriter(
+            remote_proxy, url, offset,
+            context->task_runners()->file_task_runner()));
   }
 
   if (url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal)
@@ -331,7 +333,8 @@ CrosMountPointProvider::CreateFileStreamWriter(
 
   DCHECK(url.type() == fileapi::kFileSystemTypeNativeLocal);
   return scoped_ptr<fileapi::FileStreamWriter>(
-      new fileapi::LocalFileStreamWriter(url.path(), offset));
+      new fileapi::LocalFileStreamWriter(
+          context->task_runners()->file_task_runner(), url.path(), offset));
 }
 
 bool CrosMountPointProvider::GetVirtualPath(

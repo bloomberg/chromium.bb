@@ -16,12 +16,14 @@ namespace fileapi {
 RemoteFileStreamWriter::RemoteFileStreamWriter(
     const scoped_refptr<RemoteFileSystemProxyInterface>& remote_filesystem,
     const FileSystemURL& url,
-    int64 offset)
+    int64 offset,
+    base::TaskRunner *local_task_runner)
     : remote_filesystem_(remote_filesystem),
       url_(url),
       initial_offset_(offset),
       has_pending_create_snapshot_(false),
-      weak_factory_(this) {
+      weak_factory_(this),
+      local_task_runner_(local_task_runner) {
 }
 
 RemoteFileStreamWriter::~RemoteFileStreamWriter() {
@@ -74,8 +76,8 @@ void RemoteFileStreamWriter::OnFileOpened(
   file_ref_ = file_ref;
 
   DCHECK(!local_file_writer_.get());
-  local_file_writer_.reset(new fileapi::LocalFileStreamWriter(local_path,
-                                                              initial_offset_));
+  local_file_writer_.reset(new fileapi::LocalFileStreamWriter(
+      local_task_runner_, local_path, initial_offset_));
   int result = local_file_writer_->Write(buf, buf_len, callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);

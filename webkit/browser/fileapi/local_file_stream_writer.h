@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "base/task_runner.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
@@ -26,9 +27,10 @@ namespace fileapi {
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE LocalFileStreamWriter
     : public FileStreamWriter {
  public:
-  // Create a writer for the existing file in the path |file_path| starting from
-  // |initial_offset|.
-  LocalFileStreamWriter(const base::FilePath& file_path, int64 initial_offset);
+  // Creates a writer for the existing file in the path |file_path| starting
+  // from |initial_offset|. Uses |task_runner| for async file operations.
+  LocalFileStreamWriter(base::TaskRunner* task_runner,
+                        const base::FilePath& file_path, int64 initial_offset);
   virtual ~LocalFileStreamWriter();
 
   // FileStreamWriter overrides.
@@ -74,6 +76,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE LocalFileStreamWriter
   // Initialization parameters.
   const base::FilePath file_path_;
   const int64 initial_offset_;
+  scoped_refptr<base::TaskRunner> task_runner_;
 
   // Current states of the operation.
   bool has_pending_operation_;
