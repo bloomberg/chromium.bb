@@ -1743,9 +1743,16 @@ void RenderWidget::OnSetInputMethodActive(bool is_active) {
   input_method_is_active_ = is_active;
 }
 
-void RenderWidget::UpdateCompositionInfo(
-    const ui::Range& range,
-    const std::vector<gfx::Rect>& character_bounds) {
+void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
+  ui::Range range = ui::Range();
+  if (should_update_range) {
+    GetCompositionRange(&range);
+  } else {
+    range = composition_range_;
+  }
+  std::vector<gfx::Rect> character_bounds;
+  GetCompositionCharacterBounds(&character_bounds);
+
   if (!ShouldUpdateCompositionInfo(range, character_bounds))
     return;
   composition_character_bounds_ = character_bounds;
@@ -1761,40 +1768,15 @@ void RenderWidget::OnImeSetComposition(
   if (!webwidget_)
     return;
   ImeEventGuard guard(this);
-  if (webwidget_->setComposition(
+  if (!webwidget_->setComposition(
       text, WebVector<WebCompositionUnderline>(underlines),
       selection_start, selection_end)) {
-    // Setting the IME composition was successful. Send the new composition
-    // range to the browser.
-    ui::Range range(ui::Range::InvalidRange());
-    size_t location, length;
-    if (webwidget_->compositionRange(&location, &length)) {
-      range.set_start(location);
-      range.set_end(location + length);
-    }
-    // The IME was cancelled via the Esc key, so just send back the caret.
-    else if (webwidget_->caretOrSelectionRange(&location, &length)) {
-      range.set_start(location);
-      range.set_end(location + length);
-    }
-    std::vector<gfx::Rect> character_bounds;
-    GetCompositionCharacterBounds(&character_bounds);
-    UpdateCompositionInfo(range, character_bounds);
-  } else {
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
     // sure we are in a consistent state.
     Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
-
-    // Send an updated IME range with just the caret range.
-    ui::Range range(ui::Range::InvalidRange());
-    size_t location, length;
-    if (webwidget_->caretOrSelectionRange(&location, &length)) {
-      range.set_start(location);
-      range.set_end(location + length);
-    }
-    UpdateCompositionInfo(range, std::vector<gfx::Rect>());
   }
+  UpdateCompositionInfo(true);
 }
 
 void RenderWidget::OnImeConfirmComposition(
@@ -1805,15 +1787,7 @@ void RenderWidget::OnImeConfirmComposition(
   handling_input_event_ = true;
   webwidget_->confirmComposition(text);
   handling_input_event_ = false;
-
-  // Send an updated IME range with just the caret range.
-  ui::Range range(ui::Range::InvalidRange());
-  size_t location, length;
-  if (webwidget_->caretOrSelectionRange(&location, &length)) {
-    range.set_start(location);
-    range.set_end(location + length);
-  }
-  UpdateCompositionInfo(range, std::vector<gfx::Rect>());
+  UpdateCompositionInfo(true);
 }
 
 // This message causes the renderer to render an image of the
@@ -2188,9 +2162,7 @@ void RenderWidget::UpdateSelectionBounds() {
     Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_, params));
   }
 
-  std::vector<gfx::Rect> character_bounds;
-  GetCompositionCharacterBounds(&character_bounds);
-  UpdateCompositionInfo(composition_range_, character_bounds);
+  UpdateCompositionInfo(false);
 }
 
 bool RenderWidget::ShouldUpdateCompositionInfo(
@@ -2263,6 +2235,19 @@ void RenderWidget::GetCompositionCharacterBounds(
   bounds->clear();
 }
 
+void RenderWidget::GetCompositionRange(ui::Range* range) {
+  size_t location, length;
+  if (webwidget_->compositionRange(&location, &length)) {
+    range->set_start(location);
+    range->set_end(location + length);
+  } else if (webwidget_->caretOrSelectionRange(&location, &length)) {
+    range->set_start(location);
+    range->set_end(location + length);
+  } else {
+    *range = ui::Range::InvalidRange();
+  }
+}
+
 bool RenderWidget::CanComposeInline() {
   return true;
 }
@@ -2288,15 +2273,7 @@ void RenderWidget::resetInputMethod() {
       Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
   }
 
-  // Send an updated IME range with the current caret rect.
-  ui::Range range(ui::Range::InvalidRange());
-  size_t location, length;
-  if (webwidget_->caretOrSelectionRange(&location, &length)) {
-    range.set_start(location);
-    range.set_end(location + length);
-  }
-
-  UpdateCompositionInfo(range, std::vector<gfx::Rect>());
+  UpdateCompositionInfo(true);
 }
 
 void RenderWidget::didHandleGestureEvent(

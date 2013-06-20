@@ -6124,10 +6124,8 @@ void RenderViewImpl::SimulateImeConfirmComposition(
 }
 
 void RenderViewImpl::PpapiPluginCancelComposition() {
-  Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
-  const ui::Range range(ui::Range::InvalidRange());
-  const std::vector<gfx::Rect> empty_bounds;
-  UpdateCompositionInfo(range, empty_bounds);
+  Send(new ViewHostMsg_ImeCancelComposition(routing_id()));;
+  UpdateCompositionInfo(true);
 }
 
 void RenderViewImpl::PpapiPluginSelectionChanged() {
@@ -6258,6 +6256,9 @@ void RenderViewImpl::GetCompositionCharacterBounds(
   DCHECK(bounds);
   bounds->clear();
 
+  if (pepper_helper_->IsPluginFocused()) {
+    return;
+  }
   if (!webview())
     return;
   size_t start_offset = 0;
@@ -6281,6 +6282,13 @@ void RenderViewImpl::GetCompositionCharacterBounds(
     }
     bounds->push_back(webrect);
   }
+}
+
+void RenderViewImpl::GetCompositionRange(ui::Range* range) {
+  if (pepper_helper_->IsPluginFocused()) {
+    return;
+  }
+  RenderWidget::GetCompositionRange(range);
 }
 
 bool RenderViewImpl::CanComposeInline() {

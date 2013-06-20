@@ -821,6 +821,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) OVERRIDE;
   virtual void GetCompositionCharacterBounds(
       std::vector<gfx::Rect>* character_bounds) OVERRIDE;
+  virtual void GetCompositionRange(ui::Range* range) OVERRIDE;
   virtual bool CanComposeInline() OVERRIDE;
   virtual void DidCommitCompositorFrame() OVERRIDE;
   virtual void InstrumentWillBeginFrame() OVERRIDE;
