@@ -72,7 +72,7 @@ public:
     static bool initializeDescription(ExceptionCode, ExceptionCodeDescription*);
     static String getErrorName(ExceptionCode);
     static String getErrorDescription(ExceptionCode);
-    static ExceptionCode getLegacyErrorCode(ExceptionCode);
+    static int getLegacyErrorCode(ExceptionCode);
 
 private:
     IDBDatabaseException(const ExceptionCodeDescription& description)

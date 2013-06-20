@@ -35,10 +35,10 @@ namespace WebKit {
 
 // The error code used for WebStorageQuota.
 enum WebStorageQuotaError {
-    WebStorageQuotaErrorNotSupported = 9,
-    WebStorageQuotaErrorInvalidModification = 13,
-    WebStorageQuotaErrorInvalidAccess = 15,
-    WebStorageQuotaErrorAbort = 20,
+    WebStorageQuotaErrorNotSupported = 7,
+    WebStorageQuotaErrorInvalidModification = 11,
+    WebStorageQuotaErrorInvalidAccess = 13,
+    WebStorageQuotaErrorAbort = 17,
 };
 
 } // namespace WebKit

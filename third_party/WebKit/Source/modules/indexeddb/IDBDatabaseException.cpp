@@ -30,12 +30,14 @@
 
 #include "modules/indexeddb/IDBDatabaseException.h"
 
+#include "core/dom/DOMCoreException.h"
+
 namespace WebCore {
 
 static const struct IDBDatabaseExceptionNameDescription {
     const char* const name;
     const char* const description;
-    const ExceptionCode code;
+    const int code;
 } idbDatabaseExceptions[] = {
     // These are IDB-specific errors from the spec.
     { "UnknownError", "An unknown error occurred within Indexed Database.", 0 },
@@ -46,14 +48,14 @@ static const struct IDBDatabaseExceptionNameDescription {
     { "VersionError", "An attempt was made to open a database using a lower version than the existing version.", 0 },
 
     // These are IDB-specific descriptions of generic DOM Exceptions when they are thrown from IDB APIs
-    { "NotFoundError", "An operation failed because the requested database object could not be found.", NOT_FOUND_ERR },
-    { "InvalidStateError", "An operation was called on an object on which it is not allowed or at a time when it is not allowed.", INVALID_STATE_ERR },
-    { "InvalidAccessError", "An invalid operation was performed on an object.", INVALID_ACCESS_ERR },
-    { "AbortError", "The transaction was aborted, so the request cannot be fulfilled.", ABORT_ERR },
-    { "TimeoutError", "A lock for the transaction could not be obtained in a reasonable time.", TIMEOUT_ERR }, // FIXME: This isn't used yet.
-    { "QuotaExceededError", "The operation failed because there was not enough remaining storage space, or the storage quota was reached and the user declined to give more space to the database.", QUOTA_EXCEEDED_ERR },
-    { "SyntaxError", "The keypath argument contains an invalid key path.", SYNTAX_ERR },
-    { "DataCloneError", "The data being stored could not be cloned by the internal structured cloning algorithm.", DATA_CLONE_ERR },
+    { "NotFoundError", "An operation failed because the requested database object could not be found.", NotFoundErrorLegacyCode },
+    { "InvalidStateError", "An operation was called on an object on which it is not allowed or at a time when it is not allowed.", InvalidStateErrorLegacyCode },
+    { "InvalidAccessError", "An invalid operation was performed on an object.", InvalidAccessErrorLegacyCode },
+    { "AbortError", "The transaction was aborted, so the request cannot be fulfilled.", AbortErrorLegacyCode },
+    { "TimeoutError", "A lock for the transaction could not be obtained in a reasonable time.", TimeoutErrorLegacyCode }, // FIXME: This isn't used yet.
+    { "QuotaExceededError", "The operation failed because there was not enough remaining storage space, or the storage quota was reached and the user declined to give more space to the database.", QuotaExceededErrorLegacyCode },
+    { "SyntaxError", "The keypath argument contains an invalid key path.", SyntaxErrorLegacyCode },
+    { "DataCloneError", "The data being stored could not be cloned by the internal structured cloning algorithm.", DataCloneErrorLegacyCode },
 };
 
 static const IDBDatabaseExceptionNameDescription* getErrorEntry(ExceptionCode ec)
@@ -76,8 +78,8 @@ bool IDBDatabaseException::initializeDescription(ExceptionCode ec, ExceptionCode
     description->code = entry->code;
     description->type = DOMCoreExceptionType;
 
-    description->name = entry ? entry->name : 0;
-    description->description = entry ? entry->description : 0;
+    description->name = entry->name;
+    description->description = entry->description;
 
     return true;
 }
@@ -102,7 +104,7 @@ String IDBDatabaseException::getErrorDescription(ExceptionCode ec)
     return entry->description;
 }
 
-ExceptionCode IDBDatabaseException::getLegacyErrorCode(ExceptionCode ec)
+int IDBDatabaseException::getLegacyErrorCode(ExceptionCode ec)
 {
     const IDBDatabaseExceptionNameDescription* entry = getErrorEntry(ec);
     ASSERT(entry);

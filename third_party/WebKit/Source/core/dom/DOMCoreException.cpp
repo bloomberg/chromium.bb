@@ -30,53 +30,68 @@
 #include "core/dom/DOMCoreException.h"
 
 #include "DOMException.h"
+#include "ExceptionCode.h"
 
 namespace WebCore {
 
 static struct CoreException {
     const char* const name;
     const char* const description;
+    const int code;
 } coreExceptions[] = {
-    { "IndexSizeError", "Index or size was negative, or greater than the allowed value." },
-    { 0, 0 }, // DOMStringSizeError
-    { "HierarchyRequestError", "A Node was inserted somewhere it doesn't belong." },
-    { "WrongDocumentError", "A Node was used in a different document than the one that created it (that doesn't support it)." },
-    { "InvalidCharacterError", "An invalid or illegal character was specified, such as in an XML name." },
-    { 0, 0 }, // NoDataAllowedError
-    { "NoModificationAllowedError", "An attempt was made to modify an object where modifications are not allowed." },
-    { "NotFoundError", "An attempt was made to reference a Node in a context where it does not exist." },
-    { "NotSupportedError", "The implementation did not support the requested type of object or operation." },
-    { "InUseAttributeError", "An attempt was made to add an attribute that is already in use elsewhere." },
-    { "InvalidStateError", "An attempt was made to use an object that is not, or is no longer, usable." },
-    { "SyntaxError", "An invalid or illegal string was specified." },
-    { "InvalidModificationError", "An attempt was made to modify the type of the underlying object." },
-    { "NamespaceError", "An attempt was made to create or change an object in a way which is incorrect with regard to namespaces." },
-    { "InvalidAccessError", "A parameter or an operation was not supported by the underlying object." },
-    { 0, 0 }, // ValidationError
-    { "TypeMismatchError", "The type of an object was incompatible with the expected type of the parameter associated to the object." },
-    { "SecurityError", "An attempt was made to break through the security policy of the user agent." },
-    // FIXME: Couldn't find a description in the HTML/DOM specifications for NETWORK_ERR, ABORT_ERR, URL_MISMATCH_ERR, and QUOTA_EXCEEDED_ERR
-    { "NetworkError", "A network error occurred." },
-    { "AbortError", "The user aborted a request." },
-    { "URLMismatchError", "A worker global scope represented an absolute URL that is not equal to the resulting absolute URL." },
-    { "QuotaExceededError", "An attempt was made to add something to storage that exceeded the quota." },
-    { "TimeoutError", "A timeout occurred." },
-    { "InvalidNodeTypeError", "The supplied node is invalid or has an invalid ancestor for this operation." },
-    { "DataCloneError", "An object could not be cloned." }
+    { "IndexSizeError", "Index or size was negative, or greater than the allowed value.", IndexSizeErrorLegacyCode },
+    { "HierarchyRequestError", "A Node was inserted somewhere it doesn't belong.", HierarchyRequestErrorLegacyCode },
+    { "WrongDocumentError", "A Node was used in a different document than the one that created it (that doesn't support it).", WrongDocumentErrorLegacyCode },
+    { "InvalidCharacterError", "An invalid or illegal character was specified, such as in an XML name.", InvalidCharacterErrorLegacyCode },
+    { "NoModificationAllowedError", "An attempt was made to modify an object where modifications are not allowed.", NoModificationAllowedErrorLegacyCode },
+    { "NotFoundError", "An attempt was made to reference a Node in a context where it does not exist.", NotFoundErrorLegacyCode },
+    { "NotSupportedError", "The implementation did not support the requested type of object or operation.", NotSupportedErrorLegacyCode },
+    { "InUseAttributeError", "An attempt was made to add an attribute that is already in use elsewhere.", InuseAttributeErrorLegacyCode },
+    { "InvalidStateError", "An attempt was made to use an object that is not, or is no longer, usable.", InvalidStateErrorLegacyCode },
+    { "SyntaxError", "An invalid or illegal string was specified.", SyntaxErrorLegacyCode },
+    { "InvalidModificationError", "An attempt was made to modify the type of the underlying object.", InvalidModificationErrorLegacyCode },
+    { "NamespaceError", "An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.", NamespaceErrorLegacyCode },
+    { "InvalidAccessError", "A parameter or an operation was not supported by the underlying object.", InvalidAccessErrorLegacyCode },
+    { "TypeMismatchError", "The type of an object was incompatible with the expected type of the parameter associated to the object.", TypeMismatchErrorLegacyCode },
+    { "SecurityError", "An attempt was made to break through the security policy of the user agent.", SecurityErrorLegacyCode },
+    // FIXME: Couldn't find a description in the HTML/DOM specifications for NETWORKERR, ABORTERR, URLMISMATCHERR, and QUOTAEXCEEDEDERR
+    { "NetworkError", "A network error occurred.", NetworkErrorLegacyCode },
+    { "AbortError", "The user aborted a request.", AbortErrorLegacyCode },
+    { "URLMismatchError", "A worker global scope represented an absolute URL that is not equal to the resulting absolute URL.", UrlMismatchErrorLegacyCode },
+    { "QuotaExceededError", "An attempt was made to add something to storage that exceeded the quota.", QuotaExceededErrorLegacyCode },
+    { "TimeoutError", "A timeout occurred.", TimeoutErrorLegacyCode },
+    { "InvalidNodeTypeError", "The supplied node is invalid or has an invalid ancestor for this operation.", InvalidNodeTypeErrorLegacyCode },
+    { "DataCloneError", "An object could not be cloned.", DataCloneErrorLegacyCode }
 };
 
-bool DOMCoreException::initializeDescription(ExceptionCode ec, ExceptionCodeDescription* description)
+static const CoreException* getErrorEntry(ExceptionCode ec)
 {
-    description->code = ec;
-    description->type = DOMCoreExceptionType;
-
     size_t tableSize = WTF_ARRAY_LENGTH(coreExceptions);
     size_t tableIndex = ec - INDEX_SIZE_ERR;
 
-    description->name = tableIndex < tableSize ? coreExceptions[tableIndex].name : 0;
-    description->description = tableIndex < tableSize ? coreExceptions[tableIndex].description : 0;
+    return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
+}
+
+bool DOMCoreException::initializeDescription(ExceptionCode ec, ExceptionCodeDescription* description)
+{
+    const CoreException* entry = getErrorEntry(ec);
+    if (!entry)
+        return false;
+
+    description->type = DOMCoreExceptionType;
+    description->name = entry->name;
+    description->description = entry->description;
+    description->code = entry->code;
 
     return true;
+}
+
+int DOMCoreException::getLegacyErrorCode(ExceptionCode ec)
+{
+    const CoreException* entry = getErrorEntry(ec);
+    ASSERT(entry);
+
+    return (entry && entry->code) ? entry->code : 0;
 }
 
 } // namespace WebCore
