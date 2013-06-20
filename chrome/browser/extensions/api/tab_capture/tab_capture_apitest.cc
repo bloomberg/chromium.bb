@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/feature_switch.h"
@@ -183,47 +182,6 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
   EXPECT_TRUE(before_whitelist_extension.WaitUntilSatisfied());
   AddExtensionToCommandLineWhitelist();
   before_whitelist_extension.Reply("");
-
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-// Linux Aura does not currently support fullscreen video.
-#if defined(USE_AURA) && defined(OS_LINUX)
-#define MAYBE_FullscreenEvents DISABLED_FullscreenEvents
-// Fullscreen is special on Mac and does not fire events when run in tests.
-#elif defined(OS_MACOSX)
-#define MAYBE_FullscreenEvents DISABLED_FullscreenEvents
-#else
-#define MAYBE_FullscreenEvents FullscreenEvents
-#endif
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
-  AddExtensionToCommandLineWhitelist();
-
-  content::OpenURLParams params(GURL("chrome://version"),
-                                content::Referrer(),
-                                CURRENT_TAB,
-                                content::PAGE_TRANSITION_LINK, false);
-  content::WebContents* web_contents = browser()->OpenURL(params);
-
-  ExtensionTestMessageListener listeners_setup("ready1", true);
-  ExtensionTestMessageListener fullscreen_entered("ready2", true);
-
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
-                                  "fullscreen_test.html")) << message_;
-  EXPECT_TRUE(listeners_setup.WaitUntilSatisfied());
-
-  // Toggle fullscreen after setting up listeners.
-  browser()->fullscreen_controller()->ToggleFullscreenModeForTab(web_contents,
-                                                                 true);
-  listeners_setup.Reply("");
-
-  // Toggle again after JS should have the event.
-  EXPECT_TRUE(fullscreen_entered.WaitUntilSatisfied());
-  browser()->fullscreen_controller()->ToggleFullscreenModeForTab(web_contents,
-                                                                 false);
-  fullscreen_entered.Reply("");
 
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
