@@ -43,7 +43,7 @@ class ProfileSigninConfirmationDelegate;
   scoped_nsobject<NSTextField> titleField_;
   scoped_nsobject<NSTextField> promptField_;
   scoped_nsobject<NSTextView> explanationField_;
-  scoped_nsobject<NSButton> createProfileLinkField_;
+  scoped_nsobject<ConstrainedWindowButton> createProfileButton_;
   scoped_nsobject<ConstrainedWindowButton> cancelButton_;
   scoped_nsobject<ConstrainedWindowButton> okButton_;
 }
@@ -63,7 +63,7 @@ class ProfileSigninConfirmationDelegate;
 @interface ProfileSigninConfirmationViewController (TestingAPI)
 
 @property(readonly, nonatomic) ui::ProfileSigninConfirmationDelegate* delegate;
-@property(readonly, nonatomic) NSButton* createProfileLinkField;
+@property(readonly, nonatomic) NSButton* createProfileButton;
 @property(readonly, nonatomic) NSTextView* explanationField;
 
 @end

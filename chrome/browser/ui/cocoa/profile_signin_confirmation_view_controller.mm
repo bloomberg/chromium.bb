@@ -182,6 +182,10 @@ NSTextField* AddTextField(
       [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
   okButton_.reset(
       [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
+  if (offerProfileCreation_) {
+    createProfileButton_.reset(
+        [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
+  }
   promptBox_.reset(
       [[NSBox alloc] initWithFrame:NSZeroRect]);
   closeButton_.reset(
@@ -229,13 +233,11 @@ NSTextField* AddTextField(
 
   // Create Profile link.
   if (offerProfileCreation_) {
-    createProfileLinkField_.reset(
-        [AddLinkButton([self view],
-                       l10n_util::GetStringUTF16(
-                           IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NEW_STYLE),
-                       self,
-                       @selector(createProfile:)) retain]);
-    [createProfileLinkField_ sizeToFit];
+    [self addButton:createProfileButton_
+          withTitle:IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NEW_STYLE
+             target:self
+             action:@selector(createProfile:)
+     shouldAutoSize:YES];
   }
 
   // Add the title label.
@@ -249,7 +251,7 @@ NSTextField* AddTextField(
 
   // Compute the dialog width using the title and buttons.
   const CGFloat buttonsWidth =
-      (offerProfileCreation_ ? NSWidth([createProfileLinkField_ frame]) : 0) +
+      (offerProfileCreation_ ? NSWidth([createProfileButton_ frame]) : 0) +
       kButtonGap + NSWidth([cancelButton_ frame]) +
       kButtonGap + NSWidth([okButton_ frame]);
   const CGFloat titleWidth =
@@ -276,17 +278,17 @@ NSTextField* AddTextField(
   [[self view] addSubview:promptBox_];
 
   // Prompt text.
-  std::vector<size_t> offsets;
+  size_t offset;
   const string16 domain = ASCIIToUTF16(gaia::ExtractDomainName(username_));
   const string16 username = ASCIIToUTF16(username_);
   const string16 prompt_text =
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_ALERT_NEW_STYLE,
-          username, domain, &offsets);
+          domain, &offset);
   promptField_.reset(
       [AddTextField(promptBox_, prompt_text, chrome_style::kTextFontStyle)
           retain]);
-  MakeTextBold(promptField_, offsets[1], domain.size());
+  MakeTextBold(promptField_, offset, domain.size());
   [promptField_ setFrame:ComputeFrame(
         [promptField_ attributedStringValue], width, 0.0)];
 
@@ -300,7 +302,7 @@ NSTextField* AddTextField(
   [promptBox_ setFrame:NSMakeRect(0, 0, dialogWidth, boxHeight)];
 
   // Explanation text.
-  offsets.clear();
+  std::vector<size_t> offsets;
   const string16 learn_more_text =
       l10n_util::GetStringUTF16(
           IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE);
@@ -326,24 +328,21 @@ NSTextField* AddTextField(
 
   // Layout the elements, starting at the bottom and moving up.
 
-  CGFloat curX = chrome_style::kHorizontalPadding;
+  CGFloat curX = dialogWidth - chrome_style::kHorizontalPadding;
   CGFloat curY = chrome_style::kClientBottomPadding;
 
-  // CreateProfile link sticks to the bottom-left, vertically centered with
-  // the other buttons.
+  // Buttons should go |Cancel|Continue|CreateProfile|, unless
+  // |CreateProfile| isn't shown.
   if (offerProfileCreation_) {
-    CGFloat linkHeight = NSHeight([createProfileLinkField_ frame]);
-    CGFloat buttonHeight = NSHeight([okButton_ frame]);
-    CGFloat dy = roundf((buttonHeight - linkHeight) / 2.0 + 1.0);
-    [createProfileLinkField_ setFrameOrigin:NSMakePoint(curX, curY + dy)];
+    curX -= NSWidth([createProfileButton_ frame]);
+    [createProfileButton_ setFrameOrigin:NSMakePoint(curX, curY)];
+    curX -= kButtonGap;
   }
-
-  // OK and Cancel buttons stick to the bottom-right.
-  curX = dialogWidth - chrome_style::kHorizontalPadding;
   curX -= NSWidth([okButton_ frame]);
   [okButton_ setFrameOrigin:NSMakePoint(curX, curY)];
   curX -= (kButtonGap + NSWidth([cancelButton_ frame]));
   [cancelButton_ setFrameOrigin:NSMakePoint(curX, curY)];
+
   curY += NSHeight([cancelButton_ frame]);
 
   // Explanation text.
@@ -463,8 +462,8 @@ NSTextField* AddTextField(
   return delegate_;
 }
 
-- (NSButton*)createProfileLinkField {
-  return createProfileLinkField_.get();
+- (NSButton*)createProfileButton {
+  return createProfileButton_.get();
 }
 
 - (NSTextView*)explanationField {

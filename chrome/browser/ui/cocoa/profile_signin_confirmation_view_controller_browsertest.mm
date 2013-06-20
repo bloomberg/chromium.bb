@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationViewControllerTest,
                        DoNotOfferNewProfile) {
   SetupDialog(/*offerProfileCreation = */ false);
   // Create Profile button shouldn't exist.
-  EXPECT_NSEQ(nil, [controller_ createProfileLinkField]);
+  EXPECT_NSEQ(nil, [controller_ createProfileButton]);
   // Explanation shouldn't mention creating a new profile.
   NSString* explanationWithoutCreateProfile = base::SysUTF16ToNSString(
       l10n_util::GetStringFUTF16(
@@ -174,9 +174,9 @@ IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationViewControllerTest,
                        OfferNewProfile) {
   SetupDialog(/*offerProfileCreation = */ true);
   // Create Profile button should exist and be visible.
-  EXPECT_NSNE(nil, [controller_ createProfileLinkField]);
+  EXPECT_NSNE(nil, [controller_ createProfileButton]);
   EXPECT_TRUE([[[controller_ view] subviews]
-                containsObject:[controller_ createProfileLinkField]]);
+                containsObject:[controller_ createProfileButton]]);
   NSString* explanationWithCreateProfile = base::SysUTF16ToNSString(
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION_NEW_STYLE,

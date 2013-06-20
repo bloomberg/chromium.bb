@@ -7,6 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -25,8 +27,8 @@ class StyledLabel;
 // A tab-modal dialog to allow a user signing in with a managed account
 // to create a new Chrome profile.
 class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
-                                             public views::LinkListener,
-                                             public views::StyledLabelListener {
+                                             public views::StyledLabelListener,
+                                             public views::ButtonListener {
  public:
   // Create and show the dialog, which owns itself.
   static void ShowDialog(Browser* browser,
@@ -54,12 +56,12 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
 
-  // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
-
   // views::StyledLabelListener:
   virtual void StyledLabelLinkClicked(const ui::Range& range,
                                       int event_flags) OVERRIDE;
+
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button*, const ui::Event& event) OVERRIDE;
 
   // Shows the dialog and releases ownership of this object. It will
   // delete itself when the dialog is closed. If |prompt_for_new_profile|
@@ -84,8 +86,8 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   // Whether the user should be prompted to create a new profile.
   bool prompt_for_new_profile_;
 
-  // The link to create a new profile.
-  views::Link* link_;
+  // The button to continue with signin, if an extra button is required.
+  views::LabelButton* continue_signin_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationDialogViews);
 };

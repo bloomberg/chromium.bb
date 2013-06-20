@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
 
+#include <algorithm>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -25,29 +27,12 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-// Wrap a view in a fixed-width container.
-views::View* MakeFixedWidth(views::View* view, int width) {
-  views::View* container = new views::View;
-  views::GridLayout* layout = views::GridLayout::CreatePanel(container);
-  container->SetLayoutManager(layout);
-  layout->AddColumnSet(0)->AddColumn(
-      views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-      views::GridLayout::FIXED, width, false);
-  layout->StartRow(0, 0);
-  layout->AddView(view, 1, 1, views::GridLayout::FILL, views::GridLayout::FILL);
-  return container;
-}
-
-}  // namespace
+#include "ui/views/window/dialog_client_view.h"
 
 namespace chrome {
 // Declared in browser_dialogs.h
@@ -74,7 +59,7 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
     username_(username),
     delegate_(delegate),
     prompt_for_new_profile_(true),
-    link_(NULL) {
+    continue_signin_button_(NULL) {
 }
 
 ProfileSigninConfirmationDialogViews::~ProfileSigninConfirmationDialogViews() {}
@@ -109,9 +94,15 @@ string16 ProfileSigninConfirmationDialogViews::GetWindowTitle() const {
 
 string16 ProfileSigninConfirmationDialogViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
-      IDS_ENTERPRISE_SIGNIN_CONTINUE_NEW_STYLE :
-      IDS_ENTERPRISE_SIGNIN_CANCEL);
+  if (button == ui::DIALOG_BUTTON_OK) {
+    // If we're giving the option to create a new profile, then OK is
+    // "Create new profile".  Otherwise it is "Continue signin".
+    return l10n_util::GetStringUTF16(
+        prompt_for_new_profile_ ?
+            IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NEW_STYLE :
+            IDS_ENTERPRISE_SIGNIN_CONTINUE_NEW_STYLE);
+  }
+  return l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CANCEL);
 }
 
 int ProfileSigninConfirmationDialogViews::GetDefaultDialogButton() const {
@@ -120,20 +111,22 @@ int ProfileSigninConfirmationDialogViews::GetDefaultDialogButton() const {
 
 views::View* ProfileSigninConfirmationDialogViews::CreateExtraView() {
   if (prompt_for_new_profile_) {
-    const string16 create_profile_text =
-        l10n_util::GetStringUTF16(
-            IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NEW_STYLE);
-    link_ = new views::Link(create_profile_text);
-    link_->SetUnderline(false);
-    link_->set_listener(this);
-    link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    const string16 continue_signin_text =
+        l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE_NEW_STYLE);
+    continue_signin_button_ =
+        new views::LabelButton(this, continue_signin_text);
+    continue_signin_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    continue_signin_button_->set_focusable(true);
   }
-  return link_;
+  return continue_signin_button_;
 }
 
 bool ProfileSigninConfirmationDialogViews::Accept() {
   if (delegate_) {
-    delegate_->OnContinueSignin();
+    if (prompt_for_new_profile_)
+      delegate_->OnSigninWithNewProfile();
+    else
+      delegate_->OnContinueSignin();
     delegate_ = NULL;
   }
   return true;
@@ -160,39 +153,35 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   if (!details.is_add || details.child != this)
     return;
 
-  // Layout the labels in a single fixed-width column.
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-
   // Create the prompt label.
-  std::vector<size_t> offsets;
+  size_t offset;
   const string16 domain = ASCIIToUTF16(gaia::ExtractDomainName(username_));
   const string16 username = ASCIIToUTF16(username_);
   const string16 prompt_text =
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_ALERT_NEW_STYLE,
-          username, domain, &offsets);
+          domain, &offset);
   views::StyledLabel* prompt_label = new views::StyledLabel(prompt_text, this);
   views::StyledLabel::RangeStyleInfo bold_style;
   bold_style.font_style = gfx::Font::BOLD;
   prompt_label->AddStyleRange(
-      ui::Range(offsets[1], offsets[1] + domain.size()), bold_style);
+      ui::Range(offset, offset + domain.size()), bold_style);
 
-  // Add the prompt label with a darker background and border.
-  const int kDialogWidth = 440;
-  views::View* prompt_container = MakeFixedWidth(prompt_label, kDialogWidth);
-  prompt_container->set_border(
+  // Create the prompt bar.
+  views::View* prompt_bar = new views::View;
+  prompt_bar->set_border(
       views::Border::CreateSolidSidedBorder(
           1, 0, 1, 0,
           ui::GetSigninConfirmationPromptBarColor(
               ui::kSigninConfirmationPromptBarBorderAlpha)));
-  prompt_container->set_background(
+  // TODO(dconnelly): set the background color on the label (crbug.com/244630)
+  prompt_bar->set_background(
       views::Background::CreateSolidBackground(
           ui::GetSigninConfirmationPromptBarColor(
               ui::kSigninConfirmationPromptBarBackgroundAlpha)));
-  AddChildView(prompt_container);
 
-  // Create and add the explanation label.
-  offsets.clear();
+  // Create the explanation label.
+  std::vector<size_t> offsets;
   const string16 learn_more_text =
       l10n_util::GetStringUTF16(
           IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE);
@@ -208,17 +197,42 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   explanation_label_->AddStyleRange(
       ui::Range(offsets[1], offsets[1] + learn_more_text.size()),
       link_style);
-  // TODO(dconnelly): set the background color on the label (crbug.com/244630)
-  AddChildView(MakeFixedWidth(explanation_label_, kDialogWidth));
-}
 
-void ProfileSigninConfirmationDialogViews::LinkClicked(views::Link* source,
-                                                       int event_flags) {
-  if (delegate_) {
-    delegate_->OnSigninWithNewProfile();
-    delegate_ = NULL;
-  }
-  GetWidget()->Close();
+  // Layout the components.
+  views::GridLayout* dialog_layout = new views::GridLayout(this);
+  SetLayoutManager(dialog_layout);
+
+  // Use GridLayout inside the prompt bar because StyledLabel requires it.
+  views::GridLayout* prompt_layout = views::GridLayout::CreatePanel(prompt_bar);
+  prompt_bar->SetLayoutManager(prompt_layout);
+  prompt_layout->AddColumnSet(0)->AddColumn(
+      views::GridLayout::FILL, views::GridLayout::CENTER, 100,
+      views::GridLayout::USE_PREF, 0, 0);
+  prompt_layout->StartRow(0, 0);
+  prompt_layout->AddView(prompt_label);
+  // Use a column set with no padding.
+  dialog_layout->AddColumnSet(0)->AddColumn(
+      views::GridLayout::FILL, views::GridLayout::FILL, 100,
+      views::GridLayout::USE_PREF, 0, 0);
+  dialog_layout->StartRow(0, 0);
+  dialog_layout->AddView(
+      prompt_bar, 1, 1,
+      views::GridLayout::FILL, views::GridLayout::FILL, 0, 0);
+
+  // Use a new column set for the explanation label so we can add padding.
+  dialog_layout->AddPaddingRow(0.0, views::kPanelVertMargin);
+  views::ColumnSet* explanation_columns = dialog_layout->AddColumnSet(1);
+  explanation_columns->AddPaddingColumn(0.0, views::kButtonHEdgeMarginNew);
+  explanation_columns->AddColumn(
+      views::GridLayout::FILL, views::GridLayout::FILL, 100,
+      views::GridLayout::USE_PREF, 0, 0);
+  explanation_columns->AddPaddingColumn(0.0, views::kButtonHEdgeMarginNew);
+  dialog_layout->StartRow(0, 1);
+  const int kPreferredWidth = 440;
+  dialog_layout->AddView(
+      explanation_label_, 1, 1,
+      views::GridLayout::FILL, views::GridLayout::FILL,
+      kPreferredWidth, explanation_label_->GetHeightForWidth(kPreferredWidth));
 }
 
 void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
@@ -231,4 +245,16 @@ void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
   params.disposition = NEW_POPUP;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
+}
+
+void ProfileSigninConfirmationDialogViews::ButtonPressed(
+    views::Button* sender,
+    const ui::Event& event) {
+  DCHECK(prompt_for_new_profile_);
+  DCHECK_EQ(continue_signin_button_, sender);
+  if (delegate_) {
+    delegate_->OnContinueSignin();
+    delegate_ = NULL;
+  }
+  GetWidget()->Close();
 }
