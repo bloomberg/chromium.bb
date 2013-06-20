@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+* {
+  font-family: Ubuntu, Arial, sans-serif;
+}
+
 tabbox {
   min-height: 650px;
 }
@@ -12,15 +16,25 @@ h3 {
 
 th,
 td {
+  font-size: 14px;
   padding-left: 0.5em;
   padding-right: 0.5em;
   text-align: left;
 }
 
 thead tr {
+  font-size: 14px;
   font-weight: bold;
 }
 
 tbody tr:nth-child(odd) {
   background: rgb(238, 238, 255);
+}
+
+.log-time {
+  white-space: nowrap;
+}
+
+.log-event.error {
+  background: rgb(255, 220, 220);
 }

@@ -44,11 +44,16 @@ SyncService.onGetNotificationSource = function(sourceString) {
  * Creates an element named |elementName| containing the content |text|.
  * @param {string} elementName Name of the new element to be created.
  * @param {string} text Text to be contained in the new element.
+ * @param {Object} opt_attributes Optional attribute dictionary for the element.
  * @return {HTMLElement} The newly created HTML element.
  */
-function createElementFromText(elementName, text) {
+function createElementFromText(elementName, text, opt_attributes) {
   var element = document.createElement(elementName);
   element.appendChild(document.createTextNode(text));
+  if (opt_attributes) {
+    for (var key in opt_attributes)
+      element.setAttribute(key, opt_attributes[key]);
+  }
   return element;
 }
 
@@ -68,8 +73,11 @@ SyncService.onGetLog = function(logEntries) {
   for (var i = 0; i < logEntries.length; i++) {
     var logEntry = logEntries[i];
     var tr = document.createElement('tr');
-    tr.appendChild(createElementFromText('td', logEntry.time));
-    tr.appendChild(createElementFromText('td', logEntry.logEvent));
+    var error = /ERROR/.test(logEntry.logEvent) ? ' error' : '';
+    tr.appendChild(createElementFromText('td', logEntry.time,
+                                         {class: 'log-time'}));
+    tr.appendChild(createElementFromText('td', logEntry.logEvent,
+                                         {class: 'log-event' + error}));
     itemContainer.appendChild(tr);
   }
 }
