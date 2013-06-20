@@ -154,11 +154,10 @@ podrow[ncolumns='6'] .pod {
 }
 
 .pod .capslock-hint {
+  bottom: 13px;
   cursor: text;
-  padding: 4px 8px;
   position: absolute;
-  right: 10px;
-  top: 180px;
+  right: 6px;
   visibility: hidden;
   z-index: 1;
 }
