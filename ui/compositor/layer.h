@@ -409,9 +409,6 @@ class COMPOSITOR_EXPORT Layer
   // Visibility of this layer. See SetVisible/IsDrawn for more details.
   bool visible_;
 
-  // Computed based on the visibility of this layer and its ancestors.
-  bool is_drawn_;
-
   bool force_render_surface_;
 
   bool fills_bounds_opaquely_;

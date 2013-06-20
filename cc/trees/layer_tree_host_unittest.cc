@@ -161,6 +161,99 @@ class LayerTreeHostTestSetNeedsCommit2 : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsCommit2);
 
+// Verify that we pass property values in PushPropertiesTo.
+class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
+ protected:
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(10, 10));
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  enum Properties {
+    STARTUP,
+    BOUNDS,
+    HIDE_LAYER_AND_SUBTREE,
+    DRAWS_CONTENT,
+    DONE,
+  };
+
+  virtual void BeginTest() OVERRIDE {
+    index_ = STARTUP;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    VerifyAfterValues(impl->active_tree()->root_layer());
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    SetBeforeValues(layer_tree_host()->root_layer());
+    VerifyBeforeValues(layer_tree_host()->root_layer());
+
+    ++index_;
+    if (index_ == DONE) {
+      EndTest();
+      return;
+    }
+
+    SetAfterValues(layer_tree_host()->root_layer());
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  void VerifyBeforeValues(Layer* layer) {
+    EXPECT_EQ(gfx::Size(10, 10).ToString(), layer->bounds().ToString());
+    EXPECT_FALSE(layer->hide_layer_and_subtree());
+    EXPECT_FALSE(layer->DrawsContent());
+  }
+
+  void SetBeforeValues(Layer* layer) {
+    layer->SetBounds(gfx::Size(10, 10));
+    layer->SetHideLayerAndSubtree(false);
+    layer->SetIsDrawable(false);
+  }
+
+  void VerifyAfterValues(LayerImpl* layer) {
+    switch (static_cast<Properties>(index_)) {
+      case STARTUP:
+      case DONE:
+        break;
+      case BOUNDS:
+        EXPECT_EQ(gfx::Size(20, 20).ToString(), layer->bounds().ToString());
+        break;
+      case HIDE_LAYER_AND_SUBTREE:
+        EXPECT_TRUE(layer->hide_layer_and_subtree());
+        break;
+      case DRAWS_CONTENT:
+        EXPECT_TRUE(layer->DrawsContent());
+        break;
+    }
+  }
+
+  void SetAfterValues(Layer* layer) {
+    switch (static_cast<Properties>(index_)) {
+      case STARTUP:
+      case DONE:
+        break;
+      case BOUNDS:
+        layer->SetBounds(gfx::Size(20, 20));
+        break;
+      case HIDE_LAYER_AND_SUBTREE:
+        layer->SetHideLayerAndSubtree(true);
+        break;
+      case DRAWS_CONTENT:
+        layer->SetIsDrawable(true);
+        break;
+    }
+  }
+
+  int index_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesTo);
+
 // 1 setNeedsRedraw after the first commit has completed should lead to 1
 // additional draw.
 class LayerTreeHostTestSetNeedsRedraw : public LayerTreeHostTest {

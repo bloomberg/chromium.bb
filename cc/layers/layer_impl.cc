@@ -51,6 +51,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       use_parent_backface_visibility_(false),
       draw_checkerboard_for_missing_tiles_(false),
       draws_content_(false),
+      hide_layer_and_subtree_(false),
       force_render_surface_(false),
       is_container_for_fixed_position_layers_(false),
       draw_depth_(0.f),
@@ -354,6 +355,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       draw_checkerboard_for_missing_tiles_);
   layer->SetForceRenderSurface(force_render_surface_);
   layer->SetDrawsContent(DrawsContent());
+  layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   layer->SetFilters(filters());
   layer->SetFilter(filter());
   layer->SetBackgroundFilters(background_filters());
@@ -667,6 +669,14 @@ void LayerImpl::SetDrawsContent(bool draws_content) {
 
   draws_content_ = draws_content;
   NoteLayerPropertyChanged();
+}
+
+void LayerImpl::SetHideLayerAndSubtree(bool hide) {
+  if (hide_layer_and_subtree_ == hide)
+    return;
+
+  hide_layer_and_subtree_ = hide;
+  NoteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::SetAnchorPoint(gfx::PointF anchor_point) {
