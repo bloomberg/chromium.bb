@@ -350,10 +350,13 @@ def ValidateRegularInstruction(instruction, bitness):
       for op in write_ops:
         # TODO(shcherbina): disallow writes to
         #   rbp, rsp
-        #   bp, sp, bpl, spl,
         #   cs, ds, es, fs, gs
         if op in ['%r15', '%r15d', '%r15w', '%r15b']:
           raise SandboxingError('changes to r15 are not allowed', instruction)
+        if op in ['%bpl', '%bp']:
+          raise SandboxingError('changes to rbp are not allowed', instruction)
+        if op in ['%spl', '%sp']:
+          raise SandboxingError('changes to rsp are not allowed', instruction)
         if op in REG32_TO_REG64:
           assert postcondition == Condition()
           r = REG32_TO_REG64[op]

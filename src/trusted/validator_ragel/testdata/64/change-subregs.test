@@ -1,17 +1,34 @@
 @hex:
   # Sample of updating subregisters of protected registers rsp, rbp, and r15
-  # 66 29 c4                                     sub %sp, %ax
-  # 66 29 c5                                     sub %bp, %ax
-  # 47 29 c7                                     sub %r15d, %r8d
   66 29 c4
-  66 29 c5
-  47 29 c7
 @dis:
      0:	66 29 c4             	sub    %ax,%sp
-     3:	66 29 c5             	sub    %ax,%bp
-     6:	47 29 c7             	rex.RXB sub    %r8d,%r15d
 @rdfa_output:
   0: [0] error - %spl or %sp is changed
-  3: [0] error - %bpl or %bp is changed
-  6: [0] error - %r15 is changed
   return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 29 c5
+@dis:
+     0:	66 29 c5             	sub    %ax,%bp
+@rdfa_output:
+  0: [0] error - %bpl or %bp is changed
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  47 29 c7
+@dis:
+     0:	47 29 c7             	rex.RXB sub    %r8d,%r15d
+@rdfa_output:
+  0: [0] error - %r15 is changed
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  40 88 c5
+@dis:
+     0:	40 88 c5             	mov    %al,%bpl
+@rdfa_output:
+  0: [0] error - %bpl or %bp is changed
+  return code: 1
+@spec:
+  0: ('changes to rbp are not allowed', Instruction(0x0: 40 88 c5  mov %al,%bpl))
