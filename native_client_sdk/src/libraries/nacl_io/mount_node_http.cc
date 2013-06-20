@@ -27,6 +27,8 @@ namespace {
 const size_t MAX_READ_BUFFER_SIZE = 64 * 1024;
 const int32_t STATUSCODE_OK = 200;
 const int32_t STATUSCODE_PARTIAL_CONTENT = 206;
+const int32_t STATUSCODE_FORBIDDEN = 403;
+const int32_t STATUSCODE_NOT_FOUND = 404;
 
 StringMap_t ParseHeaders(const char* headers, int32_t headers_length) {
   enum State {
@@ -122,6 +124,22 @@ bool ParseContentRange(const StringMap_t& headers,
   }
 
   return false;
+}
+
+// Maps an HTTP |status_code| onto the appropriate errno code.
+int HTTPStatusCodeToErrno(int status_code) {
+  switch (status_code) {
+    case STATUSCODE_OK:
+    case STATUSCODE_PARTIAL_CONTENT:
+      return 0;
+    case STATUSCODE_FORBIDDEN:
+      return EACCES;
+    case STATUSCODE_NOT_FOUND:
+      return ENOENT;
+  }
+  if (status_code >= 400 && status_code < 500)
+    return EINVAL;
+  return EIO;
 }
 
 }  // namespace
@@ -298,10 +316,9 @@ Error MountNodeHttp::OpenUrl(const char* method,
   *out_statuscode = statuscode.value.as_int;
 
   // Only accept OK or Partial Content.
-  if (*out_statuscode != STATUSCODE_OK &&
-      *out_statuscode != STATUSCODE_PARTIAL_CONTENT) {
-    return EINVAL;
-  }
+  Error error = HTTPStatusCodeToErrno(*out_statuscode);
+  if (error)
+    return error;
 
   // Get response headers.
   PP_Var response_headers_var = response_interface->GetProperty(

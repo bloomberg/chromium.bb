@@ -176,6 +176,9 @@ class MountHttpNodeTest : public MountHttpTest {
   void ExpectHeaders(const char* headers);
   void OpenNode();
   void SetResponse(int status_code, const char* headers);
+  // Set a response code, but expect the request to fail. Certain function calls
+  // expected by SetResponse are not expected here.
+  void SetResponseExpectFail(int status_code, const char* headers);
   void SetResponseBody(const char* body);
   void ResetMocks();
 
@@ -283,6 +286,18 @@ void MountHttpNodeTest::SetResponse(int status_code, const char* headers) {
                       Return(headers)));
 }
 
+void MountHttpNodeTest::SetResponseExpectFail(int status_code,
+                                              const char* headers) {
+  ON_CALL(*response_, GetProperty(response_resource_, _))
+      .WillByDefault(Return(PP_MakeUndefined()));
+
+  PP_Var var_headers = MakeString(348);
+  EXPECT_CALL(*response_,
+              GetProperty(response_resource_,
+                          PP_URLRESPONSEPROPERTY_STATUSCODE))
+      .WillOnce(Return(PP_MakeInt32(status_code)));
+}
+
 ACTION_P3(ReadResponseBodyAction, offset, body, body_length) {
   char* buf = static_cast<char*>(arg1);
   size_t read_length = arg2;
@@ -335,6 +350,40 @@ TEST_F(MountHttpNodeTest, OpenAndCloseNoCache) {
   ExpectHeaders("");
   SetResponse(200, "");
   OpenNode();
+}
+
+TEST_F(MountHttpNodeTest, OpenAndCloseNotFound) {
+  StringMap_t smap;
+  smap["cache_content"] = "false";
+  SetMountArgs(StringMap_t());
+  ExpectOpen("HEAD");
+  ExpectHeaders("");
+  SetResponseExpectFail(404, "");
+  ASSERT_EQ(ENOENT, mnt_->Open(Path(path_), O_RDONLY, &node_));
+}
+
+TEST_F(MountHttpNodeTest, OpenAndCloseServerError) {
+  StringMap_t smap;
+  smap["cache_content"] = "false";
+  SetMountArgs(StringMap_t());
+  ExpectOpen("HEAD");
+  ExpectHeaders("");
+  SetResponseExpectFail(500, "");
+  ASSERT_EQ(EIO, mnt_->Open(Path(path_), O_RDONLY, &node_));
+}
+
+TEST_F(MountHttpNodeTest, GetStat) {
+  StringMap_t smap;
+  smap["cache_content"] = "false";
+  SetMountArgs(StringMap_t());
+  ExpectOpen("HEAD");
+  ExpectHeaders("");
+  SetResponse(200, "Content-Length: 42\n");
+  OpenNode();
+
+  struct stat stat;
+  EXPECT_EQ(0, node_->GetStat(&stat));
+  EXPECT_EQ(42, stat.st_size);
 }
 
 TEST_F(MountHttpNodeTest, ReadCached) {
