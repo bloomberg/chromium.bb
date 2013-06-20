@@ -780,8 +780,11 @@ int DecodeFile(const char *filename, int repeat_count) {
             return FALSE;
           } else if (state.fwait) {
             while (state.fwait < data + section->sh_offset + section->sh_size) {
-              printf("%*lx:\t9b                   \tfwait\n",
-                             state.width, (long)(state.fwait++ - state.offset));
+              printf("%*lx:\t%02x                   \tfwait\n",
+                             state.width,
+                             (long)(state.fwait - state.offset),
+                             *state.fwait);
+              state.fwait++;
             }
           }
           return TRUE;
@@ -831,8 +834,11 @@ int DecodeFile(const char *filename, int repeat_count) {
             return FALSE;
           } else if (state.fwait) {
             while (state.fwait < data + section->sh_offset + section->sh_size) {
-              printf("%*lx:\t9b                   \tfwait\n",
-                             state.width, (long)(state.fwait++ - state.offset));
+              printf("%*lx:\t%02x                   \tfwait\n",
+                             state.width,
+                             (long)(state.fwait - state.offset),
+                             *state.fwait);
+              state.fwait++;
             }
           }
           return TRUE;
@@ -873,8 +879,9 @@ char *DisassembleChunk(const uint8_t *data, size_t size, int bitness) {
     while (state.fwait < data + size) {
       stream_printf(
           result_stream,
-          "%*lx:\t9b                   \tfwait\n",
-          state.width, (long)(state.fwait++ - state.offset));
+          "%*lx:\t%02x                   \tfwait\n",
+          state.width, (long)(state.fwait - state.offset), *state.fwait);
+      state.fwait++;
     }
   }
 
