@@ -504,9 +504,7 @@ void WebKitTestController::OnImageDump(
     bool discard_transparency = true;
 #endif
 
-    bool success = false;
-#if defined(OS_ANDROID)
-    success = webkit_support::EncodeRGBAPNGWithChecksum(
+    bool success = webkit_support::EncodeBGRAPNGWithChecksum(
         reinterpret_cast<const unsigned char*>(image.getPixels()),
         image.width(),
         image.height(),
@@ -514,16 +512,6 @@ void WebKitTestController::OnImageDump(
         discard_transparency,
         actual_pixel_hash,
         &png);
-#else
-    success = webkit_support::EncodeBGRAPNGWithChecksum(
-        reinterpret_cast<const unsigned char*>(image.getPixels()),
-        image.width(),
-        image.height(),
-        static_cast<int>(image.rowBytes()),
-        discard_transparency,
-        actual_pixel_hash,
-        &png);
-#endif
     if (success)
       printer_->PrintImageBlock(png);
   }

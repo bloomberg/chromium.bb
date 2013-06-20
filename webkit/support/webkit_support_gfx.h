@@ -38,14 +38,6 @@ bool EncodeBGRAPNGWithChecksum(const unsigned char* input,
                                const std::string& checksum,
                                std::vector<unsigned char>* output);
 
-bool EncodeRGBAPNGWithChecksum(const unsigned char* input,
-                               int width,
-                               int height,
-                               int row_byte_width,
-                               bool discard_transparency,
-                               const std::string& checksum,
-                               std::vector<unsigned char>* output);
-
 }  // namespace webkit_support
 
 #endif  // WEBKIT_SUPPORT_WEBKIT_SUPPORT_GFX_H_
