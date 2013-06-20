@@ -26,7 +26,10 @@ namespace safe_browsing {
 SandboxedZipAnalyzer::SandboxedZipAnalyzer(
     const base::FilePath& zip_file,
     const ResultCallback& result_callback)
-    : zip_file_(zip_file), callback_(result_callback) {}
+    : zip_file_(zip_file),
+      callback_(result_callback),
+      callback_called_(false) {
+}
 
 void SandboxedZipAnalyzer::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -103,14 +106,11 @@ bool SandboxedZipAnalyzer::OnMessageReceived(const IPC::Message& message) {
 void SandboxedZipAnalyzer::OnAnalyzeZipFileFinished(
     const zip_analyzer::Results& results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&SandboxedZipAnalyzer::RunCallback, this, results));
-}
-
-void SandboxedZipAnalyzer::RunCallback(const zip_analyzer::Results& results) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback_.Run(results);
+  if (callback_called_)
+    return;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback_, results));
+  callback_called_ = true;
 }
 
 void SandboxedZipAnalyzer::StartProcessOnIOThread() {

@@ -19,9 +19,6 @@
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 
-namespace base {
-class FilePath;
-}
 namespace IPC {
 class Message;
 }
@@ -64,15 +61,14 @@ class SandboxedZipAnalyzer : public content::UtilityProcessHostClient {
   // Launches the utility process.  Must run on the IO thread.
   void StartProcessOnIOThread();
 
-  // Runs the caller-supplied callback.
-  void RunCallback(const zip_analyzer::Results& results);
-
   const base::FilePath zip_file_;
   // Once we have opened the file, we store the handle so that we can use it
   // once the utility process has launched.
   base::PlatformFile zip_platform_file_;
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
   const ResultCallback callback_;
+  // Initialized on the UI thread, but only accessed on the IO thread.
+  bool callback_called_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxedZipAnalyzer);
 };
