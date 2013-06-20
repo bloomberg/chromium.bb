@@ -31,15 +31,12 @@
 #ifndef CustomElementDefinition_h
 #define CustomElementDefinition_h
 
-#include "bindings/v8/ScriptValue.h"
 #include "core/dom/QualifiedName.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
-
-class ScriptState;
 
 class CustomElementDefinition : public RefCounted<CustomElementDefinition> {
 public:

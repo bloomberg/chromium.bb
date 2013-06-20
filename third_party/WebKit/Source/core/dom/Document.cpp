@@ -36,6 +36,7 @@
 #include "SVGNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "bindings/v8/CustomElementConstructorBuilder.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
@@ -841,7 +842,9 @@ ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicS
         return ScriptValue();
     }
 
-    return ensureCustomElementRegistry()->registerElement(state, name, options, ec);
+    CustomElementConstructorBuilder constructorBuilder(state, &options);
+    ensureCustomElementRegistry()->registerElement(&constructorBuilder, name, ec);
+    return constructorBuilder.bindingsReturnValue();
 }
 
 CustomElementRegistry* Document::ensureCustomElementRegistry()

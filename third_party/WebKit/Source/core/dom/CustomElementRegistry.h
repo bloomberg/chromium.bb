@@ -31,7 +31,6 @@
 #ifndef CustomElementRegistry_h
 #define CustomElementRegistry_h
 
-#include "bindings/v8/ScriptValue.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
@@ -47,11 +46,11 @@
 
 namespace WebCore {
 
+class CustomElementConstructorBuilder;
 class CustomElementDefinition;
 class Dictionary;
 class Document;
 class Element;
-class ScriptState;
 
 class CustomElementInvocation {
 public:
@@ -78,11 +77,10 @@ public:
     explicit CustomElementRegistry(Document*);
     ~CustomElementRegistry();
 
-    ScriptValue registerElement(ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
+    void registerElement(CustomElementConstructorBuilder*, const AtomicString& name, ExceptionCode&);
 
     bool isUnresolved(Element*) const;
     PassRefPtr<CustomElementDefinition> findFor(Element*) const;
-    PassRefPtr<CustomElementDefinition> findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const;
 
     PassRefPtr<Element> createCustomTagElement(const QualifiedName& localName);
 
@@ -106,6 +104,8 @@ private:
     void activate(const CustomElementInvocation&);
     void deactivate();
     void deliverLifecycleCallbacks();
+
+    PassRefPtr<CustomElementDefinition> findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const;
 
     void didCreateCustomTagElement(Element*);
     void didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind, const AtomicString& type, Element*);

@@ -34,9 +34,8 @@
 
 #include "HTMLNames.h"
 #include "SVGNames.h"
+#include "bindings/v8/CustomElementConstructorBuilder.h"
 #include "bindings/v8/CustomElementHelpers.h"
-#include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ScriptValue.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -99,79 +98,59 @@ bool CustomElementRegistry::isValidName(const AtomicString& name)
     return Document::isValidName(name.string());
 }
 
-ScriptValue CustomElementRegistry::registerElement(ScriptState* state, const AtomicString& userSuppliedName, const Dictionary& options, ExceptionCode& ec)
+void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* constructorBuilder, const AtomicString& userSuppliedName, ExceptionCode& ec)
 {
     RefPtr<CustomElementRegistry> protect(this);
 
-    if (!CustomElementHelpers::isFeatureAllowed(state))
-        return ScriptValue();
+    if (!constructorBuilder->isFeatureAllowed())
+        return;
 
-    AtomicString name = userSuppliedName.lower();
-    if (!isValidName(name)) {
+    AtomicString type = userSuppliedName.lower();
+    if (!isValidName(type)) {
         ec = INVALID_CHARACTER_ERR;
-        return ScriptValue();
+        return;
     }
 
-    ScriptValue prototypeValue;
-    if (!options.get("prototype", prototypeValue)) {
-        // FIXME: Implement the default value handling.
-        // Currently default value of the "prototype" parameter, which
-        // is HTMLSpanElement.prototype, has an ambiguity about its
-        // behavior. The spec should be fixed before WebKit implements
-        // it. https://www.w3.org/Bugs/Public/show_bug.cgi?id=20801
+    if (!constructorBuilder->validateOptions()) {
         ec = INVALID_STATE_ERR;
-        return ScriptValue();
+        return;
     }
 
-    AtomicString namespaceURI;
-    if (!CustomElementHelpers::isValidPrototypeParameter(prototypeValue, state, namespaceURI)) {
-        ec = INVALID_STATE_ERR;
-        return ScriptValue();
-    }
-
-    if (namespaceURI.isNull()) {
+    QualifiedName tagName = nullQName();
+    if (!constructorBuilder->findTagName(type, tagName)) {
         ec = NAMESPACE_ERR;
-        return ScriptValue();
+        return;
     }
+    ASSERT(tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI || tagName.namespaceURI() == SVGNames::svgNamespaceURI);
 
-    AtomicString type = name;
     if (m_definitions.contains(type)) {
         ec = INVALID_STATE_ERR;
-        return ScriptValue();
+        return;
     }
 
-    const QualifiedName* prototypeTagName = CustomElementHelpers::findLocalName(prototypeValue);
-    if (prototypeTagName)
-        name = prototypeTagName->localName();
-
-    // A script execution could happen in isValidPrototypeParameter(), which kills the document.
+    // Consulting the constructor builder could execute script and
+    // kill the document.
     if (!document()) {
         ec = INVALID_STATE_ERR;
-        return ScriptValue();
+        return;
     }
 
-    ASSERT(name == type || QualifiedName(nullAtom, name, namespaceURI) == *CustomElementHelpers::findLocalName(prototypeValue));
-    ASSERT(namespaceURI == HTMLNames::xhtmlNamespaceURI || namespaceURI == SVGNames::svgNamespaceURI);
+    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, tagName.localName(), tagName.namespaceURI());
 
-    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, name, namespaceURI);
-    ScriptValue constructor = CustomElementHelpers::createConstructor(state, prototypeValue, document(), definition->namespaceURI(), definition->name(), definition->isTypeExtension() ? definition->type() : nullAtom);
-    if (constructor.hasNoValue()) {
+    if (!constructorBuilder->createConstructor(document(), definition.get())) {
         ec = INVALID_STATE_ERR;
-        return ScriptValue();
+        return;
     }
-    ASSERT(constructor.isFunction());
 
     m_definitions.add(definition->type(), definition);
 
     // Upgrade elements that were waiting for this definition.
     CustomElementUpgradeCandidateMap::ElementSet upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition.get());
-    CustomElementHelpers::didRegisterDefinition(definition.get(), document(), upgradeCandidates, prototypeValue);
+    constructorBuilder->didRegisterDefinition(definition.get(), upgradeCandidates);
     for (CustomElementUpgradeCandidateMap::ElementSet::iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
         (*it)->setNeedsStyleRecalc(); // :unresolved has changed
         activate(CustomElementInvocation(*it));
     }
-
-    return constructor;
 }
 
 bool CustomElementRegistry::isUnresolved(Element* element) const
