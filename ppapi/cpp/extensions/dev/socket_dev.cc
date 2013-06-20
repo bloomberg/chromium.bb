@@ -76,14 +76,14 @@ bool CreateInfo_Dev::Populate(const PP_Ext_Socket_CreateInfo_Dev& value) {
   if (value.type != PP_VARTYPE_DICTIONARY)
     return false;
 
-  VarDictionary_Dev dict(value);
+  VarDictionary dict(value);
   bool result = socket_id.Populate(dict);
 
   return result;
 }
 
 Var CreateInfo_Dev::CreateVar() const {
-  VarDictionary_Dev dict;
+  VarDictionary dict;
 
   bool result = socket_id.AddTo(&dict);
   // Suppress unused variable warnings.
@@ -108,7 +108,7 @@ bool AcceptInfo_Dev::Populate(const PP_Ext_Socket_AcceptInfo_Dev& value) {
   if (value.type != PP_VARTYPE_DICTIONARY)
     return false;
 
-  VarDictionary_Dev dict(value);
+  VarDictionary dict(value);
   bool result = result_code.Populate(dict);
   result = socket_id.Populate(dict) && result;
 
@@ -116,7 +116,7 @@ bool AcceptInfo_Dev::Populate(const PP_Ext_Socket_AcceptInfo_Dev& value) {
 }
 
 Var AcceptInfo_Dev::CreateVar() const {
-  VarDictionary_Dev dict;
+  VarDictionary dict;
 
   bool result = result_code.AddTo(&dict);
   result = socket_id.MayAddTo(&dict) && result;
@@ -140,7 +140,7 @@ bool ReadInfo_Dev::Populate(const PP_Ext_Socket_ReadInfo_Dev& value) {
   if (value.type != PP_VARTYPE_DICTIONARY)
     return false;
 
-  VarDictionary_Dev dict(value);
+  VarDictionary dict(value);
   bool result = result_code.Populate(dict);
   result = data.Populate(dict) && result;
 
@@ -148,7 +148,7 @@ bool ReadInfo_Dev::Populate(const PP_Ext_Socket_ReadInfo_Dev& value) {
 }
 
 Var ReadInfo_Dev::CreateVar() const {
-  VarDictionary_Dev dict;
+  VarDictionary dict;
 
   bool result = result_code.AddTo(&dict);
   result = data.AddTo(&dict) && result;
@@ -170,14 +170,14 @@ bool WriteInfo_Dev::Populate(const PP_Ext_Socket_WriteInfo_Dev& value) {
   if (value.type != PP_VARTYPE_DICTIONARY)
     return false;
 
-  VarDictionary_Dev dict(value);
+  VarDictionary dict(value);
   bool result = bytes_written.Populate(dict);
 
   return result;
 }
 
 Var WriteInfo_Dev::CreateVar() const {
-  VarDictionary_Dev dict;
+  VarDictionary dict;
 
   bool result = bytes_written.AddTo(&dict);
   // Suppress unused variable warnings.
@@ -206,7 +206,7 @@ bool RecvFromInfo_Dev::Populate(const PP_Ext_Socket_RecvFromInfo_Dev& value) {
   if (value.type != PP_VARTYPE_DICTIONARY)
     return false;
 
-  VarDictionary_Dev dict(value);
+  VarDictionary dict(value);
   bool result = result_code.Populate(dict);
   result = data.Populate(dict) && result;
   result = address.Populate(dict) && result;
@@ -216,7 +216,7 @@ bool RecvFromInfo_Dev::Populate(const PP_Ext_Socket_RecvFromInfo_Dev& value) {
 }
 
 Var RecvFromInfo_Dev::CreateVar() const {
-  VarDictionary_Dev dict;
+  VarDictionary dict;
 
   bool result = result_code.AddTo(&dict);
   result = data.AddTo(&dict) && result;
@@ -250,7 +250,7 @@ bool SocketInfo_Dev::Populate(const PP_Ext_Socket_SocketInfo_Dev& value) {
   if (value.type != PP_VARTYPE_DICTIONARY)
     return false;
 
-  VarDictionary_Dev dict(value);
+  VarDictionary dict(value);
   bool result = socket_type.Populate(dict);
   result = connected.Populate(dict) && result;
   result = peer_address.Populate(dict) && result;
@@ -262,7 +262,7 @@ bool SocketInfo_Dev::Populate(const PP_Ext_Socket_SocketInfo_Dev& value) {
 }
 
 Var SocketInfo_Dev::CreateVar() const {
-  VarDictionary_Dev dict;
+  VarDictionary dict;
 
   bool result = socket_type.AddTo(&dict);
   result = connected.AddTo(&dict) && result;
@@ -291,7 +291,7 @@ bool NetworkInterface_Dev::Populate(
   if (value.type != PP_VARTYPE_DICTIONARY)
     return false;
 
-  VarDictionary_Dev dict(value);
+  VarDictionary dict(value);
   bool result = name.Populate(dict);
   result = address.Populate(dict) && result;
 
@@ -299,7 +299,7 @@ bool NetworkInterface_Dev::Populate(
 }
 
 Var NetworkInterface_Dev::CreateVar() const {
-  VarDictionary_Dev dict;
+  VarDictionary dict;
 
   bool result = name.AddTo(&dict);
   result = address.AddTo(&dict) && result;

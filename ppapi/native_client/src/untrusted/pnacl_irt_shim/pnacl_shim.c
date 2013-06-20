@@ -31,8 +31,6 @@
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/dev/ppb_udp_socket_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
-#include "ppapi/c/dev/ppb_var_array_dev.h"
-#include "ppapi/c/dev/ppb_var_dictionary_dev.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/c/dev/ppb_view_dev.h"
@@ -72,7 +70,9 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_var_array.h"
 #include "ppapi/c/ppb_var_array_buffer.h"
+#include "ppapi/c/ppb_var_dictionary.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -164,7 +164,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Var_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Var_1_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArray_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
@@ -214,8 +216,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Trace_Event_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArray_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
@@ -1102,6 +1102,35 @@ static const char* Pnacl_M18_PPB_Var_VarToUtf8(struct PP_Var* var, uint32_t* len
 
 /* End wrapper methods for PPB_Var_1_1 */
 
+/* Begin wrapper methods for PPB_VarArray_1_0 */
+
+static void Pnacl_M29_PPB_VarArray_Create(struct PP_Var* _struct_result) {
+  const struct PPB_VarArray_1_0 *iface = Pnacl_WrapperInfo_PPB_VarArray_1_0.real_iface;
+  *_struct_result = iface->Create();
+}
+
+static void Pnacl_M29_PPB_VarArray_Get(struct PP_Var* _struct_result, struct PP_Var* array, uint32_t index) {
+  const struct PPB_VarArray_1_0 *iface = Pnacl_WrapperInfo_PPB_VarArray_1_0.real_iface;
+  *_struct_result = iface->Get(*array, index);
+}
+
+static PP_Bool Pnacl_M29_PPB_VarArray_Set(struct PP_Var* array, uint32_t index, struct PP_Var* value) {
+  const struct PPB_VarArray_1_0 *iface = Pnacl_WrapperInfo_PPB_VarArray_1_0.real_iface;
+  return iface->Set(*array, index, *value);
+}
+
+static uint32_t Pnacl_M29_PPB_VarArray_GetLength(struct PP_Var* array) {
+  const struct PPB_VarArray_1_0 *iface = Pnacl_WrapperInfo_PPB_VarArray_1_0.real_iface;
+  return iface->GetLength(*array);
+}
+
+static PP_Bool Pnacl_M29_PPB_VarArray_SetLength(struct PP_Var* array, uint32_t length) {
+  const struct PPB_VarArray_1_0 *iface = Pnacl_WrapperInfo_PPB_VarArray_1_0.real_iface;
+  return iface->SetLength(*array, length);
+}
+
+/* End wrapper methods for PPB_VarArray_1_0 */
+
 /* Begin wrapper methods for PPB_VarArrayBuffer_1_0 */
 
 static void Pnacl_M18_PPB_VarArrayBuffer_Create(struct PP_Var* _struct_result, uint32_t size_in_bytes) {
@@ -1125,6 +1154,40 @@ static void Pnacl_M18_PPB_VarArrayBuffer_Unmap(struct PP_Var* array) {
 }
 
 /* End wrapper methods for PPB_VarArrayBuffer_1_0 */
+
+/* Begin wrapper methods for PPB_VarDictionary_1_0 */
+
+static void Pnacl_M29_PPB_VarDictionary_Create(struct PP_Var* _struct_result) {
+  const struct PPB_VarDictionary_1_0 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_1_0.real_iface;
+  *_struct_result = iface->Create();
+}
+
+static void Pnacl_M29_PPB_VarDictionary_Get(struct PP_Var* _struct_result, struct PP_Var* dict, struct PP_Var* key) {
+  const struct PPB_VarDictionary_1_0 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_1_0.real_iface;
+  *_struct_result = iface->Get(*dict, *key);
+}
+
+static PP_Bool Pnacl_M29_PPB_VarDictionary_Set(struct PP_Var* dict, struct PP_Var* key, struct PP_Var* value) {
+  const struct PPB_VarDictionary_1_0 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_1_0.real_iface;
+  return iface->Set(*dict, *key, *value);
+}
+
+static void Pnacl_M29_PPB_VarDictionary_Delete(struct PP_Var* dict, struct PP_Var* key) {
+  const struct PPB_VarDictionary_1_0 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_1_0.real_iface;
+  iface->Delete(*dict, *key);
+}
+
+static PP_Bool Pnacl_M29_PPB_VarDictionary_HasKey(struct PP_Var* dict, struct PP_Var* key) {
+  const struct PPB_VarDictionary_1_0 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_1_0.real_iface;
+  return iface->HasKey(*dict, *key);
+}
+
+static void Pnacl_M29_PPB_VarDictionary_GetKeys(struct PP_Var* _struct_result, struct PP_Var* dict) {
+  const struct PPB_VarDictionary_1_0 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_1_0.real_iface;
+  *_struct_result = iface->GetKeys(*dict);
+}
+
+/* End wrapper methods for PPB_VarDictionary_1_0 */
 
 /* Not generating wrapper methods for PPB_View_1_0 */
 
@@ -2074,69 +2137,6 @@ static void Pnacl_M17_PPB_URLUtil_Dev_GetPluginInstanceURL(struct PP_Var* _struc
 }
 
 /* End wrapper methods for PPB_URLUtil_Dev_0_6 */
-
-/* Begin wrapper methods for PPB_VarArray_Dev_0_1 */
-
-static void Pnacl_M27_PPB_VarArray_Dev_Create(struct PP_Var* _struct_result) {
-  const struct PPB_VarArray_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarArray_Dev_0_1.real_iface;
-  *_struct_result = iface->Create();
-}
-
-static void Pnacl_M27_PPB_VarArray_Dev_Get(struct PP_Var* _struct_result, struct PP_Var* array, uint32_t index) {
-  const struct PPB_VarArray_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarArray_Dev_0_1.real_iface;
-  *_struct_result = iface->Get(*array, index);
-}
-
-static PP_Bool Pnacl_M27_PPB_VarArray_Dev_Set(struct PP_Var* array, uint32_t index, struct PP_Var* value) {
-  const struct PPB_VarArray_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarArray_Dev_0_1.real_iface;
-  return iface->Set(*array, index, *value);
-}
-
-static uint32_t Pnacl_M27_PPB_VarArray_Dev_GetLength(struct PP_Var* array) {
-  const struct PPB_VarArray_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarArray_Dev_0_1.real_iface;
-  return iface->GetLength(*array);
-}
-
-static PP_Bool Pnacl_M27_PPB_VarArray_Dev_SetLength(struct PP_Var* array, uint32_t length) {
-  const struct PPB_VarArray_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarArray_Dev_0_1.real_iface;
-  return iface->SetLength(*array, length);
-}
-
-/* End wrapper methods for PPB_VarArray_Dev_0_1 */
-
-/* Begin wrapper methods for PPB_VarDictionary_Dev_0_1 */
-
-static void Pnacl_M27_PPB_VarDictionary_Dev_Create(struct PP_Var* _struct_result) {
-  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
-  *_struct_result = iface->Create();
-}
-
-static void Pnacl_M27_PPB_VarDictionary_Dev_Get(struct PP_Var* _struct_result, struct PP_Var* dict, struct PP_Var* key) {
-  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
-  *_struct_result = iface->Get(*dict, *key);
-}
-
-static PP_Bool Pnacl_M27_PPB_VarDictionary_Dev_Set(struct PP_Var* dict, struct PP_Var* key, struct PP_Var* value) {
-  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
-  return iface->Set(*dict, *key, *value);
-}
-
-static void Pnacl_M27_PPB_VarDictionary_Dev_Delete(struct PP_Var* dict, struct PP_Var* key) {
-  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
-  iface->Delete(*dict, *key);
-}
-
-static PP_Bool Pnacl_M27_PPB_VarDictionary_Dev_HasKey(struct PP_Var* dict, struct PP_Var* key) {
-  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
-  return iface->HasKey(*dict, *key);
-}
-
-static void Pnacl_M27_PPB_VarDictionary_Dev_GetKeys(struct PP_Var* _struct_result, struct PP_Var* dict) {
-  const struct PPB_VarDictionary_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1.real_iface;
-  *_struct_result = iface->GetKeys(*dict);
-}
-
-/* End wrapper methods for PPB_VarDictionary_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_VideoCapture_Dev_0_2 */
 
@@ -4121,11 +4121,28 @@ struct PPB_Var_1_1 Pnacl_Wrappers_PPB_Var_1_1 = {
     .VarToUtf8 = (const char* (*)(struct PP_Var var, uint32_t* len))&Pnacl_M18_PPB_Var_VarToUtf8
 };
 
+struct PPB_VarArray_1_0 Pnacl_Wrappers_PPB_VarArray_1_0 = {
+    .Create = (struct PP_Var (*)(void))&Pnacl_M29_PPB_VarArray_Create,
+    .Get = (struct PP_Var (*)(struct PP_Var array, uint32_t index))&Pnacl_M29_PPB_VarArray_Get,
+    .Set = (PP_Bool (*)(struct PP_Var array, uint32_t index, struct PP_Var value))&Pnacl_M29_PPB_VarArray_Set,
+    .GetLength = (uint32_t (*)(struct PP_Var array))&Pnacl_M29_PPB_VarArray_GetLength,
+    .SetLength = (PP_Bool (*)(struct PP_Var array, uint32_t length))&Pnacl_M29_PPB_VarArray_SetLength
+};
+
 struct PPB_VarArrayBuffer_1_0 Pnacl_Wrappers_PPB_VarArrayBuffer_1_0 = {
     .Create = (struct PP_Var (*)(uint32_t size_in_bytes))&Pnacl_M18_PPB_VarArrayBuffer_Create,
     .ByteLength = (PP_Bool (*)(struct PP_Var array, uint32_t* byte_length))&Pnacl_M18_PPB_VarArrayBuffer_ByteLength,
     .Map = (void* (*)(struct PP_Var array))&Pnacl_M18_PPB_VarArrayBuffer_Map,
     .Unmap = (void (*)(struct PP_Var array))&Pnacl_M18_PPB_VarArrayBuffer_Unmap
+};
+
+struct PPB_VarDictionary_1_0 Pnacl_Wrappers_PPB_VarDictionary_1_0 = {
+    .Create = (struct PP_Var (*)(void))&Pnacl_M29_PPB_VarDictionary_Create,
+    .Get = (struct PP_Var (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M29_PPB_VarDictionary_Get,
+    .Set = (PP_Bool (*)(struct PP_Var dict, struct PP_Var key, struct PP_Var value))&Pnacl_M29_PPB_VarDictionary_Set,
+    .Delete = (void (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M29_PPB_VarDictionary_Delete,
+    .HasKey = (PP_Bool (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M29_PPB_VarDictionary_HasKey,
+    .GetKeys = (struct PP_Var (*)(struct PP_Var dict))&Pnacl_M29_PPB_VarDictionary_GetKeys
 };
 
 /* Not generating wrapper interface for PPB_View_1_0 */
@@ -4410,23 +4427,6 @@ struct PPB_URLUtil_Dev_0_6 Pnacl_Wrappers_PPB_URLUtil_Dev_0_6 = {
     .DocumentCanAccessDocument = (PP_Bool (*)(PP_Instance active, PP_Instance target))&Pnacl_M17_PPB_URLUtil_Dev_DocumentCanAccessDocument,
     .GetDocumentURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M17_PPB_URLUtil_Dev_GetDocumentURL,
     .GetPluginInstanceURL = (struct PP_Var (*)(PP_Instance instance, struct PP_URLComponents_Dev* components))&Pnacl_M17_PPB_URLUtil_Dev_GetPluginInstanceURL
-};
-
-struct PPB_VarArray_Dev_0_1 Pnacl_Wrappers_PPB_VarArray_Dev_0_1 = {
-    .Create = (struct PP_Var (*)(void))&Pnacl_M27_PPB_VarArray_Dev_Create,
-    .Get = (struct PP_Var (*)(struct PP_Var array, uint32_t index))&Pnacl_M27_PPB_VarArray_Dev_Get,
-    .Set = (PP_Bool (*)(struct PP_Var array, uint32_t index, struct PP_Var value))&Pnacl_M27_PPB_VarArray_Dev_Set,
-    .GetLength = (uint32_t (*)(struct PP_Var array))&Pnacl_M27_PPB_VarArray_Dev_GetLength,
-    .SetLength = (PP_Bool (*)(struct PP_Var array, uint32_t length))&Pnacl_M27_PPB_VarArray_Dev_SetLength
-};
-
-struct PPB_VarDictionary_Dev_0_1 Pnacl_Wrappers_PPB_VarDictionary_Dev_0_1 = {
-    .Create = (struct PP_Var (*)(void))&Pnacl_M27_PPB_VarDictionary_Dev_Create,
-    .Get = (struct PP_Var (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M27_PPB_VarDictionary_Dev_Get,
-    .Set = (PP_Bool (*)(struct PP_Var dict, struct PP_Var key, struct PP_Var value))&Pnacl_M27_PPB_VarDictionary_Dev_Set,
-    .Delete = (void (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M27_PPB_VarDictionary_Dev_Delete,
-    .HasKey = (PP_Bool (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M27_PPB_VarDictionary_Dev_HasKey,
-    .GetKeys = (struct PP_Var (*)(struct PP_Var dict))&Pnacl_M27_PPB_VarDictionary_Dev_GetKeys
 };
 
 struct PPB_VideoCapture_Dev_0_2 Pnacl_Wrappers_PPB_VideoCapture_Dev_0_2 = {
@@ -5103,9 +5103,21 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Var_1_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArray_1_0 = {
+  .iface_macro = PPB_VAR_ARRAY_INTERFACE_1_0,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VarArray_1_0,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0 = {
   .iface_macro = PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VarArrayBuffer_1_0,
+  .real_iface = NULL
+};
+
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_1_0 = {
+  .iface_macro = PPB_VAR_DICTIONARY_INTERFACE_1_0,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VarDictionary_1_0,
   .real_iface = NULL
 };
 
@@ -5400,18 +5412,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6 = {
   .iface_macro = PPB_URLUTIL_DEV_INTERFACE_0_6,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_URLUtil_Dev_0_6,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArray_Dev_0_1 = {
-  .iface_macro = PPB_VAR_ARRAY_DEV_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VarArray_Dev_0_1,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1 = {
-  .iface_macro = PPB_VAR_DICTIONARY_DEV_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VarDictionary_Dev_0_1,
   .real_iface = NULL
 };
 
@@ -5862,7 +5862,9 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0,
   &Pnacl_WrapperInfo_PPB_Var_1_0,
   &Pnacl_WrapperInfo_PPB_Var_1_1,
+  &Pnacl_WrapperInfo_PPB_VarArray_1_0,
   &Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0,
+  &Pnacl_WrapperInfo_PPB_VarDictionary_1_0,
   &Pnacl_WrapperInfo_PPB_View_1_0,
   &Pnacl_WrapperInfo_PPB_View_1_1,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
@@ -5906,8 +5908,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6,
-  &Pnacl_WrapperInfo_PPB_VarArray_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_VarDictionary_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/c/dev/ppb_var_dictionary_dev.h"
+#include "ppapi/c/ppb_var_dictionary.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/dictionary_var.h"
@@ -67,7 +67,7 @@ PP_Var GetKeys(PP_Var dict) {
   return dict_var->GetKeys();
 }
 
-const PPB_VarDictionary_Dev_0_1 g_ppb_vardictionary_0_1_thunk = {
+const PPB_VarDictionary_1_0 g_ppb_vardictionary_1_0_thunk = {
   &Create,
   &Get,
   &Set,
@@ -78,8 +78,8 @@ const PPB_VarDictionary_Dev_0_1 g_ppb_vardictionary_0_1_thunk = {
 
 }  // namespace
 
-const PPB_VarDictionary_Dev_0_1* GetPPB_VarDictionary_Dev_0_1_Thunk() {
-  return &g_ppb_vardictionary_0_1_thunk;
+const PPB_VarDictionary_1_0* GetPPB_VarDictionary_1_0_Thunk() {
+  return &g_ppb_vardictionary_1_0_thunk;
 }
 
 }  // namespace thunk

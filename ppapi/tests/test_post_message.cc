@@ -12,7 +12,9 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array.h"
 #include "ppapi/cpp/var_array_buffer.h"
+#include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/tests/pp_thread.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
@@ -82,8 +84,8 @@ bool VarsEqual(const pp::Var& expected,
   if (expected.is_number()) {
     return fabs(expected.AsDouble() - actual.AsDouble()) < 1.0e-4;
   } else if (expected.is_array()) {
-    pp::VarArray_Dev expected_array(expected);
-    pp::VarArray_Dev actual_array(actual);
+    pp::VarArray expected_array(expected);
+    pp::VarArray actual_array(actual);
     if (expected_array.GetLength() != actual_array.GetLength())
       return false;
     for (uint32_t i = 0; i < expected_array.GetLength(); ++i) {
@@ -92,15 +94,15 @@ bool VarsEqual(const pp::Var& expected,
     }
     return true;
   } else if (expected.is_dictionary()) {
-    pp::VarDictionary_Dev expected_dict(expected);
-    pp::VarDictionary_Dev actual_dict(actual);
+    pp::VarDictionary expected_dict(expected);
+    pp::VarDictionary actual_dict(actual);
     if (expected_dict.GetKeys().GetLength() !=
         actual_dict.GetKeys().GetLength()) {
       return false;
     }
     for (uint32_t i = 0; i < expected_dict.GetKeys().GetLength(); ++i) {
       pp::Var key = expected_dict.GetKeys().Get(i);
-      if (actual_dict.HasKey(key) == PP_FALSE)
+      if (!actual_dict.HasKey(key))
         return false;
       if (!VarsEqual(expected_dict.Get(key), actual_dict.Get(key), visited_ids))
         return false;
@@ -448,7 +450,7 @@ std::string TestPostMessage::TestSendingArray() {
   WaitForMessages();
   ASSERT_TRUE(ClearListeners());
 
-  pp::VarArray_Dev array;
+  pp::VarArray array;
   array.Set(0, pp::Var(kTestBool));
   array.Set(1, pp::Var(kTestString));
   // Purposely leave index 2 empty.
@@ -491,7 +493,7 @@ std::string TestPostMessage::TestSendingDictionary() {
   WaitForMessages();
   ASSERT_TRUE(ClearListeners());
 
-  pp::VarDictionary_Dev dictionary;
+  pp::VarDictionary dictionary;
   dictionary.Set(pp::Var("foo"), pp::Var(kTestBool));
   dictionary.Set(pp::Var("bar"), pp::Var(kTestString));
   dictionary.Set(pp::Var("abc"), pp::Var(kTestInt));
@@ -537,14 +539,14 @@ std::string TestPostMessage::TestSendingComplexVar() {
   ASSERT_TRUE(ClearListeners());
 
   pp::Var string(kTestString);
-  pp::VarDictionary_Dev dictionary;
+  pp::VarDictionary dictionary;
   dictionary.Set(pp::Var("foo"), pp::Var(kTestBool));
   dictionary.Set(pp::Var("bar"), string);
   dictionary.Set(pp::Var("abc"), pp::Var(kTestInt));
   dictionary.Set(pp::Var("def"), pp::Var());
 
   // Reference to array.
-  pp::VarArray_Dev array;
+  pp::VarArray array;
   array.Set(0, pp::Var(kTestBool));
   array.Set(1, string);
   // Purposely leave index 2 empty (which will place an undefined var there).
@@ -562,7 +564,7 @@ std::string TestPostMessage::TestSendingComplexVar() {
   ASSERT_EQ(message_data_.size(), 0);
   ASSERT_EQ(WaitForMessages(), 1);
   ASSERT_TRUE(message_data_.back().is_dictionary());
-  pp::VarDictionary_Dev result(message_data_.back());
+  pp::VarDictionary result(message_data_.back());
   ASSERT_TRUE(VarsEqual(dictionary, message_data_.back()));
 
   WaitForMessages();
@@ -571,7 +573,7 @@ std::string TestPostMessage::TestSendingComplexVar() {
 
   // Set up a (dictionary -> array -> dictionary) cycle. Cycles shouldn't be
   // transmitted.
-  pp::VarArray_Dev array2;
+  pp::VarArray array2;
   array2.Set(0, dictionary);
   dictionary.Set(pp::Var("array2"), array2);
 

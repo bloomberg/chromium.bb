@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_VAR_ARRAY_DEV_H_
-#define PPAPI_CPP_DEV_VAR_ARRAY_DEV_H_
+#ifndef PPAPI_CPP_VAR_ARRAY_H_
+#define PPAPI_CPP_VAR_ARRAY_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_stdint.h"
@@ -14,38 +14,38 @@
 
 namespace pp {
 
-class VarArray_Dev : public Var {
+class VarArray : public Var {
  public:
   /// Constructs a new array var.
-  VarArray_Dev();
+  VarArray();
 
-  /// Constructs a <code>VarArray_Dev</code> given a var for which is_array() is
+  /// Constructs a <code>VarArray</code> given a var for which is_array() is
   /// true. This will refer to the same array var, but allow you to access
   /// methods specific to arrays.
   ///
   /// @param[in] var An array var.
-  explicit VarArray_Dev(const Var& var);
+  explicit VarArray(const Var& var);
 
-  /// Constructs a <code>VarArray_Dev</code> given a <code>PP_Var</code> of type
+  /// Constructs a <code>VarArray</code> given a <code>PP_Var</code> of type
   /// PP_VARTYPE_ARRAY.
   ///
   /// @param[in] var A <code>PP_Var</code> of type PP_VARTYPE_ARRAY.
-  explicit VarArray_Dev(const PP_Var& var);
+  explicit VarArray(const PP_Var& var);
 
   /// Copy constructor.
-  VarArray_Dev(const VarArray_Dev& other);
+  VarArray(const VarArray& other);
 
-  virtual ~VarArray_Dev();
+  virtual ~VarArray();
 
   /// Assignment operator.
-  VarArray_Dev& operator=(const VarArray_Dev& other);
+  VarArray& operator=(const VarArray& other);
 
   /// The <code>Var</code> assignment operator is overridden here so that we can
-  /// check for assigning a non-array var to a <code>VarArray_Dev</code>.
+  /// check for assigning a non-array var to a <code>VarArray</code>.
   ///
   /// @param[in] other The array var to be assigned.
   ///
-  /// @return The resulting <code>VarArray_Dev</code> (as a <code>Var</code>&).
+  /// @return The resulting <code>VarArray</code> (as a <code>Var</code>&).
   virtual Var& operator=(const Var& other);
 
   /// Gets an element from the array.
@@ -65,8 +65,8 @@ class VarArray_Dev : public Var {
   /// type <code>PP_VARTYPE_UNDEFINED</code>.
   /// @param[in] value The value to set.
   ///
-  /// @return A <code>PP_Bool</code> indicating whether the operation succeeds.
-  PP_Bool Set(uint32_t index, const Var& value);
+  /// @return A <code>bool</code> indicating whether the operation succeeds.
+  bool Set(uint32_t index, const Var& value);
 
   /// Gets the array length.
   ///
@@ -81,10 +81,10 @@ class VarArray_Dev : public Var {
   /// than its current value, undefined vars are appended to increase the array
   /// to the specified length.
   ///
-  /// @return A <code>PP_Bool</code> indicating whether the operation succeeds.
-  PP_Bool SetLength(uint32_t length);
+  /// @return A <code>bool</code> indicating whether the operation succeeds.
+  bool SetLength(uint32_t length);
 };
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_VAR_ARRAY_DEV_H_
+#endif  // PPAPI_CPP_VAR_ARRAY_H_

@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "ppapi/c/extensions/dev/ppb_ext_socket_dev.h"
-#include "ppapi/cpp/dev/var_dictionary_dev.h"
 #include "ppapi/cpp/extensions/dict_field.h"
 #include "ppapi/cpp/extensions/ext_output_traits.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_array_buffer.h"
+#include "ppapi/cpp/var_dictionary.h"
 
 namespace pp {
 namespace ext {
@@ -50,7 +50,7 @@ class SocketType_Dev {
   static const char* const kUdp;
 };
 
-typedef VarDictionary_Dev CreateOptions_Dev;
+typedef VarDictionary CreateOptions_Dev;
 
 class CreateInfo_Dev {
  public:

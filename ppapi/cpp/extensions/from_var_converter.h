@@ -8,12 +8,12 @@
 #include <string>
 
 #include "ppapi/c/pp_var.h"
-#include "ppapi/cpp/dev/var_array_dev.h"
-#include "ppapi/cpp/dev/var_dictionary_dev.h"
 #include "ppapi/cpp/extensions/optional.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array.h"
 #include "ppapi/cpp/var_array_buffer.h"
+#include "ppapi/cpp/var_dictionary.h"
 
 namespace pp {
 namespace ext {
@@ -173,8 +173,8 @@ class FromVarConverter<Var> : public FromVarConverterBase<Var> {
 };
 
 template <>
-class FromVarConverter<VarArray_Dev>
-    : public FromVarConverterBase<VarArray_Dev> {
+class FromVarConverter<VarArray>
+    : public FromVarConverterBase<VarArray> {
  public:
   FromVarConverter() {
   }
@@ -187,13 +187,13 @@ class FromVarConverter<VarArray_Dev>
   }
 
   void Set(const PP_Var& var) {
-    FromVarConverterBase<VarArray_Dev>::value_ = Var(var);
+    FromVarConverterBase<VarArray>::value_ = Var(var);
   }
 };
 
 template <>
-class FromVarConverter<VarDictionary_Dev>
-    : public FromVarConverterBase<VarDictionary_Dev> {
+class FromVarConverter<VarDictionary>
+    : public FromVarConverterBase<VarDictionary> {
  public:
   FromVarConverter() {
   }
@@ -206,7 +206,7 @@ class FromVarConverter<VarDictionary_Dev>
   }
 
   void Set(const PP_Var& var) {
-    FromVarConverterBase<VarDictionary_Dev>::value_ = Var(var);
+    FromVarConverterBase<VarDictionary>::value_ = Var(var);
   }
 };
 

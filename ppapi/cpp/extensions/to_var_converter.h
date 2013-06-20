@@ -8,11 +8,11 @@
 #include <string>
 
 #include "ppapi/c/pp_var.h"
-#include "ppapi/cpp/dev/var_array_dev.h"
-#include "ppapi/cpp/dev/var_dictionary_dev.h"
 #include "ppapi/cpp/extensions/optional.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array.h"
 #include "ppapi/cpp/var_array_buffer.h"
+#include "ppapi/cpp/var_dictionary.h"
 
 namespace pp {
 namespace ext {
@@ -120,7 +120,7 @@ class ToVarConverter<Var> : public ToVarConverterBase {
 };
 
 template <>
-class ToVarConverter<VarArray_Dev> : public ToVarConverterBase {
+class ToVarConverter<VarArray> : public ToVarConverterBase {
  public:
   explicit ToVarConverter(const Var& object) : ToVarConverterBase(object) {
   }
@@ -130,7 +130,7 @@ class ToVarConverter<VarArray_Dev> : public ToVarConverterBase {
 };
 
 template <>
-class ToVarConverter<VarDictionary_Dev> : public ToVarConverterBase {
+class ToVarConverter<VarDictionary> : public ToVarConverterBase {
  public:
   explicit ToVarConverter(const Var& object) : ToVarConverterBase(object) {
   }

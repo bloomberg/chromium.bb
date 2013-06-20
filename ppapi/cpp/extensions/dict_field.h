@@ -8,11 +8,11 @@
 #include <string>
 
 #include "ppapi/c/pp_bool.h"
-#include "ppapi/cpp/dev/var_dictionary_dev.h"
 #include "ppapi/cpp/extensions/from_var_converter.h"
 #include "ppapi/cpp/extensions/optional.h"
 #include "ppapi/cpp/extensions/to_var_converter.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_dictionary.h"
 
 namespace pp {
 namespace ext {
@@ -33,15 +33,15 @@ class DictField {
   const T& operator()() const { return value_; }
 
   // Adds this field to the dictionary var.
-  bool AddTo(VarDictionary_Dev* dict) const {
+  bool AddTo(VarDictionary* dict) const {
     if (!dict)
       return false;
 
     internal::ToVarConverter<T> converter(value_);
-    return PP_ToBool(dict->Set(Var(key_), converter.var()));
+    return dict->Set(Var(key_), converter.var());
   }
 
-  bool Populate(const VarDictionary_Dev& dict) {
+  bool Populate(const VarDictionary& dict) {
     Var value_var = dict.Get(Var(key_));
     if (value_var.is_undefined())
       return false;
@@ -72,17 +72,17 @@ class OptionalDictField {
   const Optional<T>& operator()() const { return value_; }
 
   // Adds this field to the dictionary var, if |value| has been set.
-  bool MayAddTo(VarDictionary_Dev* dict) const {
+  bool MayAddTo(VarDictionary* dict) const {
     if (!dict)
       return false;
     if (!value_.IsSet())
       return true;
 
     internal::ToVarConverter<T> converter(*value_);
-    return PP_ToBool(dict->Set(Var(key_), converter.var()));
+    return dict->Set(Var(key_), converter.var());
   }
 
-  bool Populate(const VarDictionary_Dev& dict) {
+  bool Populate(const VarDictionary& dict) {
     Var value_var = dict.Get(Var(key_));
     internal::FromVarConverter<Optional<T> > converter(value_var.pp_var());
     value_.Swap(&converter.value());

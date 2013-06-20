@@ -1,52 +1,52 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_VAR_DICTIONARY_DEV_H_
-#define PPAPI_CPP_DEV_VAR_DICTIONARY_DEV_H_
+#ifndef PPAPI_CPP_VAR_DICTIONARY_H_
+#define PPAPI_CPP_VAR_DICTIONARY_H_
 
 #include "ppapi/c/pp_bool.h"
-#include "ppapi/cpp/dev/var_array_dev.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/cpp/var_array.h"
 
 /// @file
 /// This file defines the API for interacting with dictionary vars.
 
 namespace pp {
 
-class VarDictionary_Dev : public Var {
+class VarDictionary : public Var {
  public:
   /// Constructs a new dictionary var.
-  VarDictionary_Dev();
+  VarDictionary();
 
-  /// Constructs a <code>VarDictionary_Dev</code> given a var for which
+  /// Constructs a <code>VarDictionary</code> given a var for which
   /// is_dictionary() is true. This will refer to the same dictionary var, but
   /// allow you to access methods specific to dictionary.
   ///
   /// @param[in] var A dictionary var.
-  explicit VarDictionary_Dev(const Var& var);
+  explicit VarDictionary(const Var& var);
 
-  /// Constructs a <code>VarDictionary_Dev</code> given a <code>PP_Var</code>
+  /// Constructs a <code>VarDictionary</code> given a <code>PP_Var</code>
   /// of type PP_VARTYPE_DICTIONARY.
   ///
   /// @param[in] var A <code>PP_Var</code> of type PP_VARTYPE_DICTIONARY.
-  explicit VarDictionary_Dev(const PP_Var& var);
+  explicit VarDictionary(const PP_Var& var);
 
   /// Copy constructor.
-  VarDictionary_Dev(const VarDictionary_Dev& other);
+  VarDictionary(const VarDictionary& other);
 
-  virtual ~VarDictionary_Dev();
+  virtual ~VarDictionary();
 
   /// Assignment operator.
-  VarDictionary_Dev& operator=(const VarDictionary_Dev& other);
+  VarDictionary& operator=(const VarDictionary& other);
 
   /// The <code>Var</code> assignment operator is overridden here so that we can
   /// check for assigning a non-dictionary var to a
-  /// <code>VarDictionary_Dev</code>.
+  /// <code>VarDictionary</code>.
   ///
   /// @param[in] other The dictionary var to be assigned.
   ///
-  /// @return The resulting <code>VarDictionary_Dev</code> (as a
+  /// @return The resulting <code>VarDictionary</code> (as a
   /// <code>Var</code>&).
   virtual Var& operator=(const Var& other);
 
@@ -66,8 +66,8 @@ class VarDictionary_Dev : public Var {
   /// previous value is replaced with <code>value</code>.
   /// @param[in] value The value to set.
   ///
-  /// @return A <code>PP_Bool</code> indicating whether the operation succeeds.
-  PP_Bool Set(const Var& key, const Var& value);
+  /// @return A <code>bool</code> indicating whether the operation succeeds.
+  bool Set(const Var& key, const Var& value);
 
   /// Deletes the specified key and its associated value, if the key exists.
   ///
@@ -78,16 +78,16 @@ class VarDictionary_Dev : public Var {
   ///
   /// @param[in] key A string var.
   ///
-  /// @return A <code>PP_Bool</code> indicating whether the key exists.
-  PP_Bool HasKey(const Var& key) const;
+  /// @return A <code>bool</code> indicating whether the key exists.
+  bool HasKey(const Var& key) const;
 
   /// Gets all the keys in the dictionary.
   ///
   /// @return An array var which contains all the keys of the dictionary.
   /// The elements are string vars. Returns an empty array var if failed.
-  VarArray_Dev GetKeys() const;
+  VarArray GetKeys() const;
 };
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_VAR_DICTIONARY_DEV_H_
+#endif  // PPAPI_CPP_VAR_DICTIONARY_H_

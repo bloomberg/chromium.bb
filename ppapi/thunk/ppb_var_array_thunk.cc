@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/c/dev/ppb_var_array_dev.h"
+#include "ppapi/c/ppb_var_array.h"
 #include "ppapi/shared_impl/array_var.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/thunk/thunk.h"
@@ -56,7 +56,7 @@ PP_Bool SetLength(PP_Var array, uint32_t length) {
   return array_var->SetLength(length);
 }
 
-const PPB_VarArray_Dev_0_1 g_ppb_vararray_0_1_thunk = {
+const PPB_VarArray_1_0 g_ppb_vararray_1_0_thunk = {
   &Create,
   &Get,
   &Set,
@@ -66,8 +66,8 @@ const PPB_VarArray_Dev_0_1 g_ppb_vararray_0_1_thunk = {
 
 }  // namespace
 
-const PPB_VarArray_Dev_0_1* GetPPB_VarArray_Dev_0_1_Thunk() {
-  return &g_ppb_vararray_0_1_thunk;
+const PPB_VarArray_1_0* GetPPB_VarArray_1_0_Thunk() {
+  return &g_ppb_vararray_1_0_thunk;
 }
 
 }  // namespace thunk
