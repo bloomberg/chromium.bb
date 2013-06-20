@@ -324,7 +324,6 @@ CancelCallback GDataWapiService::DownloadFile(
                               get_content_callback,
                               progress_callback,
                               download_url,
-                              virtual_path,
                               local_cache_path));
 }
 
@@ -476,7 +475,6 @@ CancelCallback GDataWapiService::InitiateUploadNewFile(
                                          url_request_context_getter_,
                                          url_generator_,
                                          callback,
-                                         drive_file_path,
                                          content_type,
                                          content_length,
                                          parent_resource_id,
@@ -499,7 +497,6 @@ CancelCallback GDataWapiService::InitiateUploadExistingFile(
                                               url_request_context_getter_,
                                               url_generator_,
                                               callback,
-                                              drive_file_path,
                                               content_type,
                                               content_length,
                                               resource_id,
@@ -524,7 +521,6 @@ CancelCallback GDataWapiService::ResumeUpload(
                                 url_request_context_getter_,
                                 callback,
                                 progress_callback,
-                                drive_file_path,
                                 upload_url,
                                 start_position,
                                 end_position,
@@ -545,7 +541,6 @@ CancelCallback GDataWapiService::GetUploadStatus(
       new GetUploadStatusRequest(sender_.get(),
                                    url_request_context_getter_,
                                    callback,
-                                   drive_file_path,
                                    upload_url,
                                    content_length));
 }

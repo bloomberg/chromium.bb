@@ -97,17 +97,8 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() OVERRIDE;
 
  protected:
-  UrlFetchRequestBase(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter);
-  // Use this constructor when you need to implement requests that take a
-  // drive file path (ex. for downloading and uploading).
-  // |url_request_context_getter| is used to initialize URLFetcher.
-  // TODO(satorux): Remove the drive file path hack. crbug.com/163296
-  UrlFetchRequestBase(
-      RequestSender* runner,
-      net::URLRequestContextGetter* url_request_context_getter,
-      const base::FilePath& drive_file_path);
+  UrlFetchRequestBase(RequestSender* runner,
+                      net::URLRequestContextGetter* url_request_context_getter);
   virtual ~UrlFetchRequestBase();
 
   // Gets URL for the request.
@@ -295,7 +286,6 @@ class InitiateUploadRequestBase : public UrlFetchRequestBase {
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const InitiateUploadCallback& callback,
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length);
   virtual ~InitiateUploadRequestBase();
@@ -307,7 +297,6 @@ class InitiateUploadRequestBase : public UrlFetchRequestBase {
 
  private:
   const InitiateUploadCallback callback_;
-  const base::FilePath drive_file_path_;
   const std::string content_type_;
   const int64 content_length_;
 
@@ -341,13 +330,9 @@ struct UploadRangeResponse {
 class UploadRangeRequestBase : public UrlFetchRequestBase {
  protected:
   // |upload_location| is the URL of where to upload the file to.
-  // |drive_file_path| is the path to the file seen in the UI. Not necessary
-  // for resuming an upload, but used for adding an entry to RequestRegistry.
-  // TODO(satorux): Remove the drive file path hack. crbug.com/163296
   UploadRangeRequestBase(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
-      const base::FilePath& drive_file_path,
       const GURL& upload_url);
   virtual ~UploadRangeRequestBase();
 
@@ -380,7 +365,6 @@ class UploadRangeRequestBase : public UrlFetchRequestBase {
   // Called when ParseJson() is completed.
   void OnDataParsed(GDataErrorCode code, scoped_ptr<base::Value> value);
 
-  const base::FilePath drive_file_path_;
   const GURL upload_url_;
 
   // Note: This should remain the last member so it'll be destroyed and
@@ -408,11 +392,10 @@ class ResumeUploadRequestBase : public UploadRangeRequestBase {
   // file content to be uploaded respectively.
   // |buf| holds current content to be uploaded.
   // See also UploadRangeRequestBase's comment for remaining parameters
-  // meaining.
+  // meaning.
   ResumeUploadRequestBase(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
-      const base::FilePath& drive_file_path,
       const GURL& upload_location,
       int64 start_position,
       int64 end_position,
@@ -457,7 +440,6 @@ class GetUploadStatusRequestBase : public UploadRangeRequestBase {
   GetUploadStatusRequestBase(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
-      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length);
   virtual ~GetUploadStatusRequestBase();
@@ -501,10 +483,6 @@ class DownloadFileRequest : public UrlFetchRequestBase {
   // download_url:
   //   Specifies the target file to download.
   //
-  // drive_file_path:
-  //   Specifies the drive path of the target file. Shown in UI.
-  //   TODO(satorux): Remove the drive file path hack. crbug.com/163296
-  //
   // output_file_path:
   //   Specifies the file path to save the downloaded file.
   //
@@ -515,7 +493,6 @@ class DownloadFileRequest : public UrlFetchRequestBase {
       const GetContentCallback& get_content_callback,
       const ProgressCallback& progress_callback,
       const GURL& download_url,
-      const base::FilePath& drive_file_path,
       const base::FilePath& output_file_path);
   virtual ~DownloadFileRequest();
 

@@ -29,12 +29,10 @@ std::string RequestTransferStateToString(RequestTransferState state);
 
 // Structure that packs progress information of each request.
 struct RequestProgressStatus {
-  explicit RequestProgressStatus(const base::FilePath& file_path);
+  RequestProgressStatus();
 
   RequestID request_id;
 
-  // Drive path of the file dealt with the current request.
-  base::FilePath file_path;
   // Current state of the transfer;
   RequestTransferState transfer_state;
 };
@@ -53,7 +51,6 @@ class RequestRegistry {
   class Request {
    public:
     explicit Request(RequestRegistry* registry);
-    Request(RequestRegistry* registry, const base::FilePath& file_path);
     virtual ~Request();
 
     // Cancels the ongoing request. NotifyFinish() is called and the Request

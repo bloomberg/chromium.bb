@@ -758,7 +758,6 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
           request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           kTestContentType,
           kTestContent.size(),
           "parent_resource_id",  // The resource id of the parent directory.
@@ -795,7 +794,6 @@ TEST_F(DriveApiRequestsTest, UploadNewFileRequest) {
       new drive::ResumeUploadRequest(
           request_sender_.get(),
           request_context_getter_.get(),
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
           0,  // start_position
           kTestContent.size(),  // end_position (exclusive)
@@ -848,7 +846,6 @@ TEST_F(DriveApiRequestsTest, UploadNewEmptyFileRequest) {
           request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           kTestContentType,
           0,
           "parent_resource_id",  // The resource id of the parent directory.
@@ -884,7 +881,6 @@ TEST_F(DriveApiRequestsTest, UploadNewEmptyFileRequest) {
       new drive::ResumeUploadRequest(
           request_sender_.get(),
           request_context_getter_.get(),
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
           0,  // start_position
           0,  // end_position (exclusive)
@@ -915,9 +911,6 @@ TEST_F(DriveApiRequestsTest, UploadNewEmptyFileRequest) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
-// TODO(kinaba): crbug.com/{241241,164098} Re-enable the test.
-#define NO_GET_UPLOAD_STATUS_TEST
-
 TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
   // Set an expected url for uploading.
   expected_upload_path_ = kTestUploadNewFilePath;
@@ -938,7 +931,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
           request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           kTestContentType,
           kTestContent.size(),
           "parent_resource_id",  // The resource id of the parent directory.
@@ -967,7 +959,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
             "\"title\":\"new file title\"}",
             http_request_.content);
 
-#if !defined(NO_GET_UPLOAD_STATUS_TEST)
   // Before sending any data, check the current status.
   // This is an edge case test for GetUploadStatusRequest.
   {
@@ -979,7 +970,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
         new drive::GetUploadStatusRequest(
             request_sender_.get(),
             request_context_getter_.get(),
-            base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
             upload_url,
             kTestContent.size(),
             CreateComposedCallback(
@@ -1003,7 +993,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(0, response.end_position_received);
   }
-#endif  // NO_GET_UPLOAD_STATUS_TEST
 
   // Upload the content to the upload URL.
   for (size_t start_position = 0; start_position < kTestContent.size();
@@ -1020,7 +1009,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
         new drive::ResumeUploadRequest(
             request_sender_.get(),
             request_context_getter_.get(),
-            base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
             upload_url,
             start_position,
             end_position,
@@ -1063,13 +1051,11 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(static_cast<int64>(end_position), response.end_position_received);
 
-#if !defined(NO_GET_UPLOAD_STATUS_TEST)
     // Check the response by GetUploadStatusRequest.
     drive::GetUploadStatusRequest* get_upload_status_request =
         new drive::GetUploadStatusRequest(
             request_sender_.get(),
             request_context_getter_.get(),
-            base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
             upload_url,
             kTestContent.size(),
             CreateComposedCallback(
@@ -1093,7 +1079,6 @@ TEST_F(DriveApiRequestsTest, UploadNewLargeFileRequest) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(static_cast<int64>(end_position),
               response.end_position_received);
-#endif  // NO_GET_UPLOAD_STATUS_TEST
   }
 }
 
@@ -1116,7 +1101,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
           request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           kTestContentType,
           kTestContent.size(),
           "resource_id",  // The resource id of the file to be overwritten.
@@ -1148,7 +1132,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequest) {
       new drive::ResumeUploadRequest(
           request_sender_.get(),
           request_context_getter_.get(),
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
           0,  // start_position
           kTestContent.size(),  // end_position (exclusive)
@@ -1201,7 +1184,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETag) {
           request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           kTestContentType,
           kTestContent.size(),
           "resource_id",  // The resource id of the file to be overwritten.
@@ -1233,7 +1215,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETag) {
       new drive::ResumeUploadRequest(
           request_sender_.get(),
           request_context_getter_.get(),
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           upload_url,
           0,  // start_position
           kTestContent.size(),  // end_position (exclusive)
@@ -1283,7 +1264,6 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileRequestWithETagConflicting) {
           request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
-          base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
           kTestContentType,
           kTestContent.size(),
           "resource_id",  // The resource id of the file to be overwritten.

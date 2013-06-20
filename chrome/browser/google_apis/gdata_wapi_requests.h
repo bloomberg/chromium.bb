@@ -400,7 +400,6 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const InitiateUploadCallback& callback,
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -439,7 +438,6 @@ class InitiateUploadExistingFileRequest
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const InitiateUploadCallback& callback,
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
@@ -474,7 +472,6 @@ class ResumeUploadRequest : public ResumeUploadRequestBase {
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback,
-      const base::FilePath& drive_file_path,
       const GURL& upload_location,
       int64 start_position,
       int64 end_position,
@@ -510,7 +507,6 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
-      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length);
   virtual ~GetUploadStatusRequest();

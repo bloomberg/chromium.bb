@@ -10,21 +10,13 @@ using content::BrowserThread;
 
 namespace google_apis {
 
-RequestProgressStatus::RequestProgressStatus(const base::FilePath& path)
+RequestProgressStatus::RequestProgressStatus()
     : request_id(-1),
-      file_path(path),
       transfer_state(REQUEST_NOT_STARTED) {
 }
 
 RequestRegistry::Request::Request(RequestRegistry* registry)
-    : registry_(registry),
-      progress_status_(base::FilePath()) {
-}
-
-RequestRegistry::Request::Request(RequestRegistry* registry,
-                                        const base::FilePath& path)
-    : registry_(registry),
-      progress_status_(path) {
+    : registry_(registry) {
 }
 
 RequestRegistry::Request::~Request() {

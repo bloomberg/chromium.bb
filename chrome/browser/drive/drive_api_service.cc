@@ -454,7 +454,6 @@ CancelCallback DriveAPIService::DownloadFile(
                               get_content_callback,
                               progress_callback,
                               download_url,
-                              virtual_path,
                               local_cache_path));
 }
 
@@ -614,7 +613,6 @@ CancelCallback DriveAPIService::InitiateUploadNewFile(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
-          drive_file_path,
           content_type,
           content_length,
           parent_resource_id,
@@ -637,7 +635,6 @@ CancelCallback DriveAPIService::InitiateUploadExistingFile(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
-          drive_file_path,
           content_type,
           content_length,
           resource_id,
@@ -662,7 +659,6 @@ CancelCallback DriveAPIService::ResumeUpload(
       new drive::ResumeUploadRequest(
           sender_.get(),
           url_request_context_getter_,
-          drive_file_path,
           upload_url,
           start_position,
           end_position,
@@ -684,7 +680,6 @@ CancelCallback DriveAPIService::GetUploadStatus(
   return sender_->StartRequestWithRetry(new drive::GetUploadStatusRequest(
       sender_.get(),
       url_request_context_getter_,
-      drive_file_path,
       upload_url,
       content_length,
       base::Bind(&ParseResourceEntryForUploadRangeAndRun, callback)));

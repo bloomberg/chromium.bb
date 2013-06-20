@@ -104,19 +104,6 @@ UrlFetchRequestBase::UrlFetchRequestBase(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-UrlFetchRequestBase::UrlFetchRequestBase(
-    RequestSender* runner,
-    net::URLRequestContextGetter* url_request_context_getter,
-    const base::FilePath& path)
-    : RequestRegistry::Request(runner->request_registry(), path),
-      url_request_context_getter_(url_request_context_getter),
-      re_authenticate_count_(0),
-      started_(false),
-      save_temp_file_(false),
-      weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 UrlFetchRequestBase::~UrlFetchRequestBase() {}
 
 void UrlFetchRequestBase::Start(const std::string& access_token,
@@ -402,14 +389,10 @@ InitiateUploadRequestBase::InitiateUploadRequestBase(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const InitiateUploadCallback& callback,
-    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length)
-    : UrlFetchRequestBase(runner,
-                          url_request_context_getter,
-                          drive_file_path),
+    : UrlFetchRequestBase(runner, url_request_context_getter),
       callback_(callback),
-      drive_file_path_(drive_file_path),
       content_type_(content_type),
       content_length_(content_length) {
   DCHECK(!callback_.is_null());
@@ -430,9 +413,6 @@ void InitiateUploadRequestBase::ProcessURLFetchResults(
                                                   kUploadResponseLocation,
                                                   &upload_location);
   }
-  VLOG(1) << "Got response for [" << drive_file_path_.value()
-          << "]: code=" << code
-          << ", location=[" << upload_location << "]";
 
   callback_.Run(code, GURL(upload_location));
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
@@ -476,12 +456,8 @@ UploadRangeResponse::~UploadRangeResponse() {
 UploadRangeRequestBase::UploadRangeRequestBase(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
-    const base::FilePath& drive_file_path,
     const GURL& upload_url)
-    : UrlFetchRequestBase(runner,
-                          url_request_context_getter,
-                          drive_file_path),
-      drive_file_path_(drive_file_path),
+    : UrlFetchRequestBase(runner, url_request_context_getter),
       upload_url_(upload_url),
       weak_ptr_factory_(this) {
 }
@@ -528,11 +504,6 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
     // The Range header has the received data range, so the start position
     // should be always 0.
     DCHECK_EQ(start_position_received, 0);
-    DVLOG(1) << "Got response for [" << drive_file_path_.value()
-             << "]: code=" << code
-             << ", range_hdr=[" << range_received
-             << "], range_parsed=" << start_position_received
-             << "," << end_position_received;
 
     OnRangeRequestComplete(UploadRangeResponse(code,
                                                start_position_received,
@@ -544,9 +515,6 @@ void UploadRangeRequestBase::ProcessURLFetchResults(
     // There might be explanation of unexpected error code in response.
     std::string response_content;
     source->GetResponseAsString(&response_content);
-    DVLOG(1) << "Got response for [" << drive_file_path_.value()
-             << "]: code=" << code
-             << ", content=[\n" << response_content << "\n]";
 
     ParseJson(response_content,
               base::Bind(&UploadRangeRequestBase::OnDataParsed,
@@ -575,7 +543,6 @@ void UploadRangeRequestBase::RunCallbackOnPrematureFailure(
 ResumeUploadRequestBase::ResumeUploadRequestBase(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
-    const base::FilePath& drive_file_path,
     const GURL& upload_location,
     int64 start_position,
     int64 end_position,
@@ -584,7 +551,6 @@ ResumeUploadRequestBase::ResumeUploadRequestBase(
     const base::FilePath& local_file_path)
     : UploadRangeRequestBase(runner,
                              url_request_context_getter,
-                             drive_file_path,
                              upload_location),
       start_position_(start_position),
       end_position_(end_position),
@@ -645,12 +611,10 @@ bool ResumeUploadRequestBase::GetContentFile(
 GetUploadStatusRequestBase::GetUploadStatusRequestBase(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
-    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length)
     : UploadRangeRequestBase(runner,
                              url_request_context_getter,
-                             drive_file_path,
                              upload_url),
       content_length_(content_length) {}
 
@@ -680,11 +644,8 @@ DownloadFileRequest::DownloadFileRequest(
     const GetContentCallback& get_content_callback,
     const ProgressCallback& progress_callback,
     const GURL& download_url,
-    const base::FilePath& drive_file_path,
     const base::FilePath& output_file_path)
-    : UrlFetchRequestBase(runner,
-                          url_request_context_getter,
-                          drive_file_path),
+    : UrlFetchRequestBase(runner, url_request_context_getter),
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
       progress_callback_(progress_callback),

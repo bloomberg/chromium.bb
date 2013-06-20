@@ -498,7 +498,6 @@ InitiateUploadNewFileRequest::InitiateUploadNewFileRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
-    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const std::string& parent_resource_id,
@@ -507,7 +506,6 @@ InitiateUploadNewFileRequest::InitiateUploadNewFileRequest(
     : InitiateUploadRequestBase(runner,
                                 url_request_context_getter,
                                 callback,
-                                drive_file_path,
                                 content_type,
                                 content_length),
       url_generator_(url_generator),
@@ -559,7 +557,6 @@ InitiateUploadExistingFileRequest::InitiateUploadExistingFileRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
-    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const std::string& resource_id,
@@ -568,7 +565,6 @@ InitiateUploadExistingFileRequest::InitiateUploadExistingFileRequest(
     : InitiateUploadRequestBase(runner,
                                 url_request_context_getter,
                                 callback,
-                                drive_file_path,
                                 content_type,
                                 content_length),
       url_generator_(url_generator),
@@ -600,7 +596,6 @@ InitiateUploadExistingFileRequest::GetExtraRequestHeaders() const {
 ResumeUploadRequest::ResumeUploadRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
-    const base::FilePath& drive_file_path,
     const GURL& upload_location,
     int64 start_position,
     int64 end_position,
@@ -611,7 +606,6 @@ ResumeUploadRequest::ResumeUploadRequest(
     const ProgressCallback& progress_callback)
     : ResumeUploadRequestBase(runner,
                               url_request_context_getter,
-                              drive_file_path,
                               upload_location,
                               start_position,
                               end_position,
@@ -641,13 +635,11 @@ void ResumeUploadRequest::OnURLFetchUploadProgress(
 GetUploadStatusRequest::GetUploadStatusRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
-    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
     const UploadRangeCallback& callback)
     : GetUploadStatusRequestBase(runner,
                                  url_request_context_getter,
-                                 drive_file_path,
                                  upload_url,
                                  content_length),
       callback_(callback) {

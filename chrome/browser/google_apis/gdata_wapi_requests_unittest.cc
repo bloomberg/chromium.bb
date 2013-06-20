@@ -916,7 +916,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewFile) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&result_code, &upload_url)),
-          base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
           "text/plain",
           kUploadContent.size(),
           "folder:id",
@@ -957,7 +956,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewFile) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&response, &new_entry)),
       ProgressCallback(),
-      base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
       upload_url,
       0,  // start_position
       kUploadContent.size(),  // end_position (exclusive)
@@ -988,9 +986,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewFile) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
-// TODO(kinaba): crbug.com/{241241,164098} Re-enable the test.
-#define NO_GET_UPLOAD_STATUS_TEST
-
 // This test exercises InitiateUploadNewFileRequest and ResumeUploadRequest
 // for a scenario of uploading a new *large* file, which requires multiple
 // requests of ResumeUploadRequest. GetUploadRequest is also tested in this
@@ -1018,7 +1013,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&result_code, &upload_url)),
-          base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
           "text/plain",
           kUploadContent.size(),
           "folder:id",
@@ -1048,7 +1042,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
             "</entry>\n",
             http_request_.content);
 
-#if !defined(NO_GET_UPLOAD_STATUS_TEST)
   // 2) Before sending any data, check the current status.
   // This is an edge case test for GetUploadStatusRequest
   // (UploadRangeRequestBase).
@@ -1064,7 +1057,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
             CreateComposedCallback(
                 base::Bind(&test_util::RunAndQuit),
                 test_util::CreateCopyResultCallback(&response, &new_entry)),
-            base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
             upload_url,
             kUploadContent.size());
     request_sender_->StartRequestWithRetry(get_upload_status_request);
@@ -1085,7 +1077,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(0, response.end_position_received);
   }
-#endif  // NO_GET_UPLOAD_STATUS_TEST
 
   // 3) Upload the content to the upload URL with multiple requests.
   size_t num_bytes_consumed = 0;
@@ -1111,7 +1102,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
             base::Bind(&test_util::RunAndQuit),
             test_util::CreateCopyResultCallback(&response, &new_entry)),
         ProgressCallback(),
-        base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
         upload_url,
         start_position,
         end_position,
@@ -1152,7 +1142,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
     EXPECT_EQ(static_cast<int64>(end_position),
               response.end_position_received);
 
-#if !defined(NO_GET_UPLOAD_STATUS_TEST)
     // Check the response by GetUploadStatusRequest.
     GetUploadStatusRequest* get_upload_status_request =
         new GetUploadStatusRequest(
@@ -1161,10 +1150,9 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
             CreateComposedCallback(
                 base::Bind(&test_util::RunAndQuit),
                 test_util::CreateCopyResultCallback(&response, &new_entry)),
-            base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
             upload_url,
             kUploadContent.size());
-    request_sender_->StartRequestWithRetry(get_upload_request);
+    request_sender_->StartRequestWithRetry(get_upload_status_request);
     base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
@@ -1182,7 +1170,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
     EXPECT_EQ(0, response.start_position_received);
     EXPECT_EQ(static_cast<int64>(end_position),
               response.end_position_received);
-#endif  // NO_GET_UPLOAD_STATUS_TEST
   }
 
   EXPECT_EQ(kUploadContent.size(), num_bytes_consumed);
@@ -1211,7 +1198,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewEmptyFile) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&result_code, &upload_url)),
-          base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
           "text/plain",
           kUploadContent.size(),
           "folder:id",
@@ -1252,7 +1238,6 @@ TEST_F(GDataWapiRequestsTest, UploadNewEmptyFile) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&response, &new_entry)),
       ProgressCallback(),
-      base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
       upload_url,
       0,  // start_position
       kUploadContent.size(),  // end_position (exclusive)
@@ -1301,7 +1286,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFile) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&result_code, &upload_url)),
-          base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
           "text/plain",
           kUploadContent.size(),
           "file:foo",
@@ -1341,7 +1325,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFile) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&response, &new_entry)),
       ProgressCallback(),
-      base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
       upload_url,
       0,  // start_position
       kUploadContent.size(),  // end_position (exclusive)
@@ -1392,7 +1375,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFileWithETag) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&result_code, &upload_url)),
-          base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
           "text/plain",
           kUploadContent.size(),
           "file:foo",
@@ -1432,7 +1414,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFileWithETag) {
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&response, &new_entry)),
       ProgressCallback(),
-      base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
       upload_url,
       0,  // start_position
       kUploadContent.size(),  // end_position (exclusive)
@@ -1479,7 +1460,6 @@ TEST_F(GDataWapiRequestsTest, UploadExistingFileWithETagConflict) {
           CreateComposedCallback(
               base::Bind(&test_util::RunAndQuit),
               test_util::CreateCopyResultCallback(&result_code, &upload_url)),
-          base::FilePath::FromUTF8Unsafe("drive/existingfile.txt"),
           "text/plain",
           kUploadContent.size(),
           "file:foo",

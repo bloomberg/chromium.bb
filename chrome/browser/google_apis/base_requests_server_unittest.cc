@@ -94,7 +94,6 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
       GetContentCallback(),
       ProgressCallback(),
       test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
-      base::FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
   request_sender_->StartRequestWithRetry(request);
@@ -127,7 +126,6 @@ TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
       GetContentCallback(),
       ProgressCallback(),
       test_server_.GetURL("/files/chromeos/gdata/no-such-file.txt"),
-      base::FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
   request_sender_->StartRequestWithRetry(request);

@@ -436,7 +436,6 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -475,7 +474,6 @@ class InitiateUploadExistingFileRequest
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
@@ -512,7 +510,6 @@ class ResumeUploadRequest : public ResumeUploadRequestBase {
   ResumeUploadRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
-      const base::FilePath& drive_file_path,
       const GURL& upload_location,
       int64 start_position,
       int64 end_position,
@@ -549,7 +546,6 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
   GetUploadStatusRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
-      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,
       const UploadRangeCallback& callback);
