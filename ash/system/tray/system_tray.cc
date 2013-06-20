@@ -58,6 +58,7 @@
 #include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/system/chromeos/settings/tray_settings.h"
 #include "ash/system/chromeos/tray_display.h"
+#include "ui/message_center/message_center.h"
 #endif
 
 using views::TrayBubbleView;
@@ -120,7 +121,8 @@ SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
     : internal::TrayBackgroundView(status_area_widget),
       items_(),
       default_bubble_height_(0),
-      hide_notifications_(false) {
+      hide_notifications_(false),
+      tray_accessibility_(NULL) {
   SetContentsBackground();
 }
 
@@ -164,7 +166,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   tray_accessibility_ = new internal::TrayAccessibility(this);
   AddTrayItem(tray_accessibility_);
 #if defined(OS_CHROMEOS)
-  AddTrayItem(new internal::TrayPower(this));
+  AddTrayItem(
+      new internal::TrayPower(this, message_center::MessageCenter::Get()));
 #endif
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayNetwork(this));

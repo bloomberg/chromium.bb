@@ -3,6 +3,14 @@
      Everything in this file is wrapped in <if expr="pp_ifdef('chromeos')">. -->
 <grit-part>
 
+  <!-- Status tray charging strings. -->
+  <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
+    Low-power charger connected
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE" desc="The message body of a notification indicating that a low-current USB charger has been connected.">
+    Your Chromebook may not charge while it is turned on. Consider using the official charger.
+  </message>
+  
   <!-- Status Tray Network strings -->
   <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header.">
     Network

@@ -63,6 +63,10 @@ const char kAshDisableUIScaling[] = "ash-disable-ui-scaling";
 #if defined(OS_CHROMEOS)
 // Disable compositor based mirroring.
 const char kAshDisableSoftwareMirroring[] = "ash-disable-software-mirroring";
+
+// Disable the notification when a low-power USB charger is connected.
+const char kAshDisableUsbChargerNotification[] =
+    "ash-disable-usb-charger-notification";
 #endif
 
 // Extend the status tray volume item to allow the user to choose an audio
@@ -177,6 +181,13 @@ bool UseAlternateShelfLayout() {
   return CommandLine::ForCurrentProcess()->
         HasSwitch(ash::switches::kAshUseAlternateShelfLayout);
 }
+
+#if defined(OS_CHROMEOS)
+bool UseUsbChargerNotification() {
+  return !CommandLine::ForCurrentProcess()->
+        HasSwitch(ash::switches::kAshDisableUsbChargerNotification);
+}
+#endif
 
 }  // namespace switches
 }  // namespace ash

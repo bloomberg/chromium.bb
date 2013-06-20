@@ -29,6 +29,8 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/size.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -40,6 +42,8 @@
 
 using chromeos::PowerManagerHandler;
 using chromeos::PowerSupplyStatus;
+using message_center::MessageCenter;
+using message_center::Notification;
 
 namespace ash {
 namespace internal {
@@ -201,12 +205,15 @@ class PowerNotificationView : public TrayNotificationView {
 
 using tray::PowerNotificationView;
 
-TrayPower::TrayPower(SystemTray* system_tray)
+TrayPower::TrayPower(SystemTray* system_tray, MessageCenter* message_center)
     : SystemTrayItem(system_tray),
+      message_center_(message_center),
       power_tray_(NULL),
       notification_view_(NULL),
       notification_state_(NOTIFICATION_NONE) {
-  PowerManagerHandler::Get()->AddObserver(this);
+  // Tests may not have a PowerManagerHandler.
+  if (PowerManagerHandler::IsInitialized())
+    PowerManagerHandler::Get()->AddObserver(this);
 }
 
 TrayPower::~TrayPower() {
@@ -271,6 +278,14 @@ gfx::ImageSkia TrayPower::GetBatteryImage(int image_index,
       image_index * kBatteryImageHeight,
       kBatteryImageWidth, kBatteryImageHeight);
   return gfx::ImageSkiaOperations::ExtractSubset(*all.ToImageSkia(), region);
+}
+
+// static
+gfx::Image TrayPower::GetUsbChargerNotificationImage() {
+  // TODO(jamescook): Use a specialized art asset here.
+  gfx::ImageSkia icon =
+      GetBatteryImage(kNumPowerImages - 1, 0, true, ICON_LIGHT);
+  return gfx::Image(icon);
 }
 
 // static
@@ -400,14 +415,51 @@ void TrayPower::OnPowerStatusChanged(
           ash::switches::kAshHideNotificationsForFactory))
     return;
 
+  if (ash::switches::UseUsbChargerNotification())
+    MaybeShowUsbChargerNotification(last_power_supply_status_, status);
+
   if (battery_alert)
     ShowNotificationView();
   else if (notification_state_ == NOTIFICATION_NONE)
     HideNotificationView();
+
+  last_power_supply_status_ = status;
 }
 
 void TrayPower::RequestStatusUpdate() const {
   PowerManagerHandler::Get()->RequestStatusUpdate();
+}
+
+bool TrayPower::MaybeShowUsbChargerNotification(
+    const PowerSupplyStatus& old_status,
+    const PowerSupplyStatus& new_status) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const char kNotificationId[] = "usb-charger";
+  // Check for a USB charger being connected.
+  if (new_status.battery_state == PowerSupplyStatus::CONNECTED_TO_USB &&
+      old_status.battery_state != PowerSupplyStatus::CONNECTED_TO_USB) {
+    scoped_ptr<Notification> notification(new Notification(
+        message_center::NOTIFICATION_TYPE_SIMPLE,
+        kNotificationId,
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
+        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE),
+        GetUsbChargerNotificationImage(),
+        base::string16(),
+        std::string(),
+        message_center::RichNotificationData(),
+        NULL));
+    message_center_->AddNotification(notification.Pass());
+    return true;
+  }
+
+  // Check for unplug of a USB charger while the USB charger notification is
+  // showing.
+  if (new_status.battery_state != PowerSupplyStatus::CONNECTED_TO_USB &&
+      old_status.battery_state == PowerSupplyStatus::CONNECTED_TO_USB) {
+    message_center_->RemoveNotification(kNotificationId, false);
+    return true;
+  }
+  return false;
 }
 
 bool TrayPower::UpdateNotificationState(
@@ -439,7 +491,8 @@ bool TrayPower::UpdateNotificationStateForRemainingTime(int remaining_seconds) {
       if (remaining_seconds <= kCriticalSeconds) {
         notification_state_ = NOTIFICATION_CRITICAL;
         return true;
-      } else if (remaining_seconds <= kLowPowerSeconds) {
+      }
+      if (remaining_seconds <= kLowPowerSeconds) {
         notification_state_ = NOTIFICATION_LOW_POWER;
         return true;
       }
