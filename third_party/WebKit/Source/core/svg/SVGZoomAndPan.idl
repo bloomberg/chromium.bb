@@ -25,7 +25,7 @@
  */
 
 [
-    DoNotGenerateToV8
+    NoInterfaceObject
 ] interface SVGZoomAndPan {
     const unsigned short SVG_ZOOMANDPAN_UNKNOWN = 0;
     const unsigned short SVG_ZOOMANDPAN_DISABLE = 1;
@@ -33,4 +33,6 @@
 
     attribute unsigned short zoomAndPan;
 };
+
+SVGViewElement implements SVGZoomAndPan;
 

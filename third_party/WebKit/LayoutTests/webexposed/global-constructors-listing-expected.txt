@@ -384,7 +384,6 @@ SVGUseElement
 SVGVKernElement
 SVGViewElement
 SVGViewSpec
-SVGZoomAndPan
 SVGZoomEvent
 Screen
 ScriptProcessorNode

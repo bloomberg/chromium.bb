@@ -28,9 +28,6 @@ FAIL SVGLocatable.toString() should be function SVGLocatable() { [native code] }
 FAIL SVGTransformable.toString() should be function SVGTransformable() { [native code] }. Threw exception ReferenceError: SVGTransformable is not defined
 FAIL SVGTests.toString() should be function SVGTests() { [native code] }. Threw exception ReferenceError: SVGTests is not defined
 FAIL SVGLangSpace.toString() should be function SVGLangSpace() { [native code] }. Threw exception ReferenceError: SVGLangSpace is not defined
-FAIL SVGExternalResourcesRequired.toString() should be function SVGExternalResourcesRequired() { [native code] }. Threw exception ReferenceError: SVGExternalResourcesRequired is not defined
-FAIL SVGFitToViewBox.toString() should be function SVGFitToViewBox() { [native code] }. Threw exception ReferenceError: SVGFitToViewBox is not defined
-PASS SVGZoomAndPan.toString() is 'function SVGZoomAndPan() { [native code] }'
 PASS SVGViewSpec.toString() is 'function SVGViewSpec() { [native code] }'
 FAIL SVGURIReference.toString() should be function SVGURIReference() { [native code] }. Threw exception ReferenceError: SVGURIReference is not defined
 FAIL SVGCSSRule.toString() should be function SVGCSSRule() { [native code] }. Threw exception ReferenceError: SVGCSSRule is not defined
