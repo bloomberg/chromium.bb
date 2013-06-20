@@ -208,7 +208,7 @@
    fun:GtkThemeService::GtkThemeService
    fun:ThemeServiceFactory::BuildServiceInstanceFor
    fun:BrowserContextKeyedServiceFactory::GetServiceForBrowserContext
-   fun:BrowserContextKeyedServiceFactory::CreateServiceNow
+   fun:*
    fun:BrowserContextDependencyManager::CreateBrowserContextServices
    fun:TestingProfile::Init
    fun:TestingProfile::TestingProfile
