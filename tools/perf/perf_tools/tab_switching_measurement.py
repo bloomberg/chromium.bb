@@ -28,12 +28,7 @@ class TabSwitchingMeasurement(page_measurement.PageMeasurement):
       t = tab.browser.tabs.New()
 
       page_state = page_runner.PageState()
-      page_state.PreparePage(page.page_set.pages[i], t, None)
-
-      t.Navigate(page.page_set.pages[i].url)
-
-      page.page_set.pages[i].WaitToLoad(t, 60)
-      t.WaitForDocumentReadyStateToBeInteractiveOrBetter()
+      page_state.PreparePage(page.page_set.pages[i], t)
 
   def MeasurePage(self, _, tab, results):
     """Although this is called MeasurePage, we're actually using this function
