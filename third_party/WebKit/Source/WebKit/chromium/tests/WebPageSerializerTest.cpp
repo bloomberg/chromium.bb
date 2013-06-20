@@ -114,6 +114,7 @@ TEST_F(WebPageSerializerTest, HTMLNodes)
     // Register the mocked frame and load it.
     WebURL topFrameURL = toKURL("http://www.test.com");
     registerMockedURLLoad("http://www.test.com", WebString::fromUTF8("simple_page.html"));
+    registerMockedURLLoad("http://www.example.com/beautifull.css", WebString::fromUTF8("beautifull.css"));
     loadURLInTopFrame(topFrameURL);
 
     // Retrieve all resources.

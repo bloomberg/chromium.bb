@@ -79,9 +79,22 @@ public:
         ,  m_runningMessageLoop(false)
     {
         // Reuse one of the test files from WebFrameTest.
-        std::string filePath = std::string(Platform::current()->unitTestSupport()->webKitRootDir().utf8().data());
-        filePath += "/Source/WebKit/chromium/tests/data/iframes_test.html";
-        m_frameFilePath = WebString::fromUTF8(filePath.c_str());
+        m_baseFilePath = Platform::current()->unitTestSupport()->webKitRootDir();
+        m_baseFilePath.append("/Source/WebKit/chromium/tests/data/");
+        m_frameFilePath = m_baseFilePath;
+        m_frameFilePath.append("iframes_test.html");
+    }
+
+    WebCore::KURL RegisterMockedUrl(const std::string& urlRoot, const WTF::String& filename)
+    {
+        WebURLResponse response;
+        response.initialize();
+        response.setMIMEType("text/html");
+        WTF::String localPath = m_baseFilePath;
+        localPath.append(filename);
+        WebCore::KURL url = toKURL(urlRoot + filename.utf8().data());
+        Platform::current()->unitTestSupport()->registerMockedURL(url, response, localPath);
+        return url;
     }
 
     void SetUp()
@@ -89,12 +102,16 @@ public:
         m_webView = WebView::create(0);
         m_webView->initializeMainFrame(&m_webFrameClient);
 
-        // Load the frame before trying to load resources.
-        WebCore::KURL url = toKURL("http://www.test.com/iframes_test.html");
-        WebURLResponse response;
-        response.initialize();
-        response.setMIMEType("text/html");
-        Platform::current()->unitTestSupport()->registerMockedURL(url, response, m_frameFilePath);
+        std::string urlRoot = "http://www.test.com/";
+        WebCore::KURL url = RegisterMockedUrl(urlRoot, "iframes_test.html");
+        const char* iframeSupportFiles[] = {
+            "invisible_iframe.html",
+            "visible_iframe.html",
+            "zero_sized_iframe.html",
+        };
+        for (size_t i = 0; i < arraysize(iframeSupportFiles); ++i) {
+            RegisterMockedUrl(urlRoot, iframeSupportFiles[i]);
+        }
 
         WebURLRequest request;
         request.initialize();
@@ -262,7 +279,8 @@ public:
     }
 
 protected:
-    WebString m_frameFilePath;
+    WTF::String m_baseFilePath;
+    WTF::String m_frameFilePath;
     TestWebFrameClient m_webFrameClient;
     WebView* m_webView;
 
