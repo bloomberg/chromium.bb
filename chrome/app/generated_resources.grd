@@ -10363,10 +10363,58 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Beta
       </message>
       <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
-        Dev - Unstable
+        Developer - unstable
       </message>
       <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGED" desc="The message to confirm that channel has changed.">
         You have switched to the <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
+      </message>
+      <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE" desc="The stable label in the message about current channel.">
+        stable
+      </message>
+      <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_BETA" desc="The beta label in the message about current channel.">
+        beta
+      </message>
+      <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_DEV" desc="The dev label in the message about current channel.">
+        dev
+      </message>
+      <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL" desc="The message about current channel.">
+        Currently on <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_BUTTON" desc="The label for the button for channel change.">
+        Change channel...
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_TITLE" desc="The title of the window for channel change.">
+        Change channel
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_DISALLOWED_MESSAGE" desc="The error message that is displayed when non-owner tries to switch channel.">
+        This setting is enforced by your administrator.
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_TITLE" desc="The title for the message that warns user about powerwash.">
+        Powerwash required on next reboot
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_MESSAGE" desc="Message that warns user about powerwash.">
+        This will remove all local users, files, data, and other settings after your next restart. All users will need to sign in again.
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_TITLE" desc="The title for the message that notifies user that channel change will be applied later.">
+        Channel change will be applied later.
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_MESSAGE" desc="Message that notifies user that channel change will be applied later.">
+        You are changing to a channel with an older version of <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>. The channel change will be applied when the channel version matches the version currently installed on your device.
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_TITLE" desc="The title for the message that warns user about switching to developer (unstable) channel.">
+        Warning: you are switching to developer channel
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_MESSAGE" desc="Message that warns user about switching to developer (unstable) channel.">
+        You are updating to an unstable version of <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> which contains features that are in progress. Crashes and unexpected bugs will occur. Please proceed with caution.
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_BUTTON" desc="The label for the button for channel switch and powerwash.">
+        Change channel and Powerwash
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CHANGE_BUTTON" desc="The label for the button for channel switch.">
+        Change channel
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON" desc="The label for the button for cancelling channel change.">
+        Cancel
       </message>
 
       <!-- chrome://network -->
