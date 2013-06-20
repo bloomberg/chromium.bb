@@ -30,8 +30,9 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
+#include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
+#include "modules/mediastream/MediaStreamTrackSourcesRequest.h"
 #include "public/platform/WebSourceInfo.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
@@ -118,20 +119,12 @@ String MediaStreamTrack::readyState() const
     return String();
 }
 
-SourceInfoVector MediaStreamTrack::getSourceInfos(ScriptExecutionContext* context, ExceptionCode& ec)
+void MediaStreamTrack::getSources(ScriptExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback, ExceptionCode& ec)
 {
-    WebKit::WebVector<WebKit::WebSourceInfo> webSourceInfos;
-    bool ok = MediaStreamCenter::instance().getSourceInfos(context->securityOrigin()->toString(), webSourceInfos);
-    if (!ok) {
+    RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context, callback);
+    bool ok = MediaStreamCenter::instance().getMediaStreamTrackSources(request.release());
+    if (!ok)
         ec = NOT_SUPPORTED_ERR;
-        return SourceInfoVector();
-    }
-
-    SourceInfoVector sourceInfos;
-    for (size_t i = 0; i < webSourceInfos.size(); ++i)
-        sourceInfos.append(SourceInfo::create(webSourceInfos[i]));
-
-    return sourceInfos;
 }
 
 bool MediaStreamTrack::ended() const

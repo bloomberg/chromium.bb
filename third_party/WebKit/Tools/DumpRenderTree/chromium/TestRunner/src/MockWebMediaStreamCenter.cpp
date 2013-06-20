@@ -35,6 +35,7 @@
 #include "public/platform/WebMediaStreamCenterClient.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebMediaStreamTrackSourcesRequest.h"
 #include "public/platform/WebSourceInfo.h"
 #include "public/platform/WebVector.h"
 
@@ -46,13 +47,13 @@ MockWebMediaStreamCenter::MockWebMediaStreamCenter(WebMediaStreamCenterClient* c
 {
 }
 
-bool MockWebMediaStreamCenter::getSourceInfos(const WebString& url, WebVector<WebSourceInfo>& webSourceInfoVector)
+bool MockWebMediaStreamCenter::getMediaStreamTrackSources(const WebMediaStreamTrackSourcesRequest& request)
 {
     size_t size = 2;
     WebVector<WebSourceInfo> results(size);
     results[0].initialize("MockAudioDevice#1", WebSourceInfo::SourceKindAudio, "Mock audio device", WebSourceInfo::VideoFacingModeNone);
     results[1].initialize("MockVideoDevice#1", WebSourceInfo::SourceKindVideo, "Mock video device", WebSourceInfo::VideoFacingModeEnvironment);
-    webSourceInfoVector.swap(results);
+    request.requestSucceeded(results);
     return true;
 }
 

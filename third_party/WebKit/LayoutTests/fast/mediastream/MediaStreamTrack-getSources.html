@@ -8,7 +8,7 @@
 <p id="description"></p>
 <div id="console"></div>
 <script>
-description("Tests MediaStreamTrack::getSourceInfos.");
+description("Tests MediaStreamTrack::getSources.");
 
 var sources = null;
 var previousId;
@@ -27,19 +27,32 @@ function getUserMedia(constraints, callback) {
     }
 }
 
-function gotStream(s) {
-    shouldNotThrow('sources = MediaStreamTrack.getSourceInfos();');
+function gotSources2(s) {
+    testPassed('gotSources2 was called.');
+    sources = s;
     shouldBeTrue('sources.length > 0');
     shouldBeTrue('sources[0].id === previousId');
     shouldBeTrue('sources[0].label.length > 0');
+
     finishJSTest();
 }
 
-shouldNotThrow('sources = MediaStreamTrack.getSourceInfos();');
-shouldBeTrue('sources.length > 0');
-previousId = sources[0].id;
+function gotStream(s) {
+    testPassed('gotStream was called.');
 
-getUserMedia({audio:true, video:true}, gotStream);
+    shouldNotThrow('MediaStreamTrack.getSources(gotSources2);');
+}
+
+function gotSources1(s) {
+    testPassed('gotSources1 was called.');
+    sources = s;
+    shouldBeTrue('sources.length > 0');
+    previousId = sources[0].id;
+
+    getUserMedia({audio:true, video:true}, gotStream);
+}
+
+shouldNotThrow('MediaStreamTrack.getSources(gotSources1);');
 
 window.jsTestIsAsync = true;
 window.successfullyParsed = true;

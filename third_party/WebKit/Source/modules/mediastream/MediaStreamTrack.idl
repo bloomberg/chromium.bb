@@ -37,7 +37,7 @@
     attribute EventListener onunmute;
     attribute EventListener onended;
 
-    [CallWith=ScriptExecutionContext, RaisesException] static sequence<SourceInfo> getSourceInfos();
+    [CallWith=ScriptExecutionContext, RaisesException] static void getSources(MediaStreamTrackSourcesCallback callback);
 
     // EventTarget interface
     void addEventListener(DOMString type,

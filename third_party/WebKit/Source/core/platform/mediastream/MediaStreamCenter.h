@@ -43,7 +43,6 @@ namespace WebKit {
 class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamTrack;
-class WebSourceInfo;
 }
 
 namespace WebCore {
@@ -51,6 +50,7 @@ namespace WebCore {
 class MediaStreamComponent;
 class MediaStreamDescriptor;
 class MediaStreamSourcesQueryClient;
+class MediaStreamTrackSourcesRequest;
 
 class MediaStreamCenter : public WebKit::WebMediaStreamCenterClient {
 public:
@@ -58,7 +58,7 @@ public:
 
     static MediaStreamCenter& instance();
 
-    bool getSourceInfos(const String& url, WebKit::WebVector<WebKit::WebSourceInfo>&);
+    bool getMediaStreamTrackSources(PassRefPtr<MediaStreamTrackSourcesRequest>);
     void didSetMediaStreamTrackEnabled(MediaStreamDescriptor*, MediaStreamComponent*);
     bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
     bool didRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);

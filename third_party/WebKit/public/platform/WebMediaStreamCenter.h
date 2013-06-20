@@ -37,6 +37,7 @@ namespace WebKit {
 class WebMediaStream;
 class WebMediaStreamSourcesRequest;
 class WebMediaStreamTrack;
+class WebMediaStreamTrackSourcesRequest;
 class WebSourceInfo;
 class WebString;
 
@@ -47,7 +48,7 @@ public:
     // DEPRECATED
     virtual void queryMediaStreamSources(const WebMediaStreamSourcesRequest&) { }
 
-    virtual bool getSourceInfos(const WebString& url, WebVector<WebSourceInfo>&) { return false; }
+    virtual bool getMediaStreamTrackSources(const WebMediaStreamTrackSourcesRequest&) { return false; }
     virtual void didEnableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
     virtual void didDisableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) = 0;
     virtual bool didAddMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) { return false; };

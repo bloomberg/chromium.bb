@@ -44,7 +44,7 @@ class MockWebMediaStreamCenter : public WebKit::WebMediaStreamCenter {
 public:
     explicit MockWebMediaStreamCenter(WebKit::WebMediaStreamCenterClient*);
 
-    virtual bool getSourceInfos(const WebKit::WebString& url, WebKit::WebVector<WebKit::WebSourceInfo>&) OVERRIDE;
+    virtual bool getMediaStreamTrackSources(const WebKit::WebMediaStreamTrackSourcesRequest&) OVERRIDE;
     virtual void didEnableMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
     virtual void didDisableMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
     virtual bool didAddMediaStreamTrack(const WebKit::WebMediaStream&, const WebKit::WebMediaStreamTrack&) OVERRIDE;
