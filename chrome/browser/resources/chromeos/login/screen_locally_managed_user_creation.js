@@ -34,7 +34,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var screen = $('managed-user-creation');
       var managerPod = this;
       var hideManagerPasswordError = function(element) {
-        managerPod.passwordErrorElement.hidden = true;
+        managerPod.passwordElement.classList.remove('password-error');
+        $('bubble').hide();
       };
 
       screen.configureTextInput(
@@ -59,7 +60,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     showPasswordError: function() {
-      this.passwordErrorElement.hidden = false;
+      this.passwordElement.classList.add('password-error');
+      $('bubble').showTextForElement(
+          this.passwordElement,
+          loadTimeData.getString('createManagedUserWrongManagerPasswordText'),
+          cr.ui.Bubble.Attachment.BOTTOM,
+          24, 4);
     },
 
     /**
@@ -99,15 +105,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     get passwordElement() {
       return this.querySelector('.managed-user-creation-manager-password');
-    },
-
-    /**
-     * Gets password error element.
-     * @type {!HTMLDivElement}
-     */
-    get passwordErrorElement() {
-      return this.
-          querySelector('.managed-user-creation-manager-wrong-password');
     },
 
     /**
@@ -234,7 +231,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
       var creationScreen = this;
 
       var hideUserPasswordError = function(element) {
-        creationScreen.passwordErrorVisible = false;
+        $('bubble').hide();
+        $('managed-user-creation-password').classList.remove('password-error');
       };
 
       this.configureTextInput(userNameField,
@@ -541,8 +539,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @param {string} errorText - reason why this password is invalid.
      */
     showPasswordError: function(errorText) {
-      $('managed-user-creation-password-error').textContent = errorText;
-      this.passwordErrorVisible = true;
+      $('bubble').showTextForElement(
+          $('managed-user-creation-password'),
+          errorText,
+          cr.ui.Bubble.Attachment.RIGHT,
+          24, 4);
+      $('managed-user-creation-password').classList.add('password-error');
       $('managed-user-creation-password').focus();
 
       this.setButtonDisabledStatus('next', true);
@@ -559,17 +561,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
           classList.toggle('duplicate-name', value);
       if (!value)
         $('managed-user-creation-name-error').textContent = '';
-    },
-
-    /**
-     * True if user name error should be displayed.
-     * @type {boolean}
-     */
-    set passwordErrorVisible(value) {
-      $('managed-user-creation-password-error').
-          classList.toggle('error', value);
-      if (!value)
-        $('managed-user-creation-password-error').textContent = '';
     },
 
     /**
@@ -835,6 +826,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.lastVerifiedName_ = null;
       this.lastIncorrectUserName_ = null;
       this.passwordErrorVisible = false;
+      $('managed-user-creation-password').classList.remove('password-error');
       this.nameErrorVisible = false;
 
       this.setVisiblePage_('intro');

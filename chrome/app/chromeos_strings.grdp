@@ -571,7 +571,7 @@ Press any key to continue exploring.
     Password is too short.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_PASSWORD_ERROR" desc="Error text shown in locally managed user creation dialog when manager password is incorrect.">
-    Incorrect manager password.
+    Incorrect password.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE_TITLE" desc="Managed user dialog, error page, manager account is in inconsistent state, title">
     Something went wrong while signing in as manager.

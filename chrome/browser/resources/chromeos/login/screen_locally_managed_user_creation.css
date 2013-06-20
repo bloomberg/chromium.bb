@@ -147,13 +147,11 @@
   padding: 4px 6px;
 }
 
-#managed-user-creation-name-error,
-#managed-user-creation-password-error {
+#managed-user-creation-name-error {
   visibility: hidden;
 }
 
-#managed-user-creation-name-error.error,
-#managed-user-creation-password-error.error {
+#managed-user-creation-name-error.error {
   color: rgb(207, 93, 70);
   padding-left: 28px;
   visibility: visible;
@@ -225,11 +223,6 @@
   color: #000;
   font-size: small;
 }
-.manager-pod .managed-user-creation-manager-wrong-password {
-  background: url('chrome://theme/IDR_WARNING') left top /24px no-repeat;
-  color: red;
-  padding-left: 28px;
-}
 
 #managed-user-creation-status {
   margin: 4px 10px;
@@ -256,3 +249,7 @@
   color: #fff;
 }
 
+.manager-pod .password-error,
+#managed-user-creation .password-error {
+  border: 1px solid red !important;
+}
