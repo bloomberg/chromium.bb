@@ -1317,8 +1317,8 @@ void ResourceProvider::AcquireImage(ResourceId id) {
 
   if (resource->image_id != 0) {
     // If we had previously allocated an image for this resource,
-    // release it before allocating a new one to prevent leaks.
-    ReleaseImage(id);
+    // then just reuse same image.
+    return;
   }
 
   WebGraphicsContext3D* context3d = output_surface_->context3d();
