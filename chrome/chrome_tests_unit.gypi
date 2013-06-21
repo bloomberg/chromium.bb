@@ -158,6 +158,8 @@
         'browser/policy/test/local_policy_test_server.h',
         'browser/prefs/pref_service_mock_builder.cc',
         'browser/prefs/pref_service_mock_builder.h',
+        'browser/profile_resetter/profile_resetter_test_base.cc',
+        'browser/profile_resetter/profile_resetter_test_base.h',
         'browser/search_engines/template_url_service_test_util.cc',
         'browser/search_engines/template_url_service_test_util.h',
         'browser/sessions/session_service_test_helper.cc',

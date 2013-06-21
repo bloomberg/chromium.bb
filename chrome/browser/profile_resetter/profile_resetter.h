@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -18,7 +19,8 @@ class TemplateURLService;
 // It is used in case the profile has been damaged due to malware or bad user
 // settings.
 class ProfileResetter : public base::NonThreadSafe,
-                        public content::NotificationObserver {
+                        public content::NotificationObserver,
+                        public BrowsingDataRemover::Observer {
  public:
   // Flags indicating what aspects of a profile shall be reset.
   enum Resettable {
@@ -70,6 +72,9 @@ class ProfileResetter : public base::NonThreadSafe,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // BrowsingDataRemover::Observer:
+  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+
   Profile* profile_;
   TemplateURLService* template_url_service_;
 
@@ -81,6 +86,10 @@ class ProfileResetter : public base::NonThreadSafe,
   base::Closure callback_;
 
   content::NotificationRegistrar registrar_;
+
+  // If non-null it means removal is in progress. BrowsingDataRemover takes care
+  // of deleting itself when done.
+  BrowsingDataRemover* cookies_remover_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileResetter);
 };

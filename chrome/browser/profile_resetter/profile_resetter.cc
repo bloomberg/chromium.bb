@@ -5,6 +5,7 @@
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/management_policy.h"
@@ -24,14 +25,18 @@
 ProfileResetter::ProfileResetter(Profile* profile)
     : profile_(profile),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
-      pending_reset_flags_(0) {
+      pending_reset_flags_(0),
+      cookies_remover_(NULL) {
   DCHECK(CalledOnValidThread());
   DCHECK(profile_);
   registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                  content::Source<TemplateURLService>(template_url_service_));
 }
 
-ProfileResetter::~ProfileResetter() {}
+ProfileResetter::~ProfileResetter() {
+  if (cookies_remover_)
+    cookies_remover_->RemoveObserver(this);
+}
 
 void ProfileResetter::Reset(ProfileResetter::ResettableFlags resettable_flags,
                             const base::Closure& callback) {
@@ -137,9 +142,18 @@ void ProfileResetter::ResetContentSettings() {
 
 void ProfileResetter::ResetCookiesAndSiteData() {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
-  // TODO(battre/vabr): Implement
-  MarkAsDone(COOKIES_AND_SITE_DATA);
+  DCHECK(!cookies_remover_);
+
+  cookies_remover_ = BrowsingDataRemover::CreateForUnboundedRange(profile_);
+  cookies_remover_->AddObserver(this);
+  int remove_mask = BrowsingDataRemover::REMOVE_SITE_DATA |
+                    BrowsingDataRemover::REMOVE_CACHE;
+  PrefService* prefs = profile_->GetPrefs();
+  DCHECK(prefs);
+  // Don't try to clear LSO data if it's not supported.
+  if (!prefs->GetBoolean(prefs::kClearPluginLSODataEnabled))
+    remove_mask &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+  cookies_remover_->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
 void ProfileResetter::ResetExtensions() {
@@ -186,4 +200,9 @@ void ProfileResetter::Observe(int type,
   // time to go on.
   if (pending_reset_flags_ & DEFAULT_SEARCH_ENGINE)
     ResetDefaultSearchEngine();
+}
+
+void ProfileResetter::OnBrowsingDataRemoverDone() {
+  cookies_remover_ = NULL;
+  MarkAsDone(COOKIES_AND_SITE_DATA);
 }
