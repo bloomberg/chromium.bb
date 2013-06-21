@@ -1691,7 +1691,7 @@ void Document::recalcStyle(StyleChange change)
     // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
 
     if (m_styleSheetCollection->needsUpdateActiveStylesheetsOnStyleRecalc())
-        m_styleSheetCollection->updateActiveStyleSheets(DocumentStyleSheetCollection::FullUpdate);
+        m_styleSheetCollection->updateActiveStyleSheets(FullStyleUpdate);
 
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willRecalculateStyle(this);
 
@@ -2695,7 +2695,7 @@ void Document::didRemoveAllPendingStylesheet()
 {
     m_needsNotifyRemoveAllPendingStylesheet = false;
 
-    styleResolverChanged(RecalcStyleIfNeeded);
+    styleResolverChanged(RecalcStyleImmediately, AnalyzedStyleUpdate);
     executeScriptsWaitingForResourcesIfNeeded();
 
     if (m_gotoAnchorNeededAfterStylesheetsLoad && view())
@@ -3059,7 +3059,7 @@ void Document::evaluateMediaQueryList()
         m_mediaQueryMatcher->styleResolverChanged();
 }
 
-void Document::styleResolverChanged(StyleResolverUpdateFlag updateFlag)
+void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleResolverUpdateMode updateMode)
 {
     // Don't bother updating, since we haven't loaded all our style info yet
     // and haven't calculated the style selector for the first time.
@@ -3074,12 +3074,9 @@ void Document::styleResolverChanged(StyleResolverUpdateFlag updateFlag)
         printf("Beginning update of style selector at time %d.\n", elapsedTime());
 #endif
 
-    DocumentStyleSheetCollection::UpdateFlag styleSheetUpdate = (updateFlag == RecalcStyleIfNeeded)
-        ? DocumentStyleSheetCollection::OptimizedUpdate
-        : DocumentStyleSheetCollection::FullUpdate;
-    bool stylesheetChangeRequiresStyleRecalc = m_styleSheetCollection->updateActiveStyleSheets(styleSheetUpdate);
+    bool needsRecalc = m_styleSheetCollection->updateActiveStyleSheets(updateMode);
 
-    if (updateFlag == DeferRecalcStyle) {
+    if (updateType >= DeferRecalcStyle) {
         scheduleForcedStyleRecalc();
         return;
     }
@@ -3090,7 +3087,7 @@ void Document::styleResolverChanged(StyleResolverUpdateFlag updateFlag)
             renderView()->repaintViewAndCompositedLayers();
     }
 
-    if (!stylesheetChangeRequiresStyleRecalc)
+    if (!needsRecalc)
         return;
 
     // This recalcStyle initiates a new recalc cycle. We need to bracket it to

@@ -174,7 +174,16 @@ enum PageshowEventPersistence {
     PageshowEventPersisted = 1
 };
 
-enum StyleResolverUpdateFlag { RecalcStyleImmediately, DeferRecalcStyle, RecalcStyleIfNeeded };
+// FIXME: We should rename DeferRecalcStyle to RecalcStyleDeferred to be consitent.
+
+enum StyleResolverUpdateType { RecalcStyleImmediately, DeferRecalcStyle };
+
+enum StyleResolverUpdateMode {
+    // Discards the StyleResolver and rebuilds it.
+    FullStyleUpdate,
+    // Attempts to use StyleInvalidationAnalysis to avoid discarding the entire StyleResolver.
+    AnalyzedStyleUpdate
+};
 
 enum NodeListInvalidationType {
     DoNotInvalidateOnAttributeChanges = 0,
@@ -440,16 +449,8 @@ public:
     bool gotoAnchorNeededAfterStylesheetsLoad() { return m_gotoAnchorNeededAfterStylesheetsLoad; }
     void setGotoAnchorNeededAfterStylesheetsLoad(bool b) { m_gotoAnchorNeededAfterStylesheetsLoad = b; }
 
-    /**
-     * Called when one or more stylesheets in the document may have been added, removed or changed.
-     *
-     * Creates a new style resolver and assign it to this document. This is done by iterating through all nodes in
-     * document (or those before <BODY> in a HTML document), searching for stylesheets. Stylesheets can be contained in
-     * <LINK>, <STYLE> or <BODY> elements, as well as processing instructions (XML documents only). A list is
-     * constructed from these which is used to create the a new style selector which collates all of the stylesheets
-     * found and is used to calculate the derived styles for all rendering objects.
-     */
-    void styleResolverChanged(StyleResolverUpdateFlag);
+    // Called when one or more stylesheets in the document may have been added, removed, or changed.
+    void styleResolverChanged(StyleResolverUpdateType, StyleResolverUpdateMode = FullStyleUpdate);
 
     void didAccessStyleResolver();
 

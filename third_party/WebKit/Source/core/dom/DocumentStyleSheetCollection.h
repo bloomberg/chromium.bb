@@ -28,16 +28,16 @@
 #ifndef DocumentStyleSheetCollection_h
 #define DocumentStyleSheetCollection_h
 
-#include <wtf/FastAllocBase.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/Document.h"
+#include "wtf/FastAllocBase.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class CSSStyleSheet;
-class Document;
 class Node;
 class StyleSheet;
 class StyleSheetContents;
@@ -73,8 +73,7 @@ public:
 
     bool needsUpdateActiveStylesheetsOnStyleRecalc() const { return m_needsUpdateActiveStylesheetsOnStyleRecalc; }
 
-    enum UpdateFlag { FullUpdate, OptimizedUpdate };
-    bool updateActiveStyleSheets(UpdateFlag);
+    bool updateActiveStyleSheets(StyleResolverUpdateMode);
 
     String preferredStylesheetSetName() const { return m_preferredStylesheetSetName; }
     String selectedStylesheetSetName() const { return m_selectedStylesheetSetName; }
@@ -114,7 +113,7 @@ private:
         Reset,
         Additive
     };
-    void analyzeStyleSheetChange(UpdateFlag, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, StyleResolverUpdateType&, bool& requiresFullStyleRecalc);
+    void analyzeStyleSheetChange(StyleResolverUpdateMode, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, StyleResolverUpdateType&, bool& requiresFullStyleRecalc);
 
     Document* m_document;
 
