@@ -1119,7 +1119,7 @@ input.rename {
   height: 51px;
   left: 0;
   opacity: 1;
-  padding: 0 12px 0 7px;
+  padding: 0 10px 0 7px;
   position: absolute;
   right: 0;
   z-index: 3;
@@ -1395,9 +1395,9 @@ input.rename {
     url('../images/files/ui/new-ui/2x/onbutton_trash.png') 2x);
   background-position: center;
   background-repeat: no-repeat;
-  min-width: 25px;  /* overrride */
+  min-width: 21px;  /* overrride */
   padding: 0;  /* overrride */
-  width: 25px;
+  width: 21px;
 }
 
 #delete-button[disabled] {

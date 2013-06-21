@@ -112,7 +112,7 @@ input.common[type='checkbox']::after {
 
 .buttonbar {
   display: -webkit-box;
-  height: 35px;
+  height: 31px;
 }
 
 .buttonbar.right {
@@ -246,7 +246,10 @@ menu.chrome-menu > [checked]::before {
   display: none;
 }
 
-/* Ok/Cancel style buttons */
+/**
+ * Ok/Cancel style buttons
+ * Height: 31px (content:21px + border:5px * 2)
+ **/
 button,
 input[type='button'],
 input[type='submit'],
@@ -258,16 +261,15 @@ select {
   border: 5px solid transparent;
   border-image: -webkit-image-set(
     url('../images/common/button.png') 1x,
-    url('../images/common/2x/button.png') 2x) 5 5 repeat;
-  box-shadow: inset 0 1px 1px 0 rgb(255, 255, 255);
+    url('../images/common/2x/button.png') 2x) 5 / 5px / 2px repeat;
   box-sizing: content-box;
   color: rgb(34, 34, 34);
   cursor: default;
-  height: 25px;
-  line-height: 25px;
+  height: 21px;
+  line-height: 21px;
   margin: 0;
-  min-height: 25px;
-  min-width: 60px;
+  min-height: 21px;
+  min-width: 55px;
   padding: 0 10px;
   position: relative;
   text-align: center;
@@ -275,7 +277,7 @@ select {
 }
 
 .buttonbar button {
-  -webkit-margin-start: 8px;
+  -webkit-margin-start: 10px;
 }
 
 button:hover,
@@ -284,8 +286,7 @@ input[type='submit']:hover,
 select:hover {
   border-image: -webkit-image-set(
     url('../images/common/button_hover.png') 1x,
-    url('../images/common/2x/button_hover.png') 2x) 5 5 repeat;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    url('../images/common/2x/button_hover.png') 2x) 5 / 5px / 2px repeat;
   color: #222;
 }
 
@@ -294,8 +295,7 @@ input[type='button']:active,
 input[type='submit']:active {
   border-image: -webkit-image-set(
     url('../images/common/button_pressed.png') 1x,
-    url('../images/common/2x/button_pressed.png') 2x) 5 5 repeat;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    url('../images/common/2x/button_pressed.png') 2x) 5 / 5px / 2px repeat;
   color: #333;
 }
 
@@ -307,12 +307,9 @@ input[type='button'][disabled]:hover,
 input[type='submit'][disabled]:hover {
   background-color: rgb(250, 250, 250);
   background-image: none;
-  border: 1px solid rgb(255, 255, 255);
-  border-bottom: 1px solid rgb(180, 180, 180);
-  border-left: 1px solid rgb(220, 220, 220);
-  border-right: 1px solid rgb(200, 200, 200);
-  border-top: 1px solid rgb(220, 220, 220);
-  box-shadow: inset 0 1px 1px 0 rgb(255, 255, 255);
+  border-image: -webkit-image-set(
+    url('../images/common/button.png') 1x,
+    url('../images/common/2x/button.png') 2x) 5 / 5px / 2px repeat;
   color: rgb(150, 150, 150);
   padding: 2px 14px;
 }
