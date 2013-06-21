@@ -1076,7 +1076,7 @@ cr.define('options', function() {
     },
 
     /**
-    * Reports a remote error (e.g., a network error during limited-user
+    * Reports a remote error (e.g., a network error during managed-user
     * registration) to the "create" overlay during profile creation.
     * @private
     */

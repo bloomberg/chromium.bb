@@ -125,7 +125,7 @@ void ManagedModeWarningInfobarDelegate::InfoBarDismissed() {
 }
 
 string16 ManagedModeWarningInfobarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_MANAGED_MODE_WARNING_MESSAGE);
+  return l10n_util::GetStringUTF16(IDS_MANAGED_USER_WARN_INFOBAR_MESSAGE);
 }
 
 int ManagedModeWarningInfobarDelegate::GetButtons() const {
@@ -135,7 +135,7 @@ int ManagedModeWarningInfobarDelegate::GetButtons() const {
 string16 ManagedModeWarningInfobarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
-  return l10n_util::GetStringUTF16(IDS_MANAGED_MODE_GO_BACK_ACTION);
+  return l10n_util::GetStringUTF16(IDS_MANAGED_USER_WARN_INFOBAR_GO_BACK);
 }
 
 bool ManagedModeWarningInfobarDelegate::Accept() {

@@ -93,6 +93,10 @@ class ManagedUserService : public BrowserContextKeyedService,
   // Returns the email address of the custodian.
   std::string GetCustodianEmailAddress() const;
 
+  // Returns the name of the custodian, or the email address if the name is
+  // empty.
+  std::string GetCustodianName() const;
+
   // These methods allow querying and modifying the manual filtering behavior.
   // The manual behavior is set by the user and overrides all other settings
   // (whitelists or the default behavior).

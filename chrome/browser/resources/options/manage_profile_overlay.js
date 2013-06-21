@@ -59,7 +59,7 @@ cr.define('options', function() {
       };
 
       if (loadTimeData.getBoolean('managedUsersEnabled')) {
-        $('create-profile-limited-container').hidden = false;
+        $('create-profile-managed-container').hidden = false;
       }
       $('manage-profile-cancel').onclick =
           $('delete-profile-cancel').onclick = function(event) {
@@ -76,12 +76,12 @@ cr.define('options', function() {
         chrome.send('removeProfileShortcut', [self.profileInfo_.filePath]);
       };
 
-      $('create-profile-limited-signed-in-link').onclick = function(event) {
+      $('create-profile-managed-signed-in-link').onclick = function(event) {
         OptionsPage.navigateToPage('managedUserLearnMore');
         return false;
       };
 
-      $('create-profile-limited-not-signed-in-link').onclick = function(event) {
+      $('create-profile-managed-not-signed-in-link').onclick = function(event) {
         // The signin process will open an overlay to configure sync, which
         // would replace this overlay. It's smoother to close this one now.
         // TODO(pamg): Move the sync-setup overlay to a higher layer so this one
@@ -143,8 +143,9 @@ cr.define('options', function() {
      *     profileInfo = {
      *       name: "Profile Name",
      *       iconURL: "chrome://path/to/icon/image",
-     *       filePath: "/path/to/profile/data/on/disk"
+     *       filePath: "/path/to/profile/data/on/disk",
      *       isCurrentProfile: false,
+     *       isManaged: false
      *     };
      * @param {string} mode A label that specifies the type of dialog
      *     box which is currently being viewed (i.e. 'create' or
@@ -308,7 +309,7 @@ cr.define('options', function() {
       var name = $('create-profile-name').value;
       var iconUrl = $('create-profile-icon-grid').selectedItem;
       var createShortcut = $('create-shortcut').checked;
-      var isManaged = $('create-profile-limited').checked;
+      var isManaged = $('create-profile-managed').checked;
 
       // 'createProfile' is handled by the BrowserOptionsHandler.
       chrome.send('createProfile',
@@ -370,6 +371,7 @@ cr.define('options', function() {
           loadTimeData.getStringF('deleteProfileMessage', profileInfo.name);
       $('delete-profile-message').style.backgroundImage = 'url("' +
           profileInfo.iconURL + '")';
+      $('delete-managed-profile-addendum').hidden = !profileInfo.isManaged;
 
       // Because this dialog isn't useful when refreshing or as part of the
       // history, don't create a history entry for it when showing.
@@ -470,7 +472,7 @@ cr.define('options', function() {
       $('create-profile-icon-grid').disabled = inProgress;
       $('create-profile-name').disabled = inProgress;
       $('create-shortcut').disabled = inProgress;
-      $('create-profile-limited').disabled = inProgress;
+      $('create-profile-managed').disabled = inProgress;
       $('create-profile-ok').disabled = inProgress;
 
       $('create-profile-throbber').hidden = !inProgress;
@@ -511,7 +513,7 @@ cr.define('options', function() {
     },
 
     /**
-     * For new limited users, shows a confirmation page after successfully
+     * For new supervised users, shows a confirmation page after successfully
      * creating a new profile; otherwise, the handler will open a new window.
      * @param {Object} profileInfo An object of the form:
      *     profileInfo = {
@@ -539,13 +541,13 @@ cr.define('options', function() {
      */
     updateSignedInStatus_: function(text) {
       var isSignedIn = text !== '';
-      $('create-profile-limited-signed-in').hidden = !isSignedIn;
-      $('create-profile-limited-not-signed-in').hidden = isSignedIn;
-      $('create-profile-limited').disabled = !isSignedIn;
+      $('create-profile-managed-signed-in').hidden = !isSignedIn;
+      $('create-profile-managed-not-signed-in').hidden = isSignedIn;
+      $('create-profile-managed').disabled = !isSignedIn;
       if (!isSignedIn)
-        $('create-profile-limited').checked = false;
+        $('create-profile-managed').checked = false;
 
-      $('create-profile-limited-signed-in-label').textContent = text;
+      $('create-profile-managed-signed-in-label').textContent = text;
     },
   };
 

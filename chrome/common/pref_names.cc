@@ -39,8 +39,13 @@ const char kManagedModeManualHosts[] = "profile.managed.manual_hosts";
 const char kManagedModeManualURLs[] = "profile.managed.manual_urls";
 
 // Stores the email address associated with the google account of the custodian
-// of the managed user.
-const char kManagedUserCustodian[] = "profile.managed.custodian_email";
+// of the managed user, set when the managed user is created.
+const char kManagedUserCustodianEmail[] = "profile.managed.custodian_email";
+
+// Stores the display name associated with the google account of the custodian
+// of the managed user, updated (if possible) each time the managed user
+// starts a session.
+const char kManagedUserCustodianName[] = "profile.managed.custodian_name";
 
 // Used to determine if the last session exited cleanly. Set to false when
 // first opened, and to true when closing. On startup if the value is false,

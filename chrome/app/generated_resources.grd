@@ -5611,8 +5611,8 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text in the extensions UI informing the user that an extension is policy controlled">
         (This extension is managed and cannot be removed or disabled.)
       </message>
-      <message name="IDS_EXTENSIONS_LOCKED_MANAGED_MODE" desc="The error message (either shown in the extensions UI or logged) informing the user that extensions are controlled by managed mode">
-        Extensions cannot be modified by managed users.
+      <message name="IDS_EXTENSIONS_LOCKED_MANAGED_USER" desc="The error message (either shown in the extensions UI or logged) informing a supervised user that extensions cannot be changed.">
+        Extensions cannot be modified by supervised users.
       </message>
       <message name="IDS_GET_MORE_EXTENSIONS" desc="The text for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
         Get more extensions
@@ -6889,10 +6889,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_DESCRIPTION" desc="Description for a flag for audio switching.">
         Modifies the volume item in the status tray to add a menu allowing choosing a specific audio input and output device. Requires "Enable new audio handler" flag.
       </message>
-      <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME" desc="Title for the flag to enable locally managed users.">
-        Enable locally managed users
+      <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME" desc="Title for the flag to enable supervised users.">
+        Enable supervised users
       </message>
-      <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_DESCRIPTION" desc="Description for the flag to enable locally managed users.">
+      <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_DESCRIPTION" desc="Description for the flag to enable supervised users.">
         Enables support for user profiles that are managed by another user and can have restrictions applied.
       </message>
       <message name="IDS_FLAGS_ENABLE_NATIVE_FRAMES_FOR_APPS_NAME" desc="Title for the flag to enable native style frames for apps.">
@@ -8357,28 +8357,28 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Managed User Avatar Menu -->
-      <message name="IDS_MANAGED_USER_INFO" desc="A text which explains that the user is managed by a custodian.">
-        This user is managed by <ph name="CUSTODIAN_NAME">$1<ex>custodian@gmail.com</ex></ph>. Usage and history from this user may be viewed by the manager.
+      <message name="IDS_MANAGED_USER_INFO" desc="Text which explains that a supervised user is managed by a custodian.">
+        This user is supervised by <ph name="CUSTODIAN_NAME">$1<ex>Jane Doe</ex></ph>. Usage and history from this user may be viewed by the manager.
       </message>
-      <message name="IDS_MANAGED_USER_AVATAR_LABEL" desc="A label for the managed user which is used in the avatar menu and as a label in the titlebar.">
-        Limited user
+      <message name="IDS_MANAGED_USER_AVATAR_LABEL" desc="A label for the supervised user which is used in the avatar menu and as a label in the titlebar.">
+        Supervised user
       </message>
 
-      <!-- Managed Mode Block Interstitial data -->
-      <message name="IDS_BLOCK_INTERSTITIAL_TITLE" desc="A title for the managed mode block interstitial page.">
+      <!-- Supervised User Block Interstitial data -->
+      <message name="IDS_BLOCK_INTERSTITIAL_TITLE" desc="A title for the supervised-user block interstitial page.">
         Page blocked
       </message>
-      <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE" desc="A message for the user when they attempt to visit a site outside of any content pack.">
-        This page has been blocked.
+      <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE" desc="A message for the supervised user when they attempt to visit a site that is not permitted by the manager.">
+        Oops, looks like you need permission from <ph name="NAME">$1<ex>John Doe</ex></ph> to access this page.
       </message>
       <message name="IDS_BACK_BUTTON" desc="A button for going back to the last safe url after being blocked.">
         Go back
       </message>
       <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON" desc="A button for requesting access to blocked sites.">
-        Request access
+        Request permission
       </message>
-      <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE" desc="The text that tells the user that a request has been sent. This is followed by the manager's name">
-        A request to access this site has been sent to <ph name="NAME">$1<ex>John Doe</ex></ph>.
+      <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE" desc="The text that tells the supervised user that a request has been sent.">
+        Your request to access this site has been sent to <ph name="NAME">$1<ex>John Doe</ex></ph>.
       </message>
 
       <!-- Content Settings dialog data -->
@@ -11758,9 +11758,16 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Add New User
         </message>
       </if>
-      <message name="IDS_PROFILES_SWITCH_PROFILE_LINK" desc="Link in the managed user bubble view to switch to a different profile.">
-        Switch Users
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_SWITCH_PROFILE_LINK" desc="Link in the supervised user bubble view to switch to a different profile.">
+          Switch users
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PROFILES_SWITCH_PROFILE_LINK" desc="In title case. Link in the supervised user bubble view to switch to a different profile.">
+          Switch Users
+        </message>
+      </if>
       <message name="IDS_PROFILES_CREATE_NEW_PROFILE_LINK" desc="Link in the avatar menu bubble view to create a new profile.">
         New user
       </message>
@@ -14972,6 +14979,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Are you sure you want to delete "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all the data associated with it from this computer? This cannot be undone!
       </message>
     </if>
+    <message name="IDS_PROFILES_DELETE_MANAGED_ADDENDUM" desc="Additional message shown in the same dialog following the IDS_PROFILES_DELETE_MESSAGE, explaining to the user what will happen if they delete the profile of a supervised user.">
+      Visited websites and settings for this supervised user may still be visible by the manager at <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.chrome.com/manage"&gt;</ph>www.chrome.com/manage<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+    </message>
     <message name="IDS_PROFILES_LIST_ITEM_CURRENT" desc="Text to display in the multi-profiles list when this profile is the current profile">
       <ph name="PROFILE_NAME">$1<ex>New User</ex></ph> (current)
     </message>
@@ -14990,19 +15000,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Create
     </message>
     <message name="IDS_PROFILES_CREATE_LOCAL_ERROR" desc="Message shown when a local error (for example, a disk error) occurs during profile creation.">
-      Oops! The new profile couldn't be created. Please check your hard drive space and permissions and try again.
+      Oops! The new user couldn't be created. Please check your hard drive space and permissions and try again.
     </message>
-    <message name="IDS_PROFILES_CREATE_REMOTE_ERROR" desc="Message shown when a remote error (for example, a network error) occurs during profile creation.">
-      Oops! The new profile couldn't be created. Please check your network connection and try again later.
+    <message name="IDS_PROFILES_CREATE_REMOTE_ERROR" desc="Message shown when a remote error (for example, a network error) occurs during creation of a new supervised user.">
+      Oops! The new supervised user couldn't be created. Please check your network connection and try again later.
     </message>
-    <message name="IDS_PROFILES_CREATE_LIMITED_SIGNED_IN_LABEL" desc="Label for the 'Limited user' checkbox in the create-profile dialog when the current user is signed in. This will be followed by a 'Learn more' link.">
-      This is a limited user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex>.</ph>
+    <message name="IDS_PROFILES_CREATE_MANAGED_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in. This will be followed by a 'Learn more' link.">
+      This is a supervised user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex>.</ph>
     </message>
-    <message name="IDS_PROFILES_CREATE_LIMITED_NOT_SIGNED_IN_LABEL" desc="Label for the (disabled) 'Limited user' checkbox in the create-profile dialog when the current user is not signed in. This will be followed by a 'Sign in now' link.">
-      This is a limited user who will be managed by another user.
+    <message name="IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LABEL" desc="Label for the (disabled) 'Supervised user' checkbox in the create-profile dialog when the current user is not signed in. This will be followed by a 'Sign in now' link.">
+      This is a supervised user who will be managed by you.
 You need to be signed in to use this feature.
     </message>
-    <message name="IDS_PROFILES_CREATE_LIMITED_NOT_SIGNED_IN_LINK" desc="Text for the sign-in promo link, shown after the (disabled) 'Limited user' checkbox in the create-profile dialog when the current user is not signed in.">
+    <message name="IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LINK" desc="Text for the sign-in promo link, shown after the (disabled) 'Supervised user' checkbox in the create-profile dialog when the current user is not signed in.">
       Sign in now
     </message>
     <message name="IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX" desc="Create Shortcut checkbox when creating a new profile">
@@ -15015,36 +15025,36 @@ You need to be signed in to use this feature.
       Remove desktop shortcut
     </message>
 
-    <!-- Limited-user creation wizard dialogs -->
-    <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_TITLE" desc="Title for the 'Learn more' dialog for the limited user feature.">
-      What is a limited user?
+    <!-- Supervised-user creation wizard dialogs -->
+    <message name="IDS_NEW_MANAGED_USER_LEARN_MORE_TITLE" desc="Title for the 'Learn more' dialog for the supervised user feature.">
+      What is a supervised user?
     </message>
-    <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_TEXT" desc="Informative text describing the 'limited user' feature in detail, shown when the 'Learn more' link is clicked in the 'Create User' dialog.">
-      By creating a limited user, you can provide a managed environment for another user to explore the web.
+    <message name="IDS_NEW_MANAGED_USER_LEARN_MORE_TEXT" desc="Informative text describing the 'supervised user' feature in detail, shown when the 'Learn more' link is clicked in the 'Create User' dialog. The HTML entities at the starts of the lines are a non-breaking space, a bullet, and another non-breaking space.">
+      A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can
 
-As the manager of a limited user in Chrome on this device, you can determine the sites you wish to allow or restrict, review past visits, and manage other settings. A limited user is not a Google account &#8212; it applies only to this device.
+&#160;&#8226;&#160;allow or prohibit certain websites,
+&#160;&#8226;&#160;review websites the supervised user has visited, and
+&#160;&#8226;&#160;manage other settings.
+
+Creating a supervised user does not create a Google Account, and their settings and data will not follow them to other devices with Chrome Sync. Currently, a supervised user applies only to this installation of Chrome, on this device.
+      
+After you create a new supervised user, you can manage their settings at any time, from any device, at www.chrome.com/manage.
     </message>
-    <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_DONE_BUTTON" desc="Text for the 'OK' button on the 'Learn more' dialog for the limited user feature.">
+    <message name="IDS_NEW_MANAGED_USER_LEARN_MORE_DONE_BUTTON" desc="Text for the 'OK' button on the 'Learn more' dialog for the supervised user feature.">
       OK, got it!
     </message>
-    <message name="IDS_NEW_LIMITED_USER_SUCCESS_TITLE" desc="Title for the confirmation dialog that appears after a limited user has been created.">
-      <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> has been created as a limited user!
+    <message name="IDS_NEW_MANAGED_USER_CREATED_TITLE" desc="Title for the confirmation dialog that appears after a supervised user has been created.">
+      <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> has been created as a supervised user!
     </message>
-    <message name="IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_1" desc="Informative text for the confirmation dialog that appears after a limited user has been created. Slide 1.">
-      This limited user can currently browse all sites on the web.
-    </message>
-    <message name="IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_2" desc="Informative text for the confirmation dialog that appears after a limited user has been created. Slide 2.">
-      Your limited user can access their environment at any time from the user menu.
-    </message>
-    <message name="IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_3" desc="Informative text for the confirmation dialog that appears after a limited user has been created. Slide 3.">
-      As the manager of this limited user, you can configure settings for this user.
+    <message name="IDS_NEW_MANAGED_USER_CREATED_TEXT" desc="Informative text for the confirmation dialog that appears after a supervised user has been created.">
+      A supervised user named <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> has been created. To set which websites this supervised user can view, you can configure restrictions and settings by visiting www.chrome.com/manage. If you do not change the default settings, <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> can browse all sites on the web.
 
-For help, please visit our help center.
+Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex></ph> for these and further instructions.
     </message>
-    <message name="IDS_NEW_LIMITED_USER_SUCCESS_DONE_BUTTON" desc="Text for the button that closes the dialog without making any additional changes, on the limited user creation confirmation dialog.">
+    <message name="IDS_NEW_MANAGED_USER_CREATED_DONE_BUTTON" desc="Text for the button that closes the dialog without making any additional changes, on the supervised user creation confirmation dialog.">
       Got it
     </message>
-    <message name="IDS_NEW_LIMITED_USER_SUCCESS_SWITCH_BUTTON" desc="Text forthe button that opens a window for the new limited user, on the limited user creation confirmation dialog.">
+    <message name="IDS_NEW_MANAGED_USER_CREATED_SWITCH_BUTTON" desc="Text for the button that opens a window for the new supervised user, on the supervised user creation confirmation dialog.">
       Switch to <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph>
     </message>
 
@@ -15435,11 +15445,11 @@ Do you accept?
       Reload
     </message>
 
-    <!-- Managed Mode -->
-    <message name="IDS_MANAGED_MODE_WARNING_MESSAGE" desc="Infobar message when browsing outside of the content pack whitelist.">
-      You're browsing on a site that is not in any installed content pack.
+    <!-- Supervised User Warning Infobar -->
+    <message name="IDS_MANAGED_USER_WARN_INFOBAR_MESSAGE" desc="Infobar message when browsing a site that is not explicitly permitted by a whitelist or manual exception.">
+      You're browsing on a site that may not be something you really want to see.
     </message>
-    <message name="IDS_MANAGED_MODE_GO_BACK_ACTION" desc="Label for the button that goes back to a 'safe' page.">
+    <message name="IDS_MANAGED_USER_WARN_INFOBAR_GO_BACK" desc="Label for the button that goes back to a 'safe' page.">
       Take me back!
     </message>
 

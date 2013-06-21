@@ -27,9 +27,6 @@ cr.define('options', function() {
     // Info about the newly created profile.
     profileInfo_: null,
 
-    // Current shown slide.
-    currentSlide_: 0,
-
     /**
      * Initialize the page.
      */
@@ -46,80 +43,6 @@ cr.define('options', function() {
         OptionsPage.closeOverlay();
         chrome.send('switchToProfile', [self.profileInfo_.filePath]);
       };
-
-      // Create a small dot button for each slide in the deck and make the
-      // first button active.
-      var numberOfSlides = $('managed-user-created-slide-deck').children.length;
-      for (var i = 0; i < numberOfSlides; i++) {
-        var smallButton = document.createElement('button');
-        $('managed-user-created-small-buttons').appendChild(smallButton);
-        smallButton.onclick = this.setCurrentSlide_.bind(this, i);
-      }
-      $('managed-user-created-small-buttons').children[0].classList.add(
-          'managed-user-created-small-button-selected');
-
-      // Changes the slide in |direction|, where |direction| can be 'Left' or
-      // 'Right'. Changing to the left goes back in LTR and forward in RTL and
-      // vice versa for right.
-      function changeSlide(direction) {
-        // Ignore all events we get while not visible.
-        if (!self.visible)
-          return;
-
-        // Ignore anything other than left and right arrow press.
-        if (direction != 'Left' && direction != 'Right')
-          return;
-
-        var container = $('managed-user-created');
-        var rtl = getComputedStyle(container).direction == 'rtl';
-
-        if ((direction == 'Right' && !rtl) || (direction == 'Left' && rtl))
-          self.setCurrentSlide_(self.currentSlide_ + 1);
-        else
-          self.setCurrentSlide_(self.currentSlide_ - 1);
-      };
-
-      $('managed-user-created-left-slide-arrow').onclick =
-          changeSlide.bind(undefined, 'Left');
-      $('managed-user-created-right-slide-arrow').onclick =
-          changeSlide.bind(undefined, 'Right');
-
-      document.onkeydown = function(event) {
-        changeSlide(event.keyIdentifier);
-      };
-    },
-
-    /**
-     * Reset to slide 1 for the next time this gets opened.
-     * @override
-     */
-    didShowPage: function() {
-      this.setCurrentSlide_(0);
-    },
-
-    /**
-     * Sets the current visible slide to |slide|, where |slide| is the index
-     * and starts from 0.
-     * @param {number} slide The slide to set.
-     * @private
-     */
-    setCurrentSlide_: function(slide) {
-      var numberOfSlides =
-          $('managed-user-created-slide-deck').children.length;
-      var newSlide = (numberOfSlides + slide) % numberOfSlides;
-      // Show the respective slide. The slide is shown by setting the
-      // appropriate negative margin on the slide deck.
-      var margin = '0';
-      if (slide != 0)
-        margin = '-' + newSlide * 100 + '%';
-      $('managed-user-created-slide-deck').style.webkitMarginStart = margin;
-
-      // Update the bottom buttons.
-      $('managed-user-created-small-buttons').children[this.currentSlide_]
-          .classList.toggle('managed-user-created-small-button-selected');
-      $('managed-user-created-small-buttons').children[newSlide]
-          .classList.toggle('managed-user-created-small-button-selected');
-      this.currentSlide_ = newSlide;
     },
 
     /**
@@ -130,16 +53,20 @@ cr.define('options', function() {
      *     info = {
      *       name: "Profile Name",
      *       filePath: "/path/to/profile/data/on/disk"
-     *       isManaged: (true|false),
+     *       isManaged: (true|false)
      *     };
      * @private
      */
     setProfileInfo_: function(info) {
       this.profileInfo_ = info;
       $('managed-user-created-title').textContent =
-          loadTimeData.getStringF('managedUserCreateConfirmTitle', info.name);
+          loadTimeData.getStringF('managedUserCreatedTitle', info.name);
+      $('managed-user-created-text').textContent =
+          loadTimeData.getStringF('managedUserCreatedText',
+                                  info.name,
+                                  loadTimeData.getString('custodianEmail'));
       $('managed-user-created-switch').textContent =
-          loadTimeData.getStringF('managedUserCreateConfirmSwitch', info.name);
+          loadTimeData.getStringF('managedUserCreatedSwitch', info.name);
     },
   };
 

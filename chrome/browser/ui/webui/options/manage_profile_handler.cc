@@ -92,13 +92,14 @@ void ManageProfileHandler::GetLocalizedValues(
     { "manageProfilesDuplicateNameError",
         IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR },
     { "manageProfilesIconLabel", IDS_PROFILES_MANAGE_ICON_LABEL },
-    { "manageProfilesLimitedNotSignedInLabel",
-        IDS_PROFILES_CREATE_LIMITED_NOT_SIGNED_IN_LABEL },
-    { "manageProfilesLimitedNotSignedInLink",
-        IDS_PROFILES_CREATE_LIMITED_NOT_SIGNED_IN_LINK },
+    { "manageProfilesManagedNotSignedInLabel",
+        IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LABEL },
+    { "manageProfilesManagedNotSignedInLink",
+        IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LINK },
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
     { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
+    { "deleteManagedProfileAddendum", IDS_PROFILES_DELETE_MANAGED_ADDENDUM },
     { "createProfileTitle", IDS_PROFILES_CREATE_TITLE },
     { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
     { "createProfileConfirm", IDS_PROFILES_CREATE_CONFIRM },
@@ -396,7 +397,7 @@ void ManageProfileHandler::RequestSignedInText(const base::ListValue* args) {
   string16 text = string16();
   if (!username.empty()) {
      text = l10n_util::GetStringFUTF16(
-         IDS_PROFILES_CREATE_LIMITED_SIGNED_IN_LABEL, username);
+         IDS_PROFILES_CREATE_MANAGED_SIGNED_IN_LABEL, username);
   }
   StringValue text_value(text);
   web_ui()->CallJavascriptFunction("CreateProfileOverlay.updateSignedInStatus",

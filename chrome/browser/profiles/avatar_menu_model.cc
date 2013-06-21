@@ -238,7 +238,7 @@ base::string16 AvatarMenuModel::GetManagedUserInformation() const {
   ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
       browser_->profile());
   if (service->ProfileIsManaged()) {
-    base::string16 custodian = UTF8ToUTF16(service->GetCustodianEmailAddress());
+    base::string16 custodian = UTF8ToUTF16(service->GetCustodianName());
     return l10n_util::GetStringFUTF16(IDS_MANAGED_USER_INFO, custodian);
   }
 #endif

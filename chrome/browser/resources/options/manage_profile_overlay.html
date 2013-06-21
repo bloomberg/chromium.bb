@@ -39,6 +39,9 @@
     <h1 i18n-content="deleteProfileTitle"></h1>
     <div class="content-area">
       <div id="delete-profile-message"></div>
+      <div id="delete-managed-profile-addendum"
+          i18n-values=".innerHTML:deleteManagedProfileAddendum" hidden>
+      </div>
     </div>
     <div class="action-area button-strip">
       <button id="delete-profile-cancel" i18n-content="cancel"></button>
@@ -71,22 +74,22 @@
           </span>
         </label>
       </div>
-      <div id="create-profile-limited-container" class="checkbox" hidden>
+      <div id="create-profile-managed-container" class="checkbox" hidden>
         <label>
-          <input id="create-profile-limited" type="checkbox">
-          <span id="create-profile-limited-signed-in">
-            <span id="create-profile-limited-signed-in-label"></span>
-            <button id="create-profile-limited-signed-in-link"
+          <input id="create-profile-managed" type="checkbox">
+          <span id="create-profile-managed-signed-in">
+            <span id="create-profile-managed-signed-in-label"></span>
+            <button id="create-profile-managed-signed-in-link"
                 class="link-button" i18n-content="learnMore">
             </button>
           </span>
-          <span id="create-profile-limited-not-signed-in" hidden>
-            <span id="create-profile-limited-not-signed-in-label"
-                i18n-content="manageProfilesLimitedNotSignedInLabel">
+          <span id="create-profile-managed-not-signed-in" hidden>
+            <span id="create-profile-managed-not-signed-in-label"
+                i18n-content="manageProfilesManagedNotSignedInLabel">
             </span>
-            <button id="create-profile-limited-not-signed-in-link"
+            <button id="create-profile-managed-not-signed-in-link"
                 class="link-button"
-                i18n-content="manageProfilesLimitedNotSignedInLink">
+                i18n-content="manageProfilesManagedNotSignedInLink">
             </button>
           </span>
         </label>

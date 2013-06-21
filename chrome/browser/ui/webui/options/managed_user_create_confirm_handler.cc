@@ -11,6 +11,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_base.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_types.h"
@@ -31,17 +34,20 @@ void ManagedUserCreateConfirmHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    {"managedUserCreateConfirmTitle", IDS_NEW_LIMITED_USER_SUCCESS_TITLE},
-    {"managedUserCreateConfirmTextSlide1",
-     IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_1},
-    {"managedUserCreateConfirmTextSlide2",
-     IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_2},
-    {"managedUserCreateConfirmTextSlide3",
-     IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_3},
-    {"managedUserCreateConfirmDone", IDS_NEW_LIMITED_USER_SUCCESS_DONE_BUTTON},
-    {"managedUserCreateConfirmSwitch",
-     IDS_NEW_LIMITED_USER_SUCCESS_SWITCH_BUTTON},
+    { "managedUserCreatedTitle", IDS_NEW_MANAGED_USER_CREATED_TITLE },
+    { "managedUserCreatedText", IDS_NEW_MANAGED_USER_CREATED_TEXT },
+    { "managedUserCreatedDone", IDS_NEW_MANAGED_USER_CREATED_DONE_BUTTON },
+    { "managedUserCreatedSwitch", IDS_NEW_MANAGED_USER_CREATED_SWITCH_BUTTON },
   };
+
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  if (signin) {
+    localized_strings->SetString("custodianEmail",
+                                 signin->GetAuthenticatedUsername());
+  } else {
+    localized_strings->SetString("custodianEmail", std::string());
+  }
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
 }

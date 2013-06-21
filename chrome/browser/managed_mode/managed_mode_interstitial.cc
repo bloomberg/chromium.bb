@@ -52,19 +52,25 @@ std::string ManagedModeInterstitial::GetHTMLContents() {
   DictionaryValue strings;
   strings.SetString("blockPageTitle",
                     l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_TITLE));
-  strings.SetString("blockPageMessage",
-                    l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_MESSAGE));
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  ManagedUserService* managed_user_service =
+      ManagedUserServiceFactory::GetForProfile(profile);
+  string16 custodian = UTF8ToUTF16(managed_user_service->GetCustodianName());
+  strings.SetString(
+      "blockPageMessage",
+      l10n_util::GetStringFUTF16(IDS_BLOCK_INTERSTITIAL_MESSAGE, custodian));
+
   strings.SetString("backButton", l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
   strings.SetString(
       "requestAccessButton",
       l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON));
 
-  // TODO(sergiu): Set name to real value here.
-  std::string custodian_name("John Doe");
   strings.SetString(
       "requestSentMessage",
       l10n_util::GetStringFUTF16(IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE,
-                                 ASCIIToUTF16(custodian_name)));
+                                 custodian));
 
   webui::SetFontAndTextDirection(&strings);
 

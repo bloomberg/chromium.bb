@@ -176,7 +176,10 @@ void ManagedUserService::RegisterUserPrefs(
       prefs::kDefaultManagedModeFilteringBehavior, ManagedModeURLFilter::ALLOW,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      prefs::kManagedUserCustodian, std::string(),
+      prefs::kManagedUserCustodianEmail, std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
+      prefs::kManagedUserCustodianName, std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
@@ -218,7 +221,13 @@ void ManagedUserService::GetCategoryNames(CategoryList* list) {
 }
 
 std::string ManagedUserService::GetCustodianEmailAddress() const {
-  return profile_->GetPrefs()->GetString(prefs::kManagedUserCustodian);
+  return profile_->GetPrefs()->GetString(prefs::kManagedUserCustodianEmail);
+}
+
+std::string ManagedUserService::GetCustodianName() const {
+  std::string name = profile_->GetPrefs()->GetString(
+      prefs::kManagedUserCustodianName);
+  return name.empty() ? GetCustodianEmailAddress() : name;
 }
 
 std::string ManagedUserService::GetDebugPolicyProviderName() const {
@@ -347,7 +356,7 @@ bool ManagedUserService::ExtensionManagementPolicyImpl(
     return true;
 
   if (error)
-    *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_MODE);
+    *error = l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_USER);
   return false;
 }
 
@@ -562,7 +571,7 @@ void ManagedUserService::OnManagedUserRegistered(
   InitSync(token);
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(custodian_profile);
-  profile_->GetPrefs()->SetString(prefs::kManagedUserCustodian,
+  profile_->GetPrefs()->SetString(prefs::kManagedUserCustodianEmail,
                                   signin->GetAuthenticatedUsername());
   callback.Run(profile_, Profile::CREATE_STATUS_INITIALIZED);
 }
