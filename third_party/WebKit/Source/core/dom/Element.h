@@ -770,7 +770,7 @@ inline Element* Node::previousElementSibling() const
     Node* n = previousSibling();
     while (n && !n->isElementNode())
         n = n->previousSibling();
-    return static_cast<Element*>(n);
+    return toElement(n);
 }
 
 inline Element* Node::nextElementSibling() const
@@ -778,7 +778,7 @@ inline Element* Node::nextElementSibling() const
     Node* n = nextSibling();
     while (n && !n->isElementNode())
         n = n->nextSibling();
-    return static_cast<Element*>(n);
+    return toElement(n);
 }
 
 inline bool Element::fastHasAttribute(const QualifiedName& name) const
