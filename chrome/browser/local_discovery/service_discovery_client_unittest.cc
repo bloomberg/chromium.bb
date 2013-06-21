@@ -7,6 +7,7 @@
 #include "net/base/net_errors.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/mdns_client_impl.h"
+#include "net/dns/mock_mdns_socket_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -133,120 +134,6 @@ const char kSamplePacketSRVA[] = {
   0x03, 0x04,
 };
 
-
-class MockDatagramSocket : public net::DatagramServerSocket {
- public:
-  int Listen(const net::IPEndPoint& address) {
-    return ListenInternal(address.ToString());
-  }
-
-  MOCK_METHOD1(ListenInternal, int(const std::string& address));
-
-  MOCK_METHOD4(RecvFrom, int(net::IOBuffer* buffer, int size,
-                             net::IPEndPoint* address,
-                             const net::CompletionCallback& callback));
-
-  int SendTo(net::IOBuffer* buf, int buf_len, const net::IPEndPoint& address,
-             const net::CompletionCallback& callback) {
-    return SendToInternal(std::string(buf->data(), buf_len), address.ToString(),
-                          callback);
-  }
-
-  MOCK_METHOD3(SendToInternal, int(const std::string& packet,
-                                   const std::string address,
-                                   const net::CompletionCallback& callback));
-
-  MOCK_METHOD1(SetReceiveBufferSize, bool(int32 size));
-  MOCK_METHOD1(SetSendBufferSize, bool(int32 size));
-
-  MOCK_METHOD0(Close, void());
-
-  MOCK_CONST_METHOD1(GetPeerAddress, int(net::IPEndPoint* address));
-  MOCK_CONST_METHOD1(GetLocalAddress, int(net::IPEndPoint* address));
-  MOCK_CONST_METHOD0(NetLog, const net::BoundNetLog&());
-
-  MOCK_METHOD0(AllowAddressReuse, void());
-  MOCK_METHOD0(AllowBroadcast, void());
-
-  int JoinGroup(const net::IPAddressNumber& group_address) const {
-    return JoinGroupInternal(net::IPAddressToString(group_address));
-  }
-
-  MOCK_CONST_METHOD1(JoinGroupInternal, int(const std::string& group));
-
-  int LeaveGroup(const net::IPAddressNumber& group_address) const {
-    return LeaveGroupInternal(net::IPAddressToString(group_address));
-  }
-
-  MOCK_CONST_METHOD1(LeaveGroupInternal, int(const std::string& group));
-
-  MOCK_METHOD1(SetMulticastTimeToLive, int(int ttl));
-
-  MOCK_METHOD1(SetMulticastLoopbackMode, int(bool loopback));
-};
-
-class MockDatagramSocketFactory
-    : public net::MDnsConnection::SocketFactory {
- public:
-  MockDatagramSocketFactory() {
-  }
-
-  virtual ~MockDatagramSocketFactory() {
-  }
-
-  virtual scoped_ptr<net::DatagramServerSocket> CreateSocket() OVERRIDE {
-    scoped_ptr<MockDatagramSocket> new_socket(
-        new NiceMock<MockDatagramSocket>);
-
-    ON_CALL(*new_socket, SendToInternal(_, _, _))
-        .WillByDefault(Invoke(
-            this,
-            &MockDatagramSocketFactory::SendToInternal));
-
-    ON_CALL(*new_socket, RecvFrom(_, _, _, _))
-        .WillByDefault(Invoke(
-            this,
-            &MockDatagramSocketFactory::RecvFromInternal));
-
-    return new_socket.PassAs<net::DatagramServerSocket>();
-  }
-
-  int SendToInternal(const std::string& packet, const std::string& address,
-                     const net::CompletionCallback& callback) {
-    OnSendTo(packet);
-    return packet.size();
-  }
-
-  // The latest recieve callback is always saved, since the net::MDnsConnection
-  // does not care which socket a packet is received on.
-  int RecvFromInternal(net::IOBuffer* buffer, int size,
-                       net::IPEndPoint* address,
-                       const net::CompletionCallback& callback) {
-    recv_buffer_ = buffer;
-    recv_buffer_size_ = size;
-    recv_callback_ = callback;
-    return net::ERR_IO_PENDING;
-  }
-
-  void SimulateReceive(const char* packet, int size) {
-    DCHECK(recv_buffer_size_ >= size);
-    DCHECK(recv_buffer_.get());
-    DCHECK(!recv_callback_.is_null());
-
-    memcpy(recv_buffer_->data(), packet, size);
-    net::CompletionCallback recv_callback = recv_callback_;
-    recv_callback_.Reset();
-    recv_callback.Run(size);
-  }
-
-  MOCK_METHOD1(OnSendTo, void(const std::string&));
-
- private:
-  scoped_refptr<net::IOBuffer> recv_buffer_;
-  int recv_buffer_size_;
-  net::CompletionCallback recv_callback_;
-};
-
 class MockServiceWatcherDelegate : public ServiceWatcher::Delegate {
  public:
   MockServiceWatcherDelegate() {}
@@ -259,7 +146,7 @@ class MockServiceWatcherDelegate : public ServiceWatcher::Delegate {
 class ServiceDiscoveryTest : public ::testing::Test {
  public:
   ServiceDiscoveryTest()
-      : socket_factory_(new MockDatagramSocketFactory),
+      : socket_factory_(new net::MockMDnsSocketFactory),
         mdns_client_(
             scoped_ptr<net::MDnsConnection::SocketFactory>(
                 socket_factory_)) {
@@ -285,7 +172,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
     base::MessageLoop::current()->Quit();
   }
 
-  MockDatagramSocketFactory* socket_factory_;
+  net::MockMDnsSocketFactory* socket_factory_;
   net::MDnsClientImpl mdns_client_;
   ServiceDiscoveryClientImpl service_discovery_client_;
   base::MessageLoop loop_;

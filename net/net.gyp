@@ -2127,6 +2127,7 @@
         '../base/base.gyp:test_support_base',
         '../net/tools/tld_cleanup/tld_cleanup.gyp:tld_cleanup_util',
         '../testing/gtest.gyp:gtest',
+        '../testing/gmock.gyp:gmock',
         '../url/url.gyp:url_lib',
         'net',
       ],
@@ -2134,6 +2135,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
+        '../testing/gmock.gyp:gmock',
       ],
       'sources': [
         'base/capturing_net_log.cc',
@@ -2164,6 +2166,8 @@
         'dns/dns_test_util.h',
         'dns/mock_host_resolver.cc',
         'dns/mock_host_resolver.h',
+        'dns/mock_mdns_socket_factory.cc',
+        'dns/mock_mdns_socket_factory.h',
         'proxy/mock_proxy_resolver.cc',
         'proxy/mock_proxy_resolver.h',
         'proxy/mock_proxy_script_fetcher.cc',
@@ -2249,6 +2253,12 @@
             ],
           },
         ],
+        [ 'enable_mdns != 1', {
+            'sources!' : [
+              'dns/mock_mdns_socket_factory.cc',
+              'dns/mock_mdns_socket_factory.h'
+            ]
+        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],

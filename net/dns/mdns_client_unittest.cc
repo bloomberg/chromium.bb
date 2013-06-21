@@ -9,6 +9,7 @@
 #include "net/base/rand_callback.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mdns_client_impl.h"
+#include "net/dns/mock_mdns_socket_factory.h"
 #include "net/dns/record_rdata.h"
 #include "net/udp/udp_client_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -263,142 +264,6 @@ const char kSamplePacketAdditionalOnly[] = {
   0xc0, 0x0c,
 };
 
-class MockDatagramServerSocket : public DatagramServerSocket {
- public:
-  // DatagramServerSocket implementation:
-  int Listen(const IPEndPoint& address) {
-    return ListenInternal(address.ToString());
-  }
-
-  MOCK_METHOD1(ListenInternal, int(const std::string& address));
-
-  MOCK_METHOD4(RecvFrom, int(IOBuffer* buffer, int size,
-                             IPEndPoint* address,
-                             const CompletionCallback& callback));
-
-  int SendTo(IOBuffer* buf, int buf_len, const IPEndPoint& address,
-             const CompletionCallback& callback) {
-    return SendToInternal(std::string(buf->data(), buf_len), address.ToString(),
-                          callback);
-  }
-
-  MOCK_METHOD3(SendToInternal, int(const std::string& packet,
-                                   const std::string address,
-                                   const CompletionCallback& callback));
-
-  MOCK_METHOD1(SetReceiveBufferSize, bool(int32 size));
-  MOCK_METHOD1(SetSendBufferSize, bool(int32 size));
-
-  MOCK_METHOD0(Close, void());
-
-  MOCK_CONST_METHOD1(GetPeerAddress, int(IPEndPoint* address));
-  MOCK_CONST_METHOD1(GetLocalAddress, int(IPEndPoint* address));
-  MOCK_CONST_METHOD0(NetLog, const BoundNetLog&());
-
-  MOCK_METHOD0(AllowAddressReuse, void());
-  MOCK_METHOD0(AllowBroadcast, void());
-
-  int JoinGroup(const IPAddressNumber& group_address) const {
-    return JoinGroupInternal(IPAddressToString(group_address));
-  }
-
-  MOCK_CONST_METHOD1(JoinGroupInternal, int(const std::string& group));
-
-  int LeaveGroup(const IPAddressNumber& group_address) const {
-    return LeaveGroupInternal(IPAddressToString(group_address));
-  }
-
-  MOCK_CONST_METHOD1(LeaveGroupInternal, int(const std::string& group));
-
-  MOCK_METHOD1(SetMulticastTimeToLive, int(int ttl));
-
-  MOCK_METHOD1(SetMulticastLoopbackMode, int(bool loopback));
-
-  void SetResponsePacket(std::string response_packet) {
-    response_packet_ = response_packet;
-  }
-
-  int HandleRecvNow(IOBuffer* buffer, int size, IPEndPoint* address,
-                    const CompletionCallback& callback) {
-    int size_returned =
-        std::min(response_packet_.size(), static_cast<size_t>(size));
-    memcpy(buffer->data(), response_packet_.data(), size_returned);
-    return size_returned;
-  }
-
-  int HandleRecvLater(IOBuffer* buffer, int size, IPEndPoint* address,
-                      const CompletionCallback& callback) {
-    int rv = HandleRecvNow(buffer, size, address, callback);
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, rv));
-    return ERR_IO_PENDING;
-  }
-
- private:
-  std::string response_packet_;
-};
-
-class MockSocketFactory
-    : public MDnsConnection::SocketFactory {
- public:
-  MockSocketFactory() {
-  }
-
-  virtual ~MockSocketFactory() {
-  }
-
-  virtual scoped_ptr<DatagramServerSocket> CreateSocket() OVERRIDE {
-    scoped_ptr<MockDatagramServerSocket> new_socket(
-        new NiceMock<MockDatagramServerSocket>);
-
-    ON_CALL(*new_socket, SendToInternal(_, _, _))
-        .WillByDefault(Invoke(
-            this,
-            &MockSocketFactory::SendToInternal));
-
-    ON_CALL(*new_socket, RecvFrom(_, _, _, _))
-        .WillByDefault(Invoke(
-            this,
-            &MockSocketFactory::RecvFromInternal));
-
-    return new_socket.PassAs<DatagramServerSocket>();
-  }
-
-  void SimulateReceive(const char* packet, int size) {
-    DCHECK(recv_buffer_size_ >= size);
-    DCHECK(recv_buffer_.get());
-    DCHECK(!recv_callback_.is_null());
-
-    memcpy(recv_buffer_->data(), packet, size);
-    CompletionCallback recv_callback = recv_callback_;
-    recv_callback_.Reset();
-    recv_callback.Run(size);
-  }
-
-  MOCK_METHOD1(OnSendTo, void(const std::string&));
-
- private:
-  int SendToInternal(const std::string& packet, const std::string& address,
-                     const CompletionCallback& callback) {
-    OnSendTo(packet);
-    return packet.size();
-  }
-
-  // The latest receive callback is always saved, since the MDnsConnection
-  // does not care which socket a packet is received on.
-  int RecvFromInternal(IOBuffer* buffer, int size,
-                       IPEndPoint* address,
-                       const CompletionCallback& callback) {
-    recv_buffer_ = buffer;
-    recv_buffer_size_ = size;
-    recv_callback_ = callback;
-    return ERR_IO_PENDING;
-  }
-
-  scoped_refptr<IOBuffer> recv_buffer_;
-  int recv_buffer_size_;
-  CompletionCallback recv_callback_;
-};
-
 class PtrRecordCopyContainer {
  public:
   PtrRecordCopyContainer() {}
@@ -455,7 +320,7 @@ class MDnsTest : public ::testing::Test {
 
   scoped_ptr<MDnsClientImpl> test_client_;
   IPEndPoint mdns_ipv4_endpoint_;
-  StrictMock<MockSocketFactory>* socket_factory_;
+  StrictMock<MockMDnsSocketFactory>* socket_factory_;
 
   // Transactions and listeners that can be deleted by class methods for
   // reentrancy tests.
@@ -474,7 +339,7 @@ class MockListenerDelegate : public MDnsListener::Delegate {
 };
 
 MDnsTest::MDnsTest() {
-  socket_factory_ = new StrictMock<MockSocketFactory>();
+  socket_factory_ = new StrictMock<MockMDnsSocketFactory>();
   test_client_.reset(new MDnsClientImpl(
       scoped_ptr<MDnsConnection::SocketFactory>(socket_factory_)));
 }
@@ -982,14 +847,14 @@ class SimpleMockSocketFactory
   }
 
   virtual scoped_ptr<DatagramServerSocket> CreateSocket() OVERRIDE {
-    scoped_ptr<MockDatagramServerSocket> socket(
-        new StrictMock<MockDatagramServerSocket>);
+    scoped_ptr<MockMDnsDatagramServerSocket> socket(
+        new StrictMock<MockMDnsDatagramServerSocket>);
     sockets_.push(socket.get());
     return socket.PassAs<DatagramServerSocket>();
   }
 
-  MockDatagramServerSocket* PopFirstSocket() {
-    MockDatagramServerSocket* socket = sockets_.front();
+  MockMDnsDatagramServerSocket* PopFirstSocket() {
+    MockMDnsDatagramServerSocket* socket = sockets_.front();
     sockets_.pop();
     return socket;
   }
@@ -999,7 +864,7 @@ class SimpleMockSocketFactory
   }
 
  private:
-  std::queue<MockDatagramServerSocket*> sockets_;
+  std::queue<MockMDnsDatagramServerSocket*> sockets_;
 };
 
 class MockMDnsConnectionDelegate : public MDnsConnection::Delegate {
@@ -1049,8 +914,8 @@ class MDnsConnectionTest : public ::testing::Test {
 
   StrictMock<MockMDnsConnectionDelegate> delegate_;
 
-  MockDatagramServerSocket* socket_ipv4_;
-  MockDatagramServerSocket* socket_ipv6_;
+  MockMDnsDatagramServerSocket* socket_ipv4_;
+  MockMDnsDatagramServerSocket* socket_ipv6_;
   SimpleMockSocketFactory factory_;
   MDnsConnection connection_;
   TestCompletionCallback callback_;
@@ -1065,7 +930,7 @@ TEST_F(MDnsConnectionTest, ReceiveSynchronous) {
       .WillOnce(Return(ERR_IO_PENDING));
   EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
       .WillOnce(
-          Invoke(socket_ipv6_, &MockDatagramServerSocket::HandleRecvNow))
+          Invoke(socket_ipv6_, &MockMDnsDatagramServerSocket::HandleRecvNow))
       .WillOnce(Return(ERR_IO_PENDING));
 
   EXPECT_CALL(delegate_, HandlePacketInternal(sample_packet));
@@ -1081,7 +946,7 @@ TEST_F(MDnsConnectionTest, ReceiveAsynchronous) {
       .WillOnce(Return(ERR_IO_PENDING));
   EXPECT_CALL(*socket_ipv6_, RecvFrom(_, _, _, _))
       .WillOnce(
-          Invoke(socket_ipv6_, &MockDatagramServerSocket::HandleRecvLater))
+          Invoke(socket_ipv6_, &MockMDnsDatagramServerSocket::HandleRecvLater))
       .WillOnce(Return(ERR_IO_PENDING));
 
   ASSERT_TRUE(InitConnection());
