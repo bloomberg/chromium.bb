@@ -46,7 +46,6 @@ extern const wchar_t kTestingInterfaceDLL[];
 extern const char    kInitialProfile[];
 extern const char    kMultiProfileDirPrefix[];
 extern const wchar_t kBrowserResourcesDll[];
-extern const wchar_t kNaClAppName[];
 extern const base::FilePath::CharType kExtensionFileExtension[];
 extern const base::FilePath::CharType kExtensionKeyFileExtension[];
 

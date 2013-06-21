@@ -27,7 +27,6 @@
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_switches.h"
@@ -443,12 +442,9 @@ bool NaClProcessHost::LaunchSelLdr() {
 #if defined(OS_WIN)
   // On Windows 64-bit NaCl loader is called nacl64.exe instead of chrome.exe
   if (RunningOnWOW64()) {
-    base::FilePath module_path;
-    if (!PathService::Get(base::FILE_MODULE, &module_path)) {
-      LOG(ERROR) << "NaCl process launch failed: could not resolve module";
+    if (!NaClBrowser::GetInstance()->GetNaCl64ExePath(&exe_path)) {
       return false;
     }
-    exe_path = module_path.DirName().Append(chrome::kNaClAppName);
   }
 #endif
 

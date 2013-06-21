@@ -197,6 +197,18 @@ void NaClBrowser::InitIrtFilePath() {
   }
 }
 
+#if defined(OS_WIN)
+bool NaClBrowser::GetNaCl64ExePath(base::FilePath* exe_path) {
+  base::FilePath module_path;
+  if (!PathService::Get(base::FILE_MODULE, &module_path)) {
+    LOG(ERROR) << "NaCl process launch failed: could not resolve module";
+    return false;
+  }
+  *exe_path = module_path.DirName().Append(L"nacl64");
+  return true;
+}
+#endif
+
 NaClBrowser* NaClBrowser::GetInstance() {
   return Singleton<NaClBrowser>::get();
 }

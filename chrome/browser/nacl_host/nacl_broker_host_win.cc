@@ -8,8 +8,7 @@
 #include "base/path_service.h"
 #include "ipc/ipc_switches.h"
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
-#include "chrome/browser/nacl_host/nacl_process_host.h"
-#include "chrome/common/chrome_constants.h"
+#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/common/chrome_process_type.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -52,11 +51,10 @@ bool NaClBrokerHost::Init() {
     return false;
 
   // Create the path to the nacl broker/loader executable.
-  base::FilePath module_path;
-  if (!PathService::Get(base::FILE_MODULE, &module_path))
+  base::FilePath nacl_path;
+  if (!NaClBrowser::GetInstance()->GetNaCl64ExePath(&nacl_path))
     return false;
 
-  base::FilePath nacl_path = module_path.DirName().Append(chrome::kNaClAppName);
   CommandLine* cmd_line = new CommandLine(nacl_path);
   nacl::CopyNaClCommandLineArguments(cmd_line);
 

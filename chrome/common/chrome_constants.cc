@@ -133,8 +133,6 @@ const char* const kHelperFlavorSuffixes[] = {
 };
 #endif  // OS_MACOSX
 
-const wchar_t kNaClAppName[] = L"nacl64";
-
 #if defined(OS_WIN)
 const base::FilePath::CharType kMetroDriverDll[] = FPL("metro_driver.dll");
 const wchar_t kStatusTrayWindowClass[] = L"Chrome_StatusTrayWindow";
