@@ -30,6 +30,7 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/render_process.h"
+#include "content/renderer/render_process_visibility_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "ipc/ipc_sync_message.h"
@@ -188,6 +189,8 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
   is_threaded_compositing_enabled_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableThreadedCompositing);
+
+  RenderProcessVisibilityManager::GetInstance()->WidgetVisibilityChanged(true);
 }
 
 RenderWidget::~RenderWidget() {
