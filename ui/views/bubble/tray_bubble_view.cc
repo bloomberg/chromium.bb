@@ -396,7 +396,7 @@ void TrayBubbleView::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void TrayBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
-  if (params_.can_activate) {
+  if (delegate_ && params_.can_activate) {
     state->role = ui::AccessibilityTypes::ROLE_WINDOW;
     state->name = delegate_->GetAccessibleNameForBubble();
   }
