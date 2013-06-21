@@ -20,6 +20,8 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/base/scoped_sc_handle_win.h"
+#include "remoting/host/branding.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_session_win.h"
 #include "remoting/host/host_exit_codes.h"
@@ -51,6 +53,7 @@ class DaemonProcessWin : public DaemonProcess {
 
   // WorkerProcessIpcDelegate implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnPermanentError(int exit_code) OVERRIDE;
 
   // DaemonProcess overrides.
   virtual void SendToNetwork(IPC::Message* message) OVERRIDE;
@@ -68,6 +71,9 @@ class DaemonProcessWin : public DaemonProcess {
   virtual void DoCrashNetworkProcess(
       const tracked_objects::Location& location) OVERRIDE;
   virtual void LaunchNetworkProcess() OVERRIDE;
+
+  // Changes the service start type to 'manual'.
+  void DisableAutoStart();
 
  private:
   scoped_ptr<WorkerProcessLauncher> network_launcher_;
@@ -97,6 +103,16 @@ void DaemonProcessWin::OnChannelConnected(int32 peer_pid) {
   }
 
   DaemonProcess::OnChannelConnected(peer_pid);
+}
+
+void DaemonProcessWin::OnPermanentError(int exit_code) {
+  // Change the service start type to 'manual' if the host has been deleted
+  // remotely. This way the host will not be started every time the machine
+  // boots until the user re-enable it again.
+  if (exit_code == kInvalidHostIdExitCode)
+    DisableAutoStart();
+
+  DaemonProcess::OnPermanentError(exit_code);
 }
 
 void DaemonProcessWin::SendToNetwork(IPC::Message* message) {
@@ -184,6 +200,44 @@ scoped_ptr<DaemonProcess> DaemonProcess::Create(
                            stopped_callback));
   daemon_process->Initialize();
   return daemon_process.PassAs<DaemonProcess>();
+}
+
+void DaemonProcessWin::DisableAutoStart() {
+  ScopedScHandle scmanager(
+      OpenSCManager(NULL, SERVICES_ACTIVE_DATABASE,
+                    SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE));
+  if (!scmanager.IsValid()) {
+    LOG_GETLASTERROR(INFO)
+        << "Failed to connect to the service control manager";
+    return;
+  }
+
+  DWORD desired_access = SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS;
+  ScopedScHandle service(
+      OpenService(scmanager, kWindowsServiceName, desired_access));
+  if (!service.IsValid()) {
+    LOG_GETLASTERROR(INFO)
+        << "Failed to open to the '" << kWindowsServiceName << "' service";
+    return;
+  }
+
+  // Change the service start type to 'manual'. All |NULL| parameters below mean
+  // that there is no change to the corresponding service parameter.
+  if (!ChangeServiceConfig(service,
+                           SERVICE_NO_CHANGE,
+                           SERVICE_DEMAND_START,
+                           SERVICE_NO_CHANGE,
+                           NULL,
+                           NULL,
+                           NULL,
+                           NULL,
+                           NULL,
+                           NULL,
+                           NULL)) {
+    LOG_GETLASTERROR(INFO)
+        << "Failed to change the '" << kWindowsServiceName
+        << "'service start type to 'manual'";
+  }
 }
 
 }  // namespace remoting

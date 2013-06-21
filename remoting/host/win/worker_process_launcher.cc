@@ -257,7 +257,7 @@ void WorkerProcessLauncher::StopWorker() {
   // misconfiguration.
   if (kMinPermanentErrorExitCode <= exit_code_ &&
       exit_code_ <= kMaxPermanentErrorExitCode) {
-    ipc_handler_->OnPermanentError();
+    ipc_handler_->OnPermanentError(exit_code_);
     return;
   }
 

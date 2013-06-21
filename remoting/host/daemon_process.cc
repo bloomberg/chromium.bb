@@ -126,7 +126,7 @@ bool DaemonProcess::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DaemonProcess::OnPermanentError() {
+void DaemonProcess::OnPermanentError(int exit_code) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
   Stop();
 }

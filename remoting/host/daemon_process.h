@@ -67,7 +67,7 @@ class DaemonProcess
   // WorkerProcessIpcDelegate implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnPermanentError() OVERRIDE;
+  virtual void OnPermanentError(int exit_code) OVERRIDE;
 
   // Sends an IPC message to the network process. The message will be dropped
   // unless the network process is connected over the IPC channel.

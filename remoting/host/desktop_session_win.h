@@ -78,13 +78,16 @@ class DesktopSessionWin
   // Stops monitoring for session attach/detach events.
   void StopMonitoring();
 
+  // Asks DaemonProcess to terminate this session.
+  void TerminateSession();
+
   // Injects a secure attention sequence into the session.
   virtual void InjectSas() = 0;
 
   // WorkerProcessIpcDelegate implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnPermanentError() OVERRIDE;
+  virtual void OnPermanentError(int exit_code) OVERRIDE;
 
   // WtsTerminalObserver implementation.
   virtual void OnSessionAttached(uint32 session_id) OVERRIDE;

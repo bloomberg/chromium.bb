@@ -62,7 +62,7 @@ class MockIpcDelegate : public WorkerProcessIpcDelegate {
   // WorkerProcessIpcDelegate interface.
   MOCK_METHOD1(OnChannelConnected, void(int32));
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message&));
-  MOCK_METHOD0(OnPermanentError, void());
+  MOCK_METHOD1(OnPermanentError, void(int));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIpcDelegate);
@@ -387,7 +387,7 @@ TEST_F(WorkerProcessLauncherTest, Start) {
 
   EXPECT_CALL(server_listener_, OnChannelConnected(_))
       .Times(0);
-  EXPECT_CALL(server_listener_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(0);
 
   StartWorker();
@@ -407,7 +407,7 @@ TEST_F(WorkerProcessLauncherTest, StartAndConnect) {
       .Times(1)
       .WillOnce(InvokeWithoutArgs(this,
                                   &WorkerProcessLauncherTest::StopWorker));
-  EXPECT_CALL(server_listener_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(0);
 
   StartWorker();
@@ -430,7 +430,7 @@ TEST_F(WorkerProcessLauncherTest, Restart) {
           .WillOnce(InvokeWithoutArgs(this,
                                       &WorkerProcessLauncherTest::StopWorker));
 
-  EXPECT_CALL(server_listener_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(0);
 
   StartWorker();
@@ -453,7 +453,7 @@ TEST_F(WorkerProcessLauncherTest, DropIpcChannel) {
           .WillOnce(InvokeWithoutArgs(
               this, &WorkerProcessLauncherTest::StopWorker));
 
-  EXPECT_CALL(server_listener_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(0);
 
   StartWorker();
@@ -473,7 +473,7 @@ TEST_F(WorkerProcessLauncherTest, PermanentError) {
       .WillOnce(InvokeWithoutArgs(CreateFunctor(
           this, &WorkerProcessLauncherTest::TerminateWorker,
           kMinPermanentErrorExitCode)));
-  EXPECT_CALL(server_listener_, OnPermanentError())
+  EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(this,
                                   &WorkerProcessLauncherTest::StopWorker));

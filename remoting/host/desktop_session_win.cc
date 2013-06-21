@@ -280,7 +280,7 @@ void RdpSession::OnRdpConnected() {
 void RdpSession::OnRdpClosed() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  OnPermanentError();
+  TerminateSession();
 }
 
 void RdpSession::SetScreenResolution(const ScreenResolution& resolution) {
@@ -421,7 +421,7 @@ void DesktopSessionWin::OnSessionAttachTimeout() {
 
   LOG(ERROR) << "Session attach notification didn't arrived within "
              << kSessionAttachTimeoutSeconds << " seconds.";
-  OnPermanentError();
+  TerminateSession();
 }
 
 void DesktopSessionWin::StartMonitoring(const std::string& terminal_id) {
@@ -451,6 +451,15 @@ void DesktopSessionWin::StopMonitoring() {
 
   session_attach_timer_.Stop();
   OnSessionDetached();
+}
+
+void DesktopSessionWin::TerminateSession() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  StopMonitoring();
+
+  // This call will delete |this| so it should be at the very end of the method.
+  daemon_process()->CloseDesktopSession(id());
 }
 
 void DesktopSessionWin::OnChannelConnected(int32 peer_pid) {
@@ -490,13 +499,10 @@ bool DesktopSessionWin::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DesktopSessionWin::OnPermanentError() {
+void DesktopSessionWin::OnPermanentError(int exit_code) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  StopMonitoring();
-
-  // This call will delete |this| so it should be at the very end of the method.
-  daemon_process()->CloseDesktopSession(id());
+  TerminateSession();
 }
 
 void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
@@ -520,7 +526,7 @@ void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
   }
 
   if (!result) {
-    OnPermanentError();
+    TerminateSession();
     return;
   }
 
@@ -540,7 +546,7 @@ void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
                                     launch_elevated,
                                     WideToUTF8(kDaemonIpcSecurityDescriptor)));
   if (!delegate->Initialize(session_id)) {
-    OnPermanentError();
+    TerminateSession();
     return;
   }
 
