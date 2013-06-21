@@ -44,6 +44,9 @@ class WebUIResourceBrowserTest : public InProcessBrowserTest {
     std::string message;
     ExecuteJavascriptOnCurrentTab("runTests()");
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    while (message.compare("\"PENDING\"") == 0) {
+      ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    }
     EXPECT_STREQ("\"SUCCESS\"", message.c_str());
   }
 
@@ -110,6 +113,11 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListSelectionModelTest) {
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, LocalStringsTest) {
   AddLibrary(IDR_WEBUI_JS_LOCAL_STRINGS);
   RunTest(base::FilePath(FILE_PATH_LITERAL("local_strings_test.html")));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ParseHtmlSubsetTest) {
+  AddLibrary(IDR_WEBUI_JS_PARSE_HTML_SUBSET);
+  RunTest(base::FilePath(FILE_PATH_LITERAL("parse_html_subset_test.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, PositionUtilTest) {

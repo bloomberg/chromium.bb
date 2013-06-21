@@ -506,6 +506,7 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
     return false;
   if (message)
     *message = message_queue_.front();
+  message_queue_.pop();
   return true;
 }
 

@@ -2,20 +2,10 @@
 <html>
 <head>
 <title>parseHtmlSubset test</title>
-<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
-<script src="parse_html_subset.js"></script>
-<script>
-
-goog.require('goog.testing.AsyncTestCase');
-goog.require('goog.testing.jsunit');
-
-</script>
-
+<script src="webui_resource_test.js"></script>
 </head>
 <body>
 <script>
-
-var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall();
 
 function parseAndAssertThrows() {
   var args = arguments;
@@ -26,9 +16,7 @@ function parseAndAssertThrows() {
 
 function parseAndAssertNotThrows() {
   var args = arguments;
-  assertNotThrows(function() {
-    parseHtmlSubset.apply(null, args);
-  });
+  parseHtmlSubset.apply(null, args);
 }
 
 function testText() {
@@ -113,17 +101,15 @@ function testInvalidCustomAttributes() {
   parseAndAssertThrows('<a class="fancy">I\'m fancy!</a>');
 }
 
-function testOnError() {
+function testOnErrorAsync(testDoneCalback) {
   window.called = false;
-
-  asyncTestCase.waitForAsync('Waiting for image error callbacks');
 
   parseAndAssertThrows('<img onerror="window.called = true" src="_.png">');
   parseAndAssertThrows('<img src="_.png" onerror="window.called = true">');
 
   window.setTimeout(function() {
-    asyncTestCase.continueTesting();
     assertFalse(window.called);
+    testDoneCalback();
   });
 }
 

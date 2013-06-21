@@ -96,35 +96,79 @@ function assertArrayEquals(expected, observed) {
 }
 
 /**
- * Runs all functions starting with test and reports success or
- * failure of the test suite.
+ * Defines runTests.
  */
-function runTests() {
-  var tests = [];
-  var success = true;
-  for (var name in window) {
-    if (typeof window[name] == 'function' && /^test/.test(name))
-      tests.push(name);
-  }
-  if (!tests.length) {
-    console.error('\nFailed to find test cases.');
-    success = false;
-  }
-  for (var i = 0; i < tests.length; i++) {
-    try {
-      if (window.setUp)
-        window.setUp();
-      window[tests[i]]();
-    } catch (err) {
-      console.error('Failure in test ' + tests[i] + '\n' + err);
-      console.log(err.stack);
-      success = false;
+(function(exports) {
+  /**
+   * List of test cases.
+   * @type {Array.<string>} List of function names for tests to run.
+   */
+  var testCases = [];
+
+  /**
+   * Indicates if all tests have run successfully.
+   * @type {boolean}
+   */
+  var cleanTestRun = true;
+
+  /**
+   * Armed during setup of a test to call the matching tear down code.
+   * @type {Function}
+   */
+  var pendingTearDown = null;
+
+  /**
+   * Runs all functions starting with test and reports success or
+   * failure of the test suite.
+   */
+  function runTests() {
+    for (var name in window) {
+      if (typeof window[name] == 'function' && /^test/.test(name))
+        testCases.push(name);
     }
-    if (window.tearDown)
-      window.tearDown();
+    if (!testCases.length) {
+      console.error('Failed to find test cases.');
+      cleanTestRun = false;
+    }
+    continueTesting();
   }
-  endTests(success);
-}
+
+  /**
+   * Runs the next test in the queue. Reports the test results if the queue is
+   * empty.
+   */
+  function continueTesting() {
+    if (pendingTearDown) {
+      pendingTearDown();
+      pendingTearDown = null;
+    }
+    if (testCases.length > 0) {
+      var fn = testCases.pop();
+      var isAsyncTest = window[fn].length;
+      try {
+        if (window.setUp)
+          window.setUp();
+        pendingTearDown = window.tearDown;
+        window[fn](continueTesting);
+      } catch(err) {
+        console.error('Failure in test ' + fn + '\n' + err);
+        console.log(err.stack);
+        cleanTestRun = false;
+      }
+      // Asynchronous tests must manually call continueTesting when complete.
+      if (!isAsyncTest)
+        continueTesting();
+    } else {
+      endTests(cleanTestRun);
+    }
+    if (testCases.length) {
+      domAutomationController.setAutomationId(1);
+      domAutomationController.send('PENDING');
+    }
+  };
+
+  exports.runTests = runTests;
+})(this);
 
 /**
  * Signals completion of a test.
