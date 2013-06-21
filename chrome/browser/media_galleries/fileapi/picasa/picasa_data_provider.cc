@@ -89,15 +89,17 @@ void PicasaDataProvider::UniquifyNames(const std::vector<AlbumInfo>& info_list,
 }
 
 bool PicasaDataProvider::ReadData() {
-  PicasaAlbumTableReader album_table_reader(database_path_);
+  PicasaAlbumTableFiles album_table_files(database_path_);
+  PicasaAlbumTableReader album_table_reader((album_table_files));
 
-  if (!album_table_reader.Init())
-    return false;
+  bool read_success = album_table_reader.Init();
 
-  InitializeWith(album_table_reader.albums(),
-                 album_table_reader.folders());
+  ClosePicasaAlbumTableFiles(&album_table_files);
 
-  return true;
+  if (read_success)
+    InitializeWith(album_table_reader.albums(), album_table_reader.folders());
+
+  return read_success;
 }
 
 }  // namespace picasa

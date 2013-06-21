@@ -948,7 +948,6 @@
         'browser/media_galleries/fileapi/picasa/picasa_album_table_reader_unittest.cc',
         'browser/media_galleries/fileapi/picasa/picasa_file_util_unittest.cc',
         'browser/media_galleries/fileapi/picasa/pmp_column_reader_unittest.cc',
-        'browser/media_galleries/fileapi/picasa/pmp_table_reader_unittest.cc',
         'browser/media_galleries/linux/mtp_device_object_enumerator_unittest.cc',
         'browser/media_galleries/mac/mtp_device_delegate_impl_mac_unittest.mm',
         'browser/media_galleries/media_file_system_registry_unittest.cc',

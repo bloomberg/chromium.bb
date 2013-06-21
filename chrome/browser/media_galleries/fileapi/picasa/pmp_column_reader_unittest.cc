@@ -44,16 +44,13 @@ void TestValid(const picasa::PmpFieldType field_type,
   ASSERT_TRUE(test_helper.Init());
 
   PmpColumnReader reader;
-
-  uint32 rows_read = 0xFF;
-
   std::vector<uint8> data =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size(), elems);
   ASSERT_TRUE(test_helper.InitColumnReaderFromBytes(
-      &reader, data, field_type, &rows_read));
-  EXPECT_EQ(elems.size(), rows_read);
+      &reader, data, field_type));
+  EXPECT_EQ(elems.size(), reader.rows_read());
 
-  for (uint32 i = 0; i < elems.size() && i < rows_read; i++) {
+  for (uint32 i = 0; i < elems.size() && i < reader.rows_read(); i++) {
     T target;
     EXPECT_TRUE(DoRead(&reader, i, &target));
     EXPECT_EQ(elems[i], target);
@@ -72,8 +69,7 @@ void TestMalformed(const picasa::PmpFieldType field_type,
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_too_few_declared_rows,
       data_too_few_declared_rows,
-      field_type,
-      NULL));
+      field_type));
 
   PmpColumnReader reader_too_many_declared_rows;
   std::vector<uint8> data_too_many_declared_rows =
@@ -81,22 +77,21 @@ void TestMalformed(const picasa::PmpFieldType field_type,
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_too_many_declared_rows,
       data_too_many_declared_rows,
-      field_type,
-      NULL));
+      field_type));
 
   PmpColumnReader reader_truncated;
   std::vector<uint8> data_truncated =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size(), elems);
   data_truncated.resize(data_truncated.size()-10);
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader_truncated, data_truncated, field_type, NULL));
+      &reader_truncated, data_truncated, field_type));
 
   PmpColumnReader reader_padded;
   std::vector<uint8> data_padded =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size(), elems);
   data_padded.resize(data_padded.size()+10);
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader_padded, data_padded, field_type, NULL));
+      &reader_padded, data_padded, field_type));
 }
 
 template<class T>
@@ -118,15 +113,14 @@ TEST(PmpColumnReaderTest, HeaderParsingAndValidation) {
   ASSERT_TRUE(test_helper.Init());
 
   PmpColumnReader reader_good_header;
-  uint32 rows_read = 0xFF;
   std::vector<uint8> good_header =
       PmpTestHelper::MakeHeader(picasa::PMP_TYPE_STRING, 0);
   EXPECT_TRUE(test_helper.InitColumnReaderFromBytes(
       &reader_good_header,
       good_header,
-      picasa::PMP_TYPE_STRING,
-      &rows_read));
-  EXPECT_EQ(0U, rows_read) << "Read non-zero rows from header-only data.";
+      picasa::PMP_TYPE_STRING));
+  EXPECT_EQ(0U, reader_good_header.rows_read()) <<
+      "Read non-zero rows from header-only data.";
 
   PmpColumnReader reader_bad_magic_bytes;
   std::vector<uint8> bad_magic_bytes =
@@ -135,8 +129,7 @@ TEST(PmpColumnReaderTest, HeaderParsingAndValidation) {
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_bad_magic_bytes,
       bad_magic_bytes,
-      picasa::PMP_TYPE_STRING,
-      NULL));
+      picasa::PMP_TYPE_STRING));
 
   PmpColumnReader reader_inconsistent_types;
   std::vector<uint8> inconsistent_type =
@@ -145,8 +138,7 @@ TEST(PmpColumnReaderTest, HeaderParsingAndValidation) {
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_inconsistent_types,
       inconsistent_type,
-      picasa::PMP_TYPE_STRING,
-      NULL));
+      picasa::PMP_TYPE_STRING));
 
   PmpColumnReader reader_invalid_type;
   std::vector<uint8> invalid_type =
@@ -156,8 +148,7 @@ TEST(PmpColumnReaderTest, HeaderParsingAndValidation) {
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_invalid_type,
       invalid_type,
-      picasa::PMP_TYPE_STRING,
-      NULL));
+      picasa::PMP_TYPE_STRING));
 
   PmpColumnReader reader_incomplete_header;
   std::vector<uint8> incomplete_header =
@@ -166,8 +157,7 @@ TEST(PmpColumnReaderTest, HeaderParsingAndValidation) {
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
       &reader_incomplete_header,
       incomplete_header,
-      picasa::PMP_TYPE_STRING,
-      NULL));
+      picasa::PMP_TYPE_STRING));
 }
 
 TEST(PmpColumnReaderTest, StringParsing) {

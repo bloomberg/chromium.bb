@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/platform_file.h"
 #include "base/time.h"
 
 namespace picasa {
@@ -37,10 +38,23 @@ struct AlbumInfo {
   base::FilePath path;
 };
 
+struct PicasaAlbumTableFiles {
+  explicit PicasaAlbumTableFiles(const base::FilePath& directory_path);
+
+  // Special empty file used to confirm existence of table.
+  base::PlatformFile indicator_file;
+
+  base::PlatformFile category_file;
+  base::PlatformFile date_file;
+  base::PlatformFile filename_file;
+  base::PlatformFile name_file;
+  base::PlatformFile token_file;
+  base::PlatformFile uid_file;
+};
+
 class PicasaAlbumTableReader {
  public:
-  // |directory_path| is Picasa's db3 directory where the PMP table is stored.
-  explicit PicasaAlbumTableReader(const base::FilePath& directory_path);
+  explicit PicasaAlbumTableReader(const PicasaAlbumTableFiles& table_files);
   virtual ~PicasaAlbumTableReader();
 
   bool Init();
@@ -49,7 +63,7 @@ class PicasaAlbumTableReader {
   const std::vector<AlbumInfo>& folders() const;
 
  private:
-  const base::FilePath directory_path_;
+  const PicasaAlbumTableFiles table_files_;
 
   bool initialized_;
 
@@ -58,6 +72,8 @@ class PicasaAlbumTableReader {
 
   DISALLOW_COPY_AND_ASSIGN(PicasaAlbumTableReader);
 };
+
+void ClosePicasaAlbumTableFiles(PicasaAlbumTableFiles* table_files);
 
 }  // namespace picasa
 

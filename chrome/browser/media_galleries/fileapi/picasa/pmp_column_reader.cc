@@ -7,7 +7,6 @@
 #include <cstring>
 
 #include "base/file_util.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -15,6 +14,7 @@ namespace picasa {
 
 namespace {
 
+COMPILE_ASSERT(sizeof(double) == 8, double_must_be_8_bytes_long);
 const int64 kPmpMaxFilesize = 50*1024*1024;  // Arbitrary maximum of 50 MB.
 
 }  // namespace
@@ -22,18 +22,22 @@ const int64 kPmpMaxFilesize = 50*1024*1024;  // Arbitrary maximum of 50 MB.
 PmpColumnReader::PmpColumnReader()
     : length_(0),
       field_type_(PMP_TYPE_INVALID),
-      rows_(0) {}
+      rows_read_(0) {}
 
 PmpColumnReader::~PmpColumnReader() {}
 
-bool PmpColumnReader::Init(const base::FilePath& filepath,
-                           const PmpFieldType expected_type,
-                           uint32* rows_read) {
+bool PmpColumnReader::ReadFile(base::PlatformFile file,
+                               const PmpFieldType expected_type) {
   DCHECK(!data_.get());
   base::ThreadRestrictions::AssertIOAllowed();
 
-  if (!file_util::GetFileSize(filepath, &length_))
+  if (file == base::kInvalidPlatformFileValue)
     return false;
+
+  base::PlatformFileInfo info;
+  if (!base::GetPlatformFileInfo(file, &info))
+    return false;
+  length_ = info.size;
 
   if (length_ < kPmpHeaderSize || length_ > kPmpMaxFilesize)
     return false;
@@ -44,11 +48,12 @@ bool PmpColumnReader::Init(const base::FilePath& filepath,
 
   DCHECK(length_ < kint32max);  // ReadFile expects an int.
 
-  bool success = file_util::ReadFile(filepath, data_begin, length_) &&
-                 ParseData(expected_type, rows_read);
+  bool success = base::ReadPlatformFile(file, 0, data_begin, length_) &&
+                 ParseData(expected_type);
 
+  // If any of the reading or parsing fails, prevent Read* calls.
   if (!success)
-    rows_ = 0;  // If any of the reading or parsing fails, prevent Read* calls.
+    rows_read_ = 0;
 
   return success;
 }
@@ -56,7 +61,7 @@ bool PmpColumnReader::Init(const base::FilePath& filepath,
 bool PmpColumnReader::ReadString(const uint32 row, std::string* result) const {
   DCHECK(data_.get() != NULL);
 
-  if (field_type_ != PMP_TYPE_STRING || row >= rows_)
+  if (field_type_ != PMP_TYPE_STRING || row >= rows_read_)
     return false;
 
   DCHECK_LT(row, strings_.size());
@@ -67,7 +72,7 @@ bool PmpColumnReader::ReadString(const uint32 row, std::string* result) const {
 bool PmpColumnReader::ReadUInt32(const uint32 row, uint32* result) const {
   DCHECK(data_.get() != NULL);
 
-  if (field_type_ != PMP_TYPE_UINT32 || row >= rows_)
+  if (field_type_ != PMP_TYPE_UINT32 || row >= rows_read_)
     return false;
 
   *result = reinterpret_cast<uint32*>(data_.get() + kPmpHeaderSize)[row];
@@ -77,7 +82,7 @@ bool PmpColumnReader::ReadUInt32(const uint32 row, uint32* result) const {
 bool PmpColumnReader::ReadDouble64(const uint32 row, double* result) const {
   DCHECK(data_.get() != NULL);
 
-  if (field_type_ != PMP_TYPE_DOUBLE64 || row >= rows_)
+  if (field_type_ != PMP_TYPE_DOUBLE64 || row >= rows_read_)
     return false;
 
   *result = reinterpret_cast<double*>(data_.get() + kPmpHeaderSize)[row];
@@ -87,7 +92,7 @@ bool PmpColumnReader::ReadDouble64(const uint32 row, double* result) const {
 bool PmpColumnReader::ReadUInt8(const uint32 row, uint8* result) const {
   DCHECK(data_.get() != NULL);
 
-  if (field_type_ != PMP_TYPE_UINT8 || row >= rows_)
+  if (field_type_ != PMP_TYPE_UINT8 || row >= rows_read_)
     return false;
 
   *result = reinterpret_cast<uint8*>(data_.get() + kPmpHeaderSize)[row];
@@ -97,15 +102,19 @@ bool PmpColumnReader::ReadUInt8(const uint32 row, uint8* result) const {
 bool PmpColumnReader::ReadUInt64(const uint32 row, uint64* result) const {
   DCHECK(data_.get() != NULL);
 
-  if (field_type_ != PMP_TYPE_UINT64 || row >= rows_)
+  if (field_type_ != PMP_TYPE_UINT64 || row >= rows_read_)
     return false;
 
   *result = reinterpret_cast<uint64*>(data_.get() + kPmpHeaderSize)[row];
   return true;
 }
 
-bool PmpColumnReader::ParseData(const PmpFieldType expected_type,
-                                uint32* rows_read) {
+uint32 PmpColumnReader::rows_read() const {
+  DCHECK(data_.get() != NULL);
+  return rows_read_;
+}
+
+bool PmpColumnReader::ParseData(const PmpFieldType expected_type) {
   DCHECK(data_.get() != NULL);
   DCHECK_GE(length_, kPmpHeaderSize);
 
@@ -131,10 +140,10 @@ bool PmpColumnReader::ParseData(const PmpFieldType expected_type,
   if (field_type_ != expected_type)
     return false;
 
-  rows_ = *(reinterpret_cast<uint32*>(&data_[kPmpRowCountOffset]));
+  rows_read_ = *(reinterpret_cast<uint32*>(&data_[kPmpRowCountOffset]));
 
   // Sanity check against malicious row field.
-  if (rows_ > (kPmpMaxFilesize - kPmpHeaderSize))
+  if (rows_read_ > (kPmpMaxFilesize - kPmpHeaderSize))
     return false;
 
   DCHECK_GE(length_, kPmpHeaderSize);
@@ -145,24 +154,22 @@ bool PmpColumnReader::ParseData(const PmpFieldType expected_type,
       expected_body_length = IndexStrings();
       break;
     case PMP_TYPE_UINT32:
-      expected_body_length = static_cast<int64>(rows_) * sizeof(uint32);
+      expected_body_length = static_cast<int64>(rows_read_) * sizeof(uint32);
       break;
     case PMP_TYPE_DOUBLE64:
-      expected_body_length = static_cast<int64>(rows_) * sizeof(double);
+      expected_body_length = static_cast<int64>(rows_read_) * sizeof(double);
       break;
     case PMP_TYPE_UINT8:
-      expected_body_length = static_cast<int64>(rows_) * sizeof(uint8);
+      expected_body_length = static_cast<int64>(rows_read_) * sizeof(uint8);
       break;
     case PMP_TYPE_UINT64:
-      expected_body_length = static_cast<int64>(rows_) * sizeof(uint64);
+      expected_body_length = static_cast<int64>(rows_read_) * sizeof(uint64);
       break;
     default:
       return false;
       break;
   }
 
-  if (body_length == expected_body_length && rows_read)
-    *rows_read = rows_;
   return body_length == expected_body_length;
 }
 
@@ -170,12 +177,12 @@ int64 PmpColumnReader::IndexStrings() {
   DCHECK(data_.get() != NULL);
   DCHECK_GE(length_, kPmpHeaderSize);
 
-  strings_.reserve(rows_);
+  strings_.reserve(rows_read_);
 
   int64 bytes_parsed = kPmpHeaderSize;
   const uint8* data_cursor = data_.get() + kPmpHeaderSize;
 
-  while (strings_.size() < rows_) {
+  while (strings_.size() < rows_read_) {
     const uint8* string_end = static_cast<const uint8*>(
         memchr(data_cursor, '\0', length_ - bytes_parsed));
 

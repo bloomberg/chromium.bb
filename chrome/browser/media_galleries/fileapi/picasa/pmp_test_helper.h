@@ -35,8 +35,7 @@ class PmpTestHelper {
 
   bool InitColumnReaderFromBytes(PmpColumnReader* const reader,
                                  const std::vector<uint8>& data,
-                                 const PmpFieldType expected_type,
-                                 uint32* rows_read);
+                                 const PmpFieldType expected_type);
 
   static std::vector<uint8> MakeHeader(const PmpFieldType field_type,
                                        const uint32 row_count);

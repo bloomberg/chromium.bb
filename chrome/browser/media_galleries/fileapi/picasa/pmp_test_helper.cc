@@ -9,6 +9,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
 
@@ -110,10 +111,10 @@ template bool PmpTestHelper::WriteColumnFileFromVector<uint8>(
 template bool PmpTestHelper::WriteColumnFileFromVector<uint64>(
     const std::string&, const PmpFieldType, const std::vector<uint64>&);
 
-bool PmpTestHelper::InitColumnReaderFromBytes(PmpColumnReader* const reader,
-                                              const std::vector<uint8>& data,
-                                              const PmpFieldType expected_type,
-                                              uint32* rows_read) {
+bool PmpTestHelper::InitColumnReaderFromBytes(
+    PmpColumnReader* const reader,
+    const std::vector<uint8>& data,
+    const PmpFieldType expected_type) {
   DCHECK(temp_dir_.IsValid());
 
   base::FilePath temp_path;
@@ -123,12 +124,18 @@ bool PmpTestHelper::InitColumnReaderFromBytes(PmpColumnReader* const reader,
     return false;
   }
 
-  bool success = reader->Init(temp_path, expected_type, rows_read);
+  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
+  base::PlatformFile platform_file =
+      base::CreatePlatformFile(temp_path, flags, NULL, NULL);
+  if (platform_file == base::kInvalidPlatformFileValue)
+    return false;
 
-  file_util::Delete(temp_path, true);
+  bool read_success = reader->ReadFile(platform_file, expected_type);
 
-  return success;
+  base::ClosePlatformFile(platform_file);
+  file_util::Delete(temp_path, false /* recursive */);
 
+  return read_success;
 }
 
 // Return a vector so we don't have to worry about memory management.
