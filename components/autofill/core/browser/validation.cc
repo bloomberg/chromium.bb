@@ -63,13 +63,24 @@ bool IsValidCreditCardNumber(const base::string16& text) {
   base::string16 number = CreditCard::StripSeparators(text);
 
   // Credit card numbers are at most 19 digits in length [1]. 12 digits seems to
-  // be a fairly safe lower-bound [2].
+  // be a fairly safe lower-bound [2].  Specific card issuers have more rigidly
+  // defined sizes.
   // [1] http://www.merriampark.com/anatomycc.htm
   // [2] http://en.wikipedia.org/wiki/Bank_card_number
-  const size_t kMinCreditCardDigits = 12;
-  const size_t kMaxCreditCardDigits = 19;
-  if (number.size() < kMinCreditCardDigits ||
-      number.size() > kMaxCreditCardDigits)
+  const std::string type = CreditCard::GetCreditCardType(text);
+  if (type == kAmericanExpressCard && number.size() != 15)
+    return false;
+  if (type == kDinersCard && number.size() != 14)
+    return false;
+  if (type == kDiscoverCard && number.size() != 16)
+    return false;
+  if (type == kJCBCard && number.size() != 16)
+    return false;
+  if (type == kMasterCard && number.size() != 16)
+    return false;
+  if (type == kVisaCard && number.size() != 13 && number.size() != 16)
+    return false;
+  if (type == kGenericCard && (number.size() < 12 || number.size() > 19))
     return false;
 
   // Use the Luhn formula [3] to validate the number.

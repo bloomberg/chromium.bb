@@ -185,9 +185,6 @@
       <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name.">
         MasterCard
       </message>
-      <message name="IDS_AUTOFILL_CC_SOLO" desc="Solo debit card name.">
-        Solo
-      </message>
       <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name.">
         Visa
       </message>

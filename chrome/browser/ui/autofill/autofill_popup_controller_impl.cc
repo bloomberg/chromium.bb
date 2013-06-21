@@ -61,7 +61,6 @@ const DataResource kDataResources[] = {
   { "genericCC", IDR_AUTOFILL_CC_GENERIC },
   { "jcbCC", IDR_AUTOFILL_CC_JCB },
   { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
-  { "soloCC", IDR_AUTOFILL_CC_SOLO },
   { "visaCC", IDR_AUTOFILL_CC_VISA },
 };
 

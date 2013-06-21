@@ -70,7 +70,6 @@
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_GENERIC" file="cc-generic.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_JCB" file="jcb.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="mastercard.png" />
-      <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SOLO" file="solo.png" />
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="visa.png" />
       <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTP" file="pdf_button_ftp.png" />
       <structure type="chrome_scaled_image" name="IDR_PDF_BUTTON_FTP_HOVER" file="pdf_button_ftp_hover.png" />

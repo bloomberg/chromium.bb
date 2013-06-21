@@ -1180,8 +1180,8 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsEmptyValue) {
   base::string16 expected_labels[] = { ASCIIToUTF16("*3456"),
                                        ASCIIToUTF16("*8765")};
   base::string16 expected_icons[] = {
-    ASCIIToUTF16("visaCC"),
-    ASCIIToUTF16("genericCC")
+    ASCIIToUTF16(kVisaCard),
+    ASCIIToUTF16(kMasterCard)
   };
   int expected_unique_ids[] = {
     autofill_manager_->GetPackedCreditCardID(4),
@@ -1220,7 +1220,7 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsMatchCharacter) {
 
   base::string16 expected_values[] = {ASCIIToUTF16("************3456")};
   base::string16 expected_labels[] = {ASCIIToUTF16("*3456")};
-  base::string16 expected_icons[] = {ASCIIToUTF16("visaCC")};
+  base::string16 expected_icons[] = {ASCIIToUTF16(kVisaCard)};
   int expected_unique_ids[] = {autofill_manager_->GetPackedCreditCardID(4)};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
@@ -1259,8 +1259,8 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsNonCCNumber) {
   base::string16 expected_labels[] = { ASCIIToUTF16("*3456"),
                                        ASCIIToUTF16("*8765") };
   base::string16 expected_icons[] = {
-    ASCIIToUTF16("visaCC"),
-    ASCIIToUTF16("genericCC")
+    ASCIIToUTF16(kVisaCard),
+    ASCIIToUTF16(kMasterCard)
   };
   int expected_unique_ids[] = {
     autofill_manager_->GetPackedCreditCardID(4),
@@ -1383,9 +1383,9 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestionsRepeatedObfuscatedNumber) {
     ASCIIToUTF16("*3456"),
   };
   base::string16 expected_icons[] = {
-    ASCIIToUTF16("visaCC"),
-    ASCIIToUTF16("genericCC"),
-    ASCIIToUTF16("masterCardCC")
+    ASCIIToUTF16(kVisaCard),
+    ASCIIToUTF16(kMasterCard),
+    ASCIIToUTF16(kMasterCard)
   };
   int expected_unique_ids[] = {
     autofill_manager_->GetPackedCreditCardID(4),
@@ -1456,8 +1456,8 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   base::string16 expected_labels2[] = { ASCIIToUTF16("*3456"),
                                         ASCIIToUTF16("*8765")};
   base::string16 expected_icons2[] = {
-    ASCIIToUTF16("visaCC"),
-    ASCIIToUTF16("genericCC")
+    ASCIIToUTF16(kVisaCard),
+    ASCIIToUTF16(kMasterCard)
   };
   int expected_unique_ids2[] = {
     autofill_manager_->GetPackedCreditCardID(4),

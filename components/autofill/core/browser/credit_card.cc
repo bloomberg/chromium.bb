@@ -151,8 +151,6 @@ base::string16 CreditCard::TypeForDisplay(const std::string& type) {
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
   if (type == kMasterCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
-  if (type == kSoloCard)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_SOLO);
   if (type == kVisaCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
 
@@ -174,8 +172,6 @@ int CreditCard::IconResourceId(const std::string& type) {
     return IDR_AUTOFILL_CC_JCB;
   if (type == kMasterCard)
     return IDR_AUTOFILL_CC_MASTERCARD;
-  if (type == kSoloCard)
-    return IDR_AUTOFILL_CC_SOLO;
   if (type == kVisaCard)
     return IDR_AUTOFILL_CC_VISA;
 
@@ -187,85 +183,83 @@ int CreditCard::IconResourceId(const std::string& type) {
 
 // static
 std::string CreditCard::GetCreditCardType(const base::string16& number) {
-  // Don't check for a specific type if this is not a credit card number.
-  if (!autofill::IsValidCreditCardNumber(number))
-    return kGenericCard;
-
   // Credit card number specifications taken from:
-  // http://en.wikipedia.org/wiki/Credit_card_numbers and
+  // http://en.wikipedia.org/wiki/Credit_card_numbers,
+  // http://www.discovernetwork.com/merchants/images/Merchant_Marketing_PDF.pdf,
+  // http://www.regular-expressions.info/creditcard.html, and
   // http://www.beachnet.com/~hstiles/cardtype.html
+  //
+  // The last site is currently unavailable, but a cached version remains at
+  // http://web.archive.org/web/20120923111349/http://www.beachnet.com/~hstiles/cardtype.html
+  //
   // Card Type              Prefix(es)                      Length
   // ---------------------------------------------------------------
   // Visa                   4                               13,16
   // American Express       34,37                           15
-  // Diners Club            300-305,2014,2149,36,           14,15
-  // Discover Card          6011,65                         16
-  // JCB                    3                               16
-  // JCB                    2131,1800                       15
+  // Diners Club            300-305,3095,36,38-39           14
+  // Discover Card          6011,644-649,65                 16
+  // JCB                    3528-3589                       16
   // MasterCard             51-55                           16
-  // Solo (debit card)      6334,6767                       16,18,19
 
-  // We need at least 4 digits to work with.
-  if (number.length() < 4)
+  // Check for prefixes of length 1.
+  if (number.empty())
+    return kGenericCard;
+
+  if (number[0] == '4')
+    return kVisaCard;
+
+  // Check for prefixes of length 2.
+  if (number.size() < 2)
+    return kGenericCard;
+
+  int first_two_digits = 0;
+  if (!base::StringToInt(number.substr(0, 2), &first_two_digits))
+    return kGenericCard;
+
+  if (first_two_digits == 34 || first_two_digits == 37)
+    return kAmericanExpressCard;
+
+  if (first_two_digits == 36 ||
+      first_two_digits == 38 ||
+      first_two_digits == 39)
+    return kDinersCard;
+
+  if (first_two_digits >= 51 && first_two_digits <= 55)
+    return kMasterCard;
+
+  if (first_two_digits == 65)
+    return kDiscoverCard;
+
+  // Check for prefixes of length 3.
+  if (number.size() < 3)
+    return kGenericCard;
+
+  int first_three_digits = 0;
+  if (!base::StringToInt(number.substr(0, 3), &first_three_digits))
+    return kGenericCard;
+
+  if (first_three_digits >= 300 && first_three_digits <= 305)
+    return kDinersCard;
+
+  if (first_three_digits >= 644 && first_three_digits <= 649)
+    return kDiscoverCard;
+
+  // Check for prefixes of length 4.
+  if (number.size() < 4)
     return kGenericCard;
 
   int first_four_digits = 0;
   if (!base::StringToInt(number.substr(0, 4), &first_four_digits))
     return kGenericCard;
 
-  int first_three_digits = first_four_digits / 10;
-  int first_two_digits = first_three_digits / 10;
-  int first_digit = first_two_digits / 10;
+  if (first_four_digits == 3095)
+    return kDinersCard;
 
-  switch (number.length()) {
-    case 13:
-      if (first_digit == 4)
-        return kVisaCard;
+  if (first_four_digits >= 3528 && first_four_digits <= 3589)
+    return kJCBCard;
 
-      break;
-    case 14:
-      if (first_three_digits >= 300 && first_three_digits <= 305)
-        return kDinersCard;
-
-      if (first_digit == 36)
-        return kDinersCard;
-
-      break;
-    case 15:
-      if (first_two_digits == 34 || first_two_digits == 37)
-        return kAmericanExpressCard;
-
-      if (first_four_digits == 2131 || first_four_digits == 1800)
-        return kJCBCard;
-
-      if (first_four_digits == 2014 || first_four_digits == 2149)
-        return kDinersCard;
-
-      break;
-    case 16:
-      if (first_four_digits == 6011 || first_two_digits == 65)
-        return kDiscoverCard;
-
-      if (first_four_digits == 6334 || first_four_digits == 6767)
-        return kSoloCard;
-
-      if (first_two_digits >= 51 && first_two_digits <= 55)
-        return kMasterCard;
-
-      if (first_digit == 3)
-        return kJCBCard;
-
-      if (first_digit == 4)
-        return kVisaCard;
-
-      break;
-    case 18:
-    case 19:
-      if (first_four_digits == 6334 || first_four_digits == 6767)
-        return kSoloCard;
-
-      break;
-  }
+  if (first_four_digits == 6011)
+    return kDiscoverCard;
 
   return kGenericCard;
 }
@@ -698,7 +692,6 @@ const char* const kDiscoverCard = "discoverCC";
 const char* const kGenericCard = "genericCC";
 const char* const kJCBCard = "jcbCC";
 const char* const kMasterCard = "masterCardCC";
-const char* const kSoloCard = "soloCC";
 const char* const kVisaCard = "visaCC";
 
 }  // namespace autofill

@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/webkit_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -292,7 +293,8 @@ TEST(CreditCardTest, InvalidMastercardNumber) {
 
   test::SetCreditCardInfo(&card, "Baby Face Nelson",
                           "5200000000000004", "01", "2010");
-  EXPECT_EQ("genericCC", card.type());
+  EXPECT_EQ(kMasterCard, card.type());
+  EXPECT_FALSE(card.IsComplete());
 }
 
 // Verify that we preserve exactly what the user typed for credit card numbers.
@@ -506,6 +508,167 @@ TEST(CreditCardTest, CreditCardTypeSelectControl) {
                            ASCIIToUTF16("6011111111111117"));
     credit_card.FillSelectControl(CREDIT_CARD_TYPE, "en-US", &field);
     EXPECT_EQ(ASCIIToUTF16("discover"), field.value);
+  }
+}
+
+TEST(CreditCardTest, GetCreditCardType) {
+  struct {
+    std::string card_number;
+    std::string type;
+    bool is_valid;
+  } test_cases[] = {
+    // The relevant sample numbers from
+    // http://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
+    { "378282246310005", kAmericanExpressCard, true },
+    { "371449635398431", kAmericanExpressCard, true },
+    { "378734493671000", kAmericanExpressCard, true },
+    { "30569309025904", kDinersCard, true },
+    { "38520000023237", kDinersCard, true },
+    { "6011111111111117", kDiscoverCard, true },
+    { "6011000990139424", kDiscoverCard, true },
+    { "3530111333300000", kJCBCard, true },
+    { "3566002020360505", kJCBCard, true },
+    { "5555555555554444", kMasterCard, true },
+    { "5105105105105100", kMasterCard, true },
+    { "4111111111111111", kVisaCard, true },
+    { "4012888888881881", kVisaCard, true },
+    { "4222222222222", kVisaCard, true },
+
+    // The relevant sample numbers from
+    // http://auricsystems.com/support-center/sample-credit-card-numbers/
+    { "343434343434343", kAmericanExpressCard, true },
+    { "371144371144376", kAmericanExpressCard, true },
+    { "341134113411347", kAmericanExpressCard, true },
+    { "36438936438936", kDinersCard, true },
+    { "36110361103612", kDinersCard, true },
+    { "36111111111111", kDinersCard, true },
+    { "6011016011016011", kDiscoverCard, true },
+    { "6011000990139424", kDiscoverCard, true },
+    { "6011000000000004", kDiscoverCard, true },
+    { "6011000995500000", kDiscoverCard, true },
+    { "6500000000000002", kDiscoverCard, true },
+    { "3566002020360505", kJCBCard, true },
+    { "3528000000000007", kJCBCard, true },
+    { "5500005555555559", kMasterCard, true },
+    { "5555555555555557", kMasterCard, true },
+    { "5454545454545454", kMasterCard, true },
+    { "5555515555555551", kMasterCard, true },
+    { "5405222222222226", kMasterCard, true },
+    { "5478050000000007", kMasterCard, true },
+    { "5111005111051128", kMasterCard, true },
+    { "5112345112345114", kMasterCard, true },
+    { "5115915115915118", kMasterCard, true },
+
+    // Empty string
+    { std::string(), kGenericCard, false },
+
+    // Non-numeric
+    { "garbage", kGenericCard, false },
+    { "4garbage", kVisaCard, false },
+
+    // Fails Luhn check.
+    { "4111111111111112", kVisaCard, false },
+
+    // Invalid length.
+    { "3434343434343434", kAmericanExpressCard, false },
+    { "411111111111116", kVisaCard, false },
+
+    // Issuer Identification Numbers (IINs) that Chrome recognizes.
+    { "4", kVisaCard, false },
+    { "34", kAmericanExpressCard, false },
+    { "37", kAmericanExpressCard, false },
+    { "300", kDinersCard, false },
+    { "301", kDinersCard, false },
+    { "302", kDinersCard, false },
+    { "303", kDinersCard, false },
+    { "304", kDinersCard, false },
+    { "305", kDinersCard, false },
+    { "3095", kDinersCard, false },
+    { "36", kDinersCard, false },
+    { "38", kDinersCard, false },
+    { "39", kDinersCard, false },
+    { "6011", kDiscoverCard, false },
+    { "644", kDiscoverCard, false },
+    { "645", kDiscoverCard, false },
+    { "646", kDiscoverCard, false },
+    { "647", kDiscoverCard, false },
+    { "648", kDiscoverCard, false },
+    { "649", kDiscoverCard, false },
+    { "65", kDiscoverCard, false },
+    { "3528", kJCBCard, false },
+    { "3531", kJCBCard, false },
+    { "3589", kJCBCard, false },
+    { "51", kMasterCard, false },
+    { "52", kMasterCard, false },
+    { "53", kMasterCard, false },
+    { "54", kMasterCard, false },
+    { "55", kMasterCard, false },
+
+    // Not enough data to determine an IIN uniquely.
+    { "3", kGenericCard, false },
+    { "30", kGenericCard, false },
+    { "309", kGenericCard, false },
+    { "35", kGenericCard, false },
+    { "5", kGenericCard, false },
+    { "6", kGenericCard, false },
+    { "60", kGenericCard, false },
+    { "601", kGenericCard, false },
+    { "64", kGenericCard, false },
+
+    // Unknown IINs.
+    { "0", kGenericCard, false },
+    { "1", kGenericCard, false },
+    { "2", kGenericCard, false },
+    { "306", kGenericCard, false },
+    { "307", kGenericCard, false },
+    { "308", kGenericCard, false },
+    { "3091", kGenericCard, false },
+    { "3094", kGenericCard, false },
+    { "3096", kGenericCard, false },
+    { "31", kGenericCard, false },
+    { "32", kGenericCard, false },
+    { "33", kGenericCard, false },
+    { "351", kGenericCard, false },
+    { "3527", kGenericCard, false },
+    { "359", kGenericCard, false },
+    { "50", kGenericCard, false },
+    { "56", kGenericCard, false },
+    { "57", kGenericCard, false },
+    { "58", kGenericCard, false },
+    { "59", kGenericCard, false },
+    { "600", kGenericCard, false },
+    { "602", kGenericCard, false },
+    { "603", kGenericCard, false },
+    { "604", kGenericCard, false },
+    { "605", kGenericCard, false },
+    { "606", kGenericCard, false },
+    { "607", kGenericCard, false },
+    { "608", kGenericCard, false },
+    { "609", kGenericCard, false },
+    { "61", kGenericCard, false },
+    { "62", kGenericCard, false },
+    { "63", kGenericCard, false },
+    { "640", kGenericCard, false },
+    { "641", kGenericCard, false },
+    { "642", kGenericCard, false },
+    { "643", kGenericCard, false },
+    { "66", kGenericCard, false },
+    { "67", kGenericCard, false },
+    { "68", kGenericCard, false },
+    { "69", kGenericCard, false },
+    { "7", kGenericCard, false },
+    { "8", kGenericCard, false },
+    { "9", kGenericCard, false },
+
+    // Oddball case: Unknown issuer, but valid Luhn check and plausible length.
+    { "7000700070007000", kGenericCard, true },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    base::string16 card_number = ASCIIToUTF16(test_cases[i].card_number);
+    SCOPED_TRACE(card_number);
+    EXPECT_EQ(test_cases[i].type, CreditCard::GetCreditCardType(card_number));
+    EXPECT_EQ(test_cases[i].is_valid, IsValidCreditCardNumber(card_number));
   }
 }
 

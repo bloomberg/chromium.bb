@@ -37,7 +37,13 @@ class CreditCard : public AutofillDataModel {
   // The ResourceBundle ID for the appropriate credit card image.
   static int IconResourceId(const std::string& type);
 
-  // The internal representation of credit card type.
+  // Returns the internal representation of credit card type corresponding to
+  // the given |number|.  The credit card type is determined purely according to
+  // the Issuer Identification Number (IIN), a.k.a. the "Bank Identification
+  // Number (BIN)", which is parsed from the relevant prefix of the |number|.
+  // This function performs no additional validation checks on the |number|.
+  // Hence, the returned type for both the valid card "4111-1111-1111-1111" and
+  // the invalid card "4garbage" will be Visa, which has an IIN of 4.
   static std::string GetCreditCardType(const base::string16& number);
 
   // FormGroup:
@@ -159,7 +165,6 @@ extern const char* const kDiscoverCard;
 extern const char* const kGenericCard;
 extern const char* const kJCBCard;
 extern const char* const kMasterCard;
-extern const char* const kSoloCard;
 extern const char* const kVisaCard;
 
 }  // namespace autofill

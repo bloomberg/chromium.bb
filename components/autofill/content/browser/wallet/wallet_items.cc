@@ -269,8 +269,6 @@ base::string16 WalletItems::MaskedInstrument::TypeAndLastFourDigits() const {
     display_type = CreditCard::TypeForDisplay(kDiscoverCard);
   else if (type_ == MASTER_CARD)
     display_type = CreditCard::TypeForDisplay(kMasterCard);
-  else if (type_ == SOLO)
-    display_type = CreditCard::TypeForDisplay(kSoloCard);
   else if (type_ == VISA)
     display_type = CreditCard::TypeForDisplay(kVisaCard);
   else
@@ -295,14 +293,11 @@ const gfx::Image& WalletItems::MaskedInstrument::CardIcon() const {
       idr = IDR_AUTOFILL_CC_MASTERCARD;
       break;
 
-    case SOLO:
-      idr = IDR_AUTOFILL_CC_SOLO;
-      break;
-
     case VISA:
       idr = IDR_AUTOFILL_CC_VISA;
       break;
 
+    case SOLO:
     case MAESTRO:
     case SWITCH:
     case UNKNOWN:
