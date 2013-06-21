@@ -27,6 +27,7 @@
 #include "ash/wm/boot_splash_screen.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/panels/panel_layout_manager.h"
+#include "ash/wm/panels/panel_window_event_handler.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
@@ -289,7 +290,7 @@ void RootWindowController::InitForPrimaryDisplay() {
   panel_layout_manager_ =
       new internal::PanelLayoutManager(panel_container);
   panel_container_handler_.reset(
-      new ToplevelWindowEventHandler(panel_container));
+      new PanelWindowEventHandler(panel_container));
   panel_container->SetLayoutManager(panel_layout_manager_);
 
   // TODO(stevenjb/oshima): Remove this call to CreateLauncher() and call

@@ -412,6 +412,8 @@
         'wm/panels/panel_frame_view.h',
         'wm/panels/panel_layout_manager.cc',
         'wm/panels/panel_layout_manager.h',
+        'wm/panels/panel_window_event_handler.cc',
+        'wm/panels/panel_window_event_handler.h',
         'wm/panels/panel_window_resizer.cc',
         'wm/panels/panel_window_resizer.h',
         'wm/partial_screenshot_view.cc',
