@@ -75,7 +75,15 @@ x {
 
 x {
     background:         invalid-linear-gradient(top,rgba(0,0,0,0) 0,rgba(0,0,0,1) 100%)    ;
+    background:         linear-gradient(top,rgba(0,0,0,0) 0,rgba(0,0,0,1) 100%)    ;
     background: IE-hack ignored \9  ;
+    background: IE-hack ignored \0 ;
+    background: IE-hack ignored\0/ ;
+    animation: 3s slidein;
+    font-size-adjust: none;
+    transform: translateZ(0);
+    user-select: none;
+    -webkit-text-size-adjust: 100%;
 }
 
 x, {
@@ -102,6 +110,8 @@ x, {
 @media %%%;
 
 @keyframes;
+@keyframes { }
+@-moz-keyframes { }
 
 @page;
 @page xxx;

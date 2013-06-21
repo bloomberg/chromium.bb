@@ -622,6 +622,7 @@ static bool hasVendorSpecificPrefix(const CharType* string, size_t stringLength)
 static bool hasNonWebkitVendorSpecificPrefix(const CSSParserString& string)
 {
     const size_t stringLength = string.length();
+    // 4 corresponds to "-o-x" - the shortest vendor-prefixed property name.
     if (stringLength < 4 || string[0] != '-')
         return false;
 
@@ -630,6 +631,19 @@ static bool hasNonWebkitVendorSpecificPrefix(const CSSParserString& string)
         return false;
 
     return string.is8Bit() ? hasVendorSpecificPrefix(string.characters8(), stringLength) : hasVendorSpecificPrefix(string.characters16(), stringLength);
+}
+
+static bool isValidPropertyName(const CSSParserString& content)
+{
+    if (content.equalIgnoringCase("animation")
+        || content.equalIgnoringCase("font-size-adjust")
+        || content.equalIgnoringCase("transform")
+        || content.equalIgnoringCase("user-select")
+        || content.equalIgnoringCase("-webkit-flex-pack")
+        || content.equalIgnoringCase("-webkit-text-size-adjust"))
+        return true;
+
+    return false;
 }
 
 // static
@@ -646,6 +660,7 @@ bool InspectorCSSAgent::cssErrorFilter(const CSSParserString& content, int prope
         // The "filter" property is commonly used instead of "opacity" for IE9.
         if (propertyId == CSSPropertyFilter)
             return false;
+
         break;
 
     case CSSParser::InvalidPropertyValueError:
@@ -661,9 +676,20 @@ bool InspectorCSSAgent::cssErrorFilter(const CSSParserString& content, int prope
         if (propertyId == CSSPropertyCursor && content.equalIgnoringCase("hand"))
             return false;
 
-        // Ignore properties like "property: value \9". This trick used in bootsrtap for IE-only properies.
-        if (contentLength > 2 && content[contentLength - 2] == '\\' && content[contentLength - 1] == '9')
+        // Ignore properties like "property: value \9" (common IE hack) or "property: value \0" (IE 8 hack).
+        if (contentLength > 2 && content[contentLength - 2] == '\\' && (content[contentLength - 1] == '9' || content[contentLength - 1] == '0'))
             return false;
+
+        // Another hack like "property: value\0/".
+        if (contentLength > 3 && content[contentLength - 3] == '\\' && content[contentLength - 2] == '0' && content[contentLength - 1] == '/')
+            return false;
+
+        // Popular value prefixes valid in other browsers.
+        if (content.startsWithIgnoringCase("linear-gradient"))
+            return false;
+        if (content.startsWithIgnoringCase("-webkit-flexbox"))
+            return false;
+
         break;
 
     case CSSParser::InvalidPropertyError:
@@ -678,10 +704,16 @@ bool InspectorCSSAgent::cssErrorFilter(const CSSParserString& content, int prope
         if (content.startsWithIgnoringCase("scrollbar-"))
             return false;
 
-        // Unsupported standard property.
-        if (content.equalIgnoringCase("font-size-adjust"))
+        if (isValidPropertyName(content))
             return false;
+
         break;
+
+    case CSSParser::InvalidRuleError:
+        // Block error reporting for @-rules for now to avoid noise.
+        if (contentLength > 4 && content[0] == '@')
+            return false;
+        return true;
     }
     return true;
 }
