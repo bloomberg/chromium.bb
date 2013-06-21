@@ -1330,6 +1330,12 @@ void Element::attach(const AttachContext& context)
             data->setNeedsFocusAppearanceUpdateSoonAfterAttach(false);
         }
     }
+
+    // FIXME: It doesn't appear safe to call didRecalculateStyleForElement when
+    // not in a Document::recalcStyle. Since we're hopefully going to always
+    // lazyAttach in the future that problem should go away.
+    if (document()->inStyleRecalc())
+        InspectorInstrumentation::didRecalculateStyleForElement(this);
 }
 
 void Element::unregisterNamedFlowContentNode()
@@ -1454,6 +1460,8 @@ void Element::recalcStyle(StyleChange change)
             return;
         }
 
+        InspectorInstrumentation::didRecalculateStyleForElement(this);
+
         if (RenderObject* renderer = this->renderer()) {
             if (localChange != NoChange || pseudoStyleCacheIsInvalid(currentStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || styleChangeType() == SyntheticStyleChange)
                 renderer->setAnimatableStyle(newStyle.get());
@@ -1519,10 +1527,9 @@ void Element::recalcStyle(StyleChange change)
 
     clearNeedsStyleRecalc();
     clearChildNeedsStyleRecalc();
-    
+
     if (hasCustomStyleCallbacks())
         didRecalcStyle(change);
-    InspectorInstrumentation::didRecalculateStyleForElement(this);
 }
 
 ElementShadow* Element::shadow() const

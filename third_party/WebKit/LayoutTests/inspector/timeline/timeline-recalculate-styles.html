@@ -15,8 +15,8 @@ function performActions()
 {
     var element = document.createElement("div");
     element.className = "test-style";
-    element.innerHTML = "Test data";
-    document.body.appendChild(element);
+    element.innerHTML = "<span>Test data</span>";
+    document.querySelector('section > div').appendChild(element);
 }
 
 function test()
@@ -31,6 +31,8 @@ function test()
 <p>
 Tests the Timeline API instrumentation of a style recalculation event
 </p>
-
+<section>
+    <div></div>
+</section>
 </body>
 </html>
