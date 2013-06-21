@@ -13,7 +13,6 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
-#include "ui/views/controls/link_listener.h"
 
 class BookmarkBubbleViewObserver;
 class Profile;
@@ -28,7 +27,6 @@ class Textfield;
 // bookmark it is created with. Don't create a BookmarkBubbleView directly,
 // instead use the static Show method.
 class BookmarkBubbleView : public views::BubbleDelegateView,
-                           public views::LinkListener,
                            public views::ButtonListener,
                            public views::ComboboxListener {
  public:
@@ -68,10 +66,10 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   // Returns the title to display.
   string16 GetTitle();
 
-  // Overridden from views::LinkListener:
-  // Either unstars the item or shows the bookmark editor (depending upon which
-  // link was clicked).
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  // Overridden from views::View:
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   // Closes the bubble or opens the edit dialog.
@@ -107,8 +105,8 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
 
   RecentlyUsedFoldersComboModel parent_model_;
 
-  // Link for removing/unstarring the bookmark.
-  views::Link* remove_link_;
+  // Button for removing the bookmark.
+  views::LabelButton* remove_button_;
 
   // Button to bring up the editor.
   views::LabelButton* edit_button_;
