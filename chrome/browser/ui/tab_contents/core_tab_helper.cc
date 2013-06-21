@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -84,10 +85,41 @@ string16 CoreTabHelper::GetStatusText() const {
   return string16();
 }
 
+void CoreTabHelper::OnCloseStarted() {
+  if (close_start_time_.is_null())
+    close_start_time_ = base::TimeTicks::Now();
+}
+
+void CoreTabHelper::OnCloseCanceled() {
+  close_start_time_ = base::TimeTicks();
+  before_unload_end_time_ = base::TimeTicks();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsObserver overrides
 
 void CoreTabHelper::WasShown() {
   WebCacheManager::GetInstance()->ObserveActivity(
       web_contents()->GetRenderProcessHost()->GetID());
+}
+
+void CoreTabHelper::WebContentsDestroyed(WebContents* web_contents) {
+  // OnCloseStarted isn't called in unit tests.
+  if (!close_start_time_.is_null()) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeTicks unload_start_time = close_start_time_;
+    if (!before_unload_end_time_.is_null())
+      unload_start_time = before_unload_end_time_;
+    UMA_HISTOGRAM_TIMES("Tab.Close", now - close_start_time_);
+    UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", now - unload_start_time);
+  }
+
+}
+
+void CoreTabHelper::BeforeUnloadFired(const base::TimeTicks& proceed_time) {
+  before_unload_end_time_ = proceed_time;
+}
+
+void CoreTabHelper::BeforeUnloadDialogCancelled() {
+  OnCloseCanceled();
 }

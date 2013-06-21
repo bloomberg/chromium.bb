@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -28,7 +29,9 @@ void AddBlankTabAt(Browser* browser, int index, bool foreground) {
   params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
   chrome::Navigate(&params);
-  params.target_contents->SetNewTabStartTime(new_tab_start_time);
+  CoreTabHelper* core_tab_helper =
+      CoreTabHelper::FromWebContents(params.target_contents);
+  core_tab_helper->set_new_tab_start_time(new_tab_start_time);
 }
 
 content::WebContents* AddSelectedTabWithURL(

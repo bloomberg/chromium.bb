@@ -398,16 +398,6 @@ WebContentsImpl::~WebContentsImpl() {
   }
 #endif
 
-  // OnCloseStarted isn't called in unit tests.
-  if (!close_start_time_.is_null()) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeTicks unload_start_time = close_start_time_;
-    if (!before_unload_end_time_.is_null())
-      unload_start_time = before_unload_end_time_;
-    UMA_HISTOGRAM_TIMES("Tab.Close", now - close_start_time_);
-    UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", now - unload_start_time);
-  }
-
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
                     WebContentsImplDestroyed());
@@ -1948,21 +1938,8 @@ RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
   return &renderer_preferences_;
 }
 
-void WebContentsImpl::SetNewTabStartTime(const base::TimeTicks& time) {
-  new_tab_start_time_ = time;
-}
-
-base::TimeTicks WebContentsImpl::GetNewTabStartTime() const {
-  return new_tab_start_time_;
-}
-
 void WebContentsImpl::Close() {
   Close(GetRenderViewHost());
-}
-
-void WebContentsImpl::OnCloseStarted() {
-  if (close_start_time_.is_null())
-    close_start_time_ = base::TimeTicks::Now();
 }
 
 void WebContentsImpl::DragSourceEndedAt(int client_x, int client_y,
@@ -3498,7 +3475,8 @@ void WebContentsImpl::WorkerCrashed() {
 void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
     bool proceed, const base::TimeTicks& proceed_time,
     bool* proceed_to_fire_unload) {
-  before_unload_end_time_ = proceed_time;
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    BeforeUnloadFired(proceed_time));
   if (delegate_)
     delegate_->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
 }
@@ -3641,8 +3619,8 @@ void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
     DidStopLoading(rvh);
     controller_.DiscardNonCommittedEntries();
 
-    close_start_time_ = base::TimeTicks();
-    before_unload_end_time_ = base::TimeTicks();
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      BeforeUnloadDialogCancelled());
   }
   is_showing_before_unload_dialog_ = false;
   static_cast<RenderViewHostImpl*>(
