@@ -22,7 +22,7 @@ var remoting = remoting || {};
 remoting.WcsSandboxContainer = function(sandbox) {
   this.sandbox_ = sandbox;
   /** @type {?function(string):void} */
-  this.onReady_ = null;
+  this.onLocalJid_ = null;
   /** @type {?function(remoting.Error):void} */
   this.onError_ = null;
   /** @type {?function(string):void} */
@@ -34,12 +34,14 @@ remoting.WcsSandboxContainer = function(sandbox) {
 };
 
 /**
- * @param {?function(string):void} onReady Callback invoked with the client JID
- *     when the WCS code has loaded.
+ * @param {?function(string):void} onLocalJid Callback invoked with the client
+ *     JID when the WCS code has loaded. Note that this may be called more than
+ *     once (potentially with a different JID) if the WCS node is reloaded for
+ *     any reason.
  * @return {void} Nothing.
  */
-remoting.WcsSandboxContainer.prototype.setOnReady = function(onReady) {
-  this.onReady_ = onReady;
+remoting.WcsSandboxContainer.prototype.setOnLocalJid = function(onLocalJid) {
+  this.onLocalJid_ = onLocalJid;
 };
 
 /**
@@ -92,15 +94,15 @@ remoting.WcsSandboxContainer.prototype.sendIq = function(stanza) {
 remoting.WcsSandboxContainer.prototype.onMessage_ = function(event) {
   switch (event.data['command']) {
 
-    case 'onReady':
+    case 'onLocalJid':
       /** @type {string} */
       var clientJid = event.data['clientJid'];
       if (clientJid === undefined) {
         console.error('onReady: missing client JID');
         break;
       }
-      if (this.onReady_) {
-        this.onReady_(clientJid);
+      if (this.onLocalJid_) {
+        this.onLocalJid_(clientJid);
       }
       break;
 

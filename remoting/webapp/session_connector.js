@@ -317,7 +317,7 @@ remoting.SessionConnector.prototype.onIT2MeHostInfo_ = function(xhr) {
  * @private
  */
 remoting.SessionConnector.prototype.loadWcs_ = function(token) {
-  remoting.wcsSandbox.setOnReady(this.onWcsLoaded_.bind(this));
+  remoting.wcsSandbox.setOnLocalJid(this.onLocalJid_.bind(this));
   remoting.wcsSandbox.setOnError(this.onError_);
   remoting.wcsSandbox.setAccessToken(token);
   this.startAccessTokenRefreshTimer_();
@@ -330,7 +330,7 @@ remoting.SessionConnector.prototype.loadWcs_ = function(token) {
  * @return {void} Nothing.
  * @private
  */
-remoting.SessionConnector.prototype.onWcsLoaded_ = function(clientJid) {
+remoting.SessionConnector.prototype.onLocalJid_ = function(clientJid) {
   this.clientJid_ = clientJid;
   this.createSessionIfReady_();
 };
@@ -344,6 +344,14 @@ remoting.SessionConnector.prototype.onWcsLoaded_ = function(clientJid) {
 remoting.SessionConnector.prototype.createSessionIfReady_ = function() {
   if (!this.clientJid_ || !this.hostJid_) {
     return;
+  }
+
+  // In some circumstances, the WCS <iframe> can get reloaded, which results
+  // in a new clientJid and a new callback. In this case, remove the old
+  // client plugin before instantiating a new one.
+  if (this.clientSession_) {
+    this.clientSession_.removePlugin();
+    this.clientSession_ = null;
   }
 
   var securityTypes = 'third_party,spake2_pair,spake2_hmac,spake2_plain';
