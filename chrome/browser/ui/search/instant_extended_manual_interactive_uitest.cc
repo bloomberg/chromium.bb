@@ -68,16 +68,6 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
     disable_network_change_notifier_.reset();
   }
 
-  void ResetInstant() {
-    set_browser(browser());
-    instant()->SetInstantEnabled(false, true);
-    instant()->SetInstantEnabled(true, false);
-
-    FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-    ASSERT_TRUE(IsGoogleOverlay());
-    ASSERT_TRUE(IsGoogleNTP());
-  }
-
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     chrome::EnableInstantExtendedAPIForTesting();
@@ -135,14 +125,6 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
     return is_google;
   }
 
-  bool IsGoogleOverlay() {
-    return IsGooglePage(instant()->overlay()->contents());
-  }
-
-  bool IsGoogleNTP() {
-    return IsGooglePage(instant()->ntp()->contents());
-  }
-
  private:
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_proc_;
   scoped_ptr<net::ScopedDefaultHostResolverProc> scoped_host_resolver_proc_;
@@ -150,31 +132,18 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
       disable_network_change_notifier_;
 };
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_OmniboxFocusLoadsInstant) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_ShowsGoogleNTP) {
   set_browser(browser());
+  instant()->SetInstantEnabled(false, true);
+  instant()->SetInstantEnabled(true, false);
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
-  // Explicitly unfocus the omnibox.
-  EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
-
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
-  EXPECT_FALSE(omnibox()->model()->has_focus());
-
-  // Delete any existing overlay.
-  instant()->overlay_.reset();
-  EXPECT_FALSE(instant()->GetOverlayContents());
-
-  // Refocus the omnibox. The InstantController should've preloaded Instant.
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  ASSERT_TRUE(IsGoogleOverlay());
-
-  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
-  EXPECT_TRUE(omnibox()->model()->has_focus());
-
-  // Check that the page supports Instant, but it isn't showing.
-  ASSERT_TRUE(instant()->overlay());
-  EXPECT_TRUE(instant()->overlay()->supports_instant());
-  EXPECT_FALSE(instant()->IsOverlayingSearchResults());
-  EXPECT_TRUE(instant()->model()->mode().is_default());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsGooglePage(active_tab));
 }
