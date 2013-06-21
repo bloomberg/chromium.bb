@@ -492,6 +492,12 @@ void MediaPlayerManagerImpl::RemovePlayer(int player_id) {
   }
 }
 
+void MediaPlayerManagerImpl::AddDrmBridge(int media_keys_id,
+                                          const std::vector<uint8>& uuid) {
+  DCHECK(!GetDrmBridge(media_keys_id));
+  drm_bridges_.push_back(MediaDrmBridge::Create(media_keys_id, uuid));
+}
+
 void MediaPlayerManagerImpl::RemoveDrmBridge(int media_keys_id) {
   for (ScopedVector<MediaDrmBridge>::iterator it = drm_bridges_.begin();
       it != drm_bridges_.end(); ++it) {

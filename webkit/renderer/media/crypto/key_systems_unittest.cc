@@ -753,4 +753,22 @@ TEST_F(KeySystemsTest, IsSupportedKeySystemWithMediaMimeType_Widevine_MP4) {
       "audio/mp4", vorbis_codec(), kWidevineAlpha));
 }
 
+#if defined(OS_ANDROID)
+TEST_F(KeySystemsTest, GetUUID_Widevine) {
+  std::vector<uint8> uuid = GetUUID(kWidevineAlpha);
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  EXPECT_EQ(16u, uuid.size());
+  EXPECT_EQ(0xED, uuid[15]);
+#else
+  EXPECT_TRUE(uuid.empty());
+#endif
+}
+
+TEST_F(KeySystemsTest, GetUUID_Unrecognized) {
+  EXPECT_TRUE(GetUUID(kWidevine).empty());
+  EXPECT_TRUE(GetUUID(kClearKey).empty());
+  EXPECT_TRUE(GetUUID("").empty());
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace webkit_media

@@ -19,9 +19,12 @@ namespace media {
 // TODO(qinmin): implement all the functions in this class.
 class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
  public:
-  // TODO(xhwang): Pass in |key_system|.
-  MediaDrmBridge(int media_keys_id, const std::vector<uint8>& uuid);
   virtual ~MediaDrmBridge();
+
+  // Returns a MediaDrmBridge instance if |uuid| is supported, or a NULL
+  // pointer otherwise.
+  static MediaDrmBridge* Create(int media_keys_id,
+                                const std::vector<uint8>& uuid);
 
   // Checks whether DRM is available.
   static bool IsAvailable();
@@ -51,8 +54,13 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   int media_keys_id() const { return media_keys_id_; }
 
  private:
+  MediaDrmBridge(int media_keys_id, const std::vector<uint8>& uuid);
+
   // Id of the MediaKeys object.
   int media_keys_id_;
+
+  // UUID of the key system.
+  std::vector<uint8> uuid_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDrmBridge);
 };

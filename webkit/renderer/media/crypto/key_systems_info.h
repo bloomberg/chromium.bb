@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/basictypes.h"
+
 namespace webkit_media {
 
 struct MediaFormatAndKeySystem {
@@ -20,7 +22,14 @@ struct KeySystemPepperTypePair {
   const char* key_system;
   const char* type;
 };
-#endif
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+#if defined(OS_ANDROID)
+struct KeySystemUUIDPair {
+  const char* key_system;
+  const uint8 uuid[16];
+};
+#endif  // defined(OS_ANDROID)
 
 // Specifies the container and codec combinations supported by individual
 // key systems. Each line is a container-codecs combination and the key system
@@ -35,7 +44,13 @@ extern const int kNumSupportedFormatKeySystemCombinations;
 // There should be one entry for each key system.
 extern const KeySystemPepperTypePair kKeySystemToPepperTypeMapping[];
 extern const int kNumKeySystemToPepperTypeMapping;
-#endif
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+#if defined(OS_ANDROID)
+// Mapping from key system to UUID, one entry per key system.
+extern const KeySystemUUIDPair kKeySystemToUUIDMapping[];
+extern const int kNumKeySystemToUUIDMapping;
+#endif  // defined(OS_ANDROID)
 
 // Returns whether |key_system| is compatible with the user's system.
 bool IsSystemCompatible(const std::string& key_system);

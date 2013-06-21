@@ -160,4 +160,15 @@ std::string GetPepperType(const std::string& key_system) {
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
+#if defined(OS_ANDROID)
+std::vector<uint8> GetUUID(const std::string& key_system) {
+  for (int i = 0; i < kNumKeySystemToUUIDMapping; ++i) {
+    if (kKeySystemToUUIDMapping[i].key_system == key_system)
+      return std::vector<uint8>(kKeySystemToUUIDMapping[i].uuid,
+                                kKeySystemToUUIDMapping[i].uuid + 16);
+  }
+  return std::vector<uint8>();
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace webkit_media

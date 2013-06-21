@@ -15,9 +15,21 @@ bool MediaDrmBridge::IsAvailable() {
   return false;
 }
 
+MediaDrmBridge* MediaDrmBridge::Create(int media_keys_id,
+                                       const std::vector<uint8>& uuid) {
+  if (!IsAvailable())
+    return NULL;
+
+  // TODO(qinmin): check whether the uuid is valid.
+  return new MediaDrmBridge(media_keys_id, uuid);
+}
+
 MediaDrmBridge::MediaDrmBridge(
     int media_keys_id, const std::vector<uint8>& uuid)
-    : media_keys_id_(media_keys_id) {}
+    : media_keys_id_(media_keys_id),
+      uuid_(uuid) {
+  // TODO(qinmin): pass the uuid to DRM engine.
+}
 
 MediaDrmBridge::~MediaDrmBridge() {}
 

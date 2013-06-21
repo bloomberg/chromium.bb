@@ -4,8 +4,6 @@
 
 #include "webkit/renderer/media/crypto/key_systems_info.h"
 
-#include "base/basictypes.h"
-
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && \
@@ -100,6 +98,21 @@ const KeySystemPepperTypePair kKeySystemToPepperTypeMapping[] = {
 const int kNumKeySystemToPepperTypeMapping =
     arraysize(kKeySystemToPepperTypeMapping);
 #endif  // defined(ENABLE_PEPPER_CDMS)
+
+#if defined(OS_ANDROID)
+// TODO(qinmin): add UUIDs for other key systems.
+const KeySystemUUIDPair kKeySystemToUUIDMapping[] = {
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  { kWidevineKeySystem, { 0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,
+                          0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED }
+  }
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+};
+
+// arraySize() does not work if the array is empty, so use ARRAYSIZE_UNSAFE().
+const int kNumKeySystemToUUIDMapping =
+    ARRAYSIZE_UNSAFE(kKeySystemToUUIDMapping);
+#endif  // defined(OS_ANDROID)
 
 bool IsSystemCompatible(const std::string& key_system) {
 #if defined(WIDEVINE_CDM_AVAILABLE) && \

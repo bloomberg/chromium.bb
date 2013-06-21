@@ -40,6 +40,11 @@ bool CanUseAesDecryptor(const std::string& key_system);
 std::string GetPepperType(const std::string& key_system);
 #endif
 
+#if defined(OS_ANDROID)
+// Convert |key_system| to 16-byte Android UUID.
+std::vector<uint8> GetUUID(const std::string& key_system);
+#endif
+
 }  // namespace webkit_media
 
 #endif  // WEBKIT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_H_
