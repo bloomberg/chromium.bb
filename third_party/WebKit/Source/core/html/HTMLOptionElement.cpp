@@ -344,12 +344,9 @@ bool HTMLOptionElement::isDisabledFormControl() const
 {
     if (ownElementDisabled())
         return true;
-
-    if (!parentNode() || !parentNode()->isHTMLElement())
-        return false;
-
-    HTMLElement* parentElement = static_cast<HTMLElement*>(parentNode());
-    return parentElement->hasTagName(optgroupTag) && parentElement->isDisabledFormControl();
+    if (Element* parent = parentElement())
+        return parent->hasTagName(optgroupTag) && parent->isDisabledFormControl();
+    return false;
 }
 
 Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(ContainerNode* insertionPoint)
