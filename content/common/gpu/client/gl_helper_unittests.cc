@@ -59,9 +59,8 @@ class GLHelperTest : public testing::Test {
  protected:
   virtual void SetUp() {
     WebGraphicsContext3D::Attributes attributes;
-    context_.reset(
-        webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
-        CreateOffscreenContext(attributes));
+    context_ = webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
+        CreateOffscreenContext(attributes);
     context_->makeContextCurrent();
     helper_.reset(new content::GLHelper(context_.get()));
     helper_scaling_.reset(new content::GLHelperScaling(

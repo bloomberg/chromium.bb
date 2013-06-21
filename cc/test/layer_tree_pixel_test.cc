@@ -50,11 +50,9 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface() {
 
       using WebKit::WebGraphicsContext3D;
       using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
+      output_surface = make_scoped_ptr(new PixelTestOutputSurface(
           WebGraphicsContext3DInProcessCommandBufferImpl::
-              CreateOffscreenContext(WebGraphicsContext3D::Attributes()));
-      output_surface = make_scoped_ptr(
-          new PixelTestOutputSurface(context3d.PassAs<WebGraphicsContext3D>()));
+              CreateOffscreenContext(WebGraphicsContext3D::Attributes())));
       break;
     }
   }
@@ -189,7 +187,7 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
     return scoped_ptr<SkBitmap>();
 
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
+  scoped_ptr<WebKit::WebGraphicsContext3D> context3d(
       WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
           WebKit::WebGraphicsContext3D::Attributes()));
 

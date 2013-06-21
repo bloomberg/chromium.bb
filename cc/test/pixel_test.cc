@@ -142,7 +142,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
   CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
 
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
+  scoped_ptr<WebKit::WebGraphicsContext3D> context3d(
       WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
           WebKit::WebGraphicsContext3D::Attributes()));
   output_surface_.reset(new PixelTestOutputSurface(

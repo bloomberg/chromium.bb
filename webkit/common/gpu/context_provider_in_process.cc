@@ -5,6 +5,7 @@
 #include "webkit/common/gpu/context_provider_in_process.h"
 
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace webkit {
 namespace gpu {
@@ -60,9 +61,9 @@ bool ContextProviderInProcess::InitializeOnMainThread() {
   attributes.noAutomaticFlushes = true;
 
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  context3d_.reset(
+  context3d_ =
       WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-          attributes));
+          attributes);
 
   return context3d_;
 }

@@ -778,22 +778,25 @@ WebGraphicsContext3DInProcessCommandBufferImpl::EnableVirtualizedContext() {
 }
 
 // static
-WebGraphicsContext3DInProcessCommandBufferImpl*
+scoped_ptr<WebKit::WebGraphicsContext3D>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
     gfx::AcceleratedWidget window) {
-  if (!gfx::GLSurface::InitializeOneOff())
-    return NULL;
-  return new WebGraphicsContext3DInProcessCommandBufferImpl(
-      attributes, false, window);
+  scoped_ptr<WebKit::WebGraphicsContext3D> context;
+  if (gfx::GLSurface::InitializeOneOff()) {
+    context.reset(new WebGraphicsContext3DInProcessCommandBufferImpl(
+      attributes, false, window));
+  }
+  return context.Pass();
 }
 
 // static
-WebGraphicsContext3DInProcessCommandBufferImpl*
+scoped_ptr<WebKit::WebGraphicsContext3D>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-  return new WebGraphicsContext3DInProcessCommandBufferImpl(
-      attributes, true, gfx::kNullAcceleratedWidget);
+  return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
+      attributes, true, gfx::kNullAcceleratedWidget))
+      .PassAs<WebKit::WebGraphicsContext3D>();
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::

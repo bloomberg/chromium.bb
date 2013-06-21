@@ -53,14 +53,12 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   // instances are created. Default value is false.
   static void EnableVirtualizedContext();
 
-  static WebGraphicsContext3DInProcessCommandBufferImpl*
-      CreateViewContext(
-          const WebKit::WebGraphicsContext3D::Attributes& attributes,
-          gfx::AcceleratedWidget window);
+  static scoped_ptr<WebKit::WebGraphicsContext3D> CreateViewContext(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes,
+      gfx::AcceleratedWidget window);
 
-  static WebGraphicsContext3DInProcessCommandBufferImpl*
-      CreateOffscreenContext(
-          const WebKit::WebGraphicsContext3D::Attributes& attributes);
+  static scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
   static void SetGpuMemoryBufferCreator(GpuMemoryBufferCreator* creator);
 

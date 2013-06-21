@@ -45,7 +45,7 @@ class DirectGLImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual GLHelper* GetGLHelper() OVERRIDE { return NULL; }
 
  private:
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context_;
+  scoped_ptr<WebKit::WebGraphicsContext3D> context_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectGLImageTransportFactory);
 };
@@ -54,8 +54,8 @@ DirectGLImageTransportFactory::DirectGLImageTransportFactory() {
   WebKit::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
-  context_.reset(webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
-                     CreateViewContext(attrs, NULL));
+  context_ = webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
+      CreateViewContext(attrs, NULL);
   if (context_->makeContextCurrent())
     context_->pushGroupMarkerEXT(
         base::StringPrintf("DirectGLImageTransportFactory-%p", this).c_str());

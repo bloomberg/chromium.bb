@@ -82,7 +82,7 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Creates a context used for offscreen rendering. This context can be shared
   // with all compositors.
-  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() = 0;
+  virtual scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext() = 0;
 
   // Creates a reflector that copies the content of the |mirrored_compositor|
   // onto |mirroing_layer|.
@@ -110,7 +110,8 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   // ContextFactory implementation
   virtual cc::OutputSurface* CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() OVERRIDE;
+  virtual scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext()
+      OVERRIDE;
 
   virtual scoped_refptr<Reflector> CreateReflector(
       Compositor* compositor,
@@ -126,7 +127,7 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   bool Initialize();
 
  private:
-  WebKit::WebGraphicsContext3D* CreateContextCommon(
+  scoped_ptr<WebKit::WebGraphicsContext3D> CreateContextCommon(
       Compositor* compositor,
       bool offscreen);
 
@@ -147,7 +148,8 @@ class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
   // ContextFactory implementation
   virtual cc::OutputSurface* CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() OVERRIDE;
+  virtual scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext()
+      OVERRIDE;
 
   virtual scoped_refptr<Reflector> CreateReflector(
       Compositor* mirrored_compositor,

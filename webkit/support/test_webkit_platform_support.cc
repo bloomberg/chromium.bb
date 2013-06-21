@@ -346,7 +346,7 @@ TestWebKitPlatformSupport::createOffscreenGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
   return WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-      attributes);
+      attributes).release();
 }
 
 WebKit::WebGraphicsContext3DProvider* TestWebKitPlatformSupport::

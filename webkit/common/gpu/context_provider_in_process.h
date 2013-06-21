@@ -9,8 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
+
+namespace WebKit {
+class WebGraphicsContext3D;
+}
 
 namespace webkit {
 namespace gpu {
@@ -44,8 +47,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   virtual void OnMemoryAllocationChanged(bool nonzero_allocation);
 
  private:
-  scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
-      context3d_;
+  scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
 
   base::Lock destroyed_lock_;
