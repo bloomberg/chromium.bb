@@ -109,6 +109,9 @@ testmode: hyphenate
 árgusszemű
 
 testmode: hyphenate
+árrésszabályt
+
+testmode: hyphenate
 árvízsújtotta
 
 testmode: hyphenate

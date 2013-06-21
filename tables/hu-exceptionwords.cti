@@ -823,7 +823,7 @@ partword üstökössz 12356-234-2345-12345-13-12345-234-156	For example üstök�
 partword biznissz 12-24-126-1345-24-156-156	For example biznisszé word
 partword ugrássz 136-1245-1235-4-234-156	For example ugrásszögének word need this exception
 partword mitugrássza 134-24-2345-136-1245-1235-4-156-156-1	But mitugrásszal word not need apply the prewious general exception
-begword lesszabá 123-15-234-156-1-12-4	For example lesszabály word
+partword lesszabá 123-15-234-156-1-12-4	For example lesszabály word
 partword ismétléssz 24-234-134-16-2345-123-16-234-156	For example ismétlésszám word
 partword visszaéléssz 1236-24-156-156-1-16-123-16-234-156	For example visszaélésszerű word
 partword szállodássz 156-4-123-123-135-145-4-234-156	For example szállodásszövetség word need this exception
@@ -884,6 +884,7 @@ partword ötvös =	For example ötvösszakmai word
 begword pálossz 1234-4-123-135-234-156	For example Pálosszentkút town name related need this general exception
 partword sasszikl 234-1-234-156-24-13-123	For example sasszikla word
 partword természetessz 2345-15-1235-134-16-156-15-2345-15-234-156	For example természetesszám word
+begword árrés =	For example árrésszabályt word related need this general exception
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules

@@ -185,6 +185,11 @@ testmode: backtranslate
 testmode: backtranslate
 árgusszemű
 
+árrésszabályt
+
+testmode: backtranslate
+árrésszabályt
+
 árvízsújtotta
 
 testmode: backtranslate

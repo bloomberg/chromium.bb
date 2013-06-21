@@ -152,6 +152,10 @@
           "output": "ár-gus-sze-mű"
         }, 
         {
+          "input": "árrésszabályt", 
+          "output": "ár-rés-sza-bályt"
+        }, 
+        {
           "input": "árvízsújtotta", 
           "output": "ár-víz-súj-tot-ta"
         }, 
@@ -665,7 +669,7 @@
         }, 
         {
           "input": "ércsodrony", 
-          "output": "ér-csod-rony"
+          "output": "érc-sod-rony"
         }, 
         {
           "input": "érzékelésszint", 

@@ -155,6 +155,10 @@
           "output": "árgusszemű"
         }, 
         {
+          "input": "⠈⠗⠗⠡⠎⠱⠁⠃⠈⠸⠞", 
+          "output": "árrésszabályt"
+        }, 
+        {
           "input": "⠈⠗⠧⠌⠣⠎⠬⠚⠞⠕⠞⠞⠁", 
           "output": "árvízsújtotta"
         }, 
@@ -4004,6 +4008,10 @@
         {
           "input": "árgusszemű", 
           "output": "⠈⠗⠛⠥⠎⠱⠑⠍⠾"
+        }, 
+        {
+          "input": "árrésszabályt", 
+          "output": "⠈⠗⠗⠡⠎⠱⠁⠃⠈⠸⠞"
         }, 
         {
           "input": "árvízsújtotta", 
