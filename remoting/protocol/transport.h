@@ -89,6 +89,9 @@ class Transport : public base::NonThreadSafe {
     // connections.
     virtual void OnTransportReady(Transport* transport, bool ready) = 0;
 
+    // Called when when the transport has failed to connect or reconnect.
+    virtual void OnTransportFailed(Transport* transport) = 0;
+
     // Called when the transport is about to be deleted.
     virtual void OnTransportDeleted(Transport* transport) = 0;
   };

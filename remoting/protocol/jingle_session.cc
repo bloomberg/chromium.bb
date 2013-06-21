@@ -287,6 +287,10 @@ void JingleSession::OnTransportReady(Transport* transport, bool ready) {
     event_handler_->OnSessionChannelReady(transport->name(), ready);
 }
 
+void JingleSession::OnTransportFailed(Transport* transport) {
+  CloseInternal(CHANNEL_CONNECTION_ERROR);
+}
+
 void JingleSession::OnTransportDeleted(Transport* transport) {
   ChannelsMap::iterator it = channels_.find(transport->name());
   DCHECK_EQ(it->second, transport);

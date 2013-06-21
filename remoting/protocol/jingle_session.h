@@ -70,6 +70,7 @@ class JingleSession : public Session,
                                       const TransportRoute& route) OVERRIDE;
   virtual void OnTransportReady(Transport* transport,
                                 bool ready) OVERRIDE;
+  virtual void OnTransportFailed(Transport* transport) OVERRIDE;
   virtual void OnTransportDeleted(Transport* transport) OVERRIDE;
 
  private:

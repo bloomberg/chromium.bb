@@ -6,6 +6,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/timer.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
 #include "jingle/glue/thread_wrapper.h"
@@ -26,14 +27,18 @@ namespace protocol {
 
 namespace {
 
-// Value is choosen to balance the extra latency against the reduced
+// Value is chosen to balance the extra latency against the reduced
 // load due to ACK traffic.
 const int kTcpAckDelayMilliseconds = 10;
 
 // Values for the TCP send and receive buffer size. This should be tuned to
-// accomodate high latency network but not backlog the decoding pipeline.
+// accommodate high latency network but not backlog the decoding pipeline.
 const int kTcpReceiveBufferSize = 256 * 1024;
 const int kTcpSendBufferSize = kTcpReceiveBufferSize + 30 * 1024;
+
+// Try connecting ICE twice with timeout of 15 seconds for each attempt.
+const int kMaxReconnectAttempts = 2;
+const int kReconnectDelaySeconds = 15;
 
 class LibjingleStreamTransport : public StreamTransport,
                                  public sigslot::has_slots<> {
@@ -54,6 +59,7 @@ class LibjingleStreamTransport : public StreamTransport,
   virtual bool is_connected() const OVERRIDE;
 
  private:
+  // Signal handlers for cricket::TransportChannel.
   void OnRequestSignaling(cricket::TransportChannelImpl* channel);
   void OnCandidateReady(cricket::TransportChannelImpl* channel,
                         const cricket::Candidate& candidate);
@@ -61,12 +67,21 @@ class LibjingleStreamTransport : public StreamTransport,
                      const cricket::Candidate& candidate);
   void OnWritableState(cricket::TransportChannel* channel);
 
+  // Callback for PseudoTcpAdapter::Connect().
   void OnTcpConnected(int result);
+
+  // Callback for Authenticator::SecureAndAuthenticate();
   void OnAuthenticationDone(net::Error error,
                             scoped_ptr<net::StreamSocket> socket);
 
+  // Callback for jingle_glue::TransportChannelSocketAdapter to notify when the
+  // socket is destroyed.
   void OnChannelDestroyed();
 
+  // Tries to connect by restarting ICE. Called by |reconnect_timer_|.
+  void TryReconnect();
+
+  // Helper methods to call |callback_|.
   void NotifyConnected(scoped_ptr<net::StreamSocket> socket);
   void NotifyConnectFailed();
 
@@ -82,6 +97,8 @@ class LibjingleStreamTransport : public StreamTransport,
 
   scoped_ptr<cricket::P2PTransportChannel> channel_;
   bool channel_was_writable_;
+  int connect_attempts_left_;
+  base::RepeatingTimer<LibjingleStreamTransport> reconnect_timer_;
 
   // We own |socket_| until it is connected.
   scoped_ptr<jingle_glue::PseudoTcpAdapter> socket_;
@@ -98,7 +115,8 @@ LibjingleStreamTransport::LibjingleStreamTransport(
       ice_username_fragment_(
           talk_base::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
       ice_password_(talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH)),
-      channel_was_writable_(false) {
+      channel_was_writable_(false),
+      connect_attempts_left_(kMaxReconnectAttempts) {
 }
 
 LibjingleStreamTransport::~LibjingleStreamTransport() {
@@ -154,6 +172,13 @@ void LibjingleStreamTransport::Connect(
   channel_->set_incoming_only(incoming_only_);
 
   channel_->Connect();
+
+  --connect_attempts_left_;
+
+  // Start reconnection timer.
+  reconnect_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kReconnectDelaySeconds),
+      this, &LibjingleStreamTransport::TryReconnect);
 
   // Create net::Socket adapter for the P2PTransportChannel.
   scoped_ptr<jingle_glue::TransportChannelSocketAdapter> channel_adapter(
@@ -251,10 +276,11 @@ void LibjingleStreamTransport::OnWritableState(
 
   if (channel->writable()) {
     channel_was_writable_ = true;
+    connect_attempts_left_ = kMaxReconnectAttempts;
+    reconnect_timer_.Stop();
   } else if (!channel->writable() && channel_was_writable_) {
-    // Restart ICE by resetting ICE password.
-    ice_password_ = talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH);
-    channel_->SetIceCredentials(ice_username_fragment_, ice_password_);
+    reconnect_timer_.Reset();
+    TryReconnect();
   }
 }
 
@@ -288,6 +314,24 @@ void LibjingleStreamTransport::OnChannelDestroyed() {
     // The connection socket is being deleted, so delete the transport too.
     delete this;
   }
+}
+
+void LibjingleStreamTransport::TryReconnect() {
+  DCHECK(!channel_->writable());
+
+  if (connect_attempts_left_ <= 0) {
+    reconnect_timer_.Stop();
+
+    // Notify the caller that ICE connection has failed - normally that will
+    // terminate Jingle connection (i.e. the transport will be destroyed).
+    event_handler_->OnTransportFailed(this);
+    return;
+  }
+  --connect_attempts_left_;
+
+  // Restart ICE by resetting ICE password.
+  ice_password_ = talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH);
+  channel_->SetIceCredentials(ice_username_fragment_, ice_password_);
 }
 
 void LibjingleStreamTransport::NotifyConnected(
