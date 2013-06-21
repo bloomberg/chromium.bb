@@ -1110,16 +1110,24 @@ TEST(BookmarkNodeTest, NodeMetaInfo) {
   EXPECT_EQ("value1", out_value);
   EXPECT_FALSE(node.SetMetaInfo("key1", "value1"));
 
-  EXPECT_FALSE(node.GetMetaInfo("key2", &out_value));
-  EXPECT_TRUE(node.SetMetaInfo("key2", "value2"));
-  EXPECT_TRUE(node.GetMetaInfo("key2", &out_value));
+  EXPECT_FALSE(node.GetMetaInfo("key2.subkey1", &out_value));
+  EXPECT_TRUE(node.SetMetaInfo("key2.subkey1", "value2"));
+  EXPECT_TRUE(node.GetMetaInfo("key2.subkey1", &out_value));
   EXPECT_EQ("value2", out_value);
 
+  EXPECT_FALSE(node.GetMetaInfo("key2.subkey2.leaf", &out_value));
+  EXPECT_TRUE(node.SetMetaInfo("key2.subkey2.leaf", ""));
+  EXPECT_TRUE(node.GetMetaInfo("key2.subkey2.leaf", &out_value));
+  EXPECT_EQ("", out_value);
+
   EXPECT_TRUE(node.DeleteMetaInfo("key1"));
-  EXPECT_TRUE(node.DeleteMetaInfo("key2"));
+  EXPECT_TRUE(node.DeleteMetaInfo("key2.subkey1"));
+  EXPECT_TRUE(node.DeleteMetaInfo("key2.subkey2.leaf"));
   EXPECT_FALSE(node.DeleteMetaInfo("key3"));
   EXPECT_FALSE(node.GetMetaInfo("key1", &out_value));
-  EXPECT_FALSE(node.GetMetaInfo("key2", &out_value));
+  EXPECT_FALSE(node.GetMetaInfo("key2.subkey1", &out_value));
+  EXPECT_FALSE(node.GetMetaInfo("key2.subkey2", &out_value));
+  EXPECT_FALSE(node.GetMetaInfo("key2.subkey2.leaf", &out_value));
   EXPECT_TRUE(node.meta_info_str().empty());
 }
 

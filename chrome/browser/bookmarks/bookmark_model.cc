@@ -46,6 +46,25 @@ BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
+// Helper to recursively determine if a Dictionary has any valid values.
+bool HasValues(const base::DictionaryValue& root) {
+  if (root.empty())
+    return false;
+  for (base::DictionaryValue::Iterator iter(root); !iter.IsAtEnd();
+       iter.Advance()) {
+    const base::Value& value = iter.value();
+    if (value.IsType(base::Value::TYPE_DICTIONARY)) {
+      const base::DictionaryValue* dict_value = NULL;
+      if (value.GetAsDictionary(&dict_value) && HasValues(*dict_value))
+        return true;
+    } else {
+      // A non dictionary type was encountered, assume it's a valid value.
+      return true;
+    }
+  }
+  return false;
+}
+
 // Whitespace characters to strip from bookmark titles.
 const char16 kInvalidChars[] = {
   '\n', '\r', '\t',
@@ -123,9 +142,8 @@ bool BookmarkNode::DeleteMetaInfo(const std::string& key) {
   JSONStringValueSerializer serializer(&meta_info_str_);
   scoped_ptr<DictionaryValue> meta_dict(
       static_cast<DictionaryValue*>(serializer.Deserialize(NULL, NULL)));
-  if (meta_dict.get() && meta_dict->HasKey(key)) {
-    meta_dict->Remove(key, NULL);
-    if (meta_dict->empty()) {
+  if (meta_dict.get() && meta_dict->Remove(key, NULL)) {
+    if (!HasValues(*meta_dict)) {
       meta_info_str_.clear();
     } else {
       serializer.Serialize(*meta_dict);
