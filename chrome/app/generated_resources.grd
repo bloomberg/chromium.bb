@@ -15472,8 +15472,8 @@ Do you accept?
     <message name="IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT" desc="The title of the token cache of the Identity API.">
       Identity API Token Cache
     </message>
-    <message name="IDS_IDENTITY_INTERNALS_TOKEN_ID" desc="Label of the row containing the token id.">
-      Token Id
+    <message name="IDS_IDENTITY_INTERNALS_ACCESS_TOKEN" desc="Label of the row containing the access token.">
+      Access Token
     </message>
     <message name="IDS_IDENTITY_INTERNALS_EXTENSION_NAME" desc="Label of the row containing a name of an extension related to the identity token.">
       Extension Name

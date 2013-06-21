@@ -7,7 +7,7 @@ cr.define('identity_internals', function() {
 
   /**
    * Creates an identity token item.
-   * @param {Object} tokenInfo Object containing token information.
+   * @param {!Object} tokenInfo Object containing token information.
    * @constructor
    */
   function TokenListItem(tokenInfo) {
@@ -24,12 +24,12 @@ cr.define('identity_internals', function() {
     /** @override */
     decorate: function() {
       this.textContent = '';
-      this.id = this.data_.tokenId;
+      this.id = this.data_.accessToken;
 
       var table = this.ownerDocument.createElement('table');
       var tbody = this.ownerDocument.createElement('tbody');
       tbody.appendChild(this.createEntry_(
-          'tokenId', this.data_.tokenId, 'token-id'));
+          'accessToken', this.data_.accessToken, 'access-token'));
       tbody.appendChild(this.createEntry_(
           'extensionName', this.data_.extensionName, 'extension-name'));
       tbody.appendChild(this.createEntry_(
@@ -114,7 +114,7 @@ cr.define('identity_internals', function() {
       revokeButton.classList.add('revoke-button');
       revokeButton.addEventListener('click', function() {
         chrome.send('identityInternalsRevokeToken',
-                    [this.data_.extensionId, this.data_.tokenId]);
+                    [this.data_.extensionId, this.data_.accessToken]);
       }.bind(this));
       revokeButton.textContent = loadTimeData.getString('revoke');
       return revokeButton;
@@ -150,13 +150,13 @@ cr.define('identity_internals', function() {
     /**
      * Removes a token node related to the specifed token ID from both the
      * internals data source as well as the user internface.
-     * @param {string} tokenId The id of the token to remove.
+     * @param {string} accessToken The id of the token to remove.
      * @private
      */
-    removeTokenNode_: function(tokenId) {
+    removeTokenNode_: function(accessToken) {
       var tokenIndex;
       for (var index = 0; index < this.data_.length; index++) {
-        if (this.data_[index].tokenId == tokenId) {
+        if (this.data_[index].accessToken == accessToken) {
           tokenIndex = index;
           break;
         }
@@ -167,7 +167,7 @@ cr.define('identity_internals', function() {
         this.data_.splice(tokenIndex, 1);
 
       // Remove from the user interface.
-      var tokenNode = $(tokenId);
+      var tokenNode = $(accessToken);
       if (tokenNode)
         this.removeChild(tokenNode);
     },
@@ -188,7 +188,7 @@ cr.define('identity_internals', function() {
 
   /**
    * Callback function accepting a list of tokens to be displayed.
-   * @param {Token[]} tokens A list of tokens to be displayed
+   * @param {!Token[]} tokens A list of tokens to be displayed
    */
   function returnTokens(tokens) {
     tokenList_.data_ = tokens;
@@ -197,12 +197,12 @@ cr.define('identity_internals', function() {
 
   /**
    * Callback function that removes a token from UI once it has been revoked.
-   * @param {!Array.<string>} tokenIds Array with a single element, which is a
-   * token ID, of the token to be removed.
+   * @param {!Array.<string>} accessTokens Array with a single element, which is
+   * an access token to be removed.
    */
-  function tokenRevokeDone(tokenIds) {
-    assert(tokenIds.length > 0);
-    tokenList_.removeTokenNode_(tokenIds[0]);
+  function tokenRevokeDone(accessTokens) {
+    assert(accessTokens.length > 0);
+    tokenList_.removeTokenNode_(accessTokens[0]);
   }
 
   // Return an object with all of the exports.

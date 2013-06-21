@@ -32,7 +32,7 @@ const char kExtensionName[] = "extensionName";
 const char kScopes[] = "scopes";
 const char kStatus[] = "status";
 const char kTokenExpirationTime[] = "expirationTime";
-const char kTokenId[] = "tokenId";
+const char kAccessToken[] = "accessToken";
 
 // RevokeToken message parameter offsets.
 const int kRevokeTokenExtensionOffset = 0;
@@ -40,6 +40,7 @@ const int kRevokeTokenTokenOffset = 1;
 
 class IdentityInternalsTokenRevoker;
 
+// Class acting as a controller of the chrome://identity-internals WebUI.
 class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
  public:
   IdentityInternalsUIMessageHandler();
@@ -54,26 +55,41 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
   virtual void RegisterMessages() OVERRIDE;
 
  private:
+  // Gets the name of an extension referred to by |token_cache_key| as a string.
   const std::string GetExtensionName(
       const extensions::IdentityAPI::TokenCacheKey& token_cache_key);
 
+  // Gets a list of scopes specified in |token_cache_key| and returns a pointer
+  // to a ListValue containing the scopes. The caller gets ownership of the
+  // returned object.
   ListValue* GetScopes(
       const extensions::IdentityAPI::TokenCacheKey& token_cache_key);
 
+  // Gets a localized status of the access token in |token_cache_value|.
   const base::string16 GetStatus(
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
+  // Gets a string representation of an expiration time of the access token in
+  // |token_cache_value|.
   const std::string GetExpirationTime(
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
+  // Converts a pair of |token_cache_key| and |token_cache_value| to a
+  // DictionaryValue object with corresponding information in a localized and
+  // readable form and returns a pointer to created object. Caller gets the
+  // ownership of the returned object.
   DictionaryValue* GetInfoForToken(
       const extensions::IdentityAPI::TokenCacheKey& token_cache_key,
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
+  // Gets all of the tokens stored in IdentityAPI token cache and returns them
+  // to the caller using Javascript callback function
+  // |identity_internals.returnTokens()|.
   void GetInfoForAllTokens(const ListValue* args);
 
   // Initiates revoking of the token, based on the extension ID and token
-  // passed as entries in the args list.
+  // passed as entries in the |args| list. Updates the caller of completion
+  // using Javascript callback function |identity_internals.tokenRevokeDone()|.
   void RevokeToken(const ListValue* args);
 
   // A vector of token revokers that are currently revoking tokens.
@@ -192,7 +208,7 @@ DictionaryValue* IdentityInternalsUIMessageHandler::GetInfoForToken(
   token_data->SetString(kExtensionName, GetExtensionName(token_cache_key));
   token_data->Set(kScopes, GetScopes(token_cache_key));
   token_data->SetString(kStatus, GetStatus(token_cache_value));
-  token_data->SetString(kTokenId, token_cache_value.token());
+  token_data->SetString(kAccessToken, token_cache_value.token());
   token_data->SetString(kTokenExpirationTime,
                         GetExpirationTime(token_cache_value));
   return token_data;
@@ -262,8 +278,8 @@ IdentityInternalsUI::IdentityInternalsUI(content::WebUI* web_ui)
   // Localized strings
   html_source->AddLocalizedString("tokenCacheHeader",
       IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT);
-  html_source->AddLocalizedString("tokenId",
-      IDS_IDENTITY_INTERNALS_TOKEN_ID);
+  html_source->AddLocalizedString("accessToken",
+      IDS_IDENTITY_INTERNALS_ACCESS_TOKEN);
   html_source->AddLocalizedString("extensionName",
       IDS_IDENTITY_INTERNALS_EXTENSION_NAME);
   html_source->AddLocalizedString("extensionId",

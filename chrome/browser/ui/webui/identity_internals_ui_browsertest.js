@@ -79,8 +79,8 @@ BaseIdentityInternalsWebUITest.prototype = {
    * @param {Element} tokenEntry Display element holding token information.
    * @return {string} Token ID of the token.
    */
-  getTokenId: function(tokenEntry) {
-    return tokenEntry.querySelector('.token-id').innerText;
+  getAccessToken: function(tokenEntry) {
+    return tokenEntry.querySelector('.access-token').innerText;
   },
 
   /**
@@ -135,7 +135,7 @@ TEST_F('IdentityInternalsSingleTokenWebUITest', 'getAllTokens', function() {
   expectEquals('Store', this.getExtensionName(tokenListEntries[0]));
   expectEquals('ahfgeienlihckogmohjhadlkjgocpleb',
                this.getExtensionId(tokenListEntries[0]));
-  expectEquals('store_token', this.getTokenId(tokenListEntries[0]));
+  expectEquals('store_token', this.getAccessToken(tokenListEntries[0]));
   expectEquals('Token Present', this.getTokenStatus(tokenListEntries[0]));
   expectLT(this.getExpirationTime(tokenListEntries[0]) - new Date(),
            3600 * 1000);
@@ -158,8 +158,8 @@ TEST_F('IdentityInternalsSingleTokenWebUITest', 'verifyGetters', function() {
       tokenListEntries[0].querySelector('.extension-name').innerText);
   expectEquals(this.getExtensionId(tokenListEntries[0]),
       tokenListEntries[0].querySelector('.extension-id').innerText);
-  expectEquals(this.getTokenId(tokenListEntries[0]),
-      tokenListEntries[0].querySelector('.token-id').innerText);
+  expectEquals(this.getAccessToken(tokenListEntries[0]),
+      tokenListEntries[0].querySelector('.access-token').innerText);
   expectEquals(this.getTokenStatus(tokenListEntries[0]),
       tokenListEntries[0].querySelector('.token-status').innerText);
   expectEquals(this.getExpirationTime(tokenListEntries[0]),
@@ -200,7 +200,7 @@ TEST_F('IdentityInternalsMultipleTokensWebUITest', 'getAllTokens', function() {
   expectEquals('', this.getExtensionName(tokenListEntries[0]));
   expectEquals('extension0',
                this.getExtensionId(tokenListEntries[0]));
-  expectEquals('token0', this.getTokenId(tokenListEntries[0]));
+  expectEquals('token0', this.getAccessToken(tokenListEntries[0]));
   expectEquals('Token Present', this.getTokenStatus(tokenListEntries[0]));
   expectLT(this.getExpirationTime(tokenListEntries[0]) - new Date(),
            3600 * 1000);
@@ -212,7 +212,7 @@ TEST_F('IdentityInternalsMultipleTokensWebUITest', 'getAllTokens', function() {
   expectEquals('', this.getExtensionName(tokenListEntries[1]));
   expectEquals('extension1',
                this.getExtensionId(tokenListEntries[1]));
-  expectEquals('token1', this.getTokenId(tokenListEntries[1]));
+  expectEquals('token1', this.getAccessToken(tokenListEntries[1]));
   expectEquals('Token Present', this.getTokenStatus(tokenListEntries[1]));
   expectLT(this.getExpirationTime(tokenListEntries[1]) - new Date(),
            3600 * 1000);
@@ -243,13 +243,13 @@ TEST_F('IdentityInternalsWebUITestAsync', 'revokeToken', function() {
   expectEquals(2, tokenListBefore.length);
   var tokenRevokeDone = identity_internals.tokenRevokeDone;
   identity_internals.tokenRevokeDone = this.continueTest(
-      WhenTestDone.ALWAYS, function (tokenIds) {
-        tokenRevokeDone.call(identity_internals, tokenIds);
+      WhenTestDone.ALWAYS, function (accessTokens) {
+        tokenRevokeDone.call(identity_internals, accessTokens);
         identity_internals.tokenRevokeDone = tokenRevokeDone;
         var tokenListAfter = this.getTokens();
         expectEquals(1, tokenListAfter.length);
-        expectEquals(this.getTokenId(tokenListBefore[0]),
-                     this.getTokenId(tokenListAfter[0]));
+        expectEquals(this.getAccessToken(tokenListBefore[0]),
+                     this.getAccessToken(tokenListAfter[0]));
       }.bind(this));
   this.getRevokeButton(tokenListBefore[1]).click();
 });
