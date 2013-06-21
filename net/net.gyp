@@ -2726,6 +2726,7 @@
             'tools/quic/quic_dispatcher_test.cc',
             'tools/quic/quic_epoll_clock_test.cc',
             'tools/quic/quic_epoll_connection_helper_test.cc',
+            'tools/quic/quic_in_memory_cache_test.cc',
             'tools/quic/quic_reliable_client_stream_test.cc',
             'tools/quic/quic_reliable_server_stream_test.cc',
             'tools/quic/quic_spdy_server_stream_test.cc',

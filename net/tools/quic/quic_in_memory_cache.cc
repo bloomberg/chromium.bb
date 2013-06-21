@@ -86,7 +86,16 @@ QuicInMemoryCache* QuicInMemoryCache::GetInstance() {
 
 const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
     const BalsaHeaders& request_headers) const {
-  ResponseMap::const_iterator it = responses_.find(GetKey(request_headers));
+  string key = GetKey(request_headers);
+  StringPiece url(key);
+  // Removing the leading https:// or http://.
+  if (StringPieceUtils::StartsWithIgnoreCase(url, "https://")) {
+    url.remove_prefix(8);
+  } else if (StringPieceUtils::StartsWithIgnoreCase(url, "http://")) {
+    url.remove_prefix(7);
+  }
+
+  ResponseMap::const_iterator it = responses_.find(url.as_string());
   if (it == responses_.end()) {
     return NULL;
   }
