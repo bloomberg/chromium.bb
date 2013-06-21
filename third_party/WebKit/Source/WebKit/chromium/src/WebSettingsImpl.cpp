@@ -443,6 +443,11 @@ void WebSettingsImpl::setAcceleratedCompositingFor3DTransformsEnabled(bool enabl
     m_settings->setAcceleratedCompositingFor3DTransformsEnabled(enabled);
 }
 
+void WebSettingsImpl::setAcceleratedCompositingForFiltersEnabled(bool enabled)
+{
+    m_settings->setAcceleratedCompositingForFiltersEnabled(enabled);
+}
+
 void WebSettingsImpl::setAcceleratedCompositingForVideoEnabled(bool enabled)
 {
     m_settings->setAcceleratedCompositingForVideoEnabled(enabled);

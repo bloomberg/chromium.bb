@@ -53,6 +53,7 @@ public:
     virtual void setAcceleratedCompositingFor3DTransformsEnabled(bool);
     virtual void setAcceleratedCompositingForAnimationEnabled(bool);
     virtual void setAcceleratedCompositingForCanvasEnabled(bool);
+    virtual void setAcceleratedCompositingForFiltersEnabled(bool);
     virtual void setAcceleratedCompositingForFixedPositionEnabled(bool);
     virtual void setAcceleratedCompositingForOverflowScrollEnabled(bool);
     virtual void setAcceleratedCompositingForTransitionEnabled(bool);
