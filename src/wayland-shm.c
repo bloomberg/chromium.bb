@@ -288,6 +288,16 @@ wl_shm_buffer_create(struct wl_client *client,
 	return &buffer->buffer;
 }
 
+WL_EXPORT struct wl_shm_buffer *
+wl_shm_buffer_get(struct wl_resource *resource)
+{
+	if (wl_resource_instance_of(resource, &wl_buffer_interface,
+				    &shm_buffer_interface))
+		return wl_resource_get_user_data(resource);
+	else
+		return NULL;
+}
+
 WL_EXPORT int
 wl_buffer_is_shm(struct wl_buffer *buffer)
 {
@@ -296,24 +306,14 @@ wl_buffer_is_shm(struct wl_buffer *buffer)
 }
 
 WL_EXPORT int32_t
-wl_shm_buffer_get_stride(struct wl_buffer *buffer_base)
+wl_shm_buffer_get_stride(struct wl_shm_buffer *buffer)
 {
-	struct wl_shm_buffer *buffer = (struct wl_shm_buffer *) buffer_base;
-
-	if (!wl_buffer_is_shm(buffer_base))
-		return 0;
-
 	return buffer->stride;
 }
 
 WL_EXPORT void *
-wl_shm_buffer_get_data(struct wl_buffer *buffer_base)
+wl_shm_buffer_get_data(struct wl_shm_buffer *buffer)
 {
-	struct wl_shm_buffer *buffer = (struct wl_shm_buffer *) buffer_base;
-
-	if (!wl_buffer_is_shm(buffer_base))
-		return NULL;
-
 	if (buffer->pool)
 		return buffer->pool->data + buffer->offset;
 	else
@@ -321,25 +321,19 @@ wl_shm_buffer_get_data(struct wl_buffer *buffer_base)
 }
 
 WL_EXPORT uint32_t
-wl_shm_buffer_get_format(struct wl_buffer *buffer_base)
+wl_shm_buffer_get_format(struct wl_shm_buffer *buffer)
 {
-	struct wl_shm_buffer *buffer = (struct wl_shm_buffer *) buffer_base;
-
 	return buffer->format;
 }
 
 WL_EXPORT int32_t
-wl_shm_buffer_get_width(struct wl_buffer *buffer_base)
+wl_shm_buffer_get_width(struct wl_shm_buffer *buffer)
 {
-	struct wl_shm_buffer *buffer = (struct wl_shm_buffer *) buffer_base;
-
 	return buffer->buffer.width;
 }
 
 WL_EXPORT int32_t
-wl_shm_buffer_get_height(struct wl_buffer *buffer_base)
+wl_shm_buffer_get_height(struct wl_shm_buffer *buffer)
 {
-	struct wl_shm_buffer *buffer = (struct wl_shm_buffer *) buffer_base;
-
 	return buffer->buffer.height;
 }
