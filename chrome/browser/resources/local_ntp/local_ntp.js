@@ -290,6 +290,14 @@ var MOST_VISITED_FONT_SIZE = 11;
 
 
 /**
+ * Hide most visited tiles for at most this many milliseconds while painting.
+ * @type {number}
+ * @const
+ */
+var MOST_VISITED_PAINT_TIMEOUT_MSEC = 500;
+
+
+/**
  * A Tile is either a rendering of a Most Visited page or "filler" used to
  * pad out the section when not enough pages exist.
  *
@@ -373,8 +381,14 @@ function onMostVisitedChange() {
     for (var i = 0; i < MAX_NUM_TILES_TO_SHOW; ++i) {
       tiles.push(createTile(pages[i], i));
     }
-    if (!userInitiatedMostVisitedChange)
+    if (!userInitiatedMostVisitedChange) {
       tilesContainer.hidden = true;
+      window.setTimeout(function() {
+        if (tilesContainer) {
+          tilesContainer.hidden = false;
+        }
+      }, MOST_VISITED_PAINT_TIMEOUT_MSEC);
+    }
     renderTiles();
   }
 }
@@ -409,10 +423,10 @@ function updateMostVisitedVisibility() {
       break;
     }
   }
-  if (!userInitiatedMostVisitedChange)
-    tilesContainer.hidden = !ready;
-  if (ready)
+  if (ready) {
+    tilesContainer.hidden = false;
     userInitiatedMostVisitedChange = false;
+  }
 }
 
 
