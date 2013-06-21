@@ -917,7 +917,7 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     // Only palms on the touchpad
     return;
   }
-  float thumb_dist_sq_thresh = DistanceTravelledSq(*min_fs, false) *
+  float thumb_dist_sq_thresh = DistanceTravelledSq(*min_fs, true) *
       thumb_movement_factor_.val_ * thumb_movement_factor_.val_;
   // Make all large-pressure contacts located below the min-pressure
   // contact as thumbs.
@@ -928,14 +928,14 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     if (fs.pressure > min_pressure + two_finger_pressure_diff_thresh_.val_ &&
         fs.pressure > min_pressure * two_finger_pressure_diff_factor_.val_ &&
         fs.position_y > min_fs->position_y &&
-        DistanceTravelledSq(fs, false) <= thumb_dist_sq_thresh) {
+        DistanceTravelledSq(fs, true) <= thumb_dist_sq_thresh) {
       if (!MapContainsKey(thumb_, fs.tracking_id))
         thumb_[fs.tracking_id] = hwstate.timestamp;
     } else if ((MapContainsKey(thumb_, fs.tracking_id) &&
                 hwstate.timestamp <
                 max(started_moving_time_,
                     thumb_[fs.tracking_id]) + thumb_eval_timeout_.val_) ||
-               (DistanceTravelledSq(fs, false) > thumb_dist_sq_thresh &&
+               (DistanceTravelledSq(fs, true) > thumb_dist_sq_thresh &&
                 fs.tracking_id != min_fs->tracking_id)) {
       thumb_.erase(fs.tracking_id);
     }
