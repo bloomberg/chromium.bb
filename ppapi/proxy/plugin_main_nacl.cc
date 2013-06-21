@@ -190,12 +190,9 @@ void PpapiDispatcher::OnMsgCreateNaClChannel(
       CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           args.switch_names[i], args.switch_values[i]);
     }
-    logging::InitLogging(
-        NULL,
-        logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-        logging::DONT_LOCK_LOG_FILE,
-        logging::DELETE_OLD_LOG_FILE,
-        logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+    logging::LoggingSettings settings;
+    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    logging::InitLogging(settings);
     command_line_and_logging_initialized = true;
   }
   // Tell the process-global GetInterface which interfaces it can return to the

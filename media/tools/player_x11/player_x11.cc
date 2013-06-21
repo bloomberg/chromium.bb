@@ -249,12 +249,9 @@ int main(int argc, char** argv) {
   scoped_ptr<media::AudioManager> audio_manager(media::AudioManager::Create());
   g_audio_manager = audio_manager.get();
 
-  logging::InitLogging(
-      NULL,
-      logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-      logging::LOCK_LOG_FILE,  // Ignored.
-      logging::DELETE_OLD_LOG_FILE,  // Ignored.
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
 
   // Install the signal handler.
   signal(SIGTERM, &TerminateHandler);

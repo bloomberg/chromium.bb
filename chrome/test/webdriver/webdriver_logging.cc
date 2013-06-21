@@ -228,12 +228,9 @@ bool InitWebDriverLogging(const base::FilePath& log_path,
                           LogLevel min_log_level) {
   start_time = base::Time::Now().ToDoubleT();
   // Turn off base/logging.
-  bool success = InitLogging(
-      NULL,
-      logging::LOG_NONE,
-      logging::DONT_LOCK_LOG_FILE,
-      logging::DELETE_OLD_LOG_FILE,
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_NONE;
+  bool success = logging::InitLogging(settings);
   if (!success) {
     PLOG(ERROR) << "Unable to initialize logging";
   }

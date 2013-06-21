@@ -47,10 +47,10 @@ int main(int argc, const char* argv[]) {
 
   // Only use OutputDebugString in debug mode.
 #ifdef NDEBUG
-  logging::LoggingDestination destination = logging::LOG_ONLY_TO_FILE;
+  logging::LoggingDestination destination = logging::LOG_TO_FILE;
 #else
   logging::LoggingDestination destination =
-      logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG;
+      logging::LOG_TO_ALL;
 #endif
 
   CommandLine::Init(argc, argv);
@@ -58,12 +58,11 @@ int main(int argc, const char* argv[]) {
   base::FilePath log_filename;
   PathService::Get(base::DIR_EXE, &log_filename);
   log_filename = log_filename.AppendASCII("tld_cleanup.log");
-  logging::InitLogging(
-      log_filename.value().c_str(),
-      destination,
-      logging::LOCK_LOG_FILE,
-      logging::DELETE_OLD_LOG_FILE,
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::LoggingSettings settings;
+  settings.logging_dest = destination;
+  settings.log_file = log_filename.value().c_str();
+  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  logging::InitLogging(settings);
 
   icu_util::Initialize();
 

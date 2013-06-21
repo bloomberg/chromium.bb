@@ -132,13 +132,11 @@ LoggingDestination DetermineLogMode(const CommandLine& command_line) {
 #ifdef NDEBUG
   bool enable_logging = false;
   const char *kInvertLoggingSwitch = switches::kEnableLogging;
-  const logging::LoggingDestination kDefaultLoggingMode =
-      logging::LOG_ONLY_TO_FILE;
+  const logging::LoggingDestination kDefaultLoggingMode = logging::LOG_TO_FILE;
 #else
   bool enable_logging = true;
   const char *kInvertLoggingSwitch = switches::kDisableLogging;
-  const logging::LoggingDestination kDefaultLoggingMode =
-      logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG;
+  const logging::LoggingDestination kDefaultLoggingMode = logging::LOG_TO_ALL;
 #endif
 
   if (command_line.HasSwitch(kInvertLoggingSwitch))
@@ -149,7 +147,7 @@ LoggingDestination DetermineLogMode(const CommandLine& command_line) {
     // Let --enable-logging=stderr force only stderr, particularly useful for
     // non-debug builds where otherwise you can't get logs to stderr at all.
     if (command_line.GetSwitchValueASCII(switches::kEnableLogging) == "stderr")
-      log_mode = logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG;
+      log_mode = logging::LOG_TO_SYSTEM_DEBUG_LOG;
     else
       log_mode = kDefaultLoggingMode;
   } else {
@@ -252,11 +250,11 @@ void RedirectChromeLogging(const CommandLine& command_line) {
 
   // ChromeOS always logs through the symlink, so it shouldn't be
   // deleted if it already exists.
-  if (!InitLogging(log_path.value().c_str(),
-                   DetermineLogMode(command_line),
-                   logging::LOCK_LOG_FILE,
-                   logging::APPEND_TO_OLD_LOG_FILE,
-                   dcheck_state)) {
+  logging::LoggingSettings settings;
+  settings.logging_dest = DetermineLogMode(command_line);
+  settings.log_file = log_path.value().c_str();
+  settings.dcheck_state = dcheck_state;
+  if (!logging::InitLogging(settings)) {
     DLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
     RemoveSymlinkAndLog(log_path, target_path);
   } else {
@@ -280,8 +278,7 @@ void InitChromeLogging(const CommandLine& command_line,
 
   // Don't resolve the log path unless we need to. Otherwise we leave an open
   // ALPC handle after sandbox lockdown on Windows.
-  if (logging_dest == LOG_ONLY_TO_FILE ||
-      logging_dest == LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG) {
+  if ((logging_dest & LOG_TO_FILE) != 0) {
     log_path = GetLogFileName();
 
 #if defined(OS_CHROMEOS)
@@ -311,11 +308,13 @@ void InitChromeLogging(const CommandLine& command_line,
       logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS :
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
 
-  bool success = InitLogging(log_path.value().c_str(),
-                             logging_dest,
-                             log_locking_state,
-                             delete_old_log_file,
-                             dcheck_state);
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging_dest;
+  settings.log_file = log_path.value().c_str();
+  settings.lock_log = log_locking_state;
+  settings.delete_old = delete_old_log_file;
+  settings.dcheck_state = dcheck_state;
+  bool success = logging::InitLogging(settings);
 
 #if defined(OS_CHROMEOS)
   if (!success) {

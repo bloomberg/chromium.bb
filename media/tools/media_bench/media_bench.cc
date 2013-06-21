@@ -92,12 +92,9 @@ int main(int argc, const char** argv) {
 
   CommandLine::Init(argc, argv);
 
-  logging::InitLogging(
-      NULL,
-      logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-      logging::LOCK_LOG_FILE,  // Ignored.
-      logging::DELETE_OLD_LOG_FILE,  // Ignored.
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   const CommandLine::StringVector& filenames = cmd_line->GetArgs();

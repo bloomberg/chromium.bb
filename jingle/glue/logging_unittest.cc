@@ -58,9 +58,12 @@ static bool Initialize(int verbosity_level) {
   }
 
   // The command line flags are parsed here and the log file name is set.
-  if (!InitLogging(log_file_name, logging::LOG_ONLY_TO_FILE,
-                   logging::DONT_LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE,
-                   logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS)) {
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_FILE;
+  settings.log_file = log_file_name;
+  settings.lock_log = logging::DONT_LOCK_LOG_FILE;
+  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  if (!logging::InitLogging(settings)) {
     return false;
   }
   EXPECT_TRUE(VLOG_IS_ON(verbosity_level));

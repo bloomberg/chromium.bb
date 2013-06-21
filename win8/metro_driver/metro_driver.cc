@@ -62,12 +62,9 @@ extern "C" __declspec(dllexport)
 int InitMetro(LPTHREAD_START_ROUTINE thread_proc, void* context) {
   // Initialize the command line.
   CommandLine::Init(0, NULL);
-  logging::InitLogging(
-        NULL,
-        logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-        logging::LOCK_LOG_FILE,
-        logging::DELETE_OLD_LOG_FILE,
-        logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
 
 #if defined(NDEBUG)
   logging::SetMinLogLevel(logging::LOG_ERROR);

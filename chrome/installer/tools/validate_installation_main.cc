@@ -61,12 +61,12 @@ logging::LogMessageHandlerFunction
 
 ConsoleLogHelper::ConsoleLogHelper() : log_file_path_(GetLogFilePath()) {
   LOG_ASSERT(old_message_handler_ == NULL);
-  logging::InitLogging(
-      log_file_path_.value().c_str(),
-      logging::LOG_ONLY_TO_FILE,
-      logging::DONT_LOCK_LOG_FILE,
-      logging::DELETE_OLD_LOG_FILE,
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_FILE;
+  settings.log_file = log_file_path_.value().c_str();
+  settings.lock_log = logging::DONT_LOCK_LOG_FILE;
+  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  logging::InitLogging(settings);
 
   old_message_handler_ = logging::GetLogMessageHandler();
   logging::SetLogMessageHandler(&DumpLogMessage);

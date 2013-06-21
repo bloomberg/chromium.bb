@@ -116,15 +116,13 @@ void InitLogging() {
   base::FilePath log_filename;
   PathService::Get(base::DIR_EXE, &log_filename);
   log_filename = log_filename.AppendASCII("DumpRenderTree.log");
-  logging::InitLogging(
-      log_filename.value().c_str(),
-      // Only log to a file. This prevents debugging output from disrupting
-      // whether or not we pass.
-      logging::LOG_ONLY_TO_FILE,
-      // We might have multiple DumpRenderTree processes going at once.
-      logging::LOCK_LOG_FILE,
-      logging::DELETE_OLD_LOG_FILE,
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::LoggingSettings settings;
+  // Only log to a file. This prevents debugging output from disrupting
+  // whether or not we pass.
+  settings.logging_dest = logging::LOG_TO_FILE;
+  settings.log_file = log_filename.value().c_str();
+  settings.delete_old = logging::DELETE_OLD_LOG_FILE;
+  logging::InitLogging(settings);
 
   // We want process and thread IDs because we may have multiple processes.
   const bool kProcessId = true;

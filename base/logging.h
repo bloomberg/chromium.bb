@@ -146,22 +146,39 @@
 
 namespace logging {
 
-// Where to record logging output? A flat file and/or system debug log via
-// OutputDebugString. Defaults on Windows to LOG_ONLY_TO_FILE, and on
-// POSIX to LOG_ONLY_TO_SYSTEM_DEBUG_LOG (aka stderr).
-enum LoggingDestination { LOG_NONE,
-                          LOG_ONLY_TO_FILE,
-                          LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-                          LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG };
+// TODO(avi): do we want to do a unification of character types here?
+#if defined(OS_WIN)
+typedef wchar_t PathChar;
+#else
+typedef char PathChar;
+#endif
+
+// Where to record logging output? A flat file and/or system debug log
+// via OutputDebugString.
+enum LoggingDestination {
+  LOG_NONE                = 0,
+  LOG_TO_FILE             = 1 << 0,
+  LOG_TO_SYSTEM_DEBUG_LOG = 1 << 1,
+
+  LOG_TO_ALL = LOG_TO_FILE | LOG_TO_SYSTEM_DEBUG_LOG,
+
+  // On Windows, use a file next to the exe; on POSIX platforms, where
+  // it may not even be possible to locate the executable on disk, use
+  // stderr.
+#if defined(OS_WIN)
+  LOG_DEFAULT = LOG_TO_FILE,
+#elif defined(OS_POSIX)
+  LOG_DEFAULT = LOG_TO_SYSTEM_DEBUG_LOG,
+#endif
+};
 
 // Indicates that the log file should be locked when being written to.
-// Often, there is no locking, which is fine for a single threaded program.
-// If logging is being done from multiple threads or there can be more than
-// one process doing the logging, the file should be locked during writes to
-// make each log outut atomic. Other writers will block.
+// Unless there is only one single-threaded process that is logging to
+// the log file, the file should be locked during writes to make each
+// log outut atomic. Other writers will block.
 //
 // All processes writing to the log file must have their locking set for it to
-// work properly. Defaults to DONT_LOCK_LOG_FILE.
+// work properly. Defaults to LOCK_LOG_FILE.
 enum LogLockingState { LOCK_LOG_FILE, DONT_LOCK_LOG_FILE };
 
 // On startup, should we delete or append to an existing log file (if any)?
@@ -173,12 +190,26 @@ enum DcheckState {
   ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS
 };
 
-// TODO(avi): do we want to do a unification of character types here?
-#if defined(OS_WIN)
-typedef wchar_t PathChar;
-#else
-typedef char PathChar;
-#endif
+struct BASE_EXPORT LoggingSettings {
+  // The defaults values are:
+  //
+  //  logging_dest: LOG_DEFAULT
+  //  log_file:     NULL
+  //  lock_log:     LOCK_LOG_FILE
+  //  delete_old:   APPEND_TO_OLD_LOG_FILE
+  //  dcheck_state: DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS
+  LoggingSettings();
+
+  LoggingDestination logging_dest;
+
+  // The three settings below have an effect only when LOG_TO_FILE is
+  // set in |logging_dest|.
+  const PathChar* log_file;
+  LogLockingState lock_log;
+  OldFileDeletionState delete_old;
+
+  DcheckState dcheck_state;
+};
 
 // Define different names for the BaseInitLoggingImpl() function depending on
 // whether NDEBUG is defined or not so that we'll fail to link if someone tries
@@ -193,11 +224,7 @@ typedef char PathChar;
 // Implementation of the InitLogging() method declared below.  We use a
 // more-specific name so we can #define it above without affecting other code
 // that has named stuff "InitLogging".
-BASE_EXPORT bool BaseInitLoggingImpl(const PathChar* log_file,
-                                     LoggingDestination logging_dest,
-                                     LogLockingState lock_log,
-                                     OldFileDeletionState delete_old,
-                                     DcheckState dcheck_state);
+BASE_EXPORT bool BaseInitLoggingImpl(const LoggingSettings& settings);
 
 // Sets the log file name and other global logging state. Calling this function
 // is recommended, and is normally done at the beginning of application init.
@@ -213,13 +240,8 @@ BASE_EXPORT bool BaseInitLoggingImpl(const PathChar* log_file,
 // This function may be called a second time to re-direct logging (e.g after
 // loging in to a user partition), however it should never be called more than
 // twice.
-inline bool InitLogging(const PathChar* log_file,
-                        LoggingDestination logging_dest,
-                        LogLockingState lock_log,
-                        OldFileDeletionState delete_old,
-                        DcheckState dcheck_state) {
-  return BaseInitLoggingImpl(log_file, logging_dest, lock_log,
-                             delete_old, dcheck_state);
+inline bool InitLogging(const LoggingSettings& settings) {
+  return BaseInitLoggingImpl(settings);
 }
 
 // Sets the log level. Anything at or above this level will be written to the

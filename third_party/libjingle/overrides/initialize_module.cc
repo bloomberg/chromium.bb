@@ -67,12 +67,9 @@ bool InitializeModule(const CommandLine& command_line,
     // done the equivalent thing via the GetCommandLine() API.
     CommandLine::ForCurrentProcess()->AppendArguments(command_line, true);
 #endif
-    logging::InitLogging(
-        NULL,
-        logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-        logging::LOCK_LOG_FILE,
-        logging::DELETE_OLD_LOG_FILE,
-        logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+    logging::LoggingSettings settings;
+    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    logging::InitLogging(settings);
 
     // Override the log message handler to forward logs to chrome's handler.
     logging::SetLogMessageHandler(log_handler);

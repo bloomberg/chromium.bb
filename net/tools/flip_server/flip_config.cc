@@ -97,7 +97,7 @@ FlipAcceptor::~FlipAcceptor() {}
 
 FlipConfig::FlipConfig()
     : server_think_time_in_s_(0),
-      log_destination_(logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG),
+      log_destination_(logging::LOG_TO_SYSTEM_DEBUG_LOG),
       wait_for_iface_(false) {
 }
 

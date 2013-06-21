@@ -153,12 +153,9 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 #endif  // (defined(OS_LINUX) || defined(OS_OPENBSD)) && !defined(OS_CHROMEOS)
   base::AtExitManager exit_manager;
   CommandLine::Init(argc, argv);
-  logging::InitLogging(
-      NULL,
-      logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-      logging::LOCK_LOG_FILE,
-      logging::DELETE_OLD_LOG_FILE,
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
 
   // Just make the main message loop the network loop.
   base::MessageLoopForIO network_loop;

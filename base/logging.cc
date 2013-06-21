@@ -85,15 +85,7 @@ const char* const log_severity_names[LOG_NUM_SEVERITIES] = {
 
 int min_log_level = 0;
 
-// The default set here for logging_destination will only be used if
-// InitLogging is not called.  On Windows, use a file next to the exe;
-// on POSIX platforms, where it may not even be possible to locate the
-// executable on disk, use stderr.
-#if defined(OS_WIN)
-LoggingDestination logging_destination = LOG_ONLY_TO_FILE;
-#elif defined(OS_POSIX)
-LoggingDestination logging_destination = LOG_ONLY_TO_SYSTEM_DEBUG_LOG;
-#endif
+LoggingDestination logging_destination = LOG_DEFAULT;
 
 // For LOG_ERROR and above, always print to stderr.
 const int kAlwaysPrintErrorLevel = LOG_ERROR;
@@ -323,8 +315,7 @@ bool InitializeLogFileHandle() {
     log_file_name = new PathString(GetDefaultLogFile());
   }
 
-  if (logging_destination == LOG_ONLY_TO_FILE ||
-      logging_destination == LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG) {
+  if ((logging_destination & LOG_TO_FILE) != 0) {
 #if defined(OS_WIN)
     log_file = CreateFile(log_file_name->c_str(), GENERIC_WRITE,
                           FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
@@ -352,17 +343,19 @@ bool InitializeLogFileHandle() {
 
 }  // namespace
 
+LoggingSettings::LoggingSettings()
+    : logging_dest(LOG_DEFAULT),
+      log_file(NULL),
+      lock_log(LOCK_LOG_FILE),
+      delete_old(APPEND_TO_OLD_LOG_FILE),
+      dcheck_state(DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS) {}
 
-bool BaseInitLoggingImpl(const PathChar* new_log_file,
-                         LoggingDestination logging_dest,
-                         LogLockingState lock_log,
-                         OldFileDeletionState delete_old,
-                         DcheckState dcheck_state) {
+bool BaseInitLoggingImpl(const LoggingSettings& settings) {
 #if defined(OS_NACL)
-  CHECK(logging_dest == LOG_NONE ||
-        logging_dest == LOG_ONLY_TO_SYSTEM_DEBUG_LOG);
+  // Can log only to the system debug log.
+  CHECK_EQ(settings.logging_dest & ~LOG_TO_SYSTEM_DEBUG_LOG, 0);
 #endif
-  g_dcheck_state = dcheck_state;
+  g_dcheck_state = settings.dcheck_state;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Don't bother initializing g_vlog_info unless we use one of the
   // vlog switches.
@@ -380,7 +373,7 @@ bool BaseInitLoggingImpl(const PathChar* new_log_file,
                      &min_log_level);
   }
 
-  LoggingLock::Init(lock_log, new_log_file);
+  LoggingLock::Init(settings.lock_log, settings.log_file);
 
   LoggingLock logging_lock;
 
@@ -391,17 +384,16 @@ bool BaseInitLoggingImpl(const PathChar* new_log_file,
     log_file = NULL;
   }
 
-  logging_destination = logging_dest;
+  logging_destination = settings.logging_dest;
 
-  // ignore file options if logging is disabled or only to system
-  if (logging_destination == LOG_NONE ||
-      logging_destination == LOG_ONLY_TO_SYSTEM_DEBUG_LOG)
+  // ignore file options unless logging to file is set.
+  if ((logging_destination & LOG_TO_FILE) == 0)
     return true;
 
   if (!log_file_name)
     log_file_name = new PathString();
-  *log_file_name = new_log_file;
-  if (delete_old == DELETE_OLD_LOG_FILE)
+  *log_file_name = settings.log_file;
+  if (settings.delete_old == DELETE_OLD_LOG_FILE)
     DeleteFilePath(*log_file_name);
 
   return InitializeLogFileHandle();
@@ -578,14 +570,14 @@ LogMessage::~LogMessage() {
   std::string str_newline(stream_.str());
 
   // Give any log message handler first dibs on the message.
-  if (log_message_handler && log_message_handler(severity_, file_, line_,
-          message_start_, str_newline)) {
+  if (log_message_handler &&
+      log_message_handler(severity_, file_, line_,
+                          message_start_, str_newline)) {
     // The handler took care of it, no further processing.
     return;
   }
 
-  if (logging_destination == LOG_ONLY_TO_SYSTEM_DEBUG_LOG ||
-      logging_destination == LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG) {
+  if ((logging_destination & LOG_TO_SYSTEM_DEBUG_LOG) != 0) {
 #if defined(OS_WIN)
     OutputDebugStringA(str_newline.c_str());
 #elif defined(OS_ANDROID)
@@ -627,8 +619,7 @@ LogMessage::~LogMessage() {
   // thread at the beginning of execution.
   LoggingLock::Init(LOCK_LOG_FILE, NULL);
   // write to log file
-  if (logging_destination != LOG_NONE &&
-      logging_destination != LOG_ONLY_TO_SYSTEM_DEBUG_LOG) {
+  if ((logging_destination & LOG_TO_FILE) != 0) {
     LoggingLock logging_lock;
     if (InitializeLogFileHandle()) {
 #if defined(OS_WIN)
