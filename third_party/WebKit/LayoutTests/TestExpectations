@@ -1955,4 +1955,6 @@ crbug.com/78724 [ Linux ] tables/mozilla_expected_failures/bugs/bug58402-2.html 
 crbug.com/78724 [ Win Mac ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ Failure ]
 crbug.com/78724 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
 
+crbug.com/252865 [ Debug ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Crash ]
+
 crbug.com/252573 [ Mac Win ] fast/forms/empty-textarea-toggle-disabled.html [ Pass Timeout ]
