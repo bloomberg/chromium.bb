@@ -1450,6 +1450,66 @@ TEST_F(ExtensionServiceTest, UpdateOnStartup) {
       prefs->GetDelayedInstallInfo("bjafgdebaacbbbecmhlhpofkepfkgcpa"));
 }
 
+// Test various cases for delayed install because of missing imports.
+TEST_F(ExtensionServiceTest, PendingImports) {
+  InitPluginService();
+
+  base::FilePath source_install_dir = data_dir_
+      .AppendASCII("pending_updates_with_imports")
+      .AppendASCII("Extensions");
+  base::FilePath pref_path = source_install_dir
+      .DirName()
+      .AppendASCII("Preferences");
+
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
+
+  // Verify there are no pending extensions initially.
+  EXPECT_FALSE(service_->pending_extension_manager()->HasPendingExtensions());
+
+  service_->Init();
+  // Wait for GarbageCollectExtensions task to complete.
+  loop_.RunUntilIdle();
+
+  // These extensions are used by the extensions we test below, they must be
+  // installed.
+  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "bjafgdebaacbbbecmhlhpofkepfkgcpa/1.0")));
+  EXPECT_TRUE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "hpiknbiabeeppbpihjehijgoemciehgk/2")));
+
+  // Each of these extensions should have been rejected because of dependencies
+  // that cannot be satisfied.
+  ExtensionPrefs* prefs = service_->extension_prefs();
+  EXPECT_FALSE(
+      prefs->GetDelayedInstallInfo("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+  EXPECT_FALSE(
+      prefs->GetInstalledExtensionInfo("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+  EXPECT_FALSE(
+      prefs->GetDelayedInstallInfo("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"));
+  EXPECT_FALSE(
+      prefs->GetInstalledExtensionInfo("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"));
+  EXPECT_FALSE(
+      prefs->GetDelayedInstallInfo("cccccccccccccccccccccccccccccccc"));
+  EXPECT_FALSE(
+      prefs->GetInstalledExtensionInfo("cccccccccccccccccccccccccccccccc"));
+
+  // Make sure the import started for the extension with a dependency.
+  EXPECT_TRUE(
+      prefs->GetDelayedInstallInfo("behllobkkfkfnphdnhnkndlbkcpglgmj"));
+  EXPECT_EQ(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
+      prefs->GetDelayedInstallReason("behllobkkfkfnphdnhnkndlbkcpglgmj"));
+
+  EXPECT_FALSE(file_util::PathExists(extensions_install_dir_.AppendASCII(
+      "behllobkkfkfnphdnhnkndlbkcpglgmj/1.0.0.0")));
+
+  EXPECT_TRUE(service_->pending_extension_manager()->HasPendingExtensions());
+  std::string pending_id("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+  EXPECT_TRUE(service_->pending_extension_manager()->IsIdPending(pending_id));
+  // Remove it because we are not testing the pending extension manager's
+  // ability to download and install extensions.
+  EXPECT_TRUE(service_->pending_extension_manager()->Remove(pending_id));
+}
+
 // Test installing extensions. This test tries to install few extensions using
 // crx files. If you need to change those crx files, feel free to repackage
 // them, throw away the key used and change the id's above.

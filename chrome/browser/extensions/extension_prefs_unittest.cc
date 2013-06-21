@@ -452,6 +452,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
     ASSERT_TRUE(extension.get()) << errors;
     ASSERT_EQ(id, extension->id());
     prefs()->SetDelayedInstallInfo(extension.get(), Extension::ENABLED,
+                                   ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE,
                                    syncer::StringOrdinal());
   }
 

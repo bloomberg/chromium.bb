@@ -121,6 +121,9 @@ const char kExtensionsBlacklistUpdate[] = "extensions.blacklistupdate";
 // updates that were waiting for idle.
 const char kDelayedInstallInfo[] = "idle_install_info";
 
+// Reason why the extension's install was delayed.
+const char kDelayedInstallReason[] = "delay_install_reason";
+
 // Path for the suggested page ordinal of a delayed extension install.
 const char kPrefSuggestedPageOrdinal[] = "suggested_page_ordinal";
 
@@ -1328,6 +1331,7 @@ ExtensionPrefs::GetInstalledExtensionsInfo() const {
 void ExtensionPrefs::SetDelayedInstallInfo(
     const Extension* extension,
     Extension::State initial_state,
+    DelayReason delay_reason,
     const syncer::StringOrdinal& page_ordinal) {
   DictionaryValue* extension_dict = new DictionaryValue();
   PopulateExtensionInfoPrefs(extension, time_provider_->GetCurrentTime(),
@@ -1342,6 +1346,8 @@ void ExtensionPrefs::SetDelayedInstallInfo(
         page_ordinal.IsValid() ? page_ordinal.ToInternalValue()
                                : std::string());
   }
+  extension_dict->SetInteger(kDelayedInstallReason,
+                             static_cast<int>(delay_reason));
 
   UpdateExtensionPref(extension->id(), kDelayedInstallInfo, extension_dict);
 }
@@ -1377,6 +1383,7 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(
     needs_sort_ordinal = true;
     pending_install_dict->Remove(kPrefSuggestedPageOrdinal, NULL);
   }
+  pending_install_dict->Remove(kDelayedInstallReason, NULL);
 
   const base::Time install_time = time_provider_->GetCurrentTime();
   pending_install_dict->Set(
@@ -1403,6 +1410,24 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetDelayedInstallInfo(
     return scoped_ptr<ExtensionInfo>();
 
   return GetInstalledInfoHelper(extension_id, ext);
+}
+
+ExtensionPrefs::DelayReason ExtensionPrefs::GetDelayedInstallReason(
+    const std::string& extension_id) const {
+  const DictionaryValue* extension_prefs =
+      GetExtensionPref(extension_id);
+  if (!extension_prefs)
+    return DELAY_REASON_NONE;
+
+  const DictionaryValue* ext = NULL;
+  if (!extension_prefs->GetDictionary(kDelayedInstallInfo, &ext))
+    return DELAY_REASON_NONE;
+
+  int delay_reason;
+  if (!ext->GetInteger(kDelayedInstallReason, &delay_reason))
+    return DELAY_REASON_NONE;
+
+  return static_cast<DelayReason>(delay_reason);
 }
 
 scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
@@ -1461,6 +1486,16 @@ int ExtensionPrefs::GetCreationFlags(const std::string& extension_id) const {
       creation_flags |= Extension::FROM_WEBSTORE;
     if (WasInstalledByDefault(extension_id))
       creation_flags |= Extension::WAS_INSTALLED_BY_DEFAULT;
+  }
+  return creation_flags;
+}
+
+int ExtensionPrefs::GetDelayedInstallCreationFlags(
+    const std::string& extension_id) const {
+  int creation_flags = Extension::NO_FLAGS;
+  const DictionaryValue* delayed_info = NULL;
+  if (ReadPrefAsDictionary(extension_id, kDelayedInstallInfo, &delayed_info)) {
+    delayed_info->GetInteger(kPrefCreationFlags, &creation_flags);
   }
   return creation_flags;
 }

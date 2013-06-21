@@ -66,7 +66,7 @@ class ExtensionSystem;
 class ExtensionUpdater;
 class PendingExtensionManager;
 class SettingsFrontend;
-} // namespace extensions
+}  // namespace extensions
 
 namespace syncer {
 class SyncErrorFactory;
@@ -404,6 +404,24 @@ class ExtensionService
   virtual void AddComponentExtension(const extensions::Extension* extension)
       OVERRIDE;
 
+  enum ImportStatus {
+   IMPORT_STATUS_OK,
+   IMPORT_STATUS_UNSATISFIED,
+   IMPORT_STATUS_UNRECOVERABLE
+  };
+
+  // Checks an extension's shared module imports to see if they are satisfied.
+  // If they are not, this function adds the dependencies to the pending install
+  // list if |extension| came from the webstore.
+  ImportStatus SatisfyImports(const extensions::Extension* extension);
+
+  // Returns a set of extensions that import a given extension.
+  scoped_ptr<const ExtensionSet> GetDependentExtensions(
+      const extensions::Extension* extension);
+
+  // Uninstalls shared modules that were only referenced by |extension|.
+  void PruneSharedModulesOnUninstall(const extensions::Extension* extension);
+
   // Informs the service that an extension's files are in place for loading.
   //
   // Please make sure the Blacklist is checked some time before calling this
@@ -413,6 +431,9 @@ class ExtensionService
       const syncer::StringOrdinal& page_ordinal,
       bool has_requirement_errors,
       bool wait_for_idle);
+
+  // Checks for delayed installation for all pending installs.
+  void MaybeFinishDelayedInstallations();
 
   // Similar to FinishInstallation, but first checks if there still is an update
   // pending for the extension, and makes sure the extension is still idle.
@@ -761,9 +782,12 @@ class ExtensionService
   void ManageBlacklist(const std::set<std::string>& old_blacklisted_ids,
                        const std::set<std::string>& new_blacklisted_ids);
 
-  // Controls if installs are delayed. See comment for |installs_delayed_|.
-  void set_installs_delayed(bool value) { installs_delayed_ = value; }
-  bool installs_delayed() const { return installs_delayed_; }
+  // Controls if installs are delayed. See comment for
+  // |installs_delayed_for_gc_|.
+  void set_installs_delayed_for_gc(bool value) {
+    installs_delayed_for_gc_ = value;
+  }
+  bool installs_delayed_for_gc() const { return installs_delayed_for_gc_; }
 
   // The normal profile associated with this ExtensionService.
   Profile* profile_;
@@ -795,13 +819,8 @@ class ExtensionService
   // they can easily be un-blacklisted.
   ExtensionSet blacklisted_extensions_;
 
-  // The list of extension updates that have had their installs delayed because
-  // they are waiting for idle.
-  ExtensionSet delayed_updates_for_idle_;
-
-  // The list of extension installs delayed by |installs_delayed_|.
-  // This is a disjoint set from |delayed_updates_for_idle_|. Extensions in
-  // the |delayed_installs_| do not need to wait for idle.
+  // The list of extension installs delayed for various reasons.  The reason
+  // for delayed install is stored in ExtensionPrefs.
   ExtensionSet delayed_installs_;
 
   // Hold the set of pending extensions.
@@ -882,11 +901,11 @@ class ExtensionService
   // decide to abort.
   bool browser_terminating_;
 
-  // Set to true to delay all new extension installations. Acts as a lock
-  // to allow background processing of tasks such as garbage collection of
-  // on-disk state without needing to worry about race conditions caused
-  // by extension installation and reinstallation.
-  bool installs_delayed_;
+  // Set to true to delay all new extension installations. Acts as a lock to
+  // allow background processing of garbage collection of on-disk state without
+  // needing to worry about race conditions caused by extension installation and
+  // reinstallation.
+  bool installs_delayed_for_gc_;
 
   // Set to true if this is the first time this ExtensionService has run.
   // Used for specially handling external extensions that are installed the

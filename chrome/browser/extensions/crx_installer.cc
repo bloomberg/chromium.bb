@@ -412,17 +412,8 @@ void CrxInstaller::CheckImportsAndRequirements() {
       Version version_required(i->minimum_version);
       const Extension* imported_module =
           service->GetExtensionById(i->extension_id, true);
-      if (!imported_module ||
-          (version_required.IsValid() &&
-           imported_module->version()->CompareTo(version_required) < 0)) {
-        ReportFailureFromUIThread(
-            CrxInstallerError(l10n_util::GetStringFUTF16(
-                IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_FOUND,
-                ASCIIToUTF16(i->extension_id),
-                ASCIIToUTF16(i->minimum_version))));
-        return;
-      }
-      if (!SharedModuleInfo::IsSharedModule(imported_module)) {
+      if (imported_module &&
+          !SharedModuleInfo::IsSharedModule(imported_module)) {
         ReportFailureFromUIThread(
             CrxInstallerError(l10n_util::GetStringFUTF16(
                 IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE,

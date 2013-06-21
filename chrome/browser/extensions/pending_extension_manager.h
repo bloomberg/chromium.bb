@@ -80,6 +80,12 @@ class PendingExtensionManager {
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool install_silently);
 
+  // Adds an extension that was depended on by another extension.
+  bool AddFromExtensionImport(
+      const std::string& id,
+      const GURL& update_url,
+      PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install);
+
   // Given an extension id and an update URL, schedule the extension
   // to be fetched, installed, and activated.
   bool AddFromExternalUpdateUrl(const std::string& id,

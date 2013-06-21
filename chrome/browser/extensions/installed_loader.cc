@@ -164,7 +164,6 @@ void InstalledLoader::LoadAllExtensions() {
 
   std::vector<int> reload_reason_counts(NUM_MANIFEST_RELOAD_REASONS, 0);
   bool should_write_prefs = false;
-  int update_count = 0;
 
   for (size_t i = 0; i < extensions_info->size(); ++i) {
     ExtensionInfo* info = extensions_info->at(i).get();
@@ -173,31 +172,6 @@ void InstalledLoader::LoadAllExtensions() {
     // want those to persist across browser restart.
     if (info->extension_location == Manifest::COMMAND_LINE)
       continue;
-
-    scoped_ptr<ExtensionInfo> pending_update(
-        extension_prefs_->GetDelayedInstallInfo(info->extension_id));
-    if (pending_update) {
-      if (!extension_prefs_->FinishDelayedInstallInfo(info->extension_id))
-        NOTREACHED();
-
-      Version old_version;
-      if (info->extension_manifest) {
-        std::string version_str;
-        if (info->extension_manifest->GetString(
-            extension_manifest_keys::kVersion, &version_str)) {
-          old_version = Version(version_str);
-        }
-      }
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(&DispatchOnInstalledEvent, extension_service_->profile(),
-                     info->extension_id, old_version, false));
-
-      info = extension_prefs_->GetInstalledExtensionInfo(
-          info->extension_id).release();
-      extensions_info->at(i).reset(info);
-
-      update_count++;
-    }
 
     ManifestReloadReason reload_reason = ShouldReloadExtensionManifest(*info);
     ++reload_reason_counts[reload_reason];
@@ -255,8 +229,6 @@ void InstalledLoader::LoadAllExtensions() {
                            extension_service_->extensions()->size());
   UMA_HISTOGRAM_COUNTS_100("Extensions.Disabled",
                            extension_service_->disabled_extensions()->size());
-  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateOnLoad",
-                           update_count);
 
   UMA_HISTOGRAM_TIMES("Extensions.LoadAllTime",
                       base::TimeTicks::Now() - start_time);
