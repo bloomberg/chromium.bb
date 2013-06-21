@@ -103,6 +103,9 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual string16 GetTextContentsOfInput(const DetailInput& input) OVERRIDE;
   virtual void SetTextContentsOfInput(const DetailInput& input,
                                       const string16& contents) OVERRIDE;
+  virtual void SetTextContentsOfSuggestionInput(
+      DialogSection section,
+      const base::string16& text) OVERRIDE;
   virtual void ActivateInput(const DetailInput& input) OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
 

@@ -1219,6 +1219,13 @@ void AutofillDialogViews::SetTextContentsOfInput(const DetailInput& input,
   NOTREACHED();
 }
 
+void AutofillDialogViews::SetTextContentsOfSuggestionInput(
+    DialogSection section,
+    const base::string16& text) {
+  GroupForSection(section)->suggested_info->decorated_textfield()->
+      SetText(text);
+}
+
 void AutofillDialogViews::ActivateInput(const DetailInput& input) {
   TextfieldEditedOrActivated(TextfieldForInput(input), false);
 }

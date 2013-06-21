@@ -75,6 +75,11 @@ class TabAutofillManagerDelegate
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
+  // Exposed for testing.
+  AutofillDialogControllerImpl* GetDialogControllerForTesting() {
+    return dialog_controller_.get();
+  }
+
  private:
   explicit TabAutofillManagerDelegate(content::WebContents* web_contents);
   friend class content::WebContentsUserData<TabAutofillManagerDelegate>;

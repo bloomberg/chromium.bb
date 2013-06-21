@@ -53,6 +53,7 @@ class AutofillDataModel;
 class AutofillDialogView;
 class AutofillPopupControllerImpl;
 class DataModelWrapper;
+class TestableAutofillDialogView;
 
 namespace risk {
 class Fingerprint;
@@ -100,6 +101,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Called when an Autocheckout flow completes successfully.
   void OnAutocheckoutSuccess();
+
+  // Returns |view_| as a testable version of itself (if |view_| exists and
+  // actually implements |AutofillDialogView::GetTestableView()|).
+  TestableAutofillDialogView* GetTestableView();
 
   // AutofillDialogController implementation.
   virtual string16 DialogTitle() const OVERRIDE;

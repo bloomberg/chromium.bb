@@ -8,13 +8,16 @@
 #include "base/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
+#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -23,8 +26,13 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace autofill {
 
@@ -213,10 +221,85 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     message_loop_runner_->Run();
   }
 
+  // Loads an HTML page in |GetActiveWebContents()| with markup as follows:
+  // <form>|form_inner_html|</form>. After loading, emulates a click event on
+  // the page as requestAutocomplete() must be in response to a user gesture.
+  // Returns the |AutofillDialogControllerImpl| created by this invocation.
+  AutofillDialogControllerImpl* SetUpHtmlAndInvoke(
+      const std::string& form_inner_html) {
+    content::WebContents* contents = GetActiveWebContents();
+    TabAutofillManagerDelegate* delegate =
+        TabAutofillManagerDelegate::FromWebContents(contents);
+    DCHECK(!delegate->GetDialogControllerForTesting());
+
+    ui_test_utils::NavigateToURL(
+        browser(), GURL(std::string("data:text/html,") +
+        "<!doctype html>"
+        "<html>"
+          "<body>"
+            "<form>" + form_inner_html + "</form>"
+            "<script>"
+              "function send(msg) {"
+                "domAutomationController.setAutomationId(0);"
+                "domAutomationController.send(msg);"
+              "}"
+              "document.forms[0].onautocompleteerror = function(e) {"
+                "send('error: ' + e.reason);"
+              "};"
+              "document.forms[0].onautocomplete = function() {"
+                "send('success');"
+              "};"
+              "window.onclick = function() {"
+                "document.forms[0].requestAutocomplete();"
+                "send('clicked');"
+              "};"
+            "</script>"
+          "</body>"
+        "</html>"));
+    content::WaitForLoadStop(contents);
+
+    dom_message_queue_.reset(new content::DOMMessageQueue);
+
+    // Triggers the onclick handler which invokes requestAutocomplete().
+    content::SimulateMouseClick(contents, 0, WebKit::WebMouseEvent::ButtonLeft);
+    ExpectDomMessage("clicked");
+
+    AutofillDialogControllerImpl* controller =
+        delegate->GetDialogControllerForTesting();
+    DCHECK(controller);
+    return controller;
+  }
+
+  // Wait for a message from the DOM automation controller (from JS in the
+  // page). Requires |SetUpHtmlAndInvoke()| be called first.
+  void ExpectDomMessage(const std::string& expected) {
+    std::string message;
+    ASSERT_TRUE(dom_message_queue_->WaitForMessage(&message));
+    dom_message_queue_->ClearQueue();
+    EXPECT_EQ("\"" + expected + "\"", message);
+  }
+
+  void AddCreditcardToProfile(Profile* profile, const CreditCard& card) {
+    PersonalDataManagerFactory::GetForProfile(profile)->AddCreditCard(card);
+    WaitForWebDB();
+  }
+
+  void AddAutofillProfileToProfile(Profile* profile,
+                                   const AutofillProfile& autofill_profile) {
+    PersonalDataManagerFactory::GetForProfile(profile)->AddProfile(
+        autofill_profile);
+    WaitForWebDB();
+  }
+
+  void WaitForWebDB() {
+    content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
+  }
+
  private:
   MockAutofillMetrics metric_logger_;
   TestAutofillDialogController* controller_;  // Weak reference.
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  scoped_ptr<content::DOMMessageQueue> dom_message_queue_;
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };
 
@@ -226,7 +309,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
 // Submit the form data.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->view()->GetTestableView()->SubmitForTesting();
+  controller()->GetTestableView()->SubmitForTesting();
 
   RunMessageLoop();
 
@@ -238,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
 // Cancel out of the dialog.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->view()->GetTestableView()->CancelForTesting();
+  controller()->GetTestableView()->CancelForTesting();
 
   RunMessageLoop();
 
@@ -262,14 +345,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Hide) {
 // Test Autocheckout success metrics.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutSuccess) {
   InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
-  controller()->view()->GetTestableView()->SubmitForTesting();
+  controller()->GetTestableView()->SubmitForTesting();
 
   EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
             metric_logger().dialog_dismissal_action());
   EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
 
   controller()->OnAutocheckoutSuccess();
-  controller()->view()->GetTestableView()->CancelForTesting();
+  controller()->GetTestableView()->CancelForTesting();
   RunMessageLoop();
 
   EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_SUCCEEDED,
@@ -284,14 +367,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutSuccess) {
 // Test Autocheckout failure metric.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutError) {
   InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
-  controller()->view()->GetTestableView()->SubmitForTesting();
+  controller()->GetTestableView()->SubmitForTesting();
 
   EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
             metric_logger().dialog_dismissal_action());
   EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
 
   controller()->OnAutocheckoutError();
-  controller()->view()->GetTestableView()->CancelForTesting();
+  controller()->GetTestableView()->CancelForTesting();
   RunMessageLoop();
 
   EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_FAILED,
@@ -305,13 +388,13 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutError) {
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutCancelled) {
   InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
-  controller()->view()->GetTestableView()->SubmitForTesting();
+  controller()->GetTestableView()->SubmitForTesting();
 
   EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
             metric_logger().dialog_dismissal_action());
   EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
 
-  controller()->view()->GetTestableView()->CancelForTesting();
+  controller()->GetTestableView()->CancelForTesting();
   RunMessageLoop();
 
   EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_CANCELLED,
@@ -334,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
   const DetailInput& triggering_input = inputs[0];
   string16 value = full_profile.GetRawInfo(triggering_input.type);
-  TestableAutofillDialogView* view = controller()->view()->GetTestableView();
+  TestableAutofillDialogView* view = controller()->GetTestableView();
   view->SetTextContentsOfInput(triggering_input,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_input);
@@ -381,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_TRUE(controller()->ShouldShowDetailArea());
   EXPECT_FALSE(controller()->ShouldShowProgressBar());
 
-  controller()->view()->GetTestableView()->SubmitForTesting();
+  controller()->GetTestableView()->SubmitForTesting();
   EXPECT_FALSE(controller()->ShouldShowDetailArea());
   EXPECT_TRUE(controller()->ShouldShowProgressBar());
 }
@@ -394,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_TRUE(controller()->ShouldShowDetailArea());
   EXPECT_FALSE(controller()->ShouldShowProgressBar());
 
-  controller()->view()->GetTestableView()->SubmitForTesting();
+  controller()->GetTestableView()->SubmitForTesting();
   EXPECT_TRUE(controller()->ShouldShowDetailArea());
   EXPECT_FALSE(controller()->ShouldShowProgressBar());
 }
@@ -418,7 +501,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillComboboxFromAutofill) {
       controller()->RequestedFieldsForSection(SECTION_CC);
   const DetailInput& triggering_input = inputs[0];
   string16 value = card1.GetRawInfo(triggering_input.type);
-  TestableAutofillDialogView* view = controller()->view()->GetTestableView();
+  TestableAutofillDialogView* view = controller()->GetTestableView();
   view->SetTextContentsOfInput(triggering_input,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_input);
@@ -561,7 +644,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
 
   const gfx::Size no_notification_size =
-      controller()->view()->GetTestableView()->GetSize();
+      controller()->GetTestableView()->GetSize();
   ASSERT_GT(no_notification_size.width(), 0);
 
   std::vector<DialogNotification> notifications;
@@ -578,7 +661,47 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
   controller()->view()->UpdateNotificationArea();
 
   EXPECT_EQ(no_notification_size.width(),
-            controller()->view()->GetTestableView()->GetSize().width());
+            controller()->GetTestableView()->GetSize().width());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocompleteEvent) {
+  AutofillDialogControllerImpl* controller =
+      SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
+
+  AddCreditcardToProfile(controller->profile(), test::GetVerifiedCreditCard());
+  AddAutofillProfileToProfile(controller->profile(),
+                              test::GetVerifiedProfile());
+
+  TestableAutofillDialogView* view = controller->GetTestableView();
+  view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
+  view->SubmitForTesting();
+  ExpectDomMessage("success");
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       AutocompleteErrorEventReasonInvalid) {
+  AutofillDialogControllerImpl* controller =
+      SetUpHtmlAndInvoke("<input autocomplete='cc-name' pattern='.*zebra.*'>");
+
+  const CreditCard& credit_card = test::GetVerifiedCreditCard();
+  ASSERT_TRUE(
+    credit_card.GetRawInfo(CREDIT_CARD_NAME).find(ASCIIToUTF16("zebra")) ==
+        base::string16::npos);
+  AddCreditcardToProfile(controller->profile(), credit_card);
+  AddAutofillProfileToProfile(controller->profile(),
+                              test::GetVerifiedProfile());
+
+  TestableAutofillDialogView* view = controller->GetTestableView();
+  view->SetTextContentsOfSuggestionInput(SECTION_CC, ASCIIToUTF16("123"));
+  view->SubmitForTesting();
+  ExpectDomMessage("error: invalid");
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       AutocompleteErrorEventReasonCancel) {
+  SetUpHtmlAndInvoke("<input autocomplete='cc-name'>")->GetTestableView()->
+      CancelForTesting();
+  ExpectDomMessage("error: cancel");
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
@@ -591,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
   EXPECT_FALSE(controller()->IsEditingExistingData(SECTION_CC));
 
   ASSERT_NO_FATAL_FAILURE(
-      controller()->view()->GetTestableView()->SubmitForTesting());
+      controller()->GetTestableView()->SubmitForTesting());
 }
 #endif  // defined(TOOLKIT_VIEWS)
 

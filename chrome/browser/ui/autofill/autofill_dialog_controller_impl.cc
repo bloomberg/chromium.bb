@@ -597,6 +597,10 @@ void AutofillDialogControllerImpl::OnAutocheckoutSuccess() {
   view_->UpdateButtonStrip();
 }
 
+TestableAutofillDialogView* AutofillDialogControllerImpl::GetTestableView() {
+  return view_ ? view_->GetTestableView() : NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillDialogController implementation.
 

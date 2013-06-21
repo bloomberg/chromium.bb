@@ -744,8 +744,11 @@ void AutofillAgent::OnRequestAutocompleteResult(
   if (in_flight_request_form_.isNull())
     return;
 
-  if (result == WebFormElement::AutocompleteResultSuccess)
+  if (result == WebFormElement::AutocompleteResultSuccess) {
     FillFormIncludingNonFocusableElements(form_data, in_flight_request_form_);
+    if (!in_flight_request_form_.checkValidityWithoutDispatchingEvents())
+      result = WebFormElement::AutocompleteResultErrorInvalid;
+  }
 
   in_flight_request_form_.finishRequestAutocomplete(result);
   in_flight_request_form_.reset();

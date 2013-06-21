@@ -26,6 +26,10 @@ class TestableAutofillDialogView {
   virtual void SetTextContentsOfInput(const DetailInput& input,
                                       const string16& contents) = 0;
 
+  // Sets the content of the extra field for a section.
+  virtual void SetTextContentsOfSuggestionInput(DialogSection section,
+                                                const base::string16& text) = 0;
+
   // Simulates a user activatino of the input which is modelled by |input|.
   virtual void ActivateInput(const DetailInput& input) = 0;
 
