@@ -1160,6 +1160,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var dragEndBound = this.onDragEnd_.bind(this);
     this.table_.list.addEventListener('dragend', dragEndBound);
     this.grid_.addEventListener('dragend', dragEndBound);
+    // This event is published by DragSelector because drag end event is not
+    // published at the end of drag selection.
+    this.table_.list.addEventListener('dragselectionend', dragEndBound);
 
     // TODO(mtomasz, yoshiki): Create sidebar earlier, and here just attach
     // the directory model.

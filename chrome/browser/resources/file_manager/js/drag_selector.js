@@ -238,7 +238,10 @@ DragSelector.prototype.onMouseUp_ = function(event) {
       'mousemove', this.onMouseMoveBound_, true);
   this.target_.ownerDocument.removeEventListener(
       'mouseup', this.onMouseUpBound_, true);
+  cr.dispatchSimpleEvent(this.target_, 'dragselectionend');
   this.target_.cachedBounds = null;
-  event.stopPropagation();
   this.target_ = null;
+  // The target may select an item by reacting to the mouseup event.
+  // This surpress to the selecting behavior.
+  event.stopPropagation();
 };
