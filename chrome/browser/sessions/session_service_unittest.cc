@@ -31,7 +31,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
-#include "third_party/WebKit/public/web/WebHistoryItem.h"
 
 using content::NavigationEntry;
 using sessions::SerializedNavigationEntry;
