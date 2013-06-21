@@ -2833,45 +2833,6 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE" desc="The instruction for hiding the keyboard overlay.">
     Type Ctrl+Alt+/ or Escape to hide
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F1" desc="The text in the keyboard overlay to explain the shortcut.">
-    F1
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F2" desc="The text in the keyboard overlay to explain the shortcut.">
-    F2
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F3" desc="The text in the keyboard overlay to explain the shortcut.">
-    F3
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F4" desc="The text in the keyboard overlay to explain the shortcut.">
-    F4
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F5" desc="The text in the keyboard overlay to explain the shortcut.">
-    F5
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F6" desc="The text in the keyboard overlay to explain the shortcut.">
-    F6
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F7" desc="The text in the keyboard overlay to explain the shortcut.">
-    F7
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F8" desc="The text in the keyboard overlay to explain the shortcut.">
-    F8
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F9" desc="The text in the keyboard overlay to explain the shortcut.">
-    F9
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F10" desc="The text in the keyboard overlay to explain the shortcut.">
-    F10
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F11" desc="The text in the keyboard overlay to explain the shortcut.">
-    F11
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_F12" desc="The text in the keyboard overlay to explain the shortcut.">
-    F12
-  </message>
-  <message name="IDS_KEYBOARD_OVERLAY_INSERT" desc="The text in the keyboard overlay to explain the shortcut.">
-    Insert
-  </message>
   <!-- BEGIN GENERATED KEYBOARD OVERLAY STRINGS -->
   <message name="IDS_KEYBOARD_OVERLAY_ACTIVATE_LAST_LAUNCHER_ITEM" desc="The text in the keyboard overlay to explain the shortcut (Open the last launcher item).">
     Activate last launcher item
@@ -2969,7 +2930,7 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_DECREASE_KEY_BRIGHTNESS" desc="The text in the keyboard overlay to explain the shortcut (decrease the keyboard brightness).">
     Decrease key brightness
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_DELETE" desc="The text in the keyboard overlay to explain the shortcut.">
+  <message name="IDS_KEYBOARD_OVERLAY_DELETE" desc="The text in the keyboard overlay to explain the shortcut (Delete).">
     Delete
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_DELETE_WORD" desc="The text in the keyboard overlay to explain the shortcut.">
@@ -2990,8 +2951,44 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_DOWNLOADS" desc="The text in the keyboard overlay to explain the shortcut.">
     Downloads
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_END" desc="The text in the keyboard overlay to explain the shortcut.">
+  <message name="IDS_KEYBOARD_OVERLAY_END" desc="The text in the keyboard overlay to explain the shortcut (End).">
     End
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F1" desc="The text in the keyboard overlay to explain the shortcut (F1).">
+    F1
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F10" desc="The text in the keyboard overlay to explain the shortcut (F10).">
+    F10
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F11" desc="The text in the keyboard overlay to explain the shortcut (F11).">
+    F11
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F12" desc="The text in the keyboard overlay to explain the shortcut (F12).">
+    F12
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F2" desc="The text in the keyboard overlay to explain the shortcut (F2).">
+    F2
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F3" desc="The text in the keyboard overlay to explain the shortcut (F3).">
+    F3
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F4" desc="The text in the keyboard overlay to explain the shortcut (F4).">
+    F4
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F5" desc="The text in the keyboard overlay to explain the shortcut (F5).">
+    F5
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F6" desc="The text in the keyboard overlay to explain the shortcut (F6).">
+    F6
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F7" desc="The text in the keyboard overlay to explain the shortcut (F7).">
+    F7
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F8" desc="The text in the keyboard overlay to explain the shortcut (F8).">
+    F8
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_F9" desc="The text in the keyboard overlay to explain the shortcut (F9).">
+    F9
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_FIND_PREVIOUS_TEXT" desc="The text in the keyboard overlay to explain the shortcut.">
     Find previous text
@@ -3038,7 +3035,7 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_HISTORY" desc="The text in the keyboard overlay to explain the shortcut.">
     History
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_HOME" desc="The text in the keyboard overlay to explain the shortcut.">
+  <message name="IDS_KEYBOARD_OVERLAY_HOME" desc="The text in the keyboard overlay to explain the shortcut (Home).">
     Home
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_INCREASE_KEY_BRIGHTNESS" desc="The text in the keyboard overlay to explain the shortcut (Increase the keyboard brightness).">
@@ -3046,6 +3043,9 @@ Battery full
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_INPUT_UNICODE_CHARACTERS" desc="The text in the keyboard overlay to explain the shortcut.">
     Input Unicode characters
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_INSERT" desc="The text in the keyboard overlay to explain the shortcut (Insert).">
+    Insert
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_JAVASCRIPT_CONSOLE" desc="The text in the keyboard overlay to explain the shortcut.">
     JavaScript console
@@ -3095,13 +3095,13 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_OPEN_ADDRESS_IN_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
     Open address in new tab
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut.">
+  <message name="IDS_KEYBOARD_OVERLAY_OPEN_FILE_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (Open the file manager).">
     Open file manager
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut.">
+  <message name="IDS_KEYBOARD_OVERLAY_PAGE_DOWN" desc="The text in the keyboard overlay to explain the shortcut (Page down).">
     Page down
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_PAGE_UP" desc="The text in the keyboard overlay to explain the shortcut.">
+  <message name="IDS_KEYBOARD_OVERLAY_PAGE_UP" desc="The text in the keyboard overlay to explain the shortcut (Page up).">
     Page up
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_PASTE" desc="The text in the keyboard overlay to explain the shortcut.">
