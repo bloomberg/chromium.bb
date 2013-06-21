@@ -176,15 +176,11 @@ void HTMLImageElement::attach(const AttachContext& context)
 
 Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode* insertionPoint)
 {
+    // m_form can be non-null if it was set in constructor.
     if (!m_form) {
-        // m_form can be non-null if it was set in constructor.
-        for (ContainerNode* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-            if (ancestor->hasTagName(formTag)) {
-                m_form = static_cast<HTMLFormElement*>(ancestor);
-                m_form->registerImgElement(this);
-                break;
-            }
-        }
+        m_form = findFormAncestor();
+        if (m_form)
+            m_form->registerImgElement(this);
     }
 
     // If we have been inserted from a renderer-less document,

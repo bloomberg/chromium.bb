@@ -56,15 +56,14 @@ const Vector<FormAssociatedElement*>& HTMLFormControlsCollection::formControlEle
     ASSERT(ownerNode());
     ASSERT(ownerNode()->hasTagName(formTag) || ownerNode()->hasTagName(fieldsetTag));
     if (ownerNode()->hasTagName(formTag))
-        return static_cast<HTMLFormElement*>(ownerNode())->associatedElements();
+        return toHTMLFormElement(ownerNode())->associatedElements();
     return static_cast<HTMLFieldSetElement*>(ownerNode())->associatedElements();
 }
 
 const Vector<HTMLImageElement*>& HTMLFormControlsCollection::formImageElements() const
 {
     ASSERT(ownerNode());
-    ASSERT(ownerNode()->hasTagName(formTag));
-    return static_cast<HTMLFormElement*>(ownerNode())->imageElements();
+    return toHTMLFormElement(ownerNode())->imageElements();
 }
 
 Element* HTMLFormControlsCollection::virtualItemAfter(unsigned& offset, Element* previousItem) const

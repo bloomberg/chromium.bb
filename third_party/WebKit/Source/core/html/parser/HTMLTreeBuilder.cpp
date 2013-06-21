@@ -137,7 +137,7 @@ static HTMLFormElement* closestFormAncestor(Element* element)
     ASSERT(isMainThread());
     while (element) {
         if (element->hasTagName(formTag))
-            return static_cast<HTMLFormElement*>(element);
+            return toHTMLFormElement(element);
         ContainerNode* parent = element->parentNode();
         if (!parent || !parent->isElementNode())
             return 0;

@@ -106,7 +106,7 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(const HTMLElement* el
         HTMLFormElement* newForm = 0;
         Element* newFormCandidate = element->treeScope()->getElementById(formId);
         if (newFormCandidate && newFormCandidate->hasTagName(formTag))
-            newForm = static_cast<HTMLFormElement*>(newFormCandidate);
+            newForm = toHTMLFormElement(newFormCandidate);
         return newForm;
     }
 

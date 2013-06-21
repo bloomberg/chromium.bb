@@ -1961,7 +1961,7 @@ static HTMLFormElement* scanForForm(Node* start)
     Element* element = start->isElementNode() ? toElement(start) : ElementTraversal::next(start);
     for (; element; element = ElementTraversal::next(element)) {
         if (element->hasTagName(formTag))
-            return static_cast<HTMLFormElement*>(element);
+            return toHTMLFormElement(element);
         if (element->isHTMLElement() && toHTMLElement(element)->isFormControlElement())
             return toHTMLFormControlElement(element)->form();
         if (element->hasTagName(frameTag) || element->hasTagName(iframeTag)) {
@@ -1985,7 +1985,7 @@ HTMLFormElement* FrameSelection::currentForm() const
     Node* node;
     for (node = start; node; node = node->parentNode()) {
         if (node->hasTagName(formTag))
-            return static_cast<HTMLFormElement*>(node);
+            return toHTMLFormElement(node);
         if (node->isHTMLElement() && toHTMLElement(node)->isFormControlElement())
             return toHTMLFormControlElement(node)->form();
     }

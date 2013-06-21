@@ -183,6 +183,12 @@ private:
     Timer<HTMLFormElement> m_requestAutocompleteTimer;
 };
 
+inline HTMLFormElement* toHTMLFormElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::formTag));
+    return static_cast<HTMLFormElement*>(node);
+}
+
 } // namespace WebCore
 
 #endif // HTMLFormElement_h

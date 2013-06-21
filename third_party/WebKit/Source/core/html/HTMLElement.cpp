@@ -746,7 +746,7 @@ HTMLFormElement* HTMLElement::findFormAncestor() const
 {
     for (ContainerNode* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
         if (ancestor->hasTagName(formTag))
-            return static_cast<HTMLFormElement*>(ancestor);
+            return toHTMLFormElement(ancestor);
     }
     return 0;
 }

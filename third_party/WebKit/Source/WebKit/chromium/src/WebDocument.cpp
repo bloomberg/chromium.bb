@@ -170,7 +170,7 @@ void WebDocument::forms(WebVector<WebFormElement>& results) const
         Node* node = forms->item(i);
         // Strange but true, sometimes node can be 0.
         if (node && node->isHTMLElement())
-            temp.append(WebFormElement(static_cast<HTMLFormElement*>(node)));
+            temp.append(WebFormElement(toHTMLFormElement(node)));
     }
     results.assign(temp);
 }
