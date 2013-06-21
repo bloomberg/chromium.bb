@@ -354,11 +354,9 @@ bool SVGImage::dataChanged(bool allDataReceived)
         frame->view()->setTransparent(true); // SVG Images are transparent.
 
         ASSERT(loader->activeDocumentLoader()); // DocumentLoader should have been created by frame->init().
-        loader->activeDocumentLoader()->writer()->setMIMEType("image/svg+xml");
-        loader->activeDocumentLoader()->writer()->begin(KURL()); // create the empty document
-        loader->activeDocumentLoader()->writer()->addData(data()->data(), data()->size());
-        loader->activeDocumentLoader()->writer()->end();
-
+        DocumentWriter* writer = loader->activeDocumentLoader()->beginWriting("image/svg+xml", "UTF-8");
+        writer->addData(data()->data(), data()->size());
+        writer->end();
         // Set the intrinsic size before a container size is available.
         m_intrinsicSize = containerSize();
     }

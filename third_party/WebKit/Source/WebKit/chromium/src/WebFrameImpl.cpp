@@ -2491,7 +2491,7 @@ void WebFrameImpl::loadJavaScriptURL(const KURL& url)
         return;
 
     if (!frame()->navigationScheduler()->locationChangePending())
-        frame()->document()->loader()->writer()->replaceDocument(scriptResult, ownerDocument.get());
+        frame()->document()->loader()->replaceDocument(scriptResult, ownerDocument.get());
 }
 
 void WebFrameImpl::willDetachPage()

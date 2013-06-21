@@ -91,7 +91,7 @@ void PluginDocumentParser::createDocumentStructure()
     DocumentLoader* loader = document()->loader();
     ASSERT(loader);
     if (loader)
-        m_embedElement->setAttribute(typeAttr, loader->writer()->mimeType());
+        m_embedElement->setAttribute(typeAttr, loader->mimeType());
 
     toPluginDocument(document())->setPluginNode(m_embedElement);
 

@@ -83,8 +83,10 @@ namespace WebCore {
         FrameLoader* frameLoader() const;
 
         unsigned long mainResourceIdentifier() const;
-        
-        DocumentWriter* writer() const { return &m_writer; }
+
+        void replaceDocument(const String& source, Document*);
+        DocumentWriter* beginWriting(const String& mimeType, const String& encoding, const KURL& = KURL());
+        String mimeType() const;
 
         const ResourceRequest& originalRequest() const;
         const ResourceRequest& originalRequestCopy() const;

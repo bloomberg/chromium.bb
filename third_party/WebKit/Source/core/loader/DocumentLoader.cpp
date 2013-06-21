@@ -1017,4 +1017,22 @@ void DocumentLoader::handledOnloadEvents()
     applicationCacheHost()->stopDeferringEvents();
 }
 
+DocumentWriter* DocumentLoader::beginWriting(const String& mimeType, const String& encoding, const KURL& url)
+{
+    m_writer.setMIMEType(mimeType);
+    m_writer.setEncoding(encoding, false);
+    m_writer.begin(url);
+    return &m_writer;
+}
+
+String DocumentLoader::mimeType() const
+{
+    return m_writer.mimeType();
+}
+
+void DocumentLoader::replaceDocument(const String& source, Document* ownerDocument)
+{
+    m_writer.replaceDocument(source, ownerDocument);
+}
+
 } // namespace WebCore
