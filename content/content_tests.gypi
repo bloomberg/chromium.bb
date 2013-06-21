@@ -408,7 +408,6 @@
         'renderer/media/video_capture_impl_unittest.cc',
         'renderer/media/video_capture_message_filter_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',
-        'renderer/skia_benchmarking_extension_unittest.cc',
         'renderer/pepper/pepper_broker_impl_unittest.cc',
         'renderer/render_thread_impl_unittest.cc',
         'renderer/render_view_impl_unittest.cc',
