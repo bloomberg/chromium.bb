@@ -162,9 +162,10 @@ cr.define('policy', function() {
       // Determine whether the contents of the value column overflows. The
       // visibility of the contents, replacement link and additional row
       // containing the complete value that depend on this are handled by CSS.
-      this.classList.toggle(
-          'has-overflowed-value',
-          valueContainer.offsetWidth < valueContainer.valueWidth);
+      if (valueContainer.offsetWidth < valueContainer.valueWidth)
+        this.classList.add('has-overflowed-value');
+      else
+        this.classList.remove('has-overflowed-value');
     },
 
     /**
@@ -279,8 +280,10 @@ cr.define('policy', function() {
             policy.unset && !showUnset ||
             policy.name.toLowerCase().indexOf(this.filterPattern_) == -1;
       }
-      this.parentElement.classList.toggle(
-          'empty', !this.querySelector('tbody:not([hidden])'));
+      if (this.querySelector('tbody:not([hidden])'))
+        this.parentElement.classList.remove('empty');
+      else
+        this.parentElement.classList.add('empty');
       setTimeout(this.checkOverflow_.bind(this), 0);
     },
 
