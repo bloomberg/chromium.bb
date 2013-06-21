@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/display/display_controller.h"
 #include "ash/display/display_info.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -53,6 +54,12 @@ class ASH_EXPORT DisplayManager :
 
   // Returns next valid UI scale.
   static float GetNextUIScale(const DisplayInfo& info, bool up);
+
+  // Updates the bounds of |secondary_display| according to |layout|.
+  static void UpdateDisplayBoundsForLayout(
+      const DisplayLayout& layout,
+      const gfx::Display& primary_display,
+      gfx::Display* secondary_display);
 
   // When set to true, the MonitorManager calls OnDisplayBoundsChanged
   // even if the display's bounds didn't change. Used to swap primary
@@ -187,7 +194,7 @@ class ASH_EXPORT DisplayManager :
   void SetSoftwareMirroring(bool enabled);
 #endif
 
- private:
+private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, TestNativeDisplaysChanged);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest,
@@ -225,6 +232,14 @@ class ASH_EXPORT DisplayManager :
 
   // Creates a display object from the DisplayInfo for |display_id|.
   gfx::Display CreateDisplayFromDisplayInfoById(int64 display_id);
+
+  // Updates the bounds of the secondary display in |display_list|
+  // using the layout registered for the display pair and set the
+  // index of display updated to |updated_index|. Returns true
+  // if the secondary display's bounds has been changed from current
+  // value, or false otherwise.
+  bool UpdateSecondaryDisplayBoundsForLayout(DisplayList* display_list,
+                                             size_t* updated_index) const;
 
   int64 first_display_id_;
 

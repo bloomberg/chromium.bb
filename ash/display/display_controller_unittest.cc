@@ -807,6 +807,7 @@ TEST_F(DisplayControllerTest, Rotate) {
   EXPECT_EQ(gfx::Display::ROTATE_90, GetStoredRotation(display1.id()));
   EXPECT_EQ(gfx::Display::ROTATE_270, GetStoredRotation(display2_id));
 
+#if !defined(OS_WIN)
   aura::test::EventGenerator generator2(root_windows[1]);
   generator2.MoveMouseToInHost(50, 40);
   EXPECT_EQ("179,25", event_handler.GetLocationAndReset());
@@ -823,6 +824,7 @@ TEST_F(DisplayControllerTest, Rotate) {
 
   generator1.MoveMouseToInHost(50, 40);
   EXPECT_EQ("69,159", event_handler.GetLocationAndReset());
+#endif
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }

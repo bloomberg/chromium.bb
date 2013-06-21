@@ -231,6 +231,12 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
 
   void OnFadeOutForSwapDisplayFinished();
 
+  // Returns the display layout for the display id pair
+  // with display swapping applied.  That is, this returns
+  // flipped layout if the displays are swapped.
+  DisplayLayout ComputeDisplayLayoutForDisplayIdPair(
+      const DisplayIdPair& display_pair) const;
+
   void UpdateHostWindowNames();
 
   bool in_bootstrap() const { return in_bootstrap_; }

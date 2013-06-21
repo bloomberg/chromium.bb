@@ -118,7 +118,7 @@ class DisplayManagerTest : public test::AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerTest);
 };
 
-TEST_F(DisplayManagerTest, NativeDisplayTest) {
+TEST_F(DisplayManagerTest, UpdateDisplayTest) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -209,6 +209,15 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
   EXPECT_EQ("1000,1000 600x400",
             GetDisplayInfoAt(1).bounds_in_pixel().ToString());
   reset();
+
+  // Changing primary will update secondary as well.
+  UpdateDisplay("0+0-800x600,1000+1000-600x400");
+  EXPECT_EQ("2 0 0", GetCountSummary());
+  reset();
+  EXPECT_EQ("0,0 800x600",
+            display_manager()->GetDisplayAt(0)->bounds().ToString());
+  EXPECT_EQ("800,0 600x400",
+            display_manager()->GetDisplayAt(1)->bounds().ToString());
 }
 
 // Test in emulation mode (use_fullscreen_host_window=false)
@@ -755,6 +764,20 @@ TEST_F(DisplayManagerTest, Rotate) {
             GetDisplayInfoAt(1).bounds_in_pixel().ToString());
   EXPECT_EQ("300x400",
             GetDisplayInfoAt(1).size_in_pixel().ToString());
+
+  // Just Rotating display will change the bounds on both display.
+  UpdateDisplay("100x200/l,300x400");
+  EXPECT_EQ("2 0 0", GetCountSummary());
+  reset();
+
+  // Updating tothe same configuration should report no changes.
+  UpdateDisplay("100x200/l,300x400");
+  EXPECT_EQ("0 0 0", GetCountSummary());
+  reset();
+
+  UpdateDisplay("100x200/l,300x400");
+  EXPECT_EQ("0 0 0", GetCountSummary());
+  reset();
 
   UpdateDisplay("200x200");
   EXPECT_EQ("1 0 1", GetCountSummary());

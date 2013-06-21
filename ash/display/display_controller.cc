@@ -74,10 +74,6 @@ int num_displays_for_shutdown = -1;
 // to change this value in case to support even larger displays.
 const int kMaxValidOffset = 10000;
 
-// The number of pixels to overlap between the primary and secondary displays,
-// in case that the offset value is too large.
-const int kMinimumOverlapForInvalidOffset = 100;
-
 // Specifies how long the display change should have been disabled
 // after each display change operations.
 // |kCycleDisplayThrottleTimeoutMs| is set to be longer to avoid
@@ -589,11 +585,7 @@ DisplayLayout DisplayController::GetCurrentDisplayLayout() const {
   // Invert if the primary was swapped.
   if (GetDisplayManager()->num_connected_displays() > 1) {
     DisplayIdPair pair = GetCurrentDisplayIdPair();
-    DisplayLayout layout = GetRegisteredDisplayLayout(pair);
-    const gfx::Display& primary = GetPrimaryDisplay();
-    // Invert if the primary was swapped. If mirrored, first is always
-    // primary.
-    return pair.first == primary.id() ? layout : layout.Invert();
+    return ComputeDisplayLayoutForDisplayIdPair(pair);
   }
   // On release build, just fallback to default instead of blowing up.
   return default_display_layout_;
@@ -942,49 +934,11 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
       GetDisplayManager()->num_connected_displays() < 2) {
     return;
   }
-
   DCHECK_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  const gfx::Rect& primary_bounds = GetPrimaryDisplay().bounds();
-
-  gfx::Display* secondary_display = GetSecondaryDisplay();
-  const gfx::Rect& secondary_bounds = secondary_display->bounds();
-  gfx::Point new_secondary_origin = primary_bounds.origin();
 
   const DisplayLayout layout = GetCurrentDisplayLayout();
-  DisplayLayout::Position position = layout.position;
-
-  // Ignore the offset in case the secondary display doesn't share edges with
-  // the primary display.
-  int offset = layout.offset;
-  if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM) {
-    offset = std::min(
-        offset, primary_bounds.width() - kMinimumOverlapForInvalidOffset);
-    offset = std::max(
-        offset, -secondary_bounds.width() + kMinimumOverlapForInvalidOffset);
-  } else {
-    offset = std::min(
-        offset, primary_bounds.height() - kMinimumOverlapForInvalidOffset);
-    offset = std::max(
-        offset, -secondary_bounds.height() + kMinimumOverlapForInvalidOffset);
-  }
-  switch (position) {
-    case DisplayLayout::TOP:
-      new_secondary_origin.Offset(offset, -secondary_bounds.height());
-      break;
-    case DisplayLayout::RIGHT:
-      new_secondary_origin.Offset(primary_bounds.width(), offset);
-      break;
-    case DisplayLayout::BOTTOM:
-      new_secondary_origin.Offset(offset, primary_bounds.height());
-      break;
-    case DisplayLayout::LEFT:
-      new_secondary_origin.Offset(-secondary_bounds.width(), offset);
-      break;
-  }
-  gfx::Insets insets = secondary_display->GetWorkAreaInsets();
-  secondary_display->set_bounds(
-      gfx::Rect(new_secondary_origin, secondary_bounds.size()));
-  secondary_display->UpdateWorkAreaFromInsets(insets);
+  Shell::GetInstance()->display_manager()->UpdateDisplayBoundsForLayout(
+      layout, GetPrimaryDisplay(), GetSecondaryDisplay());
 }
 
 void DisplayController::NotifyDisplayConfigurationChanging() {
@@ -1036,6 +990,18 @@ void DisplayController::OnFadeOutForSwapDisplayFinished() {
   SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
   Shell::GetInstance()->output_configurator_animation()->StartFadeInAnimation();
 #endif
+}
+
+DisplayLayout DisplayController::ComputeDisplayLayoutForDisplayIdPair(
+    const DisplayIdPair& pair) const {
+  DisplayLayout layout = GetRegisteredDisplayLayout(pair);
+  int64 primary_id = layout.primary_id;
+  // TODO(oshima): replace this with DCHECK.
+  if (primary_id == gfx::Display::kInvalidDisplayID)
+    primary_id = GetPrimaryDisplay().id();
+  // Invert if the primary was swapped. If mirrored, first is always
+  // primary.
+  return pair.first == primary_id ? layout : layout.Invert();
 }
 
 void DisplayController::UpdateHostWindowNames() {
