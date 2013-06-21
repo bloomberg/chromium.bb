@@ -47,9 +47,9 @@ bool WebMediaPlayerProxyImplAndroid::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_ReadFromDemuxer, OnReadFromDemuxer)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaSeekRequest, OnMediaSeekRequest)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaConfigRequest, OnMediaConfigRequest)
-    IPC_MESSAGE_HANDLER(MediaPlayerMsg_KeyAdded, OnKeyAdded)
-    IPC_MESSAGE_HANDLER(MediaPlayerMsg_KeyError, OnKeyError)
-    IPC_MESSAGE_HANDLER(MediaPlayerMsg_KeyMessage, OnKeyMessage)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_KeyAdded, OnKeyAdded)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_KeyError, OnKeyError)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_KeyMessage, OnKeyMessage)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -183,27 +183,33 @@ void WebMediaPlayerProxyImplAndroid::ReadFromDemuxerAck(
       routing_id(), player_id, params));
 }
 
-void WebMediaPlayerProxyImplAndroid::GenerateKeyRequest(
-    int player_id,
-    const std::string& type,
-    const std::vector<uint8>& init_data) {
-  Send(new MediaPlayerHostMsg_GenerateKeyRequest(
-      routing_id(), player_id, type, init_data));
+void WebMediaPlayerProxyImplAndroid::InitializeCDM(
+    int media_keys_id,
+    const std::vector<uint8>& uuid) {
+  Send(new MediaKeysHostMsg_InitializeCDM(routing_id(), media_keys_id, uuid));
 }
 
-void WebMediaPlayerProxyImplAndroid::AddKey(int player_id,
+void WebMediaPlayerProxyImplAndroid::GenerateKeyRequest(
+    int media_keys_id,
+    const std::string& type,
+    const std::vector<uint8>& init_data) {
+  Send(new MediaKeysHostMsg_GenerateKeyRequest(
+      routing_id(), media_keys_id, type, init_data));
+}
+
+void WebMediaPlayerProxyImplAndroid::AddKey(int media_keys_id,
                                             const std::vector<uint8>& key,
                                             const std::vector<uint8>& init_data,
                                             const std::string& session_id) {
-  Send(new MediaPlayerHostMsg_AddKey(
-      routing_id(), player_id, key, init_data, session_id));
+  Send(new MediaKeysHostMsg_AddKey(
+      routing_id(), media_keys_id, key, init_data, session_id));
 }
 
 void WebMediaPlayerProxyImplAndroid::CancelKeyRequest(
-    int player_id,
+    int media_keys_id,
     const std::string& session_id) {
-  Send(new MediaPlayerHostMsg_CancelKeyRequest(
-      routing_id(), player_id, session_id));
+  Send(new MediaKeysHostMsg_CancelKeyRequest(
+      routing_id(), media_keys_id, session_id));
 }
 
 #if defined(GOOGLE_TV)
@@ -268,29 +274,32 @@ void WebMediaPlayerProxyImplAndroid::OnMediaConfigRequest(int player_id) {
     player->OnMediaConfigRequest();
 }
 
-void WebMediaPlayerProxyImplAndroid::OnKeyAdded(int player_id,
+void WebMediaPlayerProxyImplAndroid::OnKeyAdded(int media_keys_id,
                                                 const std::string& session_id) {
-  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player =
+      GetWebMediaPlayer(media_keys_id);
   if (player)
     player->OnKeyAdded(session_id);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnKeyError(
-    int player_id,
+    int media_keys_id,
     const std::string& session_id,
     media::MediaKeys::KeyError error_code,
     int system_code) {
-  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player =
+      GetWebMediaPlayer(media_keys_id);
   if (player)
     player->OnKeyError(session_id, error_code, system_code);
 }
 
 void WebMediaPlayerProxyImplAndroid::OnKeyMessage(
-    int player_id,
+    int media_keys_id,
     const std::string& session_id,
     const std::string& message,
     const std::string& destination_url) {
-  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
+  webkit_media::WebMediaPlayerAndroid* player =
+      GetWebMediaPlayer(media_keys_id);
   if (player)
     player->OnKeyMessage(session_id, message, destination_url);
 }

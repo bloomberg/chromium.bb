@@ -22,65 +22,74 @@ class WebMediaPlayerProxyAndroid {
  public:
   virtual ~WebMediaPlayerProxyAndroid();
 
-  // Initialize a MediaPlayerAndroid object in browser process
+  // Initializes a MediaPlayerAndroid object in browser process
   virtual void Initialize(
       int player_id,
       const GURL& url,
       media::MediaPlayerAndroid::SourceType source_type,
       const GURL& first_party_for_cookies) = 0;
 
-  // Start the player.
+  // Starts the player.
   virtual void Start(int player_id) = 0;
 
-  // Pause the player.
+  // Pauses the player.
   virtual void Pause(int player_id) = 0;
 
-  // Perform seek on the player.
+  // Performs seek on the player.
   virtual void Seek(int player_id, base::TimeDelta time) = 0;
 
-  // Release resources for the player.
+  // Releases resources for the player.
   virtual void ReleaseResources(int player_id) = 0;
 
-  // Destroy the player in the browser process
+  // Destroys the player in the browser process
   virtual void DestroyPlayer(int player_id) = 0;
 
-  // Request the player to enter fullscreen.
+  // Requests the player to enter fullscreen.
   virtual void EnterFullscreen(int player_id) = 0;
 
-  // Request the player to exit fullscreen.
+  // Requests the player to exit fullscreen.
   virtual void ExitFullscreen(int player_id) = 0;
 
 #if defined(GOOGLE_TV)
-  // Request an external surface for out-of-band compositing.
+  // Requests an external surface for out-of-band compositing.
   virtual void RequestExternalSurface(int player_id,
                                       const gfx::RectF& geometry) = 0;
 #endif
 
-  // Inform the media source player that the demuxer is ready.
+  // Informs the media source player that the demuxer is ready.
   virtual void DemuxerReady(
       int player_id,
       const media::MediaPlayerHostMsg_DemuxerReady_Params&) = 0;
 
-  // Return the data to the media source player when data is ready.
+  // Returns the data to the media source player when data is ready.
   virtual void ReadFromDemuxerAck(
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) = 0;
 
-  virtual void GenerateKeyRequest(int player_id,
+  // Informs the media source player of changed duration from demuxer.
+  virtual void DurationChanged(int player_id,
+                               const base::TimeDelta& duration) = 0;
+
+  // Initializes a CDM that supports |uuid|. The |media_keys_id| is stored by
+  // the CDM for future reference.
+  virtual void InitializeCDM(int media_keys_id,
+                             const std::vector<uint8>& uuid) = 0;
+
+  // Asks the CDM referenced by |media_keys_id| to generate a key request.
+  virtual void GenerateKeyRequest(int media_keys_id,
                                   const std::string& type,
                                   const std::vector<uint8>& init_data) = 0;
 
-  virtual void AddKey(int player_id,
+  // Adds a key to the CDM referenced by |media_keys_id|.
+  virtual void AddKey(int media_keys_id,
                       const std::vector<uint8>& key,
                       const std::vector<uint8>& init_data,
                       const std::string& session_id) = 0;
 
-  virtual void CancelKeyRequest(int player_id,
+  // Destroys the session with |session_id| in the CDM referenced by
+  // |media_keys_id|.
+  virtual void CancelKeyRequest(int media_keys_id,
                                 const std::string& session_id) = 0;
-
-  // Inform the media source player of changed duration from demuxer.
-  virtual void DurationChanged(int player_id,
-                               const base::TimeDelta& duration) = 0;
 };
 
 }  // namespace webkit_media

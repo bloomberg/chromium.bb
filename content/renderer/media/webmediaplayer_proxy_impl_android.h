@@ -54,17 +54,19 @@ class WebMediaPlayerProxyImplAndroid
   virtual void ReadFromDemuxerAck(
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params&) OVERRIDE;
-  virtual void GenerateKeyRequest(int player_id,
+  virtual void DurationChanged(int player_id,
+                               const base::TimeDelta& duration) OVERRIDE;
+  virtual void InitializeCDM(int media_keys_id,
+                             const std::vector<uint8>& uuid) OVERRIDE;
+  virtual void GenerateKeyRequest(int media_keys_id,
                                   const std::string& type,
                                   const std::vector<uint8>& init_data) OVERRIDE;
-  virtual void AddKey(int player_id,
+  virtual void AddKey(int media_keys_id,
                       const std::vector<uint8>& key,
                       const std::vector<uint8>& init_data,
                       const std::string& session_id) OVERRIDE;
-  virtual void CancelKeyRequest(int player_id,
+  virtual void CancelKeyRequest(int media_keys_id,
                                 const std::string& session_id) OVERRIDE;
-  virtual void DurationChanged(int player_id,
-                               const base::TimeDelta& duration) OVERRIDE;
 
 #if defined(GOOGLE_TV)
   virtual void RequestExternalSurface(
@@ -96,13 +98,13 @@ class WebMediaPlayerProxyImplAndroid
   void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
                           unsigned seek_request_id);
   void OnMediaConfigRequest(int player_id);
-  void OnKeyAdded(int player_id,
+  void OnKeyAdded(int media_keys_id,
                   const std::string& session_id);
-  void OnKeyError(int player_id,
+  void OnKeyError(int media_keys_id,
                   const std::string& session_id,
                   media::MediaKeys::KeyError error_code,
                   int system_code);
-  void OnKeyMessage(int player_id,
+  void OnKeyMessage(int media_keys_id,
                     const std::string& session_id,
                     const std::string& message,
                     const std::string& destination_url);

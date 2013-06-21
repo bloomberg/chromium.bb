@@ -214,36 +214,39 @@ IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_NotifyExternalSurface,
 #endif
 
 // Messages for encrypted media extensions API ------------------------------
+// TODO(xhwang): Move the following messages to a separate file.
 
-IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_GenerateKeyRequest,
-                    int /* player_id */,
+IPC_MESSAGE_ROUTED2(MediaKeysHostMsg_InitializeCDM,
+                    int /* media_keys_id */,
+                    std::vector<uint8> /* uuid */)
+
+IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_GenerateKeyRequest,
+                    int /* media_keys_id */,
                     std::string /* type */,
                     std::vector<uint8> /* init_data */)
 
-IPC_MESSAGE_ROUTED4(MediaPlayerHostMsg_AddKey,
-                    int /* player_id */,
+IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_AddKey,
+                    int /* media_keys_id */,
                     std::vector<uint8> /* key */,
                     std::vector<uint8> /* init_data */,
                     std::string /* session_id */)
 
-IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_CancelKeyRequest,
-                    int /* player_id */,
+IPC_MESSAGE_ROUTED2(MediaKeysHostMsg_CancelKeyRequest,
+                    int /* media_keys_id */,
                     std::string /* session_id */)
 
-IPC_MESSAGE_ROUTED2(MediaPlayerMsg_KeyAdded,
-                    int /* player_id */,
+IPC_MESSAGE_ROUTED2(MediaKeysMsg_KeyAdded,
+                    int /* media_keys_id */,
                     std::string /* session_id */)
 
-IPC_MESSAGE_ROUTED4(MediaPlayerMsg_KeyError,
-                    int /* player_id */,
+IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyError,
+                    int /* media_keys_id */,
                     std::string /* session_id */,
                     media::MediaKeys::KeyError /* error_code */,
                     int /* system_code */)
 
-IPC_MESSAGE_ROUTED4(MediaPlayerMsg_KeyMessage,
-                    int /* player_id */,
+IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyMessage,
+                    int /* media_keys_id */,
                     std::string /* session_id */,
                     std::string /* message */,
                     std::string /* destination_url */)
-
-// NeedKey is fired and handled in the renderer. Hence no message is needed.

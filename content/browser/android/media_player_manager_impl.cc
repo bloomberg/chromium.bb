@@ -75,10 +75,12 @@ bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDurationChanged)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaSeekRequestAck,
                         OnMediaSeekRequestAck)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_GenerateKeyRequest,
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_InitializeCDM,
+                        OnInitializeCDM)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_GenerateKeyRequest,
                         OnGenerateKeyRequest)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_AddKey, OnAddKey)
-    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_CancelKeyRequest,
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_AddKey, OnAddKey)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CancelKeyRequest,
                         OnCancelKeyRequest)
 #if defined(GOOGLE_TV)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
@@ -284,14 +286,14 @@ void MediaPlayerManagerImpl::OnMediaConfigRequest(int player_id) {
 
 void MediaPlayerManagerImpl::OnKeyAdded(int media_keys_id,
                                         const std::string& session_id) {
-  Send(new MediaPlayerMsg_KeyAdded(routing_id(), media_keys_id, session_id));
+  Send(new MediaKeysMsg_KeyAdded(routing_id(), media_keys_id, session_id));
 }
 
 void MediaPlayerManagerImpl::OnKeyError(int media_keys_id,
                                         const std::string& session_id,
                                         media::MediaKeys::KeyError error_code,
                                         int system_code) {
-  Send(new MediaPlayerMsg_KeyError(routing_id(), media_keys_id,
+  Send(new MediaKeysMsg_KeyError(routing_id(), media_keys_id,
                                    session_id, error_code, system_code));
 }
 
@@ -299,7 +301,7 @@ void MediaPlayerManagerImpl::OnKeyMessage(int media_keys_id,
                                           const std::string& session_id,
                                           const std::string& message,
                                           const std::string& destination_url) {
-  Send(new MediaPlayerMsg_KeyMessage(routing_id(), media_keys_id, session_id,
+  Send(new MediaKeysMsg_KeyMessage(routing_id(), media_keys_id, session_id,
                                      message, destination_url));
 }
 
@@ -435,11 +437,15 @@ void MediaPlayerManagerImpl::OnMediaSeekRequestAck(
     player->OnSeekRequestAck(seek_request_id);
 }
 
+void MediaPlayerManagerImpl::OnInitializeCDM(int media_keys_id,
+                                             const std::vector<uint8>& uuid) {
+  // TODO(qinmin/xhwang): Create a MediaDrmBridge.
+}
+
 void MediaPlayerManagerImpl::OnGenerateKeyRequest(
     int media_keys_id,
     const std::string& type,
     const std::vector<uint8>& init_data) {
-  // TODO(qinmin): add a new MediaDrmBridge if GetDrmBridge() returns NULL.
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (drm_bridge) {
     drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());

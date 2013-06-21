@@ -123,6 +123,7 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
   void OnMediaSeekRequestAck(int player_id, unsigned seek_request_id);
+  void OnInitializeCDM(int media_keys_id, const std::vector<uint8>& uuid);
   void OnGenerateKeyRequest(int media_keys_id,
                             const std::string& type,
                             const std::vector<uint8>& init_data);
