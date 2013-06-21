@@ -24,7 +24,7 @@ class SequencedTaskRunner;
 
 namespace policy {
 
-class DeviceLocalAccountPolicyProvider;
+class ConfigurationPolicyProvider;
 class ManagedModePolicyProvider;
 class PolicyService;
 
@@ -82,8 +82,7 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   // local state.
   bool is_primary_user_;
 
-  scoped_ptr<DeviceLocalAccountPolicyProvider>
-      device_local_account_policy_provider_;
+  scoped_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
 #endif
 
 #if defined(ENABLE_MANAGED_USERS) && defined(ENABLE_CONFIGURATION_POLICY)

@@ -668,6 +668,7 @@
         'browser/chromeos/policy/enterprise_install_attributes_unittest.cc',
         'browser/chromeos/policy/network_configuration_updater_impl_cros_unittest.cc',
         'browser/chromeos/policy/proxy_policy_provider_unittest.cc',
+        'browser/chromeos/policy/recommendation_restorer_unittest.cc',
         'browser/chromeos/policy/user_cloud_policy_manager_chromeos_unittest.cc',
         'browser/chromeos/policy/user_cloud_policy_store_chromeos_unittest.cc',
         'browser/chromeos/preferences_unittest.cc',
