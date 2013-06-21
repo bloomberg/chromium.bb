@@ -206,7 +206,8 @@ RSAPrivateKey* RSAPrivateKey::CreateWithParams(uint16 num_bits,
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
 
-  ScopedPK11Slot slot(GetPrivateNSSKeySlot());
+  ScopedPK11Slot slot(permanent ? GetPrivateNSSKeySlot() :
+                      PK11_GetInternalSlot());
   if (!slot.get())
     return NULL;
 
@@ -236,7 +237,8 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
 
-  ScopedPK11Slot slot(GetPrivateNSSKeySlot());
+  ScopedPK11Slot slot(permanent ? GetPrivateNSSKeySlot() :
+                      PK11_GetInternalSlot());
   if (!slot.get())
     return NULL;
 
