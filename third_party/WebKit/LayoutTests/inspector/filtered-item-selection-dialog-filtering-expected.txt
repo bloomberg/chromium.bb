@@ -14,7 +14,7 @@ Output:["abc","acB"]
 Case insensitive matching
 Query:"ab"
 Input:["abc","bac","a_B"]
-Output:["a_B","abc"]
+Output:["abc","a_B"]
 
 Duplicate symbols in query
 Query:"aab"
