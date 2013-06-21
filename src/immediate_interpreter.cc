@@ -1298,7 +1298,9 @@ bool ImmediateInterpreter::TwoFingersGesturing(
   float pdiff = fabsf(finger1.pressure - finger2.pressure);
   float xdist = fabsf(finger1.position_x - finger2.position_x);
   float ydist = fabsf(finger1.position_y - finger2.position_y);
-  if (pdiff > two_finger_pressure_diff_thresh_.val_ && ydist > xdist)
+  if (pdiff > two_finger_pressure_diff_thresh_.val_ && ydist > xdist &&
+      ((finger1.pressure > finger2.pressure) ==
+       (finger1.position_y > finger2.position_y)))
     return false;
 
   const float kMin2fDistThreshSq = tapping_finger_min_separation_.val_ *
@@ -1344,6 +1346,11 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
 
   float large_dx = MaxMag(dx1, dx2);
   float large_dy = MaxMag(dy1, dy2);
+  // These compares are okay if d{x,y}1 == d{x,y}2:
+  short large_dx_id =
+      large_dx == dx1 ? finger1.tracking_id : finger2.tracking_id;
+  short large_dy_id =
+      large_dy == dy1 ? finger1.tracking_id : finger2.tracking_id;
   float small_dx = MinMag(dx1, dx2);
   float small_dy = MinMag(dy1, dy2);
 
@@ -1354,6 +1361,8 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
   float damp_dy = INFINITY;
   float non_damp_dx = 0.0;
   float non_damp_dy = 0.0;
+  short damp_dx_id = -1;
+  short damp_dy_id = -1;
   if (FingerInDampenedZone(finger1) ||
       (finger1.flags & GESTURES_FINGER_POSSIBLE_PALM)) {
     dampened_zone_occupied = true;
@@ -1361,6 +1370,7 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
     damp_dy = dy1;
     non_damp_dx = dx2;
     non_damp_dy = dy2;
+    damp_dx_id = damp_dy_id = finger1.tracking_id;
   }
   if (FingerInDampenedZone(finger2) ||
       (finger2.flags & GESTURES_FINGER_POSSIBLE_PALM)) {
@@ -1369,7 +1379,40 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
     damp_dy = MinMag(damp_dy, dy2);
     non_damp_dx = MaxMag(non_damp_dx, dx1);
     non_damp_dy = MaxMag(non_damp_dy, dy1);
+    damp_dx_id = damp_dx == dx1 ? finger1.tracking_id : finger2.tracking_id;
+    damp_dy_id = damp_dy == dy1 ? finger1.tracking_id : finger2.tracking_id;
   }
+
+  // Trending in the same direction?
+  const unsigned kTrendX =
+      GESTURES_FINGER_TREND_INC_X | GESTURES_FINGER_TREND_DEC_X;
+  const unsigned kTrendY =
+      GESTURES_FINGER_TREND_INC_Y | GESTURES_FINGER_TREND_DEC_Y;
+  unsigned common_trend_flags = finger1.flags & finger2.flags &
+      (kTrendX | kTrendY);
+
+  bool large_dx_moving =
+      fabsf(large_dx) >= two_finger_scroll_distance_thresh_.val_ ||
+      SetContainsValue(moving_, large_dx_id);
+  bool large_dy_moving =
+      fabsf(large_dy) >= two_finger_scroll_distance_thresh_.val_ ||
+      SetContainsValue(moving_, large_dy_id);
+  bool small_dx_moving = fabsf(damp_dx) >=
+      damp_scroll_min_movement_factor_.val_ * fabsf(non_damp_dx) ||
+      SetContainsValue(moving_, damp_dx_id);
+  bool small_dy_moving = fabsf(damp_dy) >=
+      damp_scroll_min_movement_factor_.val_ * fabsf(non_damp_dy) ||
+      SetContainsValue(moving_, damp_dy_id);
+  // If not in damp zone, we allow one-finger scrolling
+  bool small_dx_scrolling = !dampened_zone_occupied || small_dx_moving;
+  bool small_dy_scrolling = !dampened_zone_occupied || small_dy_moving;
+  bool trend_scrolling_x = (common_trend_flags & kTrendX) &&
+       large_dx_moving && small_dx_scrolling;
+  bool trend_scrolling_y = (common_trend_flags & kTrendY) &&
+       large_dy_moving && small_dy_scrolling;
+
+  if (trend_scrolling_x || trend_scrolling_y)
+    return kGestureTypeScroll;
 
   if (fabsf(large_dx) > fabsf(large_dy)) {
     // consider horizontal scroll
