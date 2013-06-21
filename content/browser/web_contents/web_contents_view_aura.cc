@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/aura/shadow_layer_delegate.h"
+#include "content/browser/web_contents/aura/window_slider.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/touch_editable_impl_aura.h"
@@ -334,6 +335,50 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
   return web_input_event_modifiers;
 }
 
+// A LayerDelegate that paints an image for the layer.
+class ImageLayerDelegate : public ui::LayerDelegate {
+ public:
+  ImageLayerDelegate() {}
+
+  virtual ~ImageLayerDelegate() {}
+
+  void SetImage(const gfx::Image& image) {
+    image_ = image;
+    image_size_ = image.AsImageSkia().size();
+  }
+  const gfx::Image& image() const { return image_; }
+
+ private:
+  // Overridden from ui::LayerDelegate:
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+    if (image_.IsEmpty()) {
+      canvas->DrawColor(SK_ColorGRAY);
+    } else {
+      SkISize size = canvas->sk_canvas()->getDeviceSize();
+      if (size.width() != image_size_.width() ||
+          size.height() != image_size_.height()) {
+        canvas->DrawColor(SK_ColorWHITE);
+      }
+      canvas->DrawImageInt(image_.AsImageSkia(), 0, 0);
+    }
+  }
+
+  // Called when the layer's device scale factor has changed.
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  }
+
+  // Invoked prior to the bounds changing. The returned closured is run after
+  // the bounds change.
+  virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
+    return base::Closure();
+  }
+
+  gfx::Image image_;
+  gfx::Size image_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageLayerDelegate);
+};
+
 }  // namespace
 
 // When a history navigation is triggered at the end of an overscroll
@@ -342,14 +387,17 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
 // screenshot window on top of the page until the page has completed loading and
 // painting.
 class OverscrollNavigationOverlay :
-    public RenderWidgetHostViewAura::PaintObserver {
+    public RenderWidgetHostViewAura::PaintObserver,
+    public WindowSlider::Delegate {
  public:
-  OverscrollNavigationOverlay()
-      : view_(NULL),
+  explicit OverscrollNavigationOverlay(WebContentsImpl* web_contents)
+      : web_contents_(web_contents),
+        image_delegate_(NULL),
+        view_(NULL),
         loading_complete_(false),
         received_paint_update_(false),
         compositor_updated_(false),
-        has_screenshot_(false),
+        slide_direction_(SLIDE_UNKNOWN),
         need_paint_update_(true) {
   }
 
@@ -376,11 +424,21 @@ class OverscrollNavigationOverlay :
       window_->parent()->StackChildAtTop(window_.get());
   }
 
-  void SetOverlayWindow(scoped_ptr<aura::Window> window, bool has_screenshot) {
+  void SetOverlayWindow(scoped_ptr<aura::Window> window,
+                        ImageWindowDelegate* delegate) {
     window_ = window.Pass();
     if (window_.get() && window_->parent())
       window_->parent()->StackChildAtTop(window_.get());
-    has_screenshot_ = has_screenshot;
+    image_delegate_ = delegate;
+
+    if (window_.get() && delegate->has_image()) {
+      window_slider_.reset(new WindowSlider(this,
+                                            window_->parent(),
+                                            window_.get()));
+      slide_direction_ = SLIDE_UNKNOWN;
+    } else {
+      window_slider_.reset();
+    }
   }
 
   void SetupForTesting() {
@@ -389,7 +447,7 @@ class OverscrollNavigationOverlay :
 
  private:
   // Stop observing the page if the page-load has completed and the page has
-  // been painted.
+  // been painted, and a window-slide isn't in progress.
   void StopObservingIfDone() {
     // If there is a screenshot displayed in the overlay window, then wait for
     // the navigated page to complete loading and some paint update before
@@ -397,15 +455,104 @@ class OverscrollNavigationOverlay :
     // If there is no screenshot in the overlay window, then hide this view
     // as soon as there is any new painting notification.
     if ((need_paint_update_ && !received_paint_update_) ||
-        (has_screenshot_ && !loading_complete_)) {
+        (image_delegate_->has_image() && !loading_complete_)) {
       return;
     }
 
+    // If a slide is in progress, then do not destroy the window or the slide.
+    if (window_slider_.get() && window_slider_->IsSlideInProgress())
+      return;
+
+    window_slider_.reset();
     window_.reset();
+    image_delegate_ = NULL;
     if (view_) {
       view_->set_paint_observer(NULL);
       view_ = NULL;
     }
+  }
+
+  // Creates a layer to be used for window-slide. |offset| is the offset of the
+  // NavigationEntry for the screenshot image to display.
+  ui::Layer* CreateSlideLayer(int offset) {
+    const NavigationControllerImpl& controller = web_contents_->GetController();
+    const NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+        controller.GetEntryAtOffset(offset));
+
+    gfx::Image image;
+    if (entry && entry->screenshot()) {
+      std::vector<gfx::ImagePNGRep> image_reps;
+      image_reps.push_back(gfx::ImagePNGRep(entry->screenshot(),
+            ui::GetScaleFactorForNativeView(window_.get())));
+      image = gfx::Image(image_reps);
+    }
+    layer_delegate_.SetImage(image);
+
+    ui::Layer* layer = new ui::Layer(ui::LAYER_TEXTURED);
+    layer->set_delegate(&layer_delegate_);
+    return layer;
+  }
+
+  // Overridden from WindowSlider::Delegate:
+  virtual ui::Layer* CreateBackLayer() OVERRIDE {
+    if (!web_contents_->GetController().CanGoBack())
+      return NULL;
+    slide_direction_ = SLIDE_BACK;
+    return CreateSlideLayer(-1);
+  }
+
+  virtual ui::Layer* CreateFrontLayer() OVERRIDE {
+    if (!web_contents_->GetController().CanGoForward())
+      return NULL;
+    slide_direction_ = SLIDE_FRONT;
+    return CreateSlideLayer(1);
+  }
+
+  virtual void OnWindowSlideComplete() OVERRIDE {
+    // The |WindowSlider| deletes itself when the slide is completed. So release
+    // the ownership here.
+    WindowSlider* slider ALLOW_UNUSED = window_slider_.release();
+
+    if (slide_direction_ == SLIDE_UNKNOWN) {
+      StopObservingIfDone();
+      return;
+    }
+
+    // Change the image used for the overlay window.
+    image_delegate_->SetImage(layer_delegate_.image());
+    window_->layer()->SetTransform(gfx::Transform());
+    window_->SchedulePaintInRect(gfx::Rect(window_->bounds().size()));
+
+    // At the end of the slide, the slider gets destroyed. So create a new one
+    // here.
+    window_slider_.reset(new WindowSlider(this,
+                                          window_->parent(),
+                                          window_.get()));
+    SlideDirection direction = slide_direction_;
+    slide_direction_ = SLIDE_UNKNOWN;
+
+    // Reset state and wait for the new navigation page to complete
+    // loading/painting.
+    StartObservingView(ToRenderWidgetHostViewAura(
+        web_contents_->GetRenderWidgetHostView()));
+
+    // Perform the navigation.
+    if (direction == SLIDE_BACK)
+      web_contents_->GetController().GoBack();
+    else if (direction == SLIDE_FRONT)
+      web_contents_->GetController().GoForward();
+    else
+      NOTREACHED();
+  }
+
+  virtual void OnWindowSlideAborted() OVERRIDE {
+    StopObservingIfDone();
+  }
+
+  virtual void OnWindowSliderDestroyed() OVERRIDE {
+    // The slider has just been destroyed. Release the ownership.
+    WindowSlider* slider ALLOW_UNUSED = window_slider_.release();
+    StopObservingIfDone();
   }
 
   // Overridden from RenderWidgetHostViewAura::PaintObserver:
@@ -434,12 +581,35 @@ class OverscrollNavigationOverlay :
     view_ = NULL;
   }
 
+  // The WebContents which is being navigated.
+  WebContentsImpl* web_contents_;
+
   scoped_ptr<aura::Window> window_;
+
+  // This is the WindowDelegate of |window_|. The delegate manages its own
+  // lifetime (destroys itself when |window_| is destroyed).
+  ImageWindowDelegate* image_delegate_;
+
   RenderWidgetHostViewAura* view_;
   bool loading_complete_;
   bool received_paint_update_;
   bool compositor_updated_;
-  bool has_screenshot_;
+
+  enum SlideDirection {
+    SLIDE_UNKNOWN,
+    SLIDE_BACK,
+    SLIDE_FRONT
+  };
+
+  // The |WindowSlider| that allows sliding history layers while the page is
+  // being reloaded.
+  scoped_ptr<WindowSlider> window_slider_;
+
+  // The direction of the in-progress slide (if any).
+  SlideDirection slide_direction_;
+
+  // The LayerDelegate used for the back/front layers during a slide.
+  ImageLayerDelegate layer_delegate_;
 
   // During tests, the aura windows don't get any paint updates. So the overlay
   // container keeps waiting for a paint update it never receives, causing a
@@ -819,8 +989,10 @@ void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
       overscroll_window_->delegate());
   overscroll_window_->SchedulePaintInRect(
       gfx::Rect(overscroll_window_->bounds().size()));
+  overscroll_window_->SetBounds(gfx::Rect(window_->bounds().size()));
+  overscroll_window_->SetTransform(gfx::Transform());
   navigation_overlay_->SetOverlayWindow(overscroll_window_.Pass(),
-                                        delegate->has_image());
+                                        delegate);
   navigation_overlay_->StartObservingView(ToRenderWidgetHostViewAura(
       web_contents_->GetRenderWidgetHostView()));
 }
@@ -1009,7 +1181,7 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
        web_contents_->GetDelegate()->CanOverscrollContent())) {
     host_impl->overscroll_controller()->set_delegate(this);
     if (!navigation_overlay_)
-      navigation_overlay_.reset(new OverscrollNavigationOverlay());
+      navigation_overlay_.reset(new OverscrollNavigationOverlay(web_contents_));
   }
 
   AttachTouchEditableToRenderView();
@@ -1048,7 +1220,7 @@ void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
   if (!enabled)
     navigation_overlay_.reset();
   else if (!navigation_overlay_)
-    navigation_overlay_.reset(new OverscrollNavigationOverlay());
+    navigation_overlay_.reset(new OverscrollNavigationOverlay(web_contents_));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

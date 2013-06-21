@@ -65,6 +65,8 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
   // Changes the owner of the slider.
   void ChangeOwner(aura::Window* new_owner);
 
+  bool IsSlideInProgress() const;
+
  private:
   // Sets up the slider layer correctly (sets the correct bounds of the layer,
   // parents it to the right layer, and sets up the correct stacking order).
