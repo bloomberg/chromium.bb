@@ -83,10 +83,6 @@ crbug.com/247466 [ Debug ] inspector/debugger/linkifier.html [ Skip ]
 # Inspector IndexedDB tests are slow in Release as well.
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb [ Slow ]
 
-# Test became flaky on WinXP, already was on Win7 Debug and Mac10.7 debug
-crbug.com/241855 [ XP Release ] editing/selection/doubleclick-crash.html [ Failure Pass ]
-crbug.com/241855 [ Lion Win7 Linux Debug ] editing/selection/doubleclick-crash.html [ Failure Pass ]
-
 # Chromium r163873 slowed down these tests
 webkit.org/b/100287 compositing/culling/filter-occlusion-blur-large.html [ Slow ]
 webkit.org/b/66989 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Slow ]
