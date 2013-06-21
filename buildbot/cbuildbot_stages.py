@@ -17,6 +17,7 @@ import Queue
 import shutil
 import sys
 import urllib
+from xml.etree import ElementTree
 
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_commands as commands
@@ -730,6 +731,28 @@ class ManifestVersionedSyncStage(SyncStage):
 
     return to_return
 
+  @contextlib.contextmanager
+  def LocalizeManifest(self, manifest, filter_cros=False):
+    """Remove restricted projects from the manifest if needed.
+
+    Arguments:
+      filter_cros: If set, then only projects with a remote of 'cros' or
+        'cros-internal' are kept, and the rest are filtered out.
+    """
+    if filter_cros:
+      with osutils.TempDir() as tempdir:
+        filtered_manifest = os.path.join(tempdir, 'filtered.xml')
+        doc = ElementTree.parse(manifest)
+        root = doc.getroot()
+        for project in root.findall('project'):
+          remote = project.attrib.get('remote')
+          if remote and remote not in constants.CROS_REMOTES:
+            root.remove(project)
+        doc.write(filtered_manifest)
+        yield filtered_manifest
+    else:
+      yield manifest
+
   def PerformStage(self):
     self.Initialize()
     if self._options.force_version:
@@ -749,7 +772,11 @@ class ManifestVersionedSyncStage(SyncStage):
       self._Print('\nRELEASETAG: %s\n' % (
           ManifestVersionedSyncStage.manifest_manager.current_version))
 
-    self.ManifestCheckout(next_manifest)
+    # To keep local trybots working, remove restricted projects from the
+    # official manifest we get from manifest-versions.
+    with self.LocalizeManifest(
+        next_manifest, filter_cros=self._options.local) as new_manifest:
+      self.ManifestCheckout(new_manifest)
 
 
 class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
