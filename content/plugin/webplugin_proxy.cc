@@ -220,10 +220,15 @@ NPObject* WebPluginProxy::GetWindowScriptNPObject() {
   if (!success)
     return NULL;
 
+  // PluginChannel creates a dummy owner identifier for unknown owners, so
+  // use that.
+  NPP owner = channel_->GetExistingNPObjectOwner(MSG_ROUTING_NONE);
+
   window_npobject_ = NPObjectProxy::Create(channel_.get(),
                                            npobject_route_id,
                                            host_render_view_routing_id_,
-                                           page_url_);
+                                           page_url_,
+                                           owner);
 
   return window_npobject_;
 }
@@ -239,10 +244,15 @@ NPObject* WebPluginProxy::GetPluginElement() {
   if (!success)
     return NULL;
 
+  // PluginChannel creates a dummy owner identifier for unknown owners, so
+  // use that.
+  NPP owner = channel_->GetExistingNPObjectOwner(MSG_ROUTING_NONE);
+
   plugin_element_ = NPObjectProxy::Create(channel_.get(),
                                           npobject_route_id,
                                           host_render_view_routing_id_,
-                                          page_url_);
+                                          page_url_,
+                                          owner);
 
   return plugin_element_;
 }

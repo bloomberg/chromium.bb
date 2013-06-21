@@ -92,6 +92,10 @@ class PluginChannel : public NPChannelBase {
   bool incognito_; // True if the renderer is in incognito mode.
   scoped_refptr<MessageFilter> filter_;  // Handles the modal dialog events.
 
+  // Dummy NPP value used in the plugin process to represent entities other
+  // that other plugin instances for the purpose of object ownership tracking.
+  scoped_ptr<struct _NPP> npp_;
+
   DISALLOW_COPY_AND_ASSIGN(PluginChannel);
 };
 

@@ -18,12 +18,15 @@
 #include "content/plugin/webplugin_delegate_stub.h"
 #include "content/plugin/webplugin_proxy.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/WebKit/public/web/WebBindings.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_channel_posix.h"
 #endif
+
+using WebKit::WebBindings;
 
 namespace content {
 
@@ -237,11 +240,17 @@ PluginChannel::PluginChannel()
     : renderer_id_(-1),
       in_send_(0),
       incognito_(false),
-      filter_(new MessageFilter()) {
+      filter_(new MessageFilter()),
+      npp_(new struct _NPP) {
   set_send_unblocking_only_during_unblock_dispatch();
   ChildProcess::current()->AddRefProcess();
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
+
+  // Register |npp_| as the default owner for any object we receive via IPC,
+  // and register it with WebBindings as a valid owner.
+  SetDefaultNPObjectOwner(npp_.get());
+  WebBindings::registerObjectOwner(npp_.get());
 }
 
 bool PluginChannel::OnControlMessageReceived(const IPC::Message& msg) {

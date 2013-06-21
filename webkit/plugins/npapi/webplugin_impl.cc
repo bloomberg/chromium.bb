@@ -260,12 +260,17 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 
     WebKit::WebPlugin* replacement_plugin =
         page_delegate_->CreatePluginReplacement(file_path_);
-    if (!replacement_plugin || !replacement_plugin->initialize(container))
+    if (!replacement_plugin)
       return false;
 
-    container->setPlugin(replacement_plugin);
+    // Disable scripting by this plugin before replacing it with the new
+    // one. This plugin also needs destroying, so use destroy(), which will
+    // implicitly disable scripting while un-setting the container.
     destroy();
-    return true;
+
+    // Inform the container of the replacement plugin, then initialize it.
+    container->setPlugin(replacement_plugin);
+    return replacement_plugin->initialize(container);
   }
 
   delegate_ = plugin_delegate;
@@ -1320,10 +1325,17 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
       file_path_, mime_type_);
 
+  // Store the plugin's unique identifier, used by the container to track its
+  // script objects, and enable script objects (since Initialize may use them
+  // even if it fails).
+  npp_ = plugin_delegate->GetPluginNPP();
+  container_->allowScriptObjects();
+
   bool ok = plugin_delegate && plugin_delegate->Initialize(
       plugin_url_, arg_names_, arg_values_, this, load_manually_);
 
   if (!ok) {
+    container_->clearScriptObjects();
     container_ = NULL;
     // TODO(iyengar) Should we delete the current plugin instance here?
     return false;

@@ -31,7 +31,9 @@ enum NPVariant_ParamEnum {
   NPVARIANT_PARAM_DOUBLE,
   NPVARIANT_PARAM_STRING,
   // Used when when the NPObject is running in the caller's process, so we
-  // create an NPObjectProxy in the other process.
+  // create an NPObjectProxy in the other process. To support object ownership
+  // tracking the routing-Id of the NPObject's owning plugin instance is
+  // passed alongside that of the object itself.
   NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID,
   // Used when the NPObject we're sending is running in the callee's process
   // (i.e. we have an NPObjectProxy for it).  In that case we want the callee
@@ -49,6 +51,7 @@ struct NPVariant_Param {
   double double_value;
   std::string string_value;
   int npobject_routing_id;
+  int npobject_owner_id;
 };
 
 struct NPIdentifier_Param {

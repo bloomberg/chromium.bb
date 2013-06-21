@@ -40,6 +40,10 @@ static void DestroyWebPluginAndDelegate(
   // after calling NPP_Destroy on the instance, so delete the stub now.
   if (scriptable_object.get())
     scriptable_object->DeleteSoon();
+
+  // Un-register the plugin instance as an object owner.
+  WebBindings::unregisterObjectOwner(delegate->GetPluginNPP());
+
   // WebPlugin must outlive WebPluginDelegate.
   if (delegate)
     delegate->PluginDestroyed();
@@ -76,6 +80,9 @@ WebPluginDelegateStub::~WebPluginDelegateStub() {
     DestroyWebPluginAndDelegate(
         plugin_scriptable_object_, delegate_, webplugin_);
   }
+
+  // Remove the NPObject owner mapping for this instance.
+  channel_->RemoveMappingForNPObjectOwner(instance_id_);
 }
 
 bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
@@ -174,6 +181,14 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
     webplugin_->set_delegate(delegate_);
     std::vector<std::string> arg_names = params.arg_names;
     std::vector<std::string> arg_values = params.arg_values;
+
+    // Register the plugin as a valid object owner.
+    WebBindings::registerObjectOwner(delegate_->GetPluginNPP());
+
+    // Add an NPObject owner mapping for this instance, to support ownership
+    // tracking in the renderer.
+    channel_->AddMappingForNPObjectOwner(instance_id_,
+                                         delegate_->GetPluginNPP());
 
     *result = delegate_->Initialize(params.url,
                                     arg_names,

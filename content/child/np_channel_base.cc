@@ -72,12 +72,19 @@ NPChannelBase::NPChannelBase()
       non_npobject_count_(0),
       peer_pid_(0),
       in_remove_route_(false),
+      default_owner_(NULL),
       channel_valid_(false),
       in_unblock_dispatch_(0),
       send_unblocking_only_during_unblock_dispatch_(false) {
 }
 
 NPChannelBase::~NPChannelBase() {
+  // TODO(wez): Establish why these would ever be non-empty at teardown.
+  //DCHECK(npobject_listeners_.empty());
+  //DCHECK(proxy_map_.empty());
+  //DCHECK(stub_map_.empty());
+  DCHECK(owner_to_route_.empty());
+  DCHECK(route_to_owner_.empty());
 }
 
 NPChannelBase* NPChannelBase::GetCurrentChannel() {
@@ -271,19 +278,13 @@ void NPChannelBase::OnChannelError() {
   }
 }
 
-NPObject* NPChannelBase::GetExistingNPObjectProxy(int route_id) {
-  ProxyMap::iterator iter = proxy_map_.find(route_id);
-  return iter != proxy_map_.end() ? iter->second : NULL;
-}
-
-int NPChannelBase::GetExistingRouteForNPObjectStub(NPObject* npobject) {
-  StubMap::iterator iter = stub_map_.find(npobject);
-  return iter != stub_map_.end() ? iter->second : MSG_ROUTING_NONE;
-}
-
 void NPChannelBase::AddMappingForNPObjectProxy(int route_id,
                                                NPObject* object) {
   proxy_map_[route_id] = object;
+}
+
+void NPChannelBase::RemoveMappingForNPObjectProxy(int route_id) {
+  proxy_map_.erase(route_id);
 }
 
 void NPChannelBase::AddMappingForNPObjectStub(int route_id,
@@ -298,8 +299,42 @@ void NPChannelBase::RemoveMappingForNPObjectStub(int route_id,
   stub_map_.erase(object);
 }
 
-void NPChannelBase::RemoveMappingForNPObjectProxy(int route_id) {
-  proxy_map_.erase(route_id);
+void NPChannelBase::AddMappingForNPObjectOwner(int route_id,
+                                               struct _NPP* owner) {
+  DCHECK(owner != NULL);
+  route_to_owner_[route_id] = owner;
+  owner_to_route_[owner] = route_id;
+}
+
+void NPChannelBase::SetDefaultNPObjectOwner(struct _NPP* owner) {
+  DCHECK(owner != NULL);
+  default_owner_ = owner;
+}
+
+void NPChannelBase::RemoveMappingForNPObjectOwner(int route_id) {
+  DCHECK(route_to_owner_.find(route_id) != route_to_owner_.end());
+  owner_to_route_.erase(route_to_owner_[route_id]);
+  route_to_owner_.erase(route_id);
+}
+
+NPObject* NPChannelBase::GetExistingNPObjectProxy(int route_id) {
+  ProxyMap::iterator iter = proxy_map_.find(route_id);
+  return iter != proxy_map_.end() ? iter->second : NULL;
+}
+
+int NPChannelBase::GetExistingRouteForNPObjectStub(NPObject* npobject) {
+  StubMap::iterator iter = stub_map_.find(npobject);
+  return iter != stub_map_.end() ? iter->second : MSG_ROUTING_NONE;
+}
+
+NPP NPChannelBase::GetExistingNPObjectOwner(int route_id) {
+  RouteToOwnerMap::iterator iter = route_to_owner_.find(route_id);
+  return iter != route_to_owner_.end() ? iter->second : default_owner_;
+}
+
+int NPChannelBase::GetExistingRouteForNPObjectOwner(NPP owner) {
+  OwnerToRouteMap::iterator iter = owner_to_route_.find(owner);
+  return iter != owner_to_route_.end() ? iter->second : MSG_ROUTING_NONE;
 }
 
 }  // namespace content

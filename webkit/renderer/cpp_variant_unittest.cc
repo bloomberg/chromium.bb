@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
@@ -76,25 +77,44 @@ static NPClass void_class = { NP_CLASS_STRUCT_VERSION,
                               MockNPDeallocate,
                               0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-NPObject* MakeVoidObject() {
-  g_allocate_call_count = 0;
-  g_deallocate_call_count = 0;
-  return WebBindings::createObject(NULL, &void_class);
-}
+class CppVariantTest : public testing::Test {
+public:
+  CppVariantTest() : npp_(new struct _NPP) {}
+  virtual ~CppVariantTest() {}
 
-TEST(CppVariantTest, NewVariantHasNullType) {
+  virtual void SetUp() OVERRIDE {
+    WebBindings::registerObjectOwner(npp_.get());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    WebBindings::unregisterObjectOwner(npp_.get());
+  }
+
+  struct _NPP* npp() { return npp_.get(); }
+
+  NPObject* MakeVoidObject() {
+    g_allocate_call_count = 0;
+    g_deallocate_call_count = 0;
+    return WebBindings::createObject(npp_.get(), &void_class);
+  }
+
+private:
+  scoped_ptr<struct _NPP> npp_;
+};
+
+TEST_F(CppVariantTest, NewVariantHasNullType) {
   CppVariant value;
   EXPECT_EQ(NPVariantType_Null, value.type);
 }
 
-TEST(CppVariantTest, SetNullSetsType) {
+TEST_F(CppVariantTest, SetNullSetsType) {
   CppVariant value;
   value.Set(17);
   value.SetNull();
   EXPECT_EQ(NPVariantType_Null, value.type);
 }
 
-TEST(CppVariantTest, CopyConstructorDoesDeepCopy) {
+TEST_F(CppVariantTest, CopyConstructorDoesDeepCopy) {
   CppVariant source;
   source.Set("test string");
   CppVariant dest = source;
@@ -108,7 +128,7 @@ TEST(CppVariantTest, CopyConstructorDoesDeepCopy) {
   CheckString(source, dest);
 }
 
-TEST(CppVariantTest, CopyConstructorIncrementsRefCount) {
+TEST_F(CppVariantTest, CopyConstructorIncrementsRefCount) {
   CppVariant source;
   NPObject *object = MakeVoidObject();
   source.Set(object);
@@ -123,7 +143,7 @@ TEST(CppVariantTest, CopyConstructorIncrementsRefCount) {
   CheckObject(dest);
 }
 
-TEST(CppVariantTest, AssignmentDoesDeepCopy) {
+TEST_F(CppVariantTest, AssignmentDoesDeepCopy) {
   CppVariant source;
   source.Set("test string");
   CppVariant dest;
@@ -138,7 +158,7 @@ TEST(CppVariantTest, AssignmentDoesDeepCopy) {
   CheckString(source, dest);
 }
 
-TEST(CppVariantTest, AssignmentIncrementsRefCount) {
+TEST_F(CppVariantTest, AssignmentIncrementsRefCount) {
   CppVariant source;
   NPObject *object = MakeVoidObject();
   source.Set(object);
@@ -155,7 +175,7 @@ TEST(CppVariantTest, AssignmentIncrementsRefCount) {
   CheckObject(dest);
 }
 
-TEST(CppVariantTest, DestroyingCopyDoesNotCorruptSource) {
+TEST_F(CppVariantTest, DestroyingCopyDoesNotCorruptSource) {
   CppVariant source;
   source.Set("test string");
   std::string before;
@@ -174,7 +194,7 @@ TEST(CppVariantTest, DestroyingCopyDoesNotCorruptSource) {
   CheckObject(source);
 }
 
-TEST(CppVariantTest, CopiesTypeAndValueToNPVariant) {
+TEST_F(CppVariantTest, CopiesTypeAndValueToNPVariant) {
   NPVariant np;
   CppVariant cpp;
 
@@ -215,7 +235,7 @@ TEST(CppVariantTest, CopiesTypeAndValueToNPVariant) {
   WebBindings::releaseVariantValue(&np);
 }
 
-TEST(CppVariantTest, SetsTypeAndValueFromNPVariant) {
+TEST_F(CppVariantTest, SetsTypeAndValueFromNPVariant) {
   NPVariant np;
   CppVariant cpp;
 
@@ -273,7 +293,7 @@ TEST(CppVariantTest, SetsTypeAndValueFromNPVariant) {
   CheckObject(cpp);
 }
 
-TEST(CppVariantTest, SetsSimpleTypesAndValues) {
+TEST_F(CppVariantTest, SetsSimpleTypesAndValues) {
   CppVariant cpp;
   cpp.Set(true);
   EXPECT_EQ(NPVariantType_Bool, cpp.type);
@@ -319,7 +339,7 @@ TEST(CppVariantTest, SetsSimpleTypesAndValues) {
   CheckObject(cpp);
 }
 
-TEST(CppVariantTest, FreeDataSetsToVoid) {
+TEST_F(CppVariantTest, FreeDataSetsToVoid) {
   CppVariant cpp;
   EXPECT_EQ(NPVariantType_Null, cpp.type);
   cpp.Set(12);
@@ -328,7 +348,7 @@ TEST(CppVariantTest, FreeDataSetsToVoid) {
   EXPECT_EQ(NPVariantType_Void, cpp.type);
 }
 
-TEST(CppVariantTest, FreeDataReleasesObject) {
+TEST_F(CppVariantTest, FreeDataReleasesObject) {
   CppVariant cpp;
   NPObject* object = MakeVoidObject();
   cpp.Set(object);
@@ -344,7 +364,7 @@ TEST(CppVariantTest, FreeDataReleasesObject) {
   EXPECT_EQ(1, g_deallocate_call_count);
 }
 
-TEST(CppVariantTest, IsTypeFunctionsWork) {
+TEST_F(CppVariantTest, IsTypeFunctionsWork) {
   CppVariant cpp;
   // These should not happen in practice, since voids are not supported
   // This test must be first since it just clobbers internal data without
@@ -454,7 +474,7 @@ bool MockNPGetPropertyFunction(NPObject *npobj, NPIdentifier name,
   return true;
 }
 
-TEST(CppVariantTest, ToVector) {
+TEST_F(CppVariantTest, ToVector) {
   NPClass array_like_class = {
       NP_CLASS_STRUCT_VERSION,
       0, // NPAllocateFunctionPtr allocate;
@@ -471,7 +491,7 @@ TEST(CppVariantTest, ToVector) {
       0 // NPConstructFunctionPtr construct;
       };
 
-  NPObject* obj = WebBindings::createObject(NULL, &array_like_class);
+  NPObject* obj = WebBindings::createObject(npp(), &array_like_class);
 
   CppVariant cpp;
   cpp.Set(obj);

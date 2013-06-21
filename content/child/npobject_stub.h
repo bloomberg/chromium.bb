@@ -40,7 +40,7 @@ class NPObjectStub : public IPC::Listener,
   virtual ~NPObjectStub();
 
   // Schedules tear-down of this stub.  The underlying NPObject reference is
-  // released, and further invokations form the IPC channel will fail once this
+  // released, and further invokations from the IPC channel will fail once this
   // call has returned.  Deletion of the stub is deferred to the main loop, in
   // case it is touched as the stack unwinds.  DeleteSoon() is safe to call
   // more than once, until control returns to the main loop.

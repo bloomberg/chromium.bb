@@ -31,6 +31,13 @@ struct hash<NPObject*> {
   }
 };
 
+template<>
+struct hash<struct _NPP*> {
+  std::size_t operator()(struct _NPP* const& ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+
 }  // namespace __gnu_cxx
 #elif defined(COMPILER_MSVC)
 namespace stdext {
@@ -61,16 +68,20 @@ class NPChannelBase : public IPC::Listener,
   void AddRoute(int route_id, IPC::Listener* listener, NPObjectBase* npobject);
   void RemoveRoute(int route_id);
 
-
   void AddMappingForNPObjectProxy(int route_id, NPObject* object);
   void RemoveMappingForNPObjectProxy(int route_id);
 
   void AddMappingForNPObjectStub(int route_id, NPObject* object);
   void RemoveMappingForNPObjectStub(int route_id, NPObject* object);
 
+  void AddMappingForNPObjectOwner(int route_id, struct _NPP* owner);
+  void SetDefaultNPObjectOwner(struct _NPP* owner);
+  void RemoveMappingForNPObjectOwner(int route_id);
+
   NPObject* GetExistingNPObjectProxy(int route_id);
   int GetExistingRouteForNPObjectStub(NPObject* npobject);
-
+  struct _NPP* GetExistingNPObjectOwner(int route_id);
+  int GetExistingRouteForNPObjectOwner(struct _NPP* owner);
 
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -170,6 +181,16 @@ class NPChannelBase : public IPC::Listener,
 
   typedef base::hash_map<NPObject*, int> StubMap;
   StubMap stub_map_;
+
+  typedef base::hash_map<struct _NPP*, int> OwnerToRouteMap;
+  OwnerToRouteMap owner_to_route_;
+
+  typedef base::hash_map<int, struct _NPP*> RouteToOwnerMap;
+  RouteToOwnerMap route_to_owner_;
+
+  // Used on the plugin side to represent any object received that does
+  // not belong to a plugin instance.
+  struct _NPP* default_owner_;
 
   // Used to implement message routing functionality to WebPlugin[Delegate]
   // objects

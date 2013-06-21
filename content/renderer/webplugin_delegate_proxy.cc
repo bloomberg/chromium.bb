@@ -258,6 +258,10 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     // channel went away if this was the last instance.
     channel_host_->RemoveRoute(instance_id_);
 
+    // Remove the mapping between our instance-Id and NPP identifiers, used by
+    // the channel to track object ownership, before releasing it.
+    channel_host_->RemoveMappingForNPObjectOwner(instance_id_);
+
     // Release the channel host now. If we are is the last reference to the
     // channel, this avoids a race where this renderer asks a new connection to
     // the same plugin between now and the time 'this' is actually deleted.
@@ -275,6 +279,7 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     // been destroyed by WebKit, at which point WebKit will forcibly deallocate
     // the window script object.  The window script object stub is unique to the
     // plugin instance, so this won't affect other instances.
+    // TODO(wez): Remove this hack.
     window_script_object_->DeleteSoon();
   }
 
@@ -362,6 +367,10 @@ bool WebPluginDelegateProxy::Initialize(
   instance_id_ = instance_id;
 
   channel_host_->AddRoute(instance_id_, this, NULL);
+
+  // Inform the channel of the mapping between our instance-Id and dummy NPP
+  // identifier, for use in object ownership tracking.
+  channel_host_->AddMappingForNPObjectOwner(instance_id_, GetPluginNPP());
 
   // Now tell the PluginInstance in the plugin process to initialize.
   PluginMsg_Init_Params params;
@@ -739,7 +748,7 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
     return NULL;
 
   npobject_ = NPObjectProxy::Create(
-      channel_host_.get(), route_id, 0, page_url_);
+      channel_host_.get(), route_id, 0, page_url_, GetPluginNPP());
 
   return WebBindings::retainObject(npobject_);
 }

@@ -204,6 +204,11 @@ void CreateNPVariantParam(const NPVariant& variant,
                 page_url);
             param->npobject_routing_id = route_id;
           }
+
+          // Include the object's owner.
+          NPP owner = WebBindings::getObjectOwner(variant.value.objectValue);
+          param->npobject_owner_id =
+              channel->GetExistingRouteForNPObjectOwner(owner);
         } else {
           param->type = NPVARIANT_PARAM_VOID;
         }
@@ -259,11 +264,16 @@ bool CreateNPVariant(const NPVariant_Param& param,
         WebBindings::retainObject(object);
         result->value.objectValue = object;
       } else {
+        NPP owner =
+            channel->GetExistingNPObjectOwner(param.npobject_owner_id);
+        // TODO(wez): Once NPObject tracking lands in Blink, check |owner| and
+        // return NPVariantType_Void if it is NULL.
         result->value.objectValue =
             NPObjectProxy::Create(channel,
                                   param.npobject_routing_id,
                                   render_view_id,
-                                  page_url);
+                                  page_url,
+                                  owner);
       }
       break;
     }

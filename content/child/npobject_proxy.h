@@ -38,7 +38,8 @@ class NPObjectProxy : public IPC::Listener,
   static NPObject* Create(NPChannelBase* channel,
                           int route_id,
                           int render_view_id,
-                          const GURL& page_url);
+                          const GURL& page_url,
+                          NPP owner);
 
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;

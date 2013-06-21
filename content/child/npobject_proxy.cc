@@ -85,9 +85,10 @@ NPObjectProxy::~NPObjectProxy() {
 NPObject* NPObjectProxy::Create(NPChannelBase* channel,
                                 int route_id,
                                 int render_view_id,
-                                const GURL& page_url) {
+                                const GURL& page_url,
+                                NPP owner) {
   NPObjectWrapper* obj = reinterpret_cast<NPObjectWrapper*>(
-      WebBindings::createObject(0, &npclass_proxy_));
+      WebBindings::createObject(owner, &npclass_proxy_));
   obj->proxy = new NPObjectProxy(channel, route_id, render_view_id, page_url);
   channel->AddMappingForNPObjectProxy(route_id, &obj->object);
   return reinterpret_cast<NPObject*>(obj);
