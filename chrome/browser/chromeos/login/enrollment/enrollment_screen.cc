@@ -114,6 +114,8 @@ void EnrollmentScreen::OnAuthError(
     case GoogleServiceAuthError::HOSTED_NOT_ALLOWED:
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::REQUEST_CANCELED:
+    case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
+    case GoogleServiceAuthError::SERVICE_ERROR:
       UMAFailure(policy::kMetricEnrollmentLoginFailed);
       LOG(ERROR) << "Auth error " << error.state();
       return;

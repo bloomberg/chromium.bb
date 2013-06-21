@@ -35,7 +35,6 @@ bool GoogleServiceAuthError::Captcha::operator==(const Captcha& b) const {
           image_height == b.image_height);
 }
 
-
 GoogleServiceAuthError::SecondFactor::SecondFactor() : field_length(0) {
 }
 
@@ -57,7 +56,6 @@ bool GoogleServiceAuthError::SecondFactor::operator==(
           field_length == b.field_length);
 }
 
-
 bool GoogleServiceAuthError::operator==(
     const GoogleServiceAuthError& b) const {
   return (state_ == b.state_ &&
@@ -73,6 +71,14 @@ GoogleServiceAuthError::GoogleServiceAuthError(State s)
   if (s == CONNECTION_FAILED) {
     network_error_ = net::ERR_FAILED;
   }
+}
+
+GoogleServiceAuthError::GoogleServiceAuthError(
+    State state,
+    const std::string& error_message)
+    : state_(state),
+      network_error_(0),
+      error_message_(error_message) {
 }
 
 GoogleServiceAuthError::GoogleServiceAuthError(const std::string& error_message)
@@ -96,6 +102,19 @@ GoogleServiceAuthError GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
                                 captcha_image_url, captcha_unlock_url, 0, 0);
 }
 
+// static
+GoogleServiceAuthError GoogleServiceAuthError::FromServiceError(
+    const std::string& error_message) {
+  return GoogleServiceAuthError(SERVICE_ERROR, error_message);
+}
+
+// static
+GoogleServiceAuthError GoogleServiceAuthError::FromUnexpectedServiceResponse(
+    const std::string& error_message) {
+  return GoogleServiceAuthError(UNEXPECTED_SERVICE_RESPONSE, error_message);
+}
+
+// static
 GoogleServiceAuthError GoogleServiceAuthError::AuthErrorNone() {
   return GoogleServiceAuthError(NONE);
 }
@@ -151,12 +170,17 @@ DictionaryValue* GoogleServiceAuthError::ToValue() const {
     STATE_CASE(TWO_FACTOR);
     STATE_CASE(REQUEST_CANCELED);
     STATE_CASE(HOSTED_NOT_ALLOWED);
+    STATE_CASE(UNEXPECTED_SERVICE_RESPONSE);
+    STATE_CASE(SERVICE_ERROR);
 #undef STATE_CASE
     default:
       NOTREACHED();
       break;
   }
   value->SetString("state", state_str);
+  if (!error_message_.empty()) {
+    value->SetString("errorMessage", error_message_);
+  }
   if (state_ == CAPTCHA_REQUIRED) {
     DictionaryValue* captcha_value = new DictionaryValue();
     value->Set("captcha", captcha_value);
@@ -205,6 +229,12 @@ std::string GoogleServiceAuthError::ToString() const {
       return "Request canceled.";
     case HOSTED_NOT_ALLOWED:
       return "Google account required.";
+    case UNEXPECTED_SERVICE_RESPONSE:
+      return base::StringPrintf("Unexpected service response (%s)",
+                                error_message_.c_str());
+    case SERVICE_ERROR:
+      return base::StringPrintf("Service responded with error: '%s'",
+                                error_message_.c_str());
     default:
       NOTREACHED();
       return std::string();

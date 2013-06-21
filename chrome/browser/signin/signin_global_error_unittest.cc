@@ -107,6 +107,8 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::TWO_FACTOR, true },
     { GoogleServiceAuthError::REQUEST_CANCELED, true },
     { GoogleServiceAuthError::HOSTED_NOT_ALLOWED, true },
+    { GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true },
+    { GoogleServiceAuthError::SERVICE_ERROR, true },
   };
   COMPILE_ASSERT(ARRAYSIZE_UNSAFE(table) == GoogleServiceAuthError::NUM_STATES,
       kTable_size_does_not_match_number_of_auth_error_types);

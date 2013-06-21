@@ -78,8 +78,16 @@ class GoogleServiceAuthError {
     // a GOOGLE account.
     HOSTED_NOT_ALLOWED = 10,
 
+    // Indicates the service responded to a request, but we cannot
+    // interpret the response.
+    UNEXPECTED_SERVICE_RESPONSE = 11,
+
+    // Indicates the service responded and response carried details of the
+    // application error.
+    SERVICE_ERROR = 12,
+
     // The number of known error states.
-    NUM_STATES = 11,
+    NUM_STATES = 13,
   };
 
   // Additional data for CAPTCHA_REQUIRED errors.
@@ -145,6 +153,16 @@ class GoogleServiceAuthError {
       const GURL& captcha_image_url,
       const GURL& captcha_unlock_url);
 
+  // Construct a SERVICE_ERROR error, e.g. invalid client ID, with an
+  // |error_message| which provides more information about the service error.
+  static GoogleServiceAuthError FromServiceError(
+      const std::string& error_message);
+
+  // Construct an UNEXPECTED_SERVICE_RESPONSE error, with an |error_message|
+  // detailing the problems with the response.
+  static GoogleServiceAuthError FromUnexpectedServiceResponse(
+      const std::string& error_message);
+
   // Provided for convenience for clients needing to reset an instance to NONE.
   // (avoids err_ = GoogleServiceAuthError(GoogleServiceAuthError::NONE), due
   // to explicit class and State enum relation. Note: shouldn't be inlined!
@@ -167,6 +185,9 @@ class GoogleServiceAuthError {
 
  private:
   GoogleServiceAuthError(State s, int error);
+
+  // Construct a GoogleServiceAuthError from |state| and |error_message|.
+  GoogleServiceAuthError(State state, const std::string& error_message);
 
   explicit GoogleServiceAuthError(const std::string& error_message);
 
