@@ -447,9 +447,17 @@ const LogSeverity LOG_0 = LOG_ERROR;
 #define PLOG_IF(severity, condition) \
   LAZY_STREAM(PLOG_STREAM(severity), LOG_IS_ON(severity) && (condition))
 
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+#if !defined(NDEBUG)
+// Debug builds always include DCHECK and DLOG.
+#undef LOGGING_IS_OFFICIAL_BUILD
+#define LOGGING_IS_OFFICIAL_BUILD 0
+#elif defined(OFFICIAL_BUILD)
+// Official release builds always disable and remove DCHECK and DLOG.
+#undef LOGGING_IS_OFFICIAL_BUILD
 #define LOGGING_IS_OFFICIAL_BUILD 1
-#else
+#elif !defined(LOGGING_IS_OFFICIAL_BUILD)
+// Unless otherwise specified, unofficial release builds include
+// DCHECK and DLOG.
 #define LOGGING_IS_OFFICIAL_BUILD 0
 #endif
 
