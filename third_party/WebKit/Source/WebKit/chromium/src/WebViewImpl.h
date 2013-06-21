@@ -717,6 +717,8 @@ private:
     // Saved page scale state.
     float m_savedPageScaleFactor; // 0 means that no page scale factor is saved.
     WebCore::IntSize m_savedScrollOffset;
+    float m_exitFullscreenPageScaleFactor;
+    WebCore::IntSize m_exitFullscreenScrollOffset;
 
     // The scale moved to by the latest double tap zoom, if any.
     float m_doubleTapZoomPageScaleFactor;

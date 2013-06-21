@@ -386,6 +386,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_minimumZoomLevel(zoomFactorToZoomLevel(minTextSizeMultiplier))
     , m_maximumZoomLevel(zoomFactorToZoomLevel(maxTextSizeMultiplier))
     , m_savedPageScaleFactor(0)
+    , m_exitFullscreenPageScaleFactor(0)
     , m_doubleTapZoomPageScaleFactor(0)
     , m_doubleTapZoomPending(false)
     , m_enableFakeDoubleTapAnimationForTesting(false)
@@ -1676,8 +1677,15 @@ void WebViewImpl::didEnterFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        if (FullscreenController::isFullScreen(doc))
+        if (FullscreenController::isFullScreen(doc)) {
+            if (!m_exitFullscreenPageScaleFactor) {
+                m_exitFullscreenPageScaleFactor = pageScaleFactor();
+                m_exitFullscreenScrollOffset = mainFrame()->scrollOffset();
+                setPageScaleFactorPreservingScrollOffset(1.0f);
+            }
+
             FullscreenController::from(doc)->webkitDidEnterFullScreenForElement(0);
+        }
     }
 }
 
@@ -1708,8 +1716,16 @@ void WebViewImpl::didExitFullScreen()
 
     if (Document* doc = m_fullScreenFrame->document()) {
         if (FullscreenController* fullscreen = FullscreenController::fromIfExists(doc)) {
-            if (fullscreen->webkitIsFullScreen())
+            if (fullscreen->webkitIsFullScreen()) {
+                if (m_exitFullscreenPageScaleFactor) {
+                    setPageScaleFactor(m_exitFullscreenPageScaleFactor,
+                        WebPoint(m_exitFullscreenScrollOffset.width(), m_exitFullscreenScrollOffset.height()));
+                    m_exitFullscreenPageScaleFactor = 0;
+                    m_exitFullscreenScrollOffset = IntSize();
+                }
+
                 fullscreen->webkitDidExitFullScreenForElement(0);
+            }
         }
     }
 
