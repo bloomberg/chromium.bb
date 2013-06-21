@@ -333,6 +333,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Returns true iff the keyboard has been recently used.
   bool KeyboardRecentlyUsed(stime_t now) const;
 
+  // Updates non_gs_fingers based on a new hardware state. Removes missing and
+  // newly moving fingers from non_gs_fingers.
+  void UpdateNonGsFingers(const HardwareState& hwstate);
+
   // Gets the finger or fingers we should consider for gestures.
   // Currently, it fetches the (up to) two fingers closest to the keyboard
   // that are not palms. There is one exception: for t5r2 pads with > 2
@@ -422,9 +426,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Fills the origin_* member variables.
   void FillOriginInfo(const HardwareState& hwstate);
 
-  // Called to detect if fingers have started moving.
-  void UpdateStartedMovingTime(const HardwareState& hwstate,
-                               const FingerMap& gs_fingers);
+  // Fills moving_ with any moving fingers.
+  FingerMap UpdateMovingFingers(const HardwareState& hwstate);
+
+  // Update started_moving_time_ to now if any gesturing fingers started moving.
+  void UpdateStartedMovingTime(stime_t now,
+                               const FingerMap& gs_fingers,
+                               const FingerMap& newly_moving_fingers);
 
   // Updates the internal button state based on the passed in |hwstate|.
   // Can optionally request a timeout by setting *timeout.
@@ -451,6 +459,14 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Fingers which are prohibited from ever tapping.
   set<short, kMaxFingers> tap_dead_fingers_;
+
+  // Active gs fingers are the subset of gs_fingers that are actually performing
+  // a gesture
+  FingerMap prev_active_gs_fingers_;
+
+  // Fingers that would be considered as possibly gesturing, but others fingers
+  // did the gesturing.
+  FingerMap non_gs_fingers_;
 
   FingerMap prev_gs_fingers_;
   FingerMap prev_tap_gs_fingers_;

@@ -784,11 +784,14 @@ void ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
 
   UpdatePointingFingers(*hwstate);
   UpdateThumbState(*hwstate);
-  FingerMap gs_fingers = GetGesturingFingers(*hwstate);
+  FingerMap newly_moving_fingers = UpdateMovingFingers(*hwstate);
+  UpdateNonGsFingers(*hwstate);
+  FingerMap gs_fingers =
+      SetSubtract(GetGesturingFingers(*hwstate), non_gs_fingers_);
   if (gs_fingers != prev_gs_fingers_)
     gs_changed_time_ = hwstate->timestamp;
+  UpdateStartedMovingTime(hwstate->timestamp, gs_fingers, newly_moving_fingers);
 
-  UpdateStartedMovingTime(*hwstate, gs_fingers);
   UpdateButtons(*hwstate, timeout);
   UpdateTapGesture(hwstate,
                    gs_fingers,
@@ -796,9 +799,11 @@ void ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                    hwstate->timestamp,
                    timeout);
 
-  UpdateCurrentGestureType(*hwstate, gs_fingers);
+  FingerMap active_gs_fingers;
+  UpdateCurrentGestureType(*hwstate, gs_fingers, &active_gs_fingers);
+  non_gs_fingers_ = SetSubtract(gs_fingers, active_gs_fingers);
   if (result_.type == kGestureTypeNull)
-    FillResultGesture(*hwstate, gs_fingers);
+    FillResultGesture(*hwstate, active_gs_fingers);
 
   // Prevent moves while in a tap
   if ((tap_to_click_state_ == kTtcFirstTapBegan ||
@@ -806,6 +811,7 @@ void ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
       result_.type == kGestureTypeMove)
     result_.type = kGestureTypeNull;
 
+  prev_active_gs_fingers_ = active_gs_fingers;
   prev_gs_fingers_ = gs_fingers;
   prev_result_ = result_;
   prev_gesture_type_ = current_gesture_type_;
@@ -943,6 +949,12 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
   for (map<short, stime_t, kMaxFingers>::const_iterator it = thumb_.begin();
        it != thumb_.end(); ++it)
     pointing_.erase((*it).first);
+}
+
+void ImmediateInterpreter::UpdateNonGsFingers(const HardwareState& hwstate) {
+  RemoveMissingIdsFromSet(&non_gs_fingers_, hwstate);
+  // moving fingers may be gesturing, so take them out from the set.
+  non_gs_fingers_ = SetSubtract(non_gs_fingers_, moving_);
 }
 
 bool ImmediateInterpreter::KeyboardRecentlyUsed(stime_t now) const {
@@ -2234,33 +2246,41 @@ int ImmediateInterpreter::EvaluateButtonType(
   return GetButtonTypeForTouchCount(num_pressing);
 }
 
-void ImmediateInterpreter::UpdateStartedMovingTime(
-    const HardwareState& hwstate,
-    const FingerMap& gs_fingers) {
-  SetRemoveMissing(&moving_, gs_fingers);
-  if (moving_.size() == gs_fingers.size())
-    return;  // All fingers already started moving
+FingerMap ImmediateInterpreter::UpdateMovingFingers(
+    const HardwareState& hwstate) {
+  FingerMap newly_moving_fingers;
+  if (moving_.size() == hwstate.finger_cnt)
+    return newly_moving_fingers;  // All fingers already started moving
   const float kMinDistSq =
       change_move_distance_.val_ * change_move_distance_.val_;
-  for (FingerMap::const_iterator
-           it = gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it) {
-    const FingerState* fs = hwstate.GetFingerState(*it);
-    if (!fs) {
-      Err("Missing hardware state!");
-      continue;
-    }
-    if (!MapContainsKey(start_positions_, *it)) {
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs = hwstate.fingers[i];
+    if (!MapContainsKey(start_positions_, fs.tracking_id)) {
       Err("Missing start position!");
       continue;
     }
-    if (SetContainsValue(moving_, fs->tracking_id)) {
+    if (SetContainsValue(moving_, fs.tracking_id)) {
       // This finger already moving
       continue;
     }
-    float dist_sq = DistanceTravelledSq(*fs, false);
+    float dist_sq = DistanceTravelledSq(fs, false);
     if (dist_sq > kMinDistSq) {
-      started_moving_time_ = hwstate.timestamp;
-      moving_.insert(fs->tracking_id);
+      moving_.insert(fs.tracking_id);
+      newly_moving_fingers.insert(fs.tracking_id);
+    }
+  }
+  return newly_moving_fingers;
+}
+
+void ImmediateInterpreter::UpdateStartedMovingTime(
+    stime_t now,
+    const FingerMap& gs_fingers,
+    const FingerMap& newly_moving_fingers) {
+  // Update started moving time if any gesturing finger is newly moving.
+  for (auto it = gs_fingers.begin(), e = gs_fingers.end(); it != e; ++it) {
+    if (SetContainsValue(newly_moving_fingers, *it)) {
+      started_moving_time_ = now;
+      return;
     }
   }
 }
@@ -2407,7 +2427,7 @@ void ImmediateInterpreter::FillResultGesture(
     }
     case kGestureTypeScroll: {
       if (!scroll_manager_.ComputeScroll(state_buffer_,
-                                         prev_gs_fingers_,
+                                         prev_active_gs_fingers_,
                                          fingers,
                                          prev_gesture_type_,
                                          prev_result_,
