@@ -33,6 +33,7 @@ menu > :not(hr) {
   -webkit-appearance: none;
   background: transparent;
   border: 0;
+  color: black;
   font: inherit;
   line-height: 18px;
   outline: none;
