@@ -549,7 +549,8 @@ bool InstantController::WillFetchCompletions() const {
 
 scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
   if (!extended_enabled() || !browser_->profile() ||
-      browser_->profile()->IsOffTheRecord())
+      browser_->profile()->IsOffTheRecord() ||
+      !chrome::ShouldShowInstantNTP())
     return scoped_ptr<content::WebContents>();
 
   LOG_INSTANT_DEBUG_EVENT(this, "ReleaseNTPContents");
@@ -1588,6 +1589,10 @@ bool InstantController::PageIsCurrent(const InstantPage* page) const {
 }
 
 void InstantController::ResetNTP(const std::string& instant_url) {
+  // Never load the Instant NTP if it is disabled.
+  if (!chrome::ShouldShowInstantNTP())
+    return;
+
   // Instant NTP is only used in extended mode so we should always have a
   // non-empty URL to use.
   DCHECK(!instant_url.empty());

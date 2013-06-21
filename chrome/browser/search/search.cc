@@ -65,6 +65,7 @@ const char kInstantSearchResultsFlagName[] = "instant";
 const char kLocalOnlyFlagName[] = "local_only";
 const char kPreloadLocalOnlyNTPFlagName[] = "preload_local_only_ntp";
 const char kUseRemoteNTPOnStartupFlagName[] = "use_remote_ntp_on_startup";
+const char kShowNtpFlagName[] = "show_ntp";
 
 // Constants for the field trial name and group prefix.
 const char kInstantExtendedFieldTrialName[] = "InstantExtended";
@@ -550,6 +551,16 @@ bool ShouldPreloadLocalOnlyNTP() {
           &flags, NULL)) {
     return GetBoolValueForFlagWithDefault(kPreloadLocalOnlyNTPFlagName, false,
                                           flags);
+  }
+  return true;
+}
+
+bool ShouldShowInstantNTP() {
+  FieldTrialFlags flags;
+  if (GetFieldTrialInfo(
+          base::FieldTrialList::FindFullName(kInstantExtendedFieldTrialName),
+          &flags, NULL)) {
+    return GetBoolValueForFlagWithDefault(kShowNtpFlagName, true, flags);
   }
   return true;
 }
