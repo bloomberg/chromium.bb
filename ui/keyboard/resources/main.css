@@ -50,8 +50,6 @@ kb-key.dark {
 .at,
 .com,
 .comma,
-.hide,
-.mic,
 .period,
 .tab {
   -webkit-box-flex: 1.3 !important;
@@ -61,8 +59,12 @@ kb-key.dark {
   -webkit-box-flex: 2.1 !important;
 }
 
-.symbol {
+.mic {
   -webkit-box-flex: 1.5 !important;
+}
+
+.symbol {
+  -webkit-box-flex: 1.25 !important;
 }
 
 .backspace {
@@ -80,7 +82,7 @@ kb-key.dark {
 }
 
 .space {
-  -webkit-box-flex: 4.8 !important;
+  -webkit-box-flex: 6.0 !important;
 }
 
 .bar {
