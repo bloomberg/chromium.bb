@@ -150,7 +150,7 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
 // disk.
 scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
   const int kTabId = ExtensionAction::kDefaultTabId;
-  scoped_ptr<base::DictionaryValue> dict(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString(kPopupUrlStorageKey, action->GetPopupUrl(kTabId).spec());
   dict->SetString(kTitleStorageKey, action->GetTitle(kTabId));
@@ -631,7 +631,7 @@ bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
   EXTENSION_FUNCTION_VALIDATE(details_->Get("color", &color_value));
   SkColor color = 0;
   if (color_value->IsType(Value::TYPE_LIST)) {
-    ListValue* list = NULL;
+    base::ListValue* list = NULL;
     EXTENSION_FUNCTION_VALIDATE(details_->GetList("color", &list));
     EXTENSION_FUNCTION_VALIDATE(list->GetSize() == 4);
 
@@ -671,7 +671,7 @@ bool ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
 }
 
 bool ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
-  ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
   SkColor color = extension_action_->GetBadgeBackgroundColor(tab_id_);
   list->Append(Value::CreateIntegerValue(SkColorGetR(color)));
   list->Append(Value::CreateIntegerValue(SkColorGetG(color)));

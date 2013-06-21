@@ -405,7 +405,7 @@ void FileSystemEntryFunction::RegisterFileSystemAndSendResponseWithIdOverride(
           GetExtension()->id(), render_view_host_->GetProcess()->GetID(), path,
           writable);
 
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
   dict->SetString("fileSystemId", file_entry.filesystem_id);
   dict->SetString("baseName", file_entry.registered_name);

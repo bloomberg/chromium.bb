@@ -55,7 +55,7 @@ class APIAction : public Action {
   // the original int. There is a small chance that the URL translation could
   // be wrong, if the tab has already been navigated by the time of invocation.
   static void LookupTabId(const std::string& api_call,
-                          ListValue* args,
+                          base::ListValue* args,
                           Profile* profile);
 
   // Print a APIAction as a regular string for debugging purposes.

@@ -75,7 +75,7 @@ void ExtensionSyncEventObserver::OnFileSynced(
     sync_file_system::SyncFileStatus status,
     sync_file_system::SyncAction action,
     sync_file_system::SyncDirection direction) {
-  scoped_ptr<base::ListValue> params(new ListValue());
+  scoped_ptr<base::ListValue> params(new base::ListValue());
 
   // For now we always assume events come only for files (not directories).
   params->Append(CreateDictionaryValueForFileSystemEntry(

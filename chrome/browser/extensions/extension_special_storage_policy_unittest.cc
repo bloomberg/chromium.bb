@@ -104,7 +104,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     manifest.SetString(keys::kName, "Protected");
     manifest.SetString(keys::kVersion, "1");
     manifest.SetString(keys::kLaunchWebURL, "http://explicit/protected/start");
-    ListValue* list = new ListValue();
+    base::ListValue* list = new base::ListValue();
     list->Append(Value::CreateStringValue("http://explicit/protected"));
     list->Append(Value::CreateStringValue("*://*.wildcards/protected"));
     manifest.Set(keys::kWebURLs, list);
@@ -126,10 +126,10 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
     manifest.SetString(keys::kName, "Unlimited");
     manifest.SetString(keys::kVersion, "1");
     manifest.SetString(keys::kLaunchWebURL, "http://explicit/unlimited/start");
-    ListValue* list = new ListValue();
+    base::ListValue* list = new base::ListValue();
     list->Append(Value::CreateStringValue("unlimitedStorage"));
     manifest.Set(keys::kPermissions, list);
-    list = new ListValue();
+    list = new base::ListValue();
     list->Append(Value::CreateStringValue("http://explicit/unlimited"));
     list->Append(Value::CreateStringValue("*://*.wildcards/unlimited"));
     manifest.Set(keys::kWebURLs, list);

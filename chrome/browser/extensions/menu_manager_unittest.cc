@@ -214,13 +214,13 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   int contexts_value = 0;
   ASSERT_TRUE(contexts.ToValue()->GetAsInteger(&contexts_value));
 
-  ListValue* document_url_patterns(new ListValue());
+  base::ListValue* document_url_patterns(new base::ListValue());
   document_url_patterns->Append(
       Value::CreateStringValue("http://www.google.com/*"));
   document_url_patterns->Append(
       Value::CreateStringValue("http://www.reddit.com/*"));
 
-  ListValue* target_url_patterns(new ListValue());
+  base::ListValue* target_url_patterns(new base::ListValue());
   target_url_patterns->Append(
       Value::CreateStringValue("http://www.yahoo.com/*"));
   target_url_patterns->Append(

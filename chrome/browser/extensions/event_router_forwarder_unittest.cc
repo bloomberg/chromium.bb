@@ -47,7 +47,7 @@ class MockEventRouterForwarder : public EventRouterForwarder {
 static void BroadcastEventToRenderers(EventRouterForwarder* event_router,
                                       const std::string& event_name,
                                       const GURL& url) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   event_router->BroadcastEventToRenderers(event_name, args.Pass(), url);
 }
 
@@ -56,7 +56,7 @@ static void DispatchEventToRenderers(EventRouterForwarder* event_router,
                                      void* profile,
                                      bool use_profile_to_restrict_events,
                                      const GURL& url) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   event_router->DispatchEventToRenderers(event_name, args.Pass(), profile,
                                          use_profile_to_restrict_events, url);
 }
@@ -65,7 +65,7 @@ static void BroadcastEventToExtension(EventRouterForwarder* event_router,
                                       const std::string& extension,
                                       const std::string& event_name,
                                       const GURL& url) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   event_router->BroadcastEventToExtension(extension, event_name, args.Pass(),
                                           url);
 }
@@ -76,7 +76,7 @@ static void DispatchEventToExtension(EventRouterForwarder* event_router,
                                      void* profile,
                                      bool use_profile_to_restrict_events,
                                      const GURL& url) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   event_router->DispatchEventToExtension(
       extension, event_name, args.Pass(), profile,
       use_profile_to_restrict_events, url);

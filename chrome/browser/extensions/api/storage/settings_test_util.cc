@@ -60,11 +60,11 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
     const std::string& id,
     Manifest::Type type,
     const std::set<std::string>& permissions_set) {
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("name", std::string("Test extension ") + id);
   manifest.SetString("version", "1.0");
 
-  scoped_ptr<ListValue> permissions(new ListValue());
+  scoped_ptr<base::ListValue> permissions(new base::ListValue());
   for (std::set<std::string>::const_iterator it = permissions_set.begin();
       it != permissions_set.end(); ++it) {
     permissions->Append(Value::CreateStringValue(*it));
@@ -76,8 +76,8 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
       break;
 
     case Manifest::TYPE_LEGACY_PACKAGED_APP: {
-      DictionaryValue* app = new DictionaryValue();
-      DictionaryValue* app_launch = new DictionaryValue();
+      base::DictionaryValue* app = new base::DictionaryValue();
+      base::DictionaryValue* app_launch = new base::DictionaryValue();
       app_launch->SetString("local_path", "fake.html");
       app->Set("launch", app_launch);
       manifest.Set("app", app);

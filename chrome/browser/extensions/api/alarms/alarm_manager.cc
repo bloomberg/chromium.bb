@@ -41,7 +41,7 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
 
   virtual void OnAlarm(const std::string& extension_id,
                        const Alarm& alarm) OVERRIDE {
-    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(alarm.js_alarm->ToValue().release());
     scoped_ptr<Event> event(new Event(kOnAlarmEvent, args.Pass()));
     ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
@@ -75,7 +75,7 @@ std::vector<Alarm> AlarmsFromValue(const base::ListValue* list) {
 }
 
 scoped_ptr<base::ListValue> AlarmsToValue(const std::vector<Alarm>& alarms) {
-  scoped_ptr<base::ListValue> list(new ListValue());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < alarms.size(); ++i) {
     scoped_ptr<base::DictionaryValue> alarm =
         alarms[i].js_alarm->ToValue().Pass();
@@ -234,7 +234,7 @@ void AlarmManager::WriteToStorage(const std::string& extension_id) {
   if (!storage)
     return;
 
-  scoped_ptr<Value> alarms;
+  scoped_ptr<base::Value> alarms;
   AlarmMap::iterator list = alarms_.find(extension_id);
   if (list != alarms_.end())
     alarms.reset(AlarmsToValue(list->second).release());

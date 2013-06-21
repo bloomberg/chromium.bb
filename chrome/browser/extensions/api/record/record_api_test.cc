@@ -241,7 +241,7 @@ class RecordApiTest : public InProcessBrowserTest {
 
   // Verify that the URL list of good and bad URLs was properly handled.
   // Needed by several tests.
-  bool VerifyURLHandling(const ListValue* result,
+  bool VerifyURLHandling(const base::ListValue* result,
       const TestProcessStrategy& strategy) {
 
     // Check that the two bad URLs are returned.
@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
    // Check for return value with proper stats.
   EXPECT_EQ(kTestStatistics, utils::GetString(result.get(), kStatsKey));
 
-  ListValue* errors = NULL;
+  base::ListValue* errors = NULL;
   EXPECT_TRUE(result->GetList(kErrorsKey, &errors));
   EXPECT_TRUE(VerifyURLHandling(errors, strategy));
 }

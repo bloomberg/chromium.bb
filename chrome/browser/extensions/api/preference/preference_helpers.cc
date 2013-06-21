@@ -88,7 +88,7 @@ const char* GetLevelOfControl(
 void DispatchEventToExtensions(
     Profile* profile,
     const std::string& event_name,
-    ListValue* args,
+    base::ListValue* args,
     APIPermission::ID permission,
     bool incognito,
     const std::string& browser_pref) {
@@ -108,7 +108,7 @@ void DispatchEventToExtensions(
         (!incognito || IncognitoInfo::IsSplitMode(it->get()) ||
          extension_service->CanCrossIncognito(it->get()))) {
       // Inject level of control key-value.
-      DictionaryValue* dict;
+      base::DictionaryValue* dict;
       bool rv = args->GetDictionary(0, &dict);
       DCHECK(rv);
       std::string level_of_control =
@@ -134,7 +134,7 @@ void DispatchEventToExtensions(
         }
       }
 
-      scoped_ptr<ListValue> args_copy(args->DeepCopy());
+      scoped_ptr<base::ListValue> args_copy(args->DeepCopy());
       scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));
       event->restrict_to_profile = restrict_to_profile;
       router->DispatchEventToExtension(extension_id, event.Pass());

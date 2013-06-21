@@ -53,7 +53,7 @@ bool AutotestPrivateShutdownFunction::RunImpl() {
 bool AutotestPrivateLoginStatusFunction::RunImpl() {
   DVLOG(1) << "AutotestPrivateLoginStatusFunction";
 
-  DictionaryValue* result(new DictionaryValue);
+  base::DictionaryValue* result(new base::DictionaryValue);
 #if defined(OS_CHROMEOS)
   const chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   const bool is_screen_locked =

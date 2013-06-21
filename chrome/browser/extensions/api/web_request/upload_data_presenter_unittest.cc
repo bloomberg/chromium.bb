@@ -9,11 +9,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::BinaryValue;
-using base::ListValue;
-using base::StringValue;
-using base::Value;
-
 namespace keys = extension_web_request_api_constants;
 
 namespace extensions {
@@ -27,9 +22,9 @@ TEST(WebRequestUploadDataPresenterTest, ParsedData) {
   net::UploadBytesElementReader element(block, sizeof(block) - 1);
 
   // Expected output.
-  scoped_ptr<ListValue> values(new ListValue);
-  values->Append(Value::CreateStringValue("value"));
-  DictionaryValue expected_form;
+  scoped_ptr<base::ListValue> values(new base::ListValue);
+  values->Append(base::Value::CreateStringValue("value"));
+  base::DictionaryValue expected_form;
   expected_form.SetWithoutPathExpansion("key.with.dots", values.release());
 
   // Real output.
@@ -38,7 +33,7 @@ TEST(WebRequestUploadDataPresenterTest, ParsedData) {
   ASSERT_TRUE(parsed_data_presenter.get() != NULL);
   parsed_data_presenter->FeedNext(element);
   EXPECT_TRUE(parsed_data_presenter->Succeeded());
-  scoped_ptr<Value> result = parsed_data_presenter->Result();
+  scoped_ptr<base::Value> result = parsed_data_presenter->Result();
   ASSERT_TRUE(result.get() != NULL);
 
   EXPECT_TRUE(result->Equals(&expected_form));
@@ -53,16 +48,17 @@ TEST(WebRequestUploadDataPresenterTest, RawData) {
   const size_t block2_size = sizeof(block2) - 1;
 
   // Expected output.
-  scoped_ptr<BinaryValue> expected_a(
-      BinaryValue::CreateWithCopiedBuffer(block1, block1_size));
+  scoped_ptr<base::BinaryValue> expected_a(
+      base::BinaryValue::CreateWithCopiedBuffer(block1, block1_size));
   ASSERT_TRUE(expected_a.get() != NULL);
-  scoped_ptr<StringValue> expected_b(Value::CreateStringValue(kFilename));
+  scoped_ptr<base::StringValue> expected_b(
+      base::Value::CreateStringValue(kFilename));
   ASSERT_TRUE(expected_b.get() != NULL);
-  scoped_ptr<BinaryValue> expected_c(
-      BinaryValue::CreateWithCopiedBuffer(block2, block2_size));
+  scoped_ptr<base::BinaryValue> expected_c(
+      base::BinaryValue::CreateWithCopiedBuffer(block2, block2_size));
   ASSERT_TRUE(expected_c.get() != NULL);
 
-  ListValue expected_list;
+  base::ListValue expected_list;
   subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey, expected_a.release(), &expected_list);
   subtle::AppendKeyValuePair(
@@ -76,7 +72,7 @@ TEST(WebRequestUploadDataPresenterTest, RawData) {
   raw_presenter.FeedNextFile(kFilename);
   raw_presenter.FeedNextBytes(block2, block2_size);
   EXPECT_TRUE(raw_presenter.Succeeded());
-  scoped_ptr<Value> result = raw_presenter.Result();
+  scoped_ptr<base::Value> result = raw_presenter.Result();
   ASSERT_TRUE(result.get() != NULL);
 
   EXPECT_TRUE(result->Equals(&expected_list));

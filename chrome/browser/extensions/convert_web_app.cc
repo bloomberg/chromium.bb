@@ -130,14 +130,14 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   }
 
   // Add the permissions.
-  ListValue* permissions = new ListValue();
+  base::ListValue* permissions = new base::ListValue();
   root->Set(keys::kPermissions, permissions);
   for (size_t i = 0; i < web_app.permissions.size(); ++i) {
     permissions->Append(Value::CreateStringValue(web_app.permissions[i]));
   }
 
   // Add the URLs.
-  ListValue* urls = new ListValue();
+  base::ListValue* urls = new base::ListValue();
   root->Set(keys::kWebURLs, urls);
   for (size_t i = 0; i < web_app.urls.size(); ++i) {
     urls->Append(Value::CreateStringValue(web_app.urls[i].spec()));

@@ -60,7 +60,7 @@ bool SerialGetPortsFunction::Prepare() {
 void SerialGetPortsFunction::Work() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  ListValue* ports = new ListValue();
+  base::ListValue* ports = new base::ListValue();
   SerialPortEnumerator::StringSet port_names =
       SerialPortEnumerator::GenerateValidSerialPortNames();
   SerialPortEnumerator::StringSet::const_iterator i = port_names.begin();
@@ -96,7 +96,7 @@ bool SerialOpenFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   if (params_->options.get()) {
-    scoped_ptr<DictionaryValue> options = params_->options->ToValue();
+    scoped_ptr<base::DictionaryValue> options = params_->options->ToValue();
     if (options->HasKey(kBitrateKey))
       EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kBitrateKey, &bitrate_));
   }
@@ -128,12 +128,12 @@ void SerialOpenFunction::Work() {
       id = -1;
     }
 
-    DictionaryValue* result = new DictionaryValue();
+    base::DictionaryValue* result = new base::DictionaryValue();
     result->SetInteger(kConnectionIdKey, id);
     SetResult(result);
     AsyncWorkCompleted();
   } else {
-    DictionaryValue* result = new DictionaryValue();
+    base::DictionaryValue* result = new base::DictionaryValue();
     result->SetInteger(kConnectionIdKey, -1);
     SetResult(result);
     AsyncWorkCompleted();
@@ -218,7 +218,7 @@ void SerialReadFunction::Work() {
   if (serial_connection)
     bytes_read = serial_connection->Read(io_buffer);
 
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
 
   // The API is defined to require a 'data' value, so we will always
   // create a BinaryValue, even if it's zero-length.
@@ -262,7 +262,7 @@ void SerialWriteFunction::Work() {
   else
     error_ = kSerialConnectionNotFoundError;
 
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);
   SetResult(result);
 }
@@ -318,7 +318,7 @@ bool SerialGetControlSignalsFunction::Prepare() {
 }
 
 void SerialGetControlSignalsFunction::Work() {
-  DictionaryValue *result = new DictionaryValue();
+  base::DictionaryValue *result = new base::DictionaryValue();
   SerialConnection* serial_connection = GetSerialConnection(
       params_->connection_id);
   if (serial_connection) {

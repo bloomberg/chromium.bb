@@ -98,7 +98,7 @@ syncer::SyncChange CreateDelete(
     const std::string& extension_id,
     const std::string& key,
     syncer::ModelType type) {
-  DictionaryValue no_value;
+  base::DictionaryValue no_value;
   return syncer::SyncChange(
       FROM_HERE,
       syncer::SyncChange::ACTION_DELETE,

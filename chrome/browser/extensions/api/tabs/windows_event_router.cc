@@ -57,8 +57,9 @@ void WindowsEventRouter::OnWindowControllerAdded(
   if (!profile_->IsSameProfile(window_controller->profile()))
     return;
 
-  scoped_ptr<base::ListValue> args(new ListValue());
-  DictionaryValue* window_dictionary = window_controller->CreateWindowValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* window_dictionary =
+      window_controller->CreateWindowValue();
   args->Append(window_dictionary);
   DispatchEvent(event_names::kOnWindowCreated, window_controller->profile(),
                 args.Pass());
@@ -70,7 +71,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
     return;
 
   int window_id = window_controller->GetWindowId();
-  scoped_ptr<base::ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(Value::CreateIntegerValue(window_id));
   DispatchEvent(event_names::kOnWindowRemoved, window_controller->profile(),
                 args.Pass());
@@ -107,7 +108,7 @@ static void WillDispatchWindowFocusedEvent(Profile* new_active_profile,
                                            int window_id,
                                            Profile* profile,
                                            const Extension* extension,
-                                           ListValue* event_args) {
+                                           base::ListValue* event_args) {
   // When switching between windows in the default and incognito profiles,
   // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
   // can't see the new focused window across the incognito boundary.
@@ -143,7 +144,7 @@ void WindowsEventRouter::OnActiveWindowChanged(
   focused_window_id_ = window_id;
 
   scoped_ptr<Event> event(new Event(event_names::kOnWindowFocusedChanged,
-                                    make_scoped_ptr(new ListValue())));
+                                    make_scoped_ptr(new base::ListValue())));
   event->will_dispatch_callback =
       base::Bind(&WillDispatchWindowFocusedEvent, window_profile, window_id);
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());

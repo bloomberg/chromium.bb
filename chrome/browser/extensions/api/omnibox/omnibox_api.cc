@@ -74,7 +74,7 @@ scoped_ptr<omnibox::SuggestResult> GetOmniboxDefaultSuggestion(
       ExtensionSystem::Get(profile)->extension_service()->extension_prefs();
 
   scoped_ptr<omnibox::SuggestResult> suggestion;
-  const DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = NULL;
   if (prefs && prefs->ReadPrefAsDictionary(extension_id,
                                            kOmniboxDefaultSuggestion,
                                            &dict)) {
@@ -112,7 +112,7 @@ bool SetOmniboxDefaultSuggestion(
 void ExtensionOmniboxEventRouter::OnInputStarted(
     Profile* profile, const std::string& extension_id) {
   scoped_ptr<Event> event(new Event(
-      events::kOnInputStarted, make_scoped_ptr(new ListValue())));
+      events::kOnInputStarted, make_scoped_ptr(new base::ListValue())));
   event->restrict_to_profile = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
@@ -126,7 +126,7 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
           ExtensionHasEventListener(extension_id, events::kOnInputChanged))
     return false;
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, Value::CreateStringValue(input));
   args->Set(1, Value::CreateIntegerValue(suggest_id));
 
@@ -153,7 +153,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   extensions::TabHelper::FromWebContents(web_contents)->
       active_tab_permission_granter()->GrantIfRequested(extension);
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, Value::CreateStringValue(input));
   if (disposition == NEW_FOREGROUND_TAB)
     args->Set(1, Value::CreateStringValue(kForegroundTabDisposition));
@@ -177,7 +177,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 void ExtensionOmniboxEventRouter::OnInputCancelled(
     Profile* profile, const std::string& extension_id) {
   scoped_ptr<Event> event(new Event(
-      events::kOnInputCancelled, make_scoped_ptr(new ListValue())));
+      events::kOnInputCancelled, make_scoped_ptr(new base::ListValue())));
   event->restrict_to_profile = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());

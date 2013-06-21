@@ -31,11 +31,12 @@ SettingsSyncProcessor::~SettingsSyncProcessor() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-void SettingsSyncProcessor::Init(const DictionaryValue& initial_state) {
+void SettingsSyncProcessor::Init(const base::DictionaryValue& initial_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   CHECK(!initialized_) << "Init called multiple times";
 
-  for (DictionaryValue::Iterator i(initial_state); !i.IsAtEnd(); i.Advance())
+  for (base::DictionaryValue::Iterator i(initial_state); !i.IsAtEnd();
+       i.Advance())
     synced_keys_.insert(i.key());
 
   initialized_ = true;

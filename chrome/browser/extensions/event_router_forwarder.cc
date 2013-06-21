@@ -69,7 +69,7 @@ void EventRouterForwarder::DispatchEventToExtension(
 
 void EventRouterForwarder::HandleEvent(const std::string& extension_id,
                                        const std::string& event_name,
-                                       scoped_ptr<ListValue> event_args,
+                                       scoped_ptr<base::ListValue> event_args,
                                        void* profile_ptr,
                                        bool use_profile_to_restrict_events,
                                        const GURL& event_url) {
@@ -98,7 +98,8 @@ void EventRouterForwarder::HandleEvent(const std::string& extension_id,
   } else {
     std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
     for (size_t i = 0; i < profiles.size(); ++i) {
-      scoped_ptr<ListValue> per_profile_event_args(event_args->DeepCopy());
+      scoped_ptr<base::ListValue> per_profile_event_args(
+          event_args->DeepCopy());
       CallEventRouter(
           profiles[i], extension_id, event_name, per_profile_event_args.Pass(),
           use_profile_to_restrict_events ? profiles[i] : NULL, event_url);
@@ -106,12 +107,13 @@ void EventRouterForwarder::HandleEvent(const std::string& extension_id,
   }
 }
 
-void EventRouterForwarder::CallEventRouter(Profile* profile,
-                                           const std::string& extension_id,
-                                           const std::string& event_name,
-                                           scoped_ptr<ListValue> event_args,
-                                           Profile* restrict_to_profile,
-                                           const GURL& event_url) {
+void EventRouterForwarder::CallEventRouter(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> event_args,
+    Profile* restrict_to_profile,
+    const GURL& event_url) {
   // We may not have an extension in cases like chromeos login
   // (crosbug.com/12856), chrome_frame_net_tests.exe which reuses the chrome
   // browser single process framework.

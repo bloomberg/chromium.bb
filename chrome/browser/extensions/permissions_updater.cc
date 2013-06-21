@@ -101,7 +101,7 @@ void PermissionsUpdater::DispatchEvent(
       !ExtensionSystem::Get(profile_)->event_router())
     return;
 
-  scoped_ptr<ListValue> value(new ListValue());
+  scoped_ptr<base::ListValue> value(new base::ListValue());
   scoped_ptr<api::permissions::Permissions> permissions =
       PackPermissionSet(changed_permissions);
   value->Append(permissions->ToValue().release());

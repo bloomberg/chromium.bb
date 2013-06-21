@@ -166,7 +166,7 @@ bool ContextMenusCreateFunction::RunImpl() {
     }
 
     // The Generated Id is added by context_menus_custom_bindings.js.
-    DictionaryValue* properties = NULL;
+    base::DictionaryValue* properties = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &properties));
     EXTENSION_FUNCTION_VALIDATE(properties->GetInteger(kGeneratedIdKey,
                                                        &id.uid));

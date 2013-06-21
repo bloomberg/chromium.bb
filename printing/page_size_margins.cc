@@ -12,7 +12,7 @@ namespace printing {
 
 void GetCustomMarginsFromJobSettings(const base::DictionaryValue& settings,
                                      PageSizeMargins* page_size_margins) {
-  const DictionaryValue* custom_margins;
+  const base::DictionaryValue* custom_margins;
   if (!settings.GetDictionary(kSettingMarginsCustom, &custom_margins) ||
       !custom_margins->GetDouble(kSettingMarginTop,
                                  &page_size_margins->margin_top) ||

@@ -188,7 +188,7 @@ TEST_F(ActivityLogTest, Enabled) {
 
 TEST_F(ActivityLogTest, Construct) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   ASSERT_TRUE(activity_log->IsLogEnabled());
   activity_log->LogAPIAction(
       kExtensionId, std::string("tabs.testMethod"), args.get(), std::string());
@@ -196,7 +196,7 @@ TEST_F(ActivityLogTest, Construct) {
 
 TEST_F(ActivityLogTest, LogAndFetchActions) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   ASSERT_TRUE(activity_log->IsLogEnabled());
 
   // Write some API calls
@@ -217,7 +217,7 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
 
 TEST_F(ActivityLogTest, LogAndFetchPathActions) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   ASSERT_TRUE(activity_log->IsLogEnabled());
 
   activity_log->LogDOMAction(kExtensionId,
@@ -238,7 +238,7 @@ TEST_F(ActivityLogTest, LogWithoutArguments) {
   activity_log->SetArgumentLoggingForTesting(false);
   ASSERT_TRUE(activity_log->IsLogEnabled());
   activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_NOARGS);
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
   activity_log->LogAPIAction(
@@ -252,7 +252,7 @@ TEST_F(ActivityLogTest, LogWithArguments) {
   activity_log->SetDefaultPolicy(ActivityLogPolicy::POLICY_FULLSTREAM);
   ASSERT_TRUE(activity_log->IsLogEnabled());
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
   activity_log->LogAPIAction(kExtensionId,

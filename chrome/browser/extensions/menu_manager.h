@@ -109,11 +109,11 @@ class MenuItem {
       value_ |= context;
     }
 
-    scoped_ptr<Value> ToValue() const {
-      return scoped_ptr<Value>(Value::CreateIntegerValue(value_));
+    scoped_ptr<base::Value> ToValue() const {
+      return scoped_ptr<base::Value>(base::Value::CreateIntegerValue(value_));
     }
 
-    bool Populate(const Value& value) {
+    bool Populate(const base::Value& value) {
       int int_value;
       if (!value.GetAsInteger(&int_value) || int_value < 0)
         return false;
@@ -178,7 +178,7 @@ class MenuItem {
   // Returns a new MenuItem created from |value|, or NULL if there is
   // an error. The caller takes ownership of the MenuItem.
   static MenuItem* Populate(const std::string& extension_id,
-                            const DictionaryValue& value,
+                            const base::DictionaryValue& value,
                             std::string* error);
 
   // Sets any document and target URL patterns from |properties|.

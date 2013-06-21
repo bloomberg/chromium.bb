@@ -229,7 +229,7 @@ bool BluetoothGetProfilesFunction::DoWork(
 
   BluetoothDevice::ServiceList service_list = device->GetServices();
 
-  ListValue* profiles = new ListValue;
+  base::ListValue* profiles = new base::ListValue;
   for (BluetoothDevice::ServiceList::const_iterator iter = service_list.begin();
        iter != service_list.end();
        ++iter) {
@@ -348,7 +348,7 @@ bool BluetoothGetServicesFunction::DoWork(
     return false;
   }
 
-  ListValue* services = new ListValue;
+  base::ListValue* services = new base::ListValue;
   SetResult(services);
 
   device->GetServiceRecords(
@@ -469,10 +469,10 @@ BluetoothWriteFunction::~BluetoothWriteFunction() {}
 bool BluetoothWriteFunction::Prepare() {
   // TODO(bryeung): update to new-style parameter passing when ArrayBuffer
   // support is added
-  DictionaryValue* options;
+  base::DictionaryValue* options;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
 
-  DictionaryValue* socket;
+  base::DictionaryValue* socket;
   EXTENSION_FUNCTION_VALIDATE(options->GetDictionary("socket", &socket));
 
   int socket_id;
@@ -506,8 +506,8 @@ void BluetoothWriteFunction::Work() {
   success_ = socket_->Send(drainable_io_buffer.get());
   if (success_) {
     if (drainable_io_buffer->BytesConsumed() > 0)
-      SetResult(
-          Value::CreateIntegerValue(drainable_io_buffer->BytesConsumed()));
+      SetResult(base::Value::CreateIntegerValue(
+          drainable_io_buffer->BytesConsumed()));
     else
       results_.reset();
   } else {
@@ -532,7 +532,7 @@ bool BluetoothSetOutOfBandPairingDataFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   // TODO(bryeung): update to new-style parameter passing when ArrayBuffer
   // support is added
-  DictionaryValue* options;
+  base::DictionaryValue* options;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
   std::string address;
   EXTENSION_FUNCTION_VALIDATE(options->GetString("deviceAddress", &address));
@@ -545,7 +545,7 @@ bool BluetoothSetOutOfBandPairingDataFunction::DoWork(
   }
 
   if (options->HasKey("data")) {
-    DictionaryValue* data_in;
+    base::DictionaryValue* data_in;
     EXTENSION_FUNCTION_VALIDATE(options->GetDictionary("data", &data_in));
 
     device::BluetoothOutOfBandPairingData data_out;
@@ -593,7 +593,7 @@ void BluetoothGetLocalOutOfBandPairingDataFunction::ReadCallback(
 
   // TODO(bryeung): convert to bluetooth::OutOfBandPairingData
   // when ArrayBuffer support within objects is completed.
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->Set("hash", hash);
   result->Set("randomizer", randomizer);
 

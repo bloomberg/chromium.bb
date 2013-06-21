@@ -135,18 +135,18 @@ class NotificationsApiDelegate : public NotificationDelegate {
   virtual void Display() OVERRIDE { }
 
   virtual void Error() OVERRIDE {
-    scoped_ptr<ListValue> args(CreateBaseEventArgs());
+    scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     SendEvent(event_names::kOnNotificationError, args.Pass());
   }
 
   virtual void Close(bool by_user) OVERRIDE {
-    scoped_ptr<ListValue> args(CreateBaseEventArgs());
+    scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(Value::CreateBooleanValue(by_user));
     SendEvent(event_names::kOnNotificationClosed, args.Pass());
   }
 
   virtual void Click() OVERRIDE {
-    scoped_ptr<ListValue> args(CreateBaseEventArgs());
+    scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     SendEvent(event_names::kOnNotificationClicked, args.Pass());
   }
 
@@ -156,7 +156,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
   }
 
   virtual void ButtonClick(int index) OVERRIDE {
-    scoped_ptr<ListValue> args(CreateBaseEventArgs());
+    scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(Value::CreateIntegerValue(index));
     SendEvent(event_names::kOnNotificationButtonClicked, args.Pass());
   }
@@ -186,14 +186,14 @@ class NotificationsApiDelegate : public NotificationDelegate {
  private:
   virtual ~NotificationsApiDelegate() {}
 
-  void SendEvent(const std::string& name, scoped_ptr<ListValue> args) {
+  void SendEvent(const std::string& name, scoped_ptr<base::ListValue> args) {
     scoped_ptr<Event> event(new Event(name, args.Pass()));
     ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
         extension_id_, event.Pass());
   }
 
-  scoped_ptr<ListValue> CreateBaseEventArgs() {
-    scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> CreateBaseEventArgs() {
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(Value::CreateStringValue(id_));
     return args.Pass();
   }
@@ -442,7 +442,7 @@ bool NotificationsGetAllFunction::RunNotificationsApi() {
       notification_ui_manager->GetAllIdsByProfileAndSourceOrigin(
           profile_, extension_->url());
 
-  scoped_ptr<DictionaryValue> result(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
 
   for (std::set<std::string>::iterator iter = notification_ids.begin();
        iter != notification_ids.end(); iter++) {

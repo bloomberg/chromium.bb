@@ -19,7 +19,7 @@ IdentityPrivateGetResourcesFunction::IdentityPrivateGetResourcesFunction() {}
 IdentityPrivateGetResourcesFunction::~IdentityPrivateGetResourcesFunction() {}
 
 bool IdentityPrivateGetResourcesFunction::RunImpl() {
-  DictionaryValue* result = new DictionaryValue;
+  base::DictionaryValue* result = new base::DictionaryValue;
 
   result->SetString("IDR_CLOSE_DIALOG",
                     webui::GetBitmapDataUrlFromResource(IDR_CLOSE_DIALOG));

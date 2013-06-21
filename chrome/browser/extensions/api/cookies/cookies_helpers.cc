@@ -90,10 +90,10 @@ scoped_ptr<Cookie> CreateCookie(
 }
 
 scoped_ptr<CookieStore> CreateCookieStore(Profile* profile,
-                                          ListValue* tab_ids) {
+                                          base::ListValue* tab_ids) {
   DCHECK(profile);
   DCHECK(tab_ids);
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetString(keys::kIdKey, GetStoreIdFromProfile(profile));
   dict.Set(keys::kTabIdsKey, tab_ids);
 
@@ -146,7 +146,7 @@ void AppendMatchingCookiesToVector(const net::CookieList& all_cookies,
   }
 }
 
-void AppendToTabIdList(Browser* browser, ListValue* tab_ids) {
+void AppendToTabIdList(Browser* browser, base::ListValue* tab_ids) {
   DCHECK(browser);
   DCHECK(tab_ids);
   TabStripModel* tab_strip = browser->tab_strip_model();

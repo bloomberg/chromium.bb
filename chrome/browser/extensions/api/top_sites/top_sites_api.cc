@@ -30,11 +30,11 @@ bool TopSitesGetFunction::RunImpl() {
 
 void TopSitesGetFunction::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& data) {
-  scoped_ptr<base::ListValue> pages_value(new ListValue);
+  scoped_ptr<base::ListValue> pages_value(new base::ListValue);
   for (size_t i = 0; i < data.size(); i++) {
     const history::MostVisitedURL& url = data[i];
     if (!url.url.is_empty()) {
-      DictionaryValue* page_value = new DictionaryValue();
+      base::DictionaryValue* page_value = new base::DictionaryValue();
       page_value->SetString("url", url.url.spec());
       if (url.title.empty())
         page_value->SetString("title", url.url.spec());

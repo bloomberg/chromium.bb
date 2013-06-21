@@ -646,14 +646,14 @@ void ParamTraits<ppapi::proxy::SerializedFlashMenu>::Log(const param_type& p,
 void ParamTraits<ppapi::PPB_X509Certificate_Fields>::Write(
     Message* m,
     const param_type& p) {
-  ParamTraits<ListValue>::Write(m, p.values_);
+  ParamTraits<base::ListValue>::Write(m, p.values_);
 }
 
 // static
 bool ParamTraits<ppapi::PPB_X509Certificate_Fields>::Read(const Message* m,
                                                           PickleIterator* iter,
                                                           param_type* r) {
-  return ParamTraits<ListValue>::Read(m, iter, &(r->values_));
+  return ParamTraits<base::ListValue>::Read(m, iter, &(r->values_));
 }
 
 // static

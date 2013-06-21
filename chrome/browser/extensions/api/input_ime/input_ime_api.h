@@ -128,7 +128,7 @@ class SetCandidatesFunction : public SyncExtensionFunction {
 
  private:
   bool ReadCandidates(
-      ListValue* candidates,
+      base::ListValue* candidates,
       std::vector<chromeos::InputMethodEngine::Candidate>* output);
 };
 

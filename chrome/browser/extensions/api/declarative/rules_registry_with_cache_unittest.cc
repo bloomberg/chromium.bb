@@ -234,7 +234,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   // 2. Test writing behavior.
   int write_count = store->write_count();
 
-  scoped_ptr<base::ListValue> value(new ListValue);
+  scoped_ptr<base::ListValue> value(new base::ListValue);
   value->AppendBoolean(true);
   ui_part->WriteToStorage(extension_id, value.PassAs<base::Value>());
   EXPECT_TRUE(ui_part->GetDeclarativeRulesStored(extension_id));
@@ -242,7 +242,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   EXPECT_EQ(write_count + 1, store->write_count());
   write_count = store->write_count();
 
-  value.reset(new ListValue);
+  value.reset(new base::ListValue);
   ui_part->WriteToStorage(extension_id, value.PassAs<base::Value>());
   EXPECT_FALSE(ui_part->GetDeclarativeRulesStored(extension_id));
   message_loop_.RunUntilIdle();
@@ -250,7 +250,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   EXPECT_EQ(write_count + 1, store->write_count());
   write_count = store->write_count();
 
-  value.reset(new ListValue);
+  value.reset(new base::ListValue);
   ui_part->WriteToStorage(extension_id, value.PassAs<base::Value>());
   EXPECT_FALSE(ui_part->GetDeclarativeRulesStored(extension_id));
   message_loop_.RunUntilIdle();

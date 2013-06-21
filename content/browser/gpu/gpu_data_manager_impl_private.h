@@ -215,7 +215,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 
-  ListValue log_messages_;
+  base::ListValue log_messages_;
 
   bool use_swiftshader_;
 

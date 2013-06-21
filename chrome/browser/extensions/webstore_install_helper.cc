@@ -149,7 +149,8 @@ void WebstoreInstallHelper::OnDecodeImageFailed() {
   ReportResultsIfComplete();
 }
 
-void WebstoreInstallHelper::OnJSONParseSucceeded(const ListValue& wrapper) {
+void WebstoreInstallHelper::OnJSONParseSucceeded(
+    const base::ListValue& wrapper) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   manifest_parse_complete_ = true;
   const Value* value = NULL;

@@ -77,7 +77,8 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
             details).ptr()));
   }
 
-  int GetAsMask(const DictionaryValue* dict, std::string path, int mask_value) {
+  int GetAsMask(const base::DictionaryValue* dict, std::string path,
+                int mask_value) {
     bool result;
     EXPECT_TRUE(dict->GetBoolean(path, &result)) << "for " << path;
     return result ? mask_value : 0;

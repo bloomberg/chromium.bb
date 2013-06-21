@@ -312,7 +312,7 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
   info->status = request->status;
   info->fullscreen = request->fullscreen;
 
-  scoped_ptr<base::ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(info->ToValue().release());
   scoped_ptr<Event> event(new Event(
       extensions::event_names::kOnTabCaptureStatusChanged, args.Pass()));

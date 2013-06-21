@@ -31,7 +31,7 @@ class SettingsSyncProcessor {
   ~SettingsSyncProcessor();
 
   // Initializes this with the initial state of sync.
-  void Init(const DictionaryValue& initial_state);
+  void Init(const base::DictionaryValue& initial_state);
 
   // Sends |changes| to sync.
   syncer::SyncError SendChanges(const ValueStoreChangeList& changes);

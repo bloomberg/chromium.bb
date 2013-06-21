@@ -42,7 +42,8 @@ namespace {
 
 const std::vector<webkit::WebPluginInfo>* g_testing_plugins_;
 
-bool RemoveContentType(ListValue* args, ContentSettingsType* content_type) {
+bool RemoveContentType(base::ListValue* args,
+                       ContentSettingsType* content_type) {
   std::string content_type_str;
   if (!args->GetString(0, &content_type_str))
     return false;
@@ -160,7 +161,7 @@ bool ContentSettingsContentSettingGetFunction::RunImpl() {
                                      resource_identifier);
   }
 
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->SetString(keys::kContentSettingKey,
                     helpers::ContentSettingToString(setting));
 
@@ -274,7 +275,7 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
     const std::vector<webkit::WebPluginInfo>& plugins) {
   PluginFinder* finder = PluginFinder::GetInstance();
   std::set<std::string> group_identifiers;
-  ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
   for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
     scoped_ptr<PluginMetadata> plugin_metadata(finder->GetPluginMetadata(*it));
@@ -283,7 +284,7 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
       continue;
 
     group_identifiers.insert(group_identifier);
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetString(keys::kIdKey, group_identifier);
     dict->SetString(keys::kDescriptionKey, plugin_metadata->name());
     list->Append(dict);

@@ -93,28 +93,28 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // Returns a rule that roughly matches http://*.example.com and
   // https://www.example.com and cancels it
   linked_ptr<RulesRegistry::Rule> CreateRule1() {
-    ListValue* scheme_http = new ListValue();
+    base::ListValue* scheme_http = new base::ListValue();
     scheme_http->Append(Value::CreateStringValue("http"));
-    DictionaryValue* http_condition_dict = new DictionaryValue();
+    base::DictionaryValue* http_condition_dict = new base::DictionaryValue();
     http_condition_dict->Set(keys2::kSchemesKey, scheme_http);
     http_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");
-    DictionaryValue http_condition_url_filter;
+    base::DictionaryValue http_condition_url_filter;
     http_condition_url_filter.Set(keys::kUrlKey, http_condition_dict);
     http_condition_url_filter.SetString(keys::kInstanceTypeKey,
                                         keys::kRequestMatcherType);
 
-    ListValue* scheme_https = new ListValue();
+    base::ListValue* scheme_https = new base::ListValue();
     scheme_http->Append(Value::CreateStringValue("https"));
-    DictionaryValue* https_condition_dict = new DictionaryValue();
+    base::DictionaryValue* https_condition_dict = new base::DictionaryValue();
     https_condition_dict->Set(keys2::kSchemesKey, scheme_https);
     https_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");
     https_condition_dict->SetString(keys2::kHostPrefixKey, "www");
-    DictionaryValue https_condition_url_filter;
+    base::DictionaryValue https_condition_url_filter;
     https_condition_url_filter.Set(keys::kUrlKey, https_condition_dict);
     https_condition_url_filter.SetString(keys::kInstanceTypeKey,
                                          keys::kRequestMatcherType);
 
-    DictionaryValue action_dict;
+    base::DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
@@ -130,10 +130,10 @@ class WebRequestRulesRegistryTest : public testing::Test {
 
   // Returns a rule that matches anything and cancels it.
   linked_ptr<RulesRegistry::Rule> CreateRule2() {
-    DictionaryValue condition_dict;
+    base::DictionaryValue condition_dict;
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
-    DictionaryValue action_dict;
+    base::DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
@@ -147,10 +147,10 @@ class WebRequestRulesRegistryTest : public testing::Test {
 
   linked_ptr<RulesRegistry::Rule> CreateRedirectRule(
       const std::string& destination) {
-    DictionaryValue condition_dict;
+    base::DictionaryValue condition_dict;
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
-    DictionaryValue action_dict;
+    base::DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kRedirectRequestType);
     action_dict.SetString(keys::kRedirectUrlKey, destination);
 
@@ -166,13 +166,13 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // Create a rule to ignore all other rules for a destination that
   // contains index.html.
   linked_ptr<RulesRegistry::Rule> CreateIgnoreRule() {
-    DictionaryValue condition_dict;
-    DictionaryValue* http_condition_dict = new DictionaryValue();
+    base::DictionaryValue condition_dict;
+    base::DictionaryValue* http_condition_dict = new base::DictionaryValue();
     http_condition_dict->SetString(keys2::kPathContainsKey, "index.html");
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
     condition_dict.Set(keys::kUrlKey, http_condition_dict);
 
-    DictionaryValue action_dict;
+    base::DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kIgnoreRulesType);
     action_dict.SetInteger(keys::kLowerPriorityThanKey, 150);
 
@@ -204,7 +204,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
   linked_ptr<RulesRegistry::Rule> CreateCancellingRule(
       const char* rule_id,
       const std::vector<const std::string*>& attributes) {
-    DictionaryValue action_dict;
+    base::DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
     linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);

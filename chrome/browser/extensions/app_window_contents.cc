@@ -84,7 +84,7 @@ void AppWindowContents::LoadContents(int32 creator_process_id) {
 
 void AppWindowContents::NativeWindowChanged(
     NativeAppWindow* native_app_window) {
-  ListValue args;
+  base::ListValue args;
   DictionaryValue* dictionary = new DictionaryValue();
   args.Append(dictionary);
 

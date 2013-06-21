@@ -32,7 +32,7 @@ bool WebviewExecuteCodeFunction::Init() {
   if (!guest_instance_id_)
     return false;
 
-  DictionaryValue* details_value = NULL;
+  base::DictionaryValue* details_value = NULL;
   if (!args_->GetDictionary(1, &details_value))
     return false;
   scoped_ptr<InjectDetails> details(new InjectDetails());
@@ -68,7 +68,7 @@ void WebviewExecuteScriptFunction::OnExecuteCodeFinished(
     const std::string& error,
     int32 on_page_id,
     const GURL& on_url,
-    const ListValue& result) {
+    const base::ListValue& result) {
   content::RecordAction(content::UserMetricsAction("WebView.ExecuteScript"));
   if (error.empty())
     SetResult(result.DeepCopy());

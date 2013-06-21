@@ -36,7 +36,7 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
   virtual void OnExecuteCodeFinished(const std::string& error,
                                      int32 on_page_id,
                                      const GURL& on_url,
-                                     const ListValue& result);
+                                     const base::ListValue& result);
 
   // The injection details.
   scoped_ptr<api::tabs::InjectDetails> details_;

@@ -11,6 +11,10 @@
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::DictionaryValue;
+using base::ListValue;
+using base::Value;
+
 namespace extensions {
 
 // To save typing ValueStore::DEFAULTS/IGNORE_QUOTA everywhere.

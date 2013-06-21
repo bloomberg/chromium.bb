@@ -200,7 +200,7 @@ void LocationManager::SendLocationUpdate(
     const content::Geoposition& position) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   std::string event_name;
 
   if (position.Validate() &&

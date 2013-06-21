@@ -10,7 +10,7 @@ namespace {
 
 base::DictionaryValue* CreateCommandValue(
     const extensions::Command& command, bool active) {
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->SetString("name", command.command_name());
   result->SetString("description", command.description());
   result->SetString("shortcut",
@@ -22,7 +22,7 @@ base::DictionaryValue* CreateCommandValue(
 }  // namespace
 
 bool GetAllCommandsFunction::RunImpl() {
-  ListValue* command_list = new ListValue();
+  base::ListValue* command_list = new base::ListValue();
 
   extensions::CommandService* command_service =
       extensions::CommandService::Get(profile_);

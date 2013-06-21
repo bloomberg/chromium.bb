@@ -49,7 +49,7 @@ DefaultEventDelegate::~DefaultEventDelegate() {
 
 void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
                                           IdleState new_state) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(IdleManager::CreateIdleValue(new_state));
   scoped_ptr<Event> event(new Event(keys::kOnStateChanged, args.Pass()));
   event->restrict_to_profile = profile_;

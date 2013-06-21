@@ -37,7 +37,7 @@ double MilliSecondsFromTime(const base::Time& time) {
 // Dispatches events to the extension message service.
 void DispatchEvent(content::BrowserContext* browser_context,
                    const char* event_name,
-                   scoped_ptr<ListValue> args,
+                   scoped_ptr<base::ListValue> args,
                    const GURL& url) {
   EventFilteringInfo info;
   info.SetURL(url);
@@ -65,8 +65,8 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
                               int64 parent_frame_id,
                               bool parent_is_main_frame,
                               const GURL& validated_url) {
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* dict = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, validated_url.spec());
   dict->SetInteger(keys::kProcessIdKey, render_process_id);
@@ -90,8 +90,8 @@ void DispatchOnCommitted(const char* event_name,
                          bool is_main_frame,
                          const GURL& url,
                          content::PageTransition transition_type) {
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* dict = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
   dict->SetInteger(keys::kProcessIdKey,
@@ -100,7 +100,7 @@ void DispatchOnCommitted(const char* event_name,
   dict->SetString(
       keys::kTransitionTypeKey,
       content::PageTransitionGetCoreTransitionString(transition_type));
-  ListValue* qualifiers = new ListValue();
+  base::ListValue* qualifiers = new base::ListValue();
   if (transition_type & content::PAGE_TRANSITION_CLIENT_REDIRECT)
     qualifiers->Append(Value::CreateStringValue("client_redirect"));
   if (transition_type & content::PAGE_TRANSITION_SERVER_REDIRECT)
@@ -122,8 +122,8 @@ void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
                                 const GURL& url,
                                 bool is_main_frame,
                                 int64 frame_id) {
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* dict = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
@@ -144,8 +144,8 @@ void DispatchOnCompleted(content::WebContents* web_contents,
                          const GURL& url,
                          bool is_main_frame,
                          int64 frame_id) {
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* dict = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
@@ -174,8 +174,8 @@ void DispatchOnCreatedNavigationTarget(
       Profile::FromBrowserContext(target_web_contents->GetBrowserContext()),
       false, NULL, NULL, NULL, NULL));
 
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* dict = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kSourceTabIdKey,
                    ExtensionTabUtil::GetTabId(web_contents));
   dict->SetInteger(keys::kSourceProcessIdKey,
@@ -199,8 +199,8 @@ void DispatchOnErrorOccurred(content::WebContents* web_contents,
                              int64 frame_id,
                              bool is_main_frame,
                              int error_code) {
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* dict = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
   dict->SetInteger(keys::kProcessIdKey, render_process_id);
@@ -218,8 +218,8 @@ void DispatchOnTabReplaced(
     content::WebContents* old_web_contents,
     content::BrowserContext* browser_context,
     content::WebContents* new_web_contents) {
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* dict = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kReplacedTabIdKey,
                    ExtensionTabUtil::GetTabId(old_web_contents));
   dict->SetInteger(keys::kTabIdKey,

@@ -40,7 +40,7 @@ scoped_ptr<Value> CreateKilobyte() {
 
 // Creates a megabyte of data.
 scoped_ptr<Value> CreateMegabyte() {
-  ListValue* megabyte = new ListValue();
+  base::ListValue* megabyte = new base::ListValue();
   for (int i = 0; i < 1000; ++i) {
     megabyte->Append(CreateKilobyte().release());
   }

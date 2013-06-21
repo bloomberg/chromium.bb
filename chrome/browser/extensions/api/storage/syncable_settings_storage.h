@@ -43,7 +43,7 @@ class SyncableSettingsStorage : public ValueStore {
       const std::string& key,
       const Value& value) OVERRIDE;
   virtual WriteResult Set(
-      WriteOptions options, const DictionaryValue& values) OVERRIDE;
+      WriteOptions options, const base::DictionaryValue& values) OVERRIDE;
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
   virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
   virtual WriteResult Clear() OVERRIDE;
@@ -54,7 +54,7 @@ class SyncableSettingsStorage : public ValueStore {
 
   // Must only be called if sync isn't already active.
   syncer::SyncError StartSyncing(
-      const DictionaryValue& sync_state,
+      const base::DictionaryValue& sync_state,
       scoped_ptr<SettingsSyncProcessor> sync_processor);
 
   // May be called at any time (idempotent).
@@ -69,11 +69,12 @@ class SyncableSettingsStorage : public ValueStore {
 
   // Sends all local settings to sync (synced settings assumed to be empty).
   syncer::SyncError SendLocalSettingsToSync(
-      const DictionaryValue& settings);
+      const base::DictionaryValue& settings);
 
   // Overwrites local state with sync state.
   syncer::SyncError OverwriteLocalSettingsWithSync(
-      const DictionaryValue& sync_state, const DictionaryValue& settings);
+      const base::DictionaryValue& sync_state,
+      const base::DictionaryValue& settings);
 
   // Called when an Add/Update/Remove comes from sync.  Ownership of Value*s
   // are taken.

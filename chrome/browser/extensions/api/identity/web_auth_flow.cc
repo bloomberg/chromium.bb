@@ -77,7 +77,7 @@ void WebAuthFlow::Start() {
   DCHECK(success);
 
   // identityPrivate.onWebFlowRequest(shell_window_key, provider_url_, mode_)
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->AppendString(shell_window_key_);
   args->AppendString(provider_url_.spec());
   if (mode_ == WebAuthFlow::INTERACTIVE)

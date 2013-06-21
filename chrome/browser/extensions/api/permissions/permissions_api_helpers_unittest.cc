@@ -41,9 +41,9 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
 
   // Pack the permission set to value and verify its contents.
   scoped_ptr<Permissions> permissions(PackPermissionSet(permission_set.get()));
-  scoped_ptr<DictionaryValue> value(permissions->ToValue());
-  ListValue* api_list = NULL;
-  ListValue* origin_list = NULL;
+  scoped_ptr<base::DictionaryValue> value(permissions->ToValue());
+  base::ListValue* api_list = NULL;
+  base::ListValue* origin_list = NULL;
   EXPECT_TRUE(value->GetList("permissions", &api_list));
   EXPECT_TRUE(value->GetList("origins", &origin_list));
 
@@ -77,12 +77,12 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
 // Tests various error conditions and edge cases when unpacking values
 // into PermissionSets.
 TEST(ExtensionPermissionsAPIHelpers, Unpack) {
-  scoped_ptr<ListValue> apis(new ListValue());
+  scoped_ptr<base::ListValue> apis(new base::ListValue());
   apis->Append(Value::CreateStringValue("tabs"));
-  scoped_ptr<ListValue> origins(new ListValue());
+  scoped_ptr<base::ListValue> origins(new base::ListValue());
   origins->Append(Value::CreateStringValue("http://a.com/*"));
 
-  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   scoped_refptr<PermissionSet> permissions;
   std::string error;
 
@@ -113,7 +113,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    scoped_ptr<ListValue> invalid_apis(apis->DeepCopy());
+    scoped_ptr<base::ListValue> invalid_apis(apis->DeepCopy());
     invalid_apis->Append(Value::CreateIntegerValue(3));
     value->Set("permissions", invalid_apis->DeepCopy());
     EXPECT_FALSE(Permissions::Populate(*value, &permissions_object));
@@ -123,7 +123,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    scoped_ptr<ListValue> invalid_origins(origins->DeepCopy());
+    scoped_ptr<base::ListValue> invalid_origins(origins->DeepCopy());
     invalid_origins->Append(Value::CreateIntegerValue(3));
     value->Set("origins", invalid_origins->DeepCopy());
     EXPECT_FALSE(Permissions::Populate(*value, &permissions_object));
@@ -161,7 +161,7 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack) {
   {
     Permissions permissions_object;
     value->Clear();
-    scoped_ptr<ListValue> invalid_apis(apis->DeepCopy());
+    scoped_ptr<base::ListValue> invalid_apis(apis->DeepCopy());
     invalid_apis->Append(Value::CreateStringValue("unknown_permission"));
     value->Set("permissions", invalid_apis->DeepCopy());
     EXPECT_TRUE(Permissions::Populate(*value, &permissions_object));

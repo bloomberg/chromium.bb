@@ -98,7 +98,7 @@ class TestGetConfigFunction : public SyncExtensionFunction {
 
   // Set the dictionary returned by chrome.test.getConfig().
   // Does not take ownership of |value|.
-  static void set_test_config_state(DictionaryValue* value);
+  static void set_test_config_state(base::DictionaryValue* value);
 
  protected:
   // Tests that set configuration state do so by calling
@@ -109,11 +109,11 @@ class TestGetConfigFunction : public SyncExtensionFunction {
    public:
     static TestConfigState* GetInstance();
 
-    void set_config_state(DictionaryValue* config_state) {
+    void set_config_state(base::DictionaryValue* config_state) {
       config_state_ = config_state;
     }
 
-    const DictionaryValue* config_state() {
+    const base::DictionaryValue* config_state() {
       return config_state_;
     }
 
@@ -121,7 +121,7 @@ class TestGetConfigFunction : public SyncExtensionFunction {
     friend struct DefaultSingletonTraits<TestConfigState>;
     TestConfigState();
 
-    DictionaryValue* config_state_;
+    base::DictionaryValue* config_state_;
 
     DISALLOW_COPY_AND_ASSIGN(TestConfigState);
   };

@@ -165,7 +165,7 @@ static void WillDispatchTabCreatedEvent(WebContents* contents,
                                         bool active,
                                         Profile* profile,
                                         const Extension* extension,
-                                        ListValue* event_args) {
+                                        base::ListValue* event_args) {
   DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
       contents, extension);
   event_args->Clear();
@@ -177,7 +177,7 @@ void BrowserEventRouter::TabCreatedAt(WebContents* contents,
                                       int index,
                                       bool active) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<Event> event(new Event(events::kOnTabCreated, args.Pass()));
   event->restrict_to_profile = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
@@ -200,7 +200,7 @@ void BrowserEventRouter::TabInsertedAt(WebContents* contents,
     return;
   }
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(Value::CreateIntegerValue(tab_id));
 
   DictionaryValue* object_args = new DictionaryValue();
@@ -221,7 +221,7 @@ void BrowserEventRouter::TabDetachedAt(WebContents* contents, int index) {
     return;
   }
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(Value::CreateIntegerValue(ExtensionTabUtil::GetTabId(contents)));
 
   DictionaryValue* object_args = new DictionaryValue();
@@ -241,7 +241,7 @@ void BrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
                                       int index) {
   int tab_id = ExtensionTabUtil::GetTabId(contents);
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(Value::CreateIntegerValue(tab_id));
 
   DictionaryValue* object_args = new DictionaryValue();
@@ -265,7 +265,7 @@ void BrowserEventRouter::ActiveTabChanged(WebContents* old_contents,
                                           WebContents* new_contents,
                                           int index,
                                           int reason) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   int tab_id = ExtensionTabUtil::GetTabId(new_contents);
   args->Append(Value::CreateIntegerValue(tab_id));
 
@@ -283,9 +283,9 @@ void BrowserEventRouter::ActiveTabChanged(WebContents* old_contents,
       ? EventRouter::USER_GESTURE_ENABLED
       : EventRouter::USER_GESTURE_NOT_ENABLED;
   DispatchEvent(profile, events::kOnTabSelectionChanged,
-                scoped_ptr<ListValue>(args->DeepCopy()), gesture);
+                scoped_ptr<base::ListValue>(args->DeepCopy()), gesture);
   DispatchEvent(profile, events::kOnTabActiveChanged,
-                scoped_ptr<ListValue>(args->DeepCopy()), gesture);
+                scoped_ptr<base::ListValue>(args->DeepCopy()), gesture);
 
   // The onActivated event takes one argument: {windowId, tabId}.
   args->Remove(0, NULL);
@@ -298,7 +298,7 @@ void BrowserEventRouter::TabSelectionChanged(
     const ui::ListSelectionModel& old_model) {
   ui::ListSelectionModel::SelectedIndices new_selection =
       tab_strip_model->selection_model().selected_indices();
-  ListValue* all = new ListValue();
+  base::ListValue* all = new base::ListValue();
 
   for (size_t i = 0; i < new_selection.size(); ++i) {
     int index = new_selection[i];
@@ -309,7 +309,7 @@ void BrowserEventRouter::TabSelectionChanged(
     all->Append(Value::CreateIntegerValue(tab_id));
   }
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   DictionaryValue* select_info = new DictionaryValue();
 
   select_info->Set(tab_keys::kWindowIdKey, Value::CreateIntegerValue(
@@ -321,7 +321,7 @@ void BrowserEventRouter::TabSelectionChanged(
   // The onHighlighted event replaced onHighlightChanged.
   Profile* profile = tab_strip_model->profile();
   DispatchEvent(profile, events::kOnTabHighlightChanged,
-                scoped_ptr<ListValue>(args->DeepCopy()),
+                scoped_ptr<base::ListValue>(args->DeepCopy()),
                 EventRouter::USER_GESTURE_UNKNOWN);
   DispatchEvent(profile, events::kOnTabHighlighted, args.Pass(),
                 EventRouter::USER_GESTURE_UNKNOWN);
@@ -330,7 +330,7 @@ void BrowserEventRouter::TabSelectionChanged(
 void BrowserEventRouter::TabMoved(WebContents* contents,
                                   int from_index,
                                   int to_index) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(Value::CreateIntegerValue(ExtensionTabUtil::GetTabId(contents)));
 
   DictionaryValue* object_args = new DictionaryValue();
@@ -380,7 +380,7 @@ void BrowserEventRouter::FaviconUrlUpdated(WebContents* contents,
 void BrowserEventRouter::DispatchEvent(
     Profile* profile,
     const char* event_name,
-    scoped_ptr<ListValue> args,
+    scoped_ptr<base::ListValue> args,
     EventRouter::UserGestureState user_gesture) {
   if (!profile_->IsSameProfile(profile) ||
       !extensions::ExtensionSystem::Get(profile)->event_router())
@@ -396,7 +396,7 @@ void BrowserEventRouter::DispatchEventToExtension(
     Profile* profile,
     const std::string& extension_id,
     const char* event_name,
-    scoped_ptr<ListValue> event_args,
+    scoped_ptr<base::ListValue> event_args,
     EventRouter::UserGestureState user_gesture) {
   if (!profile_->IsSameProfile(profile) ||
       !extensions::ExtensionSystem::Get(profile)->event_router())
@@ -414,7 +414,7 @@ void BrowserEventRouter::DispatchSimpleBrowserEvent(
   if (!profile_->IsSameProfile(profile))
     return;
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(Value::CreateIntegerValue(window_id));
 
   DispatchEvent(profile, event_name, args.Pass(),
@@ -426,7 +426,7 @@ static void WillDispatchTabUpdatedEvent(
     const DictionaryValue* changed_properties,
     Profile* profile,
     const Extension* extension,
-    ListValue* event_args) {
+    base::ListValue* event_args) {
   // Overwrite the second argument with the appropriate properties dictionary,
   // depending on extension permissions.
   DictionaryValue* properties_value = changed_properties->DeepCopy();
@@ -447,7 +447,7 @@ void BrowserEventRouter::DispatchTabUpdatedEvent(
 
   // The state of the tab (as seen from the extension point of view) has
   // changed.  Send a notification to the extension.
-  scoped_ptr<ListValue> args_base(new ListValue());
+  scoped_ptr<base::ListValue> args_base(new base::ListValue());
 
   // First arg: The id of the tab that changed.
   args_base->AppendInteger(ExtensionTabUtil::GetTabId(contents));
@@ -517,7 +517,7 @@ void BrowserEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
   // WebContents being swapped.
   const int new_tab_id = ExtensionTabUtil::GetTabId(new_contents);
   const int old_tab_id = ExtensionTabUtil::GetTabId(old_contents);
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(Value::CreateIntegerValue(new_tab_id));
   args->Append(Value::CreateIntegerValue(old_tab_id));
 
@@ -559,7 +559,7 @@ void BrowserEventRouter::DispatchOldPageActionEvent(
     int tab_id,
     const std::string& url,
     int button) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(Value::CreateStringValue(page_action_id));
 
   DictionaryValue* data = new DictionaryValue();
@@ -632,7 +632,7 @@ void BrowserEventRouter::ExtensionActionExecuted(
   }
 
   if (event_name) {
-    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
         web_contents);
     args->Append(tab_value);

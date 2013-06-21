@@ -132,7 +132,8 @@ base::DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
     for (int i = 0; i < node->child_count(); ++i) {
       const BookmarkNode* child = node->GetChild(i);
       if (child->IsVisible() && (!only_folders || child->is_folder())) {
-        DictionaryValue* dict = GetNodeDictionary(child, true, only_folders);
+        base::DictionaryValue* dict =
+            GetNodeDictionary(child, true, only_folders);
         children->Append(dict);
       }
     }

@@ -188,7 +188,7 @@ class _Generator(object):
     if type_.property_type == PropertyType.CHOICES:
       for choice in type_.choices:
         value_type = cpp_util.GetValueType(self._type_helper.FollowRef(choice))
-        (c.Sblock('if (value.IsType(%s)) {' % value_type)
+        (c.Sblock('if (value.IsType(base::%s)) {' % value_type)
             .Concat(self._GeneratePopulateVariableFromValue(
                 choice,
                 '(&value)',
@@ -645,7 +645,7 @@ class _Generator(object):
                                                     dst_var,
                                                     failure_value))
     elif underlying_type.property_type == PropertyType.BINARY:
-      (c.Append('if (!%(src_var)s->IsType(%(value_type)s))')
+      (c.Append('if (!%(src_var)s->IsType(base::%(value_type)s))')
         .Append('  return %(failure_value)s;')
         .Append('const base::BinaryValue* binary_value =')
         .Append('    static_cast<const base::BinaryValue*>(%(src_var)s);')

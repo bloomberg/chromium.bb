@@ -70,7 +70,7 @@ class ActivityLog : public BrowserContextKeyedService,
   // (Note: implemented as a wrapper for LogAPIActionInternal.)
   void LogAPIAction(const std::string& extension_id,
                     const std::string& name,    // e.g., tabs.get
-                    ListValue* args,            // the argument values e.g. 46
+                    base::ListValue* args,      // the argument values e.g. 46
                     const std::string& extra);  // any extra logging info
 
   // Log an event notification delivered to an extension.
@@ -78,14 +78,14 @@ class ActivityLog : public BrowserContextKeyedService,
   // (Note: implemented as a wrapper for LogAPIActionInternal.)
   void LogEventAction(const std::string& extension_id,
                       const std::string& name,    // e.g., tabs.onUpdate
-                      ListValue* args,            // arguments to the callback
+                      base::ListValue* args,      // arguments to the callback
                       const std::string& extra);  // any extra logging info
 
   // Log a blocked API call made by an extension.
   // This will create a BlockedAction for storage in the database.
   void LogBlockedAction(const std::string& extension_id,
                         const std::string& blocked_call,  // e.g., tabs.get
-                        ListValue* args,                  // argument values
+                        base::ListValue* args,            // argument values
                         BlockedAction::Reason reason,     // why it's blocked
                         const std::string& extra);        // extra logging info
 
@@ -95,7 +95,7 @@ class ActivityLog : public BrowserContextKeyedService,
                     const GURL& url,                      // target URL
                     const string16& url_title,            // title of the URL
                     const std::string& api_call,          // api call
-                    const ListValue* args,                // arguments
+                    const base::ListValue* args,          // arguments
                     DomActionType::Type call_type,        // type of the call
                     const std::string& extra);            // extra logging info
 
@@ -168,7 +168,7 @@ class ActivityLog : public BrowserContextKeyedService,
   void LogAPIActionInternal(
       const std::string& extension_id,
       const std::string& api_call,
-      ListValue* args,
+      base::ListValue* args,
       const std::string& extra,
       const APIAction::Type type);
 

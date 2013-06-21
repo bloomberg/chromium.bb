@@ -94,10 +94,10 @@ std::string FullStreamUIPolicy::GetKey(ActivityLogPolicy::KeyType key_ty) const
 std::string FullStreamUIPolicy::ProcessArguments(
     ActionType action_type,
     const std::string& name,
-    const ListValue* args) const {
+    const base::ListValue* args) const {
   std::string processed_args;
   if (args) {
-    ListValue::const_iterator it = args->begin();
+    base::ListValue::const_iterator it = args->begin();
     // TODO(felt,dbabic) Think about replacing the loop with a single
     // call to SerializeAndOmitBinaryValues.
     for (; it != args->end(); ++it) {
@@ -126,7 +126,7 @@ void FullStreamUIPolicy::ProcessAction(
     const std::string& extension_id,
     const std::string& name,
     const GURL& url_param,
-    const ListValue* args,
+    const base::ListValue* args,
     const DictionaryValue* details) {
   std::string concatenated_args = ProcessArguments(action_type, name, args);
   const Time now = Time::Now();

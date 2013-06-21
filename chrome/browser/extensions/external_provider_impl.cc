@@ -90,7 +90,7 @@ void ExternalProviderImpl::VisitRegisteredExtension() {
   loader_->StartLoading();
 }
 
-void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
+void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Check if the service is still alive. It is possible that it went
@@ -104,9 +104,9 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
   std::set<std::string> unsupported_extensions;
 
   // Notify ExtensionService about all the extensions this provider has.
-  for (DictionaryValue::Iterator i(*prefs_); !i.IsAtEnd(); i.Advance()) {
+  for (base::DictionaryValue::Iterator i(*prefs_); !i.IsAtEnd(); i.Advance()) {
     const std::string& extension_id = i.key();
-    const DictionaryValue* extension = NULL;
+    const base::DictionaryValue* extension = NULL;
 
     if (!Extension::IdIsValid(extension_id)) {
       LOG(WARNING) << "Malformed extension dictionary: key "
@@ -159,7 +159,7 @@ void ExternalProviderImpl::SetPrefs(DictionaryValue* prefs) {
     }
 
     // Check that extension supports current browser locale.
-    const ListValue* supported_locales = NULL;
+    const base::ListValue* supported_locales = NULL;
     if (extension->GetList(kSupportedLocales, &supported_locales)) {
       std::vector<std::string> browser_locales;
       l10n_util::GetParentLocales(g_browser_process->GetApplicationLocale(),
@@ -307,7 +307,7 @@ bool ExternalProviderImpl::GetExtensionDetails(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(prefs_.get());
   CHECK(ready_);
-  DictionaryValue* extension = NULL;
+  base::DictionaryValue* extension = NULL;
   if (!prefs_->GetDictionary(id, &extension))
     return false;
 

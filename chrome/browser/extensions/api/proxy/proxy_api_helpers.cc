@@ -58,7 +58,7 @@ bool CreatePACScriptFromDataURL(
 
 // Extension Pref -> Browser Pref conversion.
 
-bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetProxyModeFromExtensionPref(const base::DictionaryValue* proxy_config,
                                    ProxyPrefs::ProxyMode* out,
                                    std::string* error,
                                    bool* bad_message) {
@@ -75,11 +75,11 @@ bool GetProxyModeFromExtensionPref(const DictionaryValue* proxy_config,
   return true;
 }
 
-bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetPacMandatoryFromExtensionPref(const base::DictionaryValue* proxy_config,
                                       bool* out,
                                       std::string* error,
                                       bool* bad_message){
-  const DictionaryValue* pac_dict = NULL;
+  const base::DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
     return true;
@@ -96,11 +96,11 @@ bool GetPacMandatoryFromExtensionPref(const DictionaryValue* proxy_config,
   return true;
 }
 
-bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetPacUrlFromExtensionPref(const base::DictionaryValue* proxy_config,
                                 std::string* out,
                                 std::string* error,
                                 bool* bad_message) {
-  const DictionaryValue* pac_dict = NULL;
+  const base::DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
     return true;
@@ -122,11 +122,11 @@ bool GetPacUrlFromExtensionPref(const DictionaryValue* proxy_config,
   return true;
 }
 
-bool GetPacDataFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetPacDataFromExtensionPref(const base::DictionaryValue* proxy_config,
                                  std::string* out,
                                  std::string* error,
                                  bool* bad_message) {
-  const DictionaryValue* pac_dict = NULL;
+  const base::DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
     return true;
@@ -147,7 +147,7 @@ bool GetPacDataFromExtensionPref(const DictionaryValue* proxy_config,
   return true;
 }
 
-bool GetProxyServer(const DictionaryValue* proxy_server,
+bool GetProxyServer(const base::DictionaryValue* proxy_server,
                     net::ProxyServer::Scheme default_scheme,
                     net::ProxyServer* out,
                     std::string* error,
@@ -188,11 +188,12 @@ bool GetProxyServer(const DictionaryValue* proxy_server,
   return true;
 }
 
-bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
-                                          std::string* out,
-                                          std::string* error,
-                                          bool* bad_message) {
-  const DictionaryValue* proxy_rules = NULL;
+bool GetProxyRulesStringFromExtensionPref(
+    const base::DictionaryValue* proxy_config,
+    std::string* out,
+    std::string* error,
+    bool* bad_message) {
+  const base::DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigRules, &proxy_rules);
   if (!proxy_rules)
     return true;
@@ -207,7 +208,7 @@ bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
   // singleProxy that will supersede per-URL proxies, but it's worth it to keep
   // the code simple and extensible.
   for (size_t i = 0; i <= keys::SCHEME_MAX; ++i) {
-    const DictionaryValue* proxy_dict = NULL;
+    const base::DictionaryValue* proxy_dict = NULL;
     has_proxy[i] = proxy_rules->GetDictionary(keys::field_name[i],
                                               &proxy_dict);
     if (has_proxy[i]) {
@@ -255,7 +256,7 @@ bool GetProxyRulesStringFromExtensionPref(const DictionaryValue* proxy_config,
   return true;
 }
 
-bool JoinUrlList(const ListValue* list,
+bool JoinUrlList(const base::ListValue* list,
                  const std::string& joiner,
                  std::string* out,
                  std::string* error,
@@ -283,11 +284,11 @@ bool JoinUrlList(const ListValue* list,
   return true;
 }
 
-bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
+bool GetBypassListFromExtensionPref(const base::DictionaryValue* proxy_config,
                                     std::string* out,
                                     std::string* error,
                                     bool* bad_message) {
-  const DictionaryValue* proxy_rules = NULL;
+  const base::DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigRules, &proxy_rules);
   if (!proxy_rules)
     return true;
@@ -296,7 +297,7 @@ bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
     *out = "";
     return true;
   }
-  const ListValue* bypass_list = NULL;
+  const base::ListValue* bypass_list = NULL;
   if (!proxy_rules->GetList(keys::kProxyConfigBypassList, &bypass_list)) {
     LOG(ERROR) << "'rules.bypassList' could not be parsed.";
     *bad_message = true;
@@ -306,14 +307,15 @@ bool GetBypassListFromExtensionPref(const DictionaryValue* proxy_config,
   return JoinUrlList(bypass_list, ",", out, error, bad_message);
 }
 
-DictionaryValue* CreateProxyConfigDict(ProxyPrefs::ProxyMode mode_enum,
-                                       bool pac_mandatory,
-                                       const std::string& pac_url,
-                                       const std::string& pac_data,
-                                       const std::string& proxy_rules_string,
-                                       const std::string& bypass_list,
-                                       std::string* error) {
-  DictionaryValue* result_proxy_config = NULL;
+base::DictionaryValue* CreateProxyConfigDict(
+    ProxyPrefs::ProxyMode mode_enum,
+    bool pac_mandatory,
+    const std::string& pac_url,
+    const std::string& pac_data,
+    const std::string& proxy_rules_string,
+    const std::string& bypass_list,
+    std::string* error) {
+  base::DictionaryValue* result_proxy_config = NULL;
   switch (mode_enum) {
     case ProxyPrefs::MODE_DIRECT:
       result_proxy_config = ProxyConfigDictionary::CreateDirect();
@@ -357,12 +359,13 @@ DictionaryValue* CreateProxyConfigDict(ProxyPrefs::ProxyMode mode_enum,
   return result_proxy_config;
 }
 
-DictionaryValue* CreateProxyRulesDict(
+base::DictionaryValue* CreateProxyRulesDict(
     const ProxyConfigDictionary& proxy_config) {
   ProxyPrefs::ProxyMode mode;
   CHECK(proxy_config.GetMode(&mode) && mode == ProxyPrefs::MODE_FIXED_SERVERS);
 
-  scoped_ptr<DictionaryValue> extension_proxy_rules(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> extension_proxy_rules(
+      new base::DictionaryValue);
 
   std::string proxy_servers;
   if (!proxy_config.GetProxyServer(&proxy_servers)) {
@@ -417,15 +420,16 @@ DictionaryValue* CreateProxyRulesDict(
       LOG(ERROR) << "Invalid bypassList in configuration.";
       return NULL;
     }
-    ListValue* bypass_list = TokenizeToStringList(bypass_list_string, ",;");
+    base::ListValue* bypass_list =
+        TokenizeToStringList(bypass_list_string, ",;");
     extension_proxy_rules->Set(keys::kProxyConfigBypassList, bypass_list);
   }
 
   return extension_proxy_rules.release();
 }
 
-DictionaryValue* CreateProxyServerDict(const net::ProxyServer& proxy) {
-  scoped_ptr<DictionaryValue> out(new DictionaryValue);
+base::DictionaryValue* CreateProxyServerDict(const net::ProxyServer& proxy) {
+  scoped_ptr<base::DictionaryValue> out(new base::DictionaryValue);
   switch (proxy.scheme()) {
     case net::ProxyServer::SCHEME_HTTP:
       out->SetString(keys::kProxyConfigRuleScheme, "http");
@@ -449,12 +453,12 @@ DictionaryValue* CreateProxyServerDict(const net::ProxyServer& proxy) {
   return out.release();
 }
 
-DictionaryValue* CreatePacScriptDict(
+base::DictionaryValue* CreatePacScriptDict(
     const ProxyConfigDictionary& proxy_config) {
   ProxyPrefs::ProxyMode mode;
   CHECK(proxy_config.GetMode(&mode) && mode == ProxyPrefs::MODE_PAC_SCRIPT);
 
-  scoped_ptr<DictionaryValue> pac_script_dict(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> pac_script_dict(new base::DictionaryValue);
   std::string pac_url;
   if (!proxy_config.GetPacUrl(&pac_url)) {
     LOG(ERROR) << "Invalid proxy configuration. Missing PAC URL.";
@@ -481,9 +485,9 @@ DictionaryValue* CreatePacScriptDict(
   return pac_script_dict.release();
 }
 
-ListValue* TokenizeToStringList(const std::string& in,
+base::ListValue* TokenizeToStringList(const std::string& in,
                                 const std::string& delims) {
-  ListValue* out = new ListValue;
+  base::ListValue* out = new base::ListValue;
   base::StringTokenizer entries(in, delims);
   while (entries.GetNext())
     out->Append(Value::CreateStringValue(entries.token()));

@@ -52,7 +52,7 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     scoped_ptr<content::StreamHandle> stream,
     int64 expected_content_size) {
   // Create the event's arguments value.
-  scoped_ptr<ListValue> event_args(new ListValue());
+  scoped_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->Append(new base::StringValue(stream->GetMimeType()));
   event_args->Append(new base::StringValue(stream->GetOriginalURL().spec()));
   event_args->Append(new base::StringValue(stream->GetURL().spec()));

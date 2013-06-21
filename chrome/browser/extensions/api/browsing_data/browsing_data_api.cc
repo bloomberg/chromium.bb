@@ -121,7 +121,7 @@ bool BrowsingDataSettingsFunction::RunImpl() {
   // REMOVE_SITE_DATA in browsing_data_remover.h, the former for the unprotected
   // web, the latter for  protected web data. There is no UI control for
   // extension data.
-  scoped_ptr<DictionaryValue> origin_types(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> origin_types(new base::DictionaryValue);
   origin_types->SetBoolean(
       extension_browsing_data_api_constants::kUnprotectedWebKey,
       prefs->GetBoolean(prefs::kDeleteCookies));
@@ -141,14 +141,14 @@ bool BrowsingDataSettingsFunction::RunImpl() {
     since = time.ToJsTime();
   }
 
-  scoped_ptr<DictionaryValue> options(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> options(new base::DictionaryValue);
   options->Set(extension_browsing_data_api_constants::kOriginTypesKey,
                origin_types.release());
   options->SetDouble(extension_browsing_data_api_constants::kSinceKey, since);
 
   // Fill dataToRemove and dataRemovalPermitted.
-  scoped_ptr<DictionaryValue> selected(new DictionaryValue);
-  scoped_ptr<DictionaryValue> permitted(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> selected(new base::DictionaryValue);
+  scoped_ptr<base::DictionaryValue> permitted(new base::DictionaryValue);
 
   bool delete_site_data = prefs->GetBoolean(prefs::kDeleteCookies) ||
                           prefs->GetBoolean(prefs::kDeleteHostedAppsData);
@@ -195,7 +195,7 @@ bool BrowsingDataSettingsFunction::RunImpl() {
              extension_browsing_data_api_constants::kPasswordsKey,
              prefs->GetBoolean(prefs::kDeletePasswords));
 
-  scoped_ptr<DictionaryValue> result(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->Set(extension_browsing_data_api_constants::kOptionsKey,
               options.release());
   result->Set(extension_browsing_data_api_constants::kDataToRemoveKey,
@@ -206,10 +206,11 @@ bool BrowsingDataSettingsFunction::RunImpl() {
   return true;
 }
 
-void BrowsingDataSettingsFunction::SetDetails(DictionaryValue* selected_dict,
-                                              DictionaryValue* permitted_dict,
-                                              const char* data_type,
-                                              bool is_selected) {
+void BrowsingDataSettingsFunction::SetDetails(
+    base::DictionaryValue* selected_dict,
+    base::DictionaryValue* permitted_dict,
+    const char* data_type,
+    bool is_selected) {
   bool is_permitted = IsRemovalPermitted(MaskForKey(data_type),
                                          profile()->GetPrefs());
   selected_dict->SetBoolean(data_type, is_selected && is_permitted);
@@ -228,7 +229,7 @@ bool BrowsingDataRemoveFunction::RunImpl() {
   DCHECK(profile());
 
   // Grab the initial |options| parameter, and parse out the arguments.
-  DictionaryValue* options;
+  base::DictionaryValue* options;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &options));
   DCHECK(options);
 
@@ -311,7 +312,7 @@ int BrowsingDataRemoveFunction::ParseOriginSetMask(
   // UNPROTECTED_WEB if the developer doesn't specify anything.
   int mask = BrowsingDataHelper::UNPROTECTED_WEB;
 
-  const DictionaryValue* d = NULL;
+  const base::DictionaryValue* d = NULL;
   if (options.HasKey(extension_browsing_data_api_constants::kOriginTypesKey)) {
     EXTENSION_FUNCTION_VALIDATE(options.GetDictionary(
         extension_browsing_data_api_constants::kOriginTypesKey, &d));
@@ -358,7 +359,7 @@ int RemoveBrowsingDataFunction::GetRemovalMask() {
 
   int removal_mask = 0;
 
-  for (DictionaryValue::Iterator i(*data_to_remove);
+  for (base::DictionaryValue::Iterator i(*data_to_remove);
        !i.IsAtEnd();
        i.Advance()) {
     bool selected = false;

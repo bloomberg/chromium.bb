@@ -79,7 +79,7 @@ PrintingContext::Result PrintingContextNoSystemDialog::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextNoSystemDialog::UpdatePrinterSettings(
-    const DictionaryValue& job_settings, const PageRanges& ranges) {
+    const base::DictionaryValue& job_settings, const PageRanges& ranges) {
   bool landscape = false;
 
   if (!job_settings.GetBoolean(kSettingLandscape, &landscape))

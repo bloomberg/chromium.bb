@@ -91,7 +91,7 @@ SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(
     return;
   }
 
-  for (DictionaryValue::Iterator it(*maybe_settings->settings().get());
+  for (base::DictionaryValue::Iterator it(*maybe_settings->settings().get());
        !it.IsAtEnd(); it.Advance()) {
     Allocate(it.key(), it.value(), &used_total_, &used_per_setting_);
   }
@@ -164,10 +164,11 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
-    WriteOptions options, const DictionaryValue& values) {
+    WriteOptions options, const base::DictionaryValue& values) {
   size_t new_used_total = used_total_;
   std::map<std::string, size_t> new_used_per_setting = used_per_setting_;
-  for (DictionaryValue::Iterator it(values); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(values); !it.IsAtEnd();
+       it.Advance()) {
     Allocate(it.key(), it.value(), &new_used_total, &new_used_per_setting);
 
     if (!(options & IGNORE_QUOTA) &&

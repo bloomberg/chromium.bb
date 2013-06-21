@@ -82,7 +82,7 @@ MenuItem::List MenuItemsFromValue(const std::string& extension_id,
 }
 
 scoped_ptr<base::Value> MenuItemsToValue(const MenuItem::List& items) {
-  scoped_ptr<base::ListValue> list(new ListValue());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < items.size(); ++i)
     list->Append(items[i]->ToValue().release());
   return scoped_ptr<Value>(list.release());
@@ -94,7 +94,7 @@ bool GetStringList(const DictionaryValue& dict,
   if (!dict.HasKey(key))
     return true;
 
-  const ListValue* list = NULL;
+  const base::ListValue* list = NULL;
   if (!dict.GetListWithoutPathExpansion(key, &list))
     return false;
 
@@ -606,7 +606,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
   if (item->type() == MenuItem::RADIO)
     RadioItemSelected(item);
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
 
   DictionaryValue* properties = new DictionaryValue();
   SetIdKeyValue(properties, "menuItemId", item->id());
@@ -673,8 +673,9 @@ void MenuManager::ExecuteCommand(Profile* profile,
   }
 
   {
-    scoped_ptr<Event> event(new Event(event_names::kOnContextMenus,
-                                      scoped_ptr<ListValue>(args->DeepCopy())));
+    scoped_ptr<Event> event(new Event(
+        event_names::kOnContextMenus,
+        scoped_ptr<base::ListValue>(args->DeepCopy())));
     event->restrict_to_profile = profile;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
     event_router->DispatchEventToExtension(item->extension_id(), event.Pass());

@@ -27,7 +27,7 @@ class ExtensionOverrideTest : public ExtensionApiTest {
         browser()->profile()->GetPrefs()->GetDictionary(
             ExtensionWebUI::kExtensionURLOverrides);
 
-    const ListValue* values = NULL;
+    const base::ListValue* values = NULL;
     if (!overrides->GetList("history", &values))
       return false;
 
@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldCleanUpDuplicateEntries) {
   // a preferences file without corresponding UnloadExtension() calls. This is
   // the same as the above test, except for that it is testing the case where
   // the file already contains dupes when an extension is loaded.
-  ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < 3; ++i)
     list->Append(Value::CreateStringValue("http://www.google.com/"));
 

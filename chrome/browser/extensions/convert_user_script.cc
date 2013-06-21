@@ -101,12 +101,12 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   root->SetString(keys::kPublicKey, key);
   root->SetBoolean(keys::kConvertedFromUserScript, true);
 
-  ListValue* js_files = new ListValue();
+  base::ListValue* js_files = new base::ListValue();
   js_files->Append(Value::CreateStringValue("script.js"));
 
   // If the script provides its own match patterns, we use those. Otherwise, we
   // generate some using the include globs.
-  ListValue* matches = new ListValue();
+  base::ListValue* matches = new base::ListValue();
   if (!script.url_patterns().is_empty()) {
     for (URLPatternSet::const_iterator i = script.url_patterns().begin();
          i != script.url_patterns().end(); ++i) {
@@ -119,7 +119,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   }
 
   // Read the exclude matches, if any are present.
-  ListValue* exclude_matches = new ListValue();
+  base::ListValue* exclude_matches = new base::ListValue();
   if (!script.exclude_url_patterns().is_empty()) {
     for (URLPatternSet::const_iterator i =
          script.exclude_url_patterns().begin();
@@ -128,11 +128,11 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     }
   }
 
-  ListValue* includes = new ListValue();
+  base::ListValue* includes = new base::ListValue();
   for (size_t i = 0; i < script.globs().size(); ++i)
     includes->Append(Value::CreateStringValue(script.globs().at(i)));
 
-  ListValue* excludes = new ListValue();
+  base::ListValue* excludes = new base::ListValue();
   for (size_t i = 0; i < script.exclude_globs().size(); ++i)
     excludes->Append(Value::CreateStringValue(script.exclude_globs().at(i)));
 
@@ -151,7 +151,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     // This is the default, but store it just in case we change that.
     content_script->SetString(keys::kRunAt, values::kRunAtDocumentIdle);
 
-  ListValue* content_scripts = new ListValue();
+  base::ListValue* content_scripts = new base::ListValue();
   content_scripts->Append(content_script);
 
   root->Set(keys::kContentScripts, content_scripts);

@@ -41,7 +41,7 @@ void CompareClassification(const ACMatchClassifications& expected,
 // +       ddd
 // = nmmmmndddn
 TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
-  scoped_ptr<ListValue> list = ListBuilder()
+  scoped_ptr<base::ListValue> list = ListBuilder()
       .Append(42)
       .Append(ListBuilder()
         .Append(DictionaryBuilder()
@@ -72,7 +72,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
       *params->suggest_results[0]));
 
   // Same input, but swap the order. Ensure it still works.
-  scoped_ptr<ListValue> swap_list = ListBuilder()
+  scoped_ptr<base::ListValue> swap_list = ListBuilder()
       .Append(42)
       .Append(ListBuilder()
         .Append(DictionaryBuilder()
@@ -104,7 +104,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
 // +  dd
 // = 3773unnnn66
 TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
-  scoped_ptr<ListValue> list = ListBuilder()
+  scoped_ptr<base::ListValue> list = ListBuilder()
       .Append(42)
       .Append(ListBuilder()
         .Append(DictionaryBuilder()
@@ -149,7 +149,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
 
   // Try moving the "dim/match" style pair at offset 9. Output should be the
   // same.
-  scoped_ptr<ListValue> moved_list = ListBuilder()
+  scoped_ptr<base::ListValue> moved_list = ListBuilder()
       .Append(42)
       .Append(ListBuilder()
         .Append(DictionaryBuilder()
@@ -193,7 +193,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
 // + ddd
 // = 77777nnnnn
 TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
-  scoped_ptr<ListValue> list = ListBuilder()
+  scoped_ptr<base::ListValue> list = ListBuilder()
       .Append(42)
       .Append(ListBuilder()
         .Append(DictionaryBuilder()
@@ -242,7 +242,7 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
 // = 77777nnnnn
 TEST(ExtensionOmniboxTest, DefaultSuggestResult) {
   // Default suggestions should not have a content parameter.
-  scoped_ptr<ListValue> list = ListBuilder()
+  scoped_ptr<base::ListValue> list = ListBuilder()
       .Append(DictionaryBuilder()
         .Set("description", "description")
         .Set("descriptionStyles", ListBuilder()

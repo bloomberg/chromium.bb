@@ -88,8 +88,8 @@ bool GetNodesFromVector(BookmarkModel* model,
 // Recursively adds a node to a list. This is by used |BookmarkNodeDataToJSON|
 // when the data comes from the current profile. In this case we have a
 // BookmarkNode since we got the data from the current profile.
-void AddNodeToList(ListValue* list, const BookmarkNode& node) {
-  DictionaryValue* dict = new DictionaryValue();
+void AddNodeToList(base::ListValue* list, const BookmarkNode& node) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
 
   // Add id and parentId so we can associate the data with existing nodes on the
   // client side.
@@ -104,7 +104,7 @@ void AddNodeToList(ListValue* list, const BookmarkNode& node) {
 
   dict->SetString(bookmark_keys::kTitleKey, node.GetTitle());
 
-  ListValue* children = new ListValue();
+  base::ListValue* children = new base::ListValue();
   for (int i = 0; i < node.child_count(); ++i)
     AddNodeToList(children, *node.GetChild(i));
   dict->Set(bookmark_keys::kChildrenKey, children);
@@ -115,16 +115,16 @@ void AddNodeToList(ListValue* list, const BookmarkNode& node) {
 // Recursively adds an element to a list. This is used by
 // |BookmarkNodeDataToJSON| when the data comes from a different profile. When
 // the data comes from a different profile we do not have any IDs or parent IDs.
-void AddElementToList(ListValue* list,
+void AddElementToList(base::ListValue* list,
                       const BookmarkNodeData::Element& element) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
 
   if (element.is_url)
     dict->SetString(bookmark_keys::kUrlKey, element.url.spec());
 
   dict->SetString(bookmark_keys::kTitleKey, element.title);
 
-  ListValue* children = new ListValue();
+  base::ListValue* children = new base::ListValue();
   for (size_t i = 0; i < element.children.size(); ++i)
     AddElementToList(children, element.children[i]);
   dict->Set(bookmark_keys::kChildrenKey, children);
@@ -134,12 +134,12 @@ void AddElementToList(ListValue* list,
 
 // Builds the JSON structure based on the BookmarksDragData.
 void BookmarkNodeDataToJSON(Profile* profile, const BookmarkNodeData& data,
-                            ListValue* args) {
+                            base::ListValue* args) {
   bool same_profile = data.IsFromProfile(profile);
-  DictionaryValue* value = new DictionaryValue();
+  base::DictionaryValue* value = new base::DictionaryValue();
   value->SetBoolean(manager_keys::kSameProfileKey, same_profile);
 
-  ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
   if (same_profile) {
     std::vector<const BookmarkNode*> nodes = data.GetNodes(profile);
     for (size_t i = 0; i < nodes.size(); ++i)
@@ -176,7 +176,7 @@ BookmarkManagerPrivateEventRouter::~BookmarkManagerPrivateEventRouter() {
 
 void BookmarkManagerPrivateEventRouter::DispatchEvent(
     const char* event_name,
-    scoped_ptr<ListValue> args) {
+    scoped_ptr<base::ListValue> args) {
   if (!ExtensionSystem::Get(profile_)->event_router())
     return;
 
@@ -190,7 +190,7 @@ void BookmarkManagerPrivateEventRouter::DispatchDragEvent(
   if (data.size() == 0)
     return;
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   BookmarkNodeDataToJSON(profile_, data, args.get());
   DispatchEvent(event_name, args.Pass());
 }
@@ -323,7 +323,7 @@ bool BookmarkManagerPrivateSortChildrenFunction::RunImpl() {
 }
 
 bool BookmarkManagerPrivateGetStringsFunction::RunImpl() {
-  DictionaryValue* localized_strings = new DictionaryValue();
+  base::DictionaryValue* localized_strings = new base::DictionaryValue();
 
   localized_strings->SetString("title",
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_TITLE));
@@ -501,7 +501,7 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunImpl() {
     return false;
   }
 
-  scoped_ptr<ListValue> json(new ListValue());
+  scoped_ptr<base::ListValue> json(new base::ListValue());
   if (params->folders_only)
     bookmark_api_helpers::AddNodeFoldersOnly(node, json.get(), true);
   else

@@ -41,12 +41,13 @@ SettingsBackend::~SettingsBackend() {
 ValueStore* SettingsBackend::GetStorage(
     const std::string& extension_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DictionaryValue empty;
+  base::DictionaryValue empty;
   return GetOrCreateStorageWithSyncData(extension_id, empty);
 }
 
 SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
-    const std::string& extension_id, const DictionaryValue& sync_data) const {
+    const std::string& extension_id,
+    const base::DictionaryValue& sync_data) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   StorageObjMap::iterator maybe_storage = storage_objs_.find(extension_id);
@@ -132,10 +133,10 @@ std::set<std::string> SettingsBackend::GetKnownExtensionIDs() const {
 
 static void AddAllSyncData(
     const std::string& extension_id,
-    const DictionaryValue& src,
+    const base::DictionaryValue& src,
     syncer::ModelType type,
     syncer::SyncDataList* dst) {
-  for (DictionaryValue::Iterator it(src); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(src); !it.IsAtEnd(); it.Advance()) {
     dst->push_back(settings_sync_util::CreateData(
         extension_id, it.key(), it.value(), type));
   }
@@ -184,14 +185,15 @@ syncer::SyncMergeResult SettingsBackend::MergeDataAndStartSyncing(
   sync_error_factory_ = sync_error_factory.Pass();
 
   // Group the initial sync data by extension id.
-  std::map<std::string, linked_ptr<DictionaryValue> > grouped_sync_data;
+  std::map<std::string, linked_ptr<base::DictionaryValue> > grouped_sync_data;
   for (syncer::SyncDataList::const_iterator it = initial_sync_data.begin();
       it != initial_sync_data.end(); ++it) {
     SettingSyncData data(*it);
-    linked_ptr<DictionaryValue> sync_data =
+    linked_ptr<base::DictionaryValue> sync_data =
         grouped_sync_data[data.extension_id()];
     if (!sync_data.get()) {
-      sync_data = linked_ptr<DictionaryValue>(new DictionaryValue());
+      sync_data = linked_ptr<base::DictionaryValue>(
+          new base::DictionaryValue());
       grouped_sync_data[data.extension_id()] = sync_data;
     }
     DCHECK(!sync_data->HasKey(data.key())) <<
@@ -203,7 +205,7 @@ syncer::SyncMergeResult SettingsBackend::MergeDataAndStartSyncing(
   // the future will start being synced as part of the creation process.
   for (StorageObjMap::iterator it = storage_objs_.begin();
       it != storage_objs_.end(); ++it) {
-    std::map<std::string, linked_ptr<DictionaryValue> >::iterator
+    std::map<std::string, linked_ptr<base::DictionaryValue> >::iterator
         maybe_sync_data = grouped_sync_data.find(it->first);
     syncer::SyncError error;
     if (maybe_sync_data != grouped_sync_data.end()) {
@@ -212,7 +214,7 @@ syncer::SyncMergeResult SettingsBackend::MergeDataAndStartSyncing(
           CreateSettingsSyncProcessor(it->first).Pass());
       grouped_sync_data.erase(it->first);
     } else {
-      DictionaryValue empty;
+      base::DictionaryValue empty;
       error = it->second->StartSyncing(
           empty,
           CreateSettingsSyncProcessor(it->first).Pass());
@@ -224,7 +226,7 @@ syncer::SyncMergeResult SettingsBackend::MergeDataAndStartSyncing(
   // Eagerly create and init the rest of the storage areas that have sync data.
   // Under normal circumstances (i.e. not first-time sync) this will be all of
   // them.
-  for (std::map<std::string, linked_ptr<DictionaryValue> >::iterator it =
+  for (std::map<std::string, linked_ptr<base::DictionaryValue> >::iterator it =
       grouped_sync_data.begin(); it != grouped_sync_data.end(); ++it) {
     GetOrCreateStorageWithSyncData(it->first, *it->second);
   }
@@ -247,7 +249,7 @@ syncer::SyncError SettingsBackend::ProcessSyncChanges(
   }
 
   // Create any storage areas that don't exist yet but have sync data.
-  DictionaryValue empty;
+  base::DictionaryValue empty;
   for (std::map<std::string, SettingSyncDataList>::iterator
       it = grouped_sync_data.begin(); it != grouped_sync_data.end(); ++it) {
     SyncableSettingsStorage* storage =

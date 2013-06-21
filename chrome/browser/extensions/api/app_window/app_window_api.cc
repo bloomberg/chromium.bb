@@ -89,7 +89,7 @@ void SetCreateResultFromShellWindow(ShellWindow* window,
   result->SetBoolean("fullscreen", window->GetBaseWindow()->IsFullscreen());
   result->SetBoolean("minimized", window->GetBaseWindow()->IsMinimized());
   result->SetBoolean("maximized", window->GetBaseWindow()->IsMaximized());
-  DictionaryValue* boundsValue = new DictionaryValue();
+  base::DictionaryValue* boundsValue = new base::DictionaryValue();
   gfx::Rect bounds = window->GetClientBounds();
   boundsValue->SetInteger("left", bounds.x());
   boundsValue->SetInteger("top", bounds.y());

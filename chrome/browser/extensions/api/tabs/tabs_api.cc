@@ -328,7 +328,7 @@ bool WindowsGetAllFunction::RunImpl() {
   if (params->get_info.get() && params->get_info->populate.get())
     populate_tabs = *params->get_info->populate;
 
-  ListValue* window_list = new ListValue();
+  base::ListValue* window_list = new base::ListValue();
   const WindowControllerList::ControllerList& windows =
       WindowControllerList::GetInstance()->windows();
   for (WindowControllerList::ControllerList::const_iterator iter =
@@ -396,7 +396,7 @@ bool WindowsCreateFunction::ShouldOpenIncognitoWindow(
 }
 
 bool WindowsCreateFunction::RunImpl() {
-  DictionaryValue* args = NULL;
+  base::DictionaryValue* args = NULL;
   std::vector<GURL> urls;
   TabStripModel* source_tab_strip = NULL;
   int tab_index = -1;
@@ -417,7 +417,8 @@ bool WindowsCreateFunction::RunImpl() {
         url_value->GetAsString(&url_string);
         url_strings.push_back(url_string);
       } else if (url_value->IsType(Value::TYPE_LIST)) {
-        const ListValue* url_list = static_cast<const ListValue*>(url_value);
+        const base::ListValue* url_list =
+            static_cast<const base::ListValue*>(url_value);
         for (size_t i = 0; i < url_list->GetSize(); ++i) {
           std::string url_string;
           EXTENSION_FUNCTION_VALIDATE(url_list->GetString(i, &url_string));
@@ -689,7 +690,7 @@ bool WindowsCreateFunction::RunImpl() {
 bool WindowsUpdateFunction::RunImpl() {
   int window_id = extension_misc::kUnknownWindowId;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &window_id));
-  DictionaryValue* update_props;
+  base::DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
 
   WindowController* controller;
@@ -937,7 +938,7 @@ bool TabsQueryFunction::RunImpl() {
         params->query_info.window_type);
   }
 
-  ListValue* result = new ListValue();
+  base::ListValue* result = new base::ListValue();
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Browser* browser = *it;
     if (!profile()->IsSameProfile(browser->profile()))
@@ -1445,10 +1446,11 @@ void TabsUpdateFunction::PopulateResult() {
   SetResult(ExtensionTabUtil::CreateTabValue(web_contents_, GetExtension()));
 }
 
-void TabsUpdateFunction::OnExecuteCodeFinished(const std::string& error,
-                                              int32 on_page_id,
-                                              const GURL& url,
-                                              const ListValue& script_result) {
+void TabsUpdateFunction::OnExecuteCodeFinished(
+    const std::string& error,
+    int32 on_page_id,
+    const GURL& url,
+    const base::ListValue& script_result) {
   if (error.empty())
     PopulateResult();
   else
@@ -1462,7 +1464,7 @@ bool TabsMoveFunction::RunImpl() {
 
   int new_index = params->move_properties.index;
   int* window_id = params->move_properties.window_id.get();
-  ListValue tab_values;
+  base::ListValue tab_values;
 
   std::vector<int> tab_ids;
   if (params->tab_ids.as_array.get()) {
@@ -1501,7 +1503,7 @@ bool TabsMoveFunction::RunImpl() {
 bool TabsMoveFunction::MoveTab(int tab_id,
                                int *new_index,
                                int iteration,
-                               ListValue* tab_values,
+                               base::ListValue* tab_values,
                                int* window_id) {
   Browser* source_browser = NULL;
   TabStripModel* source_tab_strip = NULL;
@@ -2024,10 +2026,11 @@ bool TabsExecuteScriptFunction::ShouldInsertCSS() const {
   return false;
 }
 
-void TabsExecuteScriptFunction::OnExecuteCodeFinished(const std::string& error,
-                                                      int32 on_page_id,
-                                                      const GURL& on_url,
-                                                      const ListValue& result) {
+void TabsExecuteScriptFunction::OnExecuteCodeFinished(
+    const std::string& error,
+    int32 on_page_id,
+    const GURL& on_url,
+    const base::ListValue& result) {
   if (error.empty())
     SetResult(result.DeepCopy());
   ExecuteCodeInTabFunction::OnExecuteCodeFinished(error, on_page_id, on_url,
@@ -2044,7 +2047,7 @@ bool ExecuteCodeInTabFunction::Init() {
     EXTENSION_FUNCTION_VALIDATE(tab_id >= 0);
 
   // |details| are not optional.
-  DictionaryValue* details_value = NULL;
+  base::DictionaryValue* details_value = NULL;
   if (!args_->GetDictionary(1, &details_value))
     return false;
   scoped_ptr<InjectDetails> details(new InjectDetails());

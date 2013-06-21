@@ -38,8 +38,9 @@ AudioService* AudioAPI::GetService() const {
 
 void AudioAPI::OnDeviceChanged() {
   if (profile_ && ExtensionSystem::Get(profile_)->event_router()) {
-    scoped_ptr<Event> event(new Event(event_names::kOnAudioDeviceChanged,
-                                      scoped_ptr<ListValue>(new ListValue())));
+    scoped_ptr<Event> event(new Event(
+        event_names::kOnAudioDeviceChanged,
+        scoped_ptr<base::ListValue>(new base::ListValue())));
     ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
         event.Pass());
   }

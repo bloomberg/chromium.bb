@@ -72,7 +72,7 @@ class SettingsBackend : public syncer::SyncableService {
   // initializing sync with some initial data if sync enabled.
   SyncableSettingsStorage* GetOrCreateStorageWithSyncData(
       const std::string& extension_id,
-      const DictionaryValue& sync_data) const;
+      const base::DictionaryValue& sync_data) const;
 
   // Gets all extension IDs known to extension settings.  This may not be all
   // installed extensions.

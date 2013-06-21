@@ -46,7 +46,7 @@ const char kEmptyDocumentUrl[] = "data:text/html,";
   } while (0)
 
 scoped_ptr<helpers::RequestCookie> ParseRequestCookie(
-    const DictionaryValue* dict) {
+    const base::DictionaryValue* dict) {
   scoped_ptr<helpers::RequestCookie> result(new helpers::RequestCookie);
   std::string tmp;
   if (dict->GetString(keys::kNameKey, &tmp))
@@ -56,7 +56,7 @@ scoped_ptr<helpers::RequestCookie> ParseRequestCookie(
   return result.Pass();
 }
 
-void ParseResponseCookieImpl(const DictionaryValue* dict,
+void ParseResponseCookieImpl(const base::DictionaryValue* dict,
                              helpers::ResponseCookie* cookie) {
   std::string string_tmp;
   int int_tmp = 0;
@@ -80,14 +80,14 @@ void ParseResponseCookieImpl(const DictionaryValue* dict,
 }
 
 scoped_ptr<helpers::ResponseCookie> ParseResponseCookie(
-    const DictionaryValue* dict) {
+    const base::DictionaryValue* dict) {
   scoped_ptr<helpers::ResponseCookie> result(new helpers::ResponseCookie);
   ParseResponseCookieImpl(dict, result.get());
   return result.Pass();
 }
 
 scoped_ptr<helpers::FilterResponseCookie> ParseFilterResponseCookie(
-    const DictionaryValue* dict) {
+    const base::DictionaryValue* dict) {
   scoped_ptr<helpers::FilterResponseCookie> result(
       new helpers::FilterResponseCookie);
   ParseResponseCookieImpl(dict, result.get());
@@ -266,18 +266,18 @@ scoped_refptr<const WebRequestAction> CreateRequestCookieAction(
   // Get filter.
   if (modification->type == helpers::EDIT ||
       modification->type == helpers::REMOVE) {
-    const DictionaryValue* filter = NULL;
+    const base::DictionaryValue* filter = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kFilterKey, &filter));
     modification->filter = ParseRequestCookie(filter);
   }
 
   // Get new value.
   if (modification->type == helpers::ADD) {
-    const DictionaryValue* value = NULL;
+    const base::DictionaryValue* value = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &value));
     modification->modification = ParseRequestCookie(value);
   } else if (modification->type == helpers::EDIT) {
-    const DictionaryValue* value = NULL;
+    const base::DictionaryValue* value = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kModificationKey, &value));
     modification->modification = ParseRequestCookie(value);
   }
@@ -312,18 +312,18 @@ scoped_refptr<const WebRequestAction> CreateResponseCookieAction(
   // Get filter.
   if (modification->type == helpers::EDIT ||
       modification->type == helpers::REMOVE) {
-    const DictionaryValue* filter = NULL;
+    const base::DictionaryValue* filter = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kFilterKey, &filter));
     modification->filter = ParseFilterResponseCookie(filter);
   }
 
   // Get new value.
   if (modification->type == helpers::ADD) {
-    const DictionaryValue* value = NULL;
+    const base::DictionaryValue* value = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &value));
     modification->modification = ParseResponseCookie(value);
   } else if (modification->type == helpers::EDIT) {
-    const DictionaryValue* value = NULL;
+    const base::DictionaryValue* value = NULL;
     INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kModificationKey, &value));
     modification->modification = ParseResponseCookie(value);
   }

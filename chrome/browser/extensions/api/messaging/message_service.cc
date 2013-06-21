@@ -70,7 +70,7 @@ struct MessageService::MessageChannel {
 
 struct MessageService::OpenChannelParams {
   content::RenderProcessHost* source;
-  DictionaryValue source_tab;
+  base::DictionaryValue source_tab;
   scoped_ptr<MessagePort> receiver;
   int receiver_port_id;
   std::string source_extension_id;
@@ -80,7 +80,7 @@ struct MessageService::OpenChannelParams {
 
   // Takes ownership of receiver.
   OpenChannelParams(content::RenderProcessHost* source,
-                    scoped_ptr<DictionaryValue> source_tab,
+                    scoped_ptr<base::DictionaryValue> source_tab,
                     MessagePort* receiver,
                     int receiver_port_id,
                     const std::string& source_extension_id,
@@ -240,7 +240,7 @@ void MessageService::OpenChannelToExtension(
       source_process_id, source_routing_id);
 
   // Include info about the opener's tab (if it was a tab).
-  scoped_ptr<DictionaryValue> source_tab;
+  scoped_ptr<base::DictionaryValue> source_tab;
   GURL source_url_for_tab;
 
   if (source_contents && ExtensionTabUtil::GetTabId(source_contents) >= 0) {
@@ -355,8 +355,8 @@ void MessageService::OpenChannelToTab(
 
   scoped_ptr<OpenChannelParams> params(new OpenChannelParams(
         source,
-        scoped_ptr<DictionaryValue>(),  // Source tab doesn't make sense for
-                                        // opening to tabs.
+        scoped_ptr<base::DictionaryValue>(),  // Source tab doesn't make sense
+                                              // for opening to tabs.
         receiver.release(),
         receiver_port_id,
         extension_id,

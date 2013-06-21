@@ -98,7 +98,7 @@ TEST_F(FullStreamUIPolicyTest, Construct) {
                        .Set("manifest_version", 2))
           .Build();
   extension_service_->AddExtension(extension);
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   policy->ProcessAction(ActivityLogPolicy::ACTION_API, extension->id(),
       std::string("tabs.testMethod"), GURL(), args.get(), NULL);
 }
@@ -113,7 +113,7 @@ TEST_F(FullStreamUIPolicyTest, LogAndFetchActions) {
                        .Set("manifest_version", 2))
           .Build();
   extension_service_->AddExtension(extension);
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   GURL gurl("http://www.google.com");
 
   // Write some API calls
@@ -136,7 +136,7 @@ TEST_F(FullStreamUIPolicyTest, LogWithArguments) {
                        .Set("manifest_version", 2))
           .Build();
   extension_service_->AddExtension(extension);
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue("hello"));
   args->Set(1, new base::StringValue("world"));
   policy->ProcessAction(ActivityLogPolicy::ACTION_API, extension->id(),

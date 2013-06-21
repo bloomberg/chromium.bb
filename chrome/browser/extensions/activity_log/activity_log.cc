@@ -32,9 +32,9 @@
 namespace {
 
 // Concatenate arguments.
-std::string MakeArgList(const ListValue* args) {
+std::string MakeArgList(const base::ListValue* args) {
   std::string call_signature;
-  ListValue::const_iterator it = args->begin();
+  base::ListValue::const_iterator it = args->begin();
   for (; it != args->end(); ++it) {
     std::string arg;
     JSONStringValueSerializer serializer(&arg);
@@ -237,7 +237,7 @@ void ActivityLog::RemoveObserver(ActivityLog::Observer* observer) {
 
 void ActivityLog::LogAPIActionInternal(const std::string& extension_id,
                                        const std::string& api_call,
-                                       ListValue* args,
+                                       base::ListValue* args,
                                        const std::string& extra,
                                        const APIAction::Type type) {
   std::string verb, manager;
@@ -283,7 +283,7 @@ void ActivityLog::LogAPIActionInternal(const std::string& extension_id,
 // A wrapper around LogAPIActionInternal, but we know it's an API call.
 void ActivityLog::LogAPIAction(const std::string& extension_id,
                                const std::string& api_call,
-                               ListValue* args,
+                               base::ListValue* args,
                                const std::string& extra) {
   if (!IsLogEnabled() ||
       ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
@@ -300,7 +300,7 @@ void ActivityLog::LogAPIAction(const std::string& extension_id,
 // handle them. Right now they're being handled almost the same.
 void ActivityLog::LogEventAction(const std::string& extension_id,
                                  const std::string& api_call,
-                                 ListValue* args,
+                                 base::ListValue* args,
                                  const std::string& extra) {
   if (!IsLogEnabled() ||
       ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
@@ -313,7 +313,7 @@ void ActivityLog::LogEventAction(const std::string& extension_id,
 
 void ActivityLog::LogBlockedAction(const std::string& extension_id,
                                    const std::string& blocked_call,
-                                   ListValue* args,
+                                   base::ListValue* args,
                                    BlockedAction::Reason reason,
                                    const std::string& extra) {
   if (!IsLogEnabled() ||
@@ -348,7 +348,7 @@ void ActivityLog::LogDOMAction(const std::string& extension_id,
                                const GURL& url,
                                const string16& url_title,
                                const std::string& api_call,
-                               const ListValue* args,
+                               const base::ListValue* args,
                                DomActionType::Type call_type,
                                const std::string& extra) {
   if (!IsLogEnabled() ||
@@ -480,8 +480,8 @@ void ActivityLog::OnScriptsExecuted(
         ext_scripts_str += *it2;
         ext_scripts_str += " ";
       }
-      scoped_ptr<ListValue> script_names(new ListValue());
-      script_names->Set(0, new StringValue(ext_scripts_str));
+      scoped_ptr<base::ListValue> script_names(new base::ListValue());
+      script_names->Set(0, new base::StringValue(ext_scripts_str));
       LogDOMAction(extension->id(),
                    on_url,
                    web_contents->GetTitle(),

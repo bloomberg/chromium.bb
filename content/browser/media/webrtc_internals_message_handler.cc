@@ -12,8 +12,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
-using base::ListValue;
-
 namespace content {
 
 WebRTCInternalsMessageHandler::WebRTCInternalsMessageHandler() {
@@ -47,7 +45,7 @@ void WebRTCInternalsMessageHandler::OnGetAllUpdates(
   WebRTCInternals::GetInstance()->SendAllUpdates();
 }
 
-void WebRTCInternalsMessageHandler::OnGetAllStats(const ListValue* list) {
+void WebRTCInternalsMessageHandler::OnGetAllStats(const base::ListValue* list) {
   for (RenderProcessHost::iterator i(
        content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
@@ -68,7 +66,7 @@ void WebRTCInternalsMessageHandler::OnStopRtpRecording(
 void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
                                             const base::Value* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::vector<const Value*> args_vector;
+  std::vector<const base::Value*> args_vector;
   args_vector.push_back(args);
   string16 update = WebUI::GetJavascriptCall(command, args_vector);
 

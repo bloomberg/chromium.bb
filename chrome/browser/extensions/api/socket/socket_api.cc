@@ -151,7 +151,7 @@ void SocketCreateFunction::Work() {
   }
   DCHECK(socket);
 
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kSocketIdKey, manager_->Add(socket));
   SetResult(result);
 }
@@ -348,7 +348,7 @@ void SocketAcceptFunction::AsyncWorkStart() {
 
 void SocketAcceptFunction::OnAccept(int result_code,
                                     net::TCPClientSocket *socket) {
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kResultCodeKey, result_code);
   if (socket) {
     Socket *client_socket = new TCPSocket(socket, extension_id(), true);
@@ -383,7 +383,7 @@ void SocketReadFunction::AsyncWorkStart() {
 
 void SocketReadFunction::OnCompleted(int bytes_read,
                                      scoped_refptr<net::IOBuffer> io_buffer) {
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kResultCodeKey, bytes_read);
   if (bytes_read > 0) {
     result->Set(kDataKey,
@@ -429,7 +429,7 @@ void SocketWriteFunction::AsyncWorkStart() {
 }
 
 void SocketWriteFunction::OnCompleted(int bytes_written) {
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);
   SetResult(result);
 
@@ -462,7 +462,7 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
                                          scoped_refptr<net::IOBuffer> io_buffer,
                                          const std::string& address,
                                          int port) {
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kResultCodeKey, bytes_read);
   if (bytes_read > 0) {
     result->Set(kDataKey,
@@ -541,7 +541,7 @@ void SocketSendToFunction::StartSendTo() {
 }
 
 void SocketSendToFunction::OnCompleted(int bytes_written) {
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);
   SetResult(result);
 

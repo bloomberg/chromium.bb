@@ -171,7 +171,7 @@ void WebSocketProxyPrivateGetURLForTCPFunction::CustomFinalize() {
 
 bool WebSocketProxyPrivateGetURLForTCPFunction::RunImpl() {
 #if defined(OS_CHROMEOS)
-  DictionaryValue* qualification = NULL;
+  base::DictionaryValue* qualification = NULL;
   if (args_->GetDictionary(2, &qualification)) {
     const char kTlsOption[] = "tls";
     if (qualification->HasKey(kTlsOption)) {

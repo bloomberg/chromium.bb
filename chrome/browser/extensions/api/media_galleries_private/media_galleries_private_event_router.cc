@@ -62,7 +62,7 @@ void MediaGalleriesPrivateEventRouter::OnGalleryChanged(
        it != extension_ids.end(); ++it) {
     GalleryChangeDetails details;
     details.gallery_id = gallery_id;
-    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(details.ToValue().release());
     scoped_ptr<extensions::Event> event(new extensions::Event(
         event_names::kOnGalleryChangedEventName,
@@ -106,7 +106,7 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
   DeviceDetachmentDetails details;
   details.device_id = GetTransientIdForDeviceId(info.device_id());
 
-  scoped_ptr<base::ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(details.ToValue().release());
   DispatchEvent(event_names::kOnDetachEventName, args.Pass());
 }

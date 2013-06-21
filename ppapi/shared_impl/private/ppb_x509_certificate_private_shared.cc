@@ -15,7 +15,7 @@ PPB_X509Certificate_Fields::PPB_X509Certificate_Fields() {}
 
 PPB_X509Certificate_Fields::PPB_X509Certificate_Fields(
     const PPB_X509Certificate_Fields& fields) {
-  scoped_ptr<ListValue> new_values(fields.values_.DeepCopy());
+  scoped_ptr<base::ListValue> new_values(fields.values_.DeepCopy());
   values_.Swap(new_values.get());
 }
 
@@ -39,29 +39,29 @@ PP_Var PPB_X509Certificate_Fields::GetFieldAsPPVar(
   }
 
   switch (value->GetType()) {
-    case Value::TYPE_NULL:
+    case base::Value::TYPE_NULL:
       return PP_MakeNull();
-    case Value::TYPE_BOOLEAN: {
+    case base::Value::TYPE_BOOLEAN: {
       bool val;
       value->GetAsBoolean(&val);
       return PP_MakeBool(PP_FromBool(val));
     }
-    case Value::TYPE_INTEGER: {
+    case base::Value::TYPE_INTEGER: {
       int val;
       value->GetAsInteger(&val);
       return PP_MakeInt32(val);
     }
-    case Value::TYPE_DOUBLE: {
+    case base::Value::TYPE_DOUBLE: {
       double val;
       value->GetAsDouble(&val);
       return PP_MakeDouble(val);
     }
-    case Value::TYPE_STRING: {
+    case base::Value::TYPE_STRING: {
       std::string val;
       value->GetAsString(&val);
       return StringVar::StringToPPVar(val);
     }
-    case Value::TYPE_BINARY: {
+    case base::Value::TYPE_BINARY: {
       const base::BinaryValue* binary =
           static_cast<const base::BinaryValue*>(value);
       uint32_t size = static_cast<uint32_t>(binary->GetSize());
@@ -71,8 +71,8 @@ PP_Var PPB_X509Certificate_Fields::GetFieldAsPPVar(
                                                                      buffer);
       return array_buffer;
     }
-    case Value::TYPE_DICTIONARY:
-    case Value::TYPE_LIST:
+    case base::Value::TYPE_DICTIONARY:
+    case base::Value::TYPE_LIST:
       // Not handled.
       break;
   }

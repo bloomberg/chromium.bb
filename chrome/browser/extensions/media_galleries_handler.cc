@@ -78,10 +78,10 @@ MediaGalleriesHandler* LoadMediaGalleriesHandler(
 // |result|.
 bool LoadMediaGalleriesHandlers(
     const std::string& extension_id,
-    const ListValue* extension_actions,
+    const base::ListValue* extension_actions,
     MediaGalleriesHandler::List* result,
     string16* error) {
-  for (ListValue::const_iterator iter = extension_actions->begin();
+  for (base::ListValue::const_iterator iter = extension_actions->begin();
        iter != extension_actions->end();
        ++iter) {
     if (!(*iter)->IsType(Value::TYPE_DICTIONARY)) {
@@ -124,7 +124,7 @@ MediaGalleriesHandlerParser::~MediaGalleriesHandlerParser() {
 
 bool MediaGalleriesHandlerParser::Parse(extensions::Extension* extension,
                                         string16* error) {
-  const ListValue* media_galleries_handlers_value = NULL;
+  const base::ListValue* media_galleries_handlers_value = NULL;
   if (!extension->manifest()->GetList(keys::kMediaGalleriesHandlers,
                                       &media_galleries_handlers_value)) {
     *error = ASCIIToUTF16(errors::kInvalidMediaGalleriesHandler);

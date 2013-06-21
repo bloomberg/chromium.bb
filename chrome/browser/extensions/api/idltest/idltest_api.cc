@@ -10,8 +10,8 @@ using base::BinaryValue;
 
 namespace {
 
-ListValue* CopyBinaryValueToIntegerList(const BinaryValue* input) {
-  ListValue* output = new ListValue();
+base::ListValue* CopyBinaryValueToIntegerList(const BinaryValue* input) {
+  base::ListValue* output = new base::ListValue();
   const char* input_buffer = input->GetBuffer();
   for (size_t i = 0; i < input->GetSize(); i++) {
     output->Append(Value::CreateIntegerValue(input_buffer[i]));

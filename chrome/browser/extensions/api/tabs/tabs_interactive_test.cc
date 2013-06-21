@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
   // The id should always match the last focused window and does not depend
   // on what was passed to RunFunctionAndReturnSingleResult.
   EXPECT_EQ(focused_window_id, utils::GetInteger(result.get(), "id"));
-  ListValue* tabs = NULL;
+  base::ListValue* tabs = NULL;
   EXPECT_FALSE(result.get()->GetList(keys::kTabsKey, &tabs));
 
   function = new extensions::WindowsGetLastFocusedFunction();
@@ -91,11 +91,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
                                               "[{\"lastFocusedWindow\":true}]",
                                               browser())));
 
-  ListValue* result_tabs = result.get();
+  base::ListValue* result_tabs = result.get();
   // We should have one initial tab and one added tab.
   EXPECT_EQ(2u, result_tabs->GetSize());
   for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
-    DictionaryValue* result_tab = NULL;
+    base::DictionaryValue* result_tab = NULL;
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
     EXPECT_EQ(focused_window_id, utils::GetInteger(result_tab,
                                                    keys::kWindowIdKey));
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   // We should get one tab for each extra window and one for the initial window.
   EXPECT_EQ(kExtraWindows + 1, result_tabs->GetSize());
   for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
-    DictionaryValue* result_tab = NULL;
+    base::DictionaryValue* result_tab = NULL;
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
     EXPECT_NE(focused_window_id, utils::GetInteger(result_tab,
                                                    keys::kWindowIdKey));

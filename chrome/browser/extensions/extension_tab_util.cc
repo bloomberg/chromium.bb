@@ -99,10 +99,10 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   return result;
 }
 
-ListValue* ExtensionTabUtil::CreateTabList(
+base::ListValue* ExtensionTabUtil::CreateTabList(
     const Browser* browser,
     const Extension* extension) {
-  ListValue* tab_list = new ListValue();
+  base::ListValue* tab_list = new base::ListValue();
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
     tab_list->Append(CreateTabValue(tab_strip->GetWebContentsAt(i),

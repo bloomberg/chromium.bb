@@ -127,7 +127,7 @@ bool ObfuscatedGaiaIdFetcher::ParseResponse(
   if (!value.get())
     return false;
 
-  DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = NULL;
   if (!value->GetAsDictionary(&dict))
     return false;
 

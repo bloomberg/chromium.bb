@@ -148,7 +148,7 @@ BookmarkEventRouter::~BookmarkEventRouter() {
 
 void BookmarkEventRouter::DispatchEvent(
     const char* event_name,
-    scoped_ptr<ListValue> event_args) {
+    scoped_ptr<base::ListValue> event_args) {
   if (extensions::ExtensionSystem::Get(profile_)->event_router()) {
     extensions::ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
         make_scoped_ptr(new extensions::Event(event_name, event_args.Pass())));
@@ -169,10 +169,10 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
                                             int old_index,
                                             const BookmarkNode* new_parent,
                                             int new_index) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   const BookmarkNode* node = new_parent->GetChild(new_index);
-  args->Append(new StringValue(base::Int64ToString(node->id())));
-  DictionaryValue* object_args = new DictionaryValue();
+  args->Append(new base::StringValue(base::Int64ToString(node->id())));
+  base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->SetString(keys::kParentIdKey,
                          base::Int64ToString(new_parent->id()));
   object_args->SetInteger(keys::kIndexKey, new_index);
@@ -187,9 +187,9 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
 void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                             const BookmarkNode* parent,
                                             int index) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   const BookmarkNode* node = parent->GetChild(index);
-  args->Append(new StringValue(base::Int64ToString(node->id())));
+  args->Append(new base::StringValue(base::Int64ToString(node->id())));
   scoped_ptr<BookmarkTreeNode> tree_node(
       bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));
   args->Append(tree_node->ToValue().release());
@@ -201,9 +201,9 @@ void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
                                               const BookmarkNode* parent,
                                               int index,
                                               const BookmarkNode* node) {
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(new StringValue(base::Int64ToString(node->id())));
-  DictionaryValue* object_args = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(new base::StringValue(base::Int64ToString(node->id())));
+  base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->SetString(keys::kParentIdKey,
                          base::Int64ToString(parent->id()));
   object_args->SetInteger(keys::kIndexKey, index);
@@ -221,15 +221,15 @@ void BookmarkEventRouter::BookmarkAllNodesRemoved(BookmarkModel* model) {
 
 void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
                                               const BookmarkNode* node) {
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(new StringValue(base::Int64ToString(node->id())));
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(new base::StringValue(base::Int64ToString(node->id())));
 
   // TODO(erikkay) The only three things that BookmarkModel sends this
   // notification for are title, url and favicon.  Since we're currently
   // ignoring favicon and since the notification doesn't say which one anyway,
   // for now we only include title and url.  The ideal thing would be to change
   // BookmarkModel to indicate what changed.
-  DictionaryValue* object_args = new DictionaryValue();
+  base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->SetString(keys::kTitleKey, node->GetTitle());
   if (node->is_url())
     object_args->SetString(keys::kUrlKey, node->url().spec());
@@ -246,16 +246,17 @@ void BookmarkEventRouter::BookmarkNodeFaviconChanged(BookmarkModel* model,
 void BookmarkEventRouter::BookmarkNodeChildrenReordered(
     BookmarkModel* model,
     const BookmarkNode* node) {
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(new StringValue(base::Int64ToString(node->id())));
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Append(new base::StringValue(base::Int64ToString(node->id())));
   int childCount = node->child_count();
-  ListValue* children = new ListValue();
+  base::ListValue* children = new base::ListValue();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
-    Value* child_id = new StringValue(base::Int64ToString(child->id()));
+    base::Value* child_id =
+        new base::StringValue(base::Int64ToString(child->id()));
     children->Append(child_id);
   }
-  DictionaryValue* reorder_info = new DictionaryValue();
+  base::DictionaryValue* reorder_info = new base::DictionaryValue();
   reorder_info->Set(keys::kChildIdsKey, children);
   args->Append(reorder_info);
 
@@ -264,12 +265,12 @@ void BookmarkEventRouter::BookmarkNodeChildrenReordered(
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesBeginning(
     BookmarkModel* model) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   DispatchEvent(keys::kOnBookmarkImportBegan, args.Pass());
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   DispatchEvent(keys::kOnBookmarkImportEnded, args.Pass());
 }
 
@@ -457,7 +458,7 @@ bool BookmarksSearchFunction::RunImpl() {
 }
 
 // static
-bool BookmarksRemoveFunction::ExtractIds(const ListValue* args,
+bool BookmarksRemoveFunction::ExtractIds(const base::ListValue* args,
                                          std::list<int64>* ids,
                                          bool* invalid_id) {
   std::string id_string;
@@ -568,7 +569,7 @@ bool BookmarksCreateFunction::RunImpl() {
 }
 
 // static
-bool BookmarksMoveFunction::ExtractIds(const ListValue* args,
+bool BookmarksMoveFunction::ExtractIds(const base::ListValue* args,
                                        std::list<int64>* ids,
                                        bool* invalid_id) {
   // For now, Move accepts ID parameters in the same way as an Update.
@@ -642,7 +643,7 @@ bool BookmarksMoveFunction::RunImpl() {
 }
 
 // static
-bool BookmarksUpdateFunction::ExtractIds(const ListValue* args,
+bool BookmarksUpdateFunction::ExtractIds(const base::ListValue* args,
                                          std::list<int64>* ids,
                                          bool* invalid_id) {
   // For now, Update accepts ID parameters in the same way as an Remove.
@@ -728,9 +729,9 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
   explicit CreateBookmarkBucketMapper(Profile* profile) : profile_(profile) {}
   // TODO(tim): This should share code with BookmarksCreateFunction::RunImpl,
   // but I can't figure out a good way to do that with all the macros.
-  virtual void GetBucketsForArgs(const ListValue* args,
+  virtual void GetBucketsForArgs(const base::ListValue* args,
                                  BucketList* buckets) OVERRIDE {
-    const DictionaryValue* json;
+    const base::DictionaryValue* json;
     if (!args->GetDictionary(0, &json))
       return;
 
@@ -767,7 +768,7 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
 class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
  public:
   explicit RemoveBookmarksBucketMapper(Profile* profile) : profile_(profile) {}
-  virtual void GetBucketsForArgs(const ListValue* args,
+  virtual void GetBucketsForArgs(const base::ListValue* args,
                                  BucketList* buckets) OVERRIDE {
     typedef std::list<int64> IdList;
     IdList ids;
@@ -802,7 +803,8 @@ template <class FunctionType>
 class BookmarkIdMapper : public BookmarkBucketMapper<int64> {
  public:
   typedef std::list<int64> IdList;
-  virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {
+  virtual void GetBucketsForArgs(const base::ListValue* args,
+                                 BucketList* buckets) {
     IdList ids;
     bool invalid_id = false;
     if (!FunctionType::ExtractIds(args, &ids, &invalid_id) || invalid_id)

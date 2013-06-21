@@ -36,7 +36,7 @@ class WebviewExecuteScriptFunction : public WebviewExecuteCodeFunction {
   virtual void OnExecuteCodeFinished(const std::string& error,
                                      int32 on_page_id,
                                      const GURL& on_url,
-                                     const ListValue& result) OVERRIDE;
+                                     const base::ListValue& result) OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION("webview.executeScript", WEBVIEW_EXECUTESCRIPT)
 };

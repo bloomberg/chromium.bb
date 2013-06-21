@@ -168,7 +168,7 @@ void HistoryEventRouter::HistoryUrlVisited(
     Profile* profile,
     const history::URLVisitedDetails* details) {
   scoped_ptr<HistoryItem> history_item = GetHistoryItem(details->row);
-  scoped_ptr<ListValue> args = OnVisited::Create(*history_item);
+  scoped_ptr<base::ListValue> args = OnVisited::Create(*history_item);
 
   DispatchEvent(profile, kOnVisited, args.Pass());
 }
@@ -186,14 +186,14 @@ void HistoryEventRouter::HistoryUrlsRemoved(
   }
   removed.urls.reset(urls);
 
-  scoped_ptr<ListValue> args = OnVisitRemoved::Create(removed);
+  scoped_ptr<base::ListValue> args = OnVisitRemoved::Create(removed);
   DispatchEvent(profile, kOnVisitRemoved, args.Pass());
 }
 
 void HistoryEventRouter::DispatchEvent(
     Profile* profile,
     const char* event_name,
-    scoped_ptr<ListValue> event_args) {
+    scoped_ptr<base::ListValue> event_args) {
   if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
     scoped_ptr<extensions::Event> event(new extensions::Event(
         event_name, event_args.Pass()));

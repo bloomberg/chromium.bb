@@ -41,12 +41,12 @@ ValueStore::ReadResult WeakUnlimitedSettingsStorage::Get() {
 }
 
 ValueStore::WriteResult WeakUnlimitedSettingsStorage::Set(
-    WriteOptions options, const std::string& key, const Value& value) {
+    WriteOptions options, const std::string& key, const base::Value& value) {
   return delegate_->Set(IGNORE_QUOTA, key, value);
 }
 
 ValueStore::WriteResult WeakUnlimitedSettingsStorage::Set(
-    WriteOptions options, const DictionaryValue& values) {
+    WriteOptions options, const base::DictionaryValue& values) {
   return delegate_->Set(IGNORE_QUOTA, values);
 }
 

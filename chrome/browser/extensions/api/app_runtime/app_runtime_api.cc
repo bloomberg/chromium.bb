@@ -48,14 +48,14 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
 // static.
 void AppEventRouter::DispatchOnLaunchedEvent(
     Profile* profile, const Extension* extension) {
-  scoped_ptr<ListValue> arguments(new ListValue());
+  scoped_ptr<base::ListValue> arguments(new base::ListValue());
   DispatchOnLaunchedEventImpl(extension->id(), arguments.Pass(), profile);
 }
 
 // static.
 void AppEventRouter::DispatchOnRestartedEvent(Profile* profile,
                                               const Extension* extension) {
-  scoped_ptr<ListValue> arguments(new ListValue());
+  scoped_ptr<base::ListValue> arguments(new base::ListValue());
   scoped_ptr<Event> event(new Event(kOnRestarted, arguments.Pass()));
   event->restrict_to_profile = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->
@@ -67,15 +67,15 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
     Profile* profile, const Extension* extension,
     const std::string& handler_id, const std::string& mime_type,
     const extensions::app_file_handler_util::GrantedFileEntry& file_entry) {
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* launch_data = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* launch_data = new base::DictionaryValue();
   launch_data->SetString("id", handler_id);
-  DictionaryValue* launch_item = new DictionaryValue;
+  base::DictionaryValue* launch_item = new base::DictionaryValue;
   launch_item->SetString("fileSystemId", file_entry.filesystem_id);
   launch_item->SetString("baseName", file_entry.registered_name);
   launch_item->SetString("mimeType", mime_type);
   launch_item->SetString("entryId", file_entry.id);
-  ListValue* items = new ListValue;
+  base::ListValue* items = new base::ListValue;
   items->Append(launch_item);
   launch_data->Set("items", items);
   args->Append(launch_data);

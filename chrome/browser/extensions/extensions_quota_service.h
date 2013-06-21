@@ -56,7 +56,7 @@ class ExtensionsQuotaService : public base::NonThreadSafe {
   // or empty-string if the request is fine and can proceed.
   std::string Assess(const std::string& extension_id,
                      ExtensionFunction* function,
-                     const ListValue* args,
+                     const base::ListValue* args,
                      const base::TimeTicks& event_time);
 
  private:
@@ -152,7 +152,7 @@ class QuotaLimitHeuristic {
     // occurs while parsing |args|, the function aborts - buckets may be non-
     // empty). The expectation is that invalid args and associated errors are
     // handled by the ExtensionFunction itself so we don't concern ourselves.
-    virtual void GetBucketsForArgs(const ListValue* args,
+    virtual void GetBucketsForArgs(const base::ListValue* args,
                                    BucketList* buckets) = 0;
   };
 
@@ -162,7 +162,7 @@ class QuotaLimitHeuristic {
    public:
     SingletonBucketMapper() {}
     virtual ~SingletonBucketMapper() {}
-    virtual void GetBucketsForArgs(const ListValue* args,
+    virtual void GetBucketsForArgs(const base::ListValue* args,
                                    BucketList* buckets) OVERRIDE;
 
    private:
@@ -180,7 +180,8 @@ class QuotaLimitHeuristic {
   // implementation of a derived class) to perform an operation with |args|,
   // based on the history of similar operations with similar arguments (which
   // is retrieved using the BucketMapper).
-  bool ApplyToArgs(const ListValue* args, const base::TimeTicks& event_time);
+  bool ApplyToArgs(const base::ListValue* args,
+                   const base::TimeTicks& event_time);
 
   // Returns an error formatted according to this heuristic.
   std::string GetError() const;

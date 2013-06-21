@@ -51,7 +51,7 @@ void SettingSyncData::InitFromExtensionSettingSpecifics(
   if (!value.get()) {
     LOG(WARNING) << "Specifics for " << specifics.extension_id() << "/" <<
         specifics.key() << " had bad JSON for value: " << specifics.value();
-    value.reset(new DictionaryValue());
+    value.reset(new base::DictionaryValue());
   }
   internal_ = new Internal(
       change_type,

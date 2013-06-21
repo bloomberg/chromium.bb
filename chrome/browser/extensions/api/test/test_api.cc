@@ -124,7 +124,7 @@ void TestSendMessageFunction::Reply(const std::string& message) {
 
 // static
 void TestGetConfigFunction::set_test_config_state(
-    DictionaryValue* value) {
+    base::DictionaryValue* value) {
   TestConfigState* test_config_state = TestConfigState::GetInstance();
   test_config_state->set_config_state(value);
 }

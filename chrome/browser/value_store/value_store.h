@@ -19,7 +19,7 @@ class ValueStore {
   class ReadResultType {
    public:
     // Ownership of |settings| taken.
-    explicit ReadResultType(DictionaryValue* settings);
+    explicit ReadResultType(base::DictionaryValue* settings);
     explicit ReadResultType(const std::string& error);
     ~ReadResultType();
 
@@ -27,7 +27,7 @@ class ValueStore {
     // the root object. If you request the value for key "foo", that value will
     // be in |settings.foo|.
     // Must only be called if HasError() is false.
-    scoped_ptr<DictionaryValue>& settings();
+    scoped_ptr<base::DictionaryValue>& settings();
 
     // Gets whether the operation failed.
     bool HasError() const;
@@ -37,7 +37,7 @@ class ValueStore {
     const std::string& error() const;
 
    private:
-    scoped_ptr<DictionaryValue> settings_;
+    scoped_ptr<base::DictionaryValue> settings_;
     const std::string error_;
 
     DISALLOW_COPY_AND_ASSIGN(ReadResultType);
@@ -124,12 +124,13 @@ class ValueStore {
   virtual ReadResult Get() = 0;
 
   // Sets a single key to a new value.
-  virtual WriteResult Set(
-      WriteOptions options, const std::string& key, const Value& value) = 0;
+  virtual WriteResult Set(WriteOptions options,
+                          const std::string& key,
+                          const base::Value& value) = 0;
 
   // Sets multiple keys to new values.
   virtual WriteResult Set(
-      WriteOptions options, const DictionaryValue& values) = 0;
+      WriteOptions options, const base::DictionaryValue& values) = 0;
 
   // Removes a key from the storage.
   virtual WriteResult Remove(const std::string& key) = 0;

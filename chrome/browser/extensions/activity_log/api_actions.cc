@@ -208,7 +208,7 @@ bool APIAction::Record(sql::Connection* db) {
 
 // static
 void APIAction::LookupTabId(const std::string& api_call,
-                            ListValue* args,
+                            base::ListValue* args,
                             Profile* profile) {
   if (api_call == "tabs.get" ||                 // api calls, ID as int
       api_call == "tabs.connect" ||
@@ -228,7 +228,7 @@ void APIAction::LookupTabId(const std::string& api_call,
       api_call == "tabs.onRemoved" ||
       api_call == "tabs.onReplaced") {
     int tab_id;
-    ListValue* id_list;
+    base::ListValue* id_list;
     if (args->GetInteger(0, &tab_id)) {
       std::string url = GetURLForTabId(tab_id, profile);
       if (url != std::string())

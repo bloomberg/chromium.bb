@@ -165,7 +165,7 @@ class EventRouter : public content::NotificationObserver,
   static void LogExtensionEventMessage(void* profile_id,
                                        const std::string& extension_id,
                                        const std::string& event_name,
-                                       scoped_ptr<ListValue> event_args);
+                                       scoped_ptr<base::ListValue> event_args);
 
   // TODO(gdk): Document this.
   static void DispatchExtensionMessage(

@@ -24,6 +24,9 @@
 #include "sync/api/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::DictionaryValue;
+using base::ListValue;
+using base::Value;
 using content::BrowserThread;
 
 namespace extensions {

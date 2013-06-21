@@ -55,7 +55,7 @@ chrome::MediaGalleryPrefIdSet WatchedGalleryIdsFromValue(
 scoped_ptr<base::ListValue> WatchedGalleryIdsToValue(
     const chrome::MediaGalleryPrefIdSet gallery_ids) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  scoped_ptr<base::ListValue> list(new ListValue());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
   for (chrome::MediaGalleryPrefIdSet::const_iterator id_iter =
            gallery_ids.begin();
        id_iter != gallery_ids.end(); ++id_iter)

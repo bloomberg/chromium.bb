@@ -64,7 +64,7 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
     const BrowserAccessibility& node, base::DictionaryValue* dict) {
   AddProperties(node, dict);
 
-  ListValue* children = new ListValue;
+  base::ListValue* children = new base::ListValue;
   dict->Set(kChildrenDictAttr, children);
   if (!IncludeChildren(node))
     return;

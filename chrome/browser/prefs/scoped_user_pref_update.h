@@ -98,8 +98,10 @@ class ScopedUserPrefUpdate : public subtle::ScopedUserPrefUpdateBase {
   DISALLOW_COPY_AND_ASSIGN(ScopedUserPrefUpdate);
 };
 
-typedef ScopedUserPrefUpdate<base::DictionaryValue, Value::TYPE_DICTIONARY>
+typedef ScopedUserPrefUpdate<base::DictionaryValue,
+                             base::Value::TYPE_DICTIONARY>
     DictionaryPrefUpdate;
-typedef ScopedUserPrefUpdate<base::ListValue, Value::TYPE_LIST> ListPrefUpdate;
+typedef ScopedUserPrefUpdate<base::ListValue, base::Value::TYPE_LIST>
+    ListPrefUpdate;
 
 #endif  // CHROME_BROWSER_PREFS_SCOPED_USER_PREF_UPDATE_H_

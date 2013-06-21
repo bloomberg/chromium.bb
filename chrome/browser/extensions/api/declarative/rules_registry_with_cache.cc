@@ -332,7 +332,7 @@ void RulesRegistryWithCache::RuleStorageOnUI::WriteToStorage(
   if (!profile_)
     return;
 
-  const ListValue* rules = NULL;
+  const base::ListValue* rules = NULL;
   CHECK(value->GetAsList(&rules));
   bool rules_stored_previously = GetDeclarativeRulesStored(extension_id);
   bool store_rules = !rules->empty();

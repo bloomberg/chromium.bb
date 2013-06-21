@@ -162,7 +162,7 @@ void ExtensionBluetoothEventRouter::SetSendDiscoveryEvents(bool should_send) {
 
 void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
     const char* event_name, const extensions::api::bluetooth::Device& device) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(device.ToValue().release());
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
@@ -182,7 +182,7 @@ void ExtensionBluetoothEventRouter::DispatchConnectionEvent(
   result_socket.profile.uuid = uuid;
   result_socket.id = socket_id;
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(result_socket.ToValue().release());
   scoped_ptr<Event> event(new Event(
       extensions::event_names::kBluetoothOnConnection, args.Pass()));
@@ -271,7 +271,7 @@ void ExtensionBluetoothEventRouter::DispatchAdapterStateEvent() {
   api::bluetooth::AdapterState state;
   PopulateAdapterState(*adapter_.get(), &state);
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(state.ToValue().release());
   scoped_ptr<Event> event(new Event(
       extensions::event_names::kBluetoothOnAdapterStateChanged,

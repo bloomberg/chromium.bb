@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetWindow) {
 
   EXPECT_EQ(window_id, utils::GetInteger(result.get(), "id"));
   // "populate" was enabled so tabs should be populated.
-  ListValue* tabs = NULL;
+  base::ListValue* tabs = NULL;
   EXPECT_TRUE(result.get()->GetList(keys::kTabsKey, &tabs));
 
   // TODO(aa): Can't assume window is focused. On mac, calling Activate() from a
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetCurrentWindow) {
   // The id should match the window id of the browser instance that was passed
   // to RunFunctionAndReturnSingleResult.
   EXPECT_EQ(new_id, utils::GetInteger(result.get(), "id"));
-  ListValue* tabs = NULL;
+  base::ListValue* tabs = NULL;
   EXPECT_FALSE(result.get()->GetList(keys::kTabsKey, &tabs));
 
   // Get the current window using the old window and make the tabs populated.
@@ -190,15 +190,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
                                               "[]",
                                               browser())));
 
-  ListValue* windows = result.get();
+  base::ListValue* windows = result.get();
   EXPECT_EQ(NUM_WINDOWS, windows->GetSize());
   for (size_t i = 0; i < NUM_WINDOWS; ++i) {
-    DictionaryValue* result_window = NULL;
+    base::DictionaryValue* result_window = NULL;
     EXPECT_TRUE(windows->GetDictionary(i, &result_window));
     result_ids.insert(utils::GetInteger(result_window, "id"));
 
     // "populate" was not passed in so tabs are not populated.
-    ListValue* tabs = NULL;
+    base::ListValue* tabs = NULL;
     EXPECT_FALSE(result_window->GetList(keys::kTabsKey, &tabs));
   }
   // The returned ids should contain all the current browser instance ids.
@@ -215,12 +215,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
   windows = result.get();
   EXPECT_EQ(NUM_WINDOWS, windows->GetSize());
   for (size_t i = 0; i < windows->GetSize(); ++i) {
-    DictionaryValue* result_window = NULL;
+    base::DictionaryValue* result_window = NULL;
     EXPECT_TRUE(windows->GetDictionary(i, &result_window));
     result_ids.insert(utils::GetInteger(result_window, "id"));
 
     // "populate" was enabled so tabs should be populated.
-    ListValue* tabs = NULL;
+    base::ListValue* tabs = NULL;
     EXPECT_TRUE(result_window->GetList(keys::kTabsKey, &tabs));
   }
   // The returned ids should contain all the current browser instance ids.
@@ -404,11 +404,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
                                               "[{\"currentWindow\":true}]",
                                               browser())));
 
-  ListValue* result_tabs = result.get();
+  base::ListValue* result_tabs = result.get();
   // We should have one initial tab and one added tab.
   EXPECT_EQ(2u, result_tabs->GetSize());
   for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
-    DictionaryValue* result_tab = NULL;
+    base::DictionaryValue* result_tab = NULL;
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
     EXPECT_EQ(window_id, utils::GetInteger(result_tab, keys::kWindowIdKey));
   }
@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
   // We should have one tab for each extra window.
   EXPECT_EQ(kExtraWindows, result_tabs->GetSize());
   for (size_t i = 0; i < kExtraWindows; ++i) {
-    DictionaryValue* result_tab = NULL;
+    base::DictionaryValue* result_tab = NULL;
     EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
     EXPECT_NE(window_id, utils::GetInteger(result_tab, keys::kWindowIdKey));
   }

@@ -100,7 +100,7 @@ static void DispatchOnStartupEventImpl(
     return;
   }
 
-  scoped_ptr<base::ListValue> event_args(new ListValue());
+  scoped_ptr<base::ListValue> event_args(new base::ListValue());
   scoped_ptr<Event> event(new Event(kOnStartupEvent, event_args.Pass()));
   system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
 }
@@ -143,7 +143,7 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   // chance to register for events. So we register on its behalf. If the
   // extension does not actually have a listener, the event will just be
   // ignored.
-  scoped_ptr<base::ListValue> event_args(new ListValue());
+  scoped_ptr<base::ListValue> event_args(new base::ListValue());
   base::DictionaryValue* info = new base::DictionaryValue();
   event_args->Append(info);
   if (old_version.IsValid()) {
@@ -166,12 +166,12 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
 void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
     Profile* profile,
     const std::string& extension_id,
-    const DictionaryValue* manifest) {
+    const base::DictionaryValue* manifest) {
   ExtensionSystem* system = ExtensionSystem::Get(profile);
   if (!system)
     return;
 
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(manifest->DeepCopy());
   DCHECK(system->event_router());
   scoped_ptr<Event> event(new Event(kOnUpdateAvailableEvent, args.Pass()));
@@ -185,7 +185,7 @@ void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
   if (!system)
     return;
 
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   DCHECK(system->event_router());
   scoped_ptr<Event> event(new Event(kOnBrowserUpdateAvailableEvent,
                                     args.Pass()));
@@ -409,7 +409,7 @@ bool RuntimeGetPackageDirectoryEntryFunction::RunImpl() {
   if (!policy->CanReadFile(renderer_id, path))
     policy->GrantReadFile(renderer_id, path);
 
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
   dict->SetString("fileSystemId", filesystem_id);
   dict->SetString("baseName", relative_path);

@@ -315,13 +315,13 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
     return handled;
   }
 
-  void OnJSONParseSucceeded(const ListValue& wrapper) {
+  void OnJSONParseSucceeded(const base::ListValue& wrapper) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const Value* value = NULL;
     CHECK(wrapper.Get(0, &value));
     if (value->IsType(Value::TYPE_DICTIONARY))
       parsed_manifest_.reset(
-          static_cast<const DictionaryValue*>(value)->DeepCopy());
+          static_cast<const base::DictionaryValue*>(value)->DeepCopy());
     else
       error_ = keys::kManifestParseError;
 
@@ -358,7 +358,7 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
   std::string manifest_;
 
   // Results of parsing.
-  scoped_ptr<DictionaryValue> parsed_manifest_;
+  scoped_ptr<base::DictionaryValue> parsed_manifest_;
 
   std::string error_;
 };
@@ -382,7 +382,7 @@ bool ManagementGetPermissionWarningsByManifestFunction::RunImpl() {
 }
 
 void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
-    DictionaryValue* parsed_manifest) {
+    base::DictionaryValue* parsed_manifest) {
   CHECK(parsed_manifest);
 
   scoped_refptr<Extension> extension = Extension::Create(
@@ -676,7 +676,7 @@ void ManagementEventRouter::Observe(
   DCHECK(event_name);
   DCHECK(extension);
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   if (event_name == events::kOnExtensionUninstalled) {
     args->Append(Value::CreateStringValue(extension->id()));
   } else {

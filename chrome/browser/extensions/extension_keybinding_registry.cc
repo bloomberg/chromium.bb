@@ -70,7 +70,7 @@ void ExtensionKeybindingRegistry::CommandExecuted(
   if (granter)
     granter->GrantIfRequested(extension);
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(Value::CreateStringValue(command));
 
   scoped_ptr<Event> event(new Event("commands.onCommand", args.Pass()));

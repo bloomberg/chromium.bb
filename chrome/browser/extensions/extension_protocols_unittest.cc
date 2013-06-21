@@ -67,7 +67,7 @@ scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
   manifest.SetString("name", "An extension with web-accessible resources");
   manifest.SetString("version", "2");
 
-  ListValue* web_accessible_list = new ListValue();
+  base::ListValue* web_accessible_list = new base::ListValue();
   web_accessible_list->AppendString("test.dat");
   manifest.Set("web_accessible_resources", web_accessible_list);
 

@@ -124,7 +124,7 @@ bool SystemPrivateGetUpdateStatusFunction::RunImpl() {
     state = kNotAvailableState;
   }
 #endif
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString(kStateKey, state);
   dict->SetDouble(kDownloadProgressKey, download_progress);
   SetResult(dict);
@@ -133,14 +133,14 @@ bool SystemPrivateGetUpdateStatusFunction::RunImpl() {
 }
 
 void DispatchVolumeChangedEvent(double volume, bool is_volume_muted) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetDouble(kVolumeKey, volume);
   dict->SetBoolean(kIsVolumeMutedKey, is_volume_muted);
   DispatchEvent(kOnVolumeChanged, dict);
 }
 
 void DispatchBrightnessChangedEvent(int brightness, bool user_initiated) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(kBrightnessKey, brightness);
   dict->SetBoolean(kUserInitiatedKey, user_initiated);
   DispatchEvent(kOnBrightnessChanged, dict);

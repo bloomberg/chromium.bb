@@ -116,6 +116,9 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
+using base::DictionaryValue;
+using base::ListValue;
+using base::Value;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;

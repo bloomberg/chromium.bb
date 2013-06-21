@@ -168,8 +168,8 @@ const char kUserCancelledError[] = "User cancelled install";
 
 // Helper to create a dictionary with login properties set from the appropriate
 // values in the passed-in |profile|.
-DictionaryValue* CreateLoginResult(Profile* profile) {
-  DictionaryValue* dictionary = new DictionaryValue();
+base::DictionaryValue* CreateLoginResult(Profile* profile) {
+  base::DictionaryValue* dictionary = new base::DictionaryValue();
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   dictionary->SetString(kLoginKey, username);
@@ -222,7 +222,7 @@ InstallBundleFunction::InstallBundleFunction() {}
 InstallBundleFunction::~InstallBundleFunction() {}
 
 bool InstallBundleFunction::RunImpl() {
-  ListValue* extensions = NULL;
+  base::ListValue* extensions = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &extensions));
 
   BundleInstaller::ItemList items;
@@ -237,10 +237,10 @@ bool InstallBundleFunction::RunImpl() {
   return true;
 }
 
-bool InstallBundleFunction::ReadBundleInfo(ListValue* extensions,
+bool InstallBundleFunction::ReadBundleInfo(base::ListValue* extensions,
                                            BundleInstaller::ItemList* items) {
   for (size_t i = 0; i < extensions->GetSize(); ++i) {
-    DictionaryValue* details = NULL;
+    base::DictionaryValue* details = NULL;
     EXTENSION_FUNCTION_VALIDATE(extensions->GetDictionary(i, &details));
 
     BundleInstaller::Item item;
@@ -286,7 +286,7 @@ BeginInstallWithManifestFunction::BeginInstallWithManifestFunction()
 BeginInstallWithManifestFunction::~BeginInstallWithManifestFunction() {}
 
 bool BeginInstallWithManifestFunction::RunImpl() {
-  DictionaryValue* details = NULL;
+  base::DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
   CHECK(details);
 
@@ -401,7 +401,7 @@ void BeginInstallWithManifestFunction::SetResultCode(ResultCode code) {
 void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
     const std::string& id,
     const SkBitmap& icon,
-    DictionaryValue* parsed_manifest) {
+    base::DictionaryValue* parsed_manifest) {
   CHECK_EQ(id_, id);
   CHECK(parsed_manifest);
   icon_ = icon;

@@ -88,7 +88,7 @@ void ExtensionFunction::SetResult(base::Value* result) {
   results_->Append(result);
 }
 
-const ListValue* ExtensionFunction::GetResultList() {
+const base::ListValue* ExtensionFunction::GetResultList() {
   return results_.get();
 }
 
@@ -128,7 +128,7 @@ void ExtensionFunction::SendResponseImpl(bool success) {
 
   // If results were never set, we send an empty argument list.
   if (!results_)
-    results_.reset(new ListValue());
+    results_.reset(new base::ListValue());
 
   response_callback_.Run(type, *results_, GetError());
 }

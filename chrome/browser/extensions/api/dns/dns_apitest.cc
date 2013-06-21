@@ -63,7 +63,8 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
       resolve_function.get(), "[\"127.0.0.1\"]", browser()));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-  DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
+  base::DictionaryValue *value =
+      static_cast<base::DictionaryValue*>(result.get());
 
   int resultCode;
   EXPECT_TRUE(value->GetInteger("resultCode", &resultCode));
@@ -89,7 +90,8 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
       RunFunctionAndReturnSingleResult(resolve_function.get(),
                                        function_arguments, browser()));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-  DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
+  base::DictionaryValue *value =
+      static_cast<base::DictionaryValue*>(result.get());
 
   int resultCode;
   EXPECT_TRUE(value->GetInteger("resultCode", &resultCode));

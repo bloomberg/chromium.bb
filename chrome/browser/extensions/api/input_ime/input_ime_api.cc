@@ -36,10 +36,10 @@ const char kErrorSetMenuItemsFail[] = "Could not create menu Items";
 const char kErrorUpdateMenuItemsFail[] = "Could not update menu Items";
 
 bool ReadMenuItems(
-    ListValue* menu_items,
+    base::ListValue* menu_items,
     std::vector<chromeos::InputMethodEngine::MenuItem>* output) {
   for (size_t i = 0; i < menu_items->GetSize(); ++i) {
-    DictionaryValue* item_dict;
+    base::DictionaryValue* item_dict;
     if (!menu_items->GetDictionary(i, &item_dict)) {
       return false;
     }
@@ -118,7 +118,7 @@ bool ReadMenuItems(
     output->back().modified = modified;
 
     if (item_dict->HasKey(keys::kItemsKey)) {
-      ListValue* sub_list;
+      base::ListValue* sub_list;
       if (!item_dict->GetList(keys::kItemsKey, &sub_list)) {
         return false;
       }
@@ -135,7 +135,7 @@ bool ReadMenuItems(
 static void DispatchEventToExtension(Profile* profile,
                                      const std::string& extension_id,
                                      const std::string& event_name,
-                                     scoped_ptr<ListValue> args) {
+                                     scoped_ptr<base::ListValue> args) {
   scoped_ptr<extensions::Event> event(new extensions::Event(
       event_name, args.Pass()));
   event->restrict_to_profile = profile;
@@ -176,7 +176,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(Value::CreateStringValue(engine_id));
 
     DispatchEventToExtension(profile_, extension_id_,
@@ -187,7 +187,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(Value::CreateStringValue(engine_id));
 
     DispatchEventToExtension(profile_, extension_id_,
@@ -199,11 +199,11 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetInteger("contextID", context.id);
     dict->SetString("type", context.type);
 
-    scoped_ptr<base::ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(dict);
 
     DispatchEventToExtension(profile_, extension_id_,
@@ -214,7 +214,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(Value::CreateIntegerValue(context_id));
 
     DispatchEventToExtension(profile_, extension_id_,
@@ -226,11 +226,11 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetInteger("contextID", context.id);
     dict->SetString("type", context.type);
 
-    scoped_ptr<base::ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(dict);
 
     DispatchEventToExtension(profile_, extension_id_,
@@ -248,7 +248,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
         extensions::InputImeEventRouter::GetInstance()->AddRequest(engine_id,
                                                                    key_data);
 
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetString("type", event.type);
     dict->SetString("requestId", request_id);
     dict->SetString("key", event.key);
@@ -258,7 +258,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     dict->SetBoolean("shiftKey", event.shift_key);
     dict->SetBoolean("capsLock", event.caps_lock);
 
-    scoped_ptr<base::ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(Value::CreateStringValue(engine_id));
     args->Append(dict);
 
@@ -273,7 +273,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(Value::CreateStringValue(engine_id));
     args->Append(Value::CreateIntegerValue(candidate_id));
     switch (button) {
@@ -301,7 +301,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    scoped_ptr<base::ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(Value::CreateStringValue(engine_id));
     args->Append(Value::CreateStringValue(menu_id));
 
@@ -315,12 +315,12 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
                                         int anchor_pos) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetString("text", text);
     dict->SetInteger("focus", cursor_pos);
     dict->SetInteger("anchor", anchor_pos);
 
-    scoped_ptr<ListValue> args(new ListValue);
+    scoped_ptr<ListValue> args(new base::ListValue);
     args->Append(Value::CreateStringValue(engine_id));
     args->Append(dict);
 
@@ -331,7 +331,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
   virtual void OnReset(const std::string& engine_id) OVERRIDE {
     if (profile_ == NULL || extension_id_.empty())
       return;
-    scoped_ptr<base::ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(Value::CreateStringValue(engine_id));
 
     DispatchEventToExtension(profile_, extension_id_,
@@ -506,7 +506,7 @@ bool SetCompositionFunction::RunImpl() {
     return true;
   }
 
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
   int context_id;
   std::string text;
@@ -533,12 +533,12 @@ bool SetCompositionFunction::RunImpl() {
   }
 
   if (args->HasKey(keys::kSegmentsKey)) {
-    ListValue* segment_list = NULL;
+    base::ListValue* segment_list = NULL;
     EXTENSION_FUNCTION_VALIDATE(args->GetList(keys::kSegmentsKey,
                                               &segment_list));
 
     for (size_t i = 0; i < segment_list->GetSize(); ++i) {
-      DictionaryValue* segment = NULL;
+      base::DictionaryValue* segment = NULL;
       if (!segment_list->GetDictionary(i, &segment))
         continue;
 
@@ -581,7 +581,7 @@ bool ClearCompositionFunction::RunImpl() {
     return true;
   }
 
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
   int context_id;
 
@@ -605,7 +605,7 @@ bool CommitTextFunction::RunImpl() {
     return true;
   }
 
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
   int context_id;
   std::string text;
@@ -623,7 +623,7 @@ bool CommitTextFunction::RunImpl() {
 }
 
 bool SetCandidateWindowPropertiesFunction::RunImpl() {
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   std::string engine_id;
@@ -636,7 +636,7 @@ bool SetCandidateWindowPropertiesFunction::RunImpl() {
     return true;
   }
 
-  DictionaryValue* properties;
+  base::DictionaryValue* properties;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(keys::kPropertiesKey,
                                                   &properties));
 
@@ -707,10 +707,10 @@ bool SetCandidateWindowPropertiesFunction::RunImpl() {
 
 #if defined(OS_CHROMEOS)
 bool SetCandidatesFunction::ReadCandidates(
-    ListValue* candidates,
+    base::ListValue* candidates,
     std::vector<chromeos::InputMethodEngine::Candidate>* output) {
   for (size_t i = 0; i < candidates->GetSize(); ++i) {
-    DictionaryValue* candidate_dict;
+    base::DictionaryValue* candidate_dict;
     EXTENSION_FUNCTION_VALIDATE(candidates->GetDictionary(i, &candidate_dict));
 
     std::string candidate;
@@ -734,7 +734,7 @@ bool SetCandidatesFunction::ReadCandidates(
     }
 
     if (candidate_dict->HasKey(keys::kUsageKey)) {
-      DictionaryValue* usage_dict;
+      base::DictionaryValue* usage_dict;
       EXTENSION_FUNCTION_VALIDATE(candidate_dict->GetDictionary(keys::kUsageKey,
                                                                 &usage_dict));
       EXTENSION_FUNCTION_VALIDATE(usage_dict->GetString(keys::kUsageTitleKey,
@@ -751,7 +751,7 @@ bool SetCandidatesFunction::ReadCandidates(
     output->back().usage = usage_entry;
 
     if (candidate_dict->HasKey(keys::kCandidatesKey)) {
-      ListValue* sub_list;
+      base::ListValue* sub_list;
       EXTENSION_FUNCTION_VALIDATE(candidate_dict->GetList(keys::kCandidatesKey,
                                                           &sub_list));
       if (!ReadCandidates(sub_list, &(output->back().candidates))) {
@@ -772,7 +772,7 @@ bool SetCandidatesFunction::RunImpl() {
     return true;
   }
 
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   int context_id;
@@ -781,7 +781,7 @@ bool SetCandidatesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kContextIdKey,
                                                      &context_id));
 
-  ListValue* candidate_list;
+  base::ListValue* candidate_list;
   EXTENSION_FUNCTION_VALIDATE(args->GetList(keys::kCandidatesKey,
                                             &candidate_list));
   if (!ReadCandidates(candidate_list, &candidates)) {
@@ -806,7 +806,7 @@ bool SetCursorPositionFunction::RunImpl() {
     return true;
   }
 
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
   int context_id;
   int candidate_id;
@@ -825,7 +825,7 @@ bool SetCursorPositionFunction::RunImpl() {
 }
 
 bool SetMenuItemsFunction::RunImpl() {
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   std::string engine_id;
@@ -838,7 +838,7 @@ bool SetMenuItemsFunction::RunImpl() {
     return false;
   }
 
-  ListValue* items;
+  base::ListValue* items;
   EXTENSION_FUNCTION_VALIDATE(args->GetList(keys::kItemsKey, &items));
 
   std::vector<chromeos::InputMethodEngine::MenuItem> menu_items;
@@ -851,7 +851,7 @@ bool SetMenuItemsFunction::RunImpl() {
 }
 
 bool UpdateMenuItemsFunction::RunImpl() {
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   std::string engine_id;
@@ -864,7 +864,7 @@ bool UpdateMenuItemsFunction::RunImpl() {
     return false;
   }
 
-  ListValue* items;
+  base::ListValue* items;
   EXTENSION_FUNCTION_VALIDATE(args->GetList(keys::kItemsKey, &items));
 
   std::vector<chromeos::InputMethodEngine::MenuItem> menu_items;
@@ -877,7 +877,7 @@ bool UpdateMenuItemsFunction::RunImpl() {
 }
 
 bool DeleteSurroundingTextFunction::RunImpl() {
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   std::string engine_id;

@@ -151,8 +151,8 @@ class DevToolsProtocol {
                                           base::DictionaryValue* params);
 
  private:
-  static DictionaryValue* ParseMessage(const std::string& json,
-                                       std::string* error_response);
+  static base::DictionaryValue* ParseMessage(const std::string& json,
+                                             std::string* error_response);
 
   DevToolsProtocol() {}
   ~DevToolsProtocol() {}

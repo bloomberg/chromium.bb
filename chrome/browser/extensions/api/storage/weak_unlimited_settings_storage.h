@@ -32,7 +32,7 @@ class WeakUnlimitedSettingsStorage : public ValueStore {
       const std::string& key,
       const Value& value) OVERRIDE;
   virtual WriteResult Set(
-      WriteOptions options, const DictionaryValue& values) OVERRIDE;
+      WriteOptions options, const base::DictionaryValue& values) OVERRIDE;
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
   virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
   virtual WriteResult Clear() OVERRIDE;

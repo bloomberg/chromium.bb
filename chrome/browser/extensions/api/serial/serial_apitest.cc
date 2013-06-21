@@ -36,7 +36,7 @@ namespace extensions {
 class FakeSerialGetPortsFunction : public AsyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE {
-    ListValue* ports = new ListValue();
+    base::ListValue* ports = new base::ListValue();
     ports->Append(Value::CreateStringValue("/dev/fakeserial"));
     ports->Append(Value::CreateStringValue("\\\\COM800\\"));
     SetResult(ports);

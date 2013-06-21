@@ -31,7 +31,8 @@ void MediaInternalsMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void MediaInternalsMessageHandler::OnGetEverything(const ListValue* list) {
+void MediaInternalsMessageHandler::OnGetEverything(
+    const base::ListValue* list) {
   proxy_->GetEverything();
 }
 

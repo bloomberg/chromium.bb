@@ -125,7 +125,8 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       socket_create_function.get(), "[\"udp\"]", browser(), utils::NONE));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-  DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
+  base::DictionaryValue *value =
+      static_cast<base::DictionaryValue*>(result.get());
   int socketId = -1;
   EXPECT_TRUE(value->GetInteger("socketId", &socketId));
   EXPECT_TRUE(socketId > 0);
@@ -142,7 +143,8 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
   scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
       socket_create_function.get(), "[\"tcp\"]", browser(), utils::NONE));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
-  DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
+  base::DictionaryValue *value =
+      static_cast<base::DictionaryValue*>(result.get());
   int socketId = -1;
   EXPECT_TRUE(value->GetInteger("socketId", &socketId));
   ASSERT_TRUE(socketId > 0);
@@ -162,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, GetNetworkList) {
 
   // If we're invoking socket tests, all we can confirm is that we have at
   // least one address, but not what it is.
-  ListValue *value = static_cast<ListValue*>(result.get());
+  base::ListValue *value = static_cast<base::ListValue*>(result.get());
   ASSERT_TRUE(value->GetSize() > 0);
 }
 

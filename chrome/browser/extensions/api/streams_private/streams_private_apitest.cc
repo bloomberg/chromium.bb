@@ -134,7 +134,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
   // event with the "test/done" MIME type (unless the 'chrome.test.notifyFail'
   // has already been called).
   void SendDoneEvent() {
-    scoped_ptr<ListValue> event_args(new ListValue());
+    scoped_ptr<base::ListValue> event_args(new base::ListValue());
     event_args->Append(new base::StringValue("test/done"));
     event_args->Append(new base::StringValue("http://foo"));
     event_args->Append(new base::StringValue("blob://bar"));

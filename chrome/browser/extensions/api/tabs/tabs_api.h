@@ -150,7 +150,7 @@ class TabsUpdateFunction : public AsyncExtensionFunction {
   void OnExecuteCodeFinished(const std::string& error,
                              int32 on_page_id,
                              const GURL& on_url,
-                             const ListValue& script_result);
+                             const base::ListValue& script_result);
 
   DECLARE_EXTENSION_FUNCTION("tabs.update", TABS_UPDATE)
 };
@@ -160,7 +160,7 @@ class TabsMoveFunction : public SyncExtensionFunction {
   bool MoveTab(int tab_id,
                int* new_index,
                int iteration,
-               ListValue* tab_values,
+               base::ListValue* tab_values,
                int* window_id);
   DECLARE_EXTENSION_FUNCTION("tabs.move", TABS_MOVE)
 };
@@ -253,10 +253,11 @@ class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
  private:
   virtual ~TabsExecuteScriptFunction() {}
 
-  virtual void OnExecuteCodeFinished(const std::string& error,
-                                     int32 on_page_id,
-                                     const GURL& on_url,
-                                     const ListValue& script_result) OVERRIDE;
+  virtual void OnExecuteCodeFinished(
+      const std::string& error,
+      int32 on_page_id,
+      const GURL& on_url,
+      const base::ListValue& script_result) OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION("tabs.executeScript", TABS_EXECUTESCRIPT)
 };

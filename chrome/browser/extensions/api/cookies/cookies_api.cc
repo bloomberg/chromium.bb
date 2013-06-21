@@ -82,8 +82,8 @@ void CookiesEventRouter::Observe(
 void CookiesEventRouter::CookieChanged(
     Profile* profile,
     ChromeCookieDetails* details) {
-  scoped_ptr<ListValue> args(new ListValue());
-  DictionaryValue* dict = new DictionaryValue();
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean(keys::kRemovedKey, details->removed);
 
   scoped_ptr<Cookie> cookie(
@@ -129,7 +129,7 @@ void CookiesEventRouter::CookieChanged(
 void CookiesEventRouter::DispatchEvent(
     Profile* profile,
     const std::string& event_name,
-    scoped_ptr<ListValue> event_args,
+    scoped_ptr<base::ListValue> event_args,
     GURL& cookie_domain) {
   EventRouter* router = profile ?
       extensions::ExtensionSystem::Get(profile)->event_router() : NULL;
@@ -511,13 +511,13 @@ void CookiesRemoveFunction::RespondOnUIThread() {
 bool CookiesGetAllCookieStoresFunction::RunImpl() {
   Profile* original_profile = profile();
   DCHECK(original_profile);
-  scoped_ptr<ListValue> original_tab_ids(new ListValue());
+  scoped_ptr<base::ListValue> original_tab_ids(new base::ListValue());
   Profile* incognito_profile = NULL;
-  scoped_ptr<ListValue> incognito_tab_ids;
+  scoped_ptr<base::ListValue> incognito_tab_ids;
   if (include_incognito() && profile()->HasOffTheRecordProfile()) {
     incognito_profile = profile()->GetOffTheRecordProfile();
     if (incognito_profile)
-      incognito_tab_ids.reset(new ListValue());
+      incognito_tab_ids.reset(new base::ListValue());
   }
   DCHECK(original_profile != incognito_profile);
 

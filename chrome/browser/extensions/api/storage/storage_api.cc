@@ -113,10 +113,12 @@ bool SettingsFunction::UseWriteResult(ValueStore::WriteResult result) {
 namespace {
 
 // Adds all StringValues from a ListValue to a vector of strings.
-void AddAllStringValues(const ListValue& from, std::vector<std::string>* to) {
+void AddAllStringValues(const base::ListValue& from,
+                        std::vector<std::string>* to) {
   DCHECK(to->empty());
   std::string as_string;
-  for (ListValue::const_iterator it = from.begin(); it != from.end(); ++it) {
+  for (base::ListValue::const_iterator it = from.begin();
+       it != from.end(); ++it) {
     if ((*it)->GetAsString(&as_string)) {
       to->push_back(as_string);
     }
@@ -124,9 +126,9 @@ void AddAllStringValues(const ListValue& from, std::vector<std::string>* to) {
 }
 
 // Gets the keys of a DictionaryValue.
-std::vector<std::string> GetKeys(const DictionaryValue& dict) {
+std::vector<std::string> GetKeys(const base::DictionaryValue& dict) {
   std::vector<std::string> keys;
-  for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     keys.push_back(it.key());
   }
   return keys;
@@ -162,33 +164,34 @@ void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
 }  // namespace
 
 bool StorageStorageAreaGetFunction::RunWithStorage(ValueStore* storage) {
-  Value* input = NULL;
+  base::Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
 
   switch (input->GetType()) {
-    case Value::TYPE_NULL:
+    case base::Value::TYPE_NULL:
       return UseReadResult(storage->Get());
 
-    case Value::TYPE_STRING: {
+    case base::Value::TYPE_STRING: {
       std::string as_string;
       input->GetAsString(&as_string);
       return UseReadResult(storage->Get(as_string));
     }
 
-    case Value::TYPE_LIST: {
+    case base::Value::TYPE_LIST: {
       std::vector<std::string> as_string_list;
-      AddAllStringValues(*static_cast<ListValue*>(input), &as_string_list);
+      AddAllStringValues(*static_cast<base::ListValue*>(input),
+                         &as_string_list);
       return UseReadResult(storage->Get(as_string_list));
     }
 
-    case Value::TYPE_DICTIONARY: {
-      DictionaryValue* as_dict = static_cast<DictionaryValue*>(input);
+    case base::Value::TYPE_DICTIONARY: {
+      base::DictionaryValue* as_dict = static_cast<base::DictionaryValue*>(input);
       ValueStore::ReadResult result = storage->Get(GetKeys(*as_dict));
       if (result->HasError()) {
         return UseReadResult(result.Pass());
       }
 
-      DictionaryValue* with_default_values = as_dict->DeepCopy();
+      base::DictionaryValue* with_default_values = as_dict->DeepCopy();
       with_default_values->MergeDictionary(result->settings().get());
       return UseReadResult(
           ValueStore::MakeReadResult(with_default_values));
@@ -202,26 +205,27 @@ bool StorageStorageAreaGetFunction::RunWithStorage(ValueStore* storage) {
 
 bool StorageStorageAreaGetBytesInUseFunction::RunWithStorage(
     ValueStore* storage) {
-  Value* input = NULL;
+  base::Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
 
   size_t bytes_in_use = 0;
 
   switch (input->GetType()) {
-    case Value::TYPE_NULL:
+    case base::Value::TYPE_NULL:
       bytes_in_use = storage->GetBytesInUse();
       break;
 
-    case Value::TYPE_STRING: {
+    case base::Value::TYPE_STRING: {
       std::string as_string;
       input->GetAsString(&as_string);
       bytes_in_use = storage->GetBytesInUse(as_string);
       break;
     }
 
-    case Value::TYPE_LIST: {
+    case base::Value::TYPE_LIST: {
       std::vector<std::string> as_string_list;
-      AddAllStringValues(*static_cast<ListValue*>(input), &as_string_list);
+      AddAllStringValues(*static_cast<base::ListValue*>(input),
+                         &as_string_list);
       bytes_in_use = storage->GetBytesInUse(as_string_list);
       break;
     }
@@ -231,12 +235,12 @@ bool StorageStorageAreaGetBytesInUseFunction::RunWithStorage(
       return false;
   }
 
-  SetResult(Value::CreateIntegerValue(bytes_in_use));
+  SetResult(base::Value::CreateIntegerValue(bytes_in_use));
   return true;
 }
 
 bool StorageStorageAreaSetFunction::RunWithStorage(ValueStore* storage) {
-  DictionaryValue* input = NULL;
+  base::DictionaryValue* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
   return UseWriteResult(storage->Set(ValueStore::DEFAULTS, *input));
 }
@@ -247,19 +251,20 @@ void StorageStorageAreaSetFunction::GetQuotaLimitHeuristics(
 }
 
 bool StorageStorageAreaRemoveFunction::RunWithStorage(ValueStore* storage) {
-  Value* input = NULL;
+  base::Value* input = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
 
   switch (input->GetType()) {
-    case Value::TYPE_STRING: {
+    case base::Value::TYPE_STRING: {
       std::string as_string;
       input->GetAsString(&as_string);
       return UseWriteResult(storage->Remove(as_string));
     }
 
-    case Value::TYPE_LIST: {
+    case base::Value::TYPE_LIST: {
       std::vector<std::string> as_string_list;
-      AddAllStringValues(*static_cast<ListValue*>(input), &as_string_list);
+      AddAllStringValues(*static_cast<base::ListValue*>(input),
+                         &as_string_list);
       return UseWriteResult(storage->Remove(as_string_list));
     }
 

@@ -787,7 +787,7 @@ void OnDeterminingFilenameWillDispatchCallback(
     ExtensionDownloadsEventRouterData* data,
     Profile* profile,
     const extensions::Extension* extension,
-    ListValue* event_args) {
+    base::ListValue* event_args) {
   *any_determiners = true;
   base::Time installed = extensions::ExtensionSystem::Get(
       profile)->extension_service()->extension_prefs()->
