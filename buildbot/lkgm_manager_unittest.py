@@ -440,9 +440,9 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
                               print_cmd=False, redirect_stdout=True,
                               cwd=self.tmpdir + '/fake/path').AndReturn(
                                   fake_result)
-    cros_build_lib.PrintBuildbotLink('CHUMP fake:1234',
+    cros_build_lib.PrintBuildbotLink('CHUMP | repo | fake | 1234',
                                      'http://gerrit.chromium.org/gerrit/1234')
-    cros_build_lib.PrintBuildbotLink('fake:1235',
+    cros_build_lib.PrintBuildbotLink('repo | fake | 1235',
                                      'http://gerrit.chromium.org/gerrit/1235')
     self.mox.ReplayAll()
     self.manager._GenerateBlameListSinceLKGM()

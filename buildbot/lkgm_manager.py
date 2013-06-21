@@ -528,11 +528,13 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       if review_match:
         review = review_match.group(1)
         _, _, change_number = review.rpartition('/')
+        items = [
+            os.path.basename(project),
+            current_author,
+            change_number,
+        ]
         if current_committer != 'chrome-bot':
-          cros_build_lib.PrintBuildbotLink(
-              'CHUMP %s:%s' % (current_author, change_number),
-              review)
-        elif not only_print_chumps:
-          cros_build_lib.PrintBuildbotLink(
-              '%s:%s' % (current_author, change_number),
-              review)
+          items.insert(0, 'CHUMP')
+        elif only_print_chumps:
+          continue
+        cros_build_lib.PrintBuildbotLink(' | '.join(items), review)

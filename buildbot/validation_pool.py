@@ -11,6 +11,7 @@ ready for the commit queue to try.
 import contextlib
 import cPickle
 import logging
+import os
 import sys
 import time
 import urllib
@@ -778,8 +779,8 @@ class PatchSeries(object):
         raise
       applied.append(change)
       if hasattr(change, 'url'):
-        s = '%s %s' % (change.owner, cros_patch.FormatGerritNumber(
-            change.gerrit_number, force_internal=change.internal))
+        project = os.path.basename(change.project)
+        s = '%s | %s | %s' % (project, change.owner, change.gerrit_number)
         cros_build_lib.PrintBuildbotLink(s, change.url)
 
     logging.debug('Done investigating changes.  Applied %s',
