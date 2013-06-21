@@ -8,9 +8,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "net/cert/x509_certificate.h"
 
 namespace base {
 class DictionaryValue;
@@ -49,8 +51,8 @@ class CHROMEOS_EXPORT StringSubstitution {
   virtual ~StringSubstitution() {}
 
   // Returns the replacement string for |placeholder| in
-  // |substitute|. Currently, onc::substitutes::kLoginIDField and
-  // onc::substitutes::kEmailField are supported.
+  // |substitute|. Currently, substitutes::kLoginIDField and
+  // substitutes::kEmailField are supported.
   virtual bool GetSubstitute(std::string placeholder,
                              std::string* substitute) const = 0;
  private:
@@ -59,8 +61,8 @@ class CHROMEOS_EXPORT StringSubstitution {
 
 // Replaces all expandable fields that are mentioned in the ONC
 // specification. The object of |onc_object| is modified in place. Currently
-// onc::substitutes::kLoginIDField and onc::substitutes::kEmailField are
-// expanded. The replacement strings are obtained from |substitution|.
+// substitutes::kLoginIDField and substitutes::kEmailField are expanded. The
+// replacement strings are obtained from |substitution|.
 CHROMEOS_EXPORT void ExpandStringsInOncObject(
     const OncValueSignature& signature,
     const StringSubstitution& substitution,
@@ -81,10 +83,16 @@ CHROMEOS_EXPORT scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
 // output lists and should be further processed by the caller.
 CHROMEOS_EXPORT bool ParseAndValidateOncForImport(
     const std::string& onc_blob,
-    chromeos::onc::ONCSource onc_source,
+    ONCSource onc_source,
     const std::string& passphrase,
     base::ListValue* network_configs,
     base::ListValue* certificates);
+
+// Parse the given PEM encoded certificate |pem_encoded| and create a
+// X509Certificate from it.
+CHROMEOS_EXPORT scoped_refptr<net::X509Certificate> DecodePEMCertificate(
+    const std::string& pem_encoded,
+    const std::string& nickname);
 
 }  // namespace onc
 }  // namespace chromeos

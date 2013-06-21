@@ -13,25 +13,16 @@
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
-#include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
 
 #define ONC_LOG_WARNING(message)                                \
   NET_LOG_DEBUG("ONC Certificate Import Warning", message)
 #define ONC_LOG_ERROR(message)                                  \
   NET_LOG_ERROR("ONC Certificate Import Error", message)
-
-namespace {
-
-// The PEM block header used for DER certificates
-const char kCertificateHeader[] = "CERTIFICATE";
-// This is an older PEM marker for DER certificates.
-const char kX509CertificateHeader[] = "X509 CERTIFICATE";
-
-}  // namespace
 
 namespace chromeos {
 namespace onc {
@@ -206,34 +197,11 @@ bool CertificateImporter::ParseServerOrCaCertificate(
     return false;
   }
 
-  // Parse PEM certificate, and get the decoded data for use in creating
-  // certificate below.
-  std::vector<std::string> pem_headers;
-  pem_headers.push_back(kCertificateHeader);
-  pem_headers.push_back(kX509CertificateHeader);
-
-  net::PEMTokenizer pem_tokenizer(x509_data, pem_headers);
-  std::string decoded_x509;
-  if (!pem_tokenizer.GetNext()) {
-    // If we failed to read the data as a PEM file, then let's just try plain
-    // base64 decode: some versions of Spigots didn't apply the PEM marker
-    // strings. For this to work, there has to be no white space, and it has to
-    // only contain the base64-encoded data.
-    if (!base::Base64Decode(x509_data, &decoded_x509)) {
-      ONC_LOG_ERROR("Unable to base64 decode X509 data: " + x509_data);
-      return false;
-    }
-  } else {
-    decoded_x509 = pem_tokenizer.data();
-  }
-
   scoped_refptr<net::X509Certificate> x509_cert =
-      net::X509Certificate::CreateFromBytesWithNickname(
-          decoded_x509.data(),
-          decoded_x509.size(),
-          guid.c_str());
+      DecodePEMCertificate(x509_data, guid);
   if (!x509_cert.get()) {
-    ONC_LOG_ERROR("Unable to create X509 certificate from bytes.");
+    ONC_LOG_ERROR("Unable to create certificate from PEM encoding, type: " +
+                  cert_type);
     return false;
   }
 
@@ -264,10 +232,7 @@ bool CertificateImporter::ParseServerOrCaCertificate(
     }
 
     // Reload the cert here to get an actual temporary cert instance.
-    x509_cert = net::X509Certificate::CreateFromBytesWithNickname(
-        decoded_x509.data(),
-        decoded_x509.size(),
-        guid.c_str());
+    x509_cert = DecodePEMCertificate(x509_data, guid);
     if (!x509_cert.get()) {
       ONC_LOG_ERROR("Unable to create X509 certificate from bytes.");
       return false;

@@ -18,6 +18,7 @@
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
+#include "net/cert/pem_tokenizer.h"
 
 #define ONC_LOG_WARNING(message) NET_LOG_WARNING("ONC", message)
 #define ONC_LOG_ERROR(message) NET_LOG_ERROR("ONC", message)
@@ -179,14 +180,14 @@ void ExpandField(const std::string fieldname,
   std::string login_id;
   if (substitution.GetSubstitute(substitutes::kLoginIDField, &login_id)) {
     ReplaceSubstringsAfterOffset(&user_string, 0,
-                                 onc::substitutes::kLoginIDField,
+                                 substitutes::kLoginIDField,
                                  login_id);
   }
 
   std::string email;
   if (substitution.GetSubstitute(substitutes::kEmailField, &email)) {
     ReplaceSubstringsAfterOffset(&user_string, 0,
-                                 onc::substitutes::kEmailField,
+                                 substitutes::kEmailField,
                                  email);
   }
 
@@ -224,10 +225,10 @@ void ExpandStringsInOncObject(
 
 namespace {
 
-class OncMaskValues : public onc::Mapper {
+class OncMaskValues : public Mapper {
  public:
   static scoped_ptr<base::DictionaryValue> Mask(
-      const onc::OncValueSignature& signature,
+      const OncValueSignature& signature,
       const base::DictionaryValue& onc_object,
       const std::string& mask) {
     OncMaskValues masker(mask);
@@ -242,15 +243,15 @@ class OncMaskValues : public onc::Mapper {
 
   virtual scoped_ptr<base::Value> MapField(
       const std::string& field_name,
-      const onc::OncValueSignature& object_signature,
+      const OncValueSignature& object_signature,
       const base::Value& onc_value,
       bool* found_unknown_field,
       bool* error) OVERRIDE {
-    if (onc::FieldIsCredential(object_signature, field_name)) {
+    if (FieldIsCredential(object_signature, field_name)) {
       return scoped_ptr<base::Value>(new base::StringValue(mask_));
     } else {
-      return onc::Mapper::MapField(field_name, object_signature, onc_value,
-                                   found_unknown_field, error);
+      return Mapper::MapField(field_name, object_signature, onc_value,
+                              found_unknown_field, error);
     }
   }
 
@@ -261,91 +262,124 @@ class OncMaskValues : public onc::Mapper {
 }  // namespace
 
 scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
-    const onc::OncValueSignature& signature,
+    const OncValueSignature& signature,
     const base::DictionaryValue& onc_object,
     const std::string& mask) {
   return OncMaskValues::Mask(signature, onc_object, mask);
 }
 
-bool ParseAndValidateOncForImport(
-    const std::string& onc_blob,
-    chromeos::onc::ONCSource onc_source,
-    const std::string& passphrase,
-    base::ListValue* network_configs,
-    base::ListValue* certificates) {
+bool ParseAndValidateOncForImport(const std::string& onc_blob,
+                                  ONCSource onc_source,
+                                  const std::string& passphrase,
+                                  base::ListValue* network_configs,
+                                  base::ListValue* certificates) {
   certificates->Clear();
   network_configs->Clear();
   if (onc_blob.empty())
     return true;
 
   scoped_ptr<base::DictionaryValue> toplevel_onc =
-      onc::ReadDictionaryFromJson(onc_blob);
+      ReadDictionaryFromJson(onc_blob);
   if (toplevel_onc.get() == NULL) {
-    LOG(ERROR) << "ONC loaded from " << onc::GetSourceAsString(onc_source)
+    LOG(ERROR) << "ONC loaded from " << GetSourceAsString(onc_source)
                << " is not a valid JSON dictionary.";
     return false;
   }
 
   // Check and see if this is an encrypted ONC file. If so, decrypt it.
   std::string onc_type;
-  toplevel_onc->GetStringWithoutPathExpansion(onc::toplevel_config::kType,
+  toplevel_onc->GetStringWithoutPathExpansion(toplevel_config::kType,
                                               &onc_type);
-  if (onc_type == onc::toplevel_config::kEncryptedConfiguration) {
-    toplevel_onc = onc::Decrypt(passphrase, *toplevel_onc);
+  if (onc_type == toplevel_config::kEncryptedConfiguration) {
+    toplevel_onc = Decrypt(passphrase, *toplevel_onc);
     if (toplevel_onc.get() == NULL) {
       LOG(ERROR) << "Couldn't decrypt the ONC from "
-                 << onc::GetSourceAsString(onc_source);
+                 << GetSourceAsString(onc_source);
       return false;
     }
   }
 
-  bool from_policy = (onc_source == onc::ONC_SOURCE_USER_POLICY ||
-                      onc_source == onc::ONC_SOURCE_DEVICE_POLICY);
+  bool from_policy = (onc_source == ONC_SOURCE_USER_POLICY ||
+                      onc_source == ONC_SOURCE_DEVICE_POLICY);
 
   // Validate the ONC dictionary. We are liberal and ignore unknown field
   // names and ignore invalid field names in kRecommended arrays.
-  onc::Validator validator(false,  // Ignore unknown fields.
-                           false,  // Ignore invalid recommended field names.
-                           true,   // Fail on missing fields.
-                           from_policy);
+  Validator validator(false,  // Ignore unknown fields.
+                      false,  // Ignore invalid recommended field names.
+                      true,   // Fail on missing fields.
+                      from_policy);
   validator.SetOncSource(onc_source);
 
-  onc::Validator::Result validation_result;
+  Validator::Result validation_result;
   toplevel_onc = validator.ValidateAndRepairObject(
-      &onc::kToplevelConfigurationSignature,
+      &kToplevelConfigurationSignature,
       *toplevel_onc,
       &validation_result);
 
   if (from_policy) {
     UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",
-                          validation_result == onc::Validator::VALID);
+                          validation_result == Validator::VALID);
   }
 
   bool success = true;
-  if (validation_result == onc::Validator::VALID_WITH_WARNINGS) {
-    LOG(WARNING) << "ONC from " << onc::GetSourceAsString(onc_source)
+  if (validation_result == Validator::VALID_WITH_WARNINGS) {
+    LOG(WARNING) << "ONC from " << GetSourceAsString(onc_source)
                  << " produced warnings.";
     success = false;
-  } else if (validation_result == onc::Validator::INVALID ||
-             toplevel_onc == NULL) {
-    LOG(ERROR) << "ONC from " << onc::GetSourceAsString(onc_source)
+  } else if (validation_result == Validator::INVALID || toplevel_onc == NULL) {
+    LOG(ERROR) << "ONC from " << GetSourceAsString(onc_source)
                << " is invalid and couldn't be repaired.";
     return false;
   }
 
   base::ListValue* validated_certs = NULL;
-  if (toplevel_onc->GetListWithoutPathExpansion(
-          onc::toplevel_config::kCertificates, &validated_certs)) {
+  if (toplevel_onc->GetListWithoutPathExpansion(toplevel_config::kCertificates,
+                                                &validated_certs)) {
     certificates->Swap(validated_certs);
   }
 
   base::ListValue* validated_networks = NULL;
   if (toplevel_onc->GetListWithoutPathExpansion(
-          onc::toplevel_config::kNetworkConfigurations, &validated_networks)) {
+          toplevel_config::kNetworkConfigurations, &validated_networks)) {
     network_configs->Swap(validated_networks);
   }
 
   return success;
+}
+
+scoped_refptr<net::X509Certificate> DecodePEMCertificate(
+    const std::string& pem_encoded,
+    const std::string& nickname) {
+  // The PEM block header used for DER certificates
+  static const char kCertificateHeader[] = "CERTIFICATE";
+  // This is an older PEM marker for DER certificates.
+  static const char kX509CertificateHeader[] = "X509 CERTIFICATE";
+
+  std::vector<std::string> pem_headers;
+  pem_headers.push_back(kCertificateHeader);
+  pem_headers.push_back(kX509CertificateHeader);
+
+  net::PEMTokenizer pem_tokenizer(pem_encoded, pem_headers);
+  std::string decoded;
+  if (pem_tokenizer.GetNext()) {
+    decoded = pem_tokenizer.data();
+  } else {
+    // If we failed to read the data as a PEM file, then try plain base64 decode
+    // in case the PEM marker strings are missing. For this to work, there has
+    // to be no white space, and it has to only contain the base64-encoded data.
+    if (!base::Base64Decode(pem_encoded, &decoded)) {
+      LOG(ERROR) << "Unable to base64 decode X509 data: " << pem_encoded;
+      return scoped_refptr<net::X509Certificate>();
+    }
+  }
+
+  scoped_refptr<net::X509Certificate> cert =
+      net::X509Certificate::CreateFromBytesWithNickname(decoded.data(),
+                                                        decoded.size(),
+                                                        nickname.c_str());
+  LOG_IF(ERROR, !cert) << "Couldn't create certificate from X509 data: "
+                       << decoded;
+  return cert;
 }
 
 }  // namespace onc
