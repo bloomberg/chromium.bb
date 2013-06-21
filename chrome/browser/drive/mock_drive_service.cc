@@ -15,7 +15,6 @@
 
 using ::testing::_;
 using ::testing::Invoke;
-using ::testing::Return;
 
 using google_apis::CancelCallback;
 using google_apis::DownloadActionCallback;
@@ -50,7 +49,7 @@ MockDriveService::MockDriveService() {
           Invoke(this, &MockDriveService::RemoveResourceFromDirectoryStub));
   ON_CALL(*this, AddNewDirectory(_, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::CreateDirectoryStub));
-  ON_CALL(*this, DownloadFile(_, _, _, _, _, _))
+  ON_CALL(*this, DownloadFile(_, _, _, _, _))
       .WillByDefault(Invoke(this, &MockDriveService::DownloadFileStub));
 
   // Fill in the default values for mock data.
@@ -138,7 +137,6 @@ CancelCallback MockDriveService::CreateDirectoryStub(
 }
 
 CancelCallback MockDriveService::DownloadFileStub(
-    const base::FilePath& virtual_path,
     const base::FilePath& local_tmp_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,

@@ -210,7 +210,7 @@ ACTION(PrepareForRemoteChange_NotModified) {
 
 ACTION(InvokeDidDownloadFile) {
   base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg3, google_apis::HTTP_SUCCESS, arg1));
+      FROM_HERE, base::Bind(arg2, google_apis::HTTP_SUCCESS, arg0));
   return google_apis::CancelCallback();
 }
 
@@ -550,7 +550,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         .RetiresOnSaturation();
 
     EXPECT_CALL(*mock_drive_service(),
-                DownloadFile(_, _, GURL("https://file_content_url"), _, _, _))
+                DownloadFile(_, GURL("https://file_content_url"), _, _, _))
         .WillOnce(InvokeDidDownloadFile())
         .RetiresOnSaturation();
   }

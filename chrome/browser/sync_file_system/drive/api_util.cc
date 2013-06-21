@@ -39,10 +39,6 @@ const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
 const char kSyncRootDirectoryNameDev[] = "Chrome Syncable FileSystem Dev";
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
-// This path is not actually used but is required by DriveUploaderInterface.
-const base::FilePath::CharType kDummyDrivePath[] =
-    FILE_PATH_LITERAL("/dummy/drive/path");
-
 const char kFakeServerBaseUrl[] = "https://fake_server/";
 
 void EmptyGDataErrorCodeCallback(google_apis::GDataErrorCode error) {}
@@ -502,7 +498,6 @@ void APIUtil::UploadNewFile(const std::string& directory_resource_id,
                  upload_key);
   drive_uploader_->UploadNewFile(
       directory_resource_id,
-      base::FilePath(kDummyDrivePath),
       local_file_path,
       title,
       mime_type,
@@ -711,8 +706,7 @@ void APIUtil::DownloadFileInternal(
 
   DVLOG(2) << "Downloading file: " << entry->resource_id();
   const GURL& download_url = entry->download_url();
-  drive_service_->DownloadFile(base::FilePath(kDummyDrivePath),
-                               local_file_path,
+  drive_service_->DownloadFile(local_file_path,
                                download_url,
                                base::Bind(&APIUtil::DidDownloadFile,
                                           AsWeakPtr(),
@@ -837,7 +831,6 @@ void APIUtil::UploadExistingFileInternal(
       base::Bind(&APIUtil::DidUploadExistingFile, AsWeakPtr(), upload_key);
   drive_uploader_->UploadExistingFile(
       entry->resource_id(),
-      base::FilePath(kDummyDrivePath),
       local_file_path,
       mime_type,
       entry->etag(),

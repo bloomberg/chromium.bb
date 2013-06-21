@@ -30,7 +30,6 @@ const int kMaxRetryCount = kMaxThrottleCount - 1;
 // Parameter struct for RunUploadNewFile.
 struct UploadNewFileParams {
   std::string parent_resource_id;
-  base::FilePath drive_file_path;
   base::FilePath local_file_path;
   std::string title;
   std::string content_type;
@@ -43,7 +42,6 @@ google_apis::CancelCallback RunUploadNewFile(
     DriveUploaderInterface* uploader,
     const UploadNewFileParams& params) {
   return uploader->UploadNewFile(params.parent_resource_id,
-                                 params.drive_file_path,
                                  params.local_file_path,
                                  params.title,
                                  params.content_type,
@@ -54,7 +52,6 @@ google_apis::CancelCallback RunUploadNewFile(
 // Parameter struct for RunUploadExistingFile.
 struct UploadExistingFileParams {
   std::string resource_id;
-  base::FilePath drive_file_path;
   base::FilePath local_file_path;
   std::string content_type;
   std::string etag;
@@ -67,7 +64,6 @@ google_apis::CancelCallback RunUploadExistingFile(
     DriveUploaderInterface* uploader,
     const UploadExistingFileParams& params) {
   return uploader->UploadExistingFile(params.resource_id,
-                                      params.drive_file_path,
                                       params.local_file_path,
                                       params.content_type,
                                       params.etag,
@@ -78,7 +74,6 @@ google_apis::CancelCallback RunUploadExistingFile(
 // Parameter struct for RunResumeUploadFile.
 struct ResumeUploadFileParams {
   GURL upload_location;
-  base::FilePath drive_file_path;
   base::FilePath local_file_path;
   std::string content_type;
   UploadCompletionCallback callback;
@@ -90,7 +85,6 @@ google_apis::CancelCallback RunResumeUploadFile(
     DriveUploaderInterface* uploader,
     const ResumeUploadFileParams& params) {
   return uploader->ResumeUploadFile(params.upload_location,
-                                    params.drive_file_path,
                                     params.local_file_path,
                                     params.content_type,
                                     params.callback,
@@ -503,7 +497,6 @@ JobID JobScheduler::DownloadFile(
   new_job->task = base::Bind(
       &DriveServiceInterface::DownloadFile,
       base::Unretained(drive_service_),
-      virtual_path,
       local_cache_path,
       download_url,
       base::Bind(&JobScheduler::OnDownloadActionJobDone,
@@ -535,13 +528,11 @@ void JobScheduler::UploadNewFile(
 
   UploadNewFileParams params;
   params.parent_resource_id = parent_resource_id;
-  params.drive_file_path = drive_file_path;
   params.local_file_path = local_file_path;
   params.title = title;
   params.content_type = content_type;
 
   ResumeUploadParams resume_params;
-  resume_params.drive_file_path = params.drive_file_path;
   resume_params.local_file_path = params.local_file_path;
   resume_params.content_type = params.content_type;
 
@@ -574,13 +565,11 @@ void JobScheduler::UploadExistingFile(
 
   UploadExistingFileParams params;
   params.resource_id = resource_id;
-  params.drive_file_path = drive_file_path;
   params.local_file_path = local_file_path;
   params.content_type = content_type;
   params.etag = etag;
 
   ResumeUploadParams resume_params;
-  resume_params.drive_file_path = params.drive_file_path;
   resume_params.local_file_path = params.local_file_path;
   resume_params.content_type = params.content_type;
 
@@ -614,13 +603,11 @@ void JobScheduler::CreateFile(
 
   UploadNewFileParams params;
   params.parent_resource_id = parent_resource_id;
-  params.drive_file_path = drive_file_path;
   params.local_file_path = kDevNull;  // Upload an empty file.
   params.title = title;
   params.content_type = content_type;
 
   ResumeUploadParams resume_params;
-  resume_params.drive_file_path = params.drive_file_path;
   resume_params.local_file_path = params.local_file_path;
   resume_params.content_type = params.content_type;
 
@@ -884,7 +871,6 @@ void JobScheduler::OnUploadCompletionJobDone(
 
     ResumeUploadFileParams params;
     params.upload_location = upload_location;
-    params.drive_file_path = resume_params.drive_file_path;
     params.local_file_path = resume_params.local_file_path;
     params.content_type = resume_params.content_type;
     params.callback = base::Bind(&JobScheduler::OnUploadCompletionJobDone,

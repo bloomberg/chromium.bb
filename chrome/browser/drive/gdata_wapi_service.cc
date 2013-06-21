@@ -344,7 +344,6 @@ CancelCallback GDataWapiService::GetAppList(
 }
 
 CancelCallback GDataWapiService::DownloadFile(
-    const base::FilePath& virtual_path,
     const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
@@ -497,7 +496,6 @@ CancelCallback GDataWapiService::RemoveResourceFromDirectory(
 }
 
 CancelCallback GDataWapiService::InitiateUploadNewFile(
-    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const std::string& parent_resource_id,
@@ -519,7 +517,6 @@ CancelCallback GDataWapiService::InitiateUploadNewFile(
 }
 
 CancelCallback GDataWapiService::InitiateUploadExistingFile(
-    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const std::string& resource_id,
@@ -541,7 +538,6 @@ CancelCallback GDataWapiService::InitiateUploadExistingFile(
 }
 
 CancelCallback GDataWapiService::ResumeUpload(
-    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 start_position,
     int64 end_position,
@@ -567,7 +563,6 @@ CancelCallback GDataWapiService::ResumeUpload(
 }
 
 CancelCallback GDataWapiService::GetUploadStatus(
-    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
     const UploadRangeCallback& callback) {

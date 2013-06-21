@@ -43,7 +43,6 @@ namespace {
 
 const char kTestDummyId[] = "file:dummy_id";
 const char kTestDocumentTitle[] = "Hello world";
-const char kTestDrivePath[] = "drive/dummy.txt";
 const char kTestInitiateUploadParentResourceId[] = "parent_resource_id";
 const char kTestInitiateUploadResourceId[] = "resource_id";
 const char kTestMimeType[] = "text/plain";
@@ -78,7 +77,6 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
   // DriveServiceInterface overrides.
   // Handles a request for obtaining an upload location URL.
   virtual CancelCallback InitiateUploadNewFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -97,7 +95,6 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
   }
 
   virtual CancelCallback InitiateUploadExistingFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
@@ -122,7 +119,6 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
 
   // Handles a request for uploading a chunk of bytes.
   virtual CancelCallback ResumeUpload(
-      const base::FilePath& drive_file_path,
       const GURL& upload_location,
       int64 start_position,
       int64 end_position,
@@ -167,7 +163,6 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
 
   // Handles a request to fetch the current upload status.
   virtual CancelCallback GetUploadStatus(
-      const base::FilePath& drive_file_path,
       const GURL& upload_location,
       int64 content_length,
       const UploadRangeCallback& callback) OVERRIDE {
@@ -214,7 +209,6 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
 class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   // Returns error.
   virtual CancelCallback InitiateUploadNewFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -226,7 +220,6 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   }
 
   virtual CancelCallback InitiateUploadExistingFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
@@ -239,7 +232,6 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
 
   // Should not be used.
   virtual CancelCallback ResumeUpload(
-      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
       int64 end_position,
@@ -257,7 +249,6 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
 class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   // Succeeds and returns an upload location URL.
   virtual CancelCallback InitiateUploadNewFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -269,7 +260,6 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   }
 
   virtual CancelCallback InitiateUploadExistingFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
@@ -282,7 +272,6 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
 
   // Returns error.
   virtual CancelCallback ResumeUpload(
-      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
       int64 end_position,
@@ -331,7 +320,6 @@ TEST_F(DriveUploaderTest, UploadExisting0KB) {
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
-      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       std::string(),  // etag
@@ -366,7 +354,6 @@ TEST_F(DriveUploaderTest, UploadExisting512KB) {
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
-      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       std::string(),  // etag
@@ -402,7 +389,6 @@ TEST_F(DriveUploaderTest, InitiateUploadFail) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
-      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       std::string(),  // etag
@@ -430,7 +416,6 @@ TEST_F(DriveUploaderTest, InitiateUploadNoConflict) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
-      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       kTestETag,
@@ -458,7 +443,6 @@ TEST_F(DriveUploaderTest, InitiateUploadConflict) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
-      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       kDestinationETag,
@@ -485,7 +469,6 @@ TEST_F(DriveUploaderTest, ResumeUploadFail) {
   DriveUploader uploader(&mock_service);
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
-      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       std::string(),  // etag
@@ -506,7 +489,6 @@ TEST_F(DriveUploaderTest, NonExistingSourceFile) {
   DriveUploader uploader(NULL);  // NULL, the service won't be used.
   uploader.UploadExistingFile(
       kTestInitiateUploadResourceId,
-      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       temp_dir_.path().AppendASCII("_this_path_should_not_exist_"),
       kTestMimeType,
       std::string(),             // etag
@@ -539,7 +521,6 @@ TEST_F(DriveUploaderTest, ResumeUpload) {
   std::vector<test_util::ProgressInfo> upload_progress_values;
   uploader.ResumeUploadFile(
       GURL(kTestUploadExistingFileURL),
-      base::FilePath::FromUTF8Unsafe(kTestDrivePath),
       local_path,
       kTestMimeType,
       test_util::CreateCopyResultCallback(

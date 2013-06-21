@@ -163,7 +163,7 @@ void FakeFileSystem::GetFileContentByPath(
       file_path,
       base::Bind(&FakeFileSystem::GetFileContentByPathAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
-                 file_path, initialized_callback, get_content_callback,
+                 initialized_callback, get_content_callback,
                  completion_callback));
 }
 
@@ -274,7 +274,6 @@ void FakeFileSystem::GetResourceEntryByIdAfterGetResourceEntry(
 
 // Implementation of GetFileContentByPath.
 void FakeFileSystem::GetFileContentByPathAfterGetResourceEntry(
-    const base::FilePath& file_path,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
@@ -300,14 +299,12 @@ void FakeFileSystem::GetFileContentByPathAfterGetResourceEntry(
       base::Bind(
           &FakeFileSystem::GetFileContentByPathAfterGetWapiResourceEntry,
           weak_ptr_factory_.GetWeakPtr(),
-          file_path,
           initialized_callback,
           get_content_callback,
           completion_callback));
 }
 
 void FakeFileSystem::GetFileContentByPathAfterGetWapiResourceEntry(
-    const base::FilePath& file_path,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
@@ -338,7 +335,6 @@ void FakeFileSystem::GetFileContentByPathAfterGetWapiResourceEntry(
   initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), base::FilePath(),
                            base::Bind(&base::DoNothing));
   drive_service_->DownloadFile(
-      file_path,
       cache_path,
       GURL(gdata_entry->download_url()),
       base::Bind(&FakeFileSystem::GetFileContentByPathAfterDownloadFile,

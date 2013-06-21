@@ -88,7 +88,6 @@ CancelCallback DummyDriveService::DeleteResource(
     const EntryActionCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::DownloadFile(
-    const base::FilePath& virtual_path,
     const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
@@ -133,7 +132,6 @@ CancelCallback DummyDriveService::AddNewDirectory(
     const GetResourceEntryCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::InitiateUploadNewFile(
-    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const std::string& parent_resource_id,
@@ -141,7 +139,6 @@ CancelCallback DummyDriveService::InitiateUploadNewFile(
     const InitiateUploadCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::InitiateUploadExistingFile(
-    const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const std::string& resource_id,
@@ -149,7 +146,6 @@ CancelCallback DummyDriveService::InitiateUploadExistingFile(
     const InitiateUploadCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::ResumeUpload(
-    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 start_position,
     int64 end_position,
@@ -160,7 +156,6 @@ CancelCallback DummyDriveService::ResumeUpload(
     const ProgressCallback& progress_callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::GetUploadStatus(
-    const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
     const UploadRangeCallback& callback) { return CancelCallback(); }

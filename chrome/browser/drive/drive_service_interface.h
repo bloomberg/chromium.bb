@@ -261,7 +261,6 @@ class DriveServiceInterface {
   // |download_action_callback| must not be null.
   // |get_content_callback| and |progress_callback| may be null.
   virtual google_apis::CancelCallback DownloadFile(
-      const base::FilePath& virtual_path,
       const base::FilePath& local_cache_path,
       const GURL& download_url,
       const google_apis::DownloadActionCallback& download_action_callback,
@@ -273,7 +272,6 @@ class DriveServiceInterface {
   // uploaded.
   // |callback| must not be null.
   virtual google_apis::CancelCallback InitiateUploadNewFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
@@ -285,7 +283,6 @@ class DriveServiceInterface {
   // uploaded.
   // |callback| must not be null.
   virtual google_apis::CancelCallback InitiateUploadExistingFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
@@ -295,7 +292,6 @@ class DriveServiceInterface {
   // Resumes uploading of a document/file on the calling thread.
   // |callback| must not be null. |progress_callback| may be null.
   virtual google_apis::CancelCallback ResumeUpload(
-      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
       int64 end_position,
@@ -310,7 +306,6 @@ class DriveServiceInterface {
   // which is used for ResumeUpload.
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetUploadStatus(
-      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,
       const google_apis::UploadRangeCallback& callback) = 0;

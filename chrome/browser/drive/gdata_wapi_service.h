@@ -93,7 +93,6 @@ class GDataWapiService : public DriveServiceInterface,
       const std::string& etag,
       const google_apis::EntryActionCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback DownloadFile(
-      const base::FilePath& virtual_path,
       const base::FilePath& local_cache_path,
       const GURL& download_url,
       const google_apis::DownloadActionCallback& download_action_callback,
@@ -130,21 +129,18 @@ class GDataWapiService : public DriveServiceInterface,
       const std::string& directory_name,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback InitiateUploadNewFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title,
       const google_apis::InitiateUploadCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback InitiateUploadExistingFile(
-      const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
       const std::string& resource_id,
       const std::string& etag,
       const google_apis::InitiateUploadCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback ResumeUpload(
-      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
       int64 end_position,
@@ -154,7 +150,6 @@ class GDataWapiService : public DriveServiceInterface,
       const google_apis::UploadRangeCallback& callback,
       const google_apis::ProgressCallback& progress_callback) OVERRIDE;
   virtual google_apis::CancelCallback GetUploadStatus(
-      const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,
       const google_apis::UploadRangeCallback& callback) OVERRIDE;

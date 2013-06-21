@@ -47,9 +47,6 @@ class DriveUploaderInterface {
   // parent_resource_id:
   //   resource id of the destination directory.
   //
-  // drive_file_path:
-  //   The destination path like "drive/foo/bar.txt".
-  //
   // local_file_path:
   //   The path to the local file to be uploaded.
   //
@@ -68,7 +65,6 @@ class DriveUploaderInterface {
   //   May be null if the information is not needed.
   virtual google_apis::CancelCallback UploadNewFile(
       const std::string& parent_resource_id,
-      const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
@@ -88,7 +84,6 @@ class DriveUploaderInterface {
   //   If |etag| is empty, the test is skipped.
   virtual google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
-      const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const std::string& etag,
@@ -103,7 +98,6 @@ class DriveUploaderInterface {
   // See comments at UploadNewFile about common parameters and the return value.
   virtual google_apis::CancelCallback ResumeUploadFile(
       const GURL& upload_location,
-      const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const UploadCompletionCallback& callback,
@@ -118,7 +112,6 @@ class DriveUploader : public DriveUploaderInterface {
   // DriveUploaderInterface overrides.
   virtual google_apis::CancelCallback UploadNewFile(
       const std::string& parent_resource_id,
-      const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
@@ -126,7 +119,6 @@ class DriveUploader : public DriveUploaderInterface {
       const google_apis::ProgressCallback& progress_callback) OVERRIDE;
   virtual google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
-      const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const std::string& etag,
@@ -134,7 +126,6 @@ class DriveUploader : public DriveUploaderInterface {
       const google_apis::ProgressCallback& progress_callback) OVERRIDE;
   virtual google_apis::CancelCallback ResumeUploadFile(
       const GURL& upload_location,
-      const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const UploadCompletionCallback& callback,

@@ -109,34 +109,30 @@ class MockDriveService : public DriveServiceInterface {
                    const std::string& parent_resource_id,
                    const std::string& directory_name,
                    const google_apis::GetResourceEntryCallback& callback));
-  MOCK_METHOD6(
+  MOCK_METHOD5(
       DownloadFile,
       google_apis::CancelCallback(
-          const base::FilePath& virtual_path,
           const base::FilePath& local_cache_path,
           const GURL& download_url,
           const google_apis::DownloadActionCallback& donwload_action_callback,
           const google_apis::GetContentCallback& get_content_callback,
           const google_apis::ProgressCallback& progress_callback));
-  MOCK_METHOD6(InitiateUploadNewFile,
+  MOCK_METHOD5(InitiateUploadNewFile,
                google_apis::CancelCallback(
-                   const base::FilePath& drive_file_path,
                    const std::string& content_type,
                    int64 content_length,
                    const std::string& parent_resource_id,
                    const std::string& title,
                    const google_apis::InitiateUploadCallback& callback));
-  MOCK_METHOD6(InitiateUploadExistingFile,
+  MOCK_METHOD5(InitiateUploadExistingFile,
                google_apis::CancelCallback(
-                   const base::FilePath& drive_file_path,
                    const std::string& content_type,
                    int64 content_length,
                    const std::string& resource_id,
                    const std::string& etag,
                    const google_apis::InitiateUploadCallback& callback));
-  MOCK_METHOD9(ResumeUpload,
+  MOCK_METHOD8(ResumeUpload,
                google_apis::CancelCallback(
-                   const base::FilePath& drive_file_path,
                    const GURL& upload_url,
                    int64 start_position,
                    int64 end_position,
@@ -145,9 +141,8 @@ class MockDriveService : public DriveServiceInterface {
                    const base::FilePath& local_file_path,
                    const google_apis::UploadRangeCallback& callback,
                    const google_apis::ProgressCallback& progress_callback));
-  MOCK_METHOD4(GetUploadStatus,
+  MOCK_METHOD3(GetUploadStatus,
                google_apis::CancelCallback(
-                   const base::FilePath& drive_file_path,
                    const GURL& upload_url,
                    int64 content_length,
                    const google_apis::UploadRangeCallback& callback));
@@ -216,7 +211,6 @@ class MockDriveService : public DriveServiceInterface {
   // portion of the URL as the temporary file path. If |file_data_| is not null,
   // |file_data_| is written to the temporary file.
   google_apis::CancelCallback DownloadFileStub(
-      const base::FilePath& virtual_path,
       const base::FilePath& local_tmp_path,
       const GURL& download_url,
       const google_apis::DownloadActionCallback& download_action_callback,

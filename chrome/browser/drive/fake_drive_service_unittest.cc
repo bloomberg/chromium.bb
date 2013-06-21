@@ -798,7 +798,6 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
   base::FilePath output_file_path;
   test_util::TestGetContentCallback get_content_callback;
   fake_service_.DownloadFile(
-      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       test_util::CreateCopyResultCallback(&error, &output_file_path),
@@ -833,7 +832,6 @@ TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath output_file_path;
   fake_service_.DownloadFile(
-      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       test_util::CreateCopyResultCallback(&error, &output_file_path),
@@ -858,7 +856,6 @@ TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   base::FilePath output_file_path;
   fake_service_.DownloadFile(
-      base::FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
       kOutputFilePath,
       kContentUrl,
       test_util::CreateCopyResultCallback(&error, &output_file_path),
@@ -1510,7 +1507,6 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
       "test/foo",
       13,
       "folder:1_folder_resource_id",
@@ -1529,7 +1525,6 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile_NotFound) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
       "test/foo",
       13,
       "non_existent",
@@ -1548,7 +1543,6 @@ TEST_F(FakeDriveServiceTest, InitiateUploadNewFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1")),
       "test/foo",
       13,
       "folder:1_folder_resource_id",
@@ -1570,7 +1564,6 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/File 1")),
       "test/foo",
       13,
       "file:2_file_resource_id",
@@ -1589,7 +1582,6 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_NotFound) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/File 1")),
       "test/foo",
       13,
       "non_existent",
@@ -1608,7 +1600,6 @@ TEST_F(FakeDriveServiceTest, InitiateUploadExistingFile_WrongETag) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       "text/plain",
       13,
       "file:2_file_resource_id",
@@ -1627,7 +1618,6 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       "text/plain",
       13,
       "file:2_file_resource_id",
@@ -1647,7 +1637,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       "test/foo",
       15,
       "folder:1_folder_resource_id",
@@ -1665,7 +1654,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
   fake_service_.ResumeUpload(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
       0, 13, 15, "test/foo",
       base::FilePath(),
@@ -1684,7 +1672,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       "test/foo",
       15,
       "folder:1_folder_resource_id",
@@ -1697,7 +1684,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> entry;
   fake_service_.ResumeUpload(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       GURL("https://foo.com/"),
       0, 13, 15, "test/foo",
       base::FilePath(),
@@ -1716,7 +1702,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       "text/plain",
       15,
       "file:2_file_resource_id",
@@ -1730,7 +1715,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   scoped_ptr<ResourceEntry> entry;
   std::vector<test_util::ProgressInfo> upload_progress_values;
   fake_service_.ResumeUpload(
-      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       upload_location,
       0, 13, 15, "text/plain",
       base::FilePath(),
@@ -1748,7 +1732,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
 
   upload_progress_values.clear();
   fake_service_.ResumeUpload(
-      base::FilePath(FILE_PATH_LITERAL("drive/File 1.txt")),
       upload_location,
       13, 15, 15, "text/plain",
       base::FilePath(),
@@ -1774,7 +1757,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       "test/foo",
       15,
       "folder:1_folder_resource_id",
@@ -1791,7 +1773,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   scoped_ptr<ResourceEntry> entry;
   std::vector<test_util::ProgressInfo> upload_progress_values;
   fake_service_.ResumeUpload(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
       0, 13, 15, "test/foo",
       base::FilePath(),
@@ -1809,7 +1790,6 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 
   upload_progress_values.clear();
   fake_service_.ResumeUpload(
-      base::FilePath(FILE_PATH_LITERAL("drive/Directory 1/new file.foo")),
       upload_location,
       13, 15, 15, "test/foo",
       base::FilePath(),

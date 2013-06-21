@@ -179,7 +179,6 @@ class FakeDriveUploader : public DriveUploaderInterface {
   // resource entry to the caller.
   virtual google_apis::CancelCallback UploadNewFile(
       const std::string& parent_resource_id,
-      const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& title,
       const std::string& content_type,
@@ -214,7 +213,6 @@ class FakeDriveUploader : public DriveUploaderInterface {
   // returns a resource entry to the caller.
   virtual google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
-      const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const std::string& etag,
@@ -230,7 +228,6 @@ class FakeDriveUploader : public DriveUploaderInterface {
   // So this method shouldn't be reached.
   virtual google_apis::CancelCallback ResumeUploadFile(
       const GURL& upload_location,
-      const base::FilePath& drive_file_path,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const UploadCompletionCallback& callback,
