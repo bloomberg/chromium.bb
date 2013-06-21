@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
@@ -24,14 +25,15 @@ class ExtensionSyncTypeTest : public testing::Test {
     THEME
   };
 
-  static scoped_refptr<Extension> MakeSyncTestExtension(
+  static scoped_refptr<Extension> MakeSyncTestExtensionWithPluginPermission(
       SyncTestExtensionType type,
       const GURL& update_url,
       const GURL& launch_url,
       Manifest::Location location,
       int num_plugins,
       const base::FilePath& extension_path,
-      int creation_flags) {
+      int creation_flags,
+      bool has_plugin_permission) {
     base::DictionaryValue source;
     source.SetString(keys::kName, "PossiblySyncableExtension");
     source.SetString(keys::kVersion, "0.0.0.0");
@@ -55,6 +57,11 @@ class ExtensionSyncTypeTest : public testing::Test {
       }
       source.Set(keys::kPlugins, plugins);
     }
+    if (has_plugin_permission) {
+      ListValue* plugins = new ListValue();
+      plugins->Set(0, new StringValue("plugin"));
+      source.Set(keys::kPermissions, plugins);
+    }
 
     std::string error;
     scoped_refptr<Extension> extension = Extension::Create(
@@ -62,6 +69,19 @@ class ExtensionSyncTypeTest : public testing::Test {
     EXPECT_TRUE(extension.get());
     EXPECT_EQ("", error);
     return extension;
+  }
+
+  static scoped_refptr<Extension> MakeSyncTestExtension(
+      SyncTestExtensionType type,
+      const GURL& update_url,
+      const GURL& launch_url,
+      Manifest::Location location,
+      int num_plugins,
+      const base::FilePath& extension_path,
+      int creation_flags) {
+    return MakeSyncTestExtensionWithPluginPermission(
+        type, update_url, launch_url, location, num_plugins, extension_path,
+        creation_flags, false);
   }
 
   static const char kValidUpdateUrl1[];
@@ -237,6 +257,16 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
                             Extension::NO_FLAGS));
   if (extension.get())
     EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
+}
+
+TEST_F(ExtensionSyncTypeTest, ExtensionWithPluginPermission) {
+  scoped_refptr<Extension> extension(
+      MakeSyncTestExtensionWithPluginPermission(EXTENSION, GURL(), GURL(),
+                                                Manifest::INTERNAL,
+                                                0, base::FilePath(),
+                                                Extension::NO_FLAGS, true));
+  if (extension.get())
+    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
 }
 #endif // !defined(OS_CHROMEOS)
 
