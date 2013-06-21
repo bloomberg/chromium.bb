@@ -198,28 +198,28 @@ static void collectFeaturesFromRuleData(RuleFeatureSet& features, const RuleData
         features.uncommonAttributeRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
 }
     
-void RuleSet::addToRuleSet(AtomicStringImpl* key, PendingRuleMap& map, const RuleData& ruleData)
+void RuleSet::addToRuleSet(AtomicStringImpl* key, AtomRuleMap& map, const RuleData& ruleData)
 {
     if (!key)
         return;
-    OwnPtr<LinkedStack<RuleData> >& rules = map.add(key, nullptr).iterator->value;
+    OwnPtr<Vector<RuleData> >& rules = map.add(key, nullptr).iterator->value;
     if (!rules)
-        rules = adoptPtr(new LinkedStack<RuleData>);
-    rules->push(ruleData);
+        rules = adoptPtr(new Vector<RuleData>);
+    rules->append(ruleData);
 }
 
 bool RuleSet::findBestRuleSetAndAdd(const CSSSelector* component, RuleData& ruleData)
 {
     if (component->m_match == CSSSelector::Id) {
-        addToRuleSet(component->value().impl(), ensurePendingRules()->idRules, ruleData);
+        addToRuleSet(component->value().impl(), m_idRules, ruleData);
         return true;
     }
     if (component->m_match == CSSSelector::Class) {
-        addToRuleSet(component->value().impl(), ensurePendingRules()->classRules, ruleData);
+        addToRuleSet(component->value().impl(), m_classRules, ruleData);
         return true;
     }
     if (component->isCustomPseudoElement()) {
-        addToRuleSet(component->value().impl(), ensurePendingRules()->shadowPseudoElementRules, ruleData);
+        addToRuleSet(component->value().impl(), m_shadowPseudoElementRules, ruleData);
         return true;
     }
     if (component->pseudoType() == CSSSelector::PseudoCue) {
@@ -250,7 +250,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector* component, RuleData& rule
                 && findBestRuleSetAndAdd(component->tagHistory(), ruleData))
                 return true;
 
-            addToRuleSet(component->tagQName().localName().impl(), ensurePendingRules()->tagRules, ruleData);
+            addToRuleSet(component->tagQName().localName().impl(), m_tagRules, ruleData);
             return true;
         }
     }
@@ -259,6 +259,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector* component, RuleData& rule
 
 void RuleSet::addRule(StyleRule* rule, unsigned selectorIndex, AddRuleFlags addRuleFlags)
 {
+    m_hasDirtyRules = true;
     RuleData ruleData(rule, selectorIndex, m_ruleCount++, addRuleFlags);
     collectFeaturesFromRuleData(m_features, ruleData);
 
@@ -270,13 +271,13 @@ void RuleSet::addRule(StyleRule* rule, unsigned selectorIndex, AddRuleFlags addR
 
 void RuleSet::addPageRule(StyleRulePage* rule)
 {
-    ensurePendingRules(); // So that m_pageRules.shrinkToFit() gets called.
+    m_hasDirtyRules = true;
     m_pageRules.append(rule);
 }
 
 void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin)
 {
-    ensurePendingRules(); // So that m_regionSelectorsAndRuleSets.shrinkToFit() gets called.
+    m_hasDirtyRules = true;
     OwnPtr<RuleSet> regionRuleSet = RuleSet::create();
     // The region rule set should take into account the position inside the parent rule set.
     // Otherwise, the rules inside region block might be incorrectly positioned before other similar rules from
@@ -376,39 +377,20 @@ void RuleSet::addStyleRule(StyleRule* rule, AddRuleFlags addRuleFlags)
         addRule(rule, selectorIndex, addRuleFlags);
 }
 
-void RuleSet::compactPendingRules(PendingRuleMap& pendingMap, CompactRuleMap& compactMap)
+void RuleSet::shrinkMapVectorsToFit(AtomRuleMap& map)
 {
-    PendingRuleMap::iterator end = pendingMap.end();
-    for (PendingRuleMap::iterator it = pendingMap.begin(); it != end; ++it) {
-        OwnPtr<LinkedStack<RuleData> > pendingRules = it->value.release();
-        size_t pendingSize = pendingRules->size();
-        ASSERT(pendingSize);
-
-        OwnPtr<Vector<RuleData> >& compactRules = compactMap.add(it->key, nullptr).iterator->value;
-        if (!compactRules) {
-            compactRules = adoptPtr(new Vector<RuleData>);
-            compactRules->reserveInitialCapacity(pendingSize);
-        } else {
-            compactRules->reserveCapacity(compactRules->size() + pendingSize);
-        }
-
-        while (!pendingRules->isEmpty()) {
-            compactRules->append(pendingRules->peek());
-            pendingRules->pop();
-        }
-
-        ASSERT(compactRules->size() == compactRules->capacity());
-    }
+    RuleSet::AtomRuleMap::iterator end = map.end();
+    for (RuleSet::AtomRuleMap::iterator it = map.begin(); it != end; ++it)
+        it->value->shrinkToFit();
 }
 
-void RuleSet::compactRules()
+void RuleSet::shrinkToFit()
 {
-    ASSERT(m_pendingRules);
-    OwnPtr<PendingRuleMaps> pendingRules = m_pendingRules.release();
-    compactPendingRules(pendingRules->idRules, m_idRules);
-    compactPendingRules(pendingRules->classRules, m_classRules);
-    compactPendingRules(pendingRules->tagRules, m_tagRules);
-    compactPendingRules(pendingRules->shadowPseudoElementRules, m_shadowPseudoElementRules);
+    m_hasDirtyRules = false;
+    shrinkMapVectorsToFit(m_idRules);
+    shrinkMapVectorsToFit(m_classRules);
+    shrinkMapVectorsToFit(m_tagRules);
+    shrinkMapVectorsToFit(m_shadowPseudoElementRules);
     m_linkPseudoClassRules.shrinkToFit();
     m_cuePseudoRules.shrinkToFit();
     m_focusPseudoClassRules.shrinkToFit();
