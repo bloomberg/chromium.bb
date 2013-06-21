@@ -2405,7 +2405,7 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
 #endif
     if (shouldLongPressSelectWord) {
         IntPoint hitTestPoint = m_frame->view()->windowToContents(gestureEvent.position());
-        HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
+        HitTestResult result = hitTestResultAtPoint(hitTestPoint);
         Node* innerNode = result.targetNode();
         if (!result.isLiveLink() && innerNode && (innerNode->isContentEditable() || innerNode->isTextNode())) {
             selectClosestWordFromHitTestResult(result, DontAppendTrailingWhitespace);
