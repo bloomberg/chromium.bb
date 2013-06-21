@@ -38,3 +38,6 @@
     [ImplementedAs=getItem] getter (Node or NodeList)(DOMString name);
     [Custom] setter Node (DOMString name, Node value);
 };
+
+TestInterface implements TestImplements;
+

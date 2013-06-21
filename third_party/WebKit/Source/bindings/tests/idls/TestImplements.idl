@@ -51,4 +51,3 @@
     [EnabledAtRuntime=condition25, EnabledPerContext=condition26] attribute Node Node25;
 };
 
-TestInterface implements TestImplements;
