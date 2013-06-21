@@ -5,9 +5,9 @@
 #include "content/child/plugin_param_traits.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "content/child/npruntime_util.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
-#include "webkit/glue/npruntime_util.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 
 namespace content {
@@ -115,13 +115,13 @@ void ParamTraits<NPVariant_Param>::Log(const param_type& p, std::string* l) {
 }
 
 void ParamTraits<NPIdentifier_Param>::Write(Message* m, const param_type& p) {
-  webkit_glue::SerializeNPIdentifier(p.identifier, m);
+  content::SerializeNPIdentifier(p.identifier, m);
 }
 
 bool ParamTraits<NPIdentifier_Param>::Read(const Message* m,
                                            PickleIterator* iter,
                                            param_type* r) {
-  return webkit_glue::DeserializeNPIdentifier(iter, &r->identifier);
+  return content::DeserializeNPIdentifier(iter, &r->identifier);
 }
 
 void ParamTraits<NPIdentifier_Param>::Log(const param_type& p, std::string* l) {

@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/npruntime_util.h"
+#include "content/child/npruntime_util.h"
 
 #include "base/pickle.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 
 using WebKit::WebBindings;
 
-namespace webkit_glue {
+namespace content {
 
 bool SerializeNPIdentifier(NPIdentifier identifier, Pickle* pickle) {
   const NPUTF8* string;
@@ -48,4 +48,4 @@ bool DeserializeNPIdentifier(PickleIterator* pickle_iter,
   return true;
 }
 
-}  // namespace webkit_glue
+}  // namespace content

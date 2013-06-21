@@ -55,6 +55,8 @@
     'child/npobject_base.h',
     'child/npobject_proxy.cc',
     'child/npobject_proxy.h',
+    'child/npruntime_util.cc',
+    'child/npruntime_util.h',
     'child/npobject_stub.cc',
     'child/npobject_stub.h',
     'child/npobject_util.cc',

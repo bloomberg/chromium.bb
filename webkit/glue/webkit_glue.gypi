@@ -280,8 +280,6 @@
         'image_decoder.cc',
         'image_decoder.h',
         'network_list_observer.h',
-        'npruntime_util.cc',
-        'npruntime_util.h',
         'resource_loader_bridge.cc',
         'resource_loader_bridge.h',
         'resource_request_body.cc',
