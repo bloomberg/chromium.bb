@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 import org.chromium.base.ChromiumActivity;
+import org.chromium.base.MemoryPressureListener;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.AndroidBrowserProcess;
@@ -43,6 +44,21 @@ public class ContentShellActivity extends ChromiumActivity {
     private static final String ACTION_STOP_TRACE =
             "org.chromium.content_shell.action.PROFILE_STOP";
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
+
+    /**
+     * Sending an intent with this action will simulate a memory pressure signal
+     * at a critical level.
+     */
+    private static final String ACTION_LOW_MEMORY =
+            "org.chromium.content_shell.action.ACTION_LOW_MEMORY";
+
+    /**
+     * Sending an intent with this action will simulate a memory pressure signal
+     * at a moderate level.
+     */
+    private static final String ACTION_TRIM_MEMORY_MODERATE =
+            "org.chromium.content_shell.action.ACTION_TRIM_MEMORY_MODERATE";
+
 
     private ShellManager mShellManager;
     private WindowAndroid mWindowAndroid;
@@ -132,6 +148,14 @@ public class ContentShellActivity extends ChromiumActivity {
     protected void onNewIntent(Intent intent) {
         if (getCommandLineParamsFromIntent(intent) != null) {
             Log.i(TAG, "Ignoring command line params: can only be set when creating the activity.");
+        }
+
+        if (ACTION_LOW_MEMORY.equals(intent.getAction())) {
+            MemoryPressureListener.simulateMemoryPressureSignal(TRIM_MEMORY_COMPLETE);
+            return;
+        } else if (ACTION_TRIM_MEMORY_MODERATE.equals(intent.getAction())) {
+            MemoryPressureListener.simulateMemoryPressureSignal(TRIM_MEMORY_MODERATE);
+            return;
         }
 
         String url = getUrlFromIntent(intent);

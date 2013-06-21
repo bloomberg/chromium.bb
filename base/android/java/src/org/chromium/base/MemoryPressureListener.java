@@ -16,7 +16,7 @@ import org.chromium.base.MemoryPressureLevelList;
  * It registers a ComponentCallbacks2 with the system, and dispatches into
  * native.
  */
-class MemoryPressureListener {
+public class MemoryPressureListener {
   @CalledByNative
   private static void registerSystemCallback(Context context) {
       context.registerComponentCallbacks(
@@ -35,6 +35,13 @@ class MemoryPressureListener {
                 public void onConfigurationChanged(Configuration configuration) {
                 }
           });
+  }
+
+  /**
+   * Used by applications to simulate a memory pressure signal.
+   */
+  public static void simulateMemoryPressureSignal(int level) {
+      nativeOnMemoryPressure(translate(level));
   }
 
   private static int translate(int level) {

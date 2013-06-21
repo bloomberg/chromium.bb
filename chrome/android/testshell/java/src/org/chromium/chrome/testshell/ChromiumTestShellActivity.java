@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 import org.chromium.base.ChromiumActivity;
+import org.chromium.base.MemoryPressureListener;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.AndroidBrowserProcess;
@@ -31,6 +32,19 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
     private static final String TAG = ChromiumTestShellActivity.class.getCanonicalName();
     private static final String COMMAND_LINE_FILE =
             "/data/local/tmp/chromium-testshell-command-line";
+    /**
+     * Sending an intent with this action will simulate a memory pressure signal
+     * at a critical level.
+     */
+    private static final String ACTION_LOW_MEMORY =
+            "org.chromium.chrome_test_shell.action.ACTION_LOW_MEMORY";
+
+    /**
+     * Sending an intent with this action will simulate a memory pressure signal
+     * at a moderate level.
+     */
+    private static final String ACTION_TRIM_MEMORY_MODERATE =
+            "org.chromium.chrome_test_shell.action.ACTION_TRIM_MEMORY_MODERATE";
 
     private WindowAndroid mWindow;
     private TabManager mTabManager;
@@ -94,6 +108,14 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
+        if (ACTION_LOW_MEMORY.equals(intent.getAction())) {
+            MemoryPressureListener.simulateMemoryPressureSignal(TRIM_MEMORY_COMPLETE);
+            return;
+        } else if (ACTION_TRIM_MEMORY_MODERATE.equals(intent.getAction())) {
+            MemoryPressureListener.simulateMemoryPressureSignal(TRIM_MEMORY_MODERATE);
+            return;
+        }
+
         String url = getUrlFromIntent(intent);
         if (!TextUtils.isEmpty(url)) {
             TestShellTab tab = getActiveTab();
