@@ -272,6 +272,10 @@ void AutocheckoutManager::OnFormsSeen() {
   autocheckout_offered_ = false;
 }
 
+bool AutocheckoutManager::ShouldIgnoreAjax() {
+  return in_autocheckout_flow_ && page_meta_data_->ignore_ajax;
+}
+
 void AutocheckoutManager::MaybeShowAutocheckoutBubble(
     const GURL& frame_url,
     const content::SSLStatus& ssl_status,

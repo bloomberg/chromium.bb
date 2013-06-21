@@ -628,6 +628,21 @@ class TestAutofillManager : public AutofillManager {
     autocheckout_manager()->OnLoadedPageMetaData(start_of_flow.Pass());
   }
 
+  // Set autocheckout manager's page meta data to first page on Autocheckout
+  // flow.
+  void MarkAsFirstPageInAutocheckoutFlowIgnoringAjax() {
+    scoped_ptr<AutocheckoutPageMetaData> start_of_flow(
+        new AutocheckoutPageMetaData());
+    start_of_flow->current_page_number = 0;
+    start_of_flow->total_pages = 3;
+    start_of_flow->ignore_ajax = true;
+    WebElementDescriptor* proceed_element =
+        &start_of_flow->proceed_element_descriptor;
+    proceed_element->descriptor = "#foo";
+    proceed_element->retrieval_method = WebElementDescriptor::ID;
+    autocheckout_manager()->OnLoadedPageMetaData(start_of_flow.Pass());
+  }
+
  private:
   // Weak reference.
   TestPersonalDataManager* personal_data_;
@@ -3183,18 +3198,43 @@ TEST_F(AutofillManagerTest, DisabledAutofillDispatchesError) {
 
 namespace {
 
-class MockAutofillManagerDelegate
-    : public autofill::TestAutofillManagerDelegate {
+class MockAutofillManagerDelegate : public TestAutofillManagerDelegate {
  public:
-  MockAutofillManagerDelegate() {}
+  MockAutofillManagerDelegate()
+      : autocheckout_bubble_shown_(false) {}
+
   virtual ~MockAutofillManagerDelegate() {}
 
-  MOCK_METHOD3(ShowAutocheckoutBubble,
-               void(const gfx::RectF& bounds,
-                    bool is_google_user,
-                    const base::Callback<void(bool)>& callback));
+  virtual void ShowAutocheckoutBubble(
+      const gfx::RectF& bounds,
+      bool is_google_user,
+      const base::Callback<void(bool)>& callback) OVERRIDE {
+    autocheckout_bubble_shown_ = true;
+    callback.Run(true);
+  }
+
+  virtual void ShowRequestAutocompleteDialog(
+      const FormData& form,
+      const GURL& source_url,
+      DialogType dialog_type,
+      const base::Callback<void(const FormStructure*,
+                                const std::string&)>& callback) OVERRIDE {
+    callback.Run(user_supplied_data_.get(), "google_transaction_id");
+  }
+
+  void SetUserSuppliedData(scoped_ptr<FormStructure> user_supplied_data) {
+    user_supplied_data_.reset(user_supplied_data.release());
+  }
+
+  bool autocheckout_bubble_shown() const {
+    return autocheckout_bubble_shown_;
+  }
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
+  bool autocheckout_bubble_shown_;
+  scoped_ptr<FormStructure> user_supplied_data_;
+
+ DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };
 
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
@@ -3224,8 +3264,6 @@ TEST_F(AutofillManagerTest, TestBubbleShown) {
   autofill_manager_->set_autofill_enabled(true);
   autofill_manager_->MarkAsFirstPageInAutocheckoutFlow();
 
-  EXPECT_CALL(delegate, ShowAutocheckoutBubble(_, _, _));
-
   FormData form;
   CreateTestAddressFormData(&form);
 
@@ -3243,6 +3281,8 @@ TEST_F(AutofillManagerTest, TestBubbleShown) {
   autofill_manager_->AddSeenForm(form_structure);
 
   autofill_manager_->OnMaybeShowAutocheckoutBubble(form, gfx::RectF());
+
+  EXPECT_TRUE(delegate.autocheckout_bubble_shown());
 }
 
 // Test that Autocheckout bubble is not offered when server doesn't have data
@@ -3271,6 +3311,8 @@ TEST_F(AutofillManagerTest, TestAutocheckoutBubbleNotShown) {
   autofill_manager_->AddSeenForm(form_structure);
 
   autofill_manager_->OnMaybeShowAutocheckoutBubble(form, gfx::RectF());
+
+  EXPECT_FALSE(delegate.autocheckout_bubble_shown());
 }
 
 // Test our external delegate is called at the right time.
@@ -3288,6 +3330,55 @@ TEST_F(AutofillManagerTest, TestExternalDelegate) {
   GetAutofillSuggestions(form, field);  // should call the delegate's OnQuery()
 
   autofill_manager_->SetExternalDelegate(NULL);
+}
+
+// Test that in the case of Autocheckout, forms seen are in order supplied.
+TEST_F(AutofillManagerTest, DynamicFormsSeenAndIgnored) {
+  MockAutofillManagerDelegate delegate;
+  autofill_manager_.reset(new TestAutofillManager(
+      autofill_driver_.get(), &delegate, &personal_data_));
+  FormData shipping_options;
+  CreateTestShippingOptionsFormData(&shipping_options);
+  FormData user_supplied;
+  CreateTestFormWithAutocompleteAttribute(&user_supplied);
+  FormData address;
+  CreateTestAddressFormData(&address);
+
+  autofill_manager_->set_autocheckout_url_prefix("test-prefix");
+  // Push address only
+  std::vector<FormData> forms;
+  forms.push_back(address);
+
+  // Build and add form structure with server data.
+  scoped_ptr<TestFormStructure> form_structure(new TestFormStructure(address));
+  std::vector<AutofillFieldType> heuristic_types, server_types;
+  for (size_t i = 0; i < address.fields.size(); ++i) {
+    heuristic_types.push_back(UNKNOWN_TYPE);
+    server_types.push_back(form_structure->field(i)->type());
+  }
+  form_structure->SetFieldTypes(heuristic_types, server_types);
+  autofill_manager_->AddSeenForm(form_structure.release());
+
+  // Make sure normal form is handled correctly.
+  autofill_manager_->MarkAsFirstPageInAutocheckoutFlowIgnoringAjax();
+  std::vector<FormStructure*> form_structures;
+  form_structures = autofill_manager_->GetFormStructures();
+  ASSERT_EQ(1U, form_structures.size());
+  EXPECT_EQ("/form.html", form_structures[0]->source_url().path());
+
+  scoped_ptr<FormStructure> filled_form(new TestFormStructure(address));
+  delegate.SetUserSuppliedData(filled_form.Pass());
+  autofill_manager_->OnMaybeShowAutocheckoutBubble(address, gfx::RectF());
+
+  // Push other forms
+  forms.push_back(shipping_options);
+  forms.push_back(user_supplied);
+
+  // FormStructure should contain the same forms as before.
+  DynamicFormsSeen(forms);
+  form_structures = autofill_manager_->GetFormStructures();
+  ASSERT_EQ(1U, form_structures.size());
+  EXPECT_EQ("/form.html", form_structures[0]->source_url().path());
 }
 
 }  // namespace autofill

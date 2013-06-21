@@ -61,6 +61,10 @@ class AutocheckoutManager {
   // Called when a page containing forms is loaded.
   void OnFormsSeen();
 
+  // Whether ajax on the current page should be ignored during
+  // an Autocheckout flow.
+  bool ShouldIgnoreAjax();
+
   // Causes the Autocheckout bubble to be displayed if the user hasn't seen it
   // yet for the current page. |frame_url| is the page where Autocheckout is
   // being initiated. |ssl_status| is the SSL status of the page. |bounding_box|

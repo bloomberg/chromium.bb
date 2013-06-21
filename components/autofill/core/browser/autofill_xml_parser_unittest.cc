@@ -179,6 +179,7 @@ TEST_F(AutofillQueryXmlParserTest, ParseAutofillFlow) {
   EXPECT_EQ(1U, field_infos_.size());
   EXPECT_EQ(1, page_meta_data_.current_page_number);
   EXPECT_EQ(10, page_meta_data_.total_pages);
+  EXPECT_FALSE(page_meta_data_.ignore_ajax);
   EXPECT_EQ("foo", page_meta_data_.proceed_element_descriptor.descriptor);
   EXPECT_EQ(autofill::WebElementDescriptor::ID,
             page_meta_data_.proceed_element_descriptor.retrieval_method);
@@ -277,6 +278,52 @@ TEST_F(AutofillQueryXmlParserTest, ParseAutofillFlow) {
   click_elment = page_meta_data_.click_elements_after_form_fill[0];
   EXPECT_EQ("btn1", click_elment.descriptor);
   EXPECT_EQ(autofill::WebElementDescriptor::ID, click_elment.retrieval_method);
+
+  // Clear |field_infos_| for the next test.
+  field_infos_.clear();
+
+  // Test setting of ignore_ajax attribute.
+  xml = "<autofillqueryresponse>"
+        "<field autofilltype=\"55\"/>"
+        "<autofill_flow page_no=\"1\" total_pages=\"10\" ignore_ajax=\"true\">"
+        "<page_advance_button css_selector=\"[name=&quot;foo&quot;]\""
+        " id=\"foo\"/>"
+        "</autofill_flow>"
+        "</autofillqueryresponse>";
+
+  ParseQueryXML(xml, true);
+
+  EXPECT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(1, page_meta_data_.current_page_number);
+  EXPECT_EQ(10, page_meta_data_.total_pages);
+  EXPECT_TRUE(page_meta_data_.ignore_ajax);
+  EXPECT_EQ("[name=\"foo\"]",
+            page_meta_data_.proceed_element_descriptor.descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::CSS_SELECTOR,
+            page_meta_data_.proceed_element_descriptor.retrieval_method);
+
+ // Clear |field_infos_| for the next test.
+  field_infos_.clear();
+
+  // Test redundant setting to false of ignore_ajax attribute.
+  xml = "<autofillqueryresponse>"
+        "<field autofilltype=\"55\"/>"
+        "<autofill_flow page_no=\"1\" total_pages=\"10\" ignore_ajax=\"false\">"
+        "<page_advance_button css_selector=\"[name=&quot;foo&quot;]\""
+        " id=\"foo\"/>"
+        "</autofill_flow>"
+        "</autofillqueryresponse>";
+
+  ParseQueryXML(xml, true);
+
+  EXPECT_EQ(1U, field_infos_.size());
+  EXPECT_EQ(1, page_meta_data_.current_page_number);
+  EXPECT_EQ(10, page_meta_data_.total_pages);
+  EXPECT_FALSE(page_meta_data_.ignore_ajax);
+  EXPECT_EQ("[name=\"foo\"]",
+            page_meta_data_.proceed_element_descriptor.descriptor);
+  EXPECT_EQ(autofill::WebElementDescriptor::CSS_SELECTOR,
+            page_meta_data_.proceed_element_descriptor.retrieval_method);
 }
 
 // Test badly formed XML queries.

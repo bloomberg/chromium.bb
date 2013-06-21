@@ -332,9 +332,14 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
                                   autofill::FormsSeenState state) {
   bool is_post_document_load = state == autofill::DYNAMIC_FORMS_SEEN;
   bool has_more_forms = state == autofill::PARTIAL_FORMS_SEEN;
-  // If new forms were added via AJAX or DHML, treat as new page.
-  if (is_post_document_load)
+  // If new forms were added dynamically, and the autocheckout manager
+  // doesn't tell us to ignore ajax on this page, treat as a new page.
+  if (is_post_document_load) {
+    if (autocheckout_manager_.ShouldIgnoreAjax())
+      return;
+
     Reset();
+  }
 
   RenderViewHost* host = driver_->GetWebContents()->GetRenderViewHost();
   if (!host)

@@ -38,6 +38,10 @@ struct AutocheckoutPageMetaData {
   // belong to any autofill flow, it is set to -1.
   int total_pages;
 
+  // Whether ajaxy form changes that occur on this page during an Autocheckout
+  // flow should be ignored.
+  bool ignore_ajax;
+
   // A list of elements to click before filling form fields. Elements have to be
   // clicked in order.
   std::vector<WebElementDescriptor> click_elements_before_form_fill;
