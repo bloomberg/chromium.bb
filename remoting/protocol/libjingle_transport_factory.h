@@ -12,16 +12,30 @@ class HttpPortAllocatorBase;
 class PortAllocator;
 }  // namespace cricket
 
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
+
 namespace talk_base {
 class NetworkManager;
 class PacketSocketFactory;
 }  // namespace talk_base
 
 namespace remoting {
+
+struct NetworkSettings;
+
 namespace protocol {
 
 class LibjingleTransportFactory : public TransportFactory {
  public:
+  // Creates an instance of the class using ChromiumPortAllocator.
+  // Must be called from an IO thread.
+  static scoped_ptr<LibjingleTransportFactory> Create(
+      const NetworkSettings& network_settings,
+      const scoped_refptr<net::URLRequestContextGetter>&
+          url_request_context_getter);
+
   // Need to use cricket::HttpPortAllocatorBase pointer for the
   // |port_allocator|, so that it is possible to configure
   // |port_allocator| with STUN/Relay addresses.

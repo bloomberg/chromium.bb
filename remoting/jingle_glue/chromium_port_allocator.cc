@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/host_port_allocator.h"
+#include "remoting/jingle_glue/chromium_port_allocator.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -12,18 +12,18 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/host/network_settings.h"
 #include "remoting/jingle_glue/chromium_socket_factory.h"
+#include "remoting/jingle_glue/network_settings.h"
 
 namespace remoting {
 
 namespace {
 
-class HostPortAllocatorSession
+class ChromiumPortAllocatorSession
     : public cricket::HttpPortAllocatorSessionBase,
       public net::URLFetcherDelegate {
  public:
-  HostPortAllocatorSession(
+  ChromiumPortAllocatorSession(
       cricket::HttpPortAllocatorBase* allocator,
       const std::string& content_name,
       int component,
@@ -33,7 +33,7 @@ class HostPortAllocatorSession
       const std::vector<std::string>& relay_hosts,
       const std::string& relay,
       const scoped_refptr<net::URLRequestContextGetter>& url_context);
-  virtual ~HostPortAllocatorSession();
+  virtual ~ChromiumPortAllocatorSession();
 
   // cricket::HttpPortAllocatorBase overrides.
   virtual void ConfigReady(cricket::PortConfiguration* config) OVERRIDE;
@@ -46,10 +46,10 @@ class HostPortAllocatorSession
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   std::set<const net::URLFetcher*> url_fetchers_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostPortAllocatorSession);
+  DISALLOW_COPY_AND_ASSIGN(ChromiumPortAllocatorSession);
 };
 
-HostPortAllocatorSession::HostPortAllocatorSession(
+ChromiumPortAllocatorSession::ChromiumPortAllocatorSession(
     cricket::HttpPortAllocatorBase* allocator,
     const std::string& content_name,
     int component,
@@ -70,11 +70,12 @@ HostPortAllocatorSession::HostPortAllocatorSession(
                                    std::string()),
       url_context_(url_context) {}
 
-HostPortAllocatorSession::~HostPortAllocatorSession() {
+ChromiumPortAllocatorSession::~ChromiumPortAllocatorSession() {
   STLDeleteElements(&url_fetchers_);
 }
 
-void HostPortAllocatorSession::ConfigReady(cricket::PortConfiguration* config) {
+void ChromiumPortAllocatorSession::ConfigReady(
+    cricket::PortConfiguration* config) {
   // Filter out non-UDP relay ports, so that we don't try using TCP.
   for (cricket::PortConfiguration::RelayList::iterator relay =
            config->relays.begin(); relay != config->relays.end(); ++relay) {
@@ -90,8 +91,9 @@ void HostPortAllocatorSession::ConfigReady(cricket::PortConfiguration* config) {
   cricket::BasicPortAllocatorSession::ConfigReady(config);
 }
 
-void HostPortAllocatorSession::SendSessionRequest(const std::string& host,
-                                                  int port) {
+void ChromiumPortAllocatorSession::SendSessionRequest(
+    const std::string& host,
+    int port) {
   GURL url("https://" + host + ":" + base::IntToString(port) +
            GetSessionRequestUrl() + "&sn=1");
   scoped_ptr<net::URLFetcher> url_fetcher(
@@ -105,7 +107,7 @@ void HostPortAllocatorSession::SendSessionRequest(const std::string& host,
   url_fetchers_.insert(url_fetcher.release());
 }
 
-void HostPortAllocatorSession::OnURLFetchComplete(
+void ChromiumPortAllocatorSession::OnURLFetchComplete(
     const net::URLFetcher* source) {
   int response_code = source->GetResponseCode();
   std::string response;
@@ -127,15 +129,15 @@ void HostPortAllocatorSession::OnURLFetchComplete(
 }  // namespace
 
 // static
-scoped_ptr<HostPortAllocator> HostPortAllocator::Create(
+scoped_ptr<ChromiumPortAllocator> ChromiumPortAllocator::Create(
     const scoped_refptr<net::URLRequestContextGetter>& url_context,
     const NetworkSettings& network_settings) {
   scoped_ptr<talk_base::NetworkManager> network_manager(
       new talk_base::BasicNetworkManager());
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory(
       new remoting::ChromiumPacketSocketFactory());
-  scoped_ptr<HostPortAllocator> result(
-      new HostPortAllocator(url_context, network_manager.Pass(),
+  scoped_ptr<ChromiumPortAllocator> result(
+      new ChromiumPortAllocator(url_context, network_manager.Pass(),
                             socket_factory.Pass()));
 
   // We always use PseudoTcp to provide a reliable channel. It
@@ -158,7 +160,7 @@ scoped_ptr<HostPortAllocator> HostPortAllocator::Create(
   return result.Pass();
 }
 
-HostPortAllocator::HostPortAllocator(
+ChromiumPortAllocator::ChromiumPortAllocator(
     const scoped_refptr<net::URLRequestContextGetter>& url_context,
     scoped_ptr<talk_base::NetworkManager> network_manager,
     scoped_ptr<talk_base::PacketSocketFactory> socket_factory)
@@ -169,15 +171,15 @@ HostPortAllocator::HostPortAllocator(
       network_manager_(network_manager.Pass()),
       socket_factory_(socket_factory.Pass()) {}
 
-HostPortAllocator::~HostPortAllocator() {
+ChromiumPortAllocator::~ChromiumPortAllocator() {
 }
 
-cricket::PortAllocatorSession* HostPortAllocator::CreateSessionInternal(
+cricket::PortAllocatorSession* ChromiumPortAllocator::CreateSessionInternal(
     const std::string& content_name,
     int component,
     const std::string& ice_username_fragment,
     const std::string& ice_password) {
-  return new HostPortAllocatorSession(
+  return new ChromiumPortAllocatorSession(
       this, content_name, component, ice_username_fragment, ice_password,
       stun_hosts(), relay_hosts(), relay_token(), url_context_);
 }

@@ -13,9 +13,11 @@
 #include "jingle/glue/utils.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/constants.h"
+#include "remoting/jingle_glue/chromium_port_allocator.h"
+#include "remoting/jingle_glue/chromium_socket_factory.h"
+#include "remoting/jingle_glue/network_settings.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/transport_config.h"
-#include "remoting/jingle_glue/chromium_socket_factory.h"
 #include "third_party/libjingle/source/talk/base/network.h"
 #include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
@@ -360,6 +362,27 @@ void LibjingleStreamTransport::NotifyConnectFailed() {
 }
 
 }  // namespace
+
+scoped_ptr<LibjingleTransportFactory> LibjingleTransportFactory::Create(
+    const NetworkSettings& network_settings,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        url_request_context_getter) {
+  // Use Chrome's network stack to allocate ports for peer-to-peer channels.
+  scoped_ptr<ChromiumPortAllocator> port_allocator(
+      ChromiumPortAllocator::Create(url_request_context_getter,
+          network_settings));
+
+  bool incoming_only = network_settings.nat_traversal_mode ==
+      NetworkSettings::NAT_TRAVERSAL_DISABLED;
+
+  // Use libjingle for negotiation of peer-to-peer channels over
+  // NativePortAllocator allocated ports.
+  scoped_ptr<LibjingleTransportFactory> transport_factory(
+      new LibjingleTransportFactory(
+          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
+          incoming_only));
+  return transport_factory.Pass();
+}
 
 LibjingleTransportFactory::LibjingleTransportFactory(
     scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator,

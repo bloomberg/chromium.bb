@@ -7,11 +7,18 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/protocol/session_manager.h"
+
+namespace net {
+class URLRequestContextGetter;
+}  // namespace net
 
 namespace remoting {
 
 struct NetworkSettings;
+
+namespace protocol {
+  class SessionManager;
+}  // namespace protocol
 
 scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
     const NetworkSettings& network_settings,

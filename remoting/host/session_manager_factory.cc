@@ -4,11 +4,11 @@
 
 #include "remoting/host/session_manager_factory.h"
 
-#include "net/url_request/url_request_context_getter.h"
-#include "remoting/host/host_port_allocator.h"
-#include "remoting/host/network_settings.h"
-#include "remoting/protocol/libjingle_transport_factory.h"
+#include "remoting/jingle_glue/chromium_port_allocator.h"
+#include "remoting/jingle_glue/network_settings.h"
 #include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/libjingle_transport_factory.h"
+#include "remoting/protocol/session_manager.h"
 
 namespace remoting {
 
@@ -16,20 +16,9 @@ scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
     const NetworkSettings& network_settings,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter) {
-  // Use Chrome's network stack to allocate ports for peer-to-peer channels.
-  scoped_ptr<HostPortAllocator> port_allocator(
-      HostPortAllocator::Create(url_request_context_getter,
-                                network_settings));
-
-  bool incoming_only = network_settings.nat_traversal_mode ==
-      NetworkSettings::NAT_TRAVERSAL_DISABLED;
-
-  // Use libjingle for negotiation of peer-to-peer channels over
-  // HostPortAllocator allocated ports.
   scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::LibjingleTransportFactory(
-          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
-          incoming_only));
+      protocol::LibjingleTransportFactory::Create(network_settings,
+                                                  url_request_context_getter));
 
   // Use the Jingle protocol for channel-negotiation signalling between
   // peer TransportFactories.

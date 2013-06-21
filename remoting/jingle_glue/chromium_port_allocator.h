@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_HOST_PORT_ALLOCATOR_H_
-#define REMOTING_HOST_HOST_PORT_ALLOCATOR_H_
+#ifndef REMOTING_JINGLE_GLUE_CHROMIUM_PORT_ALLOCATOR_H_
+#define REMOTING_JINGLE_GLUE_CHROMIUM_PORT_ALLOCATOR_H_
 
 #include <set>
 
@@ -19,18 +19,16 @@ namespace remoting {
 
 struct NetworkSettings;
 
-// An implementation of cricket::PortAllocator for libjingle that is
-// used by the remoting host. The main difference from
-// cricket::HttpPortAllocator is that it uses Chromium's HTTP stack
-// when creating relay sessions. It also configures itself according
+// An implementation of cricket::PortAllocator for libjingle that
+// uses Chromium's network stack and configures itself according
 // to the specified NetworkSettings.
-class HostPortAllocator : public cricket::HttpPortAllocatorBase {
+class ChromiumPortAllocator : public cricket::HttpPortAllocatorBase {
  public:
-  static scoped_ptr<HostPortAllocator> Create(
+  static scoped_ptr<ChromiumPortAllocator> Create(
       const scoped_refptr<net::URLRequestContextGetter>& url_context,
       const NetworkSettings& network_settings);
 
-  virtual ~HostPortAllocator();
+  virtual ~ChromiumPortAllocator();
 
   // cricket::HttpPortAllocatorBase overrides.
   virtual cricket::PortAllocatorSession* CreateSessionInternal(
@@ -40,7 +38,7 @@ class HostPortAllocator : public cricket::HttpPortAllocatorBase {
       const std::string& ice_password) OVERRIDE;
 
  private:
-  HostPortAllocator(
+  ChromiumPortAllocator(
       const scoped_refptr<net::URLRequestContextGetter>& url_context,
       scoped_ptr<talk_base::NetworkManager> network_manager,
       scoped_ptr<talk_base::PacketSocketFactory> socket_factory);
@@ -49,7 +47,7 @@ class HostPortAllocator : public cricket::HttpPortAllocatorBase {
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostPortAllocator);
+  DISALLOW_COPY_AND_ASSIGN(ChromiumPortAllocator);
 };
 
 }  // namespace remoting
