@@ -1929,6 +1929,36 @@ Value* NetInternalsUI::GetConstants() {
     constants_dict->Set("netError", dict);
   }
 
+  // Add information on the relationship between QUIC error codes and their
+  // symbolic names.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+    for (net::QuicErrorCode error = net::QUIC_NO_ERROR;
+         error < net::QUIC_LAST_ERROR;
+         error = static_cast<net::QuicErrorCode>(error + 1)) {
+      dict->SetInteger(net::QuicUtils::ErrorToString(error),
+                       static_cast<int>(error));
+    }
+
+    constants_dict->Set("quicError", dict);
+  }
+
+  // Add information on the relationship between QUIC RST_STREAM error codes
+  // and their symbolic names.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+    for (net::QuicRstStreamErrorCode error = net::QUIC_STREAM_NO_ERROR;
+         error < net::QUIC_STREAM_LAST_ERROR;
+         error = static_cast<net::QuicRstStreamErrorCode>(error + 1)) {
+      dict->SetInteger(net::QuicUtils::StreamErrorToString(error),
+                       static_cast<int>(error));
+    }
+
+    constants_dict->Set("quicRstStreamError", dict);
+  }
+
   // Information about the relationship between event phase enums and their
   // symbolic names.
   {

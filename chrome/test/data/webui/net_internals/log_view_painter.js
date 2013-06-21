@@ -150,6 +150,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   runTestCase(painterTestURLRequestIncompleteFromLoadedLog());
   runTestCase(painterTestURLRequestIncompleteFromLoadedLogSingleEvent());
   runTestCase(painterTestNetError());
+  runTestCase(painterTestQuicError());
   runTestCase(painterTestHexEncodedBytes());
   runTestCase(painterTestCertVerifierJob());
   runTestCase(painterTestProxyConfigOneProxyAllSchemes());
@@ -1077,6 +1078,87 @@ function painterTestNetError() {
 '                            --> net_error = -105 (ERR_NAME_NOT_RESOLVED)\n' +
 't=1338864774369 [st=475] -REQUEST_ALIVE\n' +
 '                          --> net_error = -105 (ERR_NAME_NOT_RESOLVED)';
+
+  return testCase;
+}
+
+/**
+ * Tests the custom formatting of QUIC errors across several different event
+ * types.
+ */
+function painterTestQuicError() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098446';
+
+  testCase.logEntries = [
+    {
+      'params': {
+        "host": "www.example.com"
+      },
+      'phase': EventPhase.PHASE_BEGIN,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675448',
+      'type': EventType.QUIC_SESSION
+    },
+    {
+      'params': {
+        'details': "invalid headers",
+        'quic_rst_stream_error':
+            QuicRstStreamError.QUIC_BAD_APPLICATION_PAYLOAD,
+        'stream_id': 1
+      },
+      'phase': EventPhase.PHASE_NONE,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675460',
+      'type': EventType.QUIC_SESSION_RST_STREAM_FRAME_RECEIVED
+    },
+    {
+      'params': {
+        'quic_error': QuicError.QUIC_CONNECTION_TIMED_OUT,
+      },
+      'phase': EventPhase.PHASE_NONE,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675705',
+      'type': EventType.QUIC_SESSION_CONNECTION_CLOSE_FRAME_RECEIVED
+    },
+    {
+      'params': {
+        'quic_error': QuicError.QUIC_CONNECTION_TIMED_OUT
+      },
+      'phase': EventPhase.PHASE_END,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675923',
+      'type': EventType.QUIC_SESSION
+    }
+  ];
+
+  testCase.expectedText =
+'t=1338864773894 [st=  0] +QUIC_SESSION  [dt=475]\n' +
+'                          --> host = "www.example.com"\n' +
+'t=1338864773906 [st= 12]    QUIC_SESSION_RST_STREAM_FRAME_RECEIVED\n' +
+'                            --> details = "invalid headers"\n' +
+'                            --> quic_rst_stream_error = ' +
+        QuicRstStreamError.QUIC_BAD_APPLICATION_PAYLOAD + ' (' +
+        'QUIC_BAD_APPLICATION_PAYLOAD)\n' +
+'                            --> stream_id = 1\n' +
+'t=1338864774151 [st=257]    QUIC_SESSION_CONNECTION_CLOSE_FRAME_RECEIVED\n' +
+'                            --> quic_error = ' +
+        QuicError.QUIC_CONNECTION_TIMED_OUT + ' (QUIC_CONNECTION_TIMED_OUT)\n' +
+'t=1338864774369 [st=475] -QUIC_SESSION\n' +
+'                          --> quic_error = ' +
+        QuicError.QUIC_CONNECTION_TIMED_OUT + ' (QUIC_CONNECTION_TIMED_OUT)';
 
   return testCase;
 }

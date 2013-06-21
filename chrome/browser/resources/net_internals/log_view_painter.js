@@ -329,6 +329,18 @@ function defaultWriteParameter(key, value, out) {
     return;
   }
 
+  if (key == 'quic_error' && typeof value == 'number') {
+    var valueStr = value + ' (' + quicErrorToString(value) + ')';
+    out.writeArrowKeyValue(key, valueStr);
+    return;
+  }
+
+  if (key == 'quic_rst_stream_error' && typeof value == 'number') {
+    var valueStr = value + ' (' + quicRstStreamErrorToString(value) + ')';
+    out.writeArrowKeyValue(key, valueStr);
+    return;
+  }
+
   if (key == 'load_flags' && typeof value == 'number') {
     var valueStr = value + ' (' + getLoadFlagSymbolicString(value) + ')';
     out.writeArrowKeyValue(key, valueStr);

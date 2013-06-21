@@ -114,7 +114,7 @@ base::Value* NetLogQuicRstStreamFrameCallback(
     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", frame->stream_id);
-  dict->SetInteger("error_code", frame->error_code);
+  dict->SetInteger("quic_rst_stream_error", frame->error_code);
   dict->SetString("details", frame->error_details);
   return dict;
 }
@@ -123,7 +123,7 @@ base::Value* NetLogQuicConnectionCloseFrameCallback(
     const QuicConnectionCloseFrame* frame,
     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("error_code", frame->error_code);
+  dict->SetInteger("quic_error", frame->error_code);
   dict->SetString("details", frame->error_details);
   return dict;
 }
