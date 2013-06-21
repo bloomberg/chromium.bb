@@ -222,6 +222,8 @@ class CONTENT_EXPORT RenderWidget
   virtual bool AllowPartialSwap() const;
   bool UsingSynchronousRendererCompositor() const;
 
+  bool is_swapped_out() { return is_swapped_out_; }
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.

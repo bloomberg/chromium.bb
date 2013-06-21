@@ -310,6 +310,54 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 }
 
+TEST_F(RendererAccessibilityTest, AccessibilityMessagesQueueWhileSwappedOut) {
+  std::string html =
+      "<body>"
+      "  <p>Hello, world.</p>"
+      "</body>";
+  LoadHTML(html.c_str());
+
+  // Creating a RendererAccessibilityComplete should send the tree
+  // to the browser.
+  scoped_ptr<TestRendererAccessibilityComplete> accessibility(
+      new TestRendererAccessibilityComplete(view()));
+  accessibility->SendPendingAccessibilityNotifications();
+  EXPECT_EQ(3, accessibility->browser_tree_node_count());
+  EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
+
+  // Post a "value changed" notification, but then swap out
+  // before sending it. It shouldn't send the notification while
+  // swapped out.
+  sink_->ClearMessages();
+  WebDocument document = view()->GetWebView()->mainFrame()->document();
+  WebAccessibilityObject root_obj = document.accessibilityObject();
+  accessibility->HandleWebAccessibilityNotification(
+      root_obj,
+      WebKit::WebAccessibilityNotificationValueChanged);
+  view()->OnSwapOut();
+  accessibility->SendPendingAccessibilityNotifications();
+  EXPECT_FALSE(sink_->GetUniqueMessageMatching(
+      AccessibilityHostMsg_Notifications::ID));
+
+  // Navigate, so we're not swapped out anymore. Now we should
+  // send accessibility notifications again. Note that the
+  // message that was queued up before will be quickly discarded
+  // because the element it was referring to no longer exists,
+  // so the notification here is from loading this new page.
+  ViewMsg_Navigate_Params nav_params;
+  nav_params.url = GURL("data:text/html,<p>Hello, again.</p>");
+  nav_params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
+  nav_params.transition = PAGE_TRANSITION_TYPED;
+  nav_params.current_history_list_length = 1;
+  nav_params.current_history_list_offset = 0;
+  nav_params.pending_history_list_offset = 1;
+  nav_params.page_id = -1;
+  view()->OnNavigate(nav_params);
+  accessibility->SendPendingAccessibilityNotifications();
+  EXPECT_TRUE(sink_->GetUniqueMessageMatching(
+      AccessibilityHostMsg_Notifications::ID));
+}
+
 TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
   // Test RendererAccessibilityComplete and make sure it sends the
   // proper notification to the browser when an object in the tree

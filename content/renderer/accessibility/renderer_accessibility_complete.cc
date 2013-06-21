@@ -249,6 +249,9 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
   if (pending_notifications_.empty())
     return;
 
+  if (render_view_->is_swapped_out())
+    return;
+
   ack_pending_ = true;
 
   // Make a copy of the notifications, because it's possible that
