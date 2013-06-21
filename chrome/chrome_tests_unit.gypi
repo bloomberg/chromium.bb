@@ -437,7 +437,6 @@
         'test_support_common',
         'test_support_unit',
         # 3) anything tests directly depend on
-        '../courgette/courgette.gyp:courgette_lib',
         '../google_apis/google_apis.gyp:google_apis',
         '../skia/skia.gyp:skia',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
@@ -687,10 +686,7 @@
         'browser/chromeos/web_socket_proxy_helper_unittest.cc',
         'browser/command_updater_unittest.cc',
         'browser/component_updater/test/component_installers_unittest.cc',
-        'browser/component_updater/test/component_patcher_mock.h',
-        'browser/component_updater/test/component_patcher_unittest.cc',
         'browser/component_updater/test/component_updater_service_unittest.cc',
-        'browser/component_updater/test/test_installer.cc',
         'browser/content_settings/content_settings_default_provider_unittest.cc',
         'browser/content_settings/content_settings_mock_observer.cc',
         'browser/content_settings/content_settings_mock_observer.h',

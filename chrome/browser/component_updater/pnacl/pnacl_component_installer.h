@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_
 
-#include <string>
-
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/version.h"
@@ -33,9 +30,6 @@ class PnaclComponentInstaller : public ComponentInstaller {
 
   virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
-
-  virtual bool GetInstalledFile(const std::string& file,
-                                base::FilePath* installed_file) OVERRIDE;
 
   // Register a PNaCl component for the first time.
   void RegisterPnaclComponent(ComponentUpdateService* cus,

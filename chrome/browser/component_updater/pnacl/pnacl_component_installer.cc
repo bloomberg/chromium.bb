@@ -281,11 +281,6 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
   return true;
 }
 
-bool PnaclComponentInstaller::GetInstalledFile(
-    const std::string& file, base::FilePath* installed_file) {
-  return false;
-}
-
 namespace {
 
 void DoCheckForUpdate(ComponentUpdateService* cus,

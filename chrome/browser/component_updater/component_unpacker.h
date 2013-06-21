@@ -5,13 +5,11 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UNPACKER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UNPACKER_H_
 
-#include <string>
 #include <vector>
-#include "base/basictypes.h"
+
 #include "base/files/file_path.h"
 
 class ComponentInstaller;
-class ComponentPatcher;
 
 // In charge of unpacking the component CRX package and verifying that it is
 // well formed and the cryptographic signature is correct. If there is no
@@ -28,33 +26,22 @@ class ComponentPatcher;
 class ComponentUnpacker {
  public:
   // Possible error conditions.
-  // Add only to the bottom of this enum; the order must be kept stable.
   enum Error {
     kNone,
     kInvalidParams,
     kInvalidFile,
-    kUnzipPathError,
+    kUzipPathError,
     kUnzipFailed,
     kNoManifest,
     kBadManifest,
     kBadExtension,
     kInvalidId,
     kInstallerError,
-    kIoError,
-    kDeltaVerificationFailure,
-    kDeltaBadCommands,
-    kDeltaUnsupportedCommand,
-    kDeltaOperationFailure,
-    kDeltaPatchProcessFailure,
-    kDeltaMissingExistingFile,
-    kFingerprintWriteFailed,
   };
   // Unpacks, verifies and calls the installer. |pk_hash| is the expected
   // public key SHA256 hash. |path| is the current location of the CRX.
   ComponentUnpacker(const std::vector<uint8>& pk_hash,
                     const base::FilePath& path,
-                    const std::string& fingerprint,
-                    ComponentPatcher* patcher,
                     ComponentInstaller* installer);
 
   // If something went wrong during unpacking or installer invocation, the
@@ -63,12 +50,9 @@ class ComponentUnpacker {
 
   Error error() const { return error_; }
 
-  int extended_error() const { return extended_error_; }
-
  private:
   base::FilePath unpack_path_;
   Error error_;
-  int extended_error_;  // Provides additional error information.
 };
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UNPACKER_H_

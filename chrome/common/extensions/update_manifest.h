@@ -15,16 +15,13 @@ class UpdateManifest {
 
   // An update manifest looks like this:
   //
-  // <?xml version="1.0" encoding="UTF-8"?>
-  // <gupdate xmlns="http://www.google.com/update2/response" protocol="2.0">
-  //  <daystart elapsed_seconds="300" />
-  //  <app appid="12345" status="ok">
-  //   <updatecheck codebase="http://example.com/extension_1.2.3.4.crx"
-  //                hash="12345" size="9854" status="ok" version="1.2.3.4"
-  //                prodversionmin="2.0.143.0"
-  //                codebasediff="http://example.com/diff_1.2.3.4.crx"
-  //                hashdiff="123" sizediff="101"
-  //                fp="1.123" />
+  // <?xml version='1.0' encoding='UTF-8'?>
+  // <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
+  //  <daystart elapsed_seconds='300' />
+  //  <app appid='12345'>
+  //   <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'
+  //                version='1.2.3.4' prodversionmin='2.0.143.0'
+  //                hash="12345"/>
   //  </app>
   // </gupdate>
   //
@@ -36,9 +33,6 @@ class UpdateManifest {
   // fetch the updated crx file, and the "prodversionmin" attribute refers to
   // the minimum version of the chrome browser that the update applies to.
 
-  // The diff data members correspond to the differential update package, if
-  // a differential update is specified in the response.
-
   // The result of parsing one <app> tag in an xml update check manifest.
   struct Result {
     Result();
@@ -47,17 +41,8 @@ class UpdateManifest {
     std::string extension_id;
     std::string version;
     std::string browser_min_version;
-
-    // Attributes for the full update.
-    GURL crx_url;
     std::string package_hash;
-    int size;
-    std::string package_fingerprint;
-
-    // Attributes for the differential update.
-    GURL diff_crx_url;
-    std::string diff_package_hash;
-    int diff_size;
+    GURL crx_url;
   };
 
   static const int kNoDaystart = -1;

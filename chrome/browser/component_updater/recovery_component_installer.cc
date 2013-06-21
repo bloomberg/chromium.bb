@@ -56,9 +56,6 @@ class RecoveryComponentInstaller : public ComponentInstaller {
   virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
-  virtual bool GetInstalledFile(const std::string& file,
-                                base::FilePath* installed_file) OVERRIDE;
-
  private:
   Version current_version_;
   PrefService* prefs_;
@@ -131,11 +128,6 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
         base::Bind(&RecoveryUpdateVersionHelper, version, prefs_));
   }
   return base::LaunchProcess(cmdline, base::LaunchOptions(), NULL);
-}
-
-bool RecoveryComponentInstaller::GetInstalledFile(
-    const std::string& file, base::FilePath* installed_file) {
-  return false;
 }
 
 void RegisterRecoveryComponent(ComponentUpdateService* cus,

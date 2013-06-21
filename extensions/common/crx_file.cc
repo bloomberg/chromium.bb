@@ -11,9 +11,6 @@ namespace {
 // The current version of the crx format.
 static const uint32 kCurrentVersion = 2;
 
-// The current version of the crx diff format.
-static const uint32 kCurrentDiffVersion = 0;
-
 // The maximum size the crx parser will tolerate for a public key.
 static const uint32 kMaxPublicKeySize = 1 << 16;
 
@@ -24,7 +21,6 @@ static const uint32 kMaxSignatureSize = 1 << 16;
 
 // The magic string embedded in the header.
 const char kCrxFileHeaderMagic[] = "Cr24";
-const char kCrxDiffFileHeaderMagic[] = "CrOD";
 
 scoped_ptr<CrxFile> CrxFile::Parse(const CrxFile::Header& header,
                                    CrxFile::Error* error) {
@@ -49,21 +45,12 @@ scoped_ptr<CrxFile> CrxFile::Create(const uint32 key_size,
 CrxFile::CrxFile(const Header& header) : header_(header) {
 }
 
-bool CrxFile::HeaderIsDelta(const CrxFile::Header& header) {
-  return !strncmp(kCrxDiffFileHeaderMagic, header.magic, sizeof(header.magic));
-}
-
 bool CrxFile::HeaderIsValid(const CrxFile::Header& header,
                             CrxFile::Error* error) {
   bool valid = false;
-  bool diffCrx = false;
-  if (!strncmp(kCrxDiffFileHeaderMagic, header.magic, sizeof(header.magic)))
-    diffCrx = true;
-  if (strncmp(kCrxFileHeaderMagic, header.magic, sizeof(header.magic)) &&
-      !diffCrx)
+  if (strncmp(kCrxFileHeaderMagic, header.magic, sizeof(header.magic)))
     *error = kWrongMagic;
-  else if (header.version != kCurrentVersion
-      && !(diffCrx && header.version == kCurrentDiffVersion))
+  else if (header.version != kCurrentVersion)
     *error = kInvalidVersion;
   else if (header.key_size > kMaxPublicKeySize)
     *error = kInvalidKeyTooLarge;

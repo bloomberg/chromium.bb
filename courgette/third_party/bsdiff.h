@@ -30,15 +30,12 @@
  * 2009-03-31 - Change to use Streams.  Move CRC code to crc.{h,cc}
  *              Changed status to an enum, removed unused status codes.
  *                --Stephen Adams <sra@chromium.org>
- * 2013-04-10 - Added wrapper to apply a patch directly to files.
- *                --Joshua Pawlicki <waffles@chromium.org>
  */
 
 #ifndef COURGETTE_BSDIFF_H_
 #define COURGETTE_BSDIFF_H_
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
 
 namespace courgette {
 
@@ -47,8 +44,7 @@ enum BSDiffStatus {
   MEM_ERROR = 1,
   CRC_ERROR = 2,
   READ_ERROR = 3,
-  UNEXPECTED_ERROR = 4,
-  WRITE_ERROR = 5
+  UNEXPECTED_ERROR = 4
 };
 
 class SourceStream;
@@ -68,10 +64,6 @@ BSDiffStatus ApplyBinaryPatch(SourceStream* old_stream,
                               SourceStream* patch_stream,
                               SinkStream* new_stream);
 
-// As above, but simply takes the file paths.
-BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_stream,
-                              const base::FilePath& patch_stream,
-                              const base::FilePath& new_stream);
 
 // The following declarations are common to the patch-creation and
 // patch-application code.

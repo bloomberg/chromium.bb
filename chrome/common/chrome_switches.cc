@@ -208,7 +208,7 @@ const char kCloudPrintServiceURL[]          = "cloud-print-service";
 
 // Comma-separated options to troubleshoot the component updater. Only valid
 // for the browser process.
-const char kComponentUpdater[]              = "component-updater";
+const char kComponentUpdaterDebug[]         = "component-updater-debug";
 
 // Causes the browser process to inspect loaded and registered DLLs for known
 // conflicts and warn the user.

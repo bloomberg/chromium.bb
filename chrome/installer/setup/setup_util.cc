@@ -24,7 +24,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item.h"
 #include "courgette/courgette.h"
-#include "courgette/third_party/bsdiff.h"
 #include "third_party/bspatch/mbspatch.h"
 
 namespace installer {
@@ -87,59 +86,12 @@ bool SupportsSingleInstall(BrowserDistribution::Type type) {
 
 }  // namespace
 
-int CourgettePatchFiles(const base::FilePath& src,
-                        const base::FilePath& patch,
-                        const base::FilePath& dest) {
-  VLOG(1) << "Applying Courgette patch " << patch.value()
-          << " to file " << src.value()
-          << " and generating file " << dest.value();
-
-  if (src.empty() || patch.empty() || dest.empty())
-    return installer::PATCH_INVALID_ARGUMENTS;
-
-  const courgette::Status patch_status =
-      courgette::ApplyEnsemblePatch(src.value().c_str(),
-                                    patch.value().c_str(),
-                                    dest.value().c_str());
-  const int exit_code = (patch_status != courgette::C_OK) ?
-      static_cast<int>(patch_status) + kCourgetteErrorOffset : 0;
-
-  LOG_IF(ERROR, exit_code)
-      << "Failed to apply Courgette patch " << patch.value()
-      << " to file " << src.value() << " and generating file " << dest.value()
-      << ". err=" << exit_code;
-
-  return exit_code;
-}
-
-int BsdiffPatchFiles(const base::FilePath& src,
-                     const base::FilePath& patch,
-                     const base::FilePath& dest) {
-  VLOG(1) << "Applying bsdiff patch " << patch.value()
-          << " to file " << src.value()
-          << " and generating file " << dest.value();
-
-  if (src.empty() || patch.empty() || dest.empty())
-    return installer::PATCH_INVALID_ARGUMENTS;
-
-  const int patch_status = courgette::ApplyBinaryPatch(src, patch, dest);
-  const int exit_code = patch_status != OK ?
-                        patch_status + kBsdiffErrorOffset : 0;
-
-  LOG_IF(ERROR, exit_code)
-      << "Failed to apply bsdiff patch " << patch.value()
-      << " to file " << src.value() << " and generating file " << dest.value()
-      << ". err=" << exit_code;
-
-  return exit_code;
-}
-
 int ApplyDiffPatch(const base::FilePath& src,
                    const base::FilePath& patch,
                    const base::FilePath& dest,
                    const InstallerState* installer_state) {
-  VLOG(1) << "Applying patch " << patch.value() << " to file "
-          << src.value() << " and generating file " << dest.value();
+  VLOG(1) << "Applying patch " << patch.value() << " to file " << src.value()
+          << " and generating file " << dest.value();
 
   if (installer_state != NULL)
     installer_state->UpdateStage(installer::ENSEMBLE_PATCHING);
@@ -153,10 +105,8 @@ int ApplyDiffPatch(const base::FilePath& src,
   if (patch_status == courgette::C_OK)
     return 0;
 
-  LOG(ERROR)
-        << "Failed to apply patch " << patch.value()
-        << " to file " << src.value() << " and generating file " << dest.value()
-        << " using courgette. err=" << patch_status;
+  VLOG(1) << "Failed to apply patch " << patch.value()
+          << " using courgette. err=" << patch_status;
 
   // If we ran out of memory or disk space, then these are likely the errors
   // we will see.  If we run into them, return an error and stay on the
@@ -169,16 +119,8 @@ int ApplyDiffPatch(const base::FilePath& src,
   if (installer_state != NULL)
     installer_state->UpdateStage(installer::BINARY_PATCHING);
 
-  int binary_patch_status = ApplyBinaryPatch(src.value().c_str(),
-                                             patch.value().c_str(),
-                                             dest.value().c_str());
-
-  LOG_IF(ERROR, binary_patch_status != OK)
-      << "Failed to apply patch " << patch.value()
-      << " to file " << src.value() << " and generating file " << dest.value()
-      << " using bsdiff. err=" << binary_patch_status;
-
-  return binary_patch_status;
+  return ApplyBinaryPatch(src.value().c_str(), patch.value().c_str(),
+                          dest.value().c_str());
 }
 
 Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
