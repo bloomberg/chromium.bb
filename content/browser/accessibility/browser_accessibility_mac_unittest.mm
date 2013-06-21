@@ -58,6 +58,11 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
+    RebuildAccessibilityTree();
+  }
+
+ protected:
+  void RebuildAccessibilityTree() {
     AccessibilityNodeData root;
     root.id = 1000;
     root.location.set_width(500);
@@ -90,7 +95,6 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
         retain]);
   }
 
- protected:
   scoped_nsobject<MockAccessibilityDelegate> delegate_;
   scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
   scoped_ptr<BrowserAccessibilityManager> manager_;
@@ -134,6 +138,28 @@ TEST_F(BrowserAccessibilityTest, InvalidAttributeTest) {
   NSString* shouldBeNil = [accessibility_
       accessibilityAttributeValue:@"NSAnInvalidAttribute"];
   EXPECT_TRUE(shouldBeNil == nil);
+}
+
+TEST_F(BrowserAccessibilityTest, RetainedDetachedObjectsReturnNil) {
+  // Get the first child.
+  BrowserAccessibilityCocoa* retainedFirstChild =
+      [accessibility_ accessibilityHitTest:NSMakePoint(50, 50)];
+  EXPECT_NSEQ(@"Child1", [retainedFirstChild
+      accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
+
+  // Retain it. This simulates what the system might do with an
+  // accessibility object.
+  [retainedFirstChild retain];
+
+  // Rebuild the accessibility tree, which should detach |retainedFirstChild|.
+  RebuildAccessibilityTree();
+
+  // Now any attributes we query should return nil.
+  EXPECT_EQ(nil, [retainedFirstChild
+      accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
+
+  // Don't leak memory in the test.
+  [retainedFirstChild release];
 }
 
 }  // namespace content

@@ -37,17 +37,14 @@ void BrowserAccessibilityMac::PreInitialize() {
 }
 
 void BrowserAccessibilityMac::NativeReleaseReference() {
-  if (browser_accessibility_cocoa_) {
-    BrowserAccessibilityCocoa* temp = browser_accessibility_cocoa_;
-    browser_accessibility_cocoa_ = nil;
-    // Relinquish ownership of the cocoa obj.
-    [temp release];
-    // At this point, other processes may have a reference to
-    // the cocoa object. When the retain count hits zero, it will
-    // destroy us in dealloc.
-    // For that reason, do *not* make any more calls here after
-    // as we might have been deleted.
-  }
+  // Detach this object from |browser_accessibility_cocoa_| so it
+  // no longer has a pointer to this object.
+  [browser_accessibility_cocoa_ detach];
+  // Now, release it - but at this point, other processes may have a
+  // reference to the cocoa object.
+  [browser_accessibility_cocoa_ release];
+  // Finally, it's safe to delete this since we've detached.
+  delete this;
 }
 
 bool BrowserAccessibilityMac::IsNative() const {
