@@ -436,17 +436,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
 #endif  // !defined(OS_IOS)
 
-#if defined(ENABLE_PLUGINS)
-  // Prior to any processing happening on the io thread, we create the
-  // plugin service as it is predominantly used from the io thread,
-  // but must be created on the main thread. The service ctor is
-  // inexpensive and does not invoke the io_thread() accessor.
-  {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:PluginService")
-    PluginService::GetInstance()->Init();
-  }
-#endif
-
 #if defined(OS_WIN)
   system_message_window_.reset(new SystemMessageWindowWin);
 
@@ -488,9 +477,20 @@ void BrowserMainLoop::CreateThreads() {
 
   if (parts_) {
     TRACE_EVENT0("startup",
-        "BrowserMainLoop::MainMessageLoopStart:PreCreateThreads");
+        "BrowserMainLoop::CreateThreads:PreCreateThreads");
     result_code_ = parts_->PreCreateThreads();
   }
+
+#if defined(ENABLE_PLUGINS)
+  // Prior to any processing happening on the io thread, we create the
+  // plugin service as it is predominantly used from the io thread,
+  // but must be created on the main thread. The service ctor is
+  // inexpensive and does not invoke the io_thread() accessor.
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads:PluginService")
+    PluginService::GetInstance()->Init();
+  }
+#endif
 
 #if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
   // Single-process is an unsupported and not fully tested mode, so
