@@ -1843,16 +1843,17 @@ Bug(dpranke) http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm
 
 Bug(dpranke) virtual/gpu/compositedscrolling/overflow/remove-overflow-crash2.html [ Slow ]
 
-Bug(schenney) fast/text/emphasis-vertical.html [ Pass Failure ]
-Bug(schenney) fast/text/international/003.html [ Pass Failure ]
-Bug(schenney) fast/text/international/text-combine-image-test.html [ Pass Failure ]
-Bug(schenney) fast/writing-mode/Kusa-Makura-background-canvas.html [ Pass Failure ]
-
 crbug.com/248541 [ Win Mac Release ] virtual/gpu/fast/canvas/webgl/webgl-depth-texture.html [ Pass Crash ]
 crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Pass Failure ]
 crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/gl-teximage.html [ Pass Failure ]
 crbug.com/250818 [ Release ] virtual/gpu/fast/canvas/webgl/texture-active-bind.html [ Pass Failure ]
 crbug.com/250818 virtual/gpu/fast/canvas/webgl/texture-npot.html [ Pass Failure ]
+
+# Just in case they fail
+Bug(schenney) fast/text/line-break-after-empty-inline-hebrew.html [ Pass Failure ]
+Bug(schenney) fast/text/line-break-after-inline-latin1.html [ Pass Failure ]
+Bug(schenney) fast/text/line-break-between-text-nodes-cjk.html [ Pass Failure ]
+Bug(schenney) fast/text/line-break-between-text-nodes-latin1.html [ Pass Failure ]
 
 crbug.com/248832 [ XP ] virtual/softwarecompositing/reflections/nested-reflection-anchor-point.html [ ImageOnlyFailure ]
 
