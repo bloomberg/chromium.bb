@@ -424,11 +424,11 @@
         'widget/widget_deletion_observer.h',
         'widget/widget_hwnd_utils.cc',
         'widget/widget_hwnd_utils.h',
-        'widget/widget_message_filter.cc',
-        'widget/widget_message_filter.h',
         'widget/widget_observer.h',
         'widget/window_reorderer.cc',
         'widget/window_reorderer.h',
+        'win/appbar.cc',
+        'win/appbar.h',
         'win/fullscreen_handler.cc',
         'win/fullscreen_handler.h',
         'win/hwnd_message_handler.cc',
@@ -493,6 +493,10 @@
                 ['include', 'widget/desktop_aura/desktop_drag_drop_client_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_drop_target_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_root_window_host_win.cc'],
+                ['include', 'widget/monitor_win.cc'],
+                ['include', 'widget/monitor_win.h'],
+                ['include', 'win/appbar.cc'],
+                ['include', 'win/appbar.h'],
               ],
             }],
           ],
@@ -555,12 +559,6 @@
           },
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
-        }],
-        ['use_aura==0 or OS!="win"', {
-          'sources!': [
-            'widget/widget_message_filter.cc',
-            'widget/widget_message_filter.h',
-          ],
         }],
         ['OS!="win"', {
           'sources!': [

@@ -164,6 +164,13 @@ class VIEWS_EXPORT HWNDMessageHandler :
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
+  // Returns the auto-hide edges of the appbar. See Appbar::GetAutohideEdges()
+  // for details. If the edges change OnAppbarAutohideEdgesChanged() is called.
+  int GetAppbarAutohideEdges(HMONITOR monitor);
+
+  // Callback if the autohide edges have changed. See Appbar for details.
+  void OnAppbarAutohideEdgesChanged();
+
   // Can be called after the delegate has had the opportunity to set focus and
   // did not do so.
   void SetInitialFocus();
@@ -221,7 +228,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Synchronously updates the invalid contents of the Widget. Valid for
   // layered windows only.
   void RedrawLayeredWindowContents();
-
 
   // Message Handlers ----------------------------------------------------------
 
@@ -455,6 +461,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // True the first time nccalc is called on a sizable widget
   bool is_first_nccalc_;
+
+  // A factory used to lookup appbar autohide edges.
+  base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

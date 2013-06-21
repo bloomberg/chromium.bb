@@ -22,6 +22,9 @@ VIEWS_EXPORT gfx::Rect GetMonitorBoundsForRect(const gfx::Rect& rect);
 // Returns the always-on-top auto-hiding taskbar for edge |edge| (one of
 // ABE_LEFT, TOP, RIGHT, or BOTTOM) of monitor |monitor|. NULL is returned
 // if nothing is found.
+//
+// WARNING: this function spawns a nested message loop. Use Appbar instead if
+// possible.
 VIEWS_EXPORT HWND GetTopmostAutoHideTaskbarForEdge(UINT edge, HMONITOR monitor);
 
 }  // namespace views

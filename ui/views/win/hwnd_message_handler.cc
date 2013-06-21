@@ -31,6 +31,7 @@
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/widget/native_widget_win.h"
 #include "ui/views/widget/widget_hwnd_utils.h"
+#include "ui/views/win/appbar.h"
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler_delegate.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
@@ -389,7 +390,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       layered_alpha_(255),
       paint_layered_window_factory_(this),
       can_update_layered_window_(true),
-      is_first_nccalc_(true) {
+      is_first_nccalc_(true),
+      autohide_factory_(this) {
 }
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -904,6 +906,23 @@ void HWNDMessageHandler::DidProcessEvent(const base::NativeEvent& event) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, private:
+
+int HWNDMessageHandler::GetAppbarAutohideEdges(HMONITOR monitor) {
+  autohide_factory_.InvalidateWeakPtrs();
+  return Appbar::instance()->GetAutohideEdges(
+      monitor,
+      base::Bind(&HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
+                 autohide_factory_.GetWeakPtr()));
+}
+
+void HWNDMessageHandler::OnAppbarAutohideEdgesChanged() {
+  // This triggers querying WM_NCCALCSIZE again.
+  RECT client;
+  GetWindowRect(hwnd(), &client);
+  SetWindowPos(hwnd(), NULL, client.left, client.top,
+               client.right - client.left, client.bottom - client.top,
+               SWP_FRAMECHANGED);
+}
 
 void HWNDMessageHandler::SetInitialFocus() {
   if (!(GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
@@ -1639,9 +1658,10 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
         return 0;
       }
     }
-    if (GetTopmostAutoHideTaskbarForEdge(ABE_LEFT, monitor))
+    const int autohide_edges = GetAppbarAutohideEdges(monitor);
+    if (autohide_edges & Appbar::EDGE_LEFT)
       client_rect->left += kAutoHideTaskbarThicknessPx;
-    if (GetTopmostAutoHideTaskbarForEdge(ABE_TOP, monitor)) {
+    if (autohide_edges & Appbar::EDGE_TOP) {
       if (!delegate_->IsUsingCustomFrame()) {
         // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
         // WM_NCHITTEST, having any nonclient area atop the window causes the
@@ -1657,9 +1677,9 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
         client_rect->top += kAutoHideTaskbarThicknessPx;
       }
     }
-    if (GetTopmostAutoHideTaskbarForEdge(ABE_RIGHT, monitor))
+    if (autohide_edges & Appbar::EDGE_RIGHT)
       client_rect->right -= kAutoHideTaskbarThicknessPx;
-    if (GetTopmostAutoHideTaskbarForEdge(ABE_BOTTOM, monitor))
+    if (autohide_edges & Appbar::EDGE_BOTTOM)
       client_rect->bottom -= kAutoHideTaskbarThicknessPx;
 
     // We cannot return WVR_REDRAW when there is nonclient area, or Windows

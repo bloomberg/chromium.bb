@@ -25,6 +25,7 @@ gfx::Rect GetMonitorBoundsForRect(const gfx::Rect& rect) {
 }
 
 HWND GetTopmostAutoHideTaskbarForEdge(UINT edge, HMONITOR monitor) {
+  // NOTE: this may be invoked on a background thread.
   APPBARDATA taskbar_data =  { sizeof(APPBARDATA), NULL, 0, edge };
   HWND taskbar = reinterpret_cast<HWND>(SHAppBarMessage(ABM_GETAUTOHIDEBAR,
                                                         &taskbar_data));
