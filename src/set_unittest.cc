@@ -147,4 +147,32 @@ TEST(SetTest, SetRemoveMissingTest) {
   }
 }
 
+template<typename LeftSet, typename RightSet>
+void DoSetSubtractTest() {
+  LeftSet left;
+  RightSet right;
+  left.insert(4);
+  left.insert(2);
+  right.insert(1);
+  right.insert(2);
+  LeftSet out = SetSubtract(left, right);
+  EXPECT_EQ(1, out.size());
+  EXPECT_EQ(4, *out.begin());
+  EXPECT_EQ(2, left.size());
+
+  left.clear();
+  EXPECT_EQ(0, SetSubtract(left, right).size());
+  left.insert(5);
+  EXPECT_EQ(1, SetSubtract(left, right).size());
+  right.clear();
+  EXPECT_EQ(1, SetSubtract(left, right).size());
+}
+
+TEST(SetTest, SetSubtractTest) {
+  DoSetSubtractTest<std::set<short>, std::set<short>>();
+  DoSetSubtractTest<set<short, 3>, set<short, 4>>();
+  DoSetSubtractTest<set<short, 2>, set<short, 2>>();
+  DoSetSubtractTest<set<short, 4>, set<short, 2>>();
+}
+
 }  // namespace gestures

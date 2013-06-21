@@ -144,6 +144,20 @@ void RemoveMissingIdsFromSet(set<short, kSetSize>* the_set,
     the_set->erase(old_ids[i]);
 }
 
+// returns Difference = left - right.
+template<typename LeftSet, typename RightSet>
+LeftSet SetSubtract(const LeftSet& left, const RightSet& right) {
+  if (left.empty() || right.empty())
+    return left;
+  LeftSet ret;
+  for (typename LeftSet::const_iterator it = left.begin(), e = left.end();
+       it != e; ++it) {
+    if (!SetContainsValue(right, *it))
+      ret.insert(*it);
+  }
+  return ret;
+}
+
 }  // namespace gestures
 
 #endif  // GESTURES_SET_H__
