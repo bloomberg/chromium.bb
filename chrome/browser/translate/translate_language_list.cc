@@ -111,6 +111,9 @@ const int kFetcherIdForAlphaLanguageList = 2;
 // Represent if the language list updater is disabled.
 bool update_is_disabled = false;
 
+// Retry parameter for fetching.
+const int kMaxRetryOn5xx = 5;
+
 // Show a message in chrome:://translate-internals Event Logs.
 void NotifyEvent(int line, const std::string& message) {
   TranslateManager* manager = TranslateManager::GetInstance();
@@ -218,8 +221,11 @@ TranslateLanguageList::TranslateLanguageList() {
 
   language_list_fetcher_.reset(
       new TranslateURLFetcher(kFetcherIdForLanguageList));
+  language_list_fetcher_->set_max_retry_on_5xx(kMaxRetryOn5xx);
+
   alpha_language_list_fetcher_.reset(
       new TranslateURLFetcher(kFetcherIdForAlphaLanguageList));
+  alpha_language_list_fetcher_->set_max_retry_on_5xx(kMaxRetryOn5xx);
 }
 
 TranslateLanguageList::~TranslateLanguageList() {

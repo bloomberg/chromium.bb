@@ -26,6 +26,20 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
   explicit TranslateURLFetcher(int id);
   virtual ~TranslateURLFetcher();
 
+  int max_retry_on_5xx() {
+    return max_retry_on_5xx_;
+  }
+  void set_max_retry_on_5xx(int count) {
+    max_retry_on_5xx_ = count;
+  }
+
+  const std::string& extra_request_header() {
+    return extra_request_header_;
+  }
+  void set_extra_request_header(const std::string& header) {
+    extra_request_header_ = header;
+  }
+
   // Requests to |url|. |callback| will be invoked when the function returns
   // true, and the request is finished asynchronously.
   // Returns false if the previous request is not finished, or the request
@@ -57,6 +71,12 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
 
   // Counts how many times did it try to fetch the language list.
   int retry_count_;
+
+  // Max number how many times to retry on the server error
+  int max_retry_on_5xx_;
+
+  // An extra HTTP request header
+  std::string extra_request_header_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateURLFetcher);
 };

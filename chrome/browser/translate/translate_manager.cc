@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_language_list.h"
 #include "chrome/browser/translate/translate_prefs.h"
+#include "chrome/browser/translate/translate_script.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/translate/translate_url_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -52,16 +52,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "google_apis/google_api_keys.h"
-#include "grit/browser_resources.h"
-#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #ifdef FILE_MANAGER_EXTENSION
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
@@ -74,16 +68,8 @@ using content::WebContents;
 
 namespace {
 
-const char kTranslateScriptURL[] =
-    "https://translate.google.com/translate_a/element.js";
-const char kTranslateScriptHeader[] = "Google-Translate-Element-Mode: library";
 const char kReportLanguageDetectionErrorURL[] =
     "https://translate.google.com/translate_error?client=cr&action=langidc";
-
-// Used in kTranslateScriptURL to specify a callback function name.
-const char kCallbackQueryName[] = "cb";
-const char kCallbackQueryValue[] =
-    "cr.googleTranslate.onTranslateElementLoad";
 
 // Used in kReportLanguageDetectionErrorURL to specify the original page
 // language.
@@ -99,8 +85,6 @@ const int kTranslateLoadCheckDelayMs = 150;
 // The maximum number of attempts we'll do to see if the page has finshed
 // loading before giving up the translation
 const int kMaxTranslateLoadCheckAttempts = 20;
-
-const int kTranslateScriptExpirationDelayDays = 1;
 
 }  // namespace
 
@@ -185,6 +169,14 @@ bool TranslateManager::IsAcceptLanguage(Profile* profile,
   }
   NOTREACHED();
   return false;
+}
+
+void TranslateManager::SetTranslateScriptExpirationDelay(int delay_ms) {
+  if (script_.get() == NULL) {
+    NOTREACHED();
+    return;
+  }
+  script_->set_expiration_delay(delay_ms);
 }
 
 void TranslateManager::Observe(int type,
@@ -284,89 +276,6 @@ void TranslateManager::Observe(int type,
   }
 }
 
-void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (translate_script_request_pending_.get() != source) {
-    // Looks like crash on Mac is possibly caused with callback entering here
-    // with unknown fetcher when network is refreshed.
-    scoped_ptr<const net::URLFetcher> delete_ptr(source);
-    return;
-  }
-
-  bool error =
-      source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
-      source->GetResponseCode() != net::HTTP_OK;
-  if (translate_script_request_pending_.get() == source) {
-    scoped_ptr<const net::URLFetcher> delete_ptr(
-        translate_script_request_pending_.release());
-    if (!error) {
-      base::StringPiece str = ResourceBundle::GetSharedInstance().
-          GetRawDataResource(IDR_TRANSLATE_JS);
-      DCHECK(translate_script_.empty());
-      str.CopyToString(&translate_script_);
-      std::string argument = "('";
-      std::string api_key = google_apis::GetAPIKey();
-      argument += net::EscapeQueryParamValue(api_key, true);
-      argument += "');\n";
-      std::string data;
-      source->GetResponseAsString(&data);
-      translate_script_ += argument + data;
-
-      // We'll expire the cached script after some time, to make sure long
-      // running browsers still get fixes that might get pushed with newer
-      // scripts.
-      base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          base::Bind(&TranslateManager::ClearTranslateScript,
-                     weak_method_factory_.GetWeakPtr()),
-          translate_script_expiration_delay_);
-    }
-    // Process any pending requests.
-    std::vector<PendingRequest>::const_iterator iter;
-    for (iter = pending_requests_.begin(); iter != pending_requests_.end();
-         ++iter) {
-      const PendingRequest& request = *iter;
-      WebContents* web_contents =
-          tab_util::GetWebContentsByID(request.render_process_id,
-                                       request.render_view_id);
-      if (!web_contents) {
-        // The tab went away while we were retrieving the script.
-        continue;
-      }
-      NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
-      if (!entry || entry->GetPageID() != request.page_id) {
-        // We navigated away from the page the translation was triggered on.
-        continue;
-      }
-
-      if (error) {
-        Profile* profile =
-            Profile::FromBrowserContext(web_contents->GetBrowserContext());
-        TranslateInfoBarDelegate::Create(
-            InfoBarService::FromWebContents(web_contents),
-            true,
-            TranslateInfoBarDelegate::TRANSLATION_ERROR,
-            TranslateErrors::NETWORK,
-            profile->GetPrefs(),
-            ShortcutConfig(),
-            request.source_lang,
-            request.target_lang);
-
-        if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
-          TranslateErrorDetails error_details;
-          error_details.time = base::Time::Now();
-          error_details.url = entry->GetURL();
-          error_details.error = TranslateErrors::NETWORK;
-          NotifyTranslateError(error_details);
-        }
-      } else {
-        // Translate the page.
-        DoTranslatePage(web_contents, translate_script_,
-                        request.source_lang, request.target_lang);
-      }
-    }
-    pending_requests_.clear();
-  }
-}
-
 void TranslateManager::AddObserver(Observer* obs) {
   observer_list_.AddObserver(obs);
 }
@@ -392,8 +301,6 @@ void TranslateManager::NotifyTranslateError(
 
 TranslateManager::TranslateManager()
   : weak_method_factory_(this),
-    translate_script_expiration_delay_(base::TimeDelta::FromDays(
-        kTranslateScriptExpirationDelayDays)),
     max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts) {
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                               content::NotificationService::AllSources());
@@ -404,6 +311,7 @@ TranslateManager::TranslateManager()
                               content::NotificationService::AllSources());
   language_list_.reset(new TranslateLanguageList);
   accept_languages_.reset(new TranslateAcceptLanguages);
+  script_.reset(new TranslateScript);
 }
 
 void TranslateManager::InitiateTranslation(WebContents* web_contents,
@@ -592,8 +500,11 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
       TranslateInfoBarDelegate::TRANSLATING, TranslateErrors::NONE,
       profile->GetPrefs(), ShortcutConfig(), source_lang, target_lang);
 
-  if (!translate_script_.empty()) {
-    DoTranslatePage(web_contents, translate_script_, source_lang, target_lang);
+  DCHECK(script_.get() != NULL);
+
+  const std::string& translate_script = script_->data();
+  if (!translate_script.empty()) {
+    DoTranslatePage(web_contents, translate_script, source_lang, target_lang);
     return;
   }
 
@@ -607,7 +518,13 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
   request.source_lang = source_lang;
   request.target_lang = target_lang;
   pending_requests_.push_back(request);
-  RequestTranslateScript();
+
+  if (script_->HasPendingRequest())
+    return;
+
+  script_->Request(
+      base::Bind(&TranslateManager::OnTranslateScriptFetchComplete,
+                 base::Unretained(this)));
 }
 
 void TranslateManager::RevertTranslation(WebContents* web_contents) {
@@ -654,6 +571,14 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
 
   chrome::AddSelectedTabWithURL(browser, report_error_url,
                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
+}
+
+void TranslateManager::ClearTranslateScript() {
+  if (script_.get() == NULL) {
+    NOTREACHED();
+    return;
+  }
+  script_->Clear();
 }
 
 void TranslateManager::DoTranslatePage(WebContents* web_contents,
@@ -724,51 +649,56 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
 
 void TranslateManager::CleanupPendingUlrFetcher() {
   language_list_.reset();
-  translate_script_request_pending_.reset();
+  script_.reset();
 }
 
-void TranslateManager::RequestTranslateScript() {
-  if (translate_script_request_pending_.get() != NULL)
-    return;
+void TranslateManager::OnTranslateScriptFetchComplete(
+    bool success, const std::string& data) {
+  std::vector<PendingRequest>::const_iterator iter;
+  for (iter = pending_requests_.begin(); iter != pending_requests_.end();
+       ++iter) {
+    const PendingRequest& request = *iter;
+    WebContents* web_contents =
+        tab_util::GetWebContentsByID(request.render_process_id,
+                                     request.render_view_id);
+    if (!web_contents) {
+      // The tab went away while we were retrieving the script.
+      continue;
+    }
+    NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
+    if (!entry || entry->GetPageID() != request.page_id) {
+      // We navigated away from the page the translation was triggered on.
+      continue;
+    }
 
-  GURL translate_script_url;
-  // Check if command-line contains an alternative URL for translate service.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kTranslateScriptURL)) {
-    translate_script_url = GURL(
-        command_line.GetSwitchValueASCII(switches::kTranslateScriptURL));
-    if (!translate_script_url.is_valid() ||
-        !translate_script_url.query().empty()) {
-      LOG(WARNING) << "The following translate URL specified at the "
-                   << "command-line is invalid: "
-                   << translate_script_url.spec();
-      translate_script_url = GURL();
+    if (success) {
+      // Translate the page.
+      const std::string& translate_script = script_->data();
+      DoTranslatePage(web_contents, translate_script,
+                      request.source_lang, request.target_lang);
+    } else {
+      Profile* profile =
+          Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      TranslateInfoBarDelegate::Create(
+          InfoBarService::FromWebContents(web_contents),
+          true,
+          TranslateInfoBarDelegate::TRANSLATION_ERROR,
+          TranslateErrors::NETWORK,
+          profile->GetPrefs(),
+          ShortcutConfig(),
+          request.source_lang,
+          request.target_lang);
+
+      if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+        TranslateErrorDetails error_details;
+        error_details.time = base::Time::Now();
+        error_details.url = entry->GetURL();
+        error_details.error = TranslateErrors::NETWORK;
+        NotifyTranslateError(error_details);
+      }
     }
   }
-  // Use default URL when command-line argument is not specified, or specified
-  // URL is invalid.
-  if (translate_script_url.is_empty())
-    translate_script_url = GURL(kTranslateScriptURL);
-
-  translate_script_url = net::AppendQueryParameter(
-      translate_script_url,
-      kCallbackQueryName,
-      kCallbackQueryValue);
-
-  translate_script_url =
-      TranslateURLUtil::AddHostLocaleToUrl(translate_script_url);
-  translate_script_url =
-      TranslateURLUtil::AddApiKeyToUrl(translate_script_url);
-
-  translate_script_request_pending_.reset(net::URLFetcher::Create(
-      0, translate_script_url, net::URLFetcher::GET, this));
-  translate_script_request_pending_->SetLoadFlags(
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
-  translate_script_request_pending_->SetRequestContext(
-      g_browser_process->system_request_context());
-  translate_script_request_pending_->SetExtraRequestHeaders(
-      kTranslateScriptHeader);
-  translate_script_request_pending_->Start();
+  pending_requests_.clear();
 }
 
 // static

@@ -13,7 +13,6 @@
 namespace {
 
 // Retry parameter for fetching.
-const int kMaxRetryOn5xx = 5;
 const int kMaxRetry = 16;
 
 }  // namespace
@@ -56,7 +55,10 @@ bool TranslateURLFetcher::Request(
   // Set retry parameter for HTTP status code 5xx. This doesn't work against
   // 106 (net::ERR_INTERNET_DISCONNECTED) and so on.
   // TranslateLanguageList handles network status, and implements retry.
-  fetcher_->SetMaxRetriesOn5xx(kMaxRetryOn5xx);
+  fetcher_->SetMaxRetriesOn5xx(max_retry_on_5xx_);
+  if (!extra_request_header_.empty())
+    fetcher_->SetExtraRequestHeaders(extra_request_header_);
+
   fetcher_->Start();
 
   return true;

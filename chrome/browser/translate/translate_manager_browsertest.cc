@@ -49,6 +49,7 @@
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -180,7 +181,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
   }
 
   void ExpireTranslateScriptImmediately() {
-    TranslateManager::GetInstance()->set_translate_script_expiration_delay(0);
+    TranslateManager::GetInstance()->SetTranslateScriptExpirationDelay(0);
   }
 
   // If there is 1 infobar and it is a translate infobar, deny translation and
@@ -235,7 +236,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     // case it was zeroed in a previous test).
     TranslateManager::GetInstance()->ClearTranslateScript();
     TranslateManager::GetInstance()->
-        set_translate_script_expiration_delay(60 * 60 * 1000);
+        SetTranslateScriptExpirationDelay(60 * 60 * 1000);
     TranslateManager::GetInstance()->set_translate_max_reload_attemps(0);
 
     ChromeRenderViewHostTestHarness::SetUp();

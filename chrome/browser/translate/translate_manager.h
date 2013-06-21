@@ -17,7 +17,6 @@
 #include "chrome/common/translate/translate_errors.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;
@@ -31,6 +30,7 @@ struct TranslateErrorDetails;
 struct TranslateEventDetails;
 class TranslateInfoBarDelegate;
 class TranslateLanguageList;
+class TranslateScript;
 
 namespace content {
 class WebContents;
@@ -45,8 +45,7 @@ class URLFetcher;
 // page translation the user requests.
 // It is a singleton.
 
-class TranslateManager : public content::NotificationObserver,
-                         public net::URLFetcherDelegate {
+class TranslateManager : public content::NotificationObserver {
  public:
   // Returns the singleton instance.
   static TranslateManager* GetInstance();
@@ -104,23 +103,17 @@ class TranslateManager : public content::NotificationObserver,
   void ReportLanguageDetectionError(content::WebContents* web_contents);
 
   // Clears the translate script, so it will be fetched next time we translate.
-  void ClearTranslateScript() { translate_script_.clear(); }
+  void ClearTranslateScript();
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
   // Used by unit-tests to override some defaults:
   // Delay after which the translate script is fetched again from the
   // translation server.
-  void set_translate_script_expiration_delay(int delay_ms) {
-    translate_script_expiration_delay_ =
-        base::TimeDelta::FromMilliseconds(delay_ms);
-  }
+  void SetTranslateScriptExpirationDelay(int delay_ms);
 
   // Number of attempts before waiting for a page to be fully reloaded.
   void set_translate_max_reload_attemps(int attempts) {
@@ -182,9 +175,7 @@ class TranslateManager : public content::NotificationObserver,
   void PageTranslated(content::WebContents* web_contents,
                       PageTranslatedDetails* details);
 
-  // Fetches the JS translate script (the script that is injected in the page
-  // to translate it).
-  void RequestTranslateScript();
+  void OnTranslateScriptFetchComplete(bool success, const std::string& data);
 
   // Notifies to the observers when a language is detected.
   void NotifyLanguageDetection(const LanguageDetectionDetails& details);
@@ -208,18 +199,8 @@ class TranslateManager : public content::NotificationObserver,
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;
 
-  // The JS injected in the page to do the translation.
-  std::string translate_script_;
-
-  // Delay after which the translate script is fetched again
-  // from the translate server.
-  base::TimeDelta translate_script_expiration_delay_;
-
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
-
-  // Set when the translate JS is currently being retrieved. NULL otherwise.
-  scoped_ptr<net::URLFetcher> translate_script_request_pending_;
 
   // The list of pending translate requests.  Translate requests are queued when
   // the translate script is not ready and has to be fetched from the translate
@@ -231,6 +212,10 @@ class TranslateManager : public content::NotificationObserver,
 
   // An instance of TranslateLanguageList which manages supported language list.
   scoped_ptr<TranslateLanguageList> language_list_;
+
+  // An instance of TranslateScript which manages JavaScript source for
+  // Translate.
+  scoped_ptr<TranslateScript> script_;
 
   // An instance of TranslateAcceptLanguages which manages Accept languages of
   // each profiles.

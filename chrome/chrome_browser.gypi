@@ -2270,6 +2270,8 @@
         'browser/translate/translate_manager.h',
         'browser/translate/translate_prefs.cc',
         'browser/translate/translate_prefs.h',
+        'browser/translate/translate_script.cc',
+        'browser/translate/translate_script.h',
         'browser/translate/translate_tab_helper.cc',
         'browser/translate/translate_tab_helper.h',
         'browser/translate/translate_url_fetcher.cc',
