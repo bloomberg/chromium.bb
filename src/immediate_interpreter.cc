@@ -1446,9 +1446,9 @@ GestureType ImmediateInterpreter::GetThreeFingerGestureType(
     return kGestureTypeNull;
   }
 
-  // All three fingers must have traveled far enough.
-  if (fabsf(deltas[0]) < three_finger_swipe_distance_thresh_.val_ ||
-      fabsf(deltas[1]) < three_finger_swipe_distance_thresh_.val_ ||
+  // One finger must have traveled far enough.
+  if (fabsf(deltas[0]) < three_finger_swipe_distance_thresh_.val_ &&
+      fabsf(deltas[1]) < three_finger_swipe_distance_thresh_.val_ &&
       fabsf(deltas[2]) < three_finger_swipe_distance_thresh_.val_) {
     return kGestureTypeNull;
   }

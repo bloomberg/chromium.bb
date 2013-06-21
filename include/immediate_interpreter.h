@@ -605,7 +605,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Maximum distance [mm] between the outermost fingers while performing a
   // three-finger gesture.
   DoubleProperty three_finger_close_distance_thresh_;
-  // Minimum distance [mm] each of the three fingers must move to perform a
+  // Minimum distance [mm] one of the three fingers must move to perform a
   // swipe gesture.
   DoubleProperty three_finger_swipe_distance_thresh_;
   // If three-finger swipe should be enabled
