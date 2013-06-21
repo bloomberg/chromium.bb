@@ -206,6 +206,8 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::GetResourceEntryCallback& callback);
 
  private:
+  struct UploadSession;
+
   // Returns a pointer to the entry that matches |resource_id|, or NULL if
   // not found.
   base::DictionaryValue* FindEntryByResourceId(const std::string& resource_id);
@@ -214,17 +216,13 @@ class FakeDriveService : public DriveServiceInterface {
   // not found.
   base::DictionaryValue* FindEntryByContentUrl(const GURL& content_url);
 
-  // Returns a pointer to the entry that matches |upload_url|, or NULL if
-  // not found.
-  base::DictionaryValue* FindEntryByUploadUrl(const GURL& upload_url);
-
   // Returns a new resource ID, which looks like "resource_id_<num>" where
   // <num> is a monotonically increasing number starting from 1.
   std::string GetNewResourceId();
 
-  // Increments |largest_changestamp_| and adds the new changestamp to
+  // Increments |largest_changestamp_| and adds the new changestamp and ETag to
   // |entry|.
-  void AddNewChangestamp(base::DictionaryValue* entry);
+  void AddNewChangestampAndETag(base::DictionaryValue* entry);
 
   // Adds a new entry based on the given parameters. |entry_kind| should be
   // "file" or "folder". Returns a pointer to the newly added entry, or NULL
@@ -251,11 +249,16 @@ class FakeDriveService : public DriveServiceInterface {
       int* load_counter,
       const google_apis::GetResourceListCallback& callback);
 
+  // Returns new upload session URL.
+  GURL GetNewUploadSessionUrl();
+
   scoped_ptr<base::DictionaryValue> resource_list_value_;
   scoped_ptr<base::Value> account_metadata_value_;
   scoped_ptr<base::Value> app_info_value_;
+  std::map<GURL, UploadSession> upload_sessions_;
   int64 largest_changestamp_;
   int64 published_date_seq_;
+  int64 next_upload_sequence_number_;
   int default_max_results_;
   int resource_id_count_;
   int resource_list_load_count_;

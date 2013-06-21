@@ -9,6 +9,7 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/md5.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -1626,8 +1627,7 @@ TEST_F(FakeDriveServiceTest, InitiateUpload_ExistingFile) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
-  EXPECT_EQ(GURL("https://2_file_link_resumable_create_media?mode=existing"),
-            upload_location);
+  EXPECT_TRUE(upload_location.is_valid());
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_Offline) {
@@ -1696,6 +1696,13 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NotFound) {
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath local_file_path =
+      temp_dir.path().Append(FILE_PATH_LITERAL("File 1.txt"));
+  std::string contents("hogefugapiyo");
+  ASSERT_TRUE(test_util::WriteStringToFile(local_file_path, contents));
+
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
 
@@ -1703,7 +1710,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   GURL upload_location;
   fake_service_.InitiateUploadExistingFile(
       "text/plain",
-      15,
+      contents.size(),
       "file:2_file_resource_id",
       "\"HhMOFgxXHit7ImBr\"",
       test_util::CreateCopyResultCallback(&error, &upload_location));
@@ -1716,8 +1723,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   std::vector<test_util::ProgressInfo> upload_progress_values;
   fake_service_.ResumeUpload(
       upload_location,
-      0, 13, 15, "text/plain",
-      base::FilePath(),
+      0, contents.size() / 2, contents.size(), "text/plain",
+      local_file_path,
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
@@ -1728,13 +1735,14 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);
-  EXPECT_GE(13, upload_progress_values.back().first);
+  EXPECT_GE(static_cast<int64>(contents.size() / 2),
+            upload_progress_values.back().first);
 
   upload_progress_values.clear();
   fake_service_.ResumeUpload(
       upload_location,
-      13, 15, 15, "text/plain",
-      base::FilePath(),
+      contents.size() / 2, contents.size(), contents.size(), "text/plain",
+      local_file_path,
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
@@ -1742,15 +1750,25 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_ExistingFile) {
 
   EXPECT_EQ(HTTP_SUCCESS, response.code);
   EXPECT_TRUE(entry.get());
-  EXPECT_EQ(15L, entry->file_size());
+  EXPECT_EQ(static_cast<int64>(contents.size()),
+            entry->file_size());
   EXPECT_TRUE(Exists(entry->resource_id()));
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);
-  EXPECT_GE(2, upload_progress_values.back().first);
+  EXPECT_GE(static_cast<int64>(contents.size() - contents.size() / 2),
+            upload_progress_values.back().first);
+  EXPECT_EQ(base::MD5String(contents), entry->file_md5());
 }
 
 TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath local_file_path =
+      temp_dir.path().Append(FILE_PATH_LITERAL("new file.foo"));
+  std::string contents("hogefugapiyo");
+  ASSERT_TRUE(test_util::WriteStringToFile(local_file_path, contents));
+
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
 
@@ -1758,7 +1776,7 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   GURL upload_location;
   fake_service_.InitiateUploadNewFile(
       "test/foo",
-      15,
+      contents.size(),
       "folder:1_folder_resource_id",
       "new file.foo",
       test_util::CreateCopyResultCallback(&error, &upload_location));
@@ -1774,8 +1792,8 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   std::vector<test_util::ProgressInfo> upload_progress_values;
   fake_service_.ResumeUpload(
       upload_location,
-      0, 13, 15, "test/foo",
-      base::FilePath(),
+      0, contents.size() / 2, contents.size(), "test/foo",
+      local_file_path,
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
@@ -1786,13 +1804,14 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);
-  EXPECT_GE(13, upload_progress_values.back().first);
+  EXPECT_GE(static_cast<int64>(contents.size() / 2),
+            upload_progress_values.back().first);
 
   upload_progress_values.clear();
   fake_service_.ResumeUpload(
       upload_location,
-      13, 15, 15, "test/foo",
-      base::FilePath(),
+      contents.size() / 2, contents.size(), contents.size(), "test/foo",
+      local_file_path,
       test_util::CreateCopyResultCallback(&response, &entry),
       base::Bind(&test_util::AppendProgressCallbackResult,
                  &upload_progress_values));
@@ -1800,12 +1819,14 @@ TEST_F(FakeDriveServiceTest, ResumeUpload_NewFile) {
 
   EXPECT_EQ(HTTP_CREATED, response.code);
   EXPECT_TRUE(entry.get());
-  EXPECT_EQ(15L, entry->file_size());
+  EXPECT_EQ(static_cast<int64>(contents.size()), entry->file_size());
   EXPECT_TRUE(Exists(entry->resource_id()));
   ASSERT_TRUE(!upload_progress_values.empty());
   EXPECT_TRUE(base::STLIsSorted(upload_progress_values));
   EXPECT_LE(0, upload_progress_values.front().first);
-  EXPECT_GE(2, upload_progress_values.back().first);
+  EXPECT_GE(static_cast<int64>(contents.size() - contents.size() / 2),
+            upload_progress_values.back().first);
+  EXPECT_EQ(base::MD5String(contents), entry->file_md5());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
@@ -1844,6 +1865,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectory) {
   // Should be incremented as a new directory was created.
   EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
   EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
+  EXPECT_EQ(base::MD5String(kContentData), resource_entry->file_md5());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
@@ -1882,6 +1904,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToRootDirectoryOnEmptyFileSystem) {
   // Should be incremented as a new directory was created.
   EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
   EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
+  EXPECT_EQ(base::MD5String(kContentData), resource_entry->file_md5());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
@@ -1920,6 +1943,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_ToNonRootDirectory) {
   // Should be incremented as a new directory was created.
   EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
   EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
+  EXPECT_EQ(base::MD5String(kContentData), resource_entry->file_md5());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewFile_ToNonexistingDirectory) {
@@ -2008,6 +2032,7 @@ TEST_F(FakeDriveServiceTest, AddNewFile_SharedWithMeLabel) {
   // Should be incremented as a new directory was created.
   EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
   EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
+  EXPECT_EQ(base::MD5String(kContentData), resource_entry->file_md5());
 }
 
 TEST_F(FakeDriveServiceTest, SetLastModifiedTime_ExistingFile) {
