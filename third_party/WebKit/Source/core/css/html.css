@@ -447,8 +447,7 @@ input[type="search"]::-webkit-search-cancel-button {
     display: block;
     -webkit-flex: none;
     -webkit-user-modify: read-only !important;
-    -webkit-align-self: flex-start;
-    margin: auto 0;
+    -webkit-margin-start: 1px;
 }
 
 input[type="search"]::-webkit-search-decoration {

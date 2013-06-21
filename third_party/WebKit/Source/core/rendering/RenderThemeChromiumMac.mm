@@ -737,7 +737,10 @@ void RenderThemeChromiumMac::setFontFromControlSize(RenderStyle* style, NSContro
 
 NSControlSize RenderThemeChromiumMac::controlSizeForSystemFont(RenderStyle* style) const
 {
-    int fontSize = style->fontSize();
+    float fontSize = style->fontSize();
+    float zoomLevel = style->effectiveZoom();
+    if (zoomLevel != 1)
+        fontSize /= zoomLevel;
     if (fontSize >= [NSFont systemFontSizeForControlSize:NSRegularControlSize])
         return NSRegularControlSize;
     if (fontSize >= [NSFont systemFontSizeForControlSize:NSSmallControlSize])
@@ -1569,6 +1572,12 @@ const IntSize* RenderThemeChromiumMac::searchFieldSizes() const
     return sizes;
 }
 
+static const int* searchFieldHorizontalPaddings()
+{
+    static const int sizes[3] = { 3, 2, 1 };
+    return sizes;
+}
+
 void RenderThemeChromiumMac::setSearchFieldSize(RenderStyle* style) const
 {
     // If the width and height are both specified, then we have nothing to do.
@@ -1597,14 +1606,16 @@ void RenderThemeChromiumMac::adjustSearchFieldStyle(RenderStyle* style, Element*
     style->setHeight(Length(Auto));
     setSearchFieldSize(style);
 
-    // Override padding size to match AppKit text positioning.
-    const int padding = 1 * style->effectiveZoom();
-    style->setPaddingLeft(Length(padding, Fixed));
-    style->setPaddingRight(Length(padding, Fixed));
-    style->setPaddingTop(Length(padding, Fixed));
-    style->setPaddingBottom(Length(padding, Fixed));
-
     NSControlSize controlSize = controlSizeForFont(style);
+
+    // Override padding size to match AppKit text positioning.
+    const int verticalPadding = 1 * style->effectiveZoom();
+    const int horizontalPadding = searchFieldHorizontalPaddings()[controlSize] * style->effectiveZoom();
+    style->setPaddingLeft(Length(horizontalPadding, Fixed));
+    style->setPaddingRight(Length(horizontalPadding, Fixed));
+    style->setPaddingTop(Length(verticalPadding, Fixed));
+    style->setPaddingBottom(Length(verticalPadding, Fixed));
+
     setFontFromControlSize(style, controlSize);
 
     style->setBoxShadow(nullptr);
@@ -1619,19 +1630,6 @@ bool RenderThemeChromiumMac::paintSearchFieldCancelButton(RenderObject* o, const
     if (!input->renderer()->isBox())
         return false;
 
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
-
-    NSSearchFieldCell* search = this->search();
-    setSearchCellState(input->renderer(), r);
-    [search setControlSize:cancelButtonControlSizeForFont(o->style())];
-
-    if (!input->isDisabledFormControl() && (input->isTextFormControl() && !toHTMLTextFormControlElement(input)->isReadOnly())) {
-        updateActiveState([search cancelButtonCell], o);
-        updatePressedState([search cancelButtonCell], o);
-    }
-    else if ([[search cancelButtonCell] isHighlighted])
-        [[search cancelButtonCell] setHighlighted:NO];
-
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
     float zoomLevel = o->style()->effectiveZoom();
@@ -1644,14 +1642,43 @@ bool RenderThemeChromiumMac::paintSearchFieldCancelButton(RenderObject* o, const
         paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
-    [[search cancelButtonCell] drawWithFrame:unzoomedRect inView:documentViewFor(o)];
-    [[search cancelButtonCell] setControlView:nil];
+    Color fillColor(200, 200, 200);
+
+    if (isPressed(o)) {
+        Color tintColor(0, 0, 0, 32);
+        fillColor = fillColor.blend(tintColor);
+    }
+
+    float centerX = unzoomedRect.x() + unzoomedRect.width() / 2;
+    float centerY = unzoomedRect.y() + unzoomedRect.height() / 2;
+    // The line width is 3px on a regular sized, high DPI NSCancelButtonCell
+    // (which is 28px wide).
+    float lineWidth = unzoomedRect.width() * 3 / 28;
+    // The line length is 16px on a regular sized, high DPI NSCancelButtonCell.
+    float lineLength = unzoomedRect.width() * 16 / 28;
+
+    Path xPath;
+    FloatSize lineRectRadius(lineWidth / 2, lineWidth / 2);
+    xPath.addRoundedRect(FloatRect(-lineLength / 2, -lineWidth / 2, lineLength, lineWidth),
+        lineRectRadius, lineRectRadius, lineRectRadius, lineRectRadius);
+    xPath.addRoundedRect(FloatRect(-lineWidth / 2, -lineLength / 2, lineWidth, lineLength),
+        lineRectRadius, lineRectRadius, lineRectRadius, lineRectRadius);
+
+    paintInfo.context->translate(centerX, centerY);
+    paintInfo.context->rotate(deg2rad(45.0));
+    paintInfo.context->clipOut(xPath);
+    paintInfo.context->rotate(deg2rad(-45.0));
+    paintInfo.context->translate(-centerX, -centerY);
+
+    paintInfo.context->setFillColor(fillColor);
+    paintInfo.context->fillEllipse(unzoomedRect);
+
     return false;
 }
 
 const IntSize* RenderThemeChromiumMac::cancelButtonSizes() const
 {
-    static const IntSize sizes[3] = { IntSize(16, 14), IntSize(13, 11), IntSize(13, 9) };
+    static const IntSize sizes[3] = { IntSize(14, 14), IntSize(11, 11), IntSize(9, 9) };
     return sizes;
 }
 
@@ -1665,7 +1692,7 @@ void RenderThemeChromiumMac::adjustSearchFieldCancelButtonStyle(RenderStyle* sty
 
 const IntSize* RenderThemeChromiumMac::resultsButtonSizes() const
 {
-    static const IntSize sizes[3] = { IntSize(19, 13), IntSize(17, 11), IntSize(17, 9) };
+    static const IntSize sizes[3] = { IntSize(16, 13), IntSize(16, 11), IntSize(16, 9) };
     return sizes;
 }
 
