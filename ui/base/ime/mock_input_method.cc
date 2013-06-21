@@ -91,6 +91,10 @@ bool MockInputMethod::CanComposeInline() const {
   return true;
 }
 
+bool MockInputMethod::IsCandidatePopupOpen() const {
+  return false;
+}
+
 void MockInputMethod::AddObserver(InputMethodObserver* observer) {
   observer_list_.AddObserver(static_cast<Observer*>(observer));
 }

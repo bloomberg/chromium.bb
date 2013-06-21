@@ -54,6 +54,7 @@ class UI_EXPORT InputMethodIBus
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
+  virtual bool IsCandidatePopupOpen() const OVERRIDE;
 
  protected:
   // chromeos::IBusDaemonController::Observer overrides.

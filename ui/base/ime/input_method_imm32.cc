@@ -14,7 +14,7 @@ namespace ui {
 InputMethodIMM32::InputMethodIMM32(internal::InputMethodDelegate* delegate,
                                    HWND toplevel_window_handle)
     : InputMethodWin(delegate, toplevel_window_handle),
-      enabled_(false),
+      enabled_(false), is_candidate_popup_open_(false),
       composing_window_handle_(NULL) {
   // In non-Aura environment, appropriate callbacks to OnFocus() and OnBlur()
   // are not implemented yet. To work around this limitation, here we use
@@ -71,6 +71,10 @@ bool InputMethodIMM32::OnUntranslatedIMEMessage(
       original_result = OnDeadChar(
           event.message, event.wParam, event.lParam, &handled);
       break;
+    case WM_IME_NOTIFY:
+      original_result = OnImeNotify(
+          event.message, event.wParam, event.lParam, &handled);
+      break;
     default:
       NOTREACHED() << "Unknown IME message:" << event.message;
       break;
@@ -119,6 +123,10 @@ void InputMethodIMM32::CancelComposition(const TextInputClient* client) {
 void InputMethodIMM32::SetFocusedTextInputClient(TextInputClient* client) {
   ConfirmCompositionText();
   InputMethodWin::SetFocusedTextInputClient(client);
+}
+
+bool InputMethodIMM32::IsCandidatePopupOpen() const {
+  return is_candidate_popup_open_;
 }
 
 void InputMethodIMM32::OnWillChangeFocusedClient(
@@ -224,6 +232,25 @@ LRESULT InputMethodIMM32::OnImeEndComposition(HWND window_handle,
 
   ime_input_.ResetComposition(window_handle);
   ime_input_.DestroyImeWindow(window_handle);
+  return 0;
+}
+
+LRESULT InputMethodIMM32::OnImeNotify(UINT message,
+                                      WPARAM wparam,
+                                      LPARAM lparam,
+                                      BOOL* handled) {
+  *handled = FALSE;
+
+  // Update |is_candidate_popup_open_|, whether a candidate window is open.
+  switch (wparam) {
+  case IMN_OPENCANDIDATE:
+    is_candidate_popup_open_ = true;
+    break;
+  case IMN_CLOSECANDIDATE:
+    is_candidate_popup_open_ = false;
+    break;
+  }
+
   return 0;
 }
 

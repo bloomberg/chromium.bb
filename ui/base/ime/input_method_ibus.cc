@@ -337,6 +337,11 @@ bool InputMethodIBus::IsActive() {
   return true;
 }
 
+bool InputMethodIBus::IsCandidatePopupOpen() const {
+  // TODO(yukishiino): Implement this method.
+  return false;
+}
+
 void InputMethodIBus::OnWillChangeFocusedClient(TextInputClient* focused_before,
                                                 TextInputClient* focused) {
   ConfirmCompositionText();

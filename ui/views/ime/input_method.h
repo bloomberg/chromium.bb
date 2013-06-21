@@ -113,6 +113,11 @@ class VIEWS_EXPORT InputMethod {
   // ui::TEXT_INPUT_TYPE_NONE if there is no focused text input client.
   virtual ui::TextInputType GetTextInputType() const = 0;
 
+  // Returns true if we know for sure that a candidate window (or IME suggest,
+  // etc.) is open.  Returns false if no popup window is open or the detection
+  // of IME popups is not supported.
+  virtual bool IsCandidatePopupOpen() const = 0;
+
   // Returns true if the input method is a mock instance used for testing.
   virtual bool IsMock() const = 0;
 

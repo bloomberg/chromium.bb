@@ -132,6 +132,10 @@ bool MockInputMethod::IsActive() {
   return active_;
 }
 
+bool MockInputMethod::IsCandidatePopupOpen() const {
+  return false;
+}
+
 bool MockInputMethod::IsMock() const {
   return true;
 }

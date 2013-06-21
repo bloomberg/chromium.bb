@@ -93,6 +93,11 @@ void InputMethodTSF::SetFocusedTextInputClient(TextInputClient* client) {
   InputMethodWin::SetFocusedTextInputClient(client);
 }
 
+bool InputMethodTSF::IsCandidatePopupOpen() const {
+  // TODO(yukishiino): Implement this method.
+  return false;
+}
+
 void InputMethodTSF::OnWillChangeFocusedClient(TextInputClient* focused_before,
                                                TextInputClient* focused) {
   if (IsWindowFocused(focused_before)) {

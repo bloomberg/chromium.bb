@@ -28,6 +28,7 @@ class UI_EXPORT InputMethodTSF : public InputMethodWin {
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
+  virtual bool IsCandidatePopupOpen() const OVERRIDE;
 
   // Overridden from InputMethodBase:
   virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,

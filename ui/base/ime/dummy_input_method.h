@@ -37,6 +37,7 @@ class DummyInputMethod : public InputMethod {
   virtual bool IsActive() OVERRIDE;
   virtual TextInputType GetTextInputType() const OVERRIDE;
   virtual bool CanComposeInline() const OVERRIDE;
+  virtual bool IsCandidatePopupOpen() const OVERRIDE;
   virtual void AddObserver(InputMethodObserver* observer) OVERRIDE;
   virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE;
 

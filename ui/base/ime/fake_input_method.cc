@@ -137,6 +137,10 @@ bool FakeInputMethod::IsActive() {
   return true;
 }
 
+bool FakeInputMethod::IsCandidatePopupOpen() const {
+  return false;
+}
+
 ui::TextInputType FakeInputMethod::GetTextInputType() const {
   return ui::TEXT_INPUT_TYPE_NONE;
 }

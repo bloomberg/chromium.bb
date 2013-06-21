@@ -27,6 +27,7 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
                                ui::InputMethod* host)
     : hwnd_(hwnd),
       active_(false),
+      is_candidate_popup_open_(false),
       direction_(base::i18n::UNKNOWN_DIRECTION),
       pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION),
       host_(host) {
@@ -76,6 +77,10 @@ bool InputMethodWin::OnUntranslatedIMEMessage(const base::NativeEvent& event,
       break;
     case WM_IME_REQUEST:
       original_result = OnImeRequest(
+          event.message, event.wParam, event.lParam, &handled);
+      break;
+    case WM_IME_NOTIFY:
+      original_result = OnImeNotify(
           event.message, event.wParam, event.lParam, &handled);
       break;
     case WM_CHAR:
@@ -165,6 +170,10 @@ ui::TextInputClient* InputMethodWin::GetTextInputClient() const {
     return InputMethodBase::GetTextInputClient();
 
   return host_ ? host_->GetTextInputClient() : NULL;
+}
+
+bool InputMethodWin::IsCandidatePopupOpen() const {
+  return is_candidate_popup_open_;
 }
 
 void InputMethodWin::OnWillChangeFocus(View* focused_before, View* focused) {
@@ -272,6 +281,23 @@ LRESULT InputMethodWin::OnImeRequest(
     default:
       return 0;
   }
+}
+
+LRESULT InputMethodWin::OnImeNotify(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
+  *handled = FALSE;
+
+  // Update |is_candidate_popup_open_|, whether a candidate window is open.
+  switch (wparam) {
+  case IMN_OPENCANDIDATE:
+    is_candidate_popup_open_ = true;
+    break;
+  case IMN_CLOSECANDIDATE:
+    is_candidate_popup_open_ = false;
+    break;
+  }
+
+  return 0;
 }
 
 LRESULT InputMethodWin::OnChar(

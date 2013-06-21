@@ -147,6 +147,11 @@ class InputMethod {
   // Checks if the focused text input client supports inline composition.
   virtual bool CanComposeInline() const = 0;
 
+  // Returns true if we know for sure that a candidate window (or IME suggest,
+  // etc.) is open.  Returns false if no popup window is open or the detection
+  // of IME popups is not supported.
+  virtual bool IsCandidatePopupOpen() const = 0;
+
   // Management of the observer list.
   virtual void AddObserver(InputMethodObserver* observer) = 0;
   virtual void RemoveObserver(InputMethodObserver* observer) = 0;

@@ -44,6 +44,7 @@ class InputMethodWin : public InputMethodBase {
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
+  virtual bool IsCandidatePopupOpen() const OVERRIDE;
 
   // Overridden from InputMethodBase.
   virtual ui::TextInputClient* GetTextInputClient() const OVERRIDE;
@@ -58,6 +59,8 @@ class InputMethodWin : public InputMethodBase {
   LRESULT OnImeEndComposition(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
   LRESULT OnImeRequest(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
+  LRESULT OnImeNotify(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled);
   // For both WM_CHAR and WM_SYSCHAR
   LRESULT OnChar(
@@ -85,6 +88,9 @@ class InputMethodWin : public InputMethodBase {
 
   // Indicates if the current input locale has an IME.
   bool active_;
+
+  // True if we know for sure that a candidate window is open.
+  bool is_candidate_popup_open_;
 
   // Name of the current input locale.
   std::string locale_;

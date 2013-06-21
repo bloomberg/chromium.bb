@@ -76,6 +76,10 @@ bool DummyInputMethod::CanComposeInline() const {
   return true;
 }
 
+bool DummyInputMethod::IsCandidatePopupOpen() const {
+  return false;
+}
+
 void DummyInputMethod::AddObserver(InputMethodObserver* observer) {
 }
 

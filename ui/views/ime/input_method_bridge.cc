@@ -94,6 +94,10 @@ bool InputMethodBridge::IsActive() {
   return host_->IsActive();
 }
 
+bool InputMethodBridge::IsCandidatePopupOpen() const {
+  return host_->IsCandidatePopupOpen();
+}
+
 // Overridden from TextInputClient. Forward an event from the system-wide IME
 // to the text input |client|, which is e.g. views::NativeTextfieldViews.
 void InputMethodBridge::SetCompositionText(

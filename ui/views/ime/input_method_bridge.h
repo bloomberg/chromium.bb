@@ -48,6 +48,7 @@ class InputMethodBridge : public InputMethodBase,
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
+  virtual bool IsCandidatePopupOpen() const OVERRIDE;
 
   // Overridden from TextInputClient:
   virtual void SetCompositionText(

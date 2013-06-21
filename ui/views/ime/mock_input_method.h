@@ -36,6 +36,7 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
+  virtual bool IsCandidatePopupOpen() const OVERRIDE;
   virtual bool IsMock() const OVERRIDE;
 
   bool focus_changed() const { return focus_changed_; }

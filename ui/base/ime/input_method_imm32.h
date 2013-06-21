@@ -30,6 +30,7 @@ class UI_EXPORT InputMethodIMM32 : public InputMethodWin {
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
+  virtual bool IsCandidatePopupOpen() const OVERRIDE;
 
  protected:
   // Overridden from InputMethodBase:
@@ -59,6 +60,10 @@ class UI_EXPORT InputMethodIMM32 : public InputMethodWin {
                               WPARAM wparam,
                               LPARAM lparam,
                               BOOL* handled);
+  LRESULT OnImeNotify(UINT message,
+                      WPARAM wparam,
+                      LPARAM lparam,
+                      BOOL* handled);
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
@@ -71,6 +76,9 @@ class UI_EXPORT InputMethodIMM32 : public InputMethodWin {
   bool IsWindowFocused(const TextInputClient* client) const;
 
   bool enabled_;
+
+  // True if we know for sure that a candidate window is open.
+  bool is_candidate_popup_open_;
 
   // Window handle where composition is on-going. NULL when there is no
   // composition.
