@@ -172,8 +172,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   if (WebKit::WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()) {
     decryptor_.reset(new ProxyDecryptor(
+#if defined(ENABLE_PEPPER_CDMS)
         client,
         frame,
+#endif
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyAdded),
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyError),
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage)));
