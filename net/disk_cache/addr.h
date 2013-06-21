@@ -16,15 +16,19 @@ namespace disk_cache {
 enum FileType {
   EXTERNAL = 0,
   RANKINGS = 1,
-  BLOCK_256,
-  BLOCK_1K,
-  BLOCK_4K,
+  BLOCK_256 = 2,
+  BLOCK_1K = 3,
+  BLOCK_4K = 4,
+  BLOCK_FILES = 5,
+  BLOCK_ENTRIES = 6,
+  BLOCK_EVICTED = 7
 };
 
 const int kMaxBlockSize = 4096 * 4;
 const int kMaxBlockFile = 255;
 const int kMaxNumBlocks = 4;
 const int kFirstAdditionalBlockFile = 4;
+const int kFirstAdditionalBlockFileV3 = 7;
 
 // Defines a storage address for a cache record
 //
@@ -38,6 +42,9 @@ const int kFirstAdditionalBlockFile = 4;
 //   2 = 256 byte block file
 //   3 = 1k byte block file
 //   4 = 4k byte block file
+//   5 = external files block file
+//   6 = active entries block file
+//   7 = evicted entries block file
 //
 // If separate file:
 //   0000 1111 1111 1111 1111 1111 1111 1111 : file#  0 - 268,435,456 (2^28)
@@ -101,6 +108,14 @@ class NET_EXPORT_PRIVATE Addr {
     return value_ != other.value_;
   }
 
+  static Addr FromEntryAddress(uint32 value) {
+    return Addr(kInitializedMask + (BLOCK_ENTRIES << kFileTypeOffset) + value);
+  }
+
+  static Addr FromEvictedAddress(uint32 value) {
+    return Addr(kInitializedMask + (BLOCK_EVICTED << kFileTypeOffset) + value);
+  }
+
   static int BlockSizeForFileType(FileType file_type) {
     switch (file_type) {
       case RANKINGS:
@@ -111,6 +126,12 @@ class NET_EXPORT_PRIVATE Addr {
         return 1024;
       case BLOCK_4K:
         return 4096;
+      case BLOCK_FILES:
+        return 8;
+      case BLOCK_ENTRIES:
+        return 104;
+      case BLOCK_EVICTED:
+        return 48;
       default:
         return 0;
     }
@@ -133,14 +154,21 @@ class NET_EXPORT_PRIVATE Addr {
   }
 
   // Returns true if this address looks like a valid one.
-  bool SanityCheck() const;
+  bool SanityCheckV2() const;
+  bool SanityCheckV3() const;
   bool SanityCheckForEntryV2() const;
+  bool SanityCheckForEntryV3() const;
   bool SanityCheckForRankings() const;
 
  private:
+  uint32 reserved_bits() const {
+    return value_ & kReservedBitsMask;
+  }
+
   static const uint32 kInitializedMask    = 0x80000000;
   static const uint32 kFileTypeMask       = 0x70000000;
   static const uint32 kFileTypeOffset     = 28;
+  static const uint32 kReservedBitsMask   = 0x0c000000;
   static const uint32 kNumBlocksMask      = 0x03000000;
   static const uint32 kNumBlocksOffset    = 24;
   static const uint32 kFileSelectorMask   = 0x00ff0000;

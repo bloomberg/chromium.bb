@@ -26,22 +26,35 @@ bool Addr::SetFileNumber(int file_number) {
   return true;
 }
 
-bool Addr::SanityCheck() const {
+bool Addr::SanityCheckV2() const {
   if (!is_initialized())
     return !value_;
 
-  if (((value_ & kFileTypeMask) >> kFileTypeOffset) > 4)
+  if (file_type() > BLOCK_4K)
     return false;
 
   if (is_separate_file())
     return true;
 
-  const uint32 kReservedBitsMask = 0x0c000000;
-  return !(value_ & kReservedBitsMask);
+  return !reserved_bits();
+}
+
+bool Addr::SanityCheckV3() const {
+  if (!is_initialized())
+    return !value_;
+
+  // For actual entries, SanityCheckForEntryV3 should be used.
+  if (file_type() > BLOCK_FILES)
+    return false;
+
+  if (is_separate_file())
+    return true;
+
+  return !reserved_bits();
 }
 
 bool Addr::SanityCheckForEntryV2() const {
-  if (!SanityCheck() || !is_initialized())
+  if (!SanityCheckV2() || !is_initialized())
     return false;
 
   if (is_separate_file() || file_type() != BLOCK_256)
@@ -50,8 +63,24 @@ bool Addr::SanityCheckForEntryV2() const {
   return true;
 }
 
+bool Addr::SanityCheckForEntryV3() const {
+  if (!is_initialized())
+    return false;
+
+  if (reserved_bits())
+    return false;
+
+  if (file_type() != BLOCK_ENTRIES && file_type() != BLOCK_EVICTED)
+    return false;
+
+  if (num_blocks() != 1)
+    return false;
+
+  return true;
+}
+
 bool Addr::SanityCheckForRankings() const {
-  if (!SanityCheck() || !is_initialized())
+  if (!SanityCheckV2() || !is_initialized())
     return false;
 
   if (is_separate_file() || file_type() != RANKINGS || num_blocks() != 1)

@@ -36,22 +36,24 @@ TEST_F(DiskCacheTest, CacheAddr_InvalidValues) {
 
 TEST_F(DiskCacheTest, CacheAddr_SanityCheck) {
   // First a few valid values.
-  EXPECT_TRUE(Addr(0).SanityCheck());
-  EXPECT_TRUE(Addr(0x80001000).SanityCheck());
-  EXPECT_TRUE(Addr(0xC3FFFFFF).SanityCheck());
-  EXPECT_TRUE(Addr(0xC0FFFFFF).SanityCheck());
+  EXPECT_TRUE(Addr(0).SanityCheckV2());
+  EXPECT_TRUE(Addr(0x80001000).SanityCheckV2());
+  EXPECT_TRUE(Addr(0xC3FFFFFF).SanityCheckV2());
+  EXPECT_TRUE(Addr(0xC0FFFFFF).SanityCheckV2());
+  EXPECT_TRUE(Addr(0xD0001000).SanityCheckV3());
 
   // Not initialized.
-  EXPECT_FALSE(Addr(0x20).SanityCheck());
-  EXPECT_FALSE(Addr(0x10001000).SanityCheck());
+  EXPECT_FALSE(Addr(0x20).SanityCheckV2());
+  EXPECT_FALSE(Addr(0x10001000).SanityCheckV2());
 
   // Invalid file type.
-  EXPECT_FALSE(Addr(0xD0001000).SanityCheck());
-  EXPECT_FALSE(Addr(0xF0000000).SanityCheck());
+  EXPECT_FALSE(Addr(0xD0001000).SanityCheckV2());
+  EXPECT_FALSE(Addr(0xE0001000).SanityCheckV3());
+  EXPECT_FALSE(Addr(0xF0000000).SanityCheckV2());
 
   // Reserved bits.
-  EXPECT_FALSE(Addr(0x14000000).SanityCheck());
-  EXPECT_FALSE(Addr(0x18000000).SanityCheck());
+  EXPECT_FALSE(Addr(0x14000000).SanityCheckV2());
+  EXPECT_FALSE(Addr(0x18000000).SanityCheckV2());
 }
 
 }  // namespace disk_cache
