@@ -697,6 +697,7 @@
     'browser/power_save_blocker_impl.cc',
     'browser/power_save_blocker_impl.h',
     'browser/power_save_blocker_mac.cc',
+    'browser/power_save_blocker_ozone.cc',
     'browser/power_save_blocker_win.cc',
     'browser/power_save_blocker_x11.cc',
     'browser/ppapi_plugin_process_host.cc',
@@ -1344,6 +1345,7 @@
       ],
       'sources!': [
         'browser/geolocation/wifi_data_provider_linux.cc',
+        'browser/power_save_blocker_ozone.cc',
         'browser/power_save_blocker_x11.cc',
         'browser/renderer_host/gtk_key_bindings_handler.cc',
         'browser/renderer_host/gtk_key_bindings_handler.h',
