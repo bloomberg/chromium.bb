@@ -26,7 +26,7 @@ class LocalNTPTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, LocalNTPJavascriptTest) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantNTPSupport();
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
