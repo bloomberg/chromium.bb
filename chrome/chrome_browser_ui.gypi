@@ -129,8 +129,6 @@
         'browser/ui/app_list/chrome_signin_delegate.h',
         'browser/ui/app_list/extension_app_item.cc',
         'browser/ui/app_list/extension_app_item.h',
-        'browser/ui/app_list/profile_loader.cc',
-        'browser/ui/app_list/profile_loader.h',
         'browser/ui/app_list/search/app_result.cc',
         'browser/ui/app_list/search/app_result.h',
         'browser/ui/app_list/search/app_search_provider.cc',

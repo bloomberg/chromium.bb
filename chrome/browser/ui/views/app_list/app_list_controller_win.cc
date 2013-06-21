@@ -939,7 +939,7 @@ bool AppListController::IsWarmupNeeded() {
 
   // We only need to initialize the view if there's no view already created and
   // there's no profile loading to be shown.
-  return !current_view_ && !profile_loader().AnyProfilesLoading();
+  return !current_view_ && !profile_loader().IsAnyProfileLoading();
 }
 
 void AppListController::LoadProfileForWarmup() {

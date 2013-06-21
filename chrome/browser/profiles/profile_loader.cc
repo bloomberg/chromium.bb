@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/profile_loader.h"
+#include "chrome/browser/profiles/profile_loader.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -20,31 +20,47 @@ ProfileLoader::ProfileLoader(ProfileManager* profile_manager)
 ProfileLoader::~ProfileLoader() {
 }
 
-bool ProfileLoader::AnyProfilesLoading() const {
+bool ProfileLoader::IsAnyProfileLoading() const {
   return pending_profile_loads_ > 0;
 }
 
 void ProfileLoader::InvalidatePendingProfileLoads() {
-  profile_load_sequence_id_++;
+  ++profile_load_sequence_id_;
 }
 
 void ProfileLoader::LoadProfileInvalidatingOtherLoads(
     const base::FilePath& profile_file_path,
     base::Callback<void(Profile*)> callback) {
-  Profile* profile = profile_manager_->GetProfileByPath(profile_file_path);
+  InvalidatePendingProfileLoads();
+
+  Profile* profile = GetProfileByPath(profile_file_path);
   if (profile) {
     callback.Run(profile);
     return;
   }
 
   IncrementPendingProfileLoads();
-  profile_manager_->CreateProfileAsync(
+  CreateProfileAsync(
       profile_file_path,
       base::Bind(&ProfileLoader::OnProfileLoaded,
                  weak_factory_.GetWeakPtr(),
                  profile_load_sequence_id_,
                  callback),
       string16(), string16(), false);
+}
+
+Profile* ProfileLoader::GetProfileByPath(const base::FilePath& path) {
+  return profile_manager_->GetProfileByPath(path);
+}
+
+void ProfileLoader::CreateProfileAsync(
+    const base::FilePath& profile_path,
+    const ProfileManager::CreateCallback& callback,
+    const string16& name,
+    const string16& icon_url,
+    bool is_managed) {
+  profile_manager_->CreateProfileAsync(
+      profile_path, callback, name, icon_url, is_managed);
 }
 
 void ProfileLoader::OnProfileLoaded(int profile_load_sequence_id,
