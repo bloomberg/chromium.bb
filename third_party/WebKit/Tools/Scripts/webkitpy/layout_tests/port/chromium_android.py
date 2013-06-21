@@ -883,8 +883,15 @@ class ChromiumAndroidDriver(driver.Driver):
         # We override the default start() so that we can call _android_driver_cmd_line()
         # instead of cmd_line().
         new_cmd_line = self._android_driver_cmd_line(pixel_tests, per_test_args)
-        if new_cmd_line != self._current_cmd_line:
+
+        # Since _android_driver_cmd_line() is different than cmd_line() we need to provide
+        # our own mechanism for detecting when the process should be stopped.
+        if self._current_cmd_line is None:
+            self._current_android_cmd_line = None
+        if new_cmd_line != self._current_android_cmd_line:
             self.stop()
+        self._current_android_cmd_line = new_cmd_line
+
         super(ChromiumAndroidDriver, self).start(pixel_tests, per_test_args)
 
     def _start(self, pixel_tests, per_test_args):
