@@ -205,4 +205,9 @@ bool CRLSetFetcher::Install(const base::DictionaryValue& manifest,
   return true;
 }
 
+bool CRLSetFetcher::GetInstalledFile(
+    const std::string& file, base::FilePath* installed_file) {
+  return false;
+}
+
 CRLSetFetcher::~CRLSetFetcher() {}

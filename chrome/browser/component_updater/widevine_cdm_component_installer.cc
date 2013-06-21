@@ -195,6 +195,9 @@ class WidevineCdmComponentInstaller : public ComponentInstaller {
   virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
+  virtual bool GetInstalledFile(const std::string& file,
+                                base::FilePath* installed_file) OVERRIDE;
+
  private:
   base::Version current_version_;
 };
@@ -244,6 +247,11 @@ bool WidevineCdmComponentInstaller::Install(
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &RegisterWidevineCdmWithChrome, adapter_install_path, version));
   return true;
+}
+
+bool WidevineCdmComponentInstaller::GetInstalledFile(
+    const std::string& file, base::FilePath* installed_file) {
+  return false;
 }
 
 void FinishWidevineCdmUpdateRegistration(ComponentUpdateService* cus,

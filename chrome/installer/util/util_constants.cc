@@ -196,6 +196,15 @@ const char kExperimentGroup[] = "experiment-group";
 // to. See DuplicateGoogleUpdateSystemClientKey for details.
 const char kToastResultsKey[] = "toast-results-key";
 
+// Applies a binary patch to a file. The input, patch, and the output file are
+// specified as command line arguments following the --patch switch.
+// Ex: --patch=courgette --input_file='input' --patch_file='patch'
+//        --output_file='output'
+const char kPatch[] = "patch";
+const char kInputFile[] = "input-file";
+const char kPatchFile[] = "patch-file";
+const char kOutputFile[] = "output-file";
+
 }  // namespace switches
 
 // The Active Setup executable will be an identical copy of setup.exe; this is
@@ -260,5 +269,8 @@ const wchar_t kChromeChannelBeta[] = L"beta";
 const wchar_t kChromeChannelStable[] = L"";
 
 const size_t kMaxAppModelIdLength = 64U;
+
+const char kCourgette[] = "courgette";
+const char kBsdiff[] = "bsdiff";
 
 }  // namespace installer

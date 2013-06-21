@@ -105,6 +105,9 @@ class SwiftShaderComponentInstaller : public ComponentInstaller {
   virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
+  virtual bool GetInstalledFile(const std::string& file,
+                                base::FilePath* installed_file) OVERRIDE;
+
  private:
   Version current_version_;
 };
@@ -147,6 +150,11 @@ bool SwiftShaderComponentInstaller::Install(
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&RegisterSwiftShaderWithChrome, path));
   return true;
+}
+
+bool SwiftShaderComponentInstaller::GetInstalledFile(
+    const std::string& file, base::FilePath* installed_file) {
+  return false;
 }
 
 void FinishSwiftShaderUpdateRegistration(ComponentUpdateService* cus,

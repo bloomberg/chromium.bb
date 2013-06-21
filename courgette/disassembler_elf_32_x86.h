@@ -23,13 +23,12 @@ class DisassemblerElf32X86 : public DisassemblerElf32 {
   virtual e_machine_values ElfEM() { return EM_386; }
 
  protected:
-
   virtual CheckBool RelToRVA(Elf32_Rel rel, RVA* result)
-    const WARN_UNUSED_RESULT;
+      const WARN_UNUSED_RESULT;
 
   virtual CheckBool ParseRelocationSection(
       const Elf32_Shdr *section_header,
-        AssemblyProgram* program) WARN_UNUSED_RESULT;
+      AssemblyProgram* program) WARN_UNUSED_RESULT;
 
   virtual CheckBool ParseRel32RelocsFromSection(
       const Elf32_Shdr* section) WARN_UNUSED_RESULT;

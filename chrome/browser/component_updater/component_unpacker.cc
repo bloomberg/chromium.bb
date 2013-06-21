@@ -12,6 +12,7 @@
 #include "base/memory/scoped_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "crypto/secure_hash.h"
@@ -22,11 +23,12 @@
 using crypto::SecureHash;
 
 namespace {
+
 // This class makes sure that the CRX digital signature is valid
 // and well formed.
 class CRXValidator {
  public:
-  explicit CRXValidator(FILE* crx_file) : valid_(false) {
+  explicit CRXValidator(FILE* crx_file) : valid_(false), delta_(false) {
     extensions::CrxFile::Header header;
     size_t len = fread(&header, 1, sizeof(header), crx_file);
     if (len < sizeof(header))
@@ -37,6 +39,7 @@ class CRXValidator {
         extensions::CrxFile::Parse(header, &error));
     if (!crx.get())
       return;
+    delta_ = extensions::CrxFile::HeaderIsDelta(header);
 
     std::vector<uint8> key(header.key_size);
     len = fread(&key[0], sizeof(uint8), header.key_size, crx_file);
@@ -72,10 +75,13 @@ class CRXValidator {
 
   bool valid() const { return valid_; }
 
+  bool delta() const { return delta_; }
+
   const std::vector<uint8>& public_key() const { return public_key_; }
 
  private:
   bool valid_;
+  bool delta_;
   std::vector<uint8> public_key_;
 };
 
@@ -98,12 +104,29 @@ base::DictionaryValue* ReadManifest(const base::FilePath& unpack_path) {
   return static_cast<base::DictionaryValue*>(root.release());
 }
 
+// Deletes a path if it exists, and then creates a directory there.
+// Returns true if and only if these operations were successful.
+// This method doesn't take any special steps to prevent files from
+// being inserted into the target directory by another process or thread.
+bool MakeEmptyDirectory(const base::FilePath& path) {
+  if (file_util::PathExists(path)) {
+    if (!file_util::Delete(path, true))
+      return false;
+  }
+  if (!file_util::CreateDirectory(path))
+    return false;
+  return true;
+}
+
 }  // namespace.
 
 ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
                                      const base::FilePath& path,
+                                     const std::string& fingerprint,
+                                     ComponentPatcher* patcher,
                                      ComponentInstaller* installer)
-  : error_(kNone) {
+    : error_(kNone),
+      extended_error_(0) {
   if (pk_hash.empty() || path.empty()) {
     error_ = kInvalidParams;
     return;
@@ -135,29 +158,59 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
     return;
   }
   // We want the temporary directory to be unique and yet predictable, so
-  // we can easily find the package in a end user machine.
-  std::string dir(
+  // we can easily find the package in an end user machine.
+  const std::string dir(
       base::StringPrintf("CRX_%s", base::HexEncode(hash, 6).c_str()));
   unpack_path_ = path.DirName().AppendASCII(dir.c_str());
-  if (file_util::DirectoryExists(unpack_path_)) {
-    if (!file_util::Delete(unpack_path_, true)) {
-      unpack_path_.clear();
-      error_ = kUzipPathError;
+  if (!MakeEmptyDirectory(unpack_path_)) {
+    unpack_path_.clear();
+    error_ = kUnzipPathError;
+    return;
+  }
+  if (validator.delta()) {  // Package is a diff package.
+    // We want a different temp directory for the delta files; we'll put the
+    // patch output into unpack_path_.
+    std::string dir(
+        base::StringPrintf("CRX_%s_diff", base::HexEncode(hash, 6).c_str()));
+    base::FilePath unpack_diff_path = path.DirName().AppendASCII(dir.c_str());
+    if (!MakeEmptyDirectory(unpack_diff_path)) {
+      error_ = kUnzipPathError;
       return;
     }
-  }
-  if (!file_util::CreateDirectory(unpack_path_)) {
-    unpack_path_.clear();
-    error_ = kUzipPathError;
-    return;
-  }
-  if (!zip::Unzip(path, unpack_path_)) {
-    error_ = kUnzipFailed;
-    return;
+    if (!zip::Unzip(path, unpack_diff_path)) {
+      error_ = kUnzipFailed;
+      return;
+    }
+    ComponentUnpacker::Error result = DifferentialUpdatePatch(unpack_diff_path,
+                                                              unpack_path_,
+                                                              patcher,
+                                                              installer,
+                                                              &extended_error_);
+    file_util::Delete(unpack_diff_path, true);
+    unpack_diff_path.clear();
+    error_ = result;
+    if (error_ != kNone) {
+      return;
+    }
+  } else {
+    // Package is a normal update/install; unzip it into unpack_path_ directly.
+    if (!zip::Unzip(path, unpack_path_)) {
+      error_ = kUnzipFailed;
+      return;
+    }
   }
   scoped_ptr<base::DictionaryValue> manifest(ReadManifest(unpack_path_));
   if (!manifest.get()) {
     error_ = kBadManifest;
+    return;
+  }
+  // Write the fingerprint to disk.
+  if (static_cast<int>(fingerprint.size()) !=
+      file_util::WriteFile(
+          unpack_path_.Append(FILE_PATH_LITERAL("manifest.fingerprint")),
+          fingerprint.c_str(),
+          fingerprint.size())) {
+    error_ = kFingerprintWriteFailed;
     return;
   }
   if (!installer->Install(*manifest, unpack_path_)) {
@@ -169,7 +222,6 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
 }
 
 ComponentUnpacker::~ComponentUnpacker() {
-  if (!unpack_path_.empty()) {
+  if (!unpack_path_.empty())
     file_util::Delete(unpack_path_, true);
-  }
 }

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file declares util functions for setup project.
+// This file declares util functions for setup project. It also declares a
+// few functions that the Chrome component updater uses for patching binary
+// deltas.
 
 #ifndef CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
 #define CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
@@ -28,14 +30,31 @@ class InstallationState;
 class InstallerState;
 class ProductState;
 
-// Apply a diff patch to source file. First tries to apply it using courgette
-// since it checks for courgette header and fails quickly. If that fails
-// tries to apply the patch using regular bsdiff. Returns status code.
+// Apply a diff patch to source file. First tries to apply it using Courgette
+// since it checks for Courgette header and fails quickly. If that fails
+// tries to apply the patch using regular bsdiff. Returns status code as
+// defined by the bsdiff code (see third_party/bspatch/mbspatch.h for the
+// definitions of the codes).
 // The installer stage is updated if |installer_state| is non-NULL.
 int ApplyDiffPatch(const base::FilePath& src,
                    const base::FilePath& patch,
                    const base::FilePath& dest,
                    const InstallerState* installer_state);
+
+// Applies a patch file to source file using Courgette. Returns 0 in case of
+// success. In case of errors, it returns kCourgetteErrorOffset + a Courgette
+// status code, as defined in courgette/courgette.h
+int CourgettePatchFiles(const base::FilePath& src,
+                        const base::FilePath& patch,
+                        const base::FilePath& dest);
+
+// Applies a patch file to source file using bsdiff. This function uses
+// Courgette's flavor of bsdiff. Returns 0 in case of success, or
+// kBsdiffErrorOffset + a bsdiff status code in case of errors.
+// See courgette/third_party/bsdiff.h for details.
+int BsdiffPatchFiles(const base::FilePath& src,
+                     const base::FilePath& patch,
+                     const base::FilePath& dest);
 
 // Find the version of Chrome from an install source directory.
 // Chrome_path should contain at least one version folder.

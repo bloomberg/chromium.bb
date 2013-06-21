@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_PROFILE_OBSERVER_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_PROFILE_OBSERVER_H_
 
+#include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
