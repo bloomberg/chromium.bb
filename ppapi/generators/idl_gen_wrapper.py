@@ -157,7 +157,7 @@ static struct %(wrapper_struct)s *%(wrapper_prefix)sPPPShimIface(
 const void *__%(wrapper_prefix)s_PPBGetInterface(const char *name) {
   struct %(wrapper_struct)s *wrapper = %(wrapper_prefix)sPPBShimIface(name);
   if (wrapper == NULL) {
-    /* We don't have an IDL for this, for some reason. Take our chances. */
+    /* We did not generate a wrapper for this, so return the real interface. */
     return (*__real_PPBGetInterface)(name);
   }
 
@@ -178,7 +178,7 @@ const void *__%(wrapper_prefix)s_PPBGetInterface(const char *name) {
 const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
   struct %(wrapper_struct)s *wrapper = %(wrapper_prefix)sPPPShimIface(name);
   if (wrapper == NULL) {
-    /* We don't have an IDL for this, for some reason. Take our chances. */
+    /* We did not generate a wrapper for this, so return the real interface. */
     return (*__real_PPPGetInterface)(name);
   }
 
@@ -364,9 +364,7 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
       if iface.needs_wrapping:
         wrap_iface = '(void *) &%s_Wrappers_%s' % (self.wrapper_prefix,
                                                    iface.struct_name)
-      else:
-        wrap_iface = 'NULL /* Still need slot for real_iface */'
-      out.Write("""static struct %s %s = {
+        out.Write("""static struct %s %s = {
   .iface_macro = %s,
   .wrapped_iface = %s,
   .real_iface = NULL
@@ -379,10 +377,11 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     ppb_wrapper_infos = []
     ppp_wrapper_infos = []
     for iface in iface_releases:
-      appender = PPKind.ChoosePPFunc(iface,
-                                     ppb_wrapper_infos.append,
-                                     ppp_wrapper_infos.append)
-      appender('  &%s' % self.GetWrapperInfoName(iface))
+      if iface.needs_wrapping:
+        appender = PPKind.ChoosePPFunc(iface,
+                                       ppb_wrapper_infos.append,
+                                       ppp_wrapper_infos.append)
+        appender('  &%s' % self.GetWrapperInfoName(iface))
     ppb_wrapper_infos.append('  NULL')
     ppp_wrapper_infos.append('  NULL')
     out.Write(
@@ -399,8 +398,10 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     """
     out.Write('/* BEGIN Declarations for all Wrapper Infos */\n\n')
     for iface in iface_releases:
-      out.Write('static struct %s %s;\n' %
-                (self.GetWrapperMetadataName(), self.GetWrapperInfoName(iface)))
+      if iface.needs_wrapping:
+        out.Write('static struct %s %s;\n' %
+                  (self.GetWrapperMetadataName(),
+                   self.GetWrapperInfoName(iface)))
     out.Write('/* END Declarations for all Wrapper Infos. */\n\n')
 
 

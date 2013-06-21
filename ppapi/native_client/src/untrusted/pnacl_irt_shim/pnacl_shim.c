@@ -132,9 +132,6 @@ static int mystrcmp(const char* s1, const char *s2) {
 
 /* BEGIN Declarations for all Wrapper Infos */
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Audio_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioConfig_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioConfig_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Core_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_0;
@@ -142,22 +139,16 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileSystem_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Fullscreen_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Gamepad_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3D_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageData_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_InputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseInputEvent_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseCursor_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseLock_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoader_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0;
@@ -167,74 +158,30 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Var_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArray_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Graphics3D_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_InputEvent_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_MouseLock_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_5;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Find_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Memory_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ResourceArray_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Scrollbar_Dev_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_7;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_8;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_9;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_91;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_92;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInput_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInput_Dev_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Trace_Event_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Widget_Dev_0_3;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Widget_Dev_0_4;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Zoom_Dev_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_NetworkState_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Printing_Dev_0_6;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Scrollbar_Dev_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Scrollbar_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Selection_Dev_0_3;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_TextInput_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoCapture_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_9;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_10;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_11;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Widget_Dev_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Zoom_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_CrxFileSystem_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_Private_0_1;
@@ -247,13 +194,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Clipboard_4_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DeviceID_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_FontFile_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FlashFullscreen_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FlashFullscreen_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Menu_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_MessageLoop_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Print_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_GpuBlacklist_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NaCl_Private_1_0;
@@ -261,7 +202,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Talk_Private_2_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1;
@@ -277,9 +217,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDestination_Private_
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_6;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_Events_Dev_0_1;
@@ -4821,24 +4758,6 @@ struct PPB_Ext_Socket_Dev_0_2 Pnacl_Wrappers_PPB_Ext_Socket_Dev_0_2 = {
     .GetJoinedGroups = (int32_t (*)(PP_Instance instance, struct PP_Var socket_id, struct PP_Var* groups, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_Ext_Socket_Dev_GetJoinedGroups
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Audio_1_0 = {
-  .iface_macro = PPB_AUDIO_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioConfig_1_0 = {
-  .iface_macro = PPB_AUDIO_CONFIG_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioConfig_1_1 = {
-  .iface_macro = PPB_AUDIO_CONFIG_INTERFACE_1_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Console_1_0 = {
   .iface_macro = PPB_CONSOLE_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Console_1_0,
@@ -4881,18 +4800,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileSystem_1_0 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Fullscreen_1_0 = {
-  .iface_macro = PPB_FULLSCREEN_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Gamepad_1_0 = {
-  .iface_macro = PPB_GAMEPAD_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_0 = {
   .iface_macro = PPB_GRAPHICS_2D_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Graphics2D_1_0,
@@ -4908,18 +4815,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_1 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics3D_1_0 = {
   .iface_macro = PPB_GRAPHICS_3D_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Graphics3D_1_0,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ImageData_1_0 = {
-  .iface_macro = PPB_IMAGEDATA_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_InputEvent_1_0 = {
-  .iface_macro = PPB_INPUT_EVENT_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -4953,12 +4848,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_1_0 = {
-  .iface_macro = PPB_INSTANCE_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0 = {
   .iface_macro = PPB_MESSAGELOOP_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_MessageLoop_1_0,
@@ -4968,12 +4857,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0 = {
   .iface_macro = PPB_MESSAGING_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Messaging_1_0,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseCursor_1_0 = {
-  .iface_macro = PPB_MOUSECURSOR_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5031,105 +4914,15 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarDictionary_1_0 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_0 = {
-  .iface_macro = PPB_VIEW_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_1 = {
-  .iface_macro = PPB_VIEW_INTERFACE_1_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0 = {
   .iface_macro = PPB_WEBSOCKET_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_WebSocket_1_0,
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Graphics3D_1_0 = {
-  .iface_macro = PPP_GRAPHICS_3D_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_InputEvent_0_1 = {
-  .iface_macro = PPP_INPUT_EVENT_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_1_0 = {
-  .iface_macro = PPP_INSTANCE_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_1_1 = {
-  .iface_macro = PPP_INSTANCE_INTERFACE_1_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0 = {
   .iface_macro = PPP_MESSAGING_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPP_Messaging_1_0,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_MouseLock_1_0 = {
-  .iface_macro = PPP_MOUSELOCK_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2 = {
-  .iface_macro = PPB_BROKER_TRUSTED_INTERFACE_0_2,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3 = {
-  .iface_macro = PPB_BROKER_TRUSTED_INTERFACE_0_3,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0 = {
-  .iface_macro = PPB_BROWSERFONT_TRUSTED_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0 = {
-  .iface_macro = PPB_CHARSET_TRUSTED_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_5 = {
-  .iface_macro = PPB_FILECHOOSER_TRUSTED_INTERFACE_0_5,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6 = {
-  .iface_macro = PPB_FILECHOOSER_TRUSTED_INTERFACE_0_6,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4 = {
-  .iface_macro = PPB_FILEIOTRUSTED_INTERFACE_0_4,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3 = {
-  .iface_macro = PPB_URLLOADERTRUSTED_INTERFACE_0_3,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5142,24 +4935,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3 = {
   .iface_macro = PPB_AUDIO_INPUT_DEV_INTERFACE_0_3,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_AudioInput_Dev_0_3,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4 = {
-  .iface_macro = PPB_BUFFER_DEV_INTERFACE_0_4,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1 = {
-  .iface_macro = PPB_CRYPTO_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4 = {
-  .iface_macro = PPB_CURSOR_CONTROL_DEV_INTERFACE_0_4,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5181,21 +4956,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Find_Dev_0_3 = {
-  .iface_macro = PPB_FIND_DEV_INTERFACE_0_3,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6 = {
   .iface_macro = PPB_FONT_DEV_INTERFACE_0_6,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Font_Dev_0_6,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_Dev_0_1 = {
-  .iface_macro = PPB_GRAPHICS2D_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5217,18 +4980,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_1 = {
-  .iface_macro = PPB_KEYBOARD_INPUT_EVENT_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Memory_Dev_0_1 = {
-  .iface_macro = PPB_MEMORY_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1 = {
   .iface_macro = PPB_NETADDRESS_DEV_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_NetAddress_Dev_0_1,
@@ -5241,33 +4992,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ResourceArray_Dev_0_1 = {
-  .iface_macro = PPB_RESOURCEARRAY_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Scrollbar_Dev_0_5 = {
-  .iface_macro = PPB_SCROLLBAR_DEV_INTERFACE_0_5,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1 = {
   .iface_macro = PPB_TCPSOCKET_DEV_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TCPSocket_Dev_0_1,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_7 = {
-  .iface_macro = PPB_TESTING_DEV_INTERFACE_0_7,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_8 = {
-  .iface_macro = PPB_TESTING_DEV_INTERFACE_0_8,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5286,24 +5013,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_91 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_92 = {
   .iface_macro = PPB_TESTING_DEV_INTERFACE_0_92,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Testing_Dev_0_92,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInput_Dev_0_1 = {
-  .iface_macro = PPB_TEXTINPUT_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInput_Dev_0_2 = {
-  .iface_macro = PPB_TEXTINPUT_DEV_INTERFACE_0_2,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Trace_Event_Dev_0_1 = {
-  .iface_macro = PPB_TRACE_EVENT_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5343,99 +5052,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_Dev_0_1 = {
-  .iface_macro = PPB_VIEW_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Widget_Dev_0_3 = {
-  .iface_macro = PPB_WIDGET_DEV_INTERFACE_0_3,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Widget_Dev_0_4 = {
-  .iface_macro = PPB_WIDGET_DEV_INTERFACE_0_4,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Zoom_Dev_0_2 = {
-  .iface_macro = PPB_ZOOM_DEV_INTERFACE_0_2,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_NetworkState_Dev_0_1 = {
-  .iface_macro = PPP_NETWORK_STATE_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Printing_Dev_0_6 = {
-  .iface_macro = PPP_PRINTING_DEV_INTERFACE_0_6,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Scrollbar_Dev_0_2 = {
-  .iface_macro = PPP_SCROLLBAR_DEV_INTERFACE_0_2,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Scrollbar_Dev_0_3 = {
-  .iface_macro = PPP_SCROLLBAR_DEV_INTERFACE_0_3,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Selection_Dev_0_3 = {
   .iface_macro = PPP_SELECTION_DEV_INTERFACE_0_3,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPP_Selection_Dev_0_3,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_TextInput_Dev_0_1 = {
-  .iface_macro = PPP_TEXTINPUT_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoCapture_Dev_0_1 = {
-  .iface_macro = PPP_VIDEO_CAPTURE_DEV_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_9 = {
-  .iface_macro = PPP_VIDEODECODER_DEV_INTERFACE_0_9,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_10 = {
-  .iface_macro = PPP_VIDEODECODER_DEV_INTERFACE_0_10,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_11 = {
-  .iface_macro = PPP_VIDEODECODER_DEV_INTERFACE_0_11,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Widget_Dev_0_2 = {
-  .iface_macro = PPP_WIDGET_DEV_INTERFACE_0_2,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Zoom_Dev_0_3 = {
-  .iface_macro = PPP_ZOOM_DEV_INTERFACE_0_3,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5511,45 +5130,9 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_0 = {
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_FontFile_0_1 = {
-  .iface_macro = PPB_FLASH_FONTFILE_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FlashFullscreen_0_1 = {
-  .iface_macro = PPB_FLASHFULLSCREEN_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FlashFullscreen_1_0 = {
-  .iface_macro = PPB_FLASHFULLSCREEN_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Menu_0_2 = {
   .iface_macro = PPB_FLASH_MENU_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Flash_Menu_0_2,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_MessageLoop_0_1 = {
-  .iface_macro = PPB_FLASH_MESSAGELOOP_INTERFACE_0_1,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Print_1_0 = {
-  .iface_macro = PPB_FLASH_PRINT_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_GpuBlacklist_Private_0_2 = {
-  .iface_macro = PPB_GPUBLACKLIST_PRIVATE_INTERFACE_0_2,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5592,12 +5175,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1 = 
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2 = {
   .iface_macro = PPB_NETWORKLIST_PRIVATE_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_NetworkList_Private_0_2,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_2 = {
-  .iface_macro = PPB_NETWORKMONITOR_PRIVATE_INTERFACE_0_2,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
   .real_iface = NULL
 };
 
@@ -5691,24 +5268,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_
   .real_iface = NULL
 };
 
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_0 = {
-  .iface_macro = PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_0,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_2 = {
-  .iface_macro = PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_2,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_3 = {
-  .iface_macro = PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_3,
-  .wrapped_iface = NULL /* Still need slot for real_iface */,
-  .real_iface = NULL
-};
-
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Instance_Private_0_1 = {
   .iface_macro = PPP_INSTANCE_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPP_Instance_Private_0_1,
@@ -5740,9 +5299,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_Socket_Dev_0_2 = {
 };
 
 static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
-  &Pnacl_WrapperInfo_PPB_Audio_1_0,
-  &Pnacl_WrapperInfo_PPB_AudioConfig_1_0,
-  &Pnacl_WrapperInfo_PPB_AudioConfig_1_1,
   &Pnacl_WrapperInfo_PPB_Console_1_0,
   &Pnacl_WrapperInfo_PPB_Core_1_0,
   &Pnacl_WrapperInfo_PPB_FileIO_1_0,
@@ -5750,22 +5306,16 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_FileRef_1_0,
   &Pnacl_WrapperInfo_PPB_FileRef_1_1,
   &Pnacl_WrapperInfo_PPB_FileSystem_1_0,
-  &Pnacl_WrapperInfo_PPB_Fullscreen_1_0,
-  &Pnacl_WrapperInfo_PPB_Gamepad_1_0,
   &Pnacl_WrapperInfo_PPB_Graphics2D_1_0,
   &Pnacl_WrapperInfo_PPB_Graphics2D_1_1,
   &Pnacl_WrapperInfo_PPB_Graphics3D_1_0,
-  &Pnacl_WrapperInfo_PPB_ImageData_1_0,
-  &Pnacl_WrapperInfo_PPB_InputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_MouseInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_MouseInputEvent_1_1,
   &Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0,
-  &Pnacl_WrapperInfo_PPB_Instance_1_0,
   &Pnacl_WrapperInfo_PPB_MessageLoop_1_0,
   &Pnacl_WrapperInfo_PPB_Messaging_1_0,
-  &Pnacl_WrapperInfo_PPB_MouseCursor_1_0,
   &Pnacl_WrapperInfo_PPB_MouseLock_1_0,
   &Pnacl_WrapperInfo_PPB_URLLoader_1_0,
   &Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0,
@@ -5775,56 +5325,28 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_VarArray_1_0,
   &Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0,
   &Pnacl_WrapperInfo_PPB_VarDictionary_1_0,
-  &Pnacl_WrapperInfo_PPB_View_1_0,
-  &Pnacl_WrapperInfo_PPB_View_1_1,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
-  &Pnacl_WrapperInfo_PPB_BrokerTrusted_0_2,
-  &Pnacl_WrapperInfo_PPB_BrokerTrusted_0_3,
-  &Pnacl_WrapperInfo_PPB_BrowserFont_Trusted_1_0,
-  &Pnacl_WrapperInfo_PPB_CharSet_Trusted_1_0,
-  &Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_5,
-  &Pnacl_WrapperInfo_PPB_FileChooserTrusted_0_6,
-  &Pnacl_WrapperInfo_PPB_FileIOTrusted_0_4,
-  &Pnacl_WrapperInfo_PPB_URLLoaderTrusted_0_3,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3,
-  &Pnacl_WrapperInfo_PPB_Buffer_Dev_0_4,
-  &Pnacl_WrapperInfo_PPB_Crypto_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_CursorControl_Dev_0_4,
   &Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6,
-  &Pnacl_WrapperInfo_PPB_Find_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_Font_Dev_0_6,
-  &Pnacl_WrapperInfo_PPB_Graphics2D_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
-  &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_Memory_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_7,
-  &Pnacl_WrapperInfo_PPB_ResourceArray_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_Scrollbar_Dev_0_5,
   &Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_Testing_Dev_0_7,
-  &Pnacl_WrapperInfo_PPB_Testing_Dev_0_8,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_9,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_91,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_92,
-  &Pnacl_WrapperInfo_PPB_TextInput_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_TextInput_Dev_0_2,
-  &Pnacl_WrapperInfo_PPB_Trace_Event_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_VideoDecoder_Dev_0_16,
-  &Pnacl_WrapperInfo_PPB_View_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_Widget_Dev_0_3,
-  &Pnacl_WrapperInfo_PPB_Widget_Dev_0_4,
-  &Pnacl_WrapperInfo_PPB_Zoom_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_ContentDecryptor_Private_0_6,
   &Pnacl_WrapperInfo_PPB_Ext_CrxFileSystem_Private_0_1,
   &Pnacl_WrapperInfo_PPB_FileIO_Private_0_1,
@@ -5837,13 +5359,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_0,
   &Pnacl_WrapperInfo_PPB_Flash_DeviceID_1_0,
   &Pnacl_WrapperInfo_PPB_Flash_DRM_1_0,
-  &Pnacl_WrapperInfo_PPB_Flash_FontFile_0_1,
-  &Pnacl_WrapperInfo_PPB_FlashFullscreen_0_1,
-  &Pnacl_WrapperInfo_PPB_FlashFullscreen_1_0,
   &Pnacl_WrapperInfo_PPB_Flash_Menu_0_2,
-  &Pnacl_WrapperInfo_PPB_Flash_MessageLoop_0_1,
-  &Pnacl_WrapperInfo_PPB_Flash_Print_1_0,
-  &Pnacl_WrapperInfo_PPB_GpuBlacklist_Private_0_2,
   &Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Instance_Private_0_1,
   &Pnacl_WrapperInfo_PPB_NaCl_Private_1_0,
@@ -5851,7 +5367,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_1,
   &Pnacl_WrapperInfo_PPB_NetworkList_Private_0_2,
-  &Pnacl_WrapperInfo_PPB_NetworkMonitor_Private_0_2,
   &Pnacl_WrapperInfo_PPB_Talk_Private_1_0,
   &Pnacl_WrapperInfo_PPB_Talk_Private_2_0,
   &Pnacl_WrapperInfo_PPB_TCPServerSocket_Private_0_1,
@@ -5874,28 +5389,9 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
 };
 
 static struct __PnaclWrapperInfo *s_ppp_wrappers[] = {
-  &Pnacl_WrapperInfo_PPP_Graphics3D_1_0,
-  &Pnacl_WrapperInfo_PPP_InputEvent_0_1,
-  &Pnacl_WrapperInfo_PPP_Instance_1_0,
-  &Pnacl_WrapperInfo_PPP_Instance_1_1,
   &Pnacl_WrapperInfo_PPP_Messaging_1_0,
-  &Pnacl_WrapperInfo_PPP_MouseLock_1_0,
-  &Pnacl_WrapperInfo_PPP_NetworkState_Dev_0_1,
-  &Pnacl_WrapperInfo_PPP_Printing_Dev_0_6,
-  &Pnacl_WrapperInfo_PPP_Scrollbar_Dev_0_2,
-  &Pnacl_WrapperInfo_PPP_Scrollbar_Dev_0_3,
   &Pnacl_WrapperInfo_PPP_Selection_Dev_0_3,
-  &Pnacl_WrapperInfo_PPP_TextInput_Dev_0_1,
-  &Pnacl_WrapperInfo_PPP_VideoCapture_Dev_0_1,
-  &Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_9,
-  &Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_10,
-  &Pnacl_WrapperInfo_PPP_VideoDecoder_Dev_0_11,
-  &Pnacl_WrapperInfo_PPP_Widget_Dev_0_2,
-  &Pnacl_WrapperInfo_PPP_Zoom_Dev_0_3,
   &Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_6,
-  &Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_0,
-  &Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_2,
-  &Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_3,
   &Pnacl_WrapperInfo_PPP_Instance_Private_0_1,
   NULL
 };
@@ -5938,7 +5434,7 @@ static struct __PnaclWrapperInfo *PnaclPPPShimIface(
 const void *__Pnacl_PPBGetInterface(const char *name) {
   struct __PnaclWrapperInfo *wrapper = PnaclPPBShimIface(name);
   if (wrapper == NULL) {
-    /* We don't have an IDL for this, for some reason. Take our chances. */
+    /* We did not generate a wrapper for this, so return the real interface. */
     return (*__real_PPBGetInterface)(name);
   }
 
@@ -5959,7 +5455,7 @@ const void *__Pnacl_PPBGetInterface(const char *name) {
 const void *__Pnacl_PPPGetInterface(const char *name) {
   struct __PnaclWrapperInfo *wrapper = PnaclPPPShimIface(name);
   if (wrapper == NULL) {
-    /* We don't have an IDL for this, for some reason. Take our chances. */
+    /* We did not generate a wrapper for this, so return the real interface. */
     return (*__real_PPPGetInterface)(name);
   }
 
