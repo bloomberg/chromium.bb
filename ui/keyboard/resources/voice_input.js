@@ -46,9 +46,7 @@ VoiceInput.prototype = {
       if (e.results[i].isFinal)
         this.finalResult_ = e.results[i][0].transcript;
     }
-    for (var i = 0; i < this.finalResult_.length; i++) {
-      sendKey(this.finalResult_.charAt(i));
-    }
+    insertText(this.finalResult_);
   },
 
   /**

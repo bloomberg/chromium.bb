@@ -4,17 +4,15 @@
 
 #include "chrome/browser/extensions/api/input/input.h"
 
-#include <string>
-
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/events/event.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
-#include "ui/aura/root_window.h"
 #include "ui/keyboard/keyboard_util.h"
 #endif
 
@@ -27,19 +25,14 @@ const char kNotYetImplementedError[] =
 
 namespace extensions {
 
-bool SendKeyboardEventInputFunction::RunImpl() {
+bool InsertTextInputFunction::RunImpl() {
 #if defined(USE_ASH)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  scoped_ptr<ui::KeyEvent> event(
-      keyboard::KeyEventFromArgs(args_.get(), &error_));
-  if (!event)
-    return false;
+  string16 text;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &text));
 
-  ash::Shell::GetActiveRootWindow()->AsRootWindowHostDelegate()->OnHostKeyEvent(
-      event.get());
-
-  return true;
+  return keyboard::InsertText(text, ash::Shell::GetPrimaryRootWindow());
 #endif
   error_ = kNotYetImplementedError;
   return false;
@@ -48,7 +41,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 InputAPI::InputAPI(Profile* profile) {
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
-  registry->RegisterFunction<SendKeyboardEventInputFunction>();
+  registry->RegisterFunction<InsertTextInputFunction>();
 }
 
 InputAPI::~InputAPI() {

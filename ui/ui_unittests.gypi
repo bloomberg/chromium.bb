@@ -150,7 +150,6 @@
         'base/cocoa/tracking_area_unittest.mm',
         'base/events/event_dispatcher_unittest.cc',
         'base/events/event_unittest.cc',
-        'base/events/key_identifier_conversion_unittest.cc',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
         'base/gtk/menu_label_accelerator_util_unittest.cc',
@@ -303,7 +302,6 @@
           'sources!': [
             'base/events/event_dispatcher_unittest.cc',
             'base/events/event_unittest.cc',
-            'base/events/key_identifier_conversion_unittest.cc',
           ],
         }],
         ['use_aura==1', {

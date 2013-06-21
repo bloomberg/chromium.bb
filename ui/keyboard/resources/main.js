@@ -11,24 +11,6 @@ var onResize = function() {
   keyboard.style.fontSize = (height / FONT_SIZE_RATIO / ROW_LENGTH) + 'px';
 };
 
-/**
- * Send the given key to chrome.
- */
-function sendKey(key) {
-  var keyIdentifier = key;
-
-  // Fix up some keys to their respective identifiers for convenience.
-  if (keyIdentifier == ' ') {
-    keyIdentifier = 'Spacebar';
-  }
-
-  var keyEvent = {
-    keyIdentifier: keyIdentifier
-  };
-
-  sendKeyEvent(keyEvent);
-};
-
 addEventListener('WebComponentsReady', function() {
   keyboard.appendChild(
       keysets.content.body.firstElementChild.createInstance());

@@ -8,11 +8,6 @@ function logIfError() {
   }
 }
 
-function sendKeyEvent(keyEvent) {
-  keyEvent.type = 'keydown';
-  chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(keyEvent,
-      logIfError);
-  keyEvent.type = 'keyup';
-  chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(keyEvent,
-      logIfError);
+function insertText(text) {
+  chrome.experimental.input.virtualKeyboard.insertText(text, logIfError);
 }

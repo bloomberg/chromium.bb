@@ -1329,7 +1329,6 @@
         'browser/extensions/api/identity/identity_apitest.cc',
         'browser/extensions/api/idle/idle_apitest.cc',
         'browser/extensions/api/idltest/idltest_apitest.cc',
-        'browser/extensions/api/input/input_apitest.cc',
         'browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc',
         'browser/extensions/api/management/management_api_browsertest.cc',
         'browser/extensions/api/management/management_apitest.cc',
@@ -2051,7 +2050,6 @@
         }, { # else: toolkit_views == 0
           'sources/': [
             ['exclude', '^../ui/views/'],
-            ['exclude', '^browser/extensions/api/input/input_apitest.cc'],
             ['exclude', '^browser/ui/views/'],
           ],
         }],

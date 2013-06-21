@@ -9,48 +9,18 @@
     "types": [],
     "functions": [
       {
-        "name": "sendKeyboardEvent",
+        "name": "insertText",
         "type": "function",
-        "description": "Sends a keyboard event to Chrome.",
+        "description": "Inserts text into the currently focused text field.",
         "parameters": [
-          { "type": "object",
-            "name": "event",
-            "properties": {
-              "type": {
-                "type": "string",
-                "description": "One of 'keyup' or 'keydown'."
-              },
-              "keyIdentifier": {
-                "type": "string",
-                "description": "See http://www.w3.org/TR/2003/NOTE-DOM-Level-3-Events-20031107/keyset.html#KeySet-Set"
-              },
-              "altKey": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Whether or not the ALT key is pressed."
-              },
-              "ctrlKey": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Whether or not the CTRL key is pressed."
-              },
-              "metaKey": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Whether or not the META key is pressed."
-              },
-              "shiftKey": {
-                "type": "boolean",
-                "optional": true,
-                "description": "Whether or not the SHIFT key is pressed."
-              }
-            },
-            "description": "The keyboard event to be sent."
+          { "name": "text",
+            "type": "string",
+            "description": "The text that will be inserted."
           },
           { "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "This function is called when the event processing is completed.",
+            "description": "Called when the insertion is completed.",
             "parameters": []
           }
         ]

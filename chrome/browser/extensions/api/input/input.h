@@ -13,14 +13,14 @@ class Profile;
 
 namespace extensions {
 
-class SendKeyboardEventInputFunction : public SyncExtensionFunction {
+class InsertTextInputFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
-      "experimental.input.virtualKeyboard.sendKeyboardEvent",
-      EXPERIMENTAL_INPUT_VIRTUALKEYBOARD_SENDKEYBOARDEVENT);
+      "experimental.input.virtualKeyboard.insertText",
+      EXPERIMENTAL_INPUT_VIRTUALKEYBOARD_INSERTTEXT);
 
  protected:
-  virtual ~SendKeyboardEventInputFunction() {}
+  virtual ~InsertTextInputFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

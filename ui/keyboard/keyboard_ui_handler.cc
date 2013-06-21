@@ -8,12 +8,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/aura/root_window.h"
-#include "ui/base/events/event.h"
+#include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace keyboard {
@@ -26,22 +25,27 @@ KeyboardUIHandler::~KeyboardUIHandler() {
 
 void KeyboardUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "sendKeyEvent",
-      base::Bind(&KeyboardUIHandler::HandleSendKeyEventMessage,
+      "insertText",
+      base::Bind(&KeyboardUIHandler::HandleInsertTextMessage,
                  base::Unretained(this)));
 }
 
-void KeyboardUIHandler::HandleSendKeyEventMessage(const base::ListValue* args) {
-  std::string error;
-  scoped_ptr<ui::KeyEvent> event(keyboard::KeyEventFromArgs(args, &error));
-  if (!event) {
-    LOG(ERROR) << "sendKeyEvent failed: " << error;
+void KeyboardUIHandler::HandleInsertTextMessage(const base::ListValue* args) {
+  string16 text;
+  if (!args->GetString(0, &text)) {
+    LOG(ERROR) << "insertText failed: bad argument";
     return;
   }
 
   aura::RootWindow* root_window =
       web_ui()->GetWebContents()->GetView()->GetNativeView()->GetRootWindow();
-  root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(event.get());
+  if (!root_window) {
+    LOG(ERROR) << "insertText failed: no root window";
+    return;
+  }
+
+  if (!keyboard::InsertText(text, root_window))
+    LOG(ERROR) << "insertText failed";
 }
 
 }  // namespace keyboard

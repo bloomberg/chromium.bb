@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function sendKeyEvent(keyEvent) {
-  keyEvent.type = 'keydown';
-  chrome.send('sendKeyEvent', [ keyEvent ]);
-  keyEvent.type = 'keyup';
-  chrome.send('sendKeyEvent', [ keyEvent ]);
+function insertText(text) {
+  chrome.send('insertText', [ text ]);
 }

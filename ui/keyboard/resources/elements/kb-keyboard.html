@@ -95,12 +95,12 @@
         this.lastPressedKey.classList.add('active');
         repeatKey.cancel();
         if (detail.repeat) {
-          sendKey(detail.char);
+          insertText(detail.char);
           repeatKey.key = this.lastPressedKey;
           repeatKey.timer = setTimeout(function() {
             repeatKey.timer = undefined;
             repeatKey.interval = setInterval(function() {
-               sendKey(detail.char);
+               insertText(detail.char);
             }, REPEAT_INTERVAL_MSEC);
           }, Math.max(0, REPEAT_DELAY_MSEC - REPEAT_INTERVAL_MSEC));
         }
@@ -127,7 +127,7 @@
         var char = detail.char;
         if (enterUpperOnSpace) {
           enterUpperOnSpace = false;
-          if (char == 'Spacebar')
+          if (char == ' ')
             this.keyset = 'upper';
         }
         switch(char) {
@@ -141,17 +141,10 @@
           case '!':
             enterUpperOnSpace = true;
             break;
-          case 'Tab':
-          case 'Spacebar':
-          case 'Enter':
-            sendKey(char);
-            return;
           default:
             break;
         }
-        for (var i = 0; i < char.length; i++) {
-          sendKey(char.charAt(i));
-        }
+        insertText(char);
       }
     });
   </script>

@@ -11,8 +11,8 @@
 
 namespace keyboard {
 
-// The WebUI handler for chrome://keyboard.  Delivers events to the
-// aura::RootWindow associated with the WebUI.
+// The WebUI handler for chrome://keyboard.  Inserts text into the currently
+// focused TextInputClient.
 class KeyboardUIHandler : public content::WebUIMessageHandler {
  public:
   KeyboardUIHandler();
@@ -22,8 +22,8 @@ class KeyboardUIHandler : public content::WebUIMessageHandler {
   // |content::WebUIMessageHandler| implementation:
   virtual void RegisterMessages() OVERRIDE;
 
-  // Callback for the "sendKeyEvent" message.
-  void HandleSendKeyEventMessage(const base::ListValue* args);
+  // Callback for the "insertText" message.
+  void HandleInsertTextMessage(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardUIHandler);
 };

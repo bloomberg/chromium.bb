@@ -8,64 +8,12 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/values.h"
-#include "ui/base/events/event.h"
-#include "ui/base/events/event_constants.h"
-#include "ui/base/events/key_identifier_conversion.h"
+#include "base/strings/string16.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/keyboard/keyboard_switches.h"
-
-namespace {
-
-// KeyEvent dictionary keys
-const char kType[] = "type";
-const char kKeyIdentifier[] = "keyIdentifier";
-const char kAlt[] = "altKey";
-const char kCtrl[] = "ctrlKey";
-const char kMeta[] = "metaKey";
-const char kShift[] = "shiftKey";
-const char kKeyDown[] = "keydown";
-const char kKeyUp[] = "keyup";
-
-// Errors.
-const char kInvalidArgumentsListError[] =
-    "Argument list does not contain a dictionary.";
-const char kInvalidKeyEventMissingKeyIdentifierError[] =
-    "KeyEvent object is missing the keyIdentifier field";
-const char kInvalidKeyEventMissingTypeError[] =
-    "KeyEvent object is missing the type field";
-const char kUnknownKeyEventTypeError[] =
-    "Unknown event type in KeyEvent.";
-const char kUnknownOrUnsupportedKeyIdentiferError[] =
-    "Unknown or unsupported key identifier.";
-const char kUnsupportedModifierError[] =
-    "Unsupported modifier (meta).";
-
-ui::EventType GetTypeFromString(const std::string& type) {
-  if (type == kKeyDown) {
-    return ui::ET_KEY_PRESSED;
-  } else if (type == kKeyUp) {
-    return ui::ET_KEY_RELEASED;
-  }
-  return ui::ET_UNKNOWN;
-}
-
-// Converts a hex string "U+NNNN" to uint16. Returns 0 on error.
-uint16 UnicodeIdentifierStringToInt(const std::string& key_identifier) {
-  int character = 0;
-  if ((key_identifier.length() == 6) &&
-      (key_identifier.substr(0, 2) == "U+") &&
-      (key_identifier.substr(2).find_first_not_of("0123456789abcdefABCDEF") ==
-       std::string::npos)) {
-    const bool result =
-        base::HexStringToInt(key_identifier.substr(2), &character);
-    DCHECK(result) << key_identifier;
-  }
-  return character;
-}
-
-}  // namespace
 
 namespace keyboard {
 
@@ -74,69 +22,44 @@ bool IsKeyboardEnabled() {
       switches::kEnableVirtualKeyboard);
 }
 
-ui::KeyEvent* KeyEventFromArgs(const base::ListValue* args,
-                               std::string* error) {
-  const DictionaryValue* key_event;
-  if (!args->GetDictionary(0, &key_event)) {
-    *error = kInvalidArgumentsListError;
-    return NULL;
-  }
+bool InsertText(const base::string16& text, aura::RootWindow* root_window) {
+  if (!root_window)
+    return false;
 
-  std::string type_name;
-  if (!key_event->GetString(kType, &type_name)) {
-    *error = kInvalidKeyEventMissingTypeError;
-    return NULL;
-  }
+  // Handle Backspace and Enter specially: using TextInputClient::InsertText is
+  // very unreliable for these characters.
+  // TODO(bryeung): remove this code once virtual keyboards are able to send
+  // these events directly via the Input Injection API.
+  if (text.length() == 1) {
+    ui::KeyboardCode code = ui::VKEY_UNKNOWN;
+    if (text[0] == L'\n')
+      code = ui::VKEY_RETURN;
+    else if (text[0] == L'\b')
+      code = ui::VKEY_BACK;
 
-  ui::EventType type = GetTypeFromString(type_name);
-  if (type == ui::ET_UNKNOWN) {
-    *error = kUnknownKeyEventTypeError;
-    return NULL;
-  }
+    if (code != ui::VKEY_UNKNOWN) {
+      ui::KeyEvent press_event(ui::ET_KEY_PRESSED, code, 0, 0);
+      root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
 
-  std::string identifier;
-  if (!key_event->GetString(kKeyIdentifier, &identifier)) {
-    *error = kInvalidKeyEventMissingKeyIdentifierError;
-    return NULL;
-  }
-  TrimWhitespaceASCII(identifier, TRIM_ALL, &identifier);
+      ui::KeyEvent release_event(ui::ET_KEY_RELEASED, code, 0, 0);
+      root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
 
-  const ui::KeyEvent& prototype_event =
-      ui::KeyEventFromKeyIdentifier(identifier);
-  uint16 character = 0;
-  if (prototype_event.key_code() == ui::VKEY_UNKNOWN) {
-    character = UnicodeIdentifierStringToInt(identifier);
-    if (!character) {
-      *error = kUnknownOrUnsupportedKeyIdentiferError;
-      return NULL;
+      return true;
     }
   }
 
-  int flags = 0;
-  if (prototype_event.key_code() != ui::VKEY_UNKNOWN)
-    flags = prototype_event.flags();
+  ui::InputMethod* input_method = root_window->GetProperty(
+      aura::client::kRootWindowInputMethodKey);
+  if (!input_method)
+    return false;
 
-  bool flag = false;
-  if (key_event->GetBoolean(kAlt, &flag) && flag)
-    flags |= ui::EF_ALT_DOWN;
-  if (key_event->GetBoolean(kCtrl, &flag) && flag)
-    flags |= ui::EF_CONTROL_DOWN;
-  if (key_event->GetBoolean(kShift, &flag) && flag)
-    flags |= ui::EF_SHIFT_DOWN;
-  if (key_event->GetBoolean(kMeta, &flag) && flag) {
-    // ui::KeyEvent does not have a Meta flag, so return an error for now.
-    *error = kUnsupportedModifierError;
-    return NULL;
-  }
+  ui::TextInputClient* tic = input_method->GetTextInputClient();
+  if (!tic || tic->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+    return false;
 
-  ui::KeyEvent* event = new ui::KeyEvent(
-      type, prototype_event.key_code(), flags, prototype_event.is_char());
-  if (character) {
-    event->set_character(character);
-    event->set_unmodified_character(character);
-  }
+  tic->InsertText(text);
 
-  return event;
+  return true;
 }
 
 }  // namespace keyboard
