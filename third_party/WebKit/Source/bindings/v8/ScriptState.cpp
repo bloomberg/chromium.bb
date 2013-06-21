@@ -47,7 +47,7 @@ ScriptState::ScriptState(v8::Handle<v8::Context> context)
     : m_context(context)
     , m_isolate(context->GetIsolate())
 {
-    m_context.getUnsafe().MakeWeak(this, &makeWeakCallback);
+    m_context.makeWeak(this, &makeWeakCallback);
 }
 
 ScriptState::~ScriptState()

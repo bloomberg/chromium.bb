@@ -64,10 +64,10 @@ public:
         return *handle;
     }
 
-    // FIXME: This function does an unsafe handle access. Remove it.
-    ALWAYS_INLINE v8::Persistent<T>&  getUnsafe()
+    template<typename P>
+    void makeWeak(P* parameters, void (*callback)(v8::Isolate*, v8::Persistent<T>*, P*))
     {
-        return m_handle;
+        m_handle.MakeWeak(parameters, callback);
     }
 
     bool isEmpty() const { return m_handle.IsEmpty(); }
@@ -97,6 +97,14 @@ public:
     }
 
 private:
+    // FIXME: This function does an unsafe handle access. Remove it.
+    friend class V8AbstractEventListener;
+    friend class V8PerIsolateData;
+    ALWAYS_INLINE v8::Persistent<T>& getUnsafe()
+    {
+        return m_handle;
+    }
+
     v8::Persistent<T> m_handle;
 };
 

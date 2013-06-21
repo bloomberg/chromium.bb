@@ -96,7 +96,7 @@ void V8AbstractEventListener::handleEvent(ScriptExecutionContext* context, Event
 void V8AbstractEventListener::setListenerObject(v8::Handle<v8::Object> listener)
 {
     m_listener.set(m_isolate, listener);
-    m_listener.getUnsafe().MakeWeak(this, &makeWeakCallback);
+    m_listener.makeWeak(this, &makeWeakCallback);
 }
 
 void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context, Event* event, v8::Local<v8::Value> jsEvent)
