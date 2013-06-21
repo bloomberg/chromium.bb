@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webclipboard_impl.h"
+#include "content/renderer/webclipboard_impl.h"
 
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/scoped_clipboard_writer_glue.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/escape.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
@@ -21,8 +21,8 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "webkit/common/webdropdata.h"
-#include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/renderer/clipboard_utils.h"
 
 using WebKit::WebClipboard;
 using WebKit::WebData;
@@ -32,34 +32,7 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
 
-namespace webkit_glue {
-
-// Static
-std::string WebClipboardImpl::URLToMarkup(const WebURL& url,
-    const WebString& title) {
-  std::string markup("<a href=\"");
-  markup.append(url.spec());
-  markup.append("\">");
-  // TODO(darin): HTML escape this
-  markup.append(net::EscapeForHTML(UTF16ToUTF8(title)));
-  markup.append("</a>");
-  return markup;
-}
-
-// Static
-std::string WebClipboardImpl::URLToImageMarkup(const WebURL& url,
-    const WebString& title) {
-  std::string markup("<img src=\"");
-  markup.append(url.spec());
-  markup.append("\"");
-  if (!title.isEmpty()) {
-    markup.append(" alt=\"");
-    markup.append(net::EscapeForHTML(UTF16ToUTF8(title)));
-    markup.append("\"");
-  }
-  markup.append("/>");
-  return markup;
-}
+namespace content {
 
 WebClipboardImpl::WebClipboardImpl(ClipboardClient* client)
     : client_(client) {
@@ -201,7 +174,8 @@ void WebClipboardImpl::writeURL(const WebURL& url, const WebString& title) {
   ScopedClipboardWriterGlue scw(client_);
 
   scw.WriteBookmark(title, url.spec());
-  scw.WriteHTML(UTF8ToUTF16(URLToMarkup(url, title)), std::string());
+  scw.WriteHTML(UTF8ToUTF16(webkit_clipboard::URLToMarkup(url, title)),
+                std::string());
   scw.WriteText(UTF8ToUTF16(std::string(url.spec())));
 }
 
@@ -225,7 +199,8 @@ void WebClipboardImpl::writeImage(
     // We also don't want to write HTML on a Mac, since Mail.app prefers to use
     // the image markup over attaching the actual image. See
     // http://crbug.com/33016 for details.
-    scw.WriteHTML(UTF8ToUTF16(URLToImageMarkup(url, title)), std::string());
+    scw.WriteHTML(UTF8ToUTF16(webkit_clipboard::URLToImageMarkup(url, title)),
+                  std::string());
 #endif
   }
 }
@@ -275,4 +250,5 @@ bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
   return true;
 }
 
-}  // namespace webkit_glue
+}  // namespace content
+

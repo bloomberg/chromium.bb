@@ -1,14 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/scoped_clipboard_writer_glue.h"
+#include "content/renderer/scoped_clipboard_writer_glue.h"
 #include "base/logging.h"
 
-namespace webkit_glue {
+namespace content {
 
-ScopedClipboardWriterGlue::ScopedClipboardWriterGlue(
-    webkit_glue::ClipboardClient* client)
+ScopedClipboardWriterGlue::ScopedClipboardWriterGlue(ClipboardClient* client)
     : ui::ScopedClipboardWriter(client->GetClipboard(),
                                 ui::Clipboard::BUFFER_STANDARD),
       context_(client->CreateWriteContext()) {
@@ -32,4 +31,5 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
   }
 }
 
-}  // namespace webkit_glue
+}  // namespace content
+

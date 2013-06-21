@@ -6,12 +6,12 @@
 #define CONTENT_RENDERER_RENDERER_CLIPBOARD_CLIENT_H_
 
 #include "base/compiler_specific.h"
-#include "webkit/glue/clipboard_client.h"
+#include "content/renderer/clipboard_client.h"
 
 namespace content {
 
 // An implementation of ClipboardClient that gets and sends data over IPC.
-class RendererClipboardClient : public webkit_glue::ClipboardClient {
+class RendererClipboardClient : public ClipboardClient {
  public:
   RendererClipboardClient();
   virtual ~RendererClipboardClient();

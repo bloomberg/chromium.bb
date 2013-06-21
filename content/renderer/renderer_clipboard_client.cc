@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file provides the embedder's side of random webkit glue functions.
+// This file provides the embedder's side of the Clipboard interface.
 
 #include "content/renderer/renderer_clipboard_client.h"
 
@@ -11,16 +11,15 @@
 #include "content/common/clipboard_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/scoped_clipboard_writer_glue.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/size.h"
-#include "webkit/glue/scoped_clipboard_writer_glue.h"
 
 namespace content {
 
 namespace {
 
-class RendererClipboardWriteContext :
-    public webkit_glue::ClipboardClient::WriteContext {
+class RendererClipboardWriteContext : public ClipboardClient::WriteContext {
  public:
   RendererClipboardWriteContext();
   virtual ~RendererClipboardWriteContext();
@@ -184,8 +183,7 @@ void RendererClipboardClient::ReadData(const ui::Clipboard::FormatType& format,
       new ClipboardHostMsg_ReadData(format, data));
 }
 
-webkit_glue::ClipboardClient::WriteContext*
-RendererClipboardClient::CreateWriteContext() {
+ClipboardClient::WriteContext* RendererClipboardClient::CreateWriteContext() {
   return new RendererClipboardWriteContext;
 }
 

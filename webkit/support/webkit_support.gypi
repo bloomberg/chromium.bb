@@ -35,6 +35,7 @@
         'glue',
         'glue_child',
         'glue_common',
+        'glue_renderer',
         'plugins',
         'webkit_common',
         'webkit_media',
@@ -115,6 +116,7 @@
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         'glue',
+        'glue_renderer',
         'webkit_support_gfx',
       ],
       'export_dependent_settings': [
@@ -133,7 +135,6 @@
         '<(DEPTH)/webkit/support/mock_webclipboard_impl.h',
         '<(DEPTH)/webkit/support/simple_appcache_system.cc',
         '<(DEPTH)/webkit/support/simple_appcache_system.h',
-        '<(DEPTH)/webkit/support/simple_clipboard_impl.cc',
         '<(DEPTH)/webkit/support/simple_dom_storage_system.cc',
         '<(DEPTH)/webkit/support/simple_dom_storage_system.h',
         '<(DEPTH)/webkit/support/simple_file_system.cc',

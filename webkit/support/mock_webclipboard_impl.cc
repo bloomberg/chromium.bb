@@ -15,8 +15,8 @@
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/renderer/clipboard_utils.h"
 #include "webkit/support/webkit_support_gfx.h"
 
 using WebKit::WebDragData;
@@ -155,8 +155,7 @@ void MockWebClipboardImpl::writeURL(
     const WebKit::WebURL& url, const WebKit::WebString& title) {
   clear();
 
-  m_htmlText = WebString::fromUTF8(
-      webkit_glue::WebClipboardImpl::URLToMarkup(url, title));
+  m_htmlText = WebString::fromUTF8(webkit_clipboard::URLToMarkup(url, title));
   m_plainText = url.spec().utf16();
 }
 
@@ -167,7 +166,7 @@ void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
 
     m_plainText = m_htmlText;
     m_htmlText = WebString::fromUTF8(
-        webkit_glue::WebClipboardImpl::URLToImageMarkup(url, title));
+        webkit_clipboard::URLToImageMarkup(url, title));
     m_image = image;
   }
 }

@@ -1,28 +1,22 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBCLIPBOARD_IMPL_H_
-#define WEBCLIPBOARD_IMPL_H_
+#ifndef CONTENT_RENDERER_WEBCLIPBOARD_IMPL_H_
+#define CONTENT_RENDERER_WEBCLIPBOARD_IMPL_H_
 
 #include "base/compiler_specific.h"
+
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "webkit/glue/webkit_glue_export.h"
 
 #include <string>
 
-namespace webkit_glue {
+namespace content {
 class ClipboardClient;
 
-class WEBKIT_GLUE_EXPORT WebClipboardImpl :
-    NON_EXPORTED_BASE(public WebKit::WebClipboard) {
+class WebClipboardImpl : public WebKit::WebClipboard {
  public:
-  static std::string URLToMarkup(const WebKit::WebURL& url,
-      const WebKit::WebString& title);
-  static std::string URLToImageMarkup(const WebKit::WebURL& url,
-      const WebKit::WebString& title);
-
   explicit WebClipboardImpl(ClipboardClient* client);
 
   virtual ~WebClipboardImpl();
@@ -62,6 +56,7 @@ class WEBKIT_GLUE_EXPORT WebClipboardImpl :
   ClipboardClient* client_;
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBCLIPBOARD_IMPL_H_
+#endif  // CONTENT_RENDERER_WEBCLIPBOARD_IMPL_H_
+

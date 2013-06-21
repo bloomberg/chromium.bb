@@ -35,7 +35,6 @@
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/common/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
-#include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"

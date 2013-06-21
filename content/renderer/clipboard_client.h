@@ -1,17 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_CLIPBOARD_CLIENT_H_
-#define WEBKIT_GLUE_CLIPBOARD_CLIENT_H_
+#ifndef CONTENT_RENDERER_CLIPBOARD_CLIENT_H_
+#define CONTENT_RENDERER_CLIPBOARD_CLIENT_H_
 
 #include "ui/base/clipboard/clipboard.h"
 
 class GURL;
 
-namespace webkit_glue {
+namespace content {
 
-// Interface for the webkit glue embedder to implement to support clipboard.
+// Interface for the content embedder to implement to support clipboard.
 class ClipboardClient {
  public:
   class WriteContext {
@@ -79,6 +79,7 @@ class ClipboardClient {
   virtual WriteContext* CreateWriteContext() = 0;
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_GLUE_CLIPBOARD_CLIENT_H_
+#endif  // CONTENT_RENDERER_CLIPBOARD_CLIENT_H_
+

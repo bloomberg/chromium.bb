@@ -36,7 +36,6 @@
 #include "ui/gfx/size.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/glue/clipboard_client.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 class GURL;
@@ -93,7 +92,6 @@ class WebURLResponse;
 }
 
 namespace webkit_glue {
-class ClipboardClient;
 class P2PTransport;
 class NetworkListObserver;
 }  // namespace webkit_glue

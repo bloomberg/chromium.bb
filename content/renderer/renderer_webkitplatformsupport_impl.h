@@ -19,10 +19,6 @@ namespace cc {
 class ContextProvider;
 }
 
-namespace webkit_glue {
-class WebClipboardImpl;
-}
-
 namespace WebKit {
 class WebGraphicsContext3DProvider;
 }
@@ -31,6 +27,7 @@ namespace content {
 class GamepadSharedMemoryReader;
 class RendererClipboardClient;
 class ThreadSafeSender;
+class WebClipboardImpl;
 class WebFileSystemImpl;
 class WebSharedWorkerRepositoryImpl;
 
@@ -146,7 +143,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   bool CheckPreparsedJsCachingEnabled() const;
 
   scoped_ptr<RendererClipboardClient> clipboard_client_;
-  scoped_ptr<webkit_glue::WebClipboardImpl> clipboard_;
+  scoped_ptr<WebClipboardImpl> clipboard_;
 
   class FileUtilities;
   scoped_ptr<FileUtilities> file_utilities_;

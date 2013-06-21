@@ -34,6 +34,7 @@
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
+#include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/websharedworkerrepository_impl.h"
 #include "googleurl/src/gurl.h"
 #include "gpu/config/gpu_info.h"
@@ -54,7 +55,6 @@
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
-#include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/media/audio_decoder.h"
@@ -191,7 +191,7 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
 
 RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     : clipboard_client_(new RendererClipboardClient),
-      clipboard_(new webkit_glue::WebClipboardImpl(clipboard_client_.get())),
+      clipboard_(new WebClipboardImpl(clipboard_client_.get())),
       mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
       hyphenator_(new RendererWebKitPlatformSupportImpl::Hyphenator),
       sudden_termination_disables_(0),
