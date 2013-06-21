@@ -97,7 +97,9 @@ if ($supplementalDependencyFile) {
         my ($idlFile, @followingIdlFiles) = split(/\s+/, $line);
         if ($idlFile and basename($idlFile) eq basename($targetIdlFile)) {
             $idlFound = 1;
-            @supplementedIdlFiles = @followingIdlFiles;
+            # We sort the supplemental IDL files so that the corresponding code is generated
+            # in a consistent order. This is important for the bindings tests.
+            @supplementedIdlFiles = sort @followingIdlFiles;
         }
     }
     close FH;
