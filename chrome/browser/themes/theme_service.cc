@@ -177,9 +177,9 @@ SkColor ThemeService::GetColor(int id) const {
     case Properties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
     case Properties::COLOR_MANAGED_USER_LABEL:
-      return color_utils::GetReadableColor(
-          SkColorSetRGB(231, 245, 255),
-          GetColor(Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND));
+      // TODO(akuegel): Use GetReadableColor() once we want to support other
+      // themes as well.
+      return SkColorSetRGB(231, 245, 255);
     case Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND:
       // TODO(akuegel): Replace this constant by a color calculated from the
       // frame color once the default managed user theme is finished and we
