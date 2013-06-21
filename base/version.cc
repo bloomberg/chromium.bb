@@ -50,8 +50,8 @@ bool ParseVersionNumbers(const std::string& version_str,
 }
 
 // Compares version components in |components1| with components in
-// |components2|. Returns -1, 0 or 1 if |components1| is greater than, equal to,
-// or less than |components2|, respectively.
+// |components2|. Returns -1, 0 or 1 if |components1| is less than, equal to,
+// or greater than |components2|, respectively.
 int CompareVersionComponents(const std::vector<uint16>& components1,
                              const std::vector<uint16>& components2) {
   const size_t count = std::min(components1.size(), components2.size());
