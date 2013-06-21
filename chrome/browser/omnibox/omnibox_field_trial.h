@@ -97,6 +97,22 @@ class OmniboxFieldTrial {
   // user clicks on the omnibox but has not typed anything yet.
   static bool InZeroSuggestFieldTrial();
 
+  // ---------------------------------------------------------
+  // For the ShortcutsScoring field trial.
+
+  // If the field trial is active and the user is in an experiment
+  // group, extract from the experiment group name the maximum
+  // relevance score ShortcutsProvider:: CalculateScore() can return.
+  // Returns true on a successful extraction.  If the extraction failed,
+  // if the field trial is not active, etc., returns false.
+  // CalculateScore()'s return value is a product of this maximum
+  // relevance score and some attenuating factors that are all between
+  // 0 and 1.  (Note that Shortcuts results may have their scores
+  // reduced later if the assigned score is higher than allowed for
+  // non-inlineable results.  Shortcuts results are not allowed to be
+  // inlined.)
+  static bool ShortcutsScoringMaxRelevance(int* max_relevance);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxFieldTrial);
 };

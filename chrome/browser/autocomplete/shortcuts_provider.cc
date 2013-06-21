@@ -25,6 +25,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -53,7 +54,8 @@ ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
     : AutocompleteProvider(listener, profile,
           AutocompleteProvider::TYPE_SHORTCUTS),
       languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
-      initialized_(false) {
+      initialized_(false),
+      max_relevance_(AutocompleteResult::kLowestDefaultScore - 1) {
   scoped_refptr<history::ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfile(profile_);
   if (backend.get()) {
@@ -61,6 +63,9 @@ ShortcutsProvider::ShortcutsProvider(AutocompleteProviderListener* listener,
     if (backend->initialized())
       initialized_ = true;
   }
+  int max_relevance;
+  if (OmniboxFieldTrial::ShortcutsScoringMaxRelevance(&max_relevance))
+    max_relevance_ = max_relevance;
 }
 
 void ShortcutsProvider::Start(const AutocompleteInput& input,
@@ -168,6 +173,16 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   if (matches_.size() > AutocompleteProvider::kMaxMatches) {
     matches_.erase(matches_.begin() + AutocompleteProvider::kMaxMatches,
                    matches_.end());
+  }
+  // Reset relevance scores to guarantee no results are given an
+  // inlineable score and all scores are decreasing (but not do assign
+  // any scores below 1).
+  int max_relevance = AutocompleteResult::kLowestDefaultScore - 1;
+  for (ACMatches::iterator it = matches_.begin(); it != matches_.end(); ++it) {
+    max_relevance = std::min(max_relevance, it->relevance);
+    it->relevance = max_relevance;
+    if (max_relevance > 1)
+      --max_relevance;
   }
 }
 
@@ -321,7 +336,6 @@ history::ShortcutsBackend::ShortcutMap::const_iterator
     backend->shortcuts_map().end();
 }
 
-// static
 int ShortcutsProvider::CalculateScore(
     const string16& terms,
     const history::ShortcutsBackend::Shortcut& shortcut) {
@@ -334,7 +348,7 @@ int ShortcutsProvider::CalculateScore(
   // directly. This makes sense since the first characters typed are much more
   // important for determining how likely it is a user wants a particular
   // shortcut than are the remaining continued characters.
-  double base_score = (AutocompleteResult::kLowestDefaultScore - 1) *
+  double base_score = max_relevance_ *
       sqrt(static_cast<double>(terms.length()) / shortcut.text.length());
 
   // Then we decay this by half each week.

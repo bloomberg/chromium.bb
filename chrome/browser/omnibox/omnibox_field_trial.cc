@@ -22,6 +22,7 @@ const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
+const char kShortcutsScoringFieldTrialName[] = "OmniboxShortcutsScoring";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -239,4 +240,21 @@ bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
       return true;
   }
   return false;
+}
+
+// If the active group name starts with "MaxRelevance_", extract the
+// int that immediately following that, returning true on success.
+bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(int* max_relevance) {
+  std::string group_name =
+      base::FieldTrialList::FindFullName(kShortcutsScoringFieldTrialName);
+  const char kMaxRelevanceGroupPrefix[] = "MaxRelevance_";
+  if (!StartsWithASCII(group_name, kMaxRelevanceGroupPrefix, true))
+    return false;
+  if (!base::StringToInt(base::StringPiece(
+          group_name.substr(strlen(kMaxRelevanceGroupPrefix))),
+                         max_relevance)) {
+    LOG(WARNING) << "Malformed MaxRelevance string: " << group_name;
+    return false;
+  }
+  return true;
 }

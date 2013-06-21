@@ -94,12 +94,19 @@ class ShortcutsProvider
       const string16& keyword,
       history::ShortcutsBackend* backend);
 
-  static int CalculateScore(
+  int CalculateScore(
       const string16& terms,
       const history::ShortcutsBackend::Shortcut& shortcut);
 
   std::string languages_;
   bool initialized_;
+
+  // The maximum relevance that can be assigned in CalculateScore().
+  // Note that if the final assigned relevance is at least
+  // AutocompleteResult::kLowestDefaultScore, the relevance will be
+  // demoted to less than that number because ShortcutsProvider isn't
+  // allowed to inline.
+  int max_relevance_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_PROVIDER_H_
