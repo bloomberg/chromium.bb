@@ -15,7 +15,6 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -27,8 +26,6 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state.h"
 #endif  // OS_CHROMEOS
-
-using content::BrowserThread;
 
 namespace google_apis {
 
@@ -65,6 +62,7 @@ class AuthRequest : public OAuth2AccessTokenConsumer {
   AuthStatusCallback callback_;
   std::vector<std::string> scopes_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthRequest);
 };
@@ -98,7 +96,7 @@ void AuthRequest::Start() {
 // used to start fetching user data.
 void AuthRequest::OnGetTokenSuccess(const std::string& access_token,
                                     const base::Time& expiration_time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
                             kSuccessRatioHistogramSuccess,
@@ -110,7 +108,7 @@ void AuthRequest::OnGetTokenSuccess(const std::string& access_token,
 
 // Callback for OAuth2AccessTokenFetcher on failure.
 void AuthRequest::OnGetTokenFailure(const GoogleServiceAuthError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   LOG(WARNING) << "AuthRequest: token request using refresh token failed: "
                << error.ToString();
@@ -164,14 +162,14 @@ AuthService::AuthService(
       url_request_context_getter_(url_request_context_getter),
       scopes_(scopes),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 AuthService::~AuthService() {
 }
 
 void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   scoped_refptr<base::MessageLoopProxy> relay_proxy(
       base::MessageLoopProxy::current());
 
@@ -220,7 +218,7 @@ void AuthService::ClearRefreshToken() {
 void AuthService::OnAuthCompleted(const AuthStatusCallback& callback,
                                   GDataErrorCode error,
                                   const std::string& access_token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
   if (error == HTTP_SUCCESS) {
