@@ -814,6 +814,7 @@
             # by file name rules).
             ['include', '^mac/objc_property_releaser_unittest\\.mm$'],
             ['include', '^mac/bind_objc_block_unittest\\.mm$'],
+            ['include', '^mac/scoped_nsobject_unittest\\.mm$'],
             ['include', '^sys_string_conversions_mac_unittest\\.mm$'],
           ],
         }],

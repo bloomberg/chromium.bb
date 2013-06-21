@@ -746,6 +746,7 @@
               ['include', '^mac/objc_property_releaser\\.'],
               ['include', '^mac/scoped_mach_port\\.'],
               ['include', '^mac/scoped_nsautorelease_pool\\.'],
+              ['include', '^mac/scoped_nsobject\\.'],
               ['include', '^memory/discardable_memory_mac\\.'],
               ['include', '^message_loop/message_pump_mac\\.'],
               ['include', '^threading/platform_thread_mac\\.'],
