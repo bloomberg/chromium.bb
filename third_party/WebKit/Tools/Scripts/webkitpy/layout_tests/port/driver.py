@@ -469,7 +469,11 @@ class Driver(object):
                 # FIXME: Unlike HTTP, DRT dumps the content right after printing a Content-Length header.
                 # Don't wait until we're done with headers, just read the binary blob right now.
                 if content_length_before_header_check != block._content_length:
-                    block.content = self._server_process.read_stdout(deadline, block._content_length)
+                    if block._content_length > 0:
+                        block.content = self._server_process.read_stdout(deadline, block._content_length)
+                    else:
+                        _log.error("Received content of type %s with Content-Length of 0!  This indicates a bug in %s.",
+                                   block.content_type, self._server_process.name())
 
             if err_line:
                 if self._check_for_driver_crash(err_line):
