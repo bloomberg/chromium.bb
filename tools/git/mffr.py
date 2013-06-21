@@ -17,6 +17,7 @@ REGEXP uses full Python regexp syntax. REPLACEMENT can use
 back-references.
 """
 
+import optparse
 import re
 import subprocess
 import sys
@@ -73,25 +74,57 @@ def MultiFileFindReplace(original, replacement, file_globs):
 
 
 def main():
-  file_globs = []
-  force_unsafe_run = False
-  args = sys.argv[1:]
-  while args and args[0].startswith('-'):
-    if args[0] == '-d':
-      file_globs = ['*.cc', '*.h', '*.m', '*.mm']
-      args = args[1:]
-    elif args[0] == '-g':
-      file_globs.append(args[1])
-      args = args[2:]
-    elif args[0] == '-f':
-      force_unsafe_run = True
-      args = args[1:]
-  if not file_globs:
-    file_globs = ['*.*']
-  if not args:
-    print globals()['__doc__']
+  parser = optparse.OptionParser(usage='''
+(1) %prog <options> REGEXP REPLACEMENT
+REGEXP uses full Python regexp syntax. REPLACEMENT can use back-references.
+
+(2) %prog <options> -i <file>
+<file> should contain a list (in Python syntax) of
+[REGEXP, REPLACEMENT, [GLOBS]] lists, e.g.:
+[
+  [r"(foo|bar)", r"\1baz", ["*.cc", "*.h"]],
+  ["54", "42"],
+]
+As shown above, [GLOBS] can be omitted for a given search-replace list, in which
+case the corresponding search-replace will use the globs specified on the
+command line.''')
+  parser.add_option('-d', action='store_true',
+                    dest='use_default_glob',
+                    help='Perform the change on C++ and Objective-C(++) source '
+                    'and header files.')
+  parser.add_option('-f', action='store_true',
+                    dest='force_unsafe_run',
+                    help='Perform the run even if there are uncommitted local '
+                    'changes.')
+  parser.add_option('-g', action='append',
+                    type='string',
+                    default=[],
+                    metavar="<glob>",
+                    dest='user_supplied_globs',
+                    help='Perform the change on the specified glob. Can be '
+                    'specified multiple times, in which case the globs are '
+                    'unioned.')
+  parser.add_option('-i', "--input_file",
+                    type='string',
+                    action='store',
+                    default='',
+                    metavar="<file>",
+                    dest='input_filename',
+                    help='Read arguments from <file> rather than the command '
+                    'line. NOTE: To be sure of regular expressions being '
+                    'interpreted correctly, use raw strings.')
+  opts, args = parser.parse_args()
+  if opts.use_default_glob and opts.user_supplied_globs:
+    print '"-d" and "-g" cannot be used together'
+    parser.print_help()
     return 1
-  if not force_unsafe_run:
+
+  from_file = opts.input_filename != ""
+  if (from_file and len(args) != 0) or (not from_file and len(args) != 2):
+    parser.print_help()
+    return 1
+
+  if not opts.force_unsafe_run:
     out, err = subprocess.Popen(['git', 'status', '--porcelain'],
                                 stdout=subprocess.PIPE,
                                 shell=_USE_SHELL).communicate()
@@ -103,12 +136,32 @@ def main():
       print ''
       print 'To override this safeguard, pass the -f flag.'
       return 1
-  original = args[0]
-  replacement = args[1]
-  print 'File globs:  %s' % file_globs
-  print 'Original:    %s' % original
-  print 'Replacement: %s' % replacement
-  MultiFileFindReplace(original, replacement, file_globs)
+
+  global_file_globs = ['*.*']
+  if opts.use_default_glob:
+    global_file_globs = ['*.cc', '*.h', '*.m', '*.mm']
+  elif opts.user_supplied_globs:
+    global_file_globs = opts.user_supplied_globs
+
+  # Construct list of search-replace tasks.
+  search_replace_tasks = []
+  if opts.input_filename == '':
+    original = args[0]
+    replacement = args[1]
+    search_replace_tasks.append([original, replacement, global_file_globs])
+  else:
+    f = open(opts.input_filename)
+    search_replace_tasks = eval("".join(f.readlines()))
+    for task in search_replace_tasks:
+      if len(task) == 2:
+        task.append(global_file_globs)
+    f.close()
+
+  for (original, replacement, file_globs) in search_replace_tasks:
+    print 'File globs:  %s' % file_globs
+    print 'Original:    %s' % original
+    print 'Replacement: %s' % replacement
+    MultiFileFindReplace(original, replacement, file_globs)
   return 0
 
 
