@@ -41,13 +41,15 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   virtual ~ChromeURLRequestContext();
 
   base::WeakPtr<ChromeURLRequestContext> GetWeakPtr() {
-    return base::AsWeakPtr(this);
+    return weak_factory_.GetWeakPtr();
   }
 
   // Copies the state from |other| into this context.
   void CopyFrom(ChromeURLRequestContext* other);
 
  private:
+  base::WeakPtrFactory<ChromeURLRequestContext> weak_factory_;
+
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to
   // be added to CopyFrom.

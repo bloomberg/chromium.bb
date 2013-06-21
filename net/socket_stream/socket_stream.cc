@@ -90,6 +90,7 @@ SocketStream::SocketStream(const GURL& url, Delegate* delegate)
     : delegate_(delegate),
       url_(url),
       max_pending_send_allowed_(kMaxPendingSendAllowed),
+      context_(NULL),
       next_state_(STATE_NONE),
       factory_(ClientSocketFactory::GetDefaultFactory()),
       proxy_mode_(kDirectConnection),
@@ -130,13 +131,9 @@ bool SocketStream::is_secure() const {
 }
 
 void SocketStream::set_context(URLRequestContext* context) {
-  const URLRequestContext* prev_context = context_.get();
+  const URLRequestContext* prev_context = context_;
 
-  if (context) {
-    context_ = context->AsWeakPtr();
-  } else {
-    context_.reset();
-  }
+  context_ = context;
 
   if (prev_context != context) {
     if (prev_context && pac_request_) {
@@ -158,7 +155,7 @@ void SocketStream::set_context(URLRequestContext* context) {
 }
 
 void SocketStream::CheckPrivacyMode() {
-  if (context_.get() && context_->network_delegate()) {
+  if (context_ && context_->network_delegate()) {
     bool enable = context_->network_delegate()->CanEnablePrivacyMode(url_,
                                                                      url_);
     privacy_mode_ = enable ? kPrivacyModeEnabled : kPrivacyModeDisabled;
@@ -173,7 +170,7 @@ void SocketStream::Connect() {
       << "The current base::MessageLoop must exist";
   DCHECK_EQ(base::MessageLoop::TYPE_IO, base::MessageLoop::current()->type())
       << "The current base::MessageLoop must be TYPE_IO";
-  if (context_.get()) {
+  if (context_) {
     context_->ssl_config_service()->GetSSLConfig(&server_ssl_config_);
     proxy_ssl_config_ = server_ssl_config_;
   }
@@ -451,7 +448,7 @@ void SocketStream::OnWriteCompleted(int result) {
 
 void SocketStream::DoLoop(int result) {
   // If context was not set, close immediately.
-  if (!context_.get())
+  if (!context_)
     next_state_ = STATE_CLOSE;
 
   if (next_state_ == STATE_NONE)
@@ -577,10 +574,8 @@ void SocketStream::DoLoop(int result) {
 
 int SocketStream::DoBeforeConnect() {
   next_state_ = STATE_BEFORE_CONNECT_COMPLETE;
-  if (!context_.get() || !context_->network_delegate()) {
-    // TODO(yhirano): This should not be OK.
+  if (!context_ || !context_->network_delegate())
     return OK;
-  }
 
   int result = context_->network_delegate()->NotifyBeforeSocketStreamConnect(
       this, io_callback_);
@@ -1294,7 +1289,7 @@ int SocketStream::HandleCertificateError(int result) {
   SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(socket_.get());
   DCHECK(ssl_socket);
 
-  if (!context_.get())
+  if (!context_)
     return result;
 
   if (SSLClientSocket::IgnoreCertError(result, LOAD_IGNORE_ALL_CERT_ERRORS)) {
