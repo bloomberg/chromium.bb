@@ -35,6 +35,8 @@ base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
   return copy;
 #elif defined(OS_WIN)
   return event;
+#elif defined(USE_OZONE)
+  return event;
 #else
   NOTREACHED() <<
       "Don't know how to copy base::NativeEvent for this platform";
