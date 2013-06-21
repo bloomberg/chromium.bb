@@ -356,6 +356,7 @@ void HardwareStateBuffer::PushState(const HardwareState& state) {
 
 ScrollManager::ScrollManager(PropRegistry* prop_reg)
     : prev_result_high_pressure_change_(false),
+      did_generate_scroll_(false),
       max_pressure_change_(prop_reg, "Max Allowed Pressure Change Per Sec",
                            800.0),
       max_pressure_change_hysteresis_(prop_reg,
@@ -498,12 +499,15 @@ bool ScrollManager::ComputeScroll(
     // Also, only use previous gesture if it's in the same direction.
     if (prev_result.type == kGestureTypeScroll &&
         prev_result.details.scroll.dy * dy >= 0 &&
-        prev_result.details.scroll.dx * dx >= 0)
+        prev_result.details.scroll.dx * dx >= 0) {
+      did_generate_scroll_ = true;
       *result = prev_result;
+    }
     return false;
   }
 
   if (max_mag_sq > 0) {
+    did_generate_scroll_ = true;
     *result = Gesture(kGestureScroll,
                       state_buffer.Get(1)->timestamp,
                       state_buffer.Get(0)->timestamp,
@@ -606,6 +610,8 @@ void ScrollManager::RegressScrollVelocity(
 void ScrollManager::ComputeFling(const HardwareStateBuffer& state_buffer,
                                  const ScrollEventBuffer& scroll_buffer,
                                  Gesture* result) const {
+  if (!did_generate_scroll_)
+    return;
   ScrollEvent out = { 0.0, 0.0, 0.0 };
   ScrollEvent zero = { 0.0, 0.0, 0.0 };
   size_t count = 0;

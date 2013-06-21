@@ -179,6 +179,10 @@ class ScrollManager {
   bool prev_result_high_pressure_change_;
 
  private:
+  // Set to true when generating a non-zero scroll gesture. Reset to false
+  // when a fling is generated.
+  bool did_generate_scroll_;
+
   // Returns the number of most recent event events in the scroll_buffer_ that
   // should be considered for fling. If it returns 0, there should be no fling.
   size_t ScrollEventsForFlingCount(const ScrollEventBuffer& scroll_buffer)
