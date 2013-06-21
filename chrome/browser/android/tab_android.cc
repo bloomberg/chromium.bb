@@ -65,8 +65,7 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
       contents,
       autofill::TabAutofillManagerDelegate::FromWebContents(contents),
       g_browser_process->GetApplicationLocale(),
-      autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
-      true);
+      autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   BlockedContentTabHelper::CreateForWebContents(contents);
   BookmarkTabHelper::CreateForWebContents(contents);
   CoreTabHelper::CreateForWebContents(contents);

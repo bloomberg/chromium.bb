@@ -38,8 +38,7 @@ class AutofillDriverImpl : public AutofillDriver,
       content::WebContents* contents,
       autofill::AutofillManagerDelegate* delegate,
       const std::string& app_locale,
-      AutofillManager::AutofillDownloadManagerState enable_download_manager,
-      bool enable_native_ui);
+      AutofillManager::AutofillDownloadManagerState enable_download_manager);
   static AutofillDriverImpl* FromWebContents(content::WebContents* contents);
 
   // AutofillDriver:
@@ -61,8 +60,7 @@ class AutofillDriverImpl : public AutofillDriver,
       content::WebContents* web_contents,
       autofill::AutofillManagerDelegate* delegate,
       const std::string& app_locale,
-      AutofillManager::AutofillDownloadManagerState enable_download_manager,
-      bool enable_native_ui);
+      AutofillManager::AutofillDownloadManagerState enable_download_manager);
   virtual ~AutofillDriverImpl();
 
   // content::WebContentsObserver:

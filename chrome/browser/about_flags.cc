@@ -1257,13 +1257,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kPerformanceMonitorGathering)
   },
   {
-    "disable-native-autofill-ui",
-    IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_NAME,
-    IDS_FLAGS_DISABLE_NATIVE_AUTOFILL_UI_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableNativeAutofillUi)
-  },
-  {
     "enable-experimental-form-filling",
     IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_NAME,
     IDS_FLAGS_ENABLE_EXPERIMENTAL_FORM_FILLING_DESCRIPTION,

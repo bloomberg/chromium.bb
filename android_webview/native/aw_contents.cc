@@ -205,8 +205,7 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
       AwBrowserContext::FromWebContents(web_contents)->
           CreateAutofillManagerDelegate(enabled),
       l10n_util::GetDefaultLocale(),
-      AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
-      true);
+      AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }
 
 AwContents::~AwContents() {

@@ -27,8 +27,7 @@ void AutofillDriverImpl::CreateForWebContentsAndDelegate(
     content::WebContents* contents,
     autofill::AutofillManagerDelegate* delegate,
     const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager,
-    bool enable_native_ui) {
+    AutofillManager::AutofillDownloadManagerState enable_download_manager) {
   if (FromWebContents(contents))
     return;
 
@@ -36,8 +35,7 @@ void AutofillDriverImpl::CreateForWebContentsAndDelegate(
                         new AutofillDriverImpl(contents,
                                                delegate,
                                                app_locale,
-                                               enable_download_manager,
-                                               enable_native_ui));
+                                               enable_download_manager));
   // Trigger the lazy creation of AutocheckoutWhitelistManagerService, and
   // schedule a fetch of the Autocheckout whitelist file if it's not already
   // loaded. This helps ensure that the whitelist will be available by the time
@@ -56,14 +54,11 @@ AutofillDriverImpl::AutofillDriverImpl(
     content::WebContents* web_contents,
     autofill::AutofillManagerDelegate* delegate,
     const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager,
-    bool enable_native_ui)
+    AutofillManager::AutofillDownloadManagerState enable_download_manager)
     : content::WebContentsObserver(web_contents),
       autofill_manager_(this, delegate, app_locale, enable_download_manager) {
-  if (enable_native_ui) {
-    SetAutofillExternalDelegate(scoped_ptr<AutofillExternalDelegate>(
-        new AutofillExternalDelegate(web_contents, &autofill_manager_)));
-  }
+  SetAutofillExternalDelegate(scoped_ptr<AutofillExternalDelegate>(
+      new AutofillExternalDelegate(web_contents, &autofill_manager_)));
 }
 
 AutofillDriverImpl::~AutofillDriverImpl() {}

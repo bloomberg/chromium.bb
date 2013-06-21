@@ -161,8 +161,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
         web_contents(),
         manager_delegate_.get(),
         "en-US",
-        AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER,
-        false);
+        AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
     AutofillDriverImpl* driver =
         AutofillDriverImpl::FromWebContents(web_contents());
     external_delegate_.reset(
