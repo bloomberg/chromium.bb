@@ -3147,6 +3147,14 @@ other types of suffix sets.
   <summary>Events in Google Now component extension.</summary>
 </histogram>
 
+<histogram name="History.TopSitesVisitsByRank" units="rank">
+  <summary>
+    Page visits to each of a user's top 50 sites. Visits to all other sites go
+    into the 51st bucket. Only count the page visit if it came from user
+    browsing and only count it once when cycling through a redirect chain.
+  </summary>
+</histogram>
+
 <histogram name="HistoryPage.OtherSessionsMenu" enum="NtpOtherSessionsType">
   <summary>
     Histogram for usage of the section in the history page that allows the user

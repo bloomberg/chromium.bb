@@ -103,6 +103,11 @@ static const int kMaxRedirectCount = 32;
 // and is archived.
 static const int kArchiveDaysThreshold = 90;
 
+#if defined(OS_ANDROID)
+// The maximum number of top sites to track when recording top page visit stats.
+static const size_t kPageVisitStatsMaxTopSites = 50;
+#endif
+
 // Converts from PageUsageData to MostVisitedURL. |redirects| is a
 // list of redirects for this URL. Empty list means no redirects.
 MostVisitedURL MakeMostVisitedURL(const PageUsageData& page_data,
@@ -256,6 +261,9 @@ void HistoryBackend::Init(const std::string& languages, bool force_fail) {
     InitImpl(languages);
   delegate_->DBLoaded(id_);
   typed_url_syncable_service_.reset(new TypedUrlSyncableService(this));
+#if defined(OS_ANDROID)
+  PopulateMostVisitedURLMap();
+#endif
 }
 
 void HistoryBackend::SetOnBackendDestroyTask(base::MessageLoop* message_loop,
@@ -799,6 +807,15 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
       !content::PageTransitionIsRedirect(transition)) ||
       transition_type == content::PAGE_TRANSITION_KEYWORD_GENERATED)
     typed_increment = 1;
+
+#if defined(OS_ANDROID)
+  // Only count the page visit if it came from user browsing and only count it
+  // once when cycling through a redirect chain.
+  if (visit_source == SOURCE_BROWSED &&
+      (transition & content::PAGE_TRANSITION_CHAIN_END) != 0) {
+    RecordTopPageVisitStats(url);
+  }
+#endif
 
   // See if this URL is already in the DB.
   URLRow url_info(url);
@@ -3073,5 +3090,29 @@ void HistoryBackend::NotifyVisitObservers(const VisitRow& visit) {
   if (delegate_)
     delegate_->NotifyVisitDBObserversOnAddVisit(info);
 }
+
+#if defined(OS_ANDROID)
+void HistoryBackend::PopulateMostVisitedURLMap() {
+  MostVisitedURLList most_visited_urls;
+  QueryMostVisitedURLsImpl(kPageVisitStatsMaxTopSites, kSegmentDataRetention,
+                           &most_visited_urls);
+
+  DCHECK_LE(most_visited_urls.size(), kPageVisitStatsMaxTopSites);
+  for (size_t i = 0; i < most_visited_urls.size(); ++i) {
+    most_visited_urls_map_[most_visited_urls[i].url] = i;
+    for (size_t j = 0; j < most_visited_urls[i].redirects.size(); ++j)
+      most_visited_urls_map_[most_visited_urls[i].redirects[j]] = i;
+  }
+}
+
+void HistoryBackend::RecordTopPageVisitStats(const GURL& url) {
+  int rank = kPageVisitStatsMaxTopSites;
+  std::map<GURL, int>::const_iterator it = most_visited_urls_map_.find(url);
+  if (it != most_visited_urls_map_.end())
+    rank = (*it).second;
+  UMA_HISTOGRAM_ENUMERATION("History.TopSitesVisitsByRank",
+                            rank, kPageVisitStatsMaxTopSites + 1);
+}
+#endif
 
 }  // namespace history

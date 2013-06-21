@@ -608,8 +608,6 @@ struct Images {
   // scoped_refptr<base::RefCountedBytes> favicon;
 };
 
-typedef std::vector<MostVisitedURL> MostVisitedURLList;
-
 struct MostVisitedURLWithRank {
   MostVisitedURL url;
   int rank;
