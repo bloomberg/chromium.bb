@@ -1115,9 +1115,7 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
     if (index == kNoTab)
       continue;
 
-    CoreTabHelper* core_tab_helper =
-        CoreTabHelper::FromWebContents(closing_contents);
-    core_tab_helper->OnCloseStarted();
+    closing_contents->OnCloseStarted();
 
     // Update the explicitly closed state. If the unload handlers cancel the
     // close the state is reset in Browser. We don't update the explicitly

@@ -7,9 +7,7 @@
 
 #include <set>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -24,33 +22,7 @@ class WebContents;
 }
 
 namespace chrome {
-// UnloadController manages closing tabs and windows -- especially in
-// regards to beforeunload handlers (have proceed/cancel dialogs) and
-// unload handlers (have no user interaction).
-//
-// Typical flow of closing a tab:
-//  1. Browser calls CanCloseContents().
-//     If true, browser calls contents::CloseWebContents().
-//  2. WebContents notifies us via its delegate and BeforeUnloadFired()
-//     that the beforeunload handler was run. If the user allowed the
-//     close to continue, we detached the tab and hold onto it while the
-//     close finishes.
-//
-// Typical flow of closing a window:
-//  1. BrowserView::CanClose() calls TabsNeedBeforeUnloadFired().
-//     If beforeunload/unload handlers need to run, UnloadController returns
-//     true and calls ProcessPendingTabs() (private method).
-//  2. For each tab with a beforeunload/unload handler, ProcessPendingTabs()
-//        calls |CoreTabHelper::OnCloseStarted()|
-//        and   |web_contents->GetRenderViewHost()->FirePageBeforeUnload()|.
-//  3. If the user allowed the close to continue, we detach all the tabs with
-//     unload handlers, remove them from the tab strip, and finish closing
-//     the tabs in the background.
-//  4. The browser gets notified that the tab strip is empty and calls
-//     CloseFrame where the empty tab strip causes the window to hide.
-//     Once the detached tabs finish, the browser calls CloseFrame again and
-//     the window is finally closed.
-//
+
 class UnloadController : public content::NotificationObserver,
                          public TabStripModelObserver {
  public:
@@ -77,7 +49,7 @@ class UnloadController : public content::NotificationObserver,
   }
 
   // Called in response to a request to close |browser_|'s window. Returns true
-  // when there are no remaining beforeunload handlers to be run.
+  // when there are no remaining unload handlers to be run.
   bool ShouldCloseWindow();
 
   // Returns true if |browser_| has any tabs that have BeforeUnload handlers
@@ -89,10 +61,9 @@ class UnloadController : public content::NotificationObserver,
   //             could be pursued.
   bool TabsNeedBeforeUnloadFired();
 
-  // Returns true if all tabs' beforeunload/unload events have fired.
-  bool HasCompletedUnloadProcessing() const;
-
  private:
+  typedef std::set<content::WebContents*> UnloadListenerSet;
+
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -113,62 +84,49 @@ class UnloadController : public content::NotificationObserver,
   void TabAttachedImpl(content::WebContents* contents);
   void TabDetachedImpl(content::WebContents* contents);
 
-  // Detach |contents| and wait for it to finish closing.
-  // The close must be inititiated outside of this method.
-  // Returns true if it succeeds.
-  bool DetachWebContents(content::WebContents* contents);
-
   // Processes the next tab that needs it's beforeunload/unload event fired.
   void ProcessPendingTabs();
+
+  // Whether we've completed firing all the tabs' beforeunload/unload events.
+  bool HasCompletedUnloadProcessing() const;
 
   // Clears all the state associated with processing tabs' beforeunload/unload
   // events since the user cancelled closing the window.
   void CancelWindowClose();
 
-  // Cleans up state appropriately when we are trying to close the
-  // browser or close a tab in the background. We also use this in the
-  // cases where a tab crashes or hangs even if the
-  // beforeunload/unload haven't successfully fired.
-  void ClearUnloadState(content::WebContents* contents);
+  // Removes |web_contents| from the passed |set|.
+  // Returns whether the tab was in the set in the first place.
+  bool RemoveFromSet(UnloadListenerSet* set,
+                     content::WebContents* web_contents);
 
-  // Helper for |ClearUnloadState| to unwind stack before proceeding.
-  void PostTaskForProcessPendingTabs();
-
-  // Log a step of the unload processing.
-  void LogUnloadStep(const base::StringPiece& step_name,
-                     content::WebContents* contents) const;
+  // Cleans up state appropriately when we are trying to close the browser and
+  // the tab has finished firing its unload handler. We also use this in the
+  // cases where a tab crashes or hangs even if the beforeunload/unload haven't
+  // successfully fired. If |process_now| is true |ProcessPendingTabs| is
+  // invoked immediately, otherwise it is invoked after a delay (PostTask).
+  //
+  // Typically you'll want to pass in true for |process_now|. Passing in true
+  // may result in deleting |tab|. If you know that shouldn't happen (because of
+  // the state of the stack), pass in false.
+  void ClearUnloadState(content::WebContents* web_contents, bool process_now);
 
   Browser* browser_;
 
   content::NotificationRegistrar registrar_;
 
-  typedef std::set<content::WebContents*> WebContentsSet;
+  // Tracks tabs that need there beforeunload event fired before we can
+  // close the browser. Only gets populated when we try to close the browser.
+  UnloadListenerSet tabs_needing_before_unload_fired_;
 
-  // Tracks tabs that need their beforeunload event started.
-  // Only gets populated when we try to close the browser.
-  WebContentsSet tabs_needing_before_unload_;
-
-  // Tracks the tab that needs its beforeunload event result.
-  // Only gets populated when we try to close the browser.
-  content::WebContents* tab_needing_before_unload_ack_;
-
-  // Tracks tabs that need their unload event started.
-  // Only gets populated when we try to close the browser.
-  WebContentsSet tabs_needing_unload_;
-
-  // Tracks tabs that need to finish running their unload event.
-  // Populated both when closing individual tabs and when closing the browser.
-  WebContentsSet tabs_needing_unload_ack_;
+  // Tracks tabs that need there unload event fired before we can
+  // close the browser. Only gets populated when we try to close the browser.
+  UnloadListenerSet tabs_needing_unload_fired_;
 
   // Whether we are processing the beforeunload and unload events of each tab
   // in preparation for closing the browser. UnloadController owns this state
   // rather than Browser because unload handlers are the only reason that a
   // Browser window isn't just immediately closed.
   bool is_attempting_to_close_browser_;
-
-  // Manage tabs with beforeunload/unload handlers that close detached.
-  class DetachedWebContentsDelegate;
-  scoped_ptr<DetachedWebContentsDelegate> detached_delegate_;
 
   base::WeakPtrFactory<UnloadController> weak_factory_;
 
