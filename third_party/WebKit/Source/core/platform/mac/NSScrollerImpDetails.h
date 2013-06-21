@@ -27,6 +27,7 @@
 #define WebCore_NSScrollerImpDetails_h
 
 #include "config.h"
+#import <AvailabilityMacros.h>
 
 // Public APIs not available on versions of Mac on which we build
 #if __MAC_OS_X_VERSION_MAX_ALLOWED == 1060

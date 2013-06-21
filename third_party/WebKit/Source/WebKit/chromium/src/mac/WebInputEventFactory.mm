@@ -28,6 +28,7 @@
 #include "WebInputEventFactory.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#import <AvailabilityMacros.h>
 #import <Cocoa/Cocoa.h>
 
 #include "WebInputEvent.h"

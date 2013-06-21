@@ -46,6 +46,7 @@
 #endif
 
 #if USE(CF)
+#include <AvailabilityMacros.h>
 #include <CoreFoundation/CFString.h>
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
 #define WTF_USE_APPLE_SYSTEM_LOG 1

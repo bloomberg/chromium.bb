@@ -57,8 +57,6 @@
 /* OS(DARWIN) - Any Darwin-based OS, including Mac OS X and iPhone OS */
 #ifdef __APPLE__
 #define WTF_OS_DARWIN 1
-
-#include <AvailabilityMacros.h>
 #endif
 
 /* OS(FREEBSD) - FreeBSD */

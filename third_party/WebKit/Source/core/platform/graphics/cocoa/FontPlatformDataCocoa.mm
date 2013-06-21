@@ -25,6 +25,7 @@
 #import "core/platform/graphics/FontPlatformData.h"
 
 #import <AppKit/NSFont.h>
+#import <AvailabilityMacros.h>
 #import <wtf/text/WTFString.h>
 
 #if OS(DARWIN)

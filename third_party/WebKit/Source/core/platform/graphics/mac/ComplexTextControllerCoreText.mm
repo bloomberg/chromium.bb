@@ -31,6 +31,7 @@
 #include "core/platform/graphics/TextRun.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#import <AvailabilityMacros.h>
 
 // Forward declare Mac SPIs.
 extern "C" {

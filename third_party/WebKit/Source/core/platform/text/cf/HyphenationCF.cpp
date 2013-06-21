@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "core/platform/text/Hyphenation.h"
+#include <AvailabilityMacros.h>
 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 

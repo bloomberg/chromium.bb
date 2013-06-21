@@ -58,6 +58,7 @@
 #import "core/rendering/RenderSlider.h"
 #import "core/rendering/RenderView.h"
 
+#import <AvailabilityMacros.h>
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #import <math.h>

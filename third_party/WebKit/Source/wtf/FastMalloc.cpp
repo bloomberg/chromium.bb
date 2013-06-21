@@ -82,6 +82,10 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
 
+#if OS(DARWIN)
+#include <AvailabilityMacros.h>
+#endif
+
 #include <limits>
 #if OS(WINDOWS)
 #include <windows.h>

@@ -25,6 +25,8 @@
 
 #if defined(__OBJC__)
 
+#import <AvailabilityMacros.h>
+
 #define EMPTY_PROTOCOL(NAME) \
 @protocol NAME <NSObject> \
 @end
