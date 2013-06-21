@@ -135,7 +135,7 @@ void TrendClassifyingFilterInterpreter::UpdateFingerState(
        removed.begin(); it != removed.end(); ++it) {
     it->second->DeleteAll();
     history_mm_.Free(it->second);
-}
+  }
 
   FingerState *fs = hwstate.fingers;
   for (short i = 0; i < hwstate.finger_cnt; i++) {
