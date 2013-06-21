@@ -9,7 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"

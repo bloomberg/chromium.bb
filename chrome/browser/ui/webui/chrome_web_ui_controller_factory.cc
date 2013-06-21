@@ -107,7 +107,7 @@
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #endif
 
 #if defined(OS_WIN)

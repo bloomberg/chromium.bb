@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SYNC_PROMO_SYNC_PROMO_TRIAL_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
 
 class Profile;
 namespace content {

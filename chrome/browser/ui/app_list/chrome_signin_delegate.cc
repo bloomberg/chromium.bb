@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/chromium_strings.h"

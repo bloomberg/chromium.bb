@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/content_settings_types.h"
 
 class Browser;

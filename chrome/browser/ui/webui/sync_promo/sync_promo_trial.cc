@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
