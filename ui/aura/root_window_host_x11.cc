@@ -413,6 +413,9 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
                   32,
                   PropModeReplace,
                   reinterpret_cast<unsigned char*>(&pid), 1);
+
+  XRRSelectInput(xdisplay_, x_root_window_,
+                 RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
   Env::GetInstance()->AddObserver(this);
 }
 
