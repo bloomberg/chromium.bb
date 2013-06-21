@@ -61,6 +61,18 @@
     text-decoration: underline;
   }
 
+  .test-image {
+    float: right;
+    height: 140px;
+    padding-left: 30px;
+    padding-right: 30px;
+    width: 140px;
+  }
+
+  html[dir='rtl'] .test-image {
+    float: left;
+  }
+
   .title {
     color: #660000;
     font-size: 18pt;
@@ -73,7 +85,7 @@
     display: inline;
   }
   </style>
-
+  <script src="../../../../ui/webui/resources/js/assert.js"></script>
   <script>
     // Should match SSLBlockingPageCommands in ssl_blocking_page.cc.
     var CMD_DONT_PROCEED = 0;
@@ -84,6 +96,7 @@
     var showedMore = false;
     var keyPressState = 0;
     var gainFocus = false;
+    var setupExperiment = false;
 
     function $(o) {
       return document.getElementById(o);
@@ -160,8 +173,21 @@
       });
     }
 
+    function setupIconExperiments() {
+      if (templateData.trialType == '') return;
+      assert(!setupExperiment);
+      setupExperiment = true;
+      var condition = templateData.trialType.split('SSL')[1].toLowerCase();
+      if (/policeman|stoplight|badguy/.test(condition)) {
+        $('trial-' + condition).hidden = false;
+        $('more-info-short').style.webkitMarginEnd = '30px';
+        $('more-info-long').style.webkitMarginEnd = '30px';
+      }
+    }
+
     window.addEventListener('focus', handleFocusEvent);
     document.addEventListener('DOMContentLoaded', setupEvents);
+    document.addEventListener('DOMContentLoaded', setupIconExperiments);
   </script>
 </head>
 <body>
@@ -170,6 +196,18 @@
       <img src="roadblock_icon.png" alt="SSL Error Icon" id="roadblock-icon">
     </div>
     <div class="title" i18n-content="headLine"></div>
+
+    <!-- RHS images for the field trial. -->
+    <div id="trial-badguy" class="test-image" hidden>
+      <img src="badguy.png" alt="Bad guy">
+    </div>
+    <div id="trial-policeman" class="test-image" hidden>
+      <img src="policeman.png" alt="Policeman">
+    </div>
+    <div id="trial-stoplight" class="test-image" hidden>
+      <img src="stoplight.png" alt="Stoplight">
+    </div>
+
     <div class="main" i18n-values=".innerHTML:description;dir:textdirection"></div>
     <div class="main" i18n-values=".innerHTML:reasonForNotProceeding"></div>
     <div class="main">

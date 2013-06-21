@@ -158,6 +158,9 @@ const char kCondition15Control[] = "Condition15SSLControl";
 const char kCondition16Firefox[] = "Condition16SSLFirefox";
 const char kCondition17FancyFirefox[] = "Condition17SSLFancyFirefox";
 const char kCondition18NoImages[] = "Condition18SSLNoImages";
+const char kCondition19Policeman[] = "Condition19SSLPoliceman";
+const char kCondition20Stoplight[] = "Condition20SSLStoplight";
+const char kCondition21Badguy[] = "Condition21SSLBadguy";
 
 }  // namespace
 
