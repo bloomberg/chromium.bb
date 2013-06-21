@@ -486,6 +486,11 @@ class RichMessageListView : public MessageListView,
   virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) OVERRIDE;
 
  private:
+  // Returns the actual index for child of |index|.
+  // RichMessageListView allows to slide down upper notifications, which means
+  // that the upper ones should come above the lower ones. To achieve this,
+  // inversed order is adopted. The top most notification is the last child,
+  // and the bottom most notification is the first child.
   int GetActualIndex(int index);
   bool IsValidChild(views::View* child);
   void DoUpdateIfPossible();
@@ -548,7 +553,7 @@ void RichMessageListView::Layout() {
   int between_items =
       kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
 
-  for (int i = 0; i < child_count(); ++i) {
+  for (int i = child_count() - 1; i >= 0; --i) {
     views::View* child = child_at(i);
     if (!child->visible())
       continue;
@@ -559,7 +564,9 @@ void RichMessageListView::Layout() {
 }
 
 void RichMessageListView::AddNotificationAt(views::View* view, int i) {
-  AddChildViewAt(view, GetActualIndex(i));
+  // Increment by 1 because the default behavior of AddChildViewAt() is to
+  // insert before the specified index.
+  AddChildViewAt(view, GetActualIndex(i) + 1);
   if (GetContentsBounds().IsEmpty())
     return;
 
@@ -584,7 +591,8 @@ void RichMessageListView::RemoveNotificationAt(int i) {
 }
 
 void RichMessageListView::UpdateNotificationAt(views::View* view, int i) {
-  views::View* child = child_at(GetActualIndex(i));
+  int actual_index = GetActualIndex(i);
+  views::View* child = child_at(actual_index);
   if (animator_.get())
     animator_->StopAnimatingView(child);
   gfx::Rect old_bounds = child->bounds();
@@ -593,7 +601,7 @@ void RichMessageListView::UpdateNotificationAt(views::View* view, int i) {
   if (deleted_when_done_.find(child) != deleted_when_done_.end())
     deleted_when_done_.erase(child);
   delete child;
-  AddChildViewAt(view, i);
+  AddChildViewAt(view, actual_index);
   view->SetBounds(old_bounds.x(), old_bounds.y(), old_bounds.width(),
                   view->GetHeightForWidth(old_bounds.width()));
   DoUpdateIfPossible();
@@ -697,9 +705,19 @@ void RichMessageListView::OnBoundsAnimatorDone(
 }
 
 int RichMessageListView::GetActualIndex(int index) {
-  for (int i = 0; i < child_count() && i <= index; ++i)
-    index += IsValidChild(child_at(i)) ? 0 : 1;
-  return std::min(index, child_count());
+  // As is written in the comment in the declaration, this method
+  // returns actual index for the |index|-th valid child from the end.
+  int actual_index = child_count() - 1;
+  // Skips the invalid children at last.
+  for (; actual_index > 0; --actual_index) {
+    if (IsValidChild(child_at(actual_index)))
+      break;
+  }
+  // Find the |index|-th valid child from the end.
+  for (; actual_index >= 0 && index > 0; --actual_index) {
+    index -= IsValidChild(child_at(actual_index)) ? 1 : 0;
+  }
+  return actual_index;
 }
 
 bool RichMessageListView::IsValidChild(views::View* child) {
@@ -728,40 +746,24 @@ void RichMessageListView::DoUpdateIfPossible() {
     return;
   }
 
-  int between_items =
-      kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
-  int width = child_area.width();
-  views::View* last_child = NULL;
-  for (int i = child_count() - 1; i >= 0; --i) {
+  int first_index = -1;
+  for (int i = 0; i < child_count(); ++i) {
     views::View* child = child_at(i);
-    if (IsValidChild(child)) {
-      last_child = child;
+    if (!IsValidChild(child)) {
+      AnimateChild(child, child->y(), child->height());
+    } else if (child->y() < reposition_top_) {
+      first_index = i;
       break;
     }
   }
-
-  if (!last_child || reposition_top_ < last_child->bounds().y()) {
-    const int initial_top = std::max(reposition_top_, child_area.y());
-    int top = initial_top;
-    for (int i = 0; i < child_count(); ++i) {
+  if (first_index > 0) {
+    int bottom = reposition_top_ + child_at(first_index)->height();
+    int between_items =
+        kMarginBetweenItems - MessageView::GetShadowInsets().bottom();
+    for (int i = first_index; i < child_count(); ++i) {
       views::View* child = child_at(i);
-      if (adding_views_.find(child) == adding_views_.end() &&
-          child->bounds().y() < initial_top) {
-        continue;
-      }
-      int height = child->GetHeightForWidth(width);
-      AnimateChild(child, top, height);
-      if (IsValidChild(child))
-        top += height + between_items;
-    }
-  } else {
-    int bottom = reposition_top_ + last_child->GetHeightForWidth(width);
-    for (int i = child_count() - 1; i >= 0; --i) {
-      views::View* child = child_at(i);
-      int height = child->GetHeightForWidth(child_area.width());
-      AnimateChild(child, bottom - height, height);
-      if (IsValidChild(child))
-        bottom -= height + between_items;
+      AnimateChild(child, bottom - child->height(), child->height());
+      bottom -= child->height() + between_items;
     }
   }
   adding_views_.clear();
