@@ -65,6 +65,7 @@
             'Int32Array.h',
             'Int8Array.h',
             'IntegralTypedArrayBase.h',
+            'LinkedStack.h',
             'ListHashSet.h',
             'Locker.h',
             'MD5.cpp',
