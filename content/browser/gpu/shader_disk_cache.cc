@@ -103,7 +103,9 @@ class ShaderDiskReadHelper
   DISALLOW_COPY_AND_ASSIGN(ShaderDiskReadHelper);
 };
 
-class ShaderClearHelper : public base::RefCounted<ShaderClearHelper> {
+class ShaderClearHelper
+    : public base::RefCounted<ShaderClearHelper>,
+      public base::SupportsWeakPtr<ShaderClearHelper> {
  public:
   ShaderClearHelper(scoped_refptr<ShaderDiskCache> cache,
                     const base::FilePath& path,
@@ -382,13 +384,13 @@ void ShaderClearHelper::DoClearShaderCache(int rv) {
     switch (op_type_) {
       case VERIFY_CACHE_SETUP:
         rv = cache_->SetAvailableCallback(
-            base::Bind(&ShaderClearHelper::DoClearShaderCache, this));
+            base::Bind(&ShaderClearHelper::DoClearShaderCache, AsWeakPtr()));
         op_type_ = DELETE_CACHE;
         break;
       case DELETE_CACHE:
         rv = cache_->Clear(
             delete_begin_, delete_end_,
-            base::Bind(&ShaderClearHelper::DoClearShaderCache, this));
+            base::Bind(&ShaderClearHelper::DoClearShaderCache, AsWeakPtr()));
         op_type_ = TERMINATE;
         break;
       case TERMINATE:
