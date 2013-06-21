@@ -676,7 +676,6 @@ void AutoImport(
     int import_items,
     int dont_import_items,
     const std::string& import_bookmarks_path) {
-#if !defined(USE_AURA)
   // Deletes itself.
   ImporterHost* importer_host;
   // TODO(csilv,mirandac): Out-of-process import has only been qualified on
@@ -769,7 +768,6 @@ void AutoImport(
 
   content::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
 
-#endif  // !defined(USE_AURA)
   g_auto_import_state |= AUTO_IMPORT_CALLED;
 }
 

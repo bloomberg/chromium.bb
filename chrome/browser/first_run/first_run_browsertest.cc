@@ -149,14 +149,9 @@ typedef FirstRunMasterPrefsBrowserTestT<kImportDefault>
     FirstRunMasterPrefsImportDefault;
 IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportDefault, MAYBE_ImportDefault) {
   int auto_import_state = first_run::auto_import_state();
-  // Aura builds skip over the import process.
-#if defined(USE_AURA)
-  EXPECT_EQ(first_run::AUTO_IMPORT_CALLED, auto_import_state);
-#else
   EXPECT_EQ(first_run::AUTO_IMPORT_CALLED |
                 first_run::AUTO_IMPORT_PROFILE_IMPORTED,
             auto_import_state);
-#endif
 }
 
 // TODO(tapted): Investigate why this fails on Linux bots but does not
@@ -182,15 +177,10 @@ typedef FirstRunMasterPrefsBrowserTestT<kImportBookmarksFile>
 IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportBookmarksFile,
                        MAYBE_ImportBookmarksFile) {
   int auto_import_state = first_run::auto_import_state();
-  // Aura builds skip over the import process.
-#if defined(USE_AURA)
-  EXPECT_EQ(first_run::AUTO_IMPORT_CALLED, auto_import_state);
-#else
   EXPECT_EQ(first_run::AUTO_IMPORT_CALLED |
                 first_run::AUTO_IMPORT_PROFILE_IMPORTED |
                 first_run::AUTO_IMPORT_BOOKMARKS_FILE_IMPORTED,
             auto_import_state);
-#endif
 }
 
 // Test an import with all import options disabled. This is a regression test
