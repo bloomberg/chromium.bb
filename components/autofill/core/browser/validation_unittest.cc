@@ -15,6 +15,11 @@ struct ExpirationDate {
   const char* month;
 };
 
+struct IntExpirationDate {
+  const int year;
+  const int month;
+};
+
 // From https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
 const char* const kValidNumbers[] = {
   "378282246310005",
@@ -48,9 +53,17 @@ const ExpirationDate kValidCreditCardExpirationDate[] = {
   { "2014", " 1" },  // Whitespace in month.
   { " 2014", "1" },  // Whitespace in year.
 };
+const IntExpirationDate kValidCreditCardIntExpirationDate[] = {
+  { 2013, 5 },  // Valid month in current year.
+  { 2014, 1 },  // Any month in next year.
+};
 const ExpirationDate kInvalidCreditCardExpirationDate[] = {
   { "2013", "04" },  // Previous month in current year.
   { "2012", "12" },  // Any month in previous year.
+};
+const IntExpirationDate kInvalidCreditCardIntExpirationDate[] = {
+  { 2013, 4 },  // Previous month in current year.
+  { 2012, 12 },  // Any month in previous year.
 };
 const char* const kValidCreditCardSecurityCode[] = {
   "323",  // 3-digit CSC.
@@ -98,7 +111,7 @@ TEST(AutofillValidation, IsValidCreditCardExpirationDate)
   ASSERT_TRUE(base::Time::FromString(kCurrentDate, &now));
 
   for (size_t i = 0; i < arraysize(kValidCreditCardExpirationDate); ++i) {
-    const ExpirationDate data = kValidCreditCardExpirationDate[i];
+    const ExpirationDate& data = kValidCreditCardExpirationDate[i];
     SCOPED_TRACE(data.year);
     SCOPED_TRACE(data.month);
     EXPECT_TRUE(
@@ -107,7 +120,7 @@ TEST(AutofillValidation, IsValidCreditCardExpirationDate)
                                                   now));
   }
   for (size_t i = 0; i < arraysize(kInvalidCreditCardExpirationDate); ++i) {
-    const ExpirationDate data = kInvalidCreditCardExpirationDate[i];
+    const ExpirationDate& data = kInvalidCreditCardExpirationDate[i];
     SCOPED_TRACE(data.year);
     SCOPED_TRACE(data.month);
     EXPECT_TRUE(
@@ -117,6 +130,26 @@ TEST(AutofillValidation, IsValidCreditCardExpirationDate)
   }
 }
 
+TEST(AutofillValidation, IsValidCreditCardIntExpirationDate)
+{
+  base::Time now;
+  ASSERT_TRUE(base::Time::FromString(kCurrentDate, &now));
+
+  for (size_t i = 0; i < arraysize(kValidCreditCardIntExpirationDate); ++i) {
+    const IntExpirationDate& data = kValidCreditCardIntExpirationDate[i];
+    SCOPED_TRACE(data.year);
+    SCOPED_TRACE(data.month);
+    EXPECT_TRUE(
+        autofill::IsValidCreditCardExpirationDate(data.year, data.month, now));
+  }
+  for (size_t i = 0; i < arraysize(kInvalidCreditCardIntExpirationDate); ++i) {
+    const IntExpirationDate& data = kInvalidCreditCardIntExpirationDate[i];
+    SCOPED_TRACE(data.year);
+    SCOPED_TRACE(data.month);
+    EXPECT_TRUE(
+        !autofill::IsValidCreditCardExpirationDate(data.year, data.month, now));
+  }
+}
 TEST(AutofillValidation, IsValidCreditCardSecurityCode) {
   for (size_t i = 0; i < arraysize(kValidCreditCardSecurityCode); ++i) {
     SCOPED_TRACE(kValidCreditCardSecurityCode[i]);

@@ -107,6 +107,10 @@ class CreditCard : public AutofillDataModel {
   // Returns true if all field types have valid values set.
   bool IsComplete() const;
 
+  // Returns true if all field types have valid values set and the card is not
+  // expired.
+  bool IsValid() const;
+
   // Returns the credit card number.
   const base::string16& number() const { return number_; }
 

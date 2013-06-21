@@ -18,6 +18,9 @@ namespace autofill {
 bool IsValidCreditCardExpirationDate(const base::string16& year,
                                      const base::string16& month,
                                      const base::Time& now);
+bool IsValidCreditCardExpirationDate(int year,
+                                     int month,
+                                     const base::Time& now);
 
 // Returns true if |text| looks like a valid credit card number.
 // Uses the Luhn formula to validate the number.

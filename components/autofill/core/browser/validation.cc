@@ -33,21 +33,27 @@ bool IsValidCreditCardExpirationDate(const base::string16& year,
   if (year_cleaned.length() != 4)
     return false;
 
+  int cc_year;
+  if (!base::StringToInt(year_cleaned, &cc_year))
+    return false;
+
+  int cc_month;
+  if (!base::StringToInt(month_cleaned, &cc_month))
+    return false;
+
+  return IsValidCreditCardExpirationDate(cc_year, cc_month, now);
+}
+
+bool IsValidCreditCardExpirationDate(int year,
+                                     int month,
+                                     const base::Time& now) {
   base::Time::Exploded now_exploded;
   now.LocalExplode(&now_exploded);
-  size_t current_year = size_t(now_exploded.year);
-  size_t current_month = size_t(now_exploded.month);
 
-  size_t cc_year;
-  if (!base::StringToSizeT(year_cleaned, &cc_year))
-    return false;
-  if (cc_year < current_year)
+  if (year < now_exploded.year)
     return false;
 
-  size_t cc_month;
-  if (!base::StringToSizeT(month_cleaned, &cc_month))
-    return false;
-  if (cc_year == current_year && cc_month < current_month)
+  if (year == now_exploded.year && month < now_exploded.month)
     return false;
 
   return true;

@@ -140,12 +140,8 @@ gfx::Image AutofillCreditCardWrapper::GetIcon() {
 }
 
 string16 AutofillCreditCardWrapper::GetDisplayText() {
-  if (!autofill::IsValidCreditCardExpirationDate(
-           card_->GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-           card_->GetRawInfo(CREDIT_CARD_EXP_MONTH),
-           base::Time::Now())) {
+  if (!card_->IsValid())
     return string16();
-  }
 
   return card_->TypeAndLastFourDigits();
 }

@@ -4,6 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
@@ -28,8 +29,29 @@ TEST(AutofillCreditCardWrapperTest, GetInfoCreditCardExpMonth) {
 
 TEST(AutofillCreditCardWrapperTest, GetDisplayTextEmptyWhenExpired) {
   CreditCard card;
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
+  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2010"));
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   AutofillCreditCardWrapper wrapper(&card);
   EXPECT_TRUE(wrapper.GetDisplayText().empty());
+}
+
+TEST(AutofillCreditCardWrapperTest, GetDisplayTextEmptyWhenInvalid) {
+  CreditCard card;
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
+  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("9999"));
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("41111"));
+  AutofillCreditCardWrapper wrapper(&card);
+  EXPECT_TRUE(wrapper.GetDisplayText().empty());
+}
+
+TEST(AutofillCreditCardWrapperTest, GetDisplayTextNotEmptyWhenValid) {
+  CreditCard card;
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
+  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("9999"));
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  AutofillCreditCardWrapper wrapper(&card);
+  EXPECT_FALSE(wrapper.GetDisplayText().empty());
 }
 
 TEST(WalletInstrumentWrapperTest, GetInfoCreditCardExpMonth) {
@@ -71,4 +93,4 @@ TEST(DataModelWrapperTest, GetDisplayTextEmptyWithoutPhone) {
   EXPECT_TRUE(address_wrapper.GetDisplayText().empty());
 }
 
-}  // autofill
+}  // namespace autofill

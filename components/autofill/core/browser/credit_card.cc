@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -584,6 +585,12 @@ bool CreditCard::IsComplete() const {
       autofill::IsValidCreditCardNumber(number_) &&
       expiration_month_ != 0 &&
       expiration_year_ != 0;
+}
+
+bool CreditCard::IsValid() const {
+  return autofill::IsValidCreditCardNumber(number_) &&
+         autofill::IsValidCreditCardExpirationDate(
+             expiration_year_, expiration_month_, base::Time::Now());
 }
 
 void CreditCard::GetSupportedTypes(FieldTypeSet* supported_types) const {

@@ -266,6 +266,27 @@ TEST(CreditCardTest, IsComplete) {
   }
 }
 
+TEST(CreditCardTest, IsValid) {
+  CreditCard card;
+  // Invalid because expired
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("1"));
+  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2010"));
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  EXPECT_FALSE(card.IsValid());
+
+  // Invalid because card number is not complete
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
+  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("9999"));
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("41111"));
+  EXPECT_FALSE(card.IsValid());
+
+  // Valid
+  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
+  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("9999"));
+  card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  EXPECT_TRUE(card.IsValid());
+}
+
 TEST(CreditCardTest, InvalidMastercardNumber) {
   CreditCard card(base::GenerateGUID(), "https://www.example.com/");
 
