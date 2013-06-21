@@ -9,11 +9,11 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
-#include <unistd.h>
 #include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/mount_dev.h"
 #include "nacl_io/mount_node.h"
 #include "nacl_io/mount_node_dir.h"
+#include "nacl_io/osunistd.h"
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/auto_lock.h"
 

@@ -62,6 +62,7 @@
         "osmman.h",
         "osstat.h",
         "ostypes.h",
+        "osunistd.h",
         "path.h",
         "pepper_interface.h",
         "real_pepper_interface.h",

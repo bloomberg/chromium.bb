@@ -6,7 +6,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <unistd.h>
 
 #include <string>
 
@@ -15,6 +14,7 @@
 #include "nacl_io/mount_node_dir.h"
 #include "nacl_io/mount_node_mem.h"
 #include "nacl_io/osstat.h"
+#include "nacl_io/osunistd.h"
 #include "nacl_io/path.h"
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/ref_object.h"

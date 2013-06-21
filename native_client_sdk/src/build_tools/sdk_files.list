@@ -257,6 +257,7 @@ include/nacl_io/osinttypes.h
 include/nacl_io/osmman.h
 include/nacl_io/osstat.h
 include/nacl_io/ostypes.h
+include/nacl_io/osunistd.h
 include/nacl_io/path.h
 include/nacl_io/pepper/all_interfaces.h
 include/nacl_io/pepper/define_empty_macros.h

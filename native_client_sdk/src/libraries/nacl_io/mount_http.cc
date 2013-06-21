@@ -13,7 +13,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 
 #include <vector>
 
@@ -22,6 +21,7 @@
 #include "nacl_io/mount_node_dir.h"
 #include "nacl_io/mount_node_http.h"
 #include "nacl_io/osinttypes.h"
+#include "nacl_io/osunistd.h"
 #include "sdk_util/auto_lock.h"
 
 namespace {
