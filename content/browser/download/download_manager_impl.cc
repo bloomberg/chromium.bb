@@ -124,7 +124,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
   save_info->prompt_for_save_location = params->prompt();
   save_info->file_stream = params->GetFileStream();
 
-  params->resource_dispatcher_host()->BeginDownload(
+  ResourceDispatcherHost::Get()->BeginDownload(
       request.Pass(),
       params->content_initiated(),
       params->resource_context(),

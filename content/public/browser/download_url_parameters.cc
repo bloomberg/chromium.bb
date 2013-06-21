@@ -9,7 +9,6 @@
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 
@@ -28,9 +27,7 @@ DownloadUrlParameters::DownloadUrlParameters(
       render_process_host_id_(render_process_host_id),
       render_view_host_routing_id_(render_view_host_routing_id),
       resource_context_(resource_context),
-      resource_dispatcher_host_(ResourceDispatcherHost::Get()),
       url_(url) {
-  DCHECK(resource_dispatcher_host_);
 }
 
 DownloadUrlParameters::~DownloadUrlParameters() {

@@ -125,9 +125,6 @@ class CONTENT_EXPORT DownloadUrlParameters {
   content::ResourceContext* resource_context() const {
     return resource_context_;
   }
-  ResourceDispatcherHost* resource_dispatcher_host() const {
-    return resource_dispatcher_host_;
-  }
   const base::FilePath& file_path() const { return save_info_.file_path; }
   const string16& suggested_name() const { return save_info_.suggested_name; }
   int64 offset() const { return save_info_.offset; }
@@ -157,7 +154,6 @@ class CONTENT_EXPORT DownloadUrlParameters {
   int render_process_host_id_;
   int render_view_host_routing_id_;
   ResourceContext* resource_context_;
-  ResourceDispatcherHost* resource_dispatcher_host_;
   DownloadSaveInfo save_info_;
   GURL url_;
 
