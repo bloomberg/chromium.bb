@@ -41,9 +41,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
  public:
   MockMediaStreamDispatcherHost(base::MessageLoop* message_loop,
                                 MediaStreamManager* manager)
-      : MediaStreamDispatcherHost(kProcessId),
-        message_loop_(message_loop),
-        manager_(manager) {}
+      : MediaStreamDispatcherHost(kProcessId, manager),
+        message_loop_(message_loop) {}
 
   // A list of mock methods.
   MOCK_METHOD4(OnStreamGenerated,
@@ -95,11 +94,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     return true;
   }
 
-  // Use our own MediaStreamManager.
-  virtual MediaStreamManager* GetManager() OVERRIDE {
-    return manager_;
-  }
-
   // These handler methods do minimal things and delegate to the mock methods.
   void OnStreamGenerated(
       const IPC::Message& msg,
@@ -123,7 +117,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   base::MessageLoop* message_loop_;
-  MediaStreamManager* manager_;
 };
 
 class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {

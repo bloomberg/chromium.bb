@@ -23,8 +23,11 @@ struct MediaStreamDispatcherHost::StreamRequest {
   int page_request_id;
 };
 
-MediaStreamDispatcherHost::MediaStreamDispatcherHost(int render_process_id)
-    : render_process_id_(render_process_id) {
+MediaStreamDispatcherHost::MediaStreamDispatcherHost(
+    int render_process_id,
+    MediaStreamManager* media_stream_manager)
+    : render_process_id_(render_process_id),
+      media_stream_manager_(media_stream_manager) {
 }
 
 void MediaStreamDispatcherHost::StreamGenerated(
@@ -116,7 +119,7 @@ void MediaStreamDispatcherHost::OnChannelClosing() {
        it != streams_.end();
        ++it) {
     std::string label = it->first;
-    GetManager()->StopGeneratedStream(label);
+    media_stream_manager_->StopGeneratedStream(label);
   }
   // Clear the map after we have stopped all the streams.
   streams_.clear();
@@ -139,7 +142,7 @@ void MediaStreamDispatcherHost::OnGenerateStream(
            << " ], "
            << security_origin.spec() << ")";
 
-  const std::string& label = GetManager()->GenerateStream(
+  const std::string& label = media_stream_manager_->GenerateStream(
       this, render_process_id_, render_view_id, components, security_origin);
   if (label.empty()) {
     Send(new MediaStreamMsg_StreamGenerationFailed(render_view_id,
@@ -158,7 +161,7 @@ void MediaStreamDispatcherHost::OnCancelGenerateStream(int render_view_id,
   for (StreamMap::iterator it = streams_.begin(); it != streams_.end(); ++it) {
     if (it->second.render_view_id == render_view_id &&
         it->second.page_request_id == page_request_id) {
-      GetManager()->CancelRequest(it->first);
+      media_stream_manager_->CancelRequest(it->first);
     }
   }
 }
@@ -172,7 +175,7 @@ void MediaStreamDispatcherHost::OnStopGeneratedStream(
   if (it == streams_.end())
     return;
 
-  GetManager()->StopGeneratedStream(label);
+  media_stream_manager_->StopGeneratedStream(label);
   streams_.erase(it);
 }
 
@@ -187,7 +190,7 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
            << type << ", "
            << security_origin.spec() << ")";
 
-  const std::string& label = GetManager()->EnumerateDevices(
+  const std::string& label = media_stream_manager_->EnumerateDevices(
       this, render_process_id_, render_view_id, type, security_origin);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
@@ -206,15 +209,11 @@ void MediaStreamDispatcherHost::OnOpenDevice(
            << type << ", "
            << security_origin.spec() << ")";
 
-  const std::string& label = GetManager()->OpenDevice(
+  const std::string& label = media_stream_manager_->OpenDevice(
       this, render_process_id_, render_view_id,
       device_id, type, security_origin);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
-}
-
-MediaStreamManager* MediaStreamDispatcherHost::GetManager() {
-  return BrowserMainLoop::GetMediaStreamManager();
 }
 
 }  // namespace content

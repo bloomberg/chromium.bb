@@ -276,21 +276,12 @@ class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {
 };
 
 
-// static
-media::AudioManager* BrowserMainLoop::GetAudioManager() {
-  return g_current_browser_main_loop->audio_manager_.get();
-}
-
-// static
-AudioMirroringManager* BrowserMainLoop::GetAudioMirroringManager() {
-  return g_current_browser_main_loop->audio_mirroring_manager_.get();
-}
-
-// static
-MediaStreamManager* BrowserMainLoop::GetMediaStreamManager() {
-  return g_current_browser_main_loop->media_stream_manager_.get();
-}
 // BrowserMainLoop construction / destruction =============================
+
+BrowserMainLoop* BrowserMainLoop::GetInstance() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return g_current_browser_main_loop;
+}
 
 BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
     : parameters_(parameters),
@@ -828,7 +819,8 @@ void BrowserMainLoop::BrowserThreadsStarted() {
   {
     TRACE_EVENT0("startup",
       "BrowserMainLoop::BrowserThreadsStarted:InitSpeechRecognition");
-    speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl());
+    speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl(
+        audio_manager_.get(), media_stream_manager_.get()));
   }
 
   // Alert the clipboard class to which threads are allowed to access the

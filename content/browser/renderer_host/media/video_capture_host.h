@@ -46,12 +46,13 @@
 #include "ipc/ipc_message.h"
 
 namespace content {
+class MediaStreamManager;
 
 class CONTENT_EXPORT VideoCaptureHost
     : public BrowserMessageFilter,
       public VideoCaptureControllerEventHandler {
  public:
-  VideoCaptureHost();
+  explicit VideoCaptureHost(MediaStreamManager* media_stream_manager);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -133,9 +134,7 @@ class CONTENT_EXPORT VideoCaptureHost
   void DeleteVideoCaptureControllerOnIOThread(
       const VideoCaptureControllerID& controller_id);
 
-  // Returns the video capture manager. This is a virtual function so that
-  // the unit tests can inject their own MediaStreamManager.
-  virtual VideoCaptureManager* GetVideoCaptureManager();
+  MediaStreamManager* media_stream_manager_;
 
   struct Entry;
   typedef std::map<VideoCaptureControllerID, Entry*> EntryMap;

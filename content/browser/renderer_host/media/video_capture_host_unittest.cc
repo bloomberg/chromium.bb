@@ -72,10 +72,9 @@ class DumpVideo {
 class MockVideoCaptureHost : public VideoCaptureHost {
  public:
   MockVideoCaptureHost(MediaStreamManager* manager)
-      : VideoCaptureHost(),
+      : VideoCaptureHost(manager),
         return_buffers_(false),
-        dump_video_(false),
-        manager_(manager) {}
+        dump_video_(false) {}
 
   // A list of mock methods.
   MOCK_METHOD4(OnNewBufferCreated,
@@ -143,10 +142,6 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     return true;
   }
 
-  virtual VideoCaptureManager* GetVideoCaptureManager() OVERRIDE {
-    return manager_->video_capture_manager();
-  }
-
   // These handler methods do minimal things and delegate to the mock methods.
   void OnNewBufferCreatedDispatch(int device_id,
                                   base::SharedMemoryHandle handle,
@@ -187,7 +182,6 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   bool return_buffers_;
   bool dump_video_;
   DumpVideo dumper_;
-  MediaStreamManager* manager_;
 };
 
 ACTION_P(ExitMessageLoop, message_loop) {

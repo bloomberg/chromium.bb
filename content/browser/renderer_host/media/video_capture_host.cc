@@ -23,7 +23,9 @@ struct VideoCaptureHost::Entry {
   scoped_refptr<VideoCaptureController> controller;
 };
 
-VideoCaptureHost::VideoCaptureHost() {}
+VideoCaptureHost::VideoCaptureHost(MediaStreamManager* media_stream_manager)
+    : media_stream_manager_(media_stream_manager) {
+}
 
 VideoCaptureHost::~VideoCaptureHost() {}
 
@@ -36,7 +38,8 @@ void VideoCaptureHost::OnChannelClosing() {
     if (controller) {
       VideoCaptureControllerID controller_id(it->first);
       controller->StopCapture(controller_id, this);
-      GetVideoCaptureManager()->RemoveController(controller, this);
+      media_stream_manager_->video_capture_manager()->RemoveController(
+          controller, this);
     }
   }
   STLDeleteValues(&entries_);
@@ -192,7 +195,7 @@ void VideoCaptureHost::OnStartCapture(int device_id,
   DCHECK(entries_.find(controller_id) == entries_.end());
 
   entries_[controller_id] = new Entry(NULL);
-  GetVideoCaptureManager()->AddController(
+  media_stream_manager_->video_capture_manager()->AddController(
       params, this, base::Bind(&VideoCaptureHost::OnControllerAdded, this,
                                device_id, params));
 }
@@ -213,8 +216,10 @@ void VideoCaptureHost::DoControllerAddedOnIOThread(
   VideoCaptureControllerID controller_id(device_id);
   EntryMap::iterator it = entries_.find(controller_id);
   if (it == entries_.end()) {
-    if (controller)
-      GetVideoCaptureManager()->RemoveController(controller, this);
+    if (controller) {
+      media_stream_manager_->video_capture_manager()->RemoveController(
+          controller, this);
+    }
     return;
   }
 
@@ -271,15 +276,11 @@ void VideoCaptureHost::DeleteVideoCaptureControllerOnIOThread(
   VideoCaptureController* controller = it->second->controller.get();
   if (controller) {
     controller->StopCapture(controller_id, this);
-    GetVideoCaptureManager()->RemoveController(controller, this);
+    media_stream_manager_->video_capture_manager()->RemoveController(
+        controller, this);
   }
   delete it->second;
   entries_.erase(controller_id);
-}
-
-VideoCaptureManager* VideoCaptureHost::GetVideoCaptureManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return BrowserMainLoop::GetMediaStreamManager()->video_capture_manager();
 }
 
 }  // namespace content

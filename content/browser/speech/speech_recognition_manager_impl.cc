@@ -37,9 +37,9 @@ namespace {
 
 SpeechRecognitionManagerImpl* g_speech_recognition_manager_impl;
 
-void ShowAudioInputSettingsOnFileThread() {
+void ShowAudioInputSettingsOnFileThread(media::AudioManager* audio_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  BrowserMainLoop::GetAudioManager()->ShowAudioInputSettings();
+  audio_manager->ShowAudioInputSettings();
 }
 
 }  // namespace
@@ -59,8 +59,12 @@ SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
   return g_speech_recognition_manager_impl;
 }
 
-SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl()
-    : primary_session_id_(kSessionIDInvalid),
+SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl(
+      media::AudioManager* audio_manager,
+      MediaStreamManager* media_stream_manager)
+    : audio_manager_(audio_manager),
+      media_stream_manager_(media_stream_manager),
+      primary_session_id_(kSessionIDInvalid),
       last_session_id_(kSessionIDInvalid),
       is_dispatching_event_(false),
       delegate_(GetContentClient()->browser()->
@@ -183,15 +187,14 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
     SessionsTable::iterator iter = sessions_.find(session_id);
     DCHECK(iter != sessions_.end());
     SpeechRecognitionSessionContext& context = iter->second->context;
-    context.label =
-        BrowserMainLoop::GetMediaStreamManager()->MakeMediaAccessRequest(
-            context.render_process_id,
-            context.render_view_id,
-            StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE, MEDIA_NO_SERVICE),
-            GURL(context.context_name),
-            base::Bind(
-                &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,
-                weak_factory_.GetWeakPtr(), session_id));
+    context.label = media_stream_manager_->MakeMediaAccessRequest(
+        context.render_process_id,
+        context.render_view_id,
+        StreamOptions(MEDIA_DEVICE_AUDIO_CAPTURE, MEDIA_NO_SERVICE),
+        GURL(context.context_name),
+        base::Bind(
+            &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,
+            weak_factory_.GetWeakPtr(), session_id));
     return;
   }
 
@@ -642,18 +645,19 @@ SpeechRecognitionManagerImpl::GetSessionConfig(int session_id) const {
 }
 
 bool SpeechRecognitionManagerImpl::HasAudioInputDevices() {
-  return BrowserMainLoop::GetAudioManager()->HasAudioInputDevices();
+  return audio_manager_->HasAudioInputDevices();
 }
 
 string16 SpeechRecognitionManagerImpl::GetAudioInputDeviceModel() {
-  return BrowserMainLoop::GetAudioManager()->GetAudioInputDeviceModel();
+  return audio_manager_->GetAudioInputDeviceModel();
 }
 
 void SpeechRecognitionManagerImpl::ShowAudioInputSettings() {
   // Since AudioManager::ShowAudioInputSettings can potentially launch external
   // processes, do that in the FILE thread to not block the calling threads.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&ShowAudioInputSettingsOnFileThread));
+                          base::Bind(&ShowAudioInputSettingsOnFileThread,
+                                     audio_manager_));
 }
 
 SpeechRecognitionManagerImpl::Session::Session()

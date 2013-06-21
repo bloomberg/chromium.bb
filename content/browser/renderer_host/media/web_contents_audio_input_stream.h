@@ -58,7 +58,8 @@ class CONTENT_EXPORT WebContentsAudioInputStream
   static WebContentsAudioInputStream* Create(
       const std::string& device_id,
       const media::AudioParameters& params,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop);
+      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      AudioMirroringManager* audio_mirroring_manager);
 
  private:
   friend class WebContentsAudioInputStreamTest;

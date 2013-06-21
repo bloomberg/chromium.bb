@@ -297,6 +297,7 @@ RenderMessageFilter::RenderMessageFilter(
     BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper,
+    media::AudioManager* audio_manager,
     MediaInternals* media_internals,
     DOMStorageContextImpl* dom_storage_context)
     : resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
@@ -309,6 +310,7 @@ RenderMessageFilter::RenderMessageFilter(
       dom_storage_context_(dom_storage_context),
       render_process_id_(render_process_id),
       cpu_usage_(0),
+      audio_manager_(audio_manager),
       media_internals_(media_internals) {
   DCHECK(request_context_.get());
 
@@ -439,7 +441,7 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
 #if defined(OS_MACOSX)
   // OSX CoreAudio calls must all happen on the main thread.
   if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
-    return BrowserMainLoop::GetAudioManager()->GetMessageLoop();
+    return audio_manager_->GetMessageLoop();
 #endif
   return NULL;
 }
@@ -802,13 +804,11 @@ void RenderMessageFilter::OnGetAudioHardwareConfig(
     media::AudioParameters* output_params) {
   DCHECK(input_params);
   DCHECK(output_params);
-  media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
-  *output_params = audio_manager->GetDefaultOutputStreamParameters();
+  *output_params = audio_manager_->GetDefaultOutputStreamParameters();
 
   // TODO(henrika): add support for all available input devices.
-  *input_params =
-      audio_manager->GetInputStreamParameters(
-          media::AudioManagerBase::kDefaultDeviceId);
+  *input_params = audio_manager_->GetInputStreamParameters(
+      media::AudioManagerBase::kDefaultDeviceId);
 }
 
 void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {

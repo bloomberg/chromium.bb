@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/browser/renderer_host/media/web_contents_tracker.h"
@@ -281,7 +280,8 @@ void WebContentsAudioInputStream::Impl::OnTargetChanged(int render_process_id,
 WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
     const std::string& device_id,
     const media::AudioParameters& params,
-    const scoped_refptr<base::MessageLoopProxy>& message_loop) {
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
+    AudioMirroringManager* audio_mirroring_manager) {
   int render_process_id;
   int render_view_id;
   if (!WebContentsCaptureUtil::ExtractTabCaptureTarget(
@@ -291,7 +291,7 @@ WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
 
   return new WebContentsAudioInputStream(
       render_process_id, render_view_id, message_loop,
-      BrowserMainLoop::GetAudioMirroringManager(),
+      audio_mirroring_manager,
       new WebContentsTracker(),
       new media::VirtualAudioInputStream(
           params, message_loop,

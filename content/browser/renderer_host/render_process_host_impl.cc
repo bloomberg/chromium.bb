@@ -557,6 +557,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   channel_->AddFilter(new ResourceSchedulerFilter(GetID()));
   MediaInternals* media_internals = MediaInternals::GetInstance();;
+  media::AudioManager* audio_manager =
+      BrowserMainLoop::GetInstance()->audio_manager();
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages
   // from guests.
   if (supports_browser_plugin_) {
@@ -576,6 +578,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           GetBrowserContext(),
           GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
           widget_helper_.get(),
+          audio_manager,
           media_internals,
           storage_partition_impl_->GetDOMStorageContext()));
   channel_->AddFilter(render_message_filter.get());
@@ -590,27 +593,27 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       new RendererURLRequestContextSelector(browser_context, GetID()));
 
   channel_->AddFilter(resource_message_filter);
-  media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
   MediaStreamManager* media_stream_manager =
-      BrowserMainLoop::GetMediaStreamManager();
-  channel_->AddFilter(new AudioInputRendererHost(audio_manager,
-                                                 media_stream_manager));
+      BrowserMainLoop::GetInstance()->media_stream_manager();
+  channel_->AddFilter(new AudioInputRendererHost(
+      audio_manager,
+      media_stream_manager,
+      BrowserMainLoop::GetInstance()->audio_mirroring_manager()));
   channel_->AddFilter(new AudioRendererHost(
-      GetID(), audio_manager, BrowserMainLoop::GetAudioMirroringManager(),
+      GetID(), audio_manager,
+      BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
       media_internals, media_stream_manager));
-  channel_->AddFilter(new VideoCaptureHost());
+  channel_->AddFilter(new VideoCaptureHost(media_stream_manager));
   channel_->AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(),
       GetID()));
   channel_->AddFilter(new ClipboardMessageFilter);
-  channel_->AddFilter(
-      new DOMStorageMessageFilter(
-          GetID(),
-          storage_partition_impl_->GetDOMStorageContext()));
-  channel_->AddFilter(
-      new IndexedDBDispatcherHost(
-          GetID(),
-          storage_partition_impl_->GetIndexedDBContext()));
+  channel_->AddFilter(new DOMStorageMessageFilter(
+      GetID(),
+      storage_partition_impl_->GetDOMStorageContext()));
+  channel_->AddFilter(new IndexedDBDispatcherHost(
+      GetID(),
+      storage_partition_impl_->GetIndexedDBContext()));
   if (IsGuest()) {
     if (!g_browser_plugin_geolocation_context.Get().get()) {
       g_browser_plugin_geolocation_context.Get() =
@@ -627,7 +630,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if defined(ENABLE_WEBRTC)
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
   channel_->AddFilter(peer_connection_tracker_host_.get());
-  channel_->AddFilter(new MediaStreamDispatcherHost(GetID()));
+  channel_->AddFilter(new MediaStreamDispatcherHost(
+      GetID(), media_stream_manager));
 #endif
 #if defined(ENABLE_PLUGINS)
   // TODO(raymes): PepperMessageFilter should be removed from here.
@@ -664,20 +668,19 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           resource_context);
   channel_->AddFilter(socket_stream_dispatcher_host);
 
-  channel_->AddFilter(
-      new WorkerMessageFilter(
-          GetID(),
-          resource_context,
-          WorkerStoragePartition(
-              storage_partition_impl_->GetURLRequestContext(),
-              storage_partition_impl_->GetMediaURLRequestContext(),
-              storage_partition_impl_->GetAppCacheService(),
-              storage_partition_impl_->GetQuotaManager(),
-              storage_partition_impl_->GetFileSystemContext(),
-              storage_partition_impl_->GetDatabaseTracker(),
-              storage_partition_impl_->GetIndexedDBContext()),
-          base::Bind(&RenderWidgetHelper::GetNextRoutingID,
-                     base::Unretained(widget_helper_.get()))));
+  channel_->AddFilter(new WorkerMessageFilter(
+      GetID(),
+      resource_context,
+      WorkerStoragePartition(
+          storage_partition_impl_->GetURLRequestContext(),
+          storage_partition_impl_->GetMediaURLRequestContext(),
+          storage_partition_impl_->GetAppCacheService(),
+          storage_partition_impl_->GetQuotaManager(),
+          storage_partition_impl_->GetFileSystemContext(),
+          storage_partition_impl_->GetDatabaseTracker(),
+          storage_partition_impl_->GetIndexedDBContext()),
+      base::Bind(&RenderWidgetHelper::GetNextRoutingID,
+                 base::Unretained(widget_helper_.get()))));
 
 #if defined(ENABLE_WEBRTC)
   channel_->AddFilter(new P2PSocketDispatcherHost(resource_context));

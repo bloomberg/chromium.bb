@@ -47,6 +47,7 @@ class AudioParameters;
 }
 
 namespace content {
+class AudioMirroringManager;
 class MediaStreamManager;
 
 class CONTENT_EXPORT AudioInputRendererHost
@@ -56,7 +57,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Called from UI thread from the owner of this object.
   AudioInputRendererHost(
       media::AudioManager* audio_manager,
-      MediaStreamManager* media_stream_manager);
+      MediaStreamManager* media_stream_manager,
+      AudioMirroringManager* audio_mirroring_manager);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -146,6 +148,8 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Used to access to AudioInputDeviceManager.
   MediaStreamManager* media_stream_manager_;
+
+  AudioMirroringManager* audio_mirroring_manager_;
 
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;

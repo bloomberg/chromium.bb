@@ -12,7 +12,6 @@ namespace content {
 // Called to ensure the MediaStreamManager has started monitoring the capture
 // devices, this will trigger OnAudioCaptureDevicesChanged() and
 // OnVideoCaptureDevicesChanged() callbacks.
-// This must be called on the IO thread.
 CONTENT_EXPORT void EnsureMonitorCaptureDevices();
 
 }  // namespace content

@@ -47,10 +47,12 @@ class DeviceMonitorMac;
 
 // Implements the main browser loop stages called from BrowserMainRunner.
 // See comments in browser_main_parts.h for additional info.
-// All functions are to be called only on the UI thread unless otherwise noted.
 class BrowserMainLoop {
  public:
-  class MemoryObserver;
+  // Returns the current instance. This is used to get access to the getters
+  // that return objects which are owned by this class.
+  static BrowserMainLoop* GetInstance();
+
   explicit BrowserMainLoop(const MainFunctionParams& parameters);
   virtual ~BrowserMainLoop();
 
@@ -72,12 +74,16 @@ class BrowserMainLoop {
 
   int GetResultCode() const { return result_code_; }
 
-  // Can be called on any thread.
-  static media::AudioManager* GetAudioManager();
-  static AudioMirroringManager* GetAudioMirroringManager();
-  static MediaStreamManager* GetMediaStreamManager();
+  media::AudioManager* audio_manager() const { return audio_manager_.get(); }
+  AudioMirroringManager* audio_mirroring_manager() const {
+    return audio_mirroring_manager_.get();
+  }
+  MediaStreamManager* media_stream_manager() const {
+    return media_stream_manager_.get();
+  }
 
  private:
+  class MemoryObserver;
   // For ShutdownThreadsAndCleanUp.
   friend class BrowserShutdownImpl;
 

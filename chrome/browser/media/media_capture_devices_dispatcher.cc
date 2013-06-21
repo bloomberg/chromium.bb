@@ -137,9 +137,7 @@ const MediaStreamDevices&
 MediaCaptureDevicesDispatcher::GetAudioCaptureDevices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!is_device_enumeration_disabled_ && !devices_enumerated_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&content::EnsureMonitorCaptureDevices));
+    content::EnsureMonitorCaptureDevices();
     devices_enumerated_ = true;
   }
   return audio_devices_;
@@ -149,9 +147,7 @@ const MediaStreamDevices&
 MediaCaptureDevicesDispatcher::GetVideoCaptureDevices() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!is_device_enumeration_disabled_ && !devices_enumerated_) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&content::EnsureMonitorCaptureDevices));
+    content::EnsureMonitorCaptureDevices();
     devices_enumerated_ = true;
   }
   return video_devices_;

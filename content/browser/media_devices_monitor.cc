@@ -9,12 +9,21 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
+namespace {
+void EnsureMonitorCaptureDevicesInternal(
+    MediaStreamManager* media_stream_manager) {
+  media_stream_manager->EnumerateDevices(
+      NULL, -1, -1, MEDIA_DEVICE_AUDIO_CAPTURE, GURL());
+}
+}
 
 void EnsureMonitorCaptureDevices() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Post a EnumerateDevices() API to MSM to start the monitoring.
-  BrowserMainLoop::GetMediaStreamManager()->EnumerateDevices(
-      NULL, -1, -1, MEDIA_DEVICE_AUDIO_CAPTURE, GURL());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&EnsureMonitorCaptureDevicesInternal,
+                 BrowserMainLoop::GetInstance()->media_stream_manager()));
 }
 
 }  // namespace content

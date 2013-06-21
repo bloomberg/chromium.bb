@@ -245,7 +245,8 @@ void WebRTCAudioDeviceTest::CreateChannel(const char* name) {
   audio_render_host_->OnChannelConnected(base::GetCurrentProcId());
 
   audio_input_renderer_host_ = new AudioInputRendererHost(
-      audio_manager_.get(), media_stream_manager_.get());
+      audio_manager_.get(), media_stream_manager_.get(),
+      mirroring_manager_.get());
   audio_input_renderer_host_->OnChannelConnected(base::GetCurrentProcId());
 
   channel_.reset(new IPC::Channel(name, IPC::Channel::MODE_SERVER, this));
