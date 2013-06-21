@@ -939,4 +939,10 @@
    fun:MakeInterleavedBuffer
    fun:media::AudioBufferTest*
 }
-
+{
+   bug_252615
+   Heapcheck:Leak
+   fun:XGetWindowProperty
+   fun:GetXWindowName
+   fun:ash::test::DisplayControllerTest_XWidowNameForRootWindow_Test::TestBody
+}
