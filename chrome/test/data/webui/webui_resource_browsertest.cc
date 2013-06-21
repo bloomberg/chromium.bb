@@ -100,6 +100,13 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, GridTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("grid_test.html")));
 }
 
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, ListSelectionModelTest) {
+  AddLibrary(IDR_WEBUI_JS_CR);
+  AddLibrary(IDR_WEBUI_JS_CR_EVENT_TARGET);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_LIST_SELECTION_MODEL);
+  RunTest(base::FilePath(FILE_PATH_LITERAL("list_selection_model_test.html")));
+}
+
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, LocalStringsTest) {
   AddLibrary(IDR_WEBUI_JS_LOCAL_STRINGS);
   RunTest(base::FilePath(FILE_PATH_LITERAL("local_strings_test.html")));

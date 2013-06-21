@@ -73,8 +73,8 @@ function assertThrows(f) {
 
 /**
  * Verifies that the contents of the expected and observed arrays match.
- * @param {Array} expected The expected result.
- * @param {Array} observed The actual result.
+ * @param {!Array} expected The expected result.
+ * @param {!Array} observed The actual result.
  */
 function assertArrayEquals(expected, observed) {
   var v1 = Array.prototype.slice.call(expected);
