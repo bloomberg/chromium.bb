@@ -97,11 +97,16 @@ class AutofillPopupControllerBrowserTest
   scoped_ptr<TestAutofillExternalDelegate> autofill_external_delegate_;
 };
 
+#if defined(OS_LINUX)
+#define MAYBE_HidePopupOnWindowConfiguration DISABLED_HidePopupOnWindowConfiguration
+#else
+#define MAYBE_HidePopupOnWindowConfiguration HidePopupOnWindowConfiguration
+#endif
 // Autofill UI isn't currently hidden on window move on Mac.
 // http://crbug.com/180566
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
-                       HidePopupOnWindowConfiguration) {
+                       MAYBE_HidePopupOnWindowConfiguration) {
   GenerateTestAutofillPopup(autofill_external_delegate_.get());
 
   EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
