@@ -23,6 +23,10 @@ class OmahaQueryParams {
   // prod, prodchannel, prodversion.
   static std::string Get(ProdId prod);
 
+  // Returns the value we use for the "prod=" parameter. Possible return values
+  // include "chrome", "chromecrx", "chromiumcrx", and "unknown".
+  static const char* GetProdIdString(chrome::OmahaQueryParams::ProdId prod);
+
   // Returns the value we use for the "os=" parameter. Possible return values
   // include: "mac", "win", "android", "cros", "linux", and "openbsd".
   static const char* getOS();

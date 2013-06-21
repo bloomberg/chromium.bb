@@ -26,6 +26,8 @@
  * Changelog:
  * 2009-03-31 - Change to use Streams.  Move CRC code to crc.{h,cc}
  *                --Stephen Adams <sra@chromium.org>
+ * 2013-04-10 - Add wrapper method to apply a patch to files directly.
+ *                --Joshua Pawlicki <waffles@chromium.org>
  */
 
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
@@ -34,6 +36,7 @@
 
 #include "courgette/third_party/bsdiff.h"
 
+#include "base/files/memory_mapped_file.h"
 #include "courgette/crc.h"
 #include "courgette/streams.h"
 
@@ -165,6 +168,44 @@ BSDiffStatus ApplyBinaryPatch(SourceStream* old_stream,
 
   MBS_ApplyPatch(&header, patch_stream, old_start, old_size, new_stream);
 
+  return OK;
+}
+
+BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_file_path,
+                              const base::FilePath& patch_file_path,
+                              const base::FilePath& new_file_path) {
+  // Set up the old stream.
+  base::MemoryMappedFile old_file;
+  if (!old_file.Initialize(old_file_path)) {
+    return READ_ERROR;
+  }
+  SourceStream old_file_stream;
+  old_file_stream.Init(old_file.data(), old_file.length());
+
+  // Set up the patch stream.
+  base::MemoryMappedFile patch_file;
+  if (!patch_file.Initialize(patch_file_path)) {
+    return READ_ERROR;
+  }
+  SourceStream patch_file_stream;
+  patch_file_stream.Init(patch_file.data(), patch_file.length());
+
+  // Set up the new stream and apply the patch.
+  SinkStream new_sink_stream;
+  BSDiffStatus status = ApplyBinaryPatch(&old_file_stream,
+                                         &patch_file_stream,
+                                         &new_sink_stream);
+  if (status != OK) {
+    return status;
+  }
+
+  // Write the stream to disk.
+  int written = file_util::WriteFile(
+      new_file_path,
+      reinterpret_cast<const char*>(new_sink_stream.Buffer()),
+      static_cast<int>(new_sink_stream.Length()));
+  if (written != static_cast<int>(new_sink_stream.Length()))
+    return WRITE_ERROR;
   return OK;
 }
 

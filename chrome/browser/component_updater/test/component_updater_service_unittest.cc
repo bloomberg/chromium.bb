@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/component_updater_service.h"
-
 #include <list>
 #include <utility>
-
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/browser/component_updater/test/component_patcher_mock.h"
+#include "chrome/browser/component_updater/test/component_updater_service_unittest.h"
+#include "chrome/browser/component_updater/test/test_installer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/notification_observer.h"
@@ -23,242 +26,183 @@
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "googleurl/src/gurl.h"
 #include "libxml/globals.h"
+#include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 using content::TestNotificationTracker;
 
-namespace {
-// Overrides some of the component updater behaviors so it is easier to test
-// and loops faster. In actual usage it takes hours do to a full cycle.
-class TestConfigurator : public ComponentUpdateService::Configurator {
- public:
-  TestConfigurator()
-      : times_(1), recheck_time_(0), ondemand_time_(0), cus_(NULL) {
-  }
+TestConfigurator::TestConfigurator()
+    : times_(1), recheck_time_(0), ondemand_time_(0), cus_(NULL) {
+}
 
-  virtual int InitialDelay() OVERRIDE { return 0; }
+TestConfigurator::~TestConfigurator() {
+}
 
-  typedef std::pair<CrxComponent*, int> CheckAtLoopCount;
+int TestConfigurator::InitialDelay() { return 0; }
 
-  virtual int NextCheckDelay() OVERRIDE {
-    // This is called when a new full cycle of checking for updates is going
-    // to happen. In test we normally only test one cycle so it is a good
-    // time to break from the test messageloop Run() method so the test can
-    // finish.
-    if (--times_ <= 0) {
-      base::MessageLoop::current()->Quit();
-      return 0;
-
-    }
-
-    // Look for checks to issue in the middle of the loop.
-    for (std::list<CheckAtLoopCount>::iterator
-             i = components_to_check_.begin();
-         i != components_to_check_.end(); ) {
-      if (i->second == times_) {
-        cus_->CheckForUpdateSoon(*i->first);
-        i = components_to_check_.erase(i);
-      } else {
-        ++i;
-      }
-    }
-    return 1;
-  }
-
-  virtual int StepDelay() OVERRIDE {
+int TestConfigurator::NextCheckDelay() {
+  // This is called when a new full cycle of checking for updates is going
+  // to happen. In test we normally only test one cycle so it is a good
+  // time to break from the test messageloop Run() method so the test can
+  // finish.
+  if (--times_ <= 0) {
+    base::MessageLoop::current()->Quit();
     return 0;
   }
 
-  virtual int MinimumReCheckWait() OVERRIDE {
-    return recheck_time_;
+  // Look for checks to issue in the middle of the loop.
+  for (std::list<CheckAtLoopCount>::iterator
+           i = components_to_check_.begin();
+       i != components_to_check_.end(); ) {
+    if (i->second == times_) {
+      cus_->CheckForUpdateSoon(*i->first);
+      i = components_to_check_.erase(i);
+    } else {
+      ++i;
+    }
   }
+  return 1;
+}
 
-  virtual int OnDemandDelay() OVERRIDE {
-    return ondemand_time_;
-  }
+int TestConfigurator::StepDelay() {
+  return 0;
+}
 
-  virtual GURL UpdateUrl(CrxComponent::UrlSource source) OVERRIDE {
-    switch (source) {
-      case CrxComponent::BANDAID:
-        return GURL("http://localhost/upd");
-      case CrxComponent::CWS_PUBLIC:
-        return GURL("http://localhost/cws");
-      default:
-        return GURL("http://wronghost/bad");
-    };
-  }
+int TestConfigurator::MinimumReCheckWait() {
+  return recheck_time_;
+}
 
-  virtual const char* ExtraRequestParams() OVERRIDE { return "extra=foo"; }
+int TestConfigurator::OnDemandDelay() {
+  return ondemand_time_;
+}
 
-  virtual size_t UrlSizeLimit() OVERRIDE { return 256; }
+GURL TestConfigurator::UpdateUrl(CrxComponent::UrlSource source) {
+  switch (source) {
+    case CrxComponent::BANDAID:
+      return GURL("http://localhost/upd");
+    case CrxComponent::CWS_PUBLIC:
+      return GURL("http://localhost/cws");
+    default:
+      return GURL("http://wronghost/bad");
+  };
+}
 
-  virtual net::URLRequestContextGetter* RequestContext() OVERRIDE {
-    return new net::TestURLRequestContextGetter(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-  }
+const char* TestConfigurator::ExtraRequestParams() { return "extra=foo"; }
 
-  // Don't use the utility process to decode files.
-  virtual bool InProcess() OVERRIDE { return true; }
+size_t TestConfigurator::UrlSizeLimit() { return 256; }
 
-  virtual void OnEvent(Events event, int extra) OVERRIDE { }
+net::URLRequestContextGetter* TestConfigurator::RequestContext() {
+  return new net::TestURLRequestContextGetter(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+}
 
-  // Set how many update checks are called, the default value is just once.
-  void SetLoopCount(int times) { times_ = times; }
+// Don't use the utility process to decode files.
+bool TestConfigurator::InProcess() { return true; }
 
-  void SetRecheckTime(int seconds) {
-    recheck_time_ = seconds;
-  }
+void TestConfigurator::OnEvent(Events event, int extra) { }
 
-  void SetOnDemandTime(int seconds) {
-    ondemand_time_ = seconds;
-  }
+ComponentPatcher* TestConfigurator::CreateComponentPatcher() {
+  return new MockComponentPatcher();
+}
 
-  void AddComponentToCheck(CrxComponent* com, int at_loop_iter) {
-    components_to_check_.push_back(std::make_pair(com, at_loop_iter));
-  }
+bool TestConfigurator::DeltasEnabled() const {
+  return true;
+}
 
-  void SetComponentUpdateService(ComponentUpdateService* cus) {
-    cus_ = cus;
-  }
+// Set how many update checks are called, the default value is just once.
+void TestConfigurator::SetLoopCount(int times) { times_ = times; }
 
- private:
-  int times_;
-  int recheck_time_;
-  int ondemand_time_;
+void TestConfigurator::SetRecheckTime(int seconds) {
+  recheck_time_ = seconds;
+}
 
-  std::list<CheckAtLoopCount> components_to_check_;
-  ComponentUpdateService* cus_;
-};
+void TestConfigurator::SetOnDemandTime(int seconds) {
+  ondemand_time_ = seconds;
+}
 
-class TestInstaller : public ComponentInstaller {
- public :
-  explicit TestInstaller()
-      : error_(0), install_count_(0) {
-  }
+void TestConfigurator::AddComponentToCheck(CrxComponent* com,
+                                           int at_loop_iter) {
+  components_to_check_.push_back(std::make_pair(com, at_loop_iter));
+}
 
-  virtual void OnUpdateError(int error) OVERRIDE {
-    EXPECT_NE(0, error);
-    error_ = error;
-  }
+void TestConfigurator::SetComponentUpdateService(ComponentUpdateService* cus) {
+  cus_ = cus;
+}
 
-  virtual bool Install(const base::DictionaryValue& manifest,
-                       const base::FilePath& unpack_path) OVERRIDE {
-    ++install_count_;
-    return file_util::Delete(unpack_path, true);
-  }
+ComponentUpdaterTest::ComponentUpdaterTest() : test_config_(NULL) {
+  // The component updater instance under test.
+  test_config_ = new TestConfigurator;
+  component_updater_.reset(ComponentUpdateServiceFactory(test_config_));
+  test_config_->SetComponentUpdateService(component_updater_.get());
+  // The test directory is chrome/test/data/components.
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+  test_data_dir_ = test_data_dir_.AppendASCII("components");
 
-  int error() const { return error_; }
-
-  int install_count() const { return install_count_; }
-
- private:
-  int error_;
-  int install_count_;
-};
-
-// component 1 has extension id "jebgalgnebhfojomionfpkfelancnnkf", and
-// the RSA public key the following hash:
-const uint8 jebg_hash[] = {0x94,0x16,0x0b,0x6d,0x41,0x75,0xe9,0xec,0x8e,0xd5,
-                           0xfa,0x54,0xb0,0xd2,0xdd,0xa5,0x6e,0x05,0x6b,0xe8,
-                           0x73,0x47,0xf6,0xc4,0x11,0x9f,0xbc,0xb3,0x09,0xb3,
-                           0x5b,0x40};
-// component 2 has extension id "abagagagagagagagagagagagagagagag", and
-// the RSA public key the following hash:
-const uint8 abag_hash[] = {0x01,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,
-                           0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,
-                           0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,0x06,
-                           0x06,0x01};
-
-const char expected_crx_url[] =
-    "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
-
-}  // namespace
-
-// Common fixture for all the component updater tests.
-class ComponentUpdaterTest : public testing::Test {
- public:
-  enum TestComponents {
-    kTestComponent_abag,
-    kTestComponent_jebg
+  // Subscribe to all component updater notifications.
+  const int notifications[] = {
+    chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED,
+    chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
+    chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND,
+    chrome::NOTIFICATION_COMPONENT_UPDATE_READY
   };
 
-  ComponentUpdaterTest() : test_config_(NULL) {
-    // The component updater instance under test.
-    test_config_ = new TestConfigurator;
-    component_updater_.reset(ComponentUpdateServiceFactory(test_config_));
-    test_config_->SetComponentUpdateService(component_updater_.get());
-    // The test directory is chrome/test/data/components.
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
-    test_data_dir_ = test_data_dir_.AppendASCII("components");
-
-    // Subscribe to all component updater notifications.
-    const int notifications[] = {
-      chrome::NOTIFICATION_COMPONENT_UPDATER_STARTED,
-      chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING,
-      chrome::NOTIFICATION_COMPONENT_UPDATE_FOUND,
-      chrome::NOTIFICATION_COMPONENT_UPDATE_READY
-    };
-
-    for (int ix = 0; ix != arraysize(notifications); ++ix) {
-      notification_tracker_.ListenFor(
-          notifications[ix], content::NotificationService::AllSources());
-    }
-    net::URLFetcher::SetEnableInterceptionForTests(true);
+  for (int ix = 0; ix != arraysize(notifications); ++ix) {
+    notification_tracker_.ListenFor(
+        notifications[ix], content::NotificationService::AllSources());
   }
+  net::URLFetcher::SetEnableInterceptionForTests(true);
+}
 
-  virtual ~ComponentUpdaterTest() {
-    net::URLFetcher::SetEnableInterceptionForTests(false);
-  }
+ComponentUpdaterTest::~ComponentUpdaterTest() {
+  net::URLFetcher::SetEnableInterceptionForTests(false);
+}
 
-  virtual void TearDown() {
-    xmlCleanupGlobals();
-  }
+void ComponentUpdaterTest::TearDown() {
+  xmlCleanupGlobals();
+}
 
-  ComponentUpdateService* component_updater() {
-    return component_updater_.get();
-  }
+ComponentUpdateService* ComponentUpdaterTest::component_updater() {
+  return component_updater_.get();
+}
 
   // Makes the full path to a component updater test file.
-  const base::FilePath test_file(const char* file) {
-    return test_data_dir_.AppendASCII(file);
-  }
+const base::FilePath ComponentUpdaterTest::test_file(const char* file) {
+  return test_data_dir_.AppendASCII(file);
+}
 
-  TestNotificationTracker& notification_tracker() {
-    return notification_tracker_;
-  }
+TestNotificationTracker& ComponentUpdaterTest::notification_tracker() {
+  return notification_tracker_;
+}
 
-  TestConfigurator* test_configurator() {
-    return test_config_;
-  }
+TestConfigurator* ComponentUpdaterTest::test_configurator() {
+  return test_config_;
+}
 
-  ComponentUpdateService::Status RegisterComponent(CrxComponent* com,
-                                                   TestComponents component,
-                                                   const Version& version) {
-    if (component == kTestComponent_abag) {
-      com->name = "test_abag";
-      com->pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
-    } else {
-      com->name = "test_jebg";
-      com->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-    }
-    com->version = version;
-    TestInstaller* installer = new TestInstaller;
-    com->installer = installer;
-    test_installers_.push_back(installer);
-    return component_updater_->RegisterComponent(*com);
+ComponentUpdateService::Status ComponentUpdaterTest::RegisterComponent(
+    CrxComponent* com,
+    TestComponents component,
+    const Version& version,
+    TestInstaller* installer) {
+  if (component == kTestComponent_abag) {
+    com->name = "test_abag";
+    com->pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
+  } else if (component == kTestComponent_jebg) {
+    com->name = "test_jebg";
+    com->pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+  } else {
+    com->name = "test_ihfo";
+    com->pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
   }
-
- private:
-  scoped_ptr<ComponentUpdateService> component_updater_;
-  base::FilePath test_data_dir_;
-  TestNotificationTracker notification_tracker_;
-  TestConfigurator* test_config_;
-  // ComponentInstaller objects to delete after each test.
-  ScopedVector<TestInstaller> test_installers_;
-};
+  com->version = version;
+  com->installer = installer;
+  return component_updater_->RegisterComponent(*com);
+}
 
 // Verify that our test fixture work and the component updater can
 // be created and destroyed with no side effects.
@@ -295,13 +239,17 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  TestInstaller installer;
   CrxComponent com;
   EXPECT_EQ(ComponentUpdateService::kOk,
-            RegisterComponent(&com, kTestComponent_abag, Version("1.1")));
+            RegisterComponent(&com,
+                              kTestComponent_abag,
+                              Version("1.1"),
+                              &installer));
 
   const GURL expected_update_url(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D1.1%26uc");
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D1.1%26fp%3D%26uc");
 
   interceptor.SetResponse(expected_update_url,
                           test_file("updatecheck_reply_1.xml"));
@@ -374,20 +322,22 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  TestInstaller installer1;
   CrxComponent com1;
-  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"));
+  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
+  TestInstaller installer2;
   CrxComponent com2;
-  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"));
+  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
 
   const GURL expected_update_url_1(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26fp%3D%26uc"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc");
 
   const GURL expected_update_url_2(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc");
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc"
+      "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26fp%3D%26uc");
 
   interceptor.SetResponse(expected_update_url_1,
                           test_file("updatecheck_reply_1.xml"));
@@ -439,19 +389,21 @@ TEST_F(ComponentUpdaterTest, InstallCrxTwoSources) {
 
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  TestInstaller installer1;
   CrxComponent com1;
-  RegisterComponent(&com1, kTestComponent_abag, Version("2.2"));
+  RegisterComponent(&com1, kTestComponent_abag, Version("2.2"), &installer1);
+  TestInstaller installer2;
   CrxComponent com2;
   com2.source = CrxComponent::CWS_PUBLIC;
-  RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"));
+  RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"), &installer2);
 
   const GURL expected_update_url_1(
       "http://localhost/upd?extra=foo&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
+      "abagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc");
 
   const GURL expected_update_url_2(
       "http://localhost/cws?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc");
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26fp%3D%26uc");
 
   interceptor.SetResponse(expected_update_url_1,
                           test_file("updatecheck_reply_3.xml"));
@@ -511,12 +463,13 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
 
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  TestInstaller installer;
   CrxComponent com;
-  RegisterComponent(&com, kTestComponent_jebg, Version("0.9"));
+  RegisterComponent(&com, kTestComponent_jebg, Version("0.9"), &installer);
 
   const GURL expected_update_url(
       "http://localhost/upd?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc");
+      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26fp%3D%26uc");
 
   interceptor.SetResponse(expected_update_url,
                           test_file("updatecheck_reply_2.xml"));
@@ -551,20 +504,22 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
 
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  TestInstaller installer1;
   CrxComponent com1;
-  RegisterComponent(&com1, kTestComponent_abag, Version("2.2"));
+  RegisterComponent(&com1, kTestComponent_abag, Version("2.2"), &installer1);
+  TestInstaller installer2;
   CrxComponent com2;
-  RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"));
+  RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"), &installer2);
 
   const GURL expected_update_url_1(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc");
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc"
+      "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26fp%3D%26uc");
 
   const GURL expected_update_url_2(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26fp%3D%26uc"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc");
 
   interceptor.SetResponse(expected_update_url_1,
                           test_file("updatecheck_reply_empty"));
@@ -613,9 +568,9 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   // Test a few error cases. NOTE: We don't have callbacks for
   // when the updates failed yet.
   const GURL expected_update_url_3(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26fp%3D%26uc"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc");
 
   // No update: error from no server response
   interceptor.SetResponse(expected_update_url_3,
@@ -667,21 +622,23 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
 
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
+  TestInstaller installer1;
   CrxComponent com1;
-  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"));
+  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
+  TestInstaller installer2;
   CrxComponent com2;
-  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"));
+  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
 
   // Start with 0.9, and update to 1.0
   const GURL expected_update_url_1(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26uc&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26fp%3D%26uc"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc");
 
   const GURL expected_update_url_2(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26uc");
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc"
+      "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D1.0%26fp%3D%26uc");
 
   interceptor.SetResponse(expected_update_url_1,
                           test_file("updatecheck_reply_1.xml"));
@@ -722,16 +679,20 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   EXPECT_EQ(chrome::NOTIFICATION_COMPONENT_UPDATER_SLEEPING, ev4.type);
 
   // Now re-register, pretending to be an even newer version (2.2)
+  TestInstaller installer3;
   component_updater()->Stop();
   EXPECT_EQ(ComponentUpdateService::kReplaced,
-            RegisterComponent(&com1, kTestComponent_jebg, Version("2.2")));
+            RegisterComponent(&com1,
+                              kTestComponent_jebg,
+                              Version("2.2"),
+                              &installer3));
 
   // Check that we send out 2.2 as our version.
   // Interceptor's hit count should go up by 1.
   const GURL expected_update_url_3(
-      "http://localhost/upd?extra=foo&x=id%3D"
-      "jebgalgnebhfojomionfpkfelancnnkf%26v%3D2.2%26uc&x=id%3D"
-      "abagagagagagagagagagagagagagagag%26v%3D2.2%26uc");
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D2.2%26fp%3D%26uc"
+      "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc");
 
   interceptor.SetResponse(expected_update_url_3,
                           test_file("updatecheck_reply_1.xml"));
@@ -753,12 +714,135 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
 
   EXPECT_EQ(4, interceptor.GetHitCount());
 
-  // The test harness's Register() function creates a new installer,
-  // so the counts go back to 0.
+  // We created a new installer, so the counts go back to 0.
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->install_count());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
+
+  component_updater()->Stop();
+}
+
+// Verify that component installation falls back to downloading and installing
+// a full update if the differential update fails (in this case, because the
+// installer does not know about the existing files). We do two loops; the final
+// loop should do nothing.
+// We also check that exactly 4 network requests are issued:
+// 1- update check (loop 1)
+// 2- download differential crx
+// 3- download full crx
+// 4- update check (loop 2 - no update available)
+TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
+  base::MessageLoop message_loop;
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread file_thread(BrowserThread::FILE);
+  content::TestBrowserThread io_thread(BrowserThread::IO);
+
+  io_thread.StartIOThread();
+  file_thread.Start();
+
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
+
+  TestInstaller installer;
+  CrxComponent com;
+  RegisterComponent(&com, kTestComponent_ihfo, Version("1.0"), &installer);
+
+  const GURL expected_update_url_1(
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dihfokbkgjpifnbbojhneepfflplebdkc%26v%3D1.0%26fp%3D%26uc");
+  const GURL expected_update_url_2(
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dihfokbkgjpifnbbojhneepfflplebdkc%26v%3D2.0%26fp%3Df22%26uc");
+  const GURL expected_crx_url_1(
+      "http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_1.crx");
+  const GURL expected_crx_url_1_diff_2(
+      "http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx");
+  const GURL expected_crx_url_2(
+      "http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_2.crx");
+
+  interceptor.SetResponse(expected_update_url_1,
+                          test_file("updatecheck_diff_reply_2.xml"));
+  interceptor.SetResponse(expected_update_url_2,
+                          test_file("updatecheck_diff_reply_3.xml"));
+  interceptor.SetResponse(expected_crx_url_1,
+                          test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1.crx"));
+  interceptor.SetResponse(
+      expected_crx_url_1_diff_2,
+      test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"));
+  interceptor.SetResponse(expected_crx_url_2,
+                          test_file("ihfokbkgjpifnbbojhneepfflplebdkc_2.crx"));
+
+  test_configurator()->SetLoopCount(2);
+
+  component_updater()->Start();
+  message_loop.Run();
+
+  // A failed differential update does not count as a failed install.
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
+  EXPECT_EQ(1, static_cast<TestInstaller*>(com.installer)->install_count());
+
+  EXPECT_EQ(4, interceptor.GetHitCount());
+
+  component_updater()->Stop();
+}
+
+// Verify that we successfully propagate a patcher error.
+// ihfokbkgjpifnbbojhneepfflplebdkc_1to2_bad.crx contains an incorrect
+// patching instruction that should fail.
+TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
+  base::MessageLoop message_loop;
+  content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  content::TestBrowserThread file_thread(BrowserThread::FILE);
+  content::TestBrowserThread io_thread(BrowserThread::IO);
+
+  io_thread.StartIOThread();
+  file_thread.Start();
+
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
+
+  VersionedTestInstaller installer;
+  CrxComponent com;
+  RegisterComponent(&com, kTestComponent_ihfo, Version("0.0"), &installer);
+
+  const GURL expected_update_url_0(
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dihfokbkgjpifnbbojhneepfflplebdkc%26v%3D0.0%26fp%3D%26uc");
+  const GURL expected_update_url_1(
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dihfokbkgjpifnbbojhneepfflplebdkc%26v%3D1.0%26fp%3D1%26uc");
+  const GURL expected_update_url_2(
+      "http://localhost/upd?extra=foo"
+      "&x=id%3Dihfokbkgjpifnbbojhneepfflplebdkc%26v%3D2.0%26fp%3Df22%26uc");
+  const GURL expected_crx_url_1(
+      "http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_1.crx");
+  const GURL expected_crx_url_1_diff_2(
+      "http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx");
+  const GURL expected_crx_url_2(
+      "http://localhost/download/ihfokbkgjpifnbbojhneepfflplebdkc_2.crx");
+
+  interceptor.SetResponse(expected_update_url_0,
+                          test_file("updatecheck_diff_reply_1.xml"));
+  interceptor.SetResponse(expected_update_url_1,
+                          test_file("updatecheck_diff_reply_2.xml"));
+  interceptor.SetResponse(expected_update_url_2,
+                          test_file("updatecheck_diff_reply_3.xml"));
+  interceptor.SetResponse(expected_crx_url_1,
+                          test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1.crx"));
+  interceptor.SetResponse(
+      expected_crx_url_1_diff_2,
+      test_file("ihfokbkgjpifnbbojhneepfflplebdkc_1to2_bad.crx"));
+  interceptor.SetResponse(expected_crx_url_2,
+                          test_file("ihfokbkgjpifnbbojhneepfflplebdkc_2.crx"));
+
+  test_configurator()->SetLoopCount(3);
+
+  component_updater()->Start();
+  message_loop.Run();
+
+  EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
+  EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
+
+  EXPECT_EQ(6, interceptor.GetHitCount());
 
   component_updater()->Stop();
 }

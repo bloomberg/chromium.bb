@@ -19,7 +19,9 @@ static const char* kExpectedGupdateProtocol = "2.0";
 static const char* kExpectedGupdateXmlns =
     "http://www.google.com/update2/response";
 
-UpdateManifest::Result::Result() {}
+UpdateManifest::Result::Result()
+    : size(0),
+      diff_size(0) {}
 
 UpdateManifest::Result::~Result() {}
 
@@ -154,7 +156,7 @@ static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
   result->crx_url = GURL(GetAttribute(updatecheck, "codebase"));
   if (!result->crx_url.is_valid()) {
     *error_detail = "Invalid codebase url: '";
-    *error_detail += GetAttribute(updatecheck, "codebase");
+    *error_detail += result->crx_url.possibly_invalid_spec();
     *error_detail += "'.";
     return false;
   }
@@ -188,6 +190,23 @@ static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
   // package_hash is optional. It is only required for blacklist. It is a
   // sha256 hash of the package in hex format.
   result->package_hash = GetAttribute(updatecheck, "hash");
+
+  int size = 0;
+  if (base::StringToInt(GetAttribute(updatecheck, "size"), &size)) {
+    result->size = size;
+  }
+
+  // package_fingerprint is optional. It identifies the package, preferably
+  // with a modified sha256 hash of the package in hex format.
+  result->package_fingerprint = GetAttribute(updatecheck, "fp");
+
+  // Differential update information is optional.
+  result->diff_crx_url = GURL(GetAttribute(updatecheck, "codebasediff"));
+  result->diff_package_hash = GetAttribute(updatecheck, "hashdiff");
+  int sizediff = 0;
+  if (base::StringToInt(GetAttribute(updatecheck, "sizediff"), &sizediff)) {
+    result->diff_size = sizediff;
+  }
 
   return true;
 }

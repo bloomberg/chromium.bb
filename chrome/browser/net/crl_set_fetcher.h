@@ -33,6 +33,8 @@ class CRLSetFetcher : public ComponentInstaller,
   virtual void OnUpdateError(int error) OVERRIDE;
   virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
+  virtual bool GetInstalledFile(const std::string& file,
+                                base::FilePath* installed_file) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<CRLSetFetcher>;

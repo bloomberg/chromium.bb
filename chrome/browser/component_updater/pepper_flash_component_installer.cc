@@ -250,6 +250,9 @@ class PepperFlashComponentInstaller : public ComponentInstaller {
   virtual bool Install(const base::DictionaryValue& manifest,
                        const base::FilePath& unpack_path) OVERRIDE;
 
+  virtual bool GetInstalledFile(const std::string& file,
+                                base::FilePath* installed_file) OVERRIDE;
+
  private:
   Version current_version_;
 };
@@ -290,6 +293,11 @@ bool PepperFlashComponentInstaller::Install(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&RegisterPepperFlashWithChrome, path, version));
   return true;
+}
+
+bool PepperFlashComponentInstaller::GetInstalledFile(
+    const std::string& file, base::FilePath* installed_file) {
+  return false;
 }
 
 bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,

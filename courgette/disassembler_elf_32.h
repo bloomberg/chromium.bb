@@ -47,7 +47,7 @@ class DisassemblerElf32 : public Disassembler {
 
   // Misc Section Helpers
 
-  const Elf32_Half SectionHeaderCount() const {
+  Elf32_Half SectionHeaderCount() const {
     return section_header_table_size_;
   }
 
@@ -60,13 +60,13 @@ class DisassemblerElf32 : public Disassembler {
     return OffsetToPointer(SectionHeader(id)->sh_offset);
   }
 
-  const Elf32_Word SectionBodySize(int id) const {
+  Elf32_Word SectionBodySize(int id) const {
     return SectionHeader(id)->sh_size;
   }
 
   // Misc Segment Helpers
 
-  const Elf32_Half ProgramSegmentHeaderCount() const {
+  Elf32_Half ProgramSegmentHeaderCount() const {
     return program_header_table_size_;
   }
 
@@ -76,22 +76,22 @@ class DisassemblerElf32 : public Disassembler {
   }
 
   // The virtual memory address at which this program segment will be loaded
-  const Elf32_Addr ProgramSegmentMemoryBegin(int id) const {
+  Elf32_Addr ProgramSegmentMemoryBegin(int id) const {
     return ProgramSegmentHeader(id)->p_vaddr;
   }
 
   // The number of virtual memory bytes for this program segment
-  const Elf32_Word ProgramSegmentMemorySize(int id) const {
+  Elf32_Word ProgramSegmentMemorySize(int id) const {
     return ProgramSegmentHeader(id)->p_memsz;
   }
 
   // Pointer into the source file for this program segment
-  const Elf32_Addr ProgramSegmentFileOffset(int id) const {
+  Elf32_Addr ProgramSegmentFileOffset(int id) const {
     return ProgramSegmentHeader(id)->p_offset;
   }
 
   // Number of file bytes for this program segment. Is <= ProgramMemorySize.
-  const Elf32_Word ProgramSegmentFileSize(int id) const {
+  Elf32_Word ProgramSegmentFileSize(int id) const {
     return ProgramSegmentHeader(id)->p_filesz;
   }
 

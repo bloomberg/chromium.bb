@@ -60,6 +60,10 @@ class CrxFile {
   // Returns the header structure for writing out to a CRX file.
   const Header& header() const { return header_; }
 
+  // Checks a valid |header| to determine whether or not the CRX represents a
+  // differential CRX.
+  static bool HeaderIsDelta(const Header& header);
+
  private:
   Header header_;
 
