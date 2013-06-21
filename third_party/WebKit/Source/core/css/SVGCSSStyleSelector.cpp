@@ -30,7 +30,6 @@
 
 #include "core/css/resolver/StyleResolver.h"
 
-#include <stdlib.h>
 #include "CSSPropertyNames.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSValueList.h"
@@ -40,7 +39,7 @@
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGPaint.h"
 #include "core/svg/SVGURIReference.h"
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 #define HANDLE_INHERIT(prop, Prop) \
 if (isInherit) \

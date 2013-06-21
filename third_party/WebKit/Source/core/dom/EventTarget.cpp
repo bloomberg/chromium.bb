@@ -37,9 +37,8 @@
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include <wtf/MainThread.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 using namespace WTF;
 

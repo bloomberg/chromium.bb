@@ -31,11 +31,9 @@
 #ifndef InsertionPoint_h
 #define InsertionPoint_h
 
-#include "HTMLNames.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/dom/shadow/ContentDistributor.h"
 #include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/Forward.h"
 

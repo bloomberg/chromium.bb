@@ -28,9 +28,8 @@
 #define PseudoElement_h
 
 #include "core/dom/Element.h"
-#include "core/dom/Event.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

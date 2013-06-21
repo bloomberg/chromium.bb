@@ -22,10 +22,8 @@
 #ifndef PageRuleCollector_h
 #define PageRuleCollector_h
 
-#include "core/css/DocumentRuleSets.h"
 #include "core/css/resolver/StyleResolver.h"
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

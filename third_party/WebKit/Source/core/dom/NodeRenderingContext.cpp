@@ -26,19 +26,12 @@
 #include "config.h"
 #include "core/dom/NodeRenderingContext.h"
 
-#include "HTMLNames.h"
 #include "SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/FullscreenController.h"
 #include "core/dom/Node.h"
-#include "core/dom/PseudoElement.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/ContentDistributor.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ShadowRoot.h"
-#include "core/html/HTMLInputElement.h"
-#include "core/html/shadow/HTMLContentElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/RenderFullScreen.h"
@@ -46,11 +39,8 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {
-
-using namespace HTMLNames;
 
 NodeRenderingContext::NodeRenderingContext(Node* node)
     : m_node(node)

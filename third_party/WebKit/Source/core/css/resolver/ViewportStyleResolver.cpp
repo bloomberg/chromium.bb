@@ -36,8 +36,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/ViewportArguments.h"
-#include "core/page/Page.h"
-#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

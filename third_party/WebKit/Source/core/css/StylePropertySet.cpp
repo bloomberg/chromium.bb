@@ -30,14 +30,12 @@
 #include "core/css/StylePropertyShorthand.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/page/RuntimeCSSEnabled.h"
-#include <wtf/BitArray.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG
+#include "wtf/text/CString.h"
 #include <stdio.h>
-#include <wtf/ASCIICType.h>
-#include <wtf/text/CString.h>
 #endif
 
 using namespace std;

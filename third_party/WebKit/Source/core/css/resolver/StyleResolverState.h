@@ -25,10 +25,8 @@
 #include "CSSPropertyNames.h"
 
 #include "core/css/CSSSVGDocumentValue.h"
-#include "core/css/CSSValueList.h"
 #include "core/dom/Element.h"
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/rendering/style/BorderData.h"
 #include "core/rendering/style/FillLayer.h"
 #include "core/rendering/style/RenderStyle.h"

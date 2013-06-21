@@ -38,11 +38,10 @@
 #include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <wtf/ASCIICType.h>
-#include <wtf/DecimalNumber.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuffer.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/DecimalNumber.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuffer.h"
+#include "wtf/text/StringBuilder.h"
 
 using namespace WTF;
 

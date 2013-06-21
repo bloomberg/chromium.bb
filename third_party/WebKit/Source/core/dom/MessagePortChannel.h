@@ -32,13 +32,9 @@
 #define MessagePortChannel_h
 
 #include "bindings/v8/SerializedScriptValue.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

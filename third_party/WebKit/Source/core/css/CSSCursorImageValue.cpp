@@ -35,10 +35,8 @@
 #include "core/svg/SVGCursorElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGURIReference.h"
-#include <wtf/MathExtras.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/UnusedParam.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/MathExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

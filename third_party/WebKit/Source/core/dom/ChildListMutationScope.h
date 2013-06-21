@@ -34,10 +34,9 @@
 #include "core/dom/Document.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/Node.h"
-#include <wtf/HashMap.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

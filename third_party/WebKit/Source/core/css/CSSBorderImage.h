@@ -22,8 +22,7 @@
 
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSValueList.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

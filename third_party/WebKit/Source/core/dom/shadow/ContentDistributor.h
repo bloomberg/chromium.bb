@@ -34,7 +34,6 @@
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

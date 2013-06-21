@@ -28,7 +28,6 @@
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/text/StringBuilder.h>
 
 using namespace std;
 

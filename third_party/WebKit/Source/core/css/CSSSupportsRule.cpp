@@ -31,8 +31,7 @@
 
 #include "core/css/CSSRule.h"
 #include "core/css/StyleRule.h"
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

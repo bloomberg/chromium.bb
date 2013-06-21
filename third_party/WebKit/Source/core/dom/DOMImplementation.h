@@ -25,10 +25,8 @@
 #define DOMImplementation_h
 
 #include "core/dom/Document.h"
-#include "core/platform/graphics/MediaPlayer.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

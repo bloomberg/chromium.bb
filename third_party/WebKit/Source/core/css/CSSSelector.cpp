@@ -30,11 +30,10 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSOMUtils.h"
 #include "core/css/CSSSelectorList.h"
-#include <wtf/Assertions.h>
-#include <wtf/HashMap.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Vector.h>
+#include "wtf/Assertions.h"
+#include "wtf/HashMap.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

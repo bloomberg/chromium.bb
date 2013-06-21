@@ -32,12 +32,11 @@
 #define CSSFontFaceLoadEvent_h
 
 #include "core/css/CSSFontFaceRule.h"
-#include "core/css/CSSValue.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

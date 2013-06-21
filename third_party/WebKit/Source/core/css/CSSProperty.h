@@ -25,7 +25,6 @@
 #include "core/css/CSSValue.h"
 #include "core/platform/text/TextDirection.h"
 #include "core/platform/text/WritingMode.h"
-#include "core/rendering/style/RenderStyleConstants.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

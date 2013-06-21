@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/dom/DocumentFullscreen.h"
 
-#include "core/dom/Document.h"
 #include "core/dom/FullscreenController.h"
 
 namespace WebCore {

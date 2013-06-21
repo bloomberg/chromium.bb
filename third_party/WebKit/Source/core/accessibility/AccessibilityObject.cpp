@@ -30,24 +30,16 @@
 #include "core/accessibility/AccessibilityObject.h"
 
 #include "core/accessibility/AXObjectCache.h"
-#include "core/accessibility/AccessibilityTable.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/editing/Editor.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/RenderedPosition.h"
-#include "core/editing/TextCheckingHelper.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/platform/LocalizedStrings.h"
-#include "core/platform/text/TextCheckerClient.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/WTFString.h"
 
 using namespace std;
 

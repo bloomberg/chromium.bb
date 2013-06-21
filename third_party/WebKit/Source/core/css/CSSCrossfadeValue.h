@@ -32,7 +32,6 @@
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/graphics/Image.h"
-#include "core/platform/graphics/ImageObserver.h"
 
 namespace WebCore {
 

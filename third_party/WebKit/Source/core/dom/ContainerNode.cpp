@@ -33,13 +33,11 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLCollection.h"
-#include "core/page/Page.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderWidget.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 using namespace std;
 

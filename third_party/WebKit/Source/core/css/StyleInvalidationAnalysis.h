@@ -26,10 +26,9 @@
 #ifndef StyleInvalidationAnalysis_h
 #define StyleInvalidationAnalysis_h
 
-#include <wtf/HashSet.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/AtomicStringImpl.h>
+#include "wtf/HashSet.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicStringImpl.h"
 
 namespace WebCore {
 

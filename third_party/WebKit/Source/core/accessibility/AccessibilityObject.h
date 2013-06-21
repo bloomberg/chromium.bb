@@ -32,12 +32,11 @@
 
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"
-#include <wtf/Forward.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

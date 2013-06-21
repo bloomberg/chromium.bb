@@ -22,10 +22,9 @@
 #ifndef RuleFeature_h
 #define RuleFeature_h
 
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/Forward.h"
+#include "wtf/HashSet.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

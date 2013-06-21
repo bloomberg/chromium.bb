@@ -36,7 +36,6 @@
 #include "core/css/MediaQuery.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/graphics/Color.h"
-#include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/Vector.h"

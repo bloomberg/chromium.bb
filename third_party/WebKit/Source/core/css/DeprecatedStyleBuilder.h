@@ -27,8 +27,6 @@
 
 #include "CSSPropertyNames.h"
 #include "core/css/StylePropertyShorthand.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
 
 namespace WebCore {
 

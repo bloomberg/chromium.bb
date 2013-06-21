@@ -32,10 +32,6 @@
 
 #include "core/dom/CustomElementDefinition.h"
 
-#include "SVGNames.h"
-#include "bindings/v8/CustomElementHelpers.h"
-#include <wtf/Assertions.h>
-
 namespace WebCore {
 
 PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI)

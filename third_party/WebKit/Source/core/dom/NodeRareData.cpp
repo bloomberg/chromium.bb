@@ -32,9 +32,7 @@
 #include "core/dom/NodeRareData.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationVector.h>
+#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 

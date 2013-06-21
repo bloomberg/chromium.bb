@@ -27,13 +27,12 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
-#include "core/dom/ParserContentPolicy.h"
 #include "core/dom/RangeBoundaryPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/IntRect.h"
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -29,9 +29,6 @@
 #include "config.h"
 #include "core/css/RuleSet.h"
 
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationVector.h>
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSFontSelector.h"
@@ -47,9 +44,10 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "weborigin/SecurityOrigin.h"
-
 #include "core/html/track/TextTrackCue.h"
+#include "weborigin/SecurityOrigin.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 

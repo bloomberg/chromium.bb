@@ -24,9 +24,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSRuleList.h"
-#include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToStyleMap.h"
-#include "core/css/CSSValueList.h"
 #include "core/css/DocumentRuleSets.h"
 #include "core/css/InspectorCSSOMWrappers.h"
 #include "core/css/MediaQueryExp.h"
@@ -39,16 +37,11 @@
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
-#include "core/platform/LinkHash.h"
-#include "core/platform/ScrollTypes.h"
-#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

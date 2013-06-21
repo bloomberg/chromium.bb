@@ -26,10 +26,9 @@
 #ifndef ScriptedAnimationController_h
 #define ScriptedAnimationController_h
 
-#include "core/dom/DOMTimeStamp.h"
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

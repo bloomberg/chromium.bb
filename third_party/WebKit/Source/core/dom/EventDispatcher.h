@@ -28,10 +28,8 @@
 
 #include "core/dom/EventContext.h"
 #include "core/dom/SimulatedClickOptions.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

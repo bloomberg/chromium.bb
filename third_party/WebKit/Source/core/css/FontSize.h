@@ -22,8 +22,6 @@
 #ifndef FontSize_h
 #define FontSize_h
 
-#include "core/platform/graphics/FontDescription.h"
-
 namespace WebCore {
 
 class Document;

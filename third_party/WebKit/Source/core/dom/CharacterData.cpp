@@ -28,14 +28,11 @@
 #include "core/dom/MutationEvent.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/FrameSelection.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/platform/text/TextBreakIterator.h"
-#include "core/rendering/RenderText.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 using namespace std;
 

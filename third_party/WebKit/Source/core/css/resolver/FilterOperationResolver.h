@@ -22,8 +22,6 @@
 #ifndef FilterOperationResolver_h
 #define FilterOperationResolver_h
 
-#include "CSSPropertyNames.h"
-#include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 

@@ -79,7 +79,6 @@
 #include "core/page/Settings.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/HashTools.h"
-#include "core/platform/HistogramSupport.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/BitArray.h"

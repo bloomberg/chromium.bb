@@ -22,21 +22,17 @@
 #ifndef NodeRareData_h
 #define NodeRareData_h
 
-#include "HTMLNames.h"
 #include "core/dom/ChildNodeList.h"
 #include "core/dom/LiveNodeList.h"
-#include "core/dom/MutationObserver.h"
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/TagNodeList.h"
-#include "core/html/DOMSettableTokenList.h"
-#include "core/html/track/TextTrack.h"
 #include "core/page/Page.h"
-#include <wtf/HashSet.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

@@ -47,9 +47,8 @@
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/CString.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

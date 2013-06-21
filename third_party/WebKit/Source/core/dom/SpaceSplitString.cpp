@@ -22,10 +22,9 @@
 #include "core/dom/SpaceSplitString.h"
 
 #include "core/html/parser/HTMLParserIdioms.h"
-#include <wtf/ASCIICType.h>
-#include <wtf/HashMap.h>
-#include <wtf/text/AtomicStringHash.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/HashMap.h"
+#include "wtf/text/AtomicStringHash.h"
 
 using namespace WTF;
 

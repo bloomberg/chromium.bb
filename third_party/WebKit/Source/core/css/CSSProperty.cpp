@@ -26,8 +26,6 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-#include <wtf/text/StringBuilder.h>
-
 namespace WebCore {
 
 struct SameSizeAsCSSProperty {

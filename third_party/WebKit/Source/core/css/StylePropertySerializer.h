@@ -23,11 +23,8 @@
 #ifndef StylePropertySerializer_h
 #define StylePropertySerializer_h
 
-#include "core/css/CSSValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
 
 namespace WebCore {
 

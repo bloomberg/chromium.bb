@@ -29,8 +29,7 @@
 #include "core/dom/ViewportArguments.h"
 
 #include "core/dom/Document.h"
-#include "core/platform/graphics/IntSize.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 using namespace std;
 

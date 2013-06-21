@@ -26,7 +26,6 @@
 #include "core/dom/DOMImplementation.h"
 
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"

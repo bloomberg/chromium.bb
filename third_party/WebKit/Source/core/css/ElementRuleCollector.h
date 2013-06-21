@@ -22,11 +22,10 @@
 #ifndef ElementRuleCollector_h
 #define ElementRuleCollector_h
 
-#include "core/css/MediaQueryEvaluator.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/resolver/StyleResolver.h"
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -26,13 +26,12 @@
 #ifndef AXObjectCache_h
 #define AXObjectCache_h
 
-#include <limits.h>
 #include "core/accessibility/AccessibilityObject.h"
 #include "core/platform/Timer.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

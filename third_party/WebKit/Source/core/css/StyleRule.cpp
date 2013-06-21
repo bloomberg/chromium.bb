@@ -23,24 +23,20 @@
 #include "core/css/StyleRule.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/css/CSSCharsetRule.h"
 #include "core/css/CSSFilterRule.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSHostRule.h"
 #include "core/css/CSSImportRule.h"
-#include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSPageRule.h"
 #include "core/css/CSSRegionRule.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSSupportsRule.h"
-#include "core/css/CSSUnknownRule.h"
 #include "core/css/CSSViewportRule.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 

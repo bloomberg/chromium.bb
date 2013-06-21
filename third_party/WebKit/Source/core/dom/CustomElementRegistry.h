@@ -35,7 +35,6 @@
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
-#include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

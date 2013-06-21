@@ -33,7 +33,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/NamedFlowCollection.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/UIEvent.h"
 #include "core/rendering/RenderNamedFlowThread.h"

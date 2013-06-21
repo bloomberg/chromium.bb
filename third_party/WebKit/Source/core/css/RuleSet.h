@@ -26,9 +26,7 @@
 #include "core/css/StyleRule.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
 #include "wtf/LinkedStack.h"
-#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

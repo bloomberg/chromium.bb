@@ -27,8 +27,6 @@
 #include "core/dom/EventNames.h"
 #include "core/platform/PlatformWheelEvent.h"
 
-#include <wtf/MathExtras.h>
-
 namespace WebCore {
 
 WheelEventInit::WheelEventInit()

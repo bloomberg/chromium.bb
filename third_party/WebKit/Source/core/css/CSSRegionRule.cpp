@@ -33,10 +33,7 @@
 #include "core/css/CSSRegionRule.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/css/CSSParser.h"
-#include "core/css/CSSRuleList.h"
 #include "core/css/StyleRule.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

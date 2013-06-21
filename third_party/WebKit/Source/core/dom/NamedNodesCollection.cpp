@@ -31,7 +31,6 @@
 #include "core/dom/NamedNodesCollection.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/NamedNodeMap.h"
 
 namespace WebCore {
 

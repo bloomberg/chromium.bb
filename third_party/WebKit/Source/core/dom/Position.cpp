@@ -35,15 +35,14 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/platform/Logging.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderText.h"
-#include <wtf/text/CString.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/text/CString.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 

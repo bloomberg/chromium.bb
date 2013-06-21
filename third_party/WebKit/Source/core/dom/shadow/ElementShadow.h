@@ -27,13 +27,11 @@
 #ifndef ElementShadow_h
 #define ElementShadow_h
 
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/shadow/ContentDistributor.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "wtf/DoublyLinkedList.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

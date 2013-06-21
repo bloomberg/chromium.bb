@@ -34,7 +34,6 @@
 #include "core/platform/LinkHash.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "wtf/HashSet.h"
-#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

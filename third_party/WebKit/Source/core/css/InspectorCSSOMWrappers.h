@@ -23,11 +23,10 @@
 #ifndef InspectorCSSOMWrappers_h
 #define InspectorCSSOMWrappers_h
 
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -28,12 +28,11 @@
 #define DocumentEventQueue_h
 
 #include "core/dom/EventQueue.h"
-#include <wtf/Forward.h>
-#include <wtf/HashSet.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/HashSet.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

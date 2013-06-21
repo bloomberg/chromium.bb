@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/css/StyleRuleImport.h"
 
-#include <wtf/StdLibExtras.h>
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"

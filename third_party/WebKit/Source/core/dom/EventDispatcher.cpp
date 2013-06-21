@@ -35,8 +35,7 @@
 #include "core/dom/WindowEventContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/FrameView.h"
-#include <wtf/RefPtr.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

@@ -34,12 +34,11 @@
 #include "core/dom/EventListenerMap.h"
 
 #include "core/dom/EventTarget.h"
-#include <wtf/MainThread.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 #ifndef NDEBUG
-#include <wtf/Threading.h>
+#include "wtf/Threading.h"
 #endif
 
 using namespace WTF;

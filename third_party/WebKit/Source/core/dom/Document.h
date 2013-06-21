@@ -41,23 +41,19 @@
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/ViewportArguments.h"
 #include "core/html/CollectionType.h"
-#include "core/inspector/InspectorCounters.h"
 #include "core/page/FocusDirection.h"
 #include "core/page/PageVisibilityState.h"
-#include "core/platform/PlatformScreen.h"
 #include "weborigin/ReferrerPolicy.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/IntRect.h"
 #include "core/platform/text/StringWithDirection.h"
 #include "core/rendering/HitTestRequest.h"
-#include <wtf/Deque.h>
-#include <wtf/FixedArray.h>
-#include <wtf/HashSet.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/WeakPtr.h>
+#include "wtf/Deque.h"
+#include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 

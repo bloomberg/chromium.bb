@@ -37,8 +37,6 @@
 #include "core/dom/StyledElement.h"
 #include "core/rendering/RenderRegion.h"
 
-#include <wtf/TemporaryChange.h>
-
 namespace WebCore {
 
 StyleResolver::MatchResult& ElementRuleCollector::matchedResult()

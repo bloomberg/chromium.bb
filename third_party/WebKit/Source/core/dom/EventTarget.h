@@ -34,9 +34,7 @@
 
 #include "core/dom/EventListenerMap.h"
 #include "core/dom/EventNames.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

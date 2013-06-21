@@ -41,8 +41,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
+#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 

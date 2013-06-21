@@ -36,8 +36,7 @@
 #include "core/dom/NodeList.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StaticNodeList.h"
-#include <wtf/Assertions.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 
