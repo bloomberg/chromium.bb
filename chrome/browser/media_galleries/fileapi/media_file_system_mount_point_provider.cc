@@ -72,6 +72,15 @@ bool MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread() {
   return pool->IsRunningSequenceOnCurrentThread(media_sequence_token);
 }
 
+// static
+scoped_refptr<base::SequencedTaskRunner>
+MediaFileSystemMountPointProvider::MediaTaskRunner() {
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool::SequenceToken media_sequence_token =
+      pool->GetNamedSequenceToken(kMediaTaskRunnerName);
+  return pool->GetSequencedTaskRunner(media_sequence_token);
+}
+
 bool MediaFileSystemMountPointProvider::CanHandleType(
     fileapi::FileSystemType type) const {
   switch (type) {

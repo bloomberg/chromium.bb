@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/files/file_path_watcher.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_library_parser.h"
 
 namespace itunes {
@@ -62,7 +63,22 @@ class ITunesDataProvider {
   typedef std::map<AlbumName, Album> Artist;
   typedef std::map<ArtistName, Artist> Library;
 
+  // These are hacks to work around http://crbug.com/165590. Otherwise a
+  // WeakPtrFactory would be the obvious answer here.
+  // static so they can call their real counterparts.
+  // TODO(vandebo) Remove these when the bug is fixed.
+  static void OnLibraryWatchStartedCallback(
+      scoped_ptr<base::FilePathWatcher> library_watcher);
+  static void OnLibraryChangedCallback(const base::FilePath& path, bool error);
+
   bool ParseLibrary();
+
+  // Called when the FilePathWatcher for |library_path_| has tried to add an
+  // watch.
+  void OnLibraryWatchStarted(scoped_ptr<base::FilePathWatcher> library_watcher);
+
+  // Called when |library_path_| has changed.
+  void OnLibraryChanged(const base::FilePath& path, bool error);
 
   // Path to the library XML file.
   const base::FilePath library_path_;
@@ -76,6 +92,9 @@ class ITunesDataProvider {
   // True if |library_| contain valid data.  False at construction and if
   // reading or parsing the XML file fails.
   bool is_valid_;
+
+  // A watcher on the library xml file.
+  scoped_ptr<base::FilePathWatcher> library_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ITunesDataProvider);
 };

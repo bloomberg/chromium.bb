@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_data_provider.h"
@@ -19,17 +18,6 @@ using base::Bind;
 namespace chrome {
 
 namespace {
-
-scoped_refptr<base::SequencedTaskRunner> MediaTaskRunner() {
-  DCHECK(
-      !MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(
-          MediaFileSystemMountPointProvider::kMediaTaskRunnerName);
-
-  return pool->GetSequencedTaskRunner(media_sequence_token);
-}
 
 static base::LazyInstance<ImportedMediaGalleryRegistry>::Leaky
 g_imported_media_gallery_registry = LAZY_INSTANCE_INITIALIZER;
@@ -58,7 +46,7 @@ std::string ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
   picasa_fsids_.insert(fsid);
 
   if (picasa_fsids_.size() == 1) {
-    MediaTaskRunner()->PostTask(
+    MediaFileSystemMountPointProvider::MediaTaskRunner()->PostTask(
         FROM_HERE,
         Bind(&ImportedMediaGalleryRegistry::RegisterPicasaFileSystem,
              base::Unretained(this), database_path));
@@ -89,7 +77,7 @@ std::string ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
   itunes_fsids_.insert(fsid);
 
   if (itunes_fsids_.size() == 1) {
-    MediaTaskRunner()->PostTask(
+    MediaFileSystemMountPointProvider::MediaTaskRunner()->PostTask(
         FROM_HERE,
         Bind(&ImportedMediaGalleryRegistry::RegisterITunesFileSystem,
              base::Unretained(this), library_xml_path));
@@ -109,7 +97,7 @@ bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
 
   if (picasa_fsids_.erase(fsid)) {
     if (picasa_fsids_.empty()) {
-      MediaTaskRunner()->PostTask(
+      MediaFileSystemMountPointProvider::MediaTaskRunner()->PostTask(
           FROM_HERE,
           Bind(&ImportedMediaGalleryRegistry::RevokePicasaFileSystem,
                base::Unretained(this)));
@@ -119,7 +107,7 @@ bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
 
   if (itunes_fsids_.erase(fsid)) {
     if (itunes_fsids_.empty()) {
-      MediaTaskRunner()->PostTask(
+      MediaFileSystemMountPointProvider::MediaTaskRunner()->PostTask(
           FROM_HERE,
           Bind(&ImportedMediaGalleryRegistry::RevokeITunesFileSystem,
                base::Unretained(this)));
