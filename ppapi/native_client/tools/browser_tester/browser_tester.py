@@ -16,6 +16,7 @@ import urllib
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(script_dir, '../../../../third_party/'))
 sys.path.append(os.path.join(script_dir, '../../../../tools/valgrind/'))
+sys.path.append(os.path.join(script_dir, '../../../../testing/'))
 
 import browsertester.browserlauncher
 import browsertester.rpclistener
@@ -23,6 +24,8 @@ import browsertester.server
 
 import memcheck_analyze
 import tsan_analyze
+
+import test_env
 
 def BuildArgParser():
   usage = 'usage: %prog [options]'
@@ -196,6 +199,9 @@ def RunTestsOnce(url, options):
     options.hard_timeout = options.timeout * 4
 
   options.files.append(os.path.join(script_dir, 'browserdata', 'nacltest.js'))
+
+  # Setup the environment with the setuid sandbox path.
+  test_env.enable_sandbox_if_required(os.environ)
 
   # Create server
   host = GetHostName()
