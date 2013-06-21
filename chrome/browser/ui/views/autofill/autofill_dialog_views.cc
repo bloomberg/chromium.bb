@@ -315,20 +315,22 @@ class DetailsContainerView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(DetailsContainerView);
 };
 
-// ButtonStripView wraps the Autocheckout progress bar and the "[X] Save details
-// in Chrome" checkbox and listens for visibility changes.
-class ButtonStripView : public views::View {
+// A view that propagates visibility and preferred size changes.
+class LayoutPropagationView : public views::View {
  public:
-  ButtonStripView() {}
-  virtual ~ButtonStripView() {}
+  LayoutPropagationView() {}
+  virtual ~LayoutPropagationView() {}
 
  protected:
   virtual void ChildVisibilityChanged(views::View* child) OVERRIDE {
     PreferredSizeChanged();
   }
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
+    PreferredSizeChanged();
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ButtonStripView);
+  DISALLOW_COPY_AND_ASSIGN(LayoutPropagationView);
 };
 
 }  // namespace
@@ -1298,7 +1300,7 @@ views::View* AutofillDialogViews::CreateTitlebarExtraView() {
 }
 
 views::View* AutofillDialogViews::CreateFootnoteView() {
-  footnote_view_ = new views::View();
+  footnote_view_ = new LayoutPropagationView();
   footnote_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical,
                            kLegalDocPadding,
@@ -1450,7 +1452,7 @@ void AutofillDialogViews::StyledLabelLinkClicked(const ui::Range& range,
 }
 
 void AutofillDialogViews::InitChildViews() {
-  button_strip_extra_view_ = new ButtonStripView();
+  button_strip_extra_view_ = new LayoutPropagationView();
   button_strip_extra_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
