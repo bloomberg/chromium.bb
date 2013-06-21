@@ -56,6 +56,10 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   static int HardwareSampleRateForDevice(AudioDeviceID device_id);
   static int HardwareSampleRate();
 
+  // Notify streams of a device change if the default output device or its
+  // sample rate has changed, otherwise does nothing.
+  void HandleDeviceChanges();
+
  protected:
   virtual ~AudioManagerMac();
 
@@ -68,7 +72,6 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // Helper methods for constructing AudioDeviceListenerMac on the audio thread.
   void CreateDeviceListener();
   void DestroyDeviceListener();
-  void HandleDeviceChanges();
 
   scoped_ptr<AudioDeviceListenerMac> output_device_listener_;
 

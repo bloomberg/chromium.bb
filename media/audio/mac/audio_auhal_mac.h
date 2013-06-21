@@ -145,6 +145,10 @@ class AUHALStream : public AudioOutputStream {
   // The flag used to stop the streaming.
   bool stopped_;
 
+  // The flag used to indicate if the AudioManager has been notified of a
+  // potential device change.  Reset to false during Start().
+  bool notified_for_possible_device_change_;
+
   // The input AudioUnit renders its data here.
   scoped_ptr<uint8[]> input_buffer_list_storage_;
   AudioBufferList* input_buffer_list_;
