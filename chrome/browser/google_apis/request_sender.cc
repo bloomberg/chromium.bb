@@ -93,7 +93,7 @@ void RequestSender::CancelRequest(
   // Do nothing if the request is already finished.
   if (!request.get())
     return;
-  request_registry_->CancelRequest(request->AsRequestRegistryRequest());
+  request->Cancel();
 }
 
 }  // namespace google_apis

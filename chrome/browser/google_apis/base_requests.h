@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/request_registry.h"
@@ -77,10 +78,9 @@ class AuthenticatedRequestInterface {
   // using weak pointers, while deprecating RequestRegistry.
   virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() = 0;
 
-  // TODO(kinaba): crbug.com/{164089, 231209} This is temporarily added during
-  // migration of cancellation from RequestRegistry to JobScheduler. It should
-  // go away *very soon*.
-  virtual RequestRegistry::Request* AsRequestRegistryRequest() = 0;
+  // Cancels the request. It will invoke the callback object passed in
+  // each request's constructor with error code GDATA_CANCELLED.
+  virtual void Cancel() = 0;
 };
 
 //============================ UrlFetchRequestBase ===========================
@@ -95,6 +95,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
                      const std::string& custom_user_agent,
                      const ReAuthenticateCallback& callback) OVERRIDE;
   virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() OVERRIDE;
+  virtual void Cancel() OVERRIDE;
 
  protected:
   UrlFetchRequestBase(RequestSender* runner,
@@ -159,15 +160,11 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   }
 
  private:
-  // RequestRegistry::Request overrides.
-  virtual void DoCancel() OVERRIDE;
-
   // URLFetcherDelegate overrides.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // AuthenticatedRequestInterface overrides.
   virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
-  virtual RequestRegistry::Request* AsRequestRegistryRequest() OVERRIDE;
 
   net::URLRequestContextGetter* url_request_context_getter_;
   ReAuthenticateCallback re_authenticate_callback_;
@@ -178,7 +175,6 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   bool save_temp_file_;
   base::FilePath output_file_path_;
 
-  // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<UrlFetchRequestBase> weak_ptr_factory_;

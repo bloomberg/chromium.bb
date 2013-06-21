@@ -218,9 +218,10 @@ bool UrlFetchRequestBase::GetContentFile(base::FilePath* local_file_path,
   return false;
 }
 
-void UrlFetchRequestBase::DoCancel() {
+void UrlFetchRequestBase::Cancel() {
   url_fetcher_.reset(NULL);
   RunCallbackOnPrematureFailure(GDATA_CANCELLED);
+  NotifyFinish();
 }
 
 // static
@@ -239,7 +240,7 @@ GDataErrorCode UrlFetchRequestBase::GetErrorCode(const URLFetcher* source) {
 }
 
 void UrlFetchRequestBase::OnProcessURLFetchResultsComplete(bool result) {
-  NotifyFinish(result ? REQUEST_COMPLETED : REQUEST_FAILED);
+  NotifyFinish();
 }
 
 void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
@@ -274,11 +275,7 @@ void UrlFetchRequestBase::OnAuthFailed(GDataErrorCode code) {
   // Note: NotifyFinish() must be invoked at the end, after all other callbacks
   // and notifications. Once NotifyFinish() is called, the current instance of
   // request will be deleted from the RequestRegistry and become invalid.
-  NotifyFinish(REQUEST_FAILED);
-}
-
-RequestRegistry::Request* UrlFetchRequestBase::AsRequestRegistryRequest() {
-  return this;
+  NotifyFinish();
 }
 
 base::WeakPtr<AuthenticatedRequestInterface>

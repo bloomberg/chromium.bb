@@ -6,36 +6,12 @@
 #define CHROME_BROWSER_GOOGLE_APIS_REQUEST_REGISTRY_H_
 
 #include "base/basictypes.h"
-#include "base/files/file_path.h"
 #include "base/id_map.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace google_apis {
 
 // Unique ID to identify each request.
 typedef int32 RequestID;
-
-// Enumeration type for indicating the state of the transfer.
-enum RequestTransferState {
-  REQUEST_NOT_STARTED,
-  REQUEST_STARTED,
-  REQUEST_IN_PROGRESS,
-  REQUEST_COMPLETED,
-  REQUEST_FAILED,
-};
-
-// Returns string representations of the request state.
-std::string RequestTransferStateToString(RequestTransferState state);
-
-// Structure that packs progress information of each request.
-struct RequestProgressStatus {
-  RequestProgressStatus();
-
-  RequestID request_id;
-
-  // Current state of the transfer;
-  RequestTransferState transfer_state;
-};
 
 // This class tracks all the in-flight Google API requests and manage
 // their lifetime.
@@ -53,30 +29,15 @@ class RequestRegistry {
     explicit Request(RequestRegistry* registry);
     virtual ~Request();
 
-    // Cancels the ongoing request. NotifyFinish() is called and the Request
-    // object is deleted once the cancellation is done in DoCancel().
-    void Cancel();
-
-    // Retrieves the current progress status of the request.
-    const RequestProgressStatus& progress_status() const {
-      return progress_status_;
-    }
-
    protected:
     // Notifies the registry about current status.
     void NotifyStart();
-    void NotifyFinish(RequestTransferState status);
+    void NotifyFinish();
 
    private:
-    // Does the cancellation.
-    virtual void DoCancel() = 0;
-
     RequestRegistry* const registry_;
-    RequestProgressStatus progress_status_;
+    RequestID id_;
   };
-
-  // Cancels the specified request.
-  void CancelRequest(Request* request);
 
  private:
   // Handlers for notifications from Requests.
