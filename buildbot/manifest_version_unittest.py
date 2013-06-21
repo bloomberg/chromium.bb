@@ -103,16 +103,17 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
   def CommonTestIncrementVersion(self, incr_type, version, chrome_branch=None):
     """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
-    self.mox.StubOutWithMock(git, 'CreatePushBranch')
+    self.mox.StubOutWithMock(git, 'CreateBranch')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
     self.mox.StubOutWithMock(git, 'CleanAndCheckoutUpstream')
 
-    git.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tempdir)
+    git.CreateBranch(self.tempdir, manifest_version.PUSH_BRANCH)
 
     version_file = self.CreateFakeVersionFile(
         self.tempdir, version=version, chrome_branch=chrome_branch)
 
-    manifest_version._PushGitChanges(self.tempdir, message, dry_run=False)
+    manifest_version._PushGitChanges(self.tempdir, message, dry_run=False,
+                                     push_to=None)
 
     git.CleanAndCheckoutUpstream(self.tempdir)
     self.mox.ReplayAll()

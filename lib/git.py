@@ -31,6 +31,18 @@ del _path
 EXTERNAL_GERRIT_SSH_REMOTE = 'gerrit'
 
 
+class RemoteRef(object):
+  """Object representing a remote ref.
+
+  A remote ref encapsulates both a remote (e.g., 'origin',
+  'ssh://gerrit.chromium.org:29418/chromiumos/chromite.git', etc.) and a ref
+  name (e.g., 'refs/heads/master').
+  """
+  def __init__(self, remote, ref):
+    self.remote = remote
+    self.ref = ref
+
+
 def FindRepoDir(path):
   """Returns the nearest higher-level repo dir from the specified path.
 
@@ -272,12 +284,17 @@ class Manifest(object):
     return self.projects[os.path.normpath(project)]['path']
 
   def _FinalizeProjectData(self, attrs):
+    """Sets up useful properties for a project.
+
+    Args:
+      attrs: The attribute dictionary of a project tag.
+    """
     for key in ('remote', 'revision'):
       attrs.setdefault(key, self.default.get(key))
 
     remote = attrs['remote']
     assert remote in self.remotes
-    remote_name = self.remotes[remote]['alias']
+    remote_name = attrs['remote_alias'] = self.remotes[remote]['alias']
 
     # 'repo manifest -r' adds an 'upstream' attribute to the project tag for the
     # manifests it generates.  We can use the attribute to get a valid branch
@@ -287,22 +304,20 @@ class Manifest(object):
       local_rev = 'refs/remotes/%s/%s' % (remote_name, StripRefsHeads(rev))
     attrs['local_revision'] = local_rev
 
-    attrs['pushable'] = remote in constants.CROS_REMOTES
+    attrs['pushable'] = remote in constants.GIT_REMOTES
     if attrs['pushable']:
-      if remote == constants.EXTERNAL_REMOTE:
+      if remote in (constants.EXTERNAL_REMOTE, constants.CHROMIUM_REMOTE):
         attrs['push_remote'] = EXTERNAL_GERRIT_SSH_REMOTE
         if rev.startswith('refs/heads/'):
           attrs['push_remote_local'] = 'refs/remotes/%s/%s' % (
               EXTERNAL_GERRIT_SSH_REMOTE, StripRefsHeads(rev))
         else:
           attrs['push_remote_local'] = rev
-      elif remote == constants.INTERNAL_REMOTE:
-        # For cros-internal, it's already accessing gerrit directly; thus
-        # just use that.
-        attrs['push_remote'] = attrs['remote']
+      elif remote in (constants.INTERNAL_REMOTE, constants.CHROME_REMOTE):
+        attrs['push_remote'] = constants.INTERNAL_REMOTE
         attrs['push_remote_local'] = attrs['local_revision']
 
-      attrs['push_remote_url'] = constants.CROS_REMOTES[remote]
+      attrs['push_remote_url'] = constants.GIT_REMOTES[remote]
       attrs['push_url'] = '%s/%s' % (attrs['push_remote_url'], attrs['name'])
     groups = set(attrs.get('groups', 'default').replace(',', ' ').split())
     groups.add('default')
@@ -872,6 +887,41 @@ def GetTrackingBranch(git_repo, branch=None, for_checkout=True, fallback=True,
   return 'origin', 'master'
 
 
+def CreateBranch(git_repo, branch, branch_point='HEAD', track=False):
+  """Create a branch.
+
+  Args:
+    git_repo: Git repository to act on.
+    branch: Name of the branch to create.
+    branch_point: The ref to branch from.  Defaults to 'HEAD'.
+    track: Whether to setup the branch to track its starting ref.
+  """
+  cmd = ['checkout', '-B', branch, branch_point]
+  if track:
+    cmd.append('--track')
+  RunGit(git_repo, cmd)
+
+
+def GitPush(git_repo, refspec, push_to, dryrun=False, force=False):
+  """Wrapper for pushing to a branch.
+
+  Arguments:
+    git_repo: Git repository to act on.
+    refspec: The local ref to push to the remote.
+    push_to: A RemoteRef object representing the remote ref to push to.
+    force: Whether to bypass non-fastforward checks.
+  """
+  cmd = ['push', push_to.remote, '%s:%s' % (refspec, push_to.ref)]
+
+  if dryrun:
+    cmd.append('--dry-run')
+  if force:
+    cmd.append('--force')
+
+  RunGit(git_repo, cmd)
+
+
+# TODO(build): Switch callers of this function to use CreateBranch instead.
 def CreatePushBranch(branch, git_repo, sync=True, remote_push_branch=None):
   """Create a local branch for pushing changes inside a repo repository.
 
@@ -926,6 +976,7 @@ def SyncPushBranch(git_repo, remote, rebase_target):
     raise
 
 
+# TODO(build): Switch this to use the GitPush function.
 def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
   """General method to push local git changes.
 

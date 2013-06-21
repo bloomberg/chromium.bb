@@ -14,6 +14,7 @@ import math
 import multiprocessing
 import os
 import Queue
+import re
 import shutil
 import sys
 import urllib
@@ -748,7 +749,7 @@ class ManifestVersionedSyncStage(SyncStage):
         root = doc.getroot()
         for project in root.findall('project'):
           remote = project.attrib.get('remote')
-          if remote and remote not in constants.CROS_REMOTES:
+          if remote and remote not in constants.GIT_REMOTES:
             root.remove(project)
         doc.write(filtered_manifest)
         yield filtered_manifest
@@ -1329,6 +1330,275 @@ class PreCQLauncherStage(SyncStage):
         dryrun=self._options.debug_forced,
         changes_query=self._options.cq_gerrit_override,
         check_tree_open=False, change_filter=self.ProcessChanges)
+
+
+class BranchError(Exception):
+  """Raised by branch creation code on error."""
+
+
+class BranchUtilStage(bs.BuilderStage):
+  """Creates, deletes and renames branches, depending on cbuildbot options.
+
+  The two main types of branches are release branches and non-release
+  branches.  Release branches have the form 'release-*' - e.g.,
+  'release-R29-4319.B'.
+
+  On a very basic level, a branch is created by parsing the manifest of a
+  specific version of Chrome OS (e.g., 4319.0.0), and creating the branch
+  remotely for each project in the manifest at the specified hash.
+
+  Once a branch is created however, the branch component of the version on the
+  newly created branch needs to be incremented.  Additionally, in some cases
+  the Chrome major version (i.e, R29) and/or the Chrome OS version (i.e.,
+  4319.0.0) of the source branch must be incremented
+  (see IncrementVersionForSourceBranch docstring).  Finally, the external and
+  internal manifests of the new branch need to be fixed up (see
+  FixUpManifests docstring).
+  """
+
+  COMMIT_MESSAGE = 'Bump %(target)s after branching %(branch)s'
+
+  @staticmethod
+  def _NormalizeRef(ref):
+    """Convert git branch refs into fully qualified form."""
+    if ref and not ref.startswith('refs/'):
+      ref = 'refs/heads/%s' % ref
+    return ref
+
+  def __init__(self, options, build_config):
+    super(BranchUtilStage, self).__init__(options, build_config)
+    self.dryrun = self._options.debug_forced
+    self.dest_ref = self._NormalizeRef(self._options.branch_name)
+    self.rename_to = self._NormalizeRef(self._options.rename_to)
+
+  def RunPush(self, project, src_ref=None, dest_ref=None, force=False):
+    """Perform a git push for a project.
+
+    Args:
+      project: A dictionary of project manifest attributes.
+      src_ref: The source local ref to push to the remote.
+      dest_ref: The destination ref name.
+      force: Whether to override non-fastforward checks.
+    """
+    if src_ref is None:
+      src_ref = project['revision']
+    if dest_ref is None:
+      dest_ref = self.dest_ref
+
+    remote = project['push_remote']
+    push_to = git.RemoteRef(remote, dest_ref)
+    git.GitPush(project['local_path'], src_ref, push_to, dryrun=self.dryrun,
+                force=force)
+
+  def FetchAndCheckoutTo(self, project_dir, remote_ref):
+    """Fetch a remote ref and check out to it.
+
+    Args:
+      project_dir: Path to git repo to operate on.
+      remote_ref: A git.RemoteRef object.
+    """
+    git.RunGit(project_dir, ['fetch', remote_ref.remote, remote_ref.ref],
+               print_cmd=True)
+    git.RunGit(project_dir, ['checkout', 'FETCH_HEAD'], print_cmd=True)
+
+  def ProcessProject(self, project):
+    """Performs per-project push operations."""
+    ls_remote = cros_build_lib.RunCommandCaptureOutput(
+        ['git', 'ls-remote', project['remote_alias'],
+        self._options.branch_name],
+        cwd=project['local_path']).output.strip()
+
+    if self.rename_to and ls_remote:
+      git.RunGit(project['local_path'], ['remote', 'update'])
+      self.RunPush(project, src_ref=self.dest_ref, dest_ref=self.rename_to)
+
+    if self._options.delete_branch or self.rename_to:
+      if ls_remote:
+        self.RunPush(project, src_ref='')
+    elif ls_remote and not self._options.force_create:
+      raise BranchError('Project %s already contains branch %s.  Run with '
+                        '--force-create to overwrite.'
+                        % (project['name'], self._options.branch_name))
+    else:
+      self.RunPush(project, force=self._options.force_create)
+
+  def FixUpManifests(self, manifest):
+    """Points the projects at the new branch in the manifests.
+
+    The 'master' branch manifest (full.xml) contains projects that are checked
+    out to branches other than 'refs/heads/master'.  But in the new branch,
+    these should all be checked out to 'refs/heads/<new_branch>', so we go
+    through the manifest and fix those projects.
+
+    Args:
+      manifest: A git.Manifest object.
+    """
+    branch_name = self._options.branch_name
+    for project in ('chromiumos/manifest', 'chromeos/manifest-internal'):
+      manifest_project = manifest.projects[project]
+      manifest_path = manifest_project['local_path']
+      push_remote = manifest_project['push_remote']
+
+      git.CreateBranch(
+          manifest_path, manifest_version.PUSH_BRANCH,
+          branch_point=manifest_project['revision'])
+      full_manifest = os.path.join(manifest_project['local_path'], 'full.xml')
+      result = re.sub(r'\brevision="[^"]*"', 'revision="%s"' % branch_name,
+                    osutils.ReadFile(full_manifest))
+      osutils.WriteFile(full_manifest, result)
+
+      git.RunGit(manifest_path, ['add', '-A'], print_cmd=True)
+      message = 'Fix up manifest after branching %s.' % branch_name
+      git.RunGit(manifest_path, ['commit', '-m', message], print_cmd=True)
+      push_to = git.RemoteRef(push_remote, branch_name)
+      git.GitPush(manifest_path, manifest_version.PUSH_BRANCH, push_to,
+                  dryrun=self.dryrun, force=self.dryrun)
+
+  def IncrementVersion(self, incr_type, push_to, message):
+    """Bumps the version found in chromeos_version.sh on a branch.
+
+    Args:
+      incr_type: See docstring for manifest_version.VersionInfo.
+      push_to: A git.RemoteRef object.
+      message: The message to give the git commit that bumps the version.
+    """
+    version_info = manifest_version.VersionInfo.from_repo(
+        self._build_root, incr_type=incr_type)
+    version_info.IncrementVersion(message, dry_run=self.dryrun,
+                                  push_to=push_to)
+
+  @staticmethod
+  def DetermineBranchIncrParams(version_info):
+    """Determines the version component to bump for the new branch."""
+    # We increment the left-most component that is zero.
+    if version_info.branch_build_number != '0':
+      if version_info.patch_number != '0':
+        raise BranchError('Version %s cannot be branched.' %
+                          version_info.VersionString())
+      return 'patch', 'patch number'
+    else:
+      return 'branch', 'branch number'
+
+  @staticmethod
+  def DetermineSourceIncrParams(source_name, dest_name):
+    """Determines the version component to bump for the original branch."""
+    if dest_name.startswith('refs/heads/release-'):
+      return 'chrome_branch', 'Chrome version'
+    elif source_name == 'refs/heads/master':
+      return 'build', 'build number'
+    else:
+      return 'branch', 'branch build number'
+
+  def IncrementVersionForNewBranch(self, push_remote):
+    """Bumps the version found in chromeos_version.sh on the new branch
+
+    When a new branch is created, the branch component of the new branch's
+    version needs to bumped.
+
+    For example, say 'stabilize-link' is created from a the 4230.0.0 manifest.
+    The new branch's version needs to be bumped to 4230.1.0.
+
+    Args:
+      push_remote: a git.RemoteRef identifying the new branch.
+    """
+    # This needs to happen before the source branch version bumping above
+    # because we rely on the fact that since our current overlay checkout
+    # is what we just pushed to the new branch, we don't need to do another
+    # sync.  This also makes it easier to implement dryrun functionality (the
+    # new branch doesn't actually get created in dryrun mode).
+    push_to = git.RemoteRef(push_remote, self.dest_ref)
+    version_info = manifest_version.VersionInfo(
+        version_string=self._options.force_version)
+    incr_type, incr_target = self.DetermineBranchIncrParams(version_info)
+    message = self.COMMIT_MESSAGE % {
+        'target': incr_target,
+        'branch': self.dest_ref,
+    }
+    self.IncrementVersion(incr_type, push_to, message)
+
+  def IncrementVersionForSourceBranch(self, overlay_dir, push_remote,
+                                      source_branch):
+    """Bumps the version found in chromeos_version.sh on the source branch
+
+    The source branch refers to the branch that the manifest used for creating
+    the new branch came from.  For release branches, we generally branch from a
+    'master' branch manifest.
+
+    To work around crbug.com/213075, for both non-release and release branches,
+    we need to bump the Chrome OS version on the source branch if the manifest
+    used for branch creation is the latest generated manifest for the source
+    branch.
+
+    When we are creating a release branch, the Chrome major version of the
+    'master' (source) branch needs to be bumped.  For example, if we branch
+    'release-R29-4230.B' from the 4230.0.0 manifest (which is from the 'master'
+    branch), the 'master' branch's Chrome major version in chromeos_version.sh
+    (which is 29) needs to be bumped to 30.
+
+    Args:
+      overlay_dir: Absolute path to the chromiumos overlay repo.
+      push_remote: The remote to push to.
+      source_branch: The branch that the manifest we are using comes from.
+    """
+    push_to = git.RemoteRef(push_remote, source_branch)
+    self.FetchAndCheckoutTo(overlay_dir, push_to)
+
+    tot_version_info = manifest_version.VersionInfo.from_repo(self._build_root)
+    if (self.dest_ref.startswith('refs/heads/release-') or
+        tot_version_info.VersionString() == self._options.force_version):
+      incr_type, incr_target = self.DetermineSourceIncrParams(
+          source_branch, self.dest_ref)
+      message = self.COMMIT_MESSAGE % {
+          'target': incr_target,
+          'branch': self.dest_ref,
+      }
+      try:
+        self.IncrementVersion(incr_type, push_to, message)
+      except cros_build_lib.RunCommandError:
+        # There's a chance we are racing against the buildbots for this
+        # increment.  We shouldn't quit the script because of this.  Instead, we
+        # print a warning.
+        self.FetchAndCheckoutTo(overlay_dir, push_to)
+        new_version =  manifest_version.VersionInfo.from_repo(self._build_root)
+        if new_version.VersionString() != tot_version_info.VersionString():
+          logging.warning('Version number for branch %s was bumped by another '
+                          'bot.', push_to.ref)
+        else:
+          raise
+
+  def PerformStage(self):
+    """Run the branch operation."""
+    def TestPushable(project):
+      return project['pushable']
+
+    # Setup and initialize the repo.
+    super(BranchUtilStage, self).PerformStage()
+
+    manifest = git.ManifestCheckout.Cached(self._build_root)
+    # Project tuples are in the form (project_name, project_dict).
+    projects = [proj_tuple[1]
+                for proj_tuple in sorted(manifest.projects.iteritems())]
+    pushable, skipped = cros_build_lib.PredicateSplit(TestPushable, projects)
+    for p in skipped:
+      logging.warning('Skipping project %s.', p['name'])
+
+    parallel.RunTasksInProcessPool(
+        self.ProcessProject, [[p] for p in pushable], processes=4)
+
+    if self._options.delete_branch or self.rename_to:
+      return
+
+    self.FixUpManifests(manifest)
+
+    overlay_name = 'chromiumos/overlays/chromiumos-overlay'
+    overlay_project = manifest.projects[overlay_name]
+    overlay_dir = overlay_project['local_path']
+    push_remote = overlay_project['push_remote']
+    self.IncrementVersionForNewBranch(push_remote)
+
+    source_branch = manifest.default['revision']
+    self.IncrementVersionForSourceBranch(overlay_dir, push_remote,
+                                         source_branch)
 
 
 class RefreshPackageStatusStage(bs.BuilderStage):

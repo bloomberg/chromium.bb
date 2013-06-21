@@ -266,8 +266,9 @@ class LogFilter(logging.Filter):
 class LoggingCapturer(object):
   """Captures all messages emitted by the logging module."""
 
-  def __init__(self):
+  def __init__(self, logger_name=''):
     self._log_filter = LogFilter()
+    self.logger_name = logger_name
 
   def __enter__(self):
     self.StartCapturing()
@@ -278,11 +279,12 @@ class LoggingCapturer(object):
 
   def StartCapturing(self):
     """Begin capturing logging messages."""
-    logging.getLogger().addFilter(self._log_filter)
+    logging.getLogger(self.logger_name).addFilter(self._log_filter)
+
 
   def StopCapturing(self):
     """Stop capturing logging messages."""
-    logging.getLogger().removeFilter(self._log_filter)
+    logging.getLogger(self.logger_name).removeFilter(self._log_filter)
 
   @property
   def messages(self):

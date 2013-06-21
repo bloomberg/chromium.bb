@@ -72,16 +72,22 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
     repository.CloneGitRepo(manifest_dir, manifest_repo)
 
 
-def _PushGitChanges(git_repo, message, dry_run=True):
+def _PushGitChanges(git_repo, message, dry_run=True, push_to=None):
   """Push the final commit into the git repo.
 
   Args:
     git_repo: git repo to push
     message: Commit message
     dry_run: If true, don't actually push changes to the server
+    push_to: A git.RemoteRef object specifying the remote branch to push to.
+      Defaults to the tracking branch of the current branch.
   """
-  remote, push_branch = git.GetTrackingBranch(
-      git_repo, for_checkout=False, for_push=True)
+  push_branch = None
+  if push_to is None:
+    remote, push_branch = git.GetTrackingBranch(
+        git_repo, for_checkout=False, for_push=True)
+    push_to = git.RemoteRef(remote, push_branch)
+
   git.RunGit(git_repo, ['add', '-A'])
 
   # It's possible that while we are running on dry_run, someone has already
@@ -93,11 +99,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
       return
     raise
 
-  push_cmd = ['push', remote, '%s:%s' % (PUSH_BRANCH, push_branch)]
-  if dry_run:
-    push_cmd.extend(['--dry-run', '--force'])
-
-  git.RunGit(git_repo, push_cmd)
+  git.GitPush(git_repo, PUSH_BRANCH, push_to, dryrun=dry_run, force=dry_run)
 
 
 def _RemoveDirs(dir_name):
@@ -149,7 +151,7 @@ class VersionInfo(object):
   """
   # Pattern for matching build name format.  Includes chrome branch hack.
   VER_PATTERN = r'(\d+).(\d+).(\d+)(?:-R(\d+))*'
-  VALID_INCR_TYPES = ('chrome_branch', 'build', 'branch')
+  VALID_INCR_TYPES = ('chrome_branch', 'build', 'branch', 'patch')
 
   def __init__(self, version_string=None, chrome_branch=None,
                incr_type='build', version_file=None):
@@ -223,7 +225,7 @@ class VersionInfo(object):
       return match.group(2)
     return None
 
-  def IncrementVersion(self, message, dry_run):
+  def IncrementVersion(self, message, dry_run, push_to=None):
     """Updates the version file by incrementing the patch component.
     Args:
       message:  Commit message to use when incrementing the version.
@@ -254,7 +256,7 @@ class VersionInfo(object):
       self.build_number = str(int(self.build_number) + 1)
       self.branch_build_number = '0'
       self.patch_number = '0'
-    elif self.patch_number == '0':
+    elif self.incr_type == 'branch' and self.patch_number == '0':
       self.branch_build_number = str(int(self.branch_build_number) + 1)
     else:
       self.patch_number = str(int(self.patch_number) + 1)
@@ -283,12 +285,10 @@ class VersionInfo(object):
     repo_dir = os.path.dirname(self.version_file)
 
     try:
-      git.CreatePushBranch(PUSH_BRANCH, repo_dir)
-
+      git.CreateBranch(repo_dir, PUSH_BRANCH)
       shutil.copyfile(temp_file, self.version_file)
       os.unlink(temp_file)
-
-      _PushGitChanges(repo_dir, message, dry_run=dry_run)
+      _PushGitChanges(repo_dir, message, dry_run=dry_run, push_to=push_to)
     finally:
       # Update to the remote version that contains our changes. This is needed
       # to ensure that we don't build a release using a local commit.

@@ -198,6 +198,11 @@ class Builder(object):
 
   def _ShouldReExecuteInBuildRoot(self):
     """Returns True if this build should be re-executed in the buildroot."""
+    # The commandline --noreexec flag can override the config.
+    if not (self.options.postsync_reexec and
+            self.build_config['postsync_reexec']):
+      return False
+
     abs_buildroot = os.path.abspath(self.options.buildroot)
     return not os.path.abspath(__file__).startswith(abs_buildroot)
 
@@ -298,11 +303,12 @@ class Builder(object):
       sync_instance.Run()
       self._SetReleaseTag()
 
-      # Filter out patches to manifest, since PatchChangesStage can't handle
-      # them.  Manifest patches are patched in the BootstrapStage.
-      non_manifest_patches = self.patch_pool.FilterManifest(negate=True)
-      if non_manifest_patches:
-        self._RunStage(stages.PatchChangesStage, non_manifest_patches)
+      if self.options.postsync_patch and self.build_config['postsync_patch']:
+        # Filter out patches to manifest, since PatchChangesStage can't handle
+        # them.  Manifest patches are patched in the BootstrapStage.
+        non_manifest_patches = self.patch_pool.FilterManifest(negate=True)
+        if non_manifest_patches:
+          self._RunStage(stages.PatchChangesStage, non_manifest_patches)
 
       if self._ShouldReExecuteInBuildRoot():
         print_report = False
@@ -345,7 +351,9 @@ class SimpleBuilder(Builder):
 
     Returns: the instance of the sync stage that was run.
     """
-    if self.build_config['use_lkgm']:
+    if self.options.force_version:
+      sync_stage = self._GetStageInstance(stages.ManifestVersionedSyncStage)
+    elif self.build_config['use_lkgm']:
       sync_stage = self._GetStageInstance(stages.LKGMSyncStage)
     elif self.build_config['use_chrome_lkgm']:
       sync_stage = self._GetStageInstance(stages.ChromeLKGMSyncStage)
@@ -407,6 +415,8 @@ class SimpleBuilder(Builder):
     # TODO(sosa): Split these out into classes.
     if self.build_config['build_type'] == constants.PRE_CQ_LAUNCHER_TYPE:
       self._RunStage(stages.PreCQLauncherStage)
+    elif self.build_config['build_type'] == constants.CREATE_BRANCH_TYPE:
+      self._RunStage(stages.BranchUtilStage)
     elif self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
       self._RunStage(stages.UprevStage, boards=[], enter_chroot=False)
       self._RunStage(stages.InitSDKStage)
@@ -823,9 +833,10 @@ def _CreateParser():
                     help='List all of the buildbot configs available w/--list')
 
   parser.add_option('--local', default=False, action='store_true',
-                    help='Specifies that this tryjob should be run locally')
+                    help='Specifies that this tryjob should be run locally. '
+                         'Implies --debug.')
   parser.add_option('--remote', default=False, action='store_true',
-                    help='Specifies that this tryjob should be run remotely')
+                    help='Specifies that this tryjob should be run remotely.')
 
   parser.add_remote_option('-b', '--branch',
                            help='The manifest branch to test.  The branch to '
@@ -899,6 +910,25 @@ def _CreateParser():
   parser.add_option_group(group)
 
   #
+  # Branch creation options.
+  #
+
+  group = CustomGroup(
+      parser,
+      'Branch Creation Options (used with branch-util)')
+
+  group.add_remote_option('--branch-name',
+                          help='The branch to create or delete.')
+  group.add_remote_option('--delete-branch', default=False, action='store_true',
+                          help='Delete the branch specified in --branch-name.')
+  group.add_remote_option('--rename-to', type='string',
+                          help='Rename a branch to the specified name.')
+  group.add_remote_option('--force-create', default=False, action='store_true',
+                          help='Overwrites an existing branch.')
+
+  parser.add_option_group(group)
+
+  #
   # Advanced options.
   #
 
@@ -954,6 +984,14 @@ def _CreateParser():
   group.add_remote_option('--noprebuilts', action='store_false',
                           dest='prebuilts', default=True,
                           help="Don't upload prebuilts.")
+  group.add_remote_option('--nopatch', action='store_false',
+                          dest='postsync_patch', default=True,
+                          help=("Don't run PatchChanges stage.  This does not "
+                                "disable patching in of chromite patches "
+                                "during BootstrapStage."))
+  group.add_remote_option('--noreexec', action='store_false',
+                          dest='postsync_reexec', default=True,
+                          help="Don't reexec into the buildroot after syncing.")
   group.add_remote_option('--nosdk', action='store_true',
                           default=False,
                           help='Re-create the SDK from scratch.')
@@ -1130,7 +1168,7 @@ def _FinishParsing(options, args):
   options.debug_forced = False
   if options.debug:
     options.debug_forced = True
-  else:
+  if not options.debug:
     # We don't set debug by default for
     # 1. --buildbot invocations.
     # 2. --remote invocations, because it needs to push changes to the tryjob
@@ -1139,6 +1177,23 @@ def _FinishParsing(options, args):
 
   # Record the configs targeted.
   options.build_targets = args[:]
+
+  if constants.BRANCH_UTIL_CONFIG in options.build_targets:
+    if len(options.build_targets) > 1:
+      cros_build_lib.Die(
+          'Cannot run branch-util with any other configs.')
+    if not options.branch_name:
+      cros_build_lib.Die(
+          'Must specify --branch-name with the branch-util config.')
+    if not any([options.force_version, options.delete_branch,
+                options.rename_to]):
+      cros_build_lib.Die(
+          'Must specify --version with the branch-util config, unless '
+          'running with --delete-branch or --rename-to.')
+  elif any([options.delete_branch, options.rename_to, options.branch_name]):
+    cros_build_lib.Die(
+        'Cannot specify --delete-branch, --rename-to or --branch-name when not '
+        'running the %s config', constants.BRANCH_UTIL_CONFIG)
 
 
 # pylint: disable=W0613
@@ -1264,6 +1319,7 @@ def main(argv):
     sys.exit(0)
   elif (not options.buildbot and not options.remote_trybot
         and not options.resume and not options.local):
+    options.local = True
     cros_build_lib.Warning(
         'Running in LOCAL TRYBOT mode!  Use --remote to submit REMOTE '
         'tryjobs.  Use --local to suppress this message.')

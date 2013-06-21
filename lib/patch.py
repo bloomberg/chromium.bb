@@ -1070,9 +1070,11 @@ class GerritPatch(GitRepoPatch):
       http://gerrit-documentation.googlecode.com/svn/Documentation/2.6/json.html
 
     New interface:
+      # pylint: disable=C0301
       https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#json-entities
     """
-    _convert_tm = lambda tm: calendar.timegm(time.strptime(tm.partition('.')[0]))
+    _convert_tm = lambda tm: calendar.timegm(
+        time.strptime(tm.partition('.')[0]))
     _convert_user = lambda u: {
         'name': u['name'],
         'email': u['email'],
@@ -1112,6 +1114,7 @@ class GerritPatch(GitRepoPatch):
           'revision': current_revision,
           'number': current_revision_info['_number'],
       }
+    # pylint: disable=E0602
     return cls(patch_dict, remote, url_prefix)
 
   def __reduce__(self):
@@ -1277,7 +1280,7 @@ def PrepareRemotePatches(patches):
     if tag == constants.INTERNAL_PATCH_TAG:
       remote = constants.INTERNAL_REMOTE
 
-    push_url = constants.CROS_REMOTES[remote]
+    push_url = constants.GIT_REMOTES[remote]
     patch_info.append(UploadedLocalPatch(os.path.join(push_url, project),
                                          project, ref, tracking_branch,
                                          original_branch,

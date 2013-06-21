@@ -61,7 +61,7 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
     self.build_config = copy.deepcopy(config.config[self.bot_id])
     self.build_root = os.path.join(self.tempdir, self.BUILDROOT)
     self._boards = self.build_config['boards']
-    self._current_board = self._boards[0]
+    self._current_board = self._boards[0] if self._boards else None
 
     self.url = 'fake_url'
     self.build_config['manifest_repo_url'] = self.url
@@ -1754,6 +1754,184 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
     self.PatchObject(stages.PreCQLauncherStage, '_HasLaunchTimedOut',
                      return_value=True)
     self.runTrybotTest(launching=2, waiting=1, failed=1, runs=3)
+
+
+class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
+  """Tests for branch creation/deletion."""
+
+  MANIFEST_CONTENTS = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest revision="fe72f0912776fa4596505e236e39286fb217961b">
+  <notice>
+    Your sources have been sync'd successfully.
+  </notice>
+  <remote fetch="ssh://gerrit-int.chromium.org:29419" name="chrome"/>
+  <remote fetch="https://chromium.googlesource.com/" name="chromium"/>
+  <remote fetch="https://git.chromium.org/git" name="cros" \
+review="gerrit.chromium.org/gerrit"/>
+  <remote fetch="ssh://gerrit-int.chromium.org:29419" name="cros-internal" \
+review="gerrit-int.chromium.org"/>
+  <remote fetch="https://special.googlesource.com/" name="special" \
+review="https://special.googlesource.com/"/>
+
+  <default remote="cros" revision="refs/heads/master" sync-j="8"/>
+
+  <project name="chromeos/manifest-internal" path="manifest-internal" \
+remote="cros-internal" revision="fe72f0912776fa4596505e236e39286fb217961b" \
+upstream="refs/heads/master"/>
+  <project name="chromium/deps/libmtp" path="chromium/src/third_party/libmtp" \
+revision="7bc42f093d644eeaf1c77fab60883881843c3c65" \
+upstream="refs/heads/master"/>
+  <project groups="minilayout,buildtools" name="chromiumos/chromite" \
+path="chromite" revision="fb46d34d7cd4b9c167b74f494f2a99b68df50b18" \
+upstream="refs/heads/master"/>
+  <project name="chromiumos/manifest" path="manifest" \
+revision="f24b69176b16bf9153f53883c0cc752df8e07d8b" \
+upstream="refs/heads/master"/>
+  <project groups="minilayout" name="chromiumos/overlays/chromiumos-overlay" \
+path="src/third_party/chromiumos-overlay" \
+revision="3ac713c65b5d18585e606a0ee740385c8ec83e44" \
+upstream="refs/heads/master"/>
+  <project name="chromiumos/special" path="src/special" remote="special" \
+revision="6270eb3b4f78d9bffec77df50f374f5aae72b370" \
+upstream="special-upstream"/>
+</manifest>"""
+
+  DEFAULT_VERSION = '111.0.0'
+
+  def _CreateVersionFile(self, version=None):
+    if version is None:
+      version = self.DEFAULT_VERSION
+    version_file = os.path.join(self.build_root, constants.VERSION_FILE)
+    manifest_version_unittest.VersionInfoTest.WriteFakeVersionFile(
+        version_file, version=version)
+
+  def setUp(self):
+    """Setup patchers for specified bot id."""
+    self.build_config = copy.deepcopy(
+        config.config[constants.BRANCH_UTIL_CONFIG])
+    # Mock out methods as needed.
+    self.StartPatcher(parallel_unittest.ParallelMock())
+    self.StartPatcher(git_unittest.ManifestCheckoutMock())
+    self._CreateVersionFile()
+    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult()
+
+    manifest_paths = [
+        '.repo/manifest.xml',
+        'manifest/full.xml',
+        'manifest-internal/full.xml'
+    ]
+    for m in manifest_paths:
+      full_path = os.path.join(self.build_root, m)
+      osutils.SafeMakedirs(os.path.dirname(full_path))
+      osutils.WriteFile(full_path, self.MANIFEST_CONTENTS)
+    self.options.branch_name = 'refs/heads/release-test-branch'
+    self.options.force_version = self.DEFAULT_VERSION
+
+  def ConstructStage(self):
+    return stages.BranchUtilStage(self.options, self.build_config)
+
+  def testRelease(self):
+    """Run-through of branch creation."""
+    before = manifest_version.VersionInfo.from_repo(self.build_root)
+    self.RunStage()
+    after = manifest_version.VersionInfo.from_repo(self.build_root)
+    # Verify Chrome version was bumped.
+    self.assertEquals(int(after.chrome_branch) - int(before.chrome_branch), 1)
+    self.assertEquals(int(after.build_number) - int(before.build_number), 1)
+
+  def testNonRelease(self):
+    """Non-release branch creation."""
+    self.options.branch_name = 'refs/heads/test-branch'
+    before = manifest_version.VersionInfo.from_repo(self.build_root)
+    # Disable the new branch increment so that IncrementVersionForSourceBranch
+    # detects we need to bump the version.
+    self.PatchObject(stages.BranchUtilStage, 'IncrementVersionForNewBranch',
+                     autospec=True)
+    self.RunStage()
+    after = manifest_version.VersionInfo.from_repo(self.build_root)
+    # Verify only branch number is bumped.
+    self.assertEquals(after.chrome_branch, before.chrome_branch)
+    self.assertEquals(int(after.build_number) - int(before.build_number), 1)
+
+  def testDeletion(self):
+    """Branch deletion."""
+    self.options.delete_branch = True
+    self.rc_mock.AddCmdResult(
+        partial_mock.ListRegex('git ls-remote .*'), output='remote')
+    self.RunStage()
+
+  def testRename(self):
+    """Branch rename."""
+    self.options.rename_to = 'refs/heads/release-rename'
+    self.rc_mock.AddCmdResult(
+        partial_mock.ListRegex('git ls-remote .*'), output='remote')
+    self.RunStage()
+    self.rc_mock.assertCommandContains(
+        ['push', '%s:%s' % (self.options.branch_name, self.options.rename_to)])
+    self.rc_mock.assertCommandContains(
+        ['push', ':%s' % self.options.branch_name])
+
+  def testDryRun(self):
+    """Verify all pushes are done with --dryrun when --debug is set."""
+    def VerifyDryRun(cmd, *_args, **_kwargs):
+      self.assertTrue('--dry-run' in cmd)
+
+    self.rc_mock.AddCmdResult(partial_mock.In('push'),
+                              side_effect=VerifyDryRun)
+    self.options.debug_forced = True
+    self.RunStage()
+    self.rc_mock.assertCommandContains(['push', '--dry-run'])
+
+  def _DetermineIncrForVersion(self, version):
+    version_info = manifest_version.VersionInfo(version)
+    stage_cls = stages.BranchUtilStage
+    return stage_cls.DetermineBranchIncrParams(version_info)
+
+  def testDetermineIncrBranch(self):
+    """Verify branch increment detection."""
+    incr_type, _ = self._DetermineIncrForVersion(self.DEFAULT_VERSION)
+    self.assertEquals(incr_type, 'branch')
+
+  def testDetermineIncrPatch(self):
+    """Verify patch increment detection."""
+    incr_type, _ = self._DetermineIncrForVersion('111.1.0')
+    self.assertEquals(incr_type, 'patch')
+
+  def testDetermineBranchIncrError(self):
+    """Detect unbranchable version."""
+    self.assertRaises(stages.BranchError, self._DetermineIncrForVersion,
+                      '111.1.1')
+
+  def _SimulateIncrementFailure(self):
+    """Simulates a git push failure during source branch increment."""
+    overlay_dir = os.path.join(
+        self.build_root, constants.CHROMIUMOS_OVERLAY_DIR)
+    self.rc_mock.AddCmdResult(partial_mock.In('push'), returncode=128)
+    stage = self.ConstructStage()
+    args = (overlay_dir, 'gerrit', 'refs/heads/master')
+    stage.IncrementVersionForSourceBranch(*args)
+
+  def testSourceIncrementWarning(self):
+    """Test the warning case for incrementing failure."""
+    # Since all git commands are mocked out, the FetchAndCheckoutTo function
+    # does nothing, and leaves the chromeos_version.sh file in the bumped state,
+    # so it looks like TOT version was indeed bumped by another bot.
+    with cros_test_lib.LoggingCapturer() as logger:
+      self._SimulateIncrementFailure()
+      self.AssertLogsContain(logger, 'bumped by another')
+
+  def testSourceIncrementFailure(self):
+    """Test the failure case for incrementing failure."""
+    def FetchAndCheckoutTo(*_args, **_kwargs):
+      self._CreateVersionFile()
+
+    # Simulate a git checkout of TOT.
+    self.PatchObject(stages.BranchUtilStage, 'FetchAndCheckoutTo',
+                     side_effect=FetchAndCheckoutTo, autospec=True)
+    self.assertRaises(cros_build_lib.RunCommandError,
+                      self._SimulateIncrementFailure)
 
 
 if __name__ == '__main__':

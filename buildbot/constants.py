@@ -92,9 +92,14 @@ SHARED_CACHE_ENVVAR = 'CROS_CACHEDIR'
 # CrOS remotes specified in the manifests.
 EXTERNAL_REMOTE = 'cros'
 INTERNAL_REMOTE = 'cros-internal'
-CROS_REMOTES = {
+CHROMIUM_REMOTE = 'chromium'
+CHROME_REMOTE = 'chrome'
+
+GIT_REMOTES = {
     EXTERNAL_REMOTE : GERRIT_SSH_URL,
-    INTERNAL_REMOTE : GERRIT_INT_SSH_URL
+    INTERNAL_REMOTE : GERRIT_INT_SSH_URL,
+    CHROMIUM_REMOTE : GERRIT_SSH_URL,
+    CHROME_REMOTE : GERRIT_INT_SSH_URL
 }
 
 # TODO(sosa): Move to manifest-versions-external once its created
@@ -177,6 +182,9 @@ PALADIN_TYPE = 'paladin'
 # A builder that kicks off Pre-CQ builders that bless the purest CLs.
 PRE_CQ_LAUNCHER_TYPE = 'priest'
 
+# A builder that cuts and prunes branches.
+CREATE_BRANCH_TYPE = 'gardener'
+
 # Chrome PFQ type.  Incremental build type that builds and validates new
 # versions of Chrome.  Only valid if set with CHROME_REV.  See
 # VALID_CHROME_REVISIONS for more information.
@@ -188,6 +196,8 @@ BUILD_FROM_SOURCE_TYPE = 'full'
 
 # Full but with versioned logic.
 CANARY_TYPE = 'canary'
+
+BRANCH_UTIL_CONFIG = 'branch-util'
 
 # Special build type for Chroot builders.  These builds focus on building
 # toolchains and validate that they work.
@@ -208,6 +218,7 @@ VALID_BUILD_TYPES = (
     PFQ_TYPE,
     PRE_CQ_LAUNCHER_TYPE,
     REFRESH_PACKAGES_TYPE,
+    CREATE_BRANCH_TYPE,
 )
 
 # The name of the builder used to launch the pre-CQ.
@@ -236,9 +247,10 @@ FULL_AU_TEST_TYPE = 'full_suite'
 VALID_AU_TEST_TYPES = [SMOKE_SUITE_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
                        FULL_AU_TEST_TYPE]
 
-VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
+CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
+VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,
                             'chromeos/config/chromeos_version.sh')
-SDK_VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
+SDK_VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,
                                 'chromeos/binhost/host/sdk_version.conf')
 SDK_GS_BUCKET = 'chromiumos-sdk'
 

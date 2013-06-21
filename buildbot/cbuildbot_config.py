@@ -48,6 +48,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'asan-informational',
     'refresh-packages',
     'platform2',
+    constants.BRANCH_UTIL_CONFIG,
 )
 
 def OverrideConfigForTrybot(build_config, options):
@@ -429,6 +430,13 @@ _settings = dict(
 #                   disk_layout for more info.
   disk_vm_layout='2gb-rootfs-updatable',
 
+# postsync_patch -- If enabled, run the PatchChanges stage.  Enabled by default.
+#                   Can be overridden by the --nopatch flag.
+  postsync_patch=True,
+
+# postsync_rexec -- Reexec into the buildroot after syncing.  Enabled by
+#                   default.
+  postsync_reexec=True,
 
 # TODO(sosa): Collapse to one option.
 # ====================== Dev installer prebuilts options =======================
@@ -1099,6 +1107,18 @@ internal_paladin.add_config('pre-cq-launcher',
   boards=[],
   build_type=constants.PRE_CQ_LAUNCHER_TYPE,
   description='Launcher for Pre-CQ builders.',
+)
+
+internal_paladin.add_config(constants.BRANCH_UTIL_CONFIG,
+  boards=[],
+  # Disable postsync_patch to prevent conflicting patches from being applied -
+  # e.g., patches from 'master' branch being applied to a branch.
+  postsync_patch=False,
+  # Disable postsync_reexec to continue running the 'master' branch chromite
+  # for all stages, rather than the chromite in the branch buildroot.
+  postsync_reexec=False,
+  build_type=constants.CREATE_BRANCH_TYPE,
+  description='Used for creating/deleting branches.',
 )
 
 # Internal incremental builders don't use official chrome because we want
