@@ -57,7 +57,9 @@ bool ExtensionAppShimHandler::ProfileManagerFacade::ProfileExistsForPath(
 
 Profile* ExtensionAppShimHandler::ProfileManagerFacade::ProfileForPath(
     const base::FilePath& path) {
-  return g_browser_process->profile_manager()->GetProfile(path);
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath full_path = profile_manager->user_data_dir().Append(path);
+  return profile_manager->GetProfile(full_path);
 }
 
 ExtensionAppShimHandler::ExtensionAppShimHandler()
