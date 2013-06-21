@@ -757,7 +757,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
             // WebVTT region whose region identifier is identical to cue's text
             // track cue region identifier, run the following substeps:
 #endif
-            if (displayBox->hasChildNodes() && !contains(static_cast<Node*>(displayBox.get())))
+            if (displayBox->hasChildNodes() && !contains(displayBox.get()))
                 // Note: the display tree of a cue is removed when the active flag of the cue is unset.
                 appendChild(displayBox, ASSERT_NO_EXCEPTION, AttachNow);
 #if ENABLE(WEBVTT_REGIONS)
