@@ -26,6 +26,7 @@
 #include "core/css/StyleRule.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
+#include "wtf/LinkedStack.h"
 
 namespace WebCore {
 
@@ -110,23 +111,23 @@ public:
 
     const RuleFeatureSet& features() const { return m_features; }
 
-    const Vector<RuleData>* idRules(AtomicStringImpl* key) const { ASSERT(!m_hasDirtyRules); return m_idRules.get(key); }
-    const Vector<RuleData>* classRules(AtomicStringImpl* key) const { ASSERT(!m_hasDirtyRules); return m_classRules.get(key); }
-    const Vector<RuleData>* tagRules(AtomicStringImpl* key) const { ASSERT(!m_hasDirtyRules); return m_tagRules.get(key); }
-    const Vector<RuleData>* shadowPseudoElementRules(AtomicStringImpl* key) const { ASSERT(!m_hasDirtyRules); return m_shadowPseudoElementRules.get(key); }
-    const Vector<RuleData>* linkPseudoClassRules() const { ASSERT(!m_hasDirtyRules); return &m_linkPseudoClassRules; }
-    const Vector<RuleData>* cuePseudoRules() const { ASSERT(!m_hasDirtyRules); return &m_cuePseudoRules; }
-    const Vector<RuleData>* focusPseudoClassRules() const { ASSERT(!m_hasDirtyRules); return &m_focusPseudoClassRules; }
-    const Vector<RuleData>* universalRules() const { ASSERT(!m_hasDirtyRules); return &m_universalRules; }
-    const Vector<StyleRulePage*>& pageRules() const { ASSERT(!m_hasDirtyRules); return m_pageRules; }
+    const Vector<RuleData>* idRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_idRules.get(key); }
+    const Vector<RuleData>* classRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_classRules.get(key); }
+    const Vector<RuleData>* tagRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_tagRules.get(key); }
+    const Vector<RuleData>* shadowPseudoElementRules(AtomicStringImpl* key) const { ASSERT(!m_pendingRules); return m_shadowPseudoElementRules.get(key); }
+    const Vector<RuleData>* linkPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_linkPseudoClassRules; }
+    const Vector<RuleData>* cuePseudoRules() const { ASSERT(!m_pendingRules); return &m_cuePseudoRules; }
+    const Vector<RuleData>* focusPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_focusPseudoClassRules; }
+    const Vector<RuleData>* universalRules() const { ASSERT(!m_pendingRules); return &m_universalRules; }
+    const Vector<StyleRulePage*>& pageRules() const { ASSERT(!m_pendingRules); return m_pageRules; }
 
     unsigned ruleCount() const { return m_ruleCount; }
 
     void compactRulesIfNeeded()
     {
-        if (!m_hasDirtyRules)
+        if (!m_pendingRules)
             return;
-        shrinkToFit();
+        compactRules();
     }
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
@@ -143,28 +144,42 @@ public:
     Vector<RuleSetSelectorPair> m_regionSelectorsAndRuleSets;
 
 private:
-    typedef HashMap<AtomicStringImpl*, OwnPtr<Vector<RuleData> > > AtomRuleMap;
+    typedef HashMap<AtomicStringImpl*, OwnPtr<LinkedStack<RuleData> > > PendingRuleMap;
+    typedef HashMap<AtomicStringImpl*, OwnPtr<Vector<RuleData> > > CompactRuleMap;
 
     RuleSet()
         : m_ruleCount(0)
-        , m_hasDirtyRules(false)
     {
     }
 
-    void addToRuleSet(AtomicStringImpl* key, AtomRuleMap&, const RuleData&);
+    void addToRuleSet(AtomicStringImpl* key, PendingRuleMap&, const RuleData&);
     void addPageRule(StyleRulePage*);
     void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
     void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, StyleResolver*, const ContainerNode* scope, bool hasDocumentSecurityOrigin, AddRuleFlags);
     bool findBestRuleSetAndAdd(const CSSSelector*, RuleData&);
 
-    void shrinkToFit();
-    static inline void shrinkMapVectorsToFit(AtomRuleMap&);
+    void compactRules();
+    static void compactPendingRules(PendingRuleMap&, CompactRuleMap&);
 
-    AtomRuleMap m_idRules;
-    AtomRuleMap m_classRules;
-    AtomRuleMap m_tagRules;
-    AtomRuleMap m_shadowPseudoElementRules;
+    struct PendingRuleMaps {
+        PendingRuleMap idRules;
+        PendingRuleMap classRules;
+        PendingRuleMap tagRules;
+        PendingRuleMap shadowPseudoElementRules;
+    };
+
+    PendingRuleMaps* ensurePendingRules()
+    {
+        if (!m_pendingRules)
+            m_pendingRules = adoptPtr(new PendingRuleMaps);
+        return m_pendingRules.get();
+    }
+
+    CompactRuleMap m_idRules;
+    CompactRuleMap m_classRules;
+    CompactRuleMap m_tagRules;
+    CompactRuleMap m_shadowPseudoElementRules;
     Vector<RuleData> m_linkPseudoClassRules;
     Vector<RuleData> m_cuePseudoRules;
     Vector<RuleData> m_focusPseudoClassRules;
@@ -173,7 +188,7 @@ private:
     Vector<StyleRulePage*> m_pageRules;
 
     unsigned m_ruleCount;
-    bool m_hasDirtyRules;
+    OwnPtr<PendingRuleMaps> m_pendingRules;
 };
 
 } // namespace WebCore
