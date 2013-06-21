@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -86,37 +87,32 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
   }
 
   void Attach() {
+    DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
     chrome::StorageInfo info(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath,
                              string16(), string16(), string16(), 0);
     chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
-    WaitForDeviceEvents();
-  }
-
-  void Detach() {
-    chrome::StorageMonitor::GetInstance()->receiver()->ProcessDetach(
-        device_id_);
-    WaitForDeviceEvents();
-  }
-
- private:
-  void WaitForDeviceEvents() {
     content::RunAllPendingInMessageLoop();
   }
 
+  void Detach() {
+    DCHECK(chrome::StorageMonitor::GetInstance()->IsInitialized());
+    chrome::StorageMonitor::GetInstance()->receiver()->ProcessDetach(
+        device_id_);
+    content::RunAllPendingInMessageLoop();
+  }
+
+ private:
   std::string device_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPrivateApiTest);
 };
 
-// TODO(jschuh): Flaky on Win64 & Linux Aura build. crbug.com/247336
-#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
-    (defined(OS_LINUX) && defined(USE_AURA))
-#define MAYBE_DeviceAttachDetachEvents DISABLED_DeviceAttachDetachEvents
-#else
-#define MAYBE_DeviceAttachDetachEvents DeviceAttachDetachEvents
-#endif
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest,
-                       MAYBE_DeviceAttachDetachEvents) {
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest, DeviceAttachDetachEvents) {
+  scoped_ptr<chrome::test::TestStorageMonitor> monitor(
+      chrome::test::TestStorageMonitor::CreateForBrowserTests());
+  monitor->Init();
+  monitor->MarkInitialized();
+
   // Setup.
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII(kTestExtensionPath));
