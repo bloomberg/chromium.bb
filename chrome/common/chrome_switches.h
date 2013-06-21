@@ -448,6 +448,7 @@ extern const char kWindows8Search[];
 
 #if defined(OS_WIN) && defined(USE_AURA)
 extern const char kViewerConnect[];
+extern const char kViewerLaunchViaAppId[];
 #endif
 
 #ifndef NDEBUG

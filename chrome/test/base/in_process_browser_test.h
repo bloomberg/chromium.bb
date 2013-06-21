@@ -18,13 +18,19 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
 namespace base {
+#if defined(OS_MACOSX)
 namespace mac {
 class ScopedNSAutoreleasePool;
 }  // namespace mac
+#endif  // defined(OS_MACOSX)
+
+#if defined(OS_WIN) && defined(USE_AURA)
+namespace win {
+class ScopedCOMInitializer;
+}
+#endif  // defined(OS_WIN) && defined(USE_AURA)
 }  // namespace base
-#endif  // OS_MACOSX
 
 class Browser;
 class CommandLine;
@@ -209,6 +215,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_;
 #endif  // OS_MACOSX
+
+#if defined(OS_WIN) && defined(USE_AURA)
+  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+#endif
 };
 
 #endif  // CHROME_TEST_BASE_IN_PROCESS_BROWSER_TEST_H_

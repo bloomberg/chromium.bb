@@ -1600,6 +1600,11 @@ const char kWindows8Search[]           = "windows8-search";
 #if defined(OS_WIN) && defined(USE_AURA)
 // Requests that Chrome connect to the running Metro viewer process.
 const char kViewerConnect[]                 = "viewer-connect";
+
+// Requests that Chrome launch the Metro viewer process via the given appid
+// (which is assumed to be registered as default browser) and synchronously
+// connect to it.
+const char kViewerLaunchViaAppId[]          = "viewer-launch-via-appid";
 #endif
 
 #ifndef NDEBUG

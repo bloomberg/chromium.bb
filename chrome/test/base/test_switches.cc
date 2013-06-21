@@ -4,22 +4,30 @@
 
 #include "chrome/test/base/test_switches.h"
 
+namespace switches {
+
 // Also emit full event trace logs for successful tests.
-const char switches::kAlsoEmitSuccessLogs[] = "also-emit-success-logs";
+const char kAlsoEmitSuccessLogs[] = "also-emit-success-logs";
 
 // Extra flags that the test should pass to launched browser process.
-const char switches::kExtraChromeFlags[] = "extra-chrome-flags";
+const char kExtraChromeFlags[] = "extra-chrome-flags";
 
 // Enable Chromium branding of the executable.
-const char switches::kEnableChromiumBranding[] = "enable-chromium-branding";
+const char kEnableChromiumBranding[] = "enable-chromium-branding";
 
 // Enable displaying error dialogs (for debugging).
-const char switches::kEnableErrorDialogs[] = "enable-errdialogs";
+const char kEnableErrorDialogs[] = "enable-errdialogs";
 
 // Number of iterations that page cycler tests will run.
-const char switches::kPageCyclerIterations[] = "page-cycler-iterations";
+const char kPageCyclerIterations[] = "page-cycler-iterations";
 
 // Name of channel used to connect to Chrome
 // when using the named testing interface.
-const char switches::kTestingChannel[] = "testing-channel";
+const char kTestingChannel[] = "testing-channel";
 
+#if defined(OS_WIN) && defined(USE_AURA)
+// Force browser tests to run in Ash/Metro on Windows 8.
+const char kAshBrowserTests[] = "ash-browsertests";
+#endif
+
+}  // namespace switches

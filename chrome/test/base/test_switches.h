@@ -5,6 +5,8 @@
 #ifndef CHROME_TEST_BASE_TEST_SWITCHES_H_
 #define CHROME_TEST_BASE_TEST_SWITCHES_H_
 
+#include "build/build_config.h"
+
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
@@ -15,6 +17,10 @@ extern const char kEnableChromiumBranding[];
 extern const char kEnableErrorDialogs[];
 extern const char kPageCyclerIterations[];
 extern const char kTestingChannel[];
+
+#if defined(OS_WIN) && defined(USE_AURA)
+extern const char kAshBrowserTests[];
+#endif
 
 }  // namespace switches
 

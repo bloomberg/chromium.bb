@@ -36,6 +36,7 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/test_launcher_utils.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -52,6 +53,15 @@
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#endif
+
+#if defined(OS_WIN) && defined(USE_AURA)
+#include "base/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"
+#include "ui/base/win/atl_module.h"
+#include "ui/compositor/compositor_setup.h"
+#include "win8/test/metro_registration_helper.h"
+#include "win8/test/test_registrar_constants.h"
 #endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -159,6 +169,18 @@ void InProcessBrowserTest::SetUp() {
 
   google_util::SetMockLinkDoctorBaseURLForTesting();
 
+#if defined(OS_WIN) && defined(USE_AURA)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests)) {
+    com_initializer_.reset(new base::win::ScopedCOMInitializer());
+    ui::win::CreateATLModuleIfNeeded();
+    ASSERT_TRUE(win8::MakeTestDefaultBrowserSynchronously());
+
+    // Ash browser tests need the real compositor.
+    ui::DisableTestCompositor();
+  }
+#endif
+
   BrowserTestBase::SetUp();
 }
 
@@ -168,6 +190,13 @@ void InProcessBrowserTest::PrepareTestCommandLine(CommandLine* command_line) {
 
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
+
+#if defined(OS_WIN) && defined(USE_AURA)
+  if (command_line->HasSwitch(switches::kAshBrowserTests)) {
+    command_line->AppendSwitchNative(switches::kViewerLaunchViaAppId,
+                                     win8::test::kDefaultTestAppUserModelId);
+  }
+#endif
 
 #if defined(OS_MACOSX)
   // Explicitly set the path of the binary used for child processes, otherwise
@@ -212,6 +241,9 @@ bool InProcessBrowserTest::CreateUserDataDirectory() {
 
 void InProcessBrowserTest::TearDown() {
   DCHECK(!g_browser_process);
+#if defined(OS_WIN) && defined(USE_AURA)
+  com_initializer_.reset();
+#endif
   BrowserTestBase::TearDown();
 }
 

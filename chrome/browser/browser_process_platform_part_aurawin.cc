@@ -24,11 +24,23 @@ void BrowserProcessPlatformPart::OnMetroViewerProcessTerminated() {
 
 void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
     const CommandLine& command_line) {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      command_line.HasSwitch(switches::kViewerConnect) &&
-      !metro_viewer_process_host_.get()) {
-    // Create a host to connect to the Metro viewer process over IPC.
-    metro_viewer_process_host_.reset(new ChromeMetroViewerProcessHost());
+  // Check for Windows 8 specific commandlines requesting that this process
+  // either connect to an existing viewer or launch a new viewer and
+  // synchronously wait for it to connect.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    bool launch = command_line.HasSwitch(switches::kViewerLaunchViaAppId);
+    bool connect = (launch ||
+                    (command_line.HasSwitch(switches::kViewerConnect) &&
+                     !metro_viewer_process_host_.get()));
+    if (connect) {
+      // Create a host to connect to the Metro viewer process over IPC.
+      metro_viewer_process_host_.reset(new ChromeMetroViewerProcessHost());
+      if (launch) {
+        CHECK(metro_viewer_process_host_->LaunchViewerAndWaitForConnection(
+            command_line.GetSwitchValueNative(
+                switches::kViewerLaunchViaAppId)));
+      }
+    }
   }
 }
 

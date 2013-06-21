@@ -377,6 +377,14 @@
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
+          'conditions': [
+            ['use_aura==1', {
+              'dependencies': [
+                '../win8/win8.gyp:test_registrar_constants',
+                '../win8/win8.gyp:test_support_win8',
+              ],
+            }],
+          ],
         }],
       ],
     },
