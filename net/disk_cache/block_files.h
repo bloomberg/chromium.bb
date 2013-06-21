@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/addr.h"
+#include "net/disk_cache/disk_format_base.h"
 #include "net/disk_cache/mapped_file.h"
 
 namespace base {
@@ -21,6 +22,53 @@ class ThreadChecker;
 }
 
 namespace disk_cache {
+
+// An instance of this class represents the header of a block file in memory.
+// Note that this class doesn't perform any file operation.
+class NET_EXPORT_PRIVATE BlockHeader {
+ public:
+  BlockHeader();
+  explicit BlockHeader(BlockFileHeader* header);
+  explicit BlockHeader(MappedFile* file);
+  BlockHeader(const BlockHeader& other);
+  ~BlockHeader();
+
+  // Creates a new entry on the allocation map, updating the apropriate
+  // counters. |target| is the type of block to use (number of empty blocks),
+  // and |size| is the actual number of blocks to use.
+  bool CreateMapBlock(int target, int size, int* index);
+
+  // Deletes the block pointed by |index|.
+  void DeleteMapBlock(int index, int block_size);
+
+  // Returns true if the specified block is used.
+  bool UsedMapBlock(int index, int size);
+
+  // Restores the "empty counters" and allocation hints.
+  void FixAllocationCounters();
+
+  // Returns true if the current block file should not be used as-is to store
+  // more records. |block_count| is the number of blocks to allocate.
+  bool NeedToGrowBlockFile(int block_count);
+
+  // Returns the number of empty blocks for this file.
+  int EmptyBlocks() const;
+
+  // Returns true if the counters look OK.
+  bool ValidateCounters() const;
+
+  // Returns the size of the wrapped structure (BlockFileHeader).
+  int Size() const;
+
+  BlockFileHeader* operator->() { return header_; }
+  void operator=(const BlockHeader& other) { header_ = other.header_; }
+  BlockFileHeader* Get() { return header_; }
+
+ private:
+  BlockFileHeader* header_;
+};
+
+typedef std::vector<BlockHeader> BlockFilesBitmaps;
 
 // This class handles the set of block-files open by the disk cache.
 class NET_EXPORT_PRIVATE BlockFiles {
