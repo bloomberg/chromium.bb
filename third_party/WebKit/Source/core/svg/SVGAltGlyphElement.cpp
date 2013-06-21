@@ -82,9 +82,9 @@ bool SVGAltGlyphElement::childShouldCreateRenderer(const NodeRenderingContext& c
     return false;
 }
 
-RenderObject* SVGAltGlyphElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGAltGlyphElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGTSpan(this);
+    return new (document()->renderArena()) RenderSVGTSpan(this);
 }
 
 bool SVGAltGlyphElement::hasValidGlyphElements(Vector<String>& glyphNames) const

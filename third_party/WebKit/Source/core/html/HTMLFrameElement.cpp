@@ -52,9 +52,9 @@ bool HTMLFrameElement::rendererIsNeeded(const NodeRenderingContext&)
     return isURLAllowed();
 }
 
-RenderObject* HTMLFrameElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* HTMLFrameElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderFrame(this);
+    return new (document()->renderArena()) RenderFrame(this);
 }
 
 static inline HTMLFrameSetElement* containingFrameSetElement(Node* node)

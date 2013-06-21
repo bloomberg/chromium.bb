@@ -79,9 +79,9 @@ bool MeterInnerElement::rendererIsNeeded(const NodeRenderingContext& context)
     return render && !render->theme()->supportsMeter(render->style()->appearance()) && HTMLDivElement::rendererIsNeeded(context);
 }
 
-RenderObject* MeterInnerElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* MeterInnerElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderMeter(this);
+    return new (document()->renderArena()) RenderMeter(this);
 }
 
 inline MeterBarElement::MeterBarElement(Document* document)

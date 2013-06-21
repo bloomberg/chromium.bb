@@ -63,7 +63,7 @@ public:
 
 private:
     SliderThumbElement(Document*);
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren();
     virtual bool isDisabledFormControl() const OVERRIDE;
     virtual bool matchesReadOnlyPseudoClass() const OVERRIDE;
@@ -121,7 +121,7 @@ public:
 
 private:
     SliderContainerElement(Document*);
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
     virtual const AtomicString& shadowPseudoId() const;
 };
 

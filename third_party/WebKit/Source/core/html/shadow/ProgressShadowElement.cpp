@@ -70,9 +70,9 @@ PassRefPtr<ProgressInnerElement> ProgressInnerElement::create(Document* document
     return element.release();
 }
 
-RenderObject* ProgressInnerElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* ProgressInnerElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderProgress(this);
+    return new (document()->renderArena()) RenderProgress(this);
 }
 
 bool ProgressInnerElement::rendererIsNeeded(const NodeRenderingContext& context)

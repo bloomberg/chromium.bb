@@ -56,7 +56,7 @@ private:
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
 
     virtual const AtomicString& imageSourceURL() const OVERRIDE;
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;

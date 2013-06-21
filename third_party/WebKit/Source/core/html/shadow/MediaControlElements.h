@@ -259,7 +259,7 @@ private:
     explicit MediaControlTextTrackContainerElement(Document*);
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
 
     IntRect m_videoDisplaySize;
     float m_fontSize;

@@ -179,9 +179,9 @@ const AtomicString& TextTrackCueBox::textTrackCueBoxShadowPseudoId()
     return trackDisplayBoxShadowPseudoId;
 }
 
-RenderObject* TextTrackCueBox::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* TextTrackCueBox::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderTextTrackCue(this);
+    return new (document()->renderArena()) RenderTextTrackCue(this);
 }
 
 // ----------------------------

@@ -49,7 +49,7 @@ private:
 
     virtual bool selfHasRelativeLengths() const;
 
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGEllipseElement)
         DECLARE_ANIMATED_LENGTH(Cx, cx)

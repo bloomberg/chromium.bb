@@ -162,9 +162,9 @@ PassRefPtr<RenderStyle> TextFieldDecorationElement::customStyleForRenderer()
     return style.release();
 }
 
-RenderObject* TextFieldDecorationElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* TextFieldDecorationElement::createRenderer(RenderStyle*)
 {
-    RenderImage* image = new (arena) RenderImage(this);
+    RenderImage* image = new (document()->renderArena()) RenderImage(this);
     image->setImageResource(RenderImageResource::create());
     return image;
 }

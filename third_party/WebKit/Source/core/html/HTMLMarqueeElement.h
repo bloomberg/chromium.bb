@@ -61,7 +61,7 @@ private:
     virtual void suspend(ReasonForSuspension);
     virtual void resume();
 
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) OVERRIDE FINAL;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE FINAL;
 
     RenderMarquee* renderMarquee() const;
 };

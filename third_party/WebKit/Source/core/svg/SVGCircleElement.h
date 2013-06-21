@@ -49,7 +49,7 @@ private:
 
     virtual bool selfHasRelativeLengths() const;
 
-    RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    RenderObject* createRenderer(RenderStyle*);
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGCircleElement)
         DECLARE_ANIMATED_LENGTH(Cx, cx)

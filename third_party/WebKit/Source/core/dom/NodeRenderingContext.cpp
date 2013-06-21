@@ -259,7 +259,7 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     RenderObject* nextRenderer = this->nextRenderer();
 
     Document* document = element->document();
-    RenderObject* newRenderer = element->createRenderer(document->renderArena(), m_style.get());
+    RenderObject* newRenderer = element->createRenderer(m_style.get());
     if (!newRenderer)
         return;
 
@@ -305,7 +305,7 @@ void NodeRenderingContext::createRendererForTextIfNeeded()
 
     if (!textNode->textRendererIsNeeded(*this))
         return;
-    RenderText* newRenderer = textNode->createTextRenderer(document->renderArena(), m_style.get());
+    RenderText* newRenderer = textNode->createTextRenderer(m_style.get());
     if (!newRenderer)
         return;
     if (!parentRenderer->isChildAllowed(newRenderer, m_style.get())) {

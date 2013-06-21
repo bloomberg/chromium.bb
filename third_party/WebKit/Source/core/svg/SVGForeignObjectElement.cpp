@@ -130,9 +130,9 @@ void SVGForeignObjectElement::svgAttributeChanged(const QualifiedName& attrName)
         RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
 }
 
-RenderObject* SVGForeignObjectElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGForeignObjectElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGForeignObject(this);
+    return new (document()->renderArena()) RenderSVGForeignObject(this);
 }
 
 bool SVGForeignObjectElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

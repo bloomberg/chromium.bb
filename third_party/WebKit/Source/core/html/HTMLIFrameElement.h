@@ -45,7 +45,7 @@ private:
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
 
     virtual void didRecalcStyle(StyleChange) OVERRIDE;
 

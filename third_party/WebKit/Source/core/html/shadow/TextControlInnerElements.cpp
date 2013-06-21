@@ -61,9 +61,9 @@ PassRefPtr<TextControlInnerContainer> TextControlInnerContainer::create(Document
     return adoptRef(new TextControlInnerContainer(document));
 }
     
-RenderObject* TextControlInnerContainer::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* TextControlInnerContainer::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderTextControlInnerContainer(this);
+    return new (document()->renderArena()) RenderTextControlInnerContainer(this);
 }
 
 TextControlInnerElement::TextControlInnerElement(Document* document)
@@ -115,9 +115,9 @@ void TextControlInnerTextElement::defaultEventHandler(Event* event)
         HTMLDivElement::defaultEventHandler(event);
 }
 
-RenderObject* TextControlInnerTextElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* TextControlInnerTextElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderTextControlInnerBlock(this);
+    return new (document()->renderArena()) RenderTextControlInnerBlock(this);
 }
 
 PassRefPtr<RenderStyle> TextControlInnerTextElement::customStyleForRenderer()

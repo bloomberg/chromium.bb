@@ -148,9 +148,9 @@ bool SVGEllipseElement::selfHasRelativeLengths() const
         || ry().isRelative();
 }
 
-RenderObject* SVGEllipseElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGEllipseElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGEllipse(this);
+    return new (document()->renderArena()) RenderSVGEllipse(this);
 }
 
 }

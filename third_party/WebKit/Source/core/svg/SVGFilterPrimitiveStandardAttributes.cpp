@@ -137,9 +137,9 @@ void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(FilterEffect* f
         filterEffect->setHasHeight(true);
 }
 
-RenderObject* SVGFilterPrimitiveStandardAttributes::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGFilterPrimitiveStandardAttributes::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGResourceFilterPrimitive(this);
+    return new (document()->renderArena()) RenderSVGResourceFilterPrimitive(this);
 }
 
 bool SVGFilterPrimitiveStandardAttributes::rendererIsNeeded(const NodeRenderingContext& context)

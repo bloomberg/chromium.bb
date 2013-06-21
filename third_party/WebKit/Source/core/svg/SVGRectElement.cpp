@@ -164,9 +164,9 @@ bool SVGRectElement::selfHasRelativeLengths() const
         || ry().isRelative();
 }
 
-RenderObject* SVGRectElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGRectElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGRect(this);
+    return new (document()->renderArena()) RenderSVGRect(this);
 }
 
 }

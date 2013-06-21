@@ -69,7 +69,7 @@ private:
 
     virtual void willRecalcStyle(StyleChange) OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
     virtual void toClipPath(Path&);
 
     void clearResourceReferences();

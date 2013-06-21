@@ -171,9 +171,9 @@ void SVGPatternElement::childrenChanged(bool changedByParser, Node* beforeChange
         object->setNeedsLayout(true);
 }
 
-RenderObject* SVGPatternElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGPatternElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGResourcePattern(this);
+    return new (document()->renderArena()) RenderSVGResourcePattern(this);
 }
 
 void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) const

@@ -55,9 +55,9 @@ HTMLDetailsElement::HTMLDetailsElement(const QualifiedName& tagName, Document* d
     ScriptWrappable::init(this);
 }
 
-RenderObject* HTMLDetailsElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* HTMLDetailsElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderBlock(this);
+    return new (document()->renderArena()) RenderBlock(this);
 }
 
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)

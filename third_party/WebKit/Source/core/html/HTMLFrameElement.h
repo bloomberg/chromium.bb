@@ -42,7 +42,7 @@ private:
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
     
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 

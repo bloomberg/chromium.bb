@@ -59,7 +59,6 @@ class Icon;
 class KeyboardEvent;
 class MouseEvent;
 class Node;
-class RenderArena;
 class RenderObject;
 class RenderStyle;
 class TouchEvent;
@@ -230,7 +229,7 @@ public:
     // Miscellaneous functions
 
     virtual bool rendererIsNeeded();
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) const;
+    virtual RenderObject* createRenderer(RenderStyle*) const;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>);
     virtual void attach();
     virtual void detach();

@@ -135,7 +135,7 @@ bool HTMLPlugInImageElement::wouldLoadAsNetscapePlugin(const String& url, const 
     return false;
 }
 
-RenderObject* HTMLPlugInImageElement::createRenderer(RenderArena* arena, RenderStyle* style)
+RenderObject* HTMLPlugInImageElement::createRenderer(RenderStyle* style)
 {
     // Fallback content breaks the DOM->Renderer class relationship of this
     // class and all superclasses because createObject won't necessarily
@@ -144,12 +144,12 @@ RenderObject* HTMLPlugInImageElement::createRenderer(RenderArena* arena, RenderS
         return RenderObject::createObject(this, style);
 
     if (isImageType()) {
-        RenderImage* image = new (arena) RenderImage(this);
+        RenderImage* image = new (document()->renderArena()) RenderImage(this);
         image->setImageResource(RenderImageResource::create());
         return image;
     }
 
-    return new (arena) RenderEmbeddedObject(this);
+    return new (document()->renderArena()) RenderEmbeddedObject(this);
 }
 
 void HTMLPlugInImageElement::willRecalcStyle(StyleChange)

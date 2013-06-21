@@ -79,7 +79,7 @@ private:
     TextFieldDecorationElement(Document*, TextFieldDecorator*);
     virtual bool isTextFieldDecoration() const OVERRIDE;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool isMouseFocusable() const OVERRIDE;

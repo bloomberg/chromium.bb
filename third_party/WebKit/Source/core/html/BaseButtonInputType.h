@@ -45,7 +45,7 @@ private:
     virtual void valueAttributeChanged() OVERRIDE;
     virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE;
     virtual bool appendFormData(FormDataList&, bool) const OVERRIDE;
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) const OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual bool storesValueSeparateFromAttribute() OVERRIDE;
     virtual void setValue(const String&, bool, TextFieldEventBehavior) OVERRIDE;
 };

@@ -225,9 +225,9 @@ void SVGTRefElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
-RenderObject* SVGTRefElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGTRefElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGInline(this);
+    return new (document()->renderArena()) RenderSVGInline(this);
 }
 
 bool SVGTRefElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

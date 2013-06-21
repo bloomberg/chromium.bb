@@ -525,9 +525,9 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 #endif
 }
 
-RenderObject* SVGUseElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGUseElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGTransformableContainer(this);
+    return new (document()->renderArena()) RenderSVGTransformableContainer(this);
 }
 
 static bool isDirectReference(const Node* node)

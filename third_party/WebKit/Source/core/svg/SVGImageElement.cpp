@@ -187,9 +187,9 @@ bool SVGImageElement::selfHasRelativeLengths() const
         || height().isRelative();
 }
 
-RenderObject* SVGImageElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGImageElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGImage(this);
+    return new (document()->renderArena()) RenderSVGImage(this);
 }
 
 bool SVGImageElement::haveLoadedRequiredResources()

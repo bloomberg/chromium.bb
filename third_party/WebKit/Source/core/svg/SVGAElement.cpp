@@ -147,12 +147,12 @@ void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 }
 
-RenderObject* SVGAElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGAElement::createRenderer(RenderStyle*)
 {
     if (parentNode() && parentNode()->isSVGElement() && toSVGElement(parentNode())->isTextContent())
-        return new (arena) RenderSVGInline(this);
+        return new (document()->renderArena()) RenderSVGInline(this);
 
-    return new (arena) RenderSVGTransformableContainer(this);
+    return new (document()->renderArena()) RenderSVGTransformableContainer(this);
 }
 
 void SVGAElement::defaultEventHandler(Event* event)

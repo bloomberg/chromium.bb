@@ -154,9 +154,9 @@ void SVGMaskElement::childrenChanged(bool changedByParser, Node* beforeChange, N
         object->setNeedsLayout(true);
 }
 
-RenderObject* SVGMaskElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGMaskElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGResourceMasker(this);
+    return new (document()->renderArena()) RenderSVGResourceMasker(this);
 }
 
 bool SVGMaskElement::selfHasRelativeLengths() const

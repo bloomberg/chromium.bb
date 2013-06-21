@@ -49,7 +49,7 @@ public:
     void recalcTextStyle(StyleChange);
     void createTextRendererIfNeeded();
     bool textRendererIsNeeded(const NodeRenderingContext&);
-    virtual RenderText* createTextRenderer(RenderArena*, RenderStyle*);
+    virtual RenderText* createTextRenderer(RenderStyle*);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData);
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE FINAL;

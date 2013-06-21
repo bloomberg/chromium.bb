@@ -58,9 +58,9 @@ void HTMLButtonElement::setType(const AtomicString& type)
     setAttribute(typeAttr, type);
 }
 
-RenderObject* HTMLButtonElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* HTMLButtonElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderButton(this);
+    return new (document()->renderArena()) RenderButton(this);
 }
 
 const AtomicString& HTMLButtonElement::formControlType() const

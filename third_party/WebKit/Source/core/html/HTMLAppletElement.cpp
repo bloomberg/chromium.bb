@@ -72,7 +72,7 @@ bool HTMLAppletElement::rendererIsNeeded(const NodeRenderingContext& context)
     return HTMLPlugInImageElement::rendererIsNeeded(context);
 }
 
-RenderObject* HTMLAppletElement::createRenderer(RenderArena*, RenderStyle* style)
+RenderObject* HTMLAppletElement::createRenderer(RenderStyle* style)
 {
     if (!canEmbedJava())
         return RenderObject::createObject(this, style);

@@ -39,7 +39,7 @@ public:
 protected:
     SVGGElement(const QualifiedName&, Document*, ConstructionType = CreateSVGElement);
 
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
 
 private:
     virtual bool isValid() const { return SVGTests::isValid(); }

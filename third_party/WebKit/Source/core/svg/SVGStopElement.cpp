@@ -97,9 +97,9 @@ void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
-RenderObject* SVGStopElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGStopElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGGradientStop(this);
+    return new (document()->renderArena()) RenderSVGGradientStop(this);
 }
 
 bool SVGStopElement::rendererIsNeeded(const NodeRenderingContext&)

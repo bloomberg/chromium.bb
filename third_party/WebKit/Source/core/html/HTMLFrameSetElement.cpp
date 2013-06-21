@@ -156,12 +156,12 @@ bool HTMLFrameSetElement::rendererIsNeeded(const NodeRenderingContext& context)
     return context.style()->isStyleAvailable();
 }
 
-RenderObject *HTMLFrameSetElement::createRenderer(RenderArena *arena, RenderStyle *style)
+RenderObject* HTMLFrameSetElement::createRenderer(RenderStyle *style)
 {
     if (style->hasContent())
         return RenderObject::createObject(this, style);
     
-    return new (arena) RenderFrameSet(this);
+    return new (document()->renderArena()) RenderFrameSet(this);
 }
 
 void HTMLFrameSetElement::attach(const AttachContext& context)

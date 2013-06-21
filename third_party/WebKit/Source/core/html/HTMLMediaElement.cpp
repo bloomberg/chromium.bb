@@ -493,9 +493,9 @@ bool HTMLMediaElement::rendererIsNeeded(const NodeRenderingContext& context)
     return controls() ? HTMLElement::rendererIsNeeded(context) : false;
 }
 
-RenderObject* HTMLMediaElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* HTMLMediaElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderMedia(this);
+    return new (document()->renderArena()) RenderMedia(this);
 }
 
 bool HTMLMediaElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

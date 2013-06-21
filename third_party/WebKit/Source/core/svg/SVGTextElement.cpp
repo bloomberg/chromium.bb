@@ -132,9 +132,9 @@ AffineTransform* SVGTextElement::supplementalTransform()
     return m_supplementalTransform.get();
 }
 
-RenderObject* SVGTextElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGTextElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderSVGText(this);
+    return new (document()->renderArena()) RenderSVGText(this);
 }
 
 bool SVGTextElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

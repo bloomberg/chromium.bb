@@ -47,9 +47,9 @@ HTMLSummaryElement::HTMLSummaryElement(const QualifiedName& tagName, Document* d
     ASSERT(hasTagName(summaryTag));
 }
 
-RenderObject* HTMLSummaryElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderBlock(this);
+    return new (document()->renderArena()) RenderBlock(this);
 }
 
 bool HTMLSummaryElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

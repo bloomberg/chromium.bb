@@ -98,7 +98,7 @@ protected:
     virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
 
 private:
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
     virtual void willRecalcStyle(StyleChange) OVERRIDE FINAL;
 
     virtual void finishParsingChildren();

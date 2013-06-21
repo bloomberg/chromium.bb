@@ -54,7 +54,7 @@ public:
 
     static PassRefPtr<ProgressInnerElement> create(Document*);
 private:
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
 };
 

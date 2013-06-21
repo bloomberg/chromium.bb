@@ -1168,7 +1168,7 @@ bool Element::rendererIsNeeded(const NodeRenderingContext& context)
     return context.style()->display() != NONE;
 }
 
-RenderObject* Element::createRenderer(RenderArena*, RenderStyle* style)
+RenderObject* Element::createRenderer(RenderStyle* style)
 {
     return RenderObject::createObject(this, style);
 }

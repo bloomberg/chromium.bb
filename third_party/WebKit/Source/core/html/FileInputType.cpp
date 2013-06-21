@@ -158,9 +158,9 @@ void FileInputType::handleDOMActivateEvent(Event* event)
     event->setDefaultHandled();
 }
 
-RenderObject* FileInputType::createRenderer(RenderArena* arena, RenderStyle*) const
+RenderObject* FileInputType::createRenderer(RenderStyle*) const
 {
-    return new (arena) RenderFileUploadControl(element());
+    return new (element()->document()->renderArena()) RenderFileUploadControl(element());
 }
 
 bool FileInputType::canSetStringValue() const

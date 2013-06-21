@@ -259,15 +259,15 @@ void Text::createTextRendererIfNeeded()
     NodeRenderingContext(this).createRendererForTextIfNeeded();
 }
 
-RenderText* Text::createTextRenderer(RenderArena* arena, RenderStyle* style)
+RenderText* Text::createTextRenderer(RenderStyle* style)
 {
     if (isSVGText(this) || isSVGShadowText(this))
-        return new (arena) RenderSVGInlineText(this, dataImpl());
+        return new (document()->renderArena()) RenderSVGInlineText(this, dataImpl());
 
     if (style->hasTextCombine())
-        return new (arena) RenderCombineText(this, dataImpl());
+        return new (document()->renderArena()) RenderCombineText(this, dataImpl());
 
-    return new (arena) RenderText(this, dataImpl());
+    return new (document()->renderArena()) RenderText(this, dataImpl());
 }
 
 void Text::attach(const AttachContext& context)

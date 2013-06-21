@@ -56,7 +56,7 @@ private:
     virtual void handleTouchEvent(TouchEvent*) OVERRIDE;
     virtual bool hasTouchEventHandler() const OVERRIDE;
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) const OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual void createShadowSubtree() OVERRIDE;
     virtual Decimal parseToNumber(const String&, const Decimal&) const OVERRIDE;
     virtual String serialize(const Decimal&) const OVERRIDE;

@@ -48,7 +48,7 @@ public:
 private:
     SearchInputType(HTMLInputElement*);
     virtual void attach() OVERRIDE;
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) const OVERRIDE;
+    virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool shouldRespectSpeechAttribute() OVERRIDE;
     virtual bool isSearchField() const OVERRIDE;

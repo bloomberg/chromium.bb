@@ -44,7 +44,7 @@ public:
     static PassRefPtr<DetailsMarkerControl> create(Document*);
 
 private:
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
 
     HTMLSummaryElement* summaryElement();

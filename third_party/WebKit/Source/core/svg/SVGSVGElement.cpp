@@ -480,12 +480,12 @@ bool SVGSVGElement::rendererIsNeeded(const NodeRenderingContext& context)
     return StyledElement::rendererIsNeeded(context);
 }
 
-RenderObject* SVGSVGElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* SVGSVGElement::createRenderer(RenderStyle*)
 {
     if (isOutermostSVGSVGElement())
-        return new (arena) RenderSVGRoot(this);
+        return new (document()->renderArena()) RenderSVGRoot(this);
 
-    return new (arena) RenderSVGViewportContainer(this);
+    return new (document()->renderArena()) RenderSVGViewportContainer(this);
 }
 
 Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* rootParent)

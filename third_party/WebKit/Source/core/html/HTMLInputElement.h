@@ -186,7 +186,7 @@ public:
     void setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionCode&);
 
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
-    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*);
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
 
     // FIXME: For isActivatedSubmit and setActivatedSubmit, we should use the NVI-idiom here by making

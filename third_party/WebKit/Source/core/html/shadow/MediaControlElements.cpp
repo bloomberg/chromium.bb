@@ -672,9 +672,9 @@ PassRefPtr<MediaControlTextTrackContainerElement> MediaControlTextTrackContainer
     return element.release();
 }
 
-RenderObject* MediaControlTextTrackContainerElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* MediaControlTextTrackContainerElement::createRenderer(RenderStyle*)
 {
-    return new (arena) RenderTextTrackContainerElement(this);
+    return new (document()->renderArena()) RenderTextTrackContainerElement(this);
 }
 
 const AtomicString& MediaControlTextTrackContainerElement::textTrackContainerElementShadowPseudoId()

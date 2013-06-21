@@ -333,11 +333,11 @@ bool HTMLSelectElement::canSelectAll() const
     return !usesMenuList();
 }
 
-RenderObject* HTMLSelectElement::createRenderer(RenderArena* arena, RenderStyle*)
+RenderObject* HTMLSelectElement::createRenderer(RenderStyle*)
 {
     if (usesMenuList())
-        return new (arena) RenderMenuList(this);
-    return new (arena) RenderListBox(this);
+        return new (document()->renderArena()) RenderMenuList(this);
+    return new (document()->renderArena()) RenderListBox(this);
 }
 
 bool HTMLSelectElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

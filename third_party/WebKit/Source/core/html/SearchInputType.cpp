@@ -62,9 +62,9 @@ void SearchInputType::attach()
     observeFeatureIfVisible(UseCounter::InputTypeSearch);
 }
 
-RenderObject* SearchInputType::createRenderer(RenderArena* arena, RenderStyle*) const
+RenderObject* SearchInputType::createRenderer(RenderStyle*) const
 {
-    return new (arena) RenderSearchField(element());
+    return new (element()->document()->renderArena()) RenderSearchField(element());
 }
 
 const AtomicString& SearchInputType::formControlType() const
