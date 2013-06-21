@@ -19,6 +19,7 @@ package sync_pb;
 // An AutofillProfile.
 message AutofillProfileSpecifics {
   optional string guid = 15;
+  optional string origin = 16;
 
   // Contact info.
   repeated string name_first = 2;

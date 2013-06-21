@@ -36,9 +36,12 @@ const char kSettingsOrigin[] = "Chrome settings";
 class MockAutofillProfileSyncableService
     : public AutofillProfileSyncableService {
  public:
-  MockAutofillProfileSyncableService() {
-  }
+  MockAutofillProfileSyncableService() {}
   virtual ~MockAutofillProfileSyncableService() {}
+
+  using AutofillProfileSyncableService::DataBundle;
+  using AutofillProfileSyncableService::set_sync_processor;
+  using AutofillProfileSyncableService::CreateData;
 
   MOCK_METHOD1(LoadAutofillData, bool(std::vector<AutofillProfile*>*));
   MOCK_METHOD1(SaveChangesToWebData,
@@ -71,21 +74,18 @@ MATCHER_P(CheckSyncChanges, n_sync_changes_list, "") {
 MATCHER_P(DataBundleCheck, n_bundle, "") {
   if ((arg.profiles_to_delete.size() != n_bundle.profiles_to_delete.size()) ||
       (arg.profiles_to_update.size() != n_bundle.profiles_to_update.size()) ||
-      (arg.profiles_to_add.size() != n_bundle.profiles_to_add.size())) {
+      (arg.profiles_to_add.size() != n_bundle.profiles_to_add.size()))
     return false;
-  }
   for (size_t i = 0; i < arg.profiles_to_delete.size(); ++i) {
     if (arg.profiles_to_delete[i] != n_bundle.profiles_to_delete[i])
       return false;
   }
   for (size_t i = 0; i < arg.profiles_to_update.size(); ++i) {
-    if (arg.profiles_to_update[i]->guid() !=
-        n_bundle.profiles_to_update[i]->guid()) {
+    if (*arg.profiles_to_update[i] != *n_bundle.profiles_to_update[i])
       return false;
-    }
   }
   for (size_t i = 0; i < arg.profiles_to_add.size(); ++i) {
-    if (arg.profiles_to_add[i]->Compare(*n_bundle.profiles_to_add[i]))
+    if (*arg.profiles_to_add[i] != *n_bundle.profiles_to_add[i])
       return false;
   }
   return true;
@@ -98,7 +98,25 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
 
   MOCK_METHOD2(ProcessSyncChanges,
                syncer::SyncError(const tracked_objects::Location&,
-                         const syncer::SyncChangeList&));
+                                 const syncer::SyncChangeList&));
+};
+
+class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
+ public:
+  TestSyncChangeProcessor() {}
+  virtual ~TestSyncChangeProcessor() {}
+
+  virtual syncer::SyncError ProcessSyncChanges(
+      const tracked_objects::Location& location,
+      const syncer::SyncChangeList& changes) OVERRIDE {
+    changes_ = changes;
+    return syncer::SyncError();
+  }
+
+  const syncer::SyncChangeList& changes() { return changes_; }
+
+ private:
+  syncer::SyncChangeList changes_;
 };
 
 class AutofillProfileSyncableServiceTest : public testing::Test {
@@ -111,6 +129,35 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
     sync_processor_.reset(new MockSyncChangeProcessor);
   }
 
+  // Wrapper around AutofillProfileSyncableService::MergeDataAndStartSyncing()
+  // that also verifies expectations.
+  void MergeDataAndStartSyncing(
+      const std::vector<AutofillProfile*>& profiles_from_web_db,
+      const syncer::SyncDataList& data_list,
+      const MockAutofillProfileSyncableService::DataBundle& expected_bundle,
+      const syncer::SyncChangeList& expected_change_list) {
+    EXPECT_CALL(autofill_syncable_service_, LoadAutofillData(_))
+        .Times(1)
+        .WillOnce(DoAll(CopyData(&profiles_from_web_db), Return(true)));
+    EXPECT_CALL(autofill_syncable_service_,
+                SaveChangesToWebData(DataBundleCheck(expected_bundle)))
+        .Times(1)
+        .WillOnce(Return(true));
+    ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
+        .WillByDefault(Return(syncer::SyncError()));
+    EXPECT_CALL(*sync_processor_,
+                ProcessSyncChanges(_, CheckSyncChanges(expected_change_list)))
+        .Times(1)
+        .WillOnce(Return(syncer::SyncError()));
+
+    // Takes ownership of sync_processor_.
+    autofill_syncable_service_.MergeDataAndStartSyncing(
+        syncer::AUTOFILL_PROFILE, data_list,
+        sync_processor_.PassAs<syncer::SyncChangeProcessor>(),
+        scoped_ptr<syncer::SyncErrorFactory>(
+            new syncer::SyncErrorFactoryMock()));
+  }
+
  protected:
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -120,7 +167,7 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
 };
 
 TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
-  std::vector<AutofillProfile *> profiles_from_web_db;
+  std::vector<AutofillProfile*> profiles_from_web_db;
   std::string guid_present1 = kGuid1;
   std::string guid_present2 = kGuid2;
   std::string guid_synced1 = kGuid3;
@@ -150,7 +197,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
   AutofillProfile profile2(guid_synced2, origin_synced2);
   profile2.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Harry"));
   data_list.push_back(autofill_syncable_service_.CreateData(profile2));
-  // This one will have the name updated.
+  // This one will have the name and origin updated.
   AutofillProfile profile3(guid_present2, origin_synced2);
   profile3.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Tom Doe"));
   data_list.push_back(autofill_syncable_service_.CreateData(profile3));
@@ -159,14 +206,172 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
   expected_change_list.push_back(
       syncer::SyncChange(FROM_HERE,
                          syncer::SyncChange::ACTION_ADD,
-                         AutofillProfileSyncableService::CreateData(
-                             (*profiles_from_web_db.front()))));
+                         MockAutofillProfileSyncableService::CreateData(
+                             *profiles_from_web_db.front())));
 
-  AutofillProfileSyncableService::DataBundle expected_bundle;
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
   expected_bundle.profiles_to_add.push_back(&profile1);
   expected_bundle.profiles_to_add.push_back(&profile2);
   expected_bundle.profiles_to_update.push_back(&profile3);
 
+  MergeDataAndStartSyncing(
+      profiles_from_web_db, data_list, expected_bundle, expected_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+TEST_F(AutofillProfileSyncableServiceTest, MergeIdenticalProfiles) {
+  std::vector<AutofillProfile*> profiles_from_web_db;
+  std::string guid_present1 = kGuid1;
+  std::string guid_present2 = kGuid2;
+  std::string guid_synced1 = kGuid3;
+  std::string guid_synced2 = kGuid4;
+  std::string origin_present1 = kHttpOrigin;
+  std::string origin_present2 = kSettingsOrigin;
+  std::string origin_synced1 = kHttpsOrigin;
+  std::string origin_synced2 = kHttpsOrigin;
+
+  profiles_from_web_db.push_back(
+      new AutofillProfile(guid_present1, origin_present1));
+  profiles_from_web_db.back()->SetRawInfo(
+      autofill::NAME_FIRST, UTF8ToUTF16("John"));
+  profiles_from_web_db.back()->SetRawInfo(
+      autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("1 1st st"));
+  profiles_from_web_db.push_back(
+      new AutofillProfile(guid_present2, origin_present2));
+  profiles_from_web_db.back()->SetRawInfo(
+      autofill::NAME_FIRST, UTF8ToUTF16("Tom"));
+  profiles_from_web_db.back()->SetRawInfo(
+      autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("2 2nd st"));
+
+  // The synced profiles are identical to the local ones, except that the guids
+  // are different.
+  syncer::SyncDataList data_list;
+  AutofillProfile profile1(guid_synced1, origin_synced1);
+  profile1.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("John"));
+  profile1.SetRawInfo(autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("1 1st st"));
+  data_list.push_back(autofill_syncable_service_.CreateData(profile1));
+  AutofillProfile profile2(guid_synced2, origin_synced2);
+  profile2.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Tom"));
+  profile2.SetRawInfo(autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("2 2nd st"));
+  data_list.push_back(autofill_syncable_service_.CreateData(profile2));
+
+  AutofillProfile expected_profile(profile2);
+  expected_profile.set_origin(kSettingsOrigin);
+  syncer::SyncChangeList expected_change_list;
+  expected_change_list.push_back(
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_UPDATE,
+                         MockAutofillProfileSyncableService::CreateData(
+                             expected_profile)));
+
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  expected_bundle.profiles_to_delete.push_back(guid_present1);
+  expected_bundle.profiles_to_delete.push_back(guid_present2);
+  expected_bundle.profiles_to_add.push_back(&profile1);
+  expected_bundle.profiles_to_add.push_back(&expected_profile);
+
+  MergeDataAndStartSyncing(
+      profiles_from_web_db, data_list, expected_bundle, expected_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+TEST_F(AutofillProfileSyncableServiceTest, MergeSimilarProfiles) {
+  std::vector<AutofillProfile*> profiles_from_web_db;
+  std::string guid_present1 = kGuid1;
+  std::string guid_present2 = kGuid2;
+  std::string guid_synced1 = kGuid3;
+  std::string guid_synced2 = kGuid4;
+  std::string origin_present1 = kHttpOrigin;
+  std::string origin_present2 = kSettingsOrigin;
+  std::string origin_synced1 = kHttpsOrigin;
+  std::string origin_synced2 = kHttpsOrigin;
+
+  profiles_from_web_db.push_back(
+      new AutofillProfile(guid_present1, origin_present1));
+  profiles_from_web_db.back()->SetRawInfo(
+      autofill::NAME_FIRST, UTF8ToUTF16("John"));
+  profiles_from_web_db.back()->SetRawInfo(
+      autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("1 1st st"));
+  profiles_from_web_db.push_back(
+      new AutofillProfile(guid_present2, origin_present2));
+  profiles_from_web_db.back()->SetRawInfo(
+      autofill::NAME_FIRST, UTF8ToUTF16("Tom"));
+  profiles_from_web_db.back()->SetRawInfo(
+      autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("2 2nd st"));
+
+  // The synced profiles are identical to the local ones, except that the guids
+  // are different.
+  syncer::SyncDataList data_list;
+  AutofillProfile profile1(guid_synced1, origin_synced1);
+  profile1.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("John"));
+  profile1.SetRawInfo(autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("1 1st st"));
+  profile1.SetRawInfo(autofill::COMPANY_NAME, UTF8ToUTF16("Frobbers, Inc."));
+  data_list.push_back(autofill_syncable_service_.CreateData(profile1));
+  AutofillProfile profile2(guid_synced2, origin_synced2);
+  profile2.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Tom"));
+  profile2.SetRawInfo(autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("2 2nd st"));
+  profile2.SetRawInfo(autofill::COMPANY_NAME, UTF8ToUTF16("Fizzbang, LLC."));
+  data_list.push_back(autofill_syncable_service_.CreateData(profile2));
+
+  // The first profile should have its origin updated.
+  // The second profile should remain as-is, because an unverified profile
+  // should never overwrite a verified one.
+  AutofillProfile expected_profile(profile1);
+  expected_profile.set_origin(origin_present1);
+  syncer::SyncChangeList expected_change_list;
+  expected_change_list.push_back(
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_ADD,
+                         MockAutofillProfileSyncableService::CreateData(
+                             *profiles_from_web_db.back())));
+  expected_change_list.push_back(
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_UPDATE,
+                         MockAutofillProfileSyncableService::CreateData(
+                             expected_profile)));
+
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  expected_bundle.profiles_to_delete.push_back(guid_present1);
+  expected_bundle.profiles_to_add.push_back(&expected_profile);
+  expected_bundle.profiles_to_add.push_back(&profile2);
+
+  MergeDataAndStartSyncing(
+      profiles_from_web_db, data_list, expected_bundle, expected_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+// Ensure that no Sync events are generated to fill in missing origins from Sync
+// with explicitly present empty ones.  This ensures that the migration to add
+// origins to profiles does not generate lots of needless Sync updates.
+TEST_F(AutofillProfileSyncableServiceTest, MergeDataEmptyOrigins) {
+  std::vector<AutofillProfile*> profiles_from_web_db;
+
+  // Create a profile with an empty origin.
+  AutofillProfile profile(kGuid1, std::string());
+  profile.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("John"));
+  profile.SetRawInfo(autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("1 1st st"));
+
+  profiles_from_web_db.push_back(new AutofillProfile(profile));
+
+  // Create a Sync profile identical to |profile|, except with no origin set.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(profile.guid());
+  autofill_specifics->add_name_first("John");
+  autofill_specifics->add_name_middle(std::string());
+  autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_email_address(std::string());
+  autofill_specifics->add_phone_home_whole_number(std::string());
+  autofill_specifics->set_address_home_line1("1 1st st");
+  EXPECT_FALSE(autofill_specifics->has_origin());
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(
+      syncer::SyncData::CreateLocalData(
+          profile.guid(), profile.guid(), specifics));
+
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
   EXPECT_CALL(autofill_syncable_service_, LoadAutofillData(_))
       .Times(1)
       .WillOnce(DoAll(CopyData(&profiles_from_web_db), Return(true)));
@@ -174,23 +379,19 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
               SaveChangesToWebData(DataBundleCheck(expected_bundle)))
       .Times(1)
       .WillOnce(Return(true));
-  ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
-      .WillByDefault(Return(syncer::SyncError()));
-  EXPECT_CALL(*sync_processor_,
-              ProcessSyncChanges(_, CheckSyncChanges(expected_change_list)))
-      .Times(1)
-      .WillOnce(Return(syncer::SyncError()));
+  EXPECT_CALL(*sync_processor_, ProcessSyncChanges(_, _)).Times(0);
 
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncer::AUTOFILL_PROFILE, data_list,
       sync_processor_.PassAs<syncer::SyncChangeProcessor>(),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
   autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
-  std::vector<AutofillProfile *> profiles_from_web_db;
+  std::vector<AutofillProfile*> profiles_from_web_db;
   std::string guid_present1 = kGuid1;
   std::string guid_present2 = kGuid2;
 
@@ -203,27 +404,22 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   profiles_from_web_db.back()->SetRawInfo(
       autofill::NAME_FIRST, UTF8ToUTF16("Jane"));
 
-  EXPECT_CALL(autofill_syncable_service_, LoadAutofillData(_))
-      .Times(1)
-      .WillOnce(DoAll(CopyData(&profiles_from_web_db), Return(true)));
-  EXPECT_CALL(autofill_syncable_service_, SaveChangesToWebData(_))
-      .Times(1)
-      .WillOnce(Return(true));
-  ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
-      .WillByDefault(Return(syncer::SyncError()));
-  EXPECT_CALL(*sync_processor_,
-              ProcessSyncChanges(
-                  _,
-                  Property(&syncer::SyncChangeList::size, Eq(2U))))
-      .Times(1)
-      .WillOnce(Return(syncer::SyncError()));
+  syncer::SyncChangeList expected_change_list;
+  expected_change_list.push_back(
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_ADD,
+                         MockAutofillProfileSyncableService::CreateData(
+                             *profiles_from_web_db.front())));
+  expected_change_list.push_back(
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_ADD,
+                         MockAutofillProfileSyncableService::CreateData(
+                             *profiles_from_web_db.back())));
 
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
   syncer::SyncDataList data_list;
-  // Takes ownership of sync_processor_.
-  autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncer::AUTOFILL_PROFILE, data_list,
-      sync_processor_.PassAs<syncer::SyncChangeProcessor>(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+  MergeDataAndStartSyncing(
+      profiles_from_web_db, data_list, expected_bundle, expected_change_list);
 
   syncer::SyncDataList data =
       autofill_syncable_service_.GetAllSyncData(syncer::AUTOFILL_PROFILE);
@@ -231,12 +427,10 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   ASSERT_EQ(2U, data.size());
   EXPECT_EQ(guid_present1, data[0].GetSpecifics().autofill_profile().guid());
   EXPECT_EQ(guid_present2, data[1].GetSpecifics().autofill_profile().guid());
-  // TODO(isherman): Verify that the origins match once they are saved and read
-  // from the database and included in the Sync protocol buffers.
-  // http://crbug.com/170401
-  // EXPECT_EQ(kHttpOrigin, data[0].GetSpecifics().autofill_profile().origin());
-  // EXPECT_EQ(kHttpsOrigin,
-  //           data[1].GetSpecifics().autofill_profile().origin());
+  EXPECT_EQ(kHttpOrigin, data[0].GetSpecifics().autofill_profile().origin());
+  EXPECT_EQ(kHttpsOrigin, data[1].GetSpecifics().autofill_profile().origin());
+
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
@@ -248,17 +442,18 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
   AutofillProfile profile(guid_synced, kHttpOrigin);
   profile.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Jane"));
   change_list.push_back(
-      syncer::SyncChange(FROM_HERE,
-                         syncer::SyncChange::ACTION_ADD,
-                         AutofillProfileSyncableService::CreateData(profile)));
+      syncer::SyncChange(
+          FROM_HERE,
+          syncer::SyncChange::ACTION_ADD,
+          MockAutofillProfileSyncableService::CreateData(profile)));
   AutofillProfile empty_profile(guid_present, kHttpsOrigin);
   change_list.push_back(
       syncer::SyncChange(
           FROM_HERE,
           syncer::SyncChange::ACTION_DELETE,
-          AutofillProfileSyncableService::CreateData(empty_profile)));
+          MockAutofillProfileSyncableService::CreateData(empty_profile)));
 
-  AutofillProfileSyncableService::DataBundle expected_bundle;
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
   expected_bundle.profiles_to_delete.push_back(guid_present);
   expected_bundle.profiles_to_add.push_back(&profile);
 
@@ -274,20 +469,43 @@ TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {
   EXPECT_FALSE(error.IsSet());
 }
 
-TEST_F(AutofillProfileSyncableServiceTest, ActOnChange) {
-  AutofillProfile profile(kGuid1, std::string());
-  profile.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Jane"));
-  AutofillProfileChange change1(AutofillProfileChange::ADD, kGuid1, &profile);
-  AutofillProfileChange change2(AutofillProfileChange::REMOVE, kGuid2, NULL);
-  ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
-      .WillByDefault(
-          Return(syncer::SyncError(FROM_HERE, std::string("an error"),
-                                   syncer::AUTOFILL_PROFILE)));
-  EXPECT_CALL(*sync_processor_, ProcessSyncChanges(_, _)).Times(2);
+TEST_F(AutofillProfileSyncableServiceTest, AutofillProfileAdded) {
+  // Will be owned by the syncable service.  Keep a reference available here for
+  // verifying test expectations.
+  TestSyncChangeProcessor* sync_change_processor = new TestSyncChangeProcessor;
+  autofill_syncable_service_.set_sync_processor(sync_change_processor);
 
-  autofill_syncable_service_.set_sync_processor(sync_processor_.release());
-  autofill_syncable_service_.ActOnChange(change1);
-  autofill_syncable_service_.ActOnChange(change2);
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  profile.SetRawInfo(autofill::NAME_FIRST, UTF8ToUTF16("Jane"));
+  AutofillProfileChange change(AutofillProfileChange::ADD, kGuid1, &profile);
+  autofill_syncable_service_.AutofillProfileChanged(change);
+
+  ASSERT_EQ(1U, sync_change_processor->changes().size());
+  syncer::SyncChange result = sync_change_processor->changes()[0];
+  EXPECT_EQ(syncer::SyncChange::ACTION_ADD, result.change_type());
+
+  sync_pb::AutofillProfileSpecifics specifics =
+      result.sync_data().GetSpecifics().autofill_profile();
+  EXPECT_EQ(kGuid1, specifics.guid());
+  EXPECT_EQ(kHttpsOrigin, specifics.origin());
+  EXPECT_THAT(specifics.name_first(), testing::ElementsAre("Jane"));
+}
+
+TEST_F(AutofillProfileSyncableServiceTest, AutofillProfileDeleted) {
+  // Will be owned by the syncable service.  Keep a reference available here for
+  // verifying test expectations.
+  TestSyncChangeProcessor* sync_change_processor = new TestSyncChangeProcessor;
+  autofill_syncable_service_.set_sync_processor(sync_change_processor);
+
+  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuid2, NULL);
+  autofill_syncable_service_.AutofillProfileChanged(change);
+
+  ASSERT_EQ(1U, sync_change_processor->changes().size());
+  syncer::SyncChange result = sync_change_processor->changes()[0];
+  EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, result.change_type());
+  sync_pb::AutofillProfileSpecifics specifics =
+      result.sync_data().GetSpecifics().autofill_profile();
+  EXPECT_EQ(kGuid2, specifics.guid());
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, UpdateField) {
@@ -350,7 +568,7 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
   values.push_back(UTF8ToUTF16("2@1.com"));
   profile1.SetRawMultiInfo(autofill::EMAIL_ADDRESS, values);
 
-  AutofillProfile profile2(kGuid2, std::string());
+  AutofillProfile profile2(kGuid2, kHttpsOrigin);
   profile2.SetRawInfo(
       autofill::ADDRESS_HOME_LINE1, UTF8ToUTF16("111 First St."));
 
@@ -397,6 +615,8 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
   profile1.GetRawMultiInfo(autofill::PHONE_HOME_WHOLE_NUMBER, &values);
   ASSERT_EQ(values.size(), 1U);
   EXPECT_EQ(values[0], UTF8ToUTF16("650234567"));
+
+  EXPECT_EQ(profile2.origin(), profile1.origin());
 
   AutofillProfile profile3(kGuid3, kHttpOrigin);
   profile3.SetRawInfo(

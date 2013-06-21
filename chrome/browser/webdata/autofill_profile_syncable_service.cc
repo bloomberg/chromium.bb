@@ -319,6 +319,15 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
     AutofillProfile* profile,
     const std::string& app_locale) {
   bool diff = false;
+  if (profile->origin() != specifics.origin()) {
+    bool was_verified = profile->IsVerified();
+    profile->set_origin(specifics.origin());
+    diff = true;
+
+    // Verified profiles should never be overwritten by unverified ones.
+    DCHECK(!was_verified || profile->IsVerified());
+  }
+
   diff = UpdateMultivaluedField(autofill::NAME_FIRST,
                                 specifics.name_first(), profile) || diff;
   diff = UpdateMultivaluedField(autofill::NAME_MIDDLE,
@@ -368,6 +377,8 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   specifics->clear_phone_home_whole_number();
 
   specifics->set_guid(profile.guid());
+  specifics->set_origin(profile.origin());
+
   std::vector<string16> values;
   profile.GetRawMultiInfo(autofill::NAME_FIRST, &values);
   for (size_t i = 0; i < values.size(); ++i) {
@@ -435,49 +446,59 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
   const sync_pb::AutofillProfileSpecifics& autofill_specifics(
       specifics.autofill_profile());
 
-  GUIDToProfileMap::iterator it = profile_map->find(
+  GUIDToProfileMap::iterator existing_profile = profile_map->find(
         autofill_specifics.guid());
-  if (it != profile_map->end()) {
-    // Some profile that already present is synced.
+  if (existing_profile != profile_map->end()) {
+    // The synced profile already exists locally.  It might need to be updated.
     if (OverwriteProfileWithServerData(
-            autofill_specifics, it->second, app_locale_)) {
-      bundle->profiles_to_update.push_back(it->second);
+            autofill_specifics, existing_profile->second, app_locale_)) {
+      bundle->profiles_to_update.push_back(existing_profile->second);
     }
-  } else {
-    // New profile synced.
-    // TODO(isherman): Read the origin from |autofill_specifics|.
-    AutofillProfile* new_profile(
-        new AutofillProfile(autofill_specifics.guid(), std::string()));
-    OverwriteProfileWithServerData(
-        autofill_specifics, new_profile, app_locale_);
-
-    // Check if profile appears under a different guid.
-    for (GUIDToProfileMap::iterator i = profile_map->begin();
-         i != profile_map->end(); ++i) {
-      if (i->second->Compare(*new_profile) == 0) {
-        bundle->profiles_to_delete.push_back(i->second->guid());
-        DVLOG(2) << "[AUTOFILL SYNC]"
-                 << "Found in sync db but with a different guid: "
-                 << UTF16ToUTF8(i->second->GetRawInfo(autofill::NAME_FIRST))
-                 << UTF16ToUTF8(i->second->GetRawInfo(autofill::NAME_LAST))
-                 << "New guid " << new_profile->guid()
-                 << ". Profile to be deleted " << i->second->guid();
-        profile_map->erase(i);
-        break;
-      } else if (!i->second->PrimaryValue().empty() &&
-                 i->second->PrimaryValue() == new_profile->PrimaryValue()) {
-        // Add it to candidates for merge - if there is no profile with this
-        // guid we will merge them.
-        bundle->candidates_to_merge.insert(std::make_pair(i->second->guid(),
-                                                          new_profile));
-      }
-    }
-    profiles_.push_back(new_profile);
-    it = profile_map->insert(std::make_pair(new_profile->guid(),
-                                            new_profile)).first;
-    bundle->profiles_to_add.push_back(new_profile);
+    return existing_profile;
   }
-  return it;
+
+
+  // New profile synced.
+  AutofillProfile* new_profile = new AutofillProfile(
+      autofill_specifics.guid(), autofill_specifics.origin());
+  OverwriteProfileWithServerData(autofill_specifics, new_profile, app_locale_);
+
+  // Check if profile appears under a different guid.
+  // Unverified profiles should never overwrite verified ones.
+  for (GUIDToProfileMap::iterator it = profile_map->begin();
+       it != profile_map->end(); ++it) {
+    AutofillProfile* local_profile = it->second;
+    if (local_profile->Compare(*new_profile) == 0) {
+      // Ensure that a verified profile can never revert back to an unverified
+      // one.
+      if (local_profile->IsVerified() && !new_profile->IsVerified()) {
+        new_profile->set_origin(local_profile->origin());
+        bundle->profiles_to_sync_back.push_back(new_profile);
+      }
+
+      bundle->profiles_to_delete.push_back(local_profile->guid());
+      DVLOG(2) << "[AUTOFILL SYNC]"
+               << "Found in sync db but with a different guid: "
+               << UTF16ToUTF8(local_profile->GetRawInfo(autofill::NAME_FIRST))
+               << UTF16ToUTF8(local_profile->GetRawInfo(autofill::NAME_LAST))
+               << "New guid " << new_profile->guid()
+               << ". Profile to be deleted " << local_profile->guid();
+      profile_map->erase(it);
+      break;
+    } else if (!local_profile->IsVerified() &&
+               !new_profile->IsVerified() &&
+               !local_profile->PrimaryValue().empty() &&
+               local_profile->PrimaryValue() == new_profile->PrimaryValue()) {
+      // Add it to candidates for merge - if there is no profile with this
+      // guid we will merge them.
+      bundle->candidates_to_merge.insert(
+          std::make_pair(local_profile->guid(), new_profile));
+    }
+  }
+  profiles_.push_back(new_profile);
+  bundle->profiles_to_add.push_back(new_profile);
+  return profile_map->insert(std::make_pair(new_profile->guid(),
+                                            new_profile)).first;
 }
 
 void AutofillProfileSyncableService::ActOnChange(
@@ -582,7 +603,8 @@ bool AutofillProfileSyncableService::MergeProfile(
     AutofillProfile* merge_into,
     const std::string& app_locale) {
   merge_into->OverwriteWithOrAddTo(merge_from, app_locale);
-  return (merge_into->Compare(merge_from) != 0);
+  return (merge_into->Compare(merge_from) != 0 ||
+          merge_into->origin() != merge_from.origin());
 }
 
 AutofillTable* AutofillProfileSyncableService::GetAutofillTable() const {
