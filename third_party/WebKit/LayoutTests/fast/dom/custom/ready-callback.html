@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<body>
+<script>
+test(function () {
+    var readyInvocations = 0;
+    function ready() {
+        readyInvocations++;
+    }
+
+    var getterInvocations = 0;
+    function getter() {
+        getterInvocations++;
+        return ready;
+    }
+
+    function failer() {
+        assert_unreached('the ready callback must not be retrieved after registration');
+    }
+
+    var proto = Object.create(HTMLElement.prototype, {
+      readyCallback: {
+        get: getter
+      }
+    });
+    var ctor = document.register('x-a', {prototype: proto});
+    assert_equals(getterInvocations, 1, 'the ready callback must have been retrieved');
+
+    proto.readyCallback = failer;
+    var element = new ctor();
+    assert_equals(readyInvocations, 1, 'the ready callback retrieved at registration must be invoked');
+}, 'transfer ready callback');
+</script>

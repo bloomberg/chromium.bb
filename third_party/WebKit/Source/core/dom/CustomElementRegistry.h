@@ -32,6 +32,7 @@
 #define CustomElementRegistry_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/CustomElementCallback.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
@@ -53,12 +54,14 @@ class Element;
 
 class CustomElementInvocation {
 public:
-    explicit CustomElementInvocation(PassRefPtr<Element>);
+    CustomElementInvocation(PassRefPtr<CustomElementCallback>, PassRefPtr<Element>);
     ~CustomElementInvocation();
 
+    CustomElementCallback* callback() const { return m_callback.get(); }
     Element* element() const { return m_element.get(); }
 
 private:
+    RefPtr<CustomElementCallback> m_callback;
     RefPtr<Element> m_element;
 };
 
@@ -100,13 +103,13 @@ private:
     static bool isValidName(const AtomicString&);
 
     static InstanceSet& activeCustomElementRegistries();
-    void activate(const CustomElementInvocation&);
+    void enqueueReadyCallback(CustomElementCallback*, Element*);
     void deactivate();
     void deliverLifecycleCallbacks();
 
     PassRefPtr<CustomElementDefinition> findAndCheckNamespace(const AtomicString& type, const AtomicString& namespaceURI) const;
 
-    void didCreateCustomTagElement(Element*);
+    void didCreateCustomTagElement(CustomElementDefinition*, Element*);
     void didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind, const AtomicString& type, Element*);
 
     DefinitionMap m_definitions;

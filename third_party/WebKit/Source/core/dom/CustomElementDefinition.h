@@ -31,6 +31,7 @@
 #ifndef CustomElementDefinition_h
 #define CustomElementDefinition_h
 
+#include "core/dom/CustomElementCallback.h"
 #include "core/dom/QualifiedName.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -40,7 +41,7 @@ namespace WebCore {
 
 class CustomElementDefinition : public RefCounted<CustomElementDefinition> {
 public:
-    static PassRefPtr<CustomElementDefinition> create(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI);
+    static PassRefPtr<CustomElementDefinition> create(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementCallback>);
 
     virtual ~CustomElementDefinition() {}
 
@@ -69,11 +70,14 @@ public:
     CustomElementKind kind() const { return isTypeExtension() ? TypeExtension : CustomTag; }
     bool isTypeExtension() const { return type() != name(); }
 
+    CustomElementCallback* callback() const { return m_callback.get(); }
+
 private:
-    CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI);
+    CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementCallback>);
 
     AtomicString m_type;
     QualifiedName m_tag;
+    RefPtr<CustomElementCallback> m_callback;
 };
 
 }

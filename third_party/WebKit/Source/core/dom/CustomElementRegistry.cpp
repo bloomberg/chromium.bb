@@ -44,8 +44,9 @@
 
 namespace WebCore {
 
-CustomElementInvocation::CustomElementInvocation(PassRefPtr<Element> element)
-    : m_element(element)
+CustomElementInvocation::CustomElementInvocation(PassRefPtr<CustomElementCallback> callback, PassRefPtr<Element> element)
+    : m_callback(callback)
+    , m_element(element)
 {
 }
 
@@ -128,6 +129,8 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
         return;
     }
 
+    RefPtr<CustomElementCallback> lifecycleCallbacks = constructorBuilder->createCallback(document());
+
     // Consulting the constructor builder could execute script and
     // kill the document.
     if (!document()) {
@@ -135,7 +138,7 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
         return;
     }
 
-    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, tagName.localName(), tagName.namespaceURI());
+    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, tagName.localName(), tagName.namespaceURI(), lifecycleCallbacks);
 
     if (!constructorBuilder->createConstructor(document(), definition.get())) {
         ec = NOT_SUPPORTED_ERR;
@@ -147,9 +150,11 @@ void CustomElementRegistry::registerElement(CustomElementConstructorBuilder* con
     // Upgrade elements that were waiting for this definition.
     CustomElementUpgradeCandidateMap::ElementSet upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition.get());
     constructorBuilder->didRegisterDefinition(definition.get(), upgradeCandidates);
+
     for (CustomElementUpgradeCandidateMap::ElementSet::iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
         (*it)->setNeedsStyleRecalc(); // :unresolved has changed
-        activate(CustomElementInvocation(*it));
+
+        enqueueReadyCallback(lifecycleCallbacks.get(), *it);
     }
 }
 
@@ -217,7 +222,7 @@ PassRefPtr<Element> CustomElementRegistry::createCustomTagElement(const Qualifie
         // custom tag element will be unresolved in perpetuity.
         didCreateUnresolvedElement(CustomElementDefinition::CustomTag, tagName.localName(), element.get());
     } else {
-        didCreateCustomTagElement(element.get());
+        didCreateCustomTagElement(definition.get(), element.get());
     }
 
     return element.release();
@@ -234,13 +239,13 @@ void CustomElementRegistry::didGiveTypeExtension(Element* element, const AtomicS
         // extension element will be unresolved in perpetuity.
         didCreateUnresolvedElement(CustomElementDefinition::TypeExtension, type, element);
     } else {
-        activate(CustomElementInvocation(element));
+        enqueueReadyCallback(definition->callback(), element);
     }
 }
 
-void CustomElementRegistry::didCreateCustomTagElement(Element* element)
+void CustomElementRegistry::didCreateCustomTagElement(CustomElementDefinition* definition, Element* element)
 {
-    activate(CustomElementInvocation(element));
+    enqueueReadyCallback(definition->callback(), element);
 }
 
 void CustomElementRegistry::didCreateUnresolvedElement(CustomElementDefinition::CustomElementKind kind, const AtomicString& type, Element* element)
@@ -254,10 +259,13 @@ void CustomElementRegistry::customElementWasDestroyed(Element* element)
     m_candidates.remove(element);
 }
 
-void CustomElementRegistry::activate(const CustomElementInvocation& invocation)
+void CustomElementRegistry::enqueueReadyCallback(CustomElementCallback* callback, Element* element)
 {
+    if (!callback->hasReady())
+        return;
+
     bool wasInactive = m_invocations.isEmpty();
-    m_invocations.append(invocation);
+    m_invocations.append(CustomElementInvocation(callback, element));
     if (wasInactive)
         activeCustomElementRegistries().add(this);
 }
@@ -281,7 +289,9 @@ void CustomElementRegistry::deliverLifecycleCallbacks()
     if (!m_invocations.isEmpty()) {
         Vector<CustomElementInvocation> invocations;
         m_invocations.swap(invocations);
-        CustomElementHelpers::invokeReadyCallbacksIfNeeded(m_scriptExecutionContext, invocations);
+
+        for (Vector<CustomElementInvocation>::iterator it = invocations.begin(); it != invocations.end(); ++it)
+            it->callback()->ready(it->element());
     }
 
     ASSERT(m_invocations.isEmpty());

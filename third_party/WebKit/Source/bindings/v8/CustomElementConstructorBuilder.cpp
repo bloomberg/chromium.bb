@@ -40,10 +40,14 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8CustomElementCallback.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/CustomElementDefinition.h"
+#include "core/dom/CustomElementRegistry.h"
+#include "core/dom/Document.h"
 #include "wtf/Assertions.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -128,6 +132,25 @@ bool CustomElementConstructorBuilder::findTagName(const AtomicString& customElem
     }
 
     return false;
+}
+
+PassRefPtr<CustomElementCallback> CustomElementConstructorBuilder::createCallback(Document* document)
+{
+    ASSERT(!m_prototype.IsEmpty());
+
+    RefPtr<Document> protect(document);
+
+    v8::TryCatch exceptionCatcher;
+    exceptionCatcher.SetVerbose(true);
+
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Handle<v8::Value> readyValue = m_prototype->Get(v8String("readyCallback", isolate));
+
+    v8::Handle<v8::Function> readyFunction;
+    if (!readyValue.IsEmpty() && readyValue->IsFunction())
+        readyFunction = v8::Handle<v8::Function>::Cast(readyValue);
+
+    return V8CustomElementCallback::create(document, m_prototype, readyFunction);
 }
 
 bool CustomElementConstructorBuilder::createConstructor(Document* document, CustomElementDefinition* definition)

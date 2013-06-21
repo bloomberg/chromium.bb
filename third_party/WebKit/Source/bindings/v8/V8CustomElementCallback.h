@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,22 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef V8CustomElementCallback_h
+#define V8CustomElementCallback_h
 
-#include "core/dom/CustomElementDefinition.h"
+#include "bindings/v8/ActiveDOMCallback.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "core/dom/CustomElementCallback.h"
+#include <v8.h>
 
 namespace WebCore {
 
-PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementCallback> callback)
-{
-    return adoptRef(new CustomElementDefinition(type, name, namespaceURI, callback));
+class Element;
+class ScriptExecutionContext;
+
+class V8CustomElementCallback : public CustomElementCallback, ActiveDOMCallback {
+public:
+    static PassRefPtr<V8CustomElementCallback> create(ScriptExecutionContext*, v8::Handle<v8::Object> owner, v8::Handle<v8::Function> ready);
+
+    virtual ~V8CustomElementCallback() { }
+
+private:
+    V8CustomElementCallback(ScriptExecutionContext*, v8::Handle<v8::Function> ready);
+
+    virtual void ready(Element*) OVERRIDE;
+
+    RefPtr<DOMWrapperWorld> m_world;
+    ScopedPersistent<v8::Function> m_ready;
+};
+
 }
 
-CustomElementDefinition::CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementCallback> callback)
-    : m_type(type)
-    , m_tag(QualifiedName(nullAtom, name, namespaceURI))
-    , m_callback(callback)
-{
-}
-
-}
+#endif // CustomElementCallback_h

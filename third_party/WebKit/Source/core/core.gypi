@@ -1707,6 +1707,7 @@
             'dom/CrossThreadTask.h',
             'dom/CustomElementDefinition.cpp',
             'dom/CustomElementDefinition.h',
+            'dom/CustomElementCallback.h',
             'dom/CustomElementRegistry.cpp',
             'dom/CustomElementRegistry.h',
             'dom/CustomElementUpgradeCandidateMap.cpp',

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,22 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef CustomElementCallback_h
+#define CustomElementCallback_h
 
-#include "core/dom/CustomElementDefinition.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementCallback> callback)
-{
-    return adoptRef(new CustomElementDefinition(type, name, namespaceURI, callback));
+class Element;
+
+class CustomElementCallback : public RefCounted<CustomElementCallback> {
+public:
+    virtual ~CustomElementCallback() { }
+
+    bool hasReady() const { return m_which == Ready; }
+    virtual void ready(Element*) = 0;
+
+protected:
+    enum CallbackType {
+        None,
+        Ready
+    };
+
+    CustomElementCallback(CallbackType which) : m_which(which) { }
+
+private:
+    CallbackType m_which;
+};
+
 }
 
-CustomElementDefinition::CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, PassRefPtr<CustomElementCallback> callback)
-    : m_type(type)
-    , m_tag(QualifiedName(nullAtom, name, namespaceURI))
-    , m_callback(callback)
-{
-}
-
-}
+#endif // CustomElementCallback_h

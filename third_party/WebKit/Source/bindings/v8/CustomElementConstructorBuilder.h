@@ -32,11 +32,13 @@
 #define CustomElementConstructorBuilder_h
 
 #include "bindings/v8/ScriptValue.h"
+#include "core/dom/CustomElementCallback.h"
 #include "core/dom/QualifiedName.h"
-#include "v8.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
+#include <v8.h>
 
 namespace WebCore {
 
@@ -64,6 +66,7 @@ public:
     bool isFeatureAllowed() const;
     bool validateOptions();
     bool findTagName(const AtomicString& customElementType, QualifiedName& tagName) const;
+    PassRefPtr<CustomElementCallback> createCallback(Document*);
     bool createConstructor(Document*, CustomElementDefinition*);
     void didRegisterDefinition(CustomElementDefinition*, const HashSet<Element*>& upgradeCandidates) const;
 
