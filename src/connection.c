@@ -737,8 +737,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 	return NULL;
 }
 
-static int
-interface_equal(const struct wl_interface *a, const struct wl_interface *b)
+int
+wl_interface_equal(const struct wl_interface *a, const struct wl_interface *b)
 {
 	/* In most cases the pointer equality test is sufficient.
 	 * However, in some cases, depending on how things are split
@@ -784,8 +784,8 @@ wl_closure_lookup_objects(struct wl_closure *closure, struct wl_map *objects)
 			}
 
 			if (object != NULL && message->types[i] != NULL &&
-			    !interface_equal((object)->interface,
-					     message->types[i])) {
+			    !wl_interface_equal((object)->interface,
+						message->types[i])) {
 				printf("invalid object (%u), type (%s), "
 				       "message %s(%s)\n",
 				       id, (object)->interface->name,

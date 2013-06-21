@@ -504,6 +504,15 @@ wl_resource_set_destructor(struct wl_resource *resource,
 	resource->destroy = destroy;
 }
 
+WL_EXPORT int
+wl_resource_instance_of(struct wl_resource *resource,
+			const struct wl_interface *interface,
+			const void *implementation)
+{
+	return wl_interface_equal(resource->object.interface, interface) &&
+		resource->object.implementation == implementation;
+}
+
 WL_EXPORT void
 wl_resource_add_destroy_listener(struct wl_resource *resource,
 				 struct wl_listener * listener)

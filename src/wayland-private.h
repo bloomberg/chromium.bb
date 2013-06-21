@@ -73,6 +73,9 @@ struct wl_connection;
 struct wl_closure;
 struct wl_proxy;
 
+int wl_interface_equal(const struct wl_interface *iface1,
+		       const struct wl_interface *iface2);
+
 struct wl_connection *wl_connection_create(int fd);
 void wl_connection_destroy(struct wl_connection *connection);
 void wl_connection_copy(struct wl_connection *connection, void *data, size_t size);

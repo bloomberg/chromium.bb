@@ -273,6 +273,11 @@ wl_resource_get_user_data(struct wl_resource *resource);
 void
 wl_resource_set_destructor(struct wl_resource *resource,
 			   wl_resource_destroy_func_t destroy);
+int
+wl_resource_instance_of(struct wl_resource *resource,
+			const struct wl_interface *interface,
+			const void *implementation);
+
 void
 wl_resource_add_destroy_listener(struct wl_resource *resource,
 				 struct wl_listener * listener);
