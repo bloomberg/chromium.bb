@@ -29,7 +29,8 @@ const char kSandboxWalletSecureServiceUrl[] =
 bool IsWalletProductionEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(switches::kWalletServiceUseProd) ||
-         base::FieldTrialList::FindFullName("WalletProductionService") == "Yes";
+      base::FieldTrialList::FindFullName("WalletProductionService") == "Yes" ||
+      base::FieldTrialList::FindFullName("Autocheckout") == "Yes";
 }
 
 GURL GetWalletHostUrl() {
