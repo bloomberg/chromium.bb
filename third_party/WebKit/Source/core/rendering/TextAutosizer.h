@@ -69,6 +69,7 @@ private:
     void processContainer(float multiplier, RenderBlock* container, TextAutosizingClusterInfo&, RenderObject* subtreeRoot, const TextAutosizingWindowInfo&);
 
     void setMultiplier(RenderObject*, float);
+    void setMultiplierForList(RenderObject* renderer, float multiplier);
 
     static bool isAutosizingContainer(const RenderObject*);
     static bool isNarrowDescendant(const RenderBlock*, TextAutosizingClusterInfo& parentClusterInfo);

@@ -90,6 +90,18 @@ static RenderListItem* getAncestorListItem(const RenderObject* renderer)
     return (ancestor && ancestor->isListItem()) ? toRenderListItem(ancestor) : 0;
 }
 
+static RenderObject* getAncestorList(const RenderObject* renderer)
+{
+    // FIXME: Add support for <menu> elements as a possible ancestor of an <li> element,
+    // see http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-li-element
+    for (RenderObject* ancestor = renderer->parent(); ancestor; ancestor = ancestor->parent()) {
+        Node* parentNode = ancestor->generatingNode();
+        if (parentNode && (parentNode->hasTagName(olTag) || parentNode->hasTagName(ulTag)))
+            return ancestor;
+    }
+    return 0;
+}
+
 TextAutosizer::TextAutosizer(Document* document)
     : m_document(document)
 {
@@ -216,9 +228,12 @@ void TextAutosizer::processContainer(float multiplier, RenderBlock* container, T
             if (localMultiplier != 1 && descendant->style()->textAutosizingMultiplier() == 1) {
                 setMultiplier(descendant, localMultiplier);
                 setMultiplier(descendant->parent(), localMultiplier); // Parent does line spacing.
+
                 if (RenderListItem* listItemAncestor = getAncestorListItem(descendant)) {
-                    if (listItemAncestor->style()->textAutosizingMultiplier() == 1)
-                        setMultiplier(listItemAncestor, localMultiplier);
+                    if (RenderObject* list = getAncestorList(listItemAncestor)) {
+                        if (list->style()->textAutosizingMultiplier() == 1)
+                            setMultiplierForList(list, localMultiplier);
+                    }
                 }
             }
         } else if (isAutosizingContainer(descendant)) {
@@ -239,9 +254,26 @@ void TextAutosizer::processContainer(float multiplier, RenderBlock* container, T
 
 void TextAutosizer::setMultiplier(RenderObject* renderer, float multiplier)
 {
+    // FIXME: Investigate if a clone() is needed and whether it does the right thing w.r.t. style sharing.
     RefPtr<RenderStyle> newStyle = RenderStyle::clone(renderer->style());
     newStyle->setTextAutosizingMultiplier(multiplier);
     renderer->setStyle(newStyle.release());
+}
+
+void TextAutosizer::setMultiplierForList(RenderObject* renderer, float multiplier)
+{
+#ifndef NDEBUG
+    Node* parentNode = renderer->generatingNode();
+    ASSERT(parentNode);
+    ASSERT(parentNode->hasTagName(olTag) || parentNode->hasTagName(ulTag));
+#endif
+    setMultiplier(renderer, multiplier);
+
+    // Make sure all list items are autosized consistently.
+    for (RenderObject* child = renderer->firstChild(); child; child = child->nextSibling()) {
+        if (child->isListItem() && child->style()->textAutosizingMultiplier() == 1)
+            setMultiplier(child, multiplier);
+    }
 }
 
 float TextAutosizer::computeAutosizedFontSize(float specifiedSize, float multiplier)
