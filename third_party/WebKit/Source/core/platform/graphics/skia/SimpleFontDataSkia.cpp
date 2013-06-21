@@ -118,11 +118,6 @@ void SimpleFontData::platformInit()
     }
 
     float lineGap = SkScalarToFloat(metrics.fLeading);
-#if OS(WINDOWS)
-    // FIXME: Windows code uses tmExternalLeading from TEXTMETRIC, SkPaint::FontMetrics does not seem to
-    // offer an equivalent. The formula below tries to proximate it based on fLeading.
-    lineGap = floorf(lineGap * 0.45);
-#endif
     m_fontMetrics.setLineGap(lineGap);
     m_fontMetrics.setLineSpacing(lroundf(ascent) + lroundf(descent) + lroundf(lineGap));
 
