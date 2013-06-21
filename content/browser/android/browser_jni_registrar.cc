@@ -6,6 +6,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "content/browser/accessibility/browser_accessibility_android.h"
+#include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/android_browser_process.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/android/content_settings.h"
@@ -34,6 +36,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "AndroidLocationApiAdapter",
     content::AndroidLocationApiAdapter::RegisterGeolocationService },
   { "AndroidBrowserProcess", content::RegisterAndroidBrowserProcess },
+  { "BrowserAccessibilityManager",
+    content::RegisterBrowserAccessibilityManager },
   { "ChildProcessLauncher", content::RegisterChildProcessLauncher },
   { "ContentSettings", content::ContentSettings::RegisterContentSettings },
   { "ContentViewRenderView",

@@ -13,11 +13,18 @@
 #include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/common/accessibility_messages.h"
+#include "jni/BrowserAccessibilityManager_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
+
+// These are enums from android.view.accessibility.AccessibilityEvent in Java:
+enum {
+  ANDROID_ACCESSIBILITY_EVENT_TYPE_VIEW_TEXT_CHANGED = 16,
+  ANDROID_ACCESSIBILITY_EVENT_TYPE_VIEW_TEXT_SELECTION_CHANGED = 8192
+};
 
 // Restricts |val| to the range [min, max].
 int Clamp(int val, int min, int max) {
@@ -51,16 +58,19 @@ BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
   if (content_view_core.is_null())
     return;
 
-  // TODO(aboxhall): set up Java references
+  JNIEnv* env = AttachCurrentThread();
+  java_ref_ = JavaObjectWeakGlobalRef(
+      env, Java_BrowserAccessibilityManager_create(
+          env, reinterpret_cast<jint>(this), content_view_core.obj()).obj());
 }
 
 BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() {
-  JNIEnv* env = base::android::AttachCurrentThread();
+  JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
 
-  // TODO(aboxhall): tear down Java references
+  Java_BrowserAccessibilityManager_onNativeObjectDestroyed(env, obj.obj());
 }
 
 // static
@@ -75,13 +85,62 @@ AccessibilityNodeData BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
 void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
     int type,
     BrowserAccessibility* node) {
-  JNIEnv* env = base::android::AttachCurrentThread();
+  JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
 
-  // TODO(aboxhall): call into appropriate Java method for each type of
-  // notification
+  switch (type) {
+    case AccessibilityNotificationLoadComplete:
+      Java_BrowserAccessibilityManager_handlePageLoaded(
+          env, obj.obj(), focus_->renderer_id());
+      break;
+    case AccessibilityNotificationFocusChanged:
+      Java_BrowserAccessibilityManager_handleFocusChanged(
+          env, obj.obj(), node->renderer_id());
+      break;
+    case AccessibilityNotificationCheckStateChanged:
+      Java_BrowserAccessibilityManager_handleCheckStateChanged(
+          env, obj.obj(), node->renderer_id());
+      break;
+    case AccessibilityNotificationScrolledToAnchor:
+      Java_BrowserAccessibilityManager_handleScrolledToAnchor(
+          env, obj.obj(), node->renderer_id());
+      break;
+    case AccessibilityNotificationAlert:
+      // An alert is a special case of live region. Fall through to the
+      // next case to handle it.
+    case AccessibilityNotificationObjectShow: {
+      // This event is fired when an object appears in a live region.
+      // Speak its text.
+      BrowserAccessibilityAndroid* android_node =
+          static_cast<BrowserAccessibilityAndroid*>(node);
+      Java_BrowserAccessibilityManager_announceLiveRegionText(
+          env, obj.obj(),
+          base::android::ConvertUTF16ToJavaString(
+              env, android_node->GetText()).obj());
+      break;
+    }
+    case AccessibilityNotificationSelectedTextChanged:
+      Java_BrowserAccessibilityManager_handleTextSelectionChanged(
+          env, obj.obj(), node->renderer_id());
+      break;
+    case AccessibilityNotificationChildrenChanged:
+    case AccessibilityNotificationTextChanged:
+    case AccessibilityNotificationValueChanged:
+      if (node->IsEditableText()) {
+        Java_BrowserAccessibilityManager_handleEditableTextChanged(
+            env, obj.obj(), node->renderer_id());
+      } else {
+        Java_BrowserAccessibilityManager_handleContentChanged(
+            env, obj.obj(), node->renderer_id());
+      }
+      break;
+    default:
+      // There are some notifications that aren't meaningful on Android.
+      // It's okay to skip them.
+      break;
+  }
 }
 
 jint BrowserAccessibilityManagerAndroid::GetRootId(JNIEnv* env, jobject obj) {
@@ -107,6 +166,128 @@ jint BrowserAccessibilityManagerAndroid::HitTest(
     return nearest_node->renderer_id();
 
   return root_->renderer_id();
+}
+
+jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
+    JNIEnv* env, jobject obj, jobject info, jint id) {
+  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
+      GetFromRendererID(id));
+  if (!node)
+    return false;
+
+  if (node->parent()) {
+    Java_BrowserAccessibilityManager_setAccessibilityNodeInfoParent(
+        env, obj, info, node->parent()->renderer_id());
+  }
+  if (!node->IsLeaf()) {
+    for (unsigned i = 0; i < node->child_count(); ++i) {
+      Java_BrowserAccessibilityManager_addAccessibilityNodeInfoChild(
+          env, obj, info, node->children()[i]->renderer_id());
+    }
+  }
+  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoBooleanAttributes(
+      env, obj, info,
+      node->IsCheckable(),
+      node->IsChecked(),
+      node->IsClickable(),
+      node->IsEnabled(),
+      node->IsFocusable(),
+      node->IsFocused(),
+      node->IsPassword(),
+      node->IsScrollable(),
+      node->IsSelected(),
+      node->IsVisibleToUser());
+  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoStringAttributes(
+      env, obj, info,
+      base::android::ConvertUTF8ToJavaString(env, node->GetClassName()).obj(),
+      base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj());
+
+  gfx::Rect absolute_rect = node->GetLocalBoundsRect();
+  gfx::Rect parent_relative_rect = absolute_rect;
+  if (node->parent()) {
+    gfx::Rect parent_rect = node->parent()->GetLocalBoundsRect();
+    parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
+  }
+  bool is_root = node->parent() == NULL;
+  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoLocation(
+      env, obj, info,
+      absolute_rect.x(), absolute_rect.y(),
+      parent_relative_rect.x(), parent_relative_rect.y(),
+      absolute_rect.width(), absolute_rect.height(),
+      is_root);
+
+  return true;
+}
+
+jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityEvent(
+    JNIEnv* env, jobject obj, jobject event, jint id, jint event_type) {
+  BrowserAccessibilityAndroid* node = static_cast<BrowserAccessibilityAndroid*>(
+      GetFromRendererID(id));
+  if (!node)
+    return false;
+
+  Java_BrowserAccessibilityManager_setAccessibilityEventBooleanAttributes(
+      env, obj, event,
+      node->IsChecked(),
+      node->IsEnabled(),
+      node->IsPassword(),
+      node->IsScrollable());
+  Java_BrowserAccessibilityManager_setAccessibilityEventClassName(
+      env, obj, event,
+      base::android::ConvertUTF8ToJavaString(env, node->GetClassName()).obj());
+  Java_BrowserAccessibilityManager_setAccessibilityEventListAttributes(
+      env, obj, event,
+      node->GetItemIndex(),
+      node->GetItemCount());
+  Java_BrowserAccessibilityManager_setAccessibilityEventScrollAttributes(
+      env, obj, event,
+      node->GetScrollX(),
+      node->GetScrollY(),
+      node->GetMaxScrollX(),
+      node->GetMaxScrollY());
+
+  switch (event_type) {
+    case ANDROID_ACCESSIBILITY_EVENT_TYPE_VIEW_TEXT_CHANGED:
+      Java_BrowserAccessibilityManager_setAccessibilityEventTextChangedAttrs(
+          env, obj, event,
+          node->GetTextChangeFromIndex(),
+          node->GetTextChangeAddedCount(),
+          node->GetTextChangeRemovedCount(),
+          base::android::ConvertUTF16ToJavaString(
+              env, node->GetTextChangeBeforeText()).obj(),
+          base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj());
+      break;
+    case ANDROID_ACCESSIBILITY_EVENT_TYPE_VIEW_TEXT_SELECTION_CHANGED:
+      Java_BrowserAccessibilityManager_setAccessibilityEventSelectionAttrs(
+          env, obj, event,
+          node->GetSelectionStart(),
+          node->GetSelectionEnd(),
+          node->GetEditableTextLength(),
+          base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj());
+      break;
+    default:
+      break;
+  }
+
+  return true;
+}
+
+void BrowserAccessibilityManagerAndroid::Click(
+    JNIEnv* env, jobject obj, jint id) {
+  BrowserAccessibility* node = GetFromRendererID(id);
+  if (node)
+    DoDefaultAction(*node);
+}
+
+void BrowserAccessibilityManagerAndroid::Focus(
+    JNIEnv* env, jobject obj, jint id) {
+  BrowserAccessibility* node = GetFromRendererID(id);
+  if (node)
+    SetFocus(node, true);
+}
+
+void BrowserAccessibilityManagerAndroid::Blur(JNIEnv* env, jobject obj) {
+  SetFocus(root_, true);
 }
 
 BrowserAccessibility* BrowserAccessibilityManagerAndroid::FuzzyHitTest(
@@ -135,7 +316,7 @@ void BrowserAccessibilityManagerAndroid::FuzzyHitTestImpl(
     return;
   }
 
-  if (!node->ComputeName().empty()) {
+  if (!node->GetText().empty()) {
     if (distance < *nearest_distance) {
       *nearest_candidate = node;
       *nearest_distance = distance;
@@ -162,13 +343,13 @@ int BrowserAccessibilityManagerAndroid::CalculateDistanceSquared(
   return dx * dx + dy * dy;
 }
 
-jint BrowserAccessibilityManagerAndroid::GetNativeNodeById(
-    JNIEnv* env, jobject obj, jint id) {
-  return reinterpret_cast<jint>(GetFromRendererID(id));
-}
-
 void BrowserAccessibilityManagerAndroid::NotifyRootChanged() {
-  // TODO(aboxhall): non-stub implementation
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_BrowserAccessibilityManager_handleNavigate(env, obj.obj());
 }
 
 bool
@@ -178,8 +359,7 @@ BrowserAccessibilityManagerAndroid::UseRootScrollOffsetsWhenComputingBounds() {
 }
 
 bool RegisterBrowserAccessibilityManager(JNIEnv* env) {
-  // TODO(aboxhall): non-stub implementation
-  return false;
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace content

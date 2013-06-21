@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.webkit.GeolocationPermissions;
@@ -1130,6 +1131,13 @@ public class AwContents {
     }
 
     /**
+     * @see android.view.View#dispatchHoverEvent()
+     */
+    public boolean dispatchHoverEvent(MotionEvent event) {
+        return mContentViewCore.dispatchHoverEvent(event);
+    }
+
+    /**
      * @see android.view.View#onConfigurationChanged()
      */
     public void onConfigurationChanged(Configuration newConfig) {
@@ -1292,6 +1300,13 @@ public class AwContents {
      */
     public void removeJavascriptInterface(String interfaceName) {
         mContentViewCore.removeJavascriptInterface(interfaceName);
+    }
+
+    /**
+     * @see View#getAccessibilityNodeProvider()
+     */
+    public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+        return mContentViewCore.getAccessibilityNodeProvider();
     }
 
     /**
