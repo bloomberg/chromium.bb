@@ -22,7 +22,6 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
@@ -38,8 +37,14 @@ using views::GridLayout;
 
 namespace {
 
-// Minimum width of the the bubble.
-const int kMinBubbleWidth = 350;
+// Padding between "Title:" and the actual title.
+const int kTitlePadding = 4;
+
+// Minimum width for the fields - they will push out the size of the bubble if
+// necessary. This should be big enough so that the field pushes the right side
+// of the bubble far enough so that the edit button's left edge is to the right
+// of the field's left edge.
+const int kMinimumFieldSize = 180;
 
 }  // namespace
 
@@ -141,9 +146,9 @@ bool BookmarkBubbleView::AcceleratorPressed(
 }
 
 void BookmarkBubbleView::Init() {
-  remove_button_ = new views::LabelButton(this, l10n_util::GetStringUTF16(
+  remove_link_ = new views::Link(l10n_util::GetStringUTF16(
       IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
-  remove_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  remove_link_->set_listener(this);
 
   edit_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
@@ -161,45 +166,66 @@ void BookmarkBubbleView::Init() {
   parent_combobox_->set_listener(this);
   parent_combobox_->SetAccessibleName(combobox_label->text());
 
+  views::Label* title_label = new views::Label(
+      l10n_util::GetStringUTF16(
+          newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :
+                              IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
 
-  // The column layout used for middle and bottom rows.
-  const int kFirstColumnSetID = 0;
-  ColumnSet* cs = layout->AddColumnSet(kFirstColumnSetID);
+  ColumnSet* cs = layout->AddColumnSet(0);
+
+  // Top (title) row.
+  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::USE_PREF,
+                0, 0);
+  cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::USE_PREF,
+                0, 0);
+
+  // Middle (input field) rows.
+  cs = layout->AddColumnSet(2);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
+  cs->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                GridLayout::USE_PREF, 0, kMinimumFieldSize);
 
-  cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(1, views::kUnrelatedControlLargeHorizontalSpacing);
-
+  // Bottom (buttons) row.
+  cs = layout->AddColumnSet(3);
+  cs->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+  // We subtract 2 to account for the natural button padding, and
+  // to bring the separation visually in line with the row separation
+  // height.
+  cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing - 2);
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, kFirstColumnSetID);
+  layout->StartRow(0, 0);
+  layout->AddView(title_label);
+  layout->AddView(remove_link_);
+
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+  layout->StartRow(0, 2);
   views::Label* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_TITLE_TEXT));
   layout->AddView(label);
   title_tf_ = new views::Textfield();
   title_tf_->SetText(GetTitle());
-  layout->AddView(title_tf_, 5, 1);
+  layout->AddView(title_tf_);
 
-  layout->AddPaddingRow(0, views::kUnrelatedControlHorizontalSpacing);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
-  layout->StartRow(0, kFirstColumnSetID);
+  layout->StartRow(0, 2);
   layout->AddView(combobox_label);
-  layout->AddView(parent_combobox_, 5, 1);
+  layout->AddView(parent_combobox_);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  layout->StartRow(0, kFirstColumnSetID);
-  layout->SkipColumns(2);
-  layout->AddView(remove_button_);
+  layout->StartRow(0, 3);
   layout->AddView(edit_button_);
   layout->AddView(close_button_);
 
@@ -220,20 +246,15 @@ BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,
           BookmarkModelFactory::GetForProfile(profile_),
           BookmarkModelFactory::GetForProfile(profile_)->
               GetMostRecentlyAddedNodeForURL(url)),
-      remove_button_(NULL),
+      remove_link_(NULL),
       edit_button_(NULL),
       close_button_(NULL),
       title_tf_(NULL),
       parent_combobox_(NULL),
       remove_bookmark_(false),
       apply_edits_(true) {
-  const SkColor background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground);
-  set_color(background_color);
-  set_background(views::Background::CreateSolidBackground(background_color));
-  set_margins(gfx::Insets(0, 19, 18, 18));
   // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(7, 0, 7, 0));
+  set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
 }
 
 string16 BookmarkBubbleView::GetTitle() {
@@ -248,15 +269,19 @@ string16 BookmarkBubbleView::GetTitle() {
   return string16();
 }
 
-gfx::Size BookmarkBubbleView::GetMinimumSize() {
-  gfx::Size size(views::BubbleDelegateView::GetPreferredSize());
-  size.SetToMax(gfx::Size(kMinBubbleWidth, 0));
-  return size;
-}
-
 void BookmarkBubbleView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   HandleButtonPressed(sender);
+}
+
+void BookmarkBubbleView::LinkClicked(views::Link* source, int event_flags) {
+  DCHECK_EQ(remove_link_, source);
+  content::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
+
+  // Set this so we remove the bookmark after the window closes.
+  remove_bookmark_ = true;
+  apply_edits_ = false;
+  StartFade(false);
 }
 
 void BookmarkBubbleView::OnSelectedIndexChanged(views::Combobox* combobox) {
@@ -267,13 +292,7 @@ void BookmarkBubbleView::OnSelectedIndexChanged(views::Combobox* combobox) {
 }
 
 void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
-  if (sender == remove_button_) {
-    content::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
-    // Set this so we remove the bookmark after the window closes.
-    remove_bookmark_ = true;
-    apply_edits_ = false;
-    StartFade(false);
-  } else if (sender == edit_button_) {
+  if (sender == edit_button_) {
     content::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
     ShowEditor();
   } else {
@@ -312,15 +331,5 @@ void BookmarkBubbleView::ApplyEdits() {
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"));
     }
     parent_model_.MaybeChangeParent(node, parent_combobox_->selected_index());
-  }
-}
-
-void BookmarkBubbleView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this) {
-    GetBubbleFrameView()->SetTitle(l10n_util::GetStringUTF16(
-        newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
-                          : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
-    SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   }
 }

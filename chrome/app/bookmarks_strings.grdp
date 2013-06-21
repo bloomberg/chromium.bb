@@ -183,17 +183,17 @@
   <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark">
     Bookmark
   </message>
+  <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the link the user can click to edit details of the bookmark">
+    Edit...
+  </message>
+  <message name="IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK" desc="Link for removing the bookmark">
+    Remove
+  </message>
   <message name="IDS_BOOKMARK_BUBBLE_TITLE_TEXT" desc="Text preceding the title of the page that was bookmarked">
     Name:
   </message>
   <message name="IDS_BOOKMARK_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
     Folder:
-  </message>
-  <message name="IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK" desc="Title of the button for removing the bookmark">
-    Remove
-  </message>
-  <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the button the user can click to edit details of the bookmark">
-    Edit...
   </message>
   <if expr="not pp_ifdef('use_titlecase')">
     <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
