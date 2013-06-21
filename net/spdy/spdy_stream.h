@@ -129,6 +129,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   SpdyStreamId stream_id() const { return stream_id_; }
   void set_stream_id(SpdyStreamId stream_id) { stream_id_ = stream_id; }
 
+  // TODO(akalin): Remove these two functions.
   bool response_received() const { return response_received_; }
   void set_response_received() { response_received_ = true; }
 

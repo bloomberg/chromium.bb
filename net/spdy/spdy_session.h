@@ -483,9 +483,25 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
   typedef std::set<SpdyStreamRequest*> PendingStreamRequestCompletionSet;
 
-  typedef std::map<SpdyStreamId, SpdyStream*> ActiveStreamMap;
-  typedef std::map<std::string, std::pair<SpdyStream*, base::TimeTicks> >
-      PushedStreamMap;
+  struct ActiveStreamInfo {
+    ActiveStreamInfo();
+    explicit ActiveStreamInfo(SpdyStream* stream);
+    ~ActiveStreamInfo();
+
+    SpdyStream* stream;
+    bool waiting_for_syn_reply;
+  };
+  typedef std::map<SpdyStreamId, ActiveStreamInfo> ActiveStreamMap;
+
+  struct PushedStreamInfo {
+    PushedStreamInfo();
+    PushedStreamInfo(SpdyStreamId stream_id, base::TimeTicks creation_time);
+    ~PushedStreamInfo();
+
+    SpdyStreamId stream_id;
+    base::TimeTicks creation_time;
+  };
+  typedef std::map<std::string, PushedStreamInfo> PushedStreamMap;
 
   typedef std::set<SpdyStream*> CreatedStreamSet;
 
