@@ -733,12 +733,15 @@ void RenderViewContextMenu::AppendPanelItems() {
 
   bool has_selection = !params_.selection_text.empty();
 
+  // Checking link should take precedence before checking selection since on Mac
+  // right-clicking a link will also make it selected.
+  if (params_.unfiltered_link_url.is_valid())
+    AppendLinkItems();
+
   if (params_.is_editable)
     AppendEditableItems();
   else if (has_selection)
     AppendCopyItem();
-  else if (params_.unfiltered_link_url.is_valid())
-    AppendLinkItems();
 
   // Only add extension items from this extension.
   int index = 0;
