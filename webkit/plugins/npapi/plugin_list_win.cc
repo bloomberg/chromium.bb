@@ -390,7 +390,7 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
     if ((plugin1 == plugin2 && HaveSharedMimeType((*plugins)[j], info)) ||
         (plugin1 == kJavaDeploy1 && plugin2 == kJavaDeploy2) ||
         (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
-      if (!IsNewerVersion((*plugins)[j].version, info.version))
+      if (IsNewerVersion(info.version, (*plugins)[j].version))
         return false;  // We have loaded a plugin whose version is newer.
       plugins->erase(plugins->begin() + j);
       break;
