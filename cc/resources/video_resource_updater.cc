@@ -165,14 +165,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     }
 
     ResourceProvider::ResourceId resource_id = 0;
-    unsigned sync_point = 0;
+    gpu::Mailbox mailbox;
 
     // Try recycle a previously-allocated resource.
     for (size_t i = 0; i < recycled_resources_.size(); ++i) {
       if (recycled_resources_[i].resource_format == output_resource_format &&
           recycled_resources_[i].resource_size == output_plane_resource_size) {
         resource_id = recycled_resources_[i].resource_id;
-        sync_point = recycled_resources_[i].sync_point;
+        mailbox = recycled_resources_[i].mailbox;
         recycled_resources_.erase(recycled_resources_.begin() + i);
         break;
       }
@@ -185,6 +185,29 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           resource_provider_->CreateResource(output_plane_resource_size,
                                              output_resource_format,
                                              ResourceProvider::TextureUsageAny);
+
+      DCHECK(mailbox.IsZero());
+
+      if (!software_compositor) {
+        ResourceProvider::ScopedWriteLockGL lock(
+            resource_provider_, resource_id);
+
+        WebKit::WebGraphicsContext3D* context =
+            resource_provider_->GraphicsContext3D();
+        DCHECK(context);
+
+        GLC(context, context->genMailboxCHROMIUM(mailbox.name));
+        if (mailbox.IsZero()) {
+          resource_provider_->DeleteResource(resource_id);
+          resource_id = 0;
+        } else {
+          GLC(context, context->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
+          GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D,
+                                                       mailbox.name));
+          GLC(context, context->bindTexture(GL_TEXTURE_2D, 0));
+        }
+      }
+
       if (resource_id)
         all_resources_.push_back(resource_id);
     }
@@ -194,10 +217,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       break;
     }
 
+    DCHECK(software_compositor || !mailbox.IsZero());
     plane_resources.push_back(PlaneResource(resource_id,
                                             output_plane_resource_size,
                                             output_resource_format,
-                                            sync_point));
+                                            mailbox));
   }
 
   if (!allocation_success) {
@@ -211,7 +235,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   if (software_compositor) {
     DCHECK_EQ(plane_resources.size(), 1u);
     DCHECK_EQ(plane_resources[0].resource_format, kRGBResourceFormat);
-    DCHECK_EQ(plane_resources[0].sync_point, 0u);
+    DCHECK(plane_resources[0].mailbox.IsZero());
 
     if (!video_renderer_)
       video_renderer_.reset(new media::SkCanvasVideoRenderer);
@@ -233,6 +257,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       plane_resources[0].resource_id,
       plane_resources[0].resource_size,
       plane_resources[0].resource_format,
+      gpu::Mailbox()
     };
     TextureMailbox::ReleaseCallback callback_to_free_resource =
         base::Bind(&RecycleResource,
@@ -246,11 +271,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     return external_resources;
   }
 
-  WebKit::WebGraphicsContext3D* context =
-      resource_provider_->GraphicsContext3D();
-  DCHECK(context);
-
-  bool mailbox_success = true;
   for (size_t i = 0; i < plane_resources.size(); ++i) {
     // Update each plane's resource id with its content.
     DCHECK_EQ(plane_resources[i].resource_format,
@@ -269,44 +289,19 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
                                   source_rect,
                                   gfx::Vector2d());
 
-    gpu::Mailbox mailbox;
-    {
-      ResourceProvider::ScopedWriteLockGL lock(
-          resource_provider_, plane_resources[i].resource_id);
-
-      GLC(context, context->genMailboxCHROMIUM(mailbox.name));
-      if (mailbox.IsZero()) {
-        mailbox_success = false;
-        break;
-      }
-      GLC(context, context->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
-      GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D,
-                                                   mailbox.name));
-      GLC(context, context->bindTexture(GL_TEXTURE_2D, 0));
-    }
-
-    // This callback is called by the resource provider itself, so it's okay to
-    // use an unretained raw pointer here.
     RecycleResourceData recycle_data = {
       plane_resources[i].resource_id,
       plane_resources[i].resource_size,
       plane_resources[i].resource_format,
-      mailbox
+      plane_resources[i].mailbox
     };
     TextureMailbox::ReleaseCallback callback_to_free_resource =
         base::Bind(&RecycleResource,
                    AsWeakPtr(),
                    recycle_data);
     external_resources.mailboxes.push_back(
-        TextureMailbox(mailbox,
-                       callback_to_free_resource,
-                       plane_resources[i].sync_point));
-  }
-
-  if (!mailbox_success) {
-    for (size_t i = 0; i < plane_resources.size(); ++i)
-      DeleteResource(plane_resources[i].resource_id);
-    return VideoFrameExternalResources();
+        TextureMailbox(plane_resources[i].mailbox,
+                       callback_to_free_resource));
   }
 
   external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
@@ -390,14 +385,6 @@ void VideoResourceUpdater::RecycleResource(
       updater->resource_provider_->GraphicsContext3D();
   if (context && sync_point)
     GLC(context, context->waitSyncPoint(sync_point));
-  if (context && !lost_resource) {
-    ResourceProvider::ScopedWriteLockGL lock(updater->resource_provider_,
-                                             data.resource_id);
-    GLC(context, context->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
-    GLC(context, context->consumeTextureCHROMIUM(GL_TEXTURE_2D,
-                                                 data.mailbox.name));
-    GLC(context, context->bindTexture(GL_TEXTURE_2D, 0));
-  }
 
   if (lost_resource) {
     updater->DeleteResource(data.resource_id);
@@ -415,7 +402,7 @@ void VideoResourceUpdater::RecycleResource(
   PlaneResource recycled_resource(data.resource_id,
                                   data.resource_size,
                                   data.resource_format,
-                                  sync_point);
+                                  data.mailbox);
   updater->recycled_resources_.push_back(recycled_resource);
 }
 

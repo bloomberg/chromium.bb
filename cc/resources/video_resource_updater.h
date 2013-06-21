@@ -78,16 +78,16 @@ class VideoResourceUpdater
     unsigned resource_id;
     gfx::Size resource_size;
     unsigned resource_format;
-    unsigned sync_point;
+    gpu::Mailbox mailbox;
 
     PlaneResource(unsigned resource_id,
                   gfx::Size resource_size,
                   unsigned resource_format,
-                  unsigned sync_point)
+                  gpu::Mailbox mailbox)
         : resource_id(resource_id),
           resource_size(resource_size),
           resource_format(resource_format),
-          sync_point(sync_point) {}
+          mailbox(mailbox) {}
   };
 
   void DeleteResource(unsigned resource_id);
