@@ -30,25 +30,6 @@ FWAIT = 0x9b
 NOP = 0x90
 
 
-REGISTER_NAMES = {
-    validator.REG_RAX: '%rax',
-    validator.REG_RCX: '%rcx',
-    validator.REG_RDX: '%rdx',
-    validator.REG_RBX: '%rbx',
-    validator.REG_RSP: '%rsp',
-    validator.REG_RBP: '%rbp',
-    validator.REG_RSI: '%rsi',
-    validator.REG_RDI: '%rdi',
-    validator.REG_R8: '%r8',
-    validator.REG_R9: '%r9',
-    validator.REG_R10: '%r10',
-    validator.REG_R11: '%r11',
-    validator.REG_R12: '%r12',
-    validator.REG_R13: '%r13',
-    validator.REG_R14: '%r14',
-    validator.REG_R15: '%r15'}
-
-
 def IsRexPrefix(byte):
   return 0x40 <= byte < 0x50
 
@@ -213,7 +194,7 @@ def CheckFinalRestrictedRegister(
       'restricted register can not be r15')
 
   if final_restricted_register is not None:
-    register_name = REGISTER_NAMES[final_restricted_register]
+    register_name = validator.REGISTER_NAMES[final_restricted_register]
     memory_reference = 'mov (%%r15, %s), %%al' % register_name
     bundle = sandboxing + instruction + Assemble(64, memory_reference)
     assert len(bundle) <= validator.BUNDLE_SIZE
@@ -252,7 +233,7 @@ def ValidateInstruction(instruction, disassembly, old_validator):
 
     # Additionally, we try to restrict all possible
     # registers and check whether instruction would be accepted.
-    for register, register_name in REGISTER_NAMES.items():
+    for register, register_name in validator.REGISTER_NAMES.items():
       if register == validator.REG_R15:
         continue
       if validator.ValidateChunk(

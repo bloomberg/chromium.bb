@@ -33,10 +33,117 @@ def IsRexPrefix(byte):
   return 0x40 <= byte < 0x50
 
 
-def ValidateInstruction(instruction):
-  assert len(instruction) <= validator.BUNDLE_SIZE
-  bundle = instruction + [NOP] * (validator.BUNDLE_SIZE - len(instruction))
+def PadToBundleSize(bytes):
+  assert len(bytes) <= validator.BUNDLE_SIZE
+  return bytes + [NOP] * (validator.BUNDLE_SIZE - len(bytes))
 
+
+def ConditionToRestrictedRegisterNumber(condition):
+  restricted, restricted_instead_of_sandboxed = condition.GetAlteredRegisters()
+  if restricted is not None:
+    assert restricted_instead_of_sandboxed is None
+    return validator.REGISTER_BY_NAME[restricted]
+  elif restricted_instead_of_sandboxed is not None:
+    return validator.REGISTER_BY_NAME[restricted_instead_of_sandboxed]
+  else:
+    return None
+
+
+def RestrictedRegisterNumberToCondition(rr):
+  assert rr is not None
+  if rr == validator.NO_REG:
+    return spec.Condition()
+  elif rr == validator.REG_RBP:
+    return spec.Condition(restricted_instead_of_sandboxed='%rbp')
+  elif rr == validator.REG_RSP:
+    return spec.Condition(restricted_instead_of_sandboxed='%rsp')
+  else:
+    return spec.Condition(validator.REGISTER_NAMES[rr])
+
+
+def ValidateAndGetPostcondition(chunk, precondition):
+  """Validate single x86-64 instruction and get postcondition for it.
+
+  Args:
+    chunk: sequence of bytes representing single instruction.
+    precondition: instance of spec.Condition representing precondition validator
+    is allowed to assume.
+  Returns:
+    Pair (validation_result, postcondition).
+    Validation_result is True or False. When validation_result is True,
+    postcondition is spec.Condition instance representing postcondition
+    for this instruction established by validator.
+  """
+
+  valid = [True]
+  final_restricted_register = [None]
+
+  def Callback(begin, end, info):
+    if begin == 0:
+      assert end == len(chunk)
+      final_restricted_register[0] = (
+          (info & validator.RESTRICTED_REGISTER_MASK) >>
+          validator.RESTRICTED_REGISTER_SHIFT)
+
+      if info & validator.VALIDATION_ERRORS_MASK != 0:
+        valid[0] = False
+
+    else:
+      assert bundle[begin:end] == [NOP]
+
+  bundle = PadToBundleSize(chunk)
+  validator.ValidateChunk(
+    ''.join(map(chr, bundle)),
+    bitness=64,
+    callback=Callback,
+    on_each_instruction=True,
+    restricted_register=ConditionToRestrictedRegisterNumber(precondition))
+
+  (valid,) = valid
+
+  if not valid:
+    return False, None
+
+  (final_restricted_register,) = final_restricted_register
+  postcondition = RestrictedRegisterNumberToCondition(final_restricted_register)
+
+  return True, postcondition
+
+
+def CheckValid64bitInstruction(instruction, dis, precondition, postcondition):
+  for conflicting_precondition in spec.Condition.All():
+    if conflicting_precondition.Implies(precondition):
+      continue  # not conflicting
+    result, _ = ValidateAndGetPostcondition(
+        instruction, conflicting_precondition)
+    assert not result, (
+        'validator incorrectly accepted %s with precondition %s, '
+        'while specification requires precondition %s'
+        % (dis, conflicting_precondition, precondition))
+
+  result, actual_postcondition = ValidateAndGetPostcondition(
+      instruction, precondition)
+  if not result:
+    print 'warning: validator rejected %s with precondition %s' % (
+        dis, precondition)
+  else:
+    assert actual_postcondition == postcondition, (
+        'validator incorrectly determined postcondition %s '
+        'for %s where specification predicted %s'
+        % (actual_postcondition, dis, postcondition))
+
+
+def CheckInvalid64bitInstruction(instruction, dis):
+  for precondition in spec.Condition.All():
+    result, _ = ValidateAndGetPostcondition(
+        instruction, precondition)
+    assert not result, (
+        'validator incorrectly accepted %s with precondition %s, '
+        'while specification rejected because %s'
+        % (dis, precondition, e))
+
+
+def ValidateInstruction(instruction):
   dis = validator.DisassembleChunk(
       ''.join(map(chr, instruction)),
       bitness=options.bitness)
@@ -64,8 +171,8 @@ def ValidateInstruction(instruction):
 
   if options.bitness == 32:
     result = validator.ValidateChunk(
-        ''.join(map(chr, bundle)),
-        bitness=options.bitness)
+        ''.join(map(chr, PadToBundleSize(instruction))),
+        bitness=32)
 
     try:
       spec.ValidateDirectJumpOrRegularInstruction(dis, bitness=32)
@@ -83,25 +190,19 @@ def ValidateInstruction(instruction):
     return result
 
   else:
-    result = validator.ValidateChunk(
-        ''.join(map(chr, bundle)),
-        bitness=options.bitness)
-
     try:
-      spec.ValidateDirectJumpOrRegularInstruction(dis, bitness=64)
-      # TODO(shcherbina): handle restricted registers.
-      if not result:
-        print 'warning: validator rejected', dis
+      _, precondition, postcondition = (
+          spec.ValidateDirectJumpOrRegularInstruction(dis, bitness=64))
+
+      CheckValid64bitInstruction(instruction, dis, precondition, postcondition)
+      return True
     except spec.SandboxingError as e:
-      if result:
-        print 'validator accepted instruction disallowed by specification'
-        raise
+      CheckInvalid64bitInstruction(instruction, dis)
     except spec.DoNotMatchError:
       # TODO(shcherbina): When text-based specification is complete,
       # it should raise.
       pass
-
-    return result
+    return False
 
 
 class WorkerState(object):

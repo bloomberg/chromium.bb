@@ -247,6 +247,18 @@ class Condition(object):
       assert restricted_instead_of_sandboxed in ['%rbp', '%rsp']
       self._restricted_register = restricted_instead_of_sandboxed
 
+  def GetAlteredRegisters(self):
+    """ Return pair (restricted, restricted_instead_of_sandboxed).
+
+    Each item is either register name or None.
+    """
+    if self._restricted_register is None:
+      return None, None
+    elif self._restricted_register in ['%rsp', '%rbp']:
+      return None, self._restricted_register
+    else:
+      return self._restricted_register, None
+
   def __eq__(self, other):
     return self._restricted_register == other._restricted_register
 
@@ -270,6 +282,24 @@ class Condition(object):
                 other._restricted_register, self._restricted_register))
       else:
         return None
+
+  def __repr__(self):
+    if self._restricted_register is None:
+      return 'Condition(default)'
+    elif self._restricted_register in ['%rbp', '%rsp']:
+      return ('Condition(%s restricted instead of sandboxed)'
+              % self._restricted_register)
+    else:
+      return 'Condition(%s restricted)' % self._restricted_register
+
+  @staticmethod
+  def All():
+    yield Condition()
+    for reg in REGS64:
+      if reg not in ['%r15', '%rbp', '%rsp']:
+        yield Condition(restricted=reg)
+    yield Condition(restricted_instead_of_sandboxed='%rbp')
+    yield Condition(restricted_instead_of_sandboxed='%rsp')
 
 
 def ValidateRegularInstruction(instruction, bitness):
