@@ -12,6 +12,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkGraphics.h"
+#include "third_party/skia/src/utils/debugger/SkDebugCanvas.h"
+#include "third_party/skia/src/utils/debugger/SkDrawCommand.h"
 #include "ui/gfx/rect_conversions.h"
 #include "v8/include/v8.h"
 
@@ -20,6 +22,19 @@ using WebKit::WebFrame;
 namespace {
 
 const char kSkiaBenchmarkingExtensionName[] = "v8/SkiaBenchmarking";
+
+static scoped_refptr<cc::Picture> ParsePictureArg(v8::Handle<v8::Value> arg) {
+  scoped_ptr<content::V8ValueConverter> converter(
+      content::V8ValueConverter::create());
+
+  v8::String::Value v8_picture(arg);
+  scoped_ptr<base::Value> picture_value(
+      converter->FromV8Value(arg, v8::Context::GetCurrent()));
+  if (!picture_value)
+    return NULL;
+
+  return cc::Picture::CreateFromValue(picture_value.get());
+}
 
 class SkiaBenchmarkingWrapper : public v8::Extension {
  public:
@@ -39,9 +54,22 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
         "     @param [Number, Number, Number, Number] clip_rect (optional)."
         "     @returns { 'width': {Number}, 'height': {Number},"
         "                'data': {ArrayBuffer} }"
+        "     @returns undefined if the arguments are invalid or the picture"
+        "                        version is not supported."
         "   */"
         "  native function Rasterize();"
         "  return Rasterize(picture, scale, rect);"
+        "};"
+        "chrome.skiaBenchmarking.getOps = function(picture) {"
+        "  /* "
+        "     Extracts the Skia draw commands from a JSON-encoded cc::Picture"
+        "     @param {Object} picture A json-encoded cc::Picture."
+        "     @returns [{ 'cmd': {String}, 'info': [String, ...] }, ...]"
+        "     @returns undefined if the arguments are invalid or the picture"
+        "                        version is not supported."
+        "   */"
+        "  native function GetOps();"
+        "  return GetOps(picture);"
         "};"
         ) {
       content::SkiaBenchmarkingExtension::InitSkGraphics();
@@ -51,6 +79,8 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
       v8::Handle<v8::String> name) OVERRIDE {
     if (name->Equals(v8::String::New("Rasterize")))
       return v8::FunctionTemplate::New(Rasterize);
+    if (name->Equals(v8::String::New("GetOps")))
+      return v8::FunctionTemplate::New(GetOps);
 
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -59,22 +89,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (args.Length() < 1)
       return;
 
-    WebFrame* web_frame = WebFrame::frameForCurrentContext();
-    if (!web_frame)
-      return;
-
-    scoped_ptr<content::V8ValueConverter> converter(
-        content::V8ValueConverter::create());
-
-    v8::String::Value v8_picture(args[0]);
-    scoped_ptr<base::Value> picture_value(
-        converter->FromV8Value(
-            args[0], v8::Context::GetCurrent()));
-    if (!picture_value)
-      return;
-
-    scoped_refptr<cc::Picture> picture =
-        cc::Picture::CreateFromValue(picture_value.get());
+    scoped_refptr<cc::Picture> picture = ParsePictureArg(args[0]);
     if (!picture.get())
       return;
 
@@ -137,6 +152,44 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     result->Set(v8::String::New("height"),
                 v8::Number::New(snapped_clip.height()));
     result->Set(v8::String::New("data"), buffer.toV8Value());
+
+    args.GetReturnValue().Set(result);
+  }
+
+  static void GetOps(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    if (args.Length() != 1)
+      return;
+
+    scoped_refptr<cc::Picture> picture = ParsePictureArg(args[0]);
+    if (!picture.get())
+      return;
+
+    gfx::Rect bounds = picture->LayerRect();
+    SkDebugCanvas canvas(bounds.width(), bounds.height());
+    picture->Raster(&canvas, NULL, bounds, 1.0f);
+
+    v8::Local<v8::Array> result = v8::Array::New(canvas.getSize());
+    for (int i = 0; i < canvas.getSize(); ++i) {
+      DrawType cmd_type = canvas.getDrawCommandAt(i)->getType();
+      v8::Handle<v8::Object> cmd = v8::Object::New();
+      cmd->Set(v8::String::New("cmd_type"), v8::Integer::New(cmd_type));
+      cmd->Set(v8::String::New("cmd_string"), v8::String::New(
+          SkDrawCommand::GetCommandString(cmd_type)));
+
+      SkTDArray<SkString*>* info = canvas.getCommandInfo(i);
+      DCHECK(info);
+
+      v8::Local<v8::Array> v8_info = v8::Array::New(info->count());
+      for (int j = 0; j < info->count(); ++j) {
+        const SkString* info_str = (*info)[j];
+        DCHECK(info_str);
+        v8_info->Set(j, v8::String::New(info_str->c_str()));
+      }
+
+      cmd->Set(v8::String::New("info"), v8_info);
+
+      result->Set(i, cmd);
+    }
 
     args.GetReturnValue().Set(result);
   }
