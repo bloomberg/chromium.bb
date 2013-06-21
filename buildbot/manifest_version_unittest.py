@@ -63,17 +63,23 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
   """Test methods testing methods in VersionInfo class."""
 
   @classmethod
-  def WriteFakeVersionFile(cls, version_file, version=FAKE_VERSION_STRING):
+  def WriteFakeVersionFile(cls, version_file, version=None, chrome_branch=None):
     """Helper method to write a version file from specified version number."""
+    if version is None:
+      version = FAKE_VERSION_STRING
+    if chrome_branch is None:
+      chrome_branch = CHROME_BRANCH
+
     osutils.SafeMakedirs(os.path.split(version_file)[0])
-    info = manifest_version.VersionInfo(version, CHROME_BRANCH)
+    info = manifest_version.VersionInfo(version, chrome_branch)
     osutils.WriteFile(version_file, FAKE_VERSION % info.__dict__)
 
   @classmethod
-  def CreateFakeVersionFile(cls, tmpdir, version=FAKE_VERSION_STRING):
+  def CreateFakeVersionFile(cls, tmpdir, version=None, chrome_branch=None):
     """Helper method to create a version file from specified version number."""
     version_file = tempfile.mktemp(dir=tmpdir)
-    cls.WriteFakeVersionFile(version_file, version=version)
+    cls.WriteFakeVersionFile(version_file, version=version,
+                             chrome_branch=chrome_branch)
     return version_file
 
   def testLoadFromFile(self):
@@ -94,7 +100,7 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
     info = manifest_version.VersionInfo(FAKE_VERSION_STRING, CHROME_BRANCH)
     self.assertEqual(info.VersionString(), FAKE_VERSION_STRING)
 
-  def CommonTestIncrementVersion(self, incr_type, version):
+  def CommonTestIncrementVersion(self, incr_type, version, chrome_branch=None):
     """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
     self.mox.StubOutWithMock(git, 'CreatePushBranch')
@@ -103,7 +109,8 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
 
     git.CreatePushBranch(manifest_version.PUSH_BRANCH, self.tempdir)
 
-    version_file = self.CreateFakeVersionFile(self.tempdir, version)
+    version_file = self.CreateFakeVersionFile(
+        self.tempdir, version=version, chrome_branch=chrome_branch)
 
     manifest_version._PushGitChanges(self.tempdir, message, dry_run=False)
 
@@ -135,6 +142,14 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
     new_info = manifest_version.VersionInfo(version_file=version_file,
                                             incr_type='build')
     self.assertEqual(new_info.VersionString(), '2.0.0')
+
+  def testIncrementVersionChrome(self):
+    """Tests whether we can increment the chrome version."""
+    version_file = self.CommonTestIncrementVersion(
+        'chrome_branch', version='1.0.0', chrome_branch='29')
+    new_info = manifest_version.VersionInfo(version_file=version_file)
+    self.assertEqual(new_info.VersionString(), '2.0.0')
+    self.assertEqual(new_info.chrome_branch, '30')
 
 
 class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):

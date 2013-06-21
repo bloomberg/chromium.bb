@@ -143,11 +143,13 @@ class VersionInfo(object):
         branch_build_number: current build number on a branch.
         patch_number: patch number.
     chrome_branch: If version_string specified, specify chrome_branch i.e. 13.
-    incr_type: How we should increment this version - build|branch|patch
+    incr_type: How we should increment this version -
+        chrome_branch|build|branch|patch
     version_file: version file location.
   """
   # Pattern for matching build name format.  Includes chrome branch hack.
   VER_PATTERN = r'(\d+).(\d+).(\d+)(?:-R(\d+))*'
+  VALID_INCR_TYPES = ('chrome_branch', 'build', 'branch')
 
   def __init__(self, version_string=None, chrome_branch=None,
                incr_type='build', version_file=None):
@@ -166,8 +168,9 @@ class VersionInfo(object):
     self.incr_type = incr_type
 
   @classmethod
-  def from_repo(cls, source_repo):
-    return cls(version_file=os.path.join(source_repo, constants.VERSION_FILE))
+  def from_repo(cls, source_repo, **kwargs):
+    kwargs['version_file'] = os.path.join(source_repo, constants.VERSION_FILE)
+    return cls(**kwargs)
 
   def _LoadFromFile(self):
     """Read the version file and set the version components"""
@@ -238,11 +241,16 @@ class VersionInfo(object):
     if not self.version_file:
       raise VersionUpdateException('Cannot call IncrementVersion without '
                                    'an associated version_file')
-    if not self.incr_type or self.incr_type not in ('build', 'branch'):
+    if not self.incr_type or self.incr_type not in self.VALID_INCR_TYPES:
       raise VersionUpdateException('Need to specify the part of the version to'
                                    ' increment')
 
-    if self.incr_type == 'build':
+    if self.incr_type == 'chrome_branch':
+      self.chrome_branch = str(int(self.chrome_branch) + 1)
+
+    # Increment build_number for 'chrome_branch' incr_type to avoid
+    # crbug.com/213075.
+    if self.incr_type in ('build', 'chrome_branch'):
       self.build_number = str(int(self.build_number) + 1)
       self.branch_build_number = '0'
       self.patch_number = '0'
@@ -262,6 +270,8 @@ class VersionInfo(object):
                                  self.branch_build_number):
             pass
           elif IncrementOldValue(line, 'CHROMEOS_PATCH', self.patch_number):
+            pass
+          elif IncrementOldValue(line, 'CHROME_BRANCH', self.chrome_branch):
             pass
           else:
             temp_fh.write(line)
