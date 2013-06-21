@@ -32,7 +32,7 @@ class ImageDecoding(page_measurement.PageMeasurement):
       return tab.EvaluateJavaScript('isDone')
 
     decode_image_events = \
-        tab.timeline_model.GetAllOfName('DecodeImage')
+        tab.timeline_model.GetAllEventsOfName('DecodeImage')
 
     # If it is a real image page, then store only the last-minIterations
     # decode tasks.
