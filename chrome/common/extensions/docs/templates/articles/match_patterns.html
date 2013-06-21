@@ -61,7 +61,9 @@ Each match pattern has 3 parts:</p>
 The meaning of '<code>*</code>' depends on whether
 it's in the <em>scheme</em>, <em>host</em>, or <em>path</em> part.
 If the <em>scheme</em> is <code>*</code>,
-then it matches either <code>http</code> or <code>https</code>.
+then it matches either <code>http</code> or <code>https</code>,
+and <strong>not</strong> <code>file</code>, <code>ftp</code>,
+or <code>chrome-extension</code>.
 If the <em>host</em> is just <code>*</code>,
 then it matches any host.
 If the <em>host</em> is <code>*.<em>hostname</em></code>,
