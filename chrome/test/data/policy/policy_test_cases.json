@@ -1933,6 +1933,18 @@
   "DeviceVariationsRestrictParameter" : {
   },
 
+  "DeviceLoginScreenDefaultLargeCursorEnabled" : {
+  },
+
+  "DeviceLoginScreenDefaultSpokenFeedbackEnabled" : {
+  },
+
+  "DeviceLoginScreenDefaultHighContrastEnabled" : {
+  },
+
+  "DeviceLoginScreenDefaultScreenMagnifierType" : {
+  },
+
   "UptimeLimit": {
   },
 

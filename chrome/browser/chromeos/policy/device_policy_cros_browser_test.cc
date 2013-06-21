@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 
+#include <string>
 #include <vector>
 
 #include "base/file_util.h"
@@ -12,6 +13,8 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
+#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/policy/proto/chromeos/install_attributes.pb.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "crypto/rsa_private_key.h"
@@ -23,6 +26,32 @@ using ::testing::AnyNumber;
 using ::testing::Return;
 
 namespace policy {
+
+// static
+void DevicePolicyCrosBrowserTest::MarkAsEnterpriseOwned(
+    base::ScopedTempDir* temp_dir) {
+  cryptohome::SerializedInstallAttributes install_attrs_proto;
+  cryptohome::SerializedInstallAttributes::Attribute* attribute = NULL;
+
+  attribute = install_attrs_proto.add_attributes();
+  attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseOwned);
+  attribute->set_value("true");
+
+  attribute = install_attrs_proto.add_attributes();
+  attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseUser);
+  attribute->set_value(DevicePolicyBuilder::kFakeUsername);
+
+  base::FilePath install_attrs_file =
+      temp_dir->path().AppendASCII("install_attributes.pb");
+  const std::string install_attrs_blob(
+      install_attrs_proto.SerializeAsString());
+  ASSERT_EQ(static_cast<int>(install_attrs_blob.size()),
+            file_util::WriteFile(install_attrs_file,
+                                 install_attrs_blob.c_str(),
+                                 install_attrs_blob.size()));
+  ASSERT_TRUE(PathService::Override(chromeos::FILE_INSTALL_ATTRIBUTES,
+                                    install_attrs_file));
+}
 
 DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest()
     : mock_dbus_thread_manager_(

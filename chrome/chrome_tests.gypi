@@ -1268,6 +1268,7 @@
         'browser/chromeos/policy/device_policy_cros_browser_test.cc',
         'browser/chromeos/policy/device_policy_cros_browser_test.h',
         'browser/chromeos/policy/device_status_collector_browsertest.cc',
+        'browser/chromeos/policy/login_screen_default_policy_browsertest.cc',
         'browser/chromeos/policy/policy_cert_verifier_browsertest.cc',
         'browser/chromeos/policy/power_policy_browsertest.cc',
         'browser/chromeos/policy/variations_service_policy_browsertest.cc',

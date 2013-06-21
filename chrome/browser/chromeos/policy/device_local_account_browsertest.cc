@@ -25,13 +25,12 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
-#include "chrome/browser/policy/proto/chromeos/install_attributes.pb.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/ui/browser.h"
@@ -117,7 +116,7 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
     command_line->InitFromArgv(argv);
 
     // Mark the device enterprise-enrolled.
-    SetUpInstallAttributes();
+    DevicePolicyCrosBrowserTest::MarkAsEnterpriseOwned(&temp_dir_);
 
     // Redirect session_manager DBus calls to FakeSessionManagerClient.
     chromeos::MockDBusThreadManagerWithoutGMock* dbus_thread_manager =
@@ -134,30 +133,6 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::Bind(&chrome::AttemptExit));
     base::RunLoop().RunUntilIdle();
-  }
-
-  void SetUpInstallAttributes() {
-    cryptohome::SerializedInstallAttributes install_attrs_proto;
-    cryptohome::SerializedInstallAttributes::Attribute* attribute = NULL;
-
-    attribute = install_attrs_proto.add_attributes();
-    attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseOwned);
-    attribute->set_value("true");
-
-    attribute = install_attrs_proto.add_attributes();
-    attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseUser);
-    attribute->set_value(PolicyBuilder::kFakeUsername);
-
-    base::FilePath install_attrs_file =
-        temp_dir_.path().AppendASCII("install_attributes.pb");
-    const std::string install_attrs_blob(
-        install_attrs_proto.SerializeAsString());
-    ASSERT_EQ(static_cast<int>(install_attrs_blob.size()),
-              file_util::WriteFile(install_attrs_file,
-                                   install_attrs_blob.c_str(),
-                                   install_attrs_blob.size()));
-    ASSERT_TRUE(PathService::Override(chromeos::FILE_INSTALL_ATTRIBUTES,
-                                      install_attrs_file));
   }
 
   void SetUpPolicy() {
