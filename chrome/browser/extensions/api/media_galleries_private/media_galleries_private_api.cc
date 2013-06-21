@@ -128,7 +128,7 @@ void MediaGalleriesPrivateAPI::OnListenerAdded(
   // This method is called synchronously with the message handler for the
   // JS invocation.
 
-  chrome::StorageMonitor::GetInstance()->Initialize(base::Bind(
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
       &MediaGalleriesPrivateAPI::MaybeInitializeEventRouterAndTracker,
       weak_ptr_factory_.GetWeakPtr()));
 }
@@ -171,7 +171,7 @@ bool MediaGalleriesPrivateAddGalleryWatchFunction::RunImpl() {
       AddGalleryWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  chrome::StorageMonitor::GetInstance()->Initialize(base::Bind(
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
       &MediaGalleriesPrivateAddGalleryWatchFunction::OnStorageMonitorInit,
       this,
       params->gallery_id));
@@ -251,7 +251,7 @@ bool MediaGalleriesPrivateRemoveGalleryWatchFunction::RunImpl() {
       RemoveGalleryWatch::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  chrome::StorageMonitor::GetInstance()->Initialize(base::Bind(
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
       &MediaGalleriesPrivateRemoveGalleryWatchFunction::OnStorageMonitorInit,
       this,
       params->gallery_id));
@@ -298,7 +298,7 @@ bool MediaGalleriesPrivateGetAllGalleryWatchFunction::RunImpl() {
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
-  chrome::StorageMonitor::GetInstance()->Initialize(base::Bind(
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
       &MediaGalleriesPrivateGetAllGalleryWatchFunction::OnStorageMonitorInit,
       this));
   return true;
@@ -335,7 +335,7 @@ bool MediaGalleriesPrivateRemoveAllGalleryWatchFunction::RunImpl() {
   if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
-  chrome::StorageMonitor::GetInstance()->Initialize(base::Bind(
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
       &MediaGalleriesPrivateRemoveAllGalleryWatchFunction::OnStorageMonitorInit,
       this));
   return true;
@@ -371,7 +371,7 @@ bool MediaGalleriesPrivateEjectDeviceFunction::RunImpl() {
   scoped_ptr<EjectDevice::Params> params(EjectDevice::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  chrome::StorageMonitor::GetInstance()->Initialize(base::Bind(
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
       &MediaGalleriesPrivateEjectDeviceFunction::OnStorageMonitorInit,
       this,
       params->device_id));

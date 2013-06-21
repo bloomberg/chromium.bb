@@ -51,7 +51,7 @@ void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
 }
 
 void MediaGalleriesHandler::InitializePage() {
-  chrome::StorageMonitor::GetInstance()->Initialize(
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(
       base::Bind(&MediaGalleriesHandler::InitializeOnStorageMonitorInit,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -73,7 +73,7 @@ void MediaGalleriesHandler::InitializeOnStorageMonitorInit() {
 }
 
 void MediaGalleriesHandler::RegisterMessages() {
-  chrome::StorageMonitor::GetInstance()->Initialize(
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(
       base::Bind(&MediaGalleriesHandler::RegisterOnStorageMonitorInit,
                  weak_ptr_factory_.GetWeakPtr()));
 }

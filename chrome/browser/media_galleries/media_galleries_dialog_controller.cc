@@ -52,7 +52,7 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
   // Passing unretained pointer is safe, since the dialog controller
   // is self-deleting, and so won't be deleted until it can be shown
   // and then closed.
-  StorageMonitor::GetInstance()->Initialize(base::Bind(
+  StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
       &MediaGalleriesDialogController::OnStorageMonitorInitialized,
       base::Unretained(this)));
 }

@@ -771,7 +771,7 @@ void MediaFileSystemRegistryTest::SetUp() {
   monitor_->MarkInitialized();
 #endif
   base::RunLoop runloop;
-  monitor_->Initialize(runloop.QuitClosure());
+  monitor_->EnsureInitialized(runloop.QuitClosure());
   runloop.Run();
 
   DeleteContents();

@@ -72,14 +72,14 @@ class StorageMonitor {
   // somewhat shorter than a process Singleton.
   static StorageMonitor* GetInstance();
 
-  // Initialize the storage monitor. The provided callback, if non-null,
-  // will be called when initialization is complete. If initialization has
-  // already completed, this callback will be invoked within the calling stack.
-  // Before the callback is run, calls to |GetAllAvailableStorages| and
+  // Ensures that the storage monitor is initialized. The provided callback, If
+  // non-null, will be called when initialization is complete. If initialization
+  // has already completed, this callback will be invoked within the calling
+  // stack. Before the callback is run, calls to |GetAllAvailableStorages| and
   // |GetStorageInfoForPath| may not return the correct results. In addition,
   // registered observers will not be notified on device attachment/detachment.
   // Should be invoked on the UI thread; callbacks will be run on the UI thread.
-  void Initialize(base::Closure callback);
+  void EnsureInitialized(base::Closure callback);
 
   // Return true if the storage monitor has already been initialized.
   bool IsInitialized();

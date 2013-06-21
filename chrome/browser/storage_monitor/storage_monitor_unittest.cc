@@ -17,8 +17,8 @@ TEST(StorageMonitorTest, TestInitialize) {
   EXPECT_FALSE(monitor.init_called_);
 
   base::WaitableEvent event(false, false);
-  monitor.Initialize(base::Bind(&base::WaitableEvent::Signal,
-                                base::Unretained(&event)));
+  monitor.EnsureInitialized(base::Bind(&base::WaitableEvent::Signal,
+                                       base::Unretained(&event)));
   EXPECT_TRUE(monitor.init_called_);
   EXPECT_FALSE(event.IsSignaled());
   monitor.MarkInitialized();

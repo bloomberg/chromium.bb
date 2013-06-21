@@ -93,7 +93,7 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     interactive = params->details->interactive;
   }
 
-  chrome::StorageMonitor::GetInstance()->Initialize(base::Bind(
+  chrome::StorageMonitor::GetInstance()->EnsureInitialized(base::Bind(
       &MediaGalleriesGetMediaFileSystemsFunction::OnStorageMonitorInit,
       this,
       interactive));
