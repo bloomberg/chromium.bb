@@ -214,13 +214,17 @@ void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
     case UPGRADE_ERROR: {
       content::RecordAction(UserMetricsAction("UpgradeCheck_Error"));
       status = FAILED;
-      if (error_code != GOOGLE_UPDATE_DISABLED_BY_POLICY) {
-        message =
-            l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code);
-      } else {
+      if (error_code == GOOGLE_UPDATE_DISABLED_BY_POLICY) {
         message =
             l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY);
+      } else if (error_code == GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY) {
+        message =
+            l10n_util::GetStringUTF16(IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL);
+      } else {
+        message =
+            l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code);
       }
+
       if (!error_message.empty()) {
         message +=
             l10n_util::GetStringFUTF16(IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK,

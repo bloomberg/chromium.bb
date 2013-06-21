@@ -60,9 +60,14 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
       !InstallUtil::IsPerUserInstall(chrome_exe_path.value().c_str()));
   DCHECK(!app_guid.empty());
 
-  if (GoogleUpdateSettings::GetAppUpdatePolicy(app_guid, NULL) ==
-      GoogleUpdateSettings::UPDATES_DISABLED)
+  GoogleUpdateSettings::UpdatePolicy update_policy =
+      GoogleUpdateSettings::GetAppUpdatePolicy(app_guid, NULL);
+
+  if (update_policy == GoogleUpdateSettings::UPDATES_DISABLED)
     return GOOGLE_UPDATE_DISABLED_BY_POLICY;
+
+  if (update_policy == GoogleUpdateSettings::AUTO_UPDATES_ONLY)
+    return GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY;
 
   return GOOGLE_UPDATE_NO_ERROR;
 #endif

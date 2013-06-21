@@ -30,6 +30,7 @@ class GoogleUpdateSettings {
     UPDATES_DISABLED    = 0,
     AUTOMATIC_UPDATES   = 1,
     MANUAL_UPDATES_ONLY = 2,
+    AUTO_UPDATES_ONLY   = 3,
   };
 
   // Defines product data that is tracked/used by Google Update.

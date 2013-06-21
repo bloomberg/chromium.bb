@@ -147,6 +147,7 @@ bool GetUpdatePolicyFromDword(
     case GoogleUpdateSettings::UPDATES_DISABLED:
     case GoogleUpdateSettings::AUTOMATIC_UPDATES:
     case GoogleUpdateSettings::MANUAL_UPDATES_ONLY:
+    case GoogleUpdateSettings::AUTO_UPDATES_ONLY:
       *update_policy = static_cast<GoogleUpdateSettings::UpdatePolicy>(value);
       return true;
     default:
