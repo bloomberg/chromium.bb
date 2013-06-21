@@ -7,6 +7,15 @@
 #include "base/logging.h"
 #include "media/audio/android/audio_manager_android.h"
 
+#define LOG_ON_FAILURE_AND_RETURN(op, ...) \
+  do { \
+    SLresult err = (op);            \
+    if (err != SL_RESULT_SUCCESS) { \
+      DLOG(ERROR) << #op << " failed: " << err; \
+      return __VA_ARGS__; \
+    } \
+  } while (0)
+
 namespace media {
 
 OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
@@ -77,11 +86,8 @@ void OpenSLESOutputStream::Start(AudioSourceCallback* callback) {
   FillBufferQueue();
 
   // Start streaming data by setting the play state to |SL_PLAYSTATE_PLAYING|.
-  SLresult err = (*player_)->SetPlayState(player_, SL_PLAYSTATE_PLAYING);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err) {
-    DLOG(WARNING) << "SetPlayState() failed to start playing";
-  }
+  LOG_ON_FAILURE_AND_RETURN(
+      (*player_)->SetPlayState(player_, SL_PLAYSTATE_PLAYING));
 }
 
 void OpenSLESOutputStream::Stop() {
@@ -90,17 +96,13 @@ void OpenSLESOutputStream::Stop() {
 
   started_ = false;
   // Stop playing by setting the play state to |SL_PLAYSTATE_STOPPED|.
-  SLresult err = (*player_)->SetPlayState(player_, SL_PLAYSTATE_STOPPED);
-  if (SL_RESULT_SUCCESS != err) {
-    DLOG(WARNING) << "SetPlayState() failed to set the state to stop";
-  }
+  LOG_ON_FAILURE_AND_RETURN(
+      (*player_)->SetPlayState(player_, SL_PLAYSTATE_STOPPED));
 
   // Clear the buffer queue so that the old data won't be played when
   // resuming playing.
-  err = (*simple_buffer_queue_)->Clear(simple_buffer_queue_);
-  if (SL_RESULT_SUCCESS != err) {
-    DLOG(WARNING) << "Clear() failed to clear the buffer queue";
-  }
+  LOG_ON_FAILURE_AND_RETURN(
+      (*simple_buffer_queue_)->Clear(simple_buffer_queue_));
 }
 
 void OpenSLESOutputStream::Close() {
@@ -138,43 +140,36 @@ bool OpenSLESOutputStream::CreatePlayer() {
   SLEngineOption option[] = {
     { SL_ENGINEOPTION_THREADSAFE, static_cast<SLuint32>(SL_BOOLEAN_TRUE) }
   };
-  SLresult err = slCreateEngine(engine_object_.Receive(), 1, option, 0,
-                                NULL, NULL);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(
+      slCreateEngine(engine_object_.Receive(), 1, option, 0, NULL, NULL),
+      false);
 
   // Realize the SL engine object in synchronous mode.
-  err = engine_object_->Realize(engine_object_.Get(), SL_BOOLEAN_FALSE);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(
+      engine_object_->Realize(engine_object_.Get(), SL_BOOLEAN_FALSE),
+      false);
 
   // Get the SL engine interface which is implicit.
   SLEngineItf engine;
-  err = engine_object_->GetInterface(engine_object_.Get(),
-                                     SL_IID_ENGINE,
-                                     &engine);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(
+      engine_object_->GetInterface(engine_object_.Get(),
+                                   SL_IID_ENGINE,
+                                   &engine),
+      false);
 
   // Create ouput mixer object to be used by the player.
-  // TODO(xians): Do we need the environmental reverb auxiliary effect?
-  err = (*engine)->CreateOutputMix(engine,
-                                   output_mixer_.Receive(),
-                                   0,
-                                   NULL,
-                                   NULL);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(
+      (*engine)->CreateOutputMix(engine,
+                                 output_mixer_.Receive(),
+                                 0,
+                                 NULL,
+                                 NULL),
+      false);
 
   // Realizing the output mix object in synchronous mode.
-  err = output_mixer_->Realize(output_mixer_.Get(), SL_BOOLEAN_FALSE);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(
+      output_mixer_->Realize(output_mixer_.Get(), SL_BOOLEAN_FALSE),
+      false);
 
   // Audio source configuration.
   SLDataLocator_AndroidSimpleBufferQueue simple_buffer_queue = {
@@ -190,57 +185,67 @@ bool OpenSLESOutputStream::CreatePlayer() {
   SLDataSink audio_sink = { &locator_output_mix, NULL };
 
   // Create an audio player.
-  const SLuint32 number_of_interfaces = 1;
-  const SLInterfaceID interface_id[number_of_interfaces] = {
-    SL_IID_BUFFERQUEUE
+  const SLInterfaceID interface_id[] = {
+    SL_IID_BUFFERQUEUE,
+    SL_IID_VOLUME,
+    SL_IID_ANDROIDCONFIGURATION
   };
-  const SLboolean interface_required[number_of_interfaces] = {
+  const SLboolean interface_required[] = {
+    SL_BOOLEAN_TRUE,
+    SL_BOOLEAN_TRUE,
     SL_BOOLEAN_TRUE
   };
-  err = (*engine)->CreateAudioPlayer(engine,
-                                     player_object_.Receive(),
-                                     &audio_source,
-                                     &audio_sink,
-                                     number_of_interfaces,
-                                     interface_id,
-                                     interface_required);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err) {
-    DLOG(ERROR) << "CreateAudioPlayer() failed with error code " << err;
-    return false;
-  }
+  LOG_ON_FAILURE_AND_RETURN(
+      (*engine)->CreateAudioPlayer(engine,
+                                   player_object_.Receive(),
+                                   &audio_source,
+                                   &audio_sink,
+                                   arraysize(interface_id),
+                                   interface_id,
+                                   interface_required),
+      false);
+
+  // Create AudioPlayer and specify SL_IID_ANDROIDCONFIGURATION.
+  SLAndroidConfigurationItf player_config;
+  LOG_ON_FAILURE_AND_RETURN(
+      player_object_->GetInterface(player_object_.Get(),
+                                   SL_IID_ANDROIDCONFIGURATION,
+                                   &player_config),
+      false);
+
+  SLint32 stream_type = SL_ANDROID_STREAM_VOICE;
+  LOG_ON_FAILURE_AND_RETURN(
+      (*player_config)->SetConfiguration(player_config,
+                                         SL_ANDROID_KEY_STREAM_TYPE,
+                                         &stream_type, sizeof(SLint32)),
+      false);
 
   // Realize the player object in synchronous mode.
-  err = player_object_->Realize(player_object_.Get(), SL_BOOLEAN_FALSE);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err) {
-    DLOG(ERROR) << "Player Realize() failed with error code " << err;
-    return false;
-  }
+  LOG_ON_FAILURE_AND_RETURN(
+      player_object_->Realize(player_object_.Get(), SL_BOOLEAN_FALSE),
+      false);
 
   // Get an implicit player interface.
-  err = player_object_->GetInterface(
-      player_object_.Get(), SL_IID_PLAY, &player_);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(
+      player_object_->GetInterface(player_object_.Get(), SL_IID_PLAY, &player_),
+      false);
 
   // Get the simple buffer queue interface.
-  err = player_object_->GetInterface(player_object_.Get(),
-                                     SL_IID_BUFFERQUEUE,
-                                     &simple_buffer_queue_);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(
+      player_object_->GetInterface(player_object_.Get(),
+                                   SL_IID_BUFFERQUEUE,
+                                   &simple_buffer_queue_),
+      false);
 
   // Register the input callback for the simple buffer queue.
   // This callback will be called when the soundcard needs data.
-  err = (*simple_buffer_queue_)->RegisterCallback(simple_buffer_queue_,
-                                                  SimpleBufferQueueCallback,
-                                                  this);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
+  LOG_ON_FAILURE_AND_RETURN(
+      (*simple_buffer_queue_)->RegisterCallback(simple_buffer_queue_,
+                                                SimpleBufferQueueCallback,
+                                                this),
+      false);
 
-  return (SL_RESULT_SUCCESS == err);
+  return true;
 }
 
 void OpenSLESOutputStream::SimpleBufferQueueCallback(
@@ -298,7 +303,7 @@ void OpenSLESOutputStream::ReleaseAudioBuffer() {
 }
 
 void OpenSLESOutputStream::HandleError(SLresult error) {
-  DLOG(ERROR) << "OpenSLES error " << error;
+  DLOG(ERROR) << "OpenSLES Output error " << error;
   if (callback_)
     callback_->OnError(this);
 }

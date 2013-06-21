@@ -5,8 +5,9 @@
 #ifndef MEDIA_AUDIO_ANDROID_OPENSLES_UTIL_H_
 #define MEDIA_AUDIO_ANDROID_OPENSLES_UTIL_H_
 
-#include "base/logging.h"
 #include <SLES/OpenSLES.h>
+
+#include "base/logging.h"
 
 namespace media {
 

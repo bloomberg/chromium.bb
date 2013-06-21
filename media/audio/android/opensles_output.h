@@ -7,7 +7,6 @@
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
-#include <SLES/OpenSLES_AndroidConfiguration.h>
 
 #include "base/compiler_specific.h"
 #include "media/audio/android/opensles_util.h"

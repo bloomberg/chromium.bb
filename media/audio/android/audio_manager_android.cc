@@ -72,8 +72,10 @@ AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
     const AudioParameters& params, const std::string& input_device_id) {
   AudioOutputStream* stream =
     AudioManagerBase::MakeAudioOutputStream(params, std::string());
-  if (stream && output_stream_count() == 1)
+  if (stream && output_stream_count() == 1) {
+    SetAudioMode(kAudioModeInCommunication);
     RegisterHeadsetReceiver();
+  }
   return stream;
 }
 
@@ -81,21 +83,19 @@ AudioInputStream* AudioManagerAndroid::MakeAudioInputStream(
     const AudioParameters& params, const std::string& device_id) {
   AudioInputStream* stream =
     AudioManagerBase::MakeAudioInputStream(params, device_id);
-  if (stream && input_stream_count() == 1)
-    SetAudioMode(kAudioModeInCommunication);
   return stream;
 }
 
 void AudioManagerAndroid::ReleaseOutputStream(AudioOutputStream* stream) {
   AudioManagerBase::ReleaseOutputStream(stream);
-  if (!output_stream_count())
+  if (!output_stream_count()) {
     UnregisterHeadsetReceiver();
+    SetAudioMode(kAudioModeNormal);
+  }
 }
 
 void AudioManagerAndroid::ReleaseInputStream(AudioInputStream* stream) {
   AudioManagerBase::ReleaseInputStream(stream);
-  if (!input_stream_count())
-    SetAudioMode(kAudioModeNormal);
 }
 
 AudioOutputStream* AudioManagerAndroid::MakeLinearOutputStream(

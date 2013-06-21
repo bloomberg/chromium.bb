@@ -7,6 +7,15 @@
 #include "base/logging.h"
 #include "media/audio/android/audio_manager_android.h"
 
+#define LOG_ON_FAILURE_AND_RETURN(op, ...) \
+  do { \
+    SLresult err = (op);            \
+    if (err != SL_RESULT_SUCCESS) { \
+      DLOG(ERROR) << #op << " failed: " << err; \
+      return __VA_ARGS__; \
+    } \
+  } while (0)
+
 namespace media {
 
 OpenSLESInputStream::OpenSLESInputStream(AudioManagerAndroid* audio_manager,
@@ -84,7 +93,6 @@ void OpenSLESInputStream::Start(AudioInputCallback* callback) {
 
   // Start the recording by setting the state to |SL_RECORDSTATE_RECORDING|.
   err = (*recorder_)->SetRecordState(recorder_, SL_RECORDSTATE_RECORDING);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
   if (SL_RESULT_SUCCESS != err)
     HandleError(err);
 }
@@ -94,17 +102,13 @@ void OpenSLESInputStream::Stop() {
     return;
 
   // Stop recording by setting the record state to |SL_RECORDSTATE_STOPPED|.
-  SLresult err = (*recorder_)->SetRecordState(recorder_,
-                                              SL_RECORDSTATE_STOPPED);
-  if (SL_RESULT_SUCCESS != err) {
-    DLOG(WARNING) << "SetRecordState() failed to set the state to stop";
-  }
+  LOG_ON_FAILURE_AND_RETURN(
+      (*recorder_)->SetRecordState(recorder_,
+                                   SL_RECORDSTATE_STOPPED));
 
   // Clear the buffer queue to get rid of old data when resuming recording.
-  err = (*simple_buffer_queue_)->Clear(simple_buffer_queue_);
-  if (SL_RESULT_SUCCESS != err) {
-    DLOG(WARNING) << "Clear() failed to clear the buffer queue";
-  }
+  LOG_ON_FAILURE_AND_RETURN(
+      (*simple_buffer_queue_)->Clear(simple_buffer_queue_));
 
   started_ = false;
 }
@@ -154,29 +158,25 @@ bool OpenSLESInputStream::CreateRecorder() {
   SLEngineOption option[] = {
     { SL_ENGINEOPTION_THREADSAFE, static_cast<SLuint32>(SL_BOOLEAN_TRUE) }
   };
-  SLresult err = slCreateEngine(engine_object_.Receive(),
-                                1,
-                                option,
-                                0,
-                                NULL,
-                                NULL);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(slCreateEngine(engine_object_.Receive(),
+                                           1,
+                                           option,
+                                           0,
+                                           NULL,
+                                           NULL),
+                            false);
 
   // Realize the SL engine object in synchronous mode.
-  err = engine_object_->Realize(engine_object_.Get(), SL_BOOLEAN_FALSE);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(engine_object_->Realize(engine_object_.Get(),
+                                                    SL_BOOLEAN_FALSE),
+                            false);
 
   // Get the SL engine interface which is implicit.
   SLEngineItf engine;
-  err = engine_object_->GetInterface(
-      engine_object_.Get(), SL_IID_ENGINE, &engine);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(engine_object_->GetInterface(engine_object_.Get(),
+                                                         SL_IID_ENGINE,
+                                                         &engine),
+                            false);
 
   // Audio source configuration.
   SLDataLocator_IODevice mic_locator = {
@@ -193,58 +193,68 @@ bool OpenSLESInputStream::CreateRecorder() {
   SLDataSink audio_sink = { &buffer_queue, &format_ };
 
   // Create an audio recorder.
-  const SLuint32 number_of_interfaces = 1;
-  const SLInterfaceID interface_id[number_of_interfaces] = {
-    SL_IID_ANDROIDSIMPLEBUFFERQUEUE
+  const SLInterfaceID interface_id[] = {
+    SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
+    SL_IID_ANDROIDCONFIGURATION
   };
-  const SLboolean interface_required[number_of_interfaces] = {
+  const SLboolean interface_required[] = {
+    SL_BOOLEAN_TRUE,
     SL_BOOLEAN_TRUE
   };
-  err = (*engine)->CreateAudioRecorder(engine,
-                                       recorder_object_.Receive(),
-                                       &audio_source,
-                                       &audio_sink,
-                                       number_of_interfaces,
-                                       interface_id,
-                                       interface_required);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err) {
-    DLOG(ERROR) << "CreateAudioRecorder failed with error code " << err;
-    return false;
-  }
+  // Create AudioRecorder and specify SL_IID_ANDROIDCONFIGURATION.
+  LOG_ON_FAILURE_AND_RETURN(
+      (*engine)->CreateAudioRecorder(engine,
+                                     recorder_object_.Receive(),
+                                     &audio_source,
+                                     &audio_sink,
+                                     arraysize(interface_id),
+                                     interface_id,
+                                     interface_required),
+      false);
+
+  SLAndroidConfigurationItf recorder_config;
+  LOG_ON_FAILURE_AND_RETURN(
+      recorder_object_->GetInterface(recorder_object_.Get(),
+                                     SL_IID_ANDROIDCONFIGURATION,
+                                     &recorder_config),
+      false);
+
+  SLint32 stream_type = SL_ANDROID_RECORDING_PRESET_VOICE_COMMUNICATION;
+  LOG_ON_FAILURE_AND_RETURN(
+      (*recorder_config)->SetConfiguration(recorder_config,
+                                           SL_ANDROID_KEY_RECORDING_PRESET,
+                                           &stream_type, sizeof(SLint32)),
+      false);
 
   // Realize the recorder object in synchronous mode.
-  err = recorder_object_->Realize(recorder_object_.Get(), SL_BOOLEAN_FALSE);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err) {
-    DLOG(ERROR) << "Recprder Realize() failed with error code " << err;
-    return false;
-  }
+  LOG_ON_FAILURE_AND_RETURN(
+      recorder_object_->Realize(recorder_object_.Get(),
+                                SL_BOOLEAN_FALSE),
+      false);
 
   // Get an implicit recorder interface.
-  err = recorder_object_->GetInterface(recorder_object_.Get(),
-                                       SL_IID_RECORD,
-                                       &recorder_);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(
+      recorder_object_->GetInterface(recorder_object_.Get(),
+                                     SL_IID_RECORD,
+                                     &recorder_),
+      false);
 
   // Get the simple buffer queue interface.
-  err = recorder_object_->GetInterface(recorder_object_.Get(),
-                                       SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-                                       &simple_buffer_queue_);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
-  if (SL_RESULT_SUCCESS != err)
-    return false;
+  LOG_ON_FAILURE_AND_RETURN(
+      recorder_object_->GetInterface(recorder_object_.Get(),
+                                     SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
+                                     &simple_buffer_queue_),
+      false);
 
   // Register the input callback for the simple buffer queue.
   // This callback will be called when receiving new data from the device.
-  err = (*simple_buffer_queue_)->RegisterCallback(simple_buffer_queue_,
-                                                  SimpleBufferQueueCallback,
-                                                  this);
-  DCHECK_EQ(SL_RESULT_SUCCESS, err);
+  LOG_ON_FAILURE_AND_RETURN(
+      (*simple_buffer_queue_)->RegisterCallback(simple_buffer_queue_,
+                                                SimpleBufferQueueCallback,
+                                                this),
+      false);
 
-  return (SL_RESULT_SUCCESS == err);
+  return true;
 }
 
 void OpenSLESInputStream::SimpleBufferQueueCallback(
@@ -293,7 +303,7 @@ void OpenSLESInputStream::ReleaseAudioBuffer() {
 }
 
 void OpenSLESInputStream::HandleError(SLresult error) {
-  DLOG(FATAL) << "OpenSLES error " << error;
+  DLOG(FATAL) << "OpenSLES Input error " << error;
   if (callback_)
     callback_->OnError(this);
 }
