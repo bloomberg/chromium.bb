@@ -804,8 +804,10 @@ void InspectorPageAgent::domContentLoadedEventFired(Frame* frame)
         setForceCompositingMode(0, true);
 }
 
-void InspectorPageAgent::loadEventFired(Frame*)
+void InspectorPageAgent::loadEventFired(Frame* frame)
 {
+    if (frame->page()->mainFrame() != frame)
+        return;
     m_frontend->loadEventFired(currentTime());
 }
 
