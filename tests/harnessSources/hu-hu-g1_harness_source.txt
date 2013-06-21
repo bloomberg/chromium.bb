@@ -2375,6 +2375,11 @@ licencsértés
 testmode: backtranslate
 licencsértés
 
+likviditásszűke
+
+testmode: backtranslate
+likviditásszűke
+
 liszteszacskó
 
 testmode: backtranslate
@@ -3205,6 +3210,11 @@ pénzszűke
 testmode: backtranslate
 pénzszűke
 
+Perecsény
+
+testmode: backtranslate
+Perecsény
+
 perecsütőnő
 
 testmode: backtranslate
@@ -3249,6 +3259,11 @@ piroszászlós
 
 testmode: backtranslate
 piroszászlós
+
+piroszőlősav
+
+testmode: backtranslate
+piroszőlősav
 
 piszkosszőke
 
@@ -4057,6 +4072,11 @@ típuszubbony
 testmode: backtranslate
 típuszubbony
 
+titáncsoport
+
+testmode: backtranslate
+titáncsoport
+
 titkosszolgálat
 
 testmode: backtranslate
@@ -4081,6 +4101,11 @@ tojásszerű
 
 testmode: backtranslate
 tojásszerű
+
+tornácsor
+
+testmode: backtranslate
+tornácsor
 
 topázsárgája
 
@@ -4116,6 +4141,11 @@ töltésszakasz
 
 testmode: backtranslate
 töltésszakasz
+
+törészónán
+
+testmode: backtranslate
+törészónán
 
 törlesszem
 

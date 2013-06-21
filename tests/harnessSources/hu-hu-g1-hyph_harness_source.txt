@@ -1443,6 +1443,9 @@ testmode: hyphenate
 licencsértés
 
 testmode: hyphenate
+likviditásszűke
+
+testmode: hyphenate
 liszteszacskó
 
 testmode: hyphenate
@@ -1944,6 +1947,9 @@ testmode: hyphenate
 pénzszűke
 
 testmode: hyphenate
+Perecsény
+
+testmode: hyphenate
 perecsütőnő
 
 testmode: hyphenate
@@ -1969,6 +1975,9 @@ pirosszem
 
 testmode: hyphenate
 piroszászlós
+
+testmode: hyphenate
+piroszőlősav
 
 testmode: hyphenate
 piszkosszőke
@@ -2427,6 +2436,9 @@ testmode: hyphenate
 típuszubbony
 
 testmode: hyphenate
+titáncsoport
+
+testmode: hyphenate
 titkosszolgálat
 
 testmode: hyphenate
@@ -2440,6 +2452,9 @@ tojászápor
 
 testmode: hyphenate
 tojásszerű
+
+testmode: hyphenate
+tornácsor
 
 testmode: hyphenate
 topázsárgája
@@ -2461,6 +2476,9 @@ töltésszerűen
 
 testmode: hyphenate
 töltésszakasz
+
+testmode: hyphenate
+törészónán
 
 testmode: hyphenate
 törlesszem

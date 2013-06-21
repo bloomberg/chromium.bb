@@ -101,7 +101,8 @@ always arcseb =	For example arcseb, arcsebe words
 partword nyargonccs 1246-1-1235-1245-135-1345-14-146	For example nyargonccsizma word
 partword perec =	For example perecsütőnő, vállpereccsontjából words
 always perecse 1234-15-1235-15-146-15
-always perecsét 1234-15-1235-15-146-16-2345
+always perecsé 1234-15-1235-15-146-16
+always perecske 1234-15-1235-15-146-13-15
 begword princség =	For example princséged word
 always rácság =	For example rácság, rácságból words
 partword suhanc =	For example suhanccsürhe, suhancsereg word
@@ -118,6 +119,8 @@ partword láncsor =	For example karakterláncsor word related need this exceptio
 partword ketrec =	For example ketreccsapda, ketrecsor words related need this general exception
 begword spicc =	For example spiccszűrőbe word related need this general exception
 begword ércsar 16-1235-14-234-1-1235	For example ércsarukkal word
+partword titáncsop 2345-24-2345-4-1345-146-135-1234	For example titáncsoport word related need this exception
+begword tornác =	For example tornácsor word related need this general exception
 
 #gy, ggy related exceptions
 #This exception section containing word parts and full words with need marking ggy letter pairs with single g and gy braille dot combination
@@ -362,6 +365,7 @@ always kiszombor 13-24-234-126-135-134-12-135-1235	For example Kiszombor, Kiszom
 partword szöld 234-126-12345-123-145	For example haragoszöld, mohaszöld, piszkoszöld word
 partword ozgásza 135-126-1245-4-234-126-1		For example mozgászavar word
 begword pirosszk 1234-24-1235-135-156-156-13	Pirosszka is a movie film name
+partword piroszőlő 1234-24-1235-135-156-12456-123-12456	piroszőlősav a chemical name and don't need wrap the braille dots between s and z letters
 partword fedezéssz 124-15-145-15-126-16-234-156	For example felfedezésszámba word
 partword város =	For example városzajon, városzajt, városzsivaj words
 always városzt 1236-4-1235-135-156-2345	Városztályába word is an exception the prewious defined general város words related rule
@@ -397,6 +401,7 @@ begword enyves 15-1246-1236-15-234	For example enyveszsinór word related need t
 partword kortárs =	For example kortárszenei word related need this general exception
 
 partword kórus =	For example kóruszene word related need this general exception
+begword törés =	For example törészónán word related need this general exception
 
 #ssz related exceptions
 #Following exception words and word parts need writing one s and one sz braille letter
@@ -872,7 +877,7 @@ partword pólus =	For example pólusszámhoz, pólusszekvenciát words related n
 partword rovás =	For example rovásszerűen word related need this general exception
 partword ciripelés =	For example ciripelésszerűen word related need this general exception
 partword orgazmussz 135-1235-1245-1-126-134-136-234-156	For example orgazmusszerű word related need this exception
-partword teknős =	For example teknősszámlálás word related need this general exception
+partword teknőssz 2345-15-13-1345-12456-234-156	For example teknősszámlálás word related need this general exception
 partword hússzer 125-346-234-156-15-1235	For example vagdalthússzerű word
 partword emelkedés =	For example áremelkedésszerű word
 partword zaklatás 126-1-13-123-1-2345-4-234	For example zaklatásszámba word
@@ -885,6 +890,8 @@ begword pálossz 1234-4-123-135-234-156	For example Pálosszentkút town name re
 partword sasszikl 234-1-234-156-24-13-123	For example sasszikla word
 partword természetessz 2345-15-1235-134-16-156-15-2345-15-234-156	For example természetesszám word
 begword árrés =	For example árrésszabályt word related need this general exception
+always premisszám 1234-1235-15-134-24-156-156-4-134
+partword likviditás =	For example likviditásszűke word need this general exception
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules

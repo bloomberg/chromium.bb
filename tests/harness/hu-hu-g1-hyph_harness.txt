@@ -1932,6 +1932,10 @@
           "output": "li-cenc-s-ér-tés"
         }, 
         {
+          "input": "likviditásszűke", 
+          "output": "lik-vi-di-tás-szű-ke"
+        }, 
+        {
           "input": "liszteszacskó", 
           "output": "lisz-teszacs-kó"
         }, 
@@ -2600,6 +2604,10 @@
           "output": "pénz-szű-ke"
         }, 
         {
+          "input": "Perecsény", 
+          "output": "Pe-re-csény"
+        }, 
+        {
           "input": "perecsütőnő", 
           "output": "pe-rec-sü-tő-nő"
         }, 
@@ -2634,6 +2642,10 @@
         {
           "input": "piroszászlós", 
           "output": "pi-ros-zász-lós"
+        }, 
+        {
+          "input": "piroszőlősav", 
+          "output": "pi-ro-sző-lő-sav"
         }, 
         {
           "input": "piszkosszőke", 
@@ -3244,6 +3256,10 @@
           "output": "tí-pu-s-zub-bony"
         }, 
         {
+          "input": "titáncsoport", 
+          "output": "ti-tán-cso-port"
+        }, 
+        {
           "input": "titkosszolgálat", 
           "output": "tit-kos-szol-gá-lat"
         }, 
@@ -3262,6 +3278,10 @@
         {
           "input": "tojásszerű", 
           "output": "to-jás-sze-rű"
+        }, 
+        {
+          "input": "tornácsor", 
+          "output": "tor-nác-sor"
         }, 
         {
           "input": "topázsárgája", 
@@ -3290,6 +3310,10 @@
         {
           "input": "töltésszakasz", 
           "output": "töl-tés-sza-kasz"
+        }, 
+        {
+          "input": "törészónán", 
+          "output": "tö-rés-zó-nán"
         }, 
         {
           "input": "törlesszem", 

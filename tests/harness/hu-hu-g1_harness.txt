@@ -1907,6 +1907,10 @@
           "output": "licencsértés"
         }, 
         {
+          "input": "⠇⠊⠅⠧⠊⠙⠊⠞⠈⠎⠱⠾⠅⠑", 
+          "output": "likviditásszűke"
+        }, 
+        {
           "input": "⠇⠊⠱⠞⠑⠎⠣⠁⠩⠅⠪", 
           "output": "liszteszacskó"
         }, 
@@ -2571,6 +2575,10 @@
           "output": "pénzszűke"
         }, 
         {
+          "input": "⠨⠏⠑⠗⠑⠩⠡⠫", 
+          "output": "Perecsény"
+        }, 
+        {
           "input": "⠏⠑⠗⠑⠉⠎⠷⠞⠻⠝⠻", 
           "output": "perecsütőnő"
         }, 
@@ -2605,6 +2613,10 @@
         {
           "input": "⠏⠊⠗⠕⠎⠣⠈⠱⠇⠪⠎", 
           "output": "piroszászlós"
+        }, 
+        {
+          "input": "⠏⠊⠗⠕⠱⠻⠇⠻⠎⠁⠧", 
+          "output": "piroszőlősav"
         }, 
         {
           "input": "⠏⠊⠱⠅⠕⠎⠱⠻⠅⠑", 
@@ -3254,6 +3266,10 @@
           "output": "típuszubbony"
         }, 
         {
+          "input": "⠞⠊⠞⠈⠝⠩⠕⠏⠕⠗⠞", 
+          "output": "titáncsoport"
+        }, 
+        {
           "input": "⠞⠊⠞⠅⠕⠎⠱⠕⠇⠛⠈⠇⠁⠞", 
           "output": "titkosszolgálat"
         }, 
@@ -3272,6 +3288,10 @@
         {
           "input": "⠞⠕⠚⠈⠎⠱⠑⠗⠾", 
           "output": "tojásszerű"
+        }, 
+        {
+          "input": "⠞⠕⠗⠝⠈⠉⠎⠕⠗", 
+          "output": "tornácsor"
         }, 
         {
           "input": "⠞⠕⠏⠈⠣⠎⠈⠗⠛⠈⠚⠁", 
@@ -3300,6 +3320,10 @@
         {
           "input": "⠞⠟⠇⠞⠡⠎⠱⠁⠅⠁⠱", 
           "output": "töltésszakasz"
+        }, 
+        {
+          "input": "⠞⠟⠗⠡⠎⠣⠪⠝⠈⠝", 
+          "output": "törészónán"
         }, 
         {
           "input": "⠞⠟⠗⠇⠑⠱⠱⠑⠍", 
@@ -5762,6 +5786,10 @@
           "output": "⠇⠊⠉⠑⠝⠉⠎⠡⠗⠞⠡⠎"
         }, 
         {
+          "input": "likviditásszűke", 
+          "output": "⠇⠊⠅⠧⠊⠙⠊⠞⠈⠎⠱⠾⠅⠑"
+        }, 
+        {
           "input": "liszteszacskó", 
           "output": "⠇⠊⠱⠞⠑⠎⠣⠁⠩⠅⠪"
         }, 
@@ -6426,6 +6454,10 @@
           "output": "⠏⠡⠝⠣⠱⠾⠅⠑"
         }, 
         {
+          "input": "Perecsény", 
+          "output": "⠨⠏⠑⠗⠑⠩⠡⠫"
+        }, 
+        {
           "input": "perecsütőnő", 
           "output": "⠏⠑⠗⠑⠉⠎⠷⠞⠻⠝⠻"
         }, 
@@ -6460,6 +6492,10 @@
         {
           "input": "piroszászlós", 
           "output": "⠏⠊⠗⠕⠎⠣⠈⠱⠇⠪⠎"
+        }, 
+        {
+          "input": "piroszőlősav", 
+          "output": "⠏⠊⠗⠕⠱⠻⠇⠻⠎⠁⠧"
         }, 
         {
           "input": "piszkosszőke", 
@@ -7109,6 +7145,10 @@
           "output": "⠞⠌⠏⠥⠎⠣⠥⠃⠃⠕⠫"
         }, 
         {
+          "input": "titáncsoport", 
+          "output": "⠞⠊⠞⠈⠝⠩⠕⠏⠕⠗⠞"
+        }, 
+        {
           "input": "titkosszolgálat", 
           "output": "⠞⠊⠞⠅⠕⠎⠱⠕⠇⠛⠈⠇⠁⠞"
         }, 
@@ -7127,6 +7167,10 @@
         {
           "input": "tojásszerű", 
           "output": "⠞⠕⠚⠈⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "tornácsor", 
+          "output": "⠞⠕⠗⠝⠈⠉⠎⠕⠗"
         }, 
         {
           "input": "topázsárgája", 
@@ -7155,6 +7199,10 @@
         {
           "input": "töltésszakasz", 
           "output": "⠞⠟⠇⠞⠡⠎⠱⠁⠅⠁⠱"
+        }, 
+        {
+          "input": "törészónán", 
+          "output": "⠞⠟⠗⠡⠎⠣⠪⠝⠈⠝"
         }, 
         {
           "input": "törlesszem", 
