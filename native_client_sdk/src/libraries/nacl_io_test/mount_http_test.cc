@@ -16,6 +16,7 @@
 #include "nacl_io/mount_http.h"
 #include "nacl_io/mount_node_dir.h"
 #include "nacl_io/osdirent.h"
+#include "nacl_io/osunistd.h"
 #include "pepper_interface_mock.h"
 
 using ::testing::_;

@@ -6,15 +6,15 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
-#include <string>
 #include <sys/stat.h>
+#include <string>
 
+#include "gtest/gtest.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/mount_dev.h"
 #include "nacl_io/mount_mem.h"
 #include "nacl_io/osdirent.h"
-
-#include "gtest/gtest.h"
+#include "nacl_io/osunistd.h"
 
 namespace {
 
