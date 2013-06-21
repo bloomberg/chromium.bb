@@ -22,7 +22,7 @@ namespace {
 
 // Size of the low entropy source to use for the permuted entropy provider
 // in tests.
-const size_t kMaxLowEntropySize = (1 << 13);
+const size_t kMaxLowEntropySize = 8000;
 
 // Field trial names used in unit tests.
 const std::string kTestTrialNames[] = { "TestTrial", "AnotherTestTrial",
