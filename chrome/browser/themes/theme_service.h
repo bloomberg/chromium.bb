@@ -163,7 +163,7 @@ class ThemeService : public base::NonThreadSafe,
   // from ClearCaches().
   virtual void FreePlatformCaches();
 
-  Profile* profile() { return profile_; }
+  Profile* profile() const { return profile_; }
 
   void set_ready() { ready_ = true; }
 
@@ -183,6 +183,9 @@ class ThemeService : public base::NonThreadSafe,
   // Implementation of SetTheme() (and the fallback from LoadThemePrefs() in
   // case we don't have a theme pack).
   void BuildFromExtension(const extensions::Extension* extension);
+
+  // Returns true if the profile belongs to a managed user.
+  bool IsManagedUser() const;
 
 #if defined(TOOLKIT_GTK)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.

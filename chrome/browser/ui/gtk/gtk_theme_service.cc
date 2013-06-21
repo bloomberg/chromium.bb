@@ -15,6 +15,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -308,6 +309,14 @@ gfx::ImageSkia* GtkThemeService::GetImageSkiaNamed(int id) const {
 }
 
 gfx::Image GtkThemeService::GetImageNamed(int id) const {
+  // TODO(akuegel): Remove this once we have the default managed user theme.
+  if (ManagedUserService::ProfileIsManaged(profile())) {
+    if (id == IDR_THEME_FRAME)
+      id = IDR_MANAGED_USER_THEME_FRAME;
+    else if (id == IDR_THEME_FRAME_INACTIVE)
+      id = IDR_MANAGED_USER_THEME_FRAME_INACTIVE;
+  }
+
   // Try to get our cached version:
   ImageCache::const_iterator it = gtk_images_.find(id);
   if (it != gtk_images_.end())
@@ -324,6 +333,14 @@ gfx::Image GtkThemeService::GetImageNamed(int id) const {
 }
 
 SkColor GtkThemeService::GetColor(int id) const {
+  // TODO(akuegel): Remove this once we have the default managed user theme.
+  if (ManagedUserService::ProfileIsManaged(profile())) {
+    if (id == ThemeProperties::COLOR_FRAME)
+      id = ThemeProperties::COLOR_FRAME_MANAGED_USER;
+    else if (id == ThemeProperties::COLOR_FRAME_INACTIVE)
+      id = ThemeProperties::COLOR_FRAME_MANAGED_USER_INACTIVE;
+  }
+
   if (use_gtk_) {
     ColorMap::const_iterator it = colors_.find(id);
     if (it != colors_.end())

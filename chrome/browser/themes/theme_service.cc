@@ -36,6 +36,10 @@
 #include "ui/linux_ui/linux_ui.h"
 #endif
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#endif
+
 using content::BrowserThread;
 using content::UserMetricsAction;
 using extensions::Extension;
@@ -104,6 +108,15 @@ void ThemeService::Init(Profile* profile) {
 gfx::Image ThemeService::GetImageNamed(int id) const {
   DCHECK(CalledOnValidThread());
 
+  // For a managed user, use the special frame instead of the default one.
+  // TODO(akuegel): Remove this once we have the default managed user theme.
+  if (IsManagedUser()) {
+    if (id == IDR_THEME_FRAME)
+      id = IDR_MANAGED_USER_THEME_FRAME;
+    else if (id == IDR_THEME_FRAME_INACTIVE)
+      id = IDR_MANAGED_USER_THEME_FRAME_INACTIVE;
+  }
+
   gfx::Image image;
   if (theme_pack_.get())
     image = theme_pack_->GetImageNamed(id);
@@ -132,6 +145,14 @@ gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
 SkColor ThemeService::GetColor(int id) const {
   DCHECK(CalledOnValidThread());
 
+  // TODO(akuegel): Remove this once we have the default managed user theme.
+  if (IsManagedUser()) {
+    if (id == Properties::COLOR_FRAME)
+      id = Properties::COLOR_FRAME_MANAGED_USER;
+    else if (id == Properties::COLOR_FRAME_INACTIVE)
+      id = Properties::COLOR_FRAME_MANAGED_USER_INACTIVE;
+  }
+
   SkColor color;
   if (theme_pack_.get() && theme_pack_->GetColor(id, &color))
     return color;
@@ -157,11 +178,13 @@ SkColor ThemeService::GetColor(int id) const {
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
     case Properties::COLOR_MANAGED_USER_LABEL:
       return color_utils::GetReadableColor(
-          SK_ColorWHITE,
+          SkColorSetRGB(231, 245, 255),
           GetColor(Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND));
     case Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND:
-      return color_utils::BlendTowardOppositeLuminance(
-          GetColor(Properties::COLOR_FRAME), 0x80);
+      // TODO(akuegel): Replace this constant by a color calculated from the
+      // frame color once the default managed user theme is finished and we
+      // allow managed users to install other themes.
+      return SkColorSetRGB(108, 167, 210);
   }
 
   return Properties::GetDefaultColor(id);
@@ -417,6 +440,13 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
 
   SavePackName(pack_path);
   theme_pack_ = pack;
+}
+
+bool ThemeService::IsManagedUser() const {
+#if defined(ENABLE_MANAGED_USERS)
+  return ManagedUserService::ProfileIsManaged(profile_);
+#endif
+  return false;
 }
 
 void ThemeService::OnInfobarDisplayed() {
