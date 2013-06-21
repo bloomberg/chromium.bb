@@ -259,7 +259,8 @@ COMMANDS_llvm_pnacl_arm = [
      '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.nonfinal.pexe -lm -lstdc++',
      ),
     ('finalize-pexe',
-     '%(FINALIZE)s %(tmp)s.nonfinal.pexe -o %(tmp)s.final.pexe'
+     '%(FINALIZE)s %(FINALIZE_FLAGS)s %(tmp)s.nonfinal.pexe'
+     ' -o %(tmp)s.final.pexe'
     ),
     ('translate-arm',
      '%(LD)s %(TRANSLATE_FLAGS)s %(tmp)s.final.pexe -o %(tmp)s.nexe',
@@ -285,6 +286,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     SEL_LDR = RUN_SEL_LDR_ARM,
     IRT = IRT_ARM,
     CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS,
+    FINALIZE_FLAGS = '',
     TRANSLATE_FLAGS='')
 
 
@@ -303,6 +305,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
     IRT = IRT_ARM,
     CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS  + ' '
               + GLOBAL_CFLAGS,
+    FINALIZE_FLAGS = '',
     TRANSLATE_FLAGS = '')
 
 ######################################################################
@@ -315,7 +318,8 @@ COMMANDS_llvm_pnacl_x86 = [
      '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.nonfinal.pexe -lm -lstdc++',
      ),
     ('finalize-pexe',
-     '%(FINALIZE)s %(tmp)s.nonfinal.pexe -o %(tmp)s.final.pexe',
+     '%(FINALIZE)s %(FINALIZE_FLAGS)s %(tmp)s.nonfinal.pexe'
+     ' -o %(tmp)s.final.pexe',
      ),
     ('translate-x86',
      '%(LD)s %(TRANSLATE_FLAGS)s %(tmp)s.final.pexe -o %(tmp)s.nexe ',
@@ -338,6 +342,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-32_O0'] = ToolchainConfig(
     SEL_LDR = RUN_SEL_LDR_X32,
     IRT = IRT_X32,
     CFLAGS = '-O0  -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS,
+    FINALIZE_FLAGS = '',
     TRANSLATE_FLAGS = '')
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x86-32_O3'] = ToolchainConfig(
@@ -353,6 +358,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-32_O3'] = ToolchainConfig(
     IRT = IRT_X32,
     CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS + ' '
              + GLOBAL_CFLAGS,
+    FINALIZE_FLAGS = '',
     TRANSLATE_FLAGS = '')
 
 ######################################################################
@@ -371,6 +377,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O0'] = ToolchainConfig(
     SEL_LDR = RUN_SEL_LDR_X64,
     IRT = IRT_X64,
     CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS,
+    FINALIZE_FLAGS = '',
     TRANSLATE_FLAGS = '')
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O3'] = ToolchainConfig(
@@ -386,4 +393,5 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x86-64_O3'] = ToolchainConfig(
     IRT = IRT_X64,
     CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS + ' '
              + GLOBAL_CFLAGS,
+    FINALIZE_FLAGS = '',
     TRANSLATE_FLAGS = '')

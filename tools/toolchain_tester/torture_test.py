@@ -103,6 +103,7 @@ def eh_tests(context, config, exclude, extra_args):
              '--config=' + config]
   if 'pnacl' in config:
     command.append('--append=CFLAGS:--pnacl-allow-exceptions')
+    command.append('--append=FINALIZE_FLAGS:--no-finalize')
     command.append('--append=TRANSLATE_FLAGS:--pnacl-allow-exceptions')
     command.append('--append_file=tools/toolchain_tester/extra_flags_pnacl.txt')
   command.extend(extra_args)
