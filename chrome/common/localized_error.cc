@@ -546,7 +546,7 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
       base::DictionaryValue* reload_button = new base::DictionaryValue;
       reload_button->SetString("msg",
           l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
-      reload_button->SetString("reloadUrl", failed_url_string);
+      reload_button->SetString("reloadUrl", failed_url.spec());
       error_strings->Set("reload", reload_button);
     } else {
       // If the page was created by a post, it can't be reloaded in the same
