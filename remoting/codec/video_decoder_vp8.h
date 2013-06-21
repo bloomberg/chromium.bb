@@ -30,6 +30,7 @@ class VideoDecoderVp8 : public VideoDecoder {
                            uint8* image_buffer,
                            int image_stride,
                            SkRegion* output_region) OVERRIDE;
+  virtual const SkRegion* GetImageShape() OVERRIDE;
 
  private:
   enum State {
@@ -37,6 +38,14 @@ class VideoDecoderVp8 : public VideoDecoder {
     kReady,
     kError,
   };
+
+  // Fills the rectangle |rect| with the given ARGB color |color| in |buffer|.
+  void FillRect(uint8* buffer, int stride, const SkIRect& rect, uint32 color);
+
+  // Calculates the difference between the desktop shape regions in two
+  // consecutive frames and updates |updated_region_| and |transparent_region_|
+  // accordingly.
+  void UpdateImageShapeRegion(SkRegion* new_desktop_shape);
 
   // The internal state of the decoder.
   State state_;
@@ -51,6 +60,12 @@ class VideoDecoderVp8 : public VideoDecoder {
 
   // Output dimensions.
   SkISize screen_size_;
+
+  // The region occupied by the top level windows.
+  SkRegion desktop_shape_;
+
+  // The region that should be make transparent.
+  SkRegion transparent_region_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderVp8);
 };

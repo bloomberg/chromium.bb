@@ -68,6 +68,10 @@ class VideoDecoder {
                            uint8* image_buffer,
                            int image_stride,
                            SkRegion* output_region) = 0;
+
+  // Returns the "shape", if any, of the most recently rendered frame.
+  // The shape is returned in source dimensions.
+  virtual const SkRegion* GetImageShape() = 0;
 };
 
 }  // namespace remoting

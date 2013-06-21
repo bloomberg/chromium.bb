@@ -32,6 +32,7 @@ class VideoDecoderVerbatim : public VideoDecoder {
                            uint8* image_buffer,
                            int image_stride,
                            SkRegion* output_region) OVERRIDE;
+  virtual const SkRegion* GetImageShape() OVERRIDE;
 
  private:
   enum State {

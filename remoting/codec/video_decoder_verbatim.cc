@@ -203,4 +203,8 @@ void VideoDecoderVerbatim::RenderFrame(const SkISize& view_size,
   updated_region_.setEmpty();
 }
 
+const SkRegion* VideoDecoderVerbatim::GetImageShape() {
+  return NULL;
+}
+
 }  // namespace remoting

@@ -42,6 +42,9 @@ class FrameProducer {
   virtual void SetOutputSizeAndClip(const SkISize& view_size,
                                     const SkIRect& clip_area) = 0;
 
+  // Returns a reference to the shape of the most recently drawn buffer.
+  virtual const SkRegion* GetBufferShape() = 0;
+
  protected:
   virtual ~FrameProducer() {}
 

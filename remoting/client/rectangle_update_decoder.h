@@ -60,6 +60,7 @@ class RectangleUpdateDecoder
   virtual void RequestReturnBuffers(const base::Closure& done) OVERRIDE;
   virtual void SetOutputSizeAndClip(const SkISize& view_size,
                                     const SkIRect& clip_area) OVERRIDE;
+  virtual const SkRegion* GetBufferShape() OVERRIDE;
 
   // VideoStub implementation.
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> packet,

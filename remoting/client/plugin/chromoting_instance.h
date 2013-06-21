@@ -18,6 +18,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/cpp/var.h"
 #include "third_party/skia/include/core/SkPoint.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSize.h"
 
 // Windows defines 'PostMessage', so we have to undef it before we
@@ -135,6 +136,7 @@ class ChromotingInstance :
 
   // Called by PepperView.
   void SetDesktopSize(const SkISize& size, const SkIPoint& dpi);
+  void SetDesktopShape(const SkRegion& shape);
   void OnFirstFrameReceived();
 
   // Return statistics record by ChromotingClient.
@@ -232,6 +234,9 @@ class ChromotingInstance :
   scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<PepperView> view_;
   pp::View plugin_view_;
+
+  // Contains the most-recently-reported desktop shape, if any.
+  scoped_ptr<SkRegion> desktop_shape_;
 
   scoped_ptr<PepperSignalStrategy> signal_strategy_;
 

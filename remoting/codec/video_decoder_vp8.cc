@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "media/base/media.h"
 #include "media/base/yuv_convert.h"
@@ -18,6 +20,10 @@ extern "C" {
 }
 
 namespace remoting {
+
+enum { kBytesPerPixelRGB32 = 4 };
+
+const uint32 kTransparent = 0;
 
 VideoDecoderVp8::VideoDecoderVp8()
     : state_(kUninitialized),
@@ -39,6 +45,8 @@ void VideoDecoderVp8::Initialize(const SkISize& screen_size) {
 
   screen_size_ = screen_size;
   state_ = kReady;
+
+  transparent_region_.setRect(SkIRect::MakeSize(screen_size_));
 }
 
 VideoDecoder::DecodeResult VideoDecoderVp8::DecodePacket(
@@ -98,6 +106,26 @@ VideoDecoder::DecodeResult VideoDecoderVp8::DecodePacket(
   }
 
   updated_region_.op(region, SkRegion::kUnion_Op);
+
+  // Update the desktop shape region.
+  SkRegion desktop_shape_region;
+  if (packet->has_use_desktop_shape()) {
+    for (int i = 0; i < packet->desktop_shape_rects_size(); ++i) {
+      Rect remoting_rect = packet->desktop_shape_rects(i);
+      SkIRect rect = SkIRect::MakeXYWH(remoting_rect.x(),
+                                       remoting_rect.y(),
+                                       remoting_rect.width(),
+                                       remoting_rect.height());
+      desktop_shape_region.op(rect, SkRegion::kUnion_Op);
+    }
+  } else {
+    // Fallback for the case when the host didn't include the desktop shape
+    // region.
+    desktop_shape_region = SkRegion(SkIRect::MakeSize(screen_size_));
+  }
+
+  UpdateImageShapeRegion(&desktop_shape_region);
+
   return DECODE_DONE;
 }
 
@@ -119,6 +147,13 @@ void VideoDecoderVp8::Invalidate(const SkISize& view_size,
     rect = ScaleRect(rect, view_size, screen_size_);
     updated_region_.op(rect, SkRegion::kUnion_Op);
   }
+
+  // Updated areas outside of the new desktop shape region should be made
+  // transparent, not repainted.
+  SkRegion difference = updated_region_;
+  difference.op(desktop_shape_, SkRegion::kDifference_Op);
+  updated_region_.op(difference, SkRegion::kDifference_Op);
+  transparent_region_.op(difference, SkRegion::kUnion_Op);
 }
 
 void VideoDecoderVp8::RenderFrame(const SkISize& view_size,
@@ -208,6 +243,59 @@ void VideoDecoderVp8::RenderFrame(const SkISize& view_size,
 
   updated_region_.op(ScaleRect(clip_area, view_size, screen_size_),
                      SkRegion::kDifference_Op);
+
+  for (SkRegion::Iterator i(transparent_region_); !i.done(); i.next()) {
+    // Determine the scaled area affected by this rectangle changing.
+    SkIRect rect = i.rect();
+    if (!rect.intersect(source_clip))
+      continue;
+    rect = ScaleRect(rect, screen_size_, view_size);
+    if (!rect.intersect(clip_area))
+      continue;
+
+    // Fill the rectange with transparent pixels.
+    FillRect(image_buffer, image_stride, rect, kTransparent);
+    output_region->op(rect, SkRegion::kUnion_Op);
+  }
+
+  SkIRect scaled_clip_area = ScaleRect(clip_area, view_size, screen_size_);
+  updated_region_.op(scaled_clip_area, SkRegion::kDifference_Op);
+  transparent_region_.op(scaled_clip_area, SkRegion::kDifference_Op);
+}
+
+const SkRegion* VideoDecoderVp8::GetImageShape() {
+  return &desktop_shape_;
+}
+
+void VideoDecoderVp8::FillRect(uint8* buffer,
+                               int stride,
+                               const SkIRect& rect,
+                               uint32 color) {
+  uint32* ptr = reinterpret_cast<uint32*>(buffer + (rect.top() * stride) +
+      (rect.left() * kBytesPerPixelRGB32));
+  int width = rect.width();
+  for (int height = rect.height(); height > 0; --height) {
+    std::fill(ptr, ptr + width, color);
+    ptr += stride / kBytesPerPixelRGB32;
+  }
+}
+
+void VideoDecoderVp8::UpdateImageShapeRegion(SkRegion* new_desktop_shape) {
+  // Add all areas that have been updated or become transparent to the
+  // transparent region. Exclude anything within the new desktop shape.
+  transparent_region_.op(desktop_shape_, SkRegion::kUnion_Op);
+  transparent_region_.op(updated_region_, SkRegion::kUnion_Op);
+  transparent_region_.op(*new_desktop_shape, SkRegion::kDifference_Op);
+
+  // Add newly exposed areas to the update region and limit updates to the new
+  // desktop shape.
+  SkRegion difference = *new_desktop_shape;
+  difference.op(desktop_shape_, SkRegion::kDifference_Op);
+  updated_region_.op(difference, SkRegion::kUnion_Op);
+  updated_region_.op(*new_desktop_shape, SkRegion::kIntersect_Op);
+
+  // Set the new desktop shape region.
+  desktop_shape_.swap(*new_desktop_shape);
 }
 
 }  // namespace remoting

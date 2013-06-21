@@ -147,7 +147,7 @@ const char ChromotingInstance::kApiFeatures[] =
     "asyncPin thirdPartyAuth pinlessAuth";
 
 const char ChromotingInstance::kRequestedCapabilities[] = "";
-const char ChromotingInstance::kSupportedCapabilities[] = "";
+const char ChromotingInstance::kSupportedCapabilities[] = "desktopShape";
 
 bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
                                           ClientConfig* config) {
@@ -467,6 +467,28 @@ void ChromotingInstance::SetDesktopSize(const SkISize& size,
   if (dpi.y())
     data->SetInteger("y_dpi", dpi.y());
   PostChromotingMessage("onDesktopSize", data.Pass());
+}
+
+void ChromotingInstance::SetDesktopShape(const SkRegion& shape) {
+  if (desktop_shape_ && shape == *desktop_shape_)
+    return;
+
+  desktop_shape_.reset(new SkRegion(shape));
+
+  scoped_ptr<base::ListValue> rects_value(new base::ListValue());
+  for (SkRegion::Iterator i(shape); !i.done(); i.next()) {
+    SkIRect rect = i.rect();
+    scoped_ptr<base::ListValue> rect_value(new base::ListValue());
+    rect_value->AppendInteger(rect.x());
+    rect_value->AppendInteger(rect.y());
+    rect_value->AppendInteger(rect.width());
+    rect_value->AppendInteger(rect.height());
+    rects_value->Append(rect_value.release());
+  }
+
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->Set("rects", rects_value.release());
+  PostChromotingMessage("onDesktopShape", data.Pass());
 }
 
 void ChromotingInstance::OnConnectionState(

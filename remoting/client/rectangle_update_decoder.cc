@@ -222,6 +222,10 @@ void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
   }
 }
 
+const SkRegion* RectangleUpdateDecoder::GetBufferShape() {
+  return decoder_->GetImageShape();
+}
+
 void RectangleUpdateDecoder::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                 const base::Closure& done) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
