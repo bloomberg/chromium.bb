@@ -47,15 +47,12 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/component_strings.h"
-#include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
@@ -240,13 +237,6 @@ void AutofillManager::RegisterUserPrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-void AutofillManager::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (details.is_navigation_to_different_page())
-    Reset();
-}
-
 void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
   // TODO(jrg): consider passing delegate into the ctor.  That won't
   // work if the delegate has a pointer to the AutofillManager, but
@@ -257,49 +247,6 @@ void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
 
 bool AutofillManager::IsNativeUiEnabled() {
   return external_delegate_ != NULL;
-}
-
-bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AutofillManager, message)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_FormsSeen, OnFormsSeen)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_FormSubmitted, OnFormSubmitted)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_TextFieldDidChange,
-                        OnTextFieldDidChange)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_QueryFormFieldAutofill,
-                        OnQueryFormFieldAutofill)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowAutofillDialog,
-                        OnShowAutofillDialog)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_FillAutofillFormData,
-                        OnFillAutofillFormData)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_DidPreviewAutofillFormData,
-                        OnDidPreviewAutofillFormData)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_DidFillAutofillFormData,
-                        OnDidFillAutofillFormData)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_DidShowAutofillSuggestions,
-                        OnDidShowAutofillSuggestions)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_DidEndTextFieldEditing,
-                        OnDidEndTextFieldEditing)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_HideAutofillUi,
-                        OnHideAutofillUi)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_AddPasswordFormMapping,
-                        OnAddPasswordFormMapping)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordSuggestions,
-                        OnShowPasswordSuggestions)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_SetDataList,
-                        OnSetDataList)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_RequestAutocomplete,
-                        OnRequestAutocomplete)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_ClickFailed,
-                        OnClickFailed)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_MaybeShowAutocheckoutBubble,
-                        OnMaybeShowAutocheckoutBubble)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_RemoveAutocompleteEntry,
-                        RemoveAutocompleteEntry)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
 }
 
 bool AutofillManager::OnFormSubmitted(const FormData& form,

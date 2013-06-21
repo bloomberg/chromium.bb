@@ -7,7 +7,11 @@
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
+#include "components/autofill/core/common/autofill_messages.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/frame_navigate_params.h"
+#include "ipc/ipc_message_macros.h"
 
 namespace autofill {
 
@@ -69,15 +73,65 @@ content::WebContents* AutofillDriverImpl::GetWebContents() {
 }
 
 bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
-  // TODO(blundell): Move IPC handling into this class.
-  return autofill_manager_.OnMessageReceived(message);
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(AutofillDriverImpl, message)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_FormsSeen, &autofill_manager_,
+                        AutofillManager::OnFormsSeen)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_FormSubmitted, &autofill_manager_,
+                        AutofillManager::OnFormSubmitted)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_TextFieldDidChange, &autofill_manager_,
+                        AutofillManager::OnTextFieldDidChange)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_QueryFormFieldAutofill,
+                        &autofill_manager_,
+                        AutofillManager::OnQueryFormFieldAutofill)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowAutofillDialog, &autofill_manager_,
+                        AutofillManager::OnShowAutofillDialog)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_FillAutofillFormData,
+                        &autofill_manager_,
+                        AutofillManager::OnFillAutofillFormData)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_DidPreviewAutofillFormData,
+                        &autofill_manager_,
+                        AutofillManager::OnDidPreviewAutofillFormData)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_DidFillAutofillFormData,
+                        &autofill_manager_,
+                        AutofillManager::OnDidFillAutofillFormData)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_DidShowAutofillSuggestions,
+                        &autofill_manager_,
+                        AutofillManager::OnDidShowAutofillSuggestions)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_DidEndTextFieldEditing,
+                        &autofill_manager_,
+                        AutofillManager::OnDidEndTextFieldEditing)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_HideAutofillUi, &autofill_manager_,
+                        AutofillManager::OnHideAutofillUi)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_AddPasswordFormMapping,
+                        &autofill_manager_,
+                        AutofillManager::OnAddPasswordFormMapping)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowPasswordSuggestions,
+                        &autofill_manager_,
+                        AutofillManager::OnShowPasswordSuggestions)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_SetDataList, &autofill_manager_,
+                        AutofillManager::OnSetDataList)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_RequestAutocomplete,
+                        &autofill_manager_,
+                        AutofillManager::OnRequestAutocomplete)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_ClickFailed, &autofill_manager_,
+                        AutofillManager::OnClickFailed)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_MaybeShowAutocheckoutBubble,
+                        &autofill_manager_,
+                        AutofillManager::OnMaybeShowAutocheckoutBubble)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_RemoveAutocompleteEntry,
+                        &autofill_manager_,
+                        AutofillManager::RemoveAutocompleteEntry)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void AutofillDriverImpl::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  // TODO(blundell): Move the logic of this method into this class.
-  autofill_manager_.DidNavigateMainFrame(details, params);
+  if (details.is_navigation_to_different_page())
+    autofill_manager_.Reset();
 }
 
 void AutofillDriverImpl::SetAutofillExternalDelegate(

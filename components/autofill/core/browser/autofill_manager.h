@@ -37,17 +37,11 @@ class GURL;
 namespace content {
 class RenderViewHost;
 class WebContents;
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
 }
 
 namespace gfx {
 class Rect;
 class RectF;
-}
-
-namespace IPC {
-class Message;
 }
 
 namespace user_prefs {
@@ -140,12 +134,57 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Only for testing.
   void SetTestDelegate(autofill::AutofillManagerTestDelegate* delegate);
 
-  // TODO(blundell): Move the logic in these methods into AutofillDriver and
-  // eliminate these methods.
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params);
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  void OnFormsSeen(const std::vector<FormData>& forms,
+                   const base::TimeTicks& timestamp,
+                   autofill::FormsSeenState state);
+
+  // Processes the submitted |form|, saving any new Autofill data and uploading
+  // the possible field types for the submitted fields to the crowdsouring
+  // server.  Returns false if this form is not relevant for Autofill.
+  bool OnFormSubmitted(const FormData& form,
+                       const base::TimeTicks& timestamp);
+
+  void OnTextFieldDidChange(const FormData& form,
+                            const FormFieldData& field,
+                            const base::TimeTicks& timestamp);
+
+  // The |bounding_box| is a window relative value.
+  void OnQueryFormFieldAutofill(int query_id,
+                                const FormData& form,
+                                const FormFieldData& field,
+                                const gfx::RectF& bounding_box,
+                                bool display_warning);
+  void OnDidEndTextFieldEditing();
+  void OnHideAutofillUi();
+  void OnAddPasswordFormMapping(
+      const FormFieldData& form,
+      const PasswordFormFillData& fill_data);
+  void OnShowPasswordSuggestions(
+      const FormFieldData& field,
+      const gfx::RectF& bounds,
+      const std::vector<base::string16>& suggestions);
+  void OnSetDataList(const std::vector<base::string16>& values,
+                     const std::vector<base::string16>& labels,
+                     const std::vector<base::string16>& icons,
+                     const std::vector<int>& unique_ids);
+
+  // Requests an interactive autocomplete UI be shown.
+  void OnRequestAutocomplete(const FormData& form,
+                             const GURL& frame_url);
+
+  // Called to signal clicking an element failed in some way during an
+  // Autocheckout flow.
+  void OnClickFailed(autofill::AutocheckoutStatus status);
+
+  // Shows the Autocheckout bubble if conditions are right. See comments for
+  // AutocheckoutManager::MaybeShowAutocheckoutBubble. Input element requesting
+  // bubble belongs to |form|. |bounding_box| is the bounding box of the input
+  // field in focus.
+  virtual void OnMaybeShowAutocheckoutBubble(const FormData& form,
+                                             const gfx::RectF& bounding_box);
+
+  // Resets cache.
+  void Reset();
 
  protected:
   // Test code should prefer to use this constructor.
@@ -159,9 +198,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Uploads the form data to the Autofill server.
   virtual void UploadFormData(const FormStructure& submitted_form);
 
-  // Reset cache.
-  void Reset();
-
   // Logs quality metrics for the |submitted_form| and uploads the form data
   // to the crowdsourcing server, if appropriate.
   virtual void UploadFormDataAsyncCallback(
@@ -169,13 +205,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
       const base::TimeTicks& load_time,
       const base::TimeTicks& interaction_time,
       const base::TimeTicks& submission_time);
-
-  // Shows the Autocheckout bubble if conditions are right. See comments for
-  // AutocheckoutManager::MaybeShowAutocheckoutBubble. Input element requesting
-  // bubble belongs to |form|. |bounding_box| is the bounding box of the input
-  // field in focus.
-  virtual void OnMaybeShowAutocheckoutBubble(const FormData& form,
-                                             const gfx::RectF& bounding_box);
 
   // Maps GUIDs to and from IDs that are used to identify profiles and credit
   // cards sent to and from the renderer process.
@@ -205,12 +234,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
     return &autocheckout_manager_;
   }
 
-  // Processes the submitted |form|, saving any new Autofill data and uploading
-  // the possible field types for the submitted fields to the crowdsouring
-  // server.  Returns false if this form is not relevant for Autofill.
-  bool OnFormSubmitted(const FormData& form,
-                       const base::TimeTicks& timestamp);
-
   // Tell the renderer the current interactive autocomplete finished.
   virtual void ReturnAutocompleteResult(
       WebKit::WebFormElement::AutocompleteResult result,
@@ -222,44 +245,9 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   virtual void OnLoadedServerPredictions(
       const std::string& response_xml) OVERRIDE;
 
-  void OnFormsSeen(const std::vector<FormData>& forms,
-                   const base::TimeTicks& timestamp,
-                   autofill::FormsSeenState state);
-  void OnTextFieldDidChange(const FormData& form,
-                            const FormFieldData& field,
-                            const base::TimeTicks& timestamp);
-
-  // The |bounding_box| is a window relative value.
-  void OnQueryFormFieldAutofill(int query_id,
-                                const FormData& form,
-                                const FormFieldData& field,
-                                const gfx::RectF& bounding_box,
-                                bool display_warning);
-  void OnDidEndTextFieldEditing();
-  void OnHideAutofillUi();
-  void OnAddPasswordFormMapping(
-      const FormFieldData& form,
-      const PasswordFormFillData& fill_data);
-  void OnShowPasswordSuggestions(
-      const FormFieldData& field,
-      const gfx::RectF& bounds,
-      const std::vector<base::string16>& suggestions);
-  void OnSetDataList(const std::vector<base::string16>& values,
-                     const std::vector<base::string16>& labels,
-                     const std::vector<base::string16>& icons,
-                     const std::vector<int>& unique_ids);
-
-  // Requests an interactive autocomplete UI be shown.
-  void OnRequestAutocomplete(const FormData& form,
-                             const GURL& frame_url);
-
   // Passes return data for an OnRequestAutocomplete call back to the page.
   void ReturnAutocompleteData(const FormStructure* result,
                               const std::string& unused_transaction_id);
-
-  // Called to signal clicking an element failed in some way during an
-  // Autocheckout flow.
-  void OnClickFailed(autofill::AutocheckoutStatus status);
 
   // Returns the matched whitelist URL prefix for the current tab's url.
   virtual std::string GetAutocheckoutURLPrefix() const;
