@@ -32,7 +32,6 @@
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/notification_details.h"
@@ -1570,19 +1569,6 @@ void ContentViewCoreImpl::SetUseDesktopUserAgent(
     NavigationControllerImpl& controller =
         static_cast<NavigationControllerImpl&>(web_contents_->GetController());
     controller.ReloadOriginalRequestURL(false);
-  }
-}
-
-void ContentViewCoreImpl::SetAccessibilityEnabled(JNIEnv* env, jobject obj,
-                                                  bool enabled) {
-  RenderWidgetHostImpl* host_impl = RenderWidgetHostImpl::From(
-      GetRenderWidgetHostViewAndroid()->GetRenderWidgetHost());
-  if (enabled) {
-    BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-    host_impl->SetAccessibilityMode(AccessibilityModeComplete);
-  } else {
-    BrowserAccessibilityState::GetInstance()->DisableAccessibility();
-    host_impl->SetAccessibilityMode(AccessibilityModeOff);
   }
 }
 

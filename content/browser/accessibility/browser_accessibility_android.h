@@ -16,48 +16,71 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
   virtual void PostInitialize() OVERRIDE;
   virtual bool IsNative() const OVERRIDE;
 
-  bool IsLeaf() const;
+  // --------------------------------------------------------------------------
+  // Methods called from Java via JNI
+  // --------------------------------------------------------------------------
 
-  bool IsCheckable() const;
-  bool IsChecked() const;
-  bool IsClickable() const;
-  bool IsEnabled() const;
-  bool IsFocusable() const;
-  bool IsFocused() const;
-  bool IsPassword() const;
-  bool IsScrollable() const;
-  bool IsSelected() const;
-  bool IsVisibleToUser() const;
+  // Actions
+  void FocusJNI(JNIEnv* env, jobject obj);
+  void ClickJNI(JNIEnv* env, jobject obj);
 
-  const char* GetClassName() const;
-  string16 GetText() const;
-
-  int GetItemIndex() const;
-  int GetItemCount() const;
-
-  int GetScrollX() const;
-  int GetScrollY() const;
-  int GetMaxScrollX() const;
-  int GetMaxScrollY() const;
-
-  int GetTextChangeFromIndex() const;
-  int GetTextChangeAddedCount() const;
-  int GetTextChangeRemovedCount() const;
-  string16 GetTextChangeBeforeText() const;
-
-  int GetSelectionStart() const;
-  int GetSelectionEnd() const;
-  int GetEditableTextLength() const;
+  // Const accessors
+  jboolean GetClickableJNI(JNIEnv* env, jobject obj) const;
+  jboolean IsFocusedJNI(JNIEnv* env, jobject obj) const;
+  jboolean IsEditableTextJNI(JNIEnv* env, jobject obj) const;
+  base::android::ScopedJavaLocalRef<jstring> GetNameJNI(
+      JNIEnv* env, jobject obj) const;
+  base::android::ScopedJavaLocalRef<jobject> GetAbsoluteRectJNI(
+      JNIEnv* env, jobject obj) const;
+  base::android::ScopedJavaLocalRef<jobject> GetRectInParentJNI(
+      JNIEnv* env, jobject obj) const;
+  jboolean IsFocusableJNI(JNIEnv* env, jobject obj) const;
+  jint GetParentJNI(JNIEnv* env, jobject obj) const;
+  jint GetChildCountJNI(JNIEnv* env, jobject obj) const;
+  jint GetChildIdAtJNI(
+      JNIEnv* env, jobject obj, jint child_index) const;
+  jboolean IsCheckableJNI(JNIEnv* env, jobject obj) const;
+  jboolean IsCheckedJNI(JNIEnv* env, jobject obj) const;
+  base::android::ScopedJavaLocalRef<jstring> GetClassNameJNI(
+      JNIEnv* env, jobject obj) const;
+  jboolean IsEnabledJNI(JNIEnv* env, jobject obj) const;
+  jboolean IsPasswordJNI(JNIEnv* env, jobject obj) const;
+  jboolean IsScrollableJNI(JNIEnv* env, jobject obj) const;
+  jboolean IsSelectedJNI(JNIEnv* env, jobject obj) const;
+  jboolean IsVisibleJNI(JNIEnv* env, jobject obj) const;
+  jint GetItemIndexJNI(JNIEnv* env, jobject obj) const;
+  jint GetItemCountJNI(JNIEnv* env, jobject obj) const;
+  jint GetScrollXJNI(JNIEnv* env, jobject obj) const;
+  jint GetScrollYJNI(JNIEnv* env, jobject obj) const;
+  jint GetMaxScrollXJNI(JNIEnv* env, jobject obj) const;
+  jint GetMaxScrollYJNI(JNIEnv* env, jobject obj) const;
+  base::android::ScopedJavaLocalRef<jstring> GetAriaLiveJNI(
+      JNIEnv* env, jobject obj) const;
+  jint GetSelectionStartJNI(JNIEnv* env, jobject obj) const;
+  jint GetSelectionEndJNI(JNIEnv* env, jobject obj) const;
+  jint GetEditableTextLengthJNI(JNIEnv* env, jobject obj) const;
+  jint GetTextChangeFromIndexJNI(JNIEnv* env, jobject obj) const;
+  jint GetTextChangeAddedCountJNI(JNIEnv* env, jobject obj) const;
+  jint GetTextChangeRemovedCountJNI(JNIEnv* env, jobject obj) const;
+  base::android::ScopedJavaLocalRef<jstring> GetTextChangeBeforeTextJNI(
+      JNIEnv* env, jobject obj) const;
 
  private:
   // This gives BrowserAccessibility::Create access to the class constructor.
   friend class BrowserAccessibility;
 
+  // Allow BrowserAccessibilityManagerAndroid to call these private methods.
+  friend class BrowserAccessibilityManagerAndroid;
+
   BrowserAccessibilityAndroid();
 
+  string16 ComputeName() const;
+  string16 GetAriaLive() const;
+  bool IsFocusable() const;
   bool HasFocusableChild() const;
   bool HasOnlyStaticTextChildren() const;
   bool IsIframe() const;
+  bool IsLeaf() const;
 
   void NotifyLiveRegionUpdate(string16& aria_live);
 
@@ -68,6 +91,8 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityAndroid);
 };
+
+bool RegisterBrowserAccessibility(JNIEnv* env);
 
 }  // namespace content
 

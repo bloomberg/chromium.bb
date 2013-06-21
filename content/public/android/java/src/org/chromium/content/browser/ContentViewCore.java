@@ -9,18 +9,14 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import android.provider.Settings;
-import android.provider.Settings.Secure;
 import android.text.Editable;
 import android.util.Log;
 import android.util.Pair;
@@ -34,10 +30,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityManager;
-import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
@@ -51,7 +44,6 @@ import org.chromium.base.WeakContext;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
-import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
 import org.chromium.content.browser.input.AdapterInputConnection;
 import org.chromium.content.browser.input.HandleView;
 import org.chromium.content.browser.input.ImeAdapter;
@@ -66,8 +58,6 @@ import org.chromium.ui.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -78,9 +68,7 @@ import java.util.Map;
  * being tied to the view system.
  */
 @JNINamespace("content")
-    public class ContentViewCore implements MotionEventDelegate,
-                                            NavigationClient,
-                                            AccessibilityStateChangeListener {
+public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     /**
      * Indicates that input events are batched together and delivered just before vsync.
      */
@@ -360,12 +348,6 @@ import java.util.Map;
     // The AccessibilityInjector that handles loading Accessibility scripts into the web page.
     private AccessibilityInjector mAccessibilityInjector;
 
-    // Handles native accessibility, i.e. without any script injection.
-    private BrowserAccessibilityManager mBrowserAccessibilityManager;
-
-    // System accessibility service.
-    private final AccessibilityManager mAccessibilityManager;
-
     // Temporary notification to tell onSizeChanged to focus a form element,
     // because the OSK was just brought up.
     private boolean mUnfocusOnNextSizeChanged = false;
@@ -387,7 +369,6 @@ import java.util.Map;
 
     private ViewAndroid mViewAndroid;
 
-
     /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
      * a ContentViewCore and before using it.
@@ -407,8 +388,6 @@ import java.util.Map;
         mStartHandlePoint = mRenderCoordinates.createNormalizedPoint();
         mEndHandlePoint = mRenderCoordinates.createNormalizedPoint();
         mInsertionHandlePoint = mRenderCoordinates.createNormalizedPoint();
-        mAccessibilityManager = (AccessibilityManager)
-                getContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
     }
 
     /**
@@ -654,24 +633,8 @@ import java.util.Map;
         mContentSettings = new ContentSettings(this, mNativeContentViewCore);
         initializeContainerView(internalDispatcher, inputEventDeliveryMode);
 
-        try {
-            Field field = Settings.Secure.class.getField("ACCESSIBILITY_SCRIPT_INJECTION");
-            field.setAccessible(true);
-            String accessibilityScriptInjection = (String) field.get(null);
-            getContext().getContentResolver().registerContentObserver(
-                Settings.Secure.getUriFor(accessibilityScriptInjection),
-                false,
-                new ContentObserver(new Handler()) {
-                    public void onChange(boolean selfChange, Uri uri) {
-                        setAccessibilityState(mAccessibilityManager.isEnabled());
-                    }
-                });
-        } catch (Exception e) {
-            Log.e("chromium", "Could not add listener for script injection preference. " +
-                      "Defaulting to native accessibility.\n" + e.toString());
-        }
-
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
+        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
 
         String contentDescription = "Web View";
         if (R.string.accessibility_content_view == 0) {
@@ -1325,6 +1288,7 @@ import java.util.Map;
         TraceEvent.begin();
         hidePopupDialog();
         nativeOnHide(mNativeContentViewCore);
+        setAccessibilityState(false);
         TraceEvent.end();
     }
 
@@ -1333,7 +1297,7 @@ import java.util.Map;
      */
     public void onActivityResume() {
         nativeOnShow(mNativeContentViewCore);
-        setAccessibilityState(mAccessibilityManager.isEnabled());
+        setAccessibilityState(true);
     }
 
     /**
@@ -1341,7 +1305,7 @@ import java.util.Map;
      */
     public void onShow() {
         nativeOnShow(mNativeContentViewCore);
-        setAccessibilityState(mAccessibilityManager.isEnabled());
+        setAccessibilityState(true);
     }
 
     /**
@@ -1349,7 +1313,7 @@ import java.util.Map;
      */
     public void onHide() {
         hidePopupDialog();
-        setInjectedAccessibility(false);
+        setAccessibilityState(false);
         nativeOnHide(mNativeContentViewCore);
     }
 
@@ -1402,7 +1366,7 @@ import java.util.Map;
                 ChildProcessLauncher.bindAsHighPriority(pid);
             }
         }
-        setAccessibilityState(mAccessibilityManager.isEnabled());
+        setAccessibilityState(true);
     }
 
     /**
@@ -1417,7 +1381,7 @@ import java.util.Map;
                 ChildProcessLauncher.unbindAsHighPriority(pid);
             }
         }
-        setInjectedAccessibility(false);
+        setAccessibilityState(false);
         hidePopupDialog();
         mZoomControlsDelegate.dismissZoomPicker();
     }
@@ -1679,23 +1643,6 @@ import java.util.Map;
             }
         }
         return mContainerViewInternals.super_onGenericMotionEvent(event);
-    }
-
-    /**
-     * Any View that uses ContentViewCore should call override dispatchHoverEvent
-     * and call this method first so that all hover events can be intercepted and
-     * used for touch exploration if accessibility is on, and then only call the
-     * inherited method if this returns false.
-     *
-     * @see View#dispatchHoverEvent(MotionEvent)
-     */
-    public boolean dispatchHoverEvent(MotionEvent event) {
-        if (mBrowserAccessibilityManager != null) {
-            return mBrowserAccessibilityManager.dispatchHoverEvent(event);
-        } else {
-            // The client view should call super.dispatchHoverEvent.
-            return false;
-        }
     }
 
     /**
@@ -2224,9 +2171,6 @@ import java.util.Map;
                 controlsOffsetPix, contentOffsetYPix, overdrawBottomHeightPix);
 
         mPendingRendererFrame = true;
-        if (mBrowserAccessibilityManager != null) {
-            mBrowserAccessibilityManager.notifyFrameInfoInitialized();
-        }
     }
 
     @SuppressWarnings("unused")
@@ -2609,11 +2553,6 @@ import java.util.Map;
         getContentViewClient().onStartContentIntent(getContext(), contentUrl);
     }
 
-    @Override
-    public void onAccessibilityStateChanged(boolean enabled) {
-        setAccessibilityState(enabled);
-    }
-
     /**
      * Determines whether or not this ContentViewCore can handle this accessibility action.
      * @param action The action to perform.
@@ -2642,39 +2581,9 @@ import java.util.Map;
     }
 
     /**
-     * Set the BrowserAccessibilityManager, used for native accessibility
-     * (not script injection). This is only set when system accessibility
-     * has been enabled.
-     * @param manager The new BrowserAccessibilityManager.
-     */
-    public void setBrowserAccessibilityManager(BrowserAccessibilityManager manager) {
-        mBrowserAccessibilityManager = manager;
-    }
-
-    /**
-     * Get the BrowserAccessibilityManager, used for native accessibility
-     * (not script injection). This will return null when system accessibility
-     * is not enabled.
-     * @return This view's BrowserAccessibilityManager.
-     */
-    public BrowserAccessibilityManager getBrowserAccessibilityManager() {
-        return mBrowserAccessibilityManager;
-    }
-
-    /**
-     * @see View#getAccessibilityNodeProvider(View host)
-     */
-    public AccessibilityNodeProvider getAccessibilityNodeProvider() {
-        // Note: this is only used for native accessibility, i.e. without
-        // script injection.
-        return mBrowserAccessibilityManager;
-    }
-
-    /**
      * @see View#onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo)
      */
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
-        // Note: this is only used by the script-injecting accessibility code.
         mAccessibilityInjector.onInitializeAccessibilityNodeInfo(info);
     }
 
@@ -2682,7 +2591,6 @@ import java.util.Map;
      * @see View#onInitializeAccessibilityEvent(AccessibilityEvent)
      */
     public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
-        // Note: this is only used by the script-injecting accessibility code.
         event.setClassName(this.getClass().getName());
 
         // Identify where the top-left of the screen currently points to.
@@ -2704,35 +2612,6 @@ import java.util.Map;
     }
 
     /**
-     * Returns whether accessibility script injection is enabled on the device
-     */
-    public boolean isDeviceAccessibilityScriptInjectionEnabled() {
-        try {
-            if (!mContentSettings.getJavaScriptEnabled()) {
-                return false;
-            }
-
-            int result = getContext().checkCallingOrSelfPermission(
-                    android.Manifest.permission.INTERNET);
-            if (result != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-
-            Field field = Settings.Secure.class.getField("ACCESSIBILITY_SCRIPT_INJECTION");
-            field.setAccessible(true);
-            String accessibilityScriptInjection = (String) field.get(null);
-
-            boolean onDeviceScriptInjectionEnabled =
-                    Settings.Secure.getInt(getContext().getContentResolver(),
-                            accessibilityScriptInjection, 0) == 1;
-            return onDeviceScriptInjectionEnabled;
-        } catch (NoSuchFieldException e) {
-        } catch (IllegalAccessException e) {
-        }
-        return false;
-    }
-
-    /**
      * Returns whether or not accessibility injection is being used.
      */
     public boolean isInjectingAccessibilityScript() {
@@ -2740,38 +2619,10 @@ import java.util.Map;
     }
 
     /**
-     * Turns browser accessibility on or off.
-     * If |state| is |false|, this turns off both native and injected accessibility.
-     * Otherwise, if accessibility script injection is enabled, this will enable the injected
-     * accessibility scripts, and if it is disabled this will enable the native accessibility.
+     * Enable or disable accessibility features.
      */
     public void setAccessibilityState(boolean state) {
-        boolean injectedAccessibility = false;
-        boolean nativeAccessibility = false;
-        if (state) {
-            if (isDeviceAccessibilityScriptInjectionEnabled()) {
-                injectedAccessibility = true;
-            } else {
-                nativeAccessibility = true;
-            }
-        }
-        setInjectedAccessibility(injectedAccessibility);
-        setNativeAccessibilityState(nativeAccessibility);
-    }
-
-    /**
-     * Enable or disable native accessibility features.
-     */
-    public void setNativeAccessibilityState(boolean enabled) {
-        nativeSetAccessibilityEnabled(mNativeContentViewCore, enabled);
-    }
-
-    /**
-     * Enable or disable injected accessibility features
-     */
-    public void setInjectedAccessibility(boolean enabled) {
-        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        mAccessibilityInjector.setScriptEnabled(enabled);
+        mAccessibilityInjector.setScriptEnabled(state);
     }
 
     /**
@@ -3104,7 +2955,4 @@ import java.util.Map;
 
     private native void nativeDetachExternalVideoSurface(
             int nativeContentViewCoreImpl, int playerId);
-
-    private native void nativeSetAccessibilityEnabled(
-            int nativeContentViewCoreImpl, boolean enabled);
 }

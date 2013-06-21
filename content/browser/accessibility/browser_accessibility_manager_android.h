@@ -41,16 +41,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   jint GetRootId(JNIEnv* env, jobject obj);
   jint HitTest(JNIEnv* env, jobject obj, jint x, jint y);
 
-  // Populate Java accessibility data structures with info about a node.
-  jboolean PopulateAccessibilityNodeInfo(
-      JNIEnv* env, jobject obj, jobject info, jint id);
-  jboolean PopulateAccessibilityEvent(
-      JNIEnv* env, jobject obj, jobject event, jint id, jint event_type);
-
-  // Perform actions.
-  void Click(JNIEnv* env, jobject obj, jint id);
-  void Focus(JNIEnv* env, jobject obj, jint id);
-  void Blur(JNIEnv* env, jobject obj);
+  // Gets a temporary pointer to a specific node, only valid in this scope.
+  // May return 0 if that node id is no longer valid.
+  jint GetNativeNodeById(JNIEnv* env, jobject obj, jint id);
 
  protected:
   virtual void NotifyRootChanged() OVERRIDE;
