@@ -12,28 +12,24 @@ import shutil
 import subprocess
 import sys
 
-
-GCLIENT_SPEC = """
-solutions = [
+GCLIENT_SPEC_DATA = [
   { "name"        : "src",
     "url"         : "https://chromium.googlesource.com/chromium/src.git",
     "deps_file"   : ".DEPS.git",
     "managed"     : True,
     "custom_deps" : {
-      "src/data/page_cycler": "https://chrome-internal.googlesource.com/" +
+      "src/data/page_cycler": "https://chrome-internal.googlesource.com/"
                               "chrome/data/page_cycler/.git",
-      "src/data/dom_perf": "https://chrome-internal.googlesource.com/" +
+      "src/data/dom_perf": "https://chrome-internal.googlesource.com/"
                            "chrome/data/dom_perf/.git",
-      "src/tools/perf/data": "https://chrome-internal.googlesource.com/" +
+      "src/tools/perf/data": "https://chrome-internal.googlesource.com/"
                              "chrome/tools/perf/data/.git",
-      "src/v8_bleeding_edge": "git://github.com/v8/v8.git",
     },
     "safesync_url": "",
   },
 ]
-"""
-GCLIENT_SPEC = ''.join([l for l in GCLIENT_SPEC.splitlines()])
-GCLIENT_SPEC_ANDROID = GCLIENT_SPEC + "\ntarget_os = ['android']"
+GCLIENT_ANDROID = "\ntarget_os = ['android']"
+GCLIENT_CUSTOM_DEPS_V8 = {"src/v8_bleeding_edge": "git://github.com/v8/v8.git"}
 FILE_DEPS_GIT = '.DEPS.git'
 
 REPO_PARAMS = [
@@ -86,11 +82,12 @@ def CreateAndChangeToSourceDirectory(working_directory):
   return True
 
 
-def SubprocessCall(cmd):
+def SubprocessCall(cmd, cwd=None):
   """Runs a subprocess with specified parameters.
 
   Args:
     params: A list of parameters to pass to gclient.
+    cwd: Working directory to run from.
 
   Returns:
     The return code of the call.
@@ -101,21 +98,22 @@ def SubprocessCall(cmd):
     if not os.getenv('HOME'):
       os.environ['HOME'] = os.environ['USERPROFILE']
   shell = os.name == 'nt'
-  return subprocess.call(cmd, shell=shell)
+  return subprocess.call(cmd, shell=shell, cwd=cwd)
 
 
-def RunGClient(params):
+def RunGClient(params, cwd=None):
   """Runs gclient with the specified parameters.
 
   Args:
     params: A list of parameters to pass to gclient.
+    cwd: Working directory to run from.
 
   Returns:
     The return code of the call.
   """
   cmd = ['gclient'] + params
 
-  return SubprocessCall(cmd)
+  return SubprocessCall(cmd, cwd=cwd)
 
 
 def RunRepo(params):
@@ -146,21 +144,32 @@ def RunRepoSyncAtTimestamp(timestamp):
   return RunRepo(cmd)
 
 
-def RunGClientAndCreateConfig(opts):
+def RunGClientAndCreateConfig(opts, custom_deps=None, cwd=None):
   """Runs gclient and creates a config containing both src and src-internal.
 
   Args:
     opts: The options parsed from the command line through parse_args().
+    custom_deps: A dictionary of additional dependencies to add to .gclient.
+    cwd: Working directory to run from.
 
   Returns:
     The return code of the call.
   """
-  spec = GCLIENT_SPEC
+  spec = GCLIENT_SPEC_DATA
+
+  if custom_deps:
+    for k, v in custom_deps.iteritems():
+      spec[0]['custom_deps'][k] = v
+
+  # Cannot have newlines in string on windows
+  spec = 'solutions =' + str(spec)
+  spec = ''.join([l for l in spec.splitlines()])
+
   if opts.target_platform == 'android':
-    spec = GCLIENT_SPEC_ANDROID
+    spec += GCLIENT_SPEC_ANDROID
 
   return_code = RunGClient(
-      ['config', '--spec=%s' % spec, '--git-deps'])
+      ['config', '--spec=%s' % spec, '--git-deps'], cwd=cwd)
   return return_code
 
 
@@ -192,11 +201,12 @@ def RemoveThirdPartyWebkitDirectory():
   return True
 
 
-def RunGClientAndSync(reset):
+def RunGClientAndSync(reset, cwd=None):
   """Runs gclient and does a normal sync.
 
   Args:
     reset: Whether to reset any changes to the depot.
+    cwd: Working directory to run from.
 
   Returns:
     The return code of the call.
@@ -204,7 +214,7 @@ def RunGClientAndSync(reset):
   params = ['sync', '--verbose', '--nohooks']
   if reset:
     params.extend(['--reset', '--force', '--delete_unversioned_trees'])
-  return RunGClient(params)
+  return RunGClient(params, cwd=cwd)
 
 
 def SetupGitDepot(opts, reset):

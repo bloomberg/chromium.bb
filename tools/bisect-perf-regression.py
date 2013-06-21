@@ -80,7 +80,8 @@ DEPOT_DEPS_NAME = {
     "recurse" : True,
     "depends" : None,
     "build_with": 'v8_bleeding_edge',
-    "from" : 'chromium'
+    "from" : 'chromium',
+    "custom_deps": bisect_utils.GCLIENT_CUSTOM_DEPS_V8
   },
   'v8_bleeding_edge' : {
     "src" : "src/v8_bleeding_edge",
@@ -1326,7 +1327,9 @@ class BisectPerformanceMetrics(object):
   def PrepareToBisectOnDepot(self,
                              current_depot,
                              end_revision,
-                             start_revision):
+                             start_revision,
+                             previous_depot,
+                             previous_revision):
     """Changes to the appropriate directory and gathers a list of revisions
     to bisect between |start_revision| and |end_revision|.
 
@@ -1334,6 +1337,8 @@ class BisectPerformanceMetrics(object):
       current_depot: The depot we want to bisect.
       end_revision: End of the revision range.
       start_revision: Start of the revision range.
+      previous_depot: The depot we were previously bisecting.
+      previous_revision: The last revision we synced to on |previous_depot|.
 
     Returns:
       A list containing the revisions between |start_revision| and
@@ -1347,6 +1352,16 @@ class BisectPerformanceMetrics(object):
     # V8 (and possibly others) is merged in periodically. Bisecting
     # this directory directly won't give much good info.
     if DEPOT_DEPS_NAME[current_depot].has_key('build_with'):
+      if (DEPOT_DEPS_NAME[current_depot].has_key('custom_deps') and
+          previous_depot == 'chromium'):
+        config_path = os.path.join(self.src_cwd, '..')
+        if bisect_utils.RunGClientAndCreateConfig(self.opts,
+            DEPOT_DEPS_NAME[current_depot]['custom_deps'], cwd=config_path):
+          return []
+        if bisect_utils.RunGClient(
+            ['sync', '--revision', previous_revision], cwd=self.src_cwd):
+          return []
+
       new_depot = DEPOT_DEPS_NAME[current_depot]['build_with']
 
       svn_start_revision = self.source_control.SVNFindRev(start_revision)
@@ -1651,6 +1666,8 @@ class BisectPerformanceMetrics(object):
       good_revision_data['passed'] = 1
       good_revision_data['value'] = known_good_value
 
+      next_revision_depot = target_depot
+
       while True:
         if not revision_list:
           break
@@ -1676,7 +1693,6 @@ class BisectPerformanceMetrics(object):
                 if min_revision_data['external'][current_depot] !=\
                    max_revision_data['external'][current_depot]:
                   external_depot = current_depot
-
                   break
 
             # If there was no change in any of the external depots, the search
@@ -1684,12 +1700,16 @@ class BisectPerformanceMetrics(object):
             if not external_depot:
               break
 
-            earliest_revision = max_revision_data['external'][current_depot]
-            latest_revision = min_revision_data['external'][current_depot]
+            previous_revision = revision_list[min_revision]
+
+            earliest_revision = max_revision_data['external'][external_depot]
+            latest_revision = min_revision_data['external'][external_depot]
 
             new_revision_list = self.PrepareToBisectOnDepot(external_depot,
                                                             latest_revision,
-                                                            earliest_revision)
+                                                            earliest_revision,
+                                                            next_revision_depot,
+                                                            previous_revision)
 
             if not new_revision_list:
               results['error'] = 'An error occurred attempting to retrieve'\
@@ -1710,7 +1730,7 @@ class BisectPerformanceMetrics(object):
             sort_key_ids += len(revision_list)
 
             print 'Regression in metric:%s appears to be the result of changes'\
-                  ' in [%s].' % (metric, current_depot)
+                  ' in [%s].' % (metric, external_depot)
 
             self.PrintRevisionsToBisectMessage(revision_list, external_depot)
 
