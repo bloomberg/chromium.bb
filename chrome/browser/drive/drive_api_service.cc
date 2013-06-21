@@ -19,8 +19,6 @@
 #include "chrome/browser/google_apis/drive_api_requests.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/request_sender.h"
-#include "chrome/browser/google_apis/time_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -348,7 +346,7 @@ CancelCallback DriveAPIService::GetResourceListInDirectory(
   // children's references, but we need all file resource list.
   // So, here we use files.list method instead, with setting parents query.
   // After the migration from GData WAPI to Drive API v2, we should clean the
-  // code up by moving the resposibility to include "parents" in the query
+  // code up by moving the responsibility to include "parents" in the query
   // to client side.
   // We aren't interested in files in trash in this context, neither.
   return sender_->StartRequestWithRetry(

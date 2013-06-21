@@ -35,9 +35,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -49,7 +47,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
-#include "googleurl/src/gurl.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
@@ -183,7 +180,7 @@ void FileSelectorImpl::SelectFile(
     // function.
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(&FileSelectorImpl::FileSelectionCanceled,
-                   base::Unretained(this), reinterpret_cast<void*>(NULL)));
+                   base::Unretained(this), static_cast<void*>(NULL)));
   }
 }
 
@@ -401,7 +398,7 @@ void FileBrowserHandlerInternalSelectFileFunction::Respond(bool success) {
     result->entry.reset(new FileEntryInfo());
     result->entry->file_system_name = file_system_name_;
     result->entry->file_system_root = file_system_root_.spec();
-    result->entry->file_full_path = "/" + virtual_path_.value();
+    result->entry->file_full_path = "/" + virtual_path_.AsUTF8Unsafe();
     result->entry->file_is_directory = false;
   }
 

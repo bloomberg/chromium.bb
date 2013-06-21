@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/auth_service.h"
@@ -18,9 +17,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_requests.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/request_sender.h"
-#include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/url_util.h"
 
 using content::BrowserThread;
 using google_apis::AboutResource;
@@ -202,13 +199,13 @@ CancelCallback GDataWapiService::GetAllResourceList(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                   url_request_context_getter_,
-                                   url_generator_,
-                                   GURL(),         // No override url
-                                   0,              // start changestamp
-                                   std::string(),  // empty search query
-                                   std::string(),  // no directory resource id
-                                   callback));
+                                 url_request_context_getter_,
+                                 url_generator_,
+                                 GURL(),         // No override url
+                                 0,              // start changestamp
+                                 std::string(),  // empty search query
+                                 std::string(),  // no directory resource id
+                                 callback));
 }
 
 CancelCallback GDataWapiService::GetResourceListInDirectory(
@@ -220,13 +217,13 @@ CancelCallback GDataWapiService::GetResourceListInDirectory(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                   url_request_context_getter_,
-                                   url_generator_,
-                                   GURL(),         // No override url
-                                   0,              // start changestamp
-                                   std::string(),  // empty search query
-                                   directory_resource_id,
-                                   callback));
+                                 url_request_context_getter_,
+                                 url_generator_,
+                                 GURL(),         // No override url
+                                 0,              // start changestamp
+                                 std::string(),  // empty search query
+                                 directory_resource_id,
+                                 callback));
 }
 
 CancelCallback GDataWapiService::Search(
@@ -238,13 +235,13 @@ CancelCallback GDataWapiService::Search(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                   url_request_context_getter_,
-                                   url_generator_,
-                                   GURL(),         // No override url
-                                   0,              // start changestamp
-                                   search_query,
-                                   std::string(),  // no directory resource id
-                                   callback));
+                                 url_request_context_getter_,
+                                 url_generator_,
+                                 GURL(),         // No override url
+                                 0,              // start changestamp
+                                 search_query,
+                                 std::string(),  // no directory resource id
+                                 callback));
 }
 
 CancelCallback GDataWapiService::SearchByTitle(
@@ -256,13 +253,12 @@ CancelCallback GDataWapiService::SearchByTitle(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new SearchByTitleRequest(
-          sender_.get(),
-          url_request_context_getter_,
-          url_generator_,
-          title,
-          directory_resource_id,
-          callback));
+      new SearchByTitleRequest(sender_.get(),
+                               url_request_context_getter_,
+                               url_generator_,
+                               title,
+                               directory_resource_id,
+                               callback));
 }
 
 CancelCallback GDataWapiService::GetChangeList(
@@ -273,13 +269,13 @@ CancelCallback GDataWapiService::GetChangeList(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                   url_request_context_getter_,
-                                   url_generator_,
-                                   GURL(),         // No override url
-                                   start_changestamp,
-                                   std::string(),  // empty search query
-                                   std::string(),  // no directory resource id
-                                   callback));
+                                 url_request_context_getter_,
+                                 url_generator_,
+                                 GURL(),         // No override url
+                                 start_changestamp,
+                                 std::string(),  // empty search query
+                                 std::string(),  // no directory resource id
+                                 callback));
 }
 
 CancelCallback GDataWapiService::ContinueGetResourceList(
@@ -291,13 +287,13 @@ CancelCallback GDataWapiService::ContinueGetResourceList(
 
   return sender_->StartRequestWithRetry(
       new GetResourceListRequest(sender_.get(),
-                                   url_request_context_getter_,
-                                   url_generator_,
-                                   override_url,
-                                   0,              // start changestamp
-                                   std::string(),  // empty search query
-                                   std::string(),  // no directory resource id
-                                   callback));
+                                 url_request_context_getter_,
+                                 url_generator_,
+                                 override_url,
+                                 0,              // start changestamp
+                                 std::string(),  // empty search query
+                                 std::string(),  // no directory resource id
+                                 callback));
 }
 
 CancelCallback GDataWapiService::GetResourceEntry(
@@ -307,12 +303,12 @@ CancelCallback GDataWapiService::GetResourceEntry(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new GetResourceEntryRequest(
-          sender_.get(),
-          url_request_context_getter_,
-          url_generator_,
-          resource_id,
-          base::Bind(&ParseResourceEntryAndRun, callback)));
+      new GetResourceEntryRequest(sender_.get(),
+                                  url_request_context_getter_,
+                                  url_generator_,
+                                  resource_id,
+                                  base::Bind(&ParseResourceEntryAndRun,
+                                             callback)));
 }
 
 CancelCallback GDataWapiService::GetAboutResource(
@@ -335,12 +331,11 @@ CancelCallback GDataWapiService::GetAppList(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new GetAccountMetadataRequest(
-          sender_.get(),
-          url_request_context_getter_,
-          url_generator_,
-          base::Bind(&ParseAppListAndRun, callback),
-          true));  // Include installed apps.
+      new GetAccountMetadataRequest(sender_.get(),
+                                    url_request_context_getter_,
+                                    url_generator_,
+                                    base::Bind(&ParseAppListAndRun, callback),
+                                    true));  // Include installed apps.
 }
 
 CancelCallback GDataWapiService::DownloadFile(
@@ -372,11 +367,11 @@ CancelCallback GDataWapiService::DeleteResource(
 
   return sender_->StartRequestWithRetry(
       new DeleteResourceRequest(sender_.get(),
-                                  url_request_context_getter_,
-                                  url_generator_,
-                                  callback,
-                                  resource_id,
-                                  etag));
+                                url_request_context_getter_,
+                                url_generator_,
+                                callback,
+                                resource_id,
+                                etag));
 }
 
 CancelCallback GDataWapiService::AddNewDirectory(
@@ -388,12 +383,12 @@ CancelCallback GDataWapiService::AddNewDirectory(
 
   return sender_->StartRequestWithRetry(
       new CreateDirectoryRequest(sender_.get(),
-                                   url_request_context_getter_,
-                                   url_generator_,
-                                   base::Bind(&ParseResourceEntryAndRun,
-                                              callback),
-                                   parent_resource_id,
-                                   directory_name));
+                                 url_request_context_getter_,
+                                 url_generator_,
+                                 base::Bind(&ParseResourceEntryAndRun,
+                                            callback),
+                                 parent_resource_id,
+                                 directory_name));
 }
 
 CancelCallback GDataWapiService::CopyResource(
@@ -419,13 +414,13 @@ CancelCallback GDataWapiService::CopyHostedDocument(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new CopyHostedDocumentRequest(
-          sender_.get(),
-          url_request_context_getter_,
-          url_generator_,
-          base::Bind(&ParseResourceEntryAndRun, callback),
-          resource_id,
-          new_name));
+      new CopyHostedDocumentRequest(sender_.get(),
+                                    url_request_context_getter_,
+                                    url_generator_,
+                                    base::Bind(&ParseResourceEntryAndRun,
+                                               callback),
+                                    resource_id,
+                                    new_name));
 }
 
 CancelCallback GDataWapiService::RenameResource(
@@ -437,11 +432,11 @@ CancelCallback GDataWapiService::RenameResource(
 
   return sender_->StartRequestWithRetry(
       new RenameResourceRequest(sender_.get(),
-                                  url_request_context_getter_,
-                                  url_generator_,
-                                  callback,
-                                  resource_id,
-                                  new_name));
+                                url_request_context_getter_,
+                                url_generator_,
+                                callback,
+                                resource_id,
+                                new_name));
 }
 
 CancelCallback GDataWapiService::TouchResource(
@@ -472,11 +467,11 @@ CancelCallback GDataWapiService::AddResourceToDirectory(
 
   return sender_->StartRequestWithRetry(
       new AddResourceToDirectoryRequest(sender_.get(),
-                                          url_request_context_getter_,
-                                          url_generator_,
-                                          callback,
-                                          parent_resource_id,
-                                          resource_id));
+                                        url_request_context_getter_,
+                                        url_generator_,
+                                        callback,
+                                        parent_resource_id,
+                                        resource_id));
 }
 
 CancelCallback GDataWapiService::RemoveResourceFromDirectory(
@@ -488,11 +483,11 @@ CancelCallback GDataWapiService::RemoveResourceFromDirectory(
 
   return sender_->StartRequestWithRetry(
       new RemoveResourceFromDirectoryRequest(sender_.get(),
-                                               url_request_context_getter_,
-                                               url_generator_,
-                                               callback,
-                                               parent_resource_id,
-                                               resource_id));
+                                             url_request_context_getter_,
+                                             url_generator_,
+                                             callback,
+                                             parent_resource_id,
+                                             resource_id));
 }
 
 CancelCallback GDataWapiService::InitiateUploadNewFile(
@@ -507,13 +502,13 @@ CancelCallback GDataWapiService::InitiateUploadNewFile(
 
   return sender_->StartRequestWithRetry(
       new InitiateUploadNewFileRequest(sender_.get(),
-                                         url_request_context_getter_,
-                                         url_generator_,
-                                         callback,
-                                         content_type,
-                                         content_length,
-                                         parent_resource_id,
-                                         title));
+                                       url_request_context_getter_,
+                                       url_generator_,
+                                       callback,
+                                       content_type,
+                                       content_length,
+                                       parent_resource_id,
+                                       title));
 }
 
 CancelCallback GDataWapiService::InitiateUploadExistingFile(
@@ -528,13 +523,13 @@ CancelCallback GDataWapiService::InitiateUploadExistingFile(
 
   return sender_->StartRequestWithRetry(
       new InitiateUploadExistingFileRequest(sender_.get(),
-                                              url_request_context_getter_,
-                                              url_generator_,
-                                              callback,
-                                              content_type,
-                                              content_length,
-                                              resource_id,
-                                              etag));
+                                            url_request_context_getter_,
+                                            url_generator_,
+                                            callback,
+                                            content_type,
+                                            content_length,
+                                            resource_id,
+                                            etag));
 }
 
 CancelCallback GDataWapiService::ResumeUpload(
@@ -551,15 +546,15 @@ CancelCallback GDataWapiService::ResumeUpload(
 
   return sender_->StartRequestWithRetry(
       new ResumeUploadRequest(sender_.get(),
-                                url_request_context_getter_,
-                                callback,
-                                progress_callback,
-                                upload_url,
-                                start_position,
-                                end_position,
-                                content_length,
-                                content_type,
-                                local_file_path));
+                              url_request_context_getter_,
+                              callback,
+                              progress_callback,
+                              upload_url,
+                              start_position,
+                              end_position,
+                              content_length,
+                              content_type,
+                              local_file_path));
 }
 
 CancelCallback GDataWapiService::GetUploadStatus(
@@ -571,10 +566,10 @@ CancelCallback GDataWapiService::GetUploadStatus(
 
   return sender_->StartRequestWithRetry(
       new GetUploadStatusRequest(sender_.get(),
-                                   url_request_context_getter_,
-                                   callback,
-                                   upload_url,
-                                   content_length));
+                                 url_request_context_getter_,
+                                 callback,
+                                 upload_url,
+                                 content_length));
 }
 
 CancelCallback GDataWapiService::AuthorizeApp(
@@ -585,13 +580,12 @@ CancelCallback GDataWapiService::AuthorizeApp(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new AuthorizeAppRequest(
-          sender_.get(),
-          url_request_context_getter_,
-          url_generator_,
-          callback,
-          resource_id,
-          app_id));
+      new AuthorizeAppRequest(sender_.get(),
+                              url_request_context_getter_,
+                              url_generator_,
+                              callback,
+                              resource_id,
+                              app_id));
 }
 
 bool GDataWapiService::HasAccessToken() const {

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_HANDLER_H_
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -14,8 +13,8 @@
 #include "chrome/common/extensions/manifest_handler.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
-#include "googleurl/src/gurl.h"
 
+class GURL;
 class URLPattern;
 
 // FileBrowserHandler encapsulates the state of a file browser action.

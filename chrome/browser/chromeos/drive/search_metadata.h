@@ -37,7 +37,7 @@ void SearchMetadata(
 // Returns true if |query| is found. |highlighted_text| will have the original
 // text with matched portions highlighted with <b> tag (only the first match
 // is highlighted). Meta characters are escaped like &lt;. The original
-// contents of |highlighted| will be lost.
+// contents of |highlighted_text| will be lost.
 bool FindAndHighlight(const std::string& text,
                       const std::string& query,
                       std::string* highlighted_text);

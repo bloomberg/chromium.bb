@@ -42,7 +42,6 @@ std::string GetWebStoreIdFromUrl(const GURL& url) {
   return components[components.size() - 1];
 }
 
-// TODO(kochi): This is duplicate from gdata_wapi_parser.cc.
 bool SortBySize(const google_apis::InstalledApp::IconList::value_type& a,
                 const google_apis::InstalledApp::IconList::value_type& b) {
   return a.first < b.first;

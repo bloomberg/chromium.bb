@@ -6,32 +6,15 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/json/json_file_value_serializer.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
-#include "base/path_service.h"
-#include "base/threading/worker_pool.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
@@ -60,7 +43,6 @@
 // - Doing searches on drive file system from file browser extension (using
 //   fileBrowserPrivate API).
 
-using content::BrowserContext;
 using extensions::Extension;
 
 namespace {
@@ -96,14 +78,6 @@ const char kTestFileContent[] = "This is some test content.";
 const char kTestRootFeed[] =
     "chromeos/gdata/remote_file_system_apitest_root_feed.json";
 
-// Creates a test file with predetermined content. Returns true on success.
-bool CreateFileWithContent(const base::FilePath& path,
-                           const std::string& content) {
-  int content_size = static_cast<int>(content.length());
-  int written = file_util::WriteFile(path, content.c_str(), content_size);
-  return written == content_size;
-}
-
 // Sets up the initial file system state for native local and restricted native
 // local file systems. The hierarchy is the same as for the drive file system.
 bool InitializeLocalFileSystem(base::ScopedTempDir* tmp_dir,
@@ -111,16 +85,16 @@ bool InitializeLocalFileSystem(base::ScopedTempDir* tmp_dir,
   if (!tmp_dir->CreateUniqueTempDir())
     return false;
 
-  *mount_point_dir = tmp_dir->path().Append("mount");
+  *mount_point_dir = tmp_dir->path().AppendASCII("mount");
   // Create the mount point.
   if (!file_util::CreateDirectory(*mount_point_dir))
     return false;
 
-  base::FilePath test_dir = mount_point_dir->Append("test_dir");
+  base::FilePath test_dir = mount_point_dir->AppendASCII("test_dir");
   if (!file_util::CreateDirectory(test_dir))
     return false;
 
-  base::FilePath test_subdir = test_dir.Append("empty_test_dir");
+  base::FilePath test_subdir = test_dir.AppendASCII("empty_test_dir");
   if (!file_util::CreateDirectory(test_subdir))
     return false;
 
@@ -129,23 +103,23 @@ bool InitializeLocalFileSystem(base::ScopedTempDir* tmp_dir,
     return false;
 
   base::FilePath test_file = test_dir.AppendASCII("test_file.xul");
-  if (!CreateFileWithContent(test_file, kTestFileContent))
+  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
     return false;
 
   test_file = test_dir.AppendASCII("test_file.xul.foo");
-  if (!CreateFileWithContent(test_file, kTestFileContent))
+  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
     return false;
 
   test_file = test_dir.AppendASCII("test_file.tiff");
-  if (!CreateFileWithContent(test_file, kTestFileContent))
+  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
     return false;
 
   test_file = test_dir.AppendASCII("test_file.tiff.foo");
-  if (!CreateFileWithContent(test_file, kTestFileContent))
+  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
     return false;
 
   test_file = test_dir.AppendASCII("empty_test_file.foo");
-  if (!CreateFileWithContent(test_file, ""))
+  if (!google_apis::test_util::WriteStringToFile(test_file, ""))
     return false;
 
   return true;
@@ -273,8 +247,8 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
   virtual void AddTestMountPoint() OVERRIDE {
     EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())->
         RegisterFileSystem(kLocalMountPointName,
-                            fileapi::kFileSystemTypeNativeLocal,
-                            mount_point_dir_));
+                           fileapi::kFileSystemTypeNativeLocal,
+                           mount_point_dir_));
   }
 
  private:
@@ -320,9 +294,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     // system service. This has to be done early on (before the browser is
     // created) because the system service instance is initialized very early
     // by FileManagerEventRouter.
-    base::FilePath tmp_dir_path;
-    PathService::Get(base::DIR_TEMP, &tmp_dir_path);
-    ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));
+    ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
 
     drive::DriveIntegrationServiceFactory::SetFactoryForTest(
         base::Bind(

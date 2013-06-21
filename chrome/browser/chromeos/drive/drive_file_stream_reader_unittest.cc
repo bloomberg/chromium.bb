@@ -75,7 +75,7 @@ TEST_F(LocalReaderProxyTest, Read) {
   // Test instance.
   LocalReaderProxy proxy(file_reader.Pass(), file_content_.size());
 
-  // Make sure the read contant is as same as the file.
+  // Make sure the read content is as same as the file.
   std::string content;
   ASSERT_EQ(net::OK, test_util::ReadAllData(&proxy, &content));
   EXPECT_EQ(file_content_, content);
@@ -96,7 +96,7 @@ TEST_F(LocalReaderProxyTest, ReadWithLimit) {
   // Test instance.
   LocalReaderProxy proxy(file_reader.Pass(), expected_content.size());
 
-  // Make sure the read contant is as same as the file.
+  // Make sure the read content is as same as the file.
   std::string content;
   ASSERT_EQ(net::OK, test_util::ReadAllData(&proxy, &content));
   EXPECT_EQ(expected_content, content);

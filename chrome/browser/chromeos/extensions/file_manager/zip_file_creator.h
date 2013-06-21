@@ -48,7 +48,6 @@ class ZipFileCreator : public content::UtilityProcessHostClient {
   void Start();
 
  private:
-  class ProcessHostClient;
   friend class ProcessHostClient;
 
   virtual ~ZipFileCreator();

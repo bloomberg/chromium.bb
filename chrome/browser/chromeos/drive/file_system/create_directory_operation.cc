@@ -239,7 +239,7 @@ void CreateDirectoryOperation::CreateDirectoryRecursivelyAfterUpdateLocalState(
     return;
   }
 
-  // Create descendent directories.
+  // Create descendant directories.
   CreateDirectoryRecursively(resource_id, remaining_path, callback);
 }
 

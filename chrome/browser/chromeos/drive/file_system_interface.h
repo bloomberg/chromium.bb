@@ -259,8 +259,6 @@ class FileSystemInterface {
   // needs to be present in in-memory representation of the file system that
   // in order to be removed.
   //
-  // TODO(satorux): is_recursive is not supported yet. crbug.com/138282
-  //
   // |callback| must not be null.
   virtual void Remove(const base::FilePath& file_path,
                       bool is_recursive,

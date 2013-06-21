@@ -8,15 +8,11 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "googleurl/src/gurl.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class Browser;
+class GURL;
 class Profile;
-
-namespace base {
-class ListValue;
-}
 
 extern const char kFileBrowserDomain[];
 extern const char kFileBrowserGalleryTaskId[];

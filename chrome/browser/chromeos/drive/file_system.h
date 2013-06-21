@@ -398,9 +398,6 @@ class FileSystem : public FileSystemInterface,
   scoped_ptr<file_system::UpdateOperation> update_operation_;
   scoped_ptr<file_system::SearchOperation> search_operation_;
 
-  // Polling interval for checking updates in seconds.
-  int polling_interval_sec_;
-
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<FileSystem> weak_ptr_factory_;

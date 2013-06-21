@@ -77,14 +77,14 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandler) {
   FileBrowserHandler::List* handlers =
       FileBrowserHandler::GetHandlers(extension.get());
   ASSERT_TRUE(handlers != NULL);
-  ASSERT_EQ(handlers->size(), 1U);
+  ASSERT_EQ(1U, handlers->size());
   const FileBrowserHandler* action = handlers->at(0).get();
 
-  EXPECT_EQ(action->id(), "ExtremelyCoolAction");
-  EXPECT_EQ(action->title(), "Be Amazed");
-  EXPECT_EQ(action->icon_path(), "icon.png");
+  EXPECT_EQ("ExtremelyCoolAction", action->id());
+  EXPECT_EQ("Be Amazed", action->title());
+  EXPECT_EQ("icon.png", action->icon_path());
   const extensions::URLPatternSet& patterns = action->file_url_patterns();
-  ASSERT_EQ(patterns.patterns().size(), 1U);
+  ASSERT_EQ(1U, patterns.patterns().size());
   EXPECT_TRUE(action->MatchesURL(
       GURL("filesystem:chrome-extension://foo/local/test.txt")));
   EXPECT_FALSE(action->HasCreateAccessPermission());
@@ -113,11 +113,11 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerMIMETypes) {
   FileBrowserHandler::List* handlers =
       FileBrowserHandler::GetHandlers(extension.get());
   ASSERT_TRUE(handlers != NULL);
-  ASSERT_EQ(handlers->size(), 1U);
+  ASSERT_EQ(1U, handlers->size());
   const FileBrowserHandler* action = handlers->at(0).get();
 
   const extensions::URLPatternSet& patterns = action->file_url_patterns();
-  ASSERT_EQ(patterns.patterns().size(), 1U);
+  ASSERT_EQ(1U, patterns.patterns().size());
   EXPECT_TRUE(action->MatchesURL(
       GURL("filesystem:chrome-extension://foo/local/test.txt")));
 }
@@ -144,11 +144,11 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerWithCreate) {
   FileBrowserHandler::List* handlers =
       FileBrowserHandler::GetHandlers(extension.get());
   ASSERT_TRUE(handlers != NULL);
-  ASSERT_EQ(handlers->size(), 1U);
+  ASSERT_EQ(1U, handlers->size());
   const FileBrowserHandler* action = handlers->at(0).get();
   const extensions::URLPatternSet& patterns = action->file_url_patterns();
 
-  EXPECT_EQ(patterns.patterns().size(), 0U);
+  EXPECT_EQ(0U, patterns.patterns().size());
   EXPECT_TRUE(action->HasCreateAccessPermission());
   EXPECT_FALSE(action->CanRead());
   EXPECT_FALSE(action->CanWrite());
@@ -164,11 +164,11 @@ TEST_F(FileBrowserHandlerManifestTest, FileManagerURLOverride) {
               .Set("files", "main.html"))
       .Build();
 
-  // Non component extensions can't ovverride chrome://files/ URL.
+  // Non component extensions can't override chrome://files/ URL.
   LoadAndExpectError(Manifest(manifest_value.get(), "override_files"),
                      errors::kInvalidChromeURLOverrides);
 
-  // A component extention can override chrome://files/ URL.
+  // A component extension can override chrome://files/ URL.
   std::string error;
   LoadExtension(Manifest(manifest_value.get(), "override_files"),
                 &error, extensions::Manifest::COMPONENT, Extension::NO_FLAGS);

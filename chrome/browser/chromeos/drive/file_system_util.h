@@ -179,7 +179,7 @@ void PrepareWritableFileAndRun(Profile* profile,
 // If |directory| is not a Drive path, it won't check the existence and just
 // runs |callback|.
 //
-// Must be called from UI/IO thread.
+// Must be called from UI thread.
 void EnsureDirectoryExists(Profile* profile,
                            const base::FilePath& directory,
                            const FileOperationCallback& callback);

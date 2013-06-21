@@ -10,12 +10,9 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
@@ -137,7 +134,7 @@ class MockFileSelectorFactory : public file_handler::FileSelectorFactory {
   }
   virtual ~MockFileSelectorFactory() {}
 
-  // file_handler::FileSelectorFactory imaplementation.
+  // file_handler::FileSelectorFactory implementation.
   virtual file_handler::FileSelector* CreateFileSelector() const OVERRIDE {
     return new MockFileSelector(suggested_name_,
                                 allowed_extensions_,
@@ -165,9 +162,7 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
     // Create mount point directory that will be used in the test.
     // Mount point will be called "tmp", and it will be located in a tmp
     // directory with an unique name.
-    base::FilePath tmp_dir_path;
-    PathService::Get(base::DIR_TEMP, &tmp_dir_path);
-    ASSERT_TRUE(scoped_tmp_dir_.CreateUniqueTempDirUnderPath(tmp_dir_path));
+    ASSERT_TRUE(scoped_tmp_dir_.CreateUniqueTempDir());
     tmp_mount_point_ = scoped_tmp_dir_.path().Append("tmp");
     file_util::CreateDirectory(tmp_mount_point_);
 

@@ -29,7 +29,7 @@ const char kDrivePathKey[] = "DrivePath";
 class DriveUserData : public base::SupportsUserData::Data {
  public:
   explicit DriveUserData(const base::FilePath& path) : file_path_(path),
-                                                 is_complete_(false) {}
+                                                       is_complete_(false) {}
   virtual ~DriveUserData() {}
 
   const base::FilePath& file_path() const { return file_path_; }

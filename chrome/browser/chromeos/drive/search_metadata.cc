@@ -177,7 +177,7 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
     results->push_back(*result_candidates.top());
 
   // Reverse the order here because |result_candidates| puts the most
-  // uninterested candidate at the top.
+  // uninteresting candidate at the top.
   std::reverse(results->begin(), results->end());
 
   return results.Pass();

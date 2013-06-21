@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 
-#include <math.h>
-
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
@@ -711,8 +709,9 @@ void JobScheduler::ThrottleAndContinueJobLoop(QueueType queue_type) {
   if (disable_throttling_) {
     delay = base::TimeDelta::FromSeconds(0);
   } else {
+    // Exponential backoff: https://developers.google.com/drive/handle-errors.
     delay =
-      base::TimeDelta::FromSeconds(pow(2, throttle_count_ - 1)) +
+      base::TimeDelta::FromSeconds(1 << (throttle_count_ - 1)) +
       base::TimeDelta::FromMilliseconds(base::RandInt(0, 1000));
   }
   VLOG(1) << "Throttling for " << delay.InMillisecondsF();
