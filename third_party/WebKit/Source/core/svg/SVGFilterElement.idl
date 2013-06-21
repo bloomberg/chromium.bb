@@ -41,3 +41,5 @@ interface SVGFilterElement : SVGStyledElement,
                       [Default=Undefined] optional unsigned long filterResY);
 };
 
+SVGFilterElement implements SVGURIReference;
+

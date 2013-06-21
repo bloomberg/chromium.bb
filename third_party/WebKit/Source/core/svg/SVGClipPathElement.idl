@@ -32,3 +32,5 @@ interface SVGClipPathElement : SVGStyledElement,
     readonly attribute SVGAnimatedEnumeration clipPathUnits;
 };
 
+SVGClipPathElement implements SVGTests;
+

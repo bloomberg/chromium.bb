@@ -34,3 +34,6 @@ interface SVGImageElement : SVGStyledElement,
     readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
 };
 
+SVGImageElement implements SVGTests;
+SVGImageElement implements SVGURIReference;
+

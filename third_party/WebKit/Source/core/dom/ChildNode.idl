@@ -27,6 +27,3 @@ interface ChildNode {
     [RaisesException] void remove();
 };
 
-DocumentType implements ChildNode;
-Element implements ChildNode;
-CharacterData implements ChildNode;

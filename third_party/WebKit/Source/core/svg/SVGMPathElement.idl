@@ -27,3 +27,5 @@ interface SVGMPathElement : SVGElement,
                             SVGExternalResourcesRequired {
 };
 
+SVGMPathElement implements SVGURIReference;
+

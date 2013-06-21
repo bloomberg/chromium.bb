@@ -72,13 +72,14 @@ def get_partial_interface_name_from_idl(file_contents):
 
 # identifier-A implements identifier-B;
 # http://www.w3.org/TR/WebIDL/#idl-implements-statements
-def get_implementers_from_idl(file_contents, interface_name):
-    implementers = []
+def get_implemented_interfaces_from_idl(file_contents, interface_name):
+    implemented_interfaces = []
     for match in re.finditer(r'(\w+)\s+implements\s+(\w+)\s*;', file_contents):
-        # identifier-B must be the current interface
-        assert match.group(2) == interface_name
-        implementers.append(match.group(1))
-    return implementers
+        # identifier-A must be the current interface
+        assert match.group(1) == interface_name, \
+"Identifier on the left of the 'implements' statement should be %s in %s.idl, but found %s" % (interface_name, interface_name, match.group(1))
+        implemented_interfaces.append(match.group(2))
+    return implemented_interfaces
 
 def is_callback_interface_from_idl(file_contents):
     match = re.search(r'callback\s+interface\s+\w+', file_contents)
@@ -149,6 +150,12 @@ def parse_idl_files(idl_files, window_constructors_filename, workercontext_const
     window_constructor_attributes_list = []
     workercontext_constructor_attributes_list = []
 
+    # Populate interface_name_to_idl_file first
+    for idl_file_name in idl_files:
+        full_path = os.path.realpath(idl_file_name)
+        interface_name, _ = os.path.splitext(os.path.basename(idl_file_name))
+        interface_name_to_idl_file[interface_name] = full_path
+
     for idl_file_name in idl_files:
         full_path = os.path.realpath(idl_file_name)
         idl_file_contents = get_file_contents(full_path)
@@ -159,9 +166,11 @@ def parse_idl_files(idl_files, window_constructors_filename, workercontext_const
             continue
         interface_name, _ = os.path.splitext(os.path.basename(idl_file_name))
         # Parse 'identifier-A implements identifier-B; statements
-        implementers = get_implementers_from_idl(idl_file_contents, interface_name)
-        for implementer in implementers:
-            supplemental_dependencies.setdefault(full_path, []).append(implementer)
+        implemented_interfaces = get_implemented_interfaces_from_idl(idl_file_contents, interface_name)
+        for implemented_interface in implemented_interfaces:
+            assert implemented_interface in interface_name_to_idl_file, \
+"Could not find a the IDL file where the following implemented interface is defined: %s" % implemented_interface
+            supplemental_dependencies.setdefault(interface_name_to_idl_file[implemented_interface], []).append(interface_name)
         # Handle [NoInterfaceObject]
         if not is_callback_interface_from_idl(idl_file_contents):
             extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
@@ -172,7 +181,6 @@ def parse_idl_files(idl_files, window_constructors_filename, workercontext_const
                     window_constructor_attributes_list.extend(constructor_list)
                 if global_context != "WindowOnly":
                     workercontext_constructor_attributes_list.extend(constructor_list)
-        interface_name_to_idl_file[interface_name] = full_path
         idl_file_to_interface_name[full_path] = interface_name
         supplementals[full_path] = []
 

@@ -38,3 +38,5 @@
     void terminate();
 };
 
+Worker implements AbstractWorker;
+

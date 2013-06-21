@@ -38,3 +38,5 @@ interface CharacterData : Node {
                                     [Default=Undefined] optional DOMString data);
 };
 
+CharacterData implements ChildNode;
+

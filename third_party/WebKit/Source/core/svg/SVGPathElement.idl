@@ -109,3 +109,5 @@ interface SVGPathElement : SVGStyledElement,
     readonly attribute SVGPathSegList animatedNormalizedPathSegList;
 };
 
+SVGPathElement implements SVGTests;
+

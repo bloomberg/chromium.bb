@@ -37,3 +37,6 @@ interface SVGPatternElement : SVGStyledElement,
     readonly attribute SVGAnimatedLength        height;
 };
 
+SVGPatternElement implements SVGTests;
+SVGPatternElement implements SVGURIReference;
+

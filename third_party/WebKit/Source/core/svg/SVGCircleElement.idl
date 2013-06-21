@@ -33,3 +33,5 @@ interface SVGCircleElement : SVGStyledElement,
     readonly attribute SVGAnimatedLength r;
 };
 
+SVGCircleElement implements SVGTests;
+

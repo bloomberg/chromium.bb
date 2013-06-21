@@ -26,3 +26,5 @@
     [RaisesException] NodeList querySelectorAll(DOMString selectors);
 };
 
+DocumentFragment implements ParentNode;
+

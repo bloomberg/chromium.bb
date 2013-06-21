@@ -7,6 +7,3 @@
     [PerWorldBindings] readonly attribute unsigned long childElementCount;
 };
 
-Document implements ParentNode;
-DocumentFragment implements ParentNode;
-Element implements ParentNode;

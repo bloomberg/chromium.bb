@@ -33,3 +33,5 @@ interface SVGForeignObjectElement : SVGStyledElement,
     readonly attribute SVGAnimatedLength height;
 };
 
+SVGForeignObjectElement implements SVGTests;
+

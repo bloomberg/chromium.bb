@@ -31,3 +31,5 @@ interface SVGPolygonElement : SVGStyledElement,
     readonly attribute SVGPointList animatedPoints;
 };
 
+SVGPolygonElement implements SVGTests;
+

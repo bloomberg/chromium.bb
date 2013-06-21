@@ -29,3 +29,5 @@
     attribute float dy;
 };
 
+SVGGlyphRefElement implements SVGURIReference;
+

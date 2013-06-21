@@ -285,3 +285,5 @@ callback CustomElementConstructor = Element ();
     readonly attribute HTMLScriptElement currentScript;
 };
 
+Document implements ParentNode;
+

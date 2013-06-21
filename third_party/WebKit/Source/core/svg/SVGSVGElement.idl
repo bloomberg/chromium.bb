@@ -75,3 +75,5 @@ interface SVGSVGElement : SVGStyledElement,
     Element getElementById([Default=Undefined] optional DOMString elementId);
 };
 
+SVGSVGElement implements SVGTests;
+

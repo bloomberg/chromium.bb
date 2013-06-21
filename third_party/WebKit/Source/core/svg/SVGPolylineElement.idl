@@ -31,3 +31,5 @@ interface SVGPolylineElement : SVGStyledElement,
     readonly attribute SVGPointList animatedPoints;
 };
 
+SVGPolylineElement implements SVGTests;
+

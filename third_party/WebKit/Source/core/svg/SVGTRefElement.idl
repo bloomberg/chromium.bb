@@ -26,3 +26,5 @@
 interface SVGTRefElement : SVGTextPositioningElement {
 };
 
+SVGTRefElement implements SVGURIReference;
+

@@ -35,5 +35,3 @@
     attribute EventListener onerror;
 };
 
-Worker implements AbstractWorker;
-SharedWorker implements AbstractWorker;

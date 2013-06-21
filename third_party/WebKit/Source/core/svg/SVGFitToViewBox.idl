@@ -31,5 +31,3 @@
     readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
 };
 
-SVGViewElement implements SVGFitToViewBox;
-

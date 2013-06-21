@@ -194,3 +194,7 @@
     [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenchange;
     [NotEnumerable, PerWorldBindings] attribute EventListener onwebkitfullscreenerror;
 };
+
+Element implements ParentNode;
+Element implements ChildNode;
+

@@ -33,3 +33,5 @@ interface SVGEllipseElement : SVGStyledElement,
     readonly attribute SVGAnimatedLength ry;
 };
 
+SVGEllipseElement implements SVGTests;
+

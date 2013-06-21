@@ -36,3 +36,5 @@ interface SVGRectElement : SVGStyledElement,
     readonly attribute SVGAnimatedLength ry;
 };
 
+SVGRectElement implements SVGTests;
+

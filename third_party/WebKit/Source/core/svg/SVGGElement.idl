@@ -29,3 +29,5 @@ interface SVGGElement : SVGStyledElement,
                         SVGTransformable {
 };
 
+SVGGElement implements SVGTests;
+

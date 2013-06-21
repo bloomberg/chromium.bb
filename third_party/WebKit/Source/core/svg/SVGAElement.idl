@@ -30,3 +30,6 @@ interface SVGAElement : SVGStyledElement,
     readonly attribute SVGAnimatedString target;
 };
 
+SVGAElement implements SVGTests;
+SVGAElement implements SVGURIReference;
+

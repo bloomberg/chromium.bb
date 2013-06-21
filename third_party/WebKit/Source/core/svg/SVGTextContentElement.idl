@@ -47,3 +47,5 @@ interface SVGTextContentElement : SVGStyledElement,
                          [Default=Undefined,IsIndex] optional unsigned long length);
 };
 
+SVGTextContentElement implements SVGTests;
+

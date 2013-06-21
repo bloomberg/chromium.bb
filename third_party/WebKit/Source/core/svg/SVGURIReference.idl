@@ -30,20 +30,3 @@
     readonly attribute SVGAnimatedString href;
 };
 
-SVGAElement implements SVGURIReference;
-
-// The following is no longer part of the specification
-// but is kept for backward compatibility.
-SVGCursorElement implements SVGURIReference;
-SVGAltGlyphElement implements SVGURIReference;
-SVGFEImageElement implements SVGURIReference;
-SVGFilterElement implements SVGURIReference;
-SVGGlyphRefElement implements SVGURIReference;
-SVGGradientElement implements SVGURIReference;
-SVGImageElement implements SVGURIReference;
-SVGMPathElement implements SVGURIReference;
-SVGPatternElement implements SVGURIReference;
-SVGScriptElement implements SVGURIReference;
-SVGTRefElement implements SVGURIReference;
-SVGTextPathElement implements SVGURIReference;
-SVGUseElement implements SVGURIReference;

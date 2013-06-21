@@ -30,3 +30,5 @@
     [SetterRaisesException] attribute DOMString format;
 };
 
+SVGAltGlyphElement implements SVGURIReference;
+

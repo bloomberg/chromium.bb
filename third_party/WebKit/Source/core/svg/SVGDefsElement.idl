@@ -29,3 +29,5 @@ interface SVGDefsElement : SVGStyledElement,
                            SVGTransformable {
 };
 
+SVGDefsElement implements SVGTests;
+

@@ -27,3 +27,7 @@ interface SVGViewElement : SVGElement {
     readonly attribute SVGStringList viewTarget;
 };
 
+SVGViewElement implements SVGExternalResourcesRequired;
+SVGViewElement implements SVGFitToViewBox;
+SVGViewElement implements SVGZoomAndPan;
+

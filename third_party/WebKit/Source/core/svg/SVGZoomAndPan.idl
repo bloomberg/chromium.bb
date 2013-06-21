@@ -34,5 +34,3 @@
     attribute unsigned short zoomAndPan;
 };
 
-SVGViewElement implements SVGZoomAndPan;
-

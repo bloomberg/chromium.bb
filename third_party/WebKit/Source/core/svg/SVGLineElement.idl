@@ -33,3 +33,5 @@ interface SVGLineElement : SVGStyledElement,
     readonly attribute SVGAnimatedLength y2;
 };
 
+SVGLineElement implements SVGTests;
+

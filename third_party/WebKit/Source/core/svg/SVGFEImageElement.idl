@@ -30,3 +30,5 @@ interface SVGFEImageElement : SVGStyledElement,
     readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
 };
 
+SVGFEImageElement implements SVGURIReference;
+

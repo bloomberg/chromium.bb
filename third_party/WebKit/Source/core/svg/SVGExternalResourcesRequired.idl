@@ -30,5 +30,3 @@
     readonly attribute SVGAnimatedBoolean externalResourcesRequired;
 };
 
-SVGViewElement implements SVGExternalResourcesRequired;
-

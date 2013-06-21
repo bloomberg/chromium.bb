@@ -36,3 +36,6 @@ interface SVGUseElement : SVGStyledElement,
     readonly attribute SVGElementInstance animatedInstanceRoot;
 };
 
+SVGUseElement implements SVGTests;
+SVGUseElement implements SVGURIReference;
+
