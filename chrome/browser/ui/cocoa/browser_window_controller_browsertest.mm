@@ -503,11 +503,11 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FindBarOffsetInstant) {
 
   // Show instant and add a find bar to it.
   ShowInstantResults();
-  browser()->GetFindBarController()->find_bar()->Show(false);;
+  browser()->GetFindBarController()->find_bar()->Show(false);
 
   NSRect toolbar_bar_frame = [GetViewWithID(VIEW_ID_TOOLBAR) frame];
   find_bar_frame = [GetViewWithID(VIEW_ID_FIND_BAR) frame];
-  EXPECT_EQ(NSMinY(toolbar_bar_frame) - bookmarks::kBookmarkBarOverlap + 1 -
+  EXPECT_EQ(NSMinY(toolbar_bar_frame) - bookmarks::kBookmarkBarOverlap +
             line_width,
             NSMaxY(find_bar_frame));
 }

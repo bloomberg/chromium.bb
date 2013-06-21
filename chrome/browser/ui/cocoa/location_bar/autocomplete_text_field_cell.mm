@@ -185,8 +185,6 @@ size_t CalculatePositionsInFrame(
 @implementation AutocompleteTextFieldCell
 
 - (CGFloat)topTextFrameOffset {
-  if (chrome::IsInstantExtendedAPIEnabled())
-    return 2.0;
   return 3.0;
 }
 
@@ -208,8 +206,6 @@ size_t CalculatePositionsInFrame(
 }
 
 - (CGFloat)lineHeight {
-  if (chrome::IsInstantExtendedAPIEnabled())
-    return 19;
   return 16;
 }
 

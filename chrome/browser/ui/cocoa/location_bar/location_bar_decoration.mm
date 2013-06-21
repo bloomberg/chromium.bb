@@ -6,8 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
-#include "chrome/browser/search/search.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
 
@@ -69,10 +68,7 @@ NSMenu* LocationBarDecoration::GetMenu() {
 }
 
 NSFont* LocationBarDecoration::GetFont() const {
-  if (chrome::IsInstantExtendedAPIEnabled())
-    return [NSFont fontWithName:@"Helvetica Neue" size:15];
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetFont(ResourceBundle::BaseFont).GetNativeFont();
+  return OmniboxViewMac::GetFieldFont();
 }
 
 // static

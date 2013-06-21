@@ -72,11 +72,7 @@ using content::WebContents;
 namespace {
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
-const CGFloat kBaseToolbarHeightNormal = 34.0;
-
-// Height of the toolbar in pixels when the bookmark bar is if instant extended
-// is enabled.
-const CGFloat kBaseToolbarHeightInstantExtended = 35.0;
+const CGFloat kBaseToolbarHeightNormal = 35.0;
 
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
@@ -221,16 +217,6 @@ class NotificationBridge
 // Now we can hook up bridges that rely on UI objects such as the location
 // bar and button state.
 - (void)awakeFromNib {
-  // Make the location bar taller in instant extended mode. TODO(sail): Move
-  // this to the xib file once this switch is removed.
-  if (chrome::IsInstantExtendedAPIEnabled()) {
-    NSRect toolbarFrame = [[self view] frame];
-    toolbarFrame.size.height += 1;
-    [[self view] setFrame:toolbarFrame];
-    NSRect frame = NSInsetRect([locationBar_ frame], 0, -1);
-    [locationBar_ setFrame:frame];
-  }
-
   [[backButton_ cell] setImageID:IDR_BACK
                   forButtonState:image_button_cell::kDefaultState];
   [[backButton_ cell] setImageID:IDR_BACK_H
@@ -751,9 +737,6 @@ class NotificationBridge
   // With no toolbar, just ignore the compression.
   if (!hasToolbar_)
     return NSHeight([locationBar_ frame]);
-
-  if (chrome::IsInstantExtendedAPIEnabled())
-    return kBaseToolbarHeightInstantExtended - compressByHeight;
 
   return kBaseToolbarHeightNormal - compressByHeight;
 }
