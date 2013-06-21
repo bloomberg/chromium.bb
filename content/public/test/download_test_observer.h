@@ -170,7 +170,8 @@ class DownloadTestObserver : public DownloadManager::Observer,
 class DownloadTestObserverTerminal : public DownloadTestObserver {
  public:
   // Create an object that will be considered finished when |wait_count|
-  // download items have entered a terminal state (any but IN_PROGRESS).
+  // download items have entered a terminal state (DownloadItem::IsDone() is
+  // true).
   DownloadTestObserverTerminal(
       DownloadManager* download_manager,
       size_t wait_count,
@@ -202,6 +203,23 @@ class DownloadTestObserverInProgress : public DownloadTestObserver {
   virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverInProgress);
+};
+
+class DownloadTestObserverInterrupted : public DownloadTestObserver {
+ public:
+  // Create an object that will be considered finished when |wait_count|
+  // download items are interrupted.
+  DownloadTestObserverInterrupted(
+      DownloadManager* download_manager,
+      size_t wait_count,
+      DangerousDownloadAction dangerous_download_action);
+
+  virtual ~DownloadTestObserverInterrupted();
+
+ private:
+  virtual bool IsDownloadInFinalState(DownloadItem* download) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverInterrupted);
 };
 
 // The WaitForFlush() method on this class returns after:

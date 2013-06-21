@@ -255,7 +255,7 @@ DownloadTestObserverTerminal::~DownloadTestObserverTerminal() {
 
 bool DownloadTestObserverTerminal::IsDownloadInFinalState(
     DownloadItem* download) {
-  return (download->GetState() != DownloadItem::IN_PROGRESS);
+  return download->IsDone();
 }
 
 DownloadTestObserverInProgress::DownloadTestObserverInProgress(
@@ -279,6 +279,29 @@ bool DownloadTestObserverInProgress::IsDownloadInFinalState(
     DownloadItem* download) {
   return (download->GetState() == DownloadItem::IN_PROGRESS) &&
       !download->GetTargetFilePath().empty();
+}
+
+DownloadTestObserverInterrupted::DownloadTestObserverInterrupted(
+    DownloadManager* download_manager,
+    size_t wait_count,
+    DangerousDownloadAction dangerous_download_action)
+        : DownloadTestObserver(download_manager,
+                               wait_count,
+                               dangerous_download_action) {
+  // You can't rely on overriden virtual functions in a base class constructor;
+  // the virtual function table hasn't been set up yet.  So, we have to do any
+  // work that depends on those functions in the derived class constructor
+  // instead.  In this case, it's because of |IsDownloadInFinalState()|.
+  Init();
+}
+
+DownloadTestObserverInterrupted::~DownloadTestObserverInterrupted() {
+}
+
+
+bool DownloadTestObserverInterrupted::IsDownloadInFinalState(
+    DownloadItem* download) {
+  return download->GetState() == DownloadItem::INTERRUPTED;
 }
 
 DownloadTestFlushObserver::DownloadTestFlushObserver(

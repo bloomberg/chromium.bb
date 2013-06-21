@@ -555,6 +555,13 @@ class DownloadContentTest : public ContentBrowserTest {
     return new DownloadCreateObserver(download_manager);
   }
 
+  DownloadTestObserver* CreateInterruptedWaiter(
+      Shell* shell, int num_downloads) {
+    DownloadManager* download_manager = DownloadManagerForShell(shell);
+    return new DownloadTestObserverInterrupted(download_manager, num_downloads,
+        DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+  }
+
   // Note: Cannot be used with other alternative DownloadFileFactorys
   void SetupEnsureNoPendingDownloads() {
     DownloadManagerForShell(shell())->SetDownloadFileFactoryForTesting(
@@ -636,7 +643,8 @@ class DownloadContentTest : public ContentBrowserTest {
   // that the interrupt is received properly (for download resumption
   // testing).
   void ReleaseRSTAndConfirmInterruptForResume(DownloadItem* download) {
-    scoped_ptr<DownloadTestObserver> rst_observer(CreateWaiter(shell(), 1));
+    scoped_ptr<DownloadTestObserver> rst_observer(
+        CreateInterruptedWaiter(shell(), 1));
     NavigateToURL(shell(), test_server()->GetURL("download-finish"));
     rst_observer->WaitForFinished();
     EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
@@ -1249,7 +1257,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileInitError) {
   injector->InjectErrors();
 
   // Start and watch for interrupt.
-  scoped_ptr<DownloadTestObserver> int_observer(CreateWaiter(shell(), 1));
+  scoped_ptr<DownloadTestObserver> int_observer(
+      CreateInterruptedWaiter(shell(), 1));
   DownloadItem* download(StartDownloadAndReturnItem(url));
   int_observer->WaitForFinished();
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
@@ -1299,7 +1308,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   injector->InjectErrors();
 
   // Start and watch for interrupt.
-  scoped_ptr<DownloadTestObserver> int_observer(CreateWaiter(shell(), 1));
+  scoped_ptr<DownloadTestObserver> int_observer(
+      CreateInterruptedWaiter(shell(), 1));
   DownloadItem* download(StartDownloadAndReturnItem(url));
   int_observer->WaitForFinished();
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
@@ -1351,7 +1361,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeWithFileFinalRenameError) {
   injector->InjectErrors();
 
   // Start and watch for interrupt.
-  scoped_ptr<DownloadTestObserver> int_observer(CreateWaiter(shell(), 1));
+  scoped_ptr<DownloadTestObserver> int_observer(
+      CreateInterruptedWaiter(shell(), 1));
   DownloadItem* download(StartDownloadAndReturnItem(url));
   int_observer->WaitForFinished();
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
