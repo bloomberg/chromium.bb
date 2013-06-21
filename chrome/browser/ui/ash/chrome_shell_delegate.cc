@@ -159,12 +159,31 @@ void ChromeShellDelegate::ToggleFullscreen() {
   bool is_fullscreen = ash::wm::IsWindowFullscreen(window);
 
   // Windows which cannot be maximized should not be fullscreened.
-  if (is_fullscreen && !ash::wm::CanMaximizeWindow(window))
+  if (!is_fullscreen && !ash::wm::CanMaximizeWindow(window))
     return;
 
   Browser* browser = chrome::FindBrowserWithWindow(window);
   if (browser) {
-    chrome::ToggleFullscreenMode(browser);
+    // If a window is fullscreen, exit fullscreen.
+    if (is_fullscreen) {
+      chrome::ToggleFullscreenMode(browser);
+      return;
+    }
+
+    // AppNonClientFrameViewAsh shows only the window controls and no other
+    // window decorations which is pretty close to fullscreen. Put v1 apps
+    // into maximized mode instead of fullscreen to avoid showing the ugly
+    // fullscreen exit bubble.
+#if defined(OS_WIN)
+    if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
+      chrome::ToggleFullscreenMode(browser);
+      return;
+    }
+#endif  // OS_WIN
+    if (browser->is_app() && browser->app_type() != Browser::APP_TYPE_CHILD)
+      ash::wm::ToggleMaximizedWindow(window);
+    else
+      chrome::ToggleFullscreenMode(browser);
     return;
   }
 
@@ -184,13 +203,6 @@ void ChromeShellDelegate::ToggleMaximized() {
   aura::Window* window = ash::wm::GetActiveWindow();
   if (!window)
     return;
-
-  // TODO(pkotwicz): If immersive mode replaces fullscreen, bind fullscreen to
-  // F4 and find a different key binding for maximize.
-  if (ImmersiveFullscreenConfiguration::UseImmersiveFullscreen()) {
-    ToggleFullscreen();
-    return;
-  }
 
   // Get out of fullscreen when in fullscreen mode.
   if (ash::wm::IsWindowFullscreen(window)) {

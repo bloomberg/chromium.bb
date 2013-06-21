@@ -248,15 +248,6 @@ bool ShouldSaveOrRestoreWindowPos() {
   return true;
 }
 
-// Returns whether immersive mode should replace fullscreen, which should only
-// occur for "browser-fullscreen" and not for "tab-fullscreen" (which has a URL
-// for the tab entering fullscreen).
-bool UseImmersiveFullscreenForUrl(const GURL& url) {
-  bool is_browser_fullscreen = url.is_empty();
-  return is_browser_fullscreen &&
-         ImmersiveFullscreenConfiguration::UseImmersiveFullscreen();
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -886,7 +877,7 @@ void BrowserView::UpdateFullscreenExitBubbleContent(
   // Immersive mode has no exit bubble because it has a visible strip at the
   // top that gives the user a hover target.
   // TODO(jamescook): Figure out what to do with mouse-lock.
-  if (bubble_type == FEB_TYPE_NONE || UseImmersiveFullscreenForUrl(url)) {
+  if (bubble_type == FEB_TYPE_NONE || ShouldUseImmersiveFullscreenForUrl(url)) {
     fullscreen_bubble_.reset();
   } else if (fullscreen_bubble_.get()) {
     fullscreen_bubble_->UpdateContent(url, bubble_type);
@@ -2389,7 +2380,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   }
 
   // Enable immersive before the browser refreshes its list of enabled commands.
-  if (UseImmersiveFullscreenForUrl(url))
+  if (ShouldUseImmersiveFullscreenForUrl(url))
     immersive_mode_controller_->SetEnabled(fullscreen);
 
   browser_->WindowFullscreenStateChanged();
@@ -2397,7 +2388,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   if (fullscreen) {
     if (!chrome::IsRunningInAppMode() &&
         type != FOR_METRO &&
-        !UseImmersiveFullscreenForUrl(url)) {
+        !ShouldUseImmersiveFullscreenForUrl(url)) {
       fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
           this, url, bubble_type));
     }
@@ -2418,6 +2409,12 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // indirectly via UpdateUIForContents().
   ignore_layout_ = false;
   ToolbarSizeChanged(false);
+}
+
+bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
+  bool is_browser_fullscreen = url.is_empty();
+  return ImmersiveFullscreenConfiguration::UseImmersiveFullscreen() &&
+      is_browser_fullscreen && IsBrowserTypeNormal();
 }
 
 void BrowserView::LoadAccelerators() {

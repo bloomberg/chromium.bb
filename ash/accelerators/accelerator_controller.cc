@@ -831,10 +831,6 @@ bool AcceleratorController::PerformAction(int action,
       return true;
     }
     case TOGGLE_MAXIMIZED: {
-      if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2) {
-        shell->delegate()->RecordUserMetricsAction(
-            UMA_ACCEL_MAXIMIZE_RESTORE_F4);
-      }
       shell->delegate()->ToggleMaximized();
       return true;
     }

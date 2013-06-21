@@ -551,6 +551,11 @@ class BrowserView : public BrowserWindow,
                          const GURL& url,
                          FullscreenExitBubbleType bubble_type);
 
+  // Returns whether immmersive fullscreen should replace fullscreen. This
+  // should only occur for "browser-fullscreen" for tabbed-typed windows (not
+  // for tab-fullscreen and not for app/popup type windows).
+  bool ShouldUseImmersiveFullscreenForUrl(const GURL& url) const;
+
   // Copy the accelerator table from the app resources into something we can
   // use.
   void LoadAccelerators();
