@@ -12059,6 +12059,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WrenchMenu.RecentTabsSubMenu" enum="RecentTabsAction">
+  <summary>
+    The number of times each tab or window restore option in the Recent Tabs
+    submenu is clicked.
+  </summary>
+</histogram>
+
 <histogram name="ZeroSuggest.AllResults">
   <summary>
     The number of results (either query or URL) from ZeroSuggest. This is set
@@ -17223,6 +17230,13 @@ other types of suffix sets.
   <int value="1" label="ENCRYPTION_ESTABLISHED"/>
   <int value="2" label="HANDSHAKE_CONFIRMED"/>
   <int value="3" label="FAILED"/>
+</enum>
+
+<enum name="RecentTabsAction" type="int">
+  <int value="0" label="Local Session Tab"/>
+  <int value="1" label="Other Device Tab"/>
+  <int value="2" label="Restore Window"/>
+  <int value="3" label="Show More"/>
 </enum>
 
 <enum name="ResolutionCategory" type="int">

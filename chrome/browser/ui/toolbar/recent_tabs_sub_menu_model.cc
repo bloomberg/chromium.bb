@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -112,6 +113,14 @@ int CommandIdToWindowModelIndex(int command_id) {
 
 }  // namespace
 
+enum RecentTabAction {
+  LOCAL_SESSION_TAB = 0,
+  OTHER_DEVICE_TAB,
+  RESTORE_WINDOW,
+  SHOW_MORE,
+  LIMIT_RECENT_TAB_ACTION
+};
+
 // An element in |RecentTabsSubMenuModel::tab_navigation_items_| that stores
 // the navigation information of a local or foreign tab required to restore the
 // tab.
@@ -205,6 +214,8 @@ bool RecentTabsSubMenuModel::GetAcceleratorForCommandId(
 
 void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == IDC_SHOW_HISTORY) {
+    UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu", SHOW_MORE,
+                              LIMIT_RECENT_TAB_ACTION);
     // We show all "other devices" on the history page.
     chrome::ExecuteCommandWithDisposition(browser_, IDC_SHOW_HISTORY,
         ui::DispositionFromEventFlags(event_flags));
@@ -233,6 +244,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
     if (item.session_tag.empty()) {  // Restore tab of local session.
       if (service && delegate) {
+        UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu",
+                                  LOCAL_SESSION_TAB, LIMIT_RECENT_TAB_ACTION);
         service->RestoreEntryById(delegate, item.tab_id,
                                   browser_->host_desktop_type(), disposition);
       }
@@ -245,6 +258,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
         return;
       if (tab->navigations.empty())
         return;
+      UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu",
+                                OTHER_DEVICE_TAB, LIMIT_RECENT_TAB_ACTION);
       SessionRestore::RestoreForeignSessionTab(
           browser_->tab_strip_model()->GetActiveWebContents(),
           *tab, disposition);
@@ -255,6 +270,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
       int model_idx = CommandIdToWindowModelIndex(command_id);
       DCHECK(model_idx >= 0 &&
              model_idx < static_cast<int>(window_items_.size()));
+      UMA_HISTOGRAM_ENUMERATION("WrenchMenu.RecentTabsSubMenu", RESTORE_WINDOW,
+                                LIMIT_RECENT_TAB_ACTION);
       service->RestoreEntryById(delegate, window_items_[model_idx],
                                 browser_->host_desktop_type(), disposition);
     }
