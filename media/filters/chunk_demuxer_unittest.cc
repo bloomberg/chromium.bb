@@ -460,8 +460,10 @@ class ChunkDemuxerTest : public testing::Test {
   }
 
   void ShutdownDemuxer() {
-    if (demuxer_)
+    if (demuxer_) {
       demuxer_->Shutdown();
+      message_loop_.RunUntilIdle();
+    }
   }
 
   void AddSimpleBlock(ClusterBuilder* cb, int track_num, int64 timecode) {
@@ -892,6 +894,8 @@ TEST_F(ChunkDemuxerTest, TestAppendDataAfterSeek) {
   Checkpoint(1);
 
   AppendData(cluster->data(), cluster->size());
+
+  message_loop_.RunUntilIdle();
 
   Checkpoint(2);
 }
@@ -1733,11 +1737,15 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamAfterPastEosSeek) {
   demuxer_->StartWaitingForSeek();
   demuxer_->Seek(base::TimeDelta::FromMilliseconds(110),
                  base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
+  message_loop_.RunUntilIdle();
+
   EXPECT_FALSE(seek_cb_was_called);
 
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(120)));
   demuxer_->EndOfStream(PIPELINE_OK);
+  message_loop_.RunUntilIdle();
+
   EXPECT_TRUE(seek_cb_was_called);
 
   ShutdownDemuxer();
@@ -1767,11 +1775,15 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamDuringPendingSeek) {
   demuxer_->StartWaitingForSeek();
   demuxer_->Seek(base::TimeDelta::FromMilliseconds(160),
                  base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
+  message_loop_.RunUntilIdle();
+
   EXPECT_FALSE(seek_cb_was_called);
 
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(300)));
   demuxer_->EndOfStream(PIPELINE_OK);
+  message_loop_.RunUntilIdle();
+
   EXPECT_FALSE(seek_cb_was_called);
 
   scoped_ptr<Cluster> cluster_a3(
@@ -1780,6 +1792,9 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamDuringPendingSeek) {
       GenerateSingleStreamCluster(140, 180, kVideoTrackNum, 5));
   AppendData(cluster_a3->data(), cluster_a3->size());
   AppendData(cluster_v3->data(), cluster_v3->size());
+
+  message_loop_.RunUntilIdle();
+
   EXPECT_TRUE(seek_cb_was_called);
 
   ShutdownDemuxer();

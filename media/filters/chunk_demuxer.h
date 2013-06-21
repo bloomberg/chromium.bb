@@ -124,7 +124,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void ReportError_Locked(PipelineStatus error);
 
   // Returns true if any stream has seeked to a time without buffered data.
-  bool IsSeekPending_Locked() const;
+  bool IsSeekWaitingForData_Locked() const;
 
   // Returns true if all streams can successfully call EndOfStream,
   // false if any can not.
