@@ -1,17 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- TODO(arv): Check in Closue unit tests and make this run as part of the
-     tests -->
-<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
-<script src="../../cr.js"></script>
-<script src="position_util.js"></script>
-<script>
-
-goog.require('goog.testing.PropertyReplacer');
-goog.require('goog.testing.jsunit');
-
-</script>
+<script src="webui_resource_test.js"></script>
 <style>
 
 html, body {
@@ -48,7 +38,7 @@ html, body {
 var anchor = document.getElementById('anchor');
 var popup = document.getElementById('popup');
 var anchorParent = anchor.offsetParent;
-var pr = new goog.testing.PropertyReplacer;
+var oldGetBoundingClientRect = anchorParent.getBoundingClientRect;
 var availRect;
 
 function MockRect(w, h) {
@@ -66,14 +56,14 @@ function setUp() {
   anchor.style.top = '100px';
   anchor.style.left = '100px';
   availRect = new MockRect(200, 200);
-  pr.set(anchorParent, 'getBoundingClientRect', function() {
+  anchorParent.getBoundingClientRect = function() {
     return availRect;
-  });
+  };
 }
 
 function tearDown() {
   document.documentElement.dir = 'ltr';
-  pr.reset();
+  anchorParent.getBoundingClientRect = oldGetBoundingClientRect;
 }
 
 function testAbovePrimary() {

@@ -1,22 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- TODO(arv): Check in Closue unit tests and make this run as part of the
-     tests -->
-<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
-<script src="../cr.js"></script>
-<script src="event_target.js"></script>
-<script>
-
-goog.require('goog.testing.jsunit');
-
-</script>
+<script src="webui_resource_test.js"></script>
 </head>
 <body>
 <script>
 
-const EventTarget = cr.EventTarget;
-const Event = cr.Event;
+/* @const */ var EventTarget;
+/* @const */ var Event;
+
+function setUp(){
+  EventTarget = cr.EventTarget;
+  Event = cr.Event;
+}
 
 function testFunctionListener() {
   var fi = 0;
@@ -36,15 +32,15 @@ function testFunctionListener() {
   // Adding again should not cause it to be called twice
   et.addEventListener('f', f);
   et.dispatchEvent(new Event('f'));
-  assertEquals('Should have been called once', 1, fi);
+  assertEquals(1, fi, 'Should have been called once');
   assertEquals(0, gi);
 
   et.removeEventListener('f', f);
   et.dispatchEvent(new Event('f'));
-  assertEquals('Should not have been called again', 1, fi);
+  assertEquals(1, fi, 'Should not have been called again');
 
   et.dispatchEvent(new Event('g'));
-  assertEquals('Should have been called once', 1, gi);
+  assertEquals(1, gi, 'Should have been called once');
 }
 
 function testHandleEvent() {
@@ -69,15 +65,15 @@ function testHandleEvent() {
   // Adding again should not cause it to be called twice
   et.addEventListener('f', f);
   et.dispatchEvent(new Event('f'));
-  assertEquals('Should have been called once', 1, fi);
+  assertEquals(1, fi, 'Should have been called once');
   assertEquals(0, gi);
 
   et.removeEventListener('f', f);
   et.dispatchEvent(new Event('f'));
-  assertEquals('Should not have been called again', 1, fi);
+  assertEquals(1, fi, 'Should not have been called again');
 
   et.dispatchEvent(new Event('g'));
-  assertEquals('Should have been called once', 1, gi);
+  assertEquals(1, gi, 'Should have been called once');
 }
 
 function testPreventDefault() {

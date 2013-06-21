@@ -57,7 +57,7 @@ function assertNotEqual(reference, observed, opt_message) {
 }
 
 /**
- * Verifies that a test evaluation results in an assertion failure.
+ * Verifies that a test evaluation results in an exception.
  * @param {!Function} f The test function.
  */
 function assertThrows(f) {
@@ -72,15 +72,35 @@ function assertThrows(f) {
 }
 
 /**
+ * Verifies that the contents of the expected and observed arrays match.
+ * @param {Array} expected The expected result.
+ * @param {Array} observed The actual result.
+ */
+function assertArrayEquals(expected, observed) {
+  var v1 = Array.prototype.slice.call(expected);
+  var v2 = Array.prototype.slice.call(observed);
+  var equal = v1.length == v2.length;
+  if (equal) {
+    for (var i = 0; i < v1.length; i++) {
+      if (v1[i] !== v2[i]) {
+        equal = false;
+        break;
+      }
+    }
+  }
+  if (!equal) {
+    var message =
+       ['Assertion Failed', 'Observed: ' + v2, 'Expected: ' + v1].join('\n  ');
+    throw new Error(message);
+  }
+}
+
+/**
  * Runs all functions starting with test and reports success or
  * failure of the test suite.
  */
 function runTests() {
   var tests = [];
-
-  if (window.setUp)
-    window.setUp();
-
   var success = true;
   for (var name in window) {
     if (typeof window[name] == 'function' && /^test/.test(name))
@@ -92,17 +112,17 @@ function runTests() {
   }
   for (var i = 0; i < tests.length; i++) {
     try {
+      if (window.setUp)
+        window.setUp();
       window[tests[i]]();
     } catch (err) {
       console.error('Failure in test ' + tests[i] + '\n' + err);
       console.log(err.stack);
       success = false;
     }
+    if (window.tearDown)
+      window.tearDown();
   }
-
-  if (window.tearDown)
-    window.tearDown();
-
   endTests(success);
 }
 
