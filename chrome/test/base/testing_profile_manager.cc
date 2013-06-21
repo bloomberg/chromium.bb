@@ -5,10 +5,8 @@
 #include "chrome/test/base/testing_profile_manager.h"
 
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_special_storage_policy.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -47,7 +45,6 @@ bool TestingProfileManager::SetUp() {
 
 TestingProfile* TestingProfileManager::CreateTestingProfile(
     const std::string& profile_name,
-    scoped_ptr<PrefServiceSyncable> prefs,
     const string16& user_name,
     int avatar_id) {
   DCHECK(called_set_up_);
@@ -57,11 +54,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   profile_path = profile_path.AppendASCII(profile_name);
 
   // Create the profile and register it.
-  TestingProfile* profile = new TestingProfile(
-      profile_path,
-      NULL,
-      scoped_refptr<ExtensionSpecialStoragePolicy>(),
-      prefs.Pass());
+  TestingProfile* profile = new TestingProfile(profile_path);
   profile_manager_->AddProfile(profile);  // Takes ownership.
 
   // Update the user metadata.
@@ -78,8 +71,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
 TestingProfile* TestingProfileManager::CreateTestingProfile(
     const std::string& name) {
   DCHECK(called_set_up_);
-  return CreateTestingProfile(name, scoped_ptr<PrefServiceSyncable>(),
-                              UTF8ToUTF16(name), 0);
+  return CreateTestingProfile(name, UTF8ToUTF16(name), 0);
 }
 
 void TestingProfileManager::DeleteTestingProfile(const std::string& name) {

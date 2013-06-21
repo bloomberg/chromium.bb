@@ -18,7 +18,6 @@
 #include "policy/policy_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/magnifier/magnifier_constants.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -384,15 +383,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kHighContrastEnabled,
     prefs::kHighContrastEnabled,
     Value::TYPE_BOOLEAN },
-  { key::kDeviceLoginScreenDefaultLargeCursorEnabled,
-    NULL,
-    Value::TYPE_BOOLEAN },
-  { key::kDeviceLoginScreenDefaultSpokenFeedbackEnabled,
-    NULL,
-    Value::TYPE_BOOLEAN },
-  { key::kDeviceLoginScreenDefaultHighContrastEnabled,
-    NULL,
-    Value::TYPE_BOOLEAN },
   { key::kRebootAfterUpdate,
     prefs::kRebootAfterUpdate,
     Value::TYPE_BOOLEAN },
@@ -548,10 +538,6 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(new IntRangePolicyHandler(key::kUptimeLimit,
                                                 prefs::kUptimeLimit,
                                                 3600, INT_MAX, true));
-  handlers_.push_back(new IntRangePolicyHandler(
-      key::kDeviceLoginScreenDefaultScreenMagnifierType,
-      NULL,
-      0, ash::MAGNIFIER_FULL, false));
 #endif  // defined(OS_CHROMEOS)
 }
 

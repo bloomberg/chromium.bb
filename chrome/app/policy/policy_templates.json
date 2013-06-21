@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 218
+#   For your editing convenience: highest ID currently used: 214
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4603,107 +4603,6 @@
           If you set this policy, users cannot change or override it.
 
           If this policy is left unset, the screen magnifier is disabled initially but can be enabled by the user anytime.''',
-        },
-        {
-          'name': 'DeviceLoginScreenDefaultLargeCursorEnabled',
-          'type': 'main',
-          'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome_os:29-'],
-          'device_only': True,
-          'features': {
-            'dynamic_refresh': True,
-          },
-          'example_value': True,
-          'id': 215,
-          'caption': '''Set default state of the large cursor on the login screen''',
-          'desc': '''Set the default state of the large cursor accessibility feature on the login screen.
-
-          If this policy is set to true, the large cursor will be enabled when the login screen is shown.
-
-          If this policy is set to false, the large cursor will be disabled when the login screen is shown.
-
-          If you set this policy, users can temporarily override it by enabling or disabling the large cursor. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
-
-          If this policy is left unset, the large cursor is disabled when the login screen is first shown. Users can enable or disable the large cursor anytime and its status on the login screen is persisted between users.''',
-        },
-        {
-          'name': 'DeviceLoginScreenDefaultSpokenFeedbackEnabled',
-          'type': 'main',
-          'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome_os:29-'],
-          'device_only': True,
-          'features': {
-            'dynamic_refresh': True,
-          },
-          'example_value': True,
-          'id': 216,
-          'caption': '''Set the default state of spoken feedback on the login screen''',
-          'desc': '''Set the default state of the spoken feedback accessibility feature on the login screen.
-
-          If this policy is set to true, spoken feedback will be enabled when the login screen is shown.
-
-          If this policy is set to false, spoken feedback will be disabled when the login screen is shown.
-
-          If you set this policy, users can temporarily override it by enabling or disabling spoken feedback. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
-
-          If this policy is left unset, spoken feedback is disabled when the login screen is first shown. Users can enable or disable spoken feedback anytime and its status on the login screen is persisted between users.''',
-        },
-        {
-          'name': 'DeviceLoginScreenDefaultHighContrastEnabled',
-          'type': 'main',
-          'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome_os:29-'],
-          'device_only': True,
-          'features': {
-            'dynamic_refresh': True,
-          },
-          'example_value': True,
-          'id': 217,
-          'caption': '''Set the default state of high contrast mode on the login screen''',
-          'desc': '''Set the default state of the high contrast mode accessibility feature on the login screen.
-
-          If this policy is set to true, high contrast mode will be enabled when the login screen is shown.
-
-          If this policy is set to false, high contrast mode will be disabled when the login screen is shown.
-
-          If you set this policy, users can temporarily override it by enabling or disabling high contrast mode. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
-
-          If this policy is left unset, high contrast mode is disabled when the login screen is first shown. Users can enable or disable high contrast mode anytime and its status on the login screen is persisted between users.''',
-        },
-        {
-          'name': 'DeviceLoginScreenDefaultScreenMagnifierType',
-          'type': 'int-enum',
-          'schema': {
-            'type': 'integer',
-            'enum': [ 0, 1 ],
-          },
-          'items': [
-            {
-              'name': 'None',
-              'value': 0,
-              'caption': '''Screen magnifier disabled''',
-            },
-            {
-              'name': 'Full-screen',
-              'value': 1,
-              'caption': '''Full-screen magnifier enabled''',
-            },
-          ],
-          'supported_on': ['chrome_os:29-'],
-          'device_only': True,
-          'features': {
-            'dynamic_refresh': True,
-          },
-          'example_value': 1,
-          'id': 218,
-          'caption': '''Set the default screen magnifier type enabled on the login screen''',
-          'desc': '''Set the default type of screen magnifier that is enabled on the login screen.
-
-          If this policy is set, it controls the type of screen magnifier that is enabled when the login screen is shown. Setting the policy to "None" disables the screen magnifier.
-
-          If you set this policy, users can temporarily override it by enabling or disabling the screen magnifier. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
-
-          If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier anytime and its status on the login screen is persisted between users.''',
         },
       ],
     },

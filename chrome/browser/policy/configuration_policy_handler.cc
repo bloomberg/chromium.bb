@@ -292,8 +292,6 @@ bool StringToIntEnumListPolicyHandler::CheckPolicySettings(
 void StringToIntEnumListPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
-  if (!pref_path_)
-    return;
   const base::Value* value = policies.GetValue(policy_name());
   scoped_ptr<base::ListValue> list(new base::ListValue());
   if (value && Convert(value, list.get(), NULL))
@@ -362,8 +360,6 @@ IntRangePolicyHandler::~IntRangePolicyHandler() {
 
 void IntRangePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                 PrefValueMap* prefs) {
-  if (!pref_path_)
-    return;
   const base::Value* value = policies.GetValue(policy_name());
   int value_in_range;
   if (value && EnsureInRange(value, &value_in_range, NULL)) {
@@ -390,8 +386,6 @@ IntPercentageToDoublePolicyHandler::~IntPercentageToDoublePolicyHandler() {
 void IntPercentageToDoublePolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
-  if (!pref_path_)
-    return;
   const base::Value* value = policies.GetValue(policy_name());
   int percentage;
   if (value && EnsureInRange(value, &percentage, NULL)) {
@@ -622,8 +616,6 @@ bool ExtensionURLPatternListPolicyHandler::CheckPolicySettings(
 void ExtensionURLPatternListPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
-  if (!pref_path_)
-    return;
   const Value* value = policies.GetValue(policy_name());
   if (value)
     prefs->SetValue(pref_path_, value->DeepCopy());
@@ -644,8 +636,6 @@ SimplePolicyHandler::~SimplePolicyHandler() {
 
 void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                               PrefValueMap* prefs) {
-  if (!pref_path_)
-    return;
   const Value* value = policies.GetValue(policy_name());
   if (value)
     prefs->SetValue(pref_path_, value->DeepCopy());

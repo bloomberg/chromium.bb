@@ -24,7 +24,6 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -86,8 +85,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile(
-        chrome::kInitialProfile, scoped_ptr<PrefServiceSyncable>(),
-        UTF8ToUTF16("testing_profile"), 0);
+        chrome::kInitialProfile, UTF8ToUTF16("testing_profile"), 0);
     signin_profile_ = profile_manager_->CreateTestingProfile("signin_profile");
     signin_profile_->set_incognito(true);
     // Usually the signin Profile and the main Profile are separate, but since
