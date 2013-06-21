@@ -117,7 +117,7 @@ class ExternalProcessImporterClient : public content::UtilityProcessHostClient {
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
 
   // Data to be passed from the importer host to the external importer.
-  const importer::SourceProfile& source_profile_;
+  importer::SourceProfile source_profile_;
   uint16 items_;
 
   // Takes import data coming over IPC and delivers it to be written by the
