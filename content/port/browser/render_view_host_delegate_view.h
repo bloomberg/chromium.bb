@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
-#include "content/public/common/context_menu_source_type.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 
 class SkBitmap;

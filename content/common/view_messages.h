@@ -21,7 +21,6 @@
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/context_menu_source_type.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -51,6 +50,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
@@ -78,7 +78,6 @@ IPC_ENUM_TRAITS(WebKit::WebPopupType)
 IPC_ENUM_TRAITS(WebKit::WebTextDirection)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
-IPC_ENUM_TRAITS(content::ContextMenuSourceType)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
 IPC_ENUM_TRAITS(content::JavaScriptMessageType)
@@ -90,6 +89,7 @@ IPC_ENUM_TRAITS(content::StopFindAction)
 IPC_ENUM_TRAITS(content::ThreeDAPIType)
 IPC_ENUM_TRAITS(media::ChannelLayout)
 IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
+IPC_ENUM_TRAITS(ui::MenuSourceType)
 IPC_ENUM_TRAITS(ui::TextInputType)
 
 #if defined(OS_MACOSX)

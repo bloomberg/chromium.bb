@@ -13,7 +13,6 @@
 #include "base/process_util.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/context_menu_source_type.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "net/base/load_states.h"

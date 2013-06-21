@@ -37,7 +37,6 @@
     'public/common/content_switches.h',
     'public/common/context_menu_params.cc',
     'public/common/context_menu_params.h',
-    'public/common/context_menu_source_type.h',
     'public/common/console_message_level.h',
     'public/common/favicon_url.cc',
     'public/common/favicon_url.h',

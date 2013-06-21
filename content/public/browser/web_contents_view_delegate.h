@@ -12,7 +12,6 @@
 #endif
 
 #include "content/common/content_export.h"
-#include "content/public/common/context_menu_source_type.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_MACOSX)

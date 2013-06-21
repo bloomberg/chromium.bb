@@ -27,7 +27,6 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/view_message_enums.h"
-#include "content/public/common/context_menu_source_type.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
@@ -56,6 +55,7 @@
 #include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/common/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
@@ -1562,7 +1562,7 @@ class CONTENT_EXPORT RenderViewImpl
   scoped_ptr<RenderViewPepperHelper> pepper_helper_;
   scoped_ptr<StatsCollectionObserver> stats_collection_observer_;
 
-  ContextMenuSourceType context_menu_source_type_;
+  ui::MenuSourceType context_menu_source_type_;
   gfx::Point touch_editing_context_menu_location_;
 
   // ---------------------------------------------------------------------------
