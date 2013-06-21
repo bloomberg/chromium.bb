@@ -67,6 +67,10 @@ class SearchMetadataTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
+    metadata_storage_.reset(new ResourceMetadataStorage(
+        temp_dir_.path(), base::MessageLoopProxy::current()));
+    ASSERT_TRUE(metadata_storage_->Initialize());
+
     cache_.reset(new internal::FileCache(temp_dir_.path(),
                                          temp_dir_.path(),
                                          base::MessageLoopProxy::current(),
@@ -74,7 +78,7 @@ class SearchMetadataTest : public testing::Test {
     ASSERT_TRUE(cache_->Initialize());
 
     resource_metadata_.reset(
-        new ResourceMetadata(temp_dir_.path(),
+        new ResourceMetadata(metadata_storage_.get(),
                              base::MessageLoopProxy::current()));
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
@@ -188,6 +192,8 @@ class SearchMetadataTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  scoped_ptr<ResourceMetadataStorage,
+             test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;

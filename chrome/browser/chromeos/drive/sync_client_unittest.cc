@@ -86,8 +86,13 @@ class SyncClientTest : public testing::Test {
         "chromeos/gdata/account_metadata.json");
 
     scheduler_.reset(new JobScheduler(profile_.get(), drive_service_.get()));
-    metadata_.reset(new internal::ResourceMetadata(
+
+    metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.path(), base::MessageLoopProxy::current()));
+    ASSERT_TRUE(metadata_storage_->Initialize());
+
+    metadata_.reset(new internal::ResourceMetadata(
+        metadata_storage_.get(), base::MessageLoopProxy::current()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     cache_.reset(new FileCache(temp_dir_.path(),
@@ -187,8 +192,9 @@ class SyncClientTest : public testing::Test {
   scoped_ptr<SyncClientTestDriveService> drive_service_;
   DummyOperationObserver observer_;
   scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
-      metadata_;
+  scoped_ptr<ResourceMetadataStorage,
+             test_util::DestroyHelperForTests> metadata_storage_;
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<SyncClient> sync_client_;
 

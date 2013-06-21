@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/logging.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
@@ -91,9 +93,11 @@ std::string GetDriveUserAgent() {
 
 // Initializes FileCache and ResourceMetadata.
 // Must be run on the same task runner used by |cache| and |resource_metadata|.
-FileError InitializeMetadata(const base::FilePath& cache_root_directory,
-                             internal::FileCache* cache,
-                             internal::ResourceMetadata* resource_metadata) {
+FileError InitializeMetadata(
+    const base::FilePath& cache_root_directory,
+    internal::ResourceMetadataStorage* metadata_storage,
+    internal::FileCache* cache,
+    internal::ResourceMetadata* resource_metadata) {
   if (!file_util::CreateDirectory(cache_root_directory.Append(
           util::kMetadataDirectory)) ||
       !file_util::CreateDirectory(cache_root_directory.Append(
@@ -116,6 +120,11 @@ FileError InitializeMetadata(const base::FilePath& cache_root_directory,
 
   if (!cache->Initialize()) {
     LOG(WARNING) << "Failed to initialize the cache.";
+    return FILE_ERROR_FAILED;
+  }
+
+  if (!metadata_storage->Initialize()) {
+    LOG(WARNING) << "Failed to initialize the metadata storage.";
     return FILE_ERROR_FAILED;
   }
 
@@ -157,6 +166,9 @@ DriveIntegrationService::DriveIntegrationService(
         GetDriveUserAgent()));
   }
   scheduler_.reset(new JobScheduler(profile_, drive_service_.get()));
+  metadata_storage_.reset(new internal::ResourceMetadataStorage(
+      cache_root_directory_.Append(util::kMetadataDirectory),
+      blocking_task_runner_.get()));
   cache_.reset(new internal::FileCache(
       cache_root_directory_.Append(util::kMetadataDirectory),
       cache_root_directory_.Append(util::kCacheFileDirectory),
@@ -165,8 +177,7 @@ DriveIntegrationService::DriveIntegrationService(
   drive_app_registry_.reset(new DriveAppRegistry(scheduler_.get()));
 
   resource_metadata_.reset(new internal::ResourceMetadata(
-      cache_root_directory_.Append(util::kMetadataDirectory),
-      blocking_task_runner_));
+      metadata_storage_.get(), blocking_task_runner_));
 
   file_system_.reset(
       test_file_system ? test_file_system : new FileSystem(
@@ -198,6 +209,7 @@ void DriveIntegrationService::Initialize() {
       FROM_HERE,
       base::Bind(&InitializeMetadata,
                  cache_root_directory_,
+                 metadata_storage_.get(),
                  cache_.get(),
                  resource_metadata_.get()),
       base::Bind(&DriveIntegrationService::InitializeAfterMetadataInitialized,

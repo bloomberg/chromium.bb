@@ -10,8 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace leveldb {
 class DB;
@@ -22,6 +27,8 @@ namespace drive {
 
 class ResourceEntry;
 class ResourceMetadataHeader;
+
+namespace internal {
 
 // Storage for ResourceMetadata which is responsible to manage resource
 // entries and child-parent relationships between entries.
@@ -91,8 +98,13 @@ class ResourceMetadataStorage {
     DISALLOW_COPY_AND_ASSIGN(CacheEntryIterator);
   };
 
-  explicit ResourceMetadataStorage(const base::FilePath& directory_path);
-  virtual ~ResourceMetadataStorage();
+  ResourceMetadataStorage(const base::FilePath& directory_path,
+                          base::SequencedTaskRunner* blocking_task_runner);
+
+  const base::FilePath& directory_path() const { return directory_path_; }
+
+  // Destroys this object.
+  void Destroy();
 
   // Initializes this object.
   bool Initialize();
@@ -139,6 +151,12 @@ class ResourceMetadataStorage {
  private:
   friend class ResourceMetadataStorageTest;
 
+  // To destruct this object, use Destroy().
+  ~ResourceMetadataStorage();
+
+  // Used to implement Destroy().
+  void DestroyOnBlockingPool();
+
   // Returns a string to be used as a key for child entry.
   static std::string GetChildEntryKey(const std::string& parent_resource_id,
                                       const std::string& child_name);
@@ -158,9 +176,12 @@ class ResourceMetadataStorage {
   // Entries stored in this storage.
   scoped_ptr<leveldb::DB> resource_map_;
 
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(ResourceMetadataStorage);
 };
 
+}  // namespace internal
 }  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_STORAGE_H_

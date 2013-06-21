@@ -125,11 +125,10 @@ EntryInfoPairResult::~EntryInfoPairResult() {
 namespace internal {
 
 ResourceMetadata::ResourceMetadata(
-    const base::FilePath& data_directory_path,
+    ResourceMetadataStorage* storage,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : data_directory_path_(data_directory_path),
-      blocking_task_runner_(blocking_task_runner),
-      storage_(new ResourceMetadataStorage(data_directory_path)),
+    : blocking_task_runner_(blocking_task_runner),
+      storage_(storage),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -137,12 +136,8 @@ ResourceMetadata::ResourceMetadata(
 FileError ResourceMetadata::Initialize() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
-
-  // Initialize the storage.
-  if (!storage_->Initialize())
-    return FILE_ERROR_FAILED;
 
   if (!SetUpDefaultEntries())
     return FILE_ERROR_FAILED;
@@ -174,7 +169,7 @@ void ResourceMetadata::ResetOnUIThread(const FileOperationCallback& callback) {
 FileError ResourceMetadata::Reset() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
 
   if (!storage_->SetLargestChangestamp(0) ||
@@ -249,7 +244,7 @@ int64 ResourceMetadata::GetLargestChangestamp() {
 FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
 
   storage_->SetLargestChangestamp(value);
@@ -270,7 +265,7 @@ void ResourceMetadata::AddEntryOnUIThread(const ResourceEntry& entry,
 FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
 
   ResourceEntry existing_entry;
@@ -320,7 +315,7 @@ void ResourceMetadata::RenameEntryOnUIThread(const base::FilePath& file_path,
 FileError ResourceMetadata::RemoveEntry(const std::string& resource_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
 
   // Disallow deletion of special entries "/drive" and "/drive/other".
@@ -438,7 +433,7 @@ FileError ResourceMetadata::ReadDirectoryByPath(
 FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
 
   ResourceEntry old_entry;
@@ -529,7 +524,7 @@ FileError ResourceMetadata::MoveEntryToDirectory(
   DCHECK(!file_path.empty());
   DCHECK(out_file_path);
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
 
   ResourceEntry entry, destination;
@@ -558,7 +553,7 @@ FileError ResourceMetadata::RenameEntry(
 
   DVLOG(1) << "RenameEntry " << file_path.value() << " to " << new_name;
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
 
   ResourceEntry entry;
@@ -631,7 +626,7 @@ FileError ResourceMetadata::RefreshDirectory(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!directory_fetch_info.empty());
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_SPACE;
 
   ResourceEntry directory;
@@ -649,7 +644,7 @@ FileError ResourceMetadata::RefreshDirectory(
   // entries in the loop. We'll process deleted entries afterwards.
   for (ResourceEntryMap::const_iterator it = entry_map.begin();
        it != entry_map.end(); ++it) {
-    if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
       return FILE_ERROR_NO_SPACE;
 
     const ResourceEntry& entry = it->second;
@@ -674,7 +669,7 @@ FileError ResourceMetadata::RefreshDirectory(
   std::vector<std::string> children;
   storage_->GetChildren(directory.resource_id(), &children);
   for (size_t i = 0; i < children.size(); ++i) {
-    if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
       return FILE_ERROR_NO_SPACE;
 
     if (entry_map.count(children[i]) == 0) {

@@ -123,7 +123,20 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
         content::BrowserThread::GetBlockingPool();
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-    resource_metadata_.reset(new ResourceMetadata(temp_dir_.path(),
+
+    metadata_storage_.reset(new ResourceMetadataStorage(
+        temp_dir_.path(), blocking_task_runner_));
+    bool success = false;
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_,
+        FROM_HERE,
+        base::Bind(&ResourceMetadataStorage::Initialize,
+                   base::Unretained(metadata_storage_.get())),
+        google_apis::test_util::CreateCopyResultCallback(&success));
+    google_apis::test_util::RunBlockingPoolTask();
+    ASSERT_TRUE(success);
+
+    resource_metadata_.reset(new ResourceMetadata(metadata_storage_.get(),
                                                   blocking_task_runner_));
 
     FileError error = FILE_ERROR_FAILED;
@@ -144,6 +157,7 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    metadata_storage_.reset();
     resource_metadata_.reset();
     base::ThreadRestrictions::SetIOAllowed(true);
   }
@@ -175,61 +189,36 @@ class ResourceMetadataTestOnUIThread : public testing::Test {
     return entries.Pass();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  scoped_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
+      metadata_storage_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
-
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(ResourceMetadataTestOnUIThread, LargestChangestamp) {
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new ResourceMetadata(temp_dir_.path(),
-                                             blocking_task_runner_));
   FileError error = FILE_ERROR_FAILED;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::Initialize,
-                 base::Unretained(resource_metadata.get())),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(FILE_ERROR_OK, error);
-
   int64 in_changestamp = 123456;
-  resource_metadata->SetLargestChangestampOnUIThread(
+  resource_metadata_->SetLargestChangestampOnUIThread(
       in_changestamp,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   int64 out_changestamp = 0;
-  resource_metadata->GetLargestChangestampOnUIThread(
+  resource_metadata_->GetLargestChangestampOnUIThread(
       google_apis::test_util::CreateCopyResultCallback(&out_changestamp));
   google_apis::test_util::RunBlockingPoolTask();
   DCHECK_EQ(in_changestamp, out_changestamp);
 }
 
 TEST_F(ResourceMetadataTestOnUIThread, GetResourceEntryById_RootDirectory) {
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
-      resource_metadata(new ResourceMetadata(temp_dir_.path(),
-                                             blocking_task_runner_));
-  FileError error = FILE_ERROR_FAILED;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::Initialize,
-                 base::Unretained(resource_metadata.get())),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  ASSERT_EQ(FILE_ERROR_OK, error);
-
-  scoped_ptr<ResourceEntry> entry;
-
   // Look up the root directory by its resource ID.
-  resource_metadata->GetResourceEntryByIdOnUIThread(
+  FileError error = FILE_ERROR_FAILED;
+  scoped_ptr<ResourceEntry> entry;
+  resource_metadata_->GetResourceEntryByIdOnUIThread(
       util::kDriveGrandRootSpecialResourceId,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
@@ -869,9 +858,12 @@ class ResourceMetadataTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    // Use the main thread as the blocking task runner.
-    resource_metadata_.reset(new ResourceMetadata(
+    metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.path(), base::MessageLoopProxy::current()));
+    ASSERT_TRUE(metadata_storage_->Initialize());
+
+    resource_metadata_.reset(new ResourceMetadata(
+        metadata_storage_.get(), base::MessageLoopProxy::current()));
 
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
@@ -883,6 +875,8 @@ class ResourceMetadataTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
+      metadata_storage_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
 };

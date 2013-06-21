@@ -60,7 +60,19 @@ void OperationTestBase::SetUp() {
   scheduler_.reset(
       new JobScheduler(profile_.get(), fake_drive_service_.get()));
 
-  metadata_.reset(new internal::ResourceMetadata(temp_dir_.path(),
+  metadata_storage_.reset(new internal::ResourceMetadataStorage(
+      temp_dir_.path(), blocking_task_runner_));
+  bool success = false;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadataStorage::Initialize,
+                 base::Unretained(metadata_storage_.get())),
+      google_apis::test_util::CreateCopyResultCallback(&success));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_TRUE(success);
+
+  metadata_.reset(new internal::ResourceMetadata(metadata_storage_.get(),
                                                  blocking_task_runner_));
 
   FileError error = FILE_ERROR_FAILED;
@@ -78,7 +90,7 @@ void OperationTestBase::SetUp() {
                                        temp_dir_.path(),
                                        blocking_task_runner_.get(),
                                        fake_free_disk_space_getter_.get()));
-  bool success = false;
+  success = false;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,

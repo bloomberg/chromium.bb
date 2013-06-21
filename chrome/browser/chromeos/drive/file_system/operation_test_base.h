@@ -29,6 +29,7 @@ class JobScheduler;
 namespace internal {
 class FileCache;
 class ResourceMetadata;
+class ResourceMetadataStorage;
 }  // namespace internal
 
 namespace file_system {
@@ -104,6 +105,8 @@ class OperationTestBase : public testing::Test {
   LoggingObserver observer_;
   scoped_ptr<FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
+  scoped_ptr<internal::ResourceMetadataStorage,
+             test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;

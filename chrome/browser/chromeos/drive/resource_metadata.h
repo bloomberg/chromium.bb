@@ -25,7 +25,6 @@ class SequencedTaskRunner;
 namespace drive {
 
 class ResourceEntry;
-class ResourceMetadataStorage;
 
 typedef std::vector<ResourceEntry> ResourceEntryVector;
 typedef std::map<std::string /* resource_id */, ResourceEntry>
@@ -112,10 +111,8 @@ class ResourceMetadata {
  public:
   typedef ResourceMetadataStorage::Iterator Iterator;
 
-  // |root_resource_id| is the resource id for the root directory.
-  // Must be called on the UI thread.
   ResourceMetadata(
-      const base::FilePath& data_directory_path,
+      ResourceMetadataStorage* storage,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   // Initializes this object.
@@ -304,11 +301,9 @@ class ResourceMetadata {
   // Removes the entry and its descendants.
   bool RemoveEntryRecursively(const std::string& resource_id);
 
-  const base::FilePath data_directory_path_;
-
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  scoped_ptr<ResourceMetadataStorage> storage_;
+  ResourceMetadataStorage* storage_;
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.

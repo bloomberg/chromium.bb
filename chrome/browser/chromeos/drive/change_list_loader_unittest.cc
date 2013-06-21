@@ -33,7 +33,11 @@ class ChangeListLoaderTest : public testing::Test {
         "chromeos/gdata/account_metadata.json"));
 
     scheduler_.reset(new JobScheduler(profile_.get(), drive_service_.get()));
-    metadata_.reset(new ResourceMetadata(temp_dir_.path(),
+    metadata_storage_.reset(new ResourceMetadataStorage(
+        temp_dir_.path(), base::MessageLoopProxy::current()));
+    ASSERT_TRUE(metadata_storage_->Initialize());
+
+    metadata_.reset(new ResourceMetadata(metadata_storage_.get(),
                                          base::MessageLoopProxy::current()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
@@ -52,6 +56,8 @@ class ChangeListLoaderTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<FakeDriveService> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
+  scoped_ptr<ResourceMetadataStorage,
+             test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<ChangeListLoader> change_list_loader_;

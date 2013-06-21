@@ -36,6 +36,7 @@ class JobListInterface;
 namespace internal {
 class FileCache;
 class ResourceMetadata;
+class ResourceMetadataStorage;
 }  // namespace internal
 
 // Interface for classes that need to observe events from
@@ -146,6 +147,8 @@ class DriveIntegrationService
 
   base::FilePath cache_root_directory_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  scoped_ptr<internal::ResourceMetadataStorage,
+             util::DestroyHelper> metadata_storage_;
   scoped_ptr<internal::FileCache, util::DestroyHelper> cache_;
   scoped_ptr<DriveServiceInterface> drive_service_;
   scoped_ptr<JobScheduler> scheduler_;

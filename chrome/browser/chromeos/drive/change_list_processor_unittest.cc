@@ -41,8 +41,13 @@ class ChangeListProcessorTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    metadata_.reset(new internal::ResourceMetadata(
+
+    metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.path(), base::MessageLoopProxy::current()));
+    ASSERT_TRUE(metadata_storage_->Initialize());
+
+    metadata_.reset(new internal::ResourceMetadata(
+        metadata_storage_.get(), base::MessageLoopProxy::current()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
   }
 
@@ -98,8 +103,9 @@ class ChangeListProcessorTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
-      metadata_;
+  scoped_ptr<ResourceMetadataStorage,
+             test_util::DestroyHelperForTests> metadata_storage_;
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
 };
 
 }  // namespace

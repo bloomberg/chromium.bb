@@ -4,15 +4,19 @@
 
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace drive {
+namespace internal {
 
 namespace {
 
@@ -194,12 +198,17 @@ void ResourceMetadataStorage::CacheEntryIterator::AdvanceInternal() {
 }
 
 ResourceMetadataStorage::ResourceMetadataStorage(
-    const base::FilePath& directory_path)
-    : directory_path_(directory_path) {
+    const base::FilePath& directory_path,
+    base::SequencedTaskRunner* blocking_task_runner)
+    : directory_path_(directory_path),
+      blocking_task_runner_(blocking_task_runner) {
 }
 
-ResourceMetadataStorage::~ResourceMetadataStorage() {
-  base::ThreadRestrictions::AssertIOAllowed();
+void ResourceMetadataStorage::Destroy() {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ResourceMetadataStorage::DestroyOnBlockingPool,
+                 base::Unretained(this)));
 }
 
 bool ResourceMetadataStorage::Initialize() {
@@ -464,6 +473,14 @@ ResourceMetadataStorage::GetCacheEntryIterator() {
   return make_scoped_ptr(new CacheEntryIterator(it.Pass()));
 }
 
+ResourceMetadataStorage::~ResourceMetadataStorage() {
+  base::ThreadRestrictions::AssertIOAllowed();
+}
+
+void ResourceMetadataStorage::DestroyOnBlockingPool() {
+  delete this;
+}
+
 // static
 std::string ResourceMetadataStorage::GetChildEntryKey(
     const std::string& parent_resource_id,
@@ -593,4 +610,5 @@ bool ResourceMetadataStorage::CheckValidity() {
   return true;
 }
 
+}  // namespace internal
 }  // namespace drive

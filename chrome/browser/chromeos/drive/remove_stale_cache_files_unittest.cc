@@ -28,14 +28,18 @@ class RemoveStaleCacheFilesTest : public testing::Test {
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
+    metadata_storage_.reset(new ResourceMetadataStorage(
+        temp_dir_.path(), base::MessageLoopProxy::current()));
+
     cache_.reset(new FileCache(temp_dir_.path(),
                                temp_dir_.path(),
                                base::MessageLoopProxy::current(),
                                fake_free_disk_space_getter_.get()));
 
     resource_metadata_.reset(new ResourceMetadata(
-        temp_dir_.path(), base::MessageLoopProxy::current()));
+        metadata_storage_.get(), base::MessageLoopProxy::current()));
 
+    ASSERT_TRUE(metadata_storage_->Initialize());
     ASSERT_TRUE(cache_->Initialize());
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
   }
@@ -43,6 +47,8 @@ class RemoveStaleCacheFilesTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
 
+  scoped_ptr<ResourceMetadataStorage,
+             test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;

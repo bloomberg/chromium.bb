@@ -99,9 +99,13 @@ class FileSystemTest : public testing::Test {
   }
 
   void SetUpResourceMetadataAndFileSystem() {
-    resource_metadata_.reset(new internal::ResourceMetadata(
+    metadata_storage_.reset(new internal::ResourceMetadataStorage(
         util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory),
         base::MessageLoopProxy::current()));
+    ASSERT_TRUE(metadata_storage_->Initialize());
+
+    resource_metadata_.reset(new internal::ResourceMetadata(
+        metadata_storage_.get(), base::MessageLoopProxy::current()));
 
     file_system_.reset(new FileSystem(
         profile_.get(),
@@ -199,13 +203,16 @@ class FileSystemTest : public testing::Test {
     // Destroy the existing resource metadata to close DB.
     resource_metadata_.reset();
 
-    const std::string root_resource_id =
-        fake_drive_service_->GetRootResourceId();
+    base::FilePath metadata_directory =
+        util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory);
+    scoped_ptr<internal::ResourceMetadataStorage,
+               test_util::DestroyHelperForTests> metadata_storage(
+                   new internal::ResourceMetadataStorage(
+                       metadata_directory, base::MessageLoopProxy::current()));
+
     scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
         resource_metadata(new internal::ResourceMetadata(
-            util::GetCacheRootPath(profile_.get()).Append(
-                util::kMetadataDirectory),
-            base::MessageLoopProxy::current()));
+            metadata_storage_.get(), base::MessageLoopProxy::current()));
 
     if (resource_metadata->Initialize() != FILE_ERROR_OK)
       return false;
@@ -215,6 +222,8 @@ class FileSystemTest : public testing::Test {
       return false;
 
     // drive/root
+    const std::string root_resource_id =
+        fake_drive_service_->GetRootResourceId();
     if (resource_metadata->AddEntry(util::CreateMyDriveRootEntry(
             root_resource_id)) != FILE_ERROR_OK)
       return false;
@@ -279,6 +288,8 @@ class FileSystemTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
 
+  scoped_ptr<internal::ResourceMetadataStorage,
+             test_util::DestroyHelperForTests> metadata_storage_;
   scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FileSystem> file_system_;
   scoped_ptr<FakeDriveService> fake_drive_service_;

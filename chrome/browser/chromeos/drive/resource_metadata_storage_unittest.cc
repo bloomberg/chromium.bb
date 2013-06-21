@@ -9,21 +9,22 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/test_util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace drive {
+namespace internal {
 
 class ResourceMetadataStorageTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    storage_.reset(new ResourceMetadataStorage(temp_dir_.path()));
+    storage_.reset(new ResourceMetadataStorage(
+        temp_dir_.path(), base::MessageLoopProxy::current()));
     ASSERT_TRUE(storage_->Initialize());
-  }
-
-  virtual void TearDown() OVERRIDE {
   }
 
   // Overwrites |storage_|'s version.
@@ -58,8 +59,10 @@ class ResourceMetadataStorageTest : public testing::Test {
                                                   child_base_name));
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<ResourceMetadataStorage> storage_;
+  scoped_ptr<ResourceMetadataStorage,
+             test_util::DestroyHelperForTests> storage_;
 };
 
 TEST_F(ResourceMetadataStorageTest, LargestChangestamp) {
@@ -308,7 +311,8 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   EXPECT_TRUE(storage_->PutEntry(entry2));
 
   // Close DB and reopen.
-  storage_.reset(new ResourceMetadataStorage(temp_dir_.path()));
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.path(), base::MessageLoopProxy::current()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Can read data.
@@ -339,7 +343,8 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
 
   // Set incompatible version and reopen DB.
   SetDBVersion(ResourceMetadataStorage::kDBVersion - 1);
-  storage_.reset(new ResourceMetadataStorage(temp_dir_.path()));
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.path(), base::MessageLoopProxy::current()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Data is erased because of the incompatible version.
@@ -352,7 +357,8 @@ TEST_F(ResourceMetadataStorageTest, WrongPath) {
   base::FilePath path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &path));
 
-  storage_.reset(new ResourceMetadataStorage(path));
+  storage_.reset(new ResourceMetadataStorage(
+      path, base::MessageLoopProxy::current()));
   // Cannot initialize DB beacause the path does not point a directory.
   ASSERT_FALSE(storage_->Initialize());
 }
@@ -434,4 +440,5 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   EXPECT_TRUE(CheckValidity());
 }
 
+}  // namespace internal
 }  // namespace drive
