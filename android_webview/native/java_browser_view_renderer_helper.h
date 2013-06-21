@@ -22,7 +22,8 @@ class JavaBrowserViewRendererHelper : public BrowserViewRenderer::JavaHelper {
   virtual base::android::ScopedJavaLocalRef<jobject> CreateBitmap(
       JNIEnv* env,
       int width,
-      int height) OVERRIDE;
+      int height,
+      const base::android::JavaRef<jobject>& jcanvas) OVERRIDE;
   virtual void DrawBitmapIntoCanvas(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jbitmap,

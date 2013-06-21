@@ -21,9 +21,17 @@ public class JavaBrowserViewRendererHelper {
 
     /**
      * Provides a Bitmap object with a given width and height used for auxiliary rasterization.
+     * |canvas| is optional and if supplied indicates the Canvas that this Bitmap will be
+     * drawn into. Note the Canvas will not be modified in any way.
      */
     @CalledByNative
-    private static Bitmap createBitmap(int width, int height) {
+    private static Bitmap createBitmap(int width, int height, Canvas canvas) {
+        if (canvas != null) {
+            // When drawing into a Canvas, there is a maximum size imposed
+            // on Bitmaps that can be drawn. Respect that limit.
+            width = Math.min(width, canvas.getMaximumBitmapWidth());
+            height = Math.min(height, canvas.getMaximumBitmapHeight());
+        }
         return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
     }
 

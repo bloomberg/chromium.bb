@@ -440,10 +440,11 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
   AwPixelInfo* pixels = sw_functions ?
       sw_functions->access_pixels(env, java_canvas) : NULL;
   // Render into an auxiliary bitmap if pixel info is not available.
+  ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
   if (pixels == NULL) {
     TRACE_EVENT0("android_webview", "RenderToAuxBitmap");
     ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-        env, clip.width(), clip.height()));
+        env, clip.width(), clip.height(), jcanvas));
     if (!jbitmap.obj()) {
       TRACE_EVENT_INSTANT0("android_webview",
                            "EarlyOut_BitmapAllocFail",
@@ -462,7 +463,6 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
       return false;
     }
 
-    ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
     java_helper_->DrawBitmapIntoCanvas(env, jbitmap, jcanvas,
                                        clip.x(), clip.y());
     return true;
@@ -532,12 +532,11 @@ InProcessViewRenderer::CapturePicture() {
   }
 
   // If Skia versions are not compatible, workaround it by rasterizing the
-  // picture into a bitmap and drawing it into a new Java picture. Pass false
-  // for |cache_result| as the picture we create will hold a shallow reference
-  // to the bitmap drawn, and we don't want subsequent draws to corrupt any
-  // previously returned pictures.
+  // picture into a bitmap and drawing it into a new Java picture. Pass null
+  // for |canvas| as we don't have java canvas at this point (and it would be
+  // software anyway).
   ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-      env, picture->width(), picture->height()));
+      env, picture->width(), picture->height(), ScopedJavaLocalRef<jobject>()));
   if (!jbitmap.obj())
     return ScopedJavaLocalRef<jobject>();
 
