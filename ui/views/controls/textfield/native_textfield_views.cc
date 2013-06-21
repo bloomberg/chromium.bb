@@ -54,9 +54,6 @@
 
 namespace {
 
-// Default "system" color for text cursor.
-const SkColor kDefaultCursorColor = SK_ColorBLACK;
-
 void ConvertRectToScreen(const views::View* src, gfx::Rect* r) {
   DCHECK(src);
 
@@ -1118,7 +1115,7 @@ void NativeTextfieldViews::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
   UpdateTextColor();
   UpdateBackgroundColor();
   gfx::RenderText* render_text = GetRenderText();
-  render_text->set_cursor_color(kDefaultCursorColor);
+  render_text->set_cursor_color(textfield_->GetTextColor());
   render_text->set_selection_color(theme->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionColor));
   render_text->set_selection_background_focused_color(theme->GetSystemColor(
