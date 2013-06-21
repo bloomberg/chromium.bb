@@ -5,10 +5,12 @@
 #include "base/test/test_launcher.h"
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -106,18 +108,36 @@ class ResultsPrinter {
  public:
   explicit ResultsPrinter(const CommandLine& command_line);
   ~ResultsPrinter();
-  void OnTestCaseStart(const char* name, int test_count) const;
-  void OnTestCaseEnd() const;
 
-  void OnTestEnd(const char* name, const char* case_name,
-                 bool success, double elapsed_time) const;
+  // Adds |result| to the stored test results.
+  void AddTestResult(const TestResult& result);
+
+  // Returns list of full names of failed tests.
+  const std::vector<std::string>& failed_tests() const { return failed_tests_; }
+
+  // Returns total number of tests run.
+  size_t test_run_count() const { return test_run_count_; }
+
  private:
+  // Test results grouped by test case name.
+  typedef std::map<std::string, std::vector<TestResult> > ResultsMap;
+  ResultsMap results_;
+
+  // List of full names of failed tests.
+  std::vector<std::string> failed_tests_;
+
+  // Total number of tests run.
+  size_t test_run_count_;
+
+  // File handle of output file (can be NULL if no file).
   FILE* out_;
 
   DISALLOW_COPY_AND_ASSIGN(ResultsPrinter);
 };
 
-ResultsPrinter::ResultsPrinter(const CommandLine& command_line) : out_(NULL) {
+ResultsPrinter::ResultsPrinter(const CommandLine& command_line)
+    : test_run_count_(0),
+      out_(NULL) {
   if (!command_line.HasSwitch(kGTestOutputFlag))
     return;
   std::string flag = command_line.GetSwitchValueASCII(kGTestOutputFlag);
@@ -152,61 +172,44 @@ ResultsPrinter::ResultsPrinter(const CommandLine& command_line) : out_(NULL) {
                << path.value() << ".";
     return;
   }
-  fprintf(out_, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-  fprintf(out_, "<testsuites name=\"AllTests\" tests=\"\" failures=\"\""
-          " disabled=\"\" errors=\"\" time=\"\">\n");
 }
 
 ResultsPrinter::~ResultsPrinter() {
   if (!out_)
     return;
+  fprintf(out_, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+  fprintf(out_, "<testsuites name=\"AllTests\" tests=\"\" failures=\"\""
+          " disabled=\"\" errors=\"\" time=\"\">\n");
+  for (ResultsMap::iterator i = results_.begin(); i != results_.end(); ++i) {
+    fprintf(out_, "  <testsuite name=\"%s\" tests=\"%" PRIuS "\" failures=\"\""
+            " disabled=\"\" errors=\"\" time=\"\">\n",
+            i->first.c_str(), i->second.size());
+    for (size_t j = 0; j < i->second.size(); ++j) {
+      const TestResult& result = i->second[j];
+      fprintf(out_, "    <testcase name=\"%s\" status=\"run\" time=\"%.3f\""
+              " classname=\"%s\">\n",
+              result.test_name.c_str(),
+              result.elapsed_time.InSecondsF(),
+              result.test_case_name.c_str());
+      if (!result.success)
+        fprintf(out_, "      <failure message=\"\" type=\"\"></failure>\n");
+      fprintf(out_, "    </testcase>\n");
+    }
+    fprintf(out_, "  </testsuite>\n");
+  }
   fprintf(out_, "</testsuites>\n");
   fclose(out_);
 }
 
-void ResultsPrinter::OnTestCaseStart(const char* name, int test_count) const {
-  if (!out_)
-    return;
-  fprintf(out_, "  <testsuite name=\"%s\" tests=\"%d\" failures=\"\""
-          " disabled=\"\" errors=\"\" time=\"\">\n", name, test_count);
-}
+void ResultsPrinter::AddTestResult(const TestResult& result) {
+  ++test_run_count_;
+  results_[result.test_case_name].push_back(result);
 
-void ResultsPrinter::OnTestCaseEnd() const {
-  if (!out_)
-    return;
-  fprintf(out_, "  </testsuite>\n");
-}
-
-void ResultsPrinter::OnTestEnd(const char* name,
-                               const char* case_name,
-                               bool success,
-                               double elapsed_time) const {
-  if (!out_)
-    return;
-  fprintf(out_, "    <testcase name=\"%s\" status=\"run\" time=\"%.3f\""
-          " classname=\"%s\">\n",
-          name, elapsed_time / 1000.0, case_name);
-  if (!success)
-    fprintf(out_, "      <failure message=\"\" type=\"\"></failure>\n");
-  fprintf(out_, "</testcase>\n");
-}
-
-class TestCasePrinterHelper {
- public:
-  TestCasePrinterHelper(const ResultsPrinter& printer,
-                        const char* name,
-                        int total_test_count)
-      : printer_(printer) {
-    printer_.OnTestCaseStart(name, total_test_count);
+  if (!result.success) {
+    failed_tests_.push_back(
+        std::string(result.test_case_name) + "." + result.test_name);
   }
-  ~TestCasePrinterHelper() {
-    printer_.OnTestCaseEnd();
-  }
- private:
-  const ResultsPrinter& printer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCasePrinterHelper);
-};
+}
 
 // For a basic pattern matching for gtest_filter options.  (Copied from
 // gtest.cc, see the comment below and http://crbug.com/44497)
@@ -271,14 +274,10 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
   }
 
   int num_runnable_tests = 0;
-  int test_run_count = 0;
-  std::vector<std::string> failed_tests;
 
   ResultsPrinter printer(*command_line);
   for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
     const testing::TestCase* test_case = unit_test->GetTestCase(i);
-    TestCasePrinterHelper helper(printer, test_case->name(),
-                                 test_case->total_test_count());
     for (int j = 0; j < test_case->total_test_count(); ++j) {
       const testing::TestInfo* test_info = test_case->GetTestInfo(j);
       std::string test_name = test_info->test_case_name();
@@ -307,29 +306,28 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
       if (!should_run)
         continue;
 
-      TimeTicks start_time = TimeTicks::Now();
-      ++test_run_count;
-      bool success = launcher_delegate->RunTest(test_case, test_info);
-      if (!success)
-        failed_tests.push_back(test_name);
-      printer.OnTestEnd(
-          test_info->name(), test_case->name(), success,
-          (TimeTicks::Now() - start_time).InMillisecondsF());
+      launcher_delegate->RunTest(test_case,
+                                 test_info,
+                                 base::Bind(
+                                     &ResultsPrinter::AddTestResult,
+                                     base::Unretained(&printer)));
     }
   }
 
-  printf("%d test%s run\n", test_run_count, test_run_count > 1 ? "s" : "");
-  printf("%d test%s failed\n",
-         static_cast<int>(failed_tests.size()),
-         failed_tests.size() != 1 ? "s" : "");
-  if (failed_tests.empty())
+  launcher_delegate->RunRemainingTests();
+
+  printf("%" PRIuS " test%s run\n",
+         printer.test_run_count(),
+         printer.test_run_count() > 1 ? "s" : "");
+  printf("%" PRIuS " test%s failed\n",
+         printer.failed_tests().size(),
+         printer.failed_tests().size() != 1 ? "s" : "");
+  if (printer.failed_tests().empty())
     return true;
 
   printf("Failing tests:\n");
-  for (std::vector<std::string>::const_iterator iter = failed_tests.begin();
-       iter != failed_tests.end(); ++iter) {
-    printf("%s\n", iter->c_str());
-  }
+  for (size_t i = 0; i < printer.failed_tests().size(); ++i)
+    printf("%s\n", printer.failed_tests()[i].c_str());
 
   return false;
 }
@@ -343,6 +341,9 @@ const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
 const char kGTestOutputFlag[] = "gtest_output";
 
 const char kHelpFlag[]   = "help";
+
+TestResult::TestResult() {
+}
 
 TestLauncherDelegate::~TestLauncherDelegate() {
 }

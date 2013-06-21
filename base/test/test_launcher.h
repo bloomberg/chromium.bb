@@ -5,8 +5,12 @@
 #ifndef BASE_TEST_TEST_LAUNCHER_H_
 #define BASE_TEST_TEST_LAUNCHER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/time.h"
 
 namespace testing {
 class TestCase;
@@ -22,6 +26,23 @@ extern const char kGTestRepeatFlag[];
 extern const char kGTestRunDisabledTestsFlag[];
 extern const char kGTestOutputFlag[];
 
+// Structure containing result of a single test.
+struct TestResult {
+  TestResult();
+
+  // Name of the test case (before the dot, e.g. "A" for test "A.B").
+  std::string test_case_name;
+
+  // Name of the test (after the dot, e.g. "B" for test "A.B").
+  std::string test_name;
+
+  // True if the test passed.
+  bool success;
+
+  // Time it took to run the test.
+  base::TimeDelta elapsed_time;
+};
+
 // Interface for use with LaunchTests that abstracts away exact details
 // which tests and how are run.
 class TestLauncherDelegate {
@@ -32,10 +53,18 @@ class TestLauncherDelegate {
   virtual bool ShouldRunTest(const testing::TestCase* test_case,
                              const testing::TestInfo* test_info) = 0;
 
-  // Called to make the delegate run specified test. Should return true
-  // on success.
-  virtual bool RunTest(const testing::TestCase* test_case,
-                       const testing::TestInfo* test_info) = 0;
+  // Called to make the delegate run specified test. After the delegate
+  // finishes running the test (can do so asynchronously and out-of-order)
+  // it must call |callback| regardless of test success.
+  typedef base::Callback<void(const TestResult& result)> TestResultCallback;
+  virtual void RunTest(const testing::TestCase* test_case,
+                       const testing::TestInfo* test_info,
+                       const TestResultCallback& callback) = 0;
+
+  // If the delegate is running tests asynchronously, it must finish
+  // running all pending tests and call their callbacks before returning
+  // from this method.
+  virtual void RunRemainingTests() = 0;
 
  protected:
   virtual ~TestLauncherDelegate();

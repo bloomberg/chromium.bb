@@ -230,8 +230,11 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   // base::TestLauncherDelegate:
   virtual bool ShouldRunTest(const testing::TestCase* test_case,
                              const testing::TestInfo* test_info) OVERRIDE;
-  virtual bool RunTest(const testing::TestCase* test_case,
-                       const testing::TestInfo* test_info) OVERRIDE;
+  virtual void RunTest(
+      const testing::TestCase* test_case,
+      const testing::TestInfo* test_info,
+      const base::TestLauncherDelegate::TestResultCallback& callback) OVERRIDE;
+  virtual void RunRemainingTests() OVERRIDE;
 
  private:
   content::TestLauncherDelegate* launcher_delegate_;
@@ -272,8 +275,11 @@ bool WrapperTestLauncherDelegate::ShouldRunTest(
   return true;
 }
 
-bool WrapperTestLauncherDelegate::RunTest(const testing::TestCase* test_case,
-                                          const testing::TestInfo* test_info) {
+void WrapperTestLauncherDelegate::RunTest(
+    const testing::TestCase* test_case,
+    const testing::TestInfo* test_info,
+    const base::TestLauncherDelegate::TestResultCallback& callback) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
   bool was_timeout = false;
   std::string test_name =
       std::string(test_case->name()) + "." + test_info->name();
@@ -284,7 +290,18 @@ bool WrapperTestLauncherDelegate::RunTest(const testing::TestCase* test_case,
                             &was_timeout);
   if (was_timeout)
     timeout_count_++;
-  return exit_code == 0;
+
+  base::TestResult result;
+  result.test_case_name = test_case->name();
+  result.test_name = test_info->name();
+  result.success = (exit_code == 0);
+  result.elapsed_time = (base::TimeTicks::Now() - start_time);
+
+  callback.Run(result);
+}
+
+void WrapperTestLauncherDelegate::RunRemainingTests() {
+  // No need to do anything here, we launch tests synchronously.
 }
 
 }  // namespace
