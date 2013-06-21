@@ -218,6 +218,8 @@ ScriptString XMLHttpRequest::responseText(ExceptionCode& ec)
         ec = INVALID_STATE_ERR;
         return ScriptString();
     }
+    if (m_error || (m_state != LOADING && m_state != DONE))
+        return ScriptString();
     return m_responseText;
 }
 
@@ -265,7 +267,7 @@ Blob* XMLHttpRequest::responseBlob(ExceptionCode& ec)
         return 0;
     }
     // We always return null before DONE.
-    if (m_state != DONE)
+    if (m_error || m_state != DONE)
         return 0;
 
     if (!m_responseBlob) {
@@ -300,7 +302,7 @@ ArrayBuffer* XMLHttpRequest::responseArrayBuffer(ExceptionCode& ec)
         return 0;
     }
 
-    if (m_state != DONE)
+    if (m_error || m_state != DONE)
         return 0;
 
     if (!m_responseArrayBuffer.get() && m_binaryResponseBuilder.get() && m_binaryResponseBuilder->size() > 0) {
