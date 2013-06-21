@@ -71,6 +71,8 @@ struct JingleMessage {
   ActionType action;
   std::string sid;
 
+  std::string initiator;
+
   scoped_ptr<ContentDescription> description;
   std::list<NamedCandidate> candidates;
 
