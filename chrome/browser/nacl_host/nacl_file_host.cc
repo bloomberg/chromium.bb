@@ -11,6 +11,8 @@
 #include "base/platform_file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
@@ -58,9 +60,63 @@ bool PnaclDoOpenFile(const base::FilePath& file_to_open,
 void DoOpenPnaclFile(
     scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
     const std::string& filename,
+    IPC::Message* reply_msg);
+
+void PnaclCheckDone(
+    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    const std::string& filename,
+    IPC::Message* reply_msg,
+    bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!success) {
+    NotifyRendererOfError(nacl_host_message_filter, reply_msg);
+  } else {
+    if (!BrowserThread::PostBlockingPoolTask(
+            FROM_HERE,
+            base::Bind(&DoOpenPnaclFile,
+                       nacl_host_message_filter,
+                       filename,
+                       reply_msg))) {
+      NotifyRendererOfError(nacl_host_message_filter, reply_msg);
+    }
+  }
+}
+
+void TryInstallPnacl(
+    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    const std::string& filename,
+    IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ComponentUpdateService* cus = g_browser_process->component_updater();
+  PnaclComponentInstaller* pci =
+      g_browser_process->pnacl_component_installer();
+  RequestFirstInstall(cus,
+                      pci,
+                      base::Bind(&PnaclCheckDone,
+                                 nacl_host_message_filter,
+                                 filename,
+                                 reply_msg));
+}
+
+void DoOpenPnaclFile(
+    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
+    const std::string& filename,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::FilePath full_filepath;
+
+  // PNaCl must be installed.
+  base::FilePath pnacl_dir;
+  if (!PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_dir) ||
+      !file_util::PathExists(pnacl_dir)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TryInstallPnacl,
+                   nacl_host_message_filter,
+                   filename,
+                   reply_msg));
+    return;
+  }
 
   // Do some validation.
   if (!nacl_file_host::PnaclCanOpenFile(filename, &full_filepath)) {

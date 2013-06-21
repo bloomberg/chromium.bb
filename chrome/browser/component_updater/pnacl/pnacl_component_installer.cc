@@ -6,6 +6,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -32,11 +33,6 @@ using chrome::OmahaQueryParams;
 using content::BrowserThread;
 
 namespace {
-
-// If PNaCl isn't installed yet, but a user is running chrome with
-// --enable-pnacl, this is the amount of time to wait before starting
-// a background install.
-const int kInitialDelaySeconds = 10;
 
 // Name of the Pnacl component specified in the manifest.
 const char kPnaclManifestName[] = "PNaCl Translator";
@@ -194,10 +190,12 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
 
 PnaclComponentInstaller::PnaclComponentInstaller()
     : per_user_(false),
-      cus_(NULL) {
+      cus_(NULL),
+      callback_nums_(0) {
 #if defined(OS_CHROMEOS)
   per_user_ = true;
 #endif
+  updater_observer_.reset(new PnaclUpdaterObserver(this));
 }
 
 PnaclComponentInstaller::~PnaclComponentInstaller() {
@@ -241,42 +239,47 @@ void PnaclComponentInstaller::OnProfileChange() {
 
 bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
                                       const base::FilePath& unpack_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<base::DictionaryValue> pnacl_manifest(
       ReadPnaclManifest(unpack_path));
   if (pnacl_manifest == NULL) {
     LOG(WARNING) << "Failed to read pnacl manifest.";
+    NotifyInstallError();
     return false;
   }
 
   Version version;
   if (!CheckPnaclComponentManifest(manifest, *pnacl_manifest, &version)) {
     LOG(WARNING) << "CheckPnaclComponentManifest failed, not installing.";
+    NotifyInstallError();
     return false;
   }
 
   // Don't install if the current version is actually newer.
-  if (current_version().CompareTo(version) > 0)
+  if (current_version().CompareTo(version) > 0) {
+    NotifyInstallError();
     return false;
+  }
 
   // Passed the basic tests. Time to install it.
   base::FilePath path = GetPnaclBaseDirectory().AppendASCII(
       version.GetString());
   if (file_util::PathExists(path)) {
     LOG(WARNING) << "Target path already exists, not installing.";
+    NotifyInstallError();
     return false;
   }
   if (!file_util::Move(unpack_path, path)) {
     LOG(WARNING) << "Move failed, not installing.";
+    NotifyInstallError();
     return false;
   }
 
-  // Installation is done. Now tell the rest of chrome (just the path service
-  // for now). TODO(jvoung): we need notifications if someone surfed to a
-  // Pnacl webpage and Pnacl was just installed at this time. They should
-  // then be able to reload the page and retry (or something).
-  // See: http://code.google.com/p/chromium/issues/detail?id=107438
+  // Installation is done. Now tell the rest of chrome.
+  // - The path service.
+  // - Callbacks that requested an update.
   set_current_version(version);
-
+  NotifyInstallSuccess();
   OverrideDirPnaclComponent(path);
   return true;
 }
@@ -286,16 +289,56 @@ bool PnaclComponentInstaller::GetInstalledFile(
   return false;
 }
 
-namespace {
+void PnaclComponentInstaller::AddInstallCallback(
+    const InstallCallback& cb) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  int num = ++callback_nums_;
+  install_callbacks_.push_back(std::make_pair(cb, num));
+}
 
-void DoCheckForUpdate(ComponentUpdateService* cus,
-                   const CrxComponent& pnacl) {
-  if (cus->CheckForUpdateSoon(pnacl) != ComponentUpdateService::kOk) {
-    LOG(WARNING) << "Pnacl check for update failed.";
+void PnaclComponentInstaller::CancelCallback(int num) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (std::list<std::pair<InstallCallback, int> >::iterator
+           i = install_callbacks_.begin(),
+           e = install_callbacks_.end(); i != e; ++i) {
+    if (i->second == num) {
+      i->first.Run(false);
+      install_callbacks_.erase(i);
+      return;
+    }
   }
 }
 
-// Finally, do the registration with the right version number.
+void PnaclComponentInstaller::NotifyAllWithResult(bool status) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  while (!install_callbacks_.empty()) {
+    install_callbacks_.front().first.Run(status);
+    install_callbacks_.pop_front();
+  }
+}
+
+void PnaclComponentInstaller::NotifyInstallError() {
+  if (!install_callbacks_.empty()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PnaclComponentInstaller::NotifyAllWithResult,
+                   // Unretained because installer lives until process shutdown.
+                   base::Unretained(this), false));
+  }
+}
+
+void PnaclComponentInstaller::NotifyInstallSuccess() {
+  if (!install_callbacks_.empty()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PnaclComponentInstaller::NotifyAllWithResult,
+                   // Unretained because installer lives until process shutdown.
+                   base::Unretained(this), true));
+  }
+}
+
+namespace {
+
 void FinishPnaclUpdateRegistration(const Version& current_version,
                                    PnaclComponentInstaller* pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -311,17 +354,6 @@ void FinishPnaclUpdateRegistration(const Version& current_version,
   if (status != ComponentUpdateService::kOk
       && status != ComponentUpdateService::kReplaced) {
     NOTREACHED() << "Pnacl component registration failed.";
-  }
-
-  // If PNaCl is not yet installed but it is requested by --enable-pnacl,
-  // we want it to be available "soon", so kick off an update check
-  // earlier than usual.
-  Version null_version(kNullVersion);
-  if (pci->current_version().Equals(null_version)) {
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(DoCheckForUpdate, pci->cus(), pnacl_component),
-        base::TimeDelta::FromSeconds(kInitialDelaySeconds));
   }
 }
 
@@ -389,8 +421,7 @@ void GetProfileInformation(PnaclComponentInstaller* pci) {
 void PnaclComponentInstaller::RegisterPnaclComponent(
                             ComponentUpdateService* cus,
                             const CommandLine& command_line) {
-  // Only register when given the right flag.  This is important since
-  // we do an early component updater check above (in DoCheckForUpdate).
+  // Only register when given the right flag, for now.
   if (command_line.HasSwitch(switches::kEnablePnacl)) {
     cus_ = cus;
     // If per_user, create a profile observer to watch for logins.
@@ -400,13 +431,11 @@ void PnaclComponentInstaller::RegisterPnaclComponent(
     }
     if (per_user_) {
       // Figure out profile information, before proceeding to look for files.
-      BrowserThread::PostTask(
-           BrowserThread::UI, FROM_HERE,
-           base::Bind(&GetProfileInformation, this));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              base::Bind(&GetProfileInformation, this));
     } else {
-      BrowserThread::PostTask(
-           BrowserThread::FILE, FROM_HERE,
-           base::Bind(&StartPnaclUpdateRegistration, this));
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(&StartPnaclUpdateRegistration, this));
     }
   }
 }
@@ -421,4 +450,24 @@ void PnaclComponentInstaller::ReRegisterPnacl() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&GetProfileInformation, this));
+}
+
+void RequestFirstInstall(ComponentUpdateService* cus,
+                         PnaclComponentInstaller* pci,
+                          const base::Callback<void(bool)>& installed) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Version null_version(kNullVersion);
+  CrxComponent pnacl_component;
+  pci->set_current_version(null_version);
+  pnacl_component.version = null_version;
+  pnacl_component.name = "pnacl";
+  pnacl_component.installer = pci;
+  SetPnaclHash(&pnacl_component);
+  ComponentUpdateService::Status status = cus->CheckForUpdateSoon(
+      pnacl_component);
+  if (status != ComponentUpdateService::kOk) {
+    installed.Run(false);
+    return;
+  }
+  pci->AddInstallCallback(installed);
 }
