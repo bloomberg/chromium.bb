@@ -86,7 +86,7 @@ void OperationTestBase::SetUp() {
   ASSERT_EQ(FILE_ERROR_OK, error);
 
   fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
-  cache_.reset(new internal::FileCache(temp_dir_.path(),
+  cache_.reset(new internal::FileCache(metadata_storage_.get(),
                                        temp_dir_.path(),
                                        blocking_task_runner_.get(),
                                        fake_free_disk_space_getter_.get()));

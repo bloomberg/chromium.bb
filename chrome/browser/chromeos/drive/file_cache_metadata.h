@@ -28,6 +28,9 @@ namespace internal {
 // FileCacheMetadata maintains metadata of FileCache's cached files.
 // This class only manages metadata. File operations are done by FileCache.
 // All member access including ctor and dtor must be made on the blocking pool.
+//
+// OBSOLETE: This class is maintained only for importing old data.
+// TODO(hashimoto): Remove this class at some point.
 class FileCacheMetadata {
  public:
   // Result of Initialize().

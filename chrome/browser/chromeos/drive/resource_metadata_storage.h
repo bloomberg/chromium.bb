@@ -103,6 +103,10 @@ class ResourceMetadataStorage {
 
   const base::FilePath& directory_path() const { return directory_path_; }
 
+  // Returns true if the DB used by this storage was opened, not created, during
+  // Initialize().
+  bool opened_existing_db() const { return opened_existing_db_; }
+
   // Destroys this object.
   void Destroy();
 
@@ -172,6 +176,8 @@ class ResourceMetadataStorage {
 
   // Path to the directory where the data is stored.
   base::FilePath directory_path_;
+
+  bool opened_existing_db_;
 
   // Entries stored in this storage.
   scoped_ptr<leveldb::DB> resource_map_;

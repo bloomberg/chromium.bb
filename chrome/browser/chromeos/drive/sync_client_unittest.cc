@@ -95,7 +95,7 @@ class SyncClientTest : public testing::Test {
         metadata_storage_.get(), base::MessageLoopProxy::current()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
-    cache_.reset(new FileCache(temp_dir_.path(),
+    cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
                                base::MessageLoopProxy::current(),
                                NULL /* free_disk_space_getter */));
@@ -112,12 +112,6 @@ class SyncClientTest : public testing::Test {
 
     // Disable delaying so that DoSyncLoop() starts immediately.
     sync_client_->set_delay_for_testing(base::TimeDelta::FromSeconds(0));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    sync_client_.reset();
-    cache_.reset();
-    metadata_.reset();
   }
 
   // Adds a file to the service root and |resource_ids_|.

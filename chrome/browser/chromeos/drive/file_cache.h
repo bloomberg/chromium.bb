@@ -41,7 +41,7 @@ typedef base::Callback<void(const std::string& resource_id,
 
 namespace internal {
 
-class FileCacheMetadata;
+class ResourceMetadataStorage;
 
 // Callback for GetFileFromCache.
 typedef base::Callback<void(FileError error,
@@ -74,8 +74,11 @@ class FileCache {
     FILE_OPERATION_COPY,
   };
 
-  // |metadata_directory| stores the metadata and |cache_file_directory| stores
-  // cached files.
+  // Name of the cache metadata DB previously used.
+  // TODO(hashimoto): Remove this at some point.
+  static const base::FilePath::CharType kOldCacheMetadataDBName[];
+
+  // |cache_file_directory| stores cached files.
   //
   // |blocking_task_runner| is used to post a task to the blocking worker
   // pool for file operations. Must not be null.
@@ -84,7 +87,7 @@ class FileCache {
   // getter for testing. NULL must be passed for production code.
   //
   // Must be called on the UI thread.
-  FileCache(const base::FilePath& metadata_directory,
+  FileCache(ResourceMetadataStorage* storage,
             const base::FilePath& cache_file_directory,
             base::SequencedTaskRunner* blocking_task_runner,
             FreeDiskSpaceGetterInterface* free_disk_space_getter);
@@ -294,15 +297,14 @@ class FileCache {
   bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
 
   // Imports old format DB from |old_db_path| and deletes it.
-  void ImportOldDB(const base::FilePath& old_db_path);
+  // TODO(hashimoto): Remove this method and FileCacheMetadata at some point.
+  bool ImportOldDB(const base::FilePath& old_db_path);
 
-  const base::FilePath metadata_directory_;
   const base::FilePath cache_file_directory_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  // The cache state data. This member must be access only on the blocking pool.
-  scoped_ptr<FileCacheMetadata> metadata_;
+  ResourceMetadataStorage* storage_;
 
   FreeDiskSpaceGetterInterface* free_disk_space_getter_;  // Not owned.
 

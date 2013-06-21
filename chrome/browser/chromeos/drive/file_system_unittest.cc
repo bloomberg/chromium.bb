@@ -84,16 +84,7 @@ class FileSystemTest : public testing::Test {
     ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
         profile_.get()).Append(util::kTemporaryFileDirectory)));
 
-    cache_.reset(new internal::FileCache(
-        util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory),
-        util::GetCacheRootPath(profile_.get()).Append(
-            util::kCacheFileDirectory),
-        base::MessageLoopProxy::current(),
-        fake_free_disk_space_getter_.get()));
-
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
-
-    ASSERT_TRUE(cache_->Initialize());
 
     SetUpResourceMetadataAndFileSystem();
   }
@@ -103,6 +94,14 @@ class FileSystemTest : public testing::Test {
         util::GetCacheRootPath(profile_.get()).Append(util::kMetadataDirectory),
         base::MessageLoopProxy::current()));
     ASSERT_TRUE(metadata_storage_->Initialize());
+
+    cache_.reset(new internal::FileCache(
+        metadata_storage_.get(),
+        util::GetCacheRootPath(profile_.get()).Append(
+            util::kCacheFileDirectory),
+        base::MessageLoopProxy::current(),
+        fake_free_disk_space_getter_.get()));
+    ASSERT_TRUE(cache_->Initialize());
 
     resource_metadata_.reset(new internal::ResourceMetadata(
         metadata_storage_.get(), base::MessageLoopProxy::current()));

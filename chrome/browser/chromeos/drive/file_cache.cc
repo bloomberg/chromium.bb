@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache_metadata.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,10 +26,6 @@ using content::BrowserThread;
 namespace drive {
 namespace internal {
 namespace {
-
-// Name of the cache metadata DB.
-const base::FilePath::CharType* kCacheMetadataDBName =
-    FILE_PATH_LITERAL("cache_metadata.db");
 
 typedef std::map<std::string, FileCacheEntry> CacheMap;
 
@@ -159,13 +156,16 @@ void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
 
 }  // namespace
 
-FileCache::FileCache(const base::FilePath& metadata_directory,
+const base::FilePath::CharType FileCache::kOldCacheMetadataDBName[] =
+    FILE_PATH_LITERAL("cache_metadata.db");
+
+FileCache::FileCache(ResourceMetadataStorage* storage,
                      const base::FilePath& cache_file_directory,
                      base::SequencedTaskRunner* blocking_task_runner,
                      FreeDiskSpaceGetterInterface* free_disk_space_getter)
-    : metadata_directory_(metadata_directory),
-      cache_file_directory_(cache_file_directory),
+    : cache_file_directory_(cache_file_directory),
       blocking_task_runner_(blocking_task_runner),
+      storage_(storage),
       free_disk_space_getter_(free_disk_space_getter),
       weak_ptr_factory_(this) {
   DCHECK(blocking_task_runner_.get());
@@ -229,7 +229,7 @@ bool FileCache::GetCacheEntry(const std::string& resource_id,
                               FileCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
-  return metadata_->GetCacheEntry(resource_id, entry) &&
+  return storage_->GetCacheEntry(resource_id, entry) &&
       CheckIfMd5Matches(md5, *entry);
 }
 
@@ -252,9 +252,10 @@ void FileCache::Iterate(const CacheIterateCallback& iteration_callback) {
   AssertOnSequencedWorkerPool();
   DCHECK(!iteration_callback.is_null());
 
-  scoped_ptr<FileCacheMetadata::Iterator> it = metadata_->GetIterator();
+  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
+      storage_->GetCacheEntryIterator();
   for (; !it->IsAtEnd(); it->Advance())
-    iteration_callback.Run(it->GetKey(), it->GetValue());
+    iteration_callback.Run(it->GetID(), it->GetValue());
   DCHECK(!it->HasError());
 }
 
@@ -284,13 +285,14 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   DVLOG(1) << "Freeing up disk space for " << num_bytes;
 
   // Remove all entries unless specially marked.
-  scoped_ptr<FileCacheMetadata::Iterator> it = metadata_->GetIterator();
+  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
+      storage_->GetCacheEntryIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     const FileCacheEntry& entry = it->GetValue();
     if (!entry.is_pinned() &&
         !entry.is_dirty() &&
-        !mounted_files_.count(it->GetKey()))
-      metadata_->RemoveCacheEntry(it->GetKey());
+        !mounted_files_.count(it->GetID()))
+      storage_->RemoveCacheEntry(it->GetID());
   }
   DCHECK(!it->HasError());
 
@@ -392,9 +394,9 @@ FileError FileCache::Pin(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
   FileCacheEntry cache_entry;
-  metadata_->GetCacheEntry(resource_id, &cache_entry);
+  storage_->GetCacheEntry(resource_id, &cache_entry);
   cache_entry.set_is_pinned(true);
-  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  storage_->PutCacheEntry(resource_id, cache_entry);
   return FILE_ERROR_OK;
 }
 
@@ -415,16 +417,16 @@ FileError FileCache::Unpin(const std::string& resource_id) {
 
   // Unpinning a file means its entry must exist in cache.
   FileCacheEntry cache_entry;
-  if (!metadata_->GetCacheEntry(resource_id, &cache_entry))
+  if (!storage_->GetCacheEntry(resource_id, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
   // Now that file operations have completed, update metadata.
   if (cache_entry.is_present()) {
     cache_entry.set_is_pinned(false);
-    metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+    storage_->PutCacheEntry(resource_id, cache_entry);
   } else {
     // Remove the existing entry if we are unpinning a non-present file.
-    metadata_->RemoveCacheEntry(resource_id);
+    storage_->RemoveCacheEntry(resource_id);
   }
 
   // Now it's a chance to free up space if needed.
@@ -491,7 +493,7 @@ FileError FileCache::MarkDirty(const std::string& resource_id,
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
   FileCacheEntry cache_entry;
-  if (!metadata_->GetCacheEntry(resource_id, &cache_entry) ||
+  if (!storage_->GetCacheEntry(resource_id, &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
                  << resource_id
@@ -515,7 +517,7 @@ FileError FileCache::MarkDirty(const std::string& resource_id,
   // Now that file operations have completed, update metadata.
   cache_entry.set_md5(md5);
   cache_entry.set_is_dirty(true);
-  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  storage_->PutCacheEntry(resource_id, cache_entry);
   return FILE_ERROR_OK;
 }
 
@@ -529,7 +531,7 @@ FileError FileCache::ClearDirty(const std::string& resource_id,
 
   // Clearing a dirty file means its entry and actual file blob must exist in
   // cache.
-  if (!metadata_->GetCacheEntry(resource_id, &cache_entry) ||
+  if (!storage_->GetCacheEntry(resource_id, &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
                  << "res_id=" << resource_id
@@ -556,7 +558,7 @@ FileError FileCache::ClearDirty(const std::string& resource_id,
   // Now that file operations have completed, update metadata.
   cache_entry.set_md5(md5);
   cache_entry.set_is_dirty(false);
-  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  storage_->PutCacheEntry(resource_id, cache_entry);
   return FILE_ERROR_OK;
 }
 
@@ -581,7 +583,7 @@ FileError FileCache::Remove(const std::string& resource_id) {
   FileCacheEntry cache_entry;
 
   // If entry doesn't exist, nothing to do.
-  if (!metadata_->GetCacheEntry(resource_id, &cache_entry))
+  if (!storage_->GetCacheEntry(resource_id, &cache_entry))
     return FILE_ERROR_OK;
 
   // Cannot delete a dirty or mounted file.
@@ -596,7 +598,7 @@ FileError FileCache::Remove(const std::string& resource_id) {
   DeleteFilesSelectively(path_to_delete, path_to_keep);
 
   // Now that all file operations have completed, remove from metadata.
-  metadata_->RemoveCacheEntry(resource_id);
+  storage_->RemoveCacheEntry(resource_id);
 
   return FILE_ERROR_OK;
 }
@@ -615,25 +617,14 @@ void FileCache::ClearAllOnUIThread(const InitializeCacheCallback& callback) {
 bool FileCache::Initialize() {
   AssertOnSequencedWorkerPool();
 
-  metadata_.reset(new FileCacheMetadata(blocking_task_runner_.get()));
-
-  const base::FilePath db_path =
-      metadata_directory_.Append(kCacheMetadataDBName);
-  switch (metadata_->Initialize(db_path)) {
-    case FileCacheMetadata::INITIALIZE_FAILED:
-      return false;
-
-    case FileCacheMetadata::INITIALIZE_OPENED:  // Do nothing.
-      break;
-
-    case FileCacheMetadata::INITIALIZE_CREATED: {
-      CacheMap cache_map;
-      ScanCacheDirectory(cache_file_directory_, &cache_map);
-      for (CacheMap::const_iterator it = cache_map.begin();
-           it != cache_map.end(); ++it) {
-        metadata_->AddOrUpdateCacheEntry(it->first, it->second);
-      }
-      break;
+  if (!ImportOldDB(storage_->directory_path().Append(
+          kOldCacheMetadataDBName)) &&
+      !storage_->opened_existing_db()) {
+    CacheMap cache_map;
+    ScanCacheDirectory(cache_file_directory_, &cache_map);
+    for (CacheMap::const_iterator it = cache_map.begin();
+         it != cache_map.end(); ++it) {
+      storage_->PutCacheEntry(it->first, it->second);
     }
   }
   return true;
@@ -675,7 +666,7 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
     return FILE_ERROR_NO_SPACE;
 
   FileCacheEntry cache_entry;
-  metadata_->GetCacheEntry(resource_id, &cache_entry);
+  storage_->GetCacheEntry(resource_id, &cache_entry);
 
   // If file is dirty or mounted, return error.
   if (cache_entry.is_dirty() || mounted_files_.count(resource_id))
@@ -722,7 +713,7 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
     cache_entry.set_md5(md5);
     cache_entry.set_is_present(true);
     cache_entry.set_is_dirty(false);
-    metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+    storage_->PutCacheEntry(resource_id, cache_entry);
   }
 
   return success ? FILE_ERROR_OK : FILE_ERROR_FAILED;
@@ -735,7 +726,7 @@ FileError FileCache::MarkAsMounted(const std::string& resource_id,
 
   // Get cache entry associated with the resource_id and md5
   FileCacheEntry cache_entry;
-  if (!metadata_->GetCacheEntry(resource_id, &cache_entry))
+  if (!storage_->GetCacheEntry(resource_id, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
   if (mounted_files_.count(resource_id))
@@ -783,9 +774,10 @@ bool FileCache::ClearAll() {
   AssertOnSequencedWorkerPool();
 
   // Remove entries on the metadata.
-  scoped_ptr<FileCacheMetadata::Iterator> it = metadata_->GetIterator();
+  scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
+      storage_->GetCacheEntryIterator();
   for (; !it->IsAtEnd(); it->Advance())
-    metadata_->RemoveCacheEntry(it->GetKey());
+    storage_->RemoveCacheEntry(it->GetID());
 
   if (it->HasError())
     return false;
@@ -814,25 +806,31 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
   return (free_space >= num_bytes);
 }
 
-void FileCache::ImportOldDB(const base::FilePath& old_db_path) {
+bool FileCache::ImportOldDB(const base::FilePath& old_db_path) {
   if (!file_util::PathExists(old_db_path))  // Old DB is not there, do nothing.
-    return;
+    return false;
 
   // Copy all entries stored in the old DB.
-  FileCacheMetadata old_data(blocking_task_runner_);
-  if (old_data.Initialize(old_db_path)) {
-    scoped_ptr<FileCacheMetadata::Iterator> it = old_data.GetIterator();
-    for (; !it->IsAtEnd(); it->Advance()) {
-      FileCacheEntry entry;
-      if (metadata_->GetCacheEntry(it->GetKey(), &entry))
-        continue;  // Do not overwrite.
+  bool imported = false;
+  {
+    FileCacheMetadata old_data(blocking_task_runner_);
+    if (old_data.Initialize(old_db_path) ==
+        FileCacheMetadata::INITIALIZE_OPENED) {
+      scoped_ptr<FileCacheMetadata::Iterator> it = old_data.GetIterator();
+      for (; !it->IsAtEnd(); it->Advance()) {
+        FileCacheEntry entry;
+        if (storage_->GetCacheEntry(it->GetKey(), &entry))
+          continue;  // Do not overwrite.
 
-      metadata_->AddOrUpdateCacheEntry(it->GetKey(), it->GetValue());
+        storage_->PutCacheEntry(it->GetKey(), it->GetValue());
+      }
+      imported = true;
     }
   }
 
   // Delete old DB.
   file_util::Delete(old_db_path, true /* recursive */ );
+  return imported;
 }
 
 }  // namespace internal

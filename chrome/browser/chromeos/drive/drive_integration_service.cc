@@ -170,7 +170,7 @@ DriveIntegrationService::DriveIntegrationService(
       cache_root_directory_.Append(util::kMetadataDirectory),
       blocking_task_runner_.get()));
   cache_.reset(new internal::FileCache(
-      cache_root_directory_.Append(util::kMetadataDirectory),
+      metadata_storage_.get(),
       cache_root_directory_.Append(util::kCacheFileDirectory),
       blocking_task_runner_.get(),
       NULL /* free_disk_space_getter */));

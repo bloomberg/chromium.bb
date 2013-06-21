@@ -201,6 +201,7 @@ ResourceMetadataStorage::ResourceMetadataStorage(
     const base::FilePath& directory_path,
     base::SequencedTaskRunner* blocking_task_runner)
     : directory_path_(directory_path),
+      opened_existing_db_(false),
       blocking_task_runner_(blocking_task_runner) {
 }
 
@@ -248,7 +249,9 @@ bool ResourceMetadataStorage::Initialize() {
       LOG(ERROR) << "Reject invalid DB.";
     }
 
-    if (open_existing_result != DB_INIT_SUCCESS)
+    if (open_existing_result == DB_INIT_SUCCESS)
+      opened_existing_db_ = true;
+    else
       resource_map_.reset();
   }
 

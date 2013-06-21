@@ -31,7 +31,7 @@ class RemoveStaleCacheFilesTest : public testing::Test {
     metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.path(), base::MessageLoopProxy::current()));
 
-    cache_.reset(new FileCache(temp_dir_.path(),
+    cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
                                base::MessageLoopProxy::current(),
                                fake_free_disk_space_getter_.get()));

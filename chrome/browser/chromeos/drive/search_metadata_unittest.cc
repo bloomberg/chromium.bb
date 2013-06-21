@@ -71,10 +71,10 @@ class SearchMetadataTest : public testing::Test {
         temp_dir_.path(), base::MessageLoopProxy::current()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
-    cache_.reset(new internal::FileCache(temp_dir_.path(),
-                                         temp_dir_.path(),
-                                         base::MessageLoopProxy::current(),
-                                         fake_free_disk_space_getter_.get()));
+    cache_.reset(new FileCache(metadata_storage_.get(),
+                               temp_dir_.path(),
+                               base::MessageLoopProxy::current(),
+                               fake_free_disk_space_getter_.get()));
     ASSERT_TRUE(cache_->Initialize());
 
     resource_metadata_.reset(

@@ -41,7 +41,7 @@ class ChangeListLoaderTest : public testing::Test {
                                          base::MessageLoopProxy::current()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
-    cache_.reset(new FileCache(temp_dir_.path(),
+    cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
                                base::MessageLoopProxy::current(),
                                NULL /* free_disk_space_getter */));
