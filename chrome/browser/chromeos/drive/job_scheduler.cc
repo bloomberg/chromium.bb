@@ -143,11 +143,12 @@ struct JobScheduler::ResumeUploadParams {
 
 JobScheduler::JobScheduler(
     Profile* profile,
-    DriveServiceInterface* drive_service)
+    DriveServiceInterface* drive_service,
+    base::SequencedTaskRunner* blocking_task_runner)
     : throttle_count_(0),
       disable_throttling_(false),
       drive_service_(drive_service),
-      uploader_(new DriveUploader(drive_service)),
+      uploader_(new DriveUploader(drive_service, blocking_task_runner)),
       profile_(profile),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

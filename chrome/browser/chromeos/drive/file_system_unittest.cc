@@ -75,7 +75,8 @@ class FileSystemTest : public testing::Test {
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scheduler_.reset(new JobScheduler(profile_.get(),
-                                      fake_drive_service_.get()));
+                                      fake_drive_service_.get(),
+                                      base::MessageLoopProxy::current()));
 
     ASSERT_TRUE(file_util::CreateDirectory(util::GetCacheRootPath(
         profile_.get()).Append(util::kMetadataDirectory)));

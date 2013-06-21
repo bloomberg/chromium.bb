@@ -11,6 +11,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_api_util.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "net/base/mime_util.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
@@ -148,7 +150,8 @@ APIUtil::APIUtil(Profile* profile)
   drive_service_->AddObserver(this);
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
-  drive_uploader_.reset(new ::drive::DriveUploader(drive_service_.get()));
+  drive_uploader_.reset(new ::drive::DriveUploader(
+      drive_service_.get(), content::BrowserThread::GetBlockingPool()));
 }
 
 scoped_ptr<APIUtil> APIUtil::CreateForTesting(
@@ -1057,7 +1060,8 @@ void APIUtil::CancelAllUploads(google_apis::GDataErrorCode error) {
     iter->second.Run(error, std::string(), std::string());
   }
   upload_callback_map_.clear();
-  drive_uploader_.reset(new ::drive::DriveUploader(drive_service_.get()));
+  drive_uploader_.reset(new ::drive::DriveUploader(
+      drive_service_.get(), content::BrowserThread::GetBlockingPool()));
 }
 
 std::string APIUtil::GetRootResourceId() const {

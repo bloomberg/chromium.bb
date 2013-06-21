@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
@@ -18,6 +19,7 @@ class GURL;
 
 namespace base {
 class FilePath;
+class TaskRunner;
 }
 
 namespace google_apis {
@@ -106,7 +108,8 @@ class DriveUploaderInterface {
 
 class DriveUploader : public DriveUploaderInterface {
  public:
-  explicit DriveUploader(DriveServiceInterface* drive_service);
+  DriveUploader(DriveServiceInterface* drive_service,
+                base::TaskRunner* blocking_task_runner);
   virtual ~DriveUploader();
 
   // DriveUploaderInterface overrides.
@@ -190,6 +193,8 @@ class DriveUploader : public DriveUploaderInterface {
   // The lifetime of this object should be guaranteed to exceed that of the
   // DriveUploader instance.
   DriveServiceInterface* drive_service_;  // Not owned by this class.
+
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

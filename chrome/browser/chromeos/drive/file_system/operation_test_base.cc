@@ -57,8 +57,8 @@ void OperationTestBase::SetUp() {
   fake_drive_service_->LoadAccountMetadataForWapi(
       "chromeos/gdata/account_metadata.json");
 
-  scheduler_.reset(
-      new JobScheduler(profile_.get(), fake_drive_service_.get()));
+  scheduler_.reset(new JobScheduler(profile_.get(), fake_drive_service_.get(),
+                                    blocking_task_runner_));
 
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
       temp_dir_.path(), blocking_task_runner_));

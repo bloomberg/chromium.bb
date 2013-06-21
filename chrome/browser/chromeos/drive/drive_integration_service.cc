@@ -165,7 +165,8 @@ DriveIntegrationService::DriveIntegrationService(
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         GetDriveUserAgent()));
   }
-  scheduler_.reset(new JobScheduler(profile_, drive_service_.get()));
+  scheduler_.reset(new JobScheduler(
+      profile_, drive_service_.get(), blocking_task_runner_.get()));
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
       cache_root_directory_.Append(util::kMetadataDirectory),
       blocking_task_runner_.get()));

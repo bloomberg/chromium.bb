@@ -32,7 +32,8 @@ class ChangeListLoaderTest : public testing::Test {
     ASSERT_TRUE(drive_service_->LoadAccountMetadataForWapi(
         "chromeos/gdata/account_metadata.json"));
 
-    scheduler_.reset(new JobScheduler(profile_.get(), drive_service_.get()));
+    scheduler_.reset(new JobScheduler(profile_.get(), drive_service_.get(),
+                                      base::MessageLoopProxy::current()));
     metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.path(), base::MessageLoopProxy::current()));
     ASSERT_TRUE(metadata_storage_->Initialize());

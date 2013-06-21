@@ -19,6 +19,10 @@
 
 class Profile;
 
+namespace base {
+class SeqencedTaskRunner;
+}
+
 namespace drive {
 
 // The JobScheduler is responsible for queuing and scheduling drive
@@ -48,7 +52,8 @@ class JobScheduler
       public JobListInterface {
  public:
   JobScheduler(Profile* profile,
-               DriveServiceInterface* drive_service);
+               DriveServiceInterface* drive_service,
+               base::SequencedTaskRunner* blocking_task_runner);
   virtual ~JobScheduler();
 
   // JobListInterface overrides.

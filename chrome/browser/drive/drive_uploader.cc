@@ -11,7 +11,6 @@
 #include "base/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "content/public/browser/browser_thread.h"
@@ -113,8 +112,10 @@ struct DriveUploader::UploadFileInfo {
   DISALLOW_COPY_AND_ASSIGN(UploadFileInfo);
 };
 
-DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
+DriveUploader::DriveUploader(DriveServiceInterface* drive_service,
+                             base::TaskRunner* blocking_task_runner)
     : drive_service_(drive_service),
+      blocking_task_runner_(blocking_task_runner),
       weak_ptr_factory_(this) {
 }
 
@@ -199,7 +200,7 @@ CancelCallback DriveUploader::StartUploadFile(
 
   UploadFileInfo* info_ptr = upload_file_info.get();
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool(),
+      blocking_task_runner_,
       FROM_HERE,
       base::Bind(&file_util::GetFileSize, info_ptr->file_path,
                  &info_ptr->content_length),

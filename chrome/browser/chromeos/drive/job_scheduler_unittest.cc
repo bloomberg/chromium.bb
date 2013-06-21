@@ -9,12 +9,12 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -116,7 +116,8 @@ class JobSchedulerTest : public testing::Test {
         "chromeos/drive/applist.json");
 
     scheduler_.reset(new JobScheduler(profile_.get(),
-                                      fake_drive_service_.get()));
+                                      fake_drive_service_.get(),
+                                      base::MessageLoopProxy::current()));
     scheduler_->SetDisableThrottling(true);
   }
 
@@ -124,7 +125,7 @@ class JobSchedulerTest : public testing::Test {
     // The scheduler should be deleted before NetworkLibrary, as it
     // registers itself as observer of NetworkLibrary.
     scheduler_.reset();
-    google_apis::test_util::RunBlockingPoolTask();
+    base::RunLoop().RunUntilIdle();
     fake_drive_service_.reset();
     fake_network_change_notifier_.reset();
   }
@@ -175,7 +176,7 @@ TEST_F(JobSchedulerTest, GetAboutResource) {
   scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
           &error, &about_resource));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(about_resource);
 }
@@ -188,7 +189,7 @@ TEST_F(JobSchedulerTest, GetAppList) {
 
   scheduler_->GetAppList(
       google_apis::test_util::CreateCopyResultCallback(&error, &app_list));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(app_list);
@@ -203,7 +204,7 @@ TEST_F(JobSchedulerTest, GetAllResourceList) {
   scheduler_->GetAllResourceList(
       google_apis::test_util::CreateCopyResultCallback(
           &error, &resource_list));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -219,7 +220,7 @@ TEST_F(JobSchedulerTest, GetResourceListInDirectory) {
       fake_drive_service_->GetRootResourceId(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &resource_list));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -235,7 +236,7 @@ TEST_F(JobSchedulerTest, Search) {
       "File",  // search query
       google_apis::test_util::CreateCopyResultCallback(
           &error, &resource_list));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -256,7 +257,7 @@ TEST_F(JobSchedulerTest, GetChangeList) {
         "new directory",
         google_apis::test_util::CreateCopyResultCallback(
             &error, &resource_entry));
-    google_apis::test_util::RunBlockingPoolTask();
+    base::RunLoop().RunUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
   }
 
@@ -266,7 +267,7 @@ TEST_F(JobSchedulerTest, GetChangeList) {
       654321 + 1,  // start_changestamp
       google_apis::test_util::CreateCopyResultCallback(
           &error, &resource_list));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -282,7 +283,7 @@ TEST_F(JobSchedulerTest, ContinueGetResourceList) {
   scheduler_->GetAllResourceList(
       google_apis::test_util::CreateCopyResultCallback(
           &error, &resource_list));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -300,7 +301,7 @@ TEST_F(JobSchedulerTest, ContinueGetResourceList) {
       next_url,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &resource_list));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
@@ -316,7 +317,7 @@ TEST_F(JobSchedulerTest, GetResourceEntry) {
       "file:2_file_resource_id",  // resource ID
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(entry);
@@ -330,7 +331,7 @@ TEST_F(JobSchedulerTest, DeleteResource) {
   scheduler_->DeleteResource(
       "file:2_file_resource_id",
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
@@ -346,7 +347,7 @@ TEST_F(JobSchedulerTest, CopyResource) {
       "folder:1_folder_resource_id",  // parent resource ID
       "New Document",  // new name
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(entry);
@@ -362,7 +363,7 @@ TEST_F(JobSchedulerTest, CopyHostedDocument) {
       "document:5_document_resource_id",  // resource ID
       "New Document",  // new name
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
   ASSERT_TRUE(entry);
@@ -377,7 +378,7 @@ TEST_F(JobSchedulerTest, RenameResource) {
       "file:2_file_resource_id",
       "New Name",
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
@@ -391,7 +392,7 @@ TEST_F(JobSchedulerTest, AddResourceToDirectory) {
       "folder:1_folder_resource_id",
       "file:2_file_resource_id",
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
@@ -405,7 +406,7 @@ TEST_F(JobSchedulerTest, RemoveResourceFromDirectory) {
       "folder:1_folder_resource_id",
       "file:subdirectory_file_1_id",  // resource ID
       google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
@@ -420,7 +421,7 @@ TEST_F(JobSchedulerTest, AddNewDirectory) {
       fake_drive_service_->GetRootResourceId(),  // Root directory.
       "New Directory",
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(google_apis::HTTP_CREATED, error);
   ASSERT_TRUE(entry);
@@ -463,7 +464,7 @@ TEST_F(JobSchedulerTest, GetResourceEntryPriority) {
 
   // Reconnect to the network to start all jobs.
   ConnectToWifi();
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(resource_ids.size(), 4ul);
   ASSERT_EQ(resource_ids[0], resource_1);
@@ -484,14 +485,14 @@ TEST_F(JobSchedulerTest, GetResourceEntryNoConnection) {
       base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
                  &resource_ids,
                  resource));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(resource_ids.size(), 0ul);
 
   // Reconnect to the net.
   ConnectToWifi();
 
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(resource_ids.size(), 1ul);
   ASSERT_EQ(resource_ids[0], resource);
@@ -528,7 +529,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
   scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
           &metadata_error, &about_resource));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   // Check the metadata
   ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
@@ -540,7 +541,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
   // Switch to a Wifi connection
   ConnectToWifi();
 
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   // Check the download again
   EXPECT_EQ(google_apis::HTTP_SUCCESS, download_error);
@@ -581,7 +582,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
   scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
           &metadata_error, &about_resource));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   // Check the metadata
   ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
@@ -593,7 +594,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
   // Switch to a Wifi connection
   ConnectToWifi();
 
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   // Check the download again
   EXPECT_EQ(google_apis::HTTP_SUCCESS, download_error);
@@ -634,7 +635,7 @@ TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
   scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
           &metadata_error, &about_resource));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   // Check the metadata
   ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
@@ -679,7 +680,7 @@ TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
   scheduler_->GetAboutResource(
       google_apis::test_util::CreateCopyResultCallback(
           &metadata_error, &about_resource));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   // Check the metadata
   ASSERT_EQ(google_apis::HTTP_SUCCESS, metadata_error);
@@ -775,7 +776,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
   EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_COPY_HOSTED_DOCUMENT));
 
   // Run the jobs.
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   // All jobs except the BACKGROUND job should have started running (UPDATED)
   // and then finished (DONE).
@@ -800,7 +801,7 @@ TEST_F(JobSchedulerTest, JobInfo) {
 
   // Run the background downloading job as well.
   ConnectToWifi();
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   // All jobs should have finished.
   EXPECT_EQ(0U, scheduler_->GetJobInfoList().size());
@@ -829,7 +830,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&error, &path),
       google_apis::GetContentCallback());
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   std::vector<int64> download_progress;
   logger.GetProgressInfo(TYPE_DOWNLOAD_FILE, &download_progress);
@@ -853,7 +854,7 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
       "plain/plain",
       ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&upload_error, &entry));
-  google_apis::test_util::RunBlockingPoolTask();
+  base::RunLoop().RunUntilIdle();
 
   std::vector<int64> upload_progress;
   logger.GetProgressInfo(TYPE_UPLOAD_NEW_FILE, &upload_progress);
