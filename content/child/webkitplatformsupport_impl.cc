@@ -7,7 +7,6 @@
 #include "content/child/socket_stream_dispatcher.h"
 #include "content/child/webkitplatformsupport_impl.h"
 #include "content/public/common/content_client.h"
-#include "googleurl/src/gurl.h"
 
 namespace content {
 

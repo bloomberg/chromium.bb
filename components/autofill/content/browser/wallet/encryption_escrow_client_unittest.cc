@@ -9,7 +9,6 @@
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "content/public/test/test_browser_thread.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"

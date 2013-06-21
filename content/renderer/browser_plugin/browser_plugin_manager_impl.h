@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_IMPL_H_
 
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
-#include "googleurl/src/gurl.h"
 #include "ui/gfx/size.h"
 
 struct BrowserPluginMsg_UpdateRect_Params;
@@ -20,7 +19,7 @@ namespace content {
 
 class BrowserPluginManagerImpl : public BrowserPluginManager {
  public:
-  BrowserPluginManagerImpl(RenderViewImpl* render_view);
+  explicit BrowserPluginManagerImpl(RenderViewImpl* render_view);
 
   // BrowserPluginManager implementation.
   virtual BrowserPlugin* CreateBrowserPlugin(
@@ -60,4 +59,4 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
 
 }  // namespace content
 
-#endif //  CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_IMPL_H_
+#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_MANAGER_IMPL_H_

@@ -17,7 +17,6 @@
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/common/content_export.h"
 #include "content/public/common/speech_recognition_error.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {

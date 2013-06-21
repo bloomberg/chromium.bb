@@ -12,7 +12,6 @@
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
 IPC_ENUM_TRAITS(tracked_objects::ThreadData::Status)

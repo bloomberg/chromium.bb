@@ -18,7 +18,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/page_zoom.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
 static const char* kHostZoomMapKeyName = "content_host_zoom_map";

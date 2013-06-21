@@ -14,7 +14,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_client_host.h"
-#include "googleurl/src/gurl.h"
 
 namespace content {
 

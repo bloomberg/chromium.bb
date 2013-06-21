@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_bstr.h"
-#include "googleurl/src/gurl.h"
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/ie8_types.h"
@@ -62,7 +61,6 @@ class ProtocolSinkWrap
     : public CComObjectRootEx<CComMultiThreadModel>,
       public IInternetProtocolSink {
  public:
-
 BEGIN_COM_MAP(ProtocolSinkWrap)
   COM_INTERFACE_ENTRY(IInternetProtocolSink)
   COM_INTERFACE_BLIND_DELEGATE()

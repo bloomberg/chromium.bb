@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/threading/thread_local.h"
 #include "base/win/scoped_variant.h"
-#include "googleurl/src/gurl.h"
 #include "chrome_frame/utils.h"
 
 // This file contains classes that are used to cache the contents of a top-level
@@ -171,7 +170,7 @@ class NavigationManager {
 // original document contents in order to avoid multiple network trips
 // if we need to switch the renderer over to CF.
 class MonikerPatch {
-  MonikerPatch() {} // no instances should be created of this class.
+  MonikerPatch() {}  // no instances should be created of this class.
  public:
   // Patches two IMoniker methods, BindToObject and BindToStorage.
   static bool Initialize();
@@ -192,7 +191,6 @@ class MonikerPatch {
   static STDMETHODIMP BindToStorage(IMoniker_BindToStorage_Fn original,
                                     IMoniker* me, IBindCtx* bind_ctx,
                                     IMoniker* to_left, REFIID iid, void** obj);
-
 };
 
 extern wchar_t* kChromeRequestParam;

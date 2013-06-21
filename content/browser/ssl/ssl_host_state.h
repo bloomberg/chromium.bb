@@ -14,7 +14,6 @@
 #include "base/supports_user_data.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
 #include "net/cert/x509_certificate.h"
 
 namespace content {

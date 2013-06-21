@@ -14,7 +14,6 @@
 #include "content/common/database_messages.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/database/vfs_backend.h"
