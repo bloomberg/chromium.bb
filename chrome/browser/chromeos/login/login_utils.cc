@@ -251,6 +251,9 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
     return;
   }
 
+#if 0
+  // Temporary disable until all regressions introduced are fixed.
+  // See crbug.com/252442, crbug.com/251261, crbug.com/251253
   CommandLine user_flags(CommandLine::NO_PROGRAM);
   about_flags::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
   about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags);
@@ -265,6 +268,7 @@ void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
     chrome::ExitCleanly();
     return;
   }
+#endif
 
   if (login_host) {
     login_host->SetStatusAreaVisible(true);
