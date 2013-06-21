@@ -602,6 +602,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void SetQueryFromAutocompleteResult(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Indicates whether the page supports voice search.
+  static void SetVoiceSearchSupported(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Requests the overlay be shown with the specified contents and height.
   static void ShowOverlay(const v8::FunctionCallbackInfo<v8::Value>& args);
 
@@ -713,6 +717,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(SetQuery);
   if (name->Equals(v8::String::New("SetQueryFromAutocompleteResult")))
     return v8::FunctionTemplate::New(SetQueryFromAutocompleteResult);
+  if (name->Equals(v8::String::New("SetVoiceSearchSupported")))
+    return v8::FunctionTemplate::New(SetVoiceSearchSupported);
   if (name->Equals(v8::String::New("ShowOverlay")))
     return v8::FunctionTemplate::New(ShowOverlay);
   if (name->Equals(v8::String::New("FocusOmnibox")))
@@ -1261,6 +1267,16 @@ void SearchBoxExtensionWrapper::SetQueryFromAutocompleteResult(
 
   search_box->SetSuggestions(suggestions);
   search_box->MarkQueryAsRestricted();
+}
+
+// static
+void SearchBoxExtensionWrapper::SetVoiceSearchSupported(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || args.Length() < 1) return;
+
+  DVLOG(1) << render_view << " SetVoiceSearchSupported";
+  SearchBox::Get(render_view)->SetVoiceSearchSupported(args[0]->BooleanValue());
 }
 
 // static

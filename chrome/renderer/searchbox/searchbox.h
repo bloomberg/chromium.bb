@@ -32,6 +32,9 @@ class SearchBox : public content::RenderViewObserver,
   // Sends ChromeViewHostMsg_SetSuggestion to the browser.
   void SetSuggestions(const std::vector<InstantSuggestion>& suggestions);
 
+  // Sends ChromeViewHostMsg_SetVoiceSearchSupported to the browser.
+  void SetVoiceSearchSupported(bool supported);
+
   // Marks the current query text as restricted, to make sure that it does
   // not get communicated to the page.  The restricted status lasts until the
   // query is next changed or cleared.

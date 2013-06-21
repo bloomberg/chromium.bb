@@ -109,6 +109,9 @@ class SearchTabHelper : public content::NotificationObserver,
   void OnSearchBoxShowBars(int page_id);
   void OnSearchBoxHideBars(int page_id);
 
+  // Sets whether the page supports voice search on the model.
+  void OnSetVoiceSearchSupported(int page_id, bool supported);
+
   const bool is_search_enabled_;
 
   // Tracks the last value passed to OmniboxEditModelChanged().

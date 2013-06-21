@@ -712,6 +712,11 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxShowBars,
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxHideBars,
                     int /* page_id */)
 
+// Sent by Instant to indicate whether the page supports voice search.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SetVoiceSearchSupported,
+                    int /* page_id */,
+                    bool /* supported */)
+
 // The currently displayed PDF has an unsupported feature.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)
 

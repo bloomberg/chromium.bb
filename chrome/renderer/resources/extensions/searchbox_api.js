@@ -55,6 +55,7 @@ if (!chrome.embeddedSearch) {
       native function SetSuggestion();
       native function SetSuggestionFromAutocompleteResult();
       native function SetSuggestions();
+      native function SetVoiceSearchSupported();
       native function ShowOverlay();
       native function FocusOmnibox();
       native function StartCapturingKeyStrokes();
@@ -180,6 +181,9 @@ if (!chrome.embeddedSearch) {
 
       this.setSuggestions = function(text) {
         SetSuggestions(text);
+      };
+      this.setVoiceSearchSupported = function(supported) {
+        SetVoiceSearchSupported(supported);
       };
       this.setAutocompleteText = function(text, behavior) {
         SetSuggestion(text, behavior);

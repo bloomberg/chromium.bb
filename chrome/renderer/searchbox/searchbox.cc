@@ -92,6 +92,11 @@ void SearchBox::SetSuggestions(
       render_view()->GetRoutingID(), render_view()->GetPageId(), suggestions));
 }
 
+void SearchBox::SetVoiceSearchSupported(bool supported) {
+  render_view()->Send(new ChromeViewHostMsg_SetVoiceSearchSupported(
+      render_view()->GetRoutingID(), render_view()->GetPageId(), supported));
+}
+
 void SearchBox::MarkQueryAsRestricted() {
   query_is_restricted_ = true;
   query_.clear();

@@ -141,6 +141,7 @@ void SearchTabHelper::Observe(
   }
 
   model_.SetInstantSupportState(INSTANT_SUPPORT_UNKNOWN);
+  model_.SetVoiceSearchSupported(false);
 }
 
 bool SearchTabHelper::OnMessageReceived(const IPC::Message& message) {
@@ -152,6 +153,8 @@ bool SearchTabHelper::OnMessageReceived(const IPC::Message& message) {
                         OnSearchBoxHideBars)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetVoiceSearchSupported,
+                        OnSetVoiceSearchSupported)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -185,13 +188,14 @@ void SearchTabHelper::UpdateMode(bool update_origin) {
       !popup_is_open_ && !user_text_is_empty_) {
     // We're switching back (|popup_is_open_| is false) to an NTP (type and
     // mode are |NTP|) with suggestions (|user_text_is_empty_| is false), don't
-    // modify visibility of top bars.  This specific omnibox state is set when
-    // OmniboxEditModelChanged() is called from
+    // modify visibility of top bars or voice search support.  This specific
+    // omnibox state is set when OmniboxEditModelChanged() is called from
     // OmniboxEditModel::SetInputInProgress() which is called from
     // OmniboxEditModel::Revert().
     model_.SetState(SearchModel::State(SearchMode(type, origin),
                                        model_.state().top_bars_visible,
-                                       model_.instant_support()));
+                                       model_.instant_support(),
+                                       model_.state().voice_search_supported));
   } else {
     model_.SetMode(SearchMode(type, origin));
   }
@@ -233,4 +237,9 @@ void SearchTabHelper::OnSearchBoxHideBars(int page_id) {
     model_.SetTopBarsVisible(false);
     Send(new ChromeViewMsg_SearchBoxBarsHidden(routing_id()));
   }
+}
+
+void SearchTabHelper::OnSetVoiceSearchSupported(int page_id, bool supported) {
+  if (web_contents()->IsActiveEntry(page_id))
+    model_.SetVoiceSearchSupported(supported);
 }
