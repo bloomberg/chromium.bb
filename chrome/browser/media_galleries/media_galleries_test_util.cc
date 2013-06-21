@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -71,35 +72,30 @@ EnsureMediaDirectoriesExists::EnsureMediaDirectoriesExists()
   Init();
 }
 
+EnsureMediaDirectoriesExists::~EnsureMediaDirectoriesExists() {
+}
+
 void EnsureMediaDirectoriesExists::Init() {
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   return;
 #else
+
   ASSERT_TRUE(fake_dir_.CreateUniqueTempDir());
 
-  const int kDirectoryKeys[] = {
-    chrome::DIR_USER_MUSIC,
-    chrome::DIR_USER_PICTURES,
-    chrome::DIR_USER_VIDEOS,
-  };
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // This is to make sure the tests don't think iTunes is installed (unless
+  // we control it specifically).
+  appdir_override_.reset(new base::ScopedPathOverride(
+      base::DIR_APP_DATA, fake_dir_.path().AppendASCII("itunes")));
+#endif
 
-  const char* kDirectoryNames[] = {
-    "music",
-    "pictures",
-    "videos",
-  };
-
-  for (size_t i = 0; i < arraysize(kDirectoryKeys); ++i) {
-    PathService::OverrideAndCreateIfNeeded(
-        kDirectoryKeys[i], fake_dir_.path().AppendASCII(kDirectoryNames[i]),
-        true /*create*/);
-    base::FilePath path;
-    if (PathService::Get(kDirectoryKeys[i], &path) &&
-        file_util::DirectoryExists(path)) {
-      ++num_galleries_;
-    }
-  }
-  ASSERT_GT(num_galleries_, 0);
+  music_override_.reset(new base::ScopedPathOverride(
+    chrome::DIR_USER_MUSIC, fake_dir_.path().AppendASCII("music")));
+  pictures_override_.reset(new base::ScopedPathOverride(
+    chrome::DIR_USER_PICTURES, fake_dir_.path().AppendASCII("pictures")));
+  video_override_.reset(new base::ScopedPathOverride(
+    chrome::DIR_USER_VIDEOS, fake_dir_.path().AppendASCII("videos")));
+  num_galleries_ = 3;
 #endif
 }
 

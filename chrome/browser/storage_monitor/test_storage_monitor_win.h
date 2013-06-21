@@ -31,6 +31,8 @@ class TestStorageMonitorWin: public StorageMonitorWin {
 
   VolumeMountWatcherWin* volume_mount_watcher();
 
+  virtual Receiver* receiver() const OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestStorageMonitorWin);
 };

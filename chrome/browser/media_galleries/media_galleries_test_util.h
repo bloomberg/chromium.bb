@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/test/scoped_path_override.h"
 
 namespace extensions {
 class Extension;
@@ -25,6 +27,7 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
 class EnsureMediaDirectoriesExists {
  public:
   EnsureMediaDirectoriesExists();
+  ~EnsureMediaDirectoriesExists();
 
   int num_galleries() const { return num_galleries_; }
 
@@ -34,6 +37,11 @@ class EnsureMediaDirectoriesExists {
   base::ScopedTempDir fake_dir_;
 
   int num_galleries_;
+
+  scoped_ptr<base::ScopedPathOverride> appdir_override_;
+  scoped_ptr<base::ScopedPathOverride> music_override_;
+  scoped_ptr<base::ScopedPathOverride> pictures_override_;
+  scoped_ptr<base::ScopedPathOverride> video_override_;
 
   DISALLOW_COPY_AND_ASSIGN(EnsureMediaDirectoriesExists);
 };

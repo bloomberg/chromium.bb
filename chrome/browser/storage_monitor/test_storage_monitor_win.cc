@@ -32,5 +32,9 @@ TestStorageMonitorWin::volume_mount_watcher() {
   return volume_mount_watcher_.get();
 }
 
+StorageMonitor::Receiver* TestStorageMonitorWin::receiver() const {
+  return StorageMonitor::receiver();
+}
+
 }  // namespace test
 }  // namespace chrome
