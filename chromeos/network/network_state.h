@@ -20,7 +20,9 @@ namespace chromeos {
 // call NetworkStateHandler::GetNetworkState(path) to retrieve the state for
 // the network.
 class CHROMEOS_EXPORT NetworkState : public ManagedState {
- public:
+public:
+  typedef std::vector<int> FrequencyList;
+
   explicit NetworkState(const std::string& path);
   virtual ~NetworkState();
 
@@ -59,6 +61,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   bool connectable() const { return connectable_; }
   // Wifi property accessors
   bool passphrase_required() const { return passphrase_required_; }
+  const FrequencyList& wifi_frequencies() const { return wifi_frequencies_; }
   // Cellular property accessors
   const std::string& technology() const { return technology_; }
   const std::string& activation_state() const { return activation_state_; }
@@ -124,6 +127,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string hex_ssid_;
   std::string country_code_;
   bool passphrase_required_;
+  FrequencyList wifi_frequencies_;
   // Cellular properties
   std::string technology_;
   std::string activation_state_;

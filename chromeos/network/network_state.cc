@@ -6,6 +6,7 @@
 
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
+#include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -81,6 +82,24 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &connectable_);
   } else if (key == flimflam::kPassphraseRequiredProperty) {
     return GetBooleanValue(key, value, &passphrase_required_);
+  } else if (key == shill::kWifiFrequencyListProperty) {
+    const base::ListValue* frequencies;
+    if (!value.GetAsList(&frequencies)) {
+      NET_LOG_ERROR("Failed to parse " + key, path());
+      return false;
+    }
+    wifi_frequencies_.clear();
+    for (base::ListValue::const_iterator iter = frequencies->begin();
+         iter != frequencies->end(); ++iter) {
+      int frequency;
+      if ((*iter)->GetAsInteger(&frequency))
+        wifi_frequencies_.push_back(frequency);
+    }
+    if (!wifi_frequencies_.empty()) {
+      std::string str;
+      base::JSONWriter::Write(frequencies, &str);
+      NET_LOG_DEBUG("WifiFrequencies for " + path(), str);
+    }
   } else if (key == flimflam::kErrorProperty) {
     return GetStringValue(key, value, &error_);
   } else if (key == shill::kErrorDetailsProperty) {
@@ -108,7 +127,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
   } else if (key == flimflam::kProxyConfigProperty) {
     std::string proxy_config_str;
     if (!value.GetAsString(&proxy_config_str)) {
-      LOG(WARNING) << "Failed to parse string value for:" << key;
+      NET_LOG_ERROR("Failed to parse " + key, path());
       return false;
     }
 
@@ -125,13 +144,13 @@ bool NetworkState::PropertyChanged(const std::string& key,
       // order leads to memory access errors.
       proxy_config_.MergeDictionary(proxy_config_dict.get());
     } else {
-      LOG(WARNING) << "Failed to parse dictionary value for: " << key;
+      NET_LOG_ERROR("Failed to parse " + key, path());
     }
     return true;
   } else if (key == flimflam::kUIDataProperty) {
     std::string ui_data_str;
     if (!value.GetAsString(&ui_data_str)) {
-      LOG(WARNING) << "Failed to parse string value for:" << key;
+      NET_LOG_ERROR("Failed to parse " + key, path());
       return false;
     }
 
@@ -144,7 +163,7 @@ bool NetworkState::PropertyChanged(const std::string& key,
     if (ui_data_dict)
       onc_source_ = NetworkUIData(*ui_data_dict).onc_source();
     else
-      LOG(WARNING) << "Failed to parse dictionary value for: " << key;
+      NET_LOG_ERROR("Failed to parse " + key, path());
     return true;
   } else if (key == flimflam::kNetworkTechnologyProperty) {
     return GetStringValue(key, value, &technology_);
@@ -186,6 +205,15 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                              connectable_);
   dictionary->SetBooleanWithoutPathExpansion(
       flimflam::kPassphraseRequiredProperty, passphrase_required_);
+
+  base::ListValue* frequencies = new base::ListValue;
+  for (FrequencyList::const_iterator iter = wifi_frequencies_.begin();
+       iter != wifi_frequencies_.end(); ++iter) {
+    frequencies->AppendInteger(*iter);
+  }
+  dictionary->SetWithoutPathExpansion(shill::kWifiFrequencyListProperty,
+                                      frequencies);
+
   dictionary->SetStringWithoutPathExpansion(flimflam::kErrorProperty,
                                             error_);
   dictionary->SetStringWithoutPathExpansion(shill::kErrorDetailsProperty,
