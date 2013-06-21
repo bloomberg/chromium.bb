@@ -33,8 +33,8 @@ function test()
                 InspectorTest.addResult("UISourceCodeRemoved: " + uiSourceCode.name());
             }
 
-            workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, uiSourceCodeAdded);
-            workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+            workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+            workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
 
             function renameSnippetAndCheckWorkspace(uiSourceCode, snippetName)
             {
@@ -92,8 +92,8 @@ function test()
             var storageSnippetsCount = WebInspector.scriptSnippetModel._snippetStorage.snippets().length;
             InspectorTest.addResult("Number of snippets in the storage: " + storageSnippetsCount);
 
-            workspace.removeEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, uiSourceCodeAdded);
-            workspace.removeEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+            workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+            workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
 
             next();
         },
