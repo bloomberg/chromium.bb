@@ -4,6 +4,8 @@
 
 #include "net/http/http_stream_factory_impl.h"
 
+#include <string>
+
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -39,11 +41,13 @@ GURL UpgradeUrlToHttps(const GURL& original_url, int port) {
 
 }  // namespace
 
-HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session)
+HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session,
+                                             bool for_websockets)
     : session_(session),
       http_pipelined_host_pool_(this, NULL,
                                 session_->http_server_properties(),
-                                session_->force_http_pipelining()) {}
+                                session_->force_http_pipelining()),
+      for_websockets_(for_websockets) {}
 
 HttpStreamFactoryImpl::~HttpStreamFactoryImpl() {
   DCHECK(request_map_.empty());
@@ -68,7 +72,48 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStream(
     const SSLConfig& proxy_ssl_config,
     HttpStreamRequest::Delegate* delegate,
     const BoundNetLog& net_log) {
-  Request* request = new Request(request_info.url, this, delegate, net_log);
+  DCHECK(!for_websockets_);
+  return RequestStreamInternal(request_info,
+                               priority,
+                               server_ssl_config,
+                               proxy_ssl_config,
+                               delegate,
+                               NULL,
+                               net_log);
+}
+
+HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketStream(
+    const HttpRequestInfo& request_info,
+    RequestPriority priority,
+    const SSLConfig& server_ssl_config,
+    const SSLConfig& proxy_ssl_config,
+    HttpStreamRequest::Delegate* delegate,
+    WebSocketStreamBase::Factory* factory,
+    const BoundNetLog& net_log) {
+  DCHECK(for_websockets_);
+  DCHECK(factory);
+  return RequestStreamInternal(request_info,
+                               priority,
+                               server_ssl_config,
+                               proxy_ssl_config,
+                               delegate,
+                               factory,
+                               net_log);
+}
+
+HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
+    const HttpRequestInfo& request_info,
+    RequestPriority priority,
+    const SSLConfig& server_ssl_config,
+    const SSLConfig& proxy_ssl_config,
+    HttpStreamRequest::Delegate* delegate,
+    WebSocketStreamBase::Factory* websocket_stream_factory,
+    const BoundNetLog& net_log) {
+  Request* request = new Request(request_info.url,
+                                 this,
+                                 delegate,
+                                 websocket_stream_factory,
+                                 net_log);
 
   GURL alternate_url;
   PortAlternateProtocolPair alternate =
@@ -113,6 +158,7 @@ void HttpStreamFactoryImpl::PreconnectStreams(
     RequestPriority priority,
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config) {
+  DCHECK(!for_websockets_);
   GURL alternate_url;
   PortAlternateProtocolPair alternate =
       GetAlternateProtocolRequestFor(request_info.url, &alternate_url);
@@ -198,7 +244,7 @@ PortAlternateProtocolPair HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
     // for the proxy to use to reach the original URL via TCP.  But
     // the alternate request will be going via UDP to a different port.
     *alternate_url = original_url;
-   }
+  }
   return alternate;
 }
 
@@ -213,7 +259,7 @@ void HttpStreamFactoryImpl::OrphanJob(Job* job, const Request* request) {
   job->Orphan(request);
 }
 
-void HttpStreamFactoryImpl::OnSpdySessionReady(
+void HttpStreamFactoryImpl::OnNewSpdySessionReady(
     scoped_refptr<SpdySession> spdy_session,
     bool direct,
     const SSLConfig& used_ssl_config,
@@ -239,12 +285,20 @@ void HttpStreamFactoryImpl::OnSpdySessionReady(
                       protocol_negotiated,
                       using_spdy,
                       net_log);
-    bool use_relative_url = direct || request->url().SchemeIs("https");
-    request->OnStreamReady(
-        NULL,
-        used_ssl_config,
-        used_proxy_info,
-        new SpdyHttpStream(spdy_session.get(), use_relative_url));
+    if (for_websockets_) {
+      WebSocketStreamBase::Factory* factory =
+          request->websocket_stream_factory();
+      DCHECK(factory);
+      bool use_relative_url = direct || request->url().SchemeIs("wss");
+      request->OnWebSocketStreamReady(
+          NULL, used_ssl_config, used_proxy_info,
+          factory->CreateSpdyStream(spdy_session, use_relative_url));
+    } else {
+      bool use_relative_url = direct || request->url().SchemeIs("https");
+      request->OnStreamReady(NULL, used_ssl_config, used_proxy_info,
+                             new SpdyHttpStream(spdy_session,
+                                                use_relative_url));
+    }
   }
   // TODO(mbelshe): Alert other valid requests.
 }

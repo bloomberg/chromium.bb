@@ -877,7 +877,10 @@ int MockTCPClientSocket::Connect(const CompletionCallback& callback) {
   connected_ = true;
   peer_closed_connection_ = false;
   if (data_->connect_data().mode == ASYNC) {
-    RunCallbackAsync(callback, data_->connect_data().result);
+    if (data_->connect_data().result == ERR_IO_PENDING)
+      pending_callback_ = callback;
+    else
+      RunCallbackAsync(callback, data_->connect_data().result);
     return ERR_IO_PENDING;
   }
   return data_->connect_data().result;
@@ -938,6 +941,11 @@ void MockTCPClientSocket::OnReadComplete(const MockRead& data) {
   CompletionCallback callback = pending_callback_;
   int rv = CompleteRead();
   RunCallback(callback, rv);
+}
+
+void MockTCPClientSocket::OnConnectComplete(const MockConnect& data) {
+  CompletionCallback callback = pending_callback_;
+  RunCallback(callback, data.result);
 }
 
 int MockTCPClientSocket::CompleteRead() {
@@ -1171,6 +1179,10 @@ const BoundNetLog& DeterministicMockUDPClientSocket::NetLog() const {
 
 void DeterministicMockUDPClientSocket::OnReadComplete(const MockRead& data) {}
 
+void DeterministicMockUDPClientSocket::OnConnectComplete(
+    const MockConnect& data) {
+  NOTIMPLEMENTED();
+}
 
 DeterministicMockTCPClientSocket::DeterministicMockTCPClientSocket(
     net::NetLog* net_log,
@@ -1260,6 +1272,9 @@ bool DeterministicMockTCPClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
 }
 
 void DeterministicMockTCPClientSocket::OnReadComplete(const MockRead& data) {}
+
+void DeterministicMockTCPClientSocket::OnConnectComplete(
+    const MockConnect& data) {}
 
 // static
 void MockSSLClientSocket::ConnectCallback(
@@ -1407,6 +1422,10 @@ void MockSSLClientSocket::OnReadComplete(const MockRead& data) {
   NOTIMPLEMENTED();
 }
 
+void MockSSLClientSocket::OnConnectComplete(const MockConnect& data) {
+  NOTIMPLEMENTED();
+}
+
 MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
                                          net::NetLog* net_log)
     : connected_(false),
@@ -1524,6 +1543,10 @@ void MockUDPClientSocket::OnReadComplete(const MockRead& data) {
   net::CompletionCallback callback = pending_callback_;
   int rv = CompleteRead();
   RunCallback(callback, rv);
+}
+
+void MockUDPClientSocket::OnConnectComplete(const MockConnect& data) {
+  NOTIMPLEMENTED();
 }
 
 int MockUDPClientSocket::CompleteRead() {

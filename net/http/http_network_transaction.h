@@ -24,11 +24,13 @@
 
 namespace net {
 
+class ClientSocketHandle;
 class HttpAuthController;
 class HttpNetworkSession;
 class HttpStreamBase;
 class HttpStreamRequest;
 class IOBuffer;
+class SpdySession;
 struct HttpRequestInfo;
 
 class NET_EXPORT_PRIVATE HttpNetworkTransaction
@@ -71,6 +73,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   virtual void OnStreamReady(const SSLConfig& used_ssl_config,
                              const ProxyInfo& used_proxy_info,
                              HttpStreamBase* stream) OVERRIDE;
+  virtual void OnWebSocketStreamReady(
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      WebSocketStreamBase* stream) OVERRIDE;
   virtual void OnStreamFailed(int status,
                               const SSLConfig& used_ssl_config) OVERRIDE;
   virtual void OnCertificateError(int status,

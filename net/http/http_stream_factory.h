@@ -18,6 +18,10 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_server_properties.h"
 #include "net/socket/ssl_client_socket.h"
+// This file can be included from net/http even though
+// it is in net/websockets because it doesn't
+// introduce any link dependency to net/websockets.
+#include "net/websockets/websocket_stream_base.h"
 
 class GURL;
 
@@ -55,7 +59,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
    public:
     virtual ~Delegate() {}
 
-    // This is the success case.
+    // This is the success case for RequestStream.
     // |stream| is now owned by the delegate.
     // |used_ssl_config| indicates the actual SSL configuration used for this
     // stream, since the HttpStreamRequest may have modified the configuration
@@ -66,6 +70,18 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
         HttpStreamBase* stream) = 0;
+
+    // This is the success case for RequestWebSocketStream.
+    // |stream| is now owned by the delegate.
+    // |used_ssl_config| indicates the actual SSL configuration used for this
+    // stream, since the HttpStreamRequest may have modified the configuration
+    // during stream processing.
+    // |used_proxy_info| indicates the actual ProxyInfo used for this stream,
+    // since the HttpStreamRequest performs the proxy resolution.
+    virtual void OnWebSocketStreamReady(
+        const SSLConfig& used_ssl_config,
+        const ProxyInfo& used_proxy_info,
+        WebSocketStreamBase* stream) = 0;
 
     // This is the failure to create a stream case.
     // |used_ssl_config| indicates the actual SSL configuration used for this
@@ -169,13 +185,24 @@ class NET_EXPORT HttpStreamFactory {
   // Virtual interface methods.
 
   // Request a stream.
-  // Will callback to the HttpStreamRequestDelegate upon completion.
+  // Will call delegate->OnStreamReady on successful completion.
   virtual HttpStreamRequest* RequestStream(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
+      const BoundNetLog& net_log) = 0;
+
+  // Request a WebSocket stream.
+  // Will call delegate->OnWebSocketStreamReady on successful completion.
+  virtual HttpStreamRequest* RequestWebSocketStream(
+      const HttpRequestInfo& info,
+      RequestPriority priority,
+      const SSLConfig& server_ssl_config,
+      const SSLConfig& proxy_ssl_config,
+      HttpStreamRequest::Delegate* delegate,
+      WebSocketStreamBase::Factory* factory,
       const BoundNetLog& net_log) = 0;
 
   // Requests that enough connections for |num_streams| be opened.

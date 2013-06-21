@@ -440,6 +440,13 @@ void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
   OnIOComplete(OK);
 }
 
+void HttpNetworkTransaction::OnWebSocketStreamReady(
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& used_proxy_info,
+    WebSocketStreamBase* stream) {
+  NOTREACHED() << "This function should never be called.";
+}
+
 void HttpNetworkTransaction::OnStreamFailed(int result,
                                             const SSLConfig& used_ssl_config) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);

@@ -199,6 +199,7 @@ class AsyncSocket {
   // data.async is ignored, and this read is completed synchronously as
   // part of this call.
   virtual void OnReadComplete(const MockRead& data) = 0;
+  virtual void OnConnectComplete(const MockConnect& data) = 0;
 };
 
 // SocketDataProvider which responds based on static tables of mock reads and
@@ -229,7 +230,7 @@ class StaticSocketDataProvider : public SocketDataProvider {
   // SocketDataProvider implementation.
   virtual MockRead GetNextRead() OVERRIDE;
   virtual MockWriteResult OnWrite(const std::string& data) OVERRIDE;
-  virtual void Reset() OVERRIDE;
+  ;  virtual void Reset() OVERRIDE;
 
  private:
   MockRead* reads_;
@@ -696,6 +697,7 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
 
   // AsyncSocket:
   virtual void OnReadComplete(const MockRead& data) OVERRIDE;
+  virtual void OnConnectComplete(const MockConnect& data) OVERRIDE;
 
  private:
   int CompleteRead();
@@ -803,6 +805,7 @@ class DeterministicMockUDPClientSocket
 
   // AsyncSocket implementation.
   virtual void OnReadComplete(const MockRead& data) OVERRIDE;
+  virtual void OnConnectComplete(const MockConnect& data) OVERRIDE;
 
  private:
   bool connected_;
@@ -845,6 +848,7 @@ class DeterministicMockTCPClientSocket
 
   // AsyncSocket:
   virtual void OnReadComplete(const MockRead& data) OVERRIDE;
+  virtual void OnConnectComplete(const MockConnect& data) OVERRIDE;
 
  private:
   DeterministicSocketHelper helper_;
@@ -887,6 +891,7 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
 
   // This MockSocket does not implement the manual async IO feature.
   virtual void OnReadComplete(const MockRead& data) OVERRIDE;
+  virtual void OnConnectComplete(const MockConnect& data) OVERRIDE;
 
   virtual bool WasChannelIDSent() const OVERRIDE;
   virtual void set_channel_id_sent(bool channel_id_sent) OVERRIDE;
@@ -931,6 +936,7 @@ class MockUDPClientSocket
 
   // AsyncSocket implementation.
   virtual void OnReadComplete(const MockRead& data) OVERRIDE;
+  virtual void OnConnectComplete(const MockConnect& data) OVERRIDE;
 
  private:
   int CompleteRead();

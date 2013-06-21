@@ -127,7 +127,9 @@ class HttpStreamFactoryImpl::Job {
   };
 
   void OnStreamReadyCallback();
-  void OnSpdySessionReadyCallback();
+  void OnWebSocketStreamReadyCallback();
+  // This callback function is called when a new SPDY session is created.
+  void OnNewSpdySessionReadyCallback();
   void OnStreamFailedCallback(int result);
   void OnCertificateErrorCallback(int result, const SSLInfo& ssl_info);
   void OnNeedsProxyAuthCallback(const HttpResponseInfo& response_info,
@@ -292,6 +294,7 @@ class HttpStreamFactoryImpl::Job {
   bool establishing_tunnel_;
 
   scoped_ptr<HttpStream> stream_;
+  scoped_ptr<WebSocketStreamBase> websocket_stream_;
 
   // True if we negotiated NPN.
   bool was_npn_negotiated_;

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "net/base/completion_callback.h"
+#include "net/websockets/websocket_stream_base.h"
 
 namespace net {
 
@@ -30,7 +31,7 @@ struct WebSocketFrameChunk;
 // |callback| will be called when the operation is finished. Non-null |callback|
 // must be provided to these functions.
 
-class WebSocketStream {
+class WebSocketStream : public WebSocketStreamBase {
  public:
   WebSocketStream() {}
 
@@ -94,6 +95,9 @@ class WebSocketStream {
   // TODO(yutak): Add following interfaces:
   // - RenewStreamForAuth for authentication (is this necessary?)
   // - GetSSLInfo, GetSSLCertRequsetInfo for SSL
+
+  // WebSocketStreamBase derived functions
+  virtual WebSocketStream* AsWebSocketStream() { return this; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocketStream);

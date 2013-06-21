@@ -28,7 +28,9 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
     public HttpStreamFactory,
     public HttpPipelinedHostPool::Delegate {
  public:
-  explicit HttpStreamFactoryImpl(HttpNetworkSession* session);
+  // RequestStream may only be called if |for_websockets| is false.
+  // RequestWebSocketStream may only be called if |for_websockets| is true.
+  HttpStreamFactoryImpl(HttpNetworkSession* session, bool for_websockets);
   virtual ~HttpStreamFactoryImpl();
 
   // HttpStreamFactory interface
@@ -38,6 +40,15 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
+      const BoundNetLog& net_log) OVERRIDE;
+
+  virtual HttpStreamRequest* RequestWebSocketStream(
+      const HttpRequestInfo& info,
+      RequestPriority priority,
+      const SSLConfig& server_ssl_config,
+      const SSLConfig& proxy_ssl_config,
+      HttpStreamRequest::Delegate* delegate,
+      WebSocketStreamBase::Factory* factory,
       const BoundNetLog& net_log) OVERRIDE;
 
   virtual void PreconnectStreams(int num_streams,
@@ -52,6 +63,8 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   virtual void OnHttpPipelinedHostHasAdditionalCapacity(
       HttpPipelinedHost* host) OVERRIDE;
 
+  size_t num_orphaned_jobs() const { return orphaned_job_set_.size(); }
+
  private:
   class Request;
   class Job;
@@ -61,6 +74,15 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   typedef std::map<SpdySessionKey, RequestSet> SpdySessionRequestMap;
   typedef std::map<HttpPipelinedHost::Key,
                    RequestVector> HttpPipeliningRequestMap;
+
+  HttpStreamRequest* RequestStreamInternal(
+      const HttpRequestInfo& info,
+      RequestPriority priority,
+      const SSLConfig& server_ssl_config,
+      const SSLConfig& proxy_ssl_config,
+      HttpStreamRequest::Delegate* delegate,
+      WebSocketStreamBase::Factory* factory,
+      const BoundNetLog& net_log);
 
   PortAlternateProtocolPair GetAlternateProtocolRequestFor(
       const GURL& original_url,
@@ -72,14 +94,14 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   // Called when a SpdySession is ready. It will find appropriate Requests and
   // fulfill them. |direct| indicates whether or not |spdy_session| uses a
   // proxy.
-  void OnSpdySessionReady(scoped_refptr<SpdySession> spdy_session,
-                          bool direct,
-                          const SSLConfig& used_ssl_config,
-                          const ProxyInfo& used_proxy_info,
-                          bool was_npn_negotiated,
-                          NextProto protocol_negotiated,
-                          bool using_spdy,
-                          const BoundNetLog& net_log);
+  void OnNewSpdySessionReady(scoped_refptr<SpdySession> spdy_session,
+                             bool direct,
+                             const SSLConfig& used_ssl_config,
+                             const ProxyInfo& used_proxy_info,
+                             bool was_npn_negotiated,
+                             NextProto protocol_negotiated,
+                             bool using_spdy,
+                             const BoundNetLog& net_log);
 
   // Called when the Job detects that the endpoint indicated by the
   // Alternate-Protocol does not work. Lets the factory update
@@ -124,6 +146,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   // deleted when the factory is destroyed.
   std::set<const Job*> preconnect_job_set_;
 
+  const bool for_websockets_;
   DISALLOW_COPY_AND_ASSIGN(HttpStreamFactoryImpl);
 };
 

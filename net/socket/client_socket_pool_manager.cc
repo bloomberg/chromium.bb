@@ -88,7 +88,8 @@ int InitSocketPoolHelper(const GURL& request_url,
   scoped_refptr<SOCKSSocketParams> socks_params;
   scoped_ptr<HostPortPair> proxy_host_port;
 
-  bool using_ssl = request_url.SchemeIs("https") || force_spdy_over_ssl;
+  bool using_ssl = request_url.SchemeIs("https") ||
+      request_url.SchemeIs("wss") || force_spdy_over_ssl;
 
   HostPortPair origin_host_port =
       HostPortPair(request_url.HostNoBrackets(),
@@ -390,6 +391,30 @@ int InitSocketHandleForHttpRequest(
       request_url, request_extra_headers, request_load_flags, request_priority,
       session, proxy_info, force_spdy_over_ssl, want_spdy_over_npn,
       ssl_config_for_origin, ssl_config_for_proxy, false, privacy_mode, net_log,
+      0, socket_handle, resolution_callback, callback);
+}
+
+int InitSocketHandleForWebSocketRequest(
+    const GURL& request_url,
+    const HttpRequestHeaders& request_extra_headers,
+    int request_load_flags,
+    RequestPriority request_priority,
+    HttpNetworkSession* session,
+    const ProxyInfo& proxy_info,
+    bool force_spdy_over_ssl,
+    bool want_spdy_over_npn,
+    const SSLConfig& ssl_config_for_origin,
+    const SSLConfig& ssl_config_for_proxy,
+    PrivacyMode privacy_mode,
+    const BoundNetLog& net_log,
+    ClientSocketHandle* socket_handle,
+    const OnHostResolutionCallback& resolution_callback,
+    const CompletionCallback& callback) {
+  DCHECK(socket_handle);
+  return InitSocketPoolHelper(
+      request_url, request_extra_headers, request_load_flags, request_priority,
+      session, proxy_info, force_spdy_over_ssl, want_spdy_over_npn,
+      ssl_config_for_origin, ssl_config_for_proxy, true, privacy_mode, net_log,
       0, socket_handle, resolution_callback, callback);
 }
 

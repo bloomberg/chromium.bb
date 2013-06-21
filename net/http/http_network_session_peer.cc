@@ -34,4 +34,9 @@ void HttpNetworkSessionPeer::SetHttpStreamFactory(
   session_->http_stream_factory_.reset(http_stream_factory);
 }
 
+void HttpNetworkSessionPeer::SetWebSocketStreamFactory(
+    HttpStreamFactory* http_stream_factory) {
+  session_->websocket_stream_factory_.reset(http_stream_factory);
+}
+
 }  // namespace net

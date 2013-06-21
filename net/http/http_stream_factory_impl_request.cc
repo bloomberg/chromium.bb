@@ -13,12 +13,15 @@
 
 namespace net {
 
-HttpStreamFactoryImpl::Request::Request(const GURL& url,
-                                        HttpStreamFactoryImpl* factory,
-                                        HttpStreamRequest::Delegate* delegate,
-                                        const BoundNetLog& net_log)
+HttpStreamFactoryImpl::Request::Request(
+    const GURL& url,
+    HttpStreamFactoryImpl* factory,
+    HttpStreamRequest::Delegate* delegate,
+    WebSocketStreamBase::Factory* websocket_stream_factory,
+    const BoundNetLog& net_log)
     : url_(url),
       factory_(factory),
+      websocket_stream_factory_(websocket_stream_factory),
       delegate_(delegate),
       net_log_(net_log),
       completed_(false),
@@ -99,31 +102,25 @@ void HttpStreamFactoryImpl::Request::OnStreamReady(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
     HttpStreamBase* stream) {
+  DCHECK(!factory_->for_websockets_);
   DCHECK(stream);
   DCHECK(completed_);
 
-  // |job| should only be NULL if we're being serviced by a late bound
-  // SpdySession or HttpPipelinedConnection (one that was not created by a job
-  // in our |jobs_| set).
-  if (!job) {
-    DCHECK(!bound_job_.get());
-    DCHECK(!jobs_.empty());
-    // NOTE(willchan): We do *NOT* call OrphanJobs() here. The reason is because
-    // we *WANT* to cancel the unnecessary Jobs from other requests if another
-    // Job completes first.
-    // TODO(mbelshe): Revisit this when we implement ip connection pooling of
-    // SpdySessions. Do we want to orphan the jobs for a different hostname so
-    // they complete? Or do we want to prevent connecting a new SpdySession if
-    // we've already got one available for a different hostname where the ip
-    // address matches up?
-  } else if (!bound_job_.get()) {
-    // We may have other jobs in |jobs_|. For example, if we start multiple jobs
-    // for Alternate-Protocol.
-    OrphanJobsExcept(job);
-  } else {
-    DCHECK(jobs_.empty());
-  }
+  OnJobSucceeded(job);
   delegate_->OnStreamReady(used_ssl_config, used_proxy_info, stream);
+}
+
+void HttpStreamFactoryImpl::Request::OnWebSocketStreamReady(
+    Job* job,
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& used_proxy_info,
+    WebSocketStreamBase* stream) {
+  DCHECK(factory_->for_websockets_);
+  DCHECK(stream);
+  DCHECK(completed_);
+
+  OnJobSucceeded(job);
+  delegate_->OnWebSocketStreamReady(used_ssl_config, used_proxy_info, stream);
 }
 
 void HttpStreamFactoryImpl::Request::OnStreamFailed(
@@ -280,7 +277,7 @@ HttpStreamFactoryImpl::Request::RemoveRequestFromHttpPipeliningRequestMap() {
   }
 }
 
-void HttpStreamFactoryImpl::Request::OnSpdySessionReady(
+void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
     Job* job,
     scoped_refptr<SpdySession> spdy_session,
     bool direct) {
@@ -290,7 +287,7 @@ void HttpStreamFactoryImpl::Request::OnSpdySessionReady(
   // The first case is the usual case.
   if (!bound_job_.get()) {
     OrphanJobsExcept(job);
-  } else { // This is the case for HTTPS proxy tunneling.
+  } else {  // This is the case for HTTPS proxy tunneling.
     DCHECK_EQ(bound_job_.get(), job);
     DCHECK(jobs_.empty());
   }
@@ -308,14 +305,23 @@ void HttpStreamFactoryImpl::Request::OnSpdySessionReady(
 
   // Cache this so we can still use it if the request is deleted.
   HttpStreamFactoryImpl* factory = factory_;
-
-  bool use_relative_url = direct || url().SchemeIs("https");
-  delegate_->OnStreamReady(
-      job->server_ssl_config(),
-      job->proxy_info(),
-      new SpdyHttpStream(spdy_session.get(), use_relative_url));
+  if (factory->for_websockets_) {
+    DCHECK(websocket_stream_factory_);
+    bool use_relative_url = direct || url().SchemeIs("wss");
+    delegate_->OnWebSocketStreamReady(
+        job->server_ssl_config(),
+        job->proxy_info(),
+        websocket_stream_factory_->CreateSpdyStream(
+            spdy_session, use_relative_url));
+  } else {
+    bool use_relative_url = direct || url().SchemeIs("https");
+    delegate_->OnStreamReady(
+        job->server_ssl_config(),
+        job->proxy_info(),
+        new SpdyHttpStream(spdy_session, use_relative_url));
+  }
   // |this| may be deleted after this point.
-  factory->OnSpdySessionReady(
+  factory->OnNewSpdySessionReady(
       spdy_session, direct, used_ssl_config, used_proxy_info,
       was_npn_negotiated, protocol_negotiated, using_spdy, net_log);
 }
@@ -340,6 +346,30 @@ void HttpStreamFactoryImpl::Request::OrphanJobs() {
 
   for (std::set<Job*>::iterator it = tmp.begin(); it != tmp.end(); ++it)
     factory_->OrphanJob(*it, this);
+}
+
+void HttpStreamFactoryImpl::Request::OnJobSucceeded(Job* job) {
+  // |job| should only be NULL if we're being serviced by a late bound
+  // SpdySession or HttpPipelinedConnection (one that was not created by a job
+  // in our |jobs_| set).
+  if (!job) {
+    DCHECK(!bound_job_.get());
+    DCHECK(!jobs_.empty());
+    // NOTE(willchan): We do *NOT* call OrphanJobs() here. The reason is because
+    // we *WANT* to cancel the unnecessary Jobs from other requests if another
+    // Job completes first.
+    // TODO(mbelshe): Revisit this when we implement ip connection pooling of
+    // SpdySessions. Do we want to orphan the jobs for a different hostname so
+    // they complete? Or do we want to prevent connecting a new SpdySession if
+    // we've already got one available for a different hostname where the ip
+    // address matches up?
+  } else if (!bound_job_.get()) {
+    // We may have other jobs in |jobs_|. For example, if we start multiple jobs
+    // for Alternate-Protocol.
+    OrphanJobsExcept(job);
+  } else {
+    DCHECK(jobs_.empty());
+  }
 }
 
 }  // namespace net
