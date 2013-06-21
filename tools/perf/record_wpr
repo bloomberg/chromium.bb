@@ -9,5 +9,4 @@ import perf_tools
 from telemetry.page import record_wpr
 
 if __name__ == '__main__':
-  benchmark_dir = os.path.join(os.path.dirname(__file__), 'perf_tools')
-  sys.exit(record_wpr.Main(benchmark_dir))
+  sys.exit(record_wpr.Main(os.path.dirname(__file__)))
