@@ -11,6 +11,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class PrefService;
 class Profile;
 
 namespace apps {
@@ -29,10 +30,15 @@ class ShortcutManager : public BrowserContextKeyedService,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  // Checks if kShortcutsEnabled is set in prefs. If not, this sets it and
+  // creates shortcuts for all apps.
+  void OnceOffCreateShortcuts();
+
   void DeleteApplicationShortcuts(const extensions::Extension* extension);
 
   content::NotificationRegistrar registrar_;
   Profile* profile_;
+  PrefService* prefs_;
 
   // Fields used when installing application shortcuts.
   base::WeakPtrFactory<ShortcutManager> weak_factory_;

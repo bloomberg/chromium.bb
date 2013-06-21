@@ -2,6 +2,7 @@ include_rules = [
   "+base",
   "+content",
   "+components/browser_context_keyed_service",
+  "+components/user_prefs/pref_registry_syncable.h",
   "+ui",
   "+win8",
   # Temporary allowed includes.

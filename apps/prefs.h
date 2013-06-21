@@ -7,10 +7,17 @@
 
 class PrefRegistrySimple;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace apps {
 
 // Register preferences for the apps system.
 void RegisterPrefs(PrefRegistrySimple* registry);
+
+// Register per-profile preferences for the apps system.
+void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace apps
 

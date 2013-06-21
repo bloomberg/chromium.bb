@@ -27,6 +27,10 @@ const char kAppLauncherHasBeenEnabled[] =
 const char kAppLauncherIsEnabled[] =
     "apps.app_launcher.should_show_apps_page";
 
+// A boolean that indicates whether app shortcuts have been created.
+// On a transition from false to true, shortcuts are created for all apps.
+const char kShortcutsHaveBeenCreated[] = "apps.shortcuts_have_been_created";
+
 // A boolean identifying if we should show the app launcher promo or not.
 const char kShowAppLauncherPromo[] = "app_launcher.show_promo";
 

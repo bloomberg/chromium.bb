@@ -14,6 +14,7 @@ extern const char kAppLaunchForMetroRestartProfile[];
 extern const char kAppLaunchForMetroRestart[];
 extern const char kAppLauncherHasBeenEnabled[];
 extern const char kAppLauncherIsEnabled[];
+extern const char kShortcutsHaveBeenCreated[];
 extern const char kShowAppLauncherPromo[];
 
 }  // namespace prefs

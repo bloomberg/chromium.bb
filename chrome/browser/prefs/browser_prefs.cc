@@ -284,6 +284,7 @@ void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   TRACE_EVENT0("browser", "chrome::RegisterUserPrefs");
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterUserPrefs(registry);
+  apps::RegisterUserPrefs(registry);
   autofill::AutofillDialogControllerImpl::RegisterUserPrefs(registry);
   autofill::AutofillManager::RegisterUserPrefs(registry);
   BookmarkPromptPrefs::RegisterUserPrefs(registry);
