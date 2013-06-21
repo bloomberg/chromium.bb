@@ -578,6 +578,81 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
   EXPECT_EQ(instance2a, instance2b);
 }
 
+TEST_F(WebContentsImplTest, NavigateFromChromeNativeKeepsSiteInstance) {
+  contents()->transition_cross_site = true;
+  TestRenderViewHost* orig_rvh = test_rvh();
+  int orig_rvh_delete_count = 0;
+  orig_rvh->set_delete_counter(&orig_rvh_delete_count);
+  SiteInstanceImpl* orig_instance =
+      static_cast<SiteInstanceImpl*>(contents()->GetSiteInstance());
+
+  // Navigate to a chrome-native URL.
+  const GURL native_url("chrome-native://nativestuffandthings");
+  controller().LoadURL(
+      native_url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  contents()->TestDidNavigate(orig_rvh, 1, native_url, PAGE_TRANSITION_TYPED);
+
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
+  EXPECT_EQ(native_url, contents()->GetLastCommittedURL());
+  EXPECT_EQ(native_url, contents()->GetActiveURL());
+  EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
+  EXPECT_EQ(GURL(), contents()->GetSiteInstance()->GetSiteURL());
+  EXPECT_FALSE(orig_instance->HasSite());
+
+  // Navigate to new site (should keep same site instance).
+  const GURL url("http://www.google.com");
+  controller().LoadURL(
+      url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(native_url, contents()->GetLastCommittedURL());
+  EXPECT_EQ(url, contents()->GetActiveURL());
+  EXPECT_FALSE(contents()->GetPendingRenderViewHost());
+  contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
+  EXPECT_TRUE(
+      contents()->GetSiteInstance()->GetSiteURL().DomainIs("google.com"));
+  EXPECT_EQ(url, contents()->GetLastCommittedURL());
+
+  // Navigate to another new site (should create a new site instance).
+  const GURL url2("http://www.yahoo.com");
+  controller().LoadURL(
+      url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+  EXPECT_EQ(url, contents()->GetLastCommittedURL());
+  EXPECT_EQ(url2, contents()->GetActiveURL());
+  TestRenderViewHost* pending_rvh =
+      static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
+  int pending_rvh_delete_count = 0;
+  pending_rvh->set_delete_counter(&pending_rvh_delete_count);
+
+  // Navigations should be suspended in pending_rvh until ShouldCloseACK.
+  EXPECT_TRUE(pending_rvh->are_navigations_suspended());
+  orig_rvh->SendShouldCloseACK(true);
+  EXPECT_FALSE(pending_rvh->are_navigations_suspended());
+
+  // DidNavigate from the pending page.
+  contents()->TestDidNavigate(
+      pending_rvh, 1, url2, PAGE_TRANSITION_TYPED);
+  SiteInstance* new_instance = contents()->GetSiteInstance();
+
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(pending_rvh, contents()->GetRenderViewHost());
+  EXPECT_EQ(url2, contents()->GetLastCommittedURL());
+  EXPECT_EQ(url2, contents()->GetActiveURL());
+  EXPECT_NE(new_instance, orig_instance);
+  EXPECT_FALSE(contents()->GetPendingRenderViewHost());
+  // We keep the original RVH around, swapped out.
+  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsOnSwappedOutList(
+      orig_rvh));
+  EXPECT_EQ(orig_rvh_delete_count, 0);
+
+  // Close contents and ensure RVHs are deleted.
+  DeleteContents();
+  EXPECT_EQ(orig_rvh_delete_count, 1);
+  EXPECT_EQ(pending_rvh_delete_count, 1);
+}
+
 // Test that we can find an opener RVH even if it's pending.
 // http://crbug.com/176252.
 TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {

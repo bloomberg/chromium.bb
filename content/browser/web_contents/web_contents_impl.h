@@ -640,6 +640,10 @@ class CONTENT_EXPORT WebContentsImpl
       const LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
+  // Specifies whether the passed in URL should be assigned as the site of the
+  // current SiteInstance, if it does not yet have a site.
+  bool ShouldAssignSiteForURL(const GURL& url);
+
   // If our controller was restored, update the max page ID associated with the
   // given RenderViewHost to be larger than the number of restored entries.
   // This is called in CreateRenderView before any navigations in the RenderView

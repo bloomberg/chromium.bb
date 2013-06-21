@@ -2675,6 +2675,14 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
                     DidNavigateAnyFrame(details, params));
 }
 
+bool WebContentsImpl::ShouldAssignSiteForURL(const GURL& url) {
+  // Neither about:blank nor the chrome-native: scheme should "use up" a new
+  // SiteInstance.  In both cases, the SiteInstance can still be used for a
+  // normal web site.
+  return !url.SchemeIs(chrome::kChromeNativeScheme) &&
+      url != GURL(kAboutBlankURL);
+}
+
 void WebContentsImpl::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {
   // If we are creating a RVH for a restored controller, then we need to make
   // sure the RenderView starts with a next_page_id_ larger than the number
@@ -2911,10 +2919,11 @@ void WebContentsImpl::DidNavigate(
   DCHECK(frame_tree_root_.get());
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless
-  // this is for about:blank.  In that case, the SiteInstance can still be
-  // considered unused until a navigation to a real page.
+  // assigning a site is not necessary for this URL.  In that case, the
+  // SiteInstance can still be considered unused until a navigation to a real
+  // page.
   if (!static_cast<SiteInstanceImpl*>(GetSiteInstance())->HasSite() &&
-      params.url != GURL(kAboutBlankURL)) {
+      ShouldAssignSiteForURL(params.url)) {
     static_cast<SiteInstanceImpl*>(GetSiteInstance())->SetSite(params.url);
   }
 
