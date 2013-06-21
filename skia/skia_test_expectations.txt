@@ -80,7 +80,6 @@ crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-svgdom-seed-prop.htm
 crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-svgdom-stitchTiles-prop.html [ ImageOnlyFailure ]
 crbug.com/250525 svg/dynamic-updates/SVGFETurbulenceElement-svgdom-type-prop.html [ ImageOnlyFailure ]
 crbug.com/250525 svg/filters/filter-clip.svg [ ImageOnlyFailure ]
-crbug.com/250525 css3/filters/effect-reference.html [ ImageOnlyFailure ]
 crbug.com/250525 svg/W3C-SVG-1.1/filters-turb-01-f.svg [ ImageOnlyFailure ]
 crbug.com/250525 svg/W3C-SVG-1.1/filters-turb-02-f.svg [ ImageOnlyFailure ]
 
