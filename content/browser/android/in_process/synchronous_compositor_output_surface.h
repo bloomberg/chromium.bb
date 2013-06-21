@@ -68,6 +68,9 @@ class SynchronousCompositorOutputSurface
   class SoftwareDevice;
   friend class SoftwareDevice;
 
+  // Private OutputSurface overrides.
+  virtual void PostCheckForRetroactiveBeginFrame() OVERRIDE;
+
   void InvokeComposite(gfx::Size damage_size);
   void UpdateCompositorClientSettings();
   void NotifyCompositorSettingsChanged();

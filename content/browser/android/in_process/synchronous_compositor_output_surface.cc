@@ -227,6 +227,11 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     OnSwapBuffersComplete(NULL);
 }
 
+void SynchronousCompositorOutputSurface::PostCheckForRetroactiveBeginFrame() {
+  // Synchronous compositor cannot perform retroactive begin frames, so
+  // intentionally no-op here.
+}
+
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading
 // requirement: SynchronousCompositorOutputSurface() must only be used on the UI
 // thread.
