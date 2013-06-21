@@ -144,6 +144,7 @@ class TestPackage(object):
     # to output the CRASHED marker when a crash happens.
     re_crash = re.compile('\[ CRASHED      \](.*)\r\n')
 
+    log = ''
     try:
       while True:
         full_test_name = None
