@@ -1517,9 +1517,8 @@ gfx::Image AutofillDialogControllerImpl::SplashPageImage() const {
   int show_count =
       profile_->GetPrefs()->GetInteger(::prefs::kAutofillDialogShowCount);
   if (show_count <= 4) {
-    // TODO(estade): this logo is not the right size.
     return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_PRODUCT_LOGO);
+        IDR_PRODUCT_LOGO_NAME_48);
   }
 
   return gfx::Image();
