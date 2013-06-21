@@ -306,12 +306,9 @@ int32_t
 wl_shm_buffer_get_height(struct wl_shm_buffer *buffer);
 
 int
-wl_buffer_is_shm(struct wl_buffer *buffer);
-
-int
 wl_display_init_shm(struct wl_display *display);
 
-struct wl_buffer *
+struct wl_shm_buffer *
 wl_shm_buffer_create(struct wl_client *client,
 		     uint32_t id, int32_t width, int32_t height,
 		     int32_t stride, uint32_t format);

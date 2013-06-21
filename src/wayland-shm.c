@@ -44,7 +44,8 @@ struct wl_shm_pool {
 };
 
 struct wl_shm_buffer {
-	struct wl_buffer buffer;
+	struct wl_resource *resource;
+	int32_t width, height;
 	int32_t stride;
 	uint32_t format;
 	int offset;
@@ -118,23 +119,18 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 		return;
 	}
 
-	buffer->buffer.width = width;
-	buffer->buffer.height = height;
-	buffer->buffer.busy_count = 0;
+	buffer->width = width;
+	buffer->height = height;
 	buffer->format = format;
 	buffer->stride = stride;
 	buffer->offset = offset;
 	buffer->pool = pool;
 	pool->refcount++;
 
-	buffer->buffer.resource.object.id = id;
-	buffer->buffer.resource.object.interface = &wl_buffer_interface;
-	buffer->buffer.resource.object.implementation = &shm_buffer_interface;
-	buffer->buffer.resource.data = buffer;
-	buffer->buffer.resource.client = client;
-	buffer->buffer.resource.destroy = destroy_buffer;
-
-	wl_client_add_resource(client, &buffer->buffer.resource);
+	buffer->resource = wl_client_add_object(client, &wl_buffer_interface,
+						&shm_buffer_interface,
+						id, buffer);
+	wl_resource_set_destructor(buffer->resource, destroy_buffer);
 }
 
 static void
@@ -249,7 +245,7 @@ wl_display_init_shm(struct wl_display *display)
 	return 0;
 }
 
-WL_EXPORT struct wl_buffer *
+WL_EXPORT struct wl_shm_buffer *
 wl_shm_buffer_create(struct wl_client *client,
 		     uint32_t id, int32_t width, int32_t height,
 		     int32_t stride, uint32_t format)
@@ -268,24 +264,20 @@ wl_shm_buffer_create(struct wl_client *client,
 	if (buffer == NULL)
 		return NULL;
 
-	buffer->buffer.width = width;
-	buffer->buffer.height = height;
-	buffer->buffer.busy_count = 0;
+	buffer->width = width;
+	buffer->height = height;
 	buffer->format = format;
 	buffer->stride = stride;
 	buffer->offset = 0;
 	buffer->pool = NULL;
 
-	buffer->buffer.resource.object.id = id;
-	buffer->buffer.resource.object.interface = &wl_buffer_interface;
-	buffer->buffer.resource.object.implementation = &shm_buffer_interface;
-	buffer->buffer.resource.data = buffer;
-	buffer->buffer.resource.client = client;
-	buffer->buffer.resource.destroy = destroy_buffer;
 
-	wl_client_add_resource(client, &buffer->buffer.resource);
+	buffer->resource = wl_client_add_object(client, &wl_buffer_interface,
+						&shm_buffer_interface,
+						id, buffer);
+	wl_resource_set_destructor(buffer->resource, destroy_buffer);
 
-	return &buffer->buffer;
+	return buffer;
 }
 
 WL_EXPORT struct wl_shm_buffer *
@@ -296,13 +288,6 @@ wl_shm_buffer_get(struct wl_resource *resource)
 		return wl_resource_get_user_data(resource);
 	else
 		return NULL;
-}
-
-WL_EXPORT int
-wl_buffer_is_shm(struct wl_buffer *buffer)
-{
-	return buffer->resource.object.implementation == 
-		(void (**)(void)) &shm_buffer_interface;
 }
 
 WL_EXPORT int32_t
@@ -329,11 +314,11 @@ wl_shm_buffer_get_format(struct wl_shm_buffer *buffer)
 WL_EXPORT int32_t
 wl_shm_buffer_get_width(struct wl_shm_buffer *buffer)
 {
-	return buffer->buffer.width;
+	return buffer->width;
 }
 
 WL_EXPORT int32_t
 wl_shm_buffer_get_height(struct wl_shm_buffer *buffer)
 {
-	return buffer->buffer.height;
+	return buffer->height;
 }
