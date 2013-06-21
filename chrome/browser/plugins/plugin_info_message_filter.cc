@@ -47,13 +47,13 @@ bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
   if (plugin.name == ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName))
     return true;
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
   // Treat CDM invocations like JavaScript.
   if (plugin.name == ASCIIToUTF16(kWidevineCdmDisplayName)) {
     DCHECK(plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS);
     return true;
   }
-#endif  // WIDEVINE_CDM_AVAILABLE
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
 
   return false;
 }

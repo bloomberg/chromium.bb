@@ -489,7 +489,7 @@ class PepperContentSettingsTest : public ContentSettingsTest {
     const char kLibraryName[] = "clearkeycdmadapter.plugin";
 #elif defined(OS_POSIX)
     const char kLibraryName[] = "libclearkeycdmadapter.so";
-#endif
+#endif  // defined(OS_MACOSX)
 #endif  // defined(OS_WIN)
 
     // Append the switch to register the External Clear Key CDM.
@@ -571,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
 
 #if defined(ENABLE_PEPPER_CDMS)
   RunLoadPepperPluginTest(kExternalClearKeyMimeType, true);
-#endif
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
   // Next, test behavior when plug-ins are blocked.
   content_settings->SetDefaultContentSetting(
@@ -583,12 +583,12 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
-#endif
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if !defined(DISABLE_NACL)
   RunLoadPepperPluginTest("application/x-nacl", true);
-#endif
+#endif  // !defined(DISABLE_NACL)
 
   // Finally, test behavior when (just) JavaScript is blocked.
   content_settings->SetDefaultContentSetting(
@@ -602,12 +602,12 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
-#endif
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if !defined(DISABLE_NACL)
   RunJavaScriptBlockedTest("load_nacl_no_js.html", true);
-#endif
+#endif  // !defined(DISABLE_NACL)
 }
 
 #endif  // defined(ENABLE_PLUGINS)
