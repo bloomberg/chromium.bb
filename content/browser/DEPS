@@ -28,6 +28,48 @@ include_rules = [
   "-webkit/child",
   "-webkit/renderer",
 
+  # No inclusion of WebKit from the browser, other than strictly enum/POD,
+  # header-only types, and some selected common code.
+  "-third_party/WebKit",
+  "+third_party/WebKit/public/platform/WebGamepads.h",
+  "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
+  "+third_party/WebKit/public/platform/WebIDBDatabase.h",
+  "+third_party/WebKit/public/platform/WebIDBDatabaseException.h",
+  "+third_party/WebKit/public/platform/WebIDBKeyPath.h",
+  "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
+  "+third_party/WebKit/public/platform/WebScreenInfo.h",
+  "+third_party/WebKit/public/platform/WebString.h",
+  "+third_party/WebKit/public/web/WebCompositionUnderline.h",
+  "+third_party/WebKit/public/web/WebConsoleMessage.h",
+  "+third_party/WebKit/public/web/WebCursorInfo.h",
+  "+third_party/WebKit/public/web/WebDevToolsAgent.h",
+  "+third_party/WebKit/public/web/WebDragOperation.h",
+  "+third_party/WebKit/public/web/WebDragStatus.h",
+  "+third_party/WebKit/public/web/WebFindOptions.h",
+  "+third_party/WebKit/public/web/WebInputEvent.h",
+  "+third_party/WebKit/public/web/WebMediaPlayerAction.h",
+  "+third_party/WebKit/public/web/WebNotificationPresenter.h",
+  "+third_party/WebKit/public/web/WebPageSerializerClient.h",
+  "+third_party/WebKit/public/web/WebPluginAction.h",
+  "+third_party/WebKit/public/web/WebPopupType.h",
+  "+third_party/WebKit/public/web/WebScreenInfo.h",
+  "+third_party/WebKit/public/web/WebTextDirection.h",
+
+  # These should be burned down. http://crbug.com/237267
+  "!third_party/WebKit/public/platform/WebData.h",
+  "!third_party/WebKit/public/platform/WebIDBDatabaseError.h",
+  "!third_party/WebKit/public/platform/WebIDBKey.h",
+  "!third_party/WebKit/public/platform/WebURL.h",
+  "!third_party/WebKit/public/web/WebBindings.h",
+  "!third_party/WebKit/public/web/WebKit.h",
+  "!third_party/WebKit/public/web/WebSecurityOrigin.h",
+  "!third_party/WebKit/public/web/WebView.h",
+  "!third_party/WebKit/public/web/android/WebInputEventFactory.h",
+  "!third_party/WebKit/public/web/gtk/WebInputEventFactory.h",
+  "!third_party/WebKit/public/web/linux/WebFontInfo.h",
+  "!third_party/WebKit/public/web/mac/WebInputEventFactory.h",
+  "!third_party/WebKit/public/web/win/WebInputEventFactory.h",
+
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.
