@@ -5,9 +5,12 @@
 #include "media/base/test_helpers.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
+#include "base/time.h"
 #include "base/timer.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/bind_to_loop.h"
 #include "ui/gfx/rect.h"
 
@@ -142,5 +145,101 @@ gfx::Size TestVideoConfig::NormalCodedSize() {
 gfx::Size TestVideoConfig::LargeCodedSize() {
   return kLargeSize;
 }
+
+template <class T>
+scoped_refptr<AudioBuffer> MakeInterleavedAudioBuffer(
+    SampleFormat format,
+    int channels,
+    T start,
+    T increment,
+    int frames,
+    base::TimeDelta start_time) {
+  DCHECK(format == kSampleFormatU8 || format == kSampleFormatS16 ||
+         format == kSampleFormatS32 || format == kSampleFormatF32);
+
+  // Create a block of memory with values:
+  //   start
+  //   start + increment
+  //   start + 2 * increment, ...
+  // Since this is interleaved data, channel 0 data will be:
+  //   start
+  //   start + channels * increment
+  //   start + 2 * channels * increment, ...
+  int buffer_size = frames * channels * sizeof(T);
+  scoped_ptr<uint8[]> memory(new uint8[buffer_size]);
+  uint8* data[] = { memory.get() };
+  T* buffer = reinterpret_cast<T*>(memory.get());
+  for (int i = 0; i < frames * channels; ++i) {
+    buffer[i] = start;
+    start += increment;
+  }
+  // Duration is 1 second per frame (for simplicity).
+  base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
+  return AudioBuffer::CopyFrom(
+      format, channels, frames, data, start_time, duration);
+}
+
+template <class T>
+scoped_refptr<AudioBuffer> MakePlanarAudioBuffer(
+    SampleFormat format,
+    int channels,
+    T start,
+    T increment,
+    int frames,
+    base::TimeDelta start_time) {
+  DCHECK(format == kSampleFormatPlanarF32 || format == kSampleFormatPlanarS16);
+
+  // Create multiple blocks of data, one for each channel.
+  // Values in channel 0 will be:
+  //   start
+  //   start + increment
+  //   start + 2 * increment, ...
+  // Values in channel 1 will be:
+  //   start + frames * increment
+  //   start + (frames + 1) * increment
+  //   start + (frames + 2) * increment, ...
+  int buffer_size = frames * sizeof(T);
+  scoped_ptr<uint8*[]> data(new uint8*[channels]);
+  scoped_ptr<uint8[]> memory(new uint8[channels * buffer_size]);
+  for (int i = 0; i < channels; ++i) {
+    data.get()[i] = memory.get() + i * buffer_size;
+    T* buffer = reinterpret_cast<T*>(data.get()[i]);
+    for (int j = 0; j < frames; ++j) {
+      buffer[j] = start;
+      start += increment;
+    }
+  }
+  // Duration is 1 second per frame (for simplicity).
+  base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
+  return AudioBuffer::CopyFrom(
+      format, channels, frames, data.get(), start_time, duration);
+}
+
+// Instantiate all the types of MakeInterleavedAudioBuffer() and
+// MakePlanarAudioBuffer() needed.
+
+#define DEFINE_INTERLEAVED_INSTANCE(type)                               \
+  template scoped_refptr<AudioBuffer> MakeInterleavedAudioBuffer<type>( \
+      SampleFormat format,                                              \
+      int channels,                                                     \
+      type start,                                                       \
+      type increment,                                                   \
+      int frames,                                                       \
+      base::TimeDelta start_time)
+DEFINE_INTERLEAVED_INSTANCE(uint8);
+DEFINE_INTERLEAVED_INSTANCE(int16);
+DEFINE_INTERLEAVED_INSTANCE(int32);
+DEFINE_INTERLEAVED_INSTANCE(float);
+
+#define DEFINE_PLANAR_INSTANCE(type)                               \
+  template scoped_refptr<AudioBuffer> MakePlanarAudioBuffer<type>( \
+      SampleFormat format,                                         \
+      int channels,                                                \
+      type start,                                                  \
+      type increment,                                              \
+      int frames,                                                  \
+      base::TimeDelta start_time);
+DEFINE_PLANAR_INSTANCE(int16);
+DEFINE_PLANAR_INSTANCE(float);
 
 }  // namespace media

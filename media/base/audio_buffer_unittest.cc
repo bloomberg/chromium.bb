@@ -6,78 +6,10 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
+#include "media/base/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
-
-template <class T>
-static scoped_refptr<AudioBuffer> MakeInterleavedBuffer(
-    SampleFormat format,
-    int channels,
-    T start,
-    T increment,
-    int frames,
-    const base::TimeDelta start_time) {
-  DCHECK(format == kSampleFormatU8 || format == kSampleFormatS16 ||
-         format == kSampleFormatS32 || format == kSampleFormatF32);
-
-  // Create a block of memory with values:
-  //   start
-  //   start + increment
-  //   start + 2 * increment, ...
-  // Since this is interleaved data, channel 0 data will be:
-  //   start
-  //   start + channels * increment
-  //   start + 2 * channels * increment, ...
-  int buffer_size = frames * channels * sizeof(T);
-  scoped_ptr<uint8[]> memory(new uint8[buffer_size]);
-  uint8* data[] = { memory.get() };
-  T* buffer = reinterpret_cast<T*>(memory.get());
-  for (int i = 0; i < frames * channels; ++i) {
-    buffer[i] = start;
-    start += increment;
-  }
-  // Duration is 1 second per frame (for simplicity).
-  base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
-  return AudioBuffer::CopyFrom(
-      format, channels, frames, data, start_time, duration);
-}
-
-template <class T>
-static scoped_refptr<AudioBuffer> MakePlanarBuffer(
-    SampleFormat format,
-    int channels,
-    T start,
-    T increment,
-    int frames,
-    const base::TimeDelta start_time) {
-  DCHECK(format == kSampleFormatPlanarF32 || format == kSampleFormatPlanarS16);
-
-  // Create multiple blocks of data, once for each channel.
-  // Values in channel 0 will be:
-  //   start
-  //   start + increment
-  //   start + 2 * increment, ...
-  // Values in channel 1 will be:
-  //   start + frames * increment
-  //   start + (frames + 1) * increment
-  //   start + (frames + 2) * increment, ...
-  int buffer_size = frames * sizeof(T);
-  scoped_ptr<uint8*[]> data(new uint8*[channels]);
-  scoped_ptr<uint8[]> memory(new uint8[channels * buffer_size]);
-  for (int i = 0; i < channels; ++i) {
-    data.get()[i] = memory.get() + i * buffer_size;
-    T* buffer = reinterpret_cast<T*>(data.get()[i]);
-    for (int j = 0; j < frames; ++j) {
-      buffer[j] = start;
-      start += increment;
-    }
-  }
-  // Duration is 1 second per frame (for simplicity).
-  base::TimeDelta duration = base::TimeDelta::FromSeconds(frames);
-  return AudioBuffer::CopyFrom(
-      format, channels, frames, data.get(), start_time, duration);
-}
 
 static void VerifyResult(float* channel_data,
                          int frames,
@@ -95,7 +27,7 @@ TEST(AudioBufferTest, CopyFrom) {
   const int channels = 1;
   const int frames = 8;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakeInterleavedBuffer<uint8>(
+  scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<uint8>(
       kSampleFormatU8, channels, 1, 1, frames, start_time);
   EXPECT_EQ(frames, buffer->frame_count());
   EXPECT_EQ(buffer->timestamp(), start_time);
@@ -129,7 +61,7 @@ TEST(AudioBufferTest, ReadU8) {
   const int channels = 4;
   const int frames = 4;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakeInterleavedBuffer<uint8>(
+  scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<uint8>(
       kSampleFormatU8, channels, 128, 1, frames, start_time);
 
   // Read all 4 frames from the buffer. Data is interleaved, so ch[0] should be
@@ -148,7 +80,7 @@ TEST(AudioBufferTest, ReadS16) {
   const int channels = 2;
   const int frames = 10;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakeInterleavedBuffer<int16>(
+  scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<int16>(
       kSampleFormatS16, channels, 1, 1, frames, start_time);
 
   // Read 6 frames from the buffer. Data is interleaved, so ch[0] should be 1,
@@ -172,7 +104,7 @@ TEST(AudioBufferTest, ReadS32) {
   const int channels = 2;
   const int frames = 6;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakeInterleavedBuffer<int32>(
+  scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<int32>(
       kSampleFormatS32, channels, 1, 1, frames, start_time);
 
   // Read 6 frames from the buffer. Data is interleaved, so ch[0] should be 1,
@@ -194,7 +126,7 @@ TEST(AudioBufferTest, ReadF32) {
   const int channels = 2;
   const int frames = 20;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakeInterleavedBuffer<float>(
+  scoped_refptr<AudioBuffer> buffer = MakeInterleavedAudioBuffer<float>(
       kSampleFormatF32, channels, 1.0f, 1.0f, frames, start_time);
 
   // Read first 10 frames from the buffer. F32 is interleaved, so ch[0] should
@@ -215,7 +147,7 @@ TEST(AudioBufferTest, ReadS16Planar) {
   const int channels = 2;
   const int frames = 20;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakePlanarBuffer<int16>(
+  scoped_refptr<AudioBuffer> buffer = MakePlanarAudioBuffer<int16>(
       kSampleFormatPlanarS16, channels, 1, 1, frames, start_time);
 
   // Read 6 frames from the buffer. Data is planar, so ch[0] should be 1, 2, 3,
@@ -247,7 +179,7 @@ TEST(AudioBufferTest, ReadF32Planar) {
   const int channels = 4;
   const int frames = 100;
   const base::TimeDelta start_time;
-  scoped_refptr<AudioBuffer> buffer = MakePlanarBuffer<float>(
+  scoped_refptr<AudioBuffer> buffer = MakePlanarAudioBuffer<float>(
       kSampleFormatPlanarF32, channels, 1.0f, 1.0f, frames, start_time);
 
   // Read all 100 frames from the buffer. F32 is planar, so ch[0] should be 1,
