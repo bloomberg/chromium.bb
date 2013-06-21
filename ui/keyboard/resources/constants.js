@@ -12,7 +12,7 @@ var ASPECT_RATIO = 4.5;
  * Ratio of key height and font size.
  * @type {number}
  */
-var FONT_SIZE_RATIO = 3.5;
+var FONT_SIZE_RATIO = 3;
 
 /**
  * The number of rows in each keyset.
