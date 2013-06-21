@@ -125,7 +125,8 @@ def _MemoryRE(group_name='memory'):
   #   0x42(...)
   # and even
   #   0x42
-  return r'(?P<%s>%s?(\(%s?(,%s,\d)?\))?)' % (
+  return r'(?P<%s>(?P<%s_segment>%%[cdefgs]s:)?%s?(\(%s?(,%s,\d)?\))?)' % (
+      group_name,
       group_name,
       _HexRE(group_name=group_name + '_offset'),
       _AnyRegisterRE(group_name=group_name + '_base'),
@@ -346,6 +347,12 @@ def ValidateRegularInstruction(instruction, bitness):
 
   _, name, ops = _ParseInstruction(instruction)
   # TODO(shcherbina): prohibit excessive prefixes.
+
+  for op in ops:
+    m = re.match(_MemoryRE() + r'$', op)
+    if m is not None and m.group('memory_segment') is not None:
+      raise SandboxingError(
+          'segments in memory references are not allowed', instruction)
 
   if name == 'mov':
     write_ops = [ops[1]]
