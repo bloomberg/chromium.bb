@@ -9,31 +9,6 @@
 
 namespace content {
 
-static RenderFrameImpl* (*g_create_render_frame_impl)(RenderViewImpl*, int32) =
-    NULL;
-
-// static
-RenderFrameImpl* RenderFrameImpl::Create(
-    RenderViewImpl* render_view,
-    int32 routing_id) {
-  DCHECK(routing_id != MSG_ROUTING_NONE);
-
-  RenderFrameImpl* render_frame = NULL;
-  if (g_create_render_frame_impl)
-    render_frame = g_create_render_frame_impl(render_view, routing_id);
-  else
-    render_frame = new RenderFrameImpl(render_view, routing_id);
-
-  return render_frame;
-}
-
-// static
-void RenderFrameImpl::InstallCreateHook(
-    RenderFrameImpl* (*create_render_frame_impl)(RenderViewImpl*, int32)) {
-  CHECK(!g_create_render_frame_impl);
-  g_create_render_frame_impl = create_render_frame_impl;
-}
-
 RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
     : render_view_(render_view),
       routing_id_(routing_id) {

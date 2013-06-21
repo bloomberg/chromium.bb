@@ -609,7 +609,7 @@ class CONTENT_EXPORT RenderViewImpl
                                const WebKit::WebString& title,
                                WebKit::WebTextDirection direction);
   virtual void didChangeIcon(WebKit::WebFrame*,
-                             WebKit::WebIconURL::Type);
+                             WebKit::WebIconURL::Type) OVERRIDE;
   virtual void didFinishDocumentLoad(WebKit::WebFrame* frame);
   virtual void didHandleOnloadEvents(WebKit::WebFrame* frame);
   virtual void didFailLoad(WebKit::WebFrame* frame,
@@ -651,8 +651,8 @@ class CONTENT_EXPORT RenderViewImpl
                                         v8::Handle<v8::Context>,
                                         int world_id);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
-  virtual void willInsertBody(WebKit::WebFrame* frame);
-  virtual void didFirstVisuallyNonEmptyLayout(WebKit::WebFrame*);
+  virtual void willInsertBody(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void didFirstVisuallyNonEmptyLayout(WebKit::WebFrame*) OVERRIDE;
   virtual void didChangeContentsSize(WebKit::WebFrame* frame,
                                      const WebKit::WebSize& size);
   virtual void reportFindInPageMatchCount(int request_id,
@@ -681,21 +681,21 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void willOpenSocketStream(
       WebKit::WebSocketStreamHandle* handle);
   virtual void willStartUsingPeerConnectionHandler(WebKit::WebFrame* frame,
-      WebKit::WebRTCPeerConnectionHandler* handler);
+      WebKit::WebRTCPeerConnectionHandler* handler) OVERRIDE;
   virtual bool willCheckAndDispatchMessageEvent(
       WebKit::WebFrame* sourceFrame,
       WebKit::WebFrame* targetFrame,
       WebKit::WebSecurityOrigin targetOrigin,
-      WebKit::WebDOMMessageEvent event);
+      WebKit::WebDOMMessageEvent event) OVERRIDE;
   virtual WebKit::WebString acceptLanguages() OVERRIDE;
   virtual WebKit::WebString userAgentOverride(
       WebKit::WebFrame* frame,
-      const WebKit::WebURL& url);
-  virtual WebKit::WebString doNotTrackValue(WebKit::WebFrame* frame);
-  virtual bool allowWebGL(WebKit::WebFrame* frame, bool default_value);
+      const WebKit::WebURL& url) OVERRIDE;
+  virtual WebKit::WebString doNotTrackValue(WebKit::WebFrame* frame) OVERRIDE;
+  virtual bool allowWebGL(WebKit::WebFrame* frame, bool default_value) OVERRIDE;
   virtual void didLoseWebGLContext(
       WebKit::WebFrame* frame,
-      int arb_robustness_status_code);
+      int arb_robustness_status_code) OVERRIDE;
 
   // WebKit::WebPageSerializerClient implementation ----------------------------
 

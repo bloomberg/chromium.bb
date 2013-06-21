@@ -11,9 +11,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
-#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebFrameTestProxy.h"
-#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "content/browser/web_contents/web_contents_drag_win.h"
@@ -26,7 +25,6 @@
 using WebKit::WebGamepads;
 using WebKit::WebRect;
 using WebKit::WebSize;
-using WebTestRunner::WebFrameTestProxy;
 using WebTestRunner::WebTestProxy;
 using WebTestRunner::WebTestProxyBase;
 
@@ -48,18 +46,6 @@ RenderViewImpl* CreateWebTestProxy(RenderViewImplParams* params) {
   return render_view_proxy;
 }
 
-RenderFrameImpl* CreateWebFrameTestProxy(
-    RenderViewImpl* render_view,
-    int32 routing_id) {
-  typedef WebTestProxy<RenderViewImpl, RenderViewImplParams*> ViewProxy;
-  typedef WebFrameTestProxy<RenderFrameImpl, RenderViewImpl*, int32> FrameProxy;
-
-  ViewProxy* render_view_proxy = static_cast<ViewProxy*>(render_view);
-  FrameProxy* render_frame_proxy = new FrameProxy(render_view, routing_id);
-  render_frame_proxy->setBaseProxy(render_view_proxy);
-  return render_frame_proxy;
-}
-
 }  // namespace
 
 
@@ -67,7 +53,6 @@ void EnableWebTestProxyCreation(
     const base::Callback<void(RenderView*, WebTestProxyBase*)>& callback) {
   g_callback.Get() = callback;
   RenderViewImpl::InstallCreateHook(CreateWebTestProxy);
-  RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
 }
 
 void SetMockGamepads(const WebGamepads& pads) {

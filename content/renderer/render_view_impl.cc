@@ -809,9 +809,8 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 }
 
 void RenderViewImpl::Initialize(RenderViewImplParams* params) {
-  RenderFrameImpl* main_frame = RenderFrameImpl::Create(
-      this, params->main_frame_routing_id);
-  main_render_frame_.reset(main_frame);
+  main_render_frame_.reset(new RenderFrameImpl(
+      this, params->main_frame_routing_id));
 
 #if defined(ENABLE_PLUGINS)
   pepper_helper_.reset(new PepperPluginDelegateImpl(this));
@@ -887,7 +886,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       ShouldUseTransitionCompositing(device_scale_factor_));
 
   webkit_glue::ApplyWebPreferences(webkit_preferences_, webview());
-  webview()->initializeMainFrame(main_render_frame_.get());
+  webview()->initializeMainFrame(this);
 
   if (switches::IsTouchDragDropEnabled())
     webview()->settings()->setTouchDragDropEnabled(true);
@@ -2254,7 +2253,7 @@ bool RenderViewImpl::enumerateChosenDirectory(
 
 void RenderViewImpl::initializeHelperPluginWebFrame(
     WebKit::WebHelperPlugin* plugin) {
-  plugin->initializeFrame(main_render_frame_.get());
+  plugin->initializeFrame(this);
 }
 
 void RenderViewImpl::didStartLoading() {
