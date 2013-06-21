@@ -195,7 +195,7 @@ void SetFrameSize(const gfx::Size& new_size) {
   frame_size.SetSize(new_size.width(), new_size.height());
 }
 
-}
+}  // namespace
 
 // static
 NativePanel* Panel::CreateNativePanel(Panel* panel,
@@ -608,7 +608,30 @@ gboolean PanelGtk::OnTitlebarButtonPressEvent(
   if (event->type != GDK_BUTTON_PRESS)
     return TRUE;
 
-  gdk_window_raise(gtk_widget_get_window(GTK_WIDGET(window_)));
+  // If the panel is in a stack, bring all other panels in the stack to the
+  // top.
+  StackedPanelCollection* stack = panel_->stack();
+  if (stack) {
+    for (StackedPanelCollection::Panels::const_iterator iter =
+             stack->panels().begin();
+         iter != stack->panels().end(); ++iter) {
+      Panel* panel = *iter;
+      GtkWindow* gtk_window = panel->GetNativeWindow();
+      // If a panel is collapsed, we make it not to take focus. For such window,
+      // it cannot be brought to the top by calling gdk_window_raise. To work
+      // around this issue, we make it always-on-top first and then put it back
+      // to normal. Note that this trick has been done for all panels in the
+      // stack, regardless of whether it is collapsed or not.
+      // There is one side-effect to this approach: if the panel being pressed
+      // on is collapsed, clicking on the client area of the last active
+      // window will not raise it above these panels.
+      gtk_window_set_keep_above(gtk_window, true);
+      gtk_window_set_keep_above(gtk_window, false);
+    }
+  } else {
+    gdk_window_raise(gtk_widget_get_window(GTK_WIDGET(window_)));
+  }
+
   EnsureDragHelperCreated();
   drag_helper_->InitialTitlebarMousePress(event, titlebar_->widget());
   return TRUE;
