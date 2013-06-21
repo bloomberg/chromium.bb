@@ -186,16 +186,7 @@ class ImageTransportClientTexture : public OwnedTexture {
   }
 
   virtual std::string Produce() OVERRIDE {
-    std::string name;
-    if (!mailbox_name_.empty()) {
-      DCHECK(host_context_ && texture_id_);
-      host_context_->bindTexture(GL_TEXTURE_2D, texture_id_);
-      host_context_->produceTextureCHROMIUM(
-          GL_TEXTURE_2D,
-          reinterpret_cast<const signed char*>(mailbox_name_.c_str()));
-      mailbox_name_.swap(name);
-    }
-    return name;
+    return mailbox_name_;
   }
 
  protected:

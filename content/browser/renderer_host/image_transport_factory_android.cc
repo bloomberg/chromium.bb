@@ -39,8 +39,6 @@ class DirectGLImageTransportFactory : public ImageTransportFactoryAndroid {
   }
   virtual void AcquireTexture(
       uint32 texture_id, const signed char* mailbox_name) OVERRIDE {}
-  virtual void ReleaseTexture(
-      uint32 texture_id, const signed char* mailbox_name) OVERRIDE {}
   virtual WebKit::WebGraphicsContext3D* GetContext3D() OVERRIDE {
     return context_.get();
   }
@@ -76,8 +74,6 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual uint32_t CreateTexture() OVERRIDE;
   virtual void DeleteTexture(uint32_t id) OVERRIDE;
   virtual void AcquireTexture(
-      uint32 texture_id, const signed char* mailbox_name) OVERRIDE;
-  virtual void ReleaseTexture(
       uint32 texture_id, const signed char* mailbox_name) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* GetContext3D() OVERRIDE {
     return context_.get();
@@ -167,16 +163,6 @@ void CmdBufferImageTransportFactory::AcquireTexture(
   context_->bindTexture(GL_TEXTURE_2D, texture_id);
   context_->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name);
   context_->flush();
-}
-
-void CmdBufferImageTransportFactory::ReleaseTexture(
-    uint32 texture_id, const signed char* mailbox_name) {
-  if (!context_->makeContextCurrent()) {
-    LOG(ERROR) << "Failed to make helper context current.";
-    return;
-  }
-  context_->bindTexture(GL_TEXTURE_2D, texture_id);
-  context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox_name);
 }
 
 GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {

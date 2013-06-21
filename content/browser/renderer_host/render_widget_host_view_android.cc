@@ -700,11 +700,7 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   // texture.
   DCHECK(!CompositorImpl::IsThreadingEnabled());
 
-  if (texture_id_in_layer_) {
-    DCHECK(!current_mailbox_.IsZero());
-    ImageTransportFactoryAndroid::GetInstance()->ReleaseTexture(
-        texture_id_in_layer_, current_mailbox_.name);
-  } else {
+  if (!texture_id_in_layer_) {
     texture_id_in_layer_ = factory->CreateTexture();
     texture_layer_->SetIsDrawable(true);
   }

@@ -31,8 +31,6 @@ class ImageTransportFactoryAndroid {
   virtual void DeleteTexture(uint32_t id) = 0;
   virtual void AcquireTexture(
       uint32 texture_id, const signed char* mailbox_name) = 0;
-  virtual void ReleaseTexture(
-      uint32 texture_id, const signed char* mailbox_name) = 0;
 
   virtual WebKit::WebGraphicsContext3D* GetContext3D() = 0;
   virtual GLHelper* GetGLHelper() = 0;
