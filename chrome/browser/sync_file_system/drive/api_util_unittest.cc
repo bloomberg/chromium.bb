@@ -269,7 +269,6 @@ class APIUtilTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    SetDisableDriveAPI(false);
     api_util_.reset();
   }
 
@@ -337,24 +336,24 @@ class APIUtilTest : public testing::Test {
 
   base::MessageLoop* message_loop() { return &message_loop_; }
 
-  void GetSyncRoot_Body();
-  void CreateSyncRoot_Body();
-  void CreateSyncRoot_Conflict_Body();
-  void GetOriginDirectory_Body();
-  void CreateOriginDirectory_Body();
-  void CreateOriginDirectory_Conflict_Body();
-  void GetLargestChangeStamp_Body();
-  void ListFiles_Body();
-  void ListChanges_Body();
-  void DownloadFile_Body();
-  void DownloadFileInNotModified_Body();
-  void UploadNewFile_Body();
-  void UploadNewFile_ConflictWithFile_Body();
-  void UploadExistingFile_Body();
-  void UploadExistingFileInConflict_Body();
-  void DeleteFile_Body();
-  void DeleteFileInConflict_Body();
-  void CreateDirectory_Body();
+  void TestGetSyncRoot();
+  void TestCreateSyncRoot();
+  void TestCreateSyncRoot_Conflict();
+  void TestGetOriginDirectory();
+  void TestCreateOriginDirectory();
+  void TestCreateOriginDirectory_Conflict();
+  void TestGetLargestChangeStamp();
+  void TestListFiles();
+  void TestListChanges();
+  void TestDownloadFile();
+  void TestDownloadFileInNotModified();
+  void TestUploadNewFile();
+  void TestUploadNewFile_ConflictWithFile();
+  void TestUploadExistingFile();
+  void TestUploadExistingFileInConflict();
+  void TestDeleteFile();
+  void TestDeleteFileInConflict();
+  void TestCreateDirectory();
 
  private:
   base::MessageLoop message_loop_;
@@ -439,7 +438,7 @@ void DidDeleteFile(bool* done_out,
   *error_out = error;
 }
 
-void APIUtilTest::GetSyncRoot_Body() {
+void APIUtilTest::TestGetSyncRoot() {
   fake_drive_service()->LoadAccountMetadataForWapi(
       "chromeos/sync_file_system/account_metadata.json");
   SetUpSyncRootDirectory();
@@ -456,7 +455,7 @@ void APIUtilTest::GetSyncRoot_Body() {
   EXPECT_EQ(GetSyncRootResourceId(), resource_id);
 }
 
-void APIUtilTest::CreateSyncRoot_Body() {
+void APIUtilTest::TestCreateSyncRoot() {
   fake_drive_service()->LoadAccountMetadataForWapi(
       "chromeos/sync_file_system/account_metadata.json");
   bool done = false;
@@ -480,7 +479,7 @@ void APIUtilTest::CreateSyncRoot_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::CreateSyncRoot_Conflict_Body() {
+void APIUtilTest::TestCreateSyncRoot_Conflict() {
   fake_drive_service()->LoadAccountMetadataForWapi(
       "chromeos/sync_file_system/account_metadata.json");
   fake_drive_service()->set_make_directory_conflict(true);
@@ -507,7 +506,7 @@ void APIUtilTest::CreateSyncRoot_Conflict_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::GetOriginDirectory_Body() {
+void APIUtilTest::TestGetOriginDirectory() {
   SetUpSyncRootDirectory();
   SetUpOriginRootDirectory();
 
@@ -525,7 +524,7 @@ void APIUtilTest::GetOriginDirectory_Body() {
   EXPECT_EQ(GetOriginRootResourceId(), resource_id);
 }
 
-void APIUtilTest::CreateOriginDirectory_Body() {
+void APIUtilTest::TestCreateOriginDirectory() {
   SetUpSyncRootDirectory();
 
   bool done = false;
@@ -551,7 +550,7 @@ void APIUtilTest::CreateOriginDirectory_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::CreateOriginDirectory_Conflict_Body() {
+void APIUtilTest::TestCreateOriginDirectory_Conflict() {
   SetUpSyncRootDirectory();
   fake_drive_service()->set_make_directory_conflict(true);
 
@@ -579,7 +578,7 @@ void APIUtilTest::CreateOriginDirectory_Conflict_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::GetLargestChangeStamp_Body() {
+void APIUtilTest::TestGetLargestChangeStamp() {
   fake_drive_service()->LoadAccountMetadataForWapi(
       "chromeos/sync_file_system/account_metadata.json");
 
@@ -595,7 +594,7 @@ void APIUtilTest::GetLargestChangeStamp_Body() {
   EXPECT_EQ(654321, largest_changestamp);
 }
 
-void APIUtilTest::ListFiles_Body() {
+void APIUtilTest::TestListFiles() {
   fake_drive_service()->set_default_max_results(3);
 
   SetUpSyncRootDirectory();
@@ -638,7 +637,7 @@ void APIUtilTest::ListFiles_Body() {
   EXPECT_EQ(2U, document_feed->entries().size());
 }
 
-void APIUtilTest::ListChanges_Body() {
+void APIUtilTest::TestListChanges() {
   const int64 kStartChangestamp = 6;
 
   SetUpSyncRootDirectory();
@@ -682,7 +681,7 @@ void APIUtilTest::ListChanges_Body() {
   EXPECT_EQ(3U, document_feed->entries().size());
 }
 
-void APIUtilTest::DownloadFile_Body() {
+void APIUtilTest::TestDownloadFile() {
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
 
@@ -712,7 +711,7 @@ void APIUtilTest::DownloadFile_Body() {
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
-void APIUtilTest::DownloadFileInNotModified_Body() {
+void APIUtilTest::TestDownloadFileInNotModified() {
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
 
@@ -746,7 +745,7 @@ void APIUtilTest::DownloadFileInNotModified_Body() {
   // FakeDriveService::AddNewEntry set the correct MD5.
 }
 
-void APIUtilTest::UploadNewFile_Body() {
+void APIUtilTest::TestUploadNewFile() {
   const std::string kFileTitle = "test.txt";
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
 
@@ -777,7 +776,7 @@ void APIUtilTest::UploadNewFile_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::UploadNewFile_ConflictWithFile_Body() {
+void APIUtilTest::TestUploadNewFile_ConflictWithFile() {
   const std::string kFileTitle = "test.txt";
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
 
@@ -812,7 +811,7 @@ void APIUtilTest::UploadNewFile_ConflictWithFile_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::UploadExistingFile_Body() {
+void APIUtilTest::TestUploadExistingFile() {
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
@@ -847,7 +846,7 @@ void APIUtilTest::UploadExistingFile_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::UploadExistingFileInConflict_Body() {
+void APIUtilTest::TestUploadExistingFileInConflict() {
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
@@ -887,7 +886,7 @@ void APIUtilTest::UploadExistingFileInConflict_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::DeleteFile_Body() {
+void APIUtilTest::TestDeleteFile() {
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
 
@@ -915,7 +914,7 @@ void APIUtilTest::DeleteFile_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::DeleteFileInConflict_Body() {
+void APIUtilTest::TestDeleteFileInConflict() {
   const std::string kFileContent = "test content";
   const std::string kFileTitle = "test.txt";
 
@@ -950,7 +949,7 @@ void APIUtilTest::DeleteFileInConflict_Body() {
   message_loop()->RunUntilIdle();
 }
 
-void APIUtilTest::CreateDirectory_Body() {
+void APIUtilTest::TestCreateDirectory() {
   const std::string kDirectoryTitle("directory");
 
   SetUpSyncRootDirectory();
@@ -981,182 +980,182 @@ void APIUtilTest::CreateDirectory_Body() {
 
 TEST_F(APIUtilTest, GetSyncRoot) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  GetSyncRoot_Body();
+  TestGetSyncRoot();
 }
 
 TEST_F(APIUtilTest, GetSyncRoot_WAPI) {
-  SetDisableDriveAPI(true);
-  GetSyncRoot_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestGetSyncRoot();
 }
 
 TEST_F(APIUtilTest, CreateSyncRoot) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  CreateSyncRoot_Body();
+  TestCreateSyncRoot();
 }
 
 TEST_F(APIUtilTest, CreateSyncRoot_WAPI) {
-  SetDisableDriveAPI(true);
-  CreateSyncRoot_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestCreateSyncRoot();
 }
 
 TEST_F(APIUtilTest, CreateSyncRoot_Conflict) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  CreateSyncRoot_Conflict_Body();
+  TestCreateSyncRoot_Conflict();
 }
 
 TEST_F(APIUtilTest, CreateSyncRoot_Conflict_WAPI) {
-  SetDisableDriveAPI(true);
-  CreateSyncRoot_Conflict_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestCreateSyncRoot_Conflict();
 }
 
 TEST_F(APIUtilTest, GetOriginDirectory) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  GetOriginDirectory_Body();
+  TestGetOriginDirectory();
 }
 
 TEST_F(APIUtilTest, GetOriginDirectory_WAPI) {
-  SetDisableDriveAPI(true);
-  GetOriginDirectory_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestGetOriginDirectory();
 }
 
 TEST_F(APIUtilTest, CreateOriginDirectory) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  CreateOriginDirectory_Body();
+  TestCreateOriginDirectory();
 }
 
 TEST_F(APIUtilTest, CreateOriginDirectory_WAPI) {
-  SetDisableDriveAPI(true);
-  CreateOriginDirectory_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestCreateOriginDirectory();
 }
 
 TEST_F(APIUtilTest, CreateOriginDirectory_Conflict) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  CreateOriginDirectory_Conflict_Body();
+  TestCreateOriginDirectory_Conflict();
 }
 
 TEST_F(APIUtilTest, CreateOriginDirectory_Conflict_WAPI) {
-  SetDisableDriveAPI(true);
-  CreateOriginDirectory_Conflict_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestCreateOriginDirectory_Conflict();
 }
 
 TEST_F(APIUtilTest, GetLargestChangeStamp) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  GetLargestChangeStamp_Body();
+  TestGetLargestChangeStamp();
 }
 
 TEST_F(APIUtilTest, GetLargestChangeStamp_WAPI) {
-  SetDisableDriveAPI(true);
-  GetLargestChangeStamp_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestGetLargestChangeStamp();
 }
 
 TEST_F(APIUtilTest, ListFiles) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  ListFiles_Body();
+  TestListFiles();
 }
 
 TEST_F(APIUtilTest, ListFiles_WAPI) {
-  SetDisableDriveAPI(true);
-  ListFiles_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestListFiles();
 }
 
 TEST_F(APIUtilTest, ListChanges) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  ListChanges_Body();
+  TestListChanges();
 }
 
 TEST_F(APIUtilTest, ListChanges_WAPI) {
-  SetDisableDriveAPI(true);
-  ListChanges_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestListChanges();
 }
 
 TEST_F(APIUtilTest, DownloadFile) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  DownloadFile_Body();
+  TestDownloadFile();
 }
 
 TEST_F(APIUtilTest, DownloadFile_WAPI) {
-  SetDisableDriveAPI(true);
-  DownloadFile_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestDownloadFile();
 }
 
 TEST_F(APIUtilTest, DownloadFileInNotModified) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  DownloadFileInNotModified_Body();
+  TestDownloadFileInNotModified();
 }
 
 TEST_F(APIUtilTest, DownloadFileInNotModified_WAPI) {
-  SetDisableDriveAPI(true);
-  DownloadFileInNotModified_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestDownloadFileInNotModified();
 }
 
 TEST_F(APIUtilTest, UploadNewFile) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  UploadNewFile_Body();
+  TestUploadNewFile();
 }
 
 TEST_F(APIUtilTest, UploadNewFile_WAPI) {
-  SetDisableDriveAPI(true);
-  UploadNewFile_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestUploadNewFile();
 }
 
 TEST_F(APIUtilTest, UploadNewFile_ConflictWithFile) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  UploadNewFile_ConflictWithFile_Body();
+  TestUploadNewFile_ConflictWithFile();
 }
 
 TEST_F(APIUtilTest, UploadNewFile_ConflictWithFile_WAPI) {
-  SetDisableDriveAPI(true);
-  UploadNewFile_ConflictWithFile_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestUploadNewFile_ConflictWithFile();
 }
 
 TEST_F(APIUtilTest, UploadExistingFile) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  UploadExistingFile_Body();
+  TestUploadExistingFile();
 }
 
 TEST_F(APIUtilTest, UploadExistingFile_WAPI) {
-  SetDisableDriveAPI(true);
-  UploadExistingFile_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestUploadExistingFile();
 }
 
 TEST_F(APIUtilTest, UploadExistingFileInConflict) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  UploadExistingFileInConflict_Body();
+  TestUploadExistingFileInConflict();
 }
 
 TEST_F(APIUtilTest, UploadExistingFileInConflict_WAPI) {
-  SetDisableDriveAPI(true);
-  UploadExistingFileInConflict_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestUploadExistingFileInConflict();
 }
 
 TEST_F(APIUtilTest, DeleteFile) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  DeleteFile_Body();
+  TestDeleteFile();
 }
 
 TEST_F(APIUtilTest, DeleteFile_WAPI) {
-  SetDisableDriveAPI(true);
-  DeleteFile_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestDeleteFile();
 }
 
 TEST_F(APIUtilTest, DeleteFileInConflict) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  DeleteFileInConflict_Body();
+  TestDeleteFileInConflict();
 }
 
 TEST_F(APIUtilTest, DeleteFileInConflict_WAPI) {
-  SetDisableDriveAPI(true);
-  DeleteFileInConflict_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestDeleteFileInConflict();
 }
 
 TEST_F(APIUtilTest, CreateDirectory) {
   ASSERT_FALSE(IsDriveAPIDisabled());
-  CreateDirectory_Body();
+  TestCreateDirectory();
 }
 
 TEST_F(APIUtilTest, CreateDirectory_WAPI) {
-  SetDisableDriveAPI(true);
-  CreateDirectory_Body();
+  ScopedDisableDriveAPI disable_drive_api;
+  TestCreateDirectory();
 }
 
 #endif  // !defined(OS_ANDROID)
