@@ -149,6 +149,58 @@ TEST_F(SimpleIndexFileTest, IsIndexFileStale) {
   EXPECT_TRUE(SimpleIndexFile::IsIndexFileStale(index_path));
 }
 
+TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const base::FilePath index_path =
+      temp_dir.path().AppendASCII(SimpleIndexFile::kIndexFileName);
+  EXPECT_TRUE(SimpleIndexFile::IsIndexFileStale(index_path));
+
+  SimpleIndex::EntrySet entries;
+  static const uint64 kHashes[] = { 11, 22, 33 };
+  static const size_t kNumHashes = arraysize(kHashes);
+  EntryMetadata metadata_entries[kNumHashes];
+  for (size_t i = 0; i < kNumHashes; ++i) {
+    uint64 hash = kHashes[i];
+    metadata_entries[i] =
+        EntryMetadata(Time::FromInternalValue(hash), hash);
+    SimpleIndex::InsertInEntrySet(hash, metadata_entries[i], &entries);
+  }
+
+  const uint64 kCacheSize = 456U;
+  {
+    SimpleIndexFile simple_index_file(base::MessageLoopProxy::current(),
+                                      base::MessageLoopProxy::current(),
+                                      temp_dir.path());
+    simple_index_file.WriteToDisk(entries, kCacheSize,
+                                  base::TimeTicks(), false);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(file_util::PathExists(index_path));
+  }
+
+  SimpleIndexFile simple_index_file(base::MessageLoopProxy::current(),
+                                    base::MessageLoopProxy::current(),
+                                    temp_dir.path());
+  SimpleIndexFile::IndexCompletionCallback callback =
+      base::Bind(&SimpleIndexFileTest::IndexCompletionCallback,
+                 base::Unretained(this));
+  simple_index_file.LoadIndexEntries(base::MessageLoopProxy::current(),
+                                     callback);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(file_util::PathExists(index_path));
+  ASSERT_TRUE(callback_result());
+  EXPECT_FALSE(callback_result()->force_index_flush);
+  const SimpleIndex::EntrySet* read_entries =
+      callback_result()->index_file_entries.get();
+  ASSERT_TRUE(read_entries);
+
+  EXPECT_EQ(kNumHashes, read_entries->size());
+  for (size_t i = 0; i < kNumHashes; ++i)
+    EXPECT_EQ(1U, read_entries->count(kHashes[i]));
+}
+
 TEST_F(SimpleIndexFileTest, IsIndexFileCorrupt) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -175,6 +227,7 @@ TEST_F(SimpleIndexFileTest, IsIndexFileCorrupt) {
                                      callback);
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_FALSE(file_util::PathExists(index_path));
   ASSERT_TRUE(callback_result());
   EXPECT_TRUE(callback_result()->index_file_entries);
   EXPECT_TRUE(callback_result()->force_index_flush);

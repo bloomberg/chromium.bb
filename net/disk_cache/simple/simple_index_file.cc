@@ -178,10 +178,18 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::LoadFromDisk(
   std::string contents;
   if (!file_util::ReadFileToString(index_filename, &contents)) {
     LOG(WARNING) << "Could not read Simple Index file.";
+    file_util::Delete(index_filename, false);
     return scoped_ptr<SimpleIndex::EntrySet>();
   }
 
-  return SimpleIndexFile::Deserialize(contents.data(), contents.size());
+  scoped_ptr<SimpleIndex::EntrySet> entries =
+      SimpleIndexFile::Deserialize(contents.data(), contents.size());
+  if (!entries) {
+    file_util::Delete(index_filename, false);
+    return scoped_ptr<SimpleIndex::EntrySet>();
+  }
+
+  return entries.Pass();
 }
 
 // static

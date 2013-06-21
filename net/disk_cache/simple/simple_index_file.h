@@ -91,6 +91,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, IsIndexFileCorrupt);
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, IsIndexFileStale);
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, Serialize);
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexFileTest, WriteThenLoadIndex);
 
   // Using the mtime of the file and its mtime, detects if the index file is
   // stale.
