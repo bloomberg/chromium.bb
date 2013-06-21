@@ -51,15 +51,12 @@ def main():
                     'http://src.chromium.org/viewvc/chrome/trunk/src/tools'
                     '/perf/perf_tools/' + DEPS_FILE)
   import perf_tools
-  import profile_creators
   if '--print-bootstrap-deps' in sys.argv:
     print ListBootstrapDeps()
     sys.exit(0)
 
   from telemetry.page import page_measurement_runner
   import page_sets
-  measurement_dir = os.path.dirname(perf_tools.__file__)
-  profile_creators_dir = os.path.dirname(profile_creators.__file__)
   page_set_filenames = page_sets.GetAllPageSetFilenames()
 
   old_benchmark_names = {
@@ -86,8 +83,7 @@ def main():
       return old_benchmark_names[arg]
 
   runner = MeasurementRunner()
-  sys.exit(
-      runner.Run(measurement_dir, profile_creators_dir, page_set_filenames))
+  sys.exit(runner.Run(os.path.dirname(__file__), page_set_filenames))
 
 if __name__ == '__main__':
   sys.exit(main())

@@ -155,9 +155,9 @@ def CalcLatencyResults(rendering_stats_deltas, results):
               data_type='unimportant')
 
 
-class SmoothnessMeasurement(page_measurement.PageMeasurement):
+class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
-    super(SmoothnessMeasurement, self).__init__('smoothness')
+    super(Smoothness, self).__init__('smoothness')
     self.force_enable_threaded_compositing = False
     self.use_gpu_benchmarking_extension = True
     self._metrics = None

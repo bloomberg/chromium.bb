@@ -40,9 +40,8 @@ if __name__ == '__main__':
                     'test/gpu/gpu_tests/bootstrap_deps')
   import gpu_tests
   from telemetry.page import page_test_runner
-  test_dir = os.path.join(os.path.dirname(__file__), 'gpu_tests')
 
   import page_sets # pylint: disable=F0401
   page_set_filenames = page_sets.GetAllPageSetFilenames()
 
-  sys.exit(page_test_runner.Main(test_dir, '', page_set_filenames))
+  sys.exit(page_test_runner.Main(os.path.dirname(__file__), page_set_filenames))
