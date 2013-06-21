@@ -75,9 +75,6 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
                                         bool charging_unreliable,
                                         IconSet icon_set);
 
-  // Returns an icon for the USB charger notification.
-  static gfx::Image GetUsbChargerNotificationImage();
-
   // Gets the battery accessible string for |supply_status|.
   static base::string16 GetAccessibleNameString(
       const chromeos::PowerSupplyStatus& supply_status);

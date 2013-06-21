@@ -281,14 +281,6 @@ gfx::ImageSkia TrayPower::GetBatteryImage(int image_index,
 }
 
 // static
-gfx::Image TrayPower::GetUsbChargerNotificationImage() {
-  // TODO(jamescook): Use a specialized art asset here.
-  gfx::ImageSkia icon =
-      GetBatteryImage(kNumPowerImages - 1, 0, true, ICON_LIGHT);
-  return gfx::Image(icon);
-}
-
-// static
 base::string16 TrayPower::GetAccessibleNameString(
     const chromeos::PowerSupplyStatus& supply_status) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -443,7 +435,7 @@ bool TrayPower::MaybeShowUsbChargerNotification(
         kNotificationId,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE),
-        GetUsbChargerNotificationImage(),
+        rb.GetImageNamed(IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER),
         base::string16(),
         std::string(),
         message_center::RichNotificationData(),
