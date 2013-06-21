@@ -78,6 +78,7 @@ public:
     FlowState flowState() const { return m_parentFlowThread ? FlowStateCreated : FlowStateNull; }
 
     void dispatchRegionLayoutUpdateEvent();
+    void dispatchRegionOversetChangeEvent();
 
 private:
     NamedFlow(PassRefPtr<NamedFlowCollection>, const AtomicString&);

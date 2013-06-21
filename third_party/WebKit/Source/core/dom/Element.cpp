@@ -2266,6 +2266,16 @@ bool Element::isUnresolvedCustomElement()
     return isCustomElement() && document()->registry()->isUnresolved(this);
 }
 
+void Element::setRegionOversetState(RegionOversetState state)
+{
+    ensureElementRareData()->setRegionOversetState(state);
+}
+
+RegionOversetState Element::regionOversetState() const
+{
+    return hasRareData() ? elementRareData()->regionOversetState() : RegionUndefined;
+}
+
 AtomicString Element::computeInheritedLanguage() const
 {
     const Node* n = this;
@@ -2562,20 +2572,20 @@ const AtomicString& Element::webkitRegionOverset() const
     if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !renderRegion())
         return undefinedState;
 
-    switch (renderRegion()->regionState()) {
-    case RenderRegion::RegionFit: {
+    switch (renderRegion()->regionOversetState()) {
+    case RegionFit: {
         DEFINE_STATIC_LOCAL(AtomicString, fitState, ("fit", AtomicString::ConstructFromLiteral));
         return fitState;
     }
-    case RenderRegion::RegionEmpty: {
+    case RegionEmpty: {
         DEFINE_STATIC_LOCAL(AtomicString, emptyState, ("empty", AtomicString::ConstructFromLiteral));
         return emptyState;
     }
-    case RenderRegion::RegionOverset: {
+    case RegionOverset: {
         DEFINE_STATIC_LOCAL(AtomicString, overflowState, ("overset", AtomicString::ConstructFromLiteral));
         return overflowState;
     }
-    case RenderRegion::RegionUndefined:
+    case RegionUndefined:
         return undefinedState;
     }
 

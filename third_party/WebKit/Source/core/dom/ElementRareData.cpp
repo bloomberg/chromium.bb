@@ -32,6 +32,7 @@
 #include "core/dom/ElementRareData.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/rendering/RegionOversetState.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
@@ -39,6 +40,7 @@ namespace WebCore {
 struct SameSizeAsElementRareData : NodeRareData {
     short indices[2];
     unsigned bitfields;
+    RegionOversetState regionOversetState;
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
     void* pointers[9];

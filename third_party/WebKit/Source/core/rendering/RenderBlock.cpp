@@ -1773,7 +1773,7 @@ void RenderBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeF
     addVisualOverflowFromTheme();
 
     if (isRenderFlowThread())
-        toRenderFlowThread(this)->computeOverflowStateForRegions(oldClientAfterEdge);
+        toRenderFlowThread(this)->computeOversetStateForRegions(oldClientAfterEdge);
 }
 
 void RenderBlock::addOverflowFromBlockChildren()

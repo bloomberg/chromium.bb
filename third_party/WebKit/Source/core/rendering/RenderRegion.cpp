@@ -48,7 +48,6 @@ RenderRegion::RenderRegion(Element* element, RenderFlowThread* flowThread)
     , m_isValid(false)
     , m_hasCustomRegionStyle(false)
     , m_hasAutoLogicalHeight(false)
-    , m_regionState(RegionUndefined)
 {
 }
 
@@ -124,6 +123,20 @@ LayoutRect RenderRegion::overflowRectForFlowThreadPortion(const LayoutRect& flow
     }
 
     return clipRect;
+}
+
+RegionOversetState RenderRegion::regionOversetState() const
+{
+    if (isValid() && node() && node()->isElementNode())
+        return toElement(node())->regionOversetState();
+
+    return RegionUndefined;
+}
+
+void RenderRegion::setRegionOversetState(RegionOversetState state)
+{
+    if (node() && node()->isElementNode())
+        toElement(node())->setRegionOversetState(state);
 }
 
 LayoutUnit RenderRegion::pageLogicalTopForOffset(LayoutUnit /* offset */) const

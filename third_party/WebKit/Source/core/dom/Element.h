@@ -31,6 +31,7 @@
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/CollectionType.h"
 #include "core/platform/ScrollTypes.h"
+#include "core/rendering/RegionOversetState.h"
 
 namespace WebCore {
 
@@ -457,6 +458,9 @@ public:
     bool isInCanvasSubtree() const;
 
     bool isUnresolvedCustomElement();
+
+    void setRegionOversetState(RegionOversetState);
+    RegionOversetState regionOversetState() const;
 
     AtomicString computeInheritedLanguage() const;
     Locale& locale() const;

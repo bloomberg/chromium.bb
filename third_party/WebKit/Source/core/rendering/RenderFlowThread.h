@@ -126,6 +126,9 @@ public:
     RenderRegion* firstRegion() const;
     RenderRegion* lastRegion() const;
 
+    bool previousRegionCountChanged() const { return m_previousRegionCount != m_regionList.size(); }
+    void updatePreviousRegionCount() { m_previousRegionCount = m_regionList.size(); }
+
     void setRegionRangeForBox(const RenderBox*, LayoutUnit offsetFromLogicalTopOfFirstPage);
     void getRegionRangeForBox(const RenderBox*, RenderRegion*& startRegion, RenderRegion*& endRegion) const;
 
@@ -133,7 +136,7 @@ public:
         const RenderRegion* oldStartRegion = 0, const RenderRegion* oldEndRegion = 0,
         const RenderRegion* newStartRegion = 0, const RenderRegion* newEndRegion = 0);
     
-    void computeOverflowStateForRegions(LayoutUnit oldClientAfterEdge);
+    void computeOversetStateForRegions(LayoutUnit oldClientAfterEdge);
 
     bool overset() const { return m_overset; }
 
@@ -181,15 +184,20 @@ protected:
 
     void setDispatchRegionLayoutUpdateEvent(bool value) { m_dispatchRegionLayoutUpdateEvent = value; }
     bool shouldDispatchRegionLayoutUpdateEvent() { return m_dispatchRegionLayoutUpdateEvent; }
+
+    void setDispatchRegionOversetChangeEvent(bool value) { m_dispatchRegionOversetChangeEvent = value; }
+    bool shouldDispatchRegionOversetChangeEvent() const { return m_dispatchRegionOversetChangeEvent; }
     
     // Override if the flow thread implementation supports dispatching events when the flow layout is updated (e.g. for named flows)
     virtual void dispatchRegionLayoutUpdateEvent() { m_dispatchRegionLayoutUpdateEvent = false; }
+    virtual void dispatchRegionOversetChangeEvent() { m_dispatchRegionOversetChangeEvent = false; }
 
     void initializeRegionsOverrideLogicalContentHeight(RenderRegion* = 0);
 
     virtual void autoGenerateRegionsToBlockOffset(LayoutUnit) { };
 
     RenderRegionList m_regionList;
+    unsigned short m_previousRegionCount;
 
     class RenderRegionRange {
     public:
@@ -257,6 +265,7 @@ protected:
     bool m_overset : 1;
     bool m_hasRegionsWithStyling : 1;
     bool m_dispatchRegionLayoutUpdateEvent : 1;
+    bool m_dispatchRegionOversetChangeEvent : 1;
     bool m_pageLogicalSizeChanged : 1;
     bool m_inConstrainedLayoutPhase : 1;
     bool m_needsTwoPhasesLayout : 1;
