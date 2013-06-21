@@ -92,7 +92,9 @@ class SearchTabHelper : public content::NotificationObserver,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Sets the mode of the model based on the current URL of web_contents().
-  void UpdateMode();
+  // Only updates the origin part of the mode if |update_origin| is true,
+  // otherwise keeps the current origin.
+  void UpdateMode(bool update_origin);
 
   // Tells the renderer to determine if the page supports the Instant API, which
   // results in a call to OnInstantSupportDetermined() when the reply

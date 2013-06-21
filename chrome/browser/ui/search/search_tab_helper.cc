@@ -81,14 +81,14 @@ void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
   if (!user_input_in_progress && !cancelling)
     return;
 
-  UpdateMode();
+  UpdateMode(false);
 }
 
 void SearchTabHelper::NavigationEntryUpdated() {
   if (!is_search_enabled_)
     return;
 
-  UpdateMode();
+  UpdateMode(false);
 }
 
 bool SearchTabHelper::UpdateLastKnownMostVisitedItems(
@@ -122,7 +122,7 @@ void SearchTabHelper::Observe(
   if (!load_details->is_main_frame)
     return;
 
-  UpdateMode();
+  UpdateMode(true);
   last_known_most_visited_items_.clear();
 
   // Already determined the instant support state for this page, do not reset
@@ -166,7 +166,7 @@ void SearchTabHelper::DidFinishLoad(
     DetermineIfPageSupportsInstant();
 }
 
-void SearchTabHelper::UpdateMode() {
+void SearchTabHelper::UpdateMode(bool update_origin) {
   SearchMode::Type type = SearchMode::MODE_DEFAULT;
   SearchMode::Origin origin = SearchMode::ORIGIN_DEFAULT;
   if (IsNTP(web_contents_)) {
@@ -176,6 +176,8 @@ void SearchTabHelper::UpdateMode() {
     type = SearchMode::MODE_SEARCH_RESULTS;
     origin = SearchMode::ORIGIN_SEARCH;
   }
+  if (!update_origin)
+    origin = model_.mode().origin;
   if (user_input_in_progress_)
     type = SearchMode::MODE_SEARCH_SUGGESTIONS;
 
