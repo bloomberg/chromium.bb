@@ -29,13 +29,6 @@ WorkerPoolTask::WorkerPoolTask()
       did_complete_(false) {
 }
 
-WorkerPoolTask::WorkerPoolTask(TaskVector* dependencies)
-    : did_schedule_(false),
-      did_run_(false),
-      did_complete_(false) {
-  dependencies_.swap(*dependencies);
-}
-
 WorkerPoolTask::~WorkerPoolTask() {
   DCHECK_EQ(did_schedule_, did_complete_);
   DCHECK(!did_run_ || did_schedule_);
@@ -242,6 +235,7 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
     for (GraphNodeMap::iterator it = new_pending_tasks.begin();
          it != new_pending_tasks.end(); ++it) {
       internal::WorkerPoolTask* task = it->first;
+      DCHECK(task);
       GraphNode* node = it->second;
 
       // Completed tasks should not exist in |new_pending_tasks|.
@@ -359,8 +353,8 @@ void WorkerPool::Inner::Run() {
   has_ready_to_run_tasks_cv_.Signal();
 }
 
-WorkerPool::GraphNode::GraphNode(internal::WorkerPoolTask* task)
-    : task_(task),
+WorkerPool::GraphNode::GraphNode()
+    : task_(NULL),
       priority_(0),
       num_dependencies_(0) {
 }
@@ -414,59 +408,12 @@ void WorkerPool::DispatchCompletionCallbacks(TaskDeque* completed_tasks) {
 }
 
 void WorkerPool::SetTaskGraph(TaskGraph* graph) {
-  TRACE_EVENT0("cc", "WorkerPool::SetTaskGraph");
+  TRACE_EVENT1("cc", "WorkerPool::SetTaskGraph",
+               "num_tasks", graph->size());
 
   DCHECK(!in_dispatch_completion_callbacks_);
 
   inner_->SetTaskGraph(graph);
-}
-
-// static
-unsigned WorkerPool::BuildTaskGraphRecursive(
-    internal::WorkerPoolTask* task,
-    GraphNode* dependent,
-    unsigned priority,
-    TaskGraph* graph) {
-  GraphNodeMap::iterator it = graph->find(task);
-  if (it != graph->end()) {
-    GraphNode* node = it->second;
-    node->add_dependent(dependent);
-    return priority;
-  }
-
-  scoped_ptr<GraphNode> node(new GraphNode(task));
-
-  typedef internal::WorkerPoolTask::TaskVector TaskVector;
-  for (TaskVector::iterator dependency_it = task->dependencies().begin();
-       dependency_it != task->dependencies().end(); ++dependency_it) {
-    internal::WorkerPoolTask* dependency = dependency_it->get();
-    // Skip sub-tree if task has already completed.
-    if (dependency->HasCompleted())
-      continue;
-
-    node->add_dependency();
-
-    priority = BuildTaskGraphRecursive(dependency,
-                                       node.get(),
-                                       priority,
-                                       graph);
-  }
-
-  node->set_priority(priority);
-  if (dependent)
-    node->add_dependent(dependent);
-
-  graph->set(task, node.Pass());
-
-  return priority + 1;
-}
-
-// static
-void WorkerPool::BuildTaskGraph(
-    internal::WorkerPoolTask* root, TaskGraph* graph) {
-  const unsigned kBasePriority = 0u;
-  if (root && !root->HasCompleted())
-    BuildTaskGraphRecursive(root, NULL, kBasePriority, graph);
 }
 
 }  // namespace cc

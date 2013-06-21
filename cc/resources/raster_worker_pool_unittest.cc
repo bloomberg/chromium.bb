@@ -26,11 +26,12 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   TestRasterWorkerPoolTaskImpl(
       const Resource* resource,
       const Reply& reply,
-      internal::WorkerPoolTask::TaskVector* dependencies)
+      TaskVector* dependencies)
       : internal::RasterWorkerPoolTask(resource, dependencies),
         reply_(reply),
         did_raster_(false) {}
 
+  // Overridden from internal::WorkerPoolTask:
   virtual bool RunOnThread(SkDevice* device, unsigned thread_index) OVERRIDE {
     did_raster_ = true;
     return true;
@@ -45,6 +46,8 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
  private:
   const Reply reply_;
   bool did_raster_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRasterWorkerPoolTaskImpl);
 };
 
 class RasterWorkerPoolTest : public testing::Test,

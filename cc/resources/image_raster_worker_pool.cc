@@ -17,12 +17,10 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   typedef base::Callback<void(bool was_canceled)> Reply;
 
   ImageWorkerPoolTaskImpl(internal::RasterWorkerPoolTask* task,
-                          TaskVector* dependencies,
                           uint8_t* buffer,
                           int stride,
                           const Reply& reply)
-      : internal::WorkerPoolTask(dependencies),
-        task_(task),
+      : task_(task),
         buffer_(buffer),
         stride_(stride),
         reply_(reply) {
@@ -68,27 +66,20 @@ ImageRasterWorkerPool::~ImageRasterWorkerPool() {
   DCHECK_EQ(0u, image_tasks_.size());
 }
 
-void ImageRasterWorkerPool::Shutdown() {
-  RasterWorkerPool::Shutdown();
-  ScheduleRasterTasks(RootTask());
-}
-
 void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   TRACE_EVENT0("cc", "ImageRasterWorkerPool::ScheduleTasks");
 
-  internal::WorkerPoolTask::TaskVector tasks;
-
   RasterWorkerPool::SetRasterTasks(queue);
 
-  for (RasterTask::Queue::TaskVector::const_iterator it =
-           raster_tasks().begin();
+  RasterTaskGraph graph;
+  for (RasterTaskVector::const_iterator it = raster_tasks().begin();
        it != raster_tasks().end(); ++it) {
     internal::RasterWorkerPoolTask* task = it->get();
 
     TaskMap::iterator image_it = image_tasks_.find(task);
     if (image_it != image_tasks_.end()) {
       internal::WorkerPoolTask* image_task = image_it->second.get();
-      tasks.push_back(image_task);
+      graph.InsertRasterTask(image_task, task->dependencies());
       continue;
     }
 
@@ -99,29 +90,19 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
     uint8* buffer = resource_provider()->MapImage(task->resource()->id());
     int stride = resource_provider()->GetImageStride(task->resource()->id());
 
-    // TODO(reveman): Avoid having to make a copy of dependencies.
-    internal::WorkerPoolTask::TaskVector dependencies = task->dependencies();
     scoped_refptr<internal::WorkerPoolTask> new_image_task(
         new ImageWorkerPoolTaskImpl(
             task,
-            &dependencies,
             buffer,
             stride,
             base::Bind(&ImageRasterWorkerPool::OnRasterTaskCompleted,
                        base::Unretained(this),
                        make_scoped_refptr(task))));
-
     image_tasks_[task] = new_image_task;
-    tasks.push_back(new_image_task);
+    graph.InsertRasterTask(new_image_task.get(), task->dependencies());
   }
 
-  if (tasks.empty()) {
-    ScheduleRasterTasks(RootTask());
-    return;
-  }
-
-  RootTask root(&tasks);
-  ScheduleRasterTasks(root);
+  SetRasterTaskGraph(&graph);
 }
 
 void ImageRasterWorkerPool::OnRasterTaskCompleted(

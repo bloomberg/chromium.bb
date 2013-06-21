@@ -17,11 +17,9 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   typedef base::Callback<void(bool was_canceled, bool needs_upload)> Reply;
 
   PixelBufferWorkerPoolTaskImpl(internal::RasterWorkerPoolTask* task,
-                                TaskVector* dependencies,
                                 uint8_t* buffer,
                                 const Reply& reply)
-      : internal::WorkerPoolTask(dependencies),
-        task_(task),
+      : task_(task),
         buffer_(buffer),
         reply_(reply),
         needs_upload_(false) {
@@ -90,9 +88,7 @@ PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
                           shutdown_(false),
                           bytes_pending_upload_(0),
                           has_performed_uploads_since_last_flush_(false),
-                          check_for_completed_raster_tasks_pending_(false),
-                          weak_ptr_factory_(this),
-                          schedule_more_tasks_count_(0) {
+                          check_for_completed_raster_tasks_pending_(false) {
 }
 
 PixelBufferRasterWorkerPool::~PixelBufferRasterWorkerPool() {
@@ -118,8 +114,6 @@ void PixelBufferRasterWorkerPool::Shutdown() {
       completed_tasks_.push_back(task);
     }
   }
-  // Cancel any pending OnRasterFinished callback.
-  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
@@ -129,8 +123,7 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 
   // Build new pixel buffer task set.
   TaskMap new_pixel_buffer_tasks;
-  for (RasterTask::Queue::TaskVector::const_iterator it =
-           raster_tasks().begin();
+  for (RasterTaskVector::const_iterator it = raster_tasks().begin();
        it != raster_tasks().end(); ++it) {
     internal::RasterWorkerPoolTask* task = it->get();
     DCHECK(new_pixel_buffer_tasks.find(task) == new_pixel_buffer_tasks.end());
@@ -194,6 +187,13 @@ void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
 
     completed_tasks_.pop_front();
   }
+}
+
+void PixelBufferRasterWorkerPool::OnRasterTasksFinished() {
+  // Call CheckForCompletedTasks() when we've finished running all raster
+  // tasks needed since last time ScheduleMoreTasks() was called. This
+  // reduces latency when processing only a small number of raster tasks.
+  CheckForCompletedRasterTasks();
 }
 
 void PixelBufferRasterWorkerPool::FlushUploads() {
@@ -306,10 +306,8 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   size_t bytes_pending_upload = bytes_pending_upload_;
   size_t bytes_pending_raster = 0;
 
-  internal::WorkerPoolTask::TaskVector tasks;
-
-  for (RasterTask::Queue::TaskVector::const_iterator it =
-           raster_tasks().begin();
+  RasterTaskGraph graph;
+  for (RasterTaskVector::const_iterator it = raster_tasks().begin();
        it != raster_tasks().end(); ++it) {
     internal::RasterWorkerPoolTask* task = it->get();
 
@@ -354,8 +352,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
 
     // Use existing pixel buffer task if available.
     if (pixel_buffer_task) {
-      DCHECK(!pixel_buffer_task->HasCompleted());
-      tasks.push_back(pixel_buffer_task);
+      graph.InsertRasterTask(pixel_buffer_task, task->dependencies());
       continue;
     }
 
@@ -368,44 +365,24 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     uint8* buffer = resource_provider()->MapPixelBuffer(
         task->resource()->id());
 
-    // TODO(reveman): Avoid having to make a copy of dependencies.
-    internal::WorkerPoolTask::TaskVector dependencies = task->dependencies();
     scoped_refptr<internal::WorkerPoolTask> new_pixel_buffer_task(
         new PixelBufferWorkerPoolTaskImpl(
             task,
-            &dependencies,
             buffer,
             base::Bind(&PixelBufferRasterWorkerPool::OnRasterTaskCompleted,
                        base::Unretained(this),
                        make_scoped_refptr(task))));
-
     pixel_buffer_tasks_[task] = new_pixel_buffer_task;
-    tasks.push_back(new_pixel_buffer_task);
+    graph.InsertRasterTask(new_pixel_buffer_task.get(), task->dependencies());
   }
 
-  ++schedule_more_tasks_count_;
-
-  // We need to make sure not to schedule a check for completed raster
-  // tasks when |tasks| is empty as that would cause us to never stop
-  // checking.
-  if (tasks.empty()) {
-    ScheduleRasterTasks(RootTask());
-    return;
-  }
-
-  RootTask root(
-      base::Bind(&PixelBufferRasterWorkerPool::RunRasterFinishedTask,
-                 base::MessageLoopProxy::current(),
-                 base::Bind(&PixelBufferRasterWorkerPool::OnRasterFinished,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            schedule_more_tasks_count_)),
-                &tasks);
-  ScheduleRasterTasks(root);
+  SetRasterTaskGraph(&graph);
 
   // At least one task that could need an upload is now pending, schedule
   // a check for completed raster tasks to ensure this upload is dispatched
   // without too much latency.
-  ScheduleCheckForCompletedRasterTasks();
+  if (bytes_pending_raster)
+    ScheduleCheckForCompletedRasterTasks();
 }
 
 void PixelBufferRasterWorkerPool::OnRasterTaskCompleted(
@@ -436,27 +413,6 @@ void PixelBufferRasterWorkerPool::OnRasterTaskCompleted(
 
   bytes_pending_upload_ += task->resource()->bytes();
   tasks_with_pending_upload_.push_back(task);
-}
-
-void PixelBufferRasterWorkerPool::OnRasterFinished(
-    int64 schedule_more_tasks_count) {
-  TRACE_EVENT1("cc",
-               "PixelBufferRasterWorkerPool::OnRasterFinishedTasks",
-               "schedule_more_tasks_count", schedule_more_tasks_count);
-  DCHECK_GE(schedule_more_tasks_count_, schedule_more_tasks_count);
-  // Call CheckForCompletedTasks() when we've finished running all raster
-  // tasks needed since last time ScheduleMoreTasks() was called. This
-  // reduces latency when processing only a small number of raster tasks.
-  if (schedule_more_tasks_count_ == schedule_more_tasks_count)
-    CheckForCompletedRasterTasks();
-}
-
-// static
-void PixelBufferRasterWorkerPool::RunRasterFinishedTask(
-    scoped_refptr<base::MessageLoopProxy> origin_loop,
-    const base::Closure& on_raster_finished_callback) {
-  TRACE_EVENT0("cc", "RasterWorkerPool::RunRasterFinishedTask");
-  origin_loop->PostTask(FROM_HERE, on_raster_finished_callback);
 }
 
 }  // namespace cc

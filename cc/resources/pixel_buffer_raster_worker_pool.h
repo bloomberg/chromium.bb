@@ -33,6 +33,9 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   PixelBufferRasterWorkerPool(ResourceProvider* resource_provider,
                               size_t num_threads);
 
+  // Overridden from RasterWorkerPool:
+  virtual void OnRasterTasksFinished() OVERRIDE;
+
   void FlushUploads();
   void CheckForCompletedUploads();
   void ScheduleCheckForCompletedRasterTasks();
@@ -43,11 +46,6 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
       bool was_canceled,
       bool needs_upload);
   void DidCompleteRasterTask(internal::RasterWorkerPoolTask* task);
-  void OnRasterFinished(int64 schedule_more_tasks_count);
-
-  static void RunRasterFinishedTask(
-      scoped_refptr<base::MessageLoopProxy> origin_loop,
-      const base::Closure& on_raster_finished_callback);
 
   bool shutdown_;
 
@@ -61,9 +59,6 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   bool has_performed_uploads_since_last_flush_;
   base::CancelableClosure check_for_completed_raster_tasks_callback_;
   bool check_for_completed_raster_tasks_pending_;
-
-  base::WeakPtrFactory<PixelBufferRasterWorkerPool> weak_ptr_factory_;
-  int64 schedule_more_tasks_count_;
 
   DISALLOW_COPY_AND_ASSIGN(PixelBufferRasterWorkerPool);
 };

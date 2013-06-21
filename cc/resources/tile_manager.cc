@@ -726,7 +726,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
                  make_scoped_refptr(tile),
                  base::Passed(&resource),
                  mts.raster_mode),
-      decode_tasks);
+      &decode_tasks);
 }
 
 void TileManager::OnImageDecodeTaskCompleted(

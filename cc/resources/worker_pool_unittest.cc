@@ -13,16 +13,10 @@ namespace cc {
 
 namespace {
 
-class FakeTaskImpl : public internal::WorkerPoolTask {
+class FakeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
-  FakeTaskImpl(const base::Closure& callback,
-               const base::Closure& reply,
-               internal::WorkerPoolTask::TaskVector* dependencies)
-      : internal::WorkerPoolTask(dependencies),
-        callback_(callback),
-        reply_(reply) {
-  }
-  FakeTaskImpl(const base::Closure& callback, const base::Closure& reply)
+  FakeWorkerPoolTaskImpl(const base::Closure& callback,
+                         const base::Closure& reply)
       : callback_(callback),
         reply_(reply) {
   }
@@ -38,10 +32,12 @@ class FakeTaskImpl : public internal::WorkerPoolTask {
   }
 
  private:
-  virtual ~FakeTaskImpl() {}
+  virtual ~FakeWorkerPoolTaskImpl() {}
 
   const base::Closure callback_;
   const base::Closure reply_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeWorkerPoolTaskImpl);
 };
 
 class FakeWorkerPool : public WorkerPool {
@@ -57,26 +53,49 @@ class FakeWorkerPool : public WorkerPool {
                      const base::Closure& reply,
                      const base::Closure& dependency,
                      int count) {
-    scoped_refptr<FakeTaskImpl> dependency_task(
-        new FakeTaskImpl(dependency, base::Closure()));
+    unsigned priority = 0u;
+    TaskGraph graph;
 
-    internal::WorkerPoolTask::TaskVector tasks;
+    scoped_refptr<FakeWorkerPoolTaskImpl> completion_task(
+        new FakeWorkerPoolTaskImpl(
+            base::Bind(&FakeWorkerPool::OnTasksCompleted,
+                       base::Unretained(this)),
+            base::Closure()));
+    scoped_ptr<GraphNode> completion_node(new GraphNode);
+    completion_node->set_task(completion_task.get());
+
+    scoped_refptr<FakeWorkerPoolTaskImpl> dependency_task(
+        new FakeWorkerPoolTaskImpl(dependency, base::Closure()));
+    scoped_ptr<GraphNode> dependency_node(new GraphNode);
+    dependency_node->set_task(dependency_task.get());
+
+    TaskVector tasks;
     for (int i = 0; i < count; ++i) {
-      internal::WorkerPoolTask::TaskVector dependencies(1, dependency_task);
-      tasks.push_back(new FakeTaskImpl(callback, reply, &dependencies));
+      scoped_refptr<FakeWorkerPoolTaskImpl> task(
+          new FakeWorkerPoolTaskImpl(callback, reply));
+      scoped_ptr<GraphNode> node(new GraphNode);
+      node->set_task(task.get());
+      node->add_dependent(completion_node.get());
+      completion_node->add_dependency();
+      dependency_node->add_dependent(node.get());
+      node->add_dependency();
+      node->set_priority(priority++);
+      graph.set(task.get(), node.Pass());
+      tasks.push_back(task.get());
     }
-    scoped_refptr<FakeTaskImpl> completion_task(
-        new FakeTaskImpl(base::Bind(&FakeWorkerPool::OnTasksCompleted,
-                                    base::Unretained(this)),
-                         base::Closure(),
-                         &tasks));
+
+    completion_node->set_priority(priority++);
+    graph.set(completion_task.get(), completion_node.Pass());
+    dependency_node->set_priority(priority++);
+    graph.set(dependency_task.get(), dependency_node.Pass());
 
     scheduled_tasks_completion_.reset(new CompletionEvent);
 
-    TaskGraph graph;
-    BuildTaskGraph(completion_task.get(), &graph);
-    WorkerPool::SetTaskGraph(&graph);
-    root_.swap(completion_task);
+    SetTaskGraph(&graph);
+
+    tasks_.swap(tasks);
+    completion_task_.swap(completion_task);
+    dependency_task_.swap(dependency_task);
   }
 
   void WaitForTasksToComplete() {
@@ -85,13 +104,19 @@ class FakeWorkerPool : public WorkerPool {
   }
 
  private:
+  typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
+
   void OnTasksCompleted() {
     DCHECK(scheduled_tasks_completion_);
     scheduled_tasks_completion_->Signal();
   }
 
-  scoped_refptr<FakeTaskImpl> root_;
+  TaskVector tasks_;
+  scoped_refptr<FakeWorkerPoolTaskImpl> completion_task_;
+  scoped_refptr<FakeWorkerPoolTaskImpl> dependency_task_;
   scoped_ptr<CompletionEvent> scheduled_tasks_completion_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeWorkerPool);
 };
 
 class WorkerPoolTest : public testing::Test {

@@ -16,26 +16,20 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class PerfTaskImpl : public internal::WorkerPoolTask {
+class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
-  explicit PerfTaskImpl(internal::WorkerPoolTask::TaskVector* dependencies)
-      : internal::WorkerPoolTask(dependencies) {}
-
   // Overridden from internal::WorkerPoolTask:
   virtual void RunOnThread(unsigned thread_index) OVERRIDE {}
   virtual void DispatchCompletionCallback() OVERRIDE {}
 
  private:
-  virtual ~PerfTaskImpl() {}
+  virtual ~PerfWorkerPoolTaskImpl() {}
 };
 
-class PerfControlTaskImpl : public internal::WorkerPoolTask {
+class PerfControlWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
-  explicit PerfControlTaskImpl(
-      internal::WorkerPoolTask::TaskVector* dependencies)
-      : internal::WorkerPoolTask(dependencies),
-        did_start_(new CompletionEvent),
-        can_finish_(new CompletionEvent) {}
+  PerfControlWorkerPoolTaskImpl() : did_start_(new CompletionEvent),
+                                    can_finish_(new CompletionEvent) {}
 
   // Overridden from internal::WorkerPoolTask:
   virtual void RunOnThread(unsigned thread_index) OVERRIDE {
@@ -53,10 +47,12 @@ class PerfControlTaskImpl : public internal::WorkerPoolTask {
   }
 
  private:
-  virtual ~PerfControlTaskImpl() {}
+  virtual ~PerfControlWorkerPoolTaskImpl() {}
 
   scoped_ptr<CompletionEvent> did_start_;
   scoped_ptr<CompletionEvent> can_finish_;
+
+  DISALLOW_COPY_AND_ASSIGN(PerfControlWorkerPoolTaskImpl);
 };
 
 class PerfWorkerPool : public WorkerPool {
@@ -68,17 +64,97 @@ class PerfWorkerPool : public WorkerPool {
     return make_scoped_ptr(new PerfWorkerPool);
   }
 
-  void BuildTaskGraph(internal::WorkerPoolTask* root) {
-    graph_.clear();
-    WorkerPool::BuildTaskGraph(root, &graph_);
-  }
+  void ScheduleTasks(internal::WorkerPoolTask* root_task,
+                     internal::WorkerPoolTask* leaf_task,
+                     unsigned max_depth,
+                     unsigned num_children_per_node) {
+    TaskVector tasks;
+    unsigned priority = 0u;
+    TaskGraph graph;
 
-  void ScheduleTasks() {
-    SetTaskGraph(&graph_);
+    scoped_ptr<GraphNode> root_node;
+    if (root_task) {
+      root_node = make_scoped_ptr(new GraphNode);
+      root_node->set_task(root_task);
+    }
+
+    scoped_ptr<GraphNode> leaf_node;
+    if (leaf_task) {
+      leaf_node = make_scoped_ptr(new GraphNode);
+      leaf_node->set_task(leaf_task);
+    }
+
+    if (max_depth) {
+      priority = BuildTaskGraph(&tasks,
+                                &graph,
+                                root_node.get(),
+                                leaf_node.get(),
+                                priority,
+                                0,
+                                max_depth,
+                                num_children_per_node);
+    }
+
+    if (leaf_node) {
+      leaf_node->set_priority(priority++);
+      graph.set(leaf_task, leaf_node.Pass());
+    }
+
+    if (root_node) {
+      root_node->set_priority(priority++);
+      graph.set(root_task, root_node.Pass());
+    }
+
+    SetTaskGraph(&graph);
+
+    tasks_.swap(tasks);
   }
 
  private:
-  TaskGraph graph_;
+  typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
+
+  unsigned BuildTaskGraph(TaskVector* tasks,
+                          TaskGraph* graph,
+                          GraphNode* dependent_node,
+                          GraphNode* leaf_node,
+                          unsigned priority,
+                          unsigned current_depth,
+                          unsigned max_depth,
+                          unsigned num_children_per_node) {
+    scoped_refptr<PerfWorkerPoolTaskImpl> task(new PerfWorkerPoolTaskImpl);
+    scoped_ptr<GraphNode> node(new GraphNode);
+    node->set_task(task.get());
+
+    if (current_depth < max_depth) {
+      for (unsigned i = 0; i < num_children_per_node; ++i) {
+        priority = BuildTaskGraph(tasks,
+                                  graph,
+                                  node.get(),
+                                  leaf_node,
+                                  priority,
+                                  current_depth + 1,
+                                  max_depth,
+                                  num_children_per_node);
+      }
+    } else if (leaf_node) {
+      leaf_node->add_dependent(node.get());
+      node->add_dependency();
+    }
+
+    if (dependent_node) {
+      node->add_dependent(dependent_node);
+      dependent_node->add_dependency();
+    }
+    node->set_priority(priority);
+    graph->set(task.get(), node.Pass());
+    tasks->push_back(task.get());
+
+    return priority + 1;
+  }
+
+  TaskVector tasks_;
+
+  DISALLOW_COPY_AND_ASSIGN(PerfWorkerPool);
 };
 
 class WorkerPoolPerfTest : public testing::Test {
@@ -105,24 +181,6 @@ class WorkerPoolPerfTest : public testing::Test {
            num_runs_ / elapsed_.InSecondsF());
   }
 
-  void CreateTasks(internal::WorkerPoolTask::TaskVector* dependencies,
-                   unsigned current_depth,
-                   unsigned max_depth,
-                   unsigned num_children_per_node) {
-    internal::WorkerPoolTask::TaskVector children;
-    if (current_depth < max_depth) {
-      for (unsigned i = 0; i < num_children_per_node; ++i) {
-        CreateTasks(&children,
-                    current_depth + 1,
-                    max_depth,
-                    num_children_per_node);
-      }
-    } else if (leaf_task_.get()) {
-      children.push_back(leaf_task_);
-    }
-    dependencies->push_back(make_scoped_refptr(new PerfTaskImpl(&children)));
-  }
-
   bool DidRun() {
     ++num_runs_;
     if (num_runs_ == kWarmupRuns)
@@ -139,42 +197,20 @@ class WorkerPoolPerfTest : public testing::Test {
     return true;
   }
 
-  void RunBuildTaskGraphTest(const std::string test_name,
-                             unsigned max_depth,
-                             unsigned num_children_per_node) {
-    start_time_ = base::TimeTicks();
-    num_runs_ = 0;
-    internal::WorkerPoolTask::TaskVector children;
-    CreateTasks(&children, 0, max_depth, num_children_per_node);
-    scoped_refptr<PerfTaskImpl> root_task(
-        make_scoped_refptr(new PerfTaskImpl(&children)));
-    do {
-      worker_pool_->BuildTaskGraph(root_task.get());
-    } while (DidRun());
-
-    AfterTest(test_name);
-  }
-
   void RunScheduleTasksTest(const std::string test_name,
                             unsigned max_depth,
                             unsigned num_children_per_node) {
     start_time_ = base::TimeTicks();
     num_runs_ = 0;
     do {
-      internal::WorkerPoolTask::TaskVector empty;
-      leaf_task_ = make_scoped_refptr(new PerfControlTaskImpl(&empty));
-      internal::WorkerPoolTask::TaskVector children;
-      CreateTasks(&children, 0, max_depth, num_children_per_node);
-      scoped_refptr<PerfTaskImpl> root_task(
-          make_scoped_refptr(new PerfTaskImpl(&children)));
-
-      worker_pool_->BuildTaskGraph(root_task.get());
-      worker_pool_->ScheduleTasks();
-      leaf_task_->WaitForTaskToStartRunning();
-      worker_pool_->BuildTaskGraph(NULL);
-      worker_pool_->ScheduleTasks();
+      scoped_refptr<PerfControlWorkerPoolTaskImpl> leaf_task(
+          new PerfControlWorkerPoolTaskImpl);
+      worker_pool_->ScheduleTasks(
+          NULL, leaf_task.get(), max_depth, num_children_per_node);
+      leaf_task->WaitForTaskToStartRunning();
+      worker_pool_->ScheduleTasks(NULL, NULL, 0, 0);
       worker_pool_->CheckForCompletedTasks();
-      leaf_task_->AllowTaskToFinish();
+      leaf_task->AllowTaskToFinish();
     } while (DidRun());
 
     AfterTest(test_name);
@@ -186,13 +222,10 @@ class WorkerPoolPerfTest : public testing::Test {
     start_time_ = base::TimeTicks();
     num_runs_ = 0;
     do {
-      internal::WorkerPoolTask::TaskVector children;
-      CreateTasks(&children, 0, max_depth, num_children_per_node);
-      scoped_refptr<PerfControlTaskImpl> root_task(
-          make_scoped_refptr(new PerfControlTaskImpl(&children)));
-
-      worker_pool_->BuildTaskGraph(root_task.get());
-      worker_pool_->ScheduleTasks();
+      scoped_refptr<PerfControlWorkerPoolTaskImpl> root_task(
+          new PerfControlWorkerPoolTaskImpl);
+      worker_pool_->ScheduleTasks(
+          root_task.get(), NULL, max_depth, num_children_per_node);
       root_task->WaitForTaskToStartRunning();
       root_task->AllowTaskToFinish();
       worker_pool_->CheckForCompletedTasks();
@@ -203,21 +236,10 @@ class WorkerPoolPerfTest : public testing::Test {
 
  protected:
   scoped_ptr<PerfWorkerPool> worker_pool_;
-  scoped_refptr<PerfControlTaskImpl> leaf_task_;
   base::TimeTicks start_time_;
   base::TimeDelta elapsed_;
   int num_runs_;
 };
-
-TEST_F(WorkerPoolPerfTest, BuildTaskGraph) {
-  RunBuildTaskGraphTest("build_task_graph_1_10", 1, 10);
-  RunBuildTaskGraphTest("build_task_graph_1_1000", 1, 1000);
-  RunBuildTaskGraphTest("build_task_graph_2_10", 2, 10);
-  RunBuildTaskGraphTest("build_task_graph_5_5", 5, 5);
-  RunBuildTaskGraphTest("build_task_graph_10_2", 10, 2);
-  RunBuildTaskGraphTest("build_task_graph_1000_1", 1000, 1);
-  RunBuildTaskGraphTest("build_task_graph_10_1", 10, 1);
-}
 
 TEST_F(WorkerPoolPerfTest, ScheduleTasks) {
   RunScheduleTasksTest("schedule_tasks_1_10", 1, 10);
