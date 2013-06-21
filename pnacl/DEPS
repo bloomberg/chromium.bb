@@ -4,7 +4,7 @@ vars = {
   "pnacl_gcc_rev": "e09efac3663fa23abf48941d4844e1876659b7c4",
 
   "glibc_rev": "ef989bae60d93e2906847b367becbd0e7f27679f",
-  "newlib_rev": "6a104f495cf91387ecec5f5f87c6e12d345b204c",
+  "newlib_rev": "5feee65e182c08a7e89fbffc3223c57e4335420f",
   "pnacl_llvm_testsuite_rev": "0d6d7c909e6f7cc83e2b85c11332e9347b73dfb9",
   "compiler_rt_rev": "cad11a9ea0008d18125e81beafc27271ee71926e",
   # clang_rev should be the first clang commit after the llvm commit from
