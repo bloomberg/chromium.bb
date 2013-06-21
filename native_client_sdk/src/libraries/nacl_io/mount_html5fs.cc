@@ -46,7 +46,7 @@ Error MountHtml5Fs::Open(const Path& path, int mode, MountNode** out_node) {
   PP_Resource fileref = ppapi()->GetFileRefInterface()
       ->Create(filesystem_resource_, path.Join().c_str());
   if (!fileref)
-    return ENOSYS;
+    return ENOENT;
 
   MountNodeHtml5Fs* node = new MountNodeHtml5Fs(this, fileref);
   error = node->Init(mode);
@@ -71,7 +71,7 @@ Error MountHtml5Fs::Mkdir(const Path& path, int permissions) {
       ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
                                              path.Join().c_str()));
   if (!fileref_resource.pp_resource())
-    return EIO;
+    return ENOENT;
 
   int32_t result = ppapi()->GetFileRefInterface()->MakeDirectory(
       fileref_resource.pp_resource(), PP_FALSE, PP_BlockUntilComplete());
@@ -93,7 +93,7 @@ Error MountHtml5Fs::Remove(const Path& path) {
       ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
                                              path.Join().c_str()));
   if (!fileref_resource.pp_resource())
-    return ENOSYS;
+    return ENOENT;
 
   int32_t result = ppapi()->GetFileRefInterface()
       ->Delete(fileref_resource.pp_resource(), PP_BlockUntilComplete());
