@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
@@ -15,8 +14,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "content/public/browser/user_metrics.h"
-#import "ui/base/cocoa/nsgraphics_context_additions.h"
-#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 using content::UserMetricsAction;
 
@@ -45,6 +42,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
 
 // Make a drag image for the button.
 - (NSImage*)dragImage;
+
 - (void)installCustomTrackingArea;
 
 @end  // @interface BookmarkButton(Private)
@@ -122,6 +120,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
 
   return point;
 }
+
 
 - (void)updateTrackingAreas {
   [self installCustomTrackingArea];
@@ -384,19 +383,6 @@ BookmarkButton* gDraggedButton = nil; // Weak
   return kDraggableButtonMixinDidWork;
 }
 
-- (BOOL)isOpaque {
-  // Make this control opaque so that sub pixel anti aliasing works when core
-  // animation is enabled.
-  return YES;
-}
-
-- (void)drawRect:(NSRect)rect {
-  NSPoint phase = [[self window] themePatternPhase];
-  [[NSGraphicsContext currentContext] cr_setPatternPhase:phase forView:self];
-  [BackgroundGradientView drawBackgroundWithOpaque:YES forView:self];
-  [super drawRect:rect];
-}
-
 @end
 
 @implementation BookmarkButton(Private)
@@ -424,24 +410,34 @@ BookmarkButton* gDraggedButton = nil; // Weak
 - (NSImage*)dragImage {
   NSRect bounds = [self bounds];
 
-  scoped_nsobject<NSImage> image([[NSImage alloc] initWithSize:bounds.size]);
-  [image lockFocusFlipped:[self isFlipped]];
+  // Grab the image from the screen and put it in an |NSImage|. We can't use
+  // this directly since we need to clip it and set its opacity. This won't work
+  // if the source view is clipped. Fortunately, we don't display clipped
+  // bookmark buttons.
+  [self lockFocus];
+  scoped_nsobject<NSBitmapImageRep>
+      bitmap([[NSBitmapImageRep alloc] initWithFocusedViewRect:bounds]);
+  [self unlockFocus];
+  scoped_nsobject<NSImage> image([[NSImage alloc] initWithSize:[bitmap size]]);
+  [image addRepresentation:bitmap];
 
-  NSGraphicsContext* context = [NSGraphicsContext currentContext];
-  CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
-  CGContextBeginTransparencyLayer(cgContext, 0);
-  CGContextSetAlpha(cgContext, kDragImageOpacity);
+  // Make an autoreleased |NSImage|, which will be returned, and draw into it.
+  // By default, the |NSImage| will be completely transparent.
+  NSImage* dragImage =
+      [[[NSImage alloc] initWithSize:[bitmap size]] autorelease];
+  [dragImage lockFocus];
 
-  GradientButtonCell* cell =
-      base::mac::ObjCCastStrict<GradientButtonCell>([self cell]);
+  // Draw the image with the appropriate opacity, clipping it tightly.
+  GradientButtonCell* cell = static_cast<GradientButtonCell*>([self cell]);
+  DCHECK([cell isKindOfClass:[GradientButtonCell class]]);
   [[cell clipPathForFrame:bounds inView:self] setClip];
+  [image drawAtPoint:NSMakePoint(0, 0)
+            fromRect:NSMakeRect(0, 0, NSWidth(bounds), NSHeight(bounds))
+           operation:NSCompositeSourceOver
+            fraction:kDragImageOpacity];
 
-  [cell drawWithFrame:bounds inView:self];
-
-  CGContextEndTransparencyLayer(cgContext);
-  [image unlockFocus];
-
-  return image.autorelease();
+  [dragImage unlockFocus];
+  return dragImage;
 }
 
 @end  // @implementation BookmarkButton(Private)

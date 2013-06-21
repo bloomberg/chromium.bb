@@ -14,17 +14,10 @@
   BOOL showsDivider_;
 }
 
-// Controls whether the bar draws a dividing line at the bottom.
-@property(nonatomic, assign) BOOL showsDivider;
-
-// Fills the background with the toolbar color.
-+ (void)drawBackgroundWithOpaque:(BOOL)opaque
-                         forView:(NSView*)view;
-
 // The color used for the bottom stroke. Public so subclasses can use.
 - (NSColor*)strokeColor;
 
-// Draws the background for this view. Make sure that your pattern phase
+// Draws the background for this view. Make sure that your patternphase
 // is set up correctly in your graphics context before calling.
 // If |opaque| is true then the background image is forced to be opaque.
 // Otherwise the background image could be semi-transparent and blend against
@@ -33,6 +26,8 @@
 // example of this.
 - (void)drawBackgroundWithOpaque:(BOOL)opaque;
 
+// Controls whether the bar draws a dividing line at the bottom.
+@property(nonatomic, assign) BOOL showsDivider;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BACKGROUND_GRADIENT_VIEW_H_
