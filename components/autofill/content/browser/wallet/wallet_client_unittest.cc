@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
@@ -18,6 +17,7 @@
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autocheckout_status.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
@@ -729,19 +729,15 @@ class MockWalletClientDelegate : public WalletClientDelegate {
 
 class WalletClientTest : public testing::Test {
  public:
-  WalletClientTest() : io_thread_(content::BrowserThread::IO) {}
+  WalletClientTest() {}
 
   virtual void SetUp() OVERRIDE {
-    io_thread_.StartIOThread();
-    profile_.CreateRequestContext();
     wallet_client_.reset(
-        new WalletClient(profile_.GetRequestContext(), &delegate_));
+        new WalletClient(browser_context_.GetRequestContext(), &delegate_));
   }
 
   virtual void TearDown() OVERRIDE {
     wallet_client_.reset();
-    profile_.ResetRequestContext();
-    io_thread_.Stop();
   }
 
   std::string GetData(net::TestURLFetcher* fetcher) {
@@ -781,12 +777,10 @@ class WalletClientTest : public testing::Test {
 
  protected:
   scoped_ptr<WalletClient> wallet_client_;
+  content::TestBrowserContext browser_context_;
   MockWalletClientDelegate delegate_;
 
  private:
-  // The profile's request context must be released on the IO thread.
-  content::TestBrowserThread io_thread_;
-  TestingProfile profile_;
   net::TestURLFetcherFactory factory_;
 };
 

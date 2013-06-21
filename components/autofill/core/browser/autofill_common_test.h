@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_COMMON_TEST_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_COMMON_TEST_H_
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace autofill {
 
@@ -68,7 +70,7 @@ void SetCreditCardInfo(CreditCard* credit_card,
 // TODO(isherman): We should do this automatically for all tests, not manually
 // on a per-test basis: http://crbug.com/57221
 // Disables or mocks out code that would otherwise reach out to system services.
-void DisableSystemServices(Profile* profile);
+void DisableSystemServices(content::BrowserContext* browser_context);
 
 }  // namespace test
 }  // namespace autofill

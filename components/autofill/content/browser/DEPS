@@ -18,29 +18,19 @@ include_rules = [
 specific_include_rules = {
   '.*_[a-z]*test\.cc': [
     "+content/public/test",
+  ],
 
-    # TODO(joi, kaiwang): Bring this list to zero.
-    #
-    # Do not add to the list of temporarily-allowed dependencies below,
-    # and please do not introduce more #includes of these files.
-    "!chrome/browser/autofill/autofill_cc_infobar_delegate.h",
-    "!chrome/browser/autofill/personal_data_manager_factory.h",
-    "!chrome/browser/password_manager/encryptor.h",
-    "!chrome/browser/password_manager/password_manager.h",
-    "!chrome/browser/password_manager/password_manager_delegate_impl.h",
-    "!chrome/browser/profiles/profile.h",
-    "!chrome/browser/sync/profile_sync_service.h",
-    "!chrome/browser/sync/profile_sync_service_factory.h",
-    "!chrome/browser/translate/translate_infobar_delegate.h",
-    "!chrome/browser/translate/translate_manager.h",
-    "!chrome/browser/ui/autofill/tab_autofill_manager_delegate.h",
-    "!chrome/browser/ui/browser.h",
-    "!chrome/browser/ui/browser_tabstrip.h",
-    "!chrome/browser/ui/browser_window.h",
-    "!chrome/browser/ui/tabs/tab_strip_model.h",
-    "!chrome/browser/webdata/web_data_service.h",
-    "!chrome/browser/webdata/web_data_service_factory.h",
-    "!chrome/browser/webdata/web_data_service_test_util.h",
-    "!chrome/test/base",
+  # TODO(joi): Removing these dependencies needs to wait until some
+  # other things (AutofillWebData::FromBrowserContext and a few other
+  # things) move out of being built in //chrome. If we break the
+  # dependency on ChromeRenderViewHostTestHarness now (by switching to
+  # content::RenderViewHostTestHarness) but leave the test running in
+  # the 'unit_tests' target, it will fail at runtime trying to cast a
+  # plain BrowserContext to a Profile. If on the other hand we move it
+  # to the 'components_unittests' target, it will at this point fail
+  # to build due to a few link-time dependencies.
+  'autocheckout_manager_unittest.cc': [
+    "!chrome/test/base/chrome_render_view_host_test_harness.h",
+    "!chrome/test/base/testing_profile.h",
   ],
 }

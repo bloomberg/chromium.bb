@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/wallet/encryption_escrow_client.h"
 #include "components/autofill/content/browser/wallet/encryption_escrow_client_observer.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
@@ -65,20 +65,15 @@ class TestEncryptionEscrowClient : public EncryptionEscrowClient {
 class EncryptionEscrowClientTest : public testing::Test {
  public:
   EncryptionEscrowClientTest()
-      : instrument_(GetTestInstrument()),
-        io_thread_(content::BrowserThread::IO) {}
+      : instrument_(GetTestInstrument()) {}
 
   virtual void SetUp() OVERRIDE {
-    io_thread_.StartIOThread();
-    profile_.CreateRequestContext();
     encryption_escrow_client_.reset(new TestEncryptionEscrowClient(
-        profile_.GetRequestContext(), &observer_));
+        browser_context_.GetRequestContext(), &observer_));
   }
 
   virtual void TearDown() OVERRIDE {
     encryption_escrow_client_.reset();
-    profile_.ResetRequestContext();
-    io_thread_.Stop();
   }
 
   std::vector<uint8> MakeOneTimePad() {
@@ -110,9 +105,7 @@ class EncryptionEscrowClientTest : public testing::Test {
 
 
  private:
-  // The profile's request context must be released on the IO thread.
-  content::TestBrowserThread io_thread_;
-  TestingProfile profile_;
+  content::TestBrowserContext browser_context_;
   net::TestURLFetcherFactory factory_;
 };
 

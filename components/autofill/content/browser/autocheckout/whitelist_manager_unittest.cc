@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -93,14 +92,6 @@ class WhitelistManagerTest : public testing::Test {
   WhitelistManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  virtual void SetUp() {
-    profile_.CreateRequestContext();
-  }
-
-  virtual void TearDown() {
-    profile_.ResetRequestContext();
-  }
-
  protected:
   void CreateWhitelistManager() {
     if (!whitelist_manager_.get()) {
@@ -141,7 +132,6 @@ class WhitelistManagerTest : public testing::Test {
   }
 
  protected:
-  TestingProfile profile_;
   scoped_ptr<TestWhitelistManager> whitelist_manager_;
 
  private:

@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -76,21 +76,17 @@ class WalletSigninHelperForTesting : public WalletSigninHelper {
 
 class WalletSigninHelperTest : public testing::Test {
  public:
-  WalletSigninHelperTest() : io_thread_(content::BrowserThread::IO) {}
+  WalletSigninHelperTest() {}
 
   virtual void SetUp() OVERRIDE {
-    io_thread_.StartIOThread();
-    profile_.CreateRequestContext();
     signin_helper_.reset(new WalletSigninHelperForTesting(
         &mock_delegate_,
-        profile_.GetRequestContext()));
+        browser_context_.GetRequestContext()));
     EXPECT_EQ(WalletSigninHelperForTesting::IDLE, state());
   }
 
   virtual void TearDown() OVERRIDE {
     signin_helper_.reset();
-    profile_.ResetRequestContext();
-    io_thread_.Stop();
   }
 
  protected:
@@ -188,10 +184,8 @@ class WalletSigninHelperTest : public testing::Test {
   MockWalletSigninHelperDelegate mock_delegate_;
 
  private:
-  // The profile's request context must be released on the IO thread.
-  content::TestBrowserThread io_thread_;
   net::TestURLFetcherFactory factory_;
-  TestingProfile profile_;
+  content::TestBrowserContext browser_context_;
 };
 
 TEST_F(WalletSigninHelperTest, PassiveSigninSuccessful) {
