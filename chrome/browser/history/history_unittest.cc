@@ -165,10 +165,10 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
     std::vector<GURL> url_chain;
     url_chain.push_back(GURL("foo-url"));
 
-    DownloadRow download(base::FilePath(FILE_PATH_LITERAL("foo-path")),
-                         base::FilePath(FILE_PATH_LITERAL("foo-path")),
+    DownloadRow download(base::FilePath(FILE_PATH_LITERAL("current-path")),
+                         base::FilePath(FILE_PATH_LITERAL("target-path")),
                          url_chain,
-                         GURL(std::string()),
+                         GURL("http://referrer.com/"),
                          time,
                          time,
                          0,
@@ -177,7 +177,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
                          content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                          content::DOWNLOAD_INTERRUPT_REASON_NONE,
                          0,
-                         0);
+                         false);
     return db_->CreateDownload(download);
   }
 
@@ -221,12 +221,33 @@ TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(0U, downloads.size());
 
-  // Add a download, test that it was added, remove it, test that it was
-  // removed.
+  // Add a download, test that it was added correctly, remove it, test that it
+  // was removed.
   DownloadID handle;
-  EXPECT_NE(0, handle = AddDownload(DownloadItem::COMPLETE, Time()));
+  Time now = Time();
+  EXPECT_NE(0, handle = AddDownload(DownloadItem::COMPLETE, now));
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(1U, downloads.size());
+
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("current-path")),
+            downloads[0].current_path);
+  EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("target-path")),
+            downloads[0].target_path);
+  EXPECT_EQ(1UL, downloads[0].url_chain.size());
+  EXPECT_EQ(GURL("foo-url"), downloads[0].url_chain[0]);
+  EXPECT_EQ(std::string("http://referrer.com/"),
+            std::string(downloads[0].referrer_url.spec()));
+  EXPECT_EQ(now, downloads[0].start_time);
+  EXPECT_EQ(now, downloads[0].end_time);
+  EXPECT_EQ(0, downloads[0].received_bytes);
+  EXPECT_EQ(512, downloads[0].total_bytes);
+  EXPECT_EQ(DownloadItem::COMPLETE, downloads[0].state);
+  EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+            downloads[0].danger_type);
+  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+            downloads[0].interrupt_reason);
+  EXPECT_FALSE(downloads[0].opened);
+
   db_->RemoveDownload(handle);
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(0U, downloads.size());
@@ -407,6 +428,54 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
       EXPECT_EQ("http://whatever.com/index1.html", statement.ColumnString(2));
 
       EXPECT_FALSE(statement.Step());
+    }
+  }
+}
+
+TEST_F(HistoryBackendDBTest, MigrateReferrer) {
+  Time now(base::Time::Now());
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(22));
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    sql::Statement s(db.GetUniqueStatement(
+        "INSERT INTO downloads (id, full_path, url, start_time, "
+        "received_bytes, total_bytes, state, end_time, opened) VALUES "
+        "(?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+    int64 db_handle = 0;
+    s.BindInt64(0, ++db_handle);
+    s.BindString(1, "full_path");
+    s.BindString(2, "http://whatever.com/index.html");
+    s.BindInt64(3, now.ToTimeT());
+    s.BindInt64(4, 100);
+    s.BindInt64(5, 100);
+    s.BindInt(6, 1);
+    s.BindInt64(7, now.ToTimeT());
+    s.BindInt(8, 1);
+    ASSERT_TRUE(s.Run());
+  }
+  // Re-open the db using the HistoryDatabase, which should migrate to version
+  // 26, creating the referrer column.
+  CreateBackendAndDatabase();
+  DeleteBackend();
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    // The version should have been updated.
+    int cur_version = HistoryDatabase::GetCurrentVersion();
+    ASSERT_LE(26, cur_version);
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = 'version'"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(cur_version, s.ColumnInt(0));
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT referrer from downloads"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(std::string(), s.ColumnString(0));
     }
   }
 }

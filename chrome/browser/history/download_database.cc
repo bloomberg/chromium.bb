@@ -37,18 +37,19 @@ enum DroppedReason {
 };
 
 static const char kSchema[] =
-  "CREATE TABLE downloads ("
-  "id INTEGER PRIMARY KEY,"           // Primary key.
-  "current_path LONGVARCHAR NOT NULL,"  // Current disk location of the download
-  "target_path LONGVARCHAR NOT NULL,"  // Final disk location of the download
-  "start_time INTEGER NOT NULL,"      // When the download was started.
-  "received_bytes INTEGER NOT NULL,"  // Total size downloaded.
-  "total_bytes INTEGER NOT NULL,"     // Total size of the download.
-  "state INTEGER NOT NULL,"           // 1=complete, 4=interrupted
-  "danger_type INTEGER NOT NULL, "    // Not dangerous, danger type, validated.
-  "interrupt_reason INTEGER NOT NULL,"  // Reason the download was interrupted.
-  "end_time INTEGER NOT NULL,"        // When the download completed.
-  "opened INTEGER NOT NULL)";         // 1 if it has ever been opened else 0
+    "CREATE TABLE downloads ("
+    "id INTEGER PRIMARY KEY,"  // Primary key.
+    "current_path LONGVARCHAR NOT NULL,"  // Current disk location
+    "target_path LONGVARCHAR NOT NULL,"  // Final disk location
+    "start_time INTEGER NOT NULL,"  // When the download was started.
+    "received_bytes INTEGER NOT NULL,"  // Total size downloaded.
+    "total_bytes INTEGER NOT NULL,"  // Total size of the download.
+    "state INTEGER NOT NULL,"  // 1=complete, 4=interrupted
+    "danger_type INTEGER NOT NULL, "  // Not dangerous, danger type, validated.
+    "interrupt_reason INTEGER NOT NULL,"
+    "end_time INTEGER NOT NULL,"  // When the download completed.
+    "opened INTEGER NOT NULL,"  // 1 if it has ever been opened else 0
+    "referrer VARCHAR NOT NULL)";  // HTTP Referrer
 
 static const char kUrlChainSchema[] =
     "CREATE TABLE downloads_url_chains ("
@@ -234,7 +235,7 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
   sql::Statement statement_populate(GetDB().GetUniqueStatement(
     "INSERT INTO downloads "
     "( id, current_path, target_path, start_time, received_bytes, total_bytes, "
-    "  state, danger_type, interrupt_reason, end_time, opened ) "
+    "  state, danger_type, interrupt_reason, end_time, opened, referrer ) "
     "SELECT id, full_path, full_path, "
     "       CASE start_time WHEN 0 THEN 0 ELSE "
     "            (start_time + 11644473600) * 1000000 END, "
@@ -242,7 +243,7 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
     "       state, ?, ?, "
     "       CASE end_time WHEN 0 THEN 0 ELSE "
     "            (end_time + 11644473600) * 1000000 END, "
-    "       opened "
+    "       opened, \"\" "
     "FROM downloads_tmp"));
   statement_populate.BindInt(0, content::DOWNLOAD_INTERRUPT_REASON_NONE);
   statement_populate.BindInt(1, kDangerTypeNotDangerous);
@@ -263,6 +264,10 @@ bool DownloadDatabase::MigrateDownloadsReasonPathsAndDangerType() {
     return false;
 
   return true;
+}
+
+bool DownloadDatabase::MigrateReferrer() {
+  return EnsureColumnExists("referrer", "VARCHAR NOT NULL DEFAULT \"\"");
 }
 
 bool DownloadDatabase::InitDownloadTable() {
@@ -295,9 +300,9 @@ void DownloadDatabase::QueryDownloads(
 
   sql::Statement statement_main(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, current_path, target_path, start_time, received_bytes, "
-        "total_bytes, state, danger_type, interrupt_reason, end_time, opened "
-      "FROM downloads "
-      "ORDER BY start_time"));
+      "total_bytes, state, danger_type, interrupt_reason, end_time, opened, "
+      "referrer "
+      "FROM downloads ORDER BY start_time"));
 
   while (statement_main.Step()) {
     scoped_ptr<DownloadRow> info(new DownloadRow());
@@ -321,6 +326,7 @@ void DownloadDatabase::QueryDownloads(
     info->end_time = base::Time::FromInternalValue(
         statement_main.ColumnInt64(column++));
     info->opened = statement_main.ColumnInt(column++) != 0;
+    info->referrer_url = GURL(statement_main.ColumnString(column++));
     if (info->db_handle >= next_db_handle_)
       next_db_handle_ = info->db_handle + 1;
     if (!db_handles.insert(info->db_handle).second) {
@@ -482,8 +488,8 @@ int64 DownloadDatabase::CreateDownload(const DownloadRow& info) {
         "INSERT INTO downloads "
         "(id, current_path, target_path, start_time, "
         " received_bytes, total_bytes, state, danger_type, interrupt_reason, "
-        " end_time, opened) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+        " end_time, opened, referrer) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
 
     int column = 0;
     statement_insert.BindInt64(column++, db_handle);
@@ -497,6 +503,7 @@ int64 DownloadDatabase::CreateDownload(const DownloadRow& info) {
     statement_insert.BindInt(column++, info.interrupt_reason);
     statement_insert.BindInt64(column++, info.end_time.ToInternalValue());
     statement_insert.BindInt(column++, info.opened ? 1 : 0);
+    statement_insert.BindString(column++, info.referrer_url.spec());
     if (!statement_insert.Run()) {
       // GetErrorCode() returns a bitmask where the lower byte is a more general
       // code and the upper byte is a more specific code. In order to save

@@ -67,6 +67,10 @@ class DownloadDatabase {
   // two target paths to downloads.
   bool MigrateDownloadsReasonPathsAndDangerType();
 
+  // Returns true if able to successfully add the referrer column to the
+  // downloads table.
+  bool MigrateReferrer();
+
   // Creates the downloads table if needed.
   bool InitDownloadTable();
 
