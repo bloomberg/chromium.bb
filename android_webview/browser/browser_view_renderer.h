@@ -99,7 +99,7 @@ class BrowserViewRenderer {
   virtual void EnableOnNewPicture(bool enabled) = 0;
 
   // View update notifications.
-  virtual void OnVisibilityChanged(bool view_visible, bool window_visible) = 0;
+  virtual void OnVisibilityChanged(bool visible) = 0;
   virtual void OnSizeChanged(int width, int height) = 0;
   virtual void OnAttachedToWindow(int width, int height) = 0;
   virtual void OnDetachedFromWindow() = 0;

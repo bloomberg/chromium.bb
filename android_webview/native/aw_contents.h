@@ -92,9 +92,7 @@ class AwContents : public FindHelper::Listener,
   void RequestNewHitTestDataAt(JNIEnv* env, jobject obj, jint x, jint y);
   void UpdateLastHitTestData(JNIEnv* env, jobject obj);
   void OnSizeChanged(JNIEnv* env, jobject obj, int w, int h, int ow, int oh);
-  void SetWindowViewVisibility(JNIEnv* env, jobject obj,
-                               bool window_visible,
-                               bool view_visible);
+  void SetVisibility(JNIEnv* env, jobject obj, bool visible);
   void OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h);
   void OnDetachedFromWindow(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jbyteArray> GetOpaqueState(

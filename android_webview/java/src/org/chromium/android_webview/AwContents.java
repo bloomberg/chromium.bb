@@ -133,6 +133,7 @@ public class AwContents {
     private final AwSettings mSettings;
 
     private boolean mIsPaused;
+    private boolean mIsVisible;  // Equivalent to windowVisible && viewVisible && !mIsPaused.
     private Bitmap mFavicon;
     private boolean mHasRequestedVisitedHistoryFromClient;
     // TODO(boliu): This should be in a global context, not per webview.
@@ -486,7 +487,7 @@ public class AwContents {
         mLastGlobalVisibleWidth = 0;
         mLastGlobalVisibleHeight = 0;
         onSizeChanged(mContainerView.getWidth(), mContainerView.getHeight(), 0, 0);
-        updateVisiblityState();
+        updateVisibilityStateForced();
         onWindowFocusChanged(mWindowFocused);
     }
 
@@ -853,15 +854,15 @@ public class AwContents {
      */
     public void onPause() {
         mIsPaused = true;
-        mContentViewCore.onHide();
+        updateVisibilityState();
     }
 
     /**
      * @see android.webkit.WebView#onResume()
      */
     public void onResume() {
-        mContentViewCore.onShow();
         mIsPaused = false;
+        updateVisibilityState();
     }
 
     /**
@@ -1201,27 +1202,39 @@ public class AwContents {
      * @see android.view.View#onVisibilityChanged()
      */
     public void onVisibilityChanged(View changedView, int visibility) {
-        updateVisiblityState();
+        updateVisibilityState();
     }
 
     /**
      * @see android.view.View#onWindowVisibilityChanged()
      */
     public void onWindowVisibilityChanged(int visibility) {
-        updateVisiblityState();
+        updateVisibilityState();
     }
 
-    private void updateVisiblityState() {
-        if (mNativeAwContents == 0 || mIsPaused) return;
+    private void updateVisibilityState() {
+        doUpdateVisibilityState(false);
+    }
+
+    private void updateVisibilityStateForced() {
+        doUpdateVisibilityState(true);
+    }
+
+    private void doUpdateVisibilityState(boolean forced) {
+        if (mNativeAwContents == 0) return;
         boolean windowVisible = mContainerView.getWindowVisibility() == View.VISIBLE;
         boolean viewVisible = mContainerView.getVisibility() == View.VISIBLE;
-        nativeSetWindowViewVisibility(mNativeAwContents, windowVisible, viewVisible);
 
-        if (viewVisible) {
-          mContentViewCore.onShow();
+        boolean visible = windowVisible && viewVisible && !mIsPaused;
+        if (mIsVisible == visible && !forced) return;
+
+        mIsVisible = visible;
+        if (mIsVisible) {
+            mContentViewCore.onShow();
         } else {
-          mContentViewCore.onHide();
+            mContentViewCore.onHide();
         }
+        nativeSetVisibility(mNativeAwContents, mIsVisible);
     }
 
 
@@ -1533,8 +1546,7 @@ public class AwContents {
 
     private native void nativeOnSizeChanged(int nativeAwContents, int w, int h, int ow, int oh);
     private native void nativeScrollTo(int nativeAwContents, int x, int y);
-    private native void nativeSetWindowViewVisibility(int nativeAwContents, boolean windowVisible,
-            boolean viewVisible);
+    private native void nativeSetVisibility(int nativeAwContents, boolean visible);
     private native void nativeOnAttachedToWindow(int nativeAwContents, int w, int h);
     private native void nativeOnDetachedFromWindow(int nativeAwContents);
     private native void nativeSetDipScale(int nativeAwContents, float dipScale);

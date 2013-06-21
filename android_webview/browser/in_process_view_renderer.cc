@@ -306,7 +306,7 @@ InProcessViewRenderer::InProcessViewRenderer(
       java_helper_(java_helper),
       web_contents_(web_contents),
       compositor_(NULL),
-      view_visible_(false),
+      visible_(false),
       dip_scale_(0.0),
       continuous_invalidate_(false),
       block_invalidates_(false),
@@ -364,7 +364,7 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     return;
 
   TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawGL");
-  DCHECK(view_visible_);
+  DCHECK(visible_);
 
   // We need to watch if the current Android context has changed and enforce
   // a clean-up in the compositor.
@@ -553,16 +553,13 @@ InProcessViewRenderer::CapturePicture() {
 void InProcessViewRenderer::EnableOnNewPicture(bool enabled) {
 }
 
-void InProcessViewRenderer::OnVisibilityChanged(bool view_visible,
-                                                bool window_visible) {
-  TRACE_EVENT_INSTANT2("android_webview",
+void InProcessViewRenderer::OnVisibilityChanged(bool visible) {
+  TRACE_EVENT_INSTANT1("android_webview",
                        "InProcessViewRenderer::OnVisibilityChanged",
                        TRACE_EVENT_SCOPE_THREAD,
-                       "view_visible",
-                       view_visible,
-                       "window_visible",
-                       window_visible);
-  view_visible_ = window_visible && view_visible;
+                       "visible",
+                       visible);
+  visible_ = visible;
 }
 
 void InProcessViewRenderer::OnSizeChanged(int width, int height) {
@@ -603,7 +600,7 @@ bool InProcessViewRenderer::IsAttachedToWindow() {
 }
 
 bool InProcessViewRenderer::IsViewVisible() {
-  return view_visible_;
+  return visible_;
 }
 
 gfx::Rect InProcessViewRenderer::GetScreenRect() {

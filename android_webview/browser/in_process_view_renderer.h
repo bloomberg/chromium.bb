@@ -42,8 +42,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
   virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() OVERRIDE;
   virtual void EnableOnNewPicture(bool enabled) OVERRIDE;
-  virtual void OnVisibilityChanged(
-      bool view_visible, bool window_visible) OVERRIDE;
+  virtual void OnVisibilityChanged(bool visible) OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;
   virtual void ScrollTo(gfx::Vector2d new_value) OVERRIDE;
   virtual void OnAttachedToWindow(int width, int height) OVERRIDE;
@@ -77,7 +76,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   content::WebContents* web_contents_;
   content::SynchronousCompositor* compositor_;
 
-  bool view_visible_;
+  bool visible_;
   float dip_scale_;
 
   // When true, we should continuously invalidate and keep drawing, for example
