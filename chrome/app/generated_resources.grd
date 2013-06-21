@@ -10900,10 +10900,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
 
       <!-- Autocheckout bubble -->
       <message name="IDS_AUTOCHECKOUT_BUBBLE_PROMPT_SIGNED_IN" desc="Text for prompting a Google user to start an Autocheckout flow.">
-        Do you want to use your Google account to fast forward and skip typing these forms?
+        Fast forward through this checkout form with your Google account?
       </message>
       <message name="IDS_AUTOCHECKOUT_BUBBLE_PROMPT_NOT_SIGNED_IN" desc="Text for prompting a non-Google user to start an Autocheckout flow.">
-        Do you want to automatically fast forward through this checkout?
+        Fast forward through this checkout form?
       </message>
       <message name="IDS_AUTOCHECKOUT_BUBBLE_ACCEPT" desc="Label for the button a user clicks to start an Autocheckout flow.">
         Yes
