@@ -450,6 +450,7 @@
             'svg/SVGSymbolElement.idl',
             'svg/SVGTRefElement.idl',
             'svg/SVGTSpanElement.idl',
+            'svg/SVGTests.idl',
             'svg/SVGTextContentElement.idl',
             'svg/SVGTextElement.idl',
             'svg/SVGTextPathElement.idl',

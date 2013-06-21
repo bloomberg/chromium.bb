@@ -25,7 +25,6 @@
  */
 
 interface SVGClipPathElement : SVGStyledElement,
-                               SVGTests,
                                SVGLangSpace,
                                SVGExternalResourcesRequired,
                                SVGTransformable

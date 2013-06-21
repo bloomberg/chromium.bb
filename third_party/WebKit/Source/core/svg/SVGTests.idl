@@ -25,7 +25,7 @@
  */
 
 [
-    DoNotGenerateToV8
+    NoInterfaceObject
 ] interface SVGTests {
     readonly attribute SVGStringList requiredFeatures;
     readonly attribute SVGStringList requiredExtensions;
@@ -34,3 +34,24 @@
     boolean hasExtension([Default=Undefined] optional DOMString extension);
 };
 
+SVGAElement implements SVGTests;
+SVGAnimationElement implements SVGTests;
+SVGCircleElement implements SVGTests;
+SVGClipPathElement implements SVGTests;
+SVGCursorElement implements SVGTests;
+SVGDefsElement implements SVGTests;
+SVGEllipseElement implements SVGTests;
+SVGForeignObjectElement implements SVGTests;
+SVGGElement implements SVGTests;
+SVGImageElement implements SVGTests;
+SVGLineElement implements SVGTests;
+SVGMaskElement implements SVGTests;
+SVGPathElement implements SVGTests;
+SVGPatternElement implements SVGTests;
+SVGPolygonElement implements SVGTests;
+SVGPolylineElement implements SVGTests;
+SVGRectElement implements SVGTests;
+SVGSVGElement implements SVGTests;
+SVGSwitchElement implements SVGTests;
+SVGTextContentElement implements SVGTests;
+SVGUseElement implements SVGTests;

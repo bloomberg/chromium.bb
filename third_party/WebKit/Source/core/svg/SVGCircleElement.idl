@@ -25,7 +25,6 @@
  */
 
 interface SVGCircleElement : SVGStyledElement,
-                             SVGTests,
                              SVGLangSpace,
                              SVGExternalResourcesRequired,
                              SVGTransformable {

@@ -24,7 +24,6 @@
  */
 
 interface SVGMaskElement : SVGStyledElement,
-                           SVGTests,
                            SVGLangSpace,
                            SVGExternalResourcesRequired {
     readonly attribute SVGAnimatedEnumeration maskUnits;

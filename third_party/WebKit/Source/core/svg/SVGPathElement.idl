@@ -25,7 +25,6 @@
  */
 
 interface SVGPathElement : SVGStyledElement,
-                           SVGTests,
                            SVGLangSpace,
                            SVGExternalResourcesRequired,
                            SVGTransformable {

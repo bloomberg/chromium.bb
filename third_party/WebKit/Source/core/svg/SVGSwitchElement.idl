@@ -24,7 +24,6 @@
  */
 
 interface SVGSwitchElement : SVGStyledElement,
-                             SVGTests,
                              SVGLangSpace,
                              SVGExternalResourcesRequired,
                              SVGTransformable {

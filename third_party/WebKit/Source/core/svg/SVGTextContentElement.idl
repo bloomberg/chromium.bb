@@ -24,7 +24,6 @@
  */
 
 interface SVGTextContentElement : SVGStyledElement,
-                                  SVGTests,
                                   SVGLangSpace,
                                   SVGExternalResourcesRequired {
     // lengthAdjust Types

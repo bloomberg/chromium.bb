@@ -24,7 +24,6 @@
  */
 
 interface SVGForeignObjectElement : SVGStyledElement,
-                                    SVGTests,
                                     SVGLangSpace,
                                     SVGExternalResourcesRequired,
                                     SVGTransformable {

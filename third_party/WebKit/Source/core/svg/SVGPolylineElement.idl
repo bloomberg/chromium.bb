@@ -24,7 +24,6 @@
  */
 
 interface SVGPolylineElement : SVGStyledElement,
-                               SVGTests,
                                SVGLangSpace,
                                SVGExternalResourcesRequired,
                                SVGTransformable {

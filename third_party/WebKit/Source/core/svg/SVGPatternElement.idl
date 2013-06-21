@@ -24,7 +24,6 @@
  */
 
 interface SVGPatternElement : SVGStyledElement,
-                              SVGTests,
                               SVGLangSpace,
                               SVGExternalResourcesRequired,
                               SVGFitToViewBox

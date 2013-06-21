@@ -25,7 +25,6 @@
  */
 
 interface SVGRectElement : SVGStyledElement,
-                           SVGTests,
                            SVGLangSpace,
                            SVGExternalResourcesRequired,
                            SVGTransformable {
