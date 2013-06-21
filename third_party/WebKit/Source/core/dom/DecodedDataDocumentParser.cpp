@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/dom/DecodedDataDocumentParser.h"
 
-#include "core/loader/DocumentWriter.h"
+#include "core/dom/Document.h"
 #include "core/loader/TextResourceDecoder.h"
 
 namespace WebCore {
@@ -36,27 +36,36 @@ DecodedDataDocumentParser::DecodedDataDocumentParser(Document* document)
 {
 }
 
-void DecodedDataDocumentParser::appendBytes(DocumentWriter* writer, const char* data, size_t length)
+size_t DecodedDataDocumentParser::appendBytes(const char* data, size_t length)
 {
     if (!length)
-        return;
+        return 0;
 
-    String decoded = writer->createDecoderIfNeeded()->decode(data, length);
+    String decoded = document()->decoder()->decode(data, length);
     if (decoded.isEmpty())
-        return;
+        return 0;
 
-    writer->reportDataReceived();
+    size_t consumedChars = decoded.length();
     append(decoded.releaseImpl());
+
+    return consumedChars;
 }
 
-void DecodedDataDocumentParser::flush(DocumentWriter* writer)
+size_t DecodedDataDocumentParser::flush()
 {
-    String remainingData = writer->createDecoderIfNeeded()->flush();
+    // null decoder indicates there is no data received.
+    // We have nothing to do in that case.
+    TextResourceDecoder* decoder = document()->decoder();
+    if (!decoder)
+        return 0;
+    String remainingData = decoder->flush();
     if (remainingData.isEmpty())
-        return;
+        return 0;
 
-    writer->reportDataReceived();
+    size_t consumedChars = remainingData.length();
     append(remainingData.releaseImpl());
+
+    return consumedChars;
 }
 
 };

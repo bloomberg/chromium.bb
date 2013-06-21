@@ -1073,6 +1073,8 @@
             'loader/SubstituteData.cpp',
             'loader/SubstituteData.h',
             'loader/TextResourceDecoder.cpp',
+            'loader/TextResourceDecoderBuilder.cpp',
+            'loader/TextResourceDecoderBuilder.h',
             'loader/TextTrackLoader.cpp',
             'loader/TextTrackLoader.h',
             'loader/ThreadableLoader.cpp',

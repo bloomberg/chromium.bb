@@ -49,15 +49,9 @@
 
 namespace WebCore {
 
-static inline bool canReferToParentFrameEncoding(const Frame* frame, const Frame* parentFrame) 
-{
-    return parentFrame && parentFrame->document()->securityOrigin()->canAccess(frame->document()->securityOrigin());
-}
-    
 DocumentWriter::DocumentWriter(Frame* frame)
     : m_frame(frame)
     , m_hasReceivedSomeData(false)
-    , m_encodingWasChosenByUser(false)
     , m_state(NotStartedWritingState)
 {
 }
@@ -92,9 +86,8 @@ void DocumentWriter::replaceDocument(const String& source, Document* ownerDocume
 void DocumentWriter::clear()
 {
     m_decoder = 0;
+    m_decoderBuilder.clear();
     m_hasReceivedSomeData = false;
-    if (!m_encodingWasChosenByUser)
-        m_encoding = String();
 }
 
 void DocumentWriter::begin()
@@ -104,7 +97,7 @@ void DocumentWriter::begin()
 
 PassRefPtr<Document> DocumentWriter::createDocument(const KURL& url)
 {
-    return DOMImplementation::createDocument(m_mimeType, m_frame, url, m_frame->inViewSourceMode());
+    return DOMImplementation::createDocument(mimeType(), m_frame, url, m_frame->inViewSourceMode());
 }
 
 void DocumentWriter::begin(const KURL& urlReference, bool dispatch, Document* ownerDocument)
@@ -167,40 +160,6 @@ void DocumentWriter::begin(const KURL& urlReference, bool dispatch, Document* ow
     m_state = StartedWritingState;
 }
 
-TextResourceDecoder* DocumentWriter::createDecoderIfNeeded()
-{
-    if (!m_decoder) {
-        if (Settings* settings = m_frame->settings()) {
-            m_decoder = TextResourceDecoder::create(m_mimeType,
-                settings->defaultTextEncodingName(),
-                settings->usesEncodingDetector());
-            Frame* parentFrame = m_frame->tree()->parent();
-            // Set the hint encoding to the parent frame encoding only if
-            // the parent and the current frames share the security origin.
-            // We impose this condition because somebody can make a child frame 
-            // containing a carefully crafted html/javascript in one encoding
-            // that can be mistaken for hintEncoding (or related encoding) by
-            // an auto detector. When interpreted in the latter, it could be
-            // an attack vector.
-            // FIXME: This might be too cautious for non-7bit-encodings and
-            // we may consider relaxing this later after testing.
-            if (canReferToParentFrameEncoding(m_frame, parentFrame))
-                m_decoder->setHintEncoding(parentFrame->document()->decoder());
-        } else
-            m_decoder = TextResourceDecoder::create(m_mimeType, String());
-        Frame* parentFrame = m_frame->tree()->parent();
-        if (m_encoding.isEmpty()) {
-            if (canReferToParentFrameEncoding(m_frame, parentFrame))
-                m_decoder->setEncoding(parentFrame->document()->inputEncoding(), TextResourceDecoder::EncodingFromParentFrame);
-        } else {
-            m_decoder->setEncoding(m_encoding,
-                m_encodingWasChosenByUser ? TextResourceDecoder::UserChosenEncoding : TextResourceDecoder::EncodingFromHTTPHeader);
-        }
-        m_frame->document()->setDecoder(m_decoder.get());
-    }
-    return m_decoder.get();
-}
-
 void DocumentWriter::reportDataReceived()
 {
     ASSERT(m_decoder);
@@ -222,7 +181,11 @@ void DocumentWriter::addData(const char* bytes, size_t length)
         CRASH();
 
     ASSERT(m_parser);
-    m_parser->appendBytes(this, bytes, length);
+    if (!m_decoder && m_parser->needsDecoder() && 0 < length)
+        m_decoder = m_decoderBuilder.buildFor(m_frame->document());
+    size_t consumedChars = m_parser->appendBytes(bytes, length);
+    if (consumedChars)
+        reportDataReceived();
 }
 
 void DocumentWriter::end()
@@ -241,18 +204,15 @@ void DocumentWriter::end()
 
     if (!m_parser)
         return;
-    // FIXME: m_parser->finish() should imply m_parser->flush().
-    m_parser->flush(this);
+    if (!m_decoder && m_parser->needsDecoder())
+        m_decoder = m_decoderBuilder.buildFor(m_frame->document());
+    size_t consumedChars = m_parser->flush();
+    if (consumedChars)
+        reportDataReceived();
     if (!m_parser)
         return;
     m_parser->finish();
     m_parser = 0;
-}
-
-void DocumentWriter::setEncoding(const String& name, bool userChosen)
-{
-    m_encoding = name;
-    m_encodingWasChosenByUser = userChosen;
 }
 
 void DocumentWriter::setDocumentWasLoadedAsPartOfNavigation()

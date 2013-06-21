@@ -29,6 +29,7 @@
 #ifndef DocumentWriter_h
 #define DocumentWriter_h
 
+#include "core/loader/TextResourceDecoderBuilder.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -56,13 +57,11 @@ public:
     
     void setFrame(Frame* frame) { m_frame = frame; }
 
-    void setEncoding(const String& encoding, bool userChosen);
-
-    const String& mimeType() const { return m_mimeType; }
-    void setMIMEType(const String& type) { m_mimeType = type; }
+    const String& mimeType() const { return m_decoderBuilder.mimeType(); }
+    void setMIMEType(const String& type) { m_decoderBuilder.setMIMEType(type); }
+    void setEncoding(const String& encoding, bool userChosen) { m_decoderBuilder.setEncoding(encoding, userChosen); }
 
     // Exposed for DocumentParser::appendBytes.
-    TextResourceDecoder* createDecoderIfNeeded();
     void reportDataReceived();
 
     void setDocumentWasLoadedAsPartOfNavigation();
@@ -74,10 +73,8 @@ private:
     Frame* m_frame;
 
     bool m_hasReceivedSomeData;
-    String m_mimeType;
+    TextResourceDecoderBuilder m_decoderBuilder;
 
-    bool m_encodingWasChosenByUser;
-    String m_encoding;
     RefPtr<TextResourceDecoder> m_decoder;
     RefPtr<DocumentParser> m_parser;
 

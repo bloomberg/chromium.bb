@@ -91,7 +91,7 @@ private:
     {
     }
 
-    virtual void appendBytes(DocumentWriter*, const char*, size_t);
+    virtual size_t appendBytes(const char*, size_t) OVERRIDE;
     virtual void finish();
 };
 
@@ -125,18 +125,19 @@ static float pageZoomFactor(const Document* document)
     return frame ? frame->pageZoomFactor() : 1;
 }
 
-void ImageDocumentParser::appendBytes(DocumentWriter*, const char* data, size_t length)
+size_t ImageDocumentParser::appendBytes(const char* data, size_t length)
 {
     if (!length)
-        return;
+        return 0;
 
     Frame* frame = document()->frame();
     Settings* settings = frame->settings();
     if (!frame->loader()->client()->allowImage(!settings || settings->areImagesEnabled(), document()->url()))
-        return;
+        return 0;
 
     document()->cachedImage()->appendData(data, length);
     document()->imageUpdated();
+    return 0;
 }
 
 void ImageDocumentParser::finish()

@@ -60,7 +60,7 @@ private:
     {
     }
 
-    virtual void appendBytes(DocumentWriter*, const char*, size_t);
+    virtual size_t appendBytes(const char*, size_t) OVERRIDE;
 
     void createDocumentStructure();
 
@@ -99,13 +99,14 @@ void MediaDocumentParser::createDocumentStructure()
     body->appendChild(mediaElement, IGNORE_EXCEPTION);
 }
 
-void MediaDocumentParser::appendBytes(DocumentWriter*, const char*, size_t)
+size_t MediaDocumentParser::appendBytes(const char*, size_t)
 {
     if (m_mediaElement)
-        return;
+        return 0;
 
     createDocumentStructure();
     finish();
+    return 0;
 }
     
 MediaDocument::MediaDocument(Frame* frame, const KURL& url)

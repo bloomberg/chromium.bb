@@ -56,7 +56,7 @@ private:
     {
     }
 
-    virtual void appendBytes(DocumentWriter*, const char*, size_t);
+    virtual size_t appendBytes(const char*, size_t) OVERRIDE;
 
     void createDocumentStructure();
 
@@ -98,19 +98,19 @@ void PluginDocumentParser::createDocumentStructure()
     body->appendChild(embedElement, IGNORE_EXCEPTION);
 }
 
-void PluginDocumentParser::appendBytes(DocumentWriter*, const char*, size_t)
+size_t PluginDocumentParser::appendBytes(const char*, size_t)
 {
     if (m_embedElement)
-        return;
+        return 0;
 
     createDocumentStructure();
 
     Frame* frame = document()->frame();
     if (!frame)
-        return;
+        return 0;
     Settings* settings = frame->settings();
     if (!settings || !frame->loader()->subframeLoader()->allowPlugins(NotAboutToInstantiatePlugin))
-        return;
+        return 0;
 
     document()->updateLayout();
 
@@ -129,6 +129,8 @@ void PluginDocumentParser::appendBytes(DocumentWriter*, const char*, size_t)
             frame->loader()->client()->redirectDataToPlugin(widget);
         }
     }
+
+    return 0;
 }
 
 PluginDocument::PluginDocument(Frame* frame, const KURL& url)
