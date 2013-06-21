@@ -898,6 +898,8 @@ crbug.com/251727 css3/compositing/background-blend-mode-different-image-formats.
 crbug.com/251727 css3/compositing/background-blend-mode-image-color.html [ Missing ]
 crbug.com/251727 css3/compositing/background-blend-mode-image-image.html [ Missing ]
 crbug.com/251727 css3/compositing/background-blend-mode-single-layer-no-blending.html [ Missing ]
+crbug.com/251240 css3/compositing/background-blend-mode-image-svg.html [ Missing ]
+crbug.com/251240 css3/compositing/background-blend-mode-svg-color.html [ Missing ]
 
 # IETC grid layout
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ ImageOnlyFailure ]
