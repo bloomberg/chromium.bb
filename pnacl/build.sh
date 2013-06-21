@@ -2933,6 +2933,7 @@ libs-support-native() {
   rm -rf "${tmpdir}"
   mkdir -p "${tmpdir}"
   ${cc_cmd} -c setjmp_${arch/-/_}.S -o "${tmpdir}"/setjmp.o
+  ${cc_cmd} -c string.c -o "${tmpdir}"/string.o
 
   # For ARM, also compile aeabi_read_tp.S
   if  [ ${arch} == arm ] ; then

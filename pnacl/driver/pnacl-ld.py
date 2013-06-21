@@ -103,8 +103,16 @@ EXTRA_ENV = {
 
   'BCLD'                   : '${LD_GOLD}',
   'BCLD_ALLOW_UNRESOLVED'  :
+    # The following functions are implemented in the native support library.
+    # Before a .pexe is produced, they get rewritten to intrinsic calls.
+    # However, this rewriting happens after bitcode linking - so gold has
+    # to be told that these are allowed to remain unresolved.
+    '--allow-unresolved=memcpy '
+    '--allow-unresolved=memset '
+    '--allow-unresolved=memmove '
     '--allow-unresolved=setjmp '
     '--allow-unresolved=longjmp '
+    # For exception-handling enabled tests.
     '${ALLOW_CXX_EXCEPTIONS ? '
       '--allow-unresolved=_Unwind_Backtrace '
       '--allow-unresolved=_Unwind_DeleteException '
