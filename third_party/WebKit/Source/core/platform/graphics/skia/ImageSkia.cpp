@@ -312,7 +312,7 @@ void Image::paintSkBitmap(GraphicsContext* context, const NativeImageSkia& bitma
     bool useBicubicFilter = resampling == RESAMPLE_AWESOME
         && DeferredImageDecoder::isLazyDecoded(bitmap.bitmap());
     if (useBicubicFilter)
-        paint.setFlags(paint.getFlags() | SkPaint::kBicubicFilterBitmap_Flag);
+        paint.setFlags(paint.getFlags() | SkPaint::kBicubicFilterBitmap_Flag | SkPaint::kFilterBitmap_Flag);
 
     if (resampling == RESAMPLE_AWESOME && !useBicubicFilter) {
         // Resample the image and then draw the result to canvas with bilinear
