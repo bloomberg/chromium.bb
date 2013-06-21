@@ -46,6 +46,9 @@ class JobQueue {
   // Gets the total number of jobs in the queue.
   size_t GetNumberOfJobs() const;
 
+  // Removes the job from the queue.
+  void Remove(JobID id);
+
  private:
   size_t num_max_concurrent_jobs_;
   std::vector<std::deque<JobID> > queue_;

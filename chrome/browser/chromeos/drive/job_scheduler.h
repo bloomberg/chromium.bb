@@ -208,6 +208,10 @@ class JobScheduler
 
     // The callback to cancel the running job. It is returned from task.Run().
     google_apis::CancelCallback cancel_callback;
+
+    // The callback to notify an error to the client of JobScheduler.
+    // This is used to notify cancel of a job that is not running yet.
+    base::Callback<void(google_apis::GDataErrorCode)> abort_callback;
   };
 
   // Parameters for DriveUploader::ResumeUploadFile.

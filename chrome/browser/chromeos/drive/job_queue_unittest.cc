@@ -66,4 +66,39 @@ TEST(JobQueueTest, BasicJobQueueOperations) {
   EXPECT_EQ(105, id);
 }
 
+TEST(JobQueueTest, JobQueueRemove) {
+  const int kNumMaxConcurrentJobs = 3;
+  const int kNumPriorityLevels = 2;
+  enum {HIGH_PRIORITY, LOW_PRIORITY};
+
+  // Create a queue. Number of jobs are initially zero.
+  JobQueue queue(kNumMaxConcurrentJobs, kNumPriorityLevels);
+  EXPECT_EQ(0U, queue.GetNumberOfJobs());
+
+  // Push 4 jobs.
+  queue.Push(101, LOW_PRIORITY);
+  queue.Push(102, HIGH_PRIORITY);
+  queue.Push(103, LOW_PRIORITY);
+  queue.Push(104, HIGH_PRIORITY);
+  EXPECT_EQ(4U, queue.GetNumberOfJobs());
+
+  // Remove 2.
+  queue.Remove(101);
+  queue.Remove(104);
+  EXPECT_EQ(2U, queue.GetNumberOfJobs());
+
+  // Pop the 2 jobs.
+  JobID id;
+  EXPECT_TRUE(queue.PopForRun(LOW_PRIORITY, &id));
+  EXPECT_EQ(102, id);
+  EXPECT_TRUE(queue.PopForRun(LOW_PRIORITY, &id));
+  EXPECT_EQ(103, id);
+  queue.MarkFinished(102);
+  queue.MarkFinished(103);
+
+  // 0 job left.
+  EXPECT_EQ(0U, queue.GetNumberOfJobs());
+  EXPECT_FALSE(queue.PopForRun(LOW_PRIORITY, &id));
+}
+
 }  // namespace drive
