@@ -1020,7 +1020,7 @@ void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
   EmeUMAHistogramCounts(current_key_system_.utf8(), "KeyAdded", 1);
 
   if (media_source_delegate_)
-    media_source_delegate_->NotifyDemuxerReady(current_key_system_.utf8());
+    media_source_delegate_->NotifyKeyAdded(current_key_system_.utf8());
 
   client_->keyAdded(current_key_system_, WebString::fromUTF8(session_id));
 }

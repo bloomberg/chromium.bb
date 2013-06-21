@@ -72,7 +72,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   void CancelPendingSeek();
 
-  void NotifyDemuxerReady(const std::string& key_system);
+  void NotifyKeyAdded(const std::string& key_system);
 
   // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
   // If it's the first request after the seek, |seek_done| will be true.
@@ -107,6 +107,8 @@ class MediaSourceDelegate : public media::DemuxerHost {
   scoped_ptr<media::TextTrack> OnAddTextTrack(media::TextKind kind,
                                               const std::string& label,
                                               const std::string& language);
+  void NotifyDemuxerReady(const std::string& key_system);
+  bool CanNotifyDemuxerReady();
 
   // Reads an access unit from the demuxer stream |stream| and stores it in
   // the |index|th access unit in |params|.
@@ -156,6 +158,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   scoped_ptr<media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params> video_params_;
 
   bool seeking_;
+  bool key_added_;
   size_t access_unit_size_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSourceDelegate);

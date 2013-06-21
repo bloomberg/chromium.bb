@@ -69,6 +69,7 @@ MediaSourceDelegate::MediaSourceDelegate(WebMediaPlayerProxyAndroid* proxy,
       audio_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
       video_params_(new MediaPlayerHostMsg_ReadFromDemuxerAck_Params),
       seeking_(false),
+      key_added_(false),
       access_unit_size_(0) {
 }
 
@@ -331,7 +332,8 @@ void MediaSourceDelegate::OnDemuxerInitDone(
     OnDemuxerError(status);
     return;
   }
-  NotifyDemuxerReady("");
+  if (CanNotifyDemuxerReady())
+    NotifyDemuxerReady("");
 }
 
 void MediaSourceDelegate::OnDemuxerStopDone() {
@@ -341,12 +343,34 @@ void MediaSourceDelegate::OnDemuxerStopDone() {
 }
 
 void MediaSourceDelegate::OnMediaConfigRequest() {
-  NotifyDemuxerReady("");
+  if (CanNotifyDemuxerReady())
+    NotifyDemuxerReady("");
+}
+
+void MediaSourceDelegate::NotifyKeyAdded(const std::string& key_system) {
+  // TODO(kjyoun): Enhance logic to detect when to call NotifyDemuxerReady()
+  // For now, we calls it when the first key is added.
+  if (key_added_)
+    return;
+  key_added_ = true;
+  if (CanNotifyDemuxerReady())
+    NotifyDemuxerReady(key_system);
+}
+
+bool MediaSourceDelegate::CanNotifyDemuxerReady() {
+  if (key_added_)
+    return true;
+  DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+  if (audio_stream && audio_stream->audio_decoder_config().is_encrypted())
+    return false;
+  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+  if (video_stream && video_stream->video_decoder_config().is_encrypted())
+    return false;
+  return true;
 }
 
 void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
-  if (!demuxer_)
-    return;
+  DCHECK(demuxer_);
   MediaPlayerHostMsg_DemuxerReady_Params params;
   DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
   if (audio_stream) {
@@ -373,9 +397,7 @@ void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
   params.duration_ms = GetDurationMs();
   params.key_system = key_system;
 
-  bool ready_to_send = (!params.is_audio_encrypted &&
-                        !params.is_video_encrypted) || !key_system.empty();
-  if (proxy_ && ready_to_send)
+  if (proxy_)
     proxy_->DemuxerReady(player_id_, params);
 }
 
