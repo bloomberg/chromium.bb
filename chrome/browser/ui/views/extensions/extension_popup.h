@@ -84,6 +84,9 @@ class ExtensionPopup : public views::BubbleDelegateView,
 
   void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
 
+  // The browser to which the popup is anchored. Not owned.
+  Browser* browser_;
+
   // The contained host for the view.
   scoped_ptr<extensions::ExtensionHost> extension_host_;
 

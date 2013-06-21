@@ -13,6 +13,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
@@ -67,6 +70,7 @@ ExtensionPopup::ExtensionPopup(Browser* browser,
                                views::BubbleBorder::Arrow arrow,
                                ShowAction show_action)
     : BubbleDelegateView(anchor_view, arrow),
+      browser_(browser),
       extension_host_(host),
       devtools_callback_(base::Bind(
           &ExtensionPopup::OnDevToolsStateChanged, base::Unretained(this))) {
@@ -193,6 +197,21 @@ ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
 }
 
 void ExtensionPopup::ShowBubble() {
+  BrowserView* browser_view = browser_ ?
+      BrowserView::GetBrowserViewForBrowser(browser_) : NULL;
+  scoped_ptr<ImmersiveRevealedLock> immersive_reveal_lock;
+  if (browser_view &&
+      browser_view->top_container()->Contains(anchor_view())) {
+    // If we are in immersive fullscreen and we are anchored to a view in the
+    // top-of-window views (eg omnibox, toolbar), trigger an immersive reveal.
+    // We do not need to hold onto the lock because ImmersiveModeController will
+    // keep the top-of-window views revealed as long as the popup is active.
+    // TODO(pkotwicz): Move logic to ImmersiveModeController.
+    immersive_reveal_lock.reset(
+        browser_view->immersive_mode_controller()->GetRevealedLock(
+            ImmersiveModeController::ANIMATE_REVEAL_NO));
+    SizeToContents();
+  }
   GetWidget()->Show();
 
   // Focus on the host contents when the bubble is first shown.
