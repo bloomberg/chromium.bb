@@ -27,7 +27,7 @@ namespace content {
 
 class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
  public:
-  P2PSocketHostTcpBase(IPC::Sender* message_sender, int id);
+  P2PSocketHostTcpBase(IPC::Sender* message_sender, int id, P2PSocketType type);
   virtual ~P2PSocketHostTcpBase();
 
   bool InitAccepted(const net::IPEndPoint& remote_address,
@@ -78,12 +78,14 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
   bool connected_;
 
+  P2PSocketType type_;
+
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcpBase);
 };
 
 class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
  public:
-  P2PSocketHostTcp(IPC::Sender* message_sender, int id);
+  P2PSocketHostTcp(IPC::Sender* message_sender, int id, P2PSocketType type);
   virtual ~P2PSocketHostTcp();
 
  protected:
@@ -100,7 +102,7 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
 // Formatting of messages is defined in RFC5766.
 class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
  public:
-  P2PSocketHostStunTcp(IPC::Sender* message_sender, int id);
+  P2PSocketHostStunTcp(IPC::Sender* message_sender, int id, P2PSocketType type);
   virtual ~P2PSocketHostStunTcp();
 
  protected:

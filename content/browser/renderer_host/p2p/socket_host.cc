@@ -86,10 +86,16 @@ P2PSocketHost* P2PSocketHost::Create(
           message_sender, id, P2P_SOCKET_STUN_TCP_CLIENT);
 
     case P2P_SOCKET_TCP_CLIENT:
-      return new P2PSocketHostTcp(message_sender, id);
+      return new P2PSocketHostTcp(message_sender, id, type);
 
     case P2P_SOCKET_STUN_TCP_CLIENT:
-      return new P2PSocketHostStunTcp(message_sender, id);
+      return new P2PSocketHostStunTcp(message_sender, id, type);
+
+    case P2P_SOCKET_SSLTCP_CLIENT:
+      return new P2PSocketHostTcp(message_sender, id, type);
+
+    case P2P_SOCKET_STUN_SSLTCP_CLIENT:
+      return new P2PSocketHostStunTcp(message_sender, id, type);
   }
 
   NOTREACHED();

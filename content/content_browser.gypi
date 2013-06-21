@@ -1186,6 +1186,9 @@
       ],
     }],
     ['enable_webrtc==1', {
+      'dependencies': [
+        '../jingle/jingle.gyp:jingle_glue',
+      ],
       'sources': [
         'browser/renderer_host/media/peer_connection_tracker_host.cc',
         'browser/renderer_host/media/peer_connection_tracker_host.h',

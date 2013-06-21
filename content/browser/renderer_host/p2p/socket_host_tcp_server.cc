@@ -131,9 +131,9 @@ P2PSocketHost* P2PSocketHostTcpServer::AcceptIncomingTcpConnection(
 
   scoped_ptr<P2PSocketHostTcpBase> result;
   if (client_type_ == P2P_SOCKET_TCP_CLIENT) {
-    result.reset(new P2PSocketHostTcp(message_sender_, id));
+    result.reset(new P2PSocketHostTcp(message_sender_, id, client_type_));
   } else {
-    result.reset(new P2PSocketHostStunTcp(message_sender_, id));
+    result.reset(new P2PSocketHostStunTcp(message_sender_, id, client_type_));
   }
   if (!result->InitAccepted(remote_address, socket))
     return NULL;

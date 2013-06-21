@@ -7,6 +7,7 @@
 #include "base/sys_byteorder.h"
 #include "content/common/p2p_messages.h"
 #include "ipc/ipc_sender.h"
+#include "jingle/glue/fake_ssl_client_socket.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -20,15 +21,22 @@ const int kReadBufferSize = 4096;
 const int kPacketLengthOffset = 2;
 const int kTurnChannelDataHeaderSize = 4;
 
+bool IsSslClientSocket(content::P2PSocketType type) {
+  return (type == content::P2P_SOCKET_SSLTCP_CLIENT ||
+          type == content::P2P_SOCKET_STUN_SSLTCP_CLIENT);
+}
+
 }  // namespace
 
 namespace content {
 
 P2PSocketHostTcpBase::P2PSocketHostTcpBase(IPC::Sender* message_sender,
-                                           int id)
+                                           int id,
+                                           P2PSocketType type)
     : P2PSocketHost(message_sender, id),
       write_pending_(false),
-      connected_(false) {
+      connected_(false),
+      type_(type) {
 }
 
 P2PSocketHostTcpBase::~P2PSocketHostTcpBase() {
@@ -44,6 +52,7 @@ bool P2PSocketHostTcpBase::InitAccepted(const net::IPEndPoint& remote_address,
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
   remote_address_ = remote_address;
+  // TODO(ronghuawu): Add FakeSSLServerSocket.
   socket_.reset(socket);
   state_ = STATE_OPEN;
   DoRead();
@@ -63,7 +72,11 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
     OnError();
     return false;
   }
-  socket_.reset(tcp_socket.release());
+  if (IsSslClientSocket(type_)) {
+    socket_.reset(new jingle_glue::FakeSSLClientSocket(tcp_socket.release()));
+  } else {
+    socket_ = tcp_socket.PassAs<net::StreamSocket>();
+  }
 
   int result = socket_->Connect(
       base::Bind(&P2PSocketHostTcp::OnConnected, base::Unretained(this)));
@@ -272,8 +285,11 @@ void P2PSocketHostTcpBase::DidCompleteRead(int result) {
   }
 }
 
-P2PSocketHostTcp::P2PSocketHostTcp(IPC::Sender* message_sender, int id)
-    : P2PSocketHostTcpBase(message_sender, id) {
+P2PSocketHostTcp::P2PSocketHostTcp(IPC::Sender* message_sender,
+                                   int id,
+                                   P2PSocketType type)
+    : P2PSocketHostTcpBase(message_sender, id, type) {
+  DCHECK(type == P2P_SOCKET_TCP_CLIENT || type == P2P_SOCKET_SSLTCP_CLIENT);
 }
 
 P2PSocketHostTcp::~P2PSocketHostTcp() {
@@ -307,8 +323,11 @@ void P2PSocketHostTcp::DoSend(const net::IPEndPoint& to,
 
 // P2PSocketHostStunTcp
 P2PSocketHostStunTcp::P2PSocketHostStunTcp(IPC::Sender* message_sender,
-                                           int id)
-    : P2PSocketHostTcpBase(message_sender, id) {
+                                           int id,
+                                           P2PSocketType type)
+    : P2PSocketHostTcpBase(message_sender, id, type) {
+  DCHECK(type == P2P_SOCKET_STUN_TCP_CLIENT ||
+         type == P2P_SOCKET_STUN_SSLTCP_CLIENT);
 }
 
 P2PSocketHostStunTcp::~P2PSocketHostStunTcp() {

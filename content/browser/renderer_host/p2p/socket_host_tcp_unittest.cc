@@ -26,7 +26,8 @@ class P2PSocketHostTcpTest : public testing::Test {
         MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-    socket_host_.reset(new P2PSocketHostTcp(&sender_, 0));
+    socket_host_.reset(new P2PSocketHostTcp(&sender_, 0,
+                                            P2P_SOCKET_TCP_CLIENT));
     socket_ = new FakeSocket(&sent_data_);
     socket_->SetLocalAddress(ParseAddress(kTestLocalIpAddress, kTestPort1));
     socket_host_->socket_.reset(socket_);
@@ -66,7 +67,8 @@ class P2PSocketHostStunTcpTest : public testing::Test {
         MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-    socket_host_.reset(new P2PSocketHostStunTcp(&sender_, 0));
+    socket_host_.reset(new P2PSocketHostStunTcp(&sender_, 0,
+                                                P2P_SOCKET_STUN_TCP_CLIENT));
     socket_ = new FakeSocket(&sent_data_);
     socket_->SetLocalAddress(ParseAddress(kTestLocalIpAddress, kTestPort1));
     socket_host_->socket_.reset(socket_);
