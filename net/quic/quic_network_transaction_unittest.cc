@@ -46,15 +46,7 @@ namespace {
 
 // This is the expected return from a current server advertising QUIC.
 static const char kQuicAlternateProtocolHttpHeader[] =
-    "Alternate-Protocol: 443:quic\r\n\r\n";
-
-// Returns a vector of NPN protocol strings for negotiating QUIC.
-std::vector<std::string> QuicNextProtos() {
-  std::vector<std::string> protos;
-  protos.push_back("http/1.1");
-  protos.push_back("quic");
-  return protos;
-}
+    "Alternate-Protocol: 80:quic\r\n\r\n";
 
 }  // namespace
 
@@ -447,8 +439,7 @@ TEST_F(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
 }
 
 TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
-  HttpStreamFactory::set_use_alternate_protocols(true);
-  HttpStreamFactory::SetNextProtos(QuicNextProtos());
+  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
 
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
@@ -497,8 +488,7 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
 }
 
 TEST_F(QuicNetworkTransactionTest, DontUseAlternateProtocolForQuicHttps) {
-  HttpStreamFactory::set_use_alternate_protocols(true);
-  HttpStreamFactory::SetNextProtos(QuicNextProtos());
+  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
 
   MockRead http_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\n"),
@@ -526,8 +516,7 @@ TEST_F(QuicNetworkTransactionTest, DontUseAlternateProtocolForQuicHttps) {
 }
 
 TEST_F(QuicNetworkTransactionTest, ZeroRTT) {
-  HttpStreamFactory::set_use_alternate_protocols(true);
-  HttpStreamFactory::SetNextProtos(QuicNextProtos());
+  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
 
   scoped_ptr<QuicEncryptedPacket> req(
       ConstructDataPacket(1, 3, true, true, 0, GetRequestString("GET", "/")));
@@ -559,8 +548,7 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTT) {
 }
 
 TEST_F(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
-  HttpStreamFactory::set_use_alternate_protocols(true);
-  HttpStreamFactory::SetNextProtos(QuicNextProtos());
+  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
 
   // Alternate-protocol job
   scoped_ptr<QuicEncryptedPacket> close(ConstructConnectionClosePacket(1));
@@ -591,8 +579,7 @@ TEST_F(QuicNetworkTransactionTest, BrokenAlternateProtocol) {
 }
 
 TEST_F(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
-  HttpStreamFactory::set_use_alternate_protocols(true);
-  HttpStreamFactory::SetNextProtos(QuicNextProtos());
+  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
 
   // Alternate-protocol job
   MockRead quic_reads[] = {

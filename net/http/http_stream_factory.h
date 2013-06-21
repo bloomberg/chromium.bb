@@ -232,18 +232,19 @@ class NET_EXPORT HttpStreamFactory {
   // Check if a HostPortPair is excluded from using spdy.
   static bool HasSpdyExclusion(const HostPortPair& endpoint);
 
-  // Sets http/1.1 as the only protocol supported via NPN.
+  // Sets http/1.1 as the only protocol supported via NPN or Alternate-Protocol.
   static void EnableNpnHttpOnly();
 
-  // Sets http/1.1 and spdy/2 (the default spdy protocol) as the protocols
-  // supported via NPN.
+  // Sets http/1.1, quic and spdy/2 (the default spdy protocol) as the protocols
+  // supported via NPN or Alternate-Protocol.
   static void EnableNpnSpdy();
 
-  // Sets http/1.1, spdy/2, and spdy/3 as the protocols supported via NPN.
+  // Sets http/1.1, quic, spdy/2, and spdy/3 as the protocols supported via NPN
+  // or Alternate-Protocol.
   static void EnableNpnSpdy3();
 
-  // Sets http/1.1, spdy/2, spdy/3, and spdy/3.1 as the protocols
-  // supported via NPN.
+  // Sets http/1.1, quic, spdy/2, spdy/3, and spdy/3.1 as the protocols
+  // supported via NPN or Alternate-Protocol.
   static void EnableNpnSpdy31();
 
   // Sets the protocols supported by NPN (next protocol negotiation) during the
