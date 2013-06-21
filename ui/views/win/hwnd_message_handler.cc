@@ -1557,7 +1557,17 @@ void HWNDMessageHandler::OnMoving(UINT param, const RECT* new_bounds) {
   delegate_->HandleMove();
 }
 
-LRESULT HWNDMessageHandler::OnNCActivate(BOOL active) {
+LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
+                                         WPARAM w_param,
+                                         LPARAM l_param) {
+  // Per MSDN, w_param is either TRUE or FALSE. However, MSDN also hints that:
+  // "If the window is minimized when this message is received, the application
+  // should pass the message to the DefWindowProc function."
+  // It is found out that the high word of w_param might be set when the window
+  // is minimized or restored. To handle this, w_param's high word should be
+  // cleared before it is converted to BOOL.
+  BOOL active = static_cast<BOOL>(LOWORD(w_param));
+
   if (delegate_->CanActivate())
     delegate_->HandleActivationChanged(!!active);
 

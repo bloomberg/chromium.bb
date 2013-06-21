@@ -272,6 +272,11 @@ class VIEWS_EXPORT HWNDMessageHandler :
     // Touch Events.
     MESSAGE_HANDLER_EX(WM_TOUCH, OnTouchEvent)
 
+    // Uses the general handler macro since the specific handler macro
+    // MSG_WM_NCACTIVATE would convert WPARAM type to BOOL type. The high
+    // word of WPARAM could be set when the window is minimized or restored.
+    MESSAGE_HANDLER_EX(WM_NCACTIVATE, OnNCActivate)
+
     // This list is in _ALPHABETICAL_ order! OR I WILL HURT YOU.
     MSG_WM_ACTIVATEAPP(OnActivateApp)
     MSG_WM_APPCOMMAND(OnAppCommand)
@@ -291,7 +296,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
     MSG_WM_KILLFOCUS(OnKillFocus)
     MSG_WM_MOVE(OnMove)
     MSG_WM_MOVING(OnMoving)
-    MSG_WM_NCACTIVATE(OnNCActivate)
     MSG_WM_NCCALCSIZE(OnNCCalcSize)
     MSG_WM_NCHITTEST(OnNCHitTest)
     MSG_WM_NCPAINT(OnNCPaint)
@@ -338,7 +342,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param);
   void OnMove(const CPoint& point);
   void OnMoving(UINT param, const RECT* new_bounds);
-  LRESULT OnNCActivate(BOOL active);
+  LRESULT OnNCActivate(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);
   LRESULT OnNCHitTest(const CPoint& point);
   void OnNCPaint(HRGN rgn);
