@@ -1,15 +1,15 @@
-EXTRA_DIST = 				\
-	en-gb-g1_harness.txt		\
-	en-GB-g2_harness.txt		\
-	en-ueb-g2-dictionary_harness.txt \
-	en-us-g2-dictionary_harness.txt \
-	ethio-g1_harness.txt		\
-	hu-hu-comp8_harness.txt		\
-	hu-hu-g1_harness.txt		\
-	hu-hu-g1-hyph_harness.txt	\
-	iu-ca-g1_harness.txt		\
-	letterDefTest_harness.txt 	\
-	nocross_harness.txt		\
+EXTRA_DIST =					\
+	en-gb-g1_harness.txt			\
+	en-GB-g2_harness.txt			\
+	en-ueb-g2-dictionary_harness.txt	\
+	en-us-g2-dictionary_harness.txt		\
+	ethio-g1_harness.txt			\
+	hu-hu-comp8_harness.txt			\
+	hu-hu-g1_harness.txt			\
+	hu-hu-g1-hyph_harness.txt		\
+	iu-ca-g1_harness.txt			\
+	letterDefTest_harness.txt		\
+	nocross_harness.txt			\
 	ta-ta-g1_harness.txt
 
 HARNESS_DIR = $(top_srcdir)/tests/harness
@@ -28,11 +28,11 @@ runall runAll:
 $(EXTRA_DIST):
 	@$(harness_ENVIRONMENT) ./runHarness.py $@
 else
-runall runAll $(EXTRA_DIST):
+runall runAll:
 	@echo Please configure with --enable-ucs4
 endif
 else
-runall runAll $(EXTRA_DIST):
+runall runAll:
 	@echo Python is required to run the harness tests.
 endif
 
