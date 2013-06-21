@@ -96,4 +96,14 @@ bool IsDriveAPIDisabled() {
       CommandLine::ForCurrentProcess()->HasSwitch(kDisableDriveAPI);
 }
 
+ScopedDisableDriveAPI::ScopedDisableDriveAPI()
+    : was_disabled_(IsDriveAPIDisabled()) {
+  SetDisableDriveAPI(true);
+}
+
+ScopedDisableDriveAPI::~ScopedDisableDriveAPI() {
+  DCHECK(IsDriveAPIDisabled());
+  SetDisableDriveAPI(was_disabled_);
+}
+
 }  // namespace sync_file_system

@@ -26,6 +26,17 @@ void SetDisableDriveAPI(bool flag);
 // DriveAPI. (http://crbug.com/234557)
 bool IsDriveAPIDisabled();
 
+class ScopedDisableDriveAPI {
+ public:
+  ScopedDisableDriveAPI();
+  ~ScopedDisableDriveAPI();
+
+ private:
+  bool was_disabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDisableDriveAPI);
+};
+
 }  // namespace sync_file_system
 
 #endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_FILE_SYNC_UTIL_H_
