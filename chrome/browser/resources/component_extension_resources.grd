@@ -87,7 +87,11 @@
         <!-- Images referenced from the manifest or the code -->
         <include name="IDR_FILE_MANAGER_ICON_16" file="file_manager/images/icon16.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_32" file="file_manager/images/icon32.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_48" file="file_manager/images/icon48.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_64" file="file_manager/images/icon64.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_96" file="file_manager/images/icon96.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_128" file="file_manager/images/icon128.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_256" file="file_manager/images/icon256.png" type="BINDATA" />
 
         <!-- Resources used for non-flattened HTML files. -->
         <include name="IDR_FILE_MANAGER_DRIVE_WELCOME_STYLE" file="file_manager/css/drive_welcome.css" type="BINDATA" />
