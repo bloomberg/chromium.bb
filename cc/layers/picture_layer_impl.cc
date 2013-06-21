@@ -1008,8 +1008,6 @@ bool PictureLayerImpl::CanHaveTilings() const {
     return false;
   if (pile_->recorded_region().IsEmpty())
     return false;
-  if (!layer_tree_impl()->tile_manager())
-    return false;
   if (draw_properties().can_draw_directly_to_backbuffer &&
       layer_tree_impl()->settings().force_direct_layer_drawing)
     return false;

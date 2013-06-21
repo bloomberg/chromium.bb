@@ -351,12 +351,8 @@ void ThreadProxy::CheckOutputSurfaceStatusOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::CheckOutputSurfaceStatusOnImplThread");
   if (!layer_tree_host_impl_->IsContextLost())
     return;
-  cc::ContextProvider* offscreen_contexts =
-    layer_tree_host_impl_->resource_provider() ?
-        layer_tree_host_impl_->resource_provider()->
-            offscreen_context_provider() : NULL;
-
-  if (offscreen_contexts)
+  if (cc::ContextProvider* offscreen_contexts = layer_tree_host_impl_
+          ->resource_provider()->offscreen_context_provider())
     offscreen_contexts->VerifyContexts();
   scheduler_on_impl_thread_->DidLoseOutputSurface();
 }
@@ -424,8 +420,6 @@ bool ThreadProxy::ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
 
   if (!layer_tree_host_->contents_texture_manager())
     return false;
-  if (!layer_tree_host_impl_->resource_provider())
-    return false;
 
   bool reduce_result = layer_tree_host_->contents_texture_manager()->
       ReduceMemoryOnImplThread(limit_bytes,
@@ -447,8 +441,6 @@ void ThreadProxy::ReduceWastedContentsTextureMemoryOnImplThread() {
   DCHECK(IsImplThread());
 
   if (!layer_tree_host_->contents_texture_manager())
-    return;
-  if (!layer_tree_host_impl_->resource_provider())
     return;
 
   layer_tree_host_->contents_texture_manager()->ReduceWastedMemoryOnImplThread(
@@ -806,10 +798,8 @@ void ThreadProxy::StartCommitOnImplThread(
 
   if (offscreen_context_provider.get())
     offscreen_context_provider->BindToCurrentThread();
-  if (layer_tree_host_impl_->resource_provider()) {
-    layer_tree_host_impl_->resource_provider()->
-        set_offscreen_context_provider(offscreen_context_provider);
-  }
+  layer_tree_host_impl_->resource_provider()->
+      set_offscreen_context_provider(offscreen_context_provider);
 
   if (layer_tree_host_->contents_texture_manager()) {
     if (layer_tree_host_->contents_texture_manager()->
@@ -827,21 +817,14 @@ void ThreadProxy::StartCommitOnImplThread(
   }
 
   commit_completion_event_on_impl_thread_ = completion;
-  if (layer_tree_host_impl_->resource_provider()) {
-    current_resource_update_controller_on_impl_thread_ =
-        ResourceUpdateController::Create(
-            this,
-            Proxy::ImplThreadTaskRunner(),
-            queue.Pass(),
-            layer_tree_host_impl_->resource_provider());
-    current_resource_update_controller_on_impl_thread_->PerformMoreUpdates(
-        scheduler_on_impl_thread_->AnticipatedDrawTime());
-  } else {
-    // Normally the ResourceUpdateController notifies when commit should
-    // finish, but in tile-free software rendering there is no resource
-    // update step so jump straight to the notification.
-    scheduler_on_impl_thread_->FinishCommit();
-  }
+  current_resource_update_controller_on_impl_thread_ =
+      ResourceUpdateController::Create(
+          this,
+          Proxy::ImplThreadTaskRunner(),
+          queue.Pass(),
+          layer_tree_host_impl_->resource_provider());
+  current_resource_update_controller_on_impl_thread_->PerformMoreUpdates(
+      scheduler_on_impl_thread_->AnticipatedDrawTime());
 }
 
 void ThreadProxy::BeginFrameAbortedByMainThreadOnImplThread() {
@@ -857,11 +840,11 @@ void ThreadProxy::ScheduledActionCommit() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionCommit");
   DCHECK(IsImplThread());
   DCHECK(commit_completion_event_on_impl_thread_);
-  if (current_resource_update_controller_on_impl_thread_) {
-    // Complete all remaining texture updates.
-    current_resource_update_controller_on_impl_thread_->Finalize();
-    current_resource_update_controller_on_impl_thread_.reset();
-  }
+  DCHECK(current_resource_update_controller_on_impl_thread_);
+
+  // Complete all remaining texture updates.
+  current_resource_update_controller_on_impl_thread_->Finalize();
+  current_resource_update_controller_on_impl_thread_.reset();
 
   layer_tree_host_impl_->BeginCommit();
   layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
@@ -1237,10 +1220,8 @@ void ThreadProxy::DidTryInitializeRendererOnImplThread(
     offscreen_context_provider->BindToCurrentThread();
 
   if (success) {
-    if (layer_tree_host_impl_->resource_provider()) {
-      layer_tree_host_impl_->resource_provider()->
-          set_offscreen_context_provider(offscreen_context_provider);
-    }
+    layer_tree_host_impl_->resource_provider()->
+        set_offscreen_context_provider(offscreen_context_provider);
   } else if (offscreen_context_provider.get()) {
     offscreen_context_provider->VerifyContexts();
   }

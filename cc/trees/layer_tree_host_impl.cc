@@ -751,10 +751,8 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);
   if (!output_surface_->ForcedDrawToSoftwareDevice())
     renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
-  if (renderer_) {
-    RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
-                       frame);
-  }
+  RemoveRenderPasses(CullRenderPassesWithCachedTextures(renderer_.get()),
+                     frame);
 
   // If we're making a frame to draw, it better have at least one render pass.
   DCHECK(!frame->render_passes.empty());
@@ -1222,8 +1220,7 @@ void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
 
   // Once all layers have been drawn, pending texture uploads should no
   // longer block future uploads.
-  if (resource_provider_)
-    resource_provider_->MarkPendingUploadsAsNonBlocking();
+  resource_provider_->MarkPendingUploadsAsNonBlocking();
 }
 
 void LayerTreeHostImpl::FinishAllRendering() {
