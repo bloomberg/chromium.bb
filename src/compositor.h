@@ -48,6 +48,7 @@ struct weston_transform {
 };
 
 struct weston_surface;
+struct weston_buffer;
 struct shell_surface;
 struct weston_seat;
 struct weston_output;
@@ -489,7 +490,7 @@ struct weston_renderer {
 	void (*repaint_output)(struct weston_output *output,
 			       pixman_region32_t *output_damage);
 	void (*flush_damage)(struct weston_surface *surface);
-	void (*attach)(struct weston_surface *es, struct wl_buffer *buffer);
+	void (*attach)(struct weston_surface *es, struct weston_buffer *buffer);
 	int (*create_surface)(struct weston_surface *surface);
 	void (*surface_set_color)(struct weston_surface *surface,
 			       float red, float green,
@@ -574,8 +575,21 @@ struct weston_compositor {
 	struct weston_xkb_info xkb_info;
 };
 
+struct weston_buffer {
+	struct wl_resource *resource;
+	struct wl_signal destroy_signal;
+	struct wl_listener destroy_listener;
+
+	union {
+		struct wl_shm_buffer *shm_buffer;
+		struct wl_buffer *legacy_buffer;
+	};
+	int32_t width, height;
+	uint32_t busy_count;
+};
+
 struct weston_buffer_reference {
-	struct wl_buffer *buffer;
+	struct weston_buffer *buffer;
 	struct wl_listener destroy_listener;
 };
 
@@ -740,7 +754,7 @@ struct weston_surface {
 	struct {
 		/* wl_surface.attach */
 		int newly_attached;
-		struct wl_buffer *buffer;
+		struct weston_buffer *buffer;
 		struct wl_listener buffer_destroy_listener;
 		int32_t sx;
 		int32_t sy;
@@ -1017,9 +1031,12 @@ weston_surface_unmap(struct weston_surface *surface);
 struct weston_surface *
 weston_surface_get_main_surface(struct weston_surface *surface);
 
+struct weston_buffer *
+weston_buffer_from_resource(struct wl_resource *resource);
+
 void
 weston_buffer_reference(struct weston_buffer_reference *ref,
-			struct wl_buffer *buffer);
+			struct weston_buffer *buffer);
 
 uint32_t
 weston_compositor_get_time(void);

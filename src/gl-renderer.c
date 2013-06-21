@@ -1100,7 +1100,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 {
 	struct gl_renderer *gr = get_renderer(surface->compositor);
 	struct gl_surface_state *gs = get_surface_state(surface);
-	struct wl_buffer *buffer = gs->buffer_ref.buffer;
+	struct weston_buffer *buffer = gs->buffer_ref.buffer;
 
 #ifdef GL_UNPACK_ROW_LENGTH
 	pixman_box32_t *rectangles;
@@ -1131,7 +1131,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     gs->pitch, buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-			     wl_shm_buffer_get_data(buffer));
+			     wl_shm_buffer_get_data(buffer->shm_buffer));
 
 		goto done;
 	}
@@ -1139,7 +1139,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 #ifdef GL_UNPACK_ROW_LENGTH
 	/* Mesa does not define GL_EXT_unpack_subimage */
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, gs->pitch);
-	data = wl_shm_buffer_get_data(buffer);
+	data = wl_shm_buffer_get_data(buffer->shm_buffer);
 	rectangles = pixman_region32_rectangles(&gs->texture_damage, &n);
 	for (i = 0; i < n; i++) {
 		pixman_box32_t r;
@@ -1182,11 +1182,12 @@ ensure_textures(struct gl_surface_state *gs, int num_textures)
 }
 
 static void
-gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
+gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 {
 	struct weston_compositor *ec = es->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
 	struct gl_surface_state *gs = get_surface_state(es);
+	struct wl_shm_buffer *shm_buffer;
 	EGLint attribs[3], format;
 	int i, num_planes;
 
@@ -1203,16 +1204,21 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 		return;
 	}
 
-	if (wl_buffer_is_shm(buffer)) {
+	shm_buffer = wl_shm_buffer_get(buffer->resource);
+	if (shm_buffer) {
+		buffer->shm_buffer = shm_buffer;
+		buffer->width = wl_shm_buffer_get_width(shm_buffer);
+		buffer->height = wl_shm_buffer_get_height(shm_buffer);
+
 		/* Only allocate a texture if it doesn't match existing one.
 		 * If gs->num_images is not 0, then a switch from DRM allocated
 		 * buffer to a SHM buffer is happening, and we need to allocate
 		 * a new texture buffer. */
-		if (wl_shm_buffer_get_stride(buffer) / 4 != gs->pitch ||
-		    wl_shm_buffer_get_height(buffer) != gs->height ||
+		if (wl_shm_buffer_get_stride(shm_buffer) / 4 != gs->pitch ||
+		    buffer->height != gs->height ||
 		    gs->num_images > 0) {
-			gs->pitch = wl_shm_buffer_get_stride(buffer) / 4;
-			gs->height = wl_shm_buffer_get_height(buffer);
+			gs->pitch =  wl_shm_buffer_get_stride(shm_buffer) / 4;
+			gs->height = buffer->height;
 			gs->target = GL_TEXTURE_2D;
 
 			ensure_textures(gs, 1);
@@ -1227,12 +1233,17 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 						   gs->height / es->buffer_scale);
 		}
 
-		if (wl_shm_buffer_get_format(buffer) == WL_SHM_FORMAT_XRGB8888)
+		if (wl_shm_buffer_get_format(shm_buffer) == WL_SHM_FORMAT_XRGB8888)
 			gs->shader = &gr->texture_shader_rgbx;
 		else
 			gs->shader = &gr->texture_shader_rgba;
-	} else if (gr->query_buffer(gr->egl_display, buffer,
+	} else if (gr->query_buffer(gr->egl_display,
+				    (struct wl_buffer *)buffer->resource,
 				    EGL_TEXTURE_FORMAT, &format)) {
+		buffer->legacy_buffer = (struct wl_buffer *)buffer->resource;
+		buffer->width = buffer->legacy_buffer->width;
+		buffer->height = buffer->legacy_buffer->height;
+
 		for (i = 0; i < gs->num_images; i++)
 			gr->destroy_image(gr->egl_display, gs->images[i]);
 		gs->num_images = 0;
@@ -1271,7 +1282,8 @@ gl_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 			gs->images[i] = gr->create_image(gr->egl_display,
 							 NULL,
 							 EGL_WAYLAND_BUFFER_WL,
-							 buffer, attribs);
+							 buffer->legacy_buffer,
+							 attribs);
 			if (!gs->images[i]) {
 				weston_log("failed to create img for plane %d\n", i);
 				continue;

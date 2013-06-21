@@ -226,7 +226,7 @@ rpi_resource_realloc(struct rpi_resource *resource, VC_IMAGE_TYPE_T ifmt,
 #define PREMULT_ALPHA_FLAG (1 << 31)
 
 static VC_IMAGE_TYPE_T
-shm_buffer_get_vc_format(struct wl_buffer *buffer)
+shm_buffer_get_vc_format(struct wl_shm_buffer *buffer)
 {
 	switch (wl_shm_buffer_get_format(buffer)) {
 	case WL_SHM_FORMAT_XRGB8888:
@@ -240,7 +240,7 @@ shm_buffer_get_vc_format(struct wl_buffer *buffer)
 }
 
 static int
-rpi_resource_update(struct rpi_resource *resource, struct wl_buffer *buffer,
+rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 		    pixman_region32_t *region)
 {
 	pixman_region32_t write_region;
@@ -259,11 +259,11 @@ rpi_resource_update(struct rpi_resource *resource, struct wl_buffer *buffer,
 	if (!buffer)
 		return -1;
 
-	ifmt = shm_buffer_get_vc_format(buffer);
-	width = wl_shm_buffer_get_width(buffer);
-	height = wl_shm_buffer_get_height(buffer);
-	stride = wl_shm_buffer_get_stride(buffer);
-	pixels = wl_shm_buffer_get_data(buffer);
+	ifmt = shm_buffer_get_vc_format(buffer->shm_buffer);
+	width = wl_shm_buffer_get_width(buffer->shm_buffer);
+	height = wl_shm_buffer_get_height(buffer->shm_buffer);
+	stride = wl_shm_buffer_get_stride(buffer->shm_buffer);
+	pixels = wl_shm_buffer_get_data(buffer->shm_buffer);
 
 	ret = rpi_resource_realloc(resource, ifmt & ~PREMULT_ALPHA_FLAG,
 				   width, height, stride, height);
@@ -356,7 +356,7 @@ rpir_surface_destroy(struct rpir_surface *surface)
 }
 
 static int
-rpir_surface_damage(struct rpir_surface *surface, struct wl_buffer *buffer,
+rpir_surface_damage(struct rpir_surface *surface, struct weston_buffer *buffer,
 		    pixman_region32_t *damage)
 {
 	pixman_region32_t upload;
@@ -1113,11 +1113,11 @@ rpi_renderer_flush_damage(struct weston_surface *base)
 	 * having an shm buffer.
 	 */
 	struct rpir_surface *surface = to_rpir_surface(base);
-	struct wl_buffer *buffer = surface->buffer_ref.buffer;
+	struct weston_buffer *buffer = surface->buffer_ref.buffer;
 	int ret;
 
 	assert(buffer);
-	assert(wl_buffer_is_shm(buffer));
+	assert(wl_shm_buffer_get(buffer->resource));
 
 	ret = rpir_surface_damage(surface, buffer, &base->damage);
 	if (ret)
@@ -1128,7 +1128,7 @@ rpi_renderer_flush_damage(struct weston_surface *base)
 }
 
 static void
-rpi_renderer_attach(struct weston_surface *base, struct wl_buffer *buffer)
+rpi_renderer_attach(struct weston_surface *base, struct weston_buffer *buffer)
 {
 	/* Called every time a client commits an attach. */
 	static int warned;
@@ -1138,10 +1138,16 @@ rpi_renderer_attach(struct weston_surface *base, struct wl_buffer *buffer)
 	if (!surface)
 		return;
 
-	if (buffer && !wl_buffer_is_shm(buffer) && !warned) {
+	if (buffer && !wl_shm_buffer_get(buffer->resource) && !warned) {
 		weston_log("Error: non-wl_shm buffers not supported.\n");
 		warned = 1;
 		return;
+	}
+
+	if (wl_shm_buffer_get(buffer->resource)) {
+		buffer->shm_buffer = wl_shm_buffer_get(buffer->resource);
+		buffer->width = wl_shm_buffer_get_width(buffer->shm_buffer);
+		buffer->height = wl_shm_buffer_get_height(buffer->shm_buffer);
 	}
 
 	weston_buffer_reference(&surface->buffer_ref, buffer);

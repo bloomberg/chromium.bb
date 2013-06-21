@@ -47,7 +47,7 @@ noop_renderer_flush_damage(struct weston_surface *surface)
 }
 
 static void
-noop_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
+noop_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 {
 }
 

@@ -46,7 +46,7 @@ struct screenshooter {
 
 struct screenshooter_frame_listener {
 	struct wl_listener listener;
-	struct wl_buffer *buffer;
+	struct weston_buffer *buffer;
 	struct wl_resource *resource;
 };
 
@@ -140,9 +140,9 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 			     0, 0, output->current->width,
 			     output->current->height);
 
-	stride = wl_shm_buffer_get_stride(l->buffer);
+	stride = wl_shm_buffer_get_stride(l->buffer->shm_buffer);
 
-	d = wl_shm_buffer_get_data(l->buffer);
+	d = wl_shm_buffer_get_data(l->buffer->shm_buffer);
 	s = pixels + stride * (l->buffer->height - 1);
 
 	switch (compositor->read_format) {
@@ -178,10 +178,15 @@ screenshooter_shoot(struct wl_client *client,
 	struct weston_output *output =
 		wl_resource_get_user_data(output_resource);
 	struct screenshooter_frame_listener *l;
-	struct wl_buffer *buffer = buffer_resource->data;
+	struct weston_buffer *buffer =
+		weston_buffer_from_resource(buffer_resource);
 
-	if (!wl_buffer_is_shm(buffer))
+	if (!wl_shm_buffer_get(buffer->resource))
 		return;
+	
+	buffer->shm_buffer = wl_shm_buffer_get(buffer->resource);
+	buffer->width = wl_shm_buffer_get_width(buffer->shm_buffer);
+	buffer->height = wl_shm_buffer_get_height(buffer->shm_buffer);
 
 	if (buffer->width < output->current->width ||
 	    buffer->height < output->current->height)

@@ -529,9 +529,10 @@ pixman_renderer_flush_damage(struct weston_surface *surface)
 }
 
 static void
-pixman_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
+pixman_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 {
 	struct pixman_surface_state *ps = get_surface_state(es);
+	struct wl_shm_buffer *shm_buffer;
 	pixman_format_code_t pixman_format;
 
 	weston_buffer_reference(&ps->buffer_ref, buffer);
@@ -543,14 +544,16 @@ pixman_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 
 	if (!buffer)
 		return;
+	
+	shm_buffer = wl_shm_buffer_get(buffer->resource);
 
-	if (!wl_buffer_is_shm(buffer)) {
+	if (! shm_buffer) {
 		weston_log("Pixman renderer supports only SHM buffers\n");
 		weston_buffer_reference(&ps->buffer_ref, NULL);
 		return;
 	}
 
-	switch (wl_shm_buffer_get_format(buffer)) {
+	switch (wl_shm_buffer_get_format(shm_buffer)) {
 	case WL_SHM_FORMAT_XRGB8888:
 		pixman_format = PIXMAN_x8r8g8b8;
 		break;
@@ -563,11 +566,15 @@ pixman_renderer_attach(struct weston_surface *es, struct wl_buffer *buffer)
 		return;
 	break;
 	}
+
+	buffer->shm_buffer = shm_buffer;
+	buffer->width = wl_shm_buffer_get_width(shm_buffer);
+	buffer->height = wl_shm_buffer_get_height(shm_buffer);
+
 	ps->image = pixman_image_create_bits(pixman_format,
-		wl_shm_buffer_get_width(buffer),
-		wl_shm_buffer_get_height(buffer),
-		wl_shm_buffer_get_data(buffer),
-		wl_shm_buffer_get_stride(buffer));
+		buffer->width, buffer->height,
+		wl_shm_buffer_get_data(shm_buffer),
+		wl_shm_buffer_get_stride(shm_buffer));
 }
 
 static int

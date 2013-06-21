@@ -1053,6 +1053,42 @@ destroy_surface(struct wl_resource *resource)
 }
 
 static void
+weston_buffer_destroy_handler(struct wl_listener *listener, void *data)
+{
+	struct weston_buffer *buffer =
+		container_of(listener, struct weston_buffer, destroy_listener);
+
+	wl_signal_emit(&buffer->destroy_signal, buffer);
+	free(buffer);
+}
+
+struct weston_buffer *
+weston_buffer_from_resource(struct wl_resource *resource)
+{
+	struct weston_buffer *buffer;
+	struct wl_listener *listener;
+	
+	listener = wl_resource_get_destroy_listener(resource,
+						    weston_buffer_destroy_handler);
+
+	if (listener) {
+		buffer = container_of(listener, struct weston_buffer,
+				      destroy_listener);
+	} else {
+		buffer = malloc(sizeof *buffer);
+		memset(buffer, 0, sizeof *buffer);
+
+		buffer->resource = resource;
+		wl_signal_init(&buffer->destroy_signal);
+		buffer->destroy_listener.notify = weston_buffer_destroy_handler;
+		wl_resource_add_destroy_listener(resource,
+						 &buffer->destroy_listener);
+	}
+	
+	return buffer;
+}
+
+static void
 weston_buffer_reference_handle_destroy(struct wl_listener *listener,
 				       void *data)
 {
@@ -1060,19 +1096,19 @@ weston_buffer_reference_handle_destroy(struct wl_listener *listener,
 		container_of(listener, struct weston_buffer_reference,
 			     destroy_listener);
 
-	assert((struct wl_buffer *)data == ref->buffer);
+	assert((struct weston_buffer *)data == ref->buffer);
 	ref->buffer = NULL;
 }
 
 WL_EXPORT void
 weston_buffer_reference(struct weston_buffer_reference *ref,
-			struct wl_buffer *buffer)
+			struct weston_buffer *buffer)
 {
 	if (ref->buffer && buffer != ref->buffer) {
 		ref->buffer->busy_count--;
 		if (ref->buffer->busy_count == 0) {
-			assert(ref->buffer->resource.client != NULL);
-			wl_resource_queue_event(&ref->buffer->resource,
+			assert(wl_resource_get_client(ref->buffer->resource));
+			wl_resource_queue_event(ref->buffer->resource,
 						WL_BUFFER_RELEASE);
 		}
 		wl_list_remove(&ref->destroy_listener.link);
@@ -1080,7 +1116,7 @@ weston_buffer_reference(struct weston_buffer_reference *ref,
 
 	if (buffer && buffer != ref->buffer) {
 		buffer->busy_count++;
-		wl_signal_add(&buffer->resource.destroy_signal,
+		wl_signal_add(&buffer->destroy_signal,
 			      &ref->destroy_listener);
 	}
 
@@ -1089,7 +1125,8 @@ weston_buffer_reference(struct weston_buffer_reference *ref,
 }
 
 static void
-weston_surface_attach(struct weston_surface *surface, struct wl_buffer *buffer)
+weston_surface_attach(struct weston_surface *surface,
+		      struct weston_buffer *buffer)
 {
 	weston_buffer_reference(&surface->buffer_ref, buffer);
 
@@ -1135,7 +1172,7 @@ surface_accumulate_damage(struct weston_surface *surface,
 			  pixman_region32_t *opaque)
 {
 	if (surface->buffer_ref.buffer &&
-	    wl_buffer_is_shm(surface->buffer_ref.buffer))
+	    wl_shm_buffer_get(surface->buffer_ref.buffer->resource))
 		surface->compositor->renderer->flush_damage(surface);
 
 	if (surface->transform.enabled) {
@@ -1398,10 +1435,10 @@ surface_attach(struct wl_client *client,
 	       struct wl_resource *buffer_resource, int32_t sx, int32_t sy)
 {
 	struct weston_surface *surface = wl_resource_get_user_data(resource);
-	struct wl_buffer *buffer = NULL;
+	struct weston_buffer *buffer = NULL;
 
 	if (buffer_resource)
-		buffer = buffer_resource->data;
+		buffer = weston_buffer_from_resource(buffer_resource);
 
 	/* Attach, attach, without commit in between does not send
 	 * wl_buffer.release. */
@@ -1413,7 +1450,7 @@ surface_attach(struct wl_client *client,
 	surface->pending.buffer = buffer;
 	surface->pending.newly_attached = 1;
 	if (buffer) {
-		wl_signal_add(&buffer->resource.destroy_signal,
+		wl_signal_add(&buffer->destroy_signal,
 			      &surface->pending.buffer_destroy_listener);
 	}
 }

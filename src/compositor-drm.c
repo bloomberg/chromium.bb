@@ -371,7 +371,7 @@ err_free:
 }
 
 static void
-drm_fb_set_buffer(struct drm_fb *fb, struct wl_buffer *buffer)
+drm_fb_set_buffer(struct drm_fb *fb, struct weston_buffer *buffer)
 {
 	assert(fb->buffer_ref.buffer == NULL);
 
@@ -437,7 +437,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	struct drm_output *output = (struct drm_output *) _output;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
-	struct wl_buffer *buffer = es->buffer_ref.buffer;
+	struct weston_buffer *buffer = es->buffer_ref.buffer;
 	struct gbm_bo *bo;
 	uint32_t format;
 
@@ -791,7 +791,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (es->alpha != 1.0f)
 		return NULL;
 
-	if (wl_buffer_is_shm(es->buffer_ref.buffer))
+	if (wl_shm_buffer_get(es->buffer_ref.buffer->resource))
 		return NULL;
 
 	if (!drm_surface_transform_supported(es))
@@ -915,7 +915,7 @@ drm_output_prepare_cursor_surface(struct weston_output *output_base,
 	if (c->cursors_are_broken)
 		return NULL;
 	if (es->buffer_ref.buffer == NULL ||
-	    !wl_buffer_is_shm(es->buffer_ref.buffer) ||
+	    !wl_shm_buffer_get(es->buffer_ref.buffer->resource) ||
 	    es->geometry.width > 64 || es->geometry.height > 64)
 		return NULL;
 
@@ -949,8 +949,8 @@ drm_output_set_cursor(struct drm_output *output)
 		output->current_cursor ^= 1;
 		bo = output->cursor_bo[output->current_cursor];
 		memset(buf, 0, sizeof buf);
-		stride = wl_shm_buffer_get_stride(es->buffer_ref.buffer);
-		s = wl_shm_buffer_get_data(es->buffer_ref.buffer);
+		stride = wl_shm_buffer_get_stride(es->buffer_ref.buffer->shm_buffer);
+		s = wl_shm_buffer_get_data(es->buffer_ref.buffer->shm_buffer);
 		for (i = 0; i < es->geometry.height; i++)
 			memcpy(buf + i * 64, s + i * stride,
 			       es->geometry.width * 4);
@@ -1008,7 +1008,7 @@ drm_assign_planes(struct weston_output *output)
 		 * non-shm, or small enough to be a cursor
 		 */
 		if ((es->buffer_ref.buffer &&
-		     !wl_buffer_is_shm(es->buffer_ref.buffer)) ||
+		     !wl_shm_buffer_get(es->buffer_ref.buffer->resource)) ||
 		    (es->geometry.width <= 64 && es->geometry.height <= 64))
 			es->keep_buffer = 1;
 		else
