@@ -52,7 +52,6 @@ class CONTENT_EXPORT WorkerServiceImpl
                           const WorkerStoragePartition& worker_partition,
                           bool* exists,
                           bool* url_error);
-  void CancelCreateDedicatedWorker(int route_id, WorkerMessageFilter* filter);
   void ForwardToWorker(const IPC::Message& message,
                        WorkerMessageFilter* filter);
   void DocumentDetached(unsigned long long document_id,

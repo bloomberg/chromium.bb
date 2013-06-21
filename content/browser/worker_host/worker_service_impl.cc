@@ -361,13 +361,6 @@ void WorkerServiceImpl::LookupSharedWorker(
   }
 }
 
-void WorkerServiceImpl::CancelCreateDedicatedWorker(
-    int route_id,
-    WorkerMessageFilter* filter) {
-
-  NOTREACHED();
-}
-
 void WorkerServiceImpl::ForwardToWorker(const IPC::Message& message,
                                         WorkerMessageFilter* filter) {
   for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
