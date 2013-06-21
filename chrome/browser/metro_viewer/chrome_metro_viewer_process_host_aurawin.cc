@@ -57,12 +57,10 @@ void OpenURL(const GURL& url) {
 
 }  // namespace
 
-ChromeMetroViewerProcessHost::ChromeMetroViewerProcessHost(
-    const std::string& ipc_channel_name)
-        : MetroViewerProcessHost(
-              ipc_channel_name,
-              content::BrowserThread::GetMessageLoopProxyForThread(
-                  content::BrowserThread::IO)) {
+ChromeMetroViewerProcessHost::ChromeMetroViewerProcessHost()
+    : MetroViewerProcessHost(
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::IO)) {
   g_browser_process->AddRefModule();
 }
 

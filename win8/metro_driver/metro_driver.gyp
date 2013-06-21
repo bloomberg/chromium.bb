@@ -72,6 +72,9 @@
           ],
           'conditions': [
             ['use_aura==1', {
+              'dependencies': [
+                '../win8.gyp:metro_viewer',
+              ],
               'sources': [
                 'chrome_app_view_ash.cc',
                 'chrome_app_view_ash.h',

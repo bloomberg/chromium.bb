@@ -25,12 +25,10 @@ void BrowserProcessPlatformPart::OnMetroViewerProcessTerminated() {
 void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
     const CommandLine& command_line) {
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      command_line.HasSwitch(switches::kViewerConnection) &&
+      command_line.HasSwitch(switches::kViewerConnect) &&
       !metro_viewer_process_host_.get()) {
-    // Tell the metro viewer process host to connect to the given IPC channel.
-    metro_viewer_process_host_.reset(
-        new ChromeMetroViewerProcessHost(
-            command_line.GetSwitchValueASCII(switches::kViewerConnection)));
+    // Create a host to connect to the Metro viewer process over IPC.
+    metro_viewer_process_host_.reset(new ChromeMetroViewerProcessHost());
   }
 }
 

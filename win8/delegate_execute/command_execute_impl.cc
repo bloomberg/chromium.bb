@@ -59,6 +59,7 @@ HRESULT GetUrlFromShellItem(IShellItem* shell_item, string16* url) {
   return S_OK;
 }
 
+#if defined(USE_AURA)
 bool LaunchChromeBrowserProcess() {
   base::FilePath delegate_exe_path;
   if (!PathService::Get(base::FILE_EXE, &delegate_exe_path))
@@ -88,16 +89,15 @@ bool LaunchChromeBrowserProcess() {
   // Prevent a Chrome window from showing up on the desktop.
   cl.AppendSwitch(switches::kSilentLaunch);
 
-  // Tell Chrome the IPC channel name to use.
-  // TODO(robertshield): Figure out how to get this name to both the launched
-  // desktop browser process and the resulting activated metro process.
-  cl.AppendSwitchASCII(switches::kViewerConnection, "viewer");
+  // Tell Chrome to connect to the Metro viewer process.
+  cl.AppendSwitch(switches::kViewerConnect);
 
   base::LaunchOptions launch_options;
   launch_options.start_hidden = true;
 
   return base::LaunchProcess(cl, launch_options, NULL);
 }
+#endif  // defined(USE_AURA)
 
 }  // namespace
 

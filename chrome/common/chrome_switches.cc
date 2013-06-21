@@ -1481,10 +1481,6 @@ const char kVariationsServerURL[]           = "variations-server-url";
 // Prints version information and quits.
 const char kVersion[]                       = "version";
 
-// Requests that Chrome connect to a remote viewer process using an IPC
-// channel of the given name.
-const char kViewerConnection[]              = "viewer-connection";
-
 // Cycle through a series of URLs listed in the specified file.
 const char kVisitURLs[]                     = "visit-urls";
 
@@ -1603,6 +1599,11 @@ const char kWaitForMutex[]                  = "wait-for-mutex";
 // Indicates that chrome was launched to service a search request in Windows 8.
 const char kWindows8Search[]           = "windows8-search";
 
+#endif
+
+#if defined(OS_WIN) && defined(USE_AURA)
+// Requests that Chrome connect to the running Metro viewer process.
+const char kViewerConnect[]                 = "viewer-connect";
 #endif
 
 #ifndef NDEBUG

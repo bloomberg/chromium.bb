@@ -26,6 +26,7 @@
 #include "win8/metro_driver/file_picker_ash.h"
 #include "win8/metro_driver/metro_driver.h"
 #include "win8/metro_driver/winrt_utils.h"
+#include "win8/viewer/metro_viewer_constants.h"
 
 typedef winfoundtn::ITypedEventHandler<
     winapp::Core::CoreApplicationView*,
@@ -432,20 +433,13 @@ ChromeAppViewAsh::Run() {
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread.StartWithOptions(options);
 
-  std::string ipc_channel_name("viewer");
-
-  // TODO(robertshield): Figure out how to receive and append the channel ID
-  // from the delegate_execute instance that launched the browser process.
-  // See http://crbug.com/162474
-  // ipc_channel_name.append(IPC::Channel::GenerateUniqueRandomChannelID());
-
   // Start up Chrome and wait for the desired IPC server connection to exist.
-  WaitForChromeIPCConnection(ipc_channel_name);
+  WaitForChromeIPCConnection(win8::kMetroViewerIPCChannelName);
 
   // In Aura mode we create an IPC channel to the browser, then ask it to
   // connect to us.
   ChromeChannelListener ui_channel_listener(&ui_loop_, this);
-  IPC::ChannelProxy ui_channel(ipc_channel_name,
+  IPC::ChannelProxy ui_channel(win8::kMetroViewerIPCChannelName,
                                IPC::Channel::MODE_NAMED_CLIENT,
                                &ui_channel_listener,
                                io_thread.message_loop_proxy());

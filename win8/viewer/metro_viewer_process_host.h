@@ -5,8 +5,6 @@
 #ifndef WIN8_VIEWER_METRO_VIEWER_PROCESS_HOST_H_
 #define WIN8_VIEWER_METRO_VIEWER_PROCESS_HOST_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -32,13 +30,14 @@ class MetroViewerProcessHost : public IPC::Listener,
                                public IPC::Sender,
                                public base::NonThreadSafe {
  public:
-  // Initializes a viewer process host over |ipc_channel_name|. The given task
-  // runner correspond to a thread on which IPC::Channel is created and used
-  // (e.g. IO thread). Instantly connects to the viewer process if one is
-  // already connected to |ipc_channel_name|; a viewer can otherwise be
-  // launched synchronously via LaunchViewerAndWaitForConnection().
-  MetroViewerProcessHost(const std::string& ipc_channel_name,
-                         base::SingleThreadTaskRunner* ipc_task_runner);
+  // Initializes a viewer process host to connect to the Metro viewer process
+  // over IPC. The given task runner correspond to a thread on which
+  // IPC::Channel is created and used (e.g. IO thread). Instantly connects to
+  // the viewer process if one is already connected to |ipc_channel_name|; a
+  // viewer can otherwise be launched synchronously via
+  // LaunchViewerAndWaitForConnection().
+  explicit MetroViewerProcessHost(
+      base::SingleThreadTaskRunner* ipc_task_runner);
   virtual ~MetroViewerProcessHost();
 
   // Returns the process id of the viewer process if one is connected to this

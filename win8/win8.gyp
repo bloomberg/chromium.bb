@@ -60,6 +60,8 @@
         '../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
       ],
       'sources': [
+        'viewer/metro_viewer_constants.cc',
+        'viewer/metro_viewer_constants.h',
         'viewer/metro_viewer_process_host.cc',
         'viewer/metro_viewer_process_host.h',
       ],
