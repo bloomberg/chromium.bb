@@ -1351,11 +1351,8 @@ void Element::detach(const AttachContext& context)
         data->resetComputedStyle();
         data->resetDynamicRestyleObservations();
     }
-
-    if (ElementShadow* shadow = this->shadow()) {
-        detachChildrenIfNeeded(context);
+    if (ElementShadow* shadow = this->shadow())
         shadow->detach(context);
-    }
     ContainerNode::detach(context);
 }
 
