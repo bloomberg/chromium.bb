@@ -302,8 +302,7 @@ PnaclCoordinator::~PnaclCoordinator() {
 
 void PnaclCoordinator::ReportNonPpapiError(enum PluginErrorCode err_code,
                                            const nacl::string& message) {
-  error_info_.SetReport(err_code,
-                        nacl::string("PnaclCoordinator: ") + message);
+  error_info_.SetReport(err_code, message);
   ExitWithError();
 }
 
@@ -779,8 +778,9 @@ void PnaclCoordinator::OpenBitcodeStream() {
   // SRPCs won't get dropped.
   translate_thread_.reset(new PnaclTranslateThread());
   if (translate_thread_ == NULL) {
-    ReportNonPpapiError(ERROR_PNACL_THREAD_CREATE,
-                        "could not allocate translation thread.");
+    ReportNonPpapiError(
+        ERROR_PNACL_THREAD_CREATE,
+        "PnaclCoordinator: could not allocate translation thread.");
     return;
   }
   if (!use_new_cache_) {
@@ -795,8 +795,10 @@ void PnaclCoordinator::OpenBitcodeStream() {
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::BitcodeStreamDidOpen);
   if (!streaming_downloader_->OpenStream(pexe_url_, cb, this)) {
-    ReportNonPpapiError(ERROR_PNACL_PEXE_FETCH_OTHER,
-                        nacl::string("failed to open stream ") + pexe_url_);
+    ReportNonPpapiError(
+        ERROR_PNACL_PEXE_FETCH_OTHER,
+        nacl::string("PnaclCoordinator: failed to open stream ") + pexe_url_);
+    return;
   }
 }
 
@@ -870,7 +872,8 @@ void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
   if (!temp_nexe_file_->SetExistingFd(nexe_handle_)) {
     ReportNonPpapiError(
         ERROR_PNACL_CREATE_TEMP,
-        nacl::string("Got bad temp file handle from GetNexeFd"));
+        nacl::string(
+            "PnaclCoordinator: Got bad temp file handle from GetNexeFd"));
     return;
   }
   if (is_cache_hit_ == PP_TRUE) {
