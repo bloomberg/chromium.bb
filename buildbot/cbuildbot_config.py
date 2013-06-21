@@ -1345,7 +1345,7 @@ _release = full.derive(official, internal,
   git_sync=False,
   vm_tests=constants.SMOKE_SUITE_TEST_TYPE,
   disk_vm_layout='usb',
-  hw_tests=HWTestConfig.DefaultList(),
+  hw_tests=HWTestConfig.DefaultList(file_bugs=True),
   upload_hw_test_artifacts=True,
   signer_tests=True,
   trybot_list=True,
@@ -1492,7 +1492,7 @@ _release.add_config('sonic-release',
 
 _release.add_config('stout-release',
   boards=['stout'],
-  hw_tests=HWTestConfig.DefaultList(num=3),
+  hw_tests=HWTestConfig.DefaultList(num=3, file_bugs=True),
 )
 
 _release.add_config('stout32-release',
