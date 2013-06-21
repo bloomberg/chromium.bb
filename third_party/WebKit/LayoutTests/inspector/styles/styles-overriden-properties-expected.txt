@@ -5,7 +5,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#main  { (styles-overriden-properties.html:4 -> styles-overriden-properties.html:4:1)
+#main  { (styles-override…perties.html:4 -> styles-overriden-properties.html:4:1)
 /-- overloaded --/ background: #000;
 background: #bada55;
 

@@ -7,7 +7,7 @@ element.style  { ()
 
 ======== Matched CSS Rules ========
 [expanded] 
-#container #inspected  { (selector-line-sourcemap-header.scss:4 -> selector-line-sourcemap-header.scss:4:5)
+#container #inspected  { (selector-line-s…-header.scss:4 -> selector-line-sourcemap-header.scss:4:5)
 color: green;
 
 [expanded] 
