@@ -83,7 +83,7 @@ NetworkUIData& NetworkUIData::operator=(const NetworkUIData& other) {
   return *this;
 }
 
-NetworkUIData::NetworkUIData(const DictionaryValue& dict) {
+NetworkUIData::NetworkUIData(const base::DictionaryValue& dict) {
   std::string source;
   dict.GetString(kKeyONCSource, &source);
   onc_source_ = StringToEnum(kONCSourceTable, source, onc::ONC_SOURCE_NONE);
@@ -94,7 +94,7 @@ NetworkUIData::NetworkUIData(const DictionaryValue& dict) {
       StringToEnum(kClientCertTable, type_string, CLIENT_CERT_TYPE_NONE);
 
   if (certificate_type_ == CLIENT_CERT_TYPE_PATTERN) {
-    const DictionaryValue* cert_dict = NULL;
+    const base::DictionaryValue* cert_dict = NULL;
     dict.GetDictionary(kKeyCertificatePattern, &cert_dict);
     if (cert_dict)
       certificate_pattern_.CopyFromDictionary(*cert_dict);
@@ -104,7 +104,7 @@ NetworkUIData::NetworkUIData(const DictionaryValue& dict) {
     }
   }
 
-  const DictionaryValue* user_settings = NULL;
+  const base::DictionaryValue* user_settings = NULL;
   if (dict.GetDictionary(kKeyUserSettings, &user_settings))
     user_settings_.reset(user_settings->DeepCopy());
 }

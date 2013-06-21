@@ -212,7 +212,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
     std::string payload;
 
     // Returned pointer owned by the caller.
-    DictionaryValue* ToValue() const;
+    base::DictionaryValue* ToValue() const;
   };
 
   base::TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type);
@@ -279,7 +279,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
     const std::string& name, UnboundJsMessageHandler unbound_message_handler);
 
   // Returned pointer is owned by the caller.
-  static DictionaryValue* NotificationInfoToValue(
+  static base::DictionaryValue* NotificationInfoToValue(
       const NotificationInfoMap& notification_info);
 
   static std::string NotificationInfoToString(

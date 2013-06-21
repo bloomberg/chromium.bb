@@ -10,11 +10,11 @@ namespace syncer {
 
 JsArgList::JsArgList() {}
 
-JsArgList::JsArgList(ListValue* args) : args_(args) {}
+JsArgList::JsArgList(base::ListValue* args) : args_(args) {}
 
 JsArgList::~JsArgList() {}
 
-const ListValue& JsArgList::Get() const {
+const base::ListValue& JsArgList::Get() const {
   return args_.Get();
 }
 

@@ -23,7 +23,8 @@ base::DictionaryValue* ModelSafeRoutingInfoToValue(
 
 std::string ModelSafeRoutingInfoToString(
     const ModelSafeRoutingInfo& routing_info) {
-  scoped_ptr<DictionaryValue> dict(ModelSafeRoutingInfoToValue(routing_info));
+  scoped_ptr<base::DictionaryValue> dict(
+      ModelSafeRoutingInfoToValue(routing_info));
   std::string json;
   base::JSONWriter::Write(dict.get(), &json);
   return json;

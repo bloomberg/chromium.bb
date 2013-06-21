@@ -51,8 +51,8 @@ SyncProtocolError::SyncProtocolError()
 SyncProtocolError::~SyncProtocolError() {
 }
 
-DictionaryValue* SyncProtocolError::ToValue() const {
-  DictionaryValue* value = new DictionaryValue();
+base::DictionaryValue* SyncProtocolError::ToValue() const {
+  base::DictionaryValue* value = new base::DictionaryValue();
   value->SetString("ErrorType",
                    GetSyncErrorTypeString(error_type));
   value->SetString("ErrorDescription", error_description);

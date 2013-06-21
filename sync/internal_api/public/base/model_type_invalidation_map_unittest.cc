@@ -32,7 +32,8 @@ TEST_F(ModelTypeInvalidationMapTest, TypeInvalidationMapToValue) {
   states[BOOKMARKS].payload = "bookmarkpayload";
   states[APPS].payload = "";
 
-  scoped_ptr<DictionaryValue> value(ModelTypeInvalidationMapToValue(states));
+  scoped_ptr<base::DictionaryValue> value(
+      ModelTypeInvalidationMapToValue(states));
   EXPECT_EQ(2u, value->size());
   ExpectDictStringValue(states[BOOKMARKS].payload, *value, "Bookmarks");
   ExpectDictStringValue(std::string(), *value, "Apps");

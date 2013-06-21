@@ -186,15 +186,15 @@ void GaiaOAuthClient::Core::HandleResponse(
     return;
   }
 
-  scoped_ptr<DictionaryValue> response_dict;
+  scoped_ptr<base::DictionaryValue> response_dict;
   if (source->GetResponseCode() == net::HTTP_OK) {
     std::string data;
     source->GetResponseAsString(&data);
-    scoped_ptr<Value> message_value(base::JSONReader::Read(data));
+    scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
     if (message_value.get() &&
-        message_value->IsType(Value::TYPE_DICTIONARY)) {
+        message_value->IsType(base::Value::TYPE_DICTIONARY)) {
       response_dict.reset(
-          static_cast<DictionaryValue*>(message_value.release()));
+          static_cast<base::DictionaryValue*>(message_value.release()));
     }
   }
 

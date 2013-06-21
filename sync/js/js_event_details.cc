@@ -10,11 +10,12 @@ namespace syncer {
 
 JsEventDetails::JsEventDetails() {}
 
-JsEventDetails::JsEventDetails(DictionaryValue* details) : details_(details) {}
+JsEventDetails::JsEventDetails(base::DictionaryValue* details)
+    : details_(details) {}
 
 JsEventDetails::~JsEventDetails() {}
 
-const DictionaryValue& JsEventDetails::Get() const {
+const base::DictionaryValue& JsEventDetails::Get() const {
   return details_.Get();
 }
 

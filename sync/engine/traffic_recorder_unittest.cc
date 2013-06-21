@@ -109,10 +109,10 @@ TEST(TrafficRecorderTest, ToValueTimestampTest) {
   recorder.set_time(sample_time);
   recorder.RecordClientToServerResponse(response);
 
-  scoped_ptr<ListValue> value;
+  scoped_ptr<base::ListValue> value;
   value.reset(recorder.ToValue());
 
-  DictionaryValue* record_value;
+  base::DictionaryValue* record_value;
   std::string time_str;
 
   ASSERT_TRUE(value->GetDictionary(0, &record_value));

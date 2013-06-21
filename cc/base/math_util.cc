@@ -536,7 +536,7 @@ scoped_ptr<base::Value> MathUtil::AsValue(gfx::Rect r) {
 }
 
 bool MathUtil::FromValue(const base::Value* raw_value, gfx::Rect* out_rect) {
-  const ListValue* value = NULL;
+  const base::ListValue* value = NULL;
   if (!raw_value->GetAsList(&value))
     return false;
 

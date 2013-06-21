@@ -19,11 +19,11 @@ TEST_F(ModelSafeWorkerTest, ModelSafeRoutingInfoToValue) {
   routing_info[BOOKMARKS] = GROUP_PASSIVE;
   routing_info[NIGORI] = GROUP_UI;
   routing_info[PREFERENCES] = GROUP_DB;
-  DictionaryValue expected_value;
+  base::DictionaryValue expected_value;
   expected_value.SetString("Bookmarks", "GROUP_PASSIVE");
   expected_value.SetString("Encryption keys", "GROUP_UI");
   expected_value.SetString("Preferences", "GROUP_DB");
-  scoped_ptr<DictionaryValue> value(
+  scoped_ptr<base::DictionaryValue> value(
       ModelSafeRoutingInfoToValue(routing_info));
   EXPECT_TRUE(value->Equals(&expected_value));
 }

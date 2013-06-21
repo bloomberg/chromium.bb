@@ -73,7 +73,7 @@ void ShillIPConfigClientStub::SetProperty(
     dict->SetWithoutPathExpansion(name, value.DeepCopy());
   } else {
     // Create a new stub ipconfig object, and update its properties.
-    DictionaryValue* dvalue = new DictionaryValue;
+    base::DictionaryValue* dvalue = new base::DictionaryValue;
     dvalue->SetWithoutPathExpansion(name, value.DeepCopy());
     ipconfigs_.SetWithoutPathExpansion(ipconfig_path.value(),
                                        dvalue);

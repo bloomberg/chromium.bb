@@ -99,7 +99,8 @@ NetLog::ParametersCallback NetLog::Source::ToEventParametersCallback() const {
 }
 
 // static
-bool NetLog::Source::FromEventParameters(Value* event_params, Source* source) {
+bool NetLog::Source::FromEventParameters(base::Value* event_params,
+                                         Source* source) {
   base::DictionaryValue* dict;
   base::DictionaryValue* source_dict;
   int source_id;
@@ -136,7 +137,7 @@ base::Value* NetLog::Entry::ToValue() const {
 
   // Set the event-specific parameters.
   if (parameters_callback_) {
-    Value* value = parameters_callback_->Run(log_level_);
+    base::Value* value = parameters_callback_->Run(log_level_);
     if (value)
       entry_dict->Set("params", value);
   }

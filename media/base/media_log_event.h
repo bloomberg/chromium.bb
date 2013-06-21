@@ -20,7 +20,7 @@ struct MediaLogEvent {
   MediaLogEvent& operator=(const MediaLogEvent& event) {
     id = event.id;
     type = event.type;
-    scoped_ptr<DictionaryValue> event_copy(event.params.DeepCopy());
+    scoped_ptr<base::DictionaryValue> event_copy(event.params.DeepCopy());
     params.Swap(event_copy.get());
     time = event.time;
     return *this;

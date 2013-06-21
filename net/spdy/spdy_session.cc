@@ -169,7 +169,7 @@ base::Value* NetLogSpdySessionWindowUpdateCallback(
     int32 delta,
     int32 window_size,
     NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("delta", delta);
   dict->SetInteger("window_size", window_size);
   return dict;

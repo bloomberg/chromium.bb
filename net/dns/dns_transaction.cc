@@ -97,7 +97,7 @@ class DnsAttempt {
   // Returns a Value representing the received response, along with a reference
   // to the NetLog source source of the UDP socket used.  The request must have
   // completed before this is called.
-  Value* NetLogResponseCallback(NetLog::LogLevel log_level) const {
+  base::Value* NetLogResponseCallback(NetLog::LogLevel log_level) const {
     DCHECK(GetResponse()->IsValid());
 
     base::DictionaryValue* dict = new base::DictionaryValue();

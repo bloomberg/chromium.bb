@@ -78,7 +78,7 @@ struct SYNC_EXPORT SyncProtocolError {
   ModelTypeSet error_data_types;
   SyncProtocolError();
   ~SyncProtocolError();
-  DictionaryValue* ToValue() const;
+  base::DictionaryValue* ToValue() const;
 };
 
 SYNC_EXPORT const char* GetSyncErrorTypeString(SyncProtocolErrorType type);

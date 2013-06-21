@@ -24,10 +24,10 @@ typedef scoped_ptr<base::DictionaryValue> DictionaryPtr;
 // |policy|.
 void MarkRecommendedFieldnames(const base::DictionaryValue& policy,
                                base::DictionaryValue* result) {
-  const ListValue* recommended_value = NULL;
+  const base::ListValue* recommended_value = NULL;
   if (!policy.GetListWithoutPathExpansion(kRecommended, &recommended_value))
     return;
-  for (ListValue::const_iterator it = recommended_value->begin();
+  for (base::ListValue::const_iterator it = recommended_value->begin();
        it != recommended_value->end(); ++it) {
     std::string entry;
     if ((*it)->GetAsString(&entry))

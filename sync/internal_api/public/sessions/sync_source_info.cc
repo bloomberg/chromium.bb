@@ -23,8 +23,8 @@ SyncSourceInfo::SyncSourceInfo(
 
 SyncSourceInfo::~SyncSourceInfo() {}
 
-DictionaryValue* SyncSourceInfo::ToValue() const {
-  DictionaryValue* value = new DictionaryValue();
+base::DictionaryValue* SyncSourceInfo::ToValue() const {
+  base::DictionaryValue* value = new base::DictionaryValue();
   value->SetString("updatesSource",
                    GetUpdatesSourceString(updates_source));
   value->Set("types", ModelTypeInvalidationMapToValue(types));

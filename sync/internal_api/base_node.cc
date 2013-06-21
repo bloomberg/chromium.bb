@@ -227,8 +227,8 @@ int BaseNode::GetPositionIndex() const {
   return GetEntry()->GetPositionIndex();
 }
 
-DictionaryValue* BaseNode::GetSummaryAsValue() const {
-  DictionaryValue* node_info = new DictionaryValue();
+base::DictionaryValue* BaseNode::GetSummaryAsValue() const {
+  base::DictionaryValue* node_info = new base::DictionaryValue();
   node_info->SetString("id", base::Int64ToString(GetId()));
   node_info->SetBoolean("isFolder", GetIsFolder());
   node_info->SetString("title", GetTitle());
@@ -236,8 +236,8 @@ DictionaryValue* BaseNode::GetSummaryAsValue() const {
   return node_info;
 }
 
-DictionaryValue* BaseNode::GetDetailsAsValue() const {
-  DictionaryValue* node_info = GetSummaryAsValue();
+base::DictionaryValue* BaseNode::GetDetailsAsValue() const {
+  base::DictionaryValue* node_info = GetSummaryAsValue();
   node_info->SetString(
       "modificationTime", GetTimeDebugString(GetModificationTime()));
   node_info->SetString("parentId", base::Int64ToString(GetParentId()));

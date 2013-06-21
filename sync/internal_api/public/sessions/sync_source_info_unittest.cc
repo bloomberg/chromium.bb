@@ -26,12 +26,12 @@ TEST_F(SyncSourceInfoTest, SyncSourceInfoToValue) {
   ModelTypeInvalidationMap types;
   types[PREFERENCES].payload = "preferencespayload";
   types[EXTENSIONS].payload = "";
-  scoped_ptr<DictionaryValue> expected_types_value(
+  scoped_ptr<base::DictionaryValue> expected_types_value(
       ModelTypeInvalidationMapToValue(types));
 
   SyncSourceInfo source_info(updates_source, types);
 
-  scoped_ptr<DictionaryValue> value(source_info.ToValue());
+  scoped_ptr<base::DictionaryValue> value(source_info.ToValue());
   EXPECT_EQ(2u, value->size());
   ExpectDictStringValue("PERIODIC", *value, "updatesSource");
   ExpectDictDictionaryValue(*expected_types_value, *value, "types");

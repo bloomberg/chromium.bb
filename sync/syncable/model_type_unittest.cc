@@ -39,7 +39,7 @@ TEST_F(ModelTypeTest, ModelTypeFromValue) {
 TEST_F(ModelTypeTest, ModelTypeSetToValue) {
   const ModelTypeSet model_types(BOOKMARKS, APPS);
 
-  scoped_ptr<ListValue> value(ModelTypeSetToValue(model_types));
+  scoped_ptr<base::ListValue> value(ModelTypeSetToValue(model_types));
   EXPECT_EQ(2u, value->GetSize());
   std::string types[2];
   EXPECT_TRUE(value->GetString(0, &types[0]));
@@ -51,7 +51,7 @@ TEST_F(ModelTypeTest, ModelTypeSetToValue) {
 TEST_F(ModelTypeTest, ModelTypeSetFromValue) {
   // Try empty set first.
   ModelTypeSet model_types;
-  scoped_ptr<ListValue> value(ModelTypeSetToValue(model_types));
+  scoped_ptr<base::ListValue> value(ModelTypeSetToValue(model_types));
   EXPECT_TRUE(model_types.Equals(ModelTypeSetFromValue(*value)));
 
   // Now try with a few random types.

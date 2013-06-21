@@ -125,8 +125,8 @@ base::StringValue* StringToValue(const std::string& str) {
   return new base::StringValue(str);
 }
 
-StringValue* UniquePositionToValue(const UniquePosition& pos) {
-  return Value::CreateStringValue(pos.ToDebugString());
+base::StringValue* UniquePositionToValue(const UniquePosition& pos) {
+  return base::Value::CreateStringValue(pos.ToDebugString());
 }
 
 }  // namespace

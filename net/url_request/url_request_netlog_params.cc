@@ -26,7 +26,7 @@ base::Value* NetLogURLRequestStartCallback(const GURL* url,
   return dict;
 }
 
-bool StartEventLoadFlagsFromEventParams(const Value* event_params,
+bool StartEventLoadFlagsFromEventParams(const base::Value* event_params,
                                         int* load_flags) {
   const base::DictionaryValue* dict;
   if (!event_params->GetAsDictionary(&dict) ||

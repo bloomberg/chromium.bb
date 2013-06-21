@@ -23,7 +23,7 @@ class PolicyMap {
   struct Entry {
     PolicyLevel level;
     PolicyScope scope;
-    Value* value;
+    base::Value* value;
 
     Entry()
         : level(POLICY_LEVEL_RECOMMENDED),
@@ -50,14 +50,14 @@ class PolicyMap {
   // Returns a weak reference to the value currently stored for key |policy|,
   // or NULL if not found. Ownership is retained by the PolicyMap.
   // This is equivalent to Get(policy)->value, when it doesn't return NULL.
-  const Value* GetValue(const std::string& policy) const;
+  const base::Value* GetValue(const std::string& policy) const;
 
   // Takes ownership of |value|. Overwrites any existing value stored in the
   // map for the key |policy|.
   void Set(const std::string& policy,
            PolicyLevel level,
            PolicyScope scope,
-           Value* value);
+           base::Value* value);
 
   // Erase the given |policy|, if it exists in this map.
   void Erase(const std::string& policy);
@@ -80,7 +80,7 @@ class PolicyMap {
   // Loads the values in |policies| into this PolicyMap. All policies loaded
   // will have |level| and |scope| in their entries. Existing entries are
   // replaced.
-  void LoadFrom(const DictionaryValue* policies,
+  void LoadFrom(const base::DictionaryValue* policies,
                 PolicyLevel level,
                 PolicyScope scope);
 

@@ -45,7 +45,7 @@ class SYNC_EXPORT_PRIVATE TrafficRecorder {
                   base::Time time);
     TrafficRecord();
     ~TrafficRecord();
-    DictionaryValue* ToValue() const;
+    base::DictionaryValue* ToValue() const;
 
     // Time of record creation.
     base::Time timestamp;
@@ -57,7 +57,7 @@ class SYNC_EXPORT_PRIVATE TrafficRecorder {
   void RecordClientToServerMessage(const sync_pb::ClientToServerMessage& msg);
   void RecordClientToServerResponse(
       const sync_pb::ClientToServerResponse& response);
-  ListValue* ToValue() const;
+  base::ListValue* ToValue() const;
 
   const std::deque<TrafficRecord>& records() {
     return records_;

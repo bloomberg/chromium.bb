@@ -42,7 +42,7 @@ base::ListValue* CreateListFromStrings(
   base::ListValue* new_list = new base::ListValue;
   for (std::vector<std::string>::const_iterator iter = strings.begin();
        iter != strings.end(); ++iter) {
-    new_list->Append(new StringValue(*iter));
+    new_list->Append(new base::StringValue(*iter));
   }
   return new_list;
 }

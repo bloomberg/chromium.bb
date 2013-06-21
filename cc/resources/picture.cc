@@ -318,7 +318,7 @@ void Picture::Raster(
                    "num_pixels_rasterized", bounds.width() * bounds.height());
 }
 
-scoped_ptr<Value> Picture::AsValue() const {
+scoped_ptr<base::Value> Picture::AsValue() const {
   SkDynamicMemoryWStream stream;
 
   // Serialize the picture.

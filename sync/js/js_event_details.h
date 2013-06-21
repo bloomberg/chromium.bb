@@ -23,18 +23,19 @@ class SYNC_EXPORT JsEventDetails {
   JsEventDetails();
 
   // Takes over the data in |details|, leaving |details| empty.
-  explicit JsEventDetails(DictionaryValue* details);
+  explicit JsEventDetails(base::DictionaryValue* details);
 
   ~JsEventDetails();
 
-  const DictionaryValue& Get() const;
+  const base::DictionaryValue& Get() const;
 
   std::string ToString() const;
 
   // Copy constructor and assignment operator welcome.
 
  private:
-  typedef Immutable<DictionaryValue, HasSwapMemFnByPtr<DictionaryValue> >
+  typedef Immutable<base::DictionaryValue,
+                    HasSwapMemFnByPtr<base::DictionaryValue> >
       ImmutableDictionaryValue;
 
   ImmutableDictionaryValue details_;

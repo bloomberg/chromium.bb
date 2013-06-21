@@ -33,7 +33,7 @@ UseVersion2::~UseVersion2() {
 }
 
 std::string GetTemplateHtml(const base::StringPiece& html_template,
-                            const DictionaryValue* json,
+                            const base::DictionaryValue* json,
                             const base::StringPiece& template_id) {
   std::string output(html_template.data(), html_template.size());
   AppendJsonHtml(json, &output);
@@ -43,7 +43,7 @@ std::string GetTemplateHtml(const base::StringPiece& html_template,
 }
 
 std::string GetI18nTemplateHtml(const base::StringPiece& html_template,
-                                const DictionaryValue* json) {
+                                const base::DictionaryValue* json) {
   std::string output(html_template.data(), html_template.size());
   AppendJsonHtml(json, &output);
   AppendI18nTemplateSourceHtml(&output);
@@ -52,7 +52,7 @@ std::string GetI18nTemplateHtml(const base::StringPiece& html_template,
 }
 
 std::string GetTemplatesHtml(const base::StringPiece& html_template,
-                             const DictionaryValue* json,
+                             const base::DictionaryValue* json,
                              const base::StringPiece& template_id) {
   std::string output(html_template.data(), html_template.size());
   AppendI18nTemplateSourceHtml(&output);
@@ -63,7 +63,7 @@ std::string GetTemplatesHtml(const base::StringPiece& html_template,
   return output;
 }
 
-void AppendJsonHtml(const DictionaryValue* json, std::string* output) {
+void AppendJsonHtml(const base::DictionaryValue* json, std::string* output) {
   std::string javascript_string;
   AppendJsonJS(json, &javascript_string);
 
@@ -76,7 +76,7 @@ void AppendJsonHtml(const DictionaryValue* json, std::string* output) {
   output->append("</script>");
 }
 
-void AppendJsonJS(const DictionaryValue* json, std::string* output) {
+void AppendJsonJS(const base::DictionaryValue* json, std::string* output) {
   // Convert the template data to a json string.
   DCHECK(json) << "must include json data structure";
 

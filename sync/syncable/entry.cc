@@ -42,8 +42,8 @@ Directory* Entry::dir() const {
   return basetrans_->directory();
 }
 
-DictionaryValue* Entry::ToValue(Cryptographer* cryptographer) const {
-  DictionaryValue* entry_info = new DictionaryValue();
+base::DictionaryValue* Entry::ToValue(Cryptographer* cryptographer) const {
+  base::DictionaryValue* entry_info = new base::DictionaryValue();
   entry_info->SetBoolean("good", good());
   if (good()) {
     entry_info->Set("kernel", kernel_->ToValue(cryptographer));

@@ -28,11 +28,11 @@ namespace {
 // Used to compare values for finding entries to erase in a ListValue.
 // (ListValue only implements a const_iterator version of Find).
 struct ValueEquals {
-  explicit ValueEquals(const Value* first) : first_(first) {}
-  bool operator()(const Value* second) const {
+  explicit ValueEquals(const base::Value* first) : first_(first) {}
+  bool operator()(const base::Value* second) const {
     return first_->Equals(second);
   }
-  const Value* first_;
+  const base::Value* first_;
 };
 
 }  // namespace

@@ -36,7 +36,7 @@ static bool CookiePartsContains(const std::vector<std::string>& parts,
   return std::find(parts.begin(), parts.end(), part) != parts.end();
 }
 
-bool ExtractOAuth2TokenPairResponse(DictionaryValue* dict,
+bool ExtractOAuth2TokenPairResponse(base::DictionaryValue* dict,
                                     std::string* refresh_token,
                                     std::string* access_token,
                                     int* expires_in_secs) {
@@ -820,7 +820,8 @@ void GaiaAuthFetcher::OnOAuth2TokenPairFetched(
   if (status.is_success() && response_code == net::HTTP_OK) {
     scoped_ptr<base::Value> value(base::JSONReader::Read(data));
     if (value.get() && value->GetType() == base::Value::TYPE_DICTIONARY) {
-      DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+      base::DictionaryValue* dict =
+          static_cast<base::DictionaryValue*>(value.get());
       success = ExtractOAuth2TokenPairResponse(dict, &refresh_token,
                                                &access_token, &expires_in_secs);
     }

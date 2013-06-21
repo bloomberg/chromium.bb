@@ -36,7 +36,7 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
   ProgressMarkerMap download_progress_markers;
   download_progress_markers[BOOKMARKS] = "test";
   download_progress_markers[APPS] = "apps";
-  scoped_ptr<DictionaryValue> expected_download_progress_markers_value(
+  scoped_ptr<base::DictionaryValue> expected_download_progress_markers_value(
       ProgressMarkerMapToValue(download_progress_markers));
 
   const bool kIsSilenced = true;
@@ -45,7 +45,7 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
   const int kNumServerConflicts = 1057;
 
   SyncSourceInfo source;
-  scoped_ptr<DictionaryValue> expected_source_value(source.ToValue());
+  scoped_ptr<base::DictionaryValue> expected_source_value(source.ToValue());
 
   SyncSessionSnapshot snapshot(model_neutral,
                                download_progress_markers,
@@ -59,7 +59,7 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
                                base::Time::Now(),
                                std::vector<int>(MODEL_TYPE_COUNT,0),
                                std::vector<int>(MODEL_TYPE_COUNT, 0));
-  scoped_ptr<DictionaryValue> value(snapshot.ToValue());
+  scoped_ptr<base::DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(17u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits,
                          *value, "numSuccessfulCommits");

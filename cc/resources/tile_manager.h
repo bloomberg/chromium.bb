@@ -142,7 +142,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   void DidTileTreeBinChange(Tile* tile,
                             TileManagerBin new_tree_bin,
                             WhichTree tree);
-  scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
+  scoped_ptr<base::Value> GetMemoryRequirementsAsValue() const;
   void AddRequiredTileForActivation(Tile* tile);
 
   TileManagerClient* client_;

@@ -23,18 +23,18 @@ class SYNC_EXPORT JsArgList {
   JsArgList();
 
   // Takes over the data in |args|, leaving |args| empty.
-  explicit JsArgList(ListValue* args);
+  explicit JsArgList(base::ListValue* args);
 
   ~JsArgList();
 
-  const ListValue& Get() const;
+  const base::ListValue& Get() const;
 
   std::string ToString() const;
 
   // Copy constructor and assignment operator welcome.
 
  private:
-  typedef Immutable<ListValue, HasSwapMemFnByPtr<ListValue> >
+  typedef Immutable<base::ListValue, HasSwapMemFnByPtr<base::ListValue> >
       ImmutableListValue;
   ImmutableListValue args_;
 };

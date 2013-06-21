@@ -61,7 +61,7 @@ TEST(TestAccountsClientTest, ClaimAccountSuccess) {
   usernames.push_back("foo2@gmail.com");
   NoNetworkTestAccountsClient client(kServer, kAccountSpace, usernames);
 
-  DictionaryValue success_dict;
+  base::DictionaryValue success_dict;
   success_dict.Set("username", new StringValue(kUsername));
   success_dict.Set("account_space", new StringValue(kAccountSpace));
   success_dict.Set("session_id", new StringValue(kSessionId));

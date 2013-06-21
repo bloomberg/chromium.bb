@@ -154,8 +154,8 @@ const std::string& GoogleServiceAuthError::error_message() const {
   return error_message_;
 }
 
-DictionaryValue* GoogleServiceAuthError::ToValue() const {
-  DictionaryValue* value = new DictionaryValue();
+base::DictionaryValue* GoogleServiceAuthError::ToValue() const {
+  base::DictionaryValue* value = new base::DictionaryValue();
   std::string state_str;
   switch (state_) {
 #define STATE_CASE(x) case x: state_str = #x; break
@@ -182,7 +182,7 @@ DictionaryValue* GoogleServiceAuthError::ToValue() const {
     value->SetString("errorMessage", error_message_);
   }
   if (state_ == CAPTCHA_REQUIRED) {
-    DictionaryValue* captcha_value = new DictionaryValue();
+    base::DictionaryValue* captcha_value = new base::DictionaryValue();
     value->Set("captcha", captcha_value);
     captcha_value->SetString("token", captcha_.token);
     captcha_value->SetString("audioUrl", captcha_.audio_url.spec());
@@ -193,7 +193,7 @@ DictionaryValue* GoogleServiceAuthError::ToValue() const {
   } else if (state_ == CONNECTION_FAILED) {
     value->SetString("networkError", net::ErrorToString(network_error_));
   } else if (state_ == TWO_FACTOR) {
-    DictionaryValue* two_factor_value = new DictionaryValue();
+    base::DictionaryValue* two_factor_value = new base::DictionaryValue();
     value->Set("two_factor", two_factor_value);
     two_factor_value->SetString("token", second_factor_.token);
     two_factor_value->SetString("promptText", second_factor_.prompt_text);

@@ -61,10 +61,10 @@ const char* GetMessageTypeString(TrafficRecorder::TrafficMessageType type) {
 }
 }
 
-DictionaryValue* TrafficRecorder::TrafficRecord::ToValue() const {
-  scoped_ptr<DictionaryValue> value;
+base::DictionaryValue* TrafficRecorder::TrafficRecord::ToValue() const {
+  scoped_ptr<base::DictionaryValue> value;
   if (truncated) {
-    value.reset(new DictionaryValue());
+    value.reset(new base::DictionaryValue());
     value->SetString("message_type",
                      GetMessageTypeString(message_type));
     value->SetBoolean("truncated", true);
@@ -90,8 +90,8 @@ DictionaryValue* TrafficRecorder::TrafficRecord::ToValue() const {
 }
 
 
-ListValue* TrafficRecorder::ToValue() const {
-  scoped_ptr<ListValue> value(new ListValue());
+base::ListValue* TrafficRecorder::ToValue() const {
+  scoped_ptr<base::ListValue> value(new base::ListValue());
   std::deque<TrafficRecord>::const_iterator it;
   for (it = records_.begin(); it != records_.end(); ++it) {
     const TrafficRecord& record = *it;

@@ -58,7 +58,7 @@ std::string GetBitmapDataUrlFromResource(int res) {
   return str_url;
 }
 
-WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
+WindowOpenDisposition GetDispositionFromClick(const base::ListValue* args,
                                               int start_index) {
   double button = 0.0;
   bool alt_key = false;
@@ -127,7 +127,7 @@ void ParsePathAndScale(const GURL& url,
 }
 
 // static
-void SetFontAndTextDirection(DictionaryValue* localized_strings) {
+void SetFontAndTextDirection(base::DictionaryValue* localized_strings) {
   int web_font_family_id = IDS_WEB_FONT_FAMILY;
   int web_font_size_id = IDS_WEB_FONT_SIZE;
 #if defined(OS_WIN)

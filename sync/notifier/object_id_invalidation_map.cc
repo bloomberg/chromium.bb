@@ -56,10 +56,10 @@ bool ObjectIdInvalidationMapEquals(
 
 scoped_ptr<base::ListValue> ObjectIdInvalidationMapToValue(
     const ObjectIdInvalidationMap& invalidation_map) {
-  scoped_ptr<ListValue> value(new ListValue());
+  scoped_ptr<base::ListValue> value(new base::ListValue());
   for (ObjectIdInvalidationMap::const_iterator it = invalidation_map.begin();
        it != invalidation_map.end(); ++it) {
-    DictionaryValue* entry = new DictionaryValue();
+    base::DictionaryValue* entry = new base::DictionaryValue();
     entry->Set("objectId", ObjectIdToValue(it->first).release());
     entry->Set("state", it->second.ToValue().release());
     value->Append(entry);

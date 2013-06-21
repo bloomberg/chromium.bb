@@ -33,7 +33,7 @@ bool AckHandle::Equals(const AckHandle& other) const {
 }
 
 scoped_ptr<base::DictionaryValue> AckHandle::ToValue() const {
-  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString("state", state_);
   value->SetString("timestamp",
                    base::Int64ToString(timestamp_.ToInternalValue()));
@@ -76,14 +76,14 @@ bool Invalidation::Equals(const Invalidation& other) const {
 }
 
 scoped_ptr<base::DictionaryValue> Invalidation::ToValue() const {
-  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString("payload", payload);
   value->Set("ackHandle", ack_handle.ToValue().release());
   return value.Pass();
 }
 
 bool Invalidation::ResetFromValue(const base::DictionaryValue& value) {
-  const DictionaryValue* ack_handle_value = NULL;
+  const base::DictionaryValue* ack_handle_value = NULL;
   return
       value.GetString("payload", &payload) &&
       value.GetDictionary("ackHandle", &ack_handle_value) &&

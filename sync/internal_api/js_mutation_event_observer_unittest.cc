@@ -70,10 +70,10 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
   for (int i = AUTOFILL_PROFILE; i < MODEL_TYPE_COUNT; ++i) {
     const std::string& model_type_str =
         ModelTypeToString(ModelTypeFromInt(i));
-    DictionaryValue expected_details;
+    base::DictionaryValue expected_details;
     expected_details.SetString("modelType", model_type_str);
     expected_details.SetString("writeTransactionId", "0");
-    ListValue* expected_changes = new ListValue();
+    base::ListValue* expected_changes = new base::ListValue();
     expected_details.Set("changes", expected_changes);
     for (int j = i; j < MODEL_TYPE_COUNT; ++j) {
       expected_changes->Append(changes[j].ToValue());
@@ -98,7 +98,7 @@ TEST_F(JsMutationEventObserverTest, OnChangesComplete) {
   InSequence dummy;
 
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    DictionaryValue expected_details;
+    base::DictionaryValue expected_details;
     expected_details.SetString(
         "modelType",
         ModelTypeToString(ModelTypeFromInt(i)));

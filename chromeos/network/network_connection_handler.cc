@@ -64,7 +64,7 @@ bool NetworkRequiresActivation(const NetworkState* network) {
 
 bool VPNIsConfigured(const std::string& service_path,
                      const base::DictionaryValue& service_properties) {
-  const DictionaryValue* properties;
+  const base::DictionaryValue* properties;
   if (!service_properties.GetDictionary(flimflam::kProviderProperty,
                                         &properties)) {
     NET_LOG_ERROR("VPN Provider Dictionary not present", service_path);

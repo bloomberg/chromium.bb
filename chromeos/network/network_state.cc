@@ -218,10 +218,10 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                             error_);
   dictionary->SetStringWithoutPathExpansion(shill::kErrorDetailsProperty,
                                             error_details_);
-  base::DictionaryValue* ipconfig_properties = new DictionaryValue;
+  base::DictionaryValue* ipconfig_properties = new base::DictionaryValue;
   ipconfig_properties->SetStringWithoutPathExpansion(flimflam::kAddressProperty,
                                                      ip_address_);
-  base::ListValue* name_servers = new ListValue;
+  base::ListValue* name_servers = new base::ListValue;
   name_servers->AppendStrings(dns_servers_);
   ipconfig_properties->SetWithoutPathExpansion(flimflam::kNameServersProperty,
                                                name_servers);

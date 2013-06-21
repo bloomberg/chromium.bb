@@ -35,7 +35,7 @@ void JsSyncEncryptionHandlerObserver::OnPassphraseRequired(
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.SetString("reason",
                      PassphraseRequiredReasonToString(reason));
   HandleJsEvent(FROM_HERE, "onPassphraseRequired", JsEventDetails(&details));
@@ -45,7 +45,7 @@ void JsSyncEncryptionHandlerObserver::OnPassphraseAccepted() {
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   HandleJsEvent(FROM_HERE, "onPassphraseAccepted", JsEventDetails(&details));
 }
 
@@ -55,7 +55,7 @@ void JsSyncEncryptionHandlerObserver::OnBootstrapTokenUpdated(
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.SetString("bootstrapToken", "<redacted>");
   details.SetString("type", BootstrapTokenTypeToString(type));
   HandleJsEvent(FROM_HERE, "onBootstrapTokenUpdated", JsEventDetails(&details));
@@ -67,7 +67,7 @@ void JsSyncEncryptionHandlerObserver::OnEncryptedTypesChanged(
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.Set("encryptedTypes",
               ModelTypeSetToValue(encrypted_types));
   details.SetBoolean("encryptEverything", encrypt_everything);
@@ -79,7 +79,7 @@ void JsSyncEncryptionHandlerObserver::OnEncryptionComplete() {
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   HandleJsEvent(FROM_HERE, "onEncryptionComplete", JsEventDetails());
 }
 
@@ -88,7 +88,7 @@ void JsSyncEncryptionHandlerObserver::OnCryptographerStateChanged(
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.SetBoolean("ready",
                      cryptographer->is_ready());
   details.SetBoolean("hasPendingKeys",
@@ -104,7 +104,7 @@ void JsSyncEncryptionHandlerObserver::OnPassphraseTypeChanged(
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.SetString("passphraseType",
                     PassphraseTypeToString(type));
   details.SetInteger("explicitPassphraseTime",

@@ -35,16 +35,16 @@ ModelTypeSet ModelTypeInvalidationMapToSet(
 
 std::string ModelTypeInvalidationMapToString(
     const ModelTypeInvalidationMap& invalidation_map) {
-  scoped_ptr<DictionaryValue> value(
+  scoped_ptr<base::DictionaryValue> value(
       ModelTypeInvalidationMapToValue(invalidation_map));
   std::string json;
   base::JSONWriter::Write(value.get(), &json);
   return json;
 }
 
-DictionaryValue* ModelTypeInvalidationMapToValue(
+base::DictionaryValue* ModelTypeInvalidationMapToValue(
     const ModelTypeInvalidationMap& invalidation_map) {
-  DictionaryValue* value = new DictionaryValue();
+  base::DictionaryValue* value = new base::DictionaryValue();
   for (ModelTypeInvalidationMap::const_iterator it = invalidation_map.begin();
        it != invalidation_map.end(); ++it) {
     std::string printable_payload;

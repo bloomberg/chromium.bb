@@ -28,7 +28,7 @@ std::string ValueToString(const base::Value& value) {
 
 // Copied from policy/configuration_policy_handler.cc.
 // TODO(pneubeck): move to a common place like base/.
-std::string ValueTypeToString(Value::Type type) {
+std::string ValueTypeToString(base::Value::Type type) {
   static const char* strings[] = {
     "null",
     "boolean",

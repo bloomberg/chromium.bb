@@ -19,11 +19,11 @@ TEST_F(JsEventDetailsTest, EmptyList) {
 }
 
 TEST_F(JsEventDetailsTest, FromDictionary) {
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetString("foo", "bar");
-  dict.Set("baz", new ListValue());
+  dict.Set("baz", new base::ListValue());
 
-  scoped_ptr<DictionaryValue> dict_copy(dict.DeepCopy());
+  scoped_ptr<base::DictionaryValue> dict_copy(dict.DeepCopy());
 
   JsEventDetails details(&dict);
 

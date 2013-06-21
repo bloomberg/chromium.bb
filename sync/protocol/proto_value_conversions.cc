@@ -335,7 +335,7 @@ base::DictionaryValue* DictionarySpecificsToValue(
 
 namespace {
 
-DictionaryValue* FaviconSyncFlagsToValue(
+base::DictionaryValue* FaviconSyncFlagsToValue(
     const sync_pb::FaviconSyncFlags& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
   SET_BOOL(enabled);
@@ -378,9 +378,9 @@ base::DictionaryValue* ExtensionSpecificsToValue(
 }
 
 namespace {
-DictionaryValue* FaviconDataToValue(
+base::DictionaryValue* FaviconDataToValue(
     const sync_pb::FaviconData& proto) {
-  DictionaryValue* value = new DictionaryValue();
+  base::DictionaryValue* value = new base::DictionaryValue();
   SET_BYTES(favicon);
   SET_INT32(width);
   SET_INT32(height);
@@ -388,9 +388,9 @@ DictionaryValue* FaviconDataToValue(
 }
 }  // namespace
 
-DictionaryValue* FaviconImageSpecificsToValue(
+base::DictionaryValue* FaviconImageSpecificsToValue(
     const sync_pb::FaviconImageSpecifics& proto) {
-  DictionaryValue* value = new DictionaryValue();
+  base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR(favicon_url);
   SET(favicon_web, FaviconDataToValue);
   SET(favicon_web_32, FaviconDataToValue);
@@ -399,9 +399,9 @@ DictionaryValue* FaviconImageSpecificsToValue(
   return value;
 }
 
-DictionaryValue* FaviconTrackingSpecificsToValue(
+base::DictionaryValue* FaviconTrackingSpecificsToValue(
     const sync_pb::FaviconTrackingSpecifics& proto) {
-  DictionaryValue* value = new DictionaryValue();
+  base::DictionaryValue* value = new base::DictionaryValue();
   SET_STR(favicon_url);
   SET_INT64(last_visit_time_ms)
   SET_BOOL(is_bookmarked);
@@ -577,10 +577,10 @@ base::DictionaryValue* EntitySpecificsToValue(
 
 namespace {
 
-StringValue* UniquePositionToStringValue(
+base::StringValue* UniquePositionToStringValue(
     const sync_pb::UniquePosition& proto) {
   UniquePosition pos = UniquePosition::FromProto(proto);
-  return new StringValue(pos.ToDebugString());
+  return new base::StringValue(pos.ToDebugString());
 }
 
 base::DictionaryValue* SyncEntityToValue(const sync_pb::SyncEntity& proto,

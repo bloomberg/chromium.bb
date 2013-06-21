@@ -33,8 +33,9 @@ UI_EXPORT std::string GetBitmapDataUrlFromResource(int resource_id);
 // Extracts a disposition from click event arguments. |args| should contain
 // an integer button and booleans alt key, ctrl key, meta key, and shift key
 // (in that order), starting at |start_index|.
-UI_EXPORT WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
-                                                        int start_index);
+UI_EXPORT WindowOpenDisposition GetDispositionFromClick(
+    const base::ListValue* args,
+    int start_index);
 
 // Given a scale factor such as "1x", "2x" or "1.99x", sets |scale_factor| to
 // the closest ScaleFactor enum value for this scale factor. If string can not

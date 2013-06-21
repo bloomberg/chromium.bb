@@ -34,7 +34,7 @@ void JsSyncManagerObserver::OnSyncCycleCompleted(
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.Set("snapshot", snapshot.ToValue());
   HandleJsEvent(FROM_HERE, "onSyncCycleCompleted", JsEventDetails(&details));
 }
@@ -43,7 +43,7 @@ void JsSyncManagerObserver::OnConnectionStatusChange(ConnectionStatus status) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.SetString("status", ConnectionStatusToString(status));
   HandleJsEvent(FROM_HERE,
                 "onConnectionStatusChange", JsEventDetails(&details));
@@ -53,7 +53,7 @@ void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.SetString("token", "<redacted>");
   HandleJsEvent(FROM_HERE, "onUpdatedToken", JsEventDetails(&details));
 }
@@ -63,7 +63,7 @@ void JsSyncManagerObserver::OnActionableError(
   if (!event_handler_.IsInitialized()) {
     return;
   }
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.Set("syncError",  sync_error.ToValue());
   HandleJsEvent(FROM_HERE, "onActionableError",
                 JsEventDetails(&details));
@@ -79,7 +79,7 @@ void JsSyncManagerObserver::OnInitializationComplete(
   // Ignore the |js_backend| argument; it's not really convertible to
   // JSON anyway.
 
-  DictionaryValue details;
+  base::DictionaryValue details;
   details.Set("restoredTypes", ModelTypeSetToValue(restored_types));
 
   HandleJsEvent(FROM_HERE,

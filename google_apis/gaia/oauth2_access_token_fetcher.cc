@@ -226,7 +226,8 @@ bool OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
   if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY)
     return false;
 
-  DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+  base::DictionaryValue* dict =
+      static_cast<base::DictionaryValue*>(value.get());
   return dict->GetString(kAccessTokenKey, access_token) &&
       dict->GetInteger(kExpiresInKey, expires_in);
 }

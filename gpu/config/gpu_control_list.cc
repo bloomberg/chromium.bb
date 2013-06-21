@@ -1189,7 +1189,7 @@ bool GpuControlList::LoadList(
     return false;
 
   base::DictionaryValue* root_dictionary =
-      static_cast<DictionaryValue*>(root.get());
+      static_cast<base::DictionaryValue*>(root.get());
   DCHECK(root_dictionary);
   return LoadList(*root_dictionary, os_filter);
 }

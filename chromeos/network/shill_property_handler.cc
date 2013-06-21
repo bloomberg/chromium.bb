@@ -282,7 +282,7 @@ bool ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
       UpdateObserved(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
     }
   } else if (key == flimflam::kDevicesProperty) {
-    const ListValue* vlist = GetListValue(key, value);
+    const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {
       listener_->UpdateManagedList(ManagedState::MANAGED_TYPE_DEVICE, *vlist);
       UpdateObserved(ManagedState::MANAGED_TYPE_DEVICE, *vlist);

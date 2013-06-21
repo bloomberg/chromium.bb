@@ -35,7 +35,7 @@ bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address,
 
 std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
   // TODO(sergeyu): Use SDP to format candidates?
-  DictionaryValue value;
+  base::DictionaryValue value;
   value.SetString("ip", candidate.address().ipaddr().ToString());
   value.SetInteger("port", candidate.address().port());
   value.SetString("type", candidate.type());
@@ -52,13 +52,14 @@ std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
 
 bool DeserializeP2PCandidate(const std::string& candidate_str,
                              cricket::Candidate* candidate) {
-  scoped_ptr<Value> value(
+  scoped_ptr<base::Value> value(
       base::JSONReader::Read(candidate_str, base::JSON_ALLOW_TRAILING_COMMAS));
-  if (!value.get() || !value->IsType(Value::TYPE_DICTIONARY)) {
+  if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     return false;
   }
 
-  DictionaryValue* dic_value = static_cast<DictionaryValue*>(value.get());
+  base::DictionaryValue* dic_value =
+      static_cast<base::DictionaryValue*>(value.get());
 
   std::string ip;
   int port;

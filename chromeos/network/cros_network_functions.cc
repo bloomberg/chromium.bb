@@ -286,7 +286,7 @@ void ListIPConfigsCallback(const NetworkGetIPConfigsCallback& callback,
                            const base::DictionaryValue& properties) {
   NetworkIPConfigVector ipconfig_vector;
   std::string hardware_address;
-  const ListValue* ips = NULL;
+  const base::ListValue* ips = NULL;
   if (call_status != DBUS_METHOD_CALL_SUCCESS ||
       !properties.GetListWithoutPathExpansion(flimflam::kIPConfigsProperty,
                                               &ips)) {
@@ -627,7 +627,7 @@ bool CrosListIPConfigsAndBlock(const std::string& device_path,
   if (!properties.get())
     return false;
 
-  ListValue* ips = NULL;
+  base::ListValue* ips = NULL;
   if (!properties->GetListWithoutPathExpansion(
           flimflam::kIPConfigsProperty, &ips))
     return false;

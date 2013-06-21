@@ -35,7 +35,7 @@ bool DeviceState::PropertyChanged(const std::string& key,
   } else if (key == shill::kProviderRequiresRoamingProperty) {
     return GetBooleanValue(key, value, &provider_requires_roaming_);
   } else if (key == flimflam::kHomeProviderProperty) {
-    const DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = NULL;
     if (!value.GetAsDictionary(&dict))
       return false;
     std::string home_provider_country;
@@ -60,7 +60,7 @@ bool DeviceState::PropertyChanged(const std::string& key,
   } else if (key == flimflam::kTechnologyFamilyProperty) {
     return GetStringValue(key, value, &technology_family_);
   } else if (key == flimflam::kSIMLockStatusProperty) {
-    const DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = NULL;
     if (!value.GetAsDictionary(&dict))
       return false;
     if (!dict->GetStringWithoutPathExpansion(flimflam::kSIMLockTypeProperty,

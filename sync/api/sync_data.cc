@@ -121,7 +121,8 @@ std::string SyncData::ToString() const {
 
   std::string type = ModelTypeToString(GetDataType());
   std::string specifics;
-  scoped_ptr<DictionaryValue> value(EntitySpecificsToValue(GetSpecifics()));
+  scoped_ptr<base::DictionaryValue> value(
+      EntitySpecificsToValue(GetSpecifics()));
   base::JSONWriter::WriteWithOptions(value.get(),
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &specifics);

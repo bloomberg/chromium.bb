@@ -23,23 +23,23 @@ const char kFirstRunTabs[] = "first_run_tabs";
 base::LazyInstance<installer::MasterPreferences> g_master_preferences =
     LAZY_INSTANCE_INITIALIZER;
 
-bool GetURLFromValue(const Value* in_value, std::string* out_value) {
+bool GetURLFromValue(const base::Value* in_value, std::string* out_value) {
   return in_value && out_value && in_value->GetAsString(out_value);
 }
 
 std::vector<std::string> GetNamedList(const char* name,
-                                      const DictionaryValue* prefs) {
+                                      const base::DictionaryValue* prefs) {
   std::vector<std::string> list;
   if (!prefs)
     return list;
 
-  const ListValue* value_list = NULL;
+  const base::ListValue* value_list = NULL;
   if (!prefs->GetList(name, &value_list))
     return list;
 
   list.reserve(value_list->GetSize());
   for (size_t i = 0; i < value_list->GetSize(); ++i) {
-    const Value* entry;
+    const base::Value* entry;
     std::string url_entry;
     if (!value_list->Get(i, &entry) || !GetURLFromValue(entry, &url_entry)) {
       NOTREACHED();
@@ -50,20 +50,21 @@ std::vector<std::string> GetNamedList(const char* name,
   return list;
 }
 
-DictionaryValue* ParseDistributionPreferences(const std::string& json_data) {
+base::DictionaryValue* ParseDistributionPreferences(
+    const std::string& json_data) {
   JSONStringValueSerializer json(json_data);
   std::string error;
-  scoped_ptr<Value> root(json.Deserialize(NULL, &error));
+  scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
   if (!root.get()) {
     LOG(WARNING) << "Failed to parse master prefs file: " << error;
     return NULL;
   }
-  if (!root->IsType(Value::TYPE_DICTIONARY)) {
+  if (!root->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(WARNING) << "Failed to parse master prefs file: "
                  << "Root item must be a dictionary.";
     return NULL;
   }
-  return static_cast<DictionaryValue*>(root.release());
+  return static_cast<base::DictionaryValue*>(root.release());
 }
 
 }  // namespace
@@ -128,7 +129,7 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
         installer::switches::kInstallerData));
     this->MasterPreferences::MasterPreferences(prefs_path);
   } else {
-    master_dictionary_.reset(new DictionaryValue());
+    master_dictionary_.reset(new base::DictionaryValue());
   }
 
   DCHECK(master_dictionary_.get());
@@ -216,7 +217,7 @@ bool MasterPreferences::InitializeFromString(const std::string& json_data) {
 
   bool data_is_valid = true;
   if (!master_dictionary_.get()) {
-    master_dictionary_.reset(new DictionaryValue());
+    master_dictionary_.reset(new base::DictionaryValue());
     data_is_valid = false;
   } else {
     // Cache a pointer to the distribution dictionary.
@@ -305,7 +306,8 @@ std::vector<std::string> MasterPreferences::GetFirstRunTabs() const {
   return GetNamedList(kFirstRunTabs, master_dictionary_.get());
 }
 
-bool MasterPreferences::GetExtensionsBlock(DictionaryValue** extensions) const {
+bool MasterPreferences::GetExtensionsBlock(
+    base::DictionaryValue** extensions) const {
   return master_dictionary_->GetDictionary(
       master_preferences::kExtensionsBlock, extensions);
 }

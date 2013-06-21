@@ -88,8 +88,8 @@ class HasDetailsMatcher
 }
 
 ::testing::Matcher<const JsArgList&> HasArgsAsList(
-    const ListValue& expected_args) {
-  scoped_ptr<ListValue> expected_args_copy(expected_args.DeepCopy());
+    const base::ListValue& expected_args) {
+  scoped_ptr<base::ListValue> expected_args_copy(expected_args.DeepCopy());
   return HasArgs(JsArgList(expected_args_copy.get()));
 }
 
@@ -99,8 +99,8 @@ class HasDetailsMatcher
 }
 
 ::testing::Matcher<const JsEventDetails&> HasDetailsAsDictionary(
-    const DictionaryValue& expected_details) {
-  scoped_ptr<DictionaryValue> expected_details_copy(
+    const base::DictionaryValue& expected_details) {
+  scoped_ptr<base::DictionaryValue> expected_details_copy(
       expected_details.DeepCopy());
   return HasDetails(JsEventDetails(expected_details_copy.get()));
 }

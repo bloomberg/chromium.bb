@@ -53,8 +53,8 @@ SyncSessionSnapshot::SyncSessionSnapshot(
 
 SyncSessionSnapshot::~SyncSessionSnapshot() {}
 
-DictionaryValue* SyncSessionSnapshot::ToValue() const {
-  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+base::DictionaryValue* SyncSessionSnapshot::ToValue() const {
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetInteger("numSuccessfulCommits",
                     model_neutral_state_.num_successful_commits);
   value->SetInteger("numSuccessfulBookmarkCommits",
@@ -86,9 +86,10 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
   value->Set("source", source_.ToValue());
   value->SetBoolean("notificationsEnabled", notifications_enabled_);
 
-  scoped_ptr<DictionaryValue> counter_entries(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> counter_entries(
+      new base::DictionaryValue());
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; i++) {
-    scoped_ptr<DictionaryValue> type_entries(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> type_entries(new base::DictionaryValue());
     type_entries->SetInteger("numEntries", num_entries_by_type_[i]);
     type_entries->SetInteger("numToDeleteEntries",
                              num_to_delete_entries_by_type_[i]);
@@ -101,7 +102,7 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
 }
 
 std::string SyncSessionSnapshot::ToString() const {
-  scoped_ptr<DictionaryValue> value(ToValue());
+  scoped_ptr<base::DictionaryValue> value(ToValue());
   std::string json;
   base::JSONWriter::WriteWithOptions(value.get(),
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,

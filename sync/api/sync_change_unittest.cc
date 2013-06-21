@@ -47,8 +47,8 @@ TEST_F(SyncChangeTest, LocalUpdate) {
   EXPECT_EQ(tag, e.sync_data().GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
-  scoped_ptr<DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
-  scoped_ptr<DictionaryValue> e_spec(EntitySpecificsToValue(
+  scoped_ptr<base::DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
+  scoped_ptr<base::DictionaryValue> e_spec(EntitySpecificsToValue(
       e.sync_data().GetSpecifics()));
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));
 }
@@ -67,8 +67,8 @@ TEST_F(SyncChangeTest, LocalAdd) {
   EXPECT_EQ(tag, e.sync_data().GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
-  scoped_ptr<DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
-  scoped_ptr<DictionaryValue> e_spec(EntitySpecificsToValue(
+  scoped_ptr<base::DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
+  scoped_ptr<base::DictionaryValue> e_spec(EntitySpecificsToValue(
       e.sync_data().GetSpecifics()));
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));
 }
@@ -110,9 +110,9 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   SyncChange e = change_list[0];
   EXPECT_EQ(SyncChange::ACTION_UPDATE, e.change_type());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
-  scoped_ptr<DictionaryValue> ref_spec(EntitySpecificsToValue(
+  scoped_ptr<base::DictionaryValue> ref_spec(EntitySpecificsToValue(
       update_specifics));
-  scoped_ptr<DictionaryValue> e_spec(EntitySpecificsToValue(
+  scoped_ptr<base::DictionaryValue> e_spec(EntitySpecificsToValue(
       e.sync_data().GetSpecifics()));
   EXPECT_TRUE(ref_spec->Equals(e_spec.get()));
 
