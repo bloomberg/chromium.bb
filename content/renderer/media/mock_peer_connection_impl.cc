@@ -104,6 +104,11 @@ class MockDataChannel : public webrtc::DataChannelInterface {
     return reliable_;
   }
 
+  virtual int id() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return 0;
+  }
+
   virtual DataState state() const OVERRIDE {
     return state_;
   }
