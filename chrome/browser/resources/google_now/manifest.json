@@ -14,7 +14,8 @@
     "tabs",
     // TODO(vadimt): Replace <all_urls> with real URL patterns once we know
     // them.
-    "<all_urls>"
+    "<all_urls>",
+    "identity"
   ],
   "manifest_version": 2,
   "background": {
@@ -22,5 +23,9 @@
     "persistent": false
   },
   // TODO(vadimt): Remove using chrome.omnibox.
-  "omnibox": { "keyword" : "gn_url" }
+  "omnibox": { "keyword" : "gn_url" },
+  "oauth2": {
+    "auto_approve": true,
+    "scopes": ["https://www.googleapis.com/auth/googlenow"]
+  }
 }

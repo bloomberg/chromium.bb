@@ -32,6 +32,9 @@
  */
 var HTTP_OK = 200;
 
+var HTTP_UNAUTHORIZED = 401;
+var HTTP_FORBIDDEN = 403;
+
 /**
  * Initial period for polling for Google Now Notifications cards to use when the
  * period from the server is not available.
@@ -112,6 +115,8 @@ function areTasksConflicting(newTaskName, scheduledTaskName) {
 var tasks = buildTaskManager(areTasksConflicting);
 
 // Add error processing to API calls.
+tasks.instrumentApiFunction(chrome.identity, 'getAuthToken', 1);
+tasks.instrumentApiFunction(chrome.identity, 'removeCachedAuthToken', 1);
 tasks.instrumentApiFunction(chrome.location.onLocationUpdate, 'addListener', 0);
 tasks.instrumentApiFunction(chrome.notifications, 'create', 2);
 tasks.instrumentApiFunction(chrome.notifications, 'update', 2);
@@ -166,6 +171,47 @@ function recordEvent(event) {
   };
 
   chrome.metricsPrivate.recordValue(metricDescription, event);
+}
+
+/**
+ * Adds authorization behavior to the request.
+ * @param {XMLHttpRequest} request Server request.
+ * @param {function(boolean)} callbackBoolean Completion callback with 'success'
+ *     parameter.
+ */
+function setAuthorization(request, callbackBoolean) {
+  tasks.debugSetStepName('setAuthorization-getAuthToken');
+  chrome.identity.getAuthToken({interactive: false}, function(token) {
+    var errorMessage =
+        chrome.runtime.lastError && chrome.runtime.lastError.message;
+    console.log('setAuthorization: error=' + errorMessage +
+                ', token=' + (token && 'non-empty'));
+    if (chrome.runtime.lastError || !token) {
+      callbackBoolean(false);
+      return;
+    }
+
+    request.setRequestHeader('Authorization', 'Bearer ' + token);
+
+    // Instrument onloadend to remove stale auth tokens.
+    var originalOnLoadEnd = request.onloadend;
+    request.onloadend = tasks.wrapCallback(function(event) {
+      if (request.status == HTTP_FORBIDDEN ||
+          request.status == HTTP_UNAUTHORIZED) {
+        tasks.debugSetStepName('setAuthorization-removeCachedAuthToken');
+        chrome.identity.removeCachedAuthToken({token: token}, function() {
+          // After purging the token cache, call getAuthToken() again to let
+          // Chrome know about the problem with the token.
+          chrome.identity.getAuthToken({interactive: false}, function() {});
+          originalOnLoadEnd(event);
+        });
+      } else {
+        originalOnLoadEnd(event);
+      }
+    });
+
+    callbackBoolean(true);
+  });
 }
 
 /**
@@ -357,10 +403,9 @@ function requestNotificationCards(position, callback) {
       ',' + position.coords.longitude +
       ',' + position.coords.accuracy;
 
-  // TODO(vadimt): Figure out how to send user's identity to the server.
   var request = buildServerRequest('notifications');
 
-  request.onloadend = tasks.wrapCallback(function(event) {
+  request.onloadend = function(event) {
     console.log('requestNotificationCards-onloadend ' + request.status);
     if (request.status == HTTP_OK) {
       recordEvent(DiagnosticEvent.REQUEST_FOR_CARDS_SUCCESS);
@@ -368,10 +413,16 @@ function requestNotificationCards(position, callback) {
     } else {
       callback();
     }
-  });
+  };
 
-  tasks.debugSetStepName('requestNotificationCards-send-request');
-  request.send(requestParameters);
+  setAuthorization(request, function(success) {
+    if (success) {
+      tasks.debugSetStepName('requestNotificationCards-send-request');
+      request.send(requestParameters);
+    } else {
+      callback();
+    }
+  });
 }
 
 /**
@@ -425,16 +476,22 @@ function requestCardDismissal(
   var requestParameters = 'id=' + notificationId +
                           '&dismissalAge=' + (Date.now() - dismissalTimeMs);
   var request = buildServerRequest('dismiss');
-  request.onloadend = tasks.wrapCallback(function(event) {
+  request.onloadend = function(event) {
     console.log('requestDismissingCard-onloadend ' + request.status);
     if (request.status == HTTP_OK)
       recordEvent(DiagnosticEvent.DISMISS_REQUEST_SUCCESS);
 
     callbackBoolean(request.status == HTTP_OK);
-  });
+  };
 
-  tasks.debugSetStepName('requestCardDismissal-send-request');
-  request.send(requestParameters);
+  setAuthorization(request, function(success) {
+    if (success) {
+      tasks.debugSetStepName('requestCardDismissal-send-request');
+      request.send(requestParameters);
+    } else {
+      callbackBoolean(false);
+    }
+  });
 }
 
 /**
