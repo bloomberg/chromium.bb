@@ -6,13 +6,9 @@
 
 import os
 import platform
-import sys
 import urllib
 
-_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
-
-from common import util
+import util
 
 CHROME_27_REVISION = '190466'
 CHROME_28_REVISION = '198276'

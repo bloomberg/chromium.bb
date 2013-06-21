@@ -11,11 +11,9 @@ tests in various environments.
 import os
 import sys
 
+import util
+
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
-
-from common import util
 
 if util.IsLinux():
   sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
@@ -78,7 +76,7 @@ class BaseTestEnvironment(object):
 class DesktopTestEnvironment(BaseTestEnvironment):
   """Manages the environment java tests require to run on Desktop."""
 
-  #override
+  # override
   def GetOS(self):
     return util.GetPlatformName()
 
@@ -91,7 +89,7 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
     self._adb = None
     self._forwarder = None
 
-  #override
+  # override
   def GlobalSetUp(self):
     os.putenv('TEST_HTTP_PORT', str(ANDROID_TEST_HTTP_PORT))
     os.putenv('TEST_HTTPS_PORT', str(ANDROID_TEST_HTTPS_PORT))
@@ -102,13 +100,13 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
          (ANDROID_TEST_HTTPS_PORT, ANDROID_TEST_HTTPS_PORT)],
         valgrind_tools.BaseTool(), '127.0.0.1')
 
-  #override
+  # override
   def GlobalTearDown(self):
     if self._adb is not None:
       forwarder.Forwarder.KillDevice(self._adb, valgrind_tools.BaseTool())
     if self._forwarder is not None:
       self._forwarder.Close()
 
-  #override
+  # override
   def GetOS(self):
     return 'android'
