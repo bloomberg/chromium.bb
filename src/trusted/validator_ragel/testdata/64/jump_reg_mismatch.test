@@ -7,9 +7,9 @@
   # jmp %rax
   ff e0
 @dis:
-     0:	83 e3 e0             	and    $0xffffffffffffffe0,%ebx
-     3:	4c 01 fb             	add    %r15,%rbx
-     6:	ff e0                	jmpq   *%rax
+     0:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     3:	4c 01 fb                                     	add    %r15,%rbx
+     6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1

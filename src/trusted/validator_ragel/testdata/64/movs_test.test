@@ -30,33 +30,33 @@
   49 8d 3c 3f
   a4
 @dis:
-     0:	89 f6                	mov    %esi,%esi
-     2:	49 8d 34 37          	lea    (%r15,%rsi,1),%rsi
-     6:	89 ff                	mov    %edi,%edi
-     8:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-     c:	a4                   	movsb  %ds:(%rsi),%es:(%rdi)
-     d:	90                   	nop
-     e:	90                   	nop
-     f:	90                   	nop
-    10:	90                   	nop
-    11:	90                   	nop
-    12:	90                   	nop
-    13:	90                   	nop
-    14:	90                   	nop
-    15:	90                   	nop
-    16:	90                   	nop
-    17:	90                   	nop
-    18:	90                   	nop
-    19:	90                   	nop
-    1a:	90                   	nop
-    1b:	90                   	nop
-    1c:	90                   	nop
-    1d:	90                   	nop
-    1e:	89 f6                	mov    %esi,%esi
-    20:	49 8d 34 37          	lea    (%r15,%rsi,1),%rsi
-    24:	89 ff                	mov    %edi,%edi
-    26:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-    2a:	a4                   	movsb  %ds:(%rsi),%es:(%rdi)
+     0:	89 f6                                        	mov    %esi,%esi
+     2:	49 8d 34 37                                  	lea    (%r15,%rsi,1),%rsi
+     6:	89 ff                                        	mov    %edi,%edi
+     8:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     c:	a4                                           	movsb  %ds:(%rsi),%es:(%rdi)
+     d:	90                                           	nop
+     e:	90                                           	nop
+     f:	90                                           	nop
+    10:	90                                           	nop
+    11:	90                                           	nop
+    12:	90                                           	nop
+    13:	90                                           	nop
+    14:	90                                           	nop
+    15:	90                                           	nop
+    16:	90                                           	nop
+    17:	90                                           	nop
+    18:	90                                           	nop
+    19:	90                                           	nop
+    1a:	90                                           	nop
+    1b:	90                                           	nop
+    1c:	90                                           	nop
+    1d:	90                                           	nop
+    1e:	89 f6                                        	mov    %esi,%esi
+    20:	49 8d 34 37                                  	lea    (%r15,%rsi,1),%rsi
+    24:	89 ff                                        	mov    %edi,%edi
+    26:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+    2a:	a4                                           	movsb  %ds:(%rsi),%es:(%rdi)
 @rdfa_output:
   2a: [0] unrecognized instruction
   return code: 1

@@ -5,8 +5,8 @@
   89 ed
   41 8a 04 2f
 @dis:
-     0:	89 ed                	mov    %ebp,%ebp
-     2:	41 8a 04 2f          	mov    (%r15,%rbp,1),%al
+     0:	89 ed                                        	mov    %ebp,%ebp
+     2:	41 8a 04 2f                                  	mov    (%r15,%rbp,1),%al
 @rdfa_output:
   2: [0] improper %rbp sandboxing
   return code: 1
@@ -18,8 +18,8 @@
   89 e4
   42 8a 04 3c
 @dis:
-     0:	89 e4                	mov    %esp,%esp
-     2:	42 8a 04 3c          	mov    (%rsp,%r15,1),%al
+     0:	89 e4                                        	mov    %esp,%esp
+     2:	42 8a 04 3c                                  	mov    (%rsp,%r15,1),%al
 @rdfa_output:
   2: [0] improper memory address - bad index
   2: [0] improper %rsp sandboxing
@@ -33,8 +33,8 @@
   89 ed \\
   4c 01 fd
 @dis:
-     0:	89 ed                	mov    %ebp,%ebp
-     2:	4c 01 fd             	add    %r15,%rbp
+     0:	89 ed                                        	mov    %ebp,%ebp
+     2:	4c 01 fd                                     	add    %r15,%rbp
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -42,8 +42,8 @@
   83 c4 04 \\
   4a 8d 24 3c
 @dis:
-     0:	83 c4 04             	add    $0x4,%esp
-     3:	4a 8d 24 3c          	lea    (%rsp,%r15,1),%rsp
+     0:	83 c4 04                                     	add    $0x4,%esp
+     3:	4a 8d 24 3c                                  	lea    (%rsp,%r15,1),%rsp
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -53,8 +53,8 @@
   89 ed \\
   49 8d 2c 2f
 @dis:
-     0:	89 ed                	mov    %ebp,%ebp
-     2:	49 8d 2c 2f          	lea    (%r15,%rbp,1),%rbp
+     0:	89 ed                                        	mov    %ebp,%ebp
+     2:	49 8d 2c 2f                                  	lea    (%r15,%rbp,1),%rbp
 @rdfa_output:
   2: [0] improper %rbp sandboxing
   2: [0] error - %bpl or %bp is changed
@@ -66,9 +66,9 @@
   90
   48 89 ec
 @dis:
-     0:	48 89 e5             	mov    %rsp,%rbp
-     3:	90                   	nop
-     4:	48 89 ec             	mov    %rbp,%rsp
+     0:	48 89 e5                                     	mov    %rsp,%rbp
+     3:	90                                           	nop
+     4:	48 89 ec                                     	mov    %rbp,%rsp
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -80,8 +80,8 @@
   89 ed
   48 89 e5
 @dis:
-     0:	89 ed                	mov    %ebp,%ebp
-     2:	48 89 e5             	mov    %rsp,%rbp
+     0:	89 ed                                        	mov    %ebp,%ebp
+     2:	48 89 e5                                     	mov    %rsp,%rbp
 @rdfa_output:
   2: [0] improper %rbp sandboxing
   return code: 1

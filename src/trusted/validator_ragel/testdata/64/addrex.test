@@ -3,6 +3,6 @@
   # That is, validate: add %r11d, %eax
   41 01 C3
 @dis:
-     0:	41 01 c3             	add    %eax,%r11d
+     0:	41 01 c3                                     	add    %eax,%r11d
 @rdfa_output:
   return code: 0

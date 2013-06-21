@@ -11,16 +11,16 @@
   00 00 f4
   
 @dis:
-     0:	55                   	push   %ebp
-     1:	89 e5                	mov    %esp,%ebp
-     3:	83 ec 08             	sub    $0x8,%esp
-     6:	e8 81 00 00 00       	call   0x8c
-     b:	e8 d3 00 00 00       	call   0xe3
-    10:	e8 f3 04 00 00       	call   0x508
-    15:	c9                   	leave  
-    16:	c3                   	ret    
-    17:	00 00                	add    %al,(%eax)
-    19:	f4                   	hlt    
+     0:	55                                           	push   %ebp
+     1:	89 e5                                        	mov    %esp,%ebp
+     3:	83 ec 08                                     	sub    $0x8,%esp
+     6:	e8 81 00 00 00                               	call   0x8c
+     b:	e8 d3 00 00 00                               	call   0xe3
+    10:	e8 f3 04 00 00                               	call   0x508
+    15:	c9                                           	leave  
+    16:	c3                                           	ret    
+    17:	00 00                                        	add    %al,(%eax)
+    19:	f4                                           	hlt    
 @rdfa_output:
   6: [0] direct jump out of range
   b: [0] direct jump out of range

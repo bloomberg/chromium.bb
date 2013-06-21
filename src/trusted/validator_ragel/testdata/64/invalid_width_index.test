@@ -4,8 +4,8 @@
   49 89 44 CF 36
   
 @dis:
-     0:	66 83 e1 e0          	and    $0xffffffffffffffe0,%cx
-     4:	49 89 44 cf 36       	mov    %rax,0x36(%r15,%rcx,8)
+     0:	66 83 e1 e0                                  	and    $0xffffffffffffffe0,%cx
+     4:	49 89 44 cf 36                               	mov    %rax,0x36(%r15,%rcx,8)
 @rdfa_output:
   4: [0] improper memory address - bad index
   return code: 1

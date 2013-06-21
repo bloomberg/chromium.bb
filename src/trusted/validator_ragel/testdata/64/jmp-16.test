@@ -5,7 +5,7 @@
   # 0000000000000000: 66 ff e0                                     jmp %ax
   66 ff e0
 @dis:
-     0:	66 ff e0             	jmpw   *%ax
+     0:	66 ff e0                                     	jmpw   *%ax
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

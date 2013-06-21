@@ -28,6 +28,7 @@ class RdfaTestRunner(test_format.TestRunner):
           [options.objdump,
            '-mi386', arch, '--target=binary',
            '--disassemble-all', '--disassemble-zeroes',
+           '--insn-width=15',
            tmp.name],
           stdout=subprocess.PIPE)
 

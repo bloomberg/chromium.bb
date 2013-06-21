@@ -7,8 +7,8 @@
   48 89 cd
   4a 8d 2c 3c
 @dis:
-     0:	48 89 cd             	mov    %rcx,%rbp
-     3:	4a 8d 2c 3c          	lea    (%rsp,%r15,1),%rbp
+     0:	48 89 cd                                     	mov    %rcx,%rbp
+     3:	4a 8d 2c 3c                                  	lea    (%rsp,%r15,1),%rbp
 @rdfa_output:
   0: [0] error - %bpl or %bp is changed
   3: [0] error - %bpl or %bp is changed

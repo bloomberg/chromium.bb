@@ -5,8 +5,8 @@
   #  pslldq without 66 prefix.
   0f 73 ff 00
 @dis:
-     0:	0f 73                	(bad)  
-     2:	ff 00                	incl   (%rax)
+     0:	0f 73                                        	(bad)  
+     2:	ff 00                                        	incl   (%rax)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -15,6 +15,6 @@
   #  pslldq with proper 66 prefix.
   66 0f 73 ff 00
 @dis:
-     0:	66 0f 73 ff 00       	pslldq $0x0,%xmm7
+     0:	66 0f 73 ff 00                               	pslldq $0x0,%xmm7
 @rdfa_output:
   return code: 0

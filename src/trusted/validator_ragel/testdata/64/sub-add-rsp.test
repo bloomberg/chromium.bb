@@ -6,7 +6,7 @@
   4c 01 fc
   
 @dis:
-     0:	29 c4                	sub    %eax,%esp
-     2:	4c 01 fc             	add    %r15,%rsp
+     0:	29 c4                                        	sub    %eax,%esp
+     2:	4c 01 fc                                     	add    %r15,%rsp
 @rdfa_output:
   return code: 0

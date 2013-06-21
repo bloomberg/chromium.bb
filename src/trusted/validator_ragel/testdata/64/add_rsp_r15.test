@@ -3,7 +3,7 @@
   # See test lea-add-rsp.dis for an example of a proper previous instruction.
   4c 01 fc
 @dis:
-     0:	4c 01 fc             	add    %r15,%rsp
+     0:	4c 01 fc                                     	add    %r15,%rsp
 @rdfa_output:
   0: [0] improper %rsp sandboxing
   return code: 1

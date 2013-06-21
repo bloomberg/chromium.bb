@@ -5,7 +5,7 @@
   0d 00 00 00 00 \\
   41 31 1c 07
 @dis:
-     0:	0d 00 00 00 00       	or     $0x0,%eax
-     5:	41 31 1c 07          	xor    %ebx,(%r15,%rax,1)
+     0:	0d 00 00 00 00                               	or     $0x0,%eax
+     5:	41 31 1c 07                                  	xor    %ebx,(%r15,%rax,1)
 @rdfa_output:
   return code: 0

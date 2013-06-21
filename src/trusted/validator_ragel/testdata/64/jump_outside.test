@@ -6,8 +6,8 @@
   # jmp $21
   E9 17 00 00 00
 @dis:
-     0:	e9 1b 00 00 00       	jmpq   0x20
-     5:	e9 17 00 00 00       	jmpq   0x21
+     0:	e9 1b 00 00 00                               	jmpq   0x20
+     5:	e9 17 00 00 00                               	jmpq   0x21
 @rdfa_output:
   5: [0] direct jump out of range
   return code: 1

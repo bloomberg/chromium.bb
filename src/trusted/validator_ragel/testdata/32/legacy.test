@@ -29,18 +29,18 @@
   # sahf
   9E
 @dis:
-     0:	37                   	aaa    
-     1:	d5 0a                	aad    $0xa
-     3:	d4 0a                	aam    $0xa
-     5:	3f                   	aas    
-     6:	62 00                	bound  %eax,(%eax)
-     8:	27                   	daa    
-     9:	2f                   	das    
-     a:	d7                   	xlat   %ds:(%ebx)
-     b:	f1                   	icebp  
-     c:	d6                   	(bad)  
-     d:	9f                   	lahf   
-     e:	9e                   	sahf   
+     0:	37                                           	aaa    
+     1:	d5 0a                                        	aad    $0xa
+     3:	d4 0a                                        	aam    $0xa
+     5:	3f                                           	aas    
+     6:	62 00                                        	bound  %eax,(%eax)
+     8:	27                                           	daa    
+     9:	2f                                           	das    
+     a:	d7                                           	xlat   %ds:(%ebx)
+     b:	f1                                           	icebp  
+     c:	d6                                           	(bad)  
+     d:	9f                                           	lahf   
+     e:	9e                                           	sahf   
 @rdfa_output:
   0: [0] unrecognized instruction
   1: [1] unrecognized instruction

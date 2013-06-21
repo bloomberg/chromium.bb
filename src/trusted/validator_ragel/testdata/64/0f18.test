@@ -5,9 +5,9 @@
   # legal SSE prefetch instruction
   0f 18 1c 24
 @dis:
-     0:	0f 18                	(bad)  
-     2:	21 0f                	and    %ecx,(%rdi)
-     4:	18 1c 24             	sbb    %bl,(%rsp)
+     0:	0f 18                                        	(bad)  
+     2:	21 0f                                        	and    %ecx,(%rdi)
+     4:	18 1c 24                                     	sbb    %bl,(%rsp)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

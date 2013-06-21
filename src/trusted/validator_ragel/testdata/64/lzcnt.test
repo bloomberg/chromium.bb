@@ -2,6 +2,6 @@
   # Test if we recognize lzcnt as a bsr with REP prefix.
   f3 0f bd c3
 @dis:
-     0:	f3 0f bd c3          	lzcnt  %ebx,%eax
+     0:	f3 0f bd c3                                  	lzcnt  %ebx,%eax
 @rdfa_output:
   return code: 0

@@ -5,7 +5,7 @@
   8D 0C C1 \\
   49 89 44 CF 36
 @dis:
-     0:	8d 0c c1             	lea    (%rcx,%rax,8),%ecx
-     3:	49 89 44 cf 36       	mov    %rax,0x36(%r15,%rcx,8)
+     0:	8d 0c c1                                     	lea    (%rcx,%rax,8),%ecx
+     3:	49 89 44 cf 36                               	mov    %rax,0x36(%r15,%rcx,8)
 @rdfa_output:
   return code: 0

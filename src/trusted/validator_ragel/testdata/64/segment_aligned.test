@@ -2,6 +2,6 @@
   # Check that the start address of the segment is 32 byte aligned.
   90
 @dis:
-     0:	90                   	nop
+     0:	90                                           	nop
 @rdfa_output:
   return code: 0

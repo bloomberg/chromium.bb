@@ -3,7 +3,7 @@
   44 89 dd
   
 @dis:
-     0:	44 89 dd             	mov    %r11d,%ebp
+     0:	44 89 dd                                     	mov    %r11d,%ebp
 @rdfa_output:
   3: [0] improper %rbp sandboxing
   return code: 1

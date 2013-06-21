@@ -5,10 +5,10 @@
   4c 01 fa
   ff e2
 @dis:
-     0:	eb 03                	jmp    0x5
-     2:	83 e2 e0             	and    $0xffffffffffffffe0,%edx
-     5:	4c 01 fa             	add    %r15,%rdx
-     8:	ff e2                	jmpq   *%rdx
+     0:	eb 03                                        	jmp    0x5
+     2:	83 e2 e0                                     	and    $0xffffffffffffffe0,%edx
+     5:	4c 01 fa                                     	add    %r15,%rdx
+     8:	ff e2                                        	jmpq   *%rdx
 @rdfa_output:
   0: [0] bad jump target
   return code: 1

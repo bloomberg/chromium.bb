@@ -2,6 +2,6 @@
   # Test if we recognize tzcnt as a bsf with REP prefix.
   f3 0f bc c3
 @dis:
-     0:	f3 0f bc c3          	repz bsf %ebx,%eax
+     0:	f3 0f bc c3                                  	repz bsf %ebx,%eax
 @rdfa_output:
   return code: 0

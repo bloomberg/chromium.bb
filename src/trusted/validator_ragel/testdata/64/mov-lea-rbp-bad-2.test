@@ -6,8 +6,8 @@
   89 cd
   4a 8d 6c 35 00
 @dis:
-     0:	89 cd                	mov    %ecx,%ebp
-     2:	4a 8d 6c 35 00       	lea    0x0(%rbp,%r14,1),%rbp
+     0:	89 cd                                        	mov    %ecx,%ebp
+     2:	4a 8d 6c 35 00                               	lea    0x0(%rbp,%r14,1),%rbp
 @rdfa_output:
   2: [0] improper %rbp sandboxing
   2: [0] error - %bpl or %bp is changed

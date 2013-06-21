@@ -16,21 +16,21 @@
   # Too many prefix bytes
   66 66 66 66 00 00
 @dis:
-     0:	00 00                	add    %al,(%eax)
-     2:	c3                   	ret    
-     3:	01 c0                	add    %eax,%eax
-     5:	66                   	data16
-     6:	66                   	data16
-     7:	66                   	data16
-     8:	66                   	data16
-     9:	00 00                	add    %al,(%eax)
-     b:	90                   	nop
-     c:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
-    10:	66                   	data16
-    11:	66                   	data16
-    12:	66                   	data16
-    13:	66                   	data16
-    14:	00 00                	add    %al,(%eax)
+     0:	00 00                                        	add    %al,(%eax)
+     2:	c3                                           	ret    
+     3:	01 c0                                        	add    %eax,%eax
+     5:	66                                           	data16
+     6:	66                                           	data16
+     7:	66                                           	data16
+     8:	66                                           	data16
+     9:	00 00                                        	add    %al,(%eax)
+     b:	90                                           	nop
+     c:	8d 74 26 00                                  	lea    0x0(%esi,%eiz,1),%esi
+    10:	66                                           	data16
+    11:	66                                           	data16
+    12:	66                                           	data16
+    13:	66                                           	data16
+    14:	00 00                                        	add    %al,(%eax)
 @rdfa_output:
   2: [0] unrecognized instruction
   5: [1] unrecognized instruction

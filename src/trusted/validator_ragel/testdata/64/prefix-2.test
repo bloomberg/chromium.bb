@@ -27,21 +27,21 @@
   # 0x67 mov %eax,(%esp)
   67 67 89 04 24
 @dis:
-     0:	f0 f0 01 04 24       	lock add %eax,(%rsp)
-     5:	89 ff                	mov    %edi,%edi
-     7:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-     b:	f3 f3 ab             	rep stos %eax,%es:(%rdi)
-     e:	89 ff                	mov    %edi,%edi
-    10:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-    14:	f2 f3 ab             	rep repnz stos %eax,%es:(%rdi)
-    17:	89 ff                	mov    %edi,%edi
-    19:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-    1d:	f3 f2 ae             	repz repnz scas %es:(%rdi),%al
-    20:	64                   	fs
-    21:	65                   	gs
-    22:	89 c0                	mov    %eax,%eax
-    24:	66 66 89 c0          	mov    %ax,%ax
-    28:	67 67 89 04 24       	addr32 mov %eax,(%esp)
+     0:	f0 f0 01 04 24                               	lock add %eax,(%rsp)
+     5:	89 ff                                        	mov    %edi,%edi
+     7:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     b:	f3 f3 ab                                     	rep stos %eax,%es:(%rdi)
+     e:	89 ff                                        	mov    %edi,%edi
+    10:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+    14:	f2 f3 ab                                     	rep repnz stos %eax,%es:(%rdi)
+    17:	89 ff                                        	mov    %edi,%edi
+    19:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+    1d:	f3 f2 ae                                     	repz repnz scas %es:(%rdi),%al
+    20:	64                                           	fs
+    21:	65                                           	gs
+    22:	89 c0                                        	mov    %eax,%eax
+    24:	66 66 89 c0                                  	mov    %ax,%ax
+    28:	67 67 89 04 24                               	addr32 mov %eax,(%esp)
 @rdfa_output:
   0: [0] unrecognized instruction
   b: [1] unrecognized instruction
@@ -56,8 +56,8 @@
   # rex rex jmp $
   40 40 EB FD
 @dis:
-     0:	40                   	rex
-     1:	40 eb fd             	rex jmp    0x1
+     0:	40                                           	rex
+     1:	40 eb fd                                     	rex jmp    0x1
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -85,23 +85,23 @@
   66 F0 01 04 24
   F0 66 01 04 24
 @dis:
-     0:	36 f0 01 04 24       	lock add %eax,%ss:(%rsp)
-     5:	f0 36 01 04 24       	lock add %eax,%ss:(%rsp)
-     a:	89 ff                	mov    %edi,%edi
-     c:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-    10:	26                   	es
-    11:	f3 ab                	rep stos %eax,%es:(%rdi)
-    13:	89 ff                	mov    %edi,%edi
-    15:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-    19:	f3                   	repz
-    1a:	26                   	es
-    1b:	ab                   	stos   %eax,%es:(%rdi)
-    1c:	90                   	nop
-    1d:	90                   	nop
-    1e:	90                   	nop
-    1f:	90                   	nop
-    20:	66 f0 01 04 24       	lock add %ax,(%rsp)
-    25:	f0 66 01 04 24       	lock add %ax,(%rsp)
+     0:	36 f0 01 04 24                               	lock add %eax,%ss:(%rsp)
+     5:	f0 36 01 04 24                               	lock add %eax,%ss:(%rsp)
+     a:	89 ff                                        	mov    %edi,%edi
+     c:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+    10:	26                                           	es
+    11:	f3 ab                                        	rep stos %eax,%es:(%rdi)
+    13:	89 ff                                        	mov    %edi,%edi
+    15:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+    19:	f3                                           	repz
+    1a:	26                                           	es
+    1b:	ab                                           	stos   %eax,%es:(%rdi)
+    1c:	90                                           	nop
+    1d:	90                                           	nop
+    1e:	90                                           	nop
+    1f:	90                                           	nop
+    20:	66 f0 01 04 24                               	lock add %ax,(%rsp)
+    25:	f0 66 01 04 24                               	lock add %ax,(%rsp)
 @rdfa_output:
   0: [0] unrecognized instruction
   5: [1] unrecognized instruction
@@ -121,12 +121,12 @@
   49 8D 3C 3F
   F3 66 AB
 @dis:
-     0:	89 ff                	mov    %edi,%edi
-     2:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-     6:	66 f3 ab             	rep stos %ax,%es:(%rdi)
-     9:	89 ff                	mov    %edi,%edi
-     b:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-     f:	f3 66 ab             	rep stos %ax,%es:(%rdi)
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	66 f3 ab                                     	rep stos %ax,%es:(%rdi)
+     9:	89 ff                                        	mov    %edi,%edi
+     b:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     f:	f3 66 ab                                     	rep stos %ax,%es:(%rdi)
 @rdfa_output:
   6: [0] unrecognized instruction
   f: [1] unrecognized instruction
@@ -145,14 +145,14 @@
   49 8D 3C 3F
   F3 67 AB
 @dis:
-     0:	67 f0 01 04 24       	lock addr32 add %eax,(%esp)
-     5:	f0 67 01 04 24       	lock addr32 add %eax,(%esp)
-     a:	89 ff                	mov    %edi,%edi
-     c:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-    10:	67 f3 ab             	rep addr32 stos %eax,%es:(%edi)
-    13:	89 ff                	mov    %edi,%edi
-    15:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-    19:	f3 67 ab             	rep addr32 stos %eax,%es:(%edi)
+     0:	67 f0 01 04 24                               	lock addr32 add %eax,(%esp)
+     5:	f0 67 01 04 24                               	lock addr32 add %eax,(%esp)
+     a:	89 ff                                        	mov    %edi,%edi
+     c:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+    10:	67 f3 ab                                     	rep addr32 stos %eax,%es:(%edi)
+    13:	89 ff                                        	mov    %edi,%edi
+    15:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+    19:	f3 67 ab                                     	rep addr32 stos %eax,%es:(%edi)
 @rdfa_output:
   0: [0] unrecognized instruction
   5: [1] unrecognized instruction
@@ -171,12 +171,12 @@
   49 8D 3C 3F
   F3 48 AB
 @dis:
-     0:	f0 48 01 04 24       	lock add %rax,(%rsp)
-     5:	48                   	rex.W
-     6:	f0 01 04 24          	lock add %eax,(%rsp)
-     a:	89 ff                	mov    %edi,%edi
-     c:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-    10:	f3 48 ab             	rep stos %rax,%es:(%rdi)
+     0:	f0 48 01 04 24                               	lock add %rax,(%rsp)
+     5:	48                                           	rex.W
+     6:	f0 01 04 24                                  	lock add %eax,(%rsp)
+     a:	89 ff                                        	mov    %edi,%edi
+     c:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+    10:	f3 48 ab                                     	rep stos %rax,%es:(%rdi)
 @rdfa_output:
   5: [0] unrecognized instruction
   return code: 1
@@ -205,32 +205,32 @@
   67 4C 89 3C 24
   4C 67 89 3C 24
 @dis:
-     0:	64                   	fs
-     1:	66 89 c0             	mov    %ax,%ax
-     4:	66                   	data16
-     5:	64                   	fs
-     6:	89 c0                	mov    %eax,%eax
-     8:	67 64 01 04 24       	addr32 add %eax,%fs:(%esp)
-     d:	64 67 01 04 24       	addr32 add %eax,%fs:(%esp)
-    12:	64                   	fs
-    13:	48 89 c0             	mov    %rax,%rax
-    16:	48                   	rex.W
-    17:	64                   	fs
-    18:	89 c0                	mov    %eax,%eax
-    1a:	90                   	nop
-    1b:	90                   	nop
-    1c:	90                   	nop
-    1d:	90                   	nop
-    1e:	90                   	nop
-    1f:	90                   	nop
-    20:	66 67 01 04 24       	addr32 add %ax,(%esp)
-    25:	67 66 01 04 24       	addr32 add %ax,(%esp)
-    2a:	66 44 89 3c 24       	mov    %r15w,(%rsp)
-    2f:	44                   	rex.R
-    30:	66 89 3c 24          	mov    %di,(%rsp)
-    34:	67 4c 89 3c 24       	addr32 mov %r15,(%esp)
-    39:	4c                   	rex.WR
-    3a:	67 89 3c 24          	addr32 mov %edi,(%esp)
+     0:	64                                           	fs
+     1:	66 89 c0                                     	mov    %ax,%ax
+     4:	66                                           	data16
+     5:	64                                           	fs
+     6:	89 c0                                        	mov    %eax,%eax
+     8:	67 64 01 04 24                               	addr32 add %eax,%fs:(%esp)
+     d:	64 67 01 04 24                               	addr32 add %eax,%fs:(%esp)
+    12:	64                                           	fs
+    13:	48 89 c0                                     	mov    %rax,%rax
+    16:	48                                           	rex.W
+    17:	64                                           	fs
+    18:	89 c0                                        	mov    %eax,%eax
+    1a:	90                                           	nop
+    1b:	90                                           	nop
+    1c:	90                                           	nop
+    1d:	90                                           	nop
+    1e:	90                                           	nop
+    1f:	90                                           	nop
+    20:	66 67 01 04 24                               	addr32 add %ax,(%esp)
+    25:	67 66 01 04 24                               	addr32 add %ax,(%esp)
+    2a:	66 44 89 3c 24                               	mov    %r15w,(%rsp)
+    2f:	44                                           	rex.R
+    30:	66 89 3c 24                                  	mov    %di,(%rsp)
+    34:	67 4c 89 3c 24                               	addr32 mov %r15,(%esp)
+    39:	4c                                           	rex.WR
+    3a:	67 89 3c 24                                  	addr32 mov %edi,(%esp)
 @rdfa_output:
   0: [0] unrecognized instruction
   4: [1] unrecognized instruction
@@ -276,28 +276,28 @@
   89 C0
   41 F2 0F 58 04 07
 @dis:
-     0:	64                   	fs
-     1:	66 0f 38 01 c8       	phaddw %xmm0,%xmm1
-     6:	64                   	fs
-     7:	f2 0f 58 c8          	addsd  %xmm0,%xmm1
-     b:	66 66 0f 38 01 c8    	phaddw %xmm0,%xmm1
-    11:	66                   	data16
-    12:	f2 0f 58 c8          	addsd  %xmm0,%xmm1
-    16:	67 66 0f 38 01 04 24 	addr32 phaddw (%esp),%xmm0
-    1d:	90                   	nop
-    1e:	90                   	nop
-    1f:	90                   	nop
-    20:	67 f2 0f 58 04 24    	addr32 addsd (%esp),%xmm0
-    26:	89 c0                	mov    %eax,%eax
-    28:	66 41 0f 38 01 04 07 	phaddw (%r15,%rax,1),%xmm0
-    2f:	89 c0                	mov    %eax,%eax
-    31:	41                   	rex.B
-    32:	66 0f 38 01 04 07    	phaddw (%rdi,%rax,1),%xmm0
-    38:	89 c0                	mov    %eax,%eax
-    3a:	f2 41 0f 58 04 07    	addsd  (%r15,%rax,1),%xmm0
-    40:	89 c0                	mov    %eax,%eax
-    42:	41                   	rex.B
-    43:	f2 0f 58 04 07       	addsd  (%rdi,%rax,1),%xmm0
+     0:	64                                           	fs
+     1:	66 0f 38 01 c8                               	phaddw %xmm0,%xmm1
+     6:	64                                           	fs
+     7:	f2 0f 58 c8                                  	addsd  %xmm0,%xmm1
+     b:	66 66 0f 38 01 c8                            	phaddw %xmm0,%xmm1
+    11:	66                                           	data16
+    12:	f2 0f 58 c8                                  	addsd  %xmm0,%xmm1
+    16:	67 66 0f 38 01 04 24                         	addr32 phaddw (%esp),%xmm0
+    1d:	90                                           	nop
+    1e:	90                                           	nop
+    1f:	90                                           	nop
+    20:	67 f2 0f 58 04 24                            	addr32 addsd (%esp),%xmm0
+    26:	89 c0                                        	mov    %eax,%eax
+    28:	66 41 0f 38 01 04 07                         	phaddw (%r15,%rax,1),%xmm0
+    2f:	89 c0                                        	mov    %eax,%eax
+    31:	41                                           	rex.B
+    32:	66 0f 38 01 04 07                            	phaddw (%rdi,%rax,1),%xmm0
+    38:	89 c0                                        	mov    %eax,%eax
+    3a:	f2 41 0f 58 04 07                            	addsd  (%r15,%rax,1),%xmm0
+    40:	89 c0                                        	mov    %eax,%eax
+    42:	41                                           	rex.B
+    43:	f2 0f 58 04 07                               	addsd  (%rdi,%rax,1),%xmm0
 @rdfa_output:
   0: [0] unrecognized instruction
   6: [1] unrecognized instruction

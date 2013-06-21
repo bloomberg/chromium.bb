@@ -14,17 +14,17 @@
   f7 c3 00 00 00 00
   f7 cb 00 00 00 00
 @dis:
-     0:	f6 c3 00             	test   $0x0,%bl
-     3:	f6                   	(bad)  
-     4:	cb                   	lret   
-     5:	00 f7                	add    %dh,%bh
-     7:	c3                   	retq   
-     8:	00 00                	add    %al,(%rax)
-     a:	00 00                	add    %al,(%rax)
-     c:	f7                   	(bad)  
-     d:	cb                   	lret   
-     e:	00 00                	add    %al,(%rax)
-    10:	00 00                	add    %al,(%rax)
+     0:	f6 c3 00                                     	test   $0x0,%bl
+     3:	f6                                           	(bad)  
+     4:	cb                                           	lret   
+     5:	00 f7                                        	add    %dh,%bh
+     7:	c3                                           	retq   
+     8:	00 00                                        	add    %al,(%rax)
+     a:	00 00                                        	add    %al,(%rax)
+     c:	f7                                           	(bad)  
+     d:	cb                                           	lret   
+     e:	00 00                                        	add    %al,(%rax)
+    10:	00 00                                        	add    %al,(%rax)
 @rdfa_output:
   3: [0] unrecognized instruction
   c: [1] unrecognized instruction

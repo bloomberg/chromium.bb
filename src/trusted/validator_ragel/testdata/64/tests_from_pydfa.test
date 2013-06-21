@@ -12,11 +12,10 @@
   # mov $0x1234567812345678, %rax
   48 b8 78 56 34 12 78 56 34 12
 @dis:
-     0:	90                   	nop
-     1:	f4                   	hlt    
-     2:	48 c7 c0 78 56 34 12 	mov    $0x12345678,%rax
-     9:	48 b8 78 56 34 12 78 	mov    $0x1234567812345678,%rax
-    10:	56 34 12 
+     0:	90                                           	nop
+     1:	f4                                           	hlt    
+     2:	48 c7 c0 78 56 34 12                         	mov    $0x12345678,%rax
+     9:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -27,8 +26,8 @@
   # int $0x80
   cd 80
 @dis:
-     0:	90                   	nop
-     1:	cd 80                	int    $0x80
+     0:	90                                           	nop
+     1:	cd 80                                        	int    $0x80
 @rdfa_output:
   1: [0] unrecognized instruction
   return code: 1
@@ -37,7 +36,7 @@
   # ret
   c3
 @dis:
-     0:	c3                   	retq   
+     0:	c3                                           	retq   
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -46,7 +45,7 @@
   # syscall
   0f 05
 @dis:
-     0:	0f 05                	syscall 
+     0:	0f 05                                        	syscall 
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -61,14 +60,10 @@
   # mov $0x1234567812345678, %rax
   48 b8 78 56 34 12 78 56 34 12
 @dis:
-     0:	48 b8 78 56 34 12 78 	mov    $0x1234567812345678,%rax
-     7:	56 34 12 
-     a:	48 b8 78 56 34 12 78 	mov    $0x1234567812345678,%rax
-    11:	56 34 12 
-    14:	48 b8 78 56 34 12 78 	mov    $0x1234567812345678,%rax
-    1b:	56 34 12 
-    1e:	48 b8 78 56 34 12 78 	mov    $0x1234567812345678,%rax
-    25:	56 34 12 
+     0:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
+     a:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
+    14:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
+    1e:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
 @rdfa_output:
   1e: [0] unrecognized instruction
   20: [0] direct jump out of range
@@ -88,11 +83,11 @@
   # jmp .-4
   eb fa
 @dis:
-     0:	90                   	nop
-     1:	eb 04                	jmp    0x7
-     3:	eb fe                	jmp    0x3
-     5:	eb fc                	jmp    0x3
-     7:	eb fa                	jmp    0x3
+     0:	90                                           	nop
+     1:	eb 04                                        	jmp    0x7
+     3:	eb fe                                        	jmp    0x3
+     5:	eb fc                                        	jmp    0x3
+     7:	eb fa                                        	jmp    0x3
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -101,7 +96,7 @@
   # jmp .-1
   eb fd
 @dis:
-     0:	eb fd                	jmp    0xffffffff
+     0:	eb fd                                        	jmp    0xffffffff
 @rdfa_output:
   0: [0] direct jump out of range
   return code: 1
@@ -111,7 +106,7 @@
   # jmp .+33
   eb 1f
 @dis:
-     0:	eb 1f                	jmp    0x21
+     0:	eb 1f                                        	jmp    0x21
 @rdfa_output:
   0: [0] direct jump out of range
   return code: 1
@@ -123,9 +118,8 @@
   # jmp .-5
   eb f9
 @dis:
-     0:	48 b8 78 56 34 12 78 	mov    $0x1234567812345678,%rax
-     7:	56 34 12 
-     a:	eb f9                	jmp    0x5
+     0:	48 b8 78 56 34 12 78 56 34 12                	mov    $0x1234567812345678,%rax
+     a:	eb f9                                        	jmp    0x5
 @rdfa_output:
   a: [0] bad jump target
   return code: 1
@@ -135,7 +129,7 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	ff e0                	jmpq   *%rax
+     0:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -144,7 +138,7 @@
   # jmp *(%rax)
   ff 20
 @dis:
-     0:	ff 20                	jmpq   *(%rax)
+     0:	ff 20                                        	jmpq   *(%rax)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -153,7 +147,7 @@
   # call *%rax
   ff d0
 @dis:
-     0:	ff d0                	callq  *%rax
+     0:	ff d0                                        	callq  *%rax
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -162,7 +156,7 @@
   # call *(%rax)
   ff 10
 @dis:
-     0:	ff 10                	callq  *(%rax)
+     0:	ff 10                                        	callq  *(%rax)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -178,10 +172,10 @@
   # and $~31, %rbx
   48 83 e3 e0
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	83 e3 e0             	and    $0xffffffffffffffe0,%ebx
-     6:	48 83 e0 e0          	and    $0xffffffffffffffe0,%rax
-     a:	48 83 e3 e0          	and    $0xffffffffffffffe0,%rbx
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     6:	48 83 e0 e0                                  	and    $0xffffffffffffffe0,%rax
+     a:	48 83 e3 e0                                  	and    $0xffffffffffffffe0,%rbx
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -196,10 +190,10 @@
   # add %r15, %rbx
   4c 01 fb
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	4c 01 f8             	add    %r15,%rax
-     6:	83 e3 e0             	and    $0xffffffffffffffe0,%ebx
-     9:	4c 01 fb             	add    %r15,%rbx
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	4c 01 f8                                     	add    %r15,%rax
+     6:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     9:	4c 01 fb                                     	add    %r15,%rbx
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -212,9 +206,9 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	4c 01 f8             	add    %r15,%rax
-     6:	ff e0                	jmpq   *%rax
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	4c 01 f8                                     	add    %r15,%rax
+     6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -226,9 +220,9 @@
   # call *%rbx
   ff d3
 @dis:
-     0:	83 e3 e0             	and    $0xffffffffffffffe0,%ebx
-     3:	4c 01 fb             	add    %r15,%rbx
-     6:	ff d3                	callq  *%rbx
+     0:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     3:	4c 01 fb                                     	add    %r15,%rbx
+     6:	ff d3                                        	callq  *%rbx
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -241,9 +235,9 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e3 e0             	and    $0xffffffffffffffe0,%ebx
-     3:	4c 01 f8             	add    %r15,%rax
-     6:	ff e0                	jmpq   *%rax
+     0:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     3:	4c 01 f8                                     	add    %r15,%rax
+     6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
@@ -256,9 +250,9 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	4c 01 fb             	add    %r15,%rbx
-     6:	ff e0                	jmpq   *%rax
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	4c 01 fb                                     	add    %r15,%rbx
+     6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
@@ -271,9 +265,9 @@
   # jmp *%rbx
   ff e3
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	4c 01 f8             	add    %r15,%rax
-     6:	ff e3                	jmpq   *%rbx
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	4c 01 f8                                     	add    %r15,%rax
+     6:	ff e3                                        	jmpq   *%rbx
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
@@ -286,9 +280,9 @@
   # jmp *%rbx
   ff e3
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	4c 01 fb             	add    %r15,%rbx
-     6:	ff e3                	jmpq   *%rbx
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	4c 01 fb                                     	add    %r15,%rbx
+     6:	ff e3                                        	jmpq   *%rbx
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
@@ -301,9 +295,9 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e3 e0             	and    $0xffffffffffffffe0,%ebx
-     3:	4c 01 fb             	add    %r15,%rbx
-     6:	ff e0                	jmpq   *%rax
+     0:	83 e3 e0                                     	and    $0xffffffffffffffe0,%ebx
+     3:	4c 01 fb                                     	add    %r15,%rbx
+     6:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
@@ -319,10 +313,10 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	90                   	nop
-     4:	4c 01 f8             	add    %r15,%rax
-     7:	ff e0                	jmpq   *%rax
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	90                                           	nop
+     4:	4c 01 f8                                     	add    %r15,%rax
+     7:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   7: [0] unrecognized instruction
   return code: 1
@@ -337,10 +331,10 @@
   # jmp *%rax
   ff e0
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	4c 01 f8             	add    %r15,%rax
-     6:	90                   	nop
-     7:	ff e0                	jmpq   *%rax
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	4c 01 f8                                     	add    %r15,%rax
+     6:	90                                           	nop
+     7:	ff e0                                        	jmpq   *%rax
 @rdfa_output:
   7: [0] unrecognized instruction
   return code: 1
@@ -356,10 +350,10 @@
   # jmp .-2
   eb fc
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	4c 01 f8             	add    %r15,%rax
-     6:	ff e0                	jmpq   *%rax
-     8:	eb fc                	jmp    0x6
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	4c 01 f8                                     	add    %r15,%rax
+     6:	ff e0                                        	jmpq   *%rax
+     8:	eb fc                                        	jmp    0x6
 @rdfa_output:
   8: [0] bad jump target
   return code: 1
@@ -374,10 +368,10 @@
   # jmp .-5
   eb f9
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	4c 01 f8             	add    %r15,%rax
-     6:	ff e0                	jmpq   *%rax
-     8:	eb f9                	jmp    0x3
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	4c 01 f8                                     	add    %r15,%rax
+     6:	ff e0                                        	jmpq   *%rax
+     8:	eb f9                                        	jmp    0x3
 @rdfa_output:
   8: [0] bad jump target
   return code: 1
@@ -395,11 +389,11 @@
   # mov %rsp, %rax
   48 89 e0
 @dis:
-     0:	50                   	push   %rax
-     1:	55                   	push   %rbp
-     2:	54                   	push   %rsp
-     3:	41 57                	push   %r15
-     5:	48 89 e0             	mov    %rsp,%rax
+     0:	50                                           	push   %rax
+     1:	55                                           	push   %rbp
+     2:	54                                           	push   %rsp
+     3:	41 57                                        	push   %r15
+     5:	48 89 e0                                     	mov    %rsp,%rax
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -408,7 +402,7 @@
   # pop %rax
   58
 @dis:
-     0:	58                   	pop    %rax
+     0:	58                                           	pop    %rax
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -416,7 +410,7 @@
   # pop %rbp
   5d
 @dis:
-     0:	5d                   	pop    %rbp
+     0:	5d                                           	pop    %rbp
 @rdfa_output:
   0: [0] error - %bpl or %bp is changed
   return code: 1
@@ -425,7 +419,7 @@
   # pop %rsp
   5c
 @dis:
-     0:	5c                   	pop    %rsp
+     0:	5c                                           	pop    %rsp
 @rdfa_output:
   0: [0] error - %spl or %sp is changed
   return code: 1
@@ -434,7 +428,7 @@
   # pop %r15
   41 5f
 @dis:
-     0:	41 5f                	pop    %r15
+     0:	41 5f                                        	pop    %r15
 @rdfa_output:
   0: [0] error - %r15 is changed
   return code: 1
@@ -446,8 +440,8 @@
   # mov (%r15, %rax), %ebx
   41 8b 1c 07
 @dis:
-     0:	89 c0                	mov    %eax,%eax
-     2:	41 8b 1c 07          	mov    (%r15,%rax,1),%ebx
+     0:	89 c0                                        	mov    %eax,%eax
+     2:	41 8b 1c 07                                  	mov    (%r15,%rax,1),%ebx
 @rdfa_output:
   return code: 0
 @spec:
@@ -460,8 +454,8 @@
   # mov (%r15, %r12), %ebx
   43 8b 1c 27
 @dis:
-     0:	45 89 e4             	mov    %r12d,%r12d
-     3:	43 8b 1c 27          	mov    (%r15,%r12,1),%ebx
+     0:	45 89 e4                                     	mov    %r12d,%r12d
+     3:	43 8b 1c 27                                  	mov    (%r15,%r12,1),%ebx
 @rdfa_output:
   return code: 0
 @spec:
@@ -474,8 +468,8 @@
   # mov (%r15, %rdi), %ebx
   41 8b 1c 3f
 @dis:
-     0:	89 ff                	mov    %edi,%edi
-     2:	41 8b 1c 3f          	mov    (%r15,%rdi,1),%ebx
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	41 8b 1c 3f                                  	mov    (%r15,%rdi,1),%ebx
 @rdfa_output:
   return code: 0
 @spec:
@@ -487,8 +481,8 @@
   # mov (%r15, %rsi), %ebx
   41 8b 1c 37
 @dis:
-     0:	89 f6                	mov    %esi,%esi
-     2:	41 8b 1c 37          	mov    (%r15,%rsi,1),%ebx
+     0:	89 f6                                        	mov    %esi,%esi
+     2:	41 8b 1c 37                                  	mov    (%r15,%rsi,1),%ebx
 @rdfa_output:
   return code: 0
 @spec:
@@ -499,7 +493,7 @@
   # mov %eax, %eax
   89 c0
 @dis:
-     0:	89 c0                	mov    %eax,%eax
+     0:	89 c0                                        	mov    %eax,%eax
 @rdfa_output:
   return code: 0
 @spec:
@@ -509,7 +503,7 @@
   # mov (%r15, %rax), %ebx
   41 8b 1c 07
 @dis:
-     0:	41 8b 1c 07          	mov    (%r15,%rax,1),%ebx
+     0:	41 8b 1c 07                                  	mov    (%r15,%rax,1),%ebx
 @rdfa_output:
   0: [0] improper memory address - bad index
   return code: 1
@@ -524,9 +518,9 @@
   # jmp .-4
   eb fa
 @dis:
-     0:	89 c0                	mov    %eax,%eax
-     2:	41 8b 1c 07          	mov    (%r15,%rax,1),%ebx
-     6:	eb fa                	jmp    0x2
+     0:	89 c0                                        	mov    %eax,%eax
+     2:	41 8b 1c 07                                  	mov    (%r15,%rax,1),%ebx
+     6:	eb fa                                        	jmp    0x2
 @rdfa_output:
   6: [0] bad jump target
   return code: 1
@@ -549,10 +543,10 @@
   # mov (%r15, %rax), %ebx
   41 8b 1c 07
 @dis:
-     0:	83 e0 e0             	and    $0xffffffffffffffe0,%eax
-     3:	4c 01 f8             	add    %r15,%rax
-     6:	ff e0                	jmpq   *%rax
-     8:	41 8b 1c 07          	mov    (%r15,%rax,1),%ebx
+     0:	83 e0 e0                                     	and    $0xffffffffffffffe0,%eax
+     3:	4c 01 f8                                     	add    %r15,%rax
+     6:	ff e0                                        	jmpq   *%rax
+     8:	41 8b 1c 07                                  	mov    (%r15,%rax,1),%ebx
 @rdfa_output:
   8: [0] improper memory address - bad index
   return code: 1
@@ -568,10 +562,10 @@
   # mov (%r15, %rdi), %ebx
   41 8b 1c 3f
 @dis:
-     0:	89 ff                	mov    %edi,%edi
-     2:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-     6:	f3 aa                	rep stos %al,%es:(%rdi)
-     8:	41 8b 1c 3f          	mov    (%r15,%rdi,1),%ebx
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	f3 aa                                        	rep stos %al,%es:(%rdi)
+     8:	41 8b 1c 3f                                  	mov    (%r15,%rdi,1),%ebx
 @rdfa_output:
   8: [0] improper memory address - bad index
   return code: 1
@@ -591,12 +585,12 @@
   # mov (%r15, %rsi), %ebx
   41 8b 1c 37
 @dis:
-     0:	89 f6                	mov    %esi,%esi
-     2:	49 8d 34 37          	lea    (%r15,%rsi,1),%rsi
-     6:	89 ff                	mov    %edi,%edi
-     8:	49 8d 3c 3f          	lea    (%r15,%rdi,1),%rdi
-     c:	f3 a4                	rep movsb %ds:(%rsi),%es:(%rdi)
-     e:	41 8b 1c 37          	mov    (%r15,%rsi,1),%ebx
+     0:	89 f6                                        	mov    %esi,%esi
+     2:	49 8d 34 37                                  	lea    (%r15,%rsi,1),%rsi
+     6:	89 ff                                        	mov    %edi,%edi
+     8:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     c:	f3 a4                                        	rep movsb %ds:(%rsi),%es:(%rdi)
+     e:	41 8b 1c 37                                  	mov    (%r15,%rsi,1),%ebx
 @rdfa_output:
   e: [0] improper memory address - bad index
   return code: 1
@@ -610,9 +604,9 @@
   # mov 0x1234(%rbp), %eax
   8b 85 34 12 00 00
 @dis:
-     0:	8b 05 34 12 00 00    	mov    0x1234(%rip),%eax        # 0x123a
-     6:	8b 84 24 34 12 00 00 	mov    0x1234(%rsp),%eax
-     d:	8b 85 34 12 00 00    	mov    0x1234(%rbp),%eax
+     0:	8b 05 34 12 00 00                            	mov    0x1234(%rip),%eax        # 0x123a
+     6:	8b 84 24 34 12 00 00                         	mov    0x1234(%rsp),%eax
+     d:	8b 85 34 12 00 00                            	mov    0x1234(%rbp),%eax
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -620,7 +614,7 @@
   # mov 0x1234(%rsp, %rbx), %eax
   8b 84 1c 34 12 00 00
 @dis:
-     0:	8b 84 1c 34 12 00 00 	mov    0x1234(%rsp,%rbx,1),%eax
+     0:	8b 84 1c 34 12 00 00                         	mov    0x1234(%rsp,%rbx,1),%eax
 @rdfa_output:
   0: [0] improper memory address - bad index
   return code: 1
@@ -629,7 +623,7 @@
   # mov 0x1234(%rbp, %rbx), %eax
   8b 84 1d 34 12 00 00
 @dis:
-     0:	8b 84 1d 34 12 00 00 	mov    0x1234(%rbp,%rbx,1),%eax
+     0:	8b 84 1d 34 12 00 00                         	mov    0x1234(%rbp,%rbx,1),%eax
 @rdfa_output:
   0: [0] improper memory address - bad index
   return code: 1
@@ -640,8 +634,8 @@
   # mov 0x1234(%rsp, %rbx), %eax
   8b 84 1c 34 12 00 00
 @dis:
-     0:	89 db                	mov    %ebx,%ebx
-     2:	8b 84 1c 34 12 00 00 	mov    0x1234(%rsp,%rbx,1),%eax
+     0:	89 db                                        	mov    %ebx,%ebx
+     2:	8b 84 1c 34 12 00 00                         	mov    0x1234(%rsp,%rbx,1),%eax
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -651,8 +645,8 @@
   # mov 0x1234(%rbp, %rbx), %eax
   8b 84 1d 34 12 00 00
 @dis:
-     0:	89 db                	mov    %ebx,%ebx
-     2:	8b 84 1d 34 12 00 00 	mov    0x1234(%rbp,%rbx,1),%eax
+     0:	89 db                                        	mov    %ebx,%ebx
+     2:	8b 84 1d 34 12 00 00                         	mov    0x1234(%rbp,%rbx,1),%eax
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -661,7 +655,7 @@
   # lea (%rbx, %rcx, 4), %rax
   48 8d 04 8b
 @dis:
-     0:	48 8d 04 8b          	lea    (%rbx,%rcx,4),%rax
+     0:	48 8d 04 8b                                  	lea    (%rbx,%rcx,4),%rax
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -672,8 +666,8 @@
   # mov %rbp, %rsp
   48 89 ec
 @dis:
-     0:	48 89 e5             	mov    %rsp,%rbp
-     3:	48 89 ec             	mov    %rbp,%rsp
+     0:	48 89 e5                                     	mov    %rsp,%rbp
+     3:	48 89 ec                                     	mov    %rbp,%rsp
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -683,8 +677,8 @@
   # add %r15, %rbp
   4c 01 fd
 @dis:
-     0:	83 c5 08             	add    $0x8,%ebp
-     3:	4c 01 fd             	add    %r15,%rbp
+     0:	83 c5 08                                     	add    $0x8,%ebp
+     3:	4c 01 fd                                     	add    %r15,%rbp
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -696,9 +690,9 @@
   # jmp .-3
   eb fb
 @dis:
-     0:	83 c5 08             	add    $0x8,%ebp
-     3:	4c 01 fd             	add    %r15,%rbp
-     6:	eb fb                	jmp    0x3
+     0:	83 c5 08                                     	add    $0x8,%ebp
+     3:	4c 01 fd                                     	add    %r15,%rbp
+     6:	eb fb                                        	jmp    0x3
 @rdfa_output:
   6: [0] bad jump target
   return code: 1
@@ -708,7 +702,7 @@
   # add %r15, %rbp
   4c 01 fd
 @dis:
-     0:	4c 01 fd             	add    %r15,%rbp
+     0:	4c 01 fd                                     	add    %r15,%rbp
 @rdfa_output:
   0: [0] improper %rbp sandboxing
   return code: 1
@@ -717,7 +711,7 @@
   # add %r15, %rsp
   4c 01 fc
 @dis:
-     0:	4c 01 fc             	add    %r15,%rsp
+     0:	4c 01 fc                                     	add    %r15,%rsp
 @rdfa_output:
   0: [0] improper %rsp sandboxing
   return code: 1
@@ -726,7 +720,7 @@
   # add %r15, %r15
   4d 01 ff
 @dis:
-     0:	4d 01 ff             	add    %r15,%r15
+     0:	4d 01 ff                                     	add    %r15,%r15
 @rdfa_output:
   0: [0] error - %r15 is changed
   return code: 1
@@ -736,7 +730,7 @@
   # prefetchnta (%rax)
   0f 18 00
 @dis:
-     0:	0f 18 00             	prefetchnta (%rax)
+     0:	0f 18 00                                     	prefetchnta (%rax)
 @rdfa_output:
   return code: 0
 ----------------------------------------------------------------------
@@ -745,7 +739,7 @@
   # mov %rax, %es
   48 8e c0
 @dis:
-     0:	48 8e c0             	mov    %rax,%es
+     0:	48 8e c0                                     	mov    %rax,%es
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
@@ -754,7 +748,7 @@
   # mov %es, %rax
   48 8c c0
 @dis:
-     0:	48 8c c0             	mov    %es,%rax
+     0:	48 8c c0                                     	mov    %es,%rax
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

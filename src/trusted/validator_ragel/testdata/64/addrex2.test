@@ -3,8 +3,8 @@
   # Instruction is: add %r11d, %eax
   40 41 01 C3
 @dis:
-     0:	40                   	rex
-     1:	41 01 c3             	add    %eax,%r11d
+     0:	40                                           	rex
+     1:	41 01 c3                                     	add    %eax,%r11d
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

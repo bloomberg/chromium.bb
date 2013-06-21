@@ -3,7 +3,7 @@
   #   insd
   6d
 @dis:
-     0:	6d                   	insl   (%dx),%es:(%rdi)
+     0:	6d                                           	insl   (%dx),%es:(%rdi)
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1

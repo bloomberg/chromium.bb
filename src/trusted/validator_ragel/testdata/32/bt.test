@@ -12,16 +12,16 @@
   # btcl $0x1,(%esp)
   0f ba 3c 24 01
 @dis:
-     0:	66 0f ba 24 24 01    	btw    $0x1,(%esp)
-     6:	90                   	nop
-     7:	90                   	nop
-     8:	90                   	nop
-     9:	90                   	nop
-     a:	90                   	nop
-     b:	0f ba 24 24 01       	btl    $0x1,(%esp)
-    10:	0f ba 34 24 01       	btrl   $0x1,(%esp)
-    15:	0f ba 2c 24 01       	btsl   $0x1,(%esp)
-    1a:	0f ba 3c 24 01       	btcl   $0x1,(%esp)
+     0:	66 0f ba 24 24 01                            	btw    $0x1,(%esp)
+     6:	90                                           	nop
+     7:	90                                           	nop
+     8:	90                                           	nop
+     9:	90                                           	nop
+     a:	90                                           	nop
+     b:	0f ba 24 24 01                               	btl    $0x1,(%esp)
+    10:	0f ba 34 24 01                               	btrl   $0x1,(%esp)
+    15:	0f ba 2c 24 01                               	btsl   $0x1,(%esp)
+    1a:	0f ba 3c 24 01                               	btcl   $0x1,(%esp)
 @rdfa_output:
   0: [0] unrecognized instruction
   b: [1] unrecognized instruction

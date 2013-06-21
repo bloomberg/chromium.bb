@@ -8,9 +8,9 @@
   66 0f c8
   
 @dis:
-     0:	0f c8                	bswap  %eax
-     2:	48 0f c8             	bswap  %rax
-     5:	66 0f c8             	bswap  %ax
+     0:	0f c8                                        	bswap  %eax
+     2:	48 0f c8                                     	bswap  %rax
+     5:	66 0f c8                                     	bswap  %ax
 @rdfa_output:
   5: [0] unrecognized instruction
   return code: 1

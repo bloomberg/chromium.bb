@@ -3,9 +3,9 @@
   # (http://en.wikipedia.org/wiki/Pentium_F00F_bug).
   f0 0f c7 c8
 @dis:
-     0:	f0 0f                	lock cmpxchg8b (bad)
-     2:	c7                   	(bad)  
-     3:	c8                   	.byte 0xc8
+     0:	f0 0f                                        	lock cmpxchg8b (bad)
+     2:	c7                                           	(bad)  
+     3:	c8                                           	.byte 0xc8
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
