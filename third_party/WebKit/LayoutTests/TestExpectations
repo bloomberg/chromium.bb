@@ -1937,3 +1937,5 @@ crbug.com/78724 [ Win Mac ] tables/mozilla/core/bloomberg.html [ Failure ]
 crbug.com/78724 [ Linux ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ ImageOnlyFailure ]
 crbug.com/78724 [ Win Mac ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ Failure ]
 crbug.com/78724 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
+
+crbug.com/252573 [ Mac Win ] fast/forms/empty-textarea-toggle-disabled.html [ Pass Timeout ]
