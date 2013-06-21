@@ -832,7 +832,6 @@
             'editing/WrapContentsInDummySpanCommand.cpp',
             'editing/WrapContentsInDummySpanCommand.h',
             'editing/chromium/EditorChromium.cpp',
-            'editing/chromium/FrameSelectionChromium.cpp',
             'editing/htmlediting.cpp',
             'editing/markup.cpp',
             'fileapi/Blob.cpp',

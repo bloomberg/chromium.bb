@@ -118,6 +118,7 @@ protected:
     virtual bool isMultiSelectable() const OVERRIDE;
     bool isNativeImage() const;
     virtual bool isNativeTextControl() const OVERRIDE;
+    virtual bool isNonNativeTextControl() const OVERRIDE;
     virtual bool isPasswordField() const OVERRIDE;
     virtual bool isProgressIndicator() const OVERRIDE;
     virtual bool isSlider() const OVERRIDE;
@@ -189,6 +190,8 @@ protected:
 
     // Notifications that this object may have changed.
     virtual void childrenChanged() OVERRIDE;
+    virtual void selectionChanged() OVERRIDE;
+    virtual void textChanged() OVERRIDE;
     virtual void updateAccessibilityRole() OVERRIDE;
 
 private:

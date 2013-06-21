@@ -29,6 +29,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include "HTMLNames.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/CharacterData.h"
 #include "core/dom/Document.h"
@@ -1686,6 +1687,14 @@ bool FrameSelection::isInPasswordField() const
 {
     HTMLTextFormControlElement* textControl = enclosingTextFormControl(start());
     return textControl && textControl->hasTagName(inputTag) && toHTMLInputElement(textControl)->isPasswordField();
+}
+
+void FrameSelection::notifyAccessibilityForSelectionChange()
+{
+    if (m_selection.start().isNotNull() && m_selection.end().isNotNull()) {
+        if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
+            cache->selectionChanged(m_selection.start().containerNode());
+    }
 }
 
 void FrameSelection::focusedOrActiveStateChanged()

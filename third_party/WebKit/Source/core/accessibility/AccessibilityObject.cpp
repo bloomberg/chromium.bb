@@ -808,6 +808,12 @@ void AccessibilityObject::notifyIfIgnoredValueChanged()
     }
 }
 
+void AccessibilityObject::selectionChanged()
+{
+    if (AccessibilityObject* parent = parentObjectIfExists())
+        parent->selectionChanged();
+}
+
 static VisiblePosition startOfStyleRange(const VisiblePosition& visiblePos)
 {
     RenderObject* renderer = visiblePos.deepEquivalent().deprecatedNode()->renderer();

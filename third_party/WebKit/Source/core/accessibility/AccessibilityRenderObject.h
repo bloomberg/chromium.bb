@@ -198,7 +198,6 @@ protected:
     // Notifications that this object may have changed.
     virtual void handleActiveDescendantChanged() OVERRIDE;
     virtual void handleAriaExpandedChanged() OVERRIDE;
-    virtual void textChanged() OVERRIDE;
 
     // Text metrics. Most of these should be deprecated, needs major cleanup.
     virtual int index(const VisiblePosition&) const OVERRIDE;

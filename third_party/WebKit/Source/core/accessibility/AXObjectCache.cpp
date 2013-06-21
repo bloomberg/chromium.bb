@@ -550,6 +550,19 @@ void AXObjectCache::removeAXID(AccessibilityObject* object)
     m_idsInUse.remove(objID);
 }
 
+void AXObjectCache::selectionChanged(Node* node)
+{
+    // Find the nearest ancestor that already has an accessibility object, since we
+    // might be in the middle of a layout.
+    while (node) {
+        if (AccessibilityObject* obj = get(node)) {
+            obj->selectionChanged();
+            return;
+        }
+        node = node->parentNode();
+    }
+}
+
 void AXObjectCache::textChanged(Node* node)
 {
     textChanged(getOrCreate(node));

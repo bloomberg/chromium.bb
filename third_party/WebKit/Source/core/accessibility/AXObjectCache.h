@@ -109,6 +109,7 @@ public:
     void checkedStateChanged(Node*);
     void selectedChildrenChanged(Node*);
     void selectedChildrenChanged(RenderObject*);
+    void selectionChanged(Node*);
     // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
     void textChanged(Node*);
     void textChanged(RenderObject*);
