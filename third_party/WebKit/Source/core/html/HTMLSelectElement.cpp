@@ -372,6 +372,7 @@ void HTMLSelectElement::childrenChanged(bool changedByParser, Node* beforeChange
 {
     setRecalcListItems();
     setNeedsValidityCheck();
+    m_lastOnChangeSelection.clear();
 
     HTMLFormControlElementWithState::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
 }
@@ -640,6 +641,7 @@ void HTMLSelectElement::listBoxOnChange()
 
     // If the cached selection list is empty, or the size has changed, then fire
     // dispatchFormControlChangeEvent, and return early.
+    // FIXME: Why? This looks unreasonable.
     if (m_lastOnChangeSelection.isEmpty() || m_lastOnChangeSelection.size() != items.size()) {
         dispatchFormControlChangeEvent();
         return;
