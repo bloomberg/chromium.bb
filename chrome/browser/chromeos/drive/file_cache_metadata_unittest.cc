@@ -38,7 +38,7 @@ class FileCacheMetadataTest : public testing::Test {
 // RemoveTemporaryFiles.
 TEST_F(FileCacheMetadataTest, CacheTest) {
   ASSERT_EQ(FileCacheMetadata::INITIALIZE_CREATED,
-            metadata_->Initialize(temp_dir_.path()));
+            metadata_->Initialize(temp_dir_.path().AppendASCII("test.db")));
 
   // Save an initial entry.
   std::string test_resource_id("test_resource_id");
@@ -108,22 +108,22 @@ TEST_F(FileCacheMetadataTest, CacheTest) {
 }
 
 TEST_F(FileCacheMetadataTest, Initialize) {
-  const base::FilePath db_path =
-      temp_dir_.path().Append(FileCacheMetadata::kCacheMetadataDBPath);
+  const base::FilePath db_path = temp_dir_.path().AppendASCII("test.db");
 
   // Try to open a bogus file.
   ASSERT_TRUE(
       google_apis::test_util::WriteStringToFile(db_path, "Hello world"));
   ASSERT_EQ(FileCacheMetadata::INITIALIZE_CREATED,
-            metadata_->Initialize(temp_dir_.path()));
+            metadata_->Initialize(db_path));
 
   // Open an existing DB.
   metadata_.reset(new FileCacheMetadata(NULL));
   EXPECT_EQ(FileCacheMetadata::INITIALIZE_OPENED,
-            metadata_->Initialize(temp_dir_.path()));
+            metadata_->Initialize(db_path));
 
   // Try to open a nonexistent path.
-  base::FilePath non_existent_path(FILE_PATH_LITERAL("/somewhere/nonexistent"));
+  base::FilePath non_existent_path(FILE_PATH_LITERAL(
+      "/somewhere/nonexistent/test.db"));
   metadata_.reset(new FileCacheMetadata(NULL));
   EXPECT_EQ(FileCacheMetadata::INITIALIZE_FAILED,
             metadata_->Initialize(non_existent_path));

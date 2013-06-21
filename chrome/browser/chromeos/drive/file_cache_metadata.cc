@@ -29,10 +29,6 @@ enum DBOpenStatus {
 
 }  // namespace
 
-// static
-const base::FilePath::CharType* FileCacheMetadata::kCacheMetadataDBPath =
-    FILE_PATH_LITERAL("cache_metadata.db");
-
 FileCacheMetadata::Iterator::Iterator(scoped_ptr<leveldb::Iterator> it)
     : it_(it.Pass()) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -96,11 +92,8 @@ FileCacheMetadata::~FileCacheMetadata() {
 }
 
 FileCacheMetadata::InitializeResult FileCacheMetadata::Initialize(
-    const base::FilePath& db_directory_path) {
+    const base::FilePath& db_path) {
   AssertOnSequencedWorkerPool();
-
-  const base::FilePath db_path = db_directory_path.Append(kCacheMetadataDBPath);
-  DVLOG(1) << "db path=" << db_path.value();
 
   bool created = !file_util::PathExists(db_path);
 

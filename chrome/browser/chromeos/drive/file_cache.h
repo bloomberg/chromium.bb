@@ -293,6 +293,9 @@ class FileCache {
   // bytes, while keeping kMinFreeSpace bytes on the disk.
   bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
 
+  // Imports old format DB from |old_db_path| and deletes it.
+  void ImportOldDB(const base::FilePath& old_db_path);
+
   const base::FilePath metadata_directory_;
   const base::FilePath cache_file_directory_;
 

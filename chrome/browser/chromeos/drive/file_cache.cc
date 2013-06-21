@@ -26,6 +26,10 @@ namespace drive {
 namespace internal {
 namespace {
 
+// Name of the cache metadata DB.
+const base::FilePath::CharType* kCacheMetadataDBName =
+    FILE_PATH_LITERAL("cache_metadata.db");
+
 typedef std::map<std::string, FileCacheEntry> CacheMap;
 
 // Returns true if |md5| matches the one in |cache_entry| with some
@@ -613,7 +617,9 @@ bool FileCache::Initialize() {
 
   metadata_.reset(new FileCacheMetadata(blocking_task_runner_.get()));
 
-  switch (metadata_->Initialize(metadata_directory_)) {
+  const base::FilePath db_path =
+      metadata_directory_.Append(kCacheMetadataDBName);
+  switch (metadata_->Initialize(db_path)) {
     case FileCacheMetadata::INITIALIZE_FAILED:
       return false;
 
@@ -806,6 +812,27 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
   // Subtract this as if this portion does not exist.
   free_space -= kMinFreeSpace;
   return (free_space >= num_bytes);
+}
+
+void FileCache::ImportOldDB(const base::FilePath& old_db_path) {
+  if (!file_util::PathExists(old_db_path))  // Old DB is not there, do nothing.
+    return;
+
+  // Copy all entries stored in the old DB.
+  FileCacheMetadata old_data(blocking_task_runner_);
+  if (old_data.Initialize(old_db_path)) {
+    scoped_ptr<FileCacheMetadata::Iterator> it = old_data.GetIterator();
+    for (; !it->IsAtEnd(); it->Advance()) {
+      FileCacheEntry entry;
+      if (metadata_->GetCacheEntry(it->GetKey(), &entry))
+        continue;  // Do not overwrite.
+
+      metadata_->AddOrUpdateCacheEntry(it->GetKey(), it->GetValue());
+    }
+  }
+
+  // Delete old DB.
+  file_util::Delete(old_db_path, true /* recursive */ );
 }
 
 }  // namespace internal

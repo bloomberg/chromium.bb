@@ -14,6 +14,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
+#include "chrome/browser/chromeos/drive/file_cache_metadata.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -909,6 +910,10 @@ class FileCacheTest : public testing::Test {
     cache_.reset();
   }
 
+  static void ImportOldDB(FileCache* cache, const base::FilePath& old_db_path) {
+    cache->ImportOldDB(old_db_path);
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
 
@@ -987,6 +992,42 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   // Returns false when disk space cannot be freed.
   fake_free_disk_space_getter_->set_default_value(0);
   EXPECT_FALSE(cache_->FreeDiskSpaceIfNeededFor(kNeededBytes));
+}
+
+TEST_F(FileCacheTest, ImportOldDB) {
+  const base::FilePath old_db_path = temp_dir_.path().AppendASCII("old_db.db");
+
+  const std::string key1 = "key1";
+  const std::string md5_1 = "md5_1";
+  const std::string key2 = "key2";
+  const std::string md5_2 = "md5_2";
+
+  // Set up data to be imported.
+  {
+    FileCacheMetadata old_metadata(NULL);
+    ASSERT_TRUE(old_metadata.Initialize(old_db_path));
+
+    FileCacheEntry entry;
+    entry.set_md5(md5_1);
+    old_metadata.AddOrUpdateCacheEntry(key1, entry);
+
+    entry.set_md5(md5_2);
+    old_metadata.AddOrUpdateCacheEntry(key2, entry);
+  }
+  EXPECT_TRUE(file_util::PathExists(old_db_path));
+
+  // Do import.
+  ImportOldDB(cache_.get(), old_db_path);
+
+  // Old DB should be removed.
+  EXPECT_FALSE(file_util::PathExists(old_db_path));
+
+  // Data is imported correctly.
+  FileCacheEntry entry;
+  EXPECT_TRUE(cache_->GetCacheEntry(key1, std::string(), &entry));
+  EXPECT_EQ(md5_1, entry.md5());
+  EXPECT_TRUE(cache_->GetCacheEntry(key2, std::string(), &entry));
+  EXPECT_EQ(md5_2, entry.md5());
 }
 
 }  // namespace internal
