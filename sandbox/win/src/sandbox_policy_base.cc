@@ -43,10 +43,10 @@ const size_t kPolMemSize = kOneMemPage * 14;
 // Helper function to allocate space (on the heap) for policy.
 sandbox::PolicyGlobal* MakeBrokerPolicyMemory() {
   const size_t kTotalPolicySz = kPolMemSize;
-  char* mem = new char[kTotalPolicySz];
-  DCHECK(mem);
-  memset(mem, 0, kTotalPolicySz);
-  sandbox::PolicyGlobal* policy = reinterpret_cast<sandbox::PolicyGlobal*>(mem);
+  sandbox::PolicyGlobal* policy = static_cast<sandbox::PolicyGlobal*>
+      (::operator new(kTotalPolicySz));
+  DCHECK(policy);
+  memset(policy, 0, kTotalPolicySz);
   policy->data_size = kTotalPolicySz - sizeof(sandbox::PolicyGlobal);
   return policy;
 }
