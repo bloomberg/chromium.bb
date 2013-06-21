@@ -112,16 +112,15 @@ ListValue* GetTabsForProcess(int process_id) {
   int tab_id = -1;
   // We need to loop through all the RVHs to ensure we collect the set of all
   // tabs using this renderer process.
-  content::RenderProcessHost::RenderWidgetHostsIterator iter(
-      rph->GetRenderWidgetHostsIterator());
-  for (; !iter.IsAtEnd(); iter.Advance()) {
-    const content::RenderWidgetHost* widget = iter.GetCurrentValue();
-    DCHECK(widget);
-    if (!widget || !widget->IsRenderView())
+  content::RenderWidgetHost::List widgets =
+      content::RenderWidgetHost::GetRenderWidgetHosts();
+  for (size_t i = 0; i < widgets.size(); ++i) {
+    if (widgets[i]->GetProcess()->GetID() != process_id)
+      continue;
+    if (!widgets[i]->IsRenderView())
       continue;
 
-    content::RenderViewHost* host = content::RenderViewHost::From(
-        const_cast<content::RenderWidgetHost*>(widget));
+    content::RenderViewHost* host = content::RenderViewHost::From(widgets[i]);
     content::WebContents* contents =
         content::WebContents::FromRenderViewHost(host);
     if (contents) {

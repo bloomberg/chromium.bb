@@ -90,11 +90,8 @@ RenderWidgetHostViewPort* GetRenderWidgetHostViewFromSurfaceID(
         surface_id, &render_process_id, &render_widget_id))
     return NULL;
 
-  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
-  if (!process)
-    return NULL;
-
-  RenderWidgetHost* host = process->GetRenderWidgetHostByID(render_widget_id);
+  RenderWidgetHost* host =
+      RenderWidgetHost::FromID(render_process_id, render_widget_id);
   return host ? RenderWidgetHostViewPort::FromRWHV(host->GetView()) : NULL;
 }
 
@@ -231,10 +228,8 @@ void GpuProcessHostUIShim::OnUpdateVSyncParameters(int surface_id,
       surface_id, &render_process_id, &render_widget_id)) {
     return;
   }
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
-  if (!host)
-    return;
-  RenderWidgetHost* rwh = host->GetRenderWidgetHostByID(render_widget_id);
+  RenderWidgetHost* rwh =
+      RenderWidgetHost::FromID(render_process_id, render_widget_id);
   if (!rwh)
     return;
   RenderWidgetHostImpl::From(rwh)->UpdateVSyncParameters(timebase, interval);

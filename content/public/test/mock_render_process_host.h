@@ -36,6 +36,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void EnableSendQueue() OVERRIDE;
   virtual bool Init() OVERRIDE;
   virtual int GetNextRoutingID() OVERRIDE;
+  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) OVERRIDE;
+  virtual void RemoveRoute(int32 routing_id) OVERRIDE;
   virtual bool WaitForBackingStoreMsg(int render_widget_id,
                                       const base::TimeDelta& max_delay,
                                       IPC::Message* msg) OVERRIDE;
@@ -56,20 +58,15 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual bool HasConnection() const OVERRIDE;
   virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
   virtual bool IgnoreInputEvents() const OVERRIDE;
-  virtual void Attach(RenderWidgetHost* host, int routing_id) OVERRIDE;
-  virtual void Release(int routing_id) OVERRIDE;
   virtual void Cleanup() OVERRIDE;
   virtual void AddPendingView() OVERRIDE;
   virtual void RemovePendingView() OVERRIDE;
   virtual void SetSuddenTerminationAllowed(bool allowed) OVERRIDE;
   virtual bool SuddenTerminationAllowed() const OVERRIDE;
-  virtual RenderWidgetHost* GetRenderWidgetHostByID(int routing_id)
-        OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual bool InSameStoragePartition(
       StoragePartition* partition) const OVERRIDE;
   virtual IPC::ChannelProxy* GetChannel() OVERRIDE;
-  virtual RenderWidgetHostsIterator GetRenderWidgetHostsIterator() OVERRIDE;
   virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
   virtual void SurfaceUpdated(int32 surface_id) OVERRIDE;
@@ -88,6 +85,8 @@ class MockRenderProcessHost : public RenderProcessHost {
     factory_ = factory;
   }
 
+  int GetActiveViewCount();
+
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
@@ -98,6 +97,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   BrowserContext* browser_context_;
 
   IDMap<RenderWidgetHost> render_widget_hosts_;
+  IDMap<IPC::Listener> listeners_;
   bool fast_shutdown_started_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);

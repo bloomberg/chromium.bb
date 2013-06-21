@@ -76,6 +76,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void EnableSendQueue() OVERRIDE;
   virtual bool Init() OVERRIDE;
   virtual int GetNextRoutingID() OVERRIDE;
+  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) OVERRIDE;
+  virtual void RemoveRoute(int32 routing_id) OVERRIDE;
   virtual bool WaitForBackingStoreMsg(int render_widget_id,
                                       const base::TimeDelta& max_delay,
                                       IPC::Message* msg) OVERRIDE;
@@ -95,20 +97,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
       StoragePartition* partition) const OVERRIDE;
   virtual int GetID() const OVERRIDE;
   virtual bool HasConnection() const OVERRIDE;
-  virtual RenderWidgetHost* GetRenderWidgetHostByID(int routing_id)
-      OVERRIDE;
   virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
   virtual bool IgnoreInputEvents() const OVERRIDE;
-  virtual void Attach(RenderWidgetHost* host, int routing_id)
-      OVERRIDE;
-  virtual void Release(int routing_id) OVERRIDE;
   virtual void Cleanup() OVERRIDE;
   virtual void AddPendingView() OVERRIDE;
   virtual void RemovePendingView() OVERRIDE;
   virtual void SetSuddenTerminationAllowed(bool enabled) OVERRIDE;
   virtual bool SuddenTerminationAllowed() const OVERRIDE;
   virtual IPC::ChannelProxy* GetChannel() OVERRIDE;
-  virtual RenderWidgetHostsIterator GetRenderWidgetHostsIterator() OVERRIDE;
   virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
   virtual bool FastShutdownStarted() const OVERRIDE;
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
@@ -185,10 +181,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // browser_process.h)
   scoped_ptr<IPC::ChannelProxy> channel_;
 
-  // The registered render widget hosts. When this list is empty or all NULL,
-  // we should delete ourselves
-  IDMap<RenderWidgetHost> render_widget_hosts_;
-
   // True if fast shutdown has been performed on this RPH.
   bool fast_shutdown_started_;
 
@@ -234,6 +226,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void ProcessDied(bool already_dead);
 
   virtual void OnGpuSwitching() OVERRIDE;
+
+  // The registered IPC listener objects. When this list is empty, we should
+  // delete ourselves.
+  IDMap<IPC::Listener> listeners_;
 
   // The count of currently visible widgets.  Since the host can be a container
   // for multiple widgets, it uses this count to determine when it should be

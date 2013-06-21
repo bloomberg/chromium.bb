@@ -91,28 +91,16 @@ void SendTargetsData(
     const WebUIDataSource::GotDataCallback& callback) {
   scoped_ptr<base::ListValue> rvh_list(new base::ListValue());
 
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
-       !it.IsAtEnd(); it.Advance()) {
-    RenderProcessHost* render_process_host = it.GetCurrentValue();
-    DCHECK(render_process_host);
-
+  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  for (size_t i = 0; i < widgets.size(); ++i) {
     // Ignore processes that don't have a connection, such as crashed tabs.
-    if (!render_process_host->HasConnection())
+    if (!widgets[i]->GetProcess()->HasConnection())
       continue;
-
-    RenderProcessHost::RenderWidgetHostsIterator rwh_it(
-        render_process_host->GetRenderWidgetHostsIterator());
-    for (; !rwh_it.IsAtEnd(); rwh_it.Advance()) {
-      const RenderWidgetHost* rwh = rwh_it.GetCurrentValue();
-      DCHECK(rwh);
-      if (!rwh || !rwh->IsRenderView())
+    if (!widgets[i]->IsRenderView())
         continue;
 
-      RenderViewHost* rvh =
-          RenderViewHost::From(const_cast<RenderWidgetHost*>(rwh));
-
-      rvh_list->Append(BuildTargetDescriptor(rvh));
-    }
+    RenderViewHost* rvh = RenderViewHost::From(widgets[i]);
+    rvh_list->Append(BuildTargetDescriptor(rvh));
   }
 
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());

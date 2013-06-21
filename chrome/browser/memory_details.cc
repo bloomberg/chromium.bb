@@ -214,11 +214,10 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     ProcessMemoryInformation& process =
         chrome_browser->processes[index];
 
-    for (content::RenderProcessHost::iterator renderer_iter(
-            content::RenderProcessHost::AllHostsIterator());
-         !renderer_iter.IsAtEnd(); renderer_iter.Advance()) {
+    RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+    for (size_t i = 0; i < widgets.size(); ++i) {
       content::RenderProcessHost* render_process_host =
-          renderer_iter.GetCurrentValue();
+          widgets[i]->GetProcess();
       DCHECK(render_process_host);
       // Ignore processes that don't have a connection, such as crashed tabs.
       if (!render_process_host->HasConnection() ||
@@ -238,110 +237,104 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       // The RenderProcessHost may host multiple WebContentses.  Any
       // of them which contain diagnostics information make the whole
       // process be considered a diagnostics process.
-      content::RenderProcessHost::RenderWidgetHostsIterator iter(
-          render_process_host->GetRenderWidgetHostsIterator());
-      for (; !iter.IsAtEnd(); iter.Advance()) {
-        const RenderWidgetHost* widget = iter.GetCurrentValue();
-        DCHECK(widget);
-        if (!widget || !widget->IsRenderView())
-          continue;
+      if (!widgets[i]->IsRenderView())
+        continue;
 
-        RenderViewHost* host =
-            RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
-        WebContents* contents = WebContents::FromRenderViewHost(host);
-        GURL url;
-        if (contents) {
-          url = contents->GetURL();
-          SiteData* site_data =
-              &chrome_browser->site_data[contents->GetBrowserContext()];
-          SiteDetails::CollectSiteInfo(contents, site_data);
-        }
-        extensions::ViewType type = extensions::GetViewType(contents);
-        if (host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) {
-          process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
-        } else if (extension_process_map &&
-            extension_process_map->Contains(host->GetProcess()->GetID())) {
-          // For our purposes, don't count processes containing only hosted apps
-          // as extension processes. See also: crbug.com/102533.
-          std::set<std::string> extension_ids =
-              extension_process_map->GetExtensionsInProcess(
-                  host->GetProcess()->GetID());
-          for (std::set<std::string>::iterator iter = extension_ids.begin();
-               iter != extension_ids.end(); ++iter) {
-            const Extension* extension =
-                extension_service->GetExtensionById(*iter, false);
-            if (extension && !extension->is_hosted_app()) {
-              process.renderer_type =
-                  ProcessMemoryInformation::RENDERER_EXTENSION;
-              break;
-            }
-          }
-        }
-        if (extension_process_map &&
-            extension_process_map->Contains(host->GetProcess()->GetID())) {
+      RenderViewHost* host = RenderViewHost::From(widgets[i]);
+      WebContents* contents = WebContents::FromRenderViewHost(host);
+      GURL url;
+      if (contents) {
+        url = contents->GetURL();
+        SiteData* site_data =
+            &chrome_browser->site_data[contents->GetBrowserContext()];
+        SiteDetails::CollectSiteInfo(contents, site_data);
+      }
+      extensions::ViewType type = extensions::GetViewType(contents);
+      if (host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) {
+        process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
+      } else if (extension_process_map &&
+                 extension_process_map->Contains(host->GetProcess()->GetID())) {
+        // For our purposes, don't count processes containing only hosted apps
+        // as extension processes. See also: crbug.com/102533.
+        std::set<std::string> extension_ids =
+            extension_process_map->GetExtensionsInProcess(
+            host->GetProcess()->GetID());
+        for (std::set<std::string>::iterator iter = extension_ids.begin();
+             iter != extension_ids.end(); ++iter) {
           const Extension* extension =
-              extension_service->extensions()->GetByID(url.host());
-          if (extension) {
-            string16 title = UTF8ToUTF16(extension->name());
-            process.titles.push_back(title);
+              extension_service->GetExtensionById(*iter, false);
+          if (extension && !extension->is_hosted_app()) {
             process.renderer_type =
                 ProcessMemoryInformation::RENDERER_EXTENSION;
-            continue;
+            break;
           }
         }
-
-        if (!contents) {
+      }
+      if (extension_process_map &&
+          extension_process_map->Contains(host->GetProcess()->GetID())) {
+        const Extension* extension =
+            extension_service->extensions()->GetByID(url.host());
+        if (extension) {
+          string16 title = UTF8ToUTF16(extension->name());
+          process.titles.push_back(title);
           process.renderer_type =
-                ProcessMemoryInformation::RENDERER_INTERSTITIAL;
+              ProcessMemoryInformation::RENDERER_EXTENSION;
           continue;
         }
+      }
 
-        if (type == extensions::VIEW_TYPE_BACKGROUND_CONTENTS) {
-          process.titles.push_back(UTF8ToUTF16(url.spec()));
-          process.renderer_type =
-                    ProcessMemoryInformation::RENDERER_BACKGROUND_APP;
-          continue;
-        }
+      if (!contents) {
+        process.renderer_type =
+            ProcessMemoryInformation::RENDERER_INTERSTITIAL;
+        continue;
+      }
 
-        if (type == extensions::VIEW_TYPE_NOTIFICATION) {
-          process.titles.push_back(UTF8ToUTF16(url.spec()));
-          process.renderer_type =
-                    ProcessMemoryInformation::RENDERER_NOTIFICATION;
-          continue;
-        }
+      if (type == extensions::VIEW_TYPE_BACKGROUND_CONTENTS) {
+        process.titles.push_back(UTF8ToUTF16(url.spec()));
+        process.renderer_type =
+            ProcessMemoryInformation::RENDERER_BACKGROUND_APP;
+        continue;
+      }
 
-        // Since we have a WebContents and and the renderer type hasn't been
-        // set yet, it must be a normal tabbed renderer.
-        if (process.renderer_type == ProcessMemoryInformation::RENDERER_UNKNOWN)
-          process.renderer_type = ProcessMemoryInformation::RENDERER_NORMAL;
+      if (type == extensions::VIEW_TYPE_NOTIFICATION) {
+        process.titles.push_back(UTF8ToUTF16(url.spec()));
+        process.renderer_type =
+            ProcessMemoryInformation::RENDERER_NOTIFICATION;
+        continue;
+      }
 
-        string16 title = contents->GetTitle();
-        if (!title.length())
-          title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
-        process.titles.push_back(title);
+      // Since we have a WebContents and and the renderer type hasn't been
+      // set yet, it must be a normal tabbed renderer.
+      if (process.renderer_type == ProcessMemoryInformation::RENDERER_UNKNOWN)
+        process.renderer_type = ProcessMemoryInformation::RENDERER_NORMAL;
 
-        // We need to check the pending entry as well as the virtual_url to
-        // see if it's a chrome://memory URL (we don't want to count these in
-        // the total memory usage of the browser).
-        //
-        // When we reach here, chrome://memory will be the pending entry since
-        // we haven't responded with any data such that it would be committed.
-        // If you have another chrome://memory tab open (which would be
-        // committed), we don't want to count it either, so we also check the
-        // last committed entry.
-        //
-        // Either the pending or last committed entries can be NULL.
-        const NavigationEntry* pending_entry =
-            contents->GetController().GetPendingEntry();
-        const NavigationEntry* last_committed_entry =
-            contents->GetController().GetLastCommittedEntry();
-        if ((last_committed_entry &&
-             LowerCaseEqualsASCII(last_committed_entry->GetVirtualURL().spec(),
-                                  chrome::kChromeUIMemoryURL)) ||
-            (pending_entry &&
-             LowerCaseEqualsASCII(pending_entry->GetVirtualURL().spec(),
-                                  chrome::kChromeUIMemoryURL)))
-          process.is_diagnostics = true;
+      string16 title = contents->GetTitle();
+      if (!title.length())
+        title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
+      process.titles.push_back(title);
+
+      // We need to check the pending entry as well as the virtual_url to
+      // see if it's a chrome://memory URL (we don't want to count these in
+      // the total memory usage of the browser).
+      //
+      // When we reach here, chrome://memory will be the pending entry since
+      // we haven't responded with any data such that it would be committed.
+      // If you have another chrome://memory tab open (which would be
+      // committed), we don't want to count it either, so we also check the
+      // last committed entry.
+      //
+      // Either the pending or last committed entries can be NULL.
+      const NavigationEntry* pending_entry =
+          contents->GetController().GetPendingEntry();
+      const NavigationEntry* last_committed_entry =
+          contents->GetController().GetLastCommittedEntry();
+      if ((last_committed_entry &&
+           LowerCaseEqualsASCII(last_committed_entry->GetVirtualURL().spec(),
+                                chrome::kChromeUIMemoryURL)) ||
+          (pending_entry &&
+           LowerCaseEqualsASCII(pending_entry->GetVirtualURL().spec(),
+                                chrome::kChromeUIMemoryURL))) {
+        process.is_diagnostics = true;
       }
     }
 

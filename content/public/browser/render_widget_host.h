@@ -117,6 +117,14 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   static void AddCreatedCallback(const CreatedCallback& callback);
   static void RemoveCreatedCallback(const CreatedCallback& callback);
 
+  // Returns the RenderWidgetHost given its ID and the ID of its render process.
+  // Returns NULL if the IDs do not correspond to a live RenderWidgetHost.
+  static RenderWidgetHost* FromID(int32 process_id, int32 routing_id);
+
+  typedef std::vector<RenderWidgetHost*> List;
+  // Returns the global list of render widget hosts.
+  static RenderWidgetHost::List GetRenderWidgetHosts();
+
   virtual ~RenderWidgetHost() {}
 
   // Edit operations.

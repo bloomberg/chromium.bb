@@ -132,19 +132,12 @@ void GuestResourceProvider::StartUpdating() {
   updating_ = true;
 
   // Add all the existing guest WebContents.
-  for (RenderProcessHost::iterator i(
-           RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    RenderProcessHost::RenderWidgetHostsIterator iter =
-        i.GetCurrentValue()->GetRenderWidgetHostsIterator();
-    for (; !iter.IsAtEnd(); iter.Advance()) {
-      const RenderWidgetHost* widget = iter.GetCurrentValue();
-      if (widget->IsRenderView()) {
-        RenderViewHost* rvh =
-            RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
-        if (rvh->IsSubframe())
-          Add(rvh);
-      }
+  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  for (size_t i = 0; i < widgets.size(); ++i) {
+    if (widgets[i]->IsRenderView()) {
+      RenderViewHost* rvh = RenderViewHost::From(widgets[i]);
+      if (rvh->IsSubframe())
+        Add(rvh);
     }
   }
 

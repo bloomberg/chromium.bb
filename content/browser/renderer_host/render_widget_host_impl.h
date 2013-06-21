@@ -94,6 +94,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                        int routing_id);
   virtual ~RenderWidgetHostImpl();
 
+  // Similar to RenderWidgetHost::FromID, but returning the Impl object.
+  static RenderWidgetHostImpl* FromID(int32 process_id, int32 routing_id);
+
   // Use RenderWidgetHostImpl::From(rwh) to downcast a
   // RenderWidgetHost to a RenderWidgetHostImpl.  Internally, this
   // uses RenderWidgetHost::AsRenderWidgetHostImpl().

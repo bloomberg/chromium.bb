@@ -110,25 +110,16 @@ void WorkerPrioritySetter::GatherVisibleIDsAndUpdateWorkerPriorities() {
       new std::set<std::pair<int, int> >();
 
   // Gather up all the visible renderer process/view pairs
-  for (RenderProcessHost::iterator it =
-       RenderProcessHost::AllHostsIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    RenderProcessHost* render_process_host = it.GetCurrentValue();
-    if (render_process_host->VisibleWidgetCount()) {
-      for (RenderProcessHost::RenderWidgetHostsIterator rit =
-           render_process_host->GetRenderWidgetHostsIterator(); !rit.IsAtEnd();
-           rit.Advance()) {
-        RenderWidgetHost* render_widget =
-            render_process_host->GetRenderWidgetHostByID(rit.GetCurrentKey());
-        if (render_widget) {
-          RenderWidgetHostView* render_view = render_widget->GetView();
-          if (render_view && render_view->IsShowing()) {
-            visible_renderer_ids->insert(
-                std::pair<int, int>(render_process_host->GetID(),
-                                    render_widget->GetRoutingID()));
-          }
-        }
-      }
+  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  for (size_t i = 0; i < widgets.size(); ++i) {
+    if (widgets[i]->GetProcess()->VisibleWidgetCount() == 0)
+      continue;
+
+    RenderWidgetHostView* render_view = widgets[i]->GetView();
+    if (render_view && render_view->IsShowing()) {
+      visible_renderer_ids->insert(
+          std::pair<int, int>(widgets[i]->GetProcess()->GetID(),
+                              widgets[i]->GetRoutingID()));
     }
   }
 

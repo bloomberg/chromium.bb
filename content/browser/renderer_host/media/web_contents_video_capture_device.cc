@@ -873,8 +873,8 @@ RenderWidgetHost* CaptureMachine::GetTarget() {
   RenderWidgetHost* rwh = NULL;
   if (fullscreen_widget_id_ != MSG_ROUTING_NONE) {
     RenderProcessHost* process = web_contents()->GetRenderProcessHost();
-    rwh = process ? process->GetRenderWidgetHostByID(fullscreen_widget_id_)
-                  : NULL;
+    if (process)
+      rwh = RenderWidgetHost::FromID(process->GetID(), fullscreen_widget_id_);
   } else {
     rwh = web_contents()->GetRenderViewHost();
   }

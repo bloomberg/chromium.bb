@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/hash_tables.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
@@ -117,6 +118,12 @@ g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 
+typedef std::pair<int32, int32> RenderWidgetHostID;
+typedef base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>
+    RoutingIDWidgetMap;
+static base::LazyInstance<RoutingIDWidgetMap> g_routing_id_widget_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 // static
 void RenderWidgetHost::RemoveAllBackingStores() {
   BackingStoreManager::RemoveAllBackingStores();
@@ -196,7 +203,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   is_threaded_compositing_enabled_ = IsThreadedCompositingEnabled();
 
-  process_->Attach(this, routing_id_);
+  g_routing_id_widget_map.Get().insert(std::make_pair(
+      RenderWidgetHostID(process->GetID(), routing_id_), this));
+  process_->AddRoute(routing_id_, this);
   // Because the widget initializes as is_hidden_ == false,
   // tell the process host that we're alive.
   process_->WidgetRestored();
@@ -223,10 +232,41 @@ RenderWidgetHostImpl::~RenderWidgetHostImpl() {
   GpuSurfaceTracker::Get()->RemoveSurface(surface_id_);
   surface_id_ = 0;
 
-  process_->Release(routing_id_);
+  process_->RemoveRoute(routing_id_);
+  g_routing_id_widget_map.Get().erase(
+      RenderWidgetHostID(process_->GetID(), routing_id_));
 
   if (delegate_)
     delegate_->RenderWidgetDeleted(this);
+}
+
+// static
+RenderWidgetHost* RenderWidgetHost::FromID(
+    int32 process_id,
+    int32 routing_id) {
+  return RenderWidgetHostImpl::FromID(process_id, routing_id);
+}
+
+// static
+RenderWidgetHostImpl* RenderWidgetHostImpl::FromID(
+    int32 process_id,
+    int32 routing_id) {
+  RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
+  RoutingIDWidgetMap::iterator it = widgets->find(
+      RenderWidgetHostID(process_id, routing_id));
+  return it == widgets->end() ? NULL : it->second;
+}
+
+// static
+std::vector<RenderWidgetHost*> RenderWidgetHost::GetRenderWidgetHosts() {
+  std::vector<RenderWidgetHost*> hosts;
+  RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
+  for (RoutingIDWidgetMap::const_iterator it = widgets->begin();
+       it != widgets->end();
+       ++it) {
+    hosts.push_back(it->second);
+  }
+  return hosts;
 }
 
 // static
@@ -2554,10 +2594,8 @@ void RenderWidgetHostImpl::CompositorFrameDrawn(
     // Matches with GetLatencyComponentId
     int routing_id = b->first.second & 0xffffffff;
     int process_id = (b->first.second >> 32) & 0xffffffff;
-    RenderProcessHost* host = RenderProcessHost::FromID(process_id);
-    if (!host)
-      continue;
-    RenderWidgetHost* rwh = host->GetRenderWidgetHostByID(routing_id);
+    RenderWidgetHost* rwh =
+        RenderWidgetHost::FromID(process_id, routing_id);
     if (!rwh)
       continue;
     RenderWidgetHostImpl::From(rwh)->FrameSwapped(latency_info);

@@ -62,8 +62,8 @@ void ValidationMessageMessageFilter::OverrideThreadForMessage(
 void ValidationMessageMessageFilter::OnShowValidationMessage(
     int route_id, const gfx::Rect& anchor_in_root_view,
     const string16& main_text, const string16& sub_text) {
-  RenderProcessHost* process = RenderProcessHost::FromID(renderer_id_);
-  RenderWidgetHost* widget_host = process->GetRenderWidgetHostByID(route_id);
+  RenderWidgetHost* widget_host =
+      RenderWidgetHost::FromID(renderer_id_, route_id);
   validation_message_bubble_ = chrome::ValidationMessageBubble::CreateAndShow(
       widget_host, anchor_in_root_view, main_text, sub_text);
 }
@@ -76,8 +76,8 @@ void ValidationMessageMessageFilter::OnMoveValidationMessage(
     int route_id, const gfx::Rect& anchor_in_root_view) {
   if (!validation_message_bubble_)
       return;
-  RenderProcessHost* process = RenderProcessHost::FromID(renderer_id_);
-  RenderWidgetHost* widget_host = process->GetRenderWidgetHostByID(route_id);
+  RenderWidgetHost* widget_host =
+      RenderWidgetHost::FromID(renderer_id_, route_id);
   validation_message_bubble_->SetPositionRelativeToAnchor(
       widget_host, anchor_in_root_view);
 }

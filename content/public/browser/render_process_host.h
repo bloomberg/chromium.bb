@@ -37,7 +37,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
                                          public IPC::Listener {
  public:
   typedef IDMap<RenderProcessHost>::iterator iterator;
-  typedef IDMap<RenderWidgetHost>::const_iterator RenderWidgetHostsIterator;
 
   // Details for RENDERER_PROCESS_CLOSED notifications.
   struct RendererClosedDetails {
@@ -63,6 +62,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Gets the next available routing id.
   virtual int GetNextRoutingID() = 0;
+
+  // These methods add or remove listener for a specific message routing ID.
+  // Used for refcounting, each holder of this object must AddRoute and
+  // RemoveRoute. This object should be allocated on the heap; when no
+  // listeners own it any more, it will delete itself.
+  virtual void AddRoute(int32 routing_id, IPC::Listener* listener) = 0;
+  virtual void RemoveRoute(int32 routing_id) = 0;
 
   // Called to wait for the next UpdateRect message for the specified render
   // widget.  Returns true if successful, and the msg out-param will contain a
@@ -140,9 +146,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // etc.
   virtual int GetID() const = 0;
 
-  // Returns the render widget host for the routing id passed in.
-  virtual RenderWidgetHost* GetRenderWidgetHostByID(int routing_id) = 0;
-
   // Returns true iff channel_ has been set to non-NULL. Use this for checking
   // if there is connection or not. Virtual for mocking out for tests.
   virtual bool HasConnection() const = 0;
@@ -154,9 +157,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns the renderer channel.
   virtual IPC::ChannelProxy* GetChannel() = 0;
 
-  // Returns the list of attached render widget hosts.
-  virtual RenderWidgetHostsIterator GetRenderWidgetHostsIterator() = 0;
-
   // Try to shutdown the associated render process as fast as possible
   virtual bool FastShutdownForPageCount(size_t count) = 0;
 
@@ -165,14 +165,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // part of the interface.
   virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
   virtual bool IgnoreInputEvents() const = 0;
-
-  // Used for refcounting, each holder of this object must Attach and Release
-  // just like it would for a COM object. This object should be allocated on
-  // the heap; when no listeners own it any more, it will delete itself.
-  virtual void Attach(content::RenderWidgetHost* host, int routing_id) = 0;
-
-  // See Attach()
-  virtual void Release(int routing_id) = 0;
 
   // Schedules the host for deletion and removes it from the all_hosts list.
   virtual void Cleanup() = 0;

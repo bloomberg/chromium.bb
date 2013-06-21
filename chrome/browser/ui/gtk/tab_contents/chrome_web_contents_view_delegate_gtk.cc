@@ -136,9 +136,9 @@ void ChromeWebContentsViewDelegateGtk::ShowContextMenu(
   content::RenderWidgetHostView* view = NULL;
   if (params.custom_context.render_widget_id !=
       content::CustomContextMenuContext::kCurrentRenderWidget) {
-    content::RenderWidgetHost* host =
-        web_contents_->GetRenderProcessHost()->GetRenderWidgetHostByID(
-            params.custom_context.render_widget_id);
+    content::RenderWidgetHost* host = content::RenderWidgetHost::FromID(
+        web_contents_->GetRenderProcessHost()->GetID(),
+        params.custom_context.render_widget_id);
     if (!host) {
       NOTREACHED();
       return;

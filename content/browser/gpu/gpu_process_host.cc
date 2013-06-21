@@ -133,10 +133,8 @@ void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
     RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
     return;
   }
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
-  if (!host)
-    return;
-  RenderWidgetHost* rwh = host->GetRenderWidgetHostByID(render_widget_id);
+  RenderWidgetHost* rwh =
+    RenderWidgetHost::FromID(render_process_id, render_widget_id);
   if (!rwh)
     return;
   RenderWidgetHostImpl::From(rwh)->AcknowledgeSwapBuffersToRenderer();

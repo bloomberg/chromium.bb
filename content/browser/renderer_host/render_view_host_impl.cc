@@ -118,10 +118,8 @@ g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 // static
 RenderViewHost* RenderViewHost::FromID(int render_process_id,
                                        int render_view_id) {
-  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
-  if (!process)
-    return NULL;
-  RenderWidgetHost* widget = process->GetRenderWidgetHostByID(render_view_id);
+  RenderWidgetHost* widget =
+      RenderWidgetHost::FromID(render_process_id, render_view_id);
   if (!widget || !widget->IsRenderView())
     return NULL;
   return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(widget));
@@ -480,10 +478,11 @@ void RenderViewHostImpl::WasSwappedOut() {
 
     // Count the number of widget hosts for the process, which is equivalent to
     // views using the process as of this writing.
-    RenderProcessHost::RenderWidgetHostsIterator iter(
-        GetProcess()->GetRenderWidgetHostsIterator());
-    for (; !iter.IsAtEnd(); iter.Advance())
-      ++views;
+    RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+    for (size_t i = 0; i < widgets.size(); ++i) {
+      if (widgets[i]->GetProcess()->GetID() == GetProcess()->GetID())
+        ++views;
+    }
 
     if (!RenderProcessHost::run_renderer_in_process() &&
         process_handle && views <= 1) {

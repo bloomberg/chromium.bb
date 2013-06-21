@@ -105,6 +105,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host_factory.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
@@ -708,9 +709,38 @@ int RenderProcessHostImpl::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
 }
 
+
 void RenderProcessHostImpl::ResumeDeferredNavigation(
     const GlobalRequestID& request_id) {
   widget_helper_->ResumeDeferredNavigation(request_id);
+}
+
+void RenderProcessHostImpl::AddRoute(
+    int32 routing_id,
+    IPC::Listener* listener) {
+  listeners_.AddWithID(listener, routing_id);
+}
+
+void RenderProcessHostImpl::RemoveRoute(int32 routing_id) {
+  DCHECK(listeners_.Lookup(routing_id) != NULL);
+  listeners_.Remove(routing_id);
+
+#if defined(OS_WIN)
+  // Dump the handle table if handle auditing is enabled.
+  const CommandLine& browser_command_line =
+      *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(switches::kAuditHandles) ||
+      browser_command_line.HasSwitch(switches::kAuditAllHandles)) {
+    DumpHandles();
+
+    // We wait to close the channels until the child process has finished
+    // dumping handles and sends us ChildProcessHostMsg_DumpHandlesDone.
+    return;
+  }
+#endif
+  // Keep the one renderer thread around forever in single process mode.
+  if (!run_renderer_in_process())
+    Cleanup();
 }
 
 bool RenderProcessHostImpl::WaitForBackingStoreMsg(
@@ -1186,9 +1216,9 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
     return true;
   }
 
-  // Dispatch incoming messages to the appropriate RenderView/WidgetHost.
-  RenderWidgetHost* rwh = render_widget_hosts_.Lookup(msg.routing_id());
-  if (!rwh) {
+  // Dispatch incoming messages to the appropriate IPC::Listener.
+  IPC::Listener* listener = listeners_.Lookup(msg.routing_id());
+  if (!listener) {
     if (msg.is_sync()) {
       // The listener has gone away, so we must respond or else the caller will
       // hang waiting for a reply.
@@ -1206,7 +1236,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_END_MESSAGE_MAP_EX()
     return true;
   }
-  return RenderWidgetHostImpl::From(rwh)->OnMessageReceived(msg);
+  return listener->OnMessageReceived(msg);
 }
 
 void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
@@ -1241,11 +1271,6 @@ bool RenderProcessHostImpl::HasConnection() const {
   return channel_.get() != NULL;
 }
 
-RenderWidgetHost* RenderProcessHostImpl::GetRenderWidgetHostByID(
-    int routing_id) {
-  return render_widget_hosts_.Lookup(routing_id);
-}
-
 void RenderProcessHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
   ignore_input_events_ = ignore_input_events;
 }
@@ -1254,36 +1279,9 @@ bool RenderProcessHostImpl::IgnoreInputEvents() const {
   return ignore_input_events_;
 }
 
-void RenderProcessHostImpl::Attach(RenderWidgetHost* host,
-                                   int routing_id) {
-  render_widget_hosts_.AddWithID(host, routing_id);
-}
-
-void RenderProcessHostImpl::Release(int routing_id) {
-  DCHECK(render_widget_hosts_.Lookup(routing_id) != NULL);
-  render_widget_hosts_.Remove(routing_id);
-
-#if defined(OS_WIN)
-  // Dump the handle table if handle auditing is enabled.
-  const CommandLine& browser_command_line =
-      *CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kAuditHandles) ||
-      browser_command_line.HasSwitch(switches::kAuditAllHandles)) {
-    DumpHandles();
-
-    // We wait to close the channels until the child process has finished
-    // dumping handles and sends us ChildProcessHostMsg_DumpHandlesDone.
-    return;
-  }
-#endif
-  // Keep the one renderer thread around forever in single process mode.
-  if (!run_renderer_in_process())
-    Cleanup();
-}
-
 void RenderProcessHostImpl::Cleanup() {
   // When no other owners of this object, we can delete ourselves
-  if (render_widget_hosts_.IsEmpty()) {
+  if (listeners_.IsEmpty()) {
     DCHECK_EQ(0, pending_views_);
     NotificationService::current()->Notify(
         NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -1344,13 +1342,8 @@ IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
   return channel_.get();
 }
 
-RenderProcessHost::RenderWidgetHostsIterator
-    RenderProcessHostImpl::GetRenderWidgetHostsIterator() {
-  return RenderWidgetHostsIterator(&render_widget_hosts_);
-}
-
 bool RenderProcessHostImpl::FastShutdownForPageCount(size_t count) {
-  if (render_widget_hosts_.size() == count)
+  if (static_cast<size_t>(GetActiveViewCount()) == count)
     return FastShutdownIfPossible();
   return false;
 }
@@ -1605,13 +1598,14 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   channel_.reset();
   gpu_message_filter_ = NULL;
 
-  IDMap<RenderWidgetHost>::iterator iter(&render_widget_hosts_);
-  while (!iter.IsAtEnd()) {
-    RenderWidgetHostImpl::From(iter.GetCurrentValue())->OnMessageReceived(
-        ViewHostMsg_RenderViewGone(iter.GetCurrentKey(),
+  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  for (size_t i = 0; i < widgets.size(); ++i) {
+    if (widgets[i]->GetProcess()->GetID() != GetID())
+      continue;
+    RenderWidgetHostImpl::From(widgets[i])->OnMessageReceived(
+        ViewHostMsg_RenderViewGone(widgets[i]->GetRoutingID(),
                                    static_cast<int>(status),
                                    exit_code));
-    iter.Advance();
   }
 
   ClearTransportDIBCache();
@@ -1622,23 +1616,20 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
 
 int RenderProcessHostImpl::GetActiveViewCount() {
   int num_active_views = 0;
-  for (RenderWidgetHostsIterator iter = GetRenderWidgetHostsIterator();
-       !iter.IsAtEnd();
-       iter.Advance()) {
-    const RenderWidgetHost* widget = iter.GetCurrentValue();
-    DCHECK(widget);
-    if (!widget)
+  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  for (size_t i = 0; i < widgets.size(); ++i) {
+    // Count only RenderWidgetHosts in this process.
+    if (widgets[i]->GetProcess()->GetID() != GetID())
       continue;
 
     // All RenderWidgetHosts are swapped in.
-    if (!widget->IsRenderView()) {
+    if (!widgets[i]->IsRenderView()) {
       num_active_views++;
       continue;
     }
 
     // Don't count swapped out views.
-    RenderViewHost* rvh =
-        RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
+    RenderViewHost* rvh = RenderViewHost::From(widgets[i]);
     if (!static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
       num_active_views++;
   }
@@ -1771,17 +1762,16 @@ void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
 }
 
 void RenderProcessHostImpl::OnGpuSwitching() {
-  for (RenderWidgetHostsIterator iter = GetRenderWidgetHostsIterator();
-       !iter.IsAtEnd();
-       iter.Advance()) {
-    const RenderWidgetHost* widget = iter.GetCurrentValue();
-    DCHECK(widget);
-    if (!widget || !widget->IsRenderView())
+  RenderWidgetHost::List widgets = RenderWidgetHost::GetRenderWidgetHosts();
+  for (size_t i = 0; i < widgets.size(); ++i) {
+    if (!widgets[i]->IsRenderView())
       continue;
 
-    RenderViewHost* rvh =
-        RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
+    // Skip widgets in other processes.
+    if (widgets[i]->GetProcess()->GetID() != GetID())
+      continue;
 
+    RenderViewHost* rvh = RenderViewHost::From(widgets[i]);
     rvh->UpdateWebkitPreferences(rvh->GetWebkitPreferences());
   }
 }

@@ -352,21 +352,12 @@ const icu::TimeZone* TimezoneSettingsBaseImpl::GetKnownTimezoneOrNull(
 }
 
 void TimezoneSettingsBaseImpl::NotifyRenderers() {
-  content::RenderProcessHost::iterator process_iterator(
-      content::RenderProcessHost::AllHostsIterator());
-  for (; !process_iterator.IsAtEnd(); process_iterator.Advance()) {
-    content::RenderProcessHost* render_process_host =
-        process_iterator.GetCurrentValue();
-    content::RenderProcessHost::RenderWidgetHostsIterator widget_iterator(
-        render_process_host->GetRenderWidgetHostsIterator());
-    for (; !widget_iterator.IsAtEnd(); widget_iterator.Advance()) {
-      const content::RenderWidgetHost* widget =
-          widget_iterator.GetCurrentValue();
-      if (widget->IsRenderView()) {
-        content::RenderViewHost* view = content::RenderViewHost::From(
-            const_cast<content::RenderWidgetHost*>(widget));
-        view->NotifyTimezoneChange();
-      }
+  content::RenderWidgetHost::List widgets =
+      content::RenderWidgetHost::GetRenderWidgetHosts();
+  for (size_t i = 0; i < widgets.size(); ++i) {
+    if (widgets[i]->IsRenderView()) {
+      content::RenderViewHost* view = content::RenderViewHost::From(widgets[i]);
+      view->NotifyTimezoneChange();
     }
   }
 }
