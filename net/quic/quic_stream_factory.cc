@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/rand_util.h"
@@ -373,6 +374,25 @@ QuicClientSession* QuicStreamFactory::CreateSession(
           DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt),
           net_log.net_log(), net_log.source());
   socket->Connect(addr);
+
+  // We should adaptively set this buffer size, but for now, we'll use a size
+  // that is more than large enough for a 100 packet congestion window, and yet
+  // does not consume "too much" memory.  If we see bursty packet loss, we may
+  // revisit this setting and test for its impact.
+  const int32 kSocketBufferSize(kMaxPacketSize * 100);  // Support 100 packets.
+  socket->SetReceiveBufferSize(kSocketBufferSize);
+  // TODO(jar): What should the UDP send buffer be set to?  If the send buffer
+  // is too large, then we might(?) wastefully queue packets in the OS, when
+  // we'd rather construct packets just in time. We do however expect that the
+  // calculated send rate (paced, or ack clocked), will be well below the egress
+  // rate of the local machine, so that *shouldn't* be a problem.
+  // If the buffer setting is too small, then we will starve our outgoing link
+  // on a fast connection, because we won't respond fast enough to the many
+  // async callbacks to get data from us.  On the other hand, until we have real
+  // pacing support (beyond ack-clocked pacing), we get a bit of adhoc-pacing by
+  // requiring the application to refill this OS buffer (ensuring that we don't
+  // blast a pile of packets at the kernel's max egress rate).
+  // socket->SetSendBufferSize(????);
 
   QuicConnectionHelper* helper = new QuicConnectionHelper(
       base::MessageLoop::current()->message_loop_proxy().get(),
