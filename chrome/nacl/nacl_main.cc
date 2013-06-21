@@ -13,6 +13,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 
 // main() routine for the NaCl loader process.

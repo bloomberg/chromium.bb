@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "components/nacl/common/nacl_switches.h"
 
 namespace chrome {
 

@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/nacl/common/nacl_switches.h"
 #include "sandbox/win/src/sandbox.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
