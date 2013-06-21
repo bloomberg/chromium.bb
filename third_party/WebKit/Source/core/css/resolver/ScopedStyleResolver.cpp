@@ -177,10 +177,10 @@ const ContainerNode* ScopedStyleResolver::scopingNodeFor(const CSSStyleSheet* sh
     if (!document)
         return 0;
     Node* ownerNode = sheet->ownerNode();
-    if (!ownerNode || !ownerNode->isHTMLElement() || !ownerNode->hasTagName(HTMLNames::styleTag))
+    if (!ownerNode || !ownerNode->hasTagName(HTMLNames::styleTag))
         return 0;
 
-    HTMLStyleElement* styleElement = static_cast<HTMLStyleElement*>(ownerNode);
+    HTMLStyleElement* styleElement = toHTMLStyleElement(ownerNode);
     if (!styleElement->scoped())
         return styleElement->isInShadowTree() ? styleElement->containingShadowRoot() : 0;
 

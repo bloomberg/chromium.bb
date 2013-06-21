@@ -231,7 +231,7 @@ void PageSerializer::serializeFrame(Frame* frame)
                 ASSERT(m_resourceURLs.contains(url));
             }
         } else if (element->hasTagName(HTMLNames::styleTag)) {
-            HTMLStyleElement* styleElement = static_cast<HTMLStyleElement*>(element);
+            HTMLStyleElement* styleElement = toHTMLStyleElement(element);
             if (CSSStyleSheet* sheet = styleElement->sheet())
                 serializeCSSStyleSheet(sheet, KURL());
         }

@@ -2702,7 +2702,7 @@ size_t Node::numberOfScopedHTMLStyleChildren() const
 {
     size_t count = 0;
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
-        if (child->hasTagName(HTMLNames::styleTag) && static_cast<HTMLStyleElement*>(child)->isRegisteredAsScoped())
+        if (child->hasTagName(HTMLNames::styleTag) && toHTMLStyleElement(child)->isRegisteredAsScoped())
             count++;
     }
 
