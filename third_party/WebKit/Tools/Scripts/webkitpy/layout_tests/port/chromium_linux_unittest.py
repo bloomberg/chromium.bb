@@ -42,7 +42,7 @@ class ChromiumLinuxPortTest(chromium_port_testcase.ChromiumPortTestCase):
 
     def assert_architecture(self, port_name=None, file_output=None, expected_architecture=None):
         host = MockSystemHost()
-        host.filesystem.exists = lambda x: 'DumpRenderTree' in x
+        host.filesystem.exists = lambda x: 'content_shell' in x
         if file_output:
             host.executive = executive_mock.MockExecutive2(file_output)
 

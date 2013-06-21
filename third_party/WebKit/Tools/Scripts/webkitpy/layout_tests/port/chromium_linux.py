@@ -58,7 +58,7 @@ class ChromiumLinuxPort(chromium.ChromiumPort):
             configuration = options.configuration
         else:
             configuration = config_object.default_configuration()
-        return cls._static_build_path(host.filesystem, build_directory, chromium_base, webkit_base, configuration, ['DumpRenderTree'])
+        return cls._static_build_path(host.filesystem, build_directory, chromium_base, webkit_base, configuration, [cls.CONTENT_SHELL_NAME])
 
     @staticmethod
     def _determine_architecture(filesystem, executive, driver_path):
