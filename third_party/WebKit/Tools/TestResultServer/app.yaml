@@ -25,3 +25,7 @@ handlers:
 
 - url: /.*
   script: main.app
+
+- url: /updatebuilders
+  script: main.app
+  login: admin

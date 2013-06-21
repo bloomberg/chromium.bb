@@ -53,7 +53,7 @@ test('builders._builderFilter', 6, function() {
     equal(filter('WebKit Win7'), false, 'don\'t show non-deps builder');
 
     var filter = builders._builderFilter('@ToT Chromium', 'ChromiumWebkit', 'dummy_test_type');
-    equal(filter('Win7 (dbg)'), false, 'Should not show non deps ChromiumWebkit bots for test suites other than layout-tests or webkit_unit_tests');
+    equal(filter('Android Tests (dbg)'), false, 'Should not show non deps ChromiumWebkit bots for test suites other than layout-tests or webkit_unit_tests');
 });
 
 test('builders.groupNamesForTestType', 4, function() {
@@ -63,7 +63,7 @@ test('builders.groupNamesForTestType', 4, function() {
 
     names = builders.groupNamesForTestType('ash_unittests');
     equal(names.indexOf('@ToT Blink') != -1, false, 'don\'t include interactive_ui_tests in ToT');
-    equal(names.indexOf('@ToT Chromium') != -1, true, 'include interactive_ui_tests in DEPS');
+    equal(names.indexOf('@ToT Chromium') != -1, true, 'include ash_unittests in DEPS');
 });
 
 test('BuilderGroup.isToTBlink', 2, function() {
@@ -86,6 +86,6 @@ test('builders.loadBuildersList', 4, function() {
     expectedBuilder = 'XP Tests (1)'
     equal(expectedBuilder in builders.getBuilderGroup().builders, false, expectedBuilder + ' should not be among current builders');
 
-    builders.loadBuildersList('@ToT Chromium', 'interactive_ui_tests');
+    builders.loadBuildersList('@ToT Chromium', 'ash_unittests');
     equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
 });

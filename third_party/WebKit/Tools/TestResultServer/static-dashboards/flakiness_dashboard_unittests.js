@@ -47,11 +47,11 @@ function resetGlobals()
             name: 'ChromiumWebkit',
             url: 'dummyurl',
             tests: {'layout-tests': {'builders': ['WebKit Linux', 'WebKit Linux (dbg)', 'WebKit Linux (deps)', 'WebKit Mac10.7', 'WebKit Win', 'WebKit Win (dbg)']}},
-            groups: ['@ToT Blink', '@ToT Chromium'],
+            groups: ['@ToT Chromium', '@ToT Blink'],
         },{
             name :'ChromiumWin',
             url: 'dummyurl2',
-            tests: {'interactive_ui_tests': {'builders': ['XP Tests (1)', 'Win7 Tests (1)']}},
+            tests: {'ash_unittests': {'builders': ['XP Tests (1)', 'Win7 Tests (1)']}},
             groups: ['@ToT Chromium'],
         }],
     });
@@ -87,7 +87,7 @@ test('htmlForTestTypeSwitcherGroup', 6, function() {
     // FIXME(jparent): Remove this once global isn't used.
     g_history = historyInstance;
     var container = document.createElement('div');
-    historyInstance.crossDashboardState.testType = 'interactive_ui_tests';
+    historyInstance.crossDashboardState.testType = 'ash_unittests';
     container.innerHTML = ui.html.testTypeSwitcher(true);
     var selects = container.querySelectorAll('select');
     equal(selects.length, 2);
