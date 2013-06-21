@@ -287,6 +287,35 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(AccountChooser);
   };
 
+  // A view to contain the main contents of the dialog, including the
+  // notifications and account details.
+  class ShieldableContentsView : public views::View {
+   public:
+    ShieldableContentsView();
+    virtual ~ShieldableContentsView();
+
+    // Adds |view| as a child of |contents_|.
+    void AddToContents(views::View* view);
+
+    // Hides |contents_| behind a shield that displays |message|.
+    void ObscureContents(const base::string16& message);
+
+    // views::View implementation.
+    virtual void Layout() OVERRIDE;
+    virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+   private:
+    // The contents which can be shielded. This view sets the size of |this| and
+    // will always be sized to fill |this|.
+    views::View* contents_;
+
+    // Only visible when there's a message to display. Sits on top of
+    // |contents_|.
+    views::Label* contents_shield_;
+
+    DISALLOW_COPY_AND_ASSIGN(ShieldableContentsView);
+  };
+
   // An area for notifications. Some notifications point at the account chooser.
   class NotificationArea : public views::View,
                            public views::ButtonListener {
@@ -561,7 +590,7 @@ class AutofillDialogViews : public AutofillDialogView,
   views::WebView* sign_in_webview_;
 
   // View to host everything that isn't related to sign-in.
-  views::View* main_container_;
+  ShieldableContentsView* main_container_;
 
   // View that wraps |details_container_| and makes it scroll vertically.
   SizeLimitedScrollView* scrollable_area_;

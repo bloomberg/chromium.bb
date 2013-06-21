@@ -581,6 +581,51 @@ void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
   controller_->SignInLinkClicked();
 }
 
+// AutofillDialogViews::ShieldableContentsView ---------------------------------
+
+AutofillDialogViews::ShieldableContentsView::ShieldableContentsView()
+    : contents_(new views::View),
+      contents_shield_(new views::Label) {
+  contents_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
+                           views::kRelatedControlVerticalSpacing));
+  contents_shield_->SetVisible(false);
+  contents_shield_->set_background(views::Background::CreateSolidBackground(
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground)));
+  contents_shield_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont).DeriveFont(15));
+
+  AddChildView(contents_);
+  AddChildView(contents_shield_);
+}
+
+AutofillDialogViews::ShieldableContentsView::~ShieldableContentsView() {}
+
+void AutofillDialogViews::ShieldableContentsView::AddToContents(
+    views::View* view) {
+  contents_->AddChildView(view);
+}
+
+void AutofillDialogViews::ShieldableContentsView::ObscureContents(
+    const base::string16& message) {
+  if (message == contents_shield_->text())
+    return;
+
+  contents_shield_->SetVisible(!message.empty());
+  contents_shield_->SetText(message);
+  SchedulePaint();
+}
+
+void AutofillDialogViews::ShieldableContentsView::Layout() {
+  contents_->SetBoundsRect(bounds());
+  contents_shield_->SetBoundsRect(bounds());
+}
+
+gfx::Size AutofillDialogViews::ShieldableContentsView::GetPreferredSize() {
+  return contents_->GetPreferredSize();
+}
+
 // AutofillDialogViews::NotificationArea ---------------------------------------
 
 AutofillDialogViews::NotificationArea::NotificationArea(
@@ -981,6 +1026,10 @@ void AutofillDialogViews::Hide() {
 
 void AutofillDialogViews::UpdateAccountChooser() {
   account_chooser_->Update();
+  // TODO(estade): replace this with a better loading image/animation.
+  // See http://crbug.com/230932
+  main_container_->ObscureContents(controller_->ShouldShowSpinner() ?
+      ASCIIToUTF16("Loading...") : base::string16());
 
   // Update legal documents for the account.
   if (footnote_view_) {
@@ -1431,21 +1480,15 @@ void AutofillDialogViews::InitChildViews() {
 }
 
 views::View* AutofillDialogViews::CreateMainContainer() {
-  main_container_ = new views::View();
-  main_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                           views::kRelatedControlVerticalSpacing));
+  main_container_ = new ShieldableContentsView();
 
   account_chooser_ = new AccountChooser(controller_);
-  if (!views::DialogDelegate::UseNewStyle())
-    main_container_->AddChildView(account_chooser_);
-
   notification_area_ = new NotificationArea(controller_);
   notification_area_->set_arrow_centering_anchor(account_chooser_->AsWeakPtr());
-  main_container_->AddChildView(notification_area_);
+  main_container_->AddToContents(notification_area_);
 
   scrollable_area_ = new SizeLimitedScrollView(CreateDetailsContainer());
-  main_container_->AddChildView(scrollable_area_);
+  main_container_->AddToContents(scrollable_area_);
   return main_container_;
 }
 
