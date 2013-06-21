@@ -21,6 +21,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents_view.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -56,6 +58,17 @@ void InstantLoader::Load() {
   contents_->GetController().LoadURL(
       instant_url_, content::Referrer(),
       content::PAGE_TRANSITION_GENERATED, kInstantHeader);
+
+  // Explicitly set the new tab title and virtual URL.
+  //
+  // This ensures that the title is set even before we get a title from the
+  // page, preventing a potential flicker of the URL, and also ensures that
+  // (unless overridden by the page) the new tab title matches the browser UI
+  // locale.
+  content::NavigationEntry* entry = contents_->GetController().GetActiveEntry();
+  if (entry)
+    entry->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+
   contents_->WasHidden();
 
   int staleness_timeout_ms = chrome::GetInstantLoaderStalenessTimeoutSec() *

@@ -14,7 +14,8 @@
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchTabHelper);
 
@@ -142,6 +143,28 @@ void SearchTabHelper::Observe(
 
   model_.SetInstantSupportState(INSTANT_SUPPORT_UNKNOWN);
   model_.SetVoiceSearchSupported(false);
+}
+
+void SearchTabHelper::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  // Always set the title on the new tab page to be the one from our UI
+  // resources.  Normally, we set the title when we begin a NTP load, but it
+  // can get reset in several places (like when you press Reload). This check
+  // ensures that the title is properly set to the string defined by the Chrome
+  // UI language (rather than the server language) in all cases.
+  //
+  // We only override the title when it's nonempty to allow the page to set the
+  // title if it really wants. An empty title means to use the default. There's
+  // also a race condition between this code and the page's SetTitle call which
+  // this rule avoids.
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetActiveEntry();
+  if (entry && entry->GetTitle().empty() &&
+      (entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL) ||
+       chrome::NavEntryIsInstantNTP(web_contents_, entry))) {
+    entry->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+  }
 }
 
 bool SearchTabHelper::OnMessageReceived(const IPC::Message& message) {

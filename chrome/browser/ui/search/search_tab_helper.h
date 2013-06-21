@@ -84,6 +84,9 @@ class SearchTabHelper : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from contents::WebContentsObserver:
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidFinishLoad(
       int64 frame_id,

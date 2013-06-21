@@ -868,8 +868,6 @@ function isGooglePage() {
  * Google-provided page.
  */
 function init() {
-  document.title = templateData.title;
-
   tilesContainer = $(IDS.TILES);
   notification = $(IDS.NOTIFICATION);
   attribution = $(IDS.ATTRIBUTION);
