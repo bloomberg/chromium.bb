@@ -24,6 +24,7 @@
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Image.h"
 #include "core/svg/graphics/SVGImage.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -46,7 +47,7 @@ void SVGImageForContainer::drawPattern(GraphicsContext* context, const FloatRect
     m_image->drawPatternForContainer(context, m_containerSize, m_zoom, srcRect, scale, phase, compositeOp, dstRect);
 }
 
-PassNativeImagePtr SVGImageForContainer::nativeImageForCurrentFrame()
+PassRefPtr<NativeImageSkia> SVGImageForContainer::nativeImageForCurrentFrame()
 {
     return m_image->nativeImageForCurrentFrame();
 }

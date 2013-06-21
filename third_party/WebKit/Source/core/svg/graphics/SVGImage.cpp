@@ -41,6 +41,7 @@
 #include "core/svg/SVGDocument.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -142,9 +143,7 @@ void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize contai
     setImageObserver(observer);
 }
 
-// Passes ownership of the native image to the caller so PassNativeImagePtr needs
-// to be a smart pointer type.
-PassNativeImagePtr SVGImage::nativeImageForCurrentFrame()
+PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
 {
     if (!m_page)
         return 0;

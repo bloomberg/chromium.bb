@@ -31,7 +31,7 @@
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/NativeImagePtr.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -109,7 +109,7 @@ public:
 
     enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };
 
-    virtual PassNativeImagePtr nativeImageForCurrentFrame() { return 0; }
+    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() { return 0; }
 
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint& phase, CompositeOperator,

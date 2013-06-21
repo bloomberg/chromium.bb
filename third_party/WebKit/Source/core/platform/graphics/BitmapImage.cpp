@@ -32,10 +32,12 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageObserver.h"
+#include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/MemoryObjectInfo.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -370,7 +372,7 @@ bool BitmapImage::ensureFrameIsCached(size_t index)
     return true;
 }
 
-PassNativeImagePtr BitmapImage::frameAtIndex(size_t index)
+PassRefPtr<NativeImageSkia> BitmapImage::frameAtIndex(size_t index)
 {
     if (!ensureFrameIsCached(index))
         return 0;
@@ -391,7 +393,7 @@ float BitmapImage::frameDurationAtIndex(size_t index)
     return m_source.frameDurationAtIndex(index);
 }
 
-PassNativeImagePtr BitmapImage::nativeImageForCurrentFrame()
+PassRefPtr<NativeImageSkia> BitmapImage::nativeImageForCurrentFrame()
 {
     return frameAtIndex(currentFrame());
 }
@@ -672,7 +674,7 @@ void FrameData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
     memoryObjectInfo->setClassName("FrameData");
-    info.addMember(m_frame, "frame", WTF::RetainingPointer);
+    info.addMember(m_frame, "frame");
 }
 
 }

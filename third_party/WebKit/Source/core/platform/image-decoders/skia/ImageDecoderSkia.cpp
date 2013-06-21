@@ -29,6 +29,7 @@
 
 #include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -113,7 +114,7 @@ bool ImageFrame::setSize(int newWidth, int newHeight)
     return true;
 }
 
-PassNativeImagePtr ImageFrame::asNewNativeImage() const
+PassRefPtr<NativeImageSkia> ImageFrame::asNewNativeImage() const
 {
     return m_bitmap->clone();
 }

@@ -28,12 +28,11 @@
 #include "config.h"
 #include "core/platform/graphics/ImageSource.h"
 
-#include "core/platform/image-decoders/ImageDecoder.h"
-
 #include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/ImageOrientation.h"
-
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -64,7 +63,7 @@ void ImageSource::setData(SharedBuffer* data, bool allDataReceived)
     // If insufficient bytes are available to determine the image type, no decoder plugin will be
     // made.
     if (!m_decoder)
-        m_decoder = NativeImageDecoder::create(*data, m_alphaOption, m_gammaAndColorProfileOption);
+        m_decoder = DeferredImageDecoder::create(*data, m_alphaOption, m_gammaAndColorProfileOption);
 
     if (m_decoder)
         m_decoder->setData(data, allDataReceived);
@@ -117,7 +116,7 @@ size_t ImageSource::frameCount() const
     return m_decoder ? m_decoder->frameCount() : 0;
 }
 
-PassNativeImagePtr ImageSource::createFrameAtIndex(size_t index)
+PassRefPtr<NativeImageSkia> ImageSource::createFrameAtIndex(size_t index)
 {
     if (!m_decoder)
         return 0;

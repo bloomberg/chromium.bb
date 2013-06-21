@@ -33,19 +33,21 @@
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/ImageSource.h"
 #include "core/platform/graphics/IntSize.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
-    struct FrameData;
+struct FrameData;
 }
 
 namespace WTF {
-    template<> struct VectorTraits<WebCore::FrameData> : public SimpleClassVectorTraits {
-        static const bool canInitializeWithMemset = false; // Not all FrameData members initialize to 0.
-    };
+template<> struct VectorTraits<WebCore::FrameData> : public SimpleClassVectorTraits {
+    static const bool canInitializeWithMemset = false; // Not all FrameData members initialize to 0.
+};
 }
 
 namespace WebCore {
 
+class NativeImageSkia;
 template <typename T> class Timer;
 
 // ================================================
@@ -77,7 +79,7 @@ public:
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
-    NativeImagePtr m_frame;
+    RefPtr<NativeImageSkia> m_frame;
     ImageOrientation m_orientation;
     float m_duration;
     bool m_haveMetadata : 1;
@@ -96,7 +98,7 @@ class BitmapImage : public Image {
     friend class GeneratorGeneratedImage;
     friend class GraphicsContext;
 public:
-    static PassRefPtr<BitmapImage> create(PassNativeImagePtr nativeImage, ImageObserver* observer = 0)
+    static PassRefPtr<BitmapImage> create(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver* observer = 0)
     {
         return adoptRef(new BitmapImage(nativeImage, observer));
     }
@@ -126,7 +128,7 @@ public:
 
     virtual unsigned decodedSize() const OVERRIDE;
 
-    virtual PassNativeImagePtr nativeImageForCurrentFrame() OVERRIDE;
+    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE;
 
     ImageOrientation currentFrameOrientation();
@@ -147,7 +149,7 @@ protected:
       Certain     // The repetition count is known to be correct.
     };
 
-    BitmapImage(PassNativeImagePtr, ImageObserver* = 0);
+    BitmapImage(PassRefPtr<NativeImageSkia>, ImageObserver* = 0);
     BitmapImage(ImageObserver* = 0);
 
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, BlendMode) OVERRIDE;
@@ -155,7 +157,7 @@ protected:
 
     size_t currentFrame() const { return m_currentFrame; }
     size_t frameCount();
-    PassNativeImagePtr frameAtIndex(size_t);
+    PassRefPtr<NativeImageSkia> frameAtIndex(size_t);
     bool frameIsCompleteAtIndex(size_t);
     float frameDurationAtIndex(size_t);
     bool frameHasAlphaAtIndex(size_t);

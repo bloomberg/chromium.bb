@@ -27,23 +27,19 @@
 #define ImageSource_h
 
 #include "core/platform/graphics/ImageOrientation.h"
-#include "core/platform/graphics/NativeImagePtr.h"
-
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
+class DeferredImageDecoder;
 class ImageOrientation;
 class IntPoint;
 class IntSize;
+class NativeImageSkia;
 class SharedBuffer;
-
-class DeferredImageDecoder;
-typedef DeferredImageDecoder NativeImageDecoder;
-typedef DeferredImageDecoder* NativeImageDecoderPtr;
 
 // Right now GIFs are the only recognized image format that supports animation.
 // The animation system and the constants below are designed with this in mind.
@@ -116,7 +112,7 @@ public:
 
     size_t frameCount() const;
 
-    PassNativeImagePtr createFrameAtIndex(size_t);
+    PassRefPtr<NativeImageSkia> createFrameAtIndex(size_t);
 
     float frameDurationAtIndex(size_t) const;
     bool frameHasAlphaAtIndex(size_t) const; // Whether or not the frame actually used any alpha.
@@ -130,7 +126,7 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    OwnPtr<NativeImageDecoderPtr> m_decoder;
+    OwnPtr<DeferredImageDecoder> m_decoder;
 
     AlphaOption m_alphaOption;
     GammaAndColorProfileOption m_gammaAndColorProfileOption;

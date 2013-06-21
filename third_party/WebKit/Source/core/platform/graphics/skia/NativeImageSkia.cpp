@@ -184,9 +184,4 @@ void NativeImageSkia::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) cons
     info.addMember(m_cachedImageInfo, "cachedImageInfo");
 }
 
-void reportMemoryUsage(const NativeImageSkia* image, MemoryObjectInfo* memoryObjectInfo)
-{
-    image->reportMemoryUsage(memoryObjectInfo);
-}
-
 } // namespace WebCore

@@ -60,7 +60,7 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
-    virtual PassNativeImagePtr nativeImageForCurrentFrame() OVERRIDE;
+    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
 
 private:
     friend class SVGImageChromeClient;

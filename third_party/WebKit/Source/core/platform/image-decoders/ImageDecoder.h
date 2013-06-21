@@ -106,7 +106,7 @@ namespace WebCore {
         // Returns a caller-owned pointer to the underlying native image data.
         // (Actual use: This pointer will be owned by BitmapImage and freed in
         // FrameData::clear()).
-        PassNativeImagePtr asNewNativeImage() const;
+        PassRefPtr<NativeImageSkia> asNewNativeImage() const;
 
         bool hasAlpha() const;
         const IntRect& originalFrameRect() const { return m_originalFrameRect; }
