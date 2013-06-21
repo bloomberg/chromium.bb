@@ -139,6 +139,9 @@ class SystemTrayDelegate {
   // Returns the email of user that manages current locally managed user.
   virtual const std::string GetLocallyManagedUserManager() const = 0;
 
+  // Returns the email of user that manages current locally managed user.
+  virtual const base::string16 GetLocallyManagedUserManagerName() const = 0;
+
   // Returns notification for locally managed users.
   virtual const base::string16 GetLocallyManagedUserMessage() const = 0;
 

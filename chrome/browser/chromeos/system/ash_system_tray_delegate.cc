@@ -464,12 +464,18 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         chromeos::UserManager::Get()->GetActiveUser()->email());
   }
 
+  virtual const string16 GetLocallyManagedUserManagerName() const OVERRIDE {
+    if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+      return string16();
+    return UserManager::Get()->GetManagerDisplayNameForManagedUser(
+        chromeos::UserManager::Get()->GetActiveUser()->email());
+  }
+
   virtual const string16 GetLocallyManagedUserMessage() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
         return string16();
     return l10n_util::GetStringFUTF16(IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
-                                      UTF8ToUTF16(
-                                          GetLocallyManagedUserManager()));
+                                      GetLocallyManagedUserManagerName());
   }
 
   virtual bool SystemShouldUpgrade() const OVERRIDE {

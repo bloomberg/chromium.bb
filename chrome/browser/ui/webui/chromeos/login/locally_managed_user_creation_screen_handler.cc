@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/common/url_constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,9 +22,6 @@ namespace {
 // Locally managed user creation screen id.
 const char kLocallyManagedUserCreationScreen[] =
     "locally-managed-user-creation";
-
-const char kLocallyManagedWebURL[] =
-    "www.chrome.com/SomeTBDURL";
 
 }  // namespace
 
@@ -59,13 +57,13 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_2);
   builder->AddF("createManagedUserIntroText3",
                IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_3,
-               UTF8ToUTF16(kLocallyManagedWebURL));
+               UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
 
   builder->Add("createManagedUserPickManagerTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_TITLE);
   builder->AddF("createManagedUserPickManagerTitleExplanation",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_EXPLANATION,
-               UTF8ToUTF16(kLocallyManagedWebURL));
+               UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
   builder->Add("createManagedUserManagerPasswordHint",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT);
   builder->Add("createManagedUserWrongManagerPasswordText",
@@ -115,7 +113,7 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
   builder->Add("createManagedUserCreated3Text3",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_3);
 
-  builder->Add("managementURL", kLocallyManagedWebURL);
+  builder->Add("managementURL", chrome::kSupervisedUserManagementDisplayURL);
 }
 
 void LocallyManagedUserCreationScreenHandler::Initialize() {}

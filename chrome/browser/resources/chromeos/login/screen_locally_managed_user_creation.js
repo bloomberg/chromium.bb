@@ -798,12 +798,15 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.updateElementText_('created-1-text-1',
           'createManagedUserCreated1Text1',
           this.context_.managedName);
+      this.updateElementText_('created-1-text-2',
+          'createManagedUserCreated1Text2',
+          loadTimeData.getString('managementURL'), this.context_.managedName);
       this.updateElementText_('created-1-text-3',
           'createManagedUserCreated1Text3',
           managerId);
       this.updateElementText_('created-3-text-2',
           'createManagedUserCreated3Text2',
-          loadTimeData.getStringF('managementURL'),
+          loadTimeData.getString('managementURL'),
           managerId);
       this.updateElementText_('created-3-text-3',
           'createManagedUserCreated3Text3',
@@ -813,9 +816,11 @@ login.createScreen('LocallyManagedUserCreationScreen',
           managerId);
     },
 
-    updateElementText_: function(localId, templateName, value) {
+    updateElementText_: function(localId, templateName) {
+      var args = Array.prototype.slice.call(arguments);
+      args.shift();
       this.getScreenElement(localId).innerHTML =
-          loadTimeData.getStringF(templateName, value);
+          loadTimeData.getStringF.apply(loadTimeData, args);
     },
 
     showIntroPage: function() {

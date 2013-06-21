@@ -317,6 +317,13 @@ extern const char kChromeSyncLearnMoreURL[];
 // "Learn more" URL for the enterprise sign-in confirmation dialog.
 extern const char kChromeEnterpriseSignInLearnMoreURL[];
 
+// Management URL for the supervised users.
+extern const char kSupervisedUserManagementURL[];
+
+// Management URL for the supervised users - version without scheme, used
+// for display.
+extern const char kSupervisedUserManagementDisplayURL[];
+
 // Help URL for the settings page's search feature.
 extern const char kSettingsSearchHelpURL[];
 

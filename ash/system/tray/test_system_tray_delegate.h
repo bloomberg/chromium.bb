@@ -32,6 +32,8 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual const std::string GetEnterpriseDomain() const OVERRIDE;
   virtual const base::string16 GetEnterpriseMessage() const OVERRIDE;
   virtual const std::string GetLocallyManagedUserManager() const OVERRIDE;
+  virtual const base::string16 GetLocallyManagedUserManagerName() const
+      OVERRIDE;
   virtual const base::string16 GetLocallyManagedUserMessage() const OVERRIDE;
   virtual bool SystemShouldUpgrade() const OVERRIDE;
   virtual base::HourClockType GetHourClockType() const OVERRIDE;

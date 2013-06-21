@@ -434,8 +434,9 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("publicAccountEnter", IDS_LOGIN_PUBLIC_ACCOUNT_ENTER);
   builder->Add("publicAccountEnterAccessibleName",
                IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME);
-  builder->Add("removeManagedUserWarningText",
-               IDS_USER_IS_LOCALLY_MANAGED_REMOVE_WARNING);
+  builder->AddF("removeManagedUserWarningText",
+               IDS_USER_IS_LOCALLY_MANAGED_REMOVE_WARNING,
+               UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
   builder->Add("removeManagedUserWarningButtonTitle",
                IDS_USER_IS_LOCALLY_MANAGED_REMOVE_WARNING_BUTTON);
 

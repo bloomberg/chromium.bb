@@ -367,6 +367,10 @@ const char kChromeSyncLearnMoreURL[] =
 const char kChromeEnterpriseSignInLearnMoreURL[] =
   "http://support.google.com/chromeos/bin/answer.py?hl=en&answer=1331549";
 
+const char kSupervisedUserManagementURL[] = "https://www.chrome.com/manage";
+
+const char kSupervisedUserManagementDisplayURL[] = "www.chrome.com/manage";
+
 const char kSettingsSearchHelpURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=settings_search_help";

@@ -104,6 +104,11 @@ const std::string TestSystemTrayDelegate::GetLocallyManagedUserManager() const {
   return std::string();
 }
 
+const base::string16 TestSystemTrayDelegate::GetLocallyManagedUserManagerName()
+    const {
+  return string16();
+}
+
 const base::string16 TestSystemTrayDelegate::GetLocallyManagedUserMessage()
     const {
   return string16();
