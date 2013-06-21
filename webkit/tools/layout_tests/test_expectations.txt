@@ -30,3 +30,6 @@
 # src/third_party/WebKit/LayoutTests/TestExpectations . Right?)
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
+
+# rebaselined in blink r152894; remove on the next roll.
+Bug(senorblanco) fast/js/kde/inbuilt_function_tostring.html [ Failure ]
