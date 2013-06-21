@@ -470,7 +470,7 @@ void DisplayManager::UpdateDisplays(
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     DCHECK_EQ(1u, updated_display_info_list.size()) <<
         "Multiple display test does not work on Win8 bots. Please "
-        "skip (don't disable) the test using |SupportMultipleDisplay()|";
+        "skip (don't disable) the test using SupportsMultipleDisplays()";
   }
 #endif
 

@@ -131,12 +131,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::shell::InitWindowTypeLauncher();
 
-  DesktopBackgroundController* controller =
-      Shell::GetInstance()->desktop_background_controller();
-  if (controller->GetAppropriateResolution() == WALLPAPER_RESOLUTION_LARGE)
-    controller->SetDefaultWallpaper(kDefaultLargeWallpaper);
-  else
-    controller->SetDefaultWallpaper(kDefaultSmallWallpaper);
+  Shell::GetInstance()->desktop_background_controller()->SetDefaultWallpaper(
+      false /* is_guest */);
 
   ash::Shell::GetPrimaryRootWindow()->ShowRootWindow();
 }

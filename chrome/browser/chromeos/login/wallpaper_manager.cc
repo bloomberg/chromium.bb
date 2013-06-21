@@ -490,25 +490,10 @@ void WallpaperManager::SetCustomWallpaper(const std::string& username,
 }
 
 void WallpaperManager::SetDefaultWallpaper() {
-  ash::DesktopBackgroundController* controller =
-      ash::Shell::GetInstance()->desktop_background_controller();
-  ash::WallpaperResolution resolution = controller->GetAppropriateResolution();
-  ash::WallpaperInfo info;
-  if (UserManager::Get()->IsLoggedInAsGuest()) {
-    info = (resolution == ash::WALLPAPER_RESOLUTION_LARGE) ?
-        ash::kGuestLargeWallpaper : ash::kGuestSmallWallpaper;
-  } else {
-    info = (resolution == ash::WALLPAPER_RESOLUTION_LARGE) ?
-        ash::kDefaultLargeWallpaper : ash::kDefaultSmallWallpaper;
-  }
-
-  // Prevents loading of the same wallpaper as the currently loading/loaded one.
-  if (controller->GetWallpaperIDR() == info.idr)
-    return;
-
   current_wallpaper_path_.clear();
-  loaded_wallpapers_++;
-  controller->SetDefaultWallpaper(info);
+  if (ash::Shell::GetInstance()->desktop_background_controller()->
+          SetDefaultWallpaper(UserManager::Get()->IsLoggedInAsGuest()))
+    loaded_wallpapers_++;
 }
 
 void WallpaperManager::SetInitialUserWallpaper(const std::string& username,
