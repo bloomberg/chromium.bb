@@ -13,6 +13,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <vector>
 
@@ -54,6 +55,33 @@ std::string NormalizeHeaderKey(const std::string& s) {
   return result;
 }
 
+Error MountHttp::Access(const Path& path, int a_mode) {
+  assert(url_root_.empty() || url_root_[url_root_.length() - 1] == '/');
+
+  NodeMap_t::iterator iter = node_cache_.find(path.Join());
+  if (iter == node_cache_.end()) {
+    // If we can't find the node in the cache, fetch it
+    std::string url = MakeUrl(path);
+    MountNodeHttp* node = new MountNodeHttp(this, url, cache_content_);
+    Error error = node->Init(O_RDONLY);
+    if (error) {
+      node->Release();
+      return error;
+    }
+
+    error = node->GetStat(NULL);
+    node->Release();
+    if (error)
+      return error;
+  }
+
+  // Don't allow write or execute access.
+  if (a_mode & (W_OK | X_OK))
+    return EACCES;
+
+  return 0;
+}
+
 Error MountHttp::Open(const Path& path, int mode, MountNode** out_node) {
   *out_node = NULL;
 
@@ -66,9 +94,7 @@ Error MountHttp::Open(const Path& path, int mode, MountNode** out_node) {
   }
 
   // If we can't find the node in the cache, create it
-  std::string url = url_root_ + (path.IsAbsolute() ? path.Range(1, path.Size())
-                                                   : path.Join());
-
+  std::string url = MakeUrl(path);
   MountNodeHttp* node = new MountNodeHttp(this, url, cache_content_);
   Error error = node->Init(mode);
   if (error) {
@@ -337,10 +363,7 @@ Error MountHttp::ParseManifest(char* text) {
       }
 
       Path path(name);
-      std::string url =
-          url_root_ +
-          (path.IsAbsolute() ? path.Range(1, path.Size()) : path.Join());
-
+      std::string url = MakeUrl(path);
       MountNodeHttp* node = new MountNodeHttp(this, url, cache_content_);
       Error error = node->Init(mode);
       if (error) {
@@ -401,4 +424,9 @@ Error MountHttp::LoadManifest(const std::string& manifest_name,
 
   *out_manifest = text;
   return 0;
+}
+
+std::string MountHttp::MakeUrl(const Path& path) {
+  return url_root_ +
+         (path.IsAbsolute() ? path.Range(1, path.Size()) : path.Join());
 }

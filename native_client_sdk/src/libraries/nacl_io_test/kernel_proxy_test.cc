@@ -282,6 +282,8 @@ class MountNodeMockMMap : public MountNode {
 
 class MountMockMMap : public Mount {
  public:
+  virtual Error Access(const Path& path, int a_mode) { return 0; }
+
   virtual Error Open(const Path& path, int mode, MountNode** out_node) {
     MountNodeMockMMap* node = new MountNodeMockMMap(this);
     *out_node = node;

@@ -15,6 +15,7 @@ class MountPassthrough : public Mount {
   virtual void Destroy();
 
  public:
+  virtual Error Access(const Path& path, int a_mode);
   virtual Error Open(const Path& path, int mode, MountNode** out_node);
   virtual Error OpenResource(const Path& path, MountNode** out_node);
   virtual Error Unlink(const Path& path);

@@ -6,6 +6,7 @@
 #include "nacl_io/mount_html5fs.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <ppapi/c/pp_completion_callback.h>
 #include <ppapi/c/pp_errors.h>
 #include <stdlib.h>
@@ -23,6 +24,17 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 #endif
 
 }  // namespace
+
+Error MountHtml5Fs::Access(const Path& path, int a_mode) {
+  // a_mode is unused, since all files are readable, writable and executable.
+  MountNode* node;
+  Error error = Open(path, O_RDONLY, &node);
+  if (error)
+    return error;
+
+  node->Release();
+  return 0;
+}
 
 Error MountHtml5Fs::Open(const Path& path, int mode, MountNode** out_node) {
   *out_node = NULL;

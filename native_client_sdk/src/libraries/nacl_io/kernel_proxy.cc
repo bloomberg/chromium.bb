@@ -558,10 +558,25 @@ int KernelProxy::fchmod(int fd, int mode) {
 }
 
 int KernelProxy::access(const char* path, int amode) {
-  errno = EINVAL;
-  return -1;
+  Path rel;
+
+  Mount* mnt;
+  Error error = AcquireMountAndPath(path, &mnt, &rel);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  error = mnt->Access(rel, amode);
+  ReleaseMount(mnt);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+  return 0;
 }
 
+// TODO(noelallen): Needs implementation.
 int KernelProxy::link(const char* oldpath, const char* newpath) {
   errno = EINVAL;
   return -1;

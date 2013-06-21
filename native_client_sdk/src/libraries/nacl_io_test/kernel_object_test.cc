@@ -30,6 +30,7 @@ class MountRefMock : public Mount {
   ~MountRefMock() { (*mount_count)--; }
 
  public:
+  Error Access(const Path& path, int a_mode) { return ENOSYS; }
   Error Open(const Path& path, int mode, MountNode** out_node) {
     *out_node = NULL;
     return ENOSYS;

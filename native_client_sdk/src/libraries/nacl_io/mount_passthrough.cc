@@ -108,6 +108,11 @@ Error MountPassthrough::Init(int dev,
 
 void MountPassthrough::Destroy() {}
 
+Error MountPassthrough::Access(const Path& path, int a_mode) {
+  // There is no underlying 'access' syscall in NaCl. It just returns ENOSYS.
+  return ENOSYS;
+}
+
 Error MountPassthrough::Open(const Path& path, int mode, MountNode** out_node) {
   *out_node = NULL;
 

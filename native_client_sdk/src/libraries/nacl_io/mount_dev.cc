@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 #include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/mount_dev.h"
 #include "nacl_io/mount_node.h"
@@ -268,6 +269,22 @@ Error UrandomNode::Write(size_t offs,
 }
 
 }  // namespace
+
+Error MountDev::Access(const Path& path, int a_mode) {
+  MountNode* node = NULL;
+
+  AutoLock lock(&lock_);
+
+  int error = root_->FindChild(path.Join(), &node);
+  if (error)
+    return error;
+
+  // Don't allow execute access.
+  if (a_mode & X_OK)
+    return EACCES;
+
+  return 0;
+}
 
 Error MountDev::Open(const Path& path, int mode, MountNode** out_node) {
   *out_node = NULL;

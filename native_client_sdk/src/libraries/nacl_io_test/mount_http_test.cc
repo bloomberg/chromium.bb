@@ -386,6 +386,36 @@ TEST_F(MountHttpNodeTest, GetStat) {
   EXPECT_EQ(42, stat.st_size);
 }
 
+TEST_F(MountHttpNodeTest, Access) {
+  StringMap_t smap;
+  smap["cache_content"] = "false";
+  SetMountArgs(StringMap_t());
+  ExpectOpen("HEAD");
+  ExpectHeaders("");
+  SetResponse(200, "");
+  ASSERT_EQ(0, mnt_->Access(Path(path_), R_OK));
+}
+
+TEST_F(MountHttpNodeTest, AccessWrite) {
+  StringMap_t smap;
+  smap["cache_content"] = "false";
+  SetMountArgs(StringMap_t());
+  ExpectOpen("HEAD");
+  ExpectHeaders("");
+  SetResponse(200, "");
+  ASSERT_EQ(EACCES, mnt_->Access(Path(path_), W_OK));
+}
+
+TEST_F(MountHttpNodeTest, AccessNotFound) {
+  StringMap_t smap;
+  smap["cache_content"] = "false";
+  SetMountArgs(StringMap_t());
+  ExpectOpen("HEAD");
+  ExpectHeaders("");
+  SetResponseExpectFail(404, "");
+  ASSERT_EQ(ENOENT, mnt_->Access(Path(path_), R_OK));
+}
+
 TEST_F(MountHttpNodeTest, ReadCached) {
   size_t result_size = 0;
   int result_bytes = 0;

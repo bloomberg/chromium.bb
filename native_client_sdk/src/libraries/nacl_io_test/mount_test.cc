@@ -55,6 +55,7 @@ TEST(MountTest, Sanity) {
   EXPECT_EQ(1, mnt->num_nodes());
 
   // Fail to open non existent file
+  EXPECT_EQ(ENOENT, mnt->Access(Path("/foo"), R_OK | W_OK));
   EXPECT_EQ(ENOENT, mnt->Open(Path("/foo"), O_RDWR, &result_node));
   EXPECT_EQ(NULL, result_node);
 
@@ -65,7 +66,12 @@ TEST(MountTest, Sanity) {
     return;
   EXPECT_EQ(2, file->RefCount());
   EXPECT_EQ(2, mnt->num_nodes());
+  EXPECT_EQ(0, mnt->Access(Path("/foo"), R_OK | W_OK));
+  EXPECT_EQ(EACCES, mnt->Access(Path("/foo"), X_OK));
 
+  // Write access should be allowed on the root directory.
+  EXPECT_EQ(0, mnt->Access(Path("/"), R_OK | W_OK));
+  EXPECT_EQ(EACCES, mnt->Access(Path("/"), X_OK));
   // Open the root directory for write should fail.
   EXPECT_EQ(EISDIR, mnt->Open(Path("/"), O_RDWR, &root));
 
@@ -136,6 +142,7 @@ TEST(MountTest, Sanity) {
   EXPECT_EQ(1, mnt->num_nodes());
 
   // Verify the directory is gone
+  EXPECT_EQ(ENOENT, mnt->Access(Path("/foo"), F_OK));
   EXPECT_EQ(ENOENT, mnt->Open(Path("/foo"), O_RDWR, &file));
   EXPECT_EQ(NULL_NODE, file);
 }
@@ -160,11 +167,19 @@ TEST(MountTest, MemMountRemove) {
   EXPECT_EQ(NULL_NODE, result_node);
 }
 
+TEST(MountTest, DevAccess) {
+  // Should not be able to open non-existent file.
+  MountDevMock* mnt = new MountDevMock();
+  ASSERT_EQ(ENOENT, mnt->Access(Path("/foo"), F_OK));
+}
+
 TEST(MountTest, DevNull) {
   MountDevMock* mnt = new MountDevMock();
   MountNode* dev_null = NULL;
   int result_bytes = 0;
 
+  ASSERT_EQ(0, mnt->Access(Path("/null"), R_OK | W_OK));
+  ASSERT_EQ(EACCES, mnt->Access(Path("/null"), X_OK));
   ASSERT_EQ(0, mnt->Open(Path("/null"), O_RDWR, &dev_null));
   ASSERT_NE(NULL_NODE, dev_null);
 
@@ -186,6 +201,8 @@ TEST(MountTest, DevZero) {
   MountNode* dev_zero = NULL;
   int result_bytes = 0;
 
+  ASSERT_EQ(0, mnt->Access(Path("/zero"), R_OK | W_OK));
+  ASSERT_EQ(EACCES, mnt->Access(Path("/zero"), X_OK));
   ASSERT_EQ(0, mnt->Open(Path("/zero"), O_RDWR, &dev_zero));
   ASSERT_NE(NULL_NODE, dev_zero);
 
@@ -213,6 +230,8 @@ TEST(MountTest, DevUrandom) {
   MountNode* dev_urandom = NULL;
   int result_bytes = 0;
 
+  ASSERT_EQ(0, mnt->Access(Path("/urandom"), R_OK | W_OK));
+  ASSERT_EQ(EACCES, mnt->Access(Path("/urandom"), X_OK));
   ASSERT_EQ(0, mnt->Open(Path("/urandom"), O_RDWR, &dev_urandom));
   ASSERT_NE(NULL_NODE, dev_urandom);
 

@@ -319,6 +319,77 @@ TEST_F(MountHtml5FsTest, FilesystemType) {
   MountHtml5FsMock mnt(map, ppapi_);
 }
 
+TEST_F(MountHtml5FsTest, Access) {
+  const char path[] = "/foo";
+  const PP_Resource fileref_resource = 235;
+  const PP_Resource fileio_resource = 236;
+
+  // These are the default values.
+  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
+
+  FileRefInterfaceMock* fileref = ppapi_->GetFileRefInterface();
+  FileIoInterfaceMock* fileio = ppapi_->GetFileIoInterface();
+
+  EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
+      .WillOnce(Return(fileref_resource));
+  PP_FileInfo info;
+  memset(&info, 0, sizeof(PP_FileInfo));
+  info.type = PP_FILETYPE_REGULAR;
+  EXPECT_CALL(*fileref, Query(fileref_resource, _, _))
+      .WillOnce(DoAll(SetArgPointee<1>(info),
+                      Return(int32_t(PP_OK))));
+  EXPECT_CALL(*fileio, Create(instance_)).WillOnce(Return(fileio_resource));
+  int32_t open_flags = PP_FILEOPENFLAG_READ;
+  EXPECT_CALL(*fileio,
+              Open(fileio_resource, fileref_resource, open_flags, _))
+      .WillOnce(Return(int32_t(PP_OK)));
+  EXPECT_CALL(*fileio, Close(fileio_resource));
+  EXPECT_CALL(*fileio, Flush(fileio_resource, _));
+  EXPECT_CALL(*ppapi_, ReleaseResource(fileio_resource));
+  EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
+
+  StringMap_t map;
+  MountHtml5FsMock mnt(map, ppapi_);
+
+  ASSERT_EQ(0, mnt.Access(Path(path), R_OK | W_OK | X_OK));
+}
+
+TEST_F(MountHtml5FsTest, AccessFileNotFound) {
+  const char path[] = "/foo";
+  const PP_Resource fileref_resource = 235;
+  const PP_Resource fileio_resource = 236;
+
+  // These are the default values.
+  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
+
+  FileRefInterfaceMock* fileref = ppapi_->GetFileRefInterface();
+  FileIoInterfaceMock* fileio = ppapi_->GetFileIoInterface();
+
+  // Report the file as missing.
+  EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
+      .WillOnce(Return(fileref_resource));
+  PP_FileInfo info;
+  memset(&info, 0, sizeof(PP_FileInfo));
+  info.type = PP_FILETYPE_REGULAR;
+  EXPECT_CALL(*fileref, Query(fileref_resource, _, _))
+      .WillOnce(DoAll(SetArgPointee<1>(info),
+                      Return(int32_t(PP_ERROR_FILENOTFOUND))));
+  EXPECT_CALL(*fileio, Create(instance_)).WillOnce(Return(fileio_resource));
+  int32_t open_flags = PP_FILEOPENFLAG_READ;
+  EXPECT_CALL(*fileio,
+              Open(fileio_resource, fileref_resource, open_flags, _))
+      .WillOnce(Return(int32_t(PP_ERROR_FILENOTFOUND)));
+  EXPECT_CALL(*fileio, Close(fileio_resource));
+  EXPECT_CALL(*fileio, Flush(fileio_resource, _));
+  EXPECT_CALL(*ppapi_, ReleaseResource(fileio_resource));
+  EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
+
+  StringMap_t map;
+  MountHtml5FsMock mnt(map, ppapi_);
+
+  ASSERT_EQ(ENOENT, mnt.Access(Path(path), F_OK));
+}
+
 TEST_F(MountHtml5FsTest, Mkdir) {
   const char path[] = "/foo";
   const PP_Resource fileref_resource = 235;

@@ -29,6 +29,7 @@ class MountMem : public Mount {
   virtual Error FindNode(const Path& path, int type, MountNode** out_node);
 
  public:
+  virtual Error Access(const Path& path, int a_mode);
   virtual Error Open(const Path& path, int mode, MountNode** out_node);
   virtual Error Unlink(const Path& path);
   virtual Error Mkdir(const Path& path, int perm);

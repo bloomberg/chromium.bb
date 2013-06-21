@@ -21,6 +21,7 @@ class MountHttp : public Mount {
  public:
   typedef std::map<std::string, MountNode*> NodeMap_t;
 
+  virtual Error Access(const Path& path, int a_mode);
   virtual Error Open(const Path& path, int mode, MountNode** out_node);
   virtual Error Unlink(const Path& path);
   virtual Error Mkdir(const Path& path, int permissions);
@@ -41,6 +42,10 @@ class MountHttp : public Mount {
   Error ParseManifest(char *text);
 
  private:
+  // Gets the URL to fetch for |path|.
+  // |path| is relative to the mount point for the HTTP filesystem.
+  std::string MakeUrl(const Path& path);
+
   std::string url_root_;
   StringMap_t headers_;
   NodeMap_t node_cache_;

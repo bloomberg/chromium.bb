@@ -6,6 +6,8 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
+
 #include <string>
 
 #include "nacl_io/mount.h"
@@ -73,6 +75,24 @@ Error MountMem::FindNode(const Path& path, int type, MountNode** out_node) {
 
   // We now have a valid object of the expected type, so return it.
   *out_node = node;
+  return 0;
+}
+
+Error MountMem::Access(const Path& path, int a_mode) {
+  AutoLock lock(&lock_);
+  MountNode* node = NULL;
+  Error error = FindNode(path, 0, &node);
+
+  if (error)
+    return error;
+
+  int obj_mode = node->GetMode();
+  if (((a_mode & R_OK) && !(obj_mode & S_IREAD)) ||
+      ((a_mode & W_OK) && !(obj_mode & S_IWRITE)) ||
+      ((a_mode & X_OK) && !(obj_mode & S_IEXEC))) {
+    return EACCES;
+  }
+
   return 0;
 }
 
