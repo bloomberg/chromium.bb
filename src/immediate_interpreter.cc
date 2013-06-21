@@ -10,6 +10,7 @@
 #include <cstring>
 #include <functional>
 #include <limits>
+#include <tuple>
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/logging.h"
@@ -18,9 +19,11 @@
 using std::bind1st;
 using std::for_each;
 using std::make_pair;
+using std::make_tuple;
 using std::max;
 using std::mem_fun;
 using std::min;
+using std::tuple;
 
 namespace gestures {
 
@@ -993,7 +996,9 @@ FingerMap ImmediateInterpreter::GetGesturingFingers(
 
 void ImmediateInterpreter::UpdateCurrentGestureType(
     const HardwareState& hwstate,
-    const FingerMap& gs_fingers) {
+    const FingerMap& gs_fingers,
+    FingerMap* active_gs_fingers) {
+  *active_gs_fingers = gs_fingers;
 
   size_t num_gesturing = gs_fingers.size();
 
@@ -1013,7 +1018,9 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
     case kGestureTypeSwipe:
       // If a gesturing finger just left, do fling/lift
       if (AnyGesturingFingerLeft(*state_buffer_.Get(0),
-                                 prev_gs_fingers_)) {
+                                 prev_gs_fingers_) &&
+          (current_gesture_type_ != kGestureTypeScroll ||
+           scroll_buffer_.Size() > 0)) {
         current_gesture_type_ =
             current_gesture_type_ == kGestureTypeScroll ?
             kGestureTypeFling : kGestureTypeSwipeLift;
@@ -1053,53 +1060,69 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
             hwstate.timestamp - max(started_moving_time_, gs_changed_time_) <
             evaluation_timeout_.val_ ||
             current_gesture_type_ == kGestureTypeNull) {
-          if (num_gesturing == 2) {
-            const FingerState* fingers[] = {
-              hwstate.GetFingerState(*gs_fingers.begin()),
-              hwstate.GetFingerState(*(gs_fingers.begin() + 1))
-            };
-            if (!fingers[0] || !fingers[1]) {
-              Err("Unable to find gesturing fingers!");
-              return;
-            }
-            // See if two pointers are close together
-            bool potential_two_finger_gesture =
-                TwoFingersGesturing(*fingers[0], *fingers[1], false);
-            if (!potential_two_finger_gesture) {
-              current_gesture_type_ = kGestureTypeMove;
-            } else {
-              current_gesture_type_ =
-                  GetTwoFingerGestureType(*fingers[0], *fingers[1]);
-            }
-          } else if (num_gesturing == 3) {
-            const FingerState* fingers[] = {
-              hwstate.GetFingerState(*gs_fingers.begin()),
-              hwstate.GetFingerState(*(gs_fingers.begin() + 1)),
-              hwstate.GetFingerState(*(gs_fingers.begin() + 2))
-            };
-            if (!fingers[0] || !fingers[1] || !fingers[2]) {
-              Err("Unable to find gesturing fingers!");
-              return;
-            }
-            current_gesture_type_ = GetThreeFingerGestureType(fingers);
-            if (current_gesture_type_ == kGestureTypeSwipe)
-              last_swipe_timestamp_ = hwstate.timestamp;
-
-            if (current_gesture_type_ == kGestureTypeNull) {
-              // Not a 3F gesture, try to interpret as 2F gesture if the
-              // bottommost contact is inside the dampened zone.
-              GetGesturingFingersCompare compare;
-              std::sort(fingers, fingers + 3, compare);
-              bool potential_two_finger_gesture =
-                  FingerInDampenedZone(*fingers[2]) &&
-                  TwoFingersGesturing(*fingers[0], *fingers[1], false);
-              if (potential_two_finger_gesture) {
-                current_gesture_type_ =
-                    GetTwoFingerGestureType(*fingers[0], *fingers[1]);
+          // Try to recognize gestures, starting from many-finger gestures
+          // first. We choose this order b/c 3-finger gestures are very strict
+          // in their interpretation.
+          vector<short, kMaxGesturingFingers> sorted_ids;
+          SortFingersByProximity(gs_fingers, hwstate, &sorted_ids);
+          for (; sorted_ids.size() >= 2;
+               sorted_ids.erase(sorted_ids.end() - 1)) {
+            if (sorted_ids.size() == 2) {
+              GestureType new_gs_type = kGestureTypeNull;
+              const FingerState* fingers[] = {
+                hwstate.GetFingerState(*sorted_ids.begin()),
+                hwstate.GetFingerState(*(sorted_ids.begin() + 1))
+              };
+              if (!fingers[0] || !fingers[1]) {
+                Err("Unable to find gesturing fingers!");
+                return;
               }
+              // See if two pointers are close together
+              bool potential_two_finger_gesture =
+                  TwoFingersGesturing(*fingers[0], *fingers[1], false);
+              if (!potential_two_finger_gesture) {
+                new_gs_type = kGestureTypeMove;
+              } else {
+                new_gs_type =
+                    GetTwoFingerGestureType(*fingers[0], *fingers[1]);
+                // Two fingers that don't end up causing scroll may be
+                // ambiguous. Only move if they've been down long enough.
+                if (new_gs_type == kGestureTypeMove &&
+                    hwstate.timestamp -
+                        max(origin_timestamps_[fingers[0]->tracking_id],
+                            origin_timestamps_[fingers[1]->tracking_id]) <
+                    evaluation_timeout_.val_)
+                  new_gs_type = kGestureTypeNull;
+              }
+              if (new_gs_type != kGestureTypeMove ||
+                  gs_fingers.size() == 2) {
+                // We only allow this path to set a move gesture if there
+                // are two fingers gesturing
+                current_gesture_type_ = new_gs_type;
+              }
+            } else if (sorted_ids.size() == 3) {
+              const FingerState* fingers[] = {
+                hwstate.GetFingerState(*sorted_ids.begin()),
+                hwstate.GetFingerState(*(sorted_ids.begin() + 1)),
+                hwstate.GetFingerState(*(sorted_ids.begin() + 2))
+              };
+              if (!fingers[0] || !fingers[1] || !fingers[2]) {
+                Err("Unable to find gesturing fingers!");
+                return;
+              }
+              current_gesture_type_ = GetThreeFingerGestureType(fingers);
+              if (current_gesture_type_ == kGestureTypeSwipe)
+                last_swipe_timestamp_ = hwstate.timestamp;
+            } else {
+              Log("TODO(adlr): support > 3 finger gestures.");
             }
-          } else {
-            Log("TODO(adlr): support > 3 finger gestures.");
+            if (current_gesture_type_ != kGestureTypeNull) {
+              active_gs_fingers->clear();
+              for (vector<short, kMaxGesturingFingers>::const_iterator it =
+                   sorted_ids.begin(), e = sorted_ids.end(); it != e; ++it)
+                active_gs_fingers->insert(*it);
+              break;
+            }
           }
         }
       }
@@ -1127,7 +1150,77 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
       Err("Metrics gestures reached ImmediateInterpreter");
       break;
   }
+  return;
 }
+
+namespace {
+// Can't use tuple<float, short, short> b/c we want to make a variable
+// sized array of them on the stack
+struct DistSqElt {
+  float dist_sq;
+  short tracking_id[2];
+};
+
+struct DistSqCompare {
+  // Returns true if finger_a is strictly closer to keyboard than finger_b
+  bool operator()(const DistSqElt& finger_a, const DistSqElt& finger_b) {
+    return finger_a.dist_sq < finger_b.dist_sq;
+  }
+};
+
+}  // namespace {}
+
+void ImmediateInterpreter::SortFingersByProximity(
+    const FingerMap& finger_ids,
+    const HardwareState& hwstate,
+    vector<short, kMaxGesturingFingers>* out_sorted_ids) {
+  if (finger_ids.size() <= 2) {
+    for (short finger_id : finger_ids)
+      out_sorted_ids->push_back(finger_id);
+    return;
+  }
+  // To do the sort, we sort all inter-point distances^2, then scan through
+  // that until we have enough points
+  DistSqElt dist_sq[(finger_ids.size() * (finger_ids.size() - 1)) / 2];
+  size_t dist_sq_len = 0;
+  for (size_t i = 0; i < hwstate.finger_cnt; i++) {
+    const FingerState& fs1 = hwstate.fingers[i];
+    if (!SetContainsValue(finger_ids, fs1.tracking_id))
+      continue;
+    for (size_t j = i + 1; j < hwstate.finger_cnt; j++) {
+      const FingerState& fs2 = hwstate.fingers[j];
+      if (!SetContainsValue(finger_ids, fs2.tracking_id))
+        continue;
+      DistSqElt elt = {
+        DistSq(fs1, fs2),
+        { fs1.tracking_id, fs2.tracking_id }
+      };
+      dist_sq[dist_sq_len++] = elt;
+    }
+  }
+
+  DistSqCompare distSqCompare;
+  std::sort(dist_sq, dist_sq + dist_sq_len, distSqCompare);
+
+  for (size_t i = 0; i < dist_sq_len; i++) {
+    short id1 = dist_sq[i].tracking_id[0];
+    short id2 = dist_sq[i].tracking_id[1];
+    bool contains1 = out_sorted_ids->find(id1) != out_sorted_ids->end();
+    bool contains2 = out_sorted_ids->find(id2) != out_sorted_ids->end();
+    if (contains1 == contains2 && !out_sorted_ids->empty()) {
+      // Assuming we have some ids in the out vector, then either we have both
+      // of these new ids, we have neither. Either way, we can't use this edge.
+      continue;
+    }
+    if (!contains1)
+      out_sorted_ids->push_back(id1);
+    if (!contains2)
+      out_sorted_ids->push_back(id2);
+    if (out_sorted_ids->size() == finger_ids.size())
+      break;  // We've got all the IDs
+  }
+}
+
 
 bool ImmediateInterpreter::UpdatePinchState(
     const HardwareState& hwstate, bool reset) {

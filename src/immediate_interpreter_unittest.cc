@@ -1324,7 +1324,7 @@ TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
   };
   GestureType expected_gs[] = {
     kGestureTypeNull,
-    kGestureTypeMove,
+    kGestureTypeNull,
     kGestureTypeMove,
     kGestureTypeNull,
     kGestureTypeScroll,

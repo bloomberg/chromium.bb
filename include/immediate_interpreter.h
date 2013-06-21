@@ -341,8 +341,21 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Updates current_gesture_type_ based on passed-in hwstate and
   // considering the passed in fingers as gesturing.
+  // Returns the finger(s) that are performing the gesture in
+  // active_gs_fingers.
   void UpdateCurrentGestureType(const HardwareState& hwstate,
-                                const FingerMap& gs_fingers);
+                                const FingerMap& gs_fingers,
+                                FingerMap* active_gs_fingers);
+
+  // Sorts the fingers referred to in finger_ids (whose details are in hwstate)
+  // according to prodimity and places the sorted range into out_sorted_ids.
+  // The sort first finds the two closes points and includes them first.
+  // Then, it finds the point closest to any included point, repeating until
+  // all points are included.
+  static void SortFingersByProximity(
+      const FingerMap& finger_ids,
+      const HardwareState& hwstate,
+      vector<short, kMaxGesturingFingers>* out_sorted_ids);
 
   // If the finger is likely to be a palm and that its contact size/pressure
   // is diminishing/increasing, we suppress the cursor movement. A real
