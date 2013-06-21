@@ -65,8 +65,9 @@ def main():
     "loading_benchmark": "loading_measurement",
     "memory_benchmark": "memory_measurement",
     "rasterize_and_record_benchmark": "rasterize_and_record_benchmark",
-    "scrolling_benchmark": "smoothness_measurement",
-    "smoothness_benchmark": "smoothness_measurement",
+    "scrolling_benchmark": "smoothness",
+    "smoothness_benchmark": "smoothness",
+    "smoothness_measurement": "smoothness",
     "startup_benchmark": "startup_measurement"
   }
 
