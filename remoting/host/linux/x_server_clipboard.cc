@@ -81,8 +81,6 @@ void XServerClipboard::Init(Display* display,
     LOG(ERROR) << "XInternAtoms failed";
   }
 
-  XFixesSelectSelectionInput(display_, clipboard_window_, XA_PRIMARY,
-                             XFixesSetSelectionOwnerNotifyMask);
   XFixesSelectSelectionInput(display_, clipboard_window_, clipboard_atom_,
                              XFixesSetSelectionOwnerNotifyMask);
 }
@@ -154,8 +152,8 @@ void XServerClipboard::OnSetSelectionOwnerNotify(Atom selection,
     return;
   }
 
-  // Only process PRIMARY and CLIPBOARD selections.
-  if (selection != clipboard_atom_ && selection != XA_PRIMARY)
+  // Only process CLIPBOARD selections.
+  if (selection != clipboard_atom_)
     return;
 
   // If we own the selection, don't request details for it.
