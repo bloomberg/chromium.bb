@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
-#include "remoting/host/win/message_window.h"
+#include "base/win/message_window.h"
 #include "remoting/host/win/wts_terminal_monitor.h"
 
 class CommandLine;
@@ -28,7 +28,7 @@ class AutoThreadTaskRunner;
 class DaemonProcess;
 class WtsTerminalObserver;
 
-class HostService : public win::MessageWindow::Delegate,
+class HostService : public base::win::MessageWindow::Delegate,
                     public WtsTerminalMonitor {
  public:
   static HostService* GetInstance();
@@ -71,7 +71,7 @@ class HostService : public win::MessageWindow::Delegate,
   // Stops and deletes |daemon_process_|.
   void StopDaemonProcess();
 
-  // win::MessageWindow::Delegate interface.
+  // base::win::MessageWindow::Delegate interface.
   virtual bool HandleMessage(HWND hwnd,
                              UINT message,
                              WPARAM wparam,

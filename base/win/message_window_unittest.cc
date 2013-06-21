@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/win/message_window.h"
+#include "base/win/message_window.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace remoting {
+namespace base {
 
 namespace {
 
@@ -46,16 +46,16 @@ bool MessageWindowDelegate::HandleMessage(
 TEST(MessageWindowTest, Create) {
   MessageWindowDelegate delegate;
   win::MessageWindow window;
-  EXPECT_TRUE(window.Create(&delegate));
+  EXPECT_TRUE(window.Create(&delegate, NULL));
 }
 
 // Verifies that the created window can receive messages.
 TEST(MessageWindowTest, SendMessage) {
   MessageWindowDelegate delegate;
   win::MessageWindow window;
-  EXPECT_TRUE(window.Create(&delegate));
+  EXPECT_TRUE(window.Create(&delegate, NULL));
 
   EXPECT_EQ(SendMessage(window.hwnd(), WM_USER, 100, 0), 100);
 }
 
-}  // namespace remoting
+}  // namespace base
