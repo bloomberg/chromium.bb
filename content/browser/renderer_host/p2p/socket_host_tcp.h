@@ -21,13 +21,17 @@ namespace net {
 class DrainableIOBuffer;
 class GrowableIOBuffer;
 class StreamSocket;
+class URLRequestContextGetter;
 }  // namespace net
 
 namespace content {
 
 class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
  public:
-  P2PSocketHostTcpBase(IPC::Sender* message_sender, int id, P2PSocketType type);
+  P2PSocketHostTcpBase(IPC::Sender* message_sender,
+                       int id,
+                       P2PSocketType type,
+                       net::URLRequestContextGetter* url_context);
   virtual ~P2PSocketHostTcpBase();
 
   bool InitAccepted(const net::IPEndPoint& remote_address,
@@ -52,9 +56,8 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   void OnError();
 
  private:
-  friend class P2PSocketHostTcpTest;
+  friend class P2PSocketHostTcpTestBase;
   friend class P2PSocketHostTcpServerTest;
-  friend class P2PSocketHostStunTcpTest;
 
   void DidCompleteRead(int result);
   void DoRead();
@@ -77,15 +80,18 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   bool write_pending_;
 
   bool connected_;
-
   P2PSocketType type_;
+  scoped_refptr<net::URLRequestContextGetter> url_context_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcpBase);
 };
 
 class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
  public:
-  P2PSocketHostTcp(IPC::Sender* message_sender, int id, P2PSocketType type);
+  P2PSocketHostTcp(IPC::Sender* message_sender,
+                   int id,
+                   P2PSocketType type,
+                   net::URLRequestContextGetter* url_context);
   virtual ~P2PSocketHostTcp();
 
  protected:
@@ -102,7 +108,11 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
 // Formatting of messages is defined in RFC5766.
 class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
  public:
-  P2PSocketHostStunTcp(IPC::Sender* message_sender, int id, P2PSocketType type);
+  P2PSocketHostStunTcp(IPC::Sender* message_sender,
+                       int id,
+                       P2PSocketType type,
+                       net::URLRequestContextGetter* url_context);
+
   virtual ~P2PSocketHostStunTcp();
 
  protected:

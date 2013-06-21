@@ -13,6 +13,10 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace content {
 
 class P2PSocketHost;
@@ -22,7 +26,8 @@ class P2PSocketDispatcherHost
     : public content::BrowserMessageFilter,
       public net::NetworkChangeNotifier::IPAddressObserver {
  public:
-  P2PSocketDispatcherHost(content::ResourceContext* resource_context);
+  P2PSocketDispatcherHost(content::ResourceContext* resource_context,
+                          net::URLRequestContextGetter* url_context);
 
   // content::BrowserMessageFilter overrides.
   virtual void OnChannelClosing() OVERRIDE;
@@ -72,6 +77,7 @@ class P2PSocketDispatcherHost
                          const net::IPAddressNumber& result);
 
   content::ResourceContext* resource_context_;
+  scoped_refptr<net::URLRequestContextGetter> url_context_;
 
   SocketsMap sockets_;
 

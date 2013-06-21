@@ -14,6 +14,10 @@ namespace IPC {
 class Sender;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace content {
 
 // Base class for P2P sockets.
@@ -22,7 +26,8 @@ class CONTENT_EXPORT P2PSocketHost {
   static const int kStunHeaderSize = 20;
   // Creates P2PSocketHost of the specific type.
   static P2PSocketHost* Create(IPC::Sender* message_sender,
-                               int id, P2PSocketType type);
+                               int id, P2PSocketType type,
+                               net::URLRequestContextGetter* url_context);
 
   virtual ~P2PSocketHost();
 
@@ -38,8 +43,7 @@ class CONTENT_EXPORT P2PSocketHost {
       const net::IPEndPoint& remote_address, int id) = 0;
 
  protected:
-  friend class P2PSocketHostTcpTest;
-  friend class P2PSocketHostStunTcpTest;
+  friend class P2PSocketHostTcpTestBase;
 
   enum StunMessageType {
     STUN_BINDING_REQUEST = 0x0001,

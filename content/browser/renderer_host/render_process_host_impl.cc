@@ -684,7 +684,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
                  base::Unretained(widget_helper_.get()))));
 
 #if defined(ENABLE_WEBRTC)
-  channel_->AddFilter(new P2PSocketDispatcherHost(resource_context));
+  channel_->AddFilter(new P2PSocketDispatcherHost(
+      resource_context,
+      browser_context->GetRequestContextForRenderProcess(GetID())));
 #endif
 
   channel_->AddFilter(new TraceMessageFilter());

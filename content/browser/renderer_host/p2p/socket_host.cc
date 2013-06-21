@@ -72,7 +72,8 @@ bool P2PSocketHost::IsRequestOrResponse(StunMessageType type) {
 
 // static
 P2PSocketHost* P2PSocketHost::Create(
-    IPC::Sender* message_sender, int id, P2PSocketType type) {
+    IPC::Sender* message_sender, int id, P2PSocketType type,
+    net::URLRequestContextGetter* url_context) {
   switch (type) {
     case P2P_SOCKET_UDP:
       return new P2PSocketHostUdp(message_sender, id);
@@ -86,16 +87,12 @@ P2PSocketHost* P2PSocketHost::Create(
           message_sender, id, P2P_SOCKET_STUN_TCP_CLIENT);
 
     case P2P_SOCKET_TCP_CLIENT:
-      return new P2PSocketHostTcp(message_sender, id, type);
+    case P2P_SOCKET_SSLTCP_CLIENT:
+      return new P2PSocketHostTcp(message_sender, id, type, url_context);
 
     case P2P_SOCKET_STUN_TCP_CLIENT:
-      return new P2PSocketHostStunTcp(message_sender, id, type);
-
-    case P2P_SOCKET_SSLTCP_CLIENT:
-      return new P2PSocketHostTcp(message_sender, id, type);
-
     case P2P_SOCKET_STUN_SSLTCP_CLIENT:
-      return new P2PSocketHostStunTcp(message_sender, id, type);
+      return new P2PSocketHostStunTcp(message_sender, id, type, url_context);
   }
 
   NOTREACHED();

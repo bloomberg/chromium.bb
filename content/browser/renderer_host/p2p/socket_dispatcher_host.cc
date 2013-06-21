@@ -15,6 +15,7 @@
 #include "net/base/net_log.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/dns/single_request_host_resolver.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
@@ -83,8 +84,10 @@ class P2PSocketDispatcherHost::DnsRequest {
 };
 
 P2PSocketDispatcherHost::P2PSocketDispatcherHost(
-    content::ResourceContext* resource_context)
+    content::ResourceContext* resource_context,
+    net::URLRequestContextGetter* url_context)
     : resource_context_(resource_context),
+      url_context_(url_context),
       monitoring_networks_(false) {
 }
 
@@ -188,7 +191,7 @@ void P2PSocketDispatcherHost::OnCreateSocket(
   }
 
   scoped_ptr<P2PSocketHost> socket(
-      P2PSocketHost::Create(this, socket_id, type));
+      P2PSocketHost::Create(this, socket_id, type, url_context_));
 
   if (!socket) {
     Send(new P2PMsg_OnError(socket_id));

@@ -19,15 +19,25 @@ using ::testing::Return;
 
 namespace content {
 
-class P2PSocketHostTcpTest : public testing::Test {
+class P2PSocketHostTcpTestBase : public testing::Test {
  protected:
+  explicit P2PSocketHostTcpTestBase(P2PSocketType type)
+      : socket_type_(type) {
+  }
+
   virtual void SetUp() OVERRIDE {
     EXPECT_CALL(sender_, Send(
         MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-    socket_host_.reset(new P2PSocketHostTcp(&sender_, 0,
-                                            P2P_SOCKET_TCP_CLIENT));
+    if (socket_type_ == P2P_SOCKET_TCP_CLIENT) {
+      socket_host_.reset(new P2PSocketHostTcp(
+                            &sender_, 0,  P2P_SOCKET_TCP_CLIENT, NULL));
+    } else {
+      socket_host_.reset(new P2PSocketHostStunTcp(
+                            &sender_, 0,  P2P_SOCKET_STUN_TCP_CLIENT, NULL));
+    }
+
     socket_ = new FakeSocket(&sent_data_);
     socket_->SetLocalAddress(ParseAddress(kTestLocalIpAddress, kTestPort1));
     socket_host_->socket_.reset(socket_);
@@ -50,55 +60,28 @@ class P2PSocketHostTcpTest : public testing::Test {
   }
 
   std::string sent_data_;
-  FakeSocket* socket_; // Owned by |socket_host_|.
-  scoped_ptr<P2PSocketHostTcp> socket_host_;
+  FakeSocket* socket_;  // Owned by |socket_host_|.
+  scoped_ptr<P2PSocketHostTcpBase> socket_host_;
   MockIPCSender sender_;
 
   net::IPEndPoint local_address_;
 
   net::IPEndPoint dest_;
   net::IPEndPoint dest2_;
+
+  P2PSocketType socket_type_;
 };
 
-class P2PSocketHostStunTcpTest : public testing::Test {
+class P2PSocketHostTcpTest : public P2PSocketHostTcpTestBase {
  protected:
-  virtual void SetUp() OVERRIDE {
-    EXPECT_CALL(sender_, Send(
-        MatchMessage(static_cast<uint32>(P2PMsg_OnSocketCreated::ID))))
-        .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
+  P2PSocketHostTcpTest() : P2PSocketHostTcpTestBase(P2P_SOCKET_TCP_CLIENT) { }
+};
 
-    socket_host_.reset(new P2PSocketHostStunTcp(&sender_, 0,
-                                                P2P_SOCKET_STUN_TCP_CLIENT));
-    socket_ = new FakeSocket(&sent_data_);
-    socket_->SetLocalAddress(ParseAddress(kTestLocalIpAddress, kTestPort1));
-    socket_host_->socket_.reset(socket_);
-
-    dest_ = ParseAddress(kTestIpAddress1, kTestPort1);
-
-    local_address_ = ParseAddress(kTestLocalIpAddress, kTestPort1);
-
-    socket_host_->remote_address_ = dest_;
-    socket_host_->state_ = P2PSocketHost::STATE_CONNECTING;
-    socket_host_->OnConnected(net::OK);
+class P2PSocketHostStunTcpTest : public P2PSocketHostTcpTestBase {
+ protected:
+  P2PSocketHostStunTcpTest()
+      : P2PSocketHostTcpTestBase(P2P_SOCKET_STUN_TCP_CLIENT) {
   }
-
-  std::string IntToSize(int size) {
-    std::string result;
-    uint16 size16 = base::HostToNet16(size);
-    result.resize(sizeof(size16));
-    memcpy(&result[0], &size16, sizeof(size16));
-    return result;
-  }
-
-  std::string sent_data_;
-  FakeSocket* socket_; // Owned by |socket_host_|.
-  scoped_ptr<P2PSocketHostStunTcp> socket_host_;
-  MockIPCSender sender_;
-
-  net::IPEndPoint local_address_;
-
-  net::IPEndPoint dest_;
-  net::IPEndPoint dest2_;
 };
 
 // Verify that we can send STUN message and that they are formatted
