@@ -599,6 +599,12 @@ button {
   opacity: 0.75;
 }
 
+/* TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772
+ * is fixed. */
+.no-scroll {
+  overflow: hidden;
+}
+
 /* TODO(jamiewalch): Reinstate this if we're able to get translations for
  *     "Why is this safe?" that don't overflow in any language.
 #host-setup-dialog {
