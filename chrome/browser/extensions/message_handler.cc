@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/message_handler.h"
 
-#include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,12 +43,12 @@ void MessageHandler::RenderViewHostInitialized() {
 }
 
 void MessageHandler::OnPostMessage(int port_id,
-                                   const base::ListValue& message) {
+                                   const std::string& message) {
   Profile* profile = Profile::FromBrowserContext(
       render_view_host()->GetProcess()->GetBrowserContext());
   MessageService* message_service = MessageService::Get(profile);
   if (message_service) {
-    message_service->PostMessage(port_id, make_scoped_ptr(message.DeepCopy()));
+    message_service->PostMessage(port_id, message);
   }
 }
 

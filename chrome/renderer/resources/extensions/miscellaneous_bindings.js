@@ -45,7 +45,10 @@
   // Sends a message asynchronously to the context on the other end of this
   // port.
   Port.prototype.postMessage = function(msg) {
-    miscNatives.PostMessage(this.portId_, msg);
+    // JSON.stringify doesn't support a root object which is undefined.
+    if (msg === undefined)
+      msg = null;
+    miscNatives.PostMessage(this.portId_, $JSON.stringify(msg));
   };
 
   // Disconnects the port from the other end.
@@ -266,8 +269,11 @@
   // Called by native code when a message has been sent to the given port.
   function dispatchOnMessage(msg, portId) {
     var port = ports[portId];
-    if (port)
+    if (port) {
+      if (msg)
+        msg = $JSON.parse(msg);
       port.onMessage.dispatch(msg, port);
+    }
   };
 
   // Shared implementation used by tabs.sendMessage and runtime.sendMessage.

@@ -510,7 +510,7 @@ void Dispatcher::OnDispatchOnConnect(
 }
 
 void Dispatcher::OnDeliverMessage(int target_port_id,
-                                  const base::ListValue& message) {
+                                  const std::string& message) {
   MiscellaneousBindings::DeliverMessage(
       v8_context_set_.GetAll(),
       target_port_id,

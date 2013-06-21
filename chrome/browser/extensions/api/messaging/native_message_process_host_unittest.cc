@@ -104,15 +104,19 @@ class NativeMessagingTest : public ::testing::Test,
 
   virtual void PostMessageFromNativeProcess(
       int port_id,
-      scoped_ptr<base::ListValue> message_as_list) OVERRIDE  {
-    // |message_as_list| should contain a single DictionaryValue. Extract it
-    // into |last_message_|.
-    ASSERT_EQ(1u, message_as_list->GetSize());
-    base::Value* last_message_value = NULL;
-    message_as_list->Remove(0, &last_message_value);
-    ASSERT_EQ(base::Value::TYPE_DICTIONARY, last_message_value->GetType());
-    last_message_.reset(
-        static_cast<base::DictionaryValue*>(last_message_value));
+      const std::string& message) OVERRIDE  {
+    last_message_ = message;
+
+    // Parse the message.
+    base::Value* parsed = base::JSONReader::Read(message);
+    base::DictionaryValue* dict_value;
+    if (parsed && parsed->GetAsDictionary(&dict_value)) {
+      last_message_parsed_.reset(dict_value);
+    } else {
+      LOG(ERROR) << "Failed to parse " << message;
+      last_message_parsed_.reset();
+      delete parsed;
+    }
 
     if (read_message_run_loop_)
       read_message_run_loop_->Quit();
@@ -146,7 +150,8 @@ class NativeMessagingTest : public ::testing::Test,
   base::FilePath user_data_dir_;
   scoped_ptr<base::RunLoop> read_message_run_loop_;
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<DictionaryValue> last_message_;
+  std::string last_message_;
+  scoped_ptr<base::DictionaryValue> last_message_parsed_;
 };
 
 // Read a single message from a local file.
@@ -163,26 +168,19 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
   read_message_run_loop_.reset(new base::RunLoop());
   read_message_run_loop_->RunUntilIdle();
 
-  if (!last_message_) {
+  if (last_message_.empty()) {
     read_message_run_loop_.reset(new base::RunLoop());
     native_message_process_host_->ReadNowForTesting();
     read_message_run_loop_->Run();
   }
-  ASSERT_TRUE(last_message_);
-
-  scoped_ptr<base::Value> kTestMessageAsValue(
-      base::JSONReader::Read(kTestMessage));
-  ASSERT_TRUE(kTestMessageAsValue);
-  EXPECT_TRUE(base::Value::Equals(kTestMessageAsValue.get(),
-                                  last_message_.get()))
-      << "Expected " << *kTestMessageAsValue << " got " << *last_message_;
+  EXPECT_EQ(kTestMessage, last_message_);
 }
 
 // Tests sending a single message. The message should get written to
 // |temp_file| and should match the contents of single_message_request.msg.
 TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   base::FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
-  base::FilePath temp_input_file = CreateTempFileWithMessage("{}");
+  base::FilePath temp_input_file = CreateTempFileWithMessage(std::string());
 
   scoped_ptr<NativeProcessLauncher> launcher(
       new FakeLauncher(temp_input_file, temp_output_file));
@@ -228,29 +226,30 @@ TEST_F(NativeMessagingTest, EchoConnect) {
   native_message_process_host_->Send("{\"text\": \"Hello.\"}");
   read_message_run_loop_.reset(new base::RunLoop());
   read_message_run_loop_->Run();
-  ASSERT_TRUE(last_message_);
+  ASSERT_FALSE(last_message_.empty());
+  ASSERT_TRUE(last_message_parsed_);
 
   std::string expected_url = std::string("chrome-extension://") +
       kTestNativeMessagingExtensionId + "/";
   int id;
-  EXPECT_TRUE(last_message_->GetInteger("id", &id));
+  EXPECT_TRUE(last_message_parsed_->GetInteger("id", &id));
   EXPECT_EQ(1, id);
   std::string text;
-  EXPECT_TRUE(last_message_->GetString("echo.text", &text));
+  EXPECT_TRUE(last_message_parsed_->GetString("echo.text", &text));
   EXPECT_EQ("Hello.", text);
   std::string url;
-  EXPECT_TRUE(last_message_->GetString("caller_url", &url));
+  EXPECT_TRUE(last_message_parsed_->GetString("caller_url", &url));
   EXPECT_EQ(expected_url, url);
 
 
   native_message_process_host_->Send("{\"foo\": \"bar\"}");
   read_message_run_loop_.reset(new base::RunLoop());
   read_message_run_loop_->Run();
-  EXPECT_TRUE(last_message_->GetInteger("id", &id));
+  EXPECT_TRUE(last_message_parsed_->GetInteger("id", &id));
   EXPECT_EQ(2, id);
-  EXPECT_TRUE(last_message_->GetString("echo.foo", &text));
+  EXPECT_TRUE(last_message_parsed_->GetString("echo.foo", &text));
   EXPECT_EQ("bar", text);
-  EXPECT_TRUE(last_message_->GetString("caller_url", &url));
+  EXPECT_TRUE(last_message_parsed_->GetString("caller_url", &url));
   EXPECT_EQ(expected_url, url);
 }
 

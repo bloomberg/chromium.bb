@@ -95,9 +95,10 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     if (!renderview)
       return;
 
-    // Arguments are (int32 port_id, object message).
-    CHECK_EQ(2, args.Length());
-    CHECK(args[0]->IsInt32());
+    // Arguments are (int32 port_id, string message).
+    CHECK(args.Length() == 2 &&
+          args[0]->IsInt32() &&
+          args[1]->IsString());
 
     int port_id = args[0]->Int32Value();
     if (!HasPortData(port_id)) {
@@ -106,18 +107,8 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
       return;
     }
 
-    // The message can be any base::Value but IPC can't serialize that, so we
-    // give it a singleton base::ListValue instead, or an empty list if the
-    // argument was undefined (v8 value converter will return NULL for this).
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    scoped_ptr<base::Value> message(
-        converter->FromV8Value(args[1], context()->v8_context()));
-    ListValue message_as_list;
-    if (message)
-      message_as_list.Append(message.release());
-
     renderview->Send(new ExtensionHostMsg_PostMessage(
-        renderview->GetRoutingID(), port_id, message_as_list));
+        renderview->GetRoutingID(), port_id, *v8::String::AsciiValue(args[1])));
   }
 
   // Forcefully disconnects a port.
@@ -284,7 +275,7 @@ void MiscellaneousBindings::DispatchOnConnect(
 void MiscellaneousBindings::DeliverMessage(
     const ChromeV8ContextSet::ContextSet& contexts,
     int target_port_id,
-    const base::ListValue& message,
+    const std::string& message,
     content::RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope;
 
@@ -300,9 +291,6 @@ void MiscellaneousBindings::DeliverMessage(
     if ((*it)->v8_context().IsEmpty())
       continue;
 
-    v8::Handle<v8::Context> context = (*it)->v8_context();
-    v8::Context::Scope context_scope(context);
-
     // Check to see whether the context has this port before bothering to create
     // the message.
     v8::Handle<v8::Value> port_id_handle = v8::Integer::New(target_port_id);
@@ -316,19 +304,7 @@ void MiscellaneousBindings::DeliverMessage(
       continue;
 
     std::vector<v8::Handle<v8::Value> > arguments;
-
-    // Convert the message to a v8 object; either a value or undefined.
-    // See PostMessage for more details.
-    if (message.empty()) {
-      arguments.push_back(v8::Undefined());
-    } else {
-      CHECK_EQ(1u, message.GetSize());
-      const base::Value* message_value = NULL;
-      message.Get(0, &message_value);
-      scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-      arguments.push_back(converter->ToV8Value(message_value, context));
-    }
-
+    arguments.push_back(v8::String::New(message.c_str(), message.size()));
     arguments.push_back(port_id_handle);
     (*it)->module_system()->CallModuleMethod("miscellaneous_bindings",
                                              "dispatchOnMessage",

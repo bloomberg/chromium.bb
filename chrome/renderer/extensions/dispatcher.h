@@ -164,7 +164,7 @@ class Dispatcher : public content::RenderProcessObserver {
                            const std::string& channel_name,
                            const base::DictionaryValue& source_tab,
                            const ExtensionMsg_ExternalConnectionInfo& info);
-  void OnDeliverMessage(int target_port_id, const base::ListValue& message);
+  void OnDeliverMessage(int target_port_id, const std::string& message);
   void OnDispatchOnDisconnect(int port_id, const std::string& error_message);
   void OnSetFunctionNames(const std::vector<std::string>& names);
   void OnSetSystemFont(const std::string& font_family,

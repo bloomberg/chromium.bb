@@ -6,7 +6,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -458,7 +457,7 @@ void MessageService::CloseChannelImpl(
 }
 
 void MessageService::PostMessage(
-    int source_port_id, scoped_ptr<base::ListValue> message) {
+    int source_port_id, const std::string& message) {
   int channel_id = GET_CHANNEL_ID(source_port_id);
   MessageChannelMap::iterator iter = channels_.find(channel_id);
   if (iter == channels_.end()) {
@@ -469,9 +468,7 @@ void MessageService::PostMessage(
       lazy_background_task_queue_->AddPendingTask(
           pending->second.first, pending->second.second,
           base::Bind(&MessageService::PendingPostMessage,
-                     weak_factory_.GetWeakPtr(),
-                     source_port_id,
-                     base::Passed(&message)));
+                     weak_factory_.GetWeakPtr(), source_port_id, message));
     }
     return;
   }
@@ -481,13 +478,12 @@ void MessageService::PostMessage(
   MessagePort* port = IS_OPENER_PORT_ID(dest_port_id) ?
       iter->second->opener.get() : iter->second->receiver.get();
 
-  port->DispatchOnMessage(message.Pass(), dest_port_id);
+  port->DispatchOnMessage(message, dest_port_id);
 }
 
-void MessageService::PostMessageFromNativeProcess(
-    int port_id,
-    scoped_ptr<base::ListValue> message) {
-  PostMessage(port_id, message.Pass());
+void MessageService::PostMessageFromNativeProcess(int port_id,
+                                                  const std::string& message) {
+  PostMessage(port_id, message);
 }
 
 void MessageService::Observe(int type,

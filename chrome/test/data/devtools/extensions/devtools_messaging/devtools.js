@@ -30,7 +30,7 @@ function step1() {
 }
 
 function step2() {
-  var object = [{"string": "foo"}, {"number": 42}];
+  var object = { "string": "foo", "number": 42 };
   chrome.extension.sendRequest(object, function(response) {
     assertEquals('onRequest callback: ' + JSON.stringify(object), response);
     step3();

@@ -30,6 +30,7 @@ class SafeBuiltins {
   //   Object.keys.call(...) becomes Object.keys(...)
   v8::Local<v8::Object> GetArray() const;
   v8::Local<v8::Object> GetFunction() const;
+  v8::Local<v8::Object> GetJSON() const;
   // NOTE(kalman): VS2010 won't compile "GetObject", it mysteriously renames it
   // to "GetObjectW" - hence GetObjekt. Sorry.
   v8::Local<v8::Object> GetObjekt() const;

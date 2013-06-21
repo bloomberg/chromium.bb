@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
 
-#include "base/values.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -46,11 +45,10 @@ void ExtensionMessagePort::DispatchOnDisconnect(
       routing_id_, source_port_id, error_message));
 }
 
-void ExtensionMessagePort::DispatchOnMessage(
-    scoped_ptr<base::ListValue> message,
-    int target_port_id) {
-  process_->Send(new ExtensionMsg_DeliverMessage(
-      routing_id_, target_port_id, *message));
+void ExtensionMessagePort::DispatchOnMessage(const std::string& message,
+                                             int target_port_id) {
+    process_->Send(new ExtensionMsg_DeliverMessage(
+        routing_id_, target_port_id, message));
 }
 
 void ExtensionMessagePort::IncrementLazyKeepaliveCount() {

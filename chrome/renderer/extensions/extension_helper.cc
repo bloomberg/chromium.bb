@@ -271,9 +271,8 @@ void ExtensionHelper::OnExtensionDispatchOnConnect(
       render_view());
 }
 
-void ExtensionHelper::OnExtensionDeliverMessage(
-    int target_id,
-    const base::ListValue& message) {
+void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
+                                                const std::string& message) {
   MiscellaneousBindings::DeliverMessage(dispatcher_->v8_context_set().GetAll(),
                                         target_id,
                                         message,

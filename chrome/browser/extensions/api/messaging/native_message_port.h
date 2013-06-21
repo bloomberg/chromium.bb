@@ -16,7 +16,7 @@ class NativeMessagePort : public MessageService::MessagePort {
   // Takes ownership of |native_process|.
   explicit NativeMessagePort(NativeMessageProcessHost* native_process);
   virtual ~NativeMessagePort();
-  virtual void DispatchOnMessage(scoped_ptr<base::ListValue> message,
+  virtual void DispatchOnMessage(const std::string& message,
                                  int target_port_id) OVERRIDE;
 
  private:

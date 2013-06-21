@@ -81,7 +81,7 @@ class ExtensionHelper
       const base::DictionaryValue& source_tab,
       const ExtensionMsg_ExternalConnectionInfo& info);
   void OnExtensionDeliverMessage(int target_port_id,
-                                 const base::ListValue& message);
+                                 const std::string& message);
   void OnExtensionDispatchOnDisconnect(int port_id,
                                        const std::string& error_message);
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);

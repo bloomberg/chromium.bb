@@ -1710,6 +1710,7 @@
         'renderer/extensions/json_schema_unittest.cc',
         'renderer/extensions/module_system_unittest.cc',
         'renderer/extensions/renderer_permissions_policy_delegate_unittest.cc',
+        'renderer/extensions/safe_builtins_unittest.cc',
         'renderer/media/webrtc_logging_handler_impl_unittest.cc',
         'renderer/net/predictor_queue_unittest.cc',
         'renderer/net/renderer_predictor_unittest.cc',

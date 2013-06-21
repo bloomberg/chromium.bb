@@ -198,6 +198,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     // Each safe builtin. Keep in order with the arguments in WrapSource.
     context_->safe_builtins()->GetArray(),
     context_->safe_builtins()->GetFunction(),
+    context_->safe_builtins()->GetJSON(),
     context_->safe_builtins()->GetObjekt(),
   };
   {
@@ -482,7 +483,7 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
   // Keep in order with the arguments in RequireForJsInner.
   v8::Handle<v8::String> left = v8::String::New(
       "(function(require, requireNative, exports,"
-                "$Array, $Function, $Object) {"
+                "$Array, $Function, $JSON, $Object) {"
        "'use strict';");
   v8::Handle<v8::String> right = v8::String::New("\n})");
   return handle_scope.Close(

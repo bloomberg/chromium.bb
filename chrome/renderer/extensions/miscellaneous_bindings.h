@@ -11,7 +11,6 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace content {
@@ -56,7 +55,7 @@ class MiscellaneousBindings {
   static void DeliverMessage(
       const ChromeV8ContextSet::ContextSet& context_set,
       int target_port_id,
-      const base::ListValue& message,
+      const std::string& message,
       content::RenderView* restrict_to_render_view);
 
   // Dispatches the onDisconnect event in response to the channel being closed.
@@ -67,6 +66,6 @@ class MiscellaneousBindings {
       content::RenderView* restrict_to_render_view);
 };
 
-}  // namespace
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_MISCELLANEOUS_BINDINGS_H_

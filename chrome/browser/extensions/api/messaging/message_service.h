@@ -22,7 +22,6 @@ class Profile;
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace content {
@@ -83,7 +82,7 @@ class MessageService : public ProfileKeyedAPI,
                                       const std::string& error_message) {}
 
     // Dispatch a message to this end of the communication.
-    virtual void DispatchOnMessage(scoped_ptr<base::ListValue> message,
+    virtual void DispatchOnMessage(const std::string& message,
                                    int target_port_id) = 0;
 
     // MessagPorts that target extensions will need to adjust their keepalive
@@ -145,12 +144,12 @@ class MessageService : public ProfileKeyedAPI,
                             const std::string& error_message) OVERRIDE;
 
   // Sends a message to the given port.
-  void PostMessage(int port_id, scoped_ptr<base::ListValue> message);
+  void PostMessage(int port_id, const std::string& message);
 
   // NativeMessageProcessHost::Client
   virtual void PostMessageFromNativeProcess(
       int port_id,
-      scoped_ptr<base::ListValue> message) OVERRIDE;
+      const std::string& message) OVERRIDE;
 
  private:
   friend class MockMessageService;
@@ -206,10 +205,10 @@ class MessageService : public ProfileKeyedAPI,
       CloseChannel(port_id, error_message);
   }
   void PendingPostMessage(int port_id,
-                          scoped_ptr<base::ListValue> message,
+                          const std::string& message,
                           extensions::ExtensionHost* host) {
     if (host)
-      PostMessage(port_id, message.Pass());
+      PostMessage(port_id, message);
   }
 
   // Immediate dispatches a disconnect to |source| for |port_id|. Sets source's

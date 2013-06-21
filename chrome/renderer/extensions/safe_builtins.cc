@@ -28,6 +28,7 @@ const char kClassName[] = "extensions::SafeBuiltins";
 // This is a convenient way to save functions that user scripts may clobber.\n"
 const char kScript[] =
     "(function() {\n"
+    "'use strict';\n"
     "native function Apply();\n"
     "native function Save();\n"
     "\n"
@@ -52,16 +53,64 @@ const char kScript[] =
     "  });\n"
     "}\n"
     "\n"
-    "function getSafeBuiltin(builtin) {\n"
-    "  var safe = {};\n"
+    "function getSafeBuiltin(builtin, includePrototype) {\n"
+    "  var safe = function() {\n"
+    "    throw 'Safe objects cannot be called nor constructed. ' +\n"
+    "          'Use $Foo.self() or new $Foo.self() instead.';\n"
+    "  };\n"
+    "  safe.self = builtin;\n"
     "  makeCallable(builtin, safe, true);\n"
-    "  makeCallable(builtin.prototype, safe, false);\n"
+    "  if (includePrototype)\n"
+    "    makeCallable(builtin.prototype, safe, false);\n"
     "  return safe;\n"
     "}\n"
     "\n"
-    "[Array, Function, Object].forEach(function(builtin) {\n"
-    "  Save(builtin.name, getSafeBuiltin(builtin));\n"
+    "// Built-in types taken from the ECMAScript spec. The spec may change,\n"
+    "// though. It would be nice to generate this somehow.\n"
+    "// Note: no JSON, it needs to handle toJSON being overriden so is\n"
+    "//       implemented by hand.\n"
+    "var builtinTypes = [Object, Function, Array, String, Boolean, Number,\n"
+    "                    /*Math,*/ Date, RegExp, /*JSON,*/ Error, EvalError,\n"
+    "                    ReferenceError, SyntaxError, TypeError, URIError];\n"
+    "builtinTypes.forEach(function(builtin) {\n"
+    "  Save(builtin.name, getSafeBuiltin(builtin, true));\n"
     "});\n"
+    "Save('Math', getSafeBuiltin(Math, false));\n"
+    "// Save JSON. This is trickier because extensions can override toJSON in\n"
+    "// incompatible ways, and we need to prevent that.\n"
+    "var builtinToJSONs = builtinTypes.map(function(t) {\n"
+    "  return t.toJSON;\n"
+    "});\n"
+    "var builtinArray = Array;\n"
+    "var builtinJSONStringify = JSON.stringify;\n"
+    "Save('JSON', {\n"
+    "  parse: JSON.parse,\n"
+    "  stringify: function(obj) {\n"
+    "    var savedToJSONs = new builtinArray(builtinTypes.length);\n"
+    "    try {\n"
+    "      for (var i = 0; i < builtinTypes.length; ++i) {\n"
+    "        try {\n"
+    "          if (builtinTypes[i].prototype.toJSON !==\n"
+    "              builtinToJSONs[i]) {\n"
+    "            savedToJSONs[i] = builtinTypes[i].prototype.toJSON;\n"
+    "            builtinTypes[i].prototype.toJSON = builtinToJSONs[i];\n"
+    "          }\n"
+    "        } catch (e) {}\n"
+    "      }\n"
+    "    } catch (e) {}\n"
+    "    try {\n"
+    "      return builtinJSONStringify(obj);\n"
+    "    } finally {\n"
+    "      for (var i = 0; i < builtinTypes.length; ++i) {\n"
+    "        try {\n"
+    "          if (i in savedToJSONs)\n"
+    "            builtinTypes[i].prototype.toJSON = savedToJSONs[i];\n"
+    "        } catch (e) {}\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "});\n"
+    "\n"
     "}());\n";
 
 v8::Local<v8::String> MakeKey(const char* name) {
@@ -155,6 +204,10 @@ v8::Local<v8::Object> SafeBuiltins::GetArray() const {
 
 v8::Local<v8::Object> SafeBuiltins::GetFunction() const {
   return Load("Function", context_->v8_context());
+}
+
+v8::Local<v8::Object> SafeBuiltins::GetJSON() const {
+  return Load("JSON", context_->v8_context());
 }
 
 v8::Local<v8::Object> SafeBuiltins::GetObjekt() const {

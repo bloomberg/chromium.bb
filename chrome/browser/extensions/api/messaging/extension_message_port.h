@@ -9,10 +9,6 @@
 
 class GURL;
 
-namespace base {
-class ListValue;
-}
-
 namespace content {
 class RenderProcessHost;
 }  // namespace content
@@ -34,7 +30,7 @@ class ExtensionMessagePort : public MessageService::MessagePort {
       const GURL& source_url) OVERRIDE;
   virtual void DispatchOnDisconnect(int source_port_id,
                                     const std::string& error_message) OVERRIDE;
-  virtual void DispatchOnMessage(scoped_ptr<base::ListValue> message,
+  virtual void DispatchOnMessage(const std::string& message,
                                  int target_port_id) OVERRIDE;
   virtual void IncrementLazyKeepaliveCount() OVERRIDE;
   virtual void DecrementLazyKeepaliveCount() OVERRIDE;
