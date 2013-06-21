@@ -19,7 +19,15 @@ class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       NON_EXPORTED_BASE(public WebKit::WebFrameClient) {
  public:
-  RenderFrameImpl(RenderViewImpl* render_view, int routing_id);
+  // Creates a new RenderFrame. |render_view| is the RenderView object that this
+  // frame belongs to.
+  static RenderFrameImpl* Create(RenderViewImpl* render_view, int32 routing_id);
+
+  // Used by content_layouttest_support to hook into the creation of
+  // RenderFrameImpls.
+  static void InstallCreateHook(
+      RenderFrameImpl* (*create_render_frame_impl)(RenderViewImpl*, int32));
+
   virtual ~RenderFrameImpl();
 
   // IPC::Sender
@@ -207,6 +215,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // RenderFrameImpl methods
   int routing_id() { return routing_id_; }
+
+ protected:
+  RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
 
  private:
   RenderViewImpl* render_view_;
