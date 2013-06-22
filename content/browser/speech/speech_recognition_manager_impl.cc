@@ -22,6 +22,7 @@
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_manager_base.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/speech/speech_recognizer_impl_android.h"
@@ -568,10 +569,20 @@ SpeechRecognitionManagerImpl::GetSessionState(int session_id) const {
 void SpeechRecognitionManagerImpl::SessionStart(const Session& session) {
   DCHECK_EQ(primary_session_id_, session.id);
   const MediaStreamDevices& devices = session.context.devices;
-  DCHECK_EQ(1u, devices.size());
-  DCHECK_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, devices.front().type);
+  std::string device_id;
+  if (devices.empty()) {
+    // From the ask_user=false path, use the default device.
+    // TODO(xians): Abort the session after we do not need to support this path
+    // anymore.
+    device_id = media::AudioManagerBase::kDefaultDeviceId;
+  } else {
+    // From the ask_user=true path, use the selected device.
+    DCHECK_EQ(1u, devices.size());
+    DCHECK_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, devices.front().type);
+    device_id = devices.front().id;
+  }
 
-  session.recognizer->StartRecognition(devices.front().id);
+  session.recognizer->StartRecognition(device_id);
 }
 
 void SpeechRecognitionManagerImpl::SessionAbort(const Session& session) {
