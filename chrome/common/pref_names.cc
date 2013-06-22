@@ -955,8 +955,8 @@ const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
 // Boolean controlling whether SafeSearch is mandatory for Google Web Searches.
 const char kForceSafeSearch[] = "settings.force_safesearch";
 
-#if defined(TOOLKIT_GTK)
-// GTK specific preference on whether we should match the system GTK theme.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Linux specific preference on whether we should match the system theme.
 const char kUsesSystemTheme[] = "extensions.theme.use_system";
 #endif
 const char kCurrentThemePackFilename[] = "extensions.theme.pack";

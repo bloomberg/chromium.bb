@@ -194,8 +194,8 @@ class BrowserOptionsHandler
 
   void ObserveThemeChanged();
   void ThemesReset(const base::ListValue* args);
-#if defined(TOOLKIT_GTK)
-  void ThemesSetGTK(const base::ListValue* args);
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  void ThemesSetNative(const base::ListValue* args);
 #endif
 
 #if defined(OS_CHROMEOS)

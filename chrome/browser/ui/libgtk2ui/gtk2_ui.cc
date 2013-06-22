@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/nix/mime_util_xdg.h"
@@ -342,8 +343,30 @@ bool Gtk2UI::GetColor(int id, SkColor* color) const {
   return false;
 }
 
+bool Gtk2UI::HasCustomImage(int id) const {
+  return IsOverridableImage(id);
+}
+
 ui::NativeTheme* Gtk2UI::GetNativeTheme() const {
   return NativeThemeGtk2::instance();
+}
+
+bool Gtk2UI::GetDefaultUsesSystemTheme() const {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+
+  switch (base::nix::GetDesktopEnvironment(env.get())) {
+    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
+    case base::nix::DESKTOP_ENVIRONMENT_UNITY:
+    case base::nix::DESKTOP_ENVIRONMENT_XFCE:
+      return true;
+    case base::nix::DESKTOP_ENVIRONMENT_KDE3:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE4:
+    case base::nix::DESKTOP_ENVIRONMENT_OTHER:
+      return false;
+  }
+  // Unless GetDesktopEnvironment() badly misbehaves, this should never happen.
+  NOTREACHED();
+  return false;
 }
 
 ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(

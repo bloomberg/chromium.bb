@@ -114,10 +114,6 @@
 #include "chrome/installer/util/auto_launch_util.h"
 #endif  // defined(OS_WIN)
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#endif  // defined(TOOLKIT_GTK)
-
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
@@ -336,9 +332,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
     { "translateEnableTranslate",
       IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE },
-#if defined(TOOLKIT_GTK)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     { "showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS },
-    { "themesGTKButton", IDS_THEMES_GTK_BUTTON },
+    { "themesNativeButton", IDS_THEMES_GTK_BUTTON },
     { "themesSetClassic", IDS_THEMES_SET_CLASSIC },
 #else
     { "themes", IDS_THEMES_GROUP_NAME },
@@ -578,10 +574,10 @@ void BrowserOptionsHandler::RegisterMessages() {
       "themesReset",
       base::Bind(&BrowserOptionsHandler::ThemesReset,
                  base::Unretained(this)));
-#if defined(TOOLKIT_GTK)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
-      "themesSetGTK",
-      base::Bind(&BrowserOptionsHandler::ThemesSetGTK,
+      "themesSetNative",
+      base::Bind(&BrowserOptionsHandler::ThemesSetNative,
                  base::Unretained(this)));
 #endif
   web_ui()->RegisterMessageCallback(
@@ -1319,18 +1315,19 @@ void BrowserOptionsHandler::CancelProfileRegistration(bool user_initiated) {
 void BrowserOptionsHandler::ObserveThemeChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
   bool profile_is_managed = ManagedUserService::ProfileIsManaged(profile);
-#if defined(TOOLKIT_GTK)
-  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
-  bool is_gtk_theme = theme_service->UsingNativeTheme();
-  base::FundamentalValue gtk_enabled(!is_gtk_theme && !profile_is_managed);
-  web_ui()->CallJavascriptFunction("BrowserOptions.setGtkThemeButtonEnabled",
-                                   gtk_enabled);
-#else
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
-  bool is_gtk_theme = false;
+  bool is_native_theme = false;
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  is_native_theme = theme_service->UsingNativeTheme();
+  base::FundamentalValue native_theme_enabled(!is_native_theme &&
+                                              !profile_is_managed);
+  web_ui()->CallJavascriptFunction("BrowserOptions.setNativeThemeButtonEnabled",
+                                   native_theme_enabled);
 #endif
 
-  bool is_classic_theme = !is_gtk_theme && theme_service->UsingDefaultTheme();
+  bool is_classic_theme = !is_native_theme &&
+                          theme_service->UsingDefaultTheme();
   base::FundamentalValue enabled(!is_classic_theme && !profile_is_managed);
   web_ui()->CallJavascriptFunction("BrowserOptions.setThemesResetButtonEnabled",
                                    enabled);
@@ -1344,8 +1341,8 @@ void BrowserOptionsHandler::ThemesReset(const ListValue* args) {
   ThemeServiceFactory::GetForProfile(profile)->UseDefaultTheme();
 }
 
-#if defined(TOOLKIT_GTK)
-void BrowserOptionsHandler::ThemesSetGTK(const ListValue* args) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+void BrowserOptionsHandler::ThemesSetNative(const ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_GtkThemeSet"));
   Profile* profile = Profile::FromWebUI(web_ui());
   ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();

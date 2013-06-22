@@ -32,10 +32,6 @@
 #include "ui/base/win/shell.h"
 #endif
 
-#if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
-#include "ui/linux_ui/linux_ui.h"
-#endif
-
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #endif
@@ -123,12 +119,6 @@ gfx::Image ThemeService::GetImageNamed(int id) const {
   if (theme_pack_.get())
     image = theme_pack_->GetImageNamed(id);
 
-#if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
-  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
-  if (image.IsEmpty() && linux_ui)
-    image = linux_ui->GetThemeImageNamed(id);
-#endif
-
   if (image.IsEmpty())
     image = rb_.GetNativeImageNamed(id);
 
@@ -158,12 +148,6 @@ SkColor ThemeService::GetColor(int id) const {
   SkColor color;
   if (theme_pack_.get() && theme_pack_->GetColor(id, &color))
     return color;
-
-#if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
-  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
-  if (linux_ui && linux_ui->GetColor(id, &color))
-    return color;
-#endif
 
   // For backward compat with older themes, some newer colors are generated from
   // older ones if they are missing.

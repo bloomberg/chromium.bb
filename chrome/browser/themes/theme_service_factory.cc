@@ -18,6 +18,11 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #endif
 
+#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "chrome/browser/themes/theme_service_aurax11.h"
+#include "ui/linux_ui/linux_ui.h"
+#endif
+
 // static
 ThemeService* ThemeServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<ThemeService*>(
@@ -51,6 +56,8 @@ BrowserContextKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
   ThemeService* provider = NULL;
 #if defined(TOOLKIT_GTK)
   provider = new GtkThemeService;
+#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  provider = new ThemeServiceAuraX11;
 #else
   provider = new ThemeService;
 #endif
@@ -61,10 +68,20 @@ BrowserContextKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
 
 void ThemeServiceFactory::RegisterUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  bool default_uses_system_theme = false;
+
 #if defined(TOOLKIT_GTK)
+  default_uses_system_theme = GtkThemeService::DefaultUsesSystemTheme();
+#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
+  if (linux_ui)
+    default_uses_system_theme = linux_ui->GetDefaultUsesSystemTheme();
+#endif
+
   registry->RegisterBooleanPref(
       prefs::kUsesSystemTheme,
-      GtkThemeService::DefaultUsesSystemTheme(),
+      default_uses_system_theme,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
   registry->RegisterFilePathPref(

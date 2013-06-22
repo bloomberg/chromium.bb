@@ -31,14 +31,14 @@
       <button id="set-wallpaper" i18n-content="setWallpaper"
           guest-visibility="disabled"></button>
 </if>
-<if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+<if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx">
       <button id="themes-gallery" i18n-content="themesGallery"></button>
-      <button id="themes-GTK-button"
-          i18n-content="themesGTKButton"></button>
+      <button id="themes-native-button"
+          i18n-content="themesNativeButton"></button>
       <button id="themes-reset"
           i18n-content="themesSetClassic"></button>
 </if>
-<if expr="pp_ifdef('toolkit_views') or is_win or is_macosx">
+<if expr="pp_ifdef('chromeos') or is_win or is_macosx">
       <button id="themes-gallery" i18n-content="themesGallery"></button>
       <button id="themes-reset" i18n-content="themesReset"></button>
 </if>

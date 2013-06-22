@@ -619,6 +619,10 @@ bool DesktopRootWindowHostX11::ShouldUseNativeFrame() {
 }
 
 void DesktopRootWindowHostX11::FrameTypeChanged() {
+  // Replace the frame and layout the contents. Even though we don't have a
+  // swapable glass frame like on Windows, we still replace the frame because
+  // the button assets don't update otherwise.
+  native_widget_delegate_->AsWidget()->non_client_view()->UpdateFrame(true);
 }
 
 NonClientFrameView* DesktopRootWindowHostX11::CreateNonClientFrameView() {

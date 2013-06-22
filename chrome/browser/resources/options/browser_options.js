@@ -235,9 +235,9 @@ cr.define('options', function() {
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
         };
 
-        if ($('themes-GTK-button')) {
-          $('themes-GTK-button').onclick = function(event) {
-            chrome.send('themesSetGTK');
+        if ($('themes-native-button')) {
+          $('themes-native-button').onclick = function(event) {
+            chrome.send('themesSetNative');
           };
         }
       }
@@ -1114,9 +1114,10 @@ cr.define('options', function() {
              'There should always be a current profile, but none found.');
     },
 
-    setGtkThemeButtonEnabled_: function(enabled) {
-      if (!cr.isChromeOS && navigator.platform.match(/linux|BSD/i))
-        $('themes-GTK-button').disabled = !enabled;
+    setNativeThemeButtonEnabled_: function(enabled) {
+      var button = $('themes-native-button');
+      if (button)
+        button.disabled = !enabled;
     },
 
     setThemesResetButtonEnabled_: function(enabled) {
@@ -1465,7 +1466,7 @@ cr.define('options', function() {
     'setAutoOpenFileTypesDisplayed',
     'setBluetoothState',
     'setFontSize',
-    'setGtkThemeButtonEnabled',
+    'setNativeThemeButtonEnabled',
     'setHighContrastCheckboxState',
     'setMetricsReportingCheckboxState',
     'setMetricsReportingSettingVisibility',

@@ -42,7 +42,9 @@ class Gtk2UI : public ui::LinuxUI {
   virtual bool UseNativeTheme() const OVERRIDE;
   virtual gfx::Image GetThemeImageNamed(int id) const OVERRIDE;
   virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
+  virtual bool HasCustomImage(int id) const OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
+  virtual bool GetDefaultUsesSystemTheme() const OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;
