@@ -82,7 +82,7 @@
             ],
             'include_dirs': [
                 '<(DEPTH)',
-                '<(source_dir)/WebKit/chromium/public',
+                '../../../public/web',
                 '../chromium/TestRunner/public',
                 '../chromium/TestRunner/src',
                 '../../../Source',
@@ -134,7 +134,7 @@
                         '<(DEPTH)/build/linux/system.gyp:gtk',
                     ],
                     'include_dirs': [
-                        '<(source_dir)/WebKit/chromium/public/gtk',
+                        '../../../public/web/gtk',
                     ],
                 }],
                 ['OS!="win"', {

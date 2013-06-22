@@ -59,7 +59,7 @@
                 'tests/RunAllTests.cpp',
             ],
             'include_dirs': [
-                'public',
+                '../../../public/web',
                 'src',
             ],
             'conditions': [
@@ -83,7 +83,7 @@
                     'conditions': [
                         ['toolkit_uses_gtk == 1', {
                             'include_dirs': [
-                                'public/gtk',
+                                '../../../public/web/gtk',
                             ],
                             'variables': {
                             # FIXME: Enable warnings on other platforms.
@@ -112,7 +112,7 @@
                 }],
                 ['OS=="mac"', {
                     'include_dirs': [
-                        'public/mac',
+                        '../../../public/web/mac',
                     ],
                 }],
                 [ 'os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and linux_use_tcmalloc==1', {
