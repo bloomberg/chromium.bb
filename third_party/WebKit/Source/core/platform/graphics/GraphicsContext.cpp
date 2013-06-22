@@ -39,6 +39,7 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "weborigin/KURL.h"
 #include "wtf/Assertions.h"
@@ -1058,10 +1059,28 @@ void GraphicsContext::drawBitmapRect(const SkBitmap& bitmap, const SkRect* src,
     if (paintingDisabled())
         return;
 
-    m_canvas->drawBitmapRectToRect(bitmap, src, dst, paint);
+    ASSERT(!src || (src->left() >= 0 && src->top() >= 0 && src->right() <= bitmap.width() && src->bottom() <= bitmap.height()));
 
-    if (m_trackOpaqueRegion)
-        m_opaqueRegion.didDrawRect(this, dst, *paint, &bitmap);
+    if (m_state->m_shouldClampToSourceRect) {
+        m_canvas->drawBitmapRectToRect(bitmap, src, dst, paint);
+
+        if (m_trackOpaqueRegion)
+            m_opaqueRegion.didDrawRect(this, dst, *paint, &bitmap);
+    } else {
+        SkShader* bitmapShader = SkShader::CreateBitmapShader(bitmap, SkShader::kClamp_TileMode, SkShader::kClamp_TileMode);
+
+        SkMatrix matrix;
+        matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
+        bitmapShader->setLocalMatrix(matrix);
+
+        SkPaint tmpPaint(*paint);
+        tmpPaint.setShader(bitmapShader);
+
+        m_canvas->drawRect(dst, tmpPaint);
+
+        if (m_trackOpaqueRegion)
+            m_opaqueRegion.didDrawRect(this, dst, tmpPaint, &bitmap);
+    }
 }
 
 void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint)

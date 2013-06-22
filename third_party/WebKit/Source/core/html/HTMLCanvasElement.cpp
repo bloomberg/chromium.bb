@@ -503,6 +503,8 @@ void HTMLCanvasElement::createImageBuffer() const
     m_imageBuffer = ImageBuffer::create(size(), m_deviceScaleFactor, renderingMode, opacityMode);
     if (!m_imageBuffer)
         return;
+
+    m_imageBuffer->context()->setShouldClampToSourceRect(false);
     m_imageBuffer->context()->setImageInterpolationQuality(DefaultInterpolationQuality);
     if (document()->settings() && !document()->settings()->antialiased2dCanvasEnabled())
         m_imageBuffer->context()->setShouldAntialias(false);
