@@ -5029,7 +5029,7 @@ void RenderLayer::calculateRects(const ClipRectsContext& clipRectsContext, const
             layerBoundsWithVisualOverflow.moveBy(offset);
             if (this != clipRectsContext.rootLayer || clipRectsContext.respectOverflowClip == RespectOverflowClip)
                 backgroundRect.intersect(layerBoundsWithVisualOverflow);
-        } else {
+        } else if (renderer()->hasOverflowClip()) {
             // Shift the bounds to be for our region only.
             LayoutRect bounds = renderBox()->borderBoxRectInRegion(clipRectsContext.region);
             bounds.moveBy(offset);
