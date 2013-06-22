@@ -87,7 +87,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       write_blocked_(false),
       debug_visitor_(NULL),
       packet_creator_(guid_, &framer_, random_generator_, is_server),
-      packet_generator_(this, &packet_creator_),
+      packet_generator_(this, NULL, &packet_creator_),
       idle_network_timeout_(
           QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs)),
       overall_connection_timeout_(QuicTime::Delta::Infinite()),
@@ -1111,7 +1111,7 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
 
   int error;
   QuicTime now = clock_->Now();
-  if (helper_->WritePacketToWire(*encrypted, &error) == -1) {
+  if (WritePacketToWire(sequence_number, level, *encrypted, &error) == -1) {
     if (helper_->IsWriteBlocked(error)) {
       // TODO(satyashekhar): It might be more efficient (fewer system calls), if
       // all connections share this variable i.e this becomes a part of
@@ -1154,6 +1154,20 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
 
   delete packet;
   return true;
+}
+
+int QuicConnection::WritePacketToWire(QuicPacketSequenceNumber sequence_number,
+                                      EncryptionLevel level,
+                                      const QuicEncryptedPacket& packet,
+                                      int* error) {
+  int bytes_written = helper_->WritePacketToWire(packet, error);
+  if (debug_visitor_) {
+    // WritePacketToWire returned -1, then |error| will be populated with
+    // a NetErrorCode, which we want to pass along to the visitor.
+    debug_visitor_->OnPacketSent(sequence_number, level, packet,
+                                 bytes_written == -1 ? *error : bytes_written);
+  }
+  return bytes_written;
 }
 
 bool QuicConnection::OnSerializedPacket(

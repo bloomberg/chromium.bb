@@ -13,8 +13,10 @@ using base::StringPiece;
 namespace net {
 
 QuicPacketGenerator::QuicPacketGenerator(DelegateInterface* delegate,
+                                         DebugDelegateInterface* debug_delegate,
                                          QuicPacketCreator* creator)
     : delegate_(delegate),
+      debug_delegate_(debug_delegate),
       packet_creator_(creator),
       should_flush_(true),
       should_send_ack_(false),
@@ -77,7 +79,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     QuicFrame frame;
     size_t bytes_consumed = packet_creator_->CreateStreamFrame(
         id, data, offset + total_bytes_consumed, fin, &frame);
-    bool success = packet_creator_->AddSavedFrame(frame);
+    bool success = AddFrame(frame);
     DCHECK(success);
 
     total_bytes_consumed += bytes_consumed;
@@ -158,7 +160,7 @@ bool QuicPacketGenerator::HasPendingFrames() const {
 bool QuicPacketGenerator::AddNextPendingFrame() {
   if (should_send_ack_) {
     pending_ack_frame_.reset(delegate_->CreateAckFrame());
-    if (!packet_creator_->AddSavedFrame(QuicFrame(pending_ack_frame_.get()))) {
+    if (!AddFrame(QuicFrame(pending_ack_frame_.get()))) {
       // packet was full
       return false;
     }
@@ -168,8 +170,7 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
 
   if (should_send_feedback_) {
     pending_feedback_frame_.reset(delegate_->CreateFeedbackFrame());
-    if (!packet_creator_->AddSavedFrame(QuicFrame(
-            pending_feedback_frame_.get()))) {
+    if (!AddFrame(QuicFrame(pending_feedback_frame_.get()))) {
       // packet was full
       return false;
     }
@@ -178,12 +179,20 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
   }
 
   DCHECK(!queued_control_frames_.empty());
-  if (!packet_creator_->AddSavedFrame(queued_control_frames_.back())) {
+  if (!AddFrame(queued_control_frames_.back())) {
     // packet was full
     return false;
   }
   queued_control_frames_.pop_back();
   return true;
+}
+
+bool QuicPacketGenerator::AddFrame(const QuicFrame& frame) {
+  bool success = packet_creator_->AddSavedFrame(frame);
+  if (success && debug_delegate_) {
+    debug_delegate_->OnFrameAddedToPacket(frame);
+  }
+  return success;
 }
 
 void QuicPacketGenerator::SerializeAndSendPacket() {

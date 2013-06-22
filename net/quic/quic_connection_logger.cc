@@ -25,6 +25,23 @@ base::Value* NetLogQuicPacketCallback(const IPEndPoint* self_address,
   return dict;
 }
 
+base::Value* NetLogQuicPacketSentCallback(
+    QuicPacketSequenceNumber sequence_number,
+    EncryptionLevel level,
+    size_t packet_size,
+    int rv,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("encryption_level", level);
+  dict->SetString("packet_sequence_number",
+                  base::Uint64ToString(sequence_number));
+  dict->SetInteger("size", packet_size);
+  if (rv < 0) {
+    dict->SetInteger("net_error", rv);
+  }
+  return dict;
+}
+
 base::Value* NetLogQuicPacketHeaderCallback(const QuicPacketHeader* header,
                                             NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
@@ -137,7 +154,56 @@ QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
 QuicConnectionLogger::~QuicConnectionLogger() {
 }
 
-  // QuicConnectionDebugVisitorInterface
+void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
+  switch (frame.type) {
+    case PADDING_FRAME:
+      break;
+    case STREAM_FRAME:
+      net_log_.AddEvent(
+          NetLog::TYPE_QUIC_SESSION_STREAM_FRAME_SENT,
+          base::Bind(&NetLogQuicStreamFrameCallback, frame.stream_frame));
+      break;
+    case ACK_FRAME:
+      net_log_.AddEvent(
+          NetLog::TYPE_QUIC_SESSION_ACK_FRAME_SENT,
+          base::Bind(&NetLogQuicAckFrameCallback, frame.ack_frame));
+      break;
+    case CONGESTION_FEEDBACK_FRAME:
+      net_log_.AddEvent(
+          NetLog::TYPE_QUIC_SESSION_CONGESTION_FEEDBACK_FRAME_SENT,
+          base::Bind(&NetLogQuicCongestionFeedbackFrameCallback,
+                     frame.congestion_feedback_frame));
+      break;
+    case RST_STREAM_FRAME:
+      net_log_.AddEvent(
+          NetLog::TYPE_QUIC_SESSION_RST_STREAM_FRAME_SENT,
+          base::Bind(&NetLogQuicRstStreamFrameCallback,
+                     frame.rst_stream_frame));
+      break;
+    case CONNECTION_CLOSE_FRAME:
+      net_log_.AddEvent(
+          NetLog::TYPE_QUIC_SESSION_CONNECTION_CLOSE_FRAME_SENT,
+          base::Bind(&NetLogQuicConnectionCloseFrameCallback,
+                     frame.connection_close_frame));
+      break;
+    case GOAWAY_FRAME:
+      break;
+    default:
+      DCHECK(false) << "Illegal frame type: " << frame.type;
+  }
+}
+
+void QuicConnectionLogger::OnPacketSent(
+    QuicPacketSequenceNumber sequence_number,
+    EncryptionLevel level,
+    const QuicEncryptedPacket& packet,
+    int rv) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
+      base::Bind(&NetLogQuicPacketSentCallback, sequence_number, level,
+                 packet.length(), rv));
+}
+
 void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
                                             const IPEndPoint& peer_address,
                                             const QuicEncryptedPacket& packet) {

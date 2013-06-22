@@ -1279,6 +1279,15 @@ EVENT_TYPE(QUIC_SESSION_CLOSE_ON_ERROR)
 //   }
 EVENT_TYPE(QUIC_SESSION_PACKET_RECEIVED)
 
+// Session sent a QUIC packet.
+//   {
+//     "encryption_level": <The EncryptionLevel of the packet>
+//     "packet_sequence_number": <The packet's full 64-bit sequence number,
+//                                as a base-10 string.>,
+//     "size": <The size of the packet in bytes>
+//   }
+EVENT_TYPE(QUIC_SESSION_PACKET_SENT)
+
 // Session received a QUIC packet header for a valid packet.
 //   {
 //     "guid": <The 64-bit GUID for this connection, as a base-10 string>,
@@ -1299,6 +1308,15 @@ EVENT_TYPE(QUIC_SESSION_PACKET_HEADER_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_STREAM_FRAME_RECEIVED)
 
+// Session sent a STREAM frame.
+//   {
+//     "stream_id": <The id of the stream which this data is for>,
+//     "fin": <True if this is the final data set by the peer on this stream>,
+//     "offset": <Offset in the byte stream where this data starts>,
+//     "length": <Length of the data in this frame>,
+//   }
+EVENT_TYPE(QUIC_SESSION_STREAM_FRAME_SENT)
+
 // Session received an ACK frame.
 //   {
 //     "sent_info": <Details of packet sent by the peer>
@@ -1317,13 +1335,39 @@ EVENT_TYPE(QUIC_SESSION_STREAM_FRAME_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_ACK_FRAME_RECEIVED)
 
+// Session sent an ACK frame.
+//   {
+//     "sent_info": <Details of packet sent by the peer>
+//       {
+//         "least_unacked": <Lowest sequence number of a packet sent by the peer
+//                           for which it has not received an ACK>,
+//       }
+//     "received_info": <Details of packet received by the peer>
+//       {
+//         "largest_observed": <The largest sequence number of a packet received
+//                               by (or inferred by) the peer>,
+//         "missing": <List of sequence numbers of packets lower than
+//                     largest_observed which have not been received by the
+//                     peer>,
+//       }
+//   }
+EVENT_TYPE(QUIC_SESSION_ACK_FRAME_SENT)
+
 // Session recevied a RST_STREAM frame.
 //   {
 //     "offset": <Offset in the byte stream which triggered the reset>,
-//     "error_code": <QuicErrorCode in the frame>,
+//     "quic_rst_stream_error": <QuicRstStreamErrorCode in the frame>,
 //     "details": <Human readable description>,
 //   }
 EVENT_TYPE(QUIC_SESSION_RST_STREAM_FRAME_RECEIVED)
+
+// Session sent a RST_STREAM frame.
+//   {
+//     "offset": <Offset in the byte stream which triggered the reset>,
+//     "quic_rst_stream_error": <QuicRstStreamErrorCode in the frame>,
+//     "details": <Human readable description>,
+//   }
+EVENT_TYPE(QUIC_SESSION_RST_STREAM_FRAME_SENT)
 
 // Session received a CONGESTION_FEEDBACK frame.
 //   {
@@ -1346,12 +1390,40 @@ EVENT_TYPE(QUIC_SESSION_RST_STREAM_FRAME_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_CONGESTION_FEEDBACK_FRAME_RECEIVED)
 
+// Session received a CONGESTION_FEEDBACK frame.
+//   {
+//     "type": <The specific type of feedback being provided>,
+//     Other per-feedback type details:
+//
+//     for InterArrival:
+//     "accumulated_number_of_lost_packets": <Total number of lost packets
+//                                            over the life of this session>,
+//     "received_packets": <List of strings of the form:
+//                          <sequence_number>@<receive_time_in_ms>>,
+//
+//     for FixRate:
+//     "bitrate_in_bytes_per_second": <The configured bytes per second>,
+//
+//     for TCP:
+//     "accumulated_number_of_lost_packets": <Total number of lost packets
+//                                            over the life of this session>,
+//     "receive_window": <Number of bytes in the receive window>,
+//   }
+EVENT_TYPE(QUIC_SESSION_CONGESTION_FEEDBACK_FRAME_SENT)
+
 // Session received a CONNECTION_CLOSE frame.
 //   {
-//     "error_code": <QuicErrorCode in the frame>,
+//     "quic_error": <QuicErrorCode in the frame>,
 //     "details": <Human readable description>,
 //   }
 EVENT_TYPE(QUIC_SESSION_CONNECTION_CLOSE_FRAME_RECEIVED)
+
+// Session received a CONNECTION_CLOSE frame.
+//   {
+//     "quic_error": <QuicErrorCode in the frame>,
+//     "details": <Human readable description>,
+//   }
+EVENT_TYPE(QUIC_SESSION_CONNECTION_CLOSE_FRAME_SENT)
 
 // ------------------------------------------------------------------------
 // QuicHttpStream

@@ -82,9 +82,16 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 // Interface which gets callbacks from the QuicConnection at interesting
 // points.  Implementations must not mutate the state of the connection
 // as a result of these callbacks.
-class NET_EXPORT_PRIVATE QuicConnectionDebugVisitorInterface {
+class NET_EXPORT_PRIVATE QuicConnectionDebugVisitorInterface
+    : public QuicPacketGenerator::DebugDelegateInterface {
  public:
   virtual ~QuicConnectionDebugVisitorInterface() {}
+
+  // Called when a packet has been sent.
+  virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
+                            EncryptionLevel level,
+                            const QuicEncryptedPacket& packet,
+                            int rv) = 0;
 
   // Called when a packet has been received, but before it is
   // validated or parsed.
@@ -306,6 +313,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   }
   void set_debug_visitor(QuicConnectionDebugVisitorInterface* debug_visitor) {
     debug_visitor_ = debug_visitor;
+    packet_generator_.set_debug_delegate(debug_visitor);
   }
   const IPEndPoint& self_address() const { return self_address_; }
   const IPEndPoint& peer_address() const { return peer_address_; }
@@ -428,6 +436,11 @@ class NET_EXPORT_PRIVATE QuicConnection
                    QuicPacket* packet,
                    HasRetransmittableData retransmittable,
                    Force force);
+
+  int WritePacketToWire(QuicPacketSequenceNumber sequence_number,
+                        EncryptionLevel level,
+                        const QuicEncryptedPacket& packet,
+                        int* error);
 
   // Make sure an ack we got from our peer is sane.
   bool ValidateAckFrame(const QuicAckFrame& incoming_ack);

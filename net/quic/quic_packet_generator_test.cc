@@ -79,7 +79,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
   QuicPacketGeneratorTest()
       : framer_(kQuicVersion1, QuicTime::Zero(), false),
         creator_(42, &framer_, &random_, false),
-        generator_(&delegate_, &creator_),
+        generator_(&delegate_, NULL, &creator_),
         packet_(0, NULL, 0, NULL),
         packet2_(0, NULL, 0, NULL),
         packet3_(0, NULL, 0, NULL),
