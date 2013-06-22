@@ -5,6 +5,7 @@
 #include "cc/resources/tile_manager.h"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "base/bind.h"
@@ -35,6 +36,10 @@ inline TileManagerBin BinFromTilePriority(const TilePriority& prio,
   // we're prioritizing checkerboard prevention.
   bool can_be_in_now_bin = tree_priority == SMOOTHNESS_TAKES_PRIORITY ||
                            prio.resolution != LOW_RESOLUTION;
+
+  if (prio.distance_to_visible_in_pixels ==
+      std::numeric_limits<float>::infinity())
+    return NEVER_BIN;
 
   if (can_be_in_now_bin && prio.time_to_visible_in_seconds == 0)
     return NOW_BIN;
@@ -512,9 +517,24 @@ void TileManager::AssignGpuMemoryToTiles() {
     for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
       Tile* tile = *it;
       ManagedTileState& mts = tile->managed_state();
+      ManagedTileState::TileVersion& tile_version =
+          mts.tile_versions[mts.raster_mode];
       if (mts.tree_bin[PENDING_TREE] == NEVER_BIN &&
           mts.tree_bin[ACTIVE_TREE] != NOW_BIN) {
         size_t bytes_that_can_be_freed = 0;
+
+        // If the tile is in the to-rasterize list, but it has no task,
+        // then it means that we have assigned memory for it.
+        TileVector::iterator raster_it =
+            std::find(tiles_that_need_to_be_rasterized_.begin(),
+                      tiles_that_need_to_be_rasterized_.end(),
+                      tile);
+        if (raster_it != tiles_that_need_to_be_rasterized_.end() &&
+            tile_version.raster_task_.is_null()) {
+          bytes_that_can_be_freed += tile->bytes_consumed_if_allocated();
+        }
+
+        // Also consider all of the completed resources for freeing.
         for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
           ManagedTileState::TileVersion& tile_version =
               mts.tile_versions[mode];
@@ -524,16 +544,13 @@ void TileManager::AssignGpuMemoryToTiles() {
           }
         }
 
+        // If we can free anything, then do so.
         if (bytes_that_can_be_freed > 0) {
           FreeResourcesForTile(tile);
           bytes_freed += bytes_that_can_be_freed;
           mts.tile_versions[mts.raster_mode].set_rasterize_on_demand();
-          TileVector::iterator it = std::find(
-                  tiles_that_need_to_be_rasterized_.begin(),
-                  tiles_that_need_to_be_rasterized_.end(),
-                  tile);
-          if (it != tiles_that_need_to_be_rasterized_.end())
-              tiles_that_need_to_be_rasterized_.erase(it);
+          if (raster_it != tiles_that_need_to_be_rasterized_.end())
+              tiles_that_need_to_be_rasterized_.erase(raster_it);
         }
       }
 

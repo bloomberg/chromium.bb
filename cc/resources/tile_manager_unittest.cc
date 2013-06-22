@@ -142,7 +142,7 @@ TEST_F(TileManagerTest, EnoughMemoryAllowAnything) {
   EXPECT_EQ(3, AssignedMemoryCounts(active_now));
   EXPECT_EQ(3, AssignedMemoryCounts(pending_now));
   EXPECT_EQ(3, AssignedMemoryCounts(active_pending_soon));
-  EXPECT_EQ(1, AssignedMemoryCounts(never_bin));
+  EXPECT_EQ(0, AssignedMemoryCounts(never_bin));
 
   active_now.clear();
   pending_now.clear();
@@ -283,6 +283,27 @@ TEST_F(TileManagerTest, TotalOOMMemoryToPending) {
   Initialize(4, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
   TileVector active_tree_tiles =
       CreateTiles(5, TilePriorityForEventualBin(), TilePriority());
+  TileVector pending_tree_tiles =
+      CreateTiles(5, TilePriority(), TilePriorityForNowBin());
+
+  tile_manager()->ManageTiles();
+
+  EXPECT_EQ(0, AssignedMemoryCounts(active_tree_tiles));
+  EXPECT_EQ(4, AssignedMemoryCounts(pending_tree_tiles));
+
+  pending_tree_tiles.clear();
+  active_tree_tiles.clear();
+  TearDown();
+}
+
+TEST_F(TileManagerTest, TotalOOMActiveSoonMemoryToPending) {
+  // 5 tiles on active tree soon bin, 5 tiles on pending tree now bin,
+  // but only enough memory for 4 tiles. The result is 4 pending tree tiles
+  // get memory, and none of the active tree tiles get memory.
+
+  Initialize(4, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector active_tree_tiles =
+      CreateTiles(5, TilePriorityForSoonBin(), TilePriority());
   TileVector pending_tree_tiles =
       CreateTiles(5, TilePriority(), TilePriorityForNowBin());
 
