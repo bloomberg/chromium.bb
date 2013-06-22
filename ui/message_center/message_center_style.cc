@@ -59,7 +59,7 @@ gfx::Size GetImageSizeForWidth(int width, const gfx::Size& image_size) {
   return size;
 }
 
-const size_t kNotificationMaximumItems = 8;
+const size_t kNotificationMaximumItems = 5;
 
 // Timing.
 const int kAutocloseDefaultDelaySeconds = 8;
