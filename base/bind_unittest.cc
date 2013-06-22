@@ -211,6 +211,10 @@ int FunctionWithWeakFirstParam(WeakPtr<NoRef> o, int n) {
   return n;
 }
 
+int FunctionWithScopedRefptrFirstParam(const scoped_refptr<HasRef>& o, int n) {
+  return n;
+}
+
 void TakesACallback(const Closure& callback) {
   callback.Run();
 }
@@ -661,6 +665,21 @@ TEST_F(BindTest, ConstRef) {
   EXPECT_EQ(0, all_const_ref_cb.Run());
   EXPECT_EQ(0, copies);
   EXPECT_EQ(0, assigns);
+}
+
+TEST_F(BindTest, ScopedRefptr) {
+  // BUG: The scoped_refptr should cause the only AddRef()/Release() pair. But
+  // due to a bug in base::Bind(), there's an extra call when invoking the
+  // callback.
+  // https://code.google.com/p/chromium/issues/detail?id=251937
+  EXPECT_CALL(has_ref_, AddRef()).Times(2);
+  EXPECT_CALL(has_ref_, Release()).Times(2);
+
+  const scoped_refptr<StrictMock<HasRef> > refptr(&has_ref_);
+
+  Callback<int(void)> scoped_refptr_const_ref_cb =
+      Bind(&FunctionWithScopedRefptrFirstParam, base::ConstRef(refptr), 1);
+  EXPECT_EQ(1, scoped_refptr_const_ref_cb.Run());
 }
 
 // Test Owned() support.
