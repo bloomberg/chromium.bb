@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   EXPECT_EQ(TaskManagerModel::TASK_PENDING, model->update_state_);
 
   // Now show the task manager and wait for it to be ready
-  chrome::ShowTaskManager(browser(), false);
+  chrome::ShowTaskManager(browser());
 
   EXPECT_EQ(2, model->update_requests_);
   EXPECT_EQ(TaskManagerModel::TASK_PENDING, model->update_state_);

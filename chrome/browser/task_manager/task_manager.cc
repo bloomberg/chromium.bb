@@ -15,8 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/background/background_contents_service.h"
-#include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -1543,36 +1541,6 @@ void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
   params.disposition = NEW_FOREGROUND_TAB;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
-}
-
-// static
-int TaskManager::GetBackgroundPageCount() {
-  int count = 0;
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager)  // Null when running unit tests.
-    return count;
-  std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
-  for (std::vector<Profile*>::const_iterator iter = profiles.begin();
-       iter != profiles.end();
-       ++iter) {
-    Profile* profile = *iter;
-    // Count the number of Background Contents (background pages for hosted
-    // apps). Incognito windows do not support hosted apps, so just check the
-    // main profile.
-    BackgroundContentsService* background_contents_service =
-        BackgroundContentsServiceFactory::GetForProfile(profile);
-    if (background_contents_service)
-      count += background_contents_service->GetBackgroundContents().size();
-
-    // Count the number of extensions with background pages (including
-    // incognito).
-    count += CountExtensionBackgroundPagesForProfile(profile);
-    if (profile->HasOffTheRecordProfile()) {
-      count += CountExtensionBackgroundPagesForProfile(
-          profile->GetOffTheRecordProfile());
-    }
-  }
-  return count;
 }
 
 TaskManager::TaskManager()

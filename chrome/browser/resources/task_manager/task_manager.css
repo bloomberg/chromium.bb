@@ -77,13 +77,6 @@ body {
   width: 6px;
 }
 
-.table-background-row {
-  background-color: hsl(34, 91%, 87%);
-  background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.8),
-                                            rgba(255, 255, 255, 0));
-  border-color: hsl(34, 91%, 65%);
-}
-
 /* Cells in table. */
 .table-row-cell {
   -webkit-box-orient: horizontal;

@@ -238,7 +238,7 @@ void ChromeShellDelegate::RestoreTab() {
 }
 
 void ChromeShellDelegate::ShowTaskManager() {
-  chrome::OpenTaskManager(NULL, false);
+  chrome::OpenTaskManager(NULL);
 }
 
 content::BrowserContext* ChromeShellDelegate::GetCurrentBrowserContext() {

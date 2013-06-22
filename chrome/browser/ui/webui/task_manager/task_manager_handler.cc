@@ -264,10 +264,8 @@ base::DictionaryValue* TaskManagerHandler::CreateTaskGroupValue(
   int index = model_->GetResourceIndexForGroup(group_index, 0);
   int length = model_->GetGroupRangeForResource(index).second;
 
-  // Forces to set following 3 columns regardless of |enable_columns|.
+  // Forces to set following column regardless of |enable_columns|.
   val->SetInteger("index", index);
-  val->SetBoolean("isBackgroundResource",
-                  model_->IsBackgroundResource(index));
   CreateGroupColumnList("processId", index, 1, val);
   CreateGroupColumnList("type", index, length, val);
   CreateGroupColumnList("uniqueId", index, length, val);

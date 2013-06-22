@@ -8,7 +8,6 @@
 #include <cmath>
 
 #include "base/command_line.h"
-#include "base/i18n/number_formatting.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -278,7 +277,6 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
 #elif defined(OS_WIN)
          command_id == IDC_PIN_TO_START_SCREEN ||
 #endif
-         command_id == IDC_VIEW_BACKGROUND_PAGES ||
          command_id == IDC_UPGRADE_DIALOG ||
          command_id == IDC_SHOW_SIGNIN;
 }
@@ -308,12 +306,6 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
       return l10n_util::GetStringUTF16(string_id);
     }
 #endif
-    case IDC_VIEW_BACKGROUND_PAGES: {
-      string16 num_background_pages = base::FormatNumber(
-          TaskManager::GetBackgroundPageCount());
-      return l10n_util::GetStringFUTF16(IDS_VIEW_BACKGROUND_PAGES,
-                                        num_background_pages);
-    }
     case IDC_UPGRADE_DIALOG:
       return GetUpgradeDialogMenuItemName();
     case IDC_SHOW_SIGNIN:
@@ -428,8 +420,6 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
 #endif
   } else if (command_id == IDC_UPGRADE_DIALOG) {
     return UpgradeDetector::GetInstance()->notify_upgrade();
-  } else if (command_id == IDC_VIEW_BACKGROUND_PAGES) {
-    return TaskManager::GetBackgroundPageCount() > 0;
   }
   return true;
 }
@@ -601,19 +591,12 @@ void WrenchMenuModel::Build(bool is_new_menu) {
                              IDS_TOGGLE_REQUEST_TABLET_SITE);
 #endif
 
-// On ChromeOS-Touch, we don't want the about/background pages menu options.
+// On ChromeOS-Touch, we don't want the about menu option.
 #if defined(OS_CHROMEOS)
   if (!is_new_menu)
 #endif
   {
     AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
-    // We use the task manager to show background pages.
-    if (chrome::CanOpenTaskManager()) {
-      string16 num_background_pages = base::FormatNumber(
-          TaskManager::GetBackgroundPageCount());
-      AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(
-          IDS_VIEW_BACKGROUND_PAGES, num_background_pages));
-    }
   }
 
   if (browser_defaults::kShowUpgradeMenuItem)

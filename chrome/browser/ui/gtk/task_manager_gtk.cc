@@ -71,15 +71,11 @@ enum TaskManagerColumn {
   kTaskManagerFPS,
   kTaskManagerSqliteMemoryUsed,
   kTaskManagerGoatsTeleported,
-  // Columns below this point are not visible in the task manager.
-  kTaskManagerBackgroundColor,
   kTaskManagerColumnCount,
 };
 
 const TaskManagerColumn kTaskManagerLastVisibleColumn =
     kTaskManagerGoatsTeleported;
-
-static const GdkColor kHighlightColor = GDK_COLOR_RGB(0xff, 0xfa, 0xcd);
 
 TaskManagerColumn TaskManagerResourceIDToColumnID(int id) {
   switch (id) {
@@ -194,15 +190,9 @@ void TreeViewInsertTaskColumn(GtkWidget* treeview, int resid) {
   gtk_tree_view_column_pack_start(column, image_renderer, FALSE);
   gtk_tree_view_column_add_attribute(column, image_renderer,
                                      "pixbuf", kTaskManagerIcon);
-  gtk_tree_view_column_add_attribute(column, image_renderer,
-                                     "cell-background-gdk",
-                                     kTaskManagerBackgroundColor);
   GtkCellRenderer* text_renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(column, text_renderer, TRUE);
   gtk_tree_view_column_add_attribute(column, text_renderer, "markup", colid);
-  gtk_tree_view_column_add_attribute(column, text_renderer,
-                                     "cell-background-gdk",
-                                     kTaskManagerBackgroundColor);
   gtk_tree_view_column_set_resizable(column, TRUE);
   // This is temporary: we'll turn expanding off after getting the size.
   gtk_tree_view_column_set_expand(column, TRUE);
@@ -218,7 +208,6 @@ void TreeViewInsertColumnWithName(GtkWidget* treeview,
       GTK_TREE_VIEW(treeview), -1,
       name, renderer,
       "text", colid,
-      "cell-background-gdk", kTaskManagerBackgroundColor,
       NULL);
   GtkTreeViewColumn* column = gtk_tree_view_get_column(
       GTK_TREE_VIEW(treeview), TreeViewColumnIndexFromID(colid));
@@ -315,15 +304,14 @@ class TaskManagerGtk::ContextMenuController
   DISALLOW_COPY_AND_ASSIGN(ContextMenuController);
 };
 
-TaskManagerGtk::TaskManagerGtk(bool highlight_background_resources)
+TaskManagerGtk::TaskManagerGtk()
   : task_manager_(TaskManager::GetInstance()),
     model_(TaskManager::GetInstance()->model()),
     dialog_(NULL),
     treeview_(NULL),
     process_list_(NULL),
     process_count_(0),
-    ignore_selection_changed_(false),
-    highlight_background_resources_(highlight_background_resources) {
+    ignore_selection_changed_(false) {
   Init();
 }
 
@@ -427,19 +415,12 @@ void TaskManagerGtk::Close() {
 }
 
 // static
-void TaskManagerGtk::Show(bool highlight_background_resources) {
-  if (instance_ &&
-      instance_->highlight_background_resources_ !=
-          highlight_background_resources) {
-    instance_->Close();
-    DCHECK(!instance_);
-  }
-
+void TaskManagerGtk::Show() {
   if (instance_) {
     // If there's a Task manager window open already, just activate it.
     gtk_util::PresentWindow(instance_->dialog_, 0);
   } else {
-    instance_ = new TaskManagerGtk(highlight_background_resources);
+    instance_ = new TaskManagerGtk();
     instance_->model_->StartUpdating();
   }
 }
@@ -584,7 +565,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
       GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_COLOR);
+      G_TYPE_STRING, G_TYPE_STRING);
 
   // Support sorting on all columns.
   process_list_sort_ = gtk_tree_model_sort_new_with_model(
@@ -736,8 +717,6 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
   std::string goats =
       GetModelText(row, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
 
-  bool is_background = model_->IsBackgroundResource(row) &&
-      highlight_background_resources_;
   gtk_list_store_set(process_list_, iter,
                      kTaskManagerIcon, icon,
                      kTaskManagerTask, task_markup,
@@ -755,8 +734,6 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
                      kTaskManagerFPS, fps.c_str(),
                      kTaskManagerSqliteMemoryUsed, sqlite_memory.c_str(),
                      kTaskManagerGoatsTeleported, goats.c_str(),
-                     kTaskManagerBackgroundColor,
-                     is_background ? &kHighlightColor : NULL,
                      -1);
   g_object_unref(icon);
   g_free(task_markup);
@@ -969,8 +946,8 @@ gboolean TaskManagerGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
 namespace chrome {
 
 // Declared in browser_dialogs.h.
-void ShowTaskManager(Browser* browser, bool highlight_background_resources) {
-  TaskManagerGtk::Show(highlight_background_resources);
+void ShowTaskManager(Browser* browser) {
+  TaskManagerGtk::Show();
 }
 
 }  // namespace chrome

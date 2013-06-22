@@ -7,8 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/background/background_contents_service.h"
-#include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -78,11 +76,9 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
     EXPECT_EQ(0, model()->ResourceCount());
 
-    EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
-
     // Show the task manager. This populates the model, and helps with debugging
     // (you see the task manager).
-    chrome::ShowTaskManager(browser(), false);
+    chrome::ShowTaskManager(browser());
 
     // New Tab Page.
     TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
@@ -189,67 +185,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
-  // Open a new background contents and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
-      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
-
-  BackgroundContentsService* service =
-      BackgroundContentsServiceFactory::GetForProfile(browser()->profile());
-  string16 application_id(ASCIIToUTF16("test_app_id"));
-  service->LoadBackgroundContents(browser()->profile(),
-                                  url,
-                                  ASCIIToUTF16("background_page"),
-                                  application_id);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
-  EXPECT_EQ(1, TaskManager::GetBackgroundPageCount());
-
-  // Close the background contents and verify that we notice.
-  service->ShutdownAssociatedBackgroundContents(application_id);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
-}
-
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
-  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
-
-  // Open a new background contents and make sure we notice that.
-  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
-      base::FilePath::kCurrentDirectory), base::FilePath(kTitle1File)));
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BACKGROUND_CONTENTS_NAVIGATED,
-      content::Source<Profile>(browser()->profile()));
-
-  BackgroundContentsService* service =
-      BackgroundContentsServiceFactory::GetForProfile(browser()->profile());
-  string16 application_id(ASCIIToUTF16("test_app_id"));
-  service->LoadBackgroundContents(browser()->profile(),
-                                  url,
-                                  ASCIIToUTF16("background_page"),
-                                  application_id);
-
-  // Wait for the background contents process to finish loading.
-  observer.Wait();
-
-  EXPECT_EQ(resource_count + 1, model()->ResourceCount());
-  EXPECT_EQ(1, TaskManager::GetBackgroundPageCount());
-
-  // Kill the background contents process and verify that it disappears from the
-  // model.
-  bool found = false;
-  for (int i = 0; i < model()->ResourceCount(); ++i) {
-    if (model()->IsBackgroundResource(i)) {
-      TaskManager::GetInstance()->KillProcess(i);
-      found = true;
-      break;
-    }
-  }
-  ASSERT_TRUE(found);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
-}
-
 #if defined(USE_ASH) || defined(OS_WIN)
 // This test fails on Ash because task manager treats view type
 // Panels differently for Ash.
@@ -286,20 +221,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillPanelExtension) {
   ASSERT_TRUE(model()->IsBackgroundResource(resource_count));
   TaskManager::GetInstance()->KillProcess(resource_count);
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-}
-
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
-  // Loading an extension with a background page should result in a new
-  // resource being created for it.
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
-  EXPECT_EQ(1, TaskManager::GetBackgroundPageCount());
-
-  // Unload extension to avoid crash on Windows (see http://crbug.com/31663).
-  UnloadExtension(last_loaded_extension_id_);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
@@ -434,27 +355,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   // The third entry's title should be back to a normal tab.
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
                          tab_prefix, true));
-}
-
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillExtension) {
-  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
-
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
-
-  // Wait until we see the loaded extension in the task manager (the three
-  // resources are: the browser process, New Tab Page, and the extension).
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
-  EXPECT_EQ(1, TaskManager::GetBackgroundPageCount());
-
-  EXPECT_TRUE(model()->GetResourceExtension(0) == NULL);
-  EXPECT_TRUE(model()->GetResourceExtension(1) == NULL);
-  ASSERT_TRUE(model()->GetResourceExtension(resource_count) != NULL);
-
-  // Kill the extension process and make sure we notice it.
-  TaskManager::GetInstance()->KillProcess(resource_count);
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 }
 
 // Disabled, http://crbug.com/66957.

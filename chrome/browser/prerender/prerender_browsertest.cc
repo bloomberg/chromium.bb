@@ -1884,7 +1884,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // See crbug.com/131836.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderTaskManager) {
   // Show the task manager. This populates the model.
-  chrome::OpenTaskManager(current_browser(), false);
+  chrome::OpenTaskManager(current_browser());
   // Wait for the model of task manager to start.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 

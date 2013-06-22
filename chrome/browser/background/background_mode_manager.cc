@@ -487,7 +487,7 @@ void BackgroundModeManager::ExecuteCommand(int command_id, int event_flags) {
       chrome::ShowAboutChrome(bmd->GetBrowserWindow());
       break;
     case IDC_TASK_MANAGER:
-      chrome::OpenTaskManager(bmd->GetBrowserWindow(), true);
+      chrome::OpenTaskManager(bmd->GetBrowserWindow());
       break;
     case IDC_EXIT:
       content::RecordAction(UserMetricsAction("Exit"));

@@ -113,8 +113,7 @@ class SortHelper {
 
 @implementation TaskManagerWindowController
 
-- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver
-     highlightBackgroundResources:(bool)highlightBackgroundResources {
+- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver {
   NSString* nibpath = [base::mac::FrameworkBundle()
                         pathForResource:@"TaskManager"
                                  ofType:@"nib"];
@@ -122,15 +121,6 @@ class SortHelper {
     taskManagerObserver_ = taskManagerObserver;
     taskManager_ = taskManagerObserver_->task_manager();
     model_ = taskManager_->model();
-    highlightBackgroundResources_ = highlightBackgroundResources;
-    if (highlightBackgroundResources_) {
-      // Highlight background resources with a yellow background.
-      backgroundResourceColor_.reset(
-          [[NSColor colorWithDeviceRed:0xff/255.0
-                                 green:0xfa/255.0
-                                  blue:0xcd/255.0
-                                 alpha:1.0] retain]);
-    }
 
     if (g_browser_process && g_browser_process->local_state()) {
       size_saver_.reset([[WindowSizeAutosaver alloc]
@@ -396,35 +386,6 @@ class SortHelper {
   [self autorelease];
 }
 
-// Delegate method invoked before each cell in the table is displayed. We
-// override this to provide highlighting of background resources.
-- (void)  tableView:(NSTableView*)tableView
-    willDisplayCell:(id)cell
-     forTableColumn:(NSTableColumn*)tableColumn
-                row:(NSInteger)row {
-  if (!highlightBackgroundResources_)
-    return;
-
-  DCHECK([cell respondsToSelector:@selector(setBackgroundColor:)]);
-  if ([cell respondsToSelector:@selector(setBackgroundColor:)]) {
-    NSColor* color = nil;
-    if (taskManagerObserver_->IsBackgroundRow(viewToModelMap_[row]) &&
-        ![tableView isRowSelected:row]) {
-      color = backgroundResourceColor_.get();
-      if ((row % 2) == 1 && [tableView usesAlternatingRowBackgroundColors]) {
-        color = [color blendedColorWithFraction:0.05
-                                        ofColor:[NSColor blackColor]];
-      }
-    }
-    [cell setBackgroundColor:color];
-
-    // The icon at the left is an |NSButtonCell|, which does not
-    // implement this method on 10.5.
-    if ([cell respondsToSelector:@selector(setDrawsBackground:)])
-      [cell setDrawsBackground:(color != nil)];
-  }
-}
-
 @end
 
 @implementation TaskManagerWindowController (NSTableDataSource)
@@ -489,16 +450,12 @@ class SortHelper {
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerMac implementation:
 
-TaskManagerMac::TaskManagerMac(TaskManager* task_manager,
-                               bool highlight_background_resources)
+TaskManagerMac::TaskManagerMac(TaskManager* task_manager)
   : task_manager_(task_manager),
     model_(task_manager->model()),
-    icon_cache_(this),
-    highlight_background_resources_(highlight_background_resources) {
+    icon_cache_(this) {
   window_controller_ =
-      [[TaskManagerWindowController alloc]
-           initWithTaskManagerObserver:this
-          highlightBackgroundResources:highlight_background_resources];
+      [[TaskManagerWindowController alloc] initWithTaskManagerObserver:this];
   model_->AddObserver(this);
 }
 
@@ -560,37 +517,23 @@ gfx::ImageSkia TaskManagerMac::GetIcon(int r) const {
   return model_->GetResourceIcon(r);
 }
 
-bool TaskManagerMac::IsBackgroundRow(int row) const {
-  return model_->IsBackgroundResource(row);
-}
-
 // static
-void TaskManagerMac::Show(bool highlight_background_resources) {
+void TaskManagerMac::Show() {
   if (instance_) {
-    if (instance_->highlight_background_resources_ ==
-        highlight_background_resources) {
-      // There's a Task manager window open already, so just activate it.
-      [[instance_->window_controller_ window]
-        makeKeyAndOrderFront:instance_->window_controller_];
-      return;
-    } else {
-      // The user is switching between "View Background Pages" and
-      // "Task Manager" so close the existing window and fall through to
-      // open a new one.
-      [[instance_->window_controller_ window] close];
-    }
+    [[instance_->window_controller_ window]
+      makeKeyAndOrderFront:instance_->window_controller_];
+    return;
   }
   // Create a new instance.
-  instance_ = new TaskManagerMac(TaskManager::GetInstance(),
-                                 highlight_background_resources);
+  instance_ = new TaskManagerMac(TaskManager::GetInstance());
   instance_->model_->StartUpdating();
 }
 
 namespace chrome {
 
 // Declared in browser_dialogs.h.
-void ShowTaskManager(Browser* browser, bool highlight_background_resources) {
-  TaskManagerMac::Show(highlight_background_resources);
+void ShowTaskManager(Browser* browser) {
+  TaskManagerMac::Show();
 }
 
 }  // namespace chrome

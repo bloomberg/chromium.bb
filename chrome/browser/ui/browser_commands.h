@@ -132,7 +132,7 @@ void FocusNextPane(Browser* browser);
 void FocusPreviousPane(Browser* browser);
 void ToggleDevToolsWindow(Browser* browser, DevToolsToggleAction action);
 bool CanOpenTaskManager();
-void OpenTaskManager(Browser* browser, bool highlight_background_resources);
+void OpenTaskManager(Browser* browser);
 void OpenFeedbackDialog(Browser* browser);
 void ToggleBookmarkBar(Browser* browser);
 void ShowAppMenu(Browser* browser);

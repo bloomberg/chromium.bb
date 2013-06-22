@@ -928,7 +928,7 @@ void RecordLastRunAppBundlePath() {
       break;
     case IDC_TASK_MANAGER:
       content::RecordAction(UserMetricsAction("TaskManager"));
-      TaskManagerMac::Show(false);
+      TaskManagerMac::Show();
       break;
     case IDC_OPTIONS:
       [self showPreferences:sender];
@@ -1271,15 +1271,6 @@ void RecordLastRunAppBundlePath() {
         [appItem setTag:position];
         [appMenu addItem:appItem];
       }
-
-      scoped_nsobject<NSMenuItem> appMenuItem([[NSMenuItem alloc]
-          initWithTitle:menuStr
-                 action:@selector(executeApplication:)
-          keyEquivalent:@""]);
-      [appMenuItem setTarget:self];
-      [appMenuItem setTag:IDC_VIEW_BACKGROUND_PAGES];
-      [appMenuItem setSubmenu:appMenu];
-      [dockMenu addItem:appMenuItem];
     }
   }
 

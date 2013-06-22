@@ -29,7 +29,6 @@
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link.h"
@@ -38,7 +37,6 @@
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
-#include "ui/views/controls/table/table_view_row_background_painter.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -50,10 +48,6 @@
 #if defined(OS_WIN)
 #include "win8/util/win8_util.h"
 #endif
-
-// Yellow highlight used when highlighting background resources.
-static const SkColor kBackgroundResourceHighlight =
-    SkColorSetRGB(0xff, 0xf1, 0xcd);
 
 namespace {
 
@@ -92,9 +86,6 @@ class TaskManagerTableModel
   virtual void OnItemsChanged(int start, int length) OVERRIDE;
   virtual void OnItemsAdded(int start, int length) OVERRIDE;
   virtual void OnItemsRemoved(int start, int length) OVERRIDE;
-
-  // Returns true if resource corresponding to |row| is a background resource.
-  bool IsBackgroundResource(int row);
 
  private:
   TaskManagerModel* model_;
@@ -170,28 +161,6 @@ void TaskManagerTableModel::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-bool TaskManagerTableModel::IsBackgroundResource(int row) {
-  return model_->IsBackgroundResource(row);
-}
-
-class BackgroundPainter : public views::TableViewRowBackgroundPainter {
- public:
-  explicit BackgroundPainter(TaskManagerTableModel* model) : model_(model) {}
-  virtual ~BackgroundPainter() {}
-
-  virtual void PaintRowBackground(int model_index,
-                                  const gfx::Rect& row_bounds,
-                                  gfx::Canvas* canvas) OVERRIDE {
-    if (model_->IsBackgroundResource(model_index))
-      canvas->FillRect(row_bounds, kBackgroundResourceHighlight);
-  }
-
- private:
-  TaskManagerTableModel* model_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundPainter);
-};
-
 // The Task manager UI container.
 class TaskManagerView : public views::ButtonListener,
                         public views::DialogDelegateView,
@@ -200,14 +169,11 @@ class TaskManagerView : public views::ButtonListener,
                         public views::ContextMenuController,
                         public ui::SimpleMenuModel::Delegate {
  public:
-  TaskManagerView(bool highlight_background_resources,
-                  chrome::HostDesktopType desktop_type);
+  explicit TaskManagerView(chrome::HostDesktopType desktop_type);
   virtual ~TaskManagerView();
 
-  // Shows the Task manager window, or re-activates an existing one. If
-  // |highlight_background_resources| is true, highlights the background
-  // resources in the resource display.
-  static void Show(bool highlight_background_resources, Browser* browser);
+  // Shows the Task manager window, or re-activates an existing one.
+  static void Show(Browser* browser);
 
   // views::View:
   virtual void Layout() OVERRIDE;
@@ -288,9 +254,6 @@ class TaskManagerView : public views::ButtonListener,
   // True when the Task Manager window should be shown on top of other windows.
   bool is_always_on_top_;
 
-  // True when the Task Manager should highlight background resources.
-  const bool highlight_background_resources_;
-
   // The host desktop type this task manager belongs to.
   const chrome::HostDesktopType desktop_type_;
 
@@ -310,8 +273,7 @@ class TaskManagerView : public views::ButtonListener,
 TaskManagerView* TaskManagerView::instance_ = NULL;
 
 
-TaskManagerView::TaskManagerView(bool highlight_background_resources,
-                                 chrome::HostDesktopType desktop_type)
+TaskManagerView::TaskManagerView(chrome::HostDesktopType desktop_type)
     : purge_memory_button_(NULL),
       kill_button_(NULL),
       about_memory_link_(NULL),
@@ -320,7 +282,6 @@ TaskManagerView::TaskManagerView(bool highlight_background_resources,
       task_manager_(TaskManager::GetInstance()),
       model_(TaskManager::GetInstance()->model()),
       is_always_on_top_(false),
-      highlight_background_resources_(highlight_background_resources),
       desktop_type_(desktop_type) {
   Init();
 }
@@ -394,12 +355,6 @@ void TaskManagerView::Init() {
   tab_table_ = new views::TableView(
       table_model_.get(), columns_, views::ICON_AND_TEXT, false);
   tab_table_->SetGrouper(table_model_.get());
-  if (highlight_background_resources_) {
-    scoped_ptr<BackgroundPainter> painter(
-        new BackgroundPainter(table_model_.get()));
-    tab_table_->SetRowBackgroundPainter(
-        painter.PassAs<views::TableViewRowBackgroundPainter>());
-  }
 
   // Hide some columns by default
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN, false);
@@ -529,8 +484,7 @@ gfx::Size TaskManagerView::GetPreferredSize() {
 }
 
 // static
-void TaskManagerView::Show(bool highlight_background_resources,
-                           Browser* browser) {
+void TaskManagerView::Show(Browser* browser) {
 #if defined(OS_WIN)
   // In Windows Metro it's not good to open this native window.
   DCHECK(!win8::IsSingleWindowMetroMode());
@@ -541,17 +495,11 @@ void TaskManagerView::Show(bool highlight_background_resources,
       browser ? browser->host_desktop_type() : chrome::HOST_DESKTOP_TYPE_ASH;
 
   if (instance_) {
-    if (instance_->highlight_background_resources_ !=
-        highlight_background_resources ||
-        instance_->desktop_type_ != desktop_type) {
-      instance_->GetWidget()->Close();
-    } else {
-      // If there's a Task manager window open already, just activate it.
-      instance_->GetWidget()->Activate();
-      return;
-    }
+    // If there's a Task manager window open already, just activate it.
+    instance_->GetWidget()->Activate();
+    return;
   }
-  instance_ = new TaskManagerView(highlight_background_resources, desktop_type);
+  instance_ = new TaskManagerView(desktop_type);
   gfx::NativeWindow window =
       browser ? browser->window()->GetNativeWindow() : NULL;
 #if defined(USE_ASH)
@@ -779,8 +727,8 @@ bool TaskManagerView::GetSavedAlwaysOnTopState(bool* always_on_top) const {
 namespace chrome {
 
 // Declared in browser_dialogs.h so others don't need to depend on our header.
-void ShowTaskManager(Browser* browser, bool highlight_background_resources) {
-  TaskManagerView::Show(highlight_background_resources, browser);
+void ShowTaskManager(Browser* browser) {
+  TaskManagerView::Show(browser);
 }
 
 }  // namespace chrome

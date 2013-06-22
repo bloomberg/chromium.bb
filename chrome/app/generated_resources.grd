@@ -1458,9 +1458,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
           Software incompatibility: Learn more
         </message>
-        <message name="IDS_VIEW_BACKGROUND_PAGES" desc="The text label of the View background pages menu item">
-          View background pages (<ph name="NUM_BACKGROUND_APPS">$1<ex>3</ex></ph>)
-        </message>
         <message name="IDS_EXIT" desc="The text label of the Exit menu item">
           E&amp;xit
         </message>
@@ -1498,9 +1495,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
           Software Incompatibility: Learn More
-        </message>
-        <message name="IDS_VIEW_BACKGROUND_PAGES" desc="The text label of the View background pages menu item">
-          View Background Pages (<ph name="NUM_BACKGROUND_APPS">$1<ex>3</ex></ph>)
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
           E&amp;xit

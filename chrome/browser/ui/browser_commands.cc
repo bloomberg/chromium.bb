@@ -892,9 +892,9 @@ bool CanOpenTaskManager() {
 #endif
 }
 
-void OpenTaskManager(Browser* browser, bool highlight_background_resources) {
+void OpenTaskManager(Browser* browser) {
   content::RecordAction(UserMetricsAction("TaskManager"));
-  chrome::ShowTaskManager(browser, highlight_background_resources);
+  chrome::ShowTaskManager(browser);
 }
 
 void OpenFeedbackDialog(Browser* browser) {

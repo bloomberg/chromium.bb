@@ -429,8 +429,6 @@ TaskManager.prototype = {
     var listItem = new cr.ui.ListItem({label: ''});
 
     listItem.className = 'table-row';
-    if (this.opt_.isBackgroundMode && data.isBackgroundResource)
-      listItem.className += ' table-background-row';
 
     for (var i = 0; i < cm.size; i++) {
       var cell = document.createElement('div');
@@ -690,7 +688,6 @@ taskmanager = TaskManager.getInstance();
 function init() {
   var params = parseQueryParams(window.location);
   var opt = {};
-  opt['isBackgroundMode'] = params.background;
   opt['isShowCloseButton'] = params.showclose;
   taskmanager.initialize(document.body, opt);
 }

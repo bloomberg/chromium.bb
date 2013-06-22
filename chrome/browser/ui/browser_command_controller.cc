@@ -627,10 +627,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ToggleDevToolsWindow(browser_, DEVTOOLS_TOGGLE_ACTION_TOGGLE);
       break;
     case IDC_TASK_MANAGER:
-      OpenTaskManager(browser_, false);
-      break;
-    case IDC_VIEW_BACKGROUND_PAGES:
-      OpenTaskManager(browser_, true);
+      OpenTaskManager(browser_);
       break;
     case IDC_FEEDBACK:
       OpenFeedbackDialog(browser_);
@@ -940,10 +937,6 @@ void BrowserCommandController::InitCommandState() {
   // show.
   command_updater_.UpdateCommandEnabled(IDC_UPGRADE_DIALOG, true);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_INCOMPATIBILITIES, true);
-
-  // View Background Pages entry is always enabled, but is hidden if there are
-  // no background pages.
-  command_updater_.UpdateCommandEnabled(IDC_VIEW_BACKGROUND_PAGES, true);
 
   // Toggle speech input
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_SPEECH_INPUT, true);

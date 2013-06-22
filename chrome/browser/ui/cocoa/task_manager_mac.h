@@ -30,7 +30,6 @@ class ImageSkia;
   TaskManagerMac* taskManagerObserver_;  // weak
   TaskManager* taskManager_;  // weak
   TaskManagerModel* model_;  // weak
-  bool highlightBackgroundResources_;
 
   scoped_nsobject<WindowSizeAutosaver> size_saver_;
 
@@ -41,14 +40,10 @@ class ImageSkia;
 
   // Descriptor of the current sort column.
   scoped_nsobject<NSSortDescriptor> currentSortDescriptor_;
-
-  // Color we use for background resources.
-  scoped_nsobject<NSColor> backgroundResourceColor_;
 }
 
 // Creates and shows the task manager's window.
-- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver
-     highlightBackgroundResources:(bool)highlightBackgroundResources;
+- (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver;
 
 // Refreshes all data in the task manager table.
 - (void)reloadData;
@@ -71,7 +66,7 @@ class ImageSkia;
 class TaskManagerMac : public TaskManagerModelObserver,
                        public TableRowNSImageCache::Table {
  public:
-  TaskManagerMac(TaskManager* task_manager, bool highlight_background);
+  explicit TaskManagerMac(TaskManager* task_manager);
   virtual ~TaskManagerMac();
 
   // TaskManagerModelObserver
@@ -89,9 +84,8 @@ class TaskManagerMac : public TaskManagerModelObserver,
   virtual gfx::ImageSkia GetIcon(int r) const OVERRIDE;
 
   // Creates the task manager if it doesn't exist; otherwise, it activates the
-  // existing task manager window. Highlights background resources if
-  // |highlight_background_resources| is true.
-  static void Show(bool highlight_background_resources);
+  // existing task manager window.
+  static void Show();
 
   // Returns the TaskManager observed by |this|.
   TaskManager* task_manager() { return task_manager_; }
@@ -102,8 +96,6 @@ class TaskManagerMac : public TaskManagerModelObserver,
   // Returns the cocoa object. Used for testing.
   TaskManagerWindowController* cocoa_controller() { return window_controller_; }
 
-  // Returns true if the resource at this location is a background resource.
-  bool IsBackgroundRow(int row) const;
  private:
   // The task manager.
   TaskManager* const task_manager_;  // weak
@@ -117,9 +109,6 @@ class TaskManagerMac : public TaskManagerModelObserver,
 
   // Caches favicons for all rows. Needs to be initalized after |model_|.
   TableRowNSImageCache icon_cache_;
-
-  // If true, highlight background resources.
-  bool highlight_background_resources_;
 
   // An open task manager window. There can only be one open at a time. This
   // is reset to NULL when the window is closed.
