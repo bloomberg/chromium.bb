@@ -1781,6 +1781,7 @@
         '../components/autofill/content/browser/autocheckout/whitelist_manager_unittest.cc',
         '../components/autofill/content/browser/autocheckout_manager_unittest.cc',
         '../components/autofill/content/browser/autocheckout_page_meta_data_unittest.cc',
+        '../components/autofill/content/browser/autofill_driver_impl_unittest.cc',
         '../components/autofill/content/browser/wallet/encryption_escrow_client_unittest.cc',
         '../components/autofill/content/browser/wallet/full_wallet_unittest.cc',
         '../components/autofill/content/browser/wallet/instrument_unittest.cc',

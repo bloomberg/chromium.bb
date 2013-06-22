@@ -53,9 +53,9 @@ class AutofillDriverImpl : public AutofillDriver,
   void SetAutofillExternalDelegate(
       scoped_ptr<AutofillExternalDelegate> delegate);
 
-  AutofillManager* autofill_manager() { return &autofill_manager_; }
+  AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
- private:
+ protected:
   AutofillDriverImpl(
       content::WebContents* web_contents,
       autofill::AutofillManagerDelegate* delegate,
@@ -69,13 +69,18 @@ class AutofillDriverImpl : public AutofillDriver,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // Sets the manager to |manager| and sets |manager|'s external delegate
+  // to |autofill_external_delegate_|. Takes ownership of |manager|.
+  void SetAutofillManager(scoped_ptr<AutofillManager> manager);
+
+ private:
   // AutofillExternalDelegate instance that this object instantiates in the
   // case where the autofill native UI is enabled.
   scoped_ptr<AutofillExternalDelegate> autofill_external_delegate_;
 
   // AutofillManager instance via which this object drives the shared Autofill
   // code.
-  AutofillManager autofill_manager_;
+  scoped_ptr<AutofillManager> autofill_manager_;
 };
 
 }  // namespace autofill

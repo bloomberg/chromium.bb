@@ -84,7 +84,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                   AutofillDownloadManagerState enable_download_manager);
   virtual ~AutofillManager();
 
-  // Set an external delegate.
+  // Sets an external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
   // Whether browser process will create and own the Autofill popup UI.
@@ -185,7 +185,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                                              const gfx::RectF& bounding_box);
 
   // Resets cache.
-  void Reset();
+  virtual void Reset();
 
  protected:
   // Test code should prefer to use this constructor.
