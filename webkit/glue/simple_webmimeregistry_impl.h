@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBMIMEREGISTRY_IMPL_H_
-#define WEBMIMEREGISTRY_IMPL_H_
+#ifndef WEBKIT_GLUE_SIMPLE_WEBMIMEREGISTRY_IMPL_H_
+#define WEBKIT_GLUE_SIMPLE_WEBMIMEREGISTRY_IMPL_H_
+
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebMimeRegistry.h"
@@ -16,6 +18,10 @@ class WEBKIT_GLUE_EXPORT SimpleWebMimeRegistryImpl :
  public:
   SimpleWebMimeRegistryImpl() {}
   virtual ~SimpleWebMimeRegistryImpl() {}
+
+  // Convert a WebString to ASCII, falling back on an empty string in the case
+  // of a non-ASCII string.
+  static std::string ToASCIIOrEmpty(const WebKit::WebString& string);
 
   // WebMimeRegistry methods:
   virtual WebKit::WebMimeRegistry::SupportsType supportsMIMEType(
@@ -45,4 +51,4 @@ class WEBKIT_GLUE_EXPORT SimpleWebMimeRegistryImpl :
 
 }  // namespace webkit_glue
 
-#endif  // WEBMIMEREGISTRY_IMPL_H_
+#endif  // WEBKIT_GLUE_SIMPLE_WEBMIMEREGISTRY_IMPL_H_

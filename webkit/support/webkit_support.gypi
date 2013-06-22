@@ -151,8 +151,6 @@
         '<(DEPTH)/webkit/support/test_shell_request_context.h',
         '<(DEPTH)/webkit/support/test_shell_webblobregistry_impl.cc',
         '<(DEPTH)/webkit/support/test_shell_webblobregistry_impl.h',
-        '<(DEPTH)/webkit/support/test_shell_webmimeregistry_impl.cc',
-        '<(DEPTH)/webkit/support/test_shell_webmimeregistry_impl.h',
         '<(DEPTH)/webkit/mocks/mock_webhyphenator.cc',
         '<(DEPTH)/webkit/mocks/mock_webhyphenator.h',
         'simple_database_system.cc',

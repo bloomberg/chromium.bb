@@ -32,7 +32,6 @@ class WebHyphenator;
 class WebMediaPlayerClient;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
-class WebMimeRegistry;
 class WebPlugin;
 class WebPluginContainer;
 class WebPrescientNetworking;
@@ -148,10 +147,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows the embedder to override the WebKit::WebClipboard used. If it
   // returns NULL the content layer will handle clipboard interactions.
   virtual WebKit::WebClipboard* OverrideWebClipboard();
-
-  // Allows the embedder to override the WebKit::WebMimeRegistry used. If it
-  // returns NULL the content layer will provide its own mime registry.
-  virtual WebKit::WebMimeRegistry* OverrideWebMimeRegistry();
 
   // Allows the embedder to override the WebKit::WebHyphenator used. If it
   // returns NULL the content layer will handle hyphenation.

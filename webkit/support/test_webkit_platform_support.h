@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 #include "webkit/child/webkitplatformsupport_child_impl.h"
+#include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/mocks/mock_webhyphenator.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
@@ -19,7 +20,6 @@
 #include "webkit/support/simple_dom_storage_system.h"
 #include "webkit/support/simple_file_system.h"
 #include "webkit/support/simple_webcookiejar_impl.h"
-#include "webkit/support/test_shell_webmimeregistry_impl.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 
 class TestShellWebBlobRegistryImpl;
@@ -163,7 +163,7 @@ class TestWebKitPlatformSupport :
       TestViewType type);
 
  private:
-  TestShellWebMimeRegistryImpl mime_registry_;
+  webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
   base::ScopedTempDir appcache_dir_;

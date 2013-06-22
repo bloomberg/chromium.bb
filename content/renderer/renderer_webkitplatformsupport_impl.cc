@@ -42,6 +42,8 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"
+#include "media/filters/stream_parser_factory.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -59,6 +61,7 @@
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/media/audio_decoder.h"
+#include "webkit/renderer/media/crypto/key_systems.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
@@ -100,6 +103,7 @@ using WebKit::WebMIDIAccessor;
 using WebKit::Platform;
 using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
+using WebKit::WebMimeRegistry;
 using WebKit::WebRTCPeerConnectionHandler;
 using WebKit::WebRTCPeerConnectionHandlerClient;
 using WebKit::WebStorageNamespace;
@@ -118,10 +122,22 @@ base::LazyInstance<WebGamepads>::Leaky g_test_gamepads =
 class RendererWebKitPlatformSupportImpl::MimeRegistry
     : public webkit_glue::SimpleWebMimeRegistryImpl {
  public:
-  virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString&);
-  virtual WebKit::WebString mimeTypeFromFile(const WebKit::WebString&);
+  // TODO(ddorwin): Remove after http://webk.it/82983 lands.
+  virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
+      const WebKit::WebString& mime_type,
+      const WebKit::WebString& codecs);
+  virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
+      const WebKit::WebString& mime_type,
+      const WebKit::WebString& codecs,
+      const WebKit::WebString& key_system);
+  virtual bool supportsMediaSourceMIMEType(const WebKit::WebString& mime_type,
+                                           const WebKit::WebString& codecs);
+  virtual WebKit::WebString mimeTypeForExtension(
+      const WebKit::WebString& file_extension);
+  virtual WebKit::WebString mimeTypeFromFile(
+      const WebKit::WebString& file_path);
   virtual WebKit::WebString preferredExtensionForMIMEType(
-      const WebKit::WebString&);
+      const WebKit::WebString& mime_type);
 };
 
 class RendererWebKitPlatformSupportImpl::FileUtilities
@@ -229,10 +245,6 @@ WebKit::WebClipboard* RendererWebKitPlatformSupportImpl::clipboard() {
 }
 
 WebKit::WebMimeRegistry* RendererWebKitPlatformSupportImpl::mimeRegistry() {
-  WebKit::WebMimeRegistry* mime_registry =
-      GetContentClient()->renderer()->OverrideWebMimeRegistry();
-  if (mime_registry)
-    return mime_registry;
   return mime_registry_.get();
 }
 
@@ -385,6 +397,80 @@ WebFileSystem* RendererWebKitPlatformSupportImpl::fileSystem() {
 }
 
 //------------------------------------------------------------------------------
+
+WebMimeRegistry::SupportsType
+RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
+    const WebString& mime_type,
+    const WebString& codecs) {
+  return supportsMediaMIMEType(mime_type, codecs, WebString());
+}
+
+WebMimeRegistry::SupportsType
+RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
+    const WebString& mime_type,
+    const WebString& codecs,
+    const WebString& key_system) {
+  const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
+  // Not supporting the container is a flat-out no.
+  if (!net::IsSupportedMediaMimeType(mime_type_ascii))
+    return IsNotSupported;
+
+  if (!key_system.isEmpty()) {
+    // Check whether the key system is supported with the mime_type and codecs.
+
+    // Not supporting the key system is a flat-out no.
+    if (!webkit_media::IsSupportedKeySystem(key_system))
+      return IsNotSupported;
+
+    std::vector<std::string> strict_codecs;
+    bool strip_suffix = !net::IsStrictMediaMimeType(mime_type_ascii);
+    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, strip_suffix);
+
+    if (!webkit_media::IsSupportedKeySystemWithMediaMimeType(
+            mime_type_ascii, strict_codecs, ToASCIIOrEmpty(key_system)))
+      return IsNotSupported;
+
+    // Continue processing the mime_type and codecs.
+  }
+
+  // Check list of strict codecs to see if it is supported.
+  if (net::IsStrictMediaMimeType(mime_type_ascii)) {
+    // We support the container, but no codecs were specified.
+    if (codecs.isNull())
+      return MayBeSupported;
+
+    // Check if the codecs are a perfect match.
+    std::vector<std::string> strict_codecs;
+    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, false);
+    if (!net::IsSupportedStrictMediaMimeType(mime_type_ascii, strict_codecs))
+      return IsNotSupported;
+
+    // Good to go!
+    return IsSupported;
+  }
+
+  // If we don't recognize the codec, it's possible we support it.
+  std::vector<std::string> parsed_codecs;
+  net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codecs, true);
+  if (!net::AreSupportedMediaCodecs(parsed_codecs))
+    return MayBeSupported;
+
+  // Otherwise we have a perfect match.
+  return IsSupported;
+}
+
+bool
+RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaSourceMIMEType(
+    const WebKit::WebString& mime_type,
+    const WebString& codecs) {
+  const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
+  std::vector<std::string> parsed_codec_ids;
+  net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codec_ids, false);
+  if (mime_type_ascii.empty() || parsed_codec_ids.size() == 0)
+    return false;
+  return media::StreamParserFactory::IsTypeSupported(
+      mime_type_ascii, parsed_codec_ids);
+}
 
 WebString
 RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeForExtension(

@@ -1414,11 +1414,6 @@
             'include_dirs': [
               '../third_party/openssl',
             ],
-          }, {  # else OS != "android"
-            'defines': [
-              # These are the features Android doesn't support.
-              'ENABLE_MEDIA_CODEC_THEORA',
-            ],
           },
         ],
       ],

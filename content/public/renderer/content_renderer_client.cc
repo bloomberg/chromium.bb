@@ -63,10 +63,6 @@ WebKit::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
   return NULL;
 }
 
-WebKit::WebMimeRegistry* ContentRendererClient::OverrideWebMimeRegistry() {
-  return NULL;
-}
-
 WebKit::WebHyphenator* ContentRendererClient::OverrideWebHyphenator() {
   return NULL;
 }

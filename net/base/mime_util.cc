@@ -77,6 +77,8 @@ class MimeUtil : public PlatformMimeUtil {
       const std::string& mime_type,
       const std::vector<std::string>& codecs) const;
 
+  void RemoveProprietaryMediaTypesAndCodecsForTests();
+
  private:
   friend struct base::DefaultLazyInstanceTraits<MimeUtil>;
 
@@ -264,7 +266,7 @@ static const char* const common_media_types[] = {
   // Ogg.
   "audio/ogg",
   "application/ogg",
-#if defined(ENABLE_MEDIA_CODEC_THEORA)
+#if !defined(OS_ANDROID)  // Android doesn't support Ogg Theora.
   "video/ogg",
 #endif
 
@@ -300,7 +302,7 @@ static const char* const proprietary_media_types[] = {
 // The codecs for WAV are integers as defined in Appendix A of RFC2361:
 // http://tools.ietf.org/html/rfc2361
 static const char* const common_media_codecs[] = {
-#if defined(ENABLE_MEDIA_CODEC_THEORA)
+#if !defined(OS_ANDROID)  // Android doesn't support Ogg Theora.
   "theora",
 #endif
   "vorbis",
@@ -675,6 +677,15 @@ bool MimeUtil::IsSupportedStrictMediaMimeType(
       AreSupportedCodecs(it->second, codecs);
 }
 
+void MimeUtil::RemoveProprietaryMediaTypesAndCodecsForTests() {
+  for (size_t i = 0; i < arraysize(proprietary_media_types); ++i) {
+    non_image_map_.erase(proprietary_media_types[i]);
+    media_map_.erase(proprietary_media_types[i]);
+  }
+  for (size_t i = 0; i < arraysize(proprietary_media_codecs); ++i)
+    codecs_map_.erase(proprietary_media_codecs[i]);
+}
+
 //----------------------------------------------------------------------------
 // Wrappers for the singleton
 //----------------------------------------------------------------------------
@@ -934,28 +945,8 @@ void GetExtensionsForMimeType(
   HashSetToVector(&unique_extensions, extensions);
 }
 
-void GetMediaTypesBlacklistedForTests(std::vector<std::string>* types) {
-  types->clear();
-
-// Unless/until WebM files are added to the media layout tests, we need to avoid
-// blacklisting mp4 and H.264 when Theora is not supported (and proprietary
-// codecs are) so that the media tests can still run.
-#if defined(ENABLE_MEDIA_CODEC_THEORA) || !defined(USE_PROPRIETARY_CODECS)
-  for (size_t i = 0; i < arraysize(proprietary_media_types); ++i)
-    types->push_back(proprietary_media_types[i]);
-#endif
-}
-
-void GetMediaCodecsBlacklistedForTests(std::vector<std::string>* codecs) {
-  codecs->clear();
-
-// Unless/until WebM files are added to the media layout tests, we need to avoid
-// blacklisting mp4 and H.264 when Theora is not supported (and proprietary
-// codecs are) so that the media tests can still run.
-#if defined(ENABLE_MEDIA_CODEC_THEORA) || !defined(USE_PROPRIETARY_CODECS)
-  for (size_t i = 0; i < arraysize(proprietary_media_codecs); ++i)
-    codecs->push_back(proprietary_media_codecs[i]);
-#endif
+void RemoveProprietaryMediaTypesAndCodecsForTests() {
+  g_mime_util.Get().RemoveProprietaryMediaTypesAndCodecsForTests();
 }
 
 const std::string GetIANAMediaType(const std::string& mime_type) {

@@ -1,5 +1,4 @@
 include_rules = [
   "+content/common",
-  "+media",
   "+skia/ext",
 ]
