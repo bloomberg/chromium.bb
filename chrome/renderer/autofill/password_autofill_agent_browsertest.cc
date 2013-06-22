@@ -281,6 +281,21 @@ TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForFilledField) {
   CheckTextFieldsState("bogus", false, std::string(), false);
 }
 
+// Tests that changing the username does not fill a field specifying
+// autocomplete="off".
+TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForAutocompleteOff) {
+  password_element_.setAttribute(WebString::fromUTF8("autocomplete"),
+                                 WebString::fromUTF8("off"));
+
+  // Simulate the browser sending back the login info, it triggers the
+  // autocomplete.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Only the username should have been autocompleted.
+  // TODO(jcivelli): may be we should not event fill the username?
+  CheckTextFieldsState(kAliceUsername, true, std::string(), false);
+}
+
 TEST_F(PasswordAutofillAgentTest, NoAutocompleteForTextFieldPasswords) {
   const char kTextFieldPasswordFormHTML[] =
       "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
