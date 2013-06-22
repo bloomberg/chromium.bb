@@ -55,6 +55,108 @@ other types of suffix sets.
 
 <histograms>
 
+<histogram name="Accessibility.CrosHighContrast" enum="BooleanEnabled">
+  <summary>
+    Whether the Chrome OS High Constrast mode feature is on (checked once 45
+    secs after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosScreenMagnifier" enum="BooleanEnabled">
+  <summary>
+    Whether the Chrome OS Screen Magnifier feature is on (checked once 45 secs
+    after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosSpokenFeedback" enum="BooleanEnabled">
+  <summary>
+    Whether the Chrome OS Spoken Feedback feature is on (checked once 45 secs
+    after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosVirtualKeyboard" enum="BooleanEnabled">
+  <summary>
+    Whether the Chrome OS Virtual Keyboard feature is on (checked once 45 secs
+    after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.InvertedColors" enum="BooleanEnabled">
+  <summary>
+    Whether Windows system settings show that high-contrast mode is enabled and
+    the user has selected a light-on-dark color scheme (checked once 45 secs
+    after startup). This causes Chrome to prompt the user with a bubble to
+    optionally install a High Contrast extension and theme.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.ManuallyEnabled" enum="BooleanEnabled">
+  <summary>
+    Whether Chrome has enabled accessibility support because the user passed the
+    --force-renderer-accessibility flag on the command-line (checked once 45
+    secs after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.State" enum="BooleanEnabled">
+  <summary>
+    Whether Chrome has enabled accessibility support because it detects
+    supported assistive technology running, or due to being manually enabled via
+    a command-line flag (checked once 45 secs after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.WinAudioDescription" enum="BooleanEnabled">
+  <summary>
+    Whether Windows system settings show that audio descriptions are enabled
+    (checked once 45 secs after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.WinJAWS" enum="BooleanEnabled">
+  <summary>
+    Whether the third-party JAWS screen reader is running (checked once 45 secs
+    after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.WinNVDA" enum="BooleanEnabled">
+  <summary>
+    Whether the third-party NVDA screen reader is running (checked once 45 secs
+    after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.WinSAToGo" enum="BooleanEnabled">
+  <summary>
+    Whether the third-party System Access To Go screen reader is running
+    (checked once 45 secs after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.WinScreenReader" enum="BooleanEnabled">
+  <summary>
+    Whether Windows system settings show that a screen reader is running
+    (checked once 45 secs after startup). Note that this does not necessarily
+    mean that Chrome has detected a supported screen reader and has enabled its
+    accessibility mode.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.WinStickyKeys" enum="BooleanEnabled">
+  <summary>
+    Whether Windows system settings show that Sticky Keys are enabled.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.WinZoomText" enum="BooleanEnabled">
+  <summary>
+    Whether the third-party ZoomText screen magnifier is running.
+  </summary>
+</histogram>
+
 <histogram name="Apps.AppLaunch" enum="AppLaunch">
   <summary>
     The number of times v2 packaged apps are launched grouped by
