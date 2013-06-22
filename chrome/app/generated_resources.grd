@@ -6792,6 +6792,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_PREFIXED_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to disable the prefixed Encrypted Media Extensions APIs (e.g. webkitGenerateKeyRequest()).">
         Disable the experimental version of Encrypted Media Extensions on video and audio elements.
       </message>
+      <message name="IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_NAME" desc="Title for the flag to override suppressed affirmative responses to canPlayType().">
+        Enable suppressed canPlayType() responses.
+      </message>
+      <message name="IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_DESCRIPTION" desc="Description for the flag to override suppressed affirmative responses to canPlayType().">
+        Enable appropriate responses to canPlayType() for key systems that return the empty string by default.
+      </message>
       <message name="IDS_FLAGS_ENABLE_OPUS_PLAYBACK_NAME" desc="Title for the flag to enable Opus playback in &lt;video&gt; elements.">
         Enable Opus playback in &lt;video&gt; elements.
       </message>
