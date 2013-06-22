@@ -30,6 +30,10 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/tray_display.h"
+#endif
+
 #if defined(OS_WIN)
 #include "ash/test/test_metro_viewer_process_host.h"
 #include "base/test/test_process_killer_win.h"
@@ -113,6 +117,14 @@ void AshTestBase::SetUp() {
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
   ash::Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
+
+#if defined(OS_CHROMEOS)
+  // We do not want to see the notification for display configuration change,
+  // since it may trap mouse events unexpectedly.
+  // TODO(mukai): remove this code when the display notification code is moved
+  // to the message center.
+  internal::TrayDisplay::SetDisplayNotificationsDisabledForTest(true);
+#endif
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&

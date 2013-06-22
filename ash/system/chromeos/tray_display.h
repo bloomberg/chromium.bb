@@ -5,33 +5,40 @@
 #ifndef ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
 #define ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
 
-#include "ash/display/display_controller.h"
-#include "ash/system/tray/system_tray_item.h"
+#include <map>
 
-namespace views {
-class View;
-}
+#include "ash/ash_export.h"
+#include "ash/display/display_controller.h"
+#include "ash/display/display_info.h"
+#include "ash/system/tray/system_tray_item.h"
+#include "base/strings/string16.h"
+#include "ui/views/view.h"
 
 namespace ash {
+namespace test {
+class AshTestBase;
+}
+
 namespace internal {
 
-enum TrayDisplayMode {
-  TRAY_DISPLAY_SINGLE,
-  TRAY_DISPLAY_EXTENDED,
-  TRAY_DISPLAY_MIRRORED,
-  TRAY_DISPLAY_DOCKED,
-};
-
-class DisplayView;
 class DisplayNotificationView;
 
-class TrayDisplay : public SystemTrayItem,
-                    public DisplayController::Observer {
+class ASH_EXPORT TrayDisplay : public SystemTrayItem,
+                               public DisplayController::Observer {
  public:
   explicit TrayDisplay(SystemTray* system_tray);
   virtual ~TrayDisplay();
 
  private:
+  friend class test::AshTestBase;
+  friend class TrayDisplayTest;
+
+  typedef std::map<int64, DisplayInfo> DisplayInfoMap;
+
+  // Checks the current display settings and determine what message should be
+  // shown for notification.
+  base::string16 GetDisplayMessageForNotification();
+
   // Overridden from SystemTrayItem.
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
   virtual views::View* CreateNotificationView(
@@ -43,9 +50,19 @@ class TrayDisplay : public SystemTrayItem,
   // Overridden from DisplayControllerObserver:
   virtual void OnDisplayConfigurationChanged() OVERRIDE;
 
-  DisplayView* default_;
+  // Call this with |diabled| = false when the test case wants to see the
+  // display notification.
+  static void SetDisplayNotificationsDisabledForTest(bool disabled);
+
+  // Test accessors.
+  base::string16 GetDefaultViewMessage();
+  views::View* default_view() { return default_; }
+  const string16& current_message() const { return current_message_; }
+
+  views::View* default_;
   DisplayNotificationView* notification_;
-  TrayDisplayMode current_mode_;
+  string16 current_message_;
+  DisplayInfoMap display_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDisplay);
 };

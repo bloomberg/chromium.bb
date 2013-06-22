@@ -321,6 +321,15 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED" desc="The label used in the tray to show that the current status is docked mode.">
 	Dock mode
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
+	<ph name="DISPLAY_NAME">$1</ph> has been resized to <ph name="RESOLUTION">$2</ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED" desc="The label used in the tray to notify that the display rotation settings has changed.">
+	<ph name="DISPLAY_NAME">$1</ph> has been rotated
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY" desc="The label used in the tray to show the current display's configuration if there is a single display">
+	<ph name="DISPLAY_NAME">$1</ph>: <ph name="RESOLUTION">$2</ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME" desc="Label shown in tray for a display whose name is unknown.">
 	Unknown Display
       </message>
