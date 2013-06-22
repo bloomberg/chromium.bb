@@ -677,15 +677,7 @@ void AutoImport(
     int dont_import_items,
     const std::string& import_bookmarks_path) {
   // Deletes itself.
-  ImporterHost* importer_host;
-  // TODO(csilv,mirandac): Out-of-process import has only been qualified on
-  // MacOS X and Windows, so we will only use it on those platforms.
-  // Linux still uses the in-process import (http://crbug.com/56816).
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  importer_host = new ExternalProcessImporterHost;
-#else
-  importer_host = new ImporterHost;
-#endif
+  ImporterHost* importer_host = new ExternalProcessImporterHost;
 
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
@@ -753,14 +745,7 @@ void AutoImport(
 
   if (!import_bookmarks_path.empty()) {
     // Deletes itself.
-    ImporterHost* file_importer_host;
-    // TODO(gab): Make Linux use OOP import as well (http://crbug.com/56816) and
-    // get rid of these ugly ifdefs.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-    file_importer_host = new ExternalProcessImporterHost;
-#else
-    file_importer_host = new ImporterHost;
-#endif
+    ImporterHost* file_importer_host = new ExternalProcessImporterHost;
     file_importer_host->set_headless();
 
     ImportFromFile(profile, file_importer_host, import_bookmarks_path);

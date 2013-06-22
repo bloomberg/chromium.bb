@@ -30,8 +30,8 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
+#include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_data_types.h"
-#include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_type.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -979,7 +979,7 @@ void BookmarksImportFunction::FileSelected(const base::FilePath& path,
   // TODO(jgreenwald): remove ifdef once extensions are no longer built on
   // Android.
   // Deletes itself.
-  ImporterHost* importer_host = new ImporterHost;
+  ImporterHost* importer_host = new ExternalProcessImporterHost;
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
   source_profile.source_path = path;

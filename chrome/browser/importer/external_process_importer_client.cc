@@ -64,6 +64,7 @@ void ExternalProcessImporterClient::Cancel() {
 }
 
 void ExternalProcessImporterClient::OnProcessCrashed(int exit_code) {
+  DLOG(ERROR) << __FUNCTION__;
   if (cancelled_)
     return;
 

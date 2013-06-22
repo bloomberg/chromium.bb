@@ -111,9 +111,6 @@ void ImportDataHandler::ImportData(const ListValue* args) {
                                      state);
     import_did_succeed_ = false;
 
-    // TODO(gab): Make Linux use OOP import as well (http://crbug.com/56816) and
-    // get rid of these ugly ifdefs.
-#if defined(OS_MACOSX) || defined(OS_WIN)
     // The Google Toolbar importer doesn't work for the out-of-process import.
     // This is the only entry point for this importer (it is never used on first
     // run). See discussion on http://crbug.com/219419 for details.
@@ -121,9 +118,6 @@ void ImportDataHandler::ImportData(const ListValue* args) {
       importer_host_ = new ImporterHost;
     else
       importer_host_ = new ExternalProcessImporterHost;
-#else
-    importer_host_ = new ImporterHost;
-#endif
     importer_host_->SetObserver(this);
     importer_host_->set_browser(
         chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));

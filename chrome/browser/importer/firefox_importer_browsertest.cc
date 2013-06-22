@@ -269,13 +269,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
       items = items | importer::SEARCH_ENGINES;
 
     // Deletes itself.
-    // TODO(gab): Use ExternalProcessImporterHost on Linux as well.
-    ImporterHost* host;
-#if defined(OS_MACOSX) || defined(OS_WIN)
-    host = new ExternalProcessImporterHost;
-#else
-    host = new ImporterHost;
-#endif
+    ImporterHost* host = new ExternalProcessImporterHost;
     host->SetObserver(observer);
     host->StartImportSettings(source_profile,
                               browser()->profile(),
