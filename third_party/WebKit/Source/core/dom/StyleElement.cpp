@@ -34,13 +34,6 @@
 
 namespace WebCore {
 
-static bool isValidStyleChild(Node* node)
-{
-    ASSERT(node);
-    Node::NodeType nodeType = node->nodeType();
-    return nodeType == Node::TEXT_NODE || nodeType == Node::CDATA_SECTION_NODE;
-}
-
 static bool isCSS(Element* element, const AtomicString& type)
 {
     return type.isEmpty() || (element->isHTMLElement() ? equalIgnoringCase(type, "text/css") : (type == "text/css"));
@@ -111,33 +104,11 @@ void StyleElement::finishParsingChildren(Element* element)
     m_createdByParser = false;
 }
 
-void StyleElement::process(Element* e)
+void StyleElement::process(Element* element)
 {
-    if (!e || !e->inDocument())
+    if (!element || !element->inDocument())
         return;
-
-    unsigned resultLength = 0;
-    for (Node* c = e->firstChild(); c; c = c->nextSibling()) {
-        if (isValidStyleChild(c)) {
-            unsigned length = c->nodeValue().length();
-            if (length > std::numeric_limits<unsigned>::max() - resultLength) {
-                createSheet(e, "");
-                return;
-            }
-            resultLength += length;
-        }
-    }
-    StringBuilder sheetText;
-    sheetText.reserveCapacity(resultLength);
-
-    for (Node* c = e->firstChild(); c; c = c->nextSibling()) {
-        if (isValidStyleChild(c)) {
-            sheetText.append(c->nodeValue());
-        }
-    }
-    ASSERT(sheetText.length() == resultLength);
-
-    createSheet(e, sheetText.toString());
+    createSheet(element, element->textFromChildren());
 }
 
 void StyleElement::clearSheet()

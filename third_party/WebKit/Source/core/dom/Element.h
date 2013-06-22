@@ -483,6 +483,8 @@ public:
     String innerText();
     String outerText();
  
+    String textFromChildren();
+
     virtual String title() const;
 
     const AtomicString& pseudo() const;
