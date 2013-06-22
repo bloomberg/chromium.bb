@@ -33,6 +33,9 @@ def DeviceInfo(serial):
     return GetCmdOutput('adb -s %s shell %s' % (serial, cmd),
                         shell=True).strip()
 
+  device_adb = android_commands.AndroidCommands(serial)
+
+  # TODO(navabi): Replace AdbShellCmd with device_adb.
   device_type = AdbShellCmd('getprop ro.build.product')
   device_build = AdbShellCmd('getprop ro.build.id')
   device_build_type = AdbShellCmd('getprop ro.build.type')
@@ -71,7 +74,7 @@ def DeviceInfo(serial):
 
   errors = []
   if battery_level < 15:
-    errors += ['Device critically low in battery. Do not use for testing.']
+    errors += ['Device critically low in battery. Turning off device.']
   if not setup_wizard_disabled and device_build_type != 'user':
     errors += ['Setup wizard not disabled. Was it provisioned correctly?']
   if device_product_name == 'mantaray' and ac_power != 'true':
@@ -81,13 +84,13 @@ def DeviceInfo(serial):
   # if install_speed < 500:
   #   errors += ['Device install speed too low. Do not use for testing.']
 
-  # TODO(navabi): Determine if device status check step should fail on slow
-  # install speed. The original CL caused the step to fail but was reverted
-  # because it caused too many early failures. Determine if it was just flake.
-  # Also, do not fail on 'Unknown' caused by offline device, because other
-  # devices can still be used for tests.
-  fail_step = (battery_level == 'Unknown' or battery_level >= 15)
-  return device_type, device_build, '\n'.join(report), errors, fail_step
+  # Causing the device status check step fail for slow install speed or low
+  # battery currently is too disruptive to the bots (especially try bots).
+  # Turn off devices with low battery and the step does not fail.
+  if battery_level < 15:
+    device_adb.EnableAdbRoot()
+    AdbShellCmd('reboot -p')
+  return device_type, device_build, '\n'.join(report), errors, True
 
 
 def CheckForMissingDevices(options, adb_online_devs):
