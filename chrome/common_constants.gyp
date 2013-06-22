@@ -82,11 +82,6 @@
         ['toolkit_uses_gtk == 1', {
           'dependencies': ['../build/linux/system.gyp:gtk'],
         }],
-        ['OS != "ios"', {
-          'dependencies': [
-            '../components/nacl_common.gypi:nacl_switches',
-          ],
-        }],
       ],
     },
   ],
@@ -101,7 +96,6 @@
           ],
           'dependencies': [
             '../base/base.gyp:base_nacl_win64',
-            '../components/nacl_common.gypi:nacl_switches_win64',
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],
           'defines': [

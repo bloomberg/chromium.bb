@@ -14,7 +14,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
-#include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"

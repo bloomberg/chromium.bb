@@ -30,7 +30,6 @@
 #include "chrome/plugin/chrome_content_plugin_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
-#include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -529,20 +528,12 @@ void ChromeMainDelegate::PreSandboxStartup() {
     // Initialize ResourceBundle which handles files loaded from external
     // sources.  The language should have been passed in to us from the
     // browser process as a command line flag.
-#if defined(DISABLE_NACL)
-    DCHECK(command_line.HasSwitch(switches::kLang) ||
-           process_type == switches::kZygoteProcess ||
-           process_type == switches::kGpuProcess ||
-           process_type == switches::kPpapiBrokerProcess ||
-           process_type == switches::kPpapiPluginProcess);
-#else
     DCHECK(command_line.HasSwitch(switches::kLang) ||
            process_type == switches::kZygoteProcess ||
            process_type == switches::kGpuProcess ||
            process_type == switches::kNaClLoaderProcess ||
            process_type == switches::kPpapiBrokerProcess ||
            process_type == switches::kPpapiPluginProcess);
-#endif
 
     // TODO(markusheintz): The command line flag --lang is actually processed
     // by the CommandLinePrefStore, and made available through the PrefService

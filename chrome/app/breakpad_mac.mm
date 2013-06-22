@@ -32,7 +32,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/breakpad/common/breakpad_paths.h"
-#include "components/nacl/common/nacl_switches.h"
 #include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 #include "policy/policy_constants.h"
 

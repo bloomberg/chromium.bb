@@ -19,7 +19,6 @@
 #include "chrome/browser/flags_storage.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

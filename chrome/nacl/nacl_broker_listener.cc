@@ -15,8 +15,6 @@
 #include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_debug_exception_handler_win.h"
 #include "chrome/common/nacl_messages.h"
-#include "components/nacl/common/nacl_switches.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"

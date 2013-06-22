@@ -36,7 +36,6 @@
 #include "chrome/common/nacl_host_messages.h"
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/render_messages.h"
-#include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_data.h"

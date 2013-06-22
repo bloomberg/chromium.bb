@@ -11,7 +11,6 @@ include_rules = [
   "+components/auto_login_parser",
   "+components/breakpad",
   "+components/browser_context_keyed_service",
-  "+components/nacl/common",
   "+components/navigation_interception",
   "+components/user_prefs",
   "+components/visitedlink/browser",
