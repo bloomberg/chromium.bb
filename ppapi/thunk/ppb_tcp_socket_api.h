@@ -6,7 +6,7 @@
 #define PPAPI_THUNK_PPB_TCP_SOCKET_API_H_
 
 #include "base/memory/ref_counted.h"
-#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
+#include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -30,7 +30,7 @@ class PPAPI_THUNK_EXPORT PPB_TCPSocket_API {
                         int32_t bytes_to_write,
                         scoped_refptr<TrackedCallback> callback) = 0;
   virtual void Close() = 0;
-  virtual int32_t SetOption(PP_TCPSocket_Option_Dev name,
+  virtual int32_t SetOption(PP_TCPSocket_Option name,
                             const PP_Var& value,
                             scoped_refptr<TrackedCallback> callback) = 0;
 };

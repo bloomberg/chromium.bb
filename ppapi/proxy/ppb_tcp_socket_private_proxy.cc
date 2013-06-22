@@ -47,7 +47,7 @@ class TCPSocket : public TCPSocketPrivateImpl {
   virtual void SendRead(int32_t bytes_to_read) OVERRIDE;
   virtual void SendWrite(const std::string& buffer) OVERRIDE;
   virtual void SendDisconnect() OVERRIDE;
-  virtual void SendSetOption(PP_TCPSocket_Option_Dev name,
+  virtual void SendSetOption(PP_TCPSocket_Option name,
                              const SocketOptionData& value) OVERRIDE;
 
  private:
@@ -119,7 +119,7 @@ void TCPSocket::SendDisconnect() {
   SendToBrowser(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id_));
 }
 
-void TCPSocket::SendSetOption(PP_TCPSocket_Option_Dev name,
+void TCPSocket::SendSetOption(PP_TCPSocket_Option name,
                               const SocketOptionData& value) {
   SendToBrowser(
       new PpapiHostMsg_PPBTCPSocket_SetOption(socket_id_, name, value));

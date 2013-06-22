@@ -3,10 +3,10 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_tcp_socket_dev.idl modified Thu Jun 20 15:14:26 2013. */
+/* From ppb_tcp_socket.idl modified Sat Jun 22 11:17:34 2013. */
 
-#ifndef PPAPI_C_DEV_PPB_TCP_SOCKET_DEV_H_
-#define PPAPI_C_DEV_PPB_TCP_SOCKET_DEV_H_
+#ifndef PPAPI_C_PPB_TCP_SOCKET_H_
+#define PPAPI_C_PPB_TCP_SOCKET_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -16,12 +16,12 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_TCPSOCKET_DEV_INTERFACE_0_1 "PPB_TCPSocket(Dev);0.1"
-#define PPB_TCPSOCKET_DEV_INTERFACE PPB_TCPSOCKET_DEV_INTERFACE_0_1
+#define PPB_TCPSOCKET_INTERFACE_1_0 "PPB_TCPSocket;1.0"
+#define PPB_TCPSOCKET_INTERFACE PPB_TCPSOCKET_INTERFACE_1_0
 
 /**
  * @file
- * This file defines the <code>PPB_TCPSocket_Dev</code> interface.
+ * This file defines the <code>PPB_TCPSocket</code> interface.
  */
 
 
@@ -59,8 +59,8 @@ typedef enum {
    * guarantee it will conform to the size.
    */
   PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE = 2
-} PP_TCPSocket_Option_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TCPSocket_Option_Dev, 4);
+} PP_TCPSocket_Option;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TCPSocket_Option, 4);
 /**
  * @}
  */
@@ -70,14 +70,14 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TCPSocket_Option_Dev, 4);
  * @{
  */
 /**
- * The <code>PPB_TCPSocket_Dev</code> interface provides TCP socket operations.
+ * The <code>PPB_TCPSocket</code> interface provides TCP socket operations.
  *
  * Permissions: Apps permission <code>socket</code> with subrule
  * <code>tcp-connect</code> is required for <code>Connect()</code>.
  * For more details about network communication permissions, please see:
  * http://developer.chrome.com/apps/app_network.html
  */
-struct PPB_TCPSocket_Dev_0_1 {
+struct PPB_TCPSocket_1_0 {
   /**
    * Creates a TCP socket resource.
    *
@@ -94,8 +94,7 @@ struct PPB_TCPSocket_Dev_0_1 {
    * @param[in] resource A <code>PP_Resource</code> to check.
    *
    * @return <code>PP_TRUE</code> if the input is a
-   * <code>PPB_TCPSocket_Dev</code> resource; <code>PP_FALSE</code>
-   * otherwise.
+   * <code>PPB_TCPSocket</code> resource; <code>PP_FALSE</code> otherwise.
    */
   PP_Bool (*IsTCPSocket)(PP_Resource resource);
   /**
@@ -194,7 +193,7 @@ struct PPB_TCPSocket_Dev_0_1 {
   void (*Close)(PP_Resource tcp_socket);
   /**
    * Sets a socket option on the TCP socket.
-   * Please see the <code>PP_TCPSocket_Option_Dev</code> description for option
+   * Please see the <code>PP_TCPSocket_Option</code> description for option
    * names, value types and allowed values.
    *
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
@@ -207,15 +206,15 @@ struct PPB_TCPSocket_Dev_0_1 {
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
   int32_t (*SetOption)(PP_Resource tcp_socket,
-                       PP_TCPSocket_Option_Dev name,
+                       PP_TCPSocket_Option name,
                        struct PP_Var value,
                        struct PP_CompletionCallback callback);
 };
 
-typedef struct PPB_TCPSocket_Dev_0_1 PPB_TCPSocket_Dev;
+typedef struct PPB_TCPSocket_1_0 PPB_TCPSocket;
 /**
  * @}
  */
 
-#endif  /* PPAPI_C_DEV_PPB_TCP_SOCKET_DEV_H_ */
+#endif  /* PPAPI_C_PPB_TCP_SOCKET_H_ */
 

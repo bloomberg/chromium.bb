@@ -219,7 +219,7 @@ void PepperTCPSocket::Write(const std::string& data) {
   DoWrite();
 }
 
-void PepperTCPSocket::SetOption(PP_TCPSocket_Option_Dev name,
+void PepperTCPSocket::SetOption(PP_TCPSocket_Option name,
                                 const ppapi::SocketOptionData& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 

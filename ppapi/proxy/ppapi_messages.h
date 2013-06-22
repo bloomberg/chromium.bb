@@ -21,7 +21,6 @@
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/dev/pp_video_capture_dev.h"
 #include "ppapi/c/dev/pp_video_dev.h"
-#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/dev/ppb_udp_socket_dev.h"
@@ -38,6 +37,7 @@
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_image_data.h"
+#include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -96,7 +96,7 @@ IPC_ENUM_TRAITS(PP_ResourceString)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_TalkEvent, PP_TALKEVENT_NUM_EVENTS - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_TalkPermission,
                           PP_TALKPERMISSION_NUM_PERMISSIONS - 1)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_TCPSocket_Option_Dev,
+IPC_ENUM_TRAITS_MAX_VALUE(PP_TCPSocket_Option,
                           PP_TCPSOCKET_OPTION_RECV_BUFFER_SIZE)
 IPC_ENUM_TRAITS(PP_TextInput_Type)
 IPC_ENUM_TRAITS(PP_TrueTypeFontFamily_Dev)
@@ -1222,7 +1222,7 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBTCPSocket_Disconnect,
                      uint32 /* socket_id */)
 IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_SetOption,
                      uint32 /* socket_id */,
-                     PP_TCPSocket_Option_Dev /* name */,
+                     PP_TCPSocket_Option /* name */,
                      ppapi::SocketOptionData /* value */)
 
 // PPB_TCPServerSocket_Private.

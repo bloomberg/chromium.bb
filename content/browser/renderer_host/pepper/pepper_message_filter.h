@@ -23,9 +23,9 @@
 #include "net/http/transport_security_state.h"
 #include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_config_service.h"
-#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
@@ -147,7 +147,7 @@ class PepperMessageFilter
   void OnTCPWrite(uint32 socket_id, const std::string& data);
   void OnTCPDisconnect(uint32 socket_id);
   void OnTCPSetOption(uint32 socket_id,
-                      PP_TCPSocket_Option_Dev name,
+                      PP_TCPSocket_Option name,
                       const ppapi::SocketOptionData& value);
   void OnTCPServerListen(int32 routing_id,
                          uint32 plugin_dispatcher_id,

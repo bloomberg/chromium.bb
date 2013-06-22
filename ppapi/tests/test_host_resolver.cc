@@ -5,8 +5,8 @@
 #include "ppapi/tests/test_host_resolver.h"
 
 #include "ppapi/cpp/dev/host_resolver_dev.h"
-#include "ppapi/cpp/dev/tcp_socket_dev.h"
 #include "ppapi/cpp/net_address.h"
+#include "ppapi/cpp/tcp_socket.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
@@ -22,7 +22,7 @@ bool TestHostResolver::Init() {
   if (!host_resolver_is_available)
     instance_->AppendError("PPB_HostResolver interface not available");
 
-  bool tcp_socket_is_available = pp::TCPSocket_Dev::IsAvailable();
+  bool tcp_socket_is_available = pp::TCPSocket::IsAvailable();
   if (!tcp_socket_is_available)
     instance_->AppendError("PPB_TCPSocket interface not available");
 
@@ -45,7 +45,7 @@ void TestHostResolver::RunTests(const std::string& filter) {
 }
 
 std::string TestHostResolver::SyncConnect(
-    pp::TCPSocket_Dev* socket,
+    pp::TCPSocket* socket,
     const pp::NetAddress& address) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(socket->Connect(address, callback.GetCallback()));
@@ -54,7 +54,7 @@ std::string TestHostResolver::SyncConnect(
   PASS();
 }
 
-std::string TestHostResolver::SyncRead(pp::TCPSocket_Dev* socket,
+std::string TestHostResolver::SyncRead(pp::TCPSocket* socket,
                                        char* buffer,
                                        int32_t num_bytes,
                                        int32_t* bytes_read) {
@@ -67,7 +67,7 @@ std::string TestHostResolver::SyncRead(pp::TCPSocket_Dev* socket,
   PASS();
 }
 
-std::string TestHostResolver::SyncWrite(pp::TCPSocket_Dev* socket,
+std::string TestHostResolver::SyncWrite(pp::TCPSocket* socket,
                                         const char* buffer,
                                         int32_t num_bytes,
                                         int32_t* bytes_written) {
@@ -80,7 +80,7 @@ std::string TestHostResolver::SyncWrite(pp::TCPSocket_Dev* socket,
   PASS();
 }
 
-std::string TestHostResolver::CheckHTTPResponse(pp::TCPSocket_Dev* socket,
+std::string TestHostResolver::CheckHTTPResponse(pp::TCPSocket* socket,
                                                 const std::string& request,
                                                 const std::string& response) {
   int32_t rv = 0;
@@ -124,7 +124,7 @@ std::string TestHostResolver::ParameterizedTestResolve(
     address = host_resolver.GetNetAddress(i);
     ASSERT_NE(0, address.pp_resource());
 
-    pp::TCPSocket_Dev socket(instance_);
+    pp::TCPSocket socket(instance_);
     ASSERT_SUBTEST_SUCCESS(SyncConnect(&socket, address));
     ASSERT_SUBTEST_SUCCESS(CheckHTTPResponse(&socket,
                                              "GET / HTTP/1.0\r\n\r\n",

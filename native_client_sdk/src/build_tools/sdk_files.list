@@ -284,7 +284,6 @@ include/ppapi/c/dev/ppb_opengles2ext_dev.h
 include/ppapi/c/dev/ppb_printing_dev.h
 include/ppapi/c/dev/ppb_resource_array_dev.h
 include/ppapi/c/dev/ppb_scrollbar_dev.h
-include/ppapi/c/dev/ppb_tcp_socket_dev.h
 include/ppapi/c/dev/ppb_testing_dev.h
 include/ppapi/c/dev/ppb_text_input_dev.h
 include/ppapi/c/dev/ppb_trace_event_dev.h
@@ -341,6 +340,7 @@ include/ppapi/c/ppb_mouse_lock.h
 include/ppapi/c/ppb_net_address.h
 include/ppapi/c/pp_bool.h
 include/ppapi/c/ppb_opengles2.h
+include/ppapi/c/ppb_tcp_socket.h
 include/ppapi/c/ppb_url_loader.h
 include/ppapi/c/ppb_url_request_info.h
 include/ppapi/c/ppb_url_response_info.h
@@ -389,7 +389,6 @@ include/ppapi/cpp/dev/resource_array_dev.h
 include/ppapi/cpp/dev/scriptable_object_deprecated.h
 include/ppapi/cpp/dev/scrollbar_dev.h
 include/ppapi/cpp/dev/selection_dev.h
-include/ppapi/cpp/dev/tcp_socket_dev.h
 include/ppapi/cpp/dev/text_input_dev.h
 include/ppapi/cpp/dev/truetype_font_dev.h
 include/ppapi/cpp/dev/udp_socket_dev.h
@@ -456,6 +455,7 @@ include/ppapi/cpp/resource.h
 include/ppapi/c/pp_size.h
 include/ppapi/cpp/size.h
 include/ppapi/c/pp_stdint.h
+include/ppapi/cpp/tcp_socket.h
 include/ppapi/c/pp_time.h
 include/ppapi/c/pp_touch_point.h
 include/ppapi/cpp/touch_point.h
@@ -735,7 +735,7 @@ src/ppapi_cpp/scrollbar_dev.cc
 src/ppapi_cpp/selection_dev.cc
 src/ppapi_cpp/simple_thread.cc
 src/ppapi_cpp/socket_dev.cc
-src/ppapi_cpp/tcp_socket_dev.cc
+src/ppapi_cpp/tcp_socket.cc
 src/ppapi_cpp/text_input_dev.cc
 src/ppapi_cpp/truetype_font_dev.cc
 src/ppapi_cpp/udp_socket_dev.cc

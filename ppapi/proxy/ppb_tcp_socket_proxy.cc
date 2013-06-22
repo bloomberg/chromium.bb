@@ -51,7 +51,7 @@ class TCPSocket : public thunk::PPB_TCPSocket_API,
                         int32_t bytes_to_write,
                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
-  virtual int32_t SetOption(PP_TCPSocket_Option_Dev name,
+  virtual int32_t SetOption(PP_TCPSocket_Option name,
                             const PP_Var& value,
                             scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
@@ -67,7 +67,7 @@ class TCPSocket : public thunk::PPB_TCPSocket_API,
   virtual void SendRead(int32_t bytes_to_read) OVERRIDE;
   virtual void SendWrite(const std::string& buffer) OVERRIDE;
   virtual void SendDisconnect() OVERRIDE;
-  virtual void SendSetOption(PP_TCPSocket_Option_Dev name,
+  virtual void SendSetOption(PP_TCPSocket_Option name,
                              const SocketOptionData& value) OVERRIDE;
   virtual Resource* GetOwnerResource() OVERRIDE;
 
@@ -144,7 +144,7 @@ void TCPSocket::Close() {
   DisconnectImpl();
 }
 
-int32_t TCPSocket::SetOption(PP_TCPSocket_Option_Dev name,
+int32_t TCPSocket::SetOption(PP_TCPSocket_Option name,
                              const PP_Var& value,
                              scoped_refptr<TrackedCallback> callback) {
   return SetOptionImpl(name, value, callback);
@@ -183,7 +183,7 @@ void TCPSocket::SendDisconnect() {
   SendToBrowser(new PpapiHostMsg_PPBTCPSocket_Disconnect(socket_id_));
 }
 
-void TCPSocket::SendSetOption(PP_TCPSocket_Option_Dev name,
+void TCPSocket::SendSetOption(PP_TCPSocket_Option name,
                               const SocketOptionData& value) {
   SendToBrowser(
       new PpapiHostMsg_PPBTCPSocket_SetOption(socket_id_, name, value));

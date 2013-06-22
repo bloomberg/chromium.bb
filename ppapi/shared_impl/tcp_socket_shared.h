@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
+#include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
@@ -66,7 +66,7 @@ class PPAPI_SHARED_EXPORT TCPSocketShared {
   virtual void SendRead(int32_t bytes_to_read) = 0;
   virtual void SendWrite(const std::string& buffer) = 0;
   virtual void SendDisconnect() = 0;
-  virtual void SendSetOption(PP_TCPSocket_Option_Dev name,
+  virtual void SendSetOption(PP_TCPSocket_Option name,
                              const SocketOptionData& value) = 0;
 
   virtual Resource* GetOwnerResource() = 0;
@@ -111,7 +111,7 @@ class PPAPI_SHARED_EXPORT TCPSocketShared {
                     int32_t bytes_to_write,
                     scoped_refptr<TrackedCallback> callback);
   void DisconnectImpl();
-  int32_t SetOptionImpl(PP_TCPSocket_Option_Dev name,
+  int32_t SetOptionImpl(PP_TCPSocket_Option name,
                         const PP_Var& value,
                         scoped_refptr<TrackedCallback> callback);
 

@@ -112,7 +112,7 @@ void PPB_TCPSocket_Private_Impl::SendDisconnect() {
 }
 
 void PPB_TCPSocket_Private_Impl::SendSetOption(
-    PP_TCPSocket_Option_Dev name,
+    PP_TCPSocket_Option name,
     const ::ppapi::SocketOptionData& value) {
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
   if (!plugin_delegate)

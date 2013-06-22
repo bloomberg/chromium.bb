@@ -4,7 +4,7 @@
 
 #include "ppapi/tests/test_tcp_socket.h"
 
-#include "ppapi/cpp/dev/tcp_socket_dev.h"
+#include "ppapi/cpp/tcp_socket.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -26,7 +26,7 @@ TestTCPSocket::TestTCPSocket(TestingInstance* instance) : TestCase(instance) {
 }
 
 bool TestTCPSocket::Init() {
-  if (!pp::TCPSocket_Dev::IsAvailable())
+  if (!pp::TCPSocket::IsAvailable())
     return false;
 
   // We need something to connect to, so we connect to the HTTP server whence we
@@ -52,7 +52,7 @@ void TestTCPSocket::RunTests(const std::string& filter) {
 }
 
 std::string TestTCPSocket::TestConnect() {
-  pp::TCPSocket_Dev socket(instance_);
+  pp::TCPSocket socket(instance_);
   TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
   cb.WaitForResult(socket.Connect(addr_, cb.GetCallback()));
@@ -73,7 +73,7 @@ std::string TestTCPSocket::TestConnect() {
 }
 
 std::string TestTCPSocket::TestReadWrite() {
-  pp::TCPSocket_Dev socket(instance_);
+  pp::TCPSocket socket(instance_);
   TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
   cb.WaitForResult(socket.Connect(addr_, cb.GetCallback()));
@@ -91,7 +91,7 @@ std::string TestTCPSocket::TestReadWrite() {
 }
 
 std::string TestTCPSocket::TestSetOption() {
-  pp::TCPSocket_Dev socket(instance_);
+  pp::TCPSocket socket(instance_);
   TestCompletionCallback cb_1(instance_->pp_instance(), callback_type());
   TestCompletionCallback cb_2(instance_->pp_instance(), callback_type());
   TestCompletionCallback cb_3(instance_->pp_instance(), callback_type());
@@ -142,7 +142,7 @@ std::string TestTCPSocket::TestSetOption() {
   PASS();
 }
 
-int32_t TestTCPSocket::ReadFirstLineFromSocket(pp::TCPSocket_Dev* socket,
+int32_t TestTCPSocket::ReadFirstLineFromSocket(pp::TCPSocket* socket,
                                                std::string* s) {
   char buffer[1000];
 
@@ -168,7 +168,7 @@ int32_t TestTCPSocket::ReadFirstLineFromSocket(pp::TCPSocket_Dev* socket,
   return PP_ERROR_FAILED;
 }
 
-int32_t TestTCPSocket::WriteStringToSocket(pp::TCPSocket_Dev* socket,
+int32_t TestTCPSocket::WriteStringToSocket(pp::TCPSocket* socket,
                                            const std::string& s) {
   const char* buffer = s.data();
   size_t written = 0;

@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "ppapi/cpp/dev/tcp_socket_dev.h"
 #include "ppapi/cpp/dev/udp_socket_dev.h"
 #include "ppapi/cpp/pass_ref.h"
+#include "ppapi/cpp/tcp_socket.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
@@ -51,7 +51,7 @@ TestUDPSocket::TestUDPSocket(TestingInstance* instance) : TestCase(instance) {
 }
 
 bool TestUDPSocket::Init() {
-  bool tcp_socket_is_available = pp::TCPSocket_Dev::IsAvailable();
+  bool tcp_socket_is_available = pp::TCPSocket::IsAvailable();
   if (!tcp_socket_is_available)
     instance_->AppendError("PPB_TCPSocket interface not available");
 
@@ -86,7 +86,7 @@ void TestUDPSocket::RunTests(const std::string& filter) {
 }
 
 std::string TestUDPSocket::GetLocalAddress(pp::NetAddress* address) {
-  pp::TCPSocket_Dev socket(instance_);
+  pp::TCPSocket socket(instance_);
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(socket.Connect(address_, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);

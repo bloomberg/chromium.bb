@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_tcp_socket_dev.idl modified Wed Jun 05 23:11:18 2013.
+// From ppb_tcp_socket.idl modified Thu Jun 20 16:36:53 2013.
 
-#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -20,7 +20,7 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
-  VLOG(4) << "PPB_TCPSocket_Dev::Create()";
+  VLOG(4) << "PPB_TCPSocket::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -28,7 +28,7 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Bool IsTCPSocket(PP_Resource resource) {
-  VLOG(4) << "PPB_TCPSocket_Dev::IsTCPSocket()";
+  VLOG(4) << "PPB_TCPSocket::IsTCPSocket()";
   EnterResource<PPB_TCPSocket_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
@@ -36,7 +36,7 @@ PP_Bool IsTCPSocket(PP_Resource resource) {
 int32_t Connect(PP_Resource tcp_socket,
                 PP_Resource addr,
                 struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_TCPSocket_Dev::Connect()";
+  VLOG(4) << "PPB_TCPSocket::Connect()";
   EnterResource<PPB_TCPSocket_API> enter(tcp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -44,7 +44,7 @@ int32_t Connect(PP_Resource tcp_socket,
 }
 
 PP_Resource GetLocalAddress(PP_Resource tcp_socket) {
-  VLOG(4) << "PPB_TCPSocket_Dev::GetLocalAddress()";
+  VLOG(4) << "PPB_TCPSocket::GetLocalAddress()";
   EnterResource<PPB_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
     return 0;
@@ -52,7 +52,7 @@ PP_Resource GetLocalAddress(PP_Resource tcp_socket) {
 }
 
 PP_Resource GetRemoteAddress(PP_Resource tcp_socket) {
-  VLOG(4) << "PPB_TCPSocket_Dev::GetRemoteAddress()";
+  VLOG(4) << "PPB_TCPSocket::GetRemoteAddress()";
   EnterResource<PPB_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
     return 0;
@@ -63,7 +63,7 @@ int32_t Read(PP_Resource tcp_socket,
              char* buffer,
              int32_t bytes_to_read,
              struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_TCPSocket_Dev::Read()";
+  VLOG(4) << "PPB_TCPSocket::Read()";
   EnterResource<PPB_TCPSocket_API> enter(tcp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -76,7 +76,7 @@ int32_t Write(PP_Resource tcp_socket,
               const char* buffer,
               int32_t bytes_to_write,
               struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_TCPSocket_Dev::Write()";
+  VLOG(4) << "PPB_TCPSocket::Write()";
   EnterResource<PPB_TCPSocket_API> enter(tcp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -86,7 +86,7 @@ int32_t Write(PP_Resource tcp_socket,
 }
 
 void Close(PP_Resource tcp_socket) {
-  VLOG(4) << "PPB_TCPSocket_Dev::Close()";
+  VLOG(4) << "PPB_TCPSocket::Close()";
   EnterResource<PPB_TCPSocket_API> enter(tcp_socket, true);
   if (enter.failed())
     return;
@@ -94,10 +94,10 @@ void Close(PP_Resource tcp_socket) {
 }
 
 int32_t SetOption(PP_Resource tcp_socket,
-                  PP_TCPSocket_Option_Dev name,
+                  PP_TCPSocket_Option name,
                   struct PP_Var value,
                   struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_TCPSocket_Dev::SetOption()";
+  VLOG(4) << "PPB_TCPSocket::SetOption()";
   EnterResource<PPB_TCPSocket_API> enter(tcp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -106,7 +106,7 @@ int32_t SetOption(PP_Resource tcp_socket,
                                                    enter.callback()));
 }
 
-const PPB_TCPSocket_Dev_0_1 g_ppb_tcpsocket_dev_thunk_0_1 = {
+const PPB_TCPSocket_1_0 g_ppb_tcpsocket_thunk_1_0 = {
   &Create,
   &IsTCPSocket,
   &Connect,
@@ -120,8 +120,8 @@ const PPB_TCPSocket_Dev_0_1 g_ppb_tcpsocket_dev_thunk_0_1 = {
 
 }  // namespace
 
-const PPB_TCPSocket_Dev_0_1* GetPPB_TCPSocket_Dev_0_1_Thunk() {
-  return &g_ppb_tcpsocket_dev_thunk_0_1;
+const PPB_TCPSocket_1_0* GetPPB_TCPSocket_1_0_Thunk() {
+  return &g_ppb_tcpsocket_thunk_1_0;
 }
 
 }  // namespace thunk

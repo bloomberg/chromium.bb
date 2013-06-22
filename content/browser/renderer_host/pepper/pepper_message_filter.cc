@@ -363,7 +363,7 @@ void PepperMessageFilter::OnTCPDisconnect(uint32 socket_id) {
 }
 
 void PepperMessageFilter::OnTCPSetOption(uint32 socket_id,
-                                         PP_TCPSocket_Option_Dev name,
+                                         PP_TCPSocket_Option name,
                                          const ppapi::SocketOptionData& value) {
   TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
   if (iter == tcp_sockets_.end()) {

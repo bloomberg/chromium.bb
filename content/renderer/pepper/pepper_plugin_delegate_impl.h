@@ -284,7 +284,7 @@ class PepperPluginDelegateImpl
   virtual void TCPSocketDisconnect(uint32 socket_id) OVERRIDE;
   virtual void TCPSocketSetOption(
       uint32 socket_id,
-      PP_TCPSocket_Option_Dev name,
+      PP_TCPSocket_Option name,
       const ppapi::SocketOptionData& value) OVERRIDE;
   virtual void RegisterTCPSocket(
       webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,

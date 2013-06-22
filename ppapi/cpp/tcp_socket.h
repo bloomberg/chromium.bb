@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_TCP_SOCKET_DEV_H_
-#define PPAPI_CPP_DEV_TCP_SOCKET_DEV_H_
+#ifndef PPAPI_CPP_TCP_SOCKET_H_
+#define PPAPI_CPP_TCP_SOCKET_H_
 
-#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
+#include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/resource.h"
@@ -15,47 +15,47 @@ namespace pp {
 class CompletionCallback;
 class InstanceHandle;
 
-/// The <code>TCPSocket_Dev</code> class provides TCP socket operations.
+/// The <code>TCPSocket</code> class provides TCP socket operations.
 ///
 /// Permissions: Apps permission <code>socket</code> with subrule
 /// <code>tcp-connect</code> is required for <code>Connect()</code>.
 /// For more details about network communication permissions, please see:
 /// http://developer.chrome.com/apps/app_network.html
-class TCPSocket_Dev: public Resource {
+class TCPSocket : public Resource {
  public:
-  /// Default constructor for creating an is_null() <code>TCPSocket_Dev</code>
+  /// Default constructor for creating an is_null() <code>TCPSocket</code>
   /// object.
-  TCPSocket_Dev();
+  TCPSocket();
 
-  /// A constructor used to create a <code>TCPSocket_Dev</code> object.
+  /// A constructor used to create a <code>TCPSocket</code> object.
   ///
   /// @param[in] instance The instance with which this resource will be
   /// associated.
-  explicit TCPSocket_Dev(const InstanceHandle& instance);
+  explicit TCPSocket(const InstanceHandle& instance);
 
   /// A constructor used when you have received a <code>PP_Resource</code> as a
   /// return value that has had 1 ref added for you.
   ///
-  /// @param[in] resource A <code>PPB_TCPSocket_Dev</code> resource.
-  TCPSocket_Dev(PassRef, PP_Resource resource);
+  /// @param[in] resource A <code>PPB_TCPSocket</code> resource.
+  TCPSocket(PassRef, PP_Resource resource);
 
-  /// The copy constructor for <code>TCPSocket_Dev</code>.
+  /// The copy constructor for <code>TCPSocket</code>.
   ///
-  /// @param[in] other A reference to another <code>TCPSocket_Dev</code>.
-  TCPSocket_Dev(const TCPSocket_Dev& other);
+  /// @param[in] other A reference to another <code>TCPSocket</code>.
+  TCPSocket(const TCPSocket& other);
 
   /// The destructor.
-  virtual ~TCPSocket_Dev();
+  virtual ~TCPSocket();
 
-  /// The assignment operator for <code>TCPSocket_Dev</code>.
+  /// The assignment operator for <code>TCPSocket</code>.
   ///
-  /// @param[in] other A reference to another <code>TCPSocket_Dev</code>.
+  /// @param[in] other A reference to another <code>TCPSocket</code>.
   ///
-  /// @return A reference to this <code>TCPSocket_Dev</code> object.
-  TCPSocket_Dev& operator=(const TCPSocket_Dev& other);
+  /// @return A reference to this <code>TCPSocket</code> object.
+  TCPSocket& operator=(const TCPSocket& other);
 
   /// Static function for determining whether the browser supports the
-  /// <code>PPB_TCPSocket_Dev</code> interface.
+  /// <code>PPB_TCPSocket</code> interface.
   ///
   /// @return true if the interface is available, false otherwise.
   static bool IsAvailable();
@@ -101,7 +101,7 @@ class TCPSocket_Dev: public Resource {
   /// of your class. When your class goes out of scope, the callback factory
   /// will not actually cancel the operation, but will rather just skip issuing
   /// the callback on your class. This means that if the underlying
-  /// <code>PPB_TCPSocket_Dev</code> resource outlives your class, the browser
+  /// <code>PPB_TCPSocket</code> resource outlives your class, the browser
   /// will still try to write into your buffer when the operation completes.
   /// The buffer must be kept valid until then to avoid memory corruption.
   /// If you want to release the buffer while the <code>Read()</code> call is
@@ -146,7 +146,7 @@ class TCPSocket_Dev: public Resource {
   void Close();
 
   /// Sets a socket option on the TCP socket.
-  /// Please see the <code>PP_TCPSocket_Option_Dev</code> description for option
+  /// Please see the <code>PP_TCPSocket_Option</code> description for option
   /// names, value types and allowed values.
   ///
   /// @param[in] name The option to set.
@@ -156,11 +156,11 @@ class TCPSocket_Dev: public Resource {
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
   ////
-  int32_t SetOption(PP_TCPSocket_Option_Dev name,
+  int32_t SetOption(PP_TCPSocket_Option name,
                     const Var& value,
                     const CompletionCallback& callback);
 };
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_TCP_SOCKET__DevDEV_H_
+#endif  // PPAPI_CPP_TCP_SOCKET_H_

@@ -312,7 +312,7 @@ void TCPSocketShared::DisconnectImpl() {
 }
 
 int32_t TCPSocketShared::SetOptionImpl(
-    PP_TCPSocket_Option_Dev name,
+    PP_TCPSocket_Option name,
     const PP_Var& value,
     scoped_refptr<TrackedCallback> callback) {
   if (!IsConnected())

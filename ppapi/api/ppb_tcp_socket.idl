@@ -4,20 +4,20 @@
  */
 
 /**
- * This file defines the <code>PPB_TCPSocket_Dev</code> interface.
+ * This file defines the <code>PPB_TCPSocket</code> interface.
  */
 
 [generate_thunk]
 
 label Chrome {
-  M29 = 0.1
+  M29 = 1.0
 };
 
 /**
  * Option names used by <code>SetOption()</code>.
  */
 [assert_size(4)]
-enum PP_TCPSocket_Option_Dev {
+enum PP_TCPSocket_Option {
   /**
    * Disables coalescing of small writes to make TCP segments, and instead
    * delivers data immediately. Value's type is <code>PP_VARTYPE_BOOL</code>.
@@ -49,14 +49,14 @@ enum PP_TCPSocket_Option_Dev {
 };
 
 /**
- * The <code>PPB_TCPSocket_Dev</code> interface provides TCP socket operations.
+ * The <code>PPB_TCPSocket</code> interface provides TCP socket operations.
  *
  * Permissions: Apps permission <code>socket</code> with subrule
  * <code>tcp-connect</code> is required for <code>Connect()</code>.
  * For more details about network communication permissions, please see:
  * http://developer.chrome.com/apps/app_network.html
  */
-interface PPB_TCPSocket_Dev {
+interface PPB_TCPSocket {
   /**
    * Creates a TCP socket resource.
    *
@@ -74,8 +74,7 @@ interface PPB_TCPSocket_Dev {
    * @param[in] resource A <code>PP_Resource</code> to check.
    *
    * @return <code>PP_TRUE</code> if the input is a
-   * <code>PPB_TCPSocket_Dev</code> resource; <code>PP_FALSE</code>
-   * otherwise.
+   * <code>PPB_TCPSocket</code> resource; <code>PP_FALSE</code> otherwise.
    */
   PP_Bool IsTCPSocket([in] PP_Resource resource);
 
@@ -181,7 +180,7 @@ interface PPB_TCPSocket_Dev {
 
   /**
    * Sets a socket option on the TCP socket.
-   * Please see the <code>PP_TCPSocket_Option_Dev</code> description for option
+   * Please see the <code>PP_TCPSocket_Option</code> description for option
    * names, value types and allowed values.
    *
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
@@ -194,7 +193,7 @@ interface PPB_TCPSocket_Dev {
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
   int32_t SetOption([in] PP_Resource tcp_socket,
-                    [in] PP_TCPSocket_Option_Dev name,
+                    [in] PP_TCPSocket_Option name,
                     [in] PP_Var value,
                     [in] PP_CompletionCallback callback);
 };

@@ -133,7 +133,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer);
   virtual void TCPSocketDisconnect(uint32 socket_id);
   virtual void TCPSocketSetOption(uint32 socket_id,
-                                  PP_TCPSocket_Option_Dev name,
+                                  PP_TCPSocket_Option name,
                                   const ::ppapi::SocketOptionData& value);
   virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
                                  uint32 socket_id);

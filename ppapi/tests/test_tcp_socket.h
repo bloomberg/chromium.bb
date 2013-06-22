@@ -12,7 +12,7 @@
 #include "ppapi/tests/test_case.h"
 
 namespace pp {
-class TCPSocket_Dev;
+class TCPSocket;
 }
 
 class TestTCPSocket: public TestCase {
@@ -28,8 +28,8 @@ class TestTCPSocket: public TestCase {
   std::string TestReadWrite();
   std::string TestSetOption();
 
-  int32_t ReadFirstLineFromSocket(pp::TCPSocket_Dev* socket, std::string* s);
-  int32_t WriteStringToSocket(pp::TCPSocket_Dev* socket, const std::string& s);
+  int32_t ReadFirstLineFromSocket(pp::TCPSocket* socket, std::string* s);
+  int32_t WriteStringToSocket(pp::TCPSocket* socket, const std::string& s);
 
   pp::NetAddress addr_;
 };

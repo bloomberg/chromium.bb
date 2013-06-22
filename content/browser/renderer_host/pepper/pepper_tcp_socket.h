@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
-#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb_tcp_socket.h"
 
 struct PP_NetAddress_Private;
 
@@ -65,7 +65,7 @@ class PepperTCPSocket {
       const std::vector<std::vector<char> >& untrusted_certs);
   void Read(int32 bytes_to_read);
   void Write(const std::string& data);
-  void SetOption(PP_TCPSocket_Option_Dev name,
+  void SetOption(PP_TCPSocket_Option name,
                  const ppapi::SocketOptionData& value);
 
   void SendConnectACKError(int32_t error);

@@ -22,13 +22,13 @@
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
-#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb_tcp_socket.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
@@ -572,7 +572,7 @@ class PluginDelegate {
   virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer) = 0;
   virtual void TCPSocketDisconnect(uint32 socket_id) = 0;
   virtual void TCPSocketSetOption(uint32 socket_id,
-                                  PP_TCPSocket_Option_Dev name,
+                                  PP_TCPSocket_Option name,
                                   const ::ppapi::SocketOptionData& value) = 0;
   virtual void RegisterTCPSocket(PPB_TCPSocket_Private_Impl* socket,
                                  uint32 socket_id) = 0;

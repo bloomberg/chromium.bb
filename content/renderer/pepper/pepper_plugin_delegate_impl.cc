@@ -1213,7 +1213,7 @@ void PepperPluginDelegateImpl::TCPSocketDisconnect(uint32 socket_id) {
 
 void PepperPluginDelegateImpl::TCPSocketSetOption(
     uint32 socket_id,
-    PP_TCPSocket_Option_Dev name,
+    PP_TCPSocket_Option name,
     const ppapi::SocketOptionData& value) {
   DCHECK(tcp_sockets_.Lookup(socket_id));
   render_view_->Send(
