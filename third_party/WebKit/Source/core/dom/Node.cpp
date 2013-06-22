@@ -1505,7 +1505,7 @@ String Node::lookupPrefix(const AtomicString &namespaceURI) const
     
     switch (nodeType()) {
         case ELEMENT_NODE:
-            return lookupNamespacePrefix(namespaceURI, static_cast<const Element *>(this));
+            return lookupNamespacePrefix(namespaceURI, toElement(this));
         case DOCUMENT_NODE:
             if (Element* de = toDocument(this)->documentElement())
                 return de->lookupPrefix(namespaceURI);
@@ -1538,7 +1538,7 @@ String Node::lookupNamespaceURI(const String &prefix) const
     
     switch (nodeType()) {
         case ELEMENT_NODE: {
-            const Element *elem = static_cast<const Element *>(this);
+            const Element *elem = toElement(this);
             
             if (!elem->namespaceURI().isNull() && elem->prefix() == prefix)
                 return elem->namespaceURI();

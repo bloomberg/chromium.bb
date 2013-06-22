@@ -1476,7 +1476,7 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
 void FrameSelection::debugRenderer(RenderObject *r, bool selected) const
 {
     if (r->node()->isElementNode()) {
-        Element* element = static_cast<Element *>(r->node());
+        Element* element = toElement(r->node());
         fprintf(stderr, "%s%s\n", selected ? "==> " : "    ", element->localName().string().utf8().data());
     } else if (r->isText()) {
         RenderText* textRenderer = toRenderText(r);

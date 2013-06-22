@@ -895,7 +895,7 @@ PassRefPtr<HTMLElement> createHTMLElement(Document* document, const AtomicString
 
 bool isTabSpanNode(const Node *node)
 {
-    return node && node->hasTagName(spanTag) && node->isElementNode() && static_cast<const Element *>(node)->getAttribute(classAttr) == AppleTabSpanClass;
+    return node && node->hasTagName(spanTag) && node->isElementNode() && toElement(node)->getAttribute(classAttr) == AppleTabSpanClass;
 }
 
 bool isTabSpanTextNode(const Node *node)
@@ -1007,7 +1007,7 @@ bool isMailBlockquote(const Node *node)
     if (!node || !node->hasTagName(blockquoteTag))
         return false;
         
-    return static_cast<const Element *>(node)->getAttribute("type") == "cite";
+    return toElement(node)->getAttribute("type") == "cite";
 }
 
 int caretMinOffset(const Node* n)
