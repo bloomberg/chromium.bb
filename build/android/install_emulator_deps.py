@@ -21,7 +21,7 @@ from pylib.utils import run_tests_helper
 
 # From the Android Developer's website.
 SDK_BASE_URL = 'http://dl.google.com/android/adt'
-SDK_ZIP = 'adt-bundle-linux-x86_64-20130219.zip'
+SDK_ZIP = 'adt-bundle-linux-x86_64-20130522.zip'
 
 # Android x86 system image from the Intel website:
 # http://software.intel.com/en-us/articles/intel-eula-x86-android-4-2-jelly-bean-bin
