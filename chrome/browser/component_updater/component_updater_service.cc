@@ -880,6 +880,7 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
 
   if (source->FileErrorOccurred(&error_code) || !FetchSuccess(*source)) {
     if (crx->status == CrxUpdateItem::kDownloadingDiff) {
+      crx->diff_update_failed = true;
       size_t count = ChangeItemStatus(CrxUpdateItem::kDownloadingDiff,
                                       CrxUpdateItem::kCanUpdate);
       DCHECK_EQ(count, 1ul);
