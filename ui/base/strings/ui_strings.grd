@@ -461,9 +461,16 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_CLEAR_ALL" desc="The button for clearing all notifications.">
         Clear All
       </message>
-      <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="The tooltip text for the quiet mode button.">
-        Do not disturb
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="The tooltip text for the quiet mode button.">
+          Do not disturb
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="In Title Case: The tooltip text for the quiet mode button.">
+          Do Not Disturb
+        </message>
+      </if>
       <message name="IDS_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
         Nothing to see here, move along.
       </message>
