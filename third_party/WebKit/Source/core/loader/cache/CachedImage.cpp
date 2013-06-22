@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedImage.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
@@ -281,9 +280,7 @@ void CachedImage::clear()
 void CachedImage::setCustomAcceptHeader()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptWebP, ("image/webp,*/*;q=0.8", AtomicString::ConstructFromLiteral));
-
-    if (RuntimeEnabledFeatures::webPInAcceptHeaderEnabled())
-        setAccept(acceptWebP);
+    setAccept(acceptWebP);
 }
 
 inline void CachedImage::createImage()
