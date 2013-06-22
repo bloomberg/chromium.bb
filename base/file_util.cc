@@ -19,8 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
-using base::FileEnumerator;
-using base::FilePath;
+namespace base {
 
 namespace {
 
@@ -35,9 +34,26 @@ static const int kMaxUniqueFiles = 100;
 
 }  // namespace
 
+bool g_bug108724_debug = false;
+
+int64 ComputeDirectorySize(const FilePath& root_path) {
+  int64 running_size = 0;
+  FileEnumerator file_iter(root_path, true, FileEnumerator::FILES);
+  while (!file_iter.Next().empty())
+    running_size += file_iter.GetInfo().GetSize();
+  return running_size;
+}
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
 namespace file_util {
 
-bool g_bug108724_debug = false;
+using base::FileEnumerator;
+using base::FilePath;
+using base::kExtensionSeparator;
+using base::kMaxUniqueFiles;
 
 void InsertBeforeExtension(FilePath* path, const FilePath::StringType& suffix) {
   FilePath::StringType& value =
@@ -270,12 +286,4 @@ int GetUniquePathNumber(
   return -1;
 }
 
-int64 ComputeDirectorySize(const FilePath& root_path) {
-  int64 running_size = 0;
-  FileEnumerator file_iter(root_path, true, FileEnumerator::FILES);
-  while (!file_iter.Next().empty())
-    running_size += file_iter.GetInfo().GetSize();
-  return running_size;
-}
-
-}  // namespace
+}  // namespace file_util

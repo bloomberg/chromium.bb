@@ -28,6 +28,7 @@
 #include "base/win/windows_version.h"
 
 using base::FilePath;
+using base::g_bug108724_debug;
 
 namespace base {
 

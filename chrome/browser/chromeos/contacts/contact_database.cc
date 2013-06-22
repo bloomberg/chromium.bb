@@ -175,7 +175,7 @@ void ContactDatabase::InitFromTaskRunner(const base::FilePath& database_dir,
 
   VLOG(1) << "Opening " << database_dir.value();
   UMA_HISTOGRAM_MEMORY_KB("Contacts.DatabaseSizeBytes",
-                          file_util::ComputeDirectorySize(database_dir));
+                          base::ComputeDirectorySize(database_dir));
   *success = false;
   HistogramInitResult histogram_result = HISTOGRAM_INIT_RESULT_SUCCESS;
 

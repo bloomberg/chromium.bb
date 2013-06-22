@@ -243,7 +243,7 @@ class PathTest : public DiagnosticTest {
 
     int64 dir_or_file_size = 0;
     if (path_info_.is_directory) {
-      dir_or_file_size = file_util::ComputeDirectorySize(dir_or_file);
+      dir_or_file_size = base::ComputeDirectorySize(dir_or_file);
     } else {
       file_util::GetFileSize(dir_or_file, &dir_or_file_size);
     }

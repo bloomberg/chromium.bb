@@ -336,7 +336,7 @@ TEST_F(FileUtilTest, FileAndDirectorySize) {
   FilePath file_03 = subsubdir_path.Append(FPL("The file 03.txt"));
   CreateTextFile(file_03, L"123");
 
-  int64 computed_size = file_util::ComputeDirectorySize(temp_dir_.path());
+  int64 computed_size = base::ComputeDirectorySize(temp_dir_.path());
   EXPECT_EQ(size_f1 + size_f2 + 3, computed_size);
 }
 

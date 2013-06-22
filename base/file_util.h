@@ -37,28 +37,29 @@
 #endif
 
 namespace base {
+
 class Time;
-
-// Returns an absolute version of a relative path. Returns an empty path on
-// error. On POSIX, this function fails if the path does not exist. This
-// function can result in I/O so it can be slow.
-BASE_EXPORT FilePath MakeAbsoluteFilePath(const FilePath& input);
-
-}  // namespace base
-
-namespace file_util {
 
 extern bool g_bug108724_debug;
 
 //-----------------------------------------------------------------------------
 // Functions that involve filesystem access or modification:
 
+// Returns an absolute version of a relative path. Returns an empty path on
+// error. On POSIX, this function fails if the path does not exist. This
+// function can result in I/O so it can be slow.
+BASE_EXPORT FilePath MakeAbsoluteFilePath(const FilePath& input);
+
 // Returns the total number of bytes used by all the files under |root_path|.
 // If the path does not exist the function returns 0.
 //
 // This function is implemented using the FileEnumerator class so it is not
 // particularly speedy in any platform.
-BASE_EXPORT int64 ComputeDirectorySize(const base::FilePath& root_path);
+BASE_EXPORT int64 ComputeDirectorySize(const FilePath& root_path);
+
+}  // namespace base
+
+namespace file_util {
 
 // Deletes the given path, whether it's a file or a directory.
 // If it's a directory, it's perfectly happy to delete all of the

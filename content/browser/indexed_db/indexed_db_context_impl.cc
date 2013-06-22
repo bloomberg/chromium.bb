@@ -318,7 +318,7 @@ int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   std::string origin_id =
       webkit_database::GetIdentifierFromOrigin(origin_url);
   base::FilePath file_path = GetIndexedDBFilePath(origin_id);
-  return file_util::ComputeDirectorySize(file_path);
+  return base::ComputeDirectorySize(file_path);
 }
 
 void IndexedDBContextImpl::EnsureDiskUsageCacheInitialized(

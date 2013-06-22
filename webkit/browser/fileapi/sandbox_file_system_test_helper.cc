@@ -97,7 +97,7 @@ int64 SandboxFileSystemTestHelper::GetCachedOriginUsage() const {
 
 int64 SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
   usage_cache()->CloseCacheFiles();
-  int64 size = file_util::ComputeDirectorySize(GetOriginRootPath());
+  int64 size = base::ComputeDirectorySize(GetOriginRootPath());
   if (file_util::PathExists(GetUsageCachePath()))
     size -= FileSystemUsageCache::kUsageFileSize;
   return size;
@@ -105,7 +105,7 @@ int64 SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
 
 int64
 SandboxFileSystemTestHelper::ComputeCurrentDirectoryDatabaseUsage() {
-  return file_util::ComputeDirectorySize(
+  return base::ComputeDirectorySize(
       GetOriginRootPath().AppendASCII("Paths"));
 }
 
