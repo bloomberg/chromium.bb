@@ -129,6 +129,9 @@ class AutofillManagerDelegate {
 
   // Updates the Autocheckout progress bar. |value| must be in [0.0, 1.0].
   virtual void UpdateProgressBar(double value) = 0;
+
+  // Whether the Autocomplete feature of Autofill should be enabled.
+  virtual bool IsAutocompleteEnabled() = 0;
 };
 
 }  // namespace autofill

@@ -62,4 +62,8 @@ void TestAutofillManagerDelegate::HideAutofillPopup() {}
 
 void TestAutofillManagerDelegate::UpdateProgressBar(double value) {}
 
+bool TestAutofillManagerDelegate::IsAutocompleteEnabled() {
+  return true;
+}
+
 }  // namespace autofill

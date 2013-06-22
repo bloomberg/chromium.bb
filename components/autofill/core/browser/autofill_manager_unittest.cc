@@ -480,6 +480,18 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
                    has_address_fields, true, true);
 }
 
+class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
+ public:
+  MockAutocompleteHistoryManager(AutofillDriver* driver,
+                                 AutofillManagerDelegate* delegate)
+      : AutocompleteHistoryManager(driver, delegate) {}
+
+  MOCK_METHOD1(OnFormSubmitted, void(const FormData& form));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAutocompleteHistoryManager);
+};
+
 class TestAutofillManager : public AutofillManager {
  public:
   TestAutofillManager(AutofillDriver* driver,
@@ -718,7 +730,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
 
   void AutocompleteSuggestionsReturned(
       const std::vector<base::string16>& result) {
-    autofill_manager_->autocomplete_history_manager_.SendSuggestions(&result);
+    autofill_manager_->autocomplete_history_manager_->SendSuggestions(&result);
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -777,7 +789,7 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     if (unique_ids)
       *unique_ids = autofill_param.e;
 
-    autofill_manager_->autocomplete_history_manager_.CancelPendingQuery();
+    autofill_manager_->autocomplete_history_manager_->CancelPendingQuery();
     process()->sink().ClearMessages();
     return true;
   }
@@ -2722,6 +2734,79 @@ TEST_F(AutofillManagerTest, FormSubmitted) {
   // filled data.
   EXPECT_CALL(personal_data_, SaveImportedProfile(::testing::_)).Times(1);
   FormSubmitted(results);
+}
+
+// Test that when Autocomplete is enabled and Autofill is disabled,
+// form submissions are still received by AutocompleteHistoryManager.
+TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
+  TestAutofillManagerDelegate delegate;
+  autofill_manager_.reset(new TestAutofillManager(
+      autofill_driver_.get(),
+      &delegate,
+      NULL));
+  autofill_manager_->set_autofill_enabled(false);
+  scoped_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager;
+  autocomplete_history_manager.reset(
+      new MockAutocompleteHistoryManager(autofill_driver_.get(), &delegate));
+  autofill_manager_->autocomplete_history_manager_ =
+      autocomplete_history_manager.Pass();
+
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  form.method = ASCIIToUTF16("GET");
+  MockAutocompleteHistoryManager* m = static_cast<
+      MockAutocompleteHistoryManager*>(
+          autofill_manager_->autocomplete_history_manager_.get());
+  EXPECT_CALL(*m,
+              OnFormSubmitted(_)).Times(1);
+  FormSubmitted(form);
+}
+
+// Test that when Autocomplete is enabled and Autofill is disabled,
+// Autocomplete suggestions are still received.
+TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
+  TestAutofillManagerDelegate delegate;
+  autofill_manager_.reset(new TestAutofillManager(
+      autofill_driver_.get(),
+      &delegate,
+      NULL));
+  autofill_manager_->set_autofill_enabled(false);
+
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  form.method = ASCIIToUTF16("GET");
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+  const FormFieldData& field = form.fields[0];
+  GetAutofillSuggestions(form, field);
+
+  // Add some Autocomplete suggestions. We should return the autocomplete
+  // suggestions, these will be culled by the renderer.
+  std::vector<base::string16> suggestions;
+  suggestions.push_back(ASCIIToUTF16("Jay"));
+  suggestions.push_back(ASCIIToUTF16("Jason"));
+  AutocompleteSuggestionsReturned(suggestions);
+
+  int page_id = 0;
+  std::vector<base::string16> values;
+  std::vector<base::string16> labels;
+  std::vector<base::string16> icons;
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutofillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
+
+  base::string16 expected_values[] = {
+    ASCIIToUTF16("Jay"),
+    ASCIIToUTF16("Jason")
+  };
+  base::string16 expected_labels[] = { base::string16(), base::string16()};
+  base::string16 expected_icons[] = { base::string16(), base::string16()};
+  int expected_unique_ids[] = {0, 0};
+  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
+                    kDefaultPageID, arraysize(expected_values), expected_values,
+                    expected_labels, expected_icons, expected_unique_ids);
 }
 
 // Test that we are able to save form data when forms are submitted and we only

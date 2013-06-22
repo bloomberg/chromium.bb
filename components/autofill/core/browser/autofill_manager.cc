@@ -188,7 +188,8 @@ AutofillManager::AutofillManager(
       manager_delegate_(delegate),
       app_locale_(app_locale),
       personal_data_(delegate->GetPersonalDataManager()),
-      autocomplete_history_manager_(driver),
+      autocomplete_history_manager_(
+          new AutocompleteHistoryManager(driver, delegate)),
       autocheckout_manager_(this),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
@@ -242,7 +243,7 @@ void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
   // work if the delegate has a pointer to the AutofillManager, but
   // future directions may not need such a pointer.
   external_delegate_ = delegate;
-  autocomplete_history_manager_.SetExternalDelegate(delegate);
+  autocomplete_history_manager_->SetExternalDelegate(delegate);
 }
 
 bool AutofillManager::IsNativeUiEnabled() {
@@ -251,8 +252,8 @@ bool AutofillManager::IsNativeUiEnabled() {
 
 bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
-  // Let AutoComplete know as well.
-  autocomplete_history_manager_.OnFormSubmitted(form);
+  // Let Autocomplete know as well.
+  autocomplete_history_manager_->OnFormSubmitted(form);
 
   if (!IsAutofillEnabled())
     return false;
@@ -491,7 +492,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   // Add the results from AutoComplete.  They come back asynchronously, so we
   // hand off what we generated and they will send the results back to the
   // renderer.
-  autocomplete_history_manager_.OnGetAutocompleteSuggestions(
+  autocomplete_history_manager_->OnGetAutocompleteSuggestions(
       query_id, field.name, field.value, values, labels, icons, unique_ids);
 }
 
@@ -645,7 +646,7 @@ void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
 
 void AutofillManager::RemoveAutocompleteEntry(const base::string16& name,
                                               const base::string16& value) {
-  autocomplete_history_manager_.OnRemoveAutocompleteEntry(name, value);
+  autocomplete_history_manager_->OnRemoveAutocompleteEntry(name, value);
 }
 
 content::WebContents* AutofillManager::GetWebContents() const {
@@ -791,8 +792,8 @@ std::string AutofillManager::GetAutocheckoutURLPrefix() const {
   autofill::autocheckout::WhitelistManager* whitelist_manager =
       manager_delegate_->GetAutocheckoutWhitelistManager();
 
-  return whitelist_manager->GetMatchedURLPrefix(
-      driver_->GetWebContents()->GetURL());
+  return whitelist_manager ? whitelist_manager->GetMatchedURLPrefix(
+      driver_->GetWebContents()->GetURL()) : std::string();
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
@@ -917,7 +918,8 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       manager_delegate_(delegate),
       app_locale_("en-US"),
       personal_data_(personal_data),
-      autocomplete_history_manager_(driver),
+      autocomplete_history_manager_(
+          new AutocompleteHistoryManager(driver, delegate)),
       autocheckout_manager_(this),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),

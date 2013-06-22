@@ -139,7 +139,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                    autofill::FormsSeenState state);
 
   // Processes the submitted |form|, saving any new Autofill data and uploading
-  // the possible field types for the submitted fields to the crowdsouring
+  // the possible field types for the submitted fields to the crowdsourcing
   // server.  Returns false if this form is not relevant for Autofill.
   bool OnFormSubmitted(const FormData& form,
                        const base::TimeTicks& timestamp);
@@ -343,7 +343,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   scoped_ptr<AutofillDownloadManager> download_manager_;
 
   // Handles single-field autocomplete form data.
-  AutocompleteHistoryManager autocomplete_history_manager_;
+  scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
   // Handles autocheckout flows.
   autofill::AutocheckoutManager autocheckout_manager_;
@@ -409,7 +409,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest,
                            UserHappinessFormLoadAndSubmission);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, UserHappinessFormInteraction);
-
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
+                           FormSubmittedAutocompleteEnabled);
   DISALLOW_COPY_AND_ASSIGN(AutofillManager);
 };
 

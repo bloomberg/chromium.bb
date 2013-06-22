@@ -5,9 +5,15 @@
 #include "android_webview/browser/aw_browser_context.h"
 
 #include "android_webview/browser/aw_form_database_service.h"
+#include "android_webview/browser/aw_pref_store.h"
 #include "android_webview/browser/aw_quota_manager_bridge.h"
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/pref_service_builder.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
@@ -18,6 +24,10 @@
 namespace android_webview {
 
 namespace {
+
+// Shows notifications which correspond to PersistentPrefStore's reading errors.
+void HandleReadError(PersistentPrefStore::PrefReadError error) {
+}
 
 class AwResourceContext : public content::ResourceContext {
  public:
@@ -49,7 +59,8 @@ AwBrowserContext::AwBrowserContext(
     const base::FilePath path,
     JniDependencyFactory* native_factory)
     : context_storage_path_(path),
-      native_factory_(native_factory) {
+      native_factory_(native_factory),
+      user_pref_service_ready_(false) {
   DCHECK(g_browser_context == NULL);
   g_browser_context = this;
 }
@@ -121,17 +132,29 @@ AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {
   return form_database_service_.get();
 }
 
-AwAutofillManagerDelegate* AwBrowserContext::AutofillManagerDelegate() {
-  return autofill_manager_delegate_.get();
-}
+// Create user pref service for autofill functionality.
+void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
+  if (user_pref_service_ready_)
+    return;
 
-AwAutofillManagerDelegate* AwBrowserContext::CreateAutofillManagerDelegate(
-    bool enabled) {
-  if (!autofill_manager_delegate_) {
-    autofill_manager_delegate_.reset(
-        new AwAutofillManagerDelegate(enabled));
-  }
-  return autofill_manager_delegate_.get();
+  user_pref_service_ready_ = true;
+  PrefRegistrySimple* pref_registry = new PrefRegistrySimple();
+  // We only use the autocomplete feature of the Autofill, which is
+  // controlled via the manager_delegate. We don't use the rest
+  // of autofill, which is why it is hardcoded as disabled here.
+  pref_registry->RegisterBooleanPref(
+      autofill::prefs::kAutofillEnabled, false);
+  pref_registry->RegisterDoublePref(
+      autofill::prefs::kAutofillPositiveUploadRate, 0.0);
+  pref_registry->RegisterDoublePref(
+      autofill::prefs::kAutofillNegativeUploadRate, 0.0);
+
+  PrefServiceBuilder pref_service_builder;
+  pref_service_builder.WithUserPrefs(new AwPrefStore());
+  pref_service_builder.WithReadErrorCallback(base::Bind(&HandleReadError));
+
+  user_prefs::UserPrefs::Set(this,
+                             pref_service_builder.Create(pref_registry));
 }
 
 base::FilePath AwBrowserContext::GetPath() {

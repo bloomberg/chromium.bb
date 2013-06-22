@@ -14,47 +14,27 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/web_contents.h"
 
-namespace {
+using content::WebContents;
 
-// Shows notifications which correspond to PersistentPrefStore's reading errors.
-void HandleReadError(PersistentPrefStore::PrefReadError error) {
-}
-
-}  // namespace
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(android_webview::AwAutofillManagerDelegate);
 
 namespace android_webview {
 
-AwAutofillManagerDelegate::AwAutofillManagerDelegate(bool enabled) {
-  PrefRegistrySimple* pref_registry = new PrefRegistrySimple();
-  pref_registry->RegisterBooleanPref(
-      autofill::prefs::kAutofillEnabled, enabled);
-  pref_registry->RegisterDoublePref(
-      autofill::prefs::kAutofillPositiveUploadRate, 0.0);
-  pref_registry->RegisterDoublePref(
-      autofill::prefs::kAutofillNegativeUploadRate, 0.0);
-
-  PrefServiceBuilder pref_service_builder;
-  pref_service_builder.WithUserPrefs(new AwPrefStore());
-  pref_service_builder.WithReadErrorCallback(base::Bind(&HandleReadError));
-
-  AwBrowserContext* context = AwContentBrowserClient::GetAwBrowserContext();
-  user_prefs::UserPrefs::Set(context,
-                             pref_service_builder.Create(pref_registry));
+AwAutofillManagerDelegate::AwAutofillManagerDelegate(WebContents* contents)
+    : web_contents_(contents),
+      save_form_data_(false) {
 }
 
 AwAutofillManagerDelegate::~AwAutofillManagerDelegate() { }
 
 void AwAutofillManagerDelegate::SetSaveFormData(bool enabled) {
-  PrefService* service = GetPrefs();
-  DCHECK(service);
-  service->SetBoolean(autofill::prefs::kAutofillEnabled, enabled);
+  save_form_data_ = enabled;
 }
 
 bool AwAutofillManagerDelegate::GetSaveFormData() {
-  PrefService* service = GetPrefs();
-  DCHECK(service);
-  return service->GetBoolean(autofill::prefs::kAutofillEnabled);
+  return save_form_data_;
 }
 
 PrefService* AwAutofillManagerDelegate::GetPrefs() {
@@ -121,6 +101,10 @@ void AwAutofillManagerDelegate::HideAutofillPopup() {
 }
 
 void AwAutofillManagerDelegate::UpdateProgressBar(double value) {
+}
+
+bool AwAutofillManagerDelegate::IsAutocompleteEnabled() {
+  return GetSaveFormData();
 }
 
 } // namespace android_webview

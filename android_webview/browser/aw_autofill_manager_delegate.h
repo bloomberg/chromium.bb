@@ -10,6 +10,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service_builder.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
 class AutofillMetrics;
@@ -33,10 +34,18 @@ class PrefService;
 
 namespace android_webview {
 
-class AwAutofillManagerDelegate :
-    public autofill::AutofillManagerDelegate {
+// Manager delegate for the autofill functionality. Android webview
+// supports enabling autocomplete feature for each webview instance
+// (different than the browser which supports enabling/disabling for
+// a profile). Since there is only one pref service for a given browser
+// context, we cannot enable this feature via UserPrefs. Rather, we always
+// keep the feature enabled at the pref service, and control it via
+// the delegates.
+class AwAutofillManagerDelegate
+    : public autofill::AutofillManagerDelegate,
+      public content::WebContentsUserData<AwAutofillManagerDelegate> {
+
  public:
-  AwAutofillManagerDelegate(bool enabled);
   virtual ~AwAutofillManagerDelegate();
 
   void SetSaveFormData(bool enabled);
@@ -76,8 +85,17 @@ class AwAutofillManagerDelegate :
       base::WeakPtr<autofill::AutofillPopupDelegate> delegate) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
+  virtual bool IsAutocompleteEnabled() OVERRIDE;
 
  private:
+  AwAutofillManagerDelegate(content::WebContents* contents);
+  friend class content::WebContentsUserData<AwAutofillManagerDelegate>;
+
+  // The web_contents associated with this delegate.
+  content::WebContents* web_contents_;
+
+  bool save_form_data_;
+
   DISALLOW_COPY_AND_ASSIGN(AwAutofillManagerDelegate);
 };
 

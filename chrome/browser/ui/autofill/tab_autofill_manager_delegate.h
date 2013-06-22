@@ -69,6 +69,7 @@ class TabAutofillManagerDelegate
       base::WeakPtr<AutofillPopupDelegate> delegate) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
+  virtual bool IsAutocompleteEnabled() OVERRIDE;
 
   // content::WebContentsObserver implementation.
   virtual void DidNavigateMainFrame(

@@ -139,8 +139,7 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
       new AwRenderViewHostExt(this, web_contents_.get()));
 
   AwAutofillManagerDelegate* autofill_manager_delegate =
-      AwBrowserContext::FromWebContents(web_contents_.get())->
-          AutofillManagerDelegate();
+      AwAutofillManagerDelegate::FromWebContents(web_contents_.get());
   if (autofill_manager_delegate)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
 }
@@ -184,10 +183,8 @@ void AwContents::SetSaveFormData(bool enabled) {
   // We need to check for the existence, since autofill_manager_delegate
   // may not be created when the setting is false.
   if (AutofillDriverImpl::FromWebContents(web_contents_.get())) {
-    AwAutofillManagerDelegate* autofill_manager_delegate =
-        AwBrowserContext::FromWebContents(web_contents_.get())->
-            AutofillManagerDelegate();
-    autofill_manager_delegate->SetSaveFormData(enabled);
+    AwAutofillManagerDelegate::FromWebContents(web_contents_.get())->
+        SetSaveFormData(enabled);
   }
 }
 
@@ -200,10 +197,12 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
   if (AutofillDriverImpl::FromWebContents(web_contents))
     return;
 
+  AwBrowserContext::FromWebContents(web_contents)->
+      CreateUserPrefServiceIfNecessary();
+  AwAutofillManagerDelegate::CreateForWebContents(web_contents);
   AutofillDriverImpl::CreateForWebContentsAndDelegate(
       web_contents,
-      AwBrowserContext::FromWebContents(web_contents)->
-          CreateAutofillManagerDelegate(enabled),
+      AwAutofillManagerDelegate::FromWebContents(web_contents),
       l10n_util::GetDefaultLocale(),
       AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }

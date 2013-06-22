@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents_view.h"
@@ -171,6 +172,11 @@ void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
   // |dialog_controller_| is a WeakPtr, but we require it to be present when
   // |UpdateProgressBar| is called, so we intentionally do not do NULL check.
   dialog_controller_->UpdateProgressBar(value);
+}
+
+bool TabAutofillManagerDelegate::IsAutocompleteEnabled() {
+  // For browser, Autocomplete is always enabled as part of Autofill.
+  return GetPrefs()->GetBoolean(prefs::kAutofillEnabled);
 }
 
 void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {

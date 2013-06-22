@@ -11,11 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
+#include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -42,7 +42,9 @@ bool IsTextField(const FormFieldData& field) {
 
 }  // namespace
 
-AutocompleteHistoryManager::AutocompleteHistoryManager(AutofillDriver* driver)
+AutocompleteHistoryManager::AutocompleteHistoryManager(
+    AutofillDriver* driver,
+    AutofillManagerDelegate* manager_delegate)
     : browser_context_(driver->GetWebContents()->GetBrowserContext()),
       driver_(driver),
       autofill_data_(
@@ -50,10 +52,9 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(AutofillDriver* driver)
       pending_query_handle_(0),
       query_id_(0),
       external_delegate_(NULL),
+      manager_delegate_(manager_delegate),
       send_ipc_(true) {
-  autofill_enabled_.Init(
-      prefs::kAutofillEnabled,
-      user_prefs::UserPrefs::Get(browser_context_));
+  DCHECK(manager_delegate_);
 }
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {
@@ -66,7 +67,7 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
   DCHECK(pending_query_handle_);
   pending_query_handle_ = 0;
 
-  if (!*autofill_enabled_) {
+  if (!manager_delegate_->IsAutocompleteEnabled()) {
     SendSuggestions(NULL);
     return;
   }
@@ -102,7 +103,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
   autofill_labels_ = autofill_labels;
   autofill_icons_ = autofill_icons;
   autofill_unique_ids_ = autofill_unique_ids;
-  if (!*autofill_enabled_) {
+  if (!manager_delegate_->IsAutocompleteEnabled()) {
     SendSuggestions(NULL);
     return;
   }
@@ -114,7 +115,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
 }
 
 void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
-  if (!*autofill_enabled_)
+  if (!manager_delegate_->IsAutocompleteEnabled())
     return;
 
   if (browser_context_->IsOffTheRecord())

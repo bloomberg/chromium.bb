@@ -9,6 +9,8 @@
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "base/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
@@ -44,6 +46,12 @@ void AwContentRendererClient::RenderThreadStarted() {
 void AwContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   AwRenderViewExt::RenderViewCreated(render_view);
+
+  // TODO(sgurun) do not create a password autofill agent (change
+  // autofill agent to store a weakptr).
+  autofill::PasswordAutofillAgent* password_autofill_agent =
+      new autofill::PasswordAutofillAgent(render_view);
+  new autofill::AutofillAgent(render_view, password_autofill_agent);
 }
 
 std::string AwContentRendererClient::GetDefaultEncoding() {

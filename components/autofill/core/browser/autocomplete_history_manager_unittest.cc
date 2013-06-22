@@ -102,7 +102,8 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
         profile(), MockWebDataServiceWrapperCurrent::Build);
     autofill_driver_.reset(new TestAutofillDriver(web_contents()));
     autocomplete_manager_.reset(
-        new AutocompleteHistoryManager(autofill_driver_.get()));
+        new AutocompleteHistoryManager(autofill_driver_.get(),
+                                       &manager_delegate));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -206,8 +207,8 @@ namespace {
 
 class MockAutofillExternalDelegate : public AutofillExternalDelegate {
  public:
-  explicit MockAutofillExternalDelegate(content::WebContents* web_contents,
-                                        AutofillManager* autofill_manager)
+  MockAutofillExternalDelegate(content::WebContents* web_contents,
+                               AutofillManager* autofill_manager)
       : AutofillExternalDelegate(web_contents, autofill_manager) {}
   virtual ~MockAutofillExternalDelegate() {}
 
@@ -224,8 +225,9 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
 class AutocompleteHistoryManagerNoIPC : public AutocompleteHistoryManager {
   public:
-   explicit AutocompleteHistoryManagerNoIPC(AutofillDriver* driver)
-       : AutocompleteHistoryManager(driver) {
+   AutocompleteHistoryManagerNoIPC(AutofillDriver* driver,
+                                   AutofillManagerDelegate* delegate)
+       : AutocompleteHistoryManager(driver, delegate) {
      // Ensure that IPC is not sent during the test.
      set_send_ipc(false);
    }
@@ -238,7 +240,7 @@ class AutocompleteHistoryManagerNoIPC : public AutocompleteHistoryManager {
 // Make sure our external delegate is called at the right time.
 TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
   AutocompleteHistoryManagerNoIPC autocomplete_history_manager(
-      autofill_driver_.get());
+      autofill_driver_.get(), &manager_delegate);
 
   scoped_ptr<AutofillManager> autofill_manager(new AutofillManager(
       autofill_driver_.get(),

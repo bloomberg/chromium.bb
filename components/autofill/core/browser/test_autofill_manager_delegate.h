@@ -52,6 +52,7 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
       base::WeakPtr<AutofillPopupDelegate> delegate) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
+  virtual bool IsAutocompleteEnabled() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManagerDelegate);

@@ -73,8 +73,7 @@ class AwBrowserContext : public content::BrowserContext,
   AwQuotaManagerBridge* GetQuotaManagerBridge();
 
   AwFormDatabaseService* GetFormDatabaseService();
-  AwAutofillManagerDelegate* AutofillManagerDelegate();
-  AwAutofillManagerDelegate* CreateAutofillManagerDelegate(bool enabled);
+  void CreateUserPrefServiceIfNecessary();
 
   // content::BrowserContext implementation.
   virtual base::FilePath GetPath() OVERRIDE;
@@ -117,6 +116,8 @@ class AwBrowserContext : public content::BrowserContext,
 
   scoped_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
   scoped_ptr<content::ResourceContext> resource_context_;
+
+  bool user_pref_service_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };
