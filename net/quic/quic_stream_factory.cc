@@ -147,6 +147,16 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
   if (rv != OK)
     return rv;
 
+  // TODO(rch): remove this code!
+  AddressList::iterator it = address_list_.begin();
+  while (it != address_list_.end()) {
+    if (it->GetFamily() == ADDRESS_FAMILY_IPV6) {
+      it = address_list_.erase(it);
+    } else {
+      it++;
+    }
+  }
+
   DCHECK(!factory_->HasActiveSession(host_port_proxy_pair_));
   io_state_ = STATE_CONNECT;
   return OK;
