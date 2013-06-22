@@ -387,7 +387,10 @@
       "ehibbfinohgbchlgdbfpikodjaojhccn",  // Editor
       "pmofbkohncoogjjhahejjfbppikbjigm",  // Google Now
       "iejldcgjigodajhjecapkeiggcncflph",  // Google Now dev
-      "khopmbdjffemhegeeobelklnbglcdgfh"   // RU-NTP
+      "khopmbdjffemhegeeobelklnbglcdgfh",  // RU-NTP
+      "mlocfejafidcakdddnndjdngfmncfbeg",  // CCD Development
+      "ganomidahfnpdchomfgdoppjmmedlhia",  // CCD Testing
+      "eemlkeanncmjljgehlbplemhmdmalhdc"   // CCD Release
     ]
   },
   "musicManagerPrivate": {
