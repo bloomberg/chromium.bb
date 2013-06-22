@@ -150,6 +150,19 @@ const CGFloat kUnreadCountMinY = 4;
   }
 }
 
+- (NSArray*)accessibilityActionNames {
+  return @[ NSAccessibilityPressAction ];
+}
+
+- (void)accessibilityPerformAction:(NSString*)action {
+  if ([action isEqualToString:NSAccessibilityPressAction]) {
+    if (callback_)
+      callback_.get()();
+    return;
+  }
+  [super accessibilityPerformAction:action];
+}
+
 // Private /////////////////////////////////////////////////////////////////////
 
 - (BOOL)shouldHighlight {

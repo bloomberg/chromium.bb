@@ -452,6 +452,9 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL" desc="The button label for visiting the appropriate settings page in the footer of the message center.">
         Settings
       </message>
+      <message name="IDS_MESSAGE_CENTER_SETTINGS_GO_BACK_BUTTON_TOOLTIP" desc="The tooltip on back button that returns from settings to the notification list.">
+        Go back to notifications
+      </message>
       <message name="IDS_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION" desc="The label to describe the settings dialog.">
         Allow notifications from the following:
       </message>

@@ -294,12 +294,16 @@ const CGFloat kTrayBottomMargin = 75;
   [backButton_ setHidden:NO];
   [clearAllButton_ setEnabled:NO];
 
+  [scrollView_ setHidden:YES];
+
   [[[self view] window] recalculateKeyViewLoop];
 
   [self updateTrayViewAndWindow];
 }
 
 - (void)hideSettings:(id)sender {
+  [scrollView_ setHidden:NO];
+
   [[settingsController_ view] removeFromSuperview];
   settingsController_.reset();
 
@@ -413,6 +417,11 @@ const CGFloat kTrayBottomMargin = 75;
   configureButton(backButton_);
   [backButton_ setHidden:YES];
   [backButton_ setKeyEquivalent:@"\e"];
+  [backButton_ setToolTip:l10n_util::GetNSString(
+      IDS_MESSAGE_CENTER_SETTINGS_GO_BACK_BUTTON_TOOLTIP)];
+  [[backButton_ cell]
+      accessibilitySetOverrideValue:[backButton_ toolTip]
+                       forAttribute:NSAccessibilityDescriptionAttribute];
   [[self view] addSubview:backButton_];
 
   // Create the divider line between the control area and the notifications.
@@ -451,6 +460,9 @@ const CGFloat kTrayBottomMargin = 75;
       rb.GetNativeImageNamed(IDR_NOTIFICATION_SETTINGS_PRESSED).ToNSImage()];
   [settingsButton_ setToolTip:
       l10n_util::GetNSString(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL)];
+  [[settingsButton_ cell]
+      accessibilitySetOverrideValue:[settingsButton_ toolTip]
+                       forAttribute:NSAccessibilityDescriptionAttribute];
   [settingsButton_ setAction:@selector(showSettings:)];
   configureButton(settingsButton_);
   [view addSubview:settingsButton_];
@@ -469,6 +481,9 @@ const CGFloat kTrayBottomMargin = 75;
       rb.GetNativeImageNamed(IDR_NOTIFICATION_CLEAR_ALL_PRESSED).ToNSImage()];
   [clearAllButton_ setToolTip:
       l10n_util::GetNSString(IDS_MESSAGE_CENTER_CLEAR_ALL)];
+  [[clearAllButton_ cell]
+      accessibilitySetOverrideValue:[clearAllButton_ toolTip]
+                       forAttribute:NSAccessibilityDescriptionAttribute];
   [clearAllButton_ setAction:@selector(clearAllNotifications:)];
   configureButton(clearAllButton_);
   [view addSubview:clearAllButton_];
@@ -486,6 +501,9 @@ const CGFloat kTrayBottomMargin = 75;
       rb.GetNativeImageNamed(IDR_NOTIFICATION_PAUSE_PRESSED).ToNSImage()];
   [pauseButton_ setToolTip:
       l10n_util::GetNSString(IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP)];
+  [[pauseButton_ cell]
+      accessibilitySetOverrideValue:[pauseButton_ toolTip]
+                       forAttribute:NSAccessibilityDescriptionAttribute];
   [pauseButton_ setAction:@selector(toggleQuietMode:)];
   configureButton(pauseButton_);
   [view addSubview:pauseButton_];

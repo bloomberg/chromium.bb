@@ -9,8 +9,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
+#include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/hover_image_button.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/message_center/message_center.h"
@@ -89,6 +91,8 @@
 }
 @end
 
+////////////////////////////////////////////////////////////////////////////////
+
 @interface MCNotificationView : NSBox {
  @private
   MCNotificationController* controller_;
@@ -113,7 +117,36 @@
   }
   [controller_ notificationClicked];
 }
+
+- (BOOL)accessibilityIsIgnored {
+  return NO;
+}
+
+- (NSArray*)accessibilityActionNames {
+  return @[ NSAccessibilityPressAction ];
+}
+
+- (void)accessibilityPerformAction:(NSString*)action {
+  if ([action isEqualToString:NSAccessibilityPressAction]) {
+    [controller_ notificationClicked];
+    return;
+  }
+  [super accessibilityPerformAction:action];
+}
 @end
+
+////////////////////////////////////////////////////////////////////////////////
+
+@interface AccessibilityIgnoredBox : NSBox
+@end
+
+@implementation AccessibilityIgnoredBox
+- (BOOL)accessibilityIsIgnored {
+  return YES;
+}
+@end
+
+////////////////////////////////////////////////////////////////////////////////
 
 @interface MCNotificationController (Private)
 // Returns a string with item's title in title color and item's message in
@@ -154,6 +187,8 @@
             forField:(NSTextField*)field
     maxNumberOfLines:(size_t)lines;
 @end
+
+////////////////////////////////////////////////////////////////////////////////
 
 @implementation MCNotificationController
 
@@ -252,6 +287,11 @@
     listFrame.origin.y = 0;
     listFrame.size.height = 0;
     listItemView_.reset([[NSView alloc] initWithFrame:listFrame]);
+    [listItemView_ accessibilitySetOverrideValue:NSAccessibilityListRole
+                                    forAttribute:NSAccessibilityRoleAttribute];
+    [listItemView_
+        accessibilitySetOverrideValue:NSAccessibilityContentListSubrole
+                         forAttribute:NSAccessibilitySubroleAttribute];
     CGFloat y = 0;
 
     NSFont* font = [NSFont systemFontOfSize:message_center::kMessageFontSize];
@@ -327,7 +367,7 @@
     separatorFrame.origin = NSMakePoint(0, y);
     separatorFrame.size.height = 1;
     scoped_nsobject<NSBox> separator(
-        [[NSBox alloc] initWithFrame:separatorFrame]);
+        [[AccessibilityIgnoredBox alloc] initWithFrame:separatorFrame]);
     [self configureCustomBox:separator];
     [separator setFillColor:gfx::SkColorToCalibratedNSColor(
         message_center::kButtonSeparatorColor)];
@@ -441,7 +481,8 @@
   NSRect imageFrame = NSMakeRect(0, 0,
        message_center::kNotificationIconSize,
        message_center::kNotificationIconSize);
-  scoped_nsobject<NSBox> imageBox([[NSBox alloc] initWithFrame:imageFrame]);
+  scoped_nsobject<NSBox> imageBox(
+      [[AccessibilityIgnoredBox alloc] initWithFrame:imageFrame]);
   [self configureCustomBox:imageBox];
   [imageBox setFillColor:gfx::SkColorToCalibratedNSColor(
       message_center::kLegacyIconBackgroundColor)];
@@ -473,6 +514,13 @@
   [closeButton_ setAutoresizingMask:NSViewMinYMargin];
   [closeButton_ setTarget:self];
   [closeButton_ setAction:@selector(close:)];
+  [[closeButton_ cell]
+      accessibilitySetOverrideValue:NSAccessibilityCloseButtonSubrole
+                       forAttribute:NSAccessibilitySubroleAttribute];
+  [[closeButton_ cell]
+      accessibilitySetOverrideValue:
+          l10n_util::GetNSString(IDS_APP_ACCNAME_CLOSE)
+                       forAttribute:NSAccessibilityTitleAttribute];
 }
 
 - (void)configureTitleInFrame:(NSRect)rootFrame {
