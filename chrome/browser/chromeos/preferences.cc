@@ -390,10 +390,6 @@ void Preferences::RegisterUserPrefs(
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
-      prefs::kPowerPresentationIdleDelayFactor,
-      2.0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
       prefs::kPowerPresentationScreenDimDelayFactor,
       2.0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

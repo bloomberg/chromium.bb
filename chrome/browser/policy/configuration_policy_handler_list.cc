@@ -537,8 +537,8 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
           0, 3, false));
   handlers_.push_back(
       new IntPercentageToDoublePolicyHandler(
-          key::kPresentationIdleDelayScale,
-          prefs::kPowerPresentationIdleDelayFactor,
+          key::kPresentationScreenDimDelayScale,
+          prefs::kPowerPresentationScreenDimDelayFactor,
           100, INT_MAX, true));
   handlers_.push_back(
       new IntPercentageToDoublePolicyHandler(

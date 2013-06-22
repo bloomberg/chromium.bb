@@ -181,8 +181,8 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyBrowserTest, SetPowerPolicy) {
             GetDebugString(power_manager_client_->get_policy()));
 
   power_management_policy = original_power_management_policy;
-  power_management_policy.set_presentation_idle_delay_factor(3.0);
-  SetUserPolicy(key::kPresentationIdleDelayScale,
+  power_management_policy.set_presentation_screen_dim_delay_factor(3.0);
+  SetUserPolicy(key::kPresentationScreenDimDelayScale,
                 base::Value::CreateIntegerValue(300));
   EXPECT_EQ(GetDebugString(power_management_policy),
             GetDebugString(power_manager_client_->get_policy()));

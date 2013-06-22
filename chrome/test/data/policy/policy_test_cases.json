@@ -1696,10 +1696,13 @@
   },
 
   "PresentationIdleDelayScale": {
+  },
+
+  "PresentationScreenDimDelayScale": {
     "os": ["chromeos"],
-    "test_policy": { "PresentationIdleDelayScale": 200 },
+    "test_policy": { "PresentationScreenDimDelayScale": 200 },
     "pref_mappings": [
-      { "pref": "power.presentation_idle_delay_factor" }
+      { "pref": "power.presentation_screen_dim_delay_factor" }
     ]
   },
 
