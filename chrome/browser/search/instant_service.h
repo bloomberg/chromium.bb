@@ -13,7 +13,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/common/instant_types.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -22,7 +24,9 @@
 
 class GURL;
 class InstantIOContext;
+class InstantServiceObserver;
 class Profile;
+class ThemeService;
 
 namespace net {
 class URLRequest;
@@ -39,6 +43,10 @@ class InstantService : public BrowserContextKeyedService,
   // Instant processes.
   void AddInstantProcess(int process_id);
   bool IsInstantProcess(int process_id) const;
+
+  // Adds/Removes InstantService observers.
+  void AddObserver(InstantServiceObserver* observer);
+  void RemoveObserver(InstantServiceObserver* observer);
 
 #if defined(UNIT_TEST)
   int GetInstantProcessCount() const {
@@ -64,6 +72,12 @@ class InstantService : public BrowserContextKeyedService,
   void GetCurrentMostVisitedItems(
       std::vector<InstantMostVisitedItem>* items) const;
 
+  // Invoked by the InstantController to update theme information for NTP.
+  //
+  // TODO(kmadhusu): Invoking this from InstantController shouldn't be
+  // necessary. Investigate more and remove this from here.
+  void UpdateThemeInfo();
+
  private:
   // Overridden from BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
@@ -78,6 +92,9 @@ class InstantService : public BrowserContextKeyedService,
   // SendMostVisitedItems.
   void OnMostVisitedItemsReceived(const history::MostVisitedURLList& data);
 
+  // Theme changed notification handler.
+  void OnThemeChanged(ThemeService* theme_service);
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.
@@ -85,6 +102,11 @@ class InstantService : public BrowserContextKeyedService,
 
   // InstantMostVisitedItems sent to the Instant Pages.
   std::vector<InstantMostVisitedItem> most_visited_items_;
+
+  // Theme-related data for NTP overlay to adopt themes.
+  scoped_ptr<ThemeBackgroundInfo> theme_info_;
+
+  ObserverList<InstantServiceObserver> observers_;
 
   content::NotificationRegistrar registrar_;
 

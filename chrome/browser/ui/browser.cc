@@ -482,6 +482,10 @@ Browser::~Browser() {
   // is destroyed to make sure the chrome.windows.onRemoved event is sent.
   extension_window_controller_.reset();
 
+  // Destroy BrowserInstantController before the incongnito profile is destroyed
+  // because the InstantController destructor depends on this profile.
+  instant_controller_.reset();
+
   if (profile_->IsOffTheRecord() &&
       !BrowserList::IsOffTheRecordSessionActiveForProfile(profile_)) {
     // An incognito profile is no longer needed, this indirectly frees

@@ -453,6 +453,10 @@ void SearchBox::OnSetDisplayInstantResults(bool display_instant_results) {
 }
 
 void SearchBox::OnThemeChanged(const ThemeBackgroundInfo& theme_info) {
+  // Do not send duplicate notifications.
+  if (theme_info_ == theme_info)
+    return;
+
   theme_info_ = theme_info;
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchThemeChange(

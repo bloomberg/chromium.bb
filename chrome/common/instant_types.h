@@ -144,6 +144,8 @@ struct ThemeBackgroundInfo {
   ThemeBackgroundInfo();
   ~ThemeBackgroundInfo();
 
+  bool operator==(const ThemeBackgroundInfo& rhs) const;
+
   // The theme background color in RGBA format where the R, G, B and A values
   // are between 0 and 255 inclusive and always valid.
   int color_r;

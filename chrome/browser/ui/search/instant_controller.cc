@@ -274,11 +274,17 @@ InstantController::InstantController(BrowserInstantController* browser,
   // InstantService sets up profile-level facilities such as the ThemeSource for
   // the NTP.
   // However, in some tests, browser_ may be null.
-  if (browser_)
-    InstantServiceFactory::GetForProfile(browser_->profile());
+  if (browser_) {
+    InstantService* instant_service = GetInstantService();
+    instant_service->AddObserver(this);
+  }
 }
 
 InstantController::~InstantController() {
+  if (browser_) {
+    InstantService* instant_service = GetInstantService();
+    instant_service->RemoveObserver(this);
+  }
 }
 
 void InstantController::OnAutocompleteStart() {
@@ -1090,7 +1096,8 @@ void InstantController::SetInstantEnabled(bool instant_enabled,
     instant_tab_->sender()->SetDisplayInstantResults(instant_enabled_);
 }
 
-void InstantController::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
+void InstantController::ThemeInfoChanged(
+    const ThemeBackgroundInfo& theme_info) {
   if (!extended_enabled())
     return;
 
@@ -1130,8 +1137,7 @@ void InstantController::ReloadOverlayIfStale() {
 void InstantController::OverlayLoadCompletedMainFrame() {
   if (!overlay_ || overlay_->supports_instant())
     return;
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser_->profile());
+  InstantService* instant_service = GetInstantService();
   content::WebContents* contents = overlay_->contents();
   DCHECK(contents);
   if (instant_service->IsInstantProcess(
@@ -1156,8 +1162,7 @@ void InstantController::ClearDebugEvents() {
 }
 
 void InstantController::UpdateMostVisitedItems() {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
+  InstantService* instant_service = GetInstantService();
   if (!instant_service)
     return;
 
@@ -1190,8 +1195,7 @@ void InstantController::UpdateMostVisitedItems() {
 
 void InstantController::DeleteMostVisitedItem(const GURL& url) {
   DCHECK(!url.is_empty());
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
+  InstantService* instant_service = GetInstantService();
   if (!instant_service)
     return;
 
@@ -1200,8 +1204,7 @@ void InstantController::DeleteMostVisitedItem(const GURL& url) {
 
 void InstantController::UndoMostVisitedDeletion(const GURL& url) {
   DCHECK(!url.is_empty());
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
+  InstantService* instant_service = GetInstantService();
   if (!instant_service)
     return;
 
@@ -1209,8 +1212,7 @@ void InstantController::UndoMostVisitedDeletion(const GURL& url) {
 }
 
 void InstantController::UndoAllMostVisitedDeletions() {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
+  InstantService* instant_service = GetInstantService();
   if (!instant_service)
     return;
 
@@ -1241,7 +1243,9 @@ void InstantController::InstantPageRenderViewCreated(
     return;
 
   // Update theme info so that the page picks it up.
-  browser_->UpdateThemeInfo();
+  InstantService* instant_service = GetInstantService();
+  if (instant_service)
+    instant_service->UpdateThemeInfo();
 
   // Ensure the searchbox API has the correct initial state.
   if (IsContentsFrom(overlay(), contents)) {
@@ -1684,9 +1688,14 @@ void InstantController::ResetInstantTab() {
 
 void InstantController::UpdateInfoForInstantTab() {
   if (instant_tab_) {
-    browser_->UpdateThemeInfo();
     instant_tab_->sender()->SetDisplayInstantResults(instant_enabled_);
     instant_tab_->sender()->SetOmniboxBounds(omnibox_bounds_);
+
+    // Update theme details.
+    InstantService* instant_service = GetInstantService();
+    if (instant_service)
+      instant_service->UpdateThemeInfo();
+
     instant_tab_->InitializeFonts();
     UpdateMostVisitedItems();
     instant_tab_->sender()->FocusChanged(omnibox_focus_state_,
@@ -1922,4 +1931,8 @@ bool InstantController::InStartup() const {
   // TODO(shishir): This is not completely reliable. Find a better way to detect
   // startup time.
   return !browser_->GetActiveWebContents();
+}
+
+InstantService* InstantController::GetInstantService() const {
+  return InstantServiceFactory::GetForProfile(profile());
 }

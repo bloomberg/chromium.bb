@@ -647,33 +647,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
   EXPECT_EQ(most_visited_items_count_, old_most_visited_items_count);
 }
 
-IN_PROC_BROWSER_TEST_F(InstantPolicyTest, ThemeBackgroundAccess) {
-  InstallThemeSource();
-  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantNTPSupport();
-
-  // The "Instant" New Tab should have access to chrome-search: scheme but not
-  // chrome: scheme.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
-
-  content::RenderViewHost* rvh =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
-
-  const std::string chrome_url("chrome://theme/IDR_THEME_NTP_BACKGROUND");
-  const std::string search_url(
-      "chrome-search://theme/IDR_THEME_NTP_BACKGROUND");
-  bool loaded = false;
-  ASSERT_TRUE(LoadImage(rvh, chrome_url, &loaded));
-  EXPECT_FALSE(loaded) << chrome_url;
-  ASSERT_TRUE(LoadImage(rvh, search_url, &loaded));
-  EXPECT_TRUE(loaded) << search_url;
-}
-
 // TODO(dhollowa): Fix flakes.  http://crbug.com/179930.
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_FaviconAccess) {
   // Create a favicon.
@@ -1387,4 +1360,109 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
   active_tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(UpdateSearchState(active_tab));
   EXPECT_EQ(2, on_most_visited_change_calls_);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantPolicyTest, ThemeBackgroundAccess) {
+  InstallThemeSource();
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // The "Instant" New Tab should have access to chrome-search: scheme but not
+  // chrome: scheme.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  content::RenderViewHost* rvh =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
+
+  const std::string chrome_url("chrome://theme/IDR_THEME_NTP_BACKGROUND");
+  const std::string search_url(
+      "chrome-search://theme/IDR_THEME_NTP_BACKGROUND");
+  bool loaded = false;
+  ASSERT_TRUE(LoadImage(rvh, chrome_url, &loaded));
+  EXPECT_FALSE(loaded) << chrome_url;
+  ASSERT_TRUE(LoadImage(rvh, search_url, &loaded));
+  EXPECT_TRUE(loaded) << search_url;
+}
+
+IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
+                       NoThemeBackgroundChangeEventOnTabSwitch) {
+  InstallThemeSource();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Install a theme.
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+  int on_theme_changed_calls = 0;
+  EXPECT_TRUE(GetIntFromJS(active_tab, "onThemeChangedCalls",
+                           &on_theme_changed_calls));
+  EXPECT_EQ(1, on_theme_changed_calls);
+
+  // Activate the previous tab.
+  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  // Switch back to new tab.
+  browser()->tab_strip_model()->ActivateTabAt(1, false);
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+
+  // Confirm that new tab got no onthemechanged event while switching tabs.
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  on_theme_changed_calls = 0;
+  EXPECT_TRUE(GetIntFromJS(active_tab, "onThemeChangedCalls",
+                           &on_theme_changed_calls));
+  EXPECT_EQ(1, on_theme_changed_calls);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
+                       SendThemeBackgroundChangedEvent) {
+  InstallThemeSource();
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Install a theme.
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Make sure new tab received an onthemechanged event.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+  int on_theme_changed_calls = 0;
+  EXPECT_TRUE(GetIntFromJS(active_tab, "onThemeChangedCalls",
+                           &on_theme_changed_calls));
+  EXPECT_EQ(1, on_theme_changed_calls);
+
+  // Install a new theme.
+  ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme2", "snowflake theme"));
+
+  // Confirm that new tab is notified about the theme changed event.
+  on_theme_changed_calls = 0;
+  EXPECT_TRUE(GetIntFromJS(active_tab, "onThemeChangedCalls",
+                           &on_theme_changed_calls));
+  EXPECT_EQ(2, on_theme_changed_calls);
 }

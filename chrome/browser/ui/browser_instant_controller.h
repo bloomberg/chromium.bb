@@ -13,14 +13,11 @@
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/search/instant_unload_handler.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
 struct InstantSuggestion;
 class Profile;
-class ThemeService;
 
 namespace content {
 class WebContents;
@@ -30,8 +27,7 @@ namespace gfx {
 class Rect;
 }
 
-class BrowserInstantController : public content::NotificationObserver,
-                                 public SearchModelObserver {
+class BrowserInstantController : public SearchModelObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
@@ -88,9 +84,6 @@ class BrowserInstantController : public content::NotificationObserver,
   // Invoked by |browser_| when the active tab is about to be deactivated.
   void TabDeactivated(content::WebContents* contents);
 
-  // Invoked by |instant_| to update theme information for NTP.
-  void UpdateThemeInfo();
-
   // Invoked by the InstantController when it wants to open a URL.
   void OpenURL(const GURL& url,
                content::PageTransition transition,
@@ -111,14 +104,6 @@ class BrowserInstantController : public content::NotificationObserver,
   virtual void ModelChanged(const SearchModel::State& old_state,
                             const SearchModel::State& new_state) OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Helper for handling theme change.
-  void OnThemeChanged(ThemeService* theme_service);
-
   // Called when the default search provider changes. Revokes the searchbox API
   // privileges for any existing WebContents (that belong to the erstwhile
   // default search provider) by simply reloading all such WebContents. This
@@ -135,13 +120,7 @@ class BrowserInstantController : public content::NotificationObserver,
   InstantController instant_;
   InstantUnloadHandler instant_unload_handler_;
 
-  // Theme-related data for NTP overlay to adopt themes.
-  bool initialized_theme_info_;  // True if theme_info_ has been initialized.
-  ThemeBackgroundInfo theme_info_;
-
   PrefChangeRegistrar profile_pref_registrar_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInstantController);
 };

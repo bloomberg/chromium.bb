@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/search/instant_commit_type.h"
 #include "chrome/browser/ui/search/instant_overlay_model.h"
@@ -37,6 +38,7 @@ class AutocompleteResult;
 class BrowserInstantController;
 class InstantNTP;
 class InstantOverlay;
+class InstantService;
 class InstantTab;
 class TemplateURL;
 
@@ -66,7 +68,8 @@ class WebContents;
 // only an InstantOverlay instance is kept.
 //
 // InstantController is owned by Browser via BrowserInstantController.
-class InstantController : public InstantPage::Delegate {
+class InstantController : public InstantPage::Delegate,
+                          public InstantServiceObserver {
  public:
   // For reporting fallbacks to local overlay.
   enum InstantFallbackReason {
@@ -193,9 +196,6 @@ class InstantController : public InstantPage::Delegate {
   // will force the use of baked-in page as the Instant URL and is only
   // applicable if |extended_enabled_| is true.
   void SetInstantEnabled(bool instant_enabled, bool use_local_page_only);
-
-  // The theme has changed. Pass the message to the overlay page.
-  void ThemeChanged(const ThemeBackgroundInfo& theme_info);
 
   // Called when someone else swapped in a different contents in the |overlay_|.
   void SwappedOverlayContents();
@@ -340,6 +340,9 @@ class InstantController : public InstantPage::Delegate {
       bool is_search_type) OVERRIDE;
   virtual void InstantPageLoadFailed(content::WebContents* contents) OVERRIDE;
 
+  // Overridden from InstantServiceObserver:
+  virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) OVERRIDE;
+
   // Invoked by the InstantLoader when the Instant page wants to delete a
   // Most Visited item.
   virtual void DeleteMostVisitedItem(const GURL& url) OVERRIDE;
@@ -429,6 +432,9 @@ class InstantController : public InstantPage::Delegate {
       const AutocompleteMatch& match,
       size_t autocomplete_match_index,
       InstantAutocompleteResult* result);
+
+  // Returns the InstantService for the browser profile.
+  InstantService* GetInstantService() const;
 
   BrowserInstantController* const browser_;
 
