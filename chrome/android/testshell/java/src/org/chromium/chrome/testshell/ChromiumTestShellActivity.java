@@ -59,7 +59,7 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
         try {
-            AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_AUTOMATIC);
+            AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_LIMIT);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Chromium browser process initialization failed", e);
             finish();

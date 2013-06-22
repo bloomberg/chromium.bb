@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,7 @@ import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
 /**
- * This class provides the method to start/stop ChildProcess called by
- * native.
+ * This class provides the method to start/stop ChildProcess called by native.
  */
 @JNINamespace("content")
 public class ChildProcessLauncher {
@@ -113,8 +112,8 @@ public class ChildProcessLauncher {
         }
     }
 
-    // Service class for child process. As the default value it uses
-    // SandboxedProcessService0 and PrivilegedProcessService0
+    // Service class for child process. As the default value it uses SandboxedProcessService0 and
+    // PrivilegedProcessService0
     private static final ChildConnectionAllocator mSandboxedChildConnectionAllocator =
             new ChildConnectionAllocator(true);
     private static final ChildConnectionAllocator mPrivilegedChildConnectionAllocator =
@@ -320,9 +319,9 @@ public class ChildProcessLauncher {
     }
 
     /**
-     * Bind a child process as a high priority process so that it has the same
-     * priority as the main process. This can be used for the foreground renderer
-     * process to distinguish it from the the background renderer process.
+     * Bind a child process as a high priority process so that it has the same priority as the main
+     * process. This can be used for the foreground renderer process to distinguish it from the the
+     * background renderer process.
      *
      * @param pid The process handle of the service connection obtained from {@link #start}.
      */
@@ -355,17 +354,16 @@ public class ChildProcessLauncher {
     private static IChildProcessCallback createCallback(final int callbackType) {
         return new IChildProcessCallback.Stub() {
             /**
-             * This is called by the remote service regularly to tell us about
-             * new values.  Note that IPC calls are dispatched through a thread
-             * pool running in each process, so the code executing here will
-             * NOT be running in our main thread -- so, to update the UI, we need
-             * to use a Handler.
+             * This is called by the remote service regularly to tell us about new values. Note that
+             * IPC calls are dispatched through a thread pool running in each process, so the code
+             * executing here will NOT be running in our main thread -- so, to update the UI, we
+             * need to use a Handler.
              */
             @Override
             public void establishSurfacePeer(
                     int pid, Surface surface, int primaryID, int secondaryID) {
-                // Do not allow a malicious renderer to connect to a producer. This is only
-                // used from stream textures managed by the GPU process.
+                // Do not allow a malicious renderer to connect to a producer. This is only used
+                // from stream textures managed by the GPU process.
                 if (callbackType != CALLBACK_FOR_GPU_PROCESS) {
                     Log.e(TAG, "Illegal callback for non-GPU process.");
                     return;

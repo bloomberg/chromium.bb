@@ -92,7 +92,7 @@ public class ContentShellActivity extends ChromiumActivity {
             if (!TextUtils.isEmpty(startupUrl)) {
                 mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
             }
-            if (!AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_AUTOMATIC)) {
+            if (!AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_LIMIT)) {
                 String shellUrl = ShellManager.DEFAULT_SHELL_URL;
                 if (savedInstanceState != null
                     && savedInstanceState.containsKey(ACTIVE_SHELL_URL_KEY)) {
