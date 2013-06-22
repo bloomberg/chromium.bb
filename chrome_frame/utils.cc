@@ -660,6 +660,17 @@ int GetConfigInt(int default_value, const wchar_t* value_name) {
   return ret;
 }
 
+int64 GetConfigInt64(int64 default_value, const wchar_t* value_name) {
+  int64 ret = default_value;
+  RegKey config_key;
+  if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
+                      KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    config_key.ReadInt64(value_name, &ret);
+  }
+
+  return ret;
+}
+
 bool GetConfigBool(bool default_value, const wchar_t* value_name) {
   DWORD value = GetConfigInt(default_value, value_name);
   return (value != FALSE);
@@ -679,6 +690,19 @@ bool SetConfigInt(const wchar_t* value_name, int value) {
 
 bool SetConfigBool(const wchar_t* value_name, bool value) {
   return SetConfigInt(value_name, value);
+}
+
+bool SetConfigInt64(const wchar_t* value_name, int64 value) {
+  RegKey config_key;
+  if (config_key.Create(HKEY_CURRENT_USER, kChromeFrameConfigKey,
+                        KEY_SET_VALUE) == ERROR_SUCCESS) {
+    if (config_key.WriteValue(value_name, &value, sizeof(value),
+                              REG_QWORD) == ERROR_SUCCESS) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool DeleteConfigValue(const wchar_t* value_name) {

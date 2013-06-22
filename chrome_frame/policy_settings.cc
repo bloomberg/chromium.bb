@@ -137,6 +137,23 @@ void PolicySettings::ReadStringSetting(const char* value_name,
   }
 }
 
+// static
+void PolicySettings::ReadBoolSetting(const char* value_name, bool* value) {
+  DCHECK(value);
+  base::win::RegKey config_key;
+  string16 value_name_str(ASCIIToWide(value_name));
+  DWORD dword_value = 0;
+  for (int i = 0; i < arraysize(kRootKeys); ++i) {
+    if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,
+                         KEY_QUERY_VALUE) == ERROR_SUCCESS) &&
+        (config_key.ReadValueDW(value_name_str.c_str(),
+                                &dword_value) == ERROR_SUCCESS)) {
+      *value = (dword_value != 0);
+      break;
+    }
+  }
+}
+
 void PolicySettings::RefreshFromRegistry() {
   RendererForUrl default_renderer;
   std::vector<std::wstring> renderer_exclusion_list;
@@ -144,6 +161,7 @@ void PolicySettings::RefreshFromRegistry() {
   std::wstring application_locale;
   CommandLine additional_launch_parameters(CommandLine::NO_PROGRAM);
   std::wstring additional_parameters_str;
+  bool suppress_turndown_prompt = false;
 
   // Read the latest settings from the registry
   ReadUrlSettings(&default_renderer, &renderer_exclusion_list);
@@ -155,6 +173,8 @@ void PolicySettings::RefreshFromRegistry() {
     additional_parameters_str.insert(0, L"fake.exe ");
     additional_launch_parameters.ParseFromString(additional_parameters_str);
   }
+  ReadBoolSetting(policy::key::kSuppressChromeFrameTurndownPrompt,
+                  &suppress_turndown_prompt);
 
   // Nofail swap in the new values.  (Note: this is all that need be protected
   // under a mutex if/when this becomes thread safe.)
@@ -165,6 +185,7 @@ void PolicySettings::RefreshFromRegistry() {
   swap(content_type_list_, content_type_list);
   swap(application_locale_, application_locale);
   swap(additional_launch_parameters_, additional_launch_parameters);
+  swap(suppress_turndown_prompt_, suppress_turndown_prompt);
 }
 
 // static

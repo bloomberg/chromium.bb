@@ -246,11 +246,17 @@ bool GetConfigBool(bool default_value, const wchar_t* value_name);
 // Gets an integer configuration value from the registry.
 int GetConfigInt(int default_value, const wchar_t* value_name);
 
+// Gets a 64-bit integer configuration value from the registry.
+int64 GetConfigInt64(int64 default_value, const wchar_t* value_name);
+
 // Sets an integer configuration value in the registry.
 bool SetConfigInt(const wchar_t* value_name, int value);
 
 // Sets a boolean integer configuration value in the registry.
 bool SetConfigBool(const wchar_t* value_name, bool value);
+
+// Sets a 64-bit integer configuration value in the registry.
+bool SetConfigInt64(const wchar_t* value_name, int64 value);
 
 // Deletes the configuration value passed in.
 bool DeleteConfigValue(const wchar_t* value_name);

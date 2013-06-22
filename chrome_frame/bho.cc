@@ -20,7 +20,7 @@
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/metrics_service.h"
 #include "chrome_frame/protocol_sink_wrap.h"
-#include "chrome_frame/ready_mode/ready_mode.h"
+#include "chrome_frame/turndown_prompt/turndown_prompt.h"
 #include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
@@ -79,6 +79,8 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
     if (web_browser2) {
       hr = DispEventAdvise(web_browser2, &DIID_DWebBrowserEvents2);
       DCHECK(SUCCEEDED(hr)) << "DispEventAdvise failed. Error: " << hr;
+
+      turndown_prompt::Configure(web_browser2);
     }
 
     if (g_patch_helper.state() == PatchHelper::PATCH_IBROWSER) {

@@ -44,17 +44,24 @@ class PolicySettings {
   // line object must not be used when appending to another command line.
   const CommandLine& AdditionalLaunchParameters() const;
 
+  // Returns true if the Chrome Frame turndown prompt should be suppressed.
+  bool suppress_turndown_prompt() const {
+    return suppress_turndown_prompt_;
+  }
+
   // Helper functions for reading settings from the registry
   static void ReadUrlSettings(RendererForUrl* default_renderer,
       std::vector<std::wstring>* renderer_exclusion_list);
   static void ReadContentTypeSetting(
       std::vector<std::wstring>* content_type_list);
   static void ReadStringSetting(const char* value_name, std::wstring* value);
+  static void ReadBoolSetting(const char* value_name, bool* value);
 
  protected:
   PolicySettings()
       : default_renderer_(RENDERER_NOT_SPECIFIED),
-        additional_launch_parameters_(CommandLine::NO_PROGRAM) {
+        additional_launch_parameters_(CommandLine::NO_PROGRAM),
+        suppress_turndown_prompt_(false) {
     RefreshFromRegistry();
   }
 
@@ -70,6 +77,7 @@ class PolicySettings {
   std::vector<std::wstring> content_type_list_;
   std::wstring application_locale_;
   CommandLine additional_launch_parameters_;
+  bool suppress_turndown_prompt_;
 
  private:
   // This ensures no construction is possible outside of the class itself.

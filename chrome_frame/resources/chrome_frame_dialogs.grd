@@ -123,6 +123,8 @@
       </structure>
       <structure name="IDD_CHROME_FRAME_READY_PROMPT" file="../../chrome/app/cf_resources.rc" type="dialog" >
       </structure>
+      <structure name="IDD_CHROME_FRAME_TURNDOWN_PROMPT" file="../../chrome/app/cf_resources.rc" type="dialog" >
+      </structure>
     </structures>
   </release>
 </grit>

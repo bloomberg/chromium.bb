@@ -30,7 +30,9 @@ void DeleteChromeFramePolicyEntries(HKEY root) {
     key.DeleteKey(ASCIIToWide(policy::key::kRenderInChromeFrameList).c_str());
     key.DeleteKey(ASCIIToWide(policy::key::kRenderInHostList).c_str());
     key.DeleteKey(ASCIIToWide(policy::key::kChromeFrameContentTypes).c_str());
-    key.DeleteKey(ASCIIToWide(policy::key::kApplicationLocaleValue).c_str());
+    key.DeleteValue(ASCIIToWide(policy::key::kApplicationLocaleValue).c_str());
+    key.DeleteValue(
+        ASCIIToWide(policy::key::kSuppressChromeFrameTurndownPrompt).c_str());
   }
 }
 
@@ -102,6 +104,17 @@ bool SetCFPolicyString(HKEY policy_root,
   EXPECT_EQ(ERROR_SUCCESS,
       policy_key.WriteValue(policy_name_str.c_str(), value));
   return true;
+}
+
+void SetCFPolicyBool(HKEY policy_root,
+                     const char* policy_name,
+                     bool value) {
+  RegKey policy_key;
+  if (InitializePolicyKey(policy_root, &policy_key)) {
+    std::wstring policy_name_str(ASCIIToWide(policy_name));
+    EXPECT_EQ(ERROR_SUCCESS,
+              policy_key.WriteValue(policy_name_str.c_str(), value ? 1U : 0U));
+  }
 }
 
 }  // end namespace
@@ -242,6 +255,20 @@ TEST_F(PolicySettingsTest, AdditionalLaunchParameters) {
     new_cmd_line.AppendArguments(additional_params, false);
     EXPECT_NE(new_cmd_line.GetProgram(), additional_params.GetProgram());
     EXPECT_TRUE(new_cmd_line.HasSwitch(switches::kDisableWebKitMediaSource));
+
+    DeleteChromeFramePolicyEntries(root[i]);
+  }
+}
+
+TEST_F(PolicySettingsTest, SuppressTurndownPrompt) {
+  EXPECT_FALSE(PolicySettings::GetInstance()->suppress_turndown_prompt());
+
+  HKEY root[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
+  for (int i = 0; i < arraysize(root); ++i) {
+    SetCFPolicyBool(root[i], policy::key::kSuppressChromeFrameTurndownPrompt,
+                    true);
+    ResetPolicySettings();
+    EXPECT_TRUE(PolicySettings::GetInstance()->suppress_turndown_prompt());
 
     DeleteChromeFramePolicyEntries(root[i]);
   }

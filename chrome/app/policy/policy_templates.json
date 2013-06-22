@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 220
+#   For your editing convenience: highest ID currently used: 221
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4903,6 +4903,19 @@
           If an extension is not in the list, or the list is not set, the call to the API will fail with an error code.''',
         },
       ],
+    },
+    {
+      'name': 'SuppressChromeFrameTurndownPrompt',
+      'caption': '''Suppress the <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> turndown prompt''',
+      'desc': '''Suppresses the turndown prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.''',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_frame:29-'],
+      'features': {
+        'dynamic_refresh': False,
+      },
+      'example_value': True,
+      'id': 221,
     },
     {
       'name': 'LocallyManagedUsers',

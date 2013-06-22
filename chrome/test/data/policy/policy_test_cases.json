@@ -1978,5 +1978,8 @@
   },
 
   "AdditionalLaunchParameters": {
+  },
+
+  "SuppressChromeFrameTurndownPrompt": {
   }
 }

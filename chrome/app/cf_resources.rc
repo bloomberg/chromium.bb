@@ -50,3 +50,13 @@ BEGIN
     DEFPUSHBUTTON   "Enable",IDACTIVATE,280,2,50,12
     PUSHBUTTON      "Ignore",IDNEVER,340,2,50,12
 END
+
+IDD_CHROME_FRAME_TURNDOWN_PROMPT DIALOGEX 0, 0, 393, 14
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    LTEXT           "This site is using the Chrome Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.",IDC_TD_PROMPT_MESSAGE,3,3,414,8
+    LTEXT           "Learn more.",IDC_TD_PROMPT_LINK,238,3,42,8
+    PUSHBUTTON      "Uninstall",IDUNINSTALL,285,2,50,12
+    DEFPUSHBUTTON   "Dismiss",IDDISMISS,340,2,50,12
+END
