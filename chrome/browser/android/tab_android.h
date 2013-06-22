@@ -81,7 +81,12 @@ class TabAndroid {
   // derived classes may remove their implementation first.
   virtual void RunExternalProtocolDialog(const GURL& url);
 
+  // Used by sync to get/set the sync id of tab.
+  virtual int64 GetSyncId() const = 0;
+  virtual void SetSyncId(int64 sync_id) = 0;
+
   static bool RegisterTabAndroid(JNIEnv* env);
+
  protected:
   virtual ~TabAndroid();
 

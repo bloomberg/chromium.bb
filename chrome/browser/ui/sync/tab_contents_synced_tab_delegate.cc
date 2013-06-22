@@ -25,7 +25,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabContentsSyncedTabDelegate);
 
 TabContentsSyncedTabDelegate::TabContentsSyncedTabDelegate(
     content::WebContents* web_contents)
-        : web_contents_(web_contents) {}
+    : web_contents_(web_contents), sync_session_id_(0) {}
 
 TabContentsSyncedTabDelegate::~TabContentsSyncedTabDelegate() {}
 
@@ -105,3 +105,11 @@ bool TabContentsSyncedTabDelegate::IsPinned() const {
 }
 
 bool TabContentsSyncedTabDelegate::HasWebContents() const { return true; }
+
+int64 TabContentsSyncedTabDelegate::GetSyncId() const {
+  return sync_session_id_;
+}
+
+void TabContentsSyncedTabDelegate::SetSyncId(int64 sync_id) {
+  sync_session_id_ = sync_id;
+}

@@ -752,24 +752,26 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolEmpty) {
   ASSERT_TRUE(create_root.success());
 
   std::vector<int64> node_ids;
-  ASSERT_EQ(0U, model_associator_->tab_pool_.capacity());
-  ASSERT_TRUE(model_associator_->tab_pool_.empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(0U, model_associator_->tab_pool_.Capacity());
+  ASSERT_TRUE(model_associator_->tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.Full());
   const size_t num_ids = 10;
   for (size_t i = 0; i < num_ids; ++i) {
     int64 id = model_associator_->tab_pool_.GetFreeTabNode();
     ASSERT_GT(id, -1);
     node_ids.push_back(id);
+    // Associate with a tab node.
+    model_associator_->tab_pool_.AssociateTabNode(id, i + 1);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
-  ASSERT_TRUE(model_associator_->tab_pool_.empty());
-  ASSERT_FALSE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
+  ASSERT_TRUE(model_associator_->tab_pool_.Empty());
+  ASSERT_FALSE(model_associator_->tab_pool_.Full());
   for (size_t i = 0; i < num_ids; ++i) {
     model_associator_->tab_pool_.FreeTabNode(node_ids[i]);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
-  ASSERT_FALSE(model_associator_->tab_pool_.empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
+  ASSERT_FALSE(model_associator_->tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.Full());
 }
 
 // TODO(jhorwich): Re-enable when crbug.com/121487 addressed
@@ -779,29 +781,34 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
   ASSERT_TRUE(create_root.success());
 
   const size_t num_starting_nodes = 3;
+  SessionID session_id;
   for (size_t i = 0; i < num_starting_nodes; ++i) {
-    model_associator_->tab_pool_.AddTabNode(i);
+    session_id.set_id(i + 1);
+    model_associator_->tab_pool_.AddTabNode(i + 1, session_id, i);
   }
 
+  model_associator_->tab_pool_.FreeUnusedTabNodes(std::set<int64>());
   std::vector<int64> node_ids;
-  ASSERT_EQ(num_starting_nodes, model_associator_->tab_pool_.capacity());
-  ASSERT_FALSE(model_associator_->tab_pool_.empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_starting_nodes, model_associator_->tab_pool_.Capacity());
+  ASSERT_FALSE(model_associator_->tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.Full());
   const size_t num_ids = 10;
   for (size_t i = 0; i < num_ids; ++i) {
     int64 id = model_associator_->tab_pool_.GetFreeTabNode();
     ASSERT_GT(id, -1);
     node_ids.push_back(id);
+    // Associate with a tab node.
+    model_associator_->tab_pool_.AssociateTabNode(id, i + 1);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
-  ASSERT_TRUE(model_associator_->tab_pool_.empty());
-  ASSERT_FALSE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
+  ASSERT_TRUE(model_associator_->tab_pool_.Empty());
+  ASSERT_FALSE(model_associator_->tab_pool_.Full());
   for (size_t i = 0; i < num_ids; ++i) {
     model_associator_->tab_pool_.FreeTabNode(node_ids[i]);
   }
-  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
-  ASSERT_FALSE(model_associator_->tab_pool_.empty());
-  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.Capacity());
+  ASSERT_FALSE(model_associator_->tab_pool_.Empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.Full());
 }
 
 // Write a foreign session to a node, and then delete it.
@@ -1165,7 +1172,7 @@ TEST_F(ProfileSyncServiceSessionTest, MissingLocalTabNode) {
   ASSERT_FALSE(error.IsSet());
   {
     // Delete the first sync tab node.
-    std::string tab_tag = TabNodePool::TabIdToTag(local_tag, 0);
+    std::string tab_tag = TabNodePool::TabIdToTag(local_tag, 1);
 
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode root(&trans);
