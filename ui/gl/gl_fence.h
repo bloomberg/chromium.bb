@@ -17,6 +17,7 @@ class GL_EXPORT GLFence {
 
   static GLFence* Create();
   virtual bool HasCompleted() = 0;
+  virtual void ClientWait() = 0;
 
  protected:
   static bool IsContextLost();

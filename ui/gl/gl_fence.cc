@@ -32,6 +32,10 @@ class GLFenceNVFence: public gfx::GLFence {
     return !!glTestFenceNV(fence_);
   }
 
+  virtual void ClientWait() OVERRIDE {
+    glFinishFenceNV(fence_);
+  }
+
  private:
   virtual ~GLFenceNVFence() {
     glDeleteFencesNV(1, &fence_);
@@ -62,6 +66,10 @@ class GLFenceARBSync: public gfx::GLFence {
     return length == 1 && value == GL_SIGNALED;
   }
 
+  virtual void ClientWait() OVERRIDE {
+    glClientWaitSync(sync_, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+  }
+
  private:
   virtual ~GLFenceARBSync() {
     glDeleteSync(sync_);
@@ -69,6 +77,37 @@ class GLFenceARBSync: public gfx::GLFence {
 
   GLsync sync_;
 };
+
+#if !defined(OS_MACOSX)
+class EGLFenceSync : public gfx::GLFence {
+ public:
+  EGLFenceSync() {
+    display_ = eglGetCurrentDisplay();
+    sync_ = eglCreateSyncKHR(display_, EGL_SYNC_FENCE_KHR, NULL);
+  }
+
+  virtual bool HasCompleted() OVERRIDE {
+    EGLint value = 0;
+    eglGetSyncAttribKHR(display_, sync_, EGL_SYNC_STATUS_KHR, &value);
+    DCHECK(value == EGL_SIGNALED_KHR || value == EGL_UNSIGNALED_KHR);
+    return !value || value == EGL_SIGNALED_KHR;
+  }
+
+  virtual void ClientWait() OVERRIDE {
+    EGLint flags = EGL_SYNC_FLUSH_COMMANDS_BIT_KHR;
+    EGLTimeKHR time = EGL_FOREVER_KHR;
+    eglClientWaitSyncKHR(display_, sync_, flags, time);
+  }
+
+ private:
+  virtual ~EGLFenceSync() {
+    eglDestroySyncKHR(display_, sync_);
+  }
+
+  EGLSyncKHR sync_;
+  EGLDisplay display_;
+};
+#endif // !OS_MACOSX
 
 }  // namespace
 
@@ -82,13 +121,15 @@ GLFence::~GLFence() {
 
 // static
 GLFence* GLFence::Create() {
-  if (gfx::g_driver_gl.ext.b_GL_NV_fence) {
+#if !defined(OS_MACOSX)
+  if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync)
+    return new EGLFenceSync();
+#endif
+  if (gfx::g_driver_gl.ext.b_GL_NV_fence)
     return new GLFenceNVFence();
-  } else if (gfx::g_driver_gl.ext.b_GL_ARB_sync) {
+  if (gfx::g_driver_gl.ext.b_GL_ARB_sync)
     return new GLFenceARBSync();
-  } else {
-    return NULL;
-  }
+  return NULL;
 }
 
 }  // namespace gfx

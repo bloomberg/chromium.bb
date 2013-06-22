@@ -678,6 +678,10 @@ GL_FUNCTIONS = [
     'GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* length,'
     'GLint* values', },
 { 'return_type': 'void',
+  'names': ['glClientWaitSync'],
+  'arguments':
+    'GLsync sync, GLbitfield flags, GLuint64 timeout', },
+{ 'return_type': 'void',
   'names': ['glDrawArraysInstancedANGLE', 'glDrawArraysInstancedARB'],
   'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount', },
 { 'return_type': 'void',
