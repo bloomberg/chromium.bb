@@ -28,6 +28,10 @@
 #include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+typedef struct CGColorSpace* CGColorSpaceRef;
+#endif
+
 class SkBitmap;
 
 namespace {
@@ -174,6 +178,13 @@ class UI_EXPORT Image {
 
   // Swaps this image's internal representations with |other|.
   void SwapRepresentations(gfx::Image* other);
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Set the default representation's color space. This is used for converting
+  // to NSImage. This is used to compensate for PNGCodec not writing or reading
+  // colorspace ancillary chunks. (sRGB, iCCP).
+  void SetSourceColorSpace(CGColorSpaceRef color_space);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
  private:
   // Returns the type of the default representation.

@@ -124,7 +124,8 @@ gfx::Size UIImageSize(UIImage* image);
 scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromNSImage(
     NSImage* nsimage);
 // Caller takes ownership of the returned NSImage.
-NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps);
+NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps,
+                        CGColorSpaceRef color_space);
 gfx::Size NSImageSize(NSImage* image);
 #endif // defined(OS_MACOSX)
 
@@ -472,6 +473,10 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
  public:
   ImageStorage(gfx::Image::RepresentationType default_type)
       : default_representation_type_(default_type),
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+        default_representation_color_space_(
+            base::mac::GetGenericRGBColorSpace()),
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
         representations_deleter_(&representations_) {
   }
 
@@ -479,6 +484,15 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
     return default_representation_type_;
   }
   gfx::Image::RepresentationMap& representations() { return representations_; }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  void set_default_representation_color_space(CGColorSpaceRef color_space) {
+    default_representation_color_space_ = color_space;
+  }
+  CGColorSpaceRef default_representation_color_space() {
+    return default_representation_color_space_;
+  }
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
  private:
   friend class base::RefCounted<ImageStorage>;
@@ -488,6 +502,14 @@ class ImageStorage : public base::RefCounted<ImageStorage> {
   // The type of image that was passed to the constructor. This key will always
   // exist in the |representations_| map.
   gfx::Image::RepresentationType default_representation_type_;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // The default representation's colorspace. This is used for converting to
+  // NSImage. This field exists to compensate for PNGCodec not writing or
+  // reading colorspace ancillary chunks. (sRGB, iCCP).
+  // Not owned.
+  CGColorSpaceRef default_representation_color_space_;
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // All the representations of an Image. Size will always be at least one, with
   // more for any converted representations.
@@ -710,18 +732,22 @@ UIImage* Image::ToUIImage() const {
 NSImage* Image::ToNSImage() const {
   internal::ImageRep* rep = GetRepresentation(kImageRepCocoa, false);
   if (!rep) {
+    CGColorSpaceRef default_representation_color_space =
+        storage_->default_representation_color_space();
+
     switch (DefaultRepresentationType()) {
       case kImageRepPNG: {
         internal::ImageRepPNG* png_rep =
             GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
         rep = new internal::ImageRepCocoa(internal::NSImageFromPNG(
-            png_rep->image_reps()));
+            png_rep->image_reps(), default_representation_color_space));
         break;
       }
       case kImageRepSkia: {
         internal::ImageRepSkia* skia_rep =
             GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
-        NSImage* image = NSImageFromImageSkia(*skia_rep->image());
+        NSImage* image = NSImageFromImageSkiaWithColorSpace(*skia_rep->image(),
+            default_representation_color_space);
         base::mac::NSObjectRetain(image);
         rep = new internal::ImageRepCocoa(image);
         break;
@@ -895,6 +921,13 @@ gfx::Size Image::Size() const {
 void Image::SwapRepresentations(gfx::Image* other) {
   storage_.swap(other->storage_);
 }
+
+#if defined(OS_MACOSX)  && !defined(OS_IOS)
+void Image::SetSourceColorSpace(CGColorSpaceRef color_space) {
+  if (storage_.get())
+    storage_->set_default_representation_color_space(color_space);
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 Image::RepresentationType Image::DefaultRepresentationType() const {
   CHECK(storage_.get());

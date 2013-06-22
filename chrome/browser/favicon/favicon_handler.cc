@@ -323,7 +323,10 @@ void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
   if (image.IsEmpty())
     return;
 
-  entry->GetFavicon().image = image;
+  gfx::Image image_with_adjusted_colorspace = image;
+  FaviconUtil::SetFaviconColorSpace(&image_with_adjusted_colorspace);
+
+  entry->GetFavicon().image = image_with_adjusted_colorspace;
   delegate_->NotifyFaviconUpdated(icon_url_changed);
 }
 

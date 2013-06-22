@@ -16,6 +16,10 @@
 #include "ui/gfx/image/image_skia.h"
 #include "webkit/glue/image_decoder.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mac_util.h"
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 namespace {
 
 // Creates image reps of DIP size |favicon_size| for the subset of
@@ -102,6 +106,13 @@ std::vector<ui::ScaleFactor> FaviconUtil::GetFaviconScaleFactors() {
   favicon_scale_factors.insert(favicon_scale_factors.begin() + insert_index,
                                ui::SCALE_FACTOR_100P);
   return favicon_scale_factors;
+}
+
+// static
+void FaviconUtil::SetFaviconColorSpace(gfx::Image* image) {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  image->SetSourceColorSpace(base::mac::GetSystemColorSpace());
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
 // static

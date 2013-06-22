@@ -144,6 +144,15 @@ bool FSRefFromPath(const std::string& path, FSRef* ref) {
   return status == noErr;
 }
 
+CGColorSpaceRef GetGenericRGBColorSpace() {
+  // Leaked. That's OK, it's scoped to the lifetime of the application.
+  static CGColorSpaceRef g_color_space_generic_rgb(
+      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
+  DLOG_IF(ERROR, !g_color_space_generic_rgb) <<
+      "Couldn't get the generic RGB color space";
+  return g_color_space_generic_rgb;
+}
+
 CGColorSpaceRef GetSRGBColorSpace() {
   // Leaked.  That's OK, it's scoped to the lifetime of the application.
   static CGColorSpaceRef g_color_space_sRGB =

@@ -47,6 +47,10 @@ BASE_EXPORT bool FSRefFromPath(const std::string& path, FSRef* ref);
 // release it!
 BASE_EXPORT CGColorSpaceRef GetSRGBColorSpace();
 
+// Returns the generic RGB color space. The return value is a static value; do
+// not release it!
+BASE_EXPORT CGColorSpaceRef GetGenericRGBColorSpace();
+
 // Returns the color space being used by the main display.  The return value
 // is a static value; do not release it!
 BASE_EXPORT CGColorSpaceRef GetSystemColorSpace();

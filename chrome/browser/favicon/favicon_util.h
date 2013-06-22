@@ -34,6 +34,11 @@ class FaviconUtil {
   // the default favicon.
   static std::vector<ui::ScaleFactor> GetFaviconScaleFactors();
 
+  // Sets the color space used for converting |image| to an NSImage to the
+  // system colorspace. This makes the favicon look the same in the browser UI
+  // as it does in the renderer.
+  static void SetFaviconColorSpace(gfx::Image* image);
+
   // Takes a vector of png-encoded frames, decodes them, and converts them to
   // a favicon of size favicon_size (in DIPs) at the desired ui scale factors.
   static gfx::Image SelectFaviconFramesFromPNGs(

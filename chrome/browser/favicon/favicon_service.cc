@@ -314,6 +314,8 @@ void FaviconService::RunFaviconImageCallbackWithBitmapResults(
       favicon_bitmap_results,
       FaviconUtil::GetFaviconScaleFactors(),
       desired_size_in_dip);
+  FaviconUtil::SetFaviconColorSpace(&image_result.image);
+
   image_result.icon_url = image_result.image.IsEmpty() ?
       GURL() : favicon_bitmap_results[0].icon_url;
   callback.Run(image_result);
