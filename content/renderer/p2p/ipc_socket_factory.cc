@@ -21,7 +21,9 @@ namespace {
 
 bool IsTcpClientSocket(P2PSocketType type) {
   return (type == P2P_SOCKET_STUN_TCP_CLIENT) ||
-         (type == P2P_SOCKET_TCP_CLIENT);
+         (type == P2P_SOCKET_TCP_CLIENT) ||
+         (type == P2P_SOCKET_STUN_SSLTCP_CLIENT) ||
+         (type == P2P_SOCKET_SSLTCP_CLIENT);
 }
 
 // TODO(miu): This needs tuning.  http://crbug.com/237960
