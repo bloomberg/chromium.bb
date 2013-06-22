@@ -1,0 +1,22 @@
+<!-- Test for crbug.com/235256: this test passes if only 
+the top left green rect is shown.
+Modified from the original example here, 
+http://www.w3.org/TR/SVG/images/struct/Use02.svg -->
+<html>
+<body>
+<svg width="10cm" height="3cm" viewBox="0 0 100 30">
+  <defs>
+    <symbol id="MySymbol">
+      <desc>MySymbol - four rectangles in a grid</desc>
+      <rect x="1" y="1" width="8" height="8" fill="green"/>
+      <rect x="11" y="1" width="8" height="8" fill="red"/>
+      <rect x="1" y="11" width="8" height="8" fill="red"/>
+      <rect x="11" y="11" width="8" height="8"  fill="red"/>
+    </symbol>
+  </defs>
+  <use x="0" y="0" xlink:href="#MySymbol" >
+    <set attributeName="width" to="10" begin="0s" fill="freeze" />
+    <set attributeName="height" to="10" begin="0s" fill="freeze" />
+  </use>
+</svg>
+</body>
