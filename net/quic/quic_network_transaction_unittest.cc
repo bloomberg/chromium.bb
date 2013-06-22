@@ -61,7 +61,8 @@ class QuicNetworkTransactionTest : public PlatformTest {
         proxy_service_(ProxyService::CreateDirect()),
         compressor_(new QuicSpdyCompressor()),
         auth_handler_factory_(
-            HttpAuthHandlerFactory::CreateDefault(&host_resolver_)) {
+            HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
+        hanging_data_(NULL, 0, NULL, 0) {
     request_.method = "GET";
     request_.url = GURL("http://www.google.com/");
     request_.load_flags = 0;
@@ -211,10 +212,14 @@ class QuicNetworkTransactionTest : public PlatformTest {
   }
 
   void CreateSession() {
+    CreateSessionWithFactory(&socket_factory_);
+  }
+
+  void CreateSessionWithFactory(ClientSocketFactory* socket_factory) {
     params_.enable_quic = true;
     params_.quic_clock = clock_;
     params_.quic_random = &random_generator_;
-    params_.client_socket_factory = &socket_factory_;
+    params_.client_socket_factory = socket_factory;
     params_.quic_crypto_client_stream_factory = &crypto_client_stream_factory_;
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
@@ -296,10 +301,9 @@ class QuicNetworkTransactionTest : public PlatformTest {
   }
 
   void AddHangingNonAlternateProtocolSocketData() {
-    MockConnect never_finishing_connect(SYNCHRONOUS, ERR_IO_PENDING);
-    StaticSocketDataProvider data(NULL, 0, NULL, 0);
-    data.set_connect_data(never_finishing_connect);
-    socket_factory_.AddSocketDataProvider(&data);
+    MockConnect hanging_connect(SYNCHRONOUS, ERR_IO_PENDING);
+    hanging_data_.set_connect_data(hanging_connect);
+    socket_factory_.AddSocketDataProvider(&hanging_data_);
   }
 
   QuicPacketHeader header_;
@@ -319,6 +323,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
   HttpNetworkSession::Params params_;
   HttpRequestInfo request_;
   CapturingBoundNetLog net_log_;
+  StaticSocketDataProvider hanging_data_;
 };
 
 TEST_F(QuicNetworkTransactionTest, ForceQuic) {
@@ -487,6 +492,65 @@ TEST_F(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
   SendRequestAndExpectQuicResponse("hello!");
 }
 
+TEST_F(QuicNetworkTransactionTest, HungAlternateProtocol) {
+  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START);
+
+  MockWrite http_writes[] = {
+    MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
+    MockWrite(SYNCHRONOUS, 1, "Host: www.google.com\r\n"),
+    MockWrite(SYNCHRONOUS, 2, "Connection: keep-alive\r\n\r\n")
+  };
+
+  MockRead http_reads[] = {
+    MockRead(SYNCHRONOUS, 3, "HTTP/1.1 200 OK\r\n"),
+    MockRead(SYNCHRONOUS, 4, kQuicAlternateProtocolHttpHeader),
+    MockRead(SYNCHRONOUS, 5, "hello world"),
+    MockRead(SYNCHRONOUS, OK, 6)
+  };
+
+  DeterministicMockClientSocketFactory socket_factory;
+
+  DeterministicSocketData http_data(http_reads, arraysize(http_reads),
+                                    http_writes, arraysize(http_writes));
+  socket_factory.AddSocketDataProvider(&http_data);
+
+  // The QUIC transaction will not be allowed to complete.
+  MockWrite quic_writes[] = {
+    MockWrite(ASYNC, ERR_IO_PENDING, 0)
+  };
+  MockRead quic_reads[] = {
+    MockRead(ASYNC, ERR_IO_PENDING, 1),
+  };
+  DeterministicSocketData quic_data(quic_reads, arraysize(quic_reads),
+                                    quic_writes, arraysize(quic_writes));
+  socket_factory.AddSocketDataProvider(&quic_data);
+
+  // The HTTP transaction will complete.
+  DeterministicSocketData http_data2(http_reads, arraysize(http_reads),
+                                     http_writes, arraysize(http_writes));
+  socket_factory.AddSocketDataProvider(&http_data2);
+
+  CreateSessionWithFactory(&socket_factory);
+
+  // Run the first request.
+  http_data.StopAfter(arraysize(http_reads) + arraysize(http_writes));
+  SendRequestAndExpectHttpResponse("hello world");
+  ASSERT_TRUE(http_data.at_read_eof());
+  ASSERT_TRUE(http_data.at_write_eof());
+
+  // Now run the second request in which the QUIC socket hangs,
+  // and verify the the transaction continues over HTTP.
+  http_data2.StopAfter(arraysize(http_reads) + arraysize(http_writes));
+  SendRequestAndExpectHttpResponse("hello world");
+
+  ASSERT_TRUE(http_data2.at_read_eof());
+  ASSERT_TRUE(http_data2.at_write_eof());
+  ASSERT_TRUE(!quic_data.at_read_eof());
+  ASSERT_TRUE(!quic_data.at_write_eof());
+}
+
 TEST_F(QuicNetworkTransactionTest, DontUseAlternateProtocolForQuicHttps) {
   HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
 
@@ -541,6 +605,11 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTT) {
       quic_writes, arraysize(quic_writes));
 
   socket_factory_.AddSocketDataProvider(&quic_data);
+
+  // TODO(rch): Ideally, we would not need this, but since we have to do a DNS
+  // lookup, it's not synchronous.  Perhaps we can configure the HostResolver
+  // to return immediately.
+  AddHangingNonAlternateProtocolSocketData();
 
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);

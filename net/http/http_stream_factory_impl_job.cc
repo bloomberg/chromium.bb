@@ -742,8 +742,17 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     }
     next_state_ = STATE_INIT_CONNECTION_COMPLETE;
     const ProxyServer& proxy_server = proxy_info_.proxy_server();
-    return quic_request_.Request(HostPortProxyPair(origin_, proxy_server),
-                                 net_log_, io_callback_);
+    int rv = quic_request_.Request(HostPortProxyPair(origin_, proxy_server),
+                                   net_log_, io_callback_);
+    if (rv != OK) {
+      // OK, there's no available QUIC session. Let |waiting_job_| resume
+      // if it's paused.
+      if (waiting_job_) {
+        waiting_job_->Resume(this);
+        waiting_job_ = NULL;
+      }
+    }
+    return rv;
   }
 
   // Check first if we have a spdy session for this group.  If so, then go
