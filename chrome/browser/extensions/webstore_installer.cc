@@ -66,7 +66,7 @@ const char kInstallCanceledError[] = "Install canceled";
 const char kDownloadInterruptedError[] = "Download interrupted";
 const char kInvalidDownloadError[] = "Download was not a CRX";
 const char kInlineInstallSource[] = "inline";
-const char kDefaultInstallSource[] = "";
+const char kDefaultInstallSource[] = "ondemand";
 
 base::FilePath* g_download_directory_for_tests = NULL;
 
