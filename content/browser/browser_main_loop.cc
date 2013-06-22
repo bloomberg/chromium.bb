@@ -47,6 +47,7 @@
 #include "crypto/nss_util.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media.h"
+#include "media/midi/midi_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
@@ -400,7 +401,10 @@ void BrowserMainLoop::MainMessageLoopStart() {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMan")
     audio_manager_.reset(media::AudioManager::Create());
   }
-
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MIDIManager")
+    midi_manager_.reset(media::MIDIManager::Create());
+  }
 
 #if !defined(OS_IOS)
   {
