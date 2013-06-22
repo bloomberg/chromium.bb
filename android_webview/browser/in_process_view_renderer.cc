@@ -275,6 +275,8 @@ AwDrawSWFunctionTable* g_sw_draw_functions = NULL;
 // as a fallback mechanism, which will have an important performance impact.
 bool g_is_skia_version_compatible = false;
 
+const int64 kFallbackTickTimeoutInMilliseconds = 500;
+
 }  // namespace
 
 // static
@@ -319,6 +321,7 @@ InProcessViewRenderer::InProcessViewRenderer(
   CHECK(web_contents_);
   web_contents_->SetUserData(kUserDataKey, new UserData(this));
   content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
+
   // Currently the logic in this class relies on |compositor_| remaining NULL
   // until the DidInitializeCompositor() call, hence it is not set here.
 }
@@ -345,6 +348,7 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
                                    bool is_hardware_canvas,
                                    const gfx::Vector2d& scroll,
                                    const gfx::Rect& clip) {
+  fallback_tick_.Cancel();
   scroll_at_start_of_frame_  = scroll;
   if (is_hardware_canvas && attached_to_window_ && compositor_ &&
       HardwareEnabled() && client_->RequestDrawGL(java_canvas)) {
@@ -455,7 +459,7 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
     if (!RasterizeIntoBitmap(env, jbitmap,
                              clip.x() - scroll_at_start_of_frame_.x(),
                              clip.y() - scroll_at_start_of_frame_.y(),
-                             base::Bind(&InProcessViewRenderer::RenderSW,
+                             base::Bind(&InProcessViewRenderer::CompositeSW,
                                         base::Unretained(this)))) {
       TRACE_EVENT_INSTANT0("android_webview",
                            "EarlyOut_RasterizeFail",
@@ -495,7 +499,7 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
     canvas.translate(scroll_at_start_of_frame_.x(),
                      scroll_at_start_of_frame_.y());
 
-    succeeded = RenderSW(&canvas);
+    succeeded = CompositeSW(&canvas);
   }
 
   sw_functions->release_pixels(pixels);
@@ -637,7 +641,6 @@ void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
                        "invalidate",
                        invalidate);
   continuous_invalidate_ = invalidate;
-  // TODO(boliu): Handle if not attached to window case.
   EnsureContinuousInvalidation(NULL);
 }
 
@@ -698,14 +701,33 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
     } else {
       client_->PostInvalidate();
     }
+
+    // Unretained here is safe because the callback is cancelled when
+    // |fallback_tick_| is destroyed.
+    fallback_tick_.Reset(base::Bind(&InProcessViewRenderer::FallbackTickFired,
+                                    base::Unretained(this)));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        fallback_tick_.callback(),
+        base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
+
     block_invalidates_ = true;
   }
 }
 
-bool InProcessViewRenderer::RenderSW(SkCanvas* canvas) {
-  // TODO(joth): BrowserViewRendererImpl had a bunch of logic for dpi and page
-  // scale here. Determine what if any needs bringing over to this class.
-  return CompositeSW(canvas);
+void InProcessViewRenderer::FallbackTickFired() {
+  TRACE_EVENT1("android_webview",
+               "InProcessViewRenderer::FallbackTickFired",
+               "continuous_invalidate_",
+               continuous_invalidate_);
+  if (continuous_invalidate_) {
+    SkDevice device(SkBitmap::kARGB_8888_Config, 1, 1);
+    SkCanvas canvas(&device);
+    block_invalidates_ = true;
+    CompositeSW(&canvas);
+  }
+  block_invalidates_ = false;
+  EnsureContinuousInvalidation(NULL);
 }
 
 bool InProcessViewRenderer::CompositeSW(SkCanvas* canvas) {

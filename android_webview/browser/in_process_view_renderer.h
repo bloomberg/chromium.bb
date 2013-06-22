@@ -7,6 +7,7 @@
 
 #include "android_webview/browser/browser_view_renderer.h"
 
+#include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "ui/gfx/vector2d_f.h"
@@ -68,8 +69,11 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   void EnsureContinuousInvalidation(AwDrawGLInfo* draw_info);
   bool DrawSWInternal(jobject java_canvas,
                       const gfx::Rect& clip_bounds);
-  bool RenderSW(SkCanvas* canvas);
   bool CompositeSW(SkCanvas* canvas);
+
+  // If we call up view invalidate and OnDraw is not called before a deadline,
+  // then we keep ticking the SynchronousCompositor so it can make progress.
+  void FallbackTickFired();
 
   BrowserViewRenderer::Client* client_;
   BrowserViewRenderer::JavaHelper* java_helper_;
@@ -86,6 +90,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // compositor draw which may switch continuous_invalidate on and off in the
   // process.
   bool block_invalidates_;
+  // Holds a callback to FallbackTickFired while it is pending.
+  base::CancelableClosure fallback_tick_;
 
   int width_;
   int height_;
