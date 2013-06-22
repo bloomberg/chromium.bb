@@ -43,11 +43,6 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
                        Profile* profile,
                        base::MessageLoop* sync_loop);
 
-  // Informs the SyncBackendRegistrar of the currently enabled set of types.
-  // These types will be placed in the passive group.  This function should be
-  // called exactly once during startup.
-  void SetInitialTypes(syncer::ModelTypeSet initial_types);
-
   // SyncBackendRegistrar must be destroyed as follows:
   //
   //   1) On the sync thread, call OnSyncerShutdownComplete() after
@@ -61,6 +56,11 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // thread which the syncer pushes changes to).
   virtual ~SyncBackendRegistrar();
 
+  // Informs the SyncBackendRegistrar of the currently enabled set of types.
+  // These types will be placed in the passive group.  This function should be
+  // called exactly once during startup.
+  void SetInitialTypes(syncer::ModelTypeSet initial_types);
+
   // Returns whether or not we are currently syncing encryption keys.
   // Must be called on the UI thread.
   bool IsNigoriEnabled() const;
@@ -73,6 +73,11 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   syncer::ModelTypeSet ConfigureDataTypes(
       syncer::ModelTypeSet types_to_add,
       syncer::ModelTypeSet types_to_remove);
+
+  // Returns the set of enabled types as of the last configuration. Note that
+  // this might be different from the current types in the routing info due
+  // to DeactiveDataType being called separately from ConfigureDataTypes.
+  syncer::ModelTypeSet GetLastConfiguredTypes() const;
 
   // Must be called from the UI thread. (See destructor comment.)
   void StopOnUIThread();
@@ -159,6 +164,10 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
 
   // The change processors that handle the different data types.
   std::map<syncer::ModelType, ChangeProcessor*> processors_;
+
+  // The types that were enabled as of the last configuration. Updated on each
+  // call to ConfigureDataTypes as well as SetInitialTypes.
+  syncer::ModelTypeSet last_configured_types_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendRegistrar);
 };

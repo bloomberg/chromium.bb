@@ -297,9 +297,9 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
 void SyncManagerImpl::ConfigureSyncer(
     ConfigureReason reason,
     ModelTypeSet to_download,
+    ModelTypeSet to_purge,
     ModelTypeSet to_journal,
     ModelTypeSet to_unapply,
-    ModelTypeSet to_ignore,
     const ModelSafeRoutingInfo& new_routing_info,
     const base::Closure& ready_task,
     const base::Closure& retry_task) {
@@ -307,30 +307,18 @@ void SyncManagerImpl::ConfigureSyncer(
   DCHECK(!ready_task.is_null());
   DCHECK(!retry_task.is_null());
 
-  // Cleanup any types that might have just been disabled.
-  ModelTypeSet previous_types = ModelTypeSet::All();
-  if (!session_context_->routing_info().empty())
-    previous_types = GetRoutingInfoTypes(session_context_->routing_info());
-
-  // By removing the |to_ignore| types from the previous types, they won't be
-  // treated as disabled, and therefore won't be purged.
-  previous_types.RemoveAll(to_ignore);
-
   DVLOG(1) << "Configuring -"
-           << "\n\t" << "types to download: "
-           << ModelTypeSetToString(to_download)
            << "\n\t" << "current types: "
            << ModelTypeSetToString(GetRoutingInfoTypes(new_routing_info))
-           << "\n\t" << "previous types: "
-           << ModelTypeSetToString(previous_types)
-           << "\n\t" << "to_journal: "
+           << "\n\t" << "types to download: "
+           << ModelTypeSetToString(to_download)
+           << "\n\t" << "types to purge: "
+           << ModelTypeSetToString(to_purge)
+           << "\n\t" << "types to journal: "
            << ModelTypeSetToString(to_journal)
-           << "\n\t" << "to_unapply: "
-           << ModelTypeSetToString(to_unapply)
-           << "\n\t" << "to_ignore: "
-           << ModelTypeSetToString(to_ignore);
-  if (!PurgeDisabledTypes(previous_types,
-                          GetRoutingInfoTypes(new_routing_info),
+           << "\n\t" << "types to unapply: "
+           << ModelTypeSetToString(to_unapply);
+  if (!PurgeDisabledTypes(to_purge,
                           to_journal,
                           to_unapply)) {
     // We failed to cleanup the types. Invoke the ready task without actually
@@ -600,21 +588,15 @@ bool SyncManagerImpl::PurgePartiallySyncedTypes() {
 }
 
 bool SyncManagerImpl::PurgeDisabledTypes(
-    ModelTypeSet previously_enabled_types,
-    ModelTypeSet currently_enabled_types,
+    ModelTypeSet to_purge,
     ModelTypeSet to_journal,
     ModelTypeSet to_unapply) {
-  ModelTypeSet disabled_types = Difference(previously_enabled_types,
-                                           currently_enabled_types);
-  if (disabled_types.Empty())
+  if (to_purge.Empty())
     return true;
-  DVLOG(1) << "Purging disabled types "
-           << ModelTypeSetToString(disabled_types);
-  DCHECK(disabled_types.HasAll(to_journal));
-  DCHECK(disabled_types.HasAll(to_unapply));
-  return directory()->PurgeEntriesWithTypeIn(disabled_types,
-                                             to_journal,
-                                             to_unapply);
+  DVLOG(1) << "Purging disabled types " << ModelTypeSetToString(to_purge);
+  DCHECK(to_purge.HasAll(to_journal));
+  DCHECK(to_purge.HasAll(to_unapply));
+  return directory()->PurgeEntriesWithTypeIn(to_purge, to_journal, to_unapply);
 }
 
 void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {

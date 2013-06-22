@@ -2909,7 +2909,7 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
   sync_manager_.ConfigureSyncer(
       reason,
       types_to_download,
-      ModelTypeSet(),
+      disabled_types,
       ModelTypeSet(),
       ModelTypeSet(),
       new_routing_info,
@@ -3114,8 +3114,7 @@ TEST_F(SyncManagerTest, PurgeDisabledTypes) {
 
   // Verify all the enabled types remain after cleanup, and all the disabled
   // types were purged.
-  sync_manager_.PurgeDisabledTypes(ModelTypeSet::All(),
-                                   enabled_types,
+  sync_manager_.PurgeDisabledTypes(disabled_types,
                                    ModelTypeSet(),
                                    ModelTypeSet());
   EXPECT_TRUE(enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
@@ -3129,8 +3128,7 @@ TEST_F(SyncManagerTest, PurgeDisabledTypes) {
       Difference(ModelTypeSet::All(), disabled_types);
 
   // Verify only the non-disabled types remain after cleanup.
-  sync_manager_.PurgeDisabledTypes(enabled_types,
-                                   new_enabled_types,
+  sync_manager_.PurgeDisabledTypes(disabled_types,
                                    ModelTypeSet(),
                                    ModelTypeSet());
   EXPECT_TRUE(new_enabled_types.Equals(sync_manager_.InitialSyncEndedTypes()));
@@ -3208,10 +3206,7 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
 
    // Now request a purge for the unapplied types.
   disabled_types.PutAll(unapplied_types);
-  ModelTypeSet new_enabled_types =
-      Difference(ModelTypeSet::All(), disabled_types);
-  sync_manager_.PurgeDisabledTypes(enabled_types,
-                                   new_enabled_types,
+  sync_manager_.PurgeDisabledTypes(disabled_types,
                                    ModelTypeSet(),
                                    unapplied_types);
 

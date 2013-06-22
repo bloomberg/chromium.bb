@@ -106,9 +106,9 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   virtual void ConfigureSyncer(
       ConfigureReason reason,
       ModelTypeSet to_download,
+      ModelTypeSet to_purge,
       ModelTypeSet to_journal,
       ModelTypeSet to_unapply,
-      ModelTypeSet to_ignore,
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;
@@ -241,13 +241,11 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   // Open the directory named with |username|.
   bool OpenDirectory(const std::string& username);
 
-  // Purge those types from |previously_enabled_types| that are no longer
-  // enabled in |currently_enabled_types|. |to_journal| and |to_unapply|
-  // specify types that require special handling. |to_journal| types are saved
-  // into the delete journal, while |to_unapply| have only their local data
-  // deleted, while their server data is preserved.
-  bool PurgeDisabledTypes(ModelTypeSet previously_enabled_types,
-                          ModelTypeSet currently_enabled_types,
+  // Purge those disabled types as specified by |to_purge|. |to_journal| and
+  // |to_unapply| specify subsets that require special handling. |to_journal|
+  // types are saved into the delete journal, while |to_unapply| have only
+  // their local data deleted, while their server data is preserved.
+  bool PurgeDisabledTypes(ModelTypeSet to_purge,
                           ModelTypeSet to_journal,
                           ModelTypeSet to_unapply);
 

@@ -90,9 +90,9 @@ struct DoConfigureSyncerTypes {
   DoConfigureSyncerTypes() {}
   ~DoConfigureSyncerTypes() {}
   syncer::ModelTypeSet to_download;
+  syncer::ModelTypeSet to_purge;
   syncer::ModelTypeSet to_journal;
   syncer::ModelTypeSet to_unapply;
-  syncer::ModelTypeSet to_ignore;
 };
 
 }  // namespace
@@ -732,6 +732,8 @@ void SyncBackendHost::ConfigureDataTypes(
   // backend because configuration requests are never aborted; they are retried
   // until they succeed or the backend is shut down.
 
+  syncer::ModelTypeSet previous_types = registrar_->GetLastConfiguredTypes();
+
   syncer::ModelTypeSet disabled_types =
       GetDataTypesInState(DISABLED, config_state_map);
   syncer::ModelTypeSet fatal_types =
@@ -743,8 +745,6 @@ void SyncBackendHost::ConfigureDataTypes(
   syncer::ModelTypeSet types_to_download = registrar_->ConfigureDataTypes(
       GetDataTypesInState(CONFIGURE_ACTIVE, config_state_map),
       disabled_types);
-  syncer::ModelTypeSet inactive_types =
-      GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
   types_to_download.RemoveAll(syncer::ProxyTypes());
   if (!types_to_download.Empty())
     types_to_download.Put(syncer::NIGORI);
@@ -774,6 +774,17 @@ void SyncBackendHost::ConfigureDataTypes(
   syncer::ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
 
+  syncer::ModelTypeSet current_types = registrar_->GetLastConfiguredTypes();
+  syncer::ModelTypeSet types_to_purge =
+      syncer::Difference(previous_types, current_types);
+  syncer::ModelTypeSet inactive_types =
+      GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
+  types_to_purge.RemoveAll(inactive_types);
+
+  DCHECK(syncer::Intersection(current_types, fatal_types).Empty());
+  DCHECK(syncer::Intersection(current_types, crypto_types).Empty());
+  DCHECK(current_types.HasAll(types_to_download));
+
   SDVLOG(1) << "Types "
             << syncer::ModelTypeSetToString(types_to_download)
             << " added; calling DoConfigureSyncer";
@@ -791,6 +802,7 @@ void SyncBackendHost::ConfigureDataTypes(
   //   touched.
   RequestConfigureSyncer(reason,
                          types_to_download,
+                         types_to_purge,
                          fatal_types,
                          crypto_types,
                          inactive_types,
@@ -874,6 +886,7 @@ void SyncBackendHost::InitCore(const DoInitializeOptions& options) {
 void SyncBackendHost::RequestConfigureSyncer(
     syncer::ConfigureReason reason,
     syncer::ModelTypeSet to_download,
+    syncer::ModelTypeSet to_purge,
     syncer::ModelTypeSet to_journal,
     syncer::ModelTypeSet to_unapply,
     syncer::ModelTypeSet to_ignore,
@@ -883,9 +896,9 @@ void SyncBackendHost::RequestConfigureSyncer(
     const base::Closure& retry_callback) {
   DoConfigureSyncerTypes config_types;
   config_types.to_download = to_download;
+  config_types.to_purge = to_purge;
   config_types.to_journal = to_journal;
   config_types.to_unapply = to_unapply;
-  config_types.to_ignore = to_ignore;
   sync_thread_.message_loop()->PostTask(FROM_HERE,
        base::Bind(&SyncBackendHost::Core::DoConfigureSyncer,
                   core_.get(),
@@ -1047,10 +1060,14 @@ void SyncBackendHost::Core::DoDownloadControlTypes(
             << syncer::ModelTypeSetToString(new_control_types)
             << " added; calling ConfigureSyncer";
 
+  syncer::ModelTypeSet types_to_purge =
+      syncer::Difference(syncer::ModelTypeSet::All(),
+                         GetRoutingInfoTypes(routing_info));
+
   sync_manager_->ConfigureSyncer(
       reason,
       new_control_types,
-      syncer::ModelTypeSet(),
+      types_to_purge,
       syncer::ModelTypeSet(),
       syncer::ModelTypeSet(),
       routing_info,
@@ -1474,9 +1491,9 @@ void SyncBackendHost::Core::DoConfigureSyncer(
   sync_manager_->ConfigureSyncer(
       reason,
       config_types.to_download,
+      config_types.to_purge,
       config_types.to_journal,
       config_types.to_unapply,
-      config_types.to_ignore,
       routing_info,
       base::Bind(&SyncBackendHost::Core::DoFinishConfigureDataTypes,
                  this,

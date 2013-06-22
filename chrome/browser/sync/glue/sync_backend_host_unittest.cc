@@ -691,8 +691,9 @@ TEST_F(SyncBackendHostTest, DownloadControlTypes) {
   // any old types.
   InitializeBackend(true);
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(new_types));
-  EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
-                           enabled_types_).Empty());
+  EXPECT_TRUE(fake_manager_->GetAndResetCleanedTypes().Equals(
+                  Difference(syncer::ModelTypeSet::All(),
+                             enabled_types_)));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
   EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
       enabled_types_).Empty());

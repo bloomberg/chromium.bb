@@ -116,9 +116,9 @@ class FakeSyncManager : public SyncManager {
   virtual void ConfigureSyncer(
       ConfigureReason reason,
       ModelTypeSet to_download,
+      ModelTypeSet to_purge,
       ModelTypeSet to_journal,
       ModelTypeSet to_unapply,
-      ModelTypeSet to_ignore,
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) OVERRIDE;

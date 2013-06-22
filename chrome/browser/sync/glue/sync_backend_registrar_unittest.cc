@@ -128,6 +128,7 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
   ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  EXPECT_TRUE(types1.Equals(registrar.GetLastConfiguredTypes()));
 
   // Add and remove.
   const ModelTypeSet types2(PREFERENCES, THEMES);
@@ -139,11 +140,13 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
     ExpectRoutingInfo(&registrar, expected_routing_info);
   }
   ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  EXPECT_TRUE(types2.Equals(registrar.GetLastConfiguredTypes()));
 
   // Remove.
   EXPECT_TRUE(registrar.ConfigureDataTypes(ModelTypeSet(), types2).Empty());
   ExpectRoutingInfo(&registrar, syncer::ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(registrar, ModelTypeSet());
+  EXPECT_TRUE(ModelTypeSet().Equals(registrar.GetLastConfiguredTypes()));
 
   registrar.OnSyncerShutdownComplete();
   registrar.StopOnUIThread();

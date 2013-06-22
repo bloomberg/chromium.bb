@@ -85,6 +85,11 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   }
 }
 
+SyncBackendRegistrar::~SyncBackendRegistrar() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(stopped_on_ui_thread_);
+}
+
 void SyncBackendRegistrar::SetInitialTypes(syncer::ModelTypeSet initial_types) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lock(lock_);
@@ -112,11 +117,8 @@ void SyncBackendRegistrar::SetInitialTypes(syncer::ModelTypeSet initial_types) {
         << "Password store not initialized, cannot sync passwords";
     routing_info_.erase(syncer::PASSWORDS);
   }
-}
 
-SyncBackendRegistrar::~SyncBackendRegistrar() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(stopped_on_ui_thread_);
+  last_configured_types_ = syncer::GetRoutingInfoTypes(routing_info_);
 }
 
 bool SyncBackendRegistrar::IsNigoriEnabled() const {
@@ -165,8 +167,13 @@ syncer::ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
            << syncer::ModelTypeSetToString(types_to_remove)
            << " to get new routing info "
            <<syncer::ModelSafeRoutingInfoToString(routing_info_);
+  last_configured_types_ = syncer::GetRoutingInfoTypes(routing_info_);
 
   return newly_added_types;
+}
+
+syncer::ModelTypeSet SyncBackendRegistrar::GetLastConfiguredTypes() const {
+  return last_configured_types_;
 }
 
 void SyncBackendRegistrar::StopOnUIThread() {

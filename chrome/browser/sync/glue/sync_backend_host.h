@@ -372,6 +372,7 @@ class SyncBackendHost
   virtual void RequestConfigureSyncer(
       syncer::ConfigureReason reason,
       syncer::ModelTypeSet to_download,
+      syncer::ModelTypeSet to_purge,
       syncer::ModelTypeSet to_journal,
       syncer::ModelTypeSet to_unapply,
       syncer::ModelTypeSet to_ignore,
