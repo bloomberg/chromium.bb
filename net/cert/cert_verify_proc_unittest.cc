@@ -140,8 +140,8 @@ TEST_F(CertVerifyProcTest, WithoutRevocationChecking) {
 #else
 #define MAYBE_EVVerification EVVerification
 #endif
-TEST_F(CertVerifyProcTest, MAYBE_EVVerification) {
-  // This certificate will expire Jun 21, 2013.
+TEST_F(CertVerifyProcTest, DISABLED_EVVerification) {
+  // DISABLED: This certificate expired Jun 21, 2013.
   CertificateList certs = CreateCertificateListFromFile(
       GetTestCertsDirectory(),
       "comodo.chain.pem",
