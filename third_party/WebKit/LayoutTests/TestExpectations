@@ -1771,12 +1771,6 @@ crbug.com/250920 [ Release ] http/tests/inspector/styles/selector-line-sourcemap
 
 crbug.com/247614 [ Debug ] printing/print-close-crash.html [ Crash ]
 
-# Will need a rebaseline once https://codereview.chromium.org/17451005/ lands
-
-crbug.com/248692 virtual/gpu/fast/canvas/canvas-as-image-incremental-repaint.html [ ImageOnlyFailure ]
-crbug.com/248692 virtual/gpu/fast/canvas/canvas-as-image.html [ ImageOnlyFailure ]
-crbug.com/248692 virtual/gpu/fast/canvas/canvas-bg-zoom.html [ ImageOnlyFailure ]
-crbug.com/248692 virtual/gpu/fast/canvas/canvas-bg.html [ ImageOnlyFailure ]
 
 # Seems to have been timing out for a long time.
 crbug.com/248969 [ Win7 Debug ] printing/page-count-with-one-word.html [ Timeout Pass ]
