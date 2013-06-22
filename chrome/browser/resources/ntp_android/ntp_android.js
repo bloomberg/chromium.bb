@@ -707,9 +707,7 @@ cr.define('ntp', function() {
       image.onload = function() {
         var w = image.width;
         var h = image.height;
-        var wDip = w / window.devicePixelRatio;
-        var hDip = h / window.devicePixelRatio;
-        if (Math.floor(wDip) <= 16 || Math.floor(hDip) <= 16) {
+        if (Math.floor(w) <= 16 || Math.floor(h) <= 16) {
           // it's a standard favicon (or at least it's small).
           faviconBox.classList.add('document');
 
@@ -740,13 +738,13 @@ cr.define('ntp', function() {
         } else {
           // It's an html5 icon (or at least it's larger).
           // Rescale it to be no bigger than 64x64 dip.
-          var maxDip = 64; // DIP
-          if (wDip > maxDip || hDip > maxDip) {
-            var scale = (wDip > hDip) ? (maxDip / wDip) : (maxDip / hDip);
-            wDip *= scale;
-            hDip *= scale;
+          var max = 64;
+          if (w > max || h > max) {
+            var scale = (w > h) ? (max / w) : (max / h);
+            w *= scale;
+            h *= scale;
           }
-          faviconIcon.style.backgroundSize = wDip + 'px ' + hDip + 'px';
+          faviconIcon.style.backgroundSize = w + 'px ' + h + 'px';
         }
       };
       faviconBox.appendChild(faviconIcon);
