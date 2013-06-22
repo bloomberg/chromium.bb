@@ -127,6 +127,13 @@ class CHROMEOS_EXPORT DebugDaemonClient {
   virtual void TestICMP(const std::string& ip_address,
                         const TestICMPCallback& callback) = 0;
 
+  // Tests ICMP connectivity to a specified host. The |ip_address| contains the
+  // IPv4 or IPv6 address of the host, for example "8.8.8.8".
+  virtual void TestICMPWithOptions(
+      const std::string& ip_address,
+      const std::map<std::string, std::string>& options,
+      const TestICMPCallback& callback) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static DebugDaemonClient* Create(DBusClientImplementationType type,

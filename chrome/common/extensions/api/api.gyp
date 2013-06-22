@@ -37,6 +37,7 @@
           'cookies.json',
           'debugger.json',
           'developer_private.idl',
+          'diagnostics.idl',
           'dial.idl',
           'downloads.idl',
           'echo_private.json',

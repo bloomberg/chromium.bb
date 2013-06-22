@@ -149,6 +149,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kDeveloperPrivate, "developerPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
+    { APIPermission::kDiagnostics, "diagnostics",
+      APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kDial, "dial", APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kDownloadsInternal, "downloadsInternal" },
     { APIPermission::kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",

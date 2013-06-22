@@ -121,6 +121,11 @@
     "dependencies": ["permission:developerPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "diagnostics": {
+    "dependencies": ["permission:diagnostics"],
+    "extension_types": ["platform_app"],
+    "contexts": ["blessed_extension"]
+  },
   "dial": {
     "dependencies": ["permission:dial"],
     "contexts": ["blessed_extension"]

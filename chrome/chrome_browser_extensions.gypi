@@ -336,6 +336,10 @@
         'browser/extensions/api/permissions/permissions_api.h',
         'browser/extensions/api/permissions/permissions_api_helpers.cc',
         'browser/extensions/api/permissions/permissions_api_helpers.h',
+        'browser/extensions/api/diagnostics/diagnostics_api.cc',
+        'browser/extensions/api/diagnostics/diagnostics_api.h',
+        'browser/extensions/api/diagnostics/diagnostics_api_nonchromeos.cc',
+        'browser/extensions/api/diagnostics/diagnostics_api_chromeos.cc',
         'browser/extensions/api/power/power_api.cc',
         'browser/extensions/api/power/power_api.h',
         'browser/extensions/api/power/power_api_manager.cc',
@@ -794,6 +798,7 @@
           'sources!': [
             'browser/extensions/api/audio/audio_service.cc',
             'browser/extensions/api/feedback_private/feedback_service_nonchromeos.cc',
+            'browser/extensions/api/diagnostics/diagnostics_api_nonchromeos.cc',
             'browser/extensions/default_apps.cc',
             'browser/extensions/default_apps.h',
           ],
