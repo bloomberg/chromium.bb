@@ -4,24 +4,18 @@
 
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 
-#include "base/command_line.h"
+#include "base/auto_reset.h"
 #include "base/logging.h"
-#include "base/time.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
@@ -88,6 +82,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
           scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
       needs_begin_frame_(false),
+      invoking_composite_(false),
       did_swap_buffer_(false),
       current_sw_canvas_(NULL) {
   capabilities_.deferred_gl_initialization = true;
@@ -104,7 +99,11 @@ SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {
 }
 
 bool SynchronousCompositorOutputSurface::ForcedDrawToSoftwareDevice() const {
-  return current_sw_canvas_ != NULL;
+  // |current_sw_canvas_| indicates we're in a DemandDrawSw call. In addition
+  // |invoking_composite_| == false indicates an attempt to draw outside of
+  // the synchronous compositor's control: force it into SW path and hence to
+  // the null canvas (and will log a warning there).
+  return current_sw_canvas_ != NULL || !invoking_composite_;
 }
 
 bool SynchronousCompositorOutputSurface::BindToClient(
@@ -196,7 +195,7 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
   DCHECK(!current_sw_canvas_);
-  current_sw_canvas_ = canvas;
+  base::AutoReset<SkCanvas*> canvas_resetter(&current_sw_canvas_, canvas);
 
   SkIRect canvas_clip;
   canvas->getClipDeviceBounds(&canvas_clip);
@@ -212,12 +211,13 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 
   InvokeComposite(clip.size());
 
-  current_sw_canvas_ = NULL;
   return did_swap_buffer_;
 }
 
 void SynchronousCompositorOutputSurface::InvokeComposite(
     gfx::Size damage_size) {
+  DCHECK(!invoking_composite_);
+  base::AutoReset<bool> invoking_composite_resetter(&invoking_composite_, true);
   did_swap_buffer_ = false;
   SetNeedsRedrawRect(gfx::Rect(damage_size));
   if (needs_begin_frame_)

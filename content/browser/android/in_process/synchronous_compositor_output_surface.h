@@ -79,6 +79,7 @@ class SynchronousCompositorOutputSurface
 
   int routing_id_;
   bool needs_begin_frame_;
+  bool invoking_composite_;
   bool did_swap_buffer_;
 
   // Only valid (non-NULL) during a DemandDrawSw() call.
