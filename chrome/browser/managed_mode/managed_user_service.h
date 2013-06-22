@@ -188,6 +188,8 @@ class ManagedUserService : public BrowserContextKeyedService,
     DISALLOW_COPY_AND_ASSIGN(URLFilterContext);
   };
 
+  void OnCustodianProfileDownloaded(const string16& full_name);
+
   void OnManagedUserRegistered(const ProfileManager::CreateCallback& callback,
                                Profile* custodian_profile,
                                const GoogleServiceAuthError& auth_error,

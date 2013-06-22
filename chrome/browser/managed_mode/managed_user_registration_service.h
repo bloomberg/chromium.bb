@@ -13,6 +13,8 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
 #include "base/timer.h"
+#include "chrome/browser/profiles/profile_downloader.h"
+#include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "sync/api/syncable_service.h"
@@ -40,7 +42,8 @@ struct ManagedUserRegistrationInfo {
 // management server and associating it with its custodian. It is owned by the
 // custodian's profile.
 class ManagedUserRegistrationService : public BrowserContextKeyedService,
-                                       public syncer::SyncableService {
+                                       public syncer::SyncableService,
+                                       public ProfileDownloaderDelegate {
  public:
   // Callback for Register() below. If registration is successful, |token| will
   // contain an OAuth2 refresh token for the newly registered managed user,
@@ -50,10 +53,25 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
                               const std::string& /* token */)>
       RegistrationCallback;
 
+  // Callback for DownloadProfile() below. If the GAIA profile download is
+  // successful, the profile's full (display) name will be returned.
+  typedef base::Callback<void(const string16& /* full name */)>
+      DownloadProfileCallback;
+
   ManagedUserRegistrationService(
       PrefService* prefs,
       scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher);
   virtual ~ManagedUserRegistrationService();
+
+  // ProfileDownloaderDelegate:
+  virtual bool NeedsProfilePicture() const OVERRIDE;
+  virtual int GetDesiredImageSideLength() const OVERRIDE;
+  virtual std::string GetCachedPictureURL() const OVERRIDE;
+  virtual Profile* GetBrowserProfile() OVERRIDE;
+  virtual void OnProfileDownloadSuccess(ProfileDownloader* downloader) OVERRIDE;
+  virtual void OnProfileDownloadFailure(
+      ProfileDownloader* downloader,
+      ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
 
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -64,6 +82,14 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   // not yet exist.
   void Register(const ManagedUserRegistrationInfo& info,
                 const RegistrationCallback& callback);
+
+  // Downloads the GAIA account information for the |profile|. This is a best-
+  // effort attempt with no error reporting nor timeout. If the download is
+  // successful, the profile's full (display) name will be returned via the
+  // callback. If the download fails or never completes, the callback will
+  // not be called.
+  void DownloadProfile(Profile* profile,
+                       const DownloadProfileCallback& callback);
 
   // Cancels any registration currently in progress, without calling the
   // callback or reporting an error. This should be called when the user
@@ -114,6 +140,8 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   void CompleteRegistration(bool run_callback,
                             const GoogleServiceAuthError& error);
 
+  void OnProfileDownloadComplete();
+
   base::WeakPtrFactory<ManagedUserRegistrationService> weak_ptr_factory_;
   PrefService* prefs_;
   PrefChangeRegistrar pref_change_registrar_;
@@ -129,6 +157,10 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   std::string pending_managed_user_token_;
   bool pending_managed_user_acknowledged_;
   RegistrationCallback callback_;
+
+  Profile* download_profile_;
+  scoped_ptr<ProfileDownloader> profile_downloader_;
+  DownloadProfileCallback download_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedUserRegistrationService);
 };

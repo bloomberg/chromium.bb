@@ -545,6 +545,8 @@ void ManagedUserService::Init() {
 void ManagedUserService::RegisterAndInitSync(
     Profile* custodian_profile,
     const ProfileManager::CreateCallback& callback) {
+
+  // Register the managed user with the custodian's account.
   ManagedUserRegistrationService* registration_service =
       ManagedUserRegistrationServiceFactory::GetForProfile(custodian_profile);
   string16 name = UTF8ToUTF16(
@@ -554,6 +556,19 @@ void ManagedUserService::RegisterAndInitSync(
       info,
       base::Bind(&ManagedUserService::OnManagedUserRegistered,
                  weak_ptr_factory_.GetWeakPtr(), callback, custodian_profile));
+
+  // Fetch the custodian's profile information, to store the name.
+  // TODO(pamg): If --gaia-profile-info (keyword: switches::kGaiaProfileInfo)
+  // is ever enabled, take the name from the ProfileInfoCache instead.
+  registration_service->DownloadProfile(custodian_profile,
+    base::Bind(&ManagedUserService::OnCustodianProfileDownloaded,
+               weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ManagedUserService::OnCustodianProfileDownloaded(
+    const string16& full_name) {
+  profile_->GetPrefs()->SetString(prefs::kManagedUserCustodianName,
+                                  UTF16ToUTF8(full_name));
 }
 
 void ManagedUserService::OnManagedUserRegistered(

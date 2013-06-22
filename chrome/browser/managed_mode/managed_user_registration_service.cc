@@ -74,7 +74,8 @@ ManagedUserRegistrationService::ManagedUserRegistrationService(
     : weak_ptr_factory_(this),
       prefs_(prefs),
       token_fetcher_(token_fetcher.Pass()),
-      pending_managed_user_acknowledged_(false) {
+      pending_managed_user_acknowledged_(false),
+      download_profile_(NULL) {
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
       prefs::kGoogleServicesLastUsername,
@@ -141,6 +142,18 @@ void ManagedUserRegistrationService::Register(
   browser_sync::DeviceInfo::CreateLocalDeviceInfo(
       base::Bind(&ManagedUserRegistrationService::FetchToken,
                  weak_ptr_factory_.GetWeakPtr(), info.name));
+}
+
+void ManagedUserRegistrationService::DownloadProfile(
+    Profile* profile,
+    const DownloadProfileCallback& callback) {
+  download_callback_ = callback;
+  download_profile_ = profile;
+  // If another profile download is in progress, drop it. It's not worth
+  // queueing them up, and more likely that the one that hasn't ended yet is
+  // failing somehow than that the new one won't succeed.
+  profile_downloader_.reset(new ProfileDownloader(this));
+  profile_downloader_->Start();
 }
 
 void ManagedUserRegistrationService::CancelPendingRegistration() {
@@ -398,4 +411,40 @@ void ManagedUserRegistrationService::CompleteRegistration(
   pending_managed_user_token_.clear();
   pending_managed_user_id_.clear();
   pending_managed_user_acknowledged_ = false;
+}
+
+bool ManagedUserRegistrationService::NeedsProfilePicture() const {
+  return false;
+}
+
+int ManagedUserRegistrationService::GetDesiredImageSideLength() const {
+  return 0;
+}
+
+std::string ManagedUserRegistrationService::GetCachedPictureURL() const {
+  return std::string();
+}
+
+Profile* ManagedUserRegistrationService::GetBrowserProfile() {
+  DCHECK(download_profile_);
+  return download_profile_;
+}
+
+void ManagedUserRegistrationService::OnProfileDownloadComplete() {
+  download_callback_.Reset();
+  download_profile_ = NULL;
+  profile_downloader_.reset();
+}
+
+void ManagedUserRegistrationService::OnProfileDownloadSuccess(
+    ProfileDownloader* downloader) {
+  download_callback_.Run(downloader->GetProfileFullName());
+  OnProfileDownloadComplete();
+}
+
+void ManagedUserRegistrationService::OnProfileDownloadFailure(
+    ProfileDownloader* downloader,
+    ProfileDownloaderDelegate::FailureReason reason) {
+  // Ignore failures; proceed without the custodian's name.
+  OnProfileDownloadComplete();
 }
