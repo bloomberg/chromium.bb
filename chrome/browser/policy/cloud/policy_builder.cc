@@ -95,6 +95,7 @@ const int PolicyBuilder::kFakePublicKeyVersion = 17;
 const int64 PolicyBuilder::kFakeTimestamp = 365LL * 24 * 60 * 60 * 1000;
 const char PolicyBuilder::kFakeToken[] = "token";
 const char PolicyBuilder::kFakeUsername[] = "username@example.com";
+const char PolicyBuilder::kFakeServiceAccountIdentity[] = "robot4test@g.com";
 
 PolicyBuilder::PolicyBuilder()
     : policy_data_(new em::PolicyData()),
@@ -107,6 +108,7 @@ PolicyBuilder::PolicyBuilder()
   policy_data_->set_username(kFakeUsername);
   policy_data_->set_device_id(kFakeDeviceId);
   policy_data_->set_state(em::PolicyData::ACTIVE);
+  policy_data_->set_service_account_identity(kFakeServiceAccountIdentity);
 }
 
 PolicyBuilder::~PolicyBuilder() {}

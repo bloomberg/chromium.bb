@@ -39,6 +39,7 @@ const char kClientOAuthUrlSuffix[] = "/ClientOAuth";
 
 // API calls from www.googleapis.com
 const char kOAuth2IssueTokenUrlSuffix[] = "/oauth2/v2/IssueToken";
+const char kOAuth2TokenInfoUrlSuffix[] = "/oauth2/v2/tokeninfo";
 const char kOAuthUserInfoUrlSuffix[] = "/oauth2/v1/userinfo";
 const char kOAuthWrapBridgeUserInfoScopeUrlSuffix[] = "/auth/userinfo.email";
 
@@ -117,6 +118,7 @@ GaiaUrls::GaiaUrls() {
       kOAuthWrapBridgeUserInfoScopeUrlSuffix;
   std::string oauth2_issue_token_url = google_apis_origin_url_ +
                                        kOAuth2IssueTokenUrlSuffix;
+  oauth2_token_info_url_ = google_apis_origin_url_ + kOAuth2TokenInfoUrlSuffix;
   std::string oauth_user_info_url = google_apis_origin_url_ +
                                     kOAuthUserInfoUrlSuffix;
 
@@ -232,6 +234,10 @@ const std::string& GaiaUrls::oauth2_token_url() const {
 
 const std::string& GaiaUrls::oauth2_issue_token_url() const {
   return oauth2_issue_token_url_;
+}
+
+const std::string& GaiaUrls::oauth2_token_info_url() const {
+  return oauth2_token_info_url_;
 }
 
 const std::string& GaiaUrls::oauth2_revoke_url() const {

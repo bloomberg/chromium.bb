@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_OAUTH2_TOKEN_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_OAUTH2_TOKEN_SERVICE_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
+#include "base/time.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace net {
@@ -33,6 +37,11 @@ namespace chromeos {
 // Note that requests must be made from the UI thread.
 class DeviceOAuth2TokenService : public OAuth2TokenService {
  public:
+  // Specialization of StartRequest that in parallel validates that the refresh
+  // token stored on the device is owned by the device service account.
+  virtual scoped_ptr<Request> StartRequest(const ScopeSet& scopes,
+                                           Consumer* consumer) OVERRIDE;
+
   // Persist the given refresh token on the device.  Overwrites any previous
   // value.  Should only be called during initial device setup.
   void SetAndSaveRefreshToken(const std::string& refresh_token);
@@ -41,14 +50,28 @@ class DeviceOAuth2TokenService : public OAuth2TokenService {
 
   virtual std::string GetRefreshToken() OVERRIDE;
 
+ protected:
+  // Pull the robot account ID from device policy.
+  virtual std::string GetRobotAccountId();
+
  private:
+  class ValidatingConsumer;
+  friend class ValidatingConsumer;
   friend class DeviceOAuth2TokenServiceFactory;
-  FRIEND_TEST_ALL_PREFIXES(DeviceOAuth2TokenServiceTest, SaveEncryptedToken);
+  friend class DeviceOAuth2TokenServiceTest;
+  friend class TestDeviceOAuth2TokenService;
 
   // Use DeviceOAuth2TokenServiceFactory to get an instance of this class.
   explicit DeviceOAuth2TokenService(net::URLRequestContextGetter* getter,
                                     PrefService* local_state);
   virtual ~DeviceOAuth2TokenService();
+
+  void OnValidationComplete(ValidatingConsumer* validator, bool token_is_valid);
+
+  bool refresh_token_is_valid_;
+  int max_refresh_token_validation_retries_;
+
+  scoped_ptr<std::set<ValidatingConsumer*> > pending_validators_;
 
   // Cache the decrypted refresh token, so we only decrypt once.
   std::string refresh_token_;

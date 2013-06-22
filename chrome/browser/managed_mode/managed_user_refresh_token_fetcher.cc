@@ -221,9 +221,7 @@ void ManagedUserRefreshTokenFetcherImpl::OnURLFetchComplete(
   GaiaUrls* urls = GaiaUrls::GetInstance();
   client_info.client_id = urls->oauth2_chrome_client_id();
   client_info.client_secret = urls->oauth2_chrome_client_secret();
-  gaia_oauth_client_.reset(
-      new gaia::GaiaOAuthClient(GaiaUrls::GetInstance()->oauth2_token_url(),
-                                context_));
+  gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(context_));
   gaia_oauth_client_->GetTokensFromAuthCode(client_info, auth_code, kNumRetries,
                                             this);
 }

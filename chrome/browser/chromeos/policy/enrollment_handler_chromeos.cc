@@ -216,7 +216,6 @@ void EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched(
 
   // Use the system request context to avoid sending user cookies.
   gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
       g_browser_process->system_request_context()));
   gaia_oauth_client_->GetTokensFromAuthCode(client_info,
                                             client->robot_api_auth_code(),

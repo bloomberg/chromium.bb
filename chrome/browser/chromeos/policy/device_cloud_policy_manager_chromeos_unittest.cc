@@ -28,6 +28,7 @@
 #include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "policy/policy_constants.h"
@@ -158,6 +159,9 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
 
   manager_.Shutdown();
   EXPECT_TRUE(manager_.policies().Equals(bundle));
+
+  EXPECT_EQ(manager_.GetRobotAccountId(),
+            PolicyBuilder::kFakeServiceAccountIdentity);
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConsumerDevice) {
@@ -326,7 +330,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     // We return a successful OAuth response via a TestURLFetcher to trigger the
     // happy path for these classes so that enrollment can continue.
     if (robot_auth_fetch_status_ == DM_STATUS_SUCCESS) {
-      net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
+      net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(
+          gaia::GaiaOAuthClient::kUrlFetcherId);
       ASSERT_TRUE(url_fetcher);
       url_fetcher->SetMaxRetriesOn5xx(0);
       url_fetcher->set_status(net::URLRequestStatus());
@@ -484,5 +489,5 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, LoadError) {
             status_.store_status());
 }
 
-}  // namespace test
+}  // namespace
 }  // namespace policy

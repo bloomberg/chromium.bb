@@ -11,6 +11,7 @@
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/net_errors.h"
@@ -258,7 +259,8 @@ ManagedUserRefreshTokenFetcherTest::GetIssueTokenRequest() {
 
 net::TestURLFetcher*
 ManagedUserRefreshTokenFetcherTest::GetRefreshTokenRequest() {
-  net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(
+      gaia::GaiaOAuthClient::kUrlFetcherId);
   if (!url_fetcher)
     return NULL;
 

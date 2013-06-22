@@ -100,8 +100,29 @@ class OAuth2TokenService {
 
   // Return the current number of entries in the cache.
   int cache_size_for_testing() const;
+  void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
 
  protected:
+  // Implements a cancelable |OAuth2TokenService::Request|, which should be
+  // operated on the UI thread.
+  // TODO(davidroche): move this out of header file.
+  class RequestImpl : public base::SupportsWeakPtr<RequestImpl>,
+                      public Request {
+   public:
+    // |consumer| is required to outlive this.
+    explicit RequestImpl(Consumer* consumer);
+    virtual ~RequestImpl();
+
+    // Informs |consumer_| that this request is completed.
+    void InformConsumer(const GoogleServiceAuthError& error,
+                        const std::string& access_token,
+                        const base::Time& expiration_date);
+
+   private:
+    // |consumer_| to call back when this request completes.
+    Consumer* const consumer_;
+  };
+
   // Subclasses should return the refresh token maintained.
   // If no token is available, return an empty string.
   virtual std::string GetRefreshToken() = 0;
@@ -122,31 +143,12 @@ class OAuth2TokenService {
   bool HasCacheEntry(const ScopeSet& scopes);
 
   // Posts a task to fire the Consumer callback with the cached token.  Must
-  // only be called if HasCacheEntry() returns true.
+  // Must only be called if HasCacheEntry() returns true.
   scoped_ptr<Request> StartCacheLookupRequest(const ScopeSet& scopes,
                                               Consumer* consumer);
 
   // Clears the internal token cache.
   void ClearCache();
-
-  // Implements a cancelable |OAuth2TokenService::Request|, which should be
-  // operated on the UI thread.
-  class RequestImpl : public base::SupportsWeakPtr<RequestImpl>,
-                      public Request {
-   public:
-    // |consumer| is required to outlive this.
-    explicit RequestImpl(Consumer* consumer);
-    virtual ~RequestImpl();
-
-    // Informs |consumer_| that this request is completed.
-    void InformConsumer(const GoogleServiceAuthError& error,
-                        const std::string& access_token,
-                        const base::Time& expiration_date);
-
-   private:
-    // |consumer_| to call back when this request completes.
-    Consumer* const consumer_;
-  };
 
  private:
   // Class that fetches an OAuth2 access token for a given set of scopes and
@@ -189,6 +191,8 @@ class OAuth2TokenService {
   // A map from fetch parameters to a fetcher that is fetching an OAuth2 access
   // token using these parameters.
   std::map<FetchParameters, Fetcher*> pending_fetchers_;
+  // Maximum number of retries in fetching an OAuth2 access token.
+  static int max_fetch_retry_num_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenService);
 };

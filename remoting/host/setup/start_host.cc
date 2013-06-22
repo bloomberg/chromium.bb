@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/service_urls.h"
@@ -160,7 +159,6 @@ int main(int argc, char** argv) {
 
   // Start the host.
   scoped_ptr<HostStarter> host_starter(HostStarter::Create(
-      GaiaUrls::GetInstance()->oauth2_token_url(),
       remoting::ServiceUrls::GetInstance()->directory_hosts_url(),
       url_request_context_getter.get()));
   if (redirect_url.empty()) {

@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
@@ -24,17 +25,19 @@ const char kExpiresInValue[] = "expires_in";
 
 namespace gaia {
 
+// Use a non-zero number, so unit tests can differentiate the URLFetcher used by
+// this class from other fetchers (most other code just hardcodes the ID to 0).
+const int GaiaOAuthClient::kUrlFetcherId = 17109006;
+
 class GaiaOAuthClient::Core
     : public base::RefCountedThreadSafe<GaiaOAuthClient::Core>,
       public net::URLFetcherDelegate {
  public:
-  Core(const std::string& gaia_url,
-       net::URLRequestContextGetter* request_context_getter)
-           : gaia_url_(gaia_url),
-             num_retries_(0),
-             request_context_getter_(request_context_getter),
-             delegate_(NULL),
-             request_type_(NO_PENDING_REQUEST) {
+  Core(net::URLRequestContextGetter* request_context_getter)
+      : num_retries_(0),
+        request_context_getter_(request_context_getter),
+        delegate_(NULL),
+        request_type_(NO_PENDING_REQUEST) {
   }
 
   void GetTokensFromAuthCode(const OAuthClientInfo& oauth_client_info,
@@ -43,9 +46,13 @@ class GaiaOAuthClient::Core
                              GaiaOAuthClient::Delegate* delegate);
   void RefreshToken(const OAuthClientInfo& oauth_client_info,
                     const std::string& refresh_token,
+                    const std::vector<std::string>& scopes,
                     int max_retries,
                     GaiaOAuthClient::Delegate* delegate);
   void GetUserInfo(const std::string& oauth_access_token,
+                   int max_retries,
+                   Delegate* delegate);
+  void GetTokenInfo(const std::string& oauth_access_token,
                     int max_retries,
                     Delegate* delegate);
 
@@ -59,18 +66,19 @@ class GaiaOAuthClient::Core
     NO_PENDING_REQUEST,
     TOKENS_FROM_AUTH_CODE,
     REFRESH_TOKEN,
+    TOKEN_INFO,
     USER_INFO,
   };
 
   virtual ~Core() {}
 
-  void MakeGaiaRequest(const std::string& post_body,
+  void MakeGaiaRequest(const GURL& url,
+                       const std::string& post_body,
                        int max_retries,
                        GaiaOAuthClient::Delegate* delegate);
   void HandleResponse(const net::URLFetcher* source,
                       bool* should_retry_request);
 
-  GURL gaia_url_;
   int num_retries_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   GaiaOAuthClient::Delegate* delegate_;
@@ -94,12 +102,14 @@ void GaiaOAuthClient::Core::GetTokensFromAuthCode(
       "&redirect_uri=" +
       net::EscapeUrlEncodedData(oauth_client_info.redirect_uri, true) +
       "&grant_type=authorization_code";
-  MakeGaiaRequest(post_body, max_retries, delegate);
+  MakeGaiaRequest(GURL(GaiaUrls::GetInstance()->oauth2_token_url()),
+                  post_body, max_retries, delegate);
 }
 
 void GaiaOAuthClient::Core::RefreshToken(
     const OAuthClientInfo& oauth_client_info,
     const std::string& refresh_token,
+    const std::vector<std::string>& scopes,
     int max_retries,
     GaiaOAuthClient::Delegate* delegate) {
   DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
@@ -111,7 +121,14 @@ void GaiaOAuthClient::Core::RefreshToken(
       "&client_secret=" +
       net::EscapeUrlEncodedData(oauth_client_info.client_secret, true) +
       "&grant_type=refresh_token";
-  MakeGaiaRequest(post_body, max_retries, delegate);
+
+  if (!scopes.empty()) {
+    std::string scopes_string = JoinString(scopes, ' ');
+    post_body += "&scope=" + net::EscapeUrlEncodedData(scopes_string, true);
+  }
+
+  MakeGaiaRequest(GURL(GaiaUrls::GetInstance()->oauth2_token_url()),
+                  post_body, max_retries, delegate);
 }
 
 void GaiaOAuthClient::Core::GetUserInfo(const std::string& oauth_access_token,
@@ -123,7 +140,7 @@ void GaiaOAuthClient::Core::GetUserInfo(const std::string& oauth_access_token,
   delegate_ = delegate;
   num_retries_ = 0;
   request_.reset(net::URLFetcher::Create(
-      0, GURL(GaiaUrls::GetInstance()->oauth_user_info_url()),
+      kUrlFetcherId, GURL(GaiaUrls::GetInstance()->oauth_user_info_url()),
       net::URLFetcher::GET, this));
   request_->SetRequestContext(request_context_getter_.get());
   request_->AddExtraRequestHeader("Authorization: OAuth " + oauth_access_token);
@@ -136,7 +153,22 @@ void GaiaOAuthClient::Core::GetUserInfo(const std::string& oauth_access_token,
   request_->Start();
 }
 
+void GaiaOAuthClient::Core::GetTokenInfo(const std::string& oauth_access_token,
+                                         int max_retries,
+                                         Delegate* delegate) {
+  DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
+  DCHECK(!request_.get());
+  request_type_ = TOKEN_INFO;
+  std::string post_body =
+      "access_token=" + net::EscapeUrlEncodedData(oauth_access_token, true);
+  MakeGaiaRequest(GURL(GaiaUrls::GetInstance()->oauth2_token_info_url()),
+                  post_body,
+                  max_retries,
+                  delegate);
+}
+
 void GaiaOAuthClient::Core::MakeGaiaRequest(
+    const GURL& url,
     const std::string& post_body,
     int max_retries,
     GaiaOAuthClient::Delegate* delegate) {
@@ -144,7 +176,7 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   delegate_ = delegate;
   num_retries_ = 0;
   request_.reset(net::URLFetcher::Create(
-      0, gaia_url_, net::URLFetcher::POST, this));
+      kUrlFetcherId, url, net::URLFetcher::POST, this));
   request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
   request_->SetMaxRetriesOn5xx(max_retries);
@@ -175,7 +207,9 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(
 void GaiaOAuthClient::Core::HandleResponse(
     const net::URLFetcher* source,
     bool* should_retry_request) {
-  // Keep the URLFetcher object in case we need to reuse it.
+  // Move ownership of the request fetcher into a local scoped_ptr which
+  // will be nuked when we're done handling the request, unless we need
+  // to retry, in which case ownership will be returned to request_.
   scoped_ptr<net::URLFetcher> old_request = request_.Pass();
   DCHECK_EQ(source, old_request.get());
 
@@ -223,6 +257,11 @@ void GaiaOAuthClient::Core::HandleResponse(
       break;
     }
 
+    case TOKEN_INFO: {
+      delegate_->OnGetTokenInfoResponse(response_dict.Pass());
+      break;
+    }
+
     case TOKENS_FROM_AUTH_CODE:
     case REFRESH_TOKEN: {
       std::string access_token;
@@ -252,9 +291,8 @@ void GaiaOAuthClient::Core::HandleResponse(
   }
 }
 
-GaiaOAuthClient::GaiaOAuthClient(const std::string& gaia_url,
-                                 net::URLRequestContextGetter* context_getter) {
-  core_ = new Core(gaia_url, context_getter);
+GaiaOAuthClient::GaiaOAuthClient(net::URLRequestContextGetter* context_getter) {
+  core_ = new Core(context_getter);
 }
 
 GaiaOAuthClient::~GaiaOAuthClient() {
@@ -271,12 +309,15 @@ void GaiaOAuthClient::GetTokensFromAuthCode(
                                       delegate);
 }
 
-void GaiaOAuthClient::RefreshToken(const OAuthClientInfo& oauth_client_info,
-                                   const std::string& refresh_token,
-                                   int max_retries,
-                                   Delegate* delegate) {
+void GaiaOAuthClient::RefreshToken(
+    const OAuthClientInfo& oauth_client_info,
+    const std::string& refresh_token,
+    const std::vector<std::string>& scopes,
+    int max_retries,
+    Delegate* delegate) {
   return core_->RefreshToken(oauth_client_info,
                              refresh_token,
+                             scopes,
                              max_retries,
                              delegate);
 }
@@ -285,6 +326,12 @@ void GaiaOAuthClient::GetUserInfo(const std::string& access_token,
                                   int max_retries,
                                   Delegate* delegate) {
   return core_->GetUserInfo(access_token, max_retries, delegate);
+}
+
+void GaiaOAuthClient::GetTokenInfo(const std::string& access_token,
+                                   int max_retries,
+                                   Delegate* delegate) {
+  return core_->GetTokenInfo(access_token, max_retries, delegate);
 }
 
 }  // namespace gaia

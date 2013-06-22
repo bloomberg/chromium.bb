@@ -238,6 +238,10 @@ message PolicyData {
   // Indicates which public account or extension/plug-in this policy data is
   // for. See PolicyFetchRequest.settings_entity_id for more details.
   optional string settings_entity_id = 11;
+
+  // Indicates the identity the device service account is associated with.
+  // This is only sent as part of device policy fetch.
+  optional string service_account_identity = 12;
 }
 
 message PolicyFetchResponse {

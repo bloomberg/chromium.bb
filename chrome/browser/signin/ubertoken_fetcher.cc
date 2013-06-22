@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/signin/ubertoken_fetcher.h"
+
+#include <vector>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -47,9 +50,11 @@ void UbertokenFetcher::StartFetchingUbertoken() {
   client_info.client_id = urls->oauth2_chrome_client_id();
   client_info.client_secret = urls->oauth2_chrome_client_secret();
   gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(
-      urls->oauth2_token_url(), profile_->GetRequestContext()));
+      profile_->GetRequestContext()));
+  std::vector<std::string> empty_scope_list;  // (Use scope from refresh token.)
   gaia_oauth_client_->RefreshToken(
-      client_info, token_service->GetOAuth2LoginRefreshToken(), 1, this);
+      client_info, token_service->GetOAuth2LoginRefreshToken(),
+      empty_scope_list, 1, this);
 }
 
 void UbertokenFetcher::Observe(int type,

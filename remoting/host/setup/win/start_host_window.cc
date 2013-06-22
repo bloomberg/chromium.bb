@@ -22,7 +22,6 @@ namespace remoting {
 StartHostWindow::StartHostWindow(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
     : host_starter_(remoting::HostStarter::Create(
-          GaiaUrls::GetInstance()->oauth2_token_url(),
           remoting::ServiceUrls::GetInstance()->directory_hosts_url(),
           url_request_context_getter)),
       consent_to_collect_data_(true),

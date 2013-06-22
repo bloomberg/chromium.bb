@@ -35,6 +35,7 @@ class PolicyBuilder {
   static const int64 kFakeTimestamp;
   static const char kFakeToken[];
   static const char kFakeUsername[];
+  static const char kFakeServiceAccountIdentity[];
 
   // Creates a policy builder. The builder will have all PolicyData fields
   // initialized to dummy values and use the test signing keys.

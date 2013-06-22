@@ -88,6 +88,11 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Returns the machine model, or an empty string if not available.
   static std::string GetMachineModel();
 
+  // Returns the robot 'email address' associated with the device robot
+  // account (sometimes called a service account) associated with this device
+  // during enterprise enrollment.
+  std::string GetRobotAccountId();
+
  private:
   // Creates a new CloudPolicyClient.
   scoped_ptr<CloudPolicyClient> CreateClient();
