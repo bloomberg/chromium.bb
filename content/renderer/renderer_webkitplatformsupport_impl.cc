@@ -31,6 +31,7 @@
 #include "content/renderer/hyphenator/hyphenator.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
+#include "content/renderer/media/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
@@ -91,6 +92,7 @@ using WebKit::WebFileSystem;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
 using WebKit::WebIDBFactory;
+using WebKit::WebMIDIAccessor;
 using WebKit::Platform;
 using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
@@ -767,6 +769,14 @@ WebKit::WebContentDecryptionModule*
 RendererWebKitPlatformSupportImpl::createContentDecryptionModule(
     const WebKit::WebString& key_system) {
   return WebContentDecryptionModuleImpl::Create(key_system);
+}
+
+//------------------------------------------------------------------------------
+
+WebKit::WebMIDIAccessor*
+RendererWebKitPlatformSupportImpl::createMIDIAccessor(
+    WebKit::WebMIDIAccessorClient* client) {
+  return new RendererWebMIDIAccessorImpl(client);
 }
 
 //------------------------------------------------------------------------------
