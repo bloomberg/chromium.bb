@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "chrome/common/instant_types.h"
 
 class GURL;
 class Profile;
@@ -243,11 +242,6 @@ bool DefaultSearchProviderSupportsInstant(Profile* profile);
 // Let tests reset the gate that prevents metrics from being sent more than
 // once.
 void ResetInstantExtendedOptInStateGateForTest();
-
-// Returns true if |items_a| and |items_b| are equal.
-bool AreMostVisitedItemsEqual(
-    const std::vector<InstantMostVisitedItem>& items_a,
-    const std::vector<InstantMostVisitedItem>& items_b);
 
 }  // namespace chrome
 

@@ -221,10 +221,6 @@ void InstantService::OnMostVisitedItemsReceived(
     item.title = url.title;
     new_most_visited_items.push_back(item);
   }
-  if (chrome::AreMostVisitedItemsEqual(new_most_visited_items,
-                                       most_visited_items_)) {
-    return;
-  }
 
   most_visited_items_ = new_most_visited_items;
 

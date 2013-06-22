@@ -92,15 +92,6 @@ void SearchTabHelper::NavigationEntryUpdated() {
   UpdateMode(false);
 }
 
-bool SearchTabHelper::UpdateLastKnownMostVisitedItems(
-    const std::vector<InstantMostVisitedItem>& items) {
-  if (chrome::AreMostVisitedItemsEqual(items, last_known_most_visited_items_))
-    return false;
-
-  last_known_most_visited_items_ = items;
-  return true;
-}
-
 void SearchTabHelper::InstantSupportChanged(bool instant_support) {
   if (!is_search_enabled_)
     return;
@@ -124,7 +115,6 @@ void SearchTabHelper::Observe(
     return;
 
   UpdateMode(true);
-  last_known_most_visited_items_.clear();
 
   // Already determined the instant support state for this page, do not reset
   // the instant support state.

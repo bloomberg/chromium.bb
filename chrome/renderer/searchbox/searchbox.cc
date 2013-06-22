@@ -28,6 +28,23 @@ namespace {
 // Size of the results cache.
 const size_t kMaxInstantAutocompleteResultItemCacheSize = 100;
 
+// Returns true if items stored in |old_item_id_pairs| and |new_items| are
+// equal.
+bool AreMostVisitedItemsEqual(
+    const std::vector<InstantMostVisitedItemIDPair>& old_item_id_pairs,
+    const std::vector<InstantMostVisitedItem>& new_items) {
+  if (old_item_id_pairs.size() != new_items.size())
+    return false;
+
+  for (size_t i = 0; i < new_items.size(); ++i) {
+    if (new_items[i].url != old_item_id_pairs[i].second.url ||
+        new_items[i].title != old_item_id_pairs[i].second.title) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace internal {  // for testing
@@ -506,6 +523,12 @@ void SearchBox::SetQuery(const string16& query, bool verbatim) {
 
 void SearchBox::OnMostVisitedChanged(
     const std::vector<InstantMostVisitedItem>& items) {
+  std::vector<InstantMostVisitedItemIDPair> last_known_items;
+  GetMostVisitedItems(&last_known_items);
+
+  if (AreMostVisitedItemsEqual(last_known_items, items))
+    return;  // Do not send duplicate onmostvisitedchange events.
+
   most_visited_items_cache_.AddItems(items);
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchMostVisitedChanged(

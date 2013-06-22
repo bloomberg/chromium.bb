@@ -1169,23 +1169,14 @@ void InstantController::UpdateMostVisitedItems() {
   std::vector<InstantMostVisitedItem> items;
   instant_service->GetCurrentMostVisitedItems(&items);
 
-  if (overlay_ && GetOverlayContents() &&
-      SearchTabHelper::FromWebContents(overlay_->contents())->
-          UpdateLastKnownMostVisitedItems(items)) {
+  if (overlay_)
     overlay_->sender()->SendMostVisitedItems(items);
-  }
 
-  if (ntp_ && ntp_->contents() &&
-      SearchTabHelper::FromWebContents(ntp_->contents())->
-          UpdateLastKnownMostVisitedItems(items)) {
+  if (ntp_)
     ntp_->sender()->SendMostVisitedItems(items);
-  }
 
-  if (instant_tab_ && instant_tab_->contents() &&
-      SearchTabHelper::FromWebContents(instant_tab_->contents())->
-          UpdateLastKnownMostVisitedItems(items)) {
+  if (instant_tab_)
     instant_tab_->sender()->SendMostVisitedItems(items);
-  }
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,

@@ -751,19 +751,4 @@ void ResetInstantExtendedOptInStateGateForTest() {
   instant_extended_opt_in_state_gate = false;
 }
 
-bool AreMostVisitedItemsEqual(
-    const std::vector<InstantMostVisitedItem>& items_a,
-    const std::vector<InstantMostVisitedItem>& items_b) {
-  if (items_a.size() != items_b.size())
-    return false;
-
-  for (size_t i = 0; i < items_b.size(); ++i) {
-    if (items_b[i].url != items_a[i].url ||
-        items_b[i].title != items_a[i].title) {
-      return false;
-    }
-  }
-  return true;
-}
-
 }  // namespace chrome
