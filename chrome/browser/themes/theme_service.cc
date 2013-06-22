@@ -115,6 +115,8 @@ gfx::Image ThemeService::GetImageNamed(int id) const {
       id = IDR_MANAGED_USER_THEME_FRAME;
     else if (id == IDR_THEME_FRAME_INACTIVE)
       id = IDR_MANAGED_USER_THEME_FRAME_INACTIVE;
+    else if (id == IDR_THEME_TAB_BACKGROUND || id == IDR_THEME_TAB_BACKGROUND_V)
+      id = IDR_MANAGED_USER_THEME_TAB_BACKGROUND;
   }
 
   gfx::Image image;
