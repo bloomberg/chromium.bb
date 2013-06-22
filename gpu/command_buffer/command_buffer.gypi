@@ -21,6 +21,16 @@
           'common/logging.cc',
           'common/logging.h',
         ],
+        'conditions': [
+          ['OS=="android"', {
+            'sources!': [
+              'common/logging.cc',
+            ],
+            'sources': [
+              'common/logging_android.cc',
+            ],
+          }],
+        ],
       }],
     ],
   },
