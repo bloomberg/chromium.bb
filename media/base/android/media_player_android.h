@@ -17,6 +17,7 @@
 
 namespace media {
 
+class MediaDrmBridge;
 class MediaPlayerManager;
 
 // This class serves as the base class for different media player
@@ -98,6 +99,9 @@ class MEDIA_EXPORT MediaPlayerAndroid {
 
   // Called when the demuxer has changed the duration.
   virtual void DurationChanged(const base::TimeDelta& duration);
+
+  // Pass a drm bridge to a player.
+  virtual void SetDrmBridge(MediaDrmBridge* drm_bridge);
 
   int player_id() { return player_id_; }
 

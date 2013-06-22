@@ -149,17 +149,12 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   virtual bool CanSeekBackward() OVERRIDE;
   virtual bool IsPlayerReady() OVERRIDE;
   virtual void OnSeekRequestAck(unsigned seek_request_id) OVERRIDE;
-
-  // Called when the demuxer is ready.
   virtual void DemuxerReady(
       const MediaPlayerHostMsg_DemuxerReady_Params& params) OVERRIDE;
-
-  // Called when the requested data is received from the demuxer.
   virtual void ReadFromDemuxerAck(
       const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) OVERRIDE;
-
-  // Called when the demuxer has changed the duration.
   virtual void DurationChanged(const base::TimeDelta& duration) OVERRIDE;
+  virtual void SetDrmBridge(MediaDrmBridge* drm_bridge) OVERRIDE;
 
  private:
   // Update the timestamps for A/V sync scheduling.
@@ -257,6 +252,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
 
   // Weak pointer passed to media decoder jobs for callbacks.
   base::WeakPtrFactory<MediaSourcePlayer> weak_this_;
+
+  MediaDrmBridge* drm_bridge_;
 
   friend class MediaSourcePlayerTest;
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayer);

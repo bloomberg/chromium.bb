@@ -508,4 +508,16 @@ void MediaPlayerManagerImpl::RemoveDrmBridge(int media_keys_id) {
   }
 }
 
+void MediaPlayerManagerImpl::OnSetMediaKeys(int player_id, int media_keys_id) {
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  if (!player)
+    return;
+  MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
+  if (!drm_bridge)
+    return;
+  // TODO(qinmin): add the logic to decide whether we should create the
+  // fullscreen surface for EME lv1.
+  player->SetDrmBridge(drm_bridge);
+}
+
 }  // namespace content

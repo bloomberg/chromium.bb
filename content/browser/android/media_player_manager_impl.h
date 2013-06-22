@@ -133,6 +133,7 @@ class CONTENT_EXPORT MediaPlayerManagerImpl
                 const std::string& session_id);
   void OnCancelKeyRequest(int media_keys_id, const std::string& session_id);
   void OnDurationChanged(int player_id, const base::TimeDelta& duration);
+  void OnSetMediaKeys(int player_id, int media_keys_id);
 
 #if defined(GOOGLE_TV)
   virtual void OnNotifyExternalSurface(

@@ -286,7 +286,8 @@ MediaSourcePlayer::MediaSourcePlayer(
       video_access_unit_index_(0),
       waiting_for_audio_data_(false),
       waiting_for_video_data_(false),
-      weak_this_(this) {
+      weak_this_(this),
+      drm_bridge_(NULL) {
 }
 
 MediaSourcePlayer::~MediaSourcePlayer() {
@@ -469,6 +470,13 @@ void MediaSourcePlayer::ReadFromDemuxerAck(
 
 void MediaSourcePlayer::DurationChanged(const base::TimeDelta& duration) {
   duration_ = duration;
+}
+
+void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
+  drm_bridge_ = drm_bridge;
+  // TODO(qinmin): similar to SetVideoSurface() call, we need to wait for the
+  // current decoder jobs to finish, and then use the ProcessPendingEvents()
+  // to pass the drm_bridge to the decoder jobs.
 }
 
 void MediaSourcePlayer::OnSeekRequestAck(unsigned seek_request_id) {
