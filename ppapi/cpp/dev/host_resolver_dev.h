@@ -7,7 +7,7 @@
 
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/dev/ppb_host_resolver_dev.h"
-#include "ppapi/cpp/dev/net_address_dev.h"
+#include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/var.h"
@@ -103,11 +103,11 @@ class HostResolver_Dev : public Resource {
   ///
   /// @param[in] index An index indicating which address to return.
   ///
-  /// @return A <code>NetAddress_Dev</code> object. The object will be null
+  /// @return A <code>NetAddress</code> object. The object will be null
   /// (i.e., is_null() returns true) if there is a pending
   /// <code>Resolve()</code> call or the previous <code>Resolve()</code> call
   /// failed, or the specified index is out of range.
-  NetAddress_Dev GetNetAddress(uint32_t index) const;
+  NetAddress GetNetAddress(uint32_t index) const;
 };
 
 }  // namespace pp

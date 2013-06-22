@@ -49,7 +49,7 @@ bool TCPSocket_Dev::IsAvailable() {
   return has_interface<PPB_TCPSocket_Dev_0_1>();
 }
 
-int32_t TCPSocket_Dev::Connect(const NetAddress_Dev& addr,
+int32_t TCPSocket_Dev::Connect(const NetAddress& addr,
                                const CompletionCallback& callback) {
   if (has_interface<PPB_TCPSocket_Dev_0_1>()) {
     return get_interface<PPB_TCPSocket_Dev_0_1>()->Connect(
@@ -58,23 +58,23 @@ int32_t TCPSocket_Dev::Connect(const NetAddress_Dev& addr,
   return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
-NetAddress_Dev TCPSocket_Dev::GetLocalAddress() const {
+NetAddress TCPSocket_Dev::GetLocalAddress() const {
   if (has_interface<PPB_TCPSocket_Dev_0_1>()) {
-    return NetAddress_Dev(
+    return NetAddress(
         PASS_REF,
         get_interface<PPB_TCPSocket_Dev_0_1>()->GetLocalAddress(pp_resource()));
   }
-  return NetAddress_Dev();
+  return NetAddress();
 }
 
-NetAddress_Dev TCPSocket_Dev::GetRemoteAddress() const {
+NetAddress TCPSocket_Dev::GetRemoteAddress() const {
   if (has_interface<PPB_TCPSocket_Dev_0_1>()) {
-    return NetAddress_Dev(
+    return NetAddress(
         PASS_REF,
         get_interface<PPB_TCPSocket_Dev_0_1>()->GetRemoteAddress(
             pp_resource()));
   }
-  return NetAddress_Dev();
+  return NetAddress();
 }
 
 int32_t TCPSocket_Dev::Read(char* buffer,

@@ -3,10 +3,10 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_net_address_dev.idl modified Thu Jun 20 12:10:09 2013. */
+/* From ppb_net_address.idl modified Sat Jun 22 10:14:31 2013. */
 
-#ifndef PPAPI_C_DEV_PPB_NET_ADDRESS_DEV_H_
-#define PPAPI_C_DEV_PPB_NET_ADDRESS_DEV_H_
+#ifndef PPAPI_C_PPB_NET_ADDRESS_H_
+#define PPAPI_C_PPB_NET_ADDRESS_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
@@ -15,12 +15,12 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_NETADDRESS_DEV_INTERFACE_0_1 "PPB_NetAddress(Dev);0.1"
-#define PPB_NETADDRESS_DEV_INTERFACE PPB_NETADDRESS_DEV_INTERFACE_0_1
+#define PPB_NETADDRESS_INTERFACE_1_0 "PPB_NetAddress;1.0"
+#define PPB_NETADDRESS_INTERFACE PPB_NETADDRESS_INTERFACE_1_0
 
 /**
  * @file
- * This file defines the <code>PPB_NetAddress_Dev</code> interface.
+ * This file defines the <code>PPB_NetAddress</code> interface.
  */
 
 
@@ -44,8 +44,8 @@ typedef enum {
    * The Internet Protocol version 6 (IPv6) address family.
    */
   PP_NETADDRESS_FAMILY_IPV6 = 2
-} PP_NetAddress_Family_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetAddress_Family_Dev, 4);
+} PP_NetAddress_Family;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetAddress_Family, 4);
 /**
  * @}
  */
@@ -57,7 +57,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetAddress_Family_Dev, 4);
 /**
  * All members are expressed in network byte order.
  */
-struct PP_NetAddress_IPv4_Dev {
+struct PP_NetAddress_IPv4 {
   /**
    * Port number.
    */
@@ -67,12 +67,12 @@ struct PP_NetAddress_IPv4_Dev {
    */
   uint8_t addr[4];
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_IPv4_Dev, 6);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_IPv4, 6);
 
 /**
  * All members are expressed in network byte order.
  */
-struct PP_NetAddress_IPv6_Dev {
+struct PP_NetAddress_IPv6 {
   /**
    * Port number.
    */
@@ -82,7 +82,7 @@ struct PP_NetAddress_IPv6_Dev {
    */
   uint8_t addr[16];
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_IPv6_Dev, 18);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_IPv6, 18);
 /**
  * @}
  */
@@ -92,12 +92,12 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_IPv6_Dev, 18);
  * @{
  */
 /**
- * The <code>PPB_NetAddress_Dev</code> interface provides operations on
- * network addresses.
+ * The <code>PPB_NetAddress</code> interface provides operations on network
+ * addresses.
  */
-struct PPB_NetAddress_Dev_0_1 {
+struct PPB_NetAddress_1_0 {
   /**
-   * Creates a <code>PPB_NetAddress_Dev</code> resource with the specified IPv4
+   * Creates a <code>PPB_NetAddress</code> resource with the specified IPv4
    * address.
    *
    * @param[in] instance A <code>PP_Instance</code> identifying one instance of
@@ -109,9 +109,9 @@ struct PPB_NetAddress_Dev_0_1 {
    */
   PP_Resource (*CreateFromIPv4Address)(
       PP_Instance instance,
-      const struct PP_NetAddress_IPv4_Dev* ipv4_addr);
+      const struct PP_NetAddress_IPv4* ipv4_addr);
   /**
-   * Creates a <code>PPB_NetAddress_Dev</code> resource with the specified IPv6
+   * Creates a <code>PPB_NetAddress</code> resource with the specified IPv6
    * address.
    *
    * @param[in] instance A <code>PP_Instance</code> identifying one instance of
@@ -123,14 +123,14 @@ struct PPB_NetAddress_Dev_0_1 {
    */
   PP_Resource (*CreateFromIPv6Address)(
       PP_Instance instance,
-      const struct PP_NetAddress_IPv6_Dev* ipv6_addr);
+      const struct PP_NetAddress_IPv6* ipv6_addr);
   /**
    * Determines if a given resource is a network address.
    *
    * @param[in] resource A <code>PP_Resource</code> to check.
    *
-   * @return <code>PP_TRUE</code> if the input is a
-   * <code>PPB_NetAddress_Dev</code> resource; <code>PP_FALSE</code> otherwise.
+   * @return <code>PP_TRUE</code> if the input is a <code>PPB_NetAddress</code>
+   * resource; <code>PP_FALSE</code> otherwise.
    */
   PP_Bool (*IsNetAddress)(PP_Resource resource);
   /**
@@ -142,7 +142,7 @@ struct PPB_NetAddress_Dev_0_1 {
    * @return The address family on success;
    * <code>PP_NETADDRESS_FAMILY_UNSPECIFIED</code> on failure.
    */
-  PP_NetAddress_Family_Dev (*GetFamily)(PP_Resource addr);
+  PP_NetAddress_Family (*GetFamily)(PP_Resource addr);
   /**
    * Returns a human-readable description of the network address. The
    * description is in the form of host [ ":" port ] and conforms to
@@ -159,45 +159,45 @@ struct PPB_NetAddress_Dev_0_1 {
    */
   struct PP_Var (*DescribeAsString)(PP_Resource addr, PP_Bool include_port);
   /**
-   * Fills a <code>PP_NetAddress_IPv4_Dev</code> structure if the network
-   * address is of <code>PP_NETADDRESS_FAMILY_IPV4</code> address family.
+   * Fills a <code>PP_NetAddress_IPv4</code> structure if the network address is
+   * of <code>PP_NETADDRESS_FAMILY_IPV4</code> address family.
    * Note that passing a network address of
    * <code>PP_NETADDRESS_FAMILY_IPV6</code> address family will fail even if the
    * address is an IPv4-mapped IPv6 address.
    *
    * @param[in] addr A <code>PP_Resource</code> corresponding to a network
    * address.
-   * @param[out] ipv4_addr A <code>PP_NetAddress_IPv4_Dev</code> structure to
-   * store the result.
+   * @param[out] ipv4_addr A <code>PP_NetAddress_IPv4</code> structure to store
+   * the result.
    *
    * @return A <code>PP_Bool</code> value indicating whether the operation
    * succeeded.
    */
   PP_Bool (*DescribeAsIPv4Address)(PP_Resource addr,
-                                   struct PP_NetAddress_IPv4_Dev* ipv4_addr);
+                                   struct PP_NetAddress_IPv4* ipv4_addr);
   /**
-   * Fills a <code>PP_NetAddress_IPv6_Dev</code> structure if the network
-   * address is of <code>PP_NETADDRESS_FAMILY_IPV6</code> address family.
+   * Fills a <code>PP_NetAddress_IPv6</code> structure if the network address is
+   * of <code>PP_NETADDRESS_FAMILY_IPV6</code> address family.
    * Note that passing a network address of
    * <code>PP_NETADDRESS_FAMILY_IPV4</code> address family will fail - this
    * method doesn't map it to an IPv6 address.
    *
    * @param[in] addr A <code>PP_Resource</code> corresponding to a network
    * address.
-   * @param[out] ipv6_addr A <code>PP_NetAddress_IPv6_Dev</code> structure to
-   * store the result.
+   * @param[out] ipv6_addr A <code>PP_NetAddress_IPv6</code> structure to store
+   * the result.
    *
    * @return A <code>PP_Bool</code> value indicating whether the operation
    * succeeded.
    */
   PP_Bool (*DescribeAsIPv6Address)(PP_Resource addr,
-                                   struct PP_NetAddress_IPv6_Dev* ipv6_addr);
+                                   struct PP_NetAddress_IPv6* ipv6_addr);
 };
 
-typedef struct PPB_NetAddress_Dev_0_1 PPB_NetAddress_Dev;
+typedef struct PPB_NetAddress_1_0 PPB_NetAddress;
 /**
  * @}
  */
 
-#endif  /* PPAPI_C_DEV_PPB_NET_ADDRESS_DEV_H_ */
+#endif  /* PPAPI_C_PPB_NET_ADDRESS_H_ */
 

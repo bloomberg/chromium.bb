@@ -5,7 +5,7 @@
 #ifndef PPAPI_THUNK_PPB_NET_ADDRESS_API_H_
 #define PPAPI_THUNK_PPB_NET_ADDRESS_API_H_
 
-#include "ppapi/c/dev/ppb_net_address_dev.h"
+#include "ppapi/c/ppb_net_address.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 struct PP_NetAddress_Private;
@@ -17,10 +17,10 @@ class PPAPI_THUNK_EXPORT PPB_NetAddress_API {
  public:
   virtual ~PPB_NetAddress_API() {}
 
-  virtual PP_NetAddress_Family_Dev GetFamily() = 0;
+  virtual PP_NetAddress_Family GetFamily() = 0;
   virtual PP_Var DescribeAsString(PP_Bool include_port) = 0;
-  virtual PP_Bool DescribeAsIPv4Address(PP_NetAddress_IPv4_Dev* ipv4_addr) = 0;
-  virtual PP_Bool DescribeAsIPv6Address(PP_NetAddress_IPv6_Dev* ipv6_addr) = 0;
+  virtual PP_Bool DescribeAsIPv4Address(PP_NetAddress_IPv4* ipv4_addr) = 0;
+  virtual PP_Bool DescribeAsIPv6Address(PP_NetAddress_IPv6* ipv6_addr) = 0;
 
   virtual const PP_NetAddress_Private& GetNetAddressPrivate() = 0;
 };

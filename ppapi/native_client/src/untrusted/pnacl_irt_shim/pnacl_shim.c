@@ -20,7 +20,6 @@
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
-#include "ppapi/c/dev/ppb_net_address_dev.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
@@ -66,6 +65,7 @@
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_mouse_cursor.h"
 #include "ppapi/c/ppb_mouse_lock.h"
+#include "ppapi/c/ppb_net_address.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
@@ -150,6 +150,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseLock_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoader_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0;
@@ -169,7 +170,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_9;
@@ -889,6 +889,45 @@ static void Pnacl_M16_PPB_MouseLock_UnlockMouse(PP_Instance instance) {
 
 /* End wrapper methods for PPB_MouseLock_1_0 */
 
+/* Begin wrapper methods for PPB_NetAddress_1_0 */
+
+static PP_Resource Pnacl_M29_PPB_NetAddress_CreateFromIPv4Address(PP_Instance instance, const struct PP_NetAddress_IPv4* ipv4_addr) {
+  const struct PPB_NetAddress_1_0 *iface = Pnacl_WrapperInfo_PPB_NetAddress_1_0.real_iface;
+  return iface->CreateFromIPv4Address(instance, ipv4_addr);
+}
+
+static PP_Resource Pnacl_M29_PPB_NetAddress_CreateFromIPv6Address(PP_Instance instance, const struct PP_NetAddress_IPv6* ipv6_addr) {
+  const struct PPB_NetAddress_1_0 *iface = Pnacl_WrapperInfo_PPB_NetAddress_1_0.real_iface;
+  return iface->CreateFromIPv6Address(instance, ipv6_addr);
+}
+
+static PP_Bool Pnacl_M29_PPB_NetAddress_IsNetAddress(PP_Resource resource) {
+  const struct PPB_NetAddress_1_0 *iface = Pnacl_WrapperInfo_PPB_NetAddress_1_0.real_iface;
+  return iface->IsNetAddress(resource);
+}
+
+static PP_NetAddress_Family Pnacl_M29_PPB_NetAddress_GetFamily(PP_Resource addr) {
+  const struct PPB_NetAddress_1_0 *iface = Pnacl_WrapperInfo_PPB_NetAddress_1_0.real_iface;
+  return iface->GetFamily(addr);
+}
+
+static void Pnacl_M29_PPB_NetAddress_DescribeAsString(struct PP_Var* _struct_result, PP_Resource addr, PP_Bool include_port) {
+  const struct PPB_NetAddress_1_0 *iface = Pnacl_WrapperInfo_PPB_NetAddress_1_0.real_iface;
+  *_struct_result = iface->DescribeAsString(addr, include_port);
+}
+
+static PP_Bool Pnacl_M29_PPB_NetAddress_DescribeAsIPv4Address(PP_Resource addr, struct PP_NetAddress_IPv4* ipv4_addr) {
+  const struct PPB_NetAddress_1_0 *iface = Pnacl_WrapperInfo_PPB_NetAddress_1_0.real_iface;
+  return iface->DescribeAsIPv4Address(addr, ipv4_addr);
+}
+
+static PP_Bool Pnacl_M29_PPB_NetAddress_DescribeAsIPv6Address(PP_Resource addr, struct PP_NetAddress_IPv6* ipv6_addr) {
+  const struct PPB_NetAddress_1_0 *iface = Pnacl_WrapperInfo_PPB_NetAddress_1_0.real_iface;
+  return iface->DescribeAsIPv6Address(addr, ipv6_addr);
+}
+
+/* End wrapper methods for PPB_NetAddress_1_0 */
+
 /* Begin wrapper methods for PPB_URLLoader_1_0 */
 
 static PP_Resource Pnacl_M14_PPB_URLLoader_Create(PP_Instance instance) {
@@ -1560,45 +1599,6 @@ static void Pnacl_M21_PPB_IMEInputEvent_Dev_GetSelection(PP_Resource ime_event, 
 /* Not generating wrapper methods for PPB_KeyboardInputEvent_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Memory_Dev_0_1 */
-
-/* Begin wrapper methods for PPB_NetAddress_Dev_0_1 */
-
-static PP_Resource Pnacl_M29_PPB_NetAddress_Dev_CreateFromIPv4Address(PP_Instance instance, const struct PP_NetAddress_IPv4_Dev* ipv4_addr) {
-  const struct PPB_NetAddress_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1.real_iface;
-  return iface->CreateFromIPv4Address(instance, ipv4_addr);
-}
-
-static PP_Resource Pnacl_M29_PPB_NetAddress_Dev_CreateFromIPv6Address(PP_Instance instance, const struct PP_NetAddress_IPv6_Dev* ipv6_addr) {
-  const struct PPB_NetAddress_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1.real_iface;
-  return iface->CreateFromIPv6Address(instance, ipv6_addr);
-}
-
-static PP_Bool Pnacl_M29_PPB_NetAddress_Dev_IsNetAddress(PP_Resource resource) {
-  const struct PPB_NetAddress_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1.real_iface;
-  return iface->IsNetAddress(resource);
-}
-
-static PP_NetAddress_Family_Dev Pnacl_M29_PPB_NetAddress_Dev_GetFamily(PP_Resource addr) {
-  const struct PPB_NetAddress_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1.real_iface;
-  return iface->GetFamily(addr);
-}
-
-static void Pnacl_M29_PPB_NetAddress_Dev_DescribeAsString(struct PP_Var* _struct_result, PP_Resource addr, PP_Bool include_port) {
-  const struct PPB_NetAddress_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1.real_iface;
-  *_struct_result = iface->DescribeAsString(addr, include_port);
-}
-
-static PP_Bool Pnacl_M29_PPB_NetAddress_Dev_DescribeAsIPv4Address(PP_Resource addr, struct PP_NetAddress_IPv4_Dev* ipv4_addr) {
-  const struct PPB_NetAddress_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1.real_iface;
-  return iface->DescribeAsIPv4Address(addr, ipv4_addr);
-}
-
-static PP_Bool Pnacl_M29_PPB_NetAddress_Dev_DescribeAsIPv6Address(PP_Resource addr, struct PP_NetAddress_IPv6_Dev* ipv6_addr) {
-  const struct PPB_NetAddress_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1.real_iface;
-  return iface->DescribeAsIPv6Address(addr, ipv6_addr);
-}
-
-/* End wrapper methods for PPB_NetAddress_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_Printing_Dev_0_7 */
 
@@ -3945,6 +3945,16 @@ struct PPB_MouseLock_1_0 Pnacl_Wrappers_PPB_MouseLock_1_0 = {
     .UnlockMouse = (void (*)(PP_Instance instance))&Pnacl_M16_PPB_MouseLock_UnlockMouse
 };
 
+struct PPB_NetAddress_1_0 Pnacl_Wrappers_PPB_NetAddress_1_0 = {
+    .CreateFromIPv4Address = (PP_Resource (*)(PP_Instance instance, const struct PP_NetAddress_IPv4* ipv4_addr))&Pnacl_M29_PPB_NetAddress_CreateFromIPv4Address,
+    .CreateFromIPv6Address = (PP_Resource (*)(PP_Instance instance, const struct PP_NetAddress_IPv6* ipv6_addr))&Pnacl_M29_PPB_NetAddress_CreateFromIPv6Address,
+    .IsNetAddress = (PP_Bool (*)(PP_Resource resource))&Pnacl_M29_PPB_NetAddress_IsNetAddress,
+    .GetFamily = (PP_NetAddress_Family (*)(PP_Resource addr))&Pnacl_M29_PPB_NetAddress_GetFamily,
+    .DescribeAsString = (struct PP_Var (*)(PP_Resource addr, PP_Bool include_port))&Pnacl_M29_PPB_NetAddress_DescribeAsString,
+    .DescribeAsIPv4Address = (PP_Bool (*)(PP_Resource addr, struct PP_NetAddress_IPv4* ipv4_addr))&Pnacl_M29_PPB_NetAddress_DescribeAsIPv4Address,
+    .DescribeAsIPv6Address = (PP_Bool (*)(PP_Resource addr, struct PP_NetAddress_IPv6* ipv6_addr))&Pnacl_M29_PPB_NetAddress_DescribeAsIPv6Address
+};
+
 struct PPB_URLLoader_1_0 Pnacl_Wrappers_PPB_URLLoader_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M14_PPB_URLLoader_Create,
     .IsURLLoader = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_URLLoader_IsURLLoader,
@@ -4155,16 +4165,6 @@ struct PPB_IMEInputEvent_Dev_0_2 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_2 = {
 /* Not generating wrapper interface for PPB_KeyboardInputEvent_Dev_0_1 */
 
 /* Not generating wrapper interface for PPB_Memory_Dev_0_1 */
-
-struct PPB_NetAddress_Dev_0_1 Pnacl_Wrappers_PPB_NetAddress_Dev_0_1 = {
-    .CreateFromIPv4Address = (PP_Resource (*)(PP_Instance instance, const struct PP_NetAddress_IPv4_Dev* ipv4_addr))&Pnacl_M29_PPB_NetAddress_Dev_CreateFromIPv4Address,
-    .CreateFromIPv6Address = (PP_Resource (*)(PP_Instance instance, const struct PP_NetAddress_IPv6_Dev* ipv6_addr))&Pnacl_M29_PPB_NetAddress_Dev_CreateFromIPv6Address,
-    .IsNetAddress = (PP_Bool (*)(PP_Resource resource))&Pnacl_M29_PPB_NetAddress_Dev_IsNetAddress,
-    .GetFamily = (PP_NetAddress_Family_Dev (*)(PP_Resource addr))&Pnacl_M29_PPB_NetAddress_Dev_GetFamily,
-    .DescribeAsString = (struct PP_Var (*)(PP_Resource addr, PP_Bool include_port))&Pnacl_M29_PPB_NetAddress_Dev_DescribeAsString,
-    .DescribeAsIPv4Address = (PP_Bool (*)(PP_Resource addr, struct PP_NetAddress_IPv4_Dev* ipv4_addr))&Pnacl_M29_PPB_NetAddress_Dev_DescribeAsIPv4Address,
-    .DescribeAsIPv6Address = (PP_Bool (*)(PP_Resource addr, struct PP_NetAddress_IPv6_Dev* ipv6_addr))&Pnacl_M29_PPB_NetAddress_Dev_DescribeAsIPv6Address
-};
 
 struct PPB_Printing_Dev_0_7 Pnacl_Wrappers_PPB_Printing_Dev_0_7 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M23_PPB_Printing_Dev_Create,
@@ -4866,6 +4866,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseLock_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_1_0 = {
+  .iface_macro = PPB_NETADDRESS_INTERFACE_1_0,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_NetAddress_1_0,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoader_1_0 = {
   .iface_macro = PPB_URLLOADER_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_URLLoader_1_0,
@@ -4977,12 +4983,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2 = {
   .iface_macro = PPB_IME_INPUT_EVENT_DEV_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_2,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1 = {
-  .iface_macro = PPB_NETADDRESS_DEV_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_NetAddress_Dev_0_1,
   .real_iface = NULL
 };
 
@@ -5317,6 +5317,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_MessageLoop_1_0,
   &Pnacl_WrapperInfo_PPB_Messaging_1_0,
   &Pnacl_WrapperInfo_PPB_MouseLock_1_0,
+  &Pnacl_WrapperInfo_PPB_NetAddress_1_0,
   &Pnacl_WrapperInfo_PPB_URLLoader_1_0,
   &Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0,
   &Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0,
@@ -5335,7 +5336,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
-  &Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_7,
   &Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_9,

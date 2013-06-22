@@ -12,7 +12,7 @@
 
 namespace pp {
 class HostResolver_Dev;
-class NetAddress_Dev;
+class NetAddress;
 class TCPSocket_Dev;
 }  // namespace pp
 
@@ -26,7 +26,7 @@ class TestHostResolver : public TestCase {
 
  private:
   std::string SyncConnect(pp::TCPSocket_Dev* socket,
-                          const pp::NetAddress_Dev& address);
+                          const pp::NetAddress& address);
   std::string SyncRead(pp::TCPSocket_Dev* socket,
                        char* buffer,
                        int32_t num_bytes,

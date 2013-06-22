@@ -6,7 +6,7 @@
 #define PPAPI_CPP_DEV_UDP_SOCKET_DEV_H_
 
 #include "ppapi/c/dev/ppb_udp_socket_dev.h"
-#include "ppapi/cpp/dev/net_address_dev.h"
+#include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/resource.h"
 
@@ -66,7 +66,7 @@ class UDPSocket_Dev: public Resource {
 
   /// Binds the socket to the given address.
   ///
-  /// @param[in] addr A <code>NetAddress_Dev</code> object.
+  /// @param[in] addr A <code>NetAddress</code> object.
   /// @param[in] callback A <code>CompletionCallback</code> to be called upon
   /// completion.
   ///
@@ -74,14 +74,14 @@ class UDPSocket_Dev: public Resource {
   /// <code>PP_ERROR_NOACCESS</code> will be returned if the caller doesn't have
   /// required permissions. <code>PP_ERROR_ADDRESS_IN_USE</code> will be
   /// returned if the address is already in use.
-  int32_t Bind(const NetAddress_Dev& addr,
+  int32_t Bind(const NetAddress& addr,
                const CompletionCallback& callback);
 
   /// Get the address that the socket is bound to. The socket must be bound.
   ///
-  /// @return A <code>NetAddress_Dev</code> object. The object will be null
+  /// @return A <code>NetAddress</code> object. The object will be null
   /// (i.e., is_null() returns true) on failure.
-  NetAddress_Dev GetBoundAddress();
+  NetAddress GetBoundAddress();
 
   /// Receives data from the socket and stores the source address. The socket
   /// must be bound.
@@ -110,14 +110,14 @@ class UDPSocket_Dev: public Resource {
   int32_t RecvFrom(
       char* buffer,
       int32_t num_bytes,
-      const CompletionCallbackWithOutput<NetAddress_Dev>& callback);
+      const CompletionCallbackWithOutput<NetAddress>& callback);
 
   /// Sends data to a specific destination. The socket must be bound.
   ///
   /// @param[in] buffer The buffer containing the data to send.
   /// @param[in] num_bytes The number of bytes to send.
-  /// @param[in] addr A <code>NetAddress_Dev</code> object holding the
-  /// destination address.
+  /// @param[in] addr A <code>NetAddress</code> object holding the destination
+  /// address.
   /// @param[in] callback A <code>CompletionCallback</code> to be called upon
   /// completion.
   ///
@@ -127,7 +127,7 @@ class UDPSocket_Dev: public Resource {
   /// required permissions.
   int32_t SendTo(const char* buffer,
                  int32_t num_bytes,
-                 const NetAddress_Dev& addr,
+                 const NetAddress& addr,
                  const CompletionCallback& callback);
 
   /// Cancels all pending reads and writes, and closes the socket. Any pending

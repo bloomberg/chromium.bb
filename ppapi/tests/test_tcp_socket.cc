@@ -59,7 +59,7 @@ std::string TestTCPSocket::TestConnect() {
   CHECK_CALLBACK_BEHAVIOR(cb);
   ASSERT_EQ(PP_OK, cb.result());
 
-  pp::NetAddress_Dev local_addr, remote_addr;
+  pp::NetAddress local_addr, remote_addr;
   local_addr = socket.GetLocalAddress();
   remote_addr = socket.GetRemoteAddress();
 

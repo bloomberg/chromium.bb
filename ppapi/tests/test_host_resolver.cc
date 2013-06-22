@@ -5,8 +5,8 @@
 #include "ppapi/tests/test_host_resolver.h"
 
 #include "ppapi/cpp/dev/host_resolver_dev.h"
-#include "ppapi/cpp/dev/net_address_dev.h"
 #include "ppapi/cpp/dev/tcp_socket_dev.h"
+#include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
@@ -46,7 +46,7 @@ void TestHostResolver::RunTests(const std::string& filter) {
 
 std::string TestHostResolver::SyncConnect(
     pp::TCPSocket_Dev* socket,
-    const pp::NetAddress_Dev& address) {
+    const pp::NetAddress& address) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(socket->Connect(address, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
@@ -119,7 +119,7 @@ std::string TestHostResolver::ParameterizedTestResolve(
   size_t size = host_resolver.GetNetAddressCount();
   ASSERT_TRUE(size >= 1);
 
-  pp::NetAddress_Dev address;
+  pp::NetAddress address;
   for (size_t i = 0; i < size; ++i) {
     address = host_resolver.GetNetAddress(i);
     ASSERT_NE(0, address.pp_resource());
@@ -148,7 +148,7 @@ std::string TestHostResolver::ParameterizedTestResolve(
 std::string TestHostResolver::TestEmpty() {
   pp::HostResolver_Dev host_resolver(instance_);
   ASSERT_EQ(0, host_resolver.GetNetAddressCount());
-  pp::NetAddress_Dev address = host_resolver.GetNetAddress(0);
+  pp::NetAddress address = host_resolver.GetNetAddress(0);
   ASSERT_EQ(0, address.pp_resource());
 
   PASS();

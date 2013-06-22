@@ -6,7 +6,7 @@
 #define PPAPI_CPP_DEV_TCP_SOCKET_DEV_H_
 
 #include "ppapi/c/dev/ppb_tcp_socket_dev.h"
-#include "ppapi/cpp/dev/net_address_dev.h"
+#include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/resource.h"
 
@@ -62,7 +62,7 @@ class TCPSocket_Dev: public Resource {
 
   /// Connects the socket to the given address.
   ///
-  /// @param[in] addr A <code>NetAddress_Dev</code> object.
+  /// @param[in] addr A <code>NetAddress</code> object.
   /// @param[in] callback A <code>CompletionCallback</code> to be called upon
   /// completion.
   ///
@@ -77,20 +77,20 @@ class TCPSocket_Dev: public Resource {
   /// - <code>PP_ERROR_CONNECTION_FAILED</code>: the connection attempt failed.
   /// - <code>PP_ERROR_CONNECTION_TIMEDOUT</code>: the connection attempt timed
   ///   out.
-  int32_t Connect(const NetAddress_Dev& addr,
+  int32_t Connect(const NetAddress& addr,
                   const CompletionCallback& callback);
 
   /// Gets the local address of the socket, if it is connected.
   ///
-  /// @return A <code>NetAddress_Dev</code> object. The object will be null
+  /// @return A <code>NetAddress</code> object. The object will be null
   /// (i.e., is_null() returns true) on failure.
-  NetAddress_Dev GetLocalAddress() const;
+  NetAddress GetLocalAddress() const;
 
   /// Gets the remote address of the socket, if it is connected.
   ///
-  /// @return A <code>NetAddress_Dev</code> object. The object will be null
+  /// @return A <code>NetAddress</code> object. The object will be null
   /// (i.e., is_null() returns true) on failure.
-  NetAddress_Dev GetRemoteAddress() const;
+  NetAddress GetRemoteAddress() const;
 
   /// Reads data from the socket. The socket must be connected. It may perform a
   /// partial read.
@@ -163,4 +163,4 @@ class TCPSocket_Dev: public Resource {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_TCP_SOCKET_DEV_H_
+#endif  // PPAPI_CPP_DEV_TCP_SOCKET__DevDEV_H_

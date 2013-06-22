@@ -280,7 +280,6 @@ include/ppapi/c/dev/ppb_host_resolver_dev.h
 include/ppapi/c/dev/ppb_ime_input_event_dev.h
 include/ppapi/c/dev/ppb_keyboard_input_event_dev.h
 include/ppapi/c/dev/ppb_memory_dev.h
-include/ppapi/c/dev/ppb_net_address_dev.h
 include/ppapi/c/dev/ppb_opengles2ext_dev.h
 include/ppapi/c/dev/ppb_printing_dev.h
 include/ppapi/c/dev/ppb_resource_array_dev.h
@@ -339,6 +338,7 @@ include/ppapi/c/ppb_message_loop.h
 include/ppapi/c/ppb_messaging.h
 include/ppapi/c/ppb_mouse_cursor.h
 include/ppapi/c/ppb_mouse_lock.h
+include/ppapi/c/ppb_net_address.h
 include/ppapi/c/pp_bool.h
 include/ppapi/c/ppb_opengles2.h
 include/ppapi/c/ppb_url_loader.h
@@ -384,7 +384,6 @@ include/ppapi/cpp/dev/graphics_2d_dev.h
 include/ppapi/cpp/dev/host_resolver_dev.h
 include/ppapi/cpp/dev/ime_input_event_dev.h
 include/ppapi/cpp/dev/memory_dev.h
-include/ppapi/cpp/dev/net_address_dev.h
 include/ppapi/cpp/dev/printing_dev.h
 include/ppapi/cpp/dev/resource_array_dev.h
 include/ppapi/cpp/dev/scriptable_object_deprecated.h
@@ -439,6 +438,7 @@ include/ppapi/cpp/module.h
 include/ppapi/cpp/module_impl.h
 include/ppapi/cpp/mouse_cursor.h
 include/ppapi/cpp/mouse_lock.h
+include/ppapi/cpp/net_address.h
 include/ppapi/cpp/output_traits.h
 include/ppapi/cpp/pass_ref.h
 include/ppapi/c/ppp_graphics_3d.h
@@ -722,7 +722,7 @@ src/ppapi_cpp/message_loop.cc
 src/ppapi_cpp/module.cc
 src/ppapi_cpp/mouse_cursor.cc
 src/ppapi_cpp/mouse_lock.cc
-src/ppapi_cpp/net_address_dev.cc
+src/ppapi_cpp/net_address.cc
 src/ppapi_cpp/paint_aggregator.cc
 src/ppapi_cpp/paint_manager.cc
 src/ppapi_cpp/ppp_entrypoints.cc

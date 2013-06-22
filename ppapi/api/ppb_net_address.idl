@@ -4,18 +4,18 @@
  */
 
 /**
- * This file defines the <code>PPB_NetAddress_Dev</code> interface.
+ * This file defines the <code>PPB_NetAddress</code> interface.
  */
 
 label Chrome {
-  M29 = 0.1
+  M29 = 1.0
 };
 
 /**
  * Network address family types.
  */
 [assert_size(4)]
-enum PP_NetAddress_Family_Dev {
+enum PP_NetAddress_Family {
   /**
    * The address family is unspecified.
    */
@@ -34,7 +34,7 @@ enum PP_NetAddress_Family_Dev {
  * All members are expressed in network byte order.
  */
 [assert_size(6)]
-struct PP_NetAddress_IPv4_Dev {
+struct PP_NetAddress_IPv4 {
   /**
    * Port number.
    */
@@ -49,7 +49,7 @@ struct PP_NetAddress_IPv4_Dev {
  * All members are expressed in network byte order.
  */
 [assert_size(18)]
-struct PP_NetAddress_IPv6_Dev {
+struct PP_NetAddress_IPv6 {
   /**
    * Port number.
    */
@@ -61,12 +61,12 @@ struct PP_NetAddress_IPv6_Dev {
 };
 
 /**
- * The <code>PPB_NetAddress_Dev</code> interface provides operations on
- * network addresses.
+ * The <code>PPB_NetAddress</code> interface provides operations on network
+ * addresses.
  */
-interface PPB_NetAddress_Dev {
+interface PPB_NetAddress {
   /**
-   * Creates a <code>PPB_NetAddress_Dev</code> resource with the specified IPv4
+   * Creates a <code>PPB_NetAddress</code> resource with the specified IPv4
    * address.
    *
    * @param[in] instance A <code>PP_Instance</code> identifying one instance of
@@ -77,10 +77,10 @@ interface PPB_NetAddress_Dev {
    * <code>ipv4_addr</code> or 0 on failure.
    */
   PP_Resource CreateFromIPv4Address([in] PP_Instance instance,
-                                    [in] PP_NetAddress_IPv4_Dev ipv4_addr);
+                                    [in] PP_NetAddress_IPv4 ipv4_addr);
 
   /**
-   * Creates a <code>PPB_NetAddress_Dev</code> resource with the specified IPv6
+   * Creates a <code>PPB_NetAddress</code> resource with the specified IPv6
    * address.
    *
    * @param[in] instance A <code>PP_Instance</code> identifying one instance of
@@ -91,15 +91,15 @@ interface PPB_NetAddress_Dev {
    * <code>ipv6_addr</code> or 0 on failure.
    */
   PP_Resource CreateFromIPv6Address([in] PP_Instance instance,
-                                    [in] PP_NetAddress_IPv6_Dev ipv6_addr);
+                                    [in] PP_NetAddress_IPv6 ipv6_addr);
 
   /**
    * Determines if a given resource is a network address.
    *
    * @param[in] resource A <code>PP_Resource</code> to check.
    *
-   * @return <code>PP_TRUE</code> if the input is a
-   * <code>PPB_NetAddress_Dev</code> resource; <code>PP_FALSE</code> otherwise.
+   * @return <code>PP_TRUE</code> if the input is a <code>PPB_NetAddress</code>
+   * resource; <code>PP_FALSE</code> otherwise.
    */
   PP_Bool IsNetAddress([in] PP_Resource resource);
 
@@ -112,7 +112,7 @@ interface PPB_NetAddress_Dev {
    * @return The address family on success;
    * <code>PP_NETADDRESS_FAMILY_UNSPECIFIED</code> on failure.
    */
-  PP_NetAddress_Family_Dev GetFamily([in] PP_Resource addr);
+  PP_NetAddress_Family GetFamily([in] PP_Resource addr);
 
   /**
    * Returns a human-readable description of the network address. The
@@ -132,38 +132,38 @@ interface PPB_NetAddress_Dev {
                           [in] PP_Bool include_port);
 
   /**
-   * Fills a <code>PP_NetAddress_IPv4_Dev</code> structure if the network
-   * address is of <code>PP_NETADDRESS_FAMILY_IPV4</code> address family.
+   * Fills a <code>PP_NetAddress_IPv4</code> structure if the network address is
+   * of <code>PP_NETADDRESS_FAMILY_IPV4</code> address family.
    * Note that passing a network address of
    * <code>PP_NETADDRESS_FAMILY_IPV6</code> address family will fail even if the
    * address is an IPv4-mapped IPv6 address.
    *
    * @param[in] addr A <code>PP_Resource</code> corresponding to a network
    * address.
-   * @param[out] ipv4_addr A <code>PP_NetAddress_IPv4_Dev</code> structure to
-   * store the result.
+   * @param[out] ipv4_addr A <code>PP_NetAddress_IPv4</code> structure to store
+   * the result.
    *
    * @return A <code>PP_Bool</code> value indicating whether the operation
    * succeeded.
    */
   PP_Bool DescribeAsIPv4Address([in] PP_Resource addr,
-                                [out] PP_NetAddress_IPv4_Dev ipv4_addr);
+                                [out] PP_NetAddress_IPv4 ipv4_addr);
 
   /**
-   * Fills a <code>PP_NetAddress_IPv6_Dev</code> structure if the network
-   * address is of <code>PP_NETADDRESS_FAMILY_IPV6</code> address family.
+   * Fills a <code>PP_NetAddress_IPv6</code> structure if the network address is
+   * of <code>PP_NETADDRESS_FAMILY_IPV6</code> address family.
    * Note that passing a network address of
    * <code>PP_NETADDRESS_FAMILY_IPV4</code> address family will fail - this
    * method doesn't map it to an IPv6 address.
    *
    * @param[in] addr A <code>PP_Resource</code> corresponding to a network
    * address.
-   * @param[out] ipv6_addr A <code>PP_NetAddress_IPv6_Dev</code> structure to
-   * store the result.
+   * @param[out] ipv6_addr A <code>PP_NetAddress_IPv6</code> structure to store
+   * the result.
    *
    * @return A <code>PP_Bool</code> value indicating whether the operation
    * succeeded.
    */
   PP_Bool DescribeAsIPv6Address([in] PP_Resource addr,
-                                [out] PP_NetAddress_IPv6_Dev ipv6_addr);
+                                [out] PP_NetAddress_IPv6 ipv6_addr);
 };

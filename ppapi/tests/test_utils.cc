@@ -14,9 +14,9 @@
 #endif
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/cpp/dev/net_address_dev.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/private/host_resolver_private.h"
 #include "ppapi/cpp/private/net_address_private.h"
 #include "ppapi/cpp/var.h"
@@ -103,15 +103,14 @@ uint16_t ConvertToNetEndian16(uint16_t x) {
     return (x << 8) | (x >> 8);
 }
 
-bool EqualNetAddress(const pp::NetAddress_Dev& addr1,
-                     const pp::NetAddress_Dev& addr2) {
+bool EqualNetAddress(const pp::NetAddress& addr1, const pp::NetAddress& addr2) {
   if (addr1.GetFamily() == PP_NETADDRESS_FAMILY_UNSPECIFIED ||
       addr2.GetFamily() == PP_NETADDRESS_FAMILY_UNSPECIFIED) {
     return false;
   }
 
   if (addr1.GetFamily() == PP_NETADDRESS_FAMILY_IPV4) {
-    PP_NetAddress_IPv4_Dev ipv4_addr1, ipv4_addr2;
+    PP_NetAddress_IPv4 ipv4_addr1, ipv4_addr2;
     if (!addr1.DescribeAsIPv4Address(&ipv4_addr1) ||
         !addr2.DescribeAsIPv4Address(&ipv4_addr2)) {
       return false;
@@ -120,7 +119,7 @@ bool EqualNetAddress(const pp::NetAddress_Dev& addr1,
     return ipv4_addr1.port == ipv4_addr2.port &&
            !memcmp(ipv4_addr1.addr, ipv4_addr2.addr, sizeof(ipv4_addr1.addr));
   } else {
-    PP_NetAddress_IPv6_Dev ipv6_addr1, ipv6_addr2;
+    PP_NetAddress_IPv6 ipv6_addr1, ipv6_addr2;
     if (!addr1.DescribeAsIPv6Address(&ipv6_addr1) ||
         !addr2.DescribeAsIPv6Address(&ipv6_addr2)) {
       return false;
@@ -134,7 +133,7 @@ bool EqualNetAddress(const pp::NetAddress_Dev& addr1,
 bool ResolveHost(PP_Instance instance,
                  const std::string& host,
                  uint16_t port,
-                 pp::NetAddress_Dev* addr) {
+                 pp::NetAddress* addr) {
   // TODO(yzshen): Change to use the public host resolver once it is supported.
   pp::InstanceHandle instance_handle(instance);
   pp::HostResolverPrivate host_resolver(instance_handle);
@@ -152,25 +151,25 @@ bool ResolveHost(PP_Instance instance,
 
   switch (pp::NetAddressPrivate::GetFamily(addr_private)) {
     case PP_NETADDRESSFAMILY_IPV4: {
-      PP_NetAddress_IPv4_Dev ipv4_addr;
+      PP_NetAddress_IPv4 ipv4_addr;
       ipv4_addr.port = ConvertToNetEndian16(
           pp::NetAddressPrivate::GetPort(addr_private));
       if (!pp::NetAddressPrivate::GetAddress(addr_private, ipv4_addr.addr,
                                              sizeof(ipv4_addr.addr))) {
         return false;
       }
-      *addr = pp::NetAddress_Dev(instance_handle, ipv4_addr);
+      *addr = pp::NetAddress(instance_handle, ipv4_addr);
       return true;
     }
     case PP_NETADDRESSFAMILY_IPV6: {
-      PP_NetAddress_IPv6_Dev ipv6_addr;
+      PP_NetAddress_IPv6 ipv6_addr;
       ipv6_addr.port = ConvertToNetEndian16(
           pp::NetAddressPrivate::GetPort(addr_private));
       if (!pp::NetAddressPrivate::GetAddress(addr_private, ipv6_addr.addr,
                                              sizeof(ipv6_addr.addr))) {
         return false;
       }
-      *addr = pp::NetAddress_Dev(instance_handle, ipv6_addr);
+      *addr = pp::NetAddress(instance_handle, ipv6_addr);
       return true;
     }
     default: {

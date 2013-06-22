@@ -292,14 +292,14 @@ PP_Resource ResourceCreationProxy::CreateImageDataSimple(
 
 PP_Resource ResourceCreationProxy::CreateNetAddressFromIPv4Address(
     PP_Instance instance,
-    const PP_NetAddress_IPv4_Dev* ipv4_addr) {
+    const PP_NetAddress_IPv4* ipv4_addr) {
   return (new NetAddressResource(GetConnection(), instance,
                                  *ipv4_addr))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateNetAddressFromIPv6Address(
     PP_Instance instance,
-    const PP_NetAddress_IPv6_Dev* ipv6_addr) {
+    const PP_NetAddress_IPv6* ipv6_addr) {
   return (new NetAddressResource(GetConnection(), instance,
                                  *ipv6_addr))->GetReference();
 }

@@ -37,6 +37,7 @@
         'module.cc',
         'mouse_cursor.cc',
         'mouse_lock.cc',
+        'net_address.cc',
         'ppp_entrypoints.cc',
         'rect.cc',
         'resource.cc',
@@ -52,7 +53,6 @@
 
         # ppapi/cpp/dev
         'widget_client_dev.cc',
-        'net_address_dev.cc',
         'resource_array_dev.cc',
         'video_capture_client_dev.cc',
         'video_decoder_client_dev.cc',
@@ -131,6 +131,7 @@
         'module_impl.h',
         'mouse_cursor.h',
         'mouse_lock.h',
+        'net_address.h',
         'output_traits.h',
         'pass_ref.h',
         'point.h',
@@ -164,7 +165,6 @@
         'host_resolver_dev.h',
         'ime_input_event_dev.h',
         'memory_dev.h',
-        'net_address_dev.h',
         'printing_dev.h',
         'resource_array_dev.h',
         'scriptable_object_deprecated.h',

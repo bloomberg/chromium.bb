@@ -15,7 +15,7 @@
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace pp {
-class NetAddress_Dev;
+class NetAddress;
 }
 
 // Timeout to wait for some action to complete.
@@ -28,13 +28,12 @@ bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port);
 
 uint16_t ConvertFromNetEndian16(uint16_t x);
 uint16_t ConvertToNetEndian16(uint16_t x);
-bool EqualNetAddress(const pp::NetAddress_Dev& addr1,
-                     const pp::NetAddress_Dev& addr2);
+bool EqualNetAddress(const pp::NetAddress& addr1, const pp::NetAddress& addr2);
 // Only returns the first address if there are more than one available.
 bool ResolveHost(PP_Instance instance,
                  const std::string& host,
                  uint16_t port,
-                 pp::NetAddress_Dev* addr);
+                 pp::NetAddress* addr);
 
 // NestedEvent allows you to run a nested MessageLoop and wait for a particular
 // event to complete. For example, you can use it to wait for a callback on a

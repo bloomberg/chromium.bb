@@ -8,7 +8,6 @@
 #ifndef PPAPI_C_DEV_PPB_HOST_RESOLVER_DEV_H_
 #define PPAPI_C_DEV_PPB_HOST_RESOLVER_DEV_H_
 
-#include "ppapi/c/dev/ppb_net_address_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
@@ -16,6 +15,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_net_address.h"
 
 #define PPB_HOSTRESOLVER_DEV_INTERFACE_0_1 "PPB_HostResolver(Dev);0.1"
 #define PPB_HOSTRESOLVER_DEV_INTERFACE PPB_HOSTRESOLVER_DEV_INTERFACE_0_1
@@ -58,7 +58,7 @@ struct PP_HostResolver_Hint_Dev {
   /**
    * Network address family.
    */
-  PP_NetAddress_Family_Dev family;
+  PP_NetAddress_Family family;
   /**
    * Combination of flags from <code>PP_HostResolver_Flags_Dev</code>.
    */
@@ -159,9 +159,9 @@ struct PPB_HostResolver_Dev_0_1 {
    * resolver.
    * @param[in] index An index indicating which address to return.
    *
-   * @return A <code>PPB_NetAddress_Dev</code> resource on success; 0 if there
-   * is a pending <code>Resolve()</code> call or the previous
-   * <code>Resolve()</code> call failed, or the specified index is out of range.
+   * @return A <code>PPB_NetAddress</code> resource on success; 0 if there is a
+   * pending <code>Resolve()</code> call or the previous <code>Resolve()</code>
+   * call failed, or the specified index is out of range.
    */
   PP_Resource (*GetNetAddress)(PP_Resource host_resolver, uint32_t index);
 };

@@ -128,10 +128,10 @@ class ResourceCreationProxy : public InterfaceProxy,
                                             PP_Bool init_to_zero) OVERRIDE;
   virtual PP_Resource CreateNetAddressFromIPv4Address(
       PP_Instance instance,
-      const PP_NetAddress_IPv4_Dev* ipv4_addr) OVERRIDE;
+      const PP_NetAddress_IPv4* ipv4_addr) OVERRIDE;
   virtual PP_Resource CreateNetAddressFromIPv6Address(
       PP_Instance instance,
-      const PP_NetAddress_IPv6_Dev* ipv6_addr) OVERRIDE;
+      const PP_NetAddress_IPv6* ipv6_addr) OVERRIDE;
   virtual PP_Resource CreateNetAddressFromNetAddressPrivate(
       PP_Instance instance,
       const PP_NetAddress_Private& private_addr) OVERRIDE;

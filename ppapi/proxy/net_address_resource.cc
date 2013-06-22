@@ -16,7 +16,7 @@ namespace proxy {
 NetAddressResource::NetAddressResource(
     Connection connection,
     PP_Instance instance,
-    const PP_NetAddress_IPv4_Dev& ipv4_addr)
+    const PP_NetAddress_IPv4& ipv4_addr)
     : PluginResource(connection, instance) {
   NetAddressPrivateImpl::CreateNetAddressPrivateFromIPv4Address(ipv4_addr,
                                                                 &address_);
@@ -25,7 +25,7 @@ NetAddressResource::NetAddressResource(
 NetAddressResource::NetAddressResource(
     Connection connection,
     PP_Instance instance,
-    const PP_NetAddress_IPv6_Dev& ipv6_addr)
+    const PP_NetAddress_IPv6& ipv6_addr)
     : PluginResource(connection, instance) {
   NetAddressPrivateImpl::CreateNetAddressPrivateFromIPv6Address(ipv6_addr,
                                                                 &address_);
@@ -46,7 +46,7 @@ thunk::PPB_NetAddress_API* NetAddressResource::AsPPB_NetAddress_API() {
   return this;
 }
 
-PP_NetAddress_Family_Dev NetAddressResource::GetFamily() {
+PP_NetAddress_Family NetAddressResource::GetFamily() {
   return NetAddressPrivateImpl::GetFamilyFromNetAddressPrivate(address_);
 }
 
@@ -60,14 +60,14 @@ PP_Var NetAddressResource::DescribeAsString(PP_Bool include_port) {
 }
 
 PP_Bool NetAddressResource::DescribeAsIPv4Address(
-    PP_NetAddress_IPv4_Dev* ipv4_addr) {
+    PP_NetAddress_IPv4* ipv4_addr) {
   return PP_FromBool(
       NetAddressPrivateImpl::DescribeNetAddressPrivateAsIPv4Address(
           address_, ipv4_addr));
 }
 
 PP_Bool NetAddressResource::DescribeAsIPv6Address(
-    PP_NetAddress_IPv6_Dev* ipv6_addr) {
+    PP_NetAddress_IPv6* ipv6_addr) {
   return PP_FromBool(
       NetAddressPrivateImpl::DescribeNetAddressPrivateAsIPv6Address(
           address_, ipv6_addr));

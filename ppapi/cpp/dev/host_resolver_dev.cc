@@ -81,15 +81,15 @@ uint32_t HostResolver_Dev::GetNetAddressCount() const {
   return 0;
 }
 
-NetAddress_Dev HostResolver_Dev::GetNetAddress(uint32_t index) const {
+NetAddress HostResolver_Dev::GetNetAddress(uint32_t index) const {
   if (has_interface<PPB_HostResolver_Dev_0_1>()) {
-    return NetAddress_Dev(
+    return NetAddress(
         PASS_REF,
         get_interface<PPB_HostResolver_Dev_0_1>()->GetNetAddress(
             pp_resource(), index));
   }
 
-  return NetAddress_Dev();
+  return NetAddress();
 }
 
 }  // namespace pp

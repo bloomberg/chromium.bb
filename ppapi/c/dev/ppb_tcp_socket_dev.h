@@ -103,7 +103,7 @@ struct PPB_TCPSocket_Dev_0_1 {
    *
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
    * socket.
-   * @param[in] addr A <code>PPB_NetAddress_Dev</code> resource.
+   * @param[in] addr A <code>PPB_NetAddress</code> resource.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion.
    *
@@ -128,8 +128,7 @@ struct PPB_TCPSocket_Dev_0_1 {
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
    * socket.
    *
-   * @return A <code>PPB_NetAddress_Dev</code> resource on success or 0 on
-   * failure.
+   * @return A <code>PPB_NetAddress</code> resource on success or 0 on failure.
    */
   PP_Resource (*GetLocalAddress)(PP_Resource tcp_socket);
   /**
@@ -138,8 +137,7 @@ struct PPB_TCPSocket_Dev_0_1 {
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
    * socket.
    *
-   * @return A <code>PPB_NetAddress_Dev</code> resource on success or 0 on
-   * failure.
+   * @return A <code>PPB_NetAddress</code> resource on success or 0 on failure.
    */
   PP_Resource (*GetRemoteAddress)(PP_Resource tcp_socket);
   /**

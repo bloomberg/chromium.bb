@@ -20,29 +20,29 @@ namespace {
 const uint16_t kPortScanFrom = 1024;
 const uint16_t kPortScanTo = 4096;
 
-pp::NetAddress_Dev ReplacePort(const pp::InstanceHandle& instance,
-                               const pp::NetAddress_Dev& addr,
-                               uint16_t port) {
+pp::NetAddress ReplacePort(const pp::InstanceHandle& instance,
+                           const pp::NetAddress& addr,
+                           uint16_t port) {
   switch (addr.GetFamily()) {
     case PP_NETADDRESS_FAMILY_IPV4: {
-      PP_NetAddress_IPv4_Dev ipv4_addr;
+      PP_NetAddress_IPv4 ipv4_addr;
       if (!addr.DescribeAsIPv4Address(&ipv4_addr))
         break;
       ipv4_addr.port = ConvertToNetEndian16(port);
-      return pp::NetAddress_Dev(instance, ipv4_addr);
+      return pp::NetAddress(instance, ipv4_addr);
     }
     case PP_NETADDRESS_FAMILY_IPV6: {
-      PP_NetAddress_IPv6_Dev ipv6_addr;
+      PP_NetAddress_IPv6 ipv6_addr;
       if (!addr.DescribeAsIPv6Address(&ipv6_addr))
         break;
       ipv6_addr.port = ConvertToNetEndian16(port);
-      return pp::NetAddress_Dev(instance, ipv6_addr);
+      return pp::NetAddress(instance, ipv6_addr);
     }
     default: {
       PP_NOTREACHED();
     }
   }
-  return pp::NetAddress_Dev();
+  return pp::NetAddress();
 }
 
 }  // namespace
@@ -59,7 +59,7 @@ bool TestUDPSocket::Init() {
   if (!udp_socket_is_available)
     instance_->AppendError("PPB_UDPSocket interface not available");
 
-  bool net_address_is_available = pp::NetAddress_Dev::IsAvailable();
+  bool net_address_is_available = pp::NetAddress::IsAvailable();
   if (!net_address_is_available)
     instance_->AppendError("PPB_NetAddress interface not available");
 
@@ -85,7 +85,7 @@ void TestUDPSocket::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestUDPSocket, SetOption, filter);
 }
 
-std::string TestUDPSocket::GetLocalAddress(pp::NetAddress_Dev* address) {
+std::string TestUDPSocket::GetLocalAddress(pp::NetAddress* address) {
   pp::TCPSocket_Dev socket(instance_);
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(socket.Connect(address_, callback.GetCallback()));
@@ -115,7 +115,7 @@ std::string TestUDPSocket::SetBroadcastOptions(pp::UDPSocket_Dev* socket) {
 }
 
 std::string TestUDPSocket::BindUDPSocket(pp::UDPSocket_Dev* socket,
-                                         const pp::NetAddress_Dev& address) {
+                                         const pp::NetAddress& address) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(socket->Bind(address, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
@@ -125,13 +125,13 @@ std::string TestUDPSocket::BindUDPSocket(pp::UDPSocket_Dev* socket,
 
 std::string TestUDPSocket::LookupPortAndBindUDPSocket(
     pp::UDPSocket_Dev* socket,
-    pp::NetAddress_Dev* address) {
-  pp::NetAddress_Dev base_address;
+    pp::NetAddress* address) {
+  pp::NetAddress base_address;
   ASSERT_SUBTEST_SUCCESS(GetLocalAddress(&base_address));
 
   bool is_free_port_found = false;
   for (uint16_t port = kPortScanFrom; port < kPortScanTo; ++port) {
-    pp::NetAddress_Dev new_address = ReplacePort(instance_, base_address, port);
+    pp::NetAddress new_address = ReplacePort(instance_, base_address, port);
     ASSERT_NE(0, new_address.pp_resource());
     if (BindUDPSocket(socket, new_address).empty()) {
       is_free_port_found = true;
@@ -148,11 +148,11 @@ std::string TestUDPSocket::LookupPortAndBindUDPSocket(
 }
 
 std::string TestUDPSocket::ReadSocket(pp::UDPSocket_Dev* socket,
-                                      pp::NetAddress_Dev* address,
+                                      pp::NetAddress* address,
                                       size_t size,
                                       std::string* message) {
   std::vector<char> buffer(size);
-  TestCompletionCallbackWithOutput<pp::NetAddress_Dev> callback(
+  TestCompletionCallbackWithOutput<pp::NetAddress> callback(
       instance_->pp_instance(), callback_type());
   callback.WaitForResult(
       socket->RecvFrom(&buffer[0], size, callback.GetCallback()));
@@ -166,9 +166,9 @@ std::string TestUDPSocket::ReadSocket(pp::UDPSocket_Dev* socket,
 
 std::string TestUDPSocket::PassMessage(pp::UDPSocket_Dev* target,
                                        pp::UDPSocket_Dev* source,
-                                       const pp::NetAddress_Dev& target_address,
+                                       const pp::NetAddress& target_address,
                                        const std::string& message,
-                                       pp::NetAddress_Dev* recvfrom_address) {
+                                       pp::NetAddress* recvfrom_address) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   int32_t rv = source->SendTo(message.c_str(), message.size(),
                               target_address,
@@ -187,14 +187,14 @@ std::string TestUDPSocket::PassMessage(pp::UDPSocket_Dev* target,
 
 std::string TestUDPSocket::TestReadWrite() {
   pp::UDPSocket_Dev server_socket(instance_), client_socket(instance_);
-  pp::NetAddress_Dev server_address, client_address;
+  pp::NetAddress server_address, client_address;
 
   ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&server_socket,
                                                     &server_address));
   ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&client_socket,
                                                     &client_address));
   const std::string message = "Simple message that will be sent via UDP";
-  pp::NetAddress_Dev recvfrom_address;
+  pp::NetAddress recvfrom_address;
   ASSERT_SUBTEST_SUCCESS(PassMessage(&server_socket, &client_socket,
                                      server_address, message,
                                      &recvfrom_address));
@@ -215,27 +215,27 @@ std::string TestUDPSocket::TestBroadcast() {
   ASSERT_SUBTEST_SUCCESS(SetBroadcastOptions(&server1));
   ASSERT_SUBTEST_SUCCESS(SetBroadcastOptions(&server2));
 
-  PP_NetAddress_IPv4_Dev any_ipv4_address = { 0, { 0, 0, 0, 0 } };
-  pp::NetAddress_Dev any_address(instance_, any_ipv4_address);
+  PP_NetAddress_IPv4 any_ipv4_address = { 0, { 0, 0, 0, 0 } };
+  pp::NetAddress any_address(instance_, any_ipv4_address);
   ASSERT_SUBTEST_SUCCESS(BindUDPSocket(&server1, any_address));
   // Fill port field of |server_address|.
-  pp::NetAddress_Dev server_address = server1.GetBoundAddress();
+  pp::NetAddress server_address = server1.GetBoundAddress();
   ASSERT_NE(0, server_address.pp_resource());
   ASSERT_SUBTEST_SUCCESS(BindUDPSocket(&server2, server_address));
 
-  PP_NetAddress_IPv4_Dev server_ipv4_address;
+  PP_NetAddress_IPv4 server_ipv4_address;
   ASSERT_TRUE(server_address.DescribeAsIPv4Address(&server_ipv4_address));
 
-  PP_NetAddress_IPv4_Dev broadcast_ipv4_address = {
+  PP_NetAddress_IPv4 broadcast_ipv4_address = {
     server_ipv4_address.port, { 0xff, 0xff, 0xff, 0xff }
   };
-  pp::NetAddress_Dev broadcast_address(instance_, broadcast_ipv4_address);
+  pp::NetAddress broadcast_address(instance_, broadcast_ipv4_address);
 
   std::string message;
   const std::string first_message = "first message";
   const std::string second_message = "second_message";
 
-  pp::NetAddress_Dev recvfrom_address;
+  pp::NetAddress recvfrom_address;
   ASSERT_SUBTEST_SUCCESS(PassMessage(&server1, &server2, broadcast_address,
                                      first_message, &recvfrom_address));
   // |first_message| was also received by |server2|.
@@ -286,7 +286,7 @@ std::string TestUDPSocket::TestSetOption() {
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_ERROR_FAILED, callback.result());
 
-  pp::NetAddress_Dev address;
+  pp::NetAddress address;
   ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&socket, &address));
 
   // ADDRESS_REUSE and BROADCAST won't take effect after the socket is bound.

@@ -50,7 +50,7 @@ bool UDPSocket_Dev::IsAvailable() {
   return has_interface<PPB_UDPSocket_Dev_0_1>();
 }
 
-int32_t UDPSocket_Dev::Bind(const NetAddress_Dev& addr,
+int32_t UDPSocket_Dev::Bind(const NetAddress& addr,
                             const CompletionCallback& callback) {
   if (has_interface<PPB_UDPSocket_Dev_0_1>()) {
     return get_interface<PPB_UDPSocket_Dev_0_1>()->Bind(
@@ -59,19 +59,19 @@ int32_t UDPSocket_Dev::Bind(const NetAddress_Dev& addr,
   return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
-NetAddress_Dev UDPSocket_Dev::GetBoundAddress() {
+NetAddress UDPSocket_Dev::GetBoundAddress() {
   if (has_interface<PPB_UDPSocket_Dev_0_1>()) {
-    return NetAddress_Dev(
+    return NetAddress(
         PASS_REF,
         get_interface<PPB_UDPSocket_Dev_0_1>()->GetBoundAddress(pp_resource()));
   }
-  return NetAddress_Dev();
+  return NetAddress();
 }
 
 int32_t UDPSocket_Dev::RecvFrom(
     char* buffer,
     int32_t num_bytes,
-    const CompletionCallbackWithOutput<NetAddress_Dev>& callback) {
+    const CompletionCallbackWithOutput<NetAddress>& callback) {
   if (has_interface<PPB_UDPSocket_Dev_0_1>()) {
     return get_interface<PPB_UDPSocket_Dev_0_1>()->RecvFrom(
         pp_resource(), buffer, num_bytes, callback.output(),
@@ -82,7 +82,7 @@ int32_t UDPSocket_Dev::RecvFrom(
 
 int32_t UDPSocket_Dev::SendTo(const char* buffer,
                               int32_t num_bytes,
-                              const NetAddress_Dev& addr,
+                              const NetAddress& addr,
                               const CompletionCallback& callback) {
   if (has_interface<PPB_UDPSocket_Dev_0_1>()) {
     return get_interface<PPB_UDPSocket_Dev_0_1>()->SendTo(

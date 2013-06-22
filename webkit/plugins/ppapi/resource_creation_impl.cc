@@ -204,13 +204,13 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
 
 PP_Resource ResourceCreationImpl::CreateNetAddressFromIPv4Address(
     PP_Instance instance,
-    const PP_NetAddress_IPv4_Dev* ipv4_addr) {
+    const PP_NetAddress_IPv4* ipv4_addr) {
   return 0;  // Not supported in-process.
 }
 
 PP_Resource ResourceCreationImpl::CreateNetAddressFromIPv6Address(
     PP_Instance instance,
-    const PP_NetAddress_IPv6_Dev* ipv6_addr) {
+    const PP_NetAddress_IPv6* ipv6_addr) {
   return 0;  // Not supported in-process.
 }
 

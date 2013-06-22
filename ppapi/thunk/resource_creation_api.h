@@ -26,8 +26,8 @@
 struct PP_Flash_Menu;
 struct PP_FontDescription_Dev;
 struct PP_BrowserFont_Trusted_Description;
-struct PP_NetAddress_IPv4_Dev;
-struct PP_NetAddress_IPv6_Dev;
+struct PP_NetAddress_IPv4;
+struct PP_NetAddress_IPv6;
 struct PP_NetAddress_Private;
 struct PP_Size;
 
@@ -142,10 +142,10 @@ class ResourceCreationAPI {
                                             PP_Bool init_to_zero) = 0;
   virtual PP_Resource CreateNetAddressFromIPv4Address(
       PP_Instance instance,
-      const PP_NetAddress_IPv4_Dev* ipv4_addr) = 0;
+      const PP_NetAddress_IPv4* ipv4_addr) = 0;
   virtual PP_Resource CreateNetAddressFromIPv6Address(
       PP_Instance instance,
-      const PP_NetAddress_IPv6_Dev* ipv6_addr) = 0;
+      const PP_NetAddress_IPv6* ipv6_addr) = 0;
   virtual PP_Resource CreateNetAddressFromNetAddressPrivate(
       PP_Instance instance,
       const PP_NetAddress_Private& private_addr) = 0;

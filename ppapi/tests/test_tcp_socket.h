@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/cpp/dev/net_address_dev.h"
+#include "ppapi/cpp/net_address.h"
 #include "ppapi/tests/test_case.h"
 
 namespace pp {
@@ -31,7 +31,7 @@ class TestTCPSocket: public TestCase {
   int32_t ReadFirstLineFromSocket(pp::TCPSocket_Dev* socket, std::string* s);
   int32_t WriteStringToSocket(pp::TCPSocket_Dev* socket, const std::string& s);
 
-  pp::NetAddress_Dev addr_;
+  pp::NetAddress addr_;
 };
 
 #endif  // PAPPI_TESTS_TEST_TCP_SOCKET_H_

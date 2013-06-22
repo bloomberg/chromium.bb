@@ -20,10 +20,10 @@ class PPAPI_PROXY_EXPORT NetAddressResource : public PluginResource,
  public:
   NetAddressResource(Connection connection,
                      PP_Instance instance,
-                     const PP_NetAddress_IPv4_Dev& ipv4_addr);
+                     const PP_NetAddress_IPv4& ipv4_addr);
   NetAddressResource(Connection connection,
                      PP_Instance instance,
-                     const PP_NetAddress_IPv6_Dev& ipv6_addr);
+                     const PP_NetAddress_IPv6& ipv6_addr);
   NetAddressResource(Connection connection,
                      PP_Instance instance,
                      const PP_NetAddress_Private& private_addr);
@@ -34,16 +34,16 @@ class PPAPI_PROXY_EXPORT NetAddressResource : public PluginResource,
   virtual thunk::PPB_NetAddress_API* AsPPB_NetAddress_API() OVERRIDE;
 
   // PPB_NetAddress_API implementation.
-  virtual PP_NetAddress_Family_Dev GetFamily() OVERRIDE;
+  virtual PP_NetAddress_Family GetFamily() OVERRIDE;
   virtual PP_Var DescribeAsString(PP_Bool include_port) OVERRIDE;
   virtual PP_Bool DescribeAsIPv4Address(
-      PP_NetAddress_IPv4_Dev* ipv4_addr) OVERRIDE;
+      PP_NetAddress_IPv4* ipv4_addr) OVERRIDE;
   virtual PP_Bool DescribeAsIPv6Address(
-      PP_NetAddress_IPv6_Dev* ipv6_addr) OVERRIDE;
+      PP_NetAddress_IPv6* ipv6_addr) OVERRIDE;
   virtual const PP_NetAddress_Private& GetNetAddressPrivate() OVERRIDE;
 
  private:
-  // TODO(yzshen): Refactor the code so that PPB_NetAddress_Dev resource doesn't
+  // TODO(yzshen): Refactor the code so that PPB_NetAddress resource doesn't
   // use PP_NetAddress_Private as storage type.
   PP_NetAddress_Private address_;
 

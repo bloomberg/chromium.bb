@@ -84,7 +84,7 @@ interface PPB_TCPSocket_Dev {
    *
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
    * socket.
-   * @param[in] addr A <code>PPB_NetAddress_Dev</code> resource.
+   * @param[in] addr A <code>PPB_NetAddress</code> resource.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion.
    *
@@ -110,8 +110,7 @@ interface PPB_TCPSocket_Dev {
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
    * socket.
    *
-   * @return A <code>PPB_NetAddress_Dev</code> resource on success or 0 on
-   * failure.
+   * @return A <code>PPB_NetAddress</code> resource on success or 0 on failure.
    */
   PP_Resource GetLocalAddress([in] PP_Resource tcp_socket);
 
@@ -121,8 +120,7 @@ interface PPB_TCPSocket_Dev {
    * @param[in] tcp_socket A <code>PP_Resource</code> corresponding to a TCP
    * socket.
    *
-   * @return A <code>PPB_NetAddress_Dev</code> resource on success or 0 on
-   * failure.
+   * @return A <code>PPB_NetAddress</code> resource on success or 0 on failure.
    */
   PP_Resource GetRemoteAddress([in] PP_Resource tcp_socket);
 

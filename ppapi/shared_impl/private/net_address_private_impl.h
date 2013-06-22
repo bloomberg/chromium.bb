@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ppapi/c/dev/ppb_net_address_dev.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb_net_address.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
 struct PP_NetAddress_Private;
@@ -37,24 +37,24 @@ class PPAPI_SHARED_EXPORT NetAddressPrivateImpl {
   static std::string DescribeNetAddress(const PP_NetAddress_Private& addr,
                                         bool include_port);
 
-  // Conversion methods to make PPB_NetAddress_Dev resource work with
+  // Conversion methods to make PPB_NetAddress resource work with
   // PP_NetAddress_Private.
-  // TODO(yzshen): Remove them once PPB_NetAddress_Dev resource doesn't use
+  // TODO(yzshen): Remove them once PPB_NetAddress resource doesn't use
   // PP_NetAddress_Private as storage type.
   static void CreateNetAddressPrivateFromIPv4Address(
-      const PP_NetAddress_IPv4_Dev& ipv4_addr,
+      const PP_NetAddress_IPv4& ipv4_addr,
       PP_NetAddress_Private* addr);
   static void CreateNetAddressPrivateFromIPv6Address(
-      const PP_NetAddress_IPv6_Dev& ipv6_addr,
+      const PP_NetAddress_IPv6& ipv6_addr,
       PP_NetAddress_Private* addr);
-  static PP_NetAddress_Family_Dev GetFamilyFromNetAddressPrivate(
+  static PP_NetAddress_Family GetFamilyFromNetAddressPrivate(
       const PP_NetAddress_Private& addr);
   static bool DescribeNetAddressPrivateAsIPv4Address(
       const PP_NetAddress_Private& addr,
-      PP_NetAddress_IPv4_Dev* ipv4_addr);
+      PP_NetAddress_IPv4* ipv4_addr);
   static bool DescribeNetAddressPrivateAsIPv6Address(
       const PP_NetAddress_Private& addr,
-      PP_NetAddress_IPv6_Dev* ipv6_addr);
+      PP_NetAddress_IPv6* ipv6_addr);
 
   static const PP_NetAddress_Private kInvalidNetAddress;
 

@@ -110,7 +110,7 @@ struct PPB_UDPSocket_Dev_0_1 {
    *
    * @param[in] udp_socket A <code>PP_Resource</code> corresponding to a UDP
    * socket.
-   * @param[in] addr A <code>PPB_NetAddress_Dev</code> resource.
+   * @param[in] addr A <code>PPB_NetAddress</code> resource.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion.
    *
@@ -128,8 +128,7 @@ struct PPB_UDPSocket_Dev_0_1 {
    * @param[in] udp_socket A <code>PP_Resource</code> corresponding to a UDP
    * socket.
    *
-   * @return A <code>PPB_NetAddress_Dev</code> resource on success or 0 on
-   * failure.
+   * @return A <code>PPB_NetAddress</code> resource on success or 0 on failure.
    */
   PP_Resource (*GetBoundAddress)(PP_Resource udp_socket);
   /**
@@ -141,8 +140,8 @@ struct PPB_UDPSocket_Dev_0_1 {
    * @param[out] buffer The buffer to store the received data on success. It
    * must be at least as large as <code>num_bytes</code>.
    * @param[in] num_bytes The number of bytes to receive.
-   * @param[out] addr A <code>PPB_NetAddress_Dev</code> resource to store the
-   * source address on success.
+   * @param[out] addr A <code>PPB_NetAddress</code> resource to store the source
+   * address on success.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion.
    *
@@ -161,7 +160,7 @@ struct PPB_UDPSocket_Dev_0_1 {
    * socket.
    * @param[in] buffer The buffer containing the data to send.
    * @param[in] num_bytes The number of bytes to send.
-   * @param[in] addr A <code>PPB_NetAddress_Dev</code> resource holding the
+   * @param[in] addr A <code>PPB_NetAddress</code> resource holding the
    * destination address.
    * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
    * completion.
