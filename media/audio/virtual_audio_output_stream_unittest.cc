@@ -27,10 +27,10 @@ const AudioParameters kParams(
 class MockVirtualAudioInputStream : public VirtualAudioInputStream {
  public:
   explicit MockVirtualAudioInputStream(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop)
+      const scoped_refptr<base::MessageLoopProxy>& worker_loop)
       : VirtualAudioInputStream(
             kParams,
-            message_loop,
+            worker_loop,
             base::Bind(&base::DeletePointer<VirtualAudioInputStream>)) {}
   ~MockVirtualAudioInputStream() {}
 
@@ -87,7 +87,6 @@ TEST_F(VirtualAudioOutputStreamTest, StartStopStartStop) {
 
   VirtualAudioOutputStream* const output_stream = new VirtualAudioOutputStream(
       kParams,
-      audio_message_loop().get(),
       input_stream,
       base::Bind(&base::DeletePointer<VirtualAudioOutputStream>));
 

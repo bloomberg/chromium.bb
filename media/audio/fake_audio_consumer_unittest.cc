@@ -6,6 +6,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "media/audio/audio_buffers_state.h"
+#include "media/audio/audio_parameters.h"
 #include "media/audio/fake_audio_consumer.h"
 #include "media/audio/simple_sources.h"
 #include "testing/gtest/include/gtest/gtest.h"
