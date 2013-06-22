@@ -117,8 +117,6 @@ class DesktopNotificationsTest : public testing::Test {
 #if defined(USE_ASH)
   content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
       webkit_platform_support_;
-
-  scoped_ptr<ActiveDesktopMonitor> active_desktop_monitor_;
 #endif
 
   // Contains the cumulative output of the unit test.
