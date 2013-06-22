@@ -25,4 +25,6 @@ NotificationPrefsManager::NotificationPrefsManager(PrefService* prefs) {
 void NotificationPrefsManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kDesktopNotificationPosition,
                                 BalloonCollection::DEFAULT_POSITION);
+  registry->RegisterBooleanPref(prefs::kMessageCenterShowedFirstRunBalloon,
+                                false);
 }

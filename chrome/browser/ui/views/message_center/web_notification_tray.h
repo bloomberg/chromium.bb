@@ -62,6 +62,13 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 
   // StatusIconObserver implementation.
   virtual void OnStatusIconClicked() OVERRIDE;
+#if defined(OS_WIN)
+  virtual void OnBalloonClicked() OVERRIDE;
+
+  // This shows a platform-specific balloon informing the user of the existence
+  // of the message center in the status tray area.
+  void DisplayFirstRunBalloon();
+#endif
 
   // Changes the icon and hovertext based on number of unread notifications.
   void UpdateStatusIcon();

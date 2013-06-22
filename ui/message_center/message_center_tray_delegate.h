@@ -38,6 +38,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterTrayDelegate {
 
   // Display the notifier settings as a bubble.
   virtual bool ShowNotifierSettings() = 0;
+
+  // Show a platform-specific UI that informs the user how to open the message
+  // center.
+  virtual void DisplayFirstRunBalloon() {};
 };
 
 }  // namespace message_center

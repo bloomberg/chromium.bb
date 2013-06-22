@@ -56,6 +56,9 @@ class StatusIcon {
 
   // Dispatches a click event to the observers.
   void DispatchClickEvent();
+#if defined(OS_WIN)
+  void DispatchBalloonClickEvent();
+#endif
 
  protected:
   // Invoked after a call to SetContextMenu() to let the platform-specific

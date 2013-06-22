@@ -403,6 +403,8 @@ extern const char kNaturalScrollHelpURL[];
 extern const char kLearnMoreEnterpriseURL[];
 #endif
 
+extern const char kNotificationsHelpURL[];
+
 // "Debug" pages which are dangerous and not for general consumption.
 extern const char* const kChromeDebugURLs[];
 extern const int kNumberOfChromeDebugURLs;

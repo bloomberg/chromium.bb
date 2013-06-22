@@ -2164,6 +2164,11 @@ const char kDisableCloudPolicyOnSignin[] =
 // Indicates that factory reset was requested from options page.
 const char kFactoryResetRequested[] = "FactoryResetRequested";
 
+// Boolean recording whether we have showed a balloon that calls out the message
+// center for desktop notifications.
+const char kMessageCenterShowedFirstRunBalloon[] =
+    "message_center.showed_first_run_balloon";
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

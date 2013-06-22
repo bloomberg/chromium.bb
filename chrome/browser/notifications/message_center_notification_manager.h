@@ -9,6 +9,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_member.h"
+#include "base/time.h"
+#include "base/timer.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager_impl.h"
@@ -18,6 +22,7 @@
 
 class MessageCenterSettingsController;
 class Notification;
+class PrefService;
 class Profile;
 
 // This class extends NotificationUIManagerImpl and delegates actual display
@@ -28,7 +33,8 @@ class MessageCenterNotificationManager
       public message_center::MessageCenterObserver {
  public:
   explicit MessageCenterNotificationManager(
-      message_center::MessageCenter* message_center);
+      message_center::MessageCenter* message_center,
+      PrefService* local_state);
   virtual ~MessageCenterNotificationManager();
 
   // NotificationUIManager
@@ -57,6 +63,22 @@ class MessageCenterNotificationManager
   virtual void OnNotificationRemoved(const std::string& notification_id,
                                      bool by_user) OVERRIDE;
   virtual void OnNotificationCenterClosed() OVERRIDE;
+  virtual void OnNotificationUpdated(const std::string& notification_id)
+      OVERRIDE;
+
+#if defined(OS_WIN)
+  // Called when the pref changes for the first run balloon. The first run
+  // balloon is only displayed on Windows, since the visibility of the tray
+  // icon is limited.
+  void DisplayFirstRunBalloon();
+
+  void SetFirstRunTimeoutForTest(base::TimeDelta timeout);
+  bool FirstRunTimerIsActive() const;
+#endif
+
+  // Takes ownership of |delegate|.
+  void SetMessageCenterTrayDelegateForTest(
+      message_center::MessageCenterTrayDelegate* delegate);
 
  private:
   class ImageDownloadsObserver {
@@ -157,8 +179,6 @@ class MessageCenterNotificationManager
   typedef std::map<std::string, ProfileNotification*> NotificationMap;
   NotificationMap profile_notifications_;
 
-  scoped_ptr<MessageCenterSettingsController> settings_controller_;
-
   // Helpers that add/remove the notification from local map and MessageCenter.
   // They take ownership of profile_notification object.
   void AddProfileNotification(ProfileNotification* profile_notification);
@@ -168,6 +188,30 @@ class MessageCenterNotificationManager
   // Returns the ProfileNotification for the |id|, or NULL if no such
   // notification is found.
   ProfileNotification* FindProfileNotification(const std::string& id) const;
+
+#if defined(OS_WIN)
+  // This function is run on update to ensure that the notification balloon is
+  // shown only when there are no popups present.
+  void CheckFirstRunTimer();
+
+  // |first_run_pref_| is used to keep track of whether we've ever shown the
+  // first run balloon before, even across restarts.
+  BooleanPrefMember first_run_pref_;
+
+  // The timer after which we will show the first run balloon.  This timer is
+  // restarted every time the message center is closed and every time the last
+  // popup disappears from the screen.
+  base::OneShotTimer<MessageCenterNotificationManager> first_run_balloon_timer_;
+
+  // The first-run balloon will be shown |first_run_idle_timeout_| after all
+  // popups go away and the user has notifications in the message center.
+  base::TimeDelta first_run_idle_timeout_;
+
+  // Provides weak pointers for the purpose of the first run timer.
+  base::WeakPtrFactory<MessageCenterNotificationManager> weak_factory_;
+#endif
+
+  scoped_ptr<MessageCenterSettingsController> settings_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterNotificationManager);
 };

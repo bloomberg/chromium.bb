@@ -25,10 +25,26 @@
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/notifier_settings.h"
 
+namespace {
+// The first-run balloon will be shown |kFirstRunIdleDelaySeconds| after all
+// popups go away and the user has notifications in the message center.
+const int kFirstRunIdleDelaySeconds = 1;
+}  // namespace
+
 MessageCenterNotificationManager::MessageCenterNotificationManager(
-    message_center::MessageCenter* message_center)
+    message_center::MessageCenter* message_center,
+    PrefService* local_state)
     : message_center_(message_center),
+#if defined(OS_WIN)
+      first_run_idle_timeout_(
+          base::TimeDelta::FromSeconds(kFirstRunIdleDelaySeconds)),
+      weak_factory_(this),
+#endif
       settings_controller_(new MessageCenterSettingsController) {
+#if defined(OS_WIN)
+  first_run_pref_.Init(prefs::kMessageCenterShowedFirstRunBalloon, local_state);
+#endif
+
   message_center_->SetDelegate(this);
   message_center_->AddObserver(this);
   message_center_->SetNotifierSettingsProvider(settings_controller_.get());
@@ -44,7 +60,6 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {
   message_center_->RemoveObserver(this);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // NotificationUIManager
@@ -270,12 +285,31 @@ void MessageCenterNotificationManager::OnNotificationRemoved(
       profile_notifications_.find(notification_id);
   if (iter != profile_notifications_.end())
     RemoveProfileNotification(iter->second, by_user);
+
+#if defined(OS_WIN)
+  CheckFirstRunTimer();
+#endif
 }
 
 void MessageCenterNotificationManager::OnNotificationCenterClosed() {
   // When the center is open it halts all notifications, so we need to listen
   // for events indicating it's been closed.
   CheckAndShowNotifications();
+#if defined(OS_WIN)
+  CheckFirstRunTimer();
+#endif
+}
+
+void MessageCenterNotificationManager::OnNotificationUpdated(
+    const std::string& notification_id) {
+#if defined(OS_WIN)
+  CheckFirstRunTimer();
+#endif
+}
+
+void MessageCenterNotificationManager::SetMessageCenterTrayDelegateForTest(
+    message_center::MessageCenterTrayDelegate* delegate) {
+  tray_.reset(delegate);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

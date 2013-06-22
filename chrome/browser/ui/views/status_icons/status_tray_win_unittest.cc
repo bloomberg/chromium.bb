@@ -4,21 +4,34 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_win.h"
 
+#include <commctrl.h>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 #include "grit/chrome_unscaled_resources.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 
-class SkBitmap;
-
-class MockStatusIconObserver : public StatusIconObserver {
+class FakeStatusIconObserver : public StatusIconObserver {
  public:
-  MOCK_METHOD0(OnStatusIconClicked, void());
+  FakeStatusIconObserver()
+      : balloon_clicked_(false),
+        status_icon_click_count_(0) {}
+  virtual void OnStatusIconClicked() {
+    ++status_icon_click_count_;
+  }
+  virtual void OnBalloonClicked() { balloon_clicked_ = true; }
+  bool balloon_clicked() const { return balloon_clicked_; }
+  size_t status_icon_click_count() const {
+    return status_icon_click_count_;
+  }
+
+ private:
+  size_t status_icon_click_count_;
+  bool balloon_clicked_;
 };
 
 TEST(StatusTrayWinTest, CreateTray) {
@@ -46,13 +59,26 @@ TEST(StatusTrayWinTest, ClickOnIcon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayWin tray;
   StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon());
-  MockStatusIconObserver observer;
+  FakeStatusIconObserver observer;
   icon->AddObserver(&observer);
-  EXPECT_CALL(observer, OnStatusIconClicked());
   // Mimic a click.
   tray.WndProc(NULL, icon->message_id(), icon->icon_id(), WM_LBUTTONDOWN);
   // Mimic a right-click - observer should not be called.
   tray.WndProc(NULL, icon->message_id(), icon->icon_id(), WM_RBUTTONDOWN);
+  EXPECT_EQ(1, observer.status_icon_click_count());
+  icon->RemoveObserver(&observer);
+}
+
+TEST(StatusTrayWinTest, ClickOnBalloon) {
+  // Create an icon, send a fake click event, make sure observer is called.
+  StatusTrayWin tray;
+  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon());
+  FakeStatusIconObserver observer;
+  icon->AddObserver(&observer);
+  // Mimic a click.
+  tray.WndProc(
+      NULL, icon->message_id(), icon->icon_id(), TB_INDETERMINATE);
+  EXPECT_TRUE(observer.balloon_clicked());
   icon->RemoveObserver(&observer);
 }
 #endif  // !defined(USE_AURA)

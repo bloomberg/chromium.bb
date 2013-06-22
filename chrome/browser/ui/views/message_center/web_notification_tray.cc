@@ -30,10 +30,6 @@
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN)
-#include "ui/base/win/hwnd_util.h"
-#endif
-
 namespace {
 
 // Tray constants

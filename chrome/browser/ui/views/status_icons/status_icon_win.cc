@@ -63,6 +63,11 @@ void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
       ui::MENU_SOURCE_MOUSE, views::MenuRunner::HAS_MNEMONICS));
 }
 
+void StatusIconWin::HandleBalloonClickEvent() {
+  if (HasObservers())
+    DispatchBalloonClickEvent();
+}
+
 void StatusIconWin::ResetIcon() {
   NOTIFYICONDATA icon_data;
   InitIconData(&icon_data);

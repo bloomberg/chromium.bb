@@ -492,6 +492,9 @@ const char kLearnMoreEnterpriseURL[] =
     "https://support.google.com/chromeos/bin/answer.py?answer=2535613";
 #endif
 
+const char kNotificationsHelpURL[] =
+    "https://support.google.com/chrome/?p=ui_notifications";
+
 const char* const kChromeDebugURLs[] = {
   content::kChromeUICrashURL,
   content::kChromeUIKillURL,

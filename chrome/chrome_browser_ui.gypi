@@ -1804,6 +1804,7 @@
         'browser/ui/views/message_center/notification_bubble_wrapper.cc',
         'browser/ui/views/message_center/web_notification_tray.h',
         'browser/ui/views/message_center/web_notification_tray.cc',
+        'browser/ui/views/message_center/web_notification_tray_win.cc',
         'browser/ui/views/native_focus_tracker_views.cc',
         'browser/ui/views/native_focus_tracker_views.h',
         'browser/ui/views/native_focus_tracker_views_aura.cc',

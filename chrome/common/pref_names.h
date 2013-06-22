@@ -833,6 +833,8 @@ extern const char kDisableCloudPolicyOnSignin[];
 
 extern const char kFactoryResetRequested[];
 
+extern const char kMessageCenterShowedFirstRunBalloon[];
+
 extern const char kRecoveryComponentVersion[];
 extern const char kComponentUpdaterState[];
 

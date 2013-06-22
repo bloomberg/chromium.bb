@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/status_icons/status_tray_win.h"
 
+#include <commctrl.h>
+
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 #include "chrome/common/chrome_constants.h"
@@ -68,22 +70,32 @@ LRESULT CALLBACK StatusTrayWin::WndProc(HWND hwnd,
     }
     return TRUE;
   } else if (message == kStatusIconMessage) {
+    StatusIconWin* win_icon = NULL;
+
+    // Find the selected status icon.
+    for (StatusIcons::const_iterator i(status_icons().begin());
+         i != status_icons().end();
+         ++i) {
+      StatusIconWin* current_win_icon = static_cast<StatusIconWin*>(*i);
+      if (current_win_icon->icon_id() == wparam) {
+        win_icon = current_win_icon;
+        break;
+      }
+    }
+
     switch (lparam) {
+      case TB_INDETERMINATE:
+        win_icon->HandleBalloonClickEvent();
+        return TRUE;
+
       case WM_LBUTTONDOWN:
       case WM_RBUTTONDOWN:
       case WM_CONTEXTMENU:
         // Walk our icons, find which one was clicked on, and invoke its
         // HandleClickEvent() method.
-        for (StatusIcons::const_iterator i(status_icons().begin());
-             i != status_icons().end(); ++i) {
-          StatusIconWin* win_icon = static_cast<StatusIconWin*>(*i);
-          if (win_icon->icon_id() == wparam) {
-            gfx::Point cursor_pos(
-                gfx::Screen::GetNativeScreen()->GetCursorScreenPoint());
-            win_icon->HandleClickEvent(cursor_pos, lparam == WM_LBUTTONDOWN);
-            break;
-          }
-        }
+        gfx::Point cursor_pos(
+            gfx::Screen::GetNativeScreen()->GetCursorScreenPoint());
+        win_icon->HandleClickEvent(cursor_pos, lparam == WM_LBUTTONDOWN);
         return TRUE;
     }
   }

@@ -1203,6 +1203,7 @@
         'browser/notifications/fake_balloon_view.h',
         'browser/notifications/message_center_notification_manager.cc',
         'browser/notifications/message_center_notification_manager.h',
+        'browser/notifications/message_center_notification_manager_win.cc',
         'browser/notifications/message_center_settings_controller.cc',
         'browser/notifications/message_center_settings_controller.h',
         'browser/notifications/notification.cc',

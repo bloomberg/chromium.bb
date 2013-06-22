@@ -26,7 +26,7 @@ bool NotificationUIManager::DelegatesToMessageCenter() {
 NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   if (DelegatesToMessageCenter())
     return new MessageCenterNotificationManager(
-        g_browser_process->message_center());
+        g_browser_process->message_center(), local_state);
 
   BalloonNotificationUIManager* balloon_manager =
       new BalloonNotificationUIManager(local_state);

@@ -901,6 +901,16 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
           <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires that you read and accept the following Terms of Service before using this device. These terms do not expand, modify or limit the Google Chrome OS Terms.
         </message>
       </if>
+
+      <!-- Chrome Notifications center -->
+      <if expr="is_win">
+        <message name="IDS_MESSAGE_CENTER_BALLOON_TITLE" desc="Title of the first run notification ballon describing the notification center.">
+          Chrome Notification Center
+        </message>
+        <message name="IDS_MESSAGE_CENTER_BALLOON_TEXT" desc="Body text for the the first run notification ballon describing the notification center.">
+          You can see all your notifications from Chrome apps, extensions, and websites here.
+        </message>
+      </if>
     </messages>
   </release>
 </grit>
