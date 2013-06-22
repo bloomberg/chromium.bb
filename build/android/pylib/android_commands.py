@@ -178,8 +178,10 @@ def _ComputeFileListHash(md5sum_output):
 
 def _HasAdbPushSucceeded(command_output):
   """Returns whether adb push has succeeded from the provided output."""
+  # TODO(frankf): We should look at the return code instead of the command
+  # output for many of the commands in this file.
   if not command_output:
-    return False
+    return True
   # Success looks like this: "3035 KB/s (12512056 bytes in 4.025s)"
   # Errors look like this: "failed to copy  ... "
   if not re.search('^[0-9]', command_output.splitlines()[-1]):
