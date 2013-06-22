@@ -21,27 +21,43 @@ kb-keyboard {
 
 kb-key {
   background-color: #444444;
-  border-top: 1px solid #666666;
-  border-radius: 3px;
+  border-top: 2px solid #555555;
+  border-radius: 1px;
   color: #ffffff;
   font-family: sans-serif;
-  font-weight: 100;
+  font-weight: 600;
   margin-left: 3px;
 }
 
 kb-key.dark {
   background-color: #333333;
+  border-top: 2px solid #444444;
+}
+
+/* Left and right-side special keys with a character letter next to them need
+ * additional padding.
+ * */
+kb-key.padded-left-special {
+  margin-right: 2px;
+}
+
+kb-key.padded-right-special {
+  margin-left: 5px;
+}
+
+kb-row.top {
+  margin-top: 5px !important;
 }
 
 #upper .left-shift,
 #upper .right-shift,
 .active {
   background-color: #acacac !important;
-  border-top: 1px solid rgba(125,125,125,0.5);
+  border-top: 2px solid rgba(125,125,125,0.5) !important;
   /* Do not use box shadow until performance improves
    * http://code.google.com/p/chromium/issues/detail?id=99045
-  box-shadow: 0px 0px 15px #fff;
-  */
+   * box-shadow: 0px 0px 15px #fff;
+   * */
 }
 
 .at,
@@ -90,7 +106,8 @@ kb-key.dark {
 .right-more,
 .symbol,
 .moddown.shift {
-  font-size: 80%;
+  font-size: 55%;
+  font-weight: 200;
 }
 
 .mic {
@@ -99,4 +116,9 @@ kb-key.dark {
 
 .audio .mic {
   background-image: url('images/mic-green.svg');
+}
+
+.half-key-spacer {
+  -webkit-box-flex: 0.5;
+  margin-left: 4px;
 }
