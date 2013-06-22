@@ -251,7 +251,17 @@ bool WidevineCdmComponentInstaller::Install(
 
 bool WidevineCdmComponentInstaller::GetInstalledFile(
     const std::string& file, base::FilePath* installed_file) {
-  return false;
+  // Only the CDM is component-updated.
+  if (file != kWidevineCdmFileName)
+    return false;
+
+  if (current_version_.Equals(base::Version(kNullVersion)))
+    return false;  // No CDM has been installed yet.
+
+  *installed_file =
+      GetWidevineCdmBaseDirectory().AppendASCII(current_version_.GetString())
+          .AppendASCII(kWidevineCdmFileName);
+  return true;
 }
 
 void FinishWidevineCdmUpdateRegistration(ComponentUpdateService* cus,
