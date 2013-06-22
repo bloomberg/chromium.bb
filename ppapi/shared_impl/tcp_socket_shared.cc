@@ -44,9 +44,13 @@ void TCPSocketShared::OnConnectCompleted(
     int32_t result,
     const PP_NetAddress_Private& local_addr,
     const PP_NetAddress_Private& remote_addr) {
+  // It is possible that |connect_callback_| is pending while
+  // |connection_state_| is not BEFORE_CONNECT: DisconnectImpl() has been
+  // called, but a ConnectCompleted notification came earlier than the task to
+  // abort |connect_callback_|. We don't want to update |connection_state_| or
+  // other members in that case.
   if (connection_state_ != BEFORE_CONNECT ||
       !TrackedCallback::IsPending(connect_callback_)) {
-    NOTREACHED();
     return;
   }
 
@@ -62,9 +66,13 @@ void TCPSocketShared::OnConnectCompleted(
 void TCPSocketShared::OnSSLHandshakeCompleted(
     bool succeeded,
     const PPB_X509Certificate_Fields& certificate_fields) {
+  // It is possible that |ssl_handshake_callback_| is pending while
+  // |connection_state_| is not CONNECT: DisconnectImpl() has been
+  // called, but a SSLHandshakeCompleted notification came earlier than the task
+  // to abort |ssl_handshake_callback_|. We don't want to update
+  // |connection_state_| or other members in that case.
   if (connection_state_ != CONNECTED ||
       !TrackedCallback::IsPending(ssl_handshake_callback_)) {
-    NOTREACHED();
     return;
   }
 
@@ -87,10 +95,12 @@ void TCPSocketShared::OnSSLHandshakeCompleted(
 
 void TCPSocketShared::OnReadCompleted(int32_t result,
                                       const std::string& data) {
-  if (!TrackedCallback::IsPending(read_callback_) || !read_buffer_) {
-    NOTREACHED();
+  // It is possible that |read_callback_| is pending while |read_buffer_| is
+  // NULL: DisconnectImpl() has been called, but a ReadCompleted notification
+  // came earlier than the task to abort |read_callback_|. We shouldn't access
+  // the buffer in that case. The user may have released it.
+  if (!TrackedCallback::IsPending(read_callback_) || !read_buffer_)
     return;
-  }
 
   result = OverridePPError(result);
   bool succeeded = result == PP_OK;
@@ -107,10 +117,8 @@ void TCPSocketShared::OnReadCompleted(int32_t result,
 }
 
 void TCPSocketShared::OnWriteCompleted(int32_t result) {
-  if (!TrackedCallback::IsPending(write_callback_)) {
-    NOTREACHED();
+  if (!TrackedCallback::IsPending(write_callback_))
     return;
-  }
 
   result = OverridePPError(result);
   write_callback_->Run(result);

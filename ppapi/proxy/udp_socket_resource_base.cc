@@ -212,6 +212,9 @@ void UDPSocketResourceBase::CloseImpl() {
   PostAbortIfNecessary(&bind_callback_);
   PostAbortIfNecessary(&recvfrom_callback_);
   PostAbortIfNecessary(&sendto_callback_);
+
+  read_buffer_ = NULL;
+  bytes_to_read_ = -1;
 }
 
 void UDPSocketResourceBase::PostAbortIfNecessary(
@@ -230,10 +233,13 @@ void UDPSocketResourceBase::OnPluginMsgSetOptionReply(
 void UDPSocketResourceBase::OnPluginMsgBindReply(
     const ResourceMessageReplyParams& params,
     const PP_NetAddress_Private& bound_addr) {
-  if (!TrackedCallback::IsPending(bind_callback_)) {
-    NOTREACHED();
+  // It is possible that |bind_callback_| is pending while |closed_| is true:
+  // CloseImpl() has been called, but a BindReply came earlier than the task to
+  // abort |bind_callback_|. We don't want to update |bound_| or |bound_addr_|
+  // in that case.
+  if (!TrackedCallback::IsPending(bind_callback_) || closed_)
     return;
-  }
+
   if (params.result() == PP_OK)
     bound_ = true;
   bound_addr_ = bound_addr;
@@ -245,10 +251,13 @@ void UDPSocketResourceBase::OnPluginMsgRecvFromReply(
     const ResourceMessageReplyParams& params,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
-  if (!TrackedCallback::IsPending(recvfrom_callback_)) {
-    NOTREACHED();
+  // It is possible that |recvfrom_callback_| is pending while |read_buffer_| is
+  // NULL: CloseImpl() has been called, but a RecvFromReply came earlier than
+  // the task to abort |recvfrom_callback_|. We shouldn't access the buffer in
+  // that case. The user may have released it.
+  if (!TrackedCallback::IsPending(recvfrom_callback_) || !read_buffer_)
     return;
-  }
+
   int32_t result = params.result();
   if (result == PP_OK && output_addr) {
     thunk::EnterResourceCreationNoLock enter(pp_instance());
@@ -279,10 +288,9 @@ void UDPSocketResourceBase::OnPluginMsgRecvFromReply(
 void UDPSocketResourceBase::OnPluginMsgSendToReply(
     const ResourceMessageReplyParams& params,
     int32_t bytes_written) {
-  if (!TrackedCallback::IsPending(sendto_callback_)) {
-    NOTREACHED();
+  if (!TrackedCallback::IsPending(sendto_callback_))
     return;
-  }
+
   if (params.result() == PP_OK)
     sendto_callback_->Run(bytes_written);
   else
