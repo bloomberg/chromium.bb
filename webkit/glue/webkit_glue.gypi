@@ -203,12 +203,12 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
-        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/ui/ui.gyp:ui',
+        '<(DEPTH)/url/url.gyp:url_lib',
         'glue_common',
         'webkit_common',
       ],

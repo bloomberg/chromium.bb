@@ -28,7 +28,6 @@
         '../ui/snapshot/snapshot.gyp:*',
         '../ui/ui.gyp:*',
         '../url/url.gyp:*',
-        'temp_gyp/googleurl.gyp:*',
       ],
       'conditions': [
         ['OS!="ios"', {
