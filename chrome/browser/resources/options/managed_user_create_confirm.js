@@ -52,21 +52,34 @@ cr.define('options', function() {
      * @param {Object} info An object of the form:
      *     info = {
      *       name: "Profile Name",
-     *       filePath: "/path/to/profile/data/on/disk"
+     *       filePath: "/path/to/profile/data/on/disk",
      *       isManaged: (true|false)
+     *       custodianEmail: "example@gmail.com"
      *     };
      * @private
      */
     setProfileInfo_: function(info) {
+      function HTMLEscape(original) {
+        return original.replace(/&/g, '&amp;')
+                       .replace(/</g, '&lt;')
+                       .replace(/>/g, '&gt;')
+                       .replace(/"/g, '&quot;')
+                       .replace(/'/g, '&#39;');
+      }
+
       this.profileInfo_ = info;
       $('managed-user-created-title').textContent =
           loadTimeData.getStringF('managedUserCreatedTitle', info.name);
-      $('managed-user-created-text').textContent =
-          loadTimeData.getStringF('managedUserCreatedText',
-                                  info.name,
-                                  loadTimeData.getString('custodianEmail'));
       $('managed-user-created-switch').textContent =
           loadTimeData.getStringF('managedUserCreatedSwitch', info.name);
+
+      // HTML-escape the user-supplied strings before putting them into
+      // innerHTML. This is probably excessive for the email address, but
+      // belt-and-suspenders is cheap here.
+      $('managed-user-created-text').innerHTML =
+          loadTimeData.getStringF('managedUserCreatedText',
+                                  HTMLEscape(info.name),
+                                  HTMLEscape(info.custodianEmail));
     },
   };
 

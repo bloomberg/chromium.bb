@@ -92,6 +92,8 @@ void ManageProfileHandler::GetLocalizedValues(
     { "manageProfilesDuplicateNameError",
         IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR },
     { "manageProfilesIconLabel", IDS_PROFILES_MANAGE_ICON_LABEL },
+    { "manageProfilesManagedSignedInLabel",
+    IDS_PROFILES_CREATE_MANAGED_SIGNED_IN_LABEL },
     { "manageProfilesManagedNotSignedInLabel",
         IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LABEL },
     { "manageProfilesManagedNotSignedInLink",
@@ -394,14 +396,9 @@ void ManageProfileHandler::RequestSignedInText(const base::ListValue* args) {
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   string16 username = UTF8ToUTF16(manager->GetAuthenticatedUsername());
-  string16 text = string16();
-  if (!username.empty()) {
-     text = l10n_util::GetStringFUTF16(
-         IDS_PROFILES_CREATE_MANAGED_SIGNED_IN_LABEL, username);
-  }
-  StringValue text_value(text);
+  StringValue username_value(username);
   web_ui()->CallJavascriptFunction("CreateProfileOverlay.updateSignedInStatus",
-                                   text_value);
+                                   username_value);
 }
 
 void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {

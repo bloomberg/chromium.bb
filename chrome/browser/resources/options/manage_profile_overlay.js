@@ -417,6 +417,10 @@ cr.define('options', function() {
     // Inherit from ManageProfileOverlay.
     __proto__: ManageProfileOverlay.prototype,
 
+    // The signed-in email address of the current profile, or empty if they're
+    // not signed in.
+    signedInEmail_: '',
+
     /**
      * Configures the overlay to the "create user" mode.
      * @override
@@ -527,6 +531,7 @@ cr.define('options', function() {
       this.updateCreateInProgress_(false);
       OptionsPage.closeOverlay();
       if (profileInfo.isManaged) {
+        profileInfo.custodianEmail = this.signedInEmail_;
         ManagedUserCreateConfirmOverlay.setProfileInfo(profileInfo);
         OptionsPage.navigateToPage('managedUserCreateConfirm');
       }
@@ -535,19 +540,23 @@ cr.define('options', function() {
     /**
      * Updates the signed-in or not-signed-in UI when in create mode. Called by
      * the handler in response to the 'requestSignedInText' message.
-     * @param {string} text The text to show for a signed-in user. An empty
-     *     string indicates that the user is not signed in.
+     * @param {string} email The email address of the currently signed-in user.
+     *     An empty string indicates that the user is not signed in.
      * @private
      */
-    updateSignedInStatus_: function(text) {
-      var isSignedIn = text !== '';
+    updateSignedInStatus_: function(email) {
+      this.signedInEmail_ = email;
+      var isSignedIn = email !== '';
       $('create-profile-managed-signed-in').hidden = !isSignedIn;
       $('create-profile-managed-not-signed-in').hidden = isSignedIn;
       $('create-profile-managed').disabled = !isSignedIn;
-      if (!isSignedIn)
+      if (isSignedIn) {
+        $('create-profile-managed-signed-in-label').textContent =
+            loadTimeData.getStringF(
+                'manageProfilesManagedSignedInLabel', email);
+      } else {
         $('create-profile-managed').checked = false;
-
-      $('create-profile-managed-signed-in-label').textContent = text;
+      }
     },
   };
 
