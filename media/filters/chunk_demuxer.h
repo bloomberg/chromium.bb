@@ -62,7 +62,22 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   virtual base::TimeDelta GetStartTime() const OVERRIDE;
 
   // Methods used by an external object to control this demuxer.
+  //
+  // Indicates that a new Seek() call is on its way. Any pending Reads on the
+  // DemuxerStream objects should be aborted immediately inside this call and
+  // future Read calls should return kAborted until the Seek() call occurs.
+  // This method MUST ALWAYS be called before Seek() is called to signal that
+  // the next Seek() call represents the seek point we actually want to return
+  // data for.
   void StartWaitingForSeek();
+
+  // Indicates that a Seek() call is on its way, but another seek has been
+  // requested that will override the impending Seek() call. Any pending Reads
+  // on the DemuxerStream objects should be aborted immediately inside this call
+  // and future Read calls should return kAborted until the next
+  // StartWaitingForSeek() call. This method also arranges for the next Seek()
+  // call received before a StartWaitingForSeek() call to immediately call its
+  // callback without waiting for any data.
   void CancelPendingSeek();
 
   // Registers a new |id| to use for AppendData() calls. |type| indicates
@@ -176,6 +191,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   mutable base::Lock lock_;
   State state_;
+  bool cancel_next_seek_;
 
   DemuxerHost* host_;
   base::Closure open_cb_;
