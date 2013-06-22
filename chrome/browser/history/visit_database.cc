@@ -118,6 +118,39 @@ bool VisitDatabase::FillVisitVector(sql::Statement& statement,
   return statement.Succeeded();
 }
 
+// static
+bool VisitDatabase::FillVisitVectorWithOptions(sql::Statement& statement,
+                                               const QueryOptions& options,
+                                               VisitVector* visits) {
+  std::set<URLID> found_urls;
+
+  // Keeps track of the day that |found_urls| is holding the URLs for, in order
+  // to handle removing per-day duplicates.
+  base::Time found_urls_midnight;
+
+  while (statement.Step()) {
+    VisitRow visit;
+    FillVisitRow(statement, &visit);
+
+    if (options.duplicate_policy != QueryOptions::KEEP_ALL_DUPLICATES) {
+      if (options.duplicate_policy == QueryOptions::REMOVE_DUPLICATES_PER_DAY &&
+          found_urls_midnight != visit.visit_time.LocalMidnight()) {
+        found_urls.clear();
+        found_urls_midnight = visit.visit_time.LocalMidnight();
+      }
+      // Make sure the URL this visit corresponds to is unique.
+      if (found_urls.find(visit.url_id) != found_urls.end())
+        continue;
+      found_urls.insert(visit.url_id);
+    }
+
+    if (static_cast<int>(visits->size()) >= options.EffectiveMaxCount())
+      return true;
+    visits->push_back(visit);
+  }
+  return false;
+}
+
 VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO visits "
@@ -245,6 +278,31 @@ bool VisitDatabase::GetIndexedVisitsForURL(URLID url_id, VisitVector* visits) {
   return FillVisitVector(statement, visits);
 }
 
+bool VisitDatabase::GetVisitsForURLWithOptions(URLID url_id,
+                                               const QueryOptions& options,
+                                               VisitVector* visits) {
+  visits->clear();
+
+  if (options.REMOVE_ALL_DUPLICATES) {
+    VisitRow visit_row;
+    VisitID visit_id = GetMostRecentVisitForURL(url_id, &visit_row);
+    if (visit_id && options.EffectiveMaxCount() != 0) {
+      visits->push_back(visit_row);
+    }
+    return options.EffectiveMaxCount() == 0 && visit_id;
+  } else {
+    sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+        "SELECT" HISTORY_VISIT_ROW_FIELDS
+        "FROM visits "
+        "WHERE url=? AND visit_time >= ? AND visit_time < ? "
+        "ORDER BY visit_time DESC"));
+    statement.BindInt64(0, url_id);
+    statement.BindInt64(1, options.EffectiveBeginTime());
+    statement.BindInt64(2, options.EffectiveEndTime());
+
+    return FillVisitVectorWithOptions(statement, options, visits);
+  }
+}
 
 bool VisitDatabase::GetVisitsForTimes(const std::vector<base::Time>& times,
                                       VisitVector* visits) {
@@ -333,33 +391,7 @@ bool VisitDatabase::GetVisibleVisitsInRange(const QueryOptions& options,
   statement.BindInt(5, content::PAGE_TRANSITION_MANUAL_SUBFRAME);
   statement.BindInt(6, content::PAGE_TRANSITION_KEYWORD_GENERATED);
 
-  std::set<URLID> found_urls;
-
-  // Keeps track of the day that |found_urls| is holding the URLs for, in order
-  // to handle removing per-day duplicates.
-  base::Time found_urls_midnight;
-
-  while (statement.Step()) {
-    VisitRow visit;
-    FillVisitRow(statement, &visit);
-
-    if (options.duplicate_policy != QueryOptions::KEEP_ALL_DUPLICATES) {
-      if (options.duplicate_policy == QueryOptions::REMOVE_DUPLICATES_PER_DAY &&
-          found_urls_midnight != visit.visit_time.LocalMidnight()) {
-        found_urls.clear();
-        found_urls_midnight = visit.visit_time.LocalMidnight();
-      }
-      // Make sure the URL this visit corresponds to is unique.
-      if (found_urls.find(visit.url_id) != found_urls.end())
-        continue;
-      found_urls.insert(visit.url_id);
-    }
-
-    if (static_cast<int>(visits->size()) >= options.EffectiveMaxCount())
-      return true;
-    visits->push_back(visit);
-  }
-  return false;
+  return FillVisitVectorWithOptions(statement, options, visits);
 }
 
 void VisitDatabase::GetDirectVisitsDuringTimes(const VisitFilter& time_filter,

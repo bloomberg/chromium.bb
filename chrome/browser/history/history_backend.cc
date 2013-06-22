@@ -1375,8 +1375,14 @@ void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
       // if (archived_db_.get() &&
       //     expirer_.GetCurrentArchiveTime() - TimeDelta::FromDays(7)) {
     } else {
-      // Full text history query.
-      QueryHistoryFTS(text_query, options, &request->value);
+      // Text history query.
+      QueryHistoryText(db_.get(), db_.get(), text_query, options,
+                       &request->value);
+      if (archived_db_.get() &&
+          expirer_.GetCurrentArchiveTime() >= options.begin_time) {
+        QueryHistoryText(archived_db_.get(), archived_db_.get(), text_query,
+                         options, &request->value);
+      }
     }
   }
 
@@ -1438,6 +1444,43 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
   }
 
   if (!has_more_results && options.begin_time <= first_recorded_time_)
+    result->set_reached_beginning(true);
+}
+
+// Text-based querying of history.
+void HistoryBackend::QueryHistoryText(URLDatabase* url_db,
+                                      VisitDatabase* visit_db,
+                                      const string16& text_query,
+                                      const QueryOptions& options,
+                                      QueryResults* result) {
+  URLRows text_matches;
+  url_db->GetTextMatches(text_query, &text_matches);
+
+  std::vector<URLResult> matching_visits;
+  VisitVector visits;    // Declare outside loop to prevent re-construction.
+  for (size_t i = 0; i < text_matches.size(); i++) {
+    const URLRow& text_match = text_matches[i];
+    // Get all visits for given URL match.
+    visit_db->GetVisitsForURLWithOptions(text_match.id(), options, &visits);
+    for (size_t j = 0; j < visits.size(); j++) {
+      URLResult url_result(text_match);
+      url_result.set_visit_time(visits[j].visit_time);
+      matching_visits.push_back(url_result);
+    }
+  }
+
+  std::sort(matching_visits.begin(), matching_visits.end(),
+            URLResult::CompareVisitTime);
+
+  size_t max_results = options.max_count == 0 ?
+      std::numeric_limits<size_t>::max() : static_cast<int>(options.max_count);
+  for (std::vector<URLResult>::iterator it = matching_visits.begin();
+       it != matching_visits.end() && result->size() < max_results; ++it) {
+    result->AppendURLBySwapping(&(*it));
+  }
+
+  if (matching_visits.size() == result->size() &&
+      options.begin_time <= first_recorded_time_)
     result->set_reached_beginning(true);
 }
 

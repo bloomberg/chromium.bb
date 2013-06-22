@@ -641,12 +641,18 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Querying ------------------------------------------------------------------
 
-  // Backends for QueryHistory. *Basic() handles queries that are not FTS (full
-  // text search) queries and can just be given directly to the history DB).
-  // The FTS version queries the text_database, then merges with the history DB.
+  // Backends for QueryHistory. *Basic() handles queries that are not
+  // text search queries and can just be given directly to the history DB.
+  // The *Text() version performs a brute force query of the history DB to
+  // search for results which match the given text query.
   // Both functions assume QueryHistory already checked the DB for validity.
   void QueryHistoryBasic(URLDatabase* url_db, VisitDatabase* visit_db,
                          const QueryOptions& options, QueryResults* result);
+  void QueryHistoryText(URLDatabase* url_db,
+                        VisitDatabase* visit_db,
+                        const string16& text_query,
+                        const QueryOptions& options,
+                        QueryResults* result);
   void QueryHistoryFTS(const string16& text_query,
                        const QueryOptions& options,
                        QueryResults* result);

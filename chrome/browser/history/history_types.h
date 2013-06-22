@@ -294,6 +294,7 @@ class URLResult : public URLRow {
   // Constructor that create a URLResult from the specified URL and title match
   // positions from title_matches.
   URLResult(const GURL& url, const Snippet::MatchPositions& title_matches);
+  explicit URLResult(const URLRow& url_row);
   virtual ~URLResult();
 
   base::Time visit_time() const { return visit_time_; }
@@ -314,6 +315,8 @@ class URLResult : public URLRow {
   }
 
   void SwapResult(URLResult* other);
+
+  static bool CompareVisitTime(const URLResult& lhs, const URLResult& rhs);
 
  private:
   friend class HistoryBackend;

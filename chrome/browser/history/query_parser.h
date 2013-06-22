@@ -46,6 +46,9 @@ class QueryNode {
   virtual bool HasMatchIn(const std::vector<QueryWord>& words,
                           Snippet::MatchPositions* match_positions) const = 0;
 
+  // Returns true if this node matches at least one of the words in |words|.
+  virtual bool HasMatchIn(const std::vector<QueryWord>& words) const = 0;
+
   // Appends the words that make up this node in |words|.
   virtual void AppendWords(std::vector<string16>* words) const = 0;
 };
@@ -87,13 +90,18 @@ class QueryParser {
                       const std::vector<QueryNode*>& nodes,
                       Snippet::MatchPositions* match_positions);
 
+  // Returns true if all of the |words| match the query |nodes| created by a
+  // call to ParseQuery.
+  bool DoesQueryMatch(const std::vector<QueryWord>& words,
+                      const std::vector<QueryNode*>& nodes);
+
+  // Extracts the words from |text|, placing each word into |words|.
+  void ExtractQueryWords(const string16& text, std::vector<QueryWord>* words);
+
  private:
   // Does the work of parsing |query|; creates nodes in |root| as appropriate.
   // This is invoked from both of the ParseQuery methods.
   bool ParseQueryImpl(const string16& query, QueryNodeList* root);
-
-  // Extracts the words from |text|, placing each word into |words|.
-  void ExtractQueryWords(const string16& text, std::vector<QueryWord>* words);
 
   DISALLOW_COPY_AND_ASSIGN(QueryParser);
 };

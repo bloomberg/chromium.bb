@@ -11,6 +11,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace {
 
@@ -88,6 +89,8 @@ class QueryNodeWord : public QueryNode {
   virtual bool HasMatchIn(
       const std::vector<QueryWord>& words,
       Snippet::MatchPositions* match_positions) const OVERRIDE;
+  virtual bool HasMatchIn(
+      const std::vector<QueryWord>& words) const OVERRIDE;
   virtual void AppendWords(std::vector<string16>* words) const OVERRIDE;
 
  private:
@@ -138,6 +141,14 @@ bool QueryNodeWord::HasMatchIn(const std::vector<QueryWord>& words,
   return matched;
 }
 
+bool QueryNodeWord::HasMatchIn(const std::vector<QueryWord>& words) const {
+  for (size_t i = 0; i < words.size(); ++i) {
+    if (Matches(words[i].word, false))
+      return true;
+  }
+  return false;
+}
+
 void QueryNodeWord::AppendWords(std::vector<string16>* words) const {
   words->push_back(word_);
 }
@@ -164,6 +175,8 @@ class QueryNodeList : public QueryNode {
   virtual bool HasMatchIn(
       const std::vector<QueryWord>& words,
       Snippet::MatchPositions* match_positions) const OVERRIDE;
+  virtual bool HasMatchIn(
+      const std::vector<QueryWord>& words) const OVERRIDE;
   virtual void AppendWords(std::vector<string16>* words) const OVERRIDE;
 
  protected:
@@ -219,6 +232,11 @@ bool QueryNodeList::HasMatchIn(const std::vector<QueryWord>& words,
   return false;
 }
 
+bool QueryNodeList::HasMatchIn(const std::vector<QueryWord>& words) const {
+  NOTREACHED();
+  return false;
+}
+
 void QueryNodeList::AppendWords(std::vector<string16>* words) const {
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->AppendWords(words);
@@ -246,8 +264,13 @@ class QueryNodePhrase : public QueryNodeList {
   virtual bool HasMatchIn(
       const std::vector<QueryWord>& words,
       Snippet::MatchPositions* match_positions) const OVERRIDE;
+  virtual bool HasMatchIn(
+      const std::vector<QueryWord>& words) const OVERRIDE;
 
  private:
+  bool MatchesAll(const std::vector<QueryWord>& words,
+                  const QueryWord** first_word,
+                  const QueryWord** last_word) const;
   DISALLOW_COPY_AND_ASSIGN(QueryNodePhrase);
 };
 
@@ -262,9 +285,9 @@ int QueryNodePhrase::AppendToSQLiteQuery(string16* query) const {
   return num_words;
 }
 
-bool QueryNodePhrase::HasMatchIn(
-    const std::vector<QueryWord>& words,
-    Snippet::MatchPositions* match_positions) const {
+bool QueryNodePhrase::MatchesAll(const std::vector<QueryWord>& words,
+                                 const QueryWord** first_word,
+                                 const QueryWord** last_word) const {
   if (words.size() < children_.size())
     return false;
 
@@ -277,14 +300,33 @@ bool QueryNodePhrase::HasMatchIn(
       }
     }
     if (matched_all) {
-      const QueryWord& last_word = words[i + children_.size() - 1];
-      match_positions->push_back(
-          Snippet::MatchPosition(words[i].position,
-                                 last_word.position + last_word.word.length()));
+      *first_word = &words[i];
+      *last_word = &words[i + children_.size() - 1];
       return true;
     }
   }
   return false;
+}
+
+bool QueryNodePhrase::HasMatchIn(
+    const std::vector<QueryWord>& words,
+    Snippet::MatchPositions* match_positions) const {
+  const QueryWord* first_word;
+  const QueryWord* last_word;
+
+  if (MatchesAll(words, &first_word, &last_word)) {
+    match_positions->push_back(
+        Snippet::MatchPosition(first_word->position,
+                               last_word->position + last_word->word.length()));
+      return true;
+  }
+  return false;
+}
+
+bool QueryNodePhrase::HasMatchIn(const std::vector<QueryWord>& words) const {
+  const QueryWord* first_word;
+  const QueryWord* last_word;
+  return MatchesAll(words, &first_word, &last_word);
 }
 
 QueryParser::QueryParser() {}
@@ -350,6 +392,18 @@ bool QueryParser::DoesQueryMatch(const string16& text,
   } else {
     CoalseAndSortMatchPositions(&matches);
     match_positions->swap(matches);
+  }
+  return true;
+}
+
+bool QueryParser::DoesQueryMatch(const std::vector<QueryWord>& query_words,
+                                 const std::vector<QueryNode*>& query_nodes) {
+  if (query_nodes.empty() || query_words.empty())
+    return false;
+
+  for (size_t i = 0; i < query_nodes.size(); ++i) {
+    if (!query_nodes[i]->HasMatchIn(query_words))
+      return false;
   }
   return true;
 }

@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "sql/statement.h"
 
@@ -189,6 +190,12 @@ class URLDatabase {
                                bool allow_base,
                                history::URLRow* info);
 
+  // History search ------------------------------------------------------------
+
+  // Performs a brute force search over the database to find any URLs or titles
+  // which match the |query| string.  Returns any matches in |results|.
+  bool GetTextMatches(const string16& query, URLRows* results);
+
   // Keyword Search Terms ------------------------------------------------------
 
   // Sets the search terms for the specified url/keyword pair.
@@ -289,6 +296,8 @@ class URLDatabase {
   // have keyword search terms.
   bool has_keyword_search_terms_;
 
+  QueryParser query_parser_;
+
   DISALLOW_COPY_AND_ASSIGN(URLDatabase);
 };
 
@@ -303,6 +312,6 @@ class URLDatabase {
     " urls.id, urls.url, urls.title, urls.visit_count, urls.typed_count, " \
     "urls.last_visit_time, urls.hidden "
 
-}  // history
+}  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_URL_DATABASE_H_
