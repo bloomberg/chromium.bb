@@ -75,21 +75,24 @@ gfx::Vector2dF ZeroSmallComponents(gfx::Vector2dF vector) {
 
 } // namespace
 
-scoped_ptr<OverscrollGlow> OverscrollGlow::Create() {
+scoped_ptr<OverscrollGlow> OverscrollGlow::Create(bool enabled) {
   const SkBitmap& edge = g_overscroll_resources.Get().edge_bitmap();
   const SkBitmap& glow = g_overscroll_resources.Get().glow_bitmap();
   if (edge.isNull() || glow.isNull())
     return scoped_ptr<OverscrollGlow>();
 
-  return make_scoped_ptr(new OverscrollGlow(edge, glow));
+  return make_scoped_ptr(new OverscrollGlow(enabled, edge, glow));
 }
 
 void OverscrollGlow::EnsureResources() {
   g_overscroll_resources.Get();
 }
 
-OverscrollGlow::OverscrollGlow(const SkBitmap& edge, const SkBitmap& glow)
-  : horizontal_overscroll_enabled_(true),
+OverscrollGlow::OverscrollGlow(bool enabled,
+                               const SkBitmap& edge,
+                               const SkBitmap& glow)
+  : enabled_(enabled),
+    horizontal_overscroll_enabled_(true),
     vertical_overscroll_enabled_(true),
     root_layer_(cc::Layer::Create()) {
   for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
@@ -108,6 +111,9 @@ OverscrollGlow::~OverscrollGlow() {
 void OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
                                     gfx::Vector2dF overscroll,
                                     gfx::Vector2dF velocity) {
+  if (!enabled_)
+    return;
+
   // The size of the glow determines the relative effect of the inputs; an
   // empty-sized effect is effectively disabled.
   if (size_.IsEmpty())
@@ -156,7 +162,7 @@ void OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
 }
 
 bool OverscrollGlow::Animate(base::TimeTicks current_time) {
-  if (!IsActive())
+  if (!NeedsAnimate())
     return false;
 
   const gfx::SizeF sizes[EdgeEffect::EDGE_COUNT] = {
@@ -171,20 +177,27 @@ bool OverscrollGlow::Animate(base::TimeTicks current_time) {
     }
   }
 
-  return IsActive();
+  return NeedsAnimate();
 }
 
-bool OverscrollGlow::IsActive() const {
+void OverscrollGlow::SetEnabled(bool enabled) {
+  if (enabled_ == enabled)
+    return;
+  enabled_ = enabled;
+  if (!enabled_) {
+    for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i)
+      edge_effects_[i]->Finish();
+  }
+}
+
+bool OverscrollGlow::NeedsAnimate() const {
+  if (!enabled_)
+    return false;
   for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i) {
     if (!edge_effects_[i]->IsFinished())
       return true;
   }
   return false;
-}
-
-void OverscrollGlow::Finish() {
-  for (size_t i = 0; i < EdgeEffect::EDGE_COUNT; ++i)
-    edge_effects_[i]->Finish();
 }
 
 void OverscrollGlow::Pull(base::TimeTicks current_time,

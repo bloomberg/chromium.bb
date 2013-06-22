@@ -296,15 +296,16 @@ void RenderWidgetHostViewAndroid::Focus() {
   host_->Focus();
   host_->SetInputMethodActive(true);
   ResetClipping();
+  if (overscroll_effect_)
+    overscroll_effect_->SetEnabled(true);
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
   host_->ExecuteEditCommand("Unselect", "");
   host_->SetInputMethodActive(false);
   host_->Blur();
-
   if (overscroll_effect_)
-    overscroll_effect_->Finish();
+    overscroll_effect_->SetEnabled(false);
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {
@@ -739,7 +740,7 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
-  if (!overscroll_effect_ || !HasFocus())
+  if (!overscroll_effect_)
     return false;
   return overscroll_effect_->Animate(frame_time);
 }
@@ -748,7 +749,7 @@ void RenderWidgetHostViewAndroid::CreateOverscrollEffectIfNecessary() {
   if (!overscroll_effect_enabled_ || overscroll_effect_)
     return;
 
-  overscroll_effect_ = OverscrollGlow::Create();
+  overscroll_effect_ = OverscrollGlow::Create(true);
 
   // Prevent future creation attempts on failure.
   if (!overscroll_effect_)
@@ -775,7 +776,7 @@ void RenderWidgetHostViewAndroid::UpdateAnimationSize(
 void RenderWidgetHostViewAndroid::ScheduleAnimationIfNecessary() {
   if (!content_view_core_)
     return;
-  if (overscroll_effect_ && overscroll_effect_->IsActive())
+  if (overscroll_effect_ && overscroll_effect_->NeedsAnimate())
     content_view_core_->SetNeedsAnimate();
 }
 
@@ -963,6 +964,10 @@ void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
 
 void RenderWidgetHostViewAndroid::SendGestureEvent(
     const WebKit::WebGestureEvent& event) {
+  // Sending a gesture that may trigger overscroll should resume the effect.
+  if (overscroll_effect_)
+    overscroll_effect_->SetEnabled(true);
+
   if (host_)
     host_->ForwardGestureEvent(event);
 }
@@ -1030,7 +1035,7 @@ void RenderWidgetHostViewAndroid::OnOverscrolled(
     gfx::Vector2dF accumulated_overscroll,
     gfx::Vector2dF current_fling_velocity) {
   CreateOverscrollEffectIfNecessary();
-  if (!overscroll_effect_ || !HasFocus())
+  if (!overscroll_effect_)
     return;
 
   overscroll_effect_->OnOverscrolled(base::TimeTicks::Now(),
