@@ -70,6 +70,10 @@ public:
     return activate_over_non_cellular_networks_;
   }
   bool cellular_out_of_credits() const { return cellular_out_of_credits_; }
+  const std::string& usage_url() const { return usage_url_; }
+  const std::string& payment_url() const { return payment_url_; }
+  const std::string& post_method() const { return post_method_; }
+  const std::string& post_data() const { return post_data_; }
 
   bool IsConnectedState() const;
   bool IsConnectingState() const;
@@ -100,6 +104,8 @@ public:
     dns_servers_ = dns_servers;
   }
 
+  // TODO(gauravsh): Audit the list of properties that we are caching. We should
+  // only be doing this for commonly accessed properties. crbug.com/252553
   // Common Network Service properties
   std::string security_;
   std::string device_path_;
@@ -134,6 +140,11 @@ public:
   std::string roaming_;
   bool activate_over_non_cellular_networks_;
   bool cellular_out_of_credits_;
+  // Cellular payment portal properties.
+  std::string usage_url_;
+  std::string payment_url_;
+  std::string post_method_;
+  std::string post_data_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkState);
 };

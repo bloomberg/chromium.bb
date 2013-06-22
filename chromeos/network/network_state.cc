@@ -177,6 +177,20 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &activate_over_non_cellular_networks_);
   } else if (key == shill::kOutOfCreditsProperty) {
     return GetBooleanValue(key, value, &cellular_out_of_credits_);
+  } else if (key == flimflam::kUsageURLProperty) {
+    return GetStringValue(key, value, &usage_url_);
+  } else if (key == flimflam::kPaymentPortalProperty) {
+    const DictionaryValue& dict = static_cast<const DictionaryValue&>(value);
+    if (!dict.GetStringWithoutPathExpansion(flimflam::kPaymentPortalURL,
+                                            &payment_url_))
+      return false;
+    if (!dict.GetStringWithoutPathExpansion(flimflam::kPaymentPortalMethod,
+                                            &post_method_))
+      return false;
+    if (!dict.GetStringWithoutPathExpansion(flimflam::kPaymentPortalPostData,
+                                            &post_data_))
+      return false;
+    return true;
   } else if (key == flimflam::kWifiHexSsid) {
     return GetStringValue(key, value, &hex_ssid_);
   } else if (key == flimflam::kCountryProperty) {
@@ -258,6 +272,18 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
       activate_over_non_cellular_networks_);
   dictionary->SetBooleanWithoutPathExpansion(shill::kOutOfCreditsProperty,
                                              cellular_out_of_credits_);
+  base::DictionaryValue* payment_portal_properties = new DictionaryValue;
+  payment_portal_properties->SetStringWithoutPathExpansion(
+      flimflam::kPaymentPortalURL,
+      payment_url_);
+  payment_portal_properties->SetStringWithoutPathExpansion(
+      flimflam::kPaymentPortalMethod,
+      post_method_);
+  payment_portal_properties->SetStringWithoutPathExpansion(
+      flimflam::kPaymentPortalPostData,
+      post_data_);
+  dictionary->SetWithoutPathExpansion(flimflam::kPaymentPortalProperty,
+                                      payment_portal_properties);
 }
 
 void NetworkState::GetConfigProperties(

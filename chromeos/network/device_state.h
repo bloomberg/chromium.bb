@@ -25,7 +25,11 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   bool provider_requires_roaming() const { return provider_requires_roaming_; }
   bool support_network_scan() const { return support_network_scan_; }
   bool scanning() const { return scanning_; }
-  std::string sim_lock_type() const { return sim_lock_type_; }
+  const std::string& sim_lock_type() const { return sim_lock_type_; }
+  const std::string& meid() const { return meid_; }
+  const std::string& imei() const { return imei_; }
+  const std::string& iccid() const { return iccid_; }
+  const std::string& mdn() const { return mdn_; }
 
   // Returns true if the technology family is GSM and sim_present_ is false.
   bool IsSimAbsent() const;
@@ -40,6 +44,10 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   bool scanning_;
   std::string technology_family_;
   std::string sim_lock_type_;
+  std::string meid_;
+  std::string imei_;
+  std::string iccid_;
+  std::string mdn_;
   bool sim_present_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceState);

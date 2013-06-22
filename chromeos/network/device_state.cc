@@ -68,6 +68,14 @@ bool DeviceState::PropertyChanged(const std::string& key,
       return false;
     // Ignore other SIMLockStatus properties.
     return true;
+  } else if (key == flimflam::kMeidProperty) {
+    return GetStringValue(key, value, &meid_);
+  } else if (key == flimflam::kImeiProperty) {
+    return GetStringValue(key, value, &imei_);
+  } else if (key == flimflam::kIccidProperty) {
+    return GetStringValue(key, value, &iccid_);
+  } else if (key == flimflam::kMdnProperty) {
+    return GetStringValue(key, value, &mdn_);
   } else if (key == shill::kSIMPresentProperty) {
     return GetBooleanValue(key, value, &sim_present_);
   }
