@@ -378,7 +378,7 @@ void RTCPeerConnection::addStream(PassRefPtr<MediaStream> prpStream, const Dicti
 
     m_localStreams.append(stream);
 
-    bool valid = m_peerHandler->addStream(stream->descriptor(), constraints);
+    bool valid = m_peerHandler->addStream(stream->webStream(), constraints);
     if (!valid)
         ec = SYNTAX_ERR;
 }
@@ -403,7 +403,7 @@ void RTCPeerConnection::removeStream(PassRefPtr<MediaStream> prpStream, Exceptio
 
     m_localStreams.remove(pos);
 
-    m_peerHandler->removeStream(stream->descriptor());
+    m_peerHandler->removeStream(stream->webStream());
 }
 
 MediaStreamVector RTCPeerConnection::getLocalStreams() const
@@ -550,26 +550,25 @@ void RTCPeerConnection::didChangeIceConnectionState(IceConnectionState newState)
     changeIceConnectionState(newState);
 }
 
-void RTCPeerConnection::didAddRemoteStream(PassRefPtr<MediaStreamDescriptor> streamDescriptor)
+void RTCPeerConnection::didAddRemoteStream(WebKit::WebMediaStream webStream)
 {
     ASSERT(scriptExecutionContext()->isContextThread());
 
     if (m_signalingState == SignalingStateClosed)
         return;
 
-    RefPtr<MediaStream> stream = MediaStream::create(scriptExecutionContext(), streamDescriptor);
+    RefPtr<MediaStream> stream = MediaStream::create(scriptExecutionContext(), webStream);
     m_remoteStreams.append(stream);
 
     scheduleDispatchEvent(MediaStreamEvent::create(eventNames().addstreamEvent, false, false, stream.release()));
 }
 
-void RTCPeerConnection::didRemoveRemoteStream(MediaStreamDescriptor* streamDescriptor)
+void RTCPeerConnection::didRemoveRemoteStream(WebKit::WebMediaStream webStream)
 {
     ASSERT(scriptExecutionContext()->isContextThread());
-    ASSERT(streamDescriptor->client());
 
-    RefPtr<MediaStream> stream = static_cast<MediaStream*>(streamDescriptor->client());
-    stream->streamEnded();
+    RefPtr<MediaStream> stream = static_cast<MediaStream*>(webStream.client());
+    webStream.streamEnded();
 
     if (m_signalingState == SignalingStateClosed)
         return;

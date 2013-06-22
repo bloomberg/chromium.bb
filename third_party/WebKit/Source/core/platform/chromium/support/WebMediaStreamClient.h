@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2011 Ericsson AB. All rights reserved.
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,51 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaStreamCenter_h
-#define MediaStreamCenter_h
+#ifndef WebMediaStreamClient_h
+#define WebMediaStreamClient_h
 
-#include "modules/mediastream/SourceInfo.h"
-#include "public/platform/WebMediaStreamCenterClient.h"
-#include "public/platform/WebVector.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
+#include "core/platform/mediastream/MediaStreamComponent.h"
 
 namespace WebKit {
-class WebMediaStream;
-class WebMediaStreamCenter;
-class WebMediaStreamTrack;
-}
 
-namespace WebCore {
-
-class MediaStreamComponent;
-class MediaStreamDescriptor;
-class MediaStreamSourcesQueryClient;
-class MediaStreamTrackSourcesRequest;
-
-class MediaStreamCenter : public WebKit::WebMediaStreamCenterClient {
+class WebMediaStreamClient {
 public:
-    ~MediaStreamCenter();
+    virtual ~WebMediaStreamClient() { }
 
-    static MediaStreamCenter& instance();
-
-    bool getMediaStreamTrackSources(PassRefPtr<MediaStreamTrackSourcesRequest>);
-    void didSetMediaStreamTrackEnabled(WebKit::WebMediaStream, MediaStreamComponent*);
-    bool didAddMediaStreamTrack(WebKit::WebMediaStream, MediaStreamComponent*);
-    bool didRemoveMediaStreamTrack(WebKit::WebMediaStream, MediaStreamComponent*);
-    void didStopLocalMediaStream(WebKit::WebMediaStream);
-    void didCreateMediaStream(WebKit::WebMediaStream);
-
-    // WebKit::WebMediaStreamCenterClient
-    virtual void stopLocalMediaStream(WebKit::WebMediaStream) OVERRIDE;
-
-private:
-    MediaStreamCenter();
-
-    OwnPtr<WebKit::WebMediaStreamCenter> m_private;
+    virtual void trackEnded() = 0;
+    virtual void streamEnded() = 0;
+    virtual void addRemoteTrack(WebCore::MediaStreamComponent*) = 0;
+    virtual void removeRemoteTrack(WebCore::MediaStreamComponent*) = 0;
 };
 
-} // namespace WebCore
+} // namespace WebKit
 
-#endif // MediaStreamCenter_h
+#endif // WebMediaStreamClient_h

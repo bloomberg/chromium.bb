@@ -881,7 +881,7 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
 
     LOG(Media, "HTMLMediaElement::loadResource - m_currentSrc -> %s", urlForLoggingMedia(m_currentSrc).utf8().data());
 
-    if (MediaStreamRegistry::registry().lookupMediaStreamDescriptor(url.string()))
+    if (!(MediaStreamRegistry::registry().lookupWebMediaStream(url.string()).isNull()))
       removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
 
     if (m_sendProgressEvents)

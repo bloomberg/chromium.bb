@@ -31,50 +31,54 @@
 
 #include "config.h"
 
-#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "core/platform/chromium/support/WebMediaStreamPrivate.h"
 
 #include "core/platform/UUID.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
-namespace WebCore {
+namespace WebKit {
 
-PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
+PassRefPtr<WebMediaStreamPrivate> WebMediaStreamPrivate::create(const WebCore::MediaStreamSourceVector& audioSources, const WebCore::MediaStreamSourceVector& videoSources)
 {
-    return adoptRef(new MediaStreamDescriptor(createCanonicalUUIDString(), audioSources, videoSources));
+    RefPtr<WebMediaStreamPrivate> privateStream = adoptRef(new WebMediaStreamPrivate(WebCore::createCanonicalUUIDString()));
+    privateStream->initialize(audioSources, videoSources);
+    return privateStream;
 }
 
-PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
+PassRefPtr<WebMediaStreamPrivate> WebMediaStreamPrivate::create(const String& id, const WebCore::MediaStreamComponentVector& audioComponents, const WebCore::MediaStreamComponentVector& videoComponents)
 {
-    return adoptRef(new MediaStreamDescriptor(id, audioComponents, videoComponents));
+    RefPtr<WebMediaStreamPrivate> privateStream = adoptRef(new WebMediaStreamPrivate(id));
+    privateStream->initialize(audioComponents, videoComponents);
+    return privateStream;
 }
 
-void MediaStreamDescriptor::addComponent(PassRefPtr<MediaStreamComponent> component)
+void WebMediaStreamPrivate::addComponent(WebCore::MediaStreamComponent* component)
 {
     switch (component->source()->type()) {
-    case MediaStreamSource::TypeAudio:
+    case WebCore::MediaStreamSource::TypeAudio:
         if (m_audioComponents.find(component) == notFound)
             m_audioComponents.append(component);
         break;
-    case MediaStreamSource::TypeVideo:
+    case WebCore::MediaStreamSource::TypeVideo:
         if (m_videoComponents.find(component) == notFound)
             m_videoComponents.append(component);
         break;
     }
 }
 
-void MediaStreamDescriptor::removeComponent(PassRefPtr<MediaStreamComponent> component)
+void WebMediaStreamPrivate::removeComponent(WebCore::MediaStreamComponent* component)
 {
     size_t pos = notFound;
     switch (component->source()->type()) {
-    case MediaStreamSource::TypeAudio:
+    case WebCore::MediaStreamSource::TypeAudio:
         pos = m_audioComponents.find(component);
         if (pos != notFound)
             m_audioComponents.remove(pos);
         break;
-    case MediaStreamSource::TypeVideo:
+    case WebCore::MediaStreamSource::TypeVideo:
         pos = m_videoComponents.find(component);
         if (pos != notFound)
             m_videoComponents.remove(pos);
@@ -82,7 +86,7 @@ void MediaStreamDescriptor::removeComponent(PassRefPtr<MediaStreamComponent> com
     }
 }
 
-void MediaStreamDescriptor::addRemoteTrack(MediaStreamComponent* component)
+void WebMediaStreamPrivate::addRemoteTrack(WebCore::MediaStreamComponent* component)
 {
     if (m_client)
         m_client->addRemoteTrack(component);
@@ -90,7 +94,7 @@ void MediaStreamDescriptor::addRemoteTrack(MediaStreamComponent* component)
         addComponent(component);
 }
 
-void MediaStreamDescriptor::removeRemoteTrack(MediaStreamComponent* component)
+void WebMediaStreamPrivate::removeRemoteTrack(WebCore::MediaStreamComponent* component)
 {
     if (m_client)
         m_client->removeRemoteTrack(component);
@@ -98,34 +102,33 @@ void MediaStreamDescriptor::removeRemoteTrack(MediaStreamComponent* component)
         removeComponent(component);
 }
 
-MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
+WebMediaStreamPrivate::WebMediaStreamPrivate(const String& id)
     : m_client(0)
     , m_id(id)
     , m_ended(false)
 {
     ASSERT(m_id.length());
-    for (size_t i = 0; i < audioSources.size(); i++)
-        m_audioComponents.append(MediaStreamComponent::create(this, audioSources[i]));
-
-    for (size_t i = 0; i < videoSources.size(); i++)
-        m_videoComponents.append(MediaStreamComponent::create(this, videoSources[i]));
 }
 
-MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
-    : m_client(0)
-    , m_id(id)
-    , m_ended(false)
+void WebMediaStreamPrivate::initialize(const WebCore::MediaStreamSourceVector& audioSources, const WebCore::MediaStreamSourceVector& videoSources)
 {
-    ASSERT(m_id.length());
-    for (MediaStreamComponentVector::const_iterator iter = audioComponents.begin(); iter != audioComponents.end(); ++iter) {
+    for (size_t i = 0; i < audioSources.size(); i++)
+        m_audioComponents.append(WebCore::MediaStreamComponent::create(WebMediaStream(this), audioSources[i]));
+
+    for (size_t i = 0; i < videoSources.size(); i++)
+        m_videoComponents.append(WebCore::MediaStreamComponent::create(WebMediaStream(this), videoSources[i]));
+}
+
+void WebMediaStreamPrivate::initialize(const WebCore::MediaStreamComponentVector& audioComponents, const WebCore::MediaStreamComponentVector& videoComponents)
+{
+    for (WebCore::MediaStreamComponentVector::const_iterator iter = audioComponents.begin(); iter != audioComponents.end(); ++iter) {
         (*iter)->setStream(this);
         m_audioComponents.append((*iter));
     }
-    for (MediaStreamComponentVector::const_iterator iter = videoComponents.begin(); iter != videoComponents.end(); ++iter) {
+    for (WebCore::MediaStreamComponentVector::const_iterator iter = videoComponents.begin(); iter != videoComponents.end(); ++iter) {
         (*iter)->setStream(this);
         m_videoComponents.append((*iter));
     }
 }
 
-} // namespace WebCore
-
+} // namespace WebKit
