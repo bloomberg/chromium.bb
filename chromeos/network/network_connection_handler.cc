@@ -72,13 +72,15 @@ bool VPNIsConfigured(const std::string& service_path,
   }
   std::string provider_type;
   // Note: we use Value path expansion to extract Provider.Type.
-  if (!properties->GetString(flimflam::kTypeProperty, &provider_type)) {
+  if (!properties->GetStringWithoutPathExpansion(
+          flimflam::kTypeProperty, &provider_type)) {
     NET_LOG_ERROR("VPN Provider Type not present", service_path);
     return false;
   }
   if (provider_type == flimflam::kProviderOpenVpn) {
     std::string hostname;
-    properties->GetString(flimflam::kHostProperty, &hostname);
+    properties->GetStringWithoutPathExpansion(
+        flimflam::kHostProperty, &hostname);
     if (hostname.empty()) {
       NET_LOG_EVENT("OpenVPN: No hostname", service_path);
       return false;
@@ -220,7 +222,7 @@ void NetworkConnectionHandler::OnCertificatesLoaded(
                      true /* ignore_error_state */);
   } else if (initial_load) {
     // Once certificates have loaded, connect to the "best" available network.
-    NetworkHandler::Get()->network_state_handler()->ConnectToBestWifiNetwork();
+    network_state_handler_->ConnectToBestWifiNetwork();
   }
 }
 
@@ -399,7 +401,8 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
     if (network->type() == flimflam::kTypeVPN) {
       std::string provider_type;
-      properties.GetString(flimflam::kTypeProperty, &provider_type);
+      // Get 'Type' property from 'Provider' dictionary (use expansion).
+      properties.GetString(flimflam::kProviderTypeProperty, &provider_type);
       if (provider_type == flimflam::kProviderOpenVpn) {
         config_properties.SetStringWithoutPathExpansion(
             flimflam::kOpenVPNClientCertSlotProperty, tpm_slot);

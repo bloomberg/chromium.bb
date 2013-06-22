@@ -169,7 +169,6 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // Local references to the associated handler instances.
   CertLoader* cert_loader_;
   NetworkStateHandler* network_state_handler_;
-  NetworkProfileHandler* network_profile_handler_;
   NetworkConfigurationHandler* network_configuration_handler_;
 
   // Map of pending connect requests, used to prevent repeated attempts while
