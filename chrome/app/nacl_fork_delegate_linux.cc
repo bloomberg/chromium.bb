@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/nacl_helper_linux.h"
+#include "chrome/common/nacl_paths.h"
 
 NaClForkDelegate::NaClForkDelegate()
     : status_(kNaClHelperUnused),
@@ -50,9 +51,9 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
   status_ = kNaClHelperUnused;
   base::FilePath helper_exe;
   base::FilePath helper_bootstrap_exe;
-  if (!PathService::Get(chrome::FILE_NACL_HELPER, &helper_exe)) {
+  if (!PathService::Get(nacl::FILE_NACL_HELPER, &helper_exe)) {
     status_ = kNaClHelperMissing;
-  } else if (!PathService::Get(chrome::FILE_NACL_HELPER_BOOTSTRAP,
+  } else if (!PathService::Get(nacl::FILE_NACL_HELPER_BOOTSTRAP,
                                &helper_bootstrap_exe)) {
     status_ = kNaClHelperBootstrapMissing;
   } else if (RunningOnValgrind()) {

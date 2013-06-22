@@ -65,15 +65,6 @@ const base::FilePath::CharType kInternalNaClPluginFileName[] =
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-// File name of the nacl_helper and nacl_helper_bootstrap, Linux only.
-const base::FilePath::CharType kInternalNaClHelperFileName[] =
-    FILE_PATH_LITERAL("nacl_helper");
-const base::FilePath::CharType kInternalNaClHelperBootstrapFileName[] =
-    FILE_PATH_LITERAL("nacl_helper_bootstrap");
-#endif
-
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
 
 const base::FilePath::CharType kO3DPluginFileName[] =
     FILE_PATH_LITERAL("pepper/libppo3dautoplugin.so");
@@ -311,16 +302,6 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
       break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-    case chrome::FILE_NACL_HELPER:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-      cur = cur.Append(kInternalNaClHelperFileName);
-      break;
-    case chrome::FILE_NACL_HELPER_BOOTSTRAP:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-      cur = cur.Append(kInternalNaClHelperBootstrapFileName);
-      break;
     case chrome::FILE_O3D_PLUGIN:
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;

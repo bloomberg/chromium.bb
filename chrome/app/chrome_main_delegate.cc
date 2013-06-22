@@ -62,8 +62,9 @@
 #include <signal.h>
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if !defined(DISABLE_NACL) && defined(OS_LINUX)
 #include "chrome/app/nacl_fork_delegate_linux.h"
+#include "chrome/common/nacl_paths.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -473,6 +474,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
   chrome::RegisterPathProvider();
 #if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();
+#endif
+#if !defined(DISABLE_NACL) && defined(OS_LINUX)
+  nacl::RegisterPathProvider();
 #endif
 
 #if defined(OS_MACOSX)

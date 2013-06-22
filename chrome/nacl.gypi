@@ -54,6 +54,8 @@
             'sources': [
               'app/nacl_fork_delegate_linux.cc',
               'app/nacl_fork_delegate_linux.h',
+              'common/nacl_paths.cc',
+              'common/nacl_paths.h',
             ],
           },],
         ],
