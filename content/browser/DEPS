@@ -5,6 +5,7 @@ include_rules = [
   "+content/child/webkitplatformsupport_impl.h",  # For in-process webkit
   "+media/audio",  # For audio input for speech input feature.
   "+media/base",  # For Android JNI registration.
+  "+media/midi",  # For Web MIDI API
   "+sql",
   "+ui/webui",
   "+win8/util",
