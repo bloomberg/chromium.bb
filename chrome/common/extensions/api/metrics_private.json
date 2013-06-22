@@ -41,6 +41,22 @@
         ]
       },
       {
+        "name": "getFieldTrial",
+        "description": "Returns the group name chosen for the named trial, or the empty string if the trial does not exist or is not enabled.",
+        "type": "function",
+        "parameters": [
+          {"name": "name", "type": "string"},
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              { "name": "group", "type": "string" }
+            ]
+          }
+        ]
+      },
+      {
         "name": "recordUserAction",
         "type": "function",
         "description": "Records an action performed by the user.",

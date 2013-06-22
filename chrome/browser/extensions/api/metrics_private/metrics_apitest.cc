@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -125,6 +126,8 @@ void ValidateHistograms(const RecordedHistogram* recorded,
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
   UserActionObserver observer;
+
+  base::FieldTrialList::CreateTrialsFromString("apitestfieldtrial2/group1/");
 
   ASSERT_TRUE(RunComponentExtensionTest("metrics")) << message_;
 

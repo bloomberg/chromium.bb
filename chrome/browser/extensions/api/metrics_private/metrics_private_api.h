@@ -25,6 +25,18 @@ class MetricsPrivateGetIsCrashReportingEnabledFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+class MetricsPrivateGetFieldTrialFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.getFieldTrial",
+                             METRICSPRIVATE_GETFIELDTRIAL)
+
+ protected:
+  virtual ~MetricsPrivateGetFieldTrialFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class MetricsPrivateRecordUserActionFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordUserAction",

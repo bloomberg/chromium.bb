@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
@@ -22,6 +23,7 @@ namespace extensions {
 
 namespace GetIsCrashReportingEnabled =
     api::metrics_private::GetIsCrashReportingEnabled;
+namespace GetFieldTrial = api::metrics_private::GetFieldTrial;
 namespace RecordUserAction = api::metrics_private::RecordUserAction;
 namespace RecordValue = api::metrics_private::RecordValue;
 namespace RecordPercentage = api::metrics_private::RecordPercentage;
@@ -63,6 +65,14 @@ static bool IsCrashReportingEnabled() {
 
 bool MetricsPrivateGetIsCrashReportingEnabledFunction::RunImpl() {
   SetResult(new base::FundamentalValue(IsCrashReportingEnabled()));
+  return true;
+}
+
+bool MetricsPrivateGetFieldTrialFunction::RunImpl() {
+  std::string name;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
+
+  SetResult(new base::StringValue(base::FieldTrialList::FindFullName(name)));
   return true;
 }
 

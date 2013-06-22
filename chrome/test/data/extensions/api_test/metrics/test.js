@@ -57,6 +57,20 @@ chrome.test.runTests([
     chrome.metricsPrivate.recordSmallCount('test.small.count', 42);
 
     chrome.test.succeed();
+  },
+
+  function getFieldTrial() {
+    var test1Callback = function(group) {
+      chrome.test.assertEq('', group);
+      chrome.metricsPrivate.getFieldTrial('apitestfieldtrial2', test2Callback);
+    };
+
+    var test2Callback = function(group) {
+      chrome.test.assertEq('group1', group);
+      chrome.test.succeed();
+    };
+
+    chrome.metricsPrivate.getFieldTrial('apitestfieldtrial1', test1Callback);
   }
 ]);
 
