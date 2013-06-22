@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
-#define WEBKIT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
+#ifndef CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
+#define CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
 
 #include <jni.h>
 
@@ -14,6 +14,9 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "cc/layers/video_frame_provider.h"
+#include "content/renderer/media/android/media_info_loader.h"
+#include "content/renderer/media/android/media_source_delegate.h"
+#include "content/renderer/media/android/stream_texture_factory_android.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
@@ -22,10 +25,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "ui/gfx/rect_f.h"
-#include "webkit/renderer/media/android/media_source_delegate.h"
-#include "webkit/renderer/media/android/stream_texture_factory_android.h"
 #include "webkit/renderer/media/crypto/proxy_decryptor.h"
-#include "webkit/renderer/media/media_info_loader.h"
 
 namespace media {
 class Demuxer;
@@ -41,9 +41,12 @@ class WebLayerImpl;
 }
 
 namespace webkit_media {
+class WebMediaPlayerDelegate;
+}
+
+namespace content {
 
 class MediaStreamClient;
-class WebMediaPlayerDelegate;
 class WebMediaPlayerManagerAndroid;
 class WebMediaPlayerProxyAndroid;
 
@@ -68,13 +71,14 @@ class WebMediaPlayerAndroid
   // player can enter fullscreen. This logic should probably be moved into
   // blink, so that enterFullscreen() will not be called if another video is
   // already in fullscreen.
-  WebMediaPlayerAndroid(WebKit::WebFrame* frame,
-                        WebKit::WebMediaPlayerClient* client,
-                        base::WeakPtr<WebMediaPlayerDelegate> delegate,
-                        WebMediaPlayerManagerAndroid* manager,
-                        WebMediaPlayerProxyAndroid* proxy,
-                        StreamTextureFactory* factory,
-                        media::MediaLog* media_log);
+  WebMediaPlayerAndroid(
+      WebKit::WebFrame* frame,
+      WebKit::WebMediaPlayerClient* client,
+      base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate,
+      WebMediaPlayerManagerAndroid* manager,
+      WebMediaPlayerProxyAndroid* proxy,
+      StreamTextureFactory* factory,
+      media::MediaLog* media_log);
   virtual ~WebMediaPlayerAndroid();
 
   // WebKit::WebMediaPlayer implementation.
@@ -281,7 +285,7 @@ class WebMediaPlayerAndroid
   // TODO(qinmin): Currently android mediaplayer takes care of the screen
   // lock. So this is only used for media source. Will apply this to regular
   // media tag once http://crbug.com/247892 is fixed.
-  base::WeakPtr<WebMediaPlayerDelegate> delegate_;
+  base::WeakPtr<webkit_media::WebMediaPlayerDelegate> delegate_;
 
   // Save the list of buffered time ranges.
   WebKit::WebTimeRanges buffered_;
@@ -403,11 +407,11 @@ class WebMediaPlayerAndroid
   std::string init_data_type_;
 
   // The decryptor that manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<ProxyDecryptor> decryptor_;
+  scoped_ptr<webkit_media::ProxyDecryptor> decryptor_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);
 };
 
-}  // namespace webkit_media
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_
+#endif  // CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_ANDROID_H_

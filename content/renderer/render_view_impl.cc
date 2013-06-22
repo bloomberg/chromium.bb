@@ -225,14 +225,14 @@
 #include "content/renderer/android/content_detector.h"
 #include "content/renderer/android/email_detector.h"
 #include "content/renderer/android/phone_number_detector.h"
-#include "content/renderer/media/stream_texture_factory_impl_android.h"
-#include "content/renderer/media/webmediaplayer_proxy_impl_android.h"
+#include "content/renderer/media/android/stream_texture_factory_android.h"
+#include "content/renderer/media/android/webmediaplayer_android.h"
+#include "content/renderer/media/android/webmediaplayer_manager_android.h"
+#include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "ui/gfx/rect_f.h"
-#include "webkit/renderer/media/android/webmediaplayer_android.h"
-#include "webkit/renderer/media/android/webmediaplayer_manager_android.h"
 
 #if defined(GOOGLE_TV)
 #include "content/renderer/media/rtc_video_decoder_bridge_tv.h"
@@ -910,8 +910,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-  media_player_manager_.reset(
-      new webkit_media::WebMediaPlayerManagerAndroid());
+  media_player_manager_.reset(new WebMediaPlayerManagerAndroid());
 #endif
 
   // The next group of objects all implement RenderViewObserver, so are deleted
@@ -2869,17 +2868,17 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   }
 
   if (!media_player_proxy_) {
-    media_player_proxy_ = new WebMediaPlayerProxyImplAndroid(
+    media_player_proxy_ = new WebMediaPlayerProxyAndroid(
         this, media_player_manager_.get());
   }
-  scoped_ptr<webkit_media::WebMediaPlayerAndroid> web_media_player_android(
-      new webkit_media::WebMediaPlayerAndroid(
+  scoped_ptr<WebMediaPlayerAndroid> web_media_player_android(
+      new WebMediaPlayerAndroid(
           frame,
           client,
           AsWeakPtr(),
           media_player_manager_.get(),
           media_player_proxy_,
-          new StreamTextureFactoryImpl(
+          new StreamTextureFactory(
               context_provider->Context3d(), gpu_channel_host, routing_id_),
           new RenderMediaLog()));
 #if defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)

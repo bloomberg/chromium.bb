@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_ANDROID_MEDIA_SOURCE_DELEGATE_H_
-#define WEBKIT_RENDERER_MEDIA_ANDROID_MEDIA_SOURCE_DELEGATE_H_
+#ifndef CONTENT_RENDERER_MEDIA_ANDROID_MEDIA_SOURCE_DELEGATE_H_
+#define CONTENT_RENDERER_MEDIA_ANDROID_MEDIA_SOURCE_DELEGATE_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -26,9 +26,8 @@ class MediaLog;
 struct MediaPlayerHostMsg_ReadFromDemuxerAck_Params;
 }
 
-namespace webkit_media {
+namespace content {
 
-class ProxyDecryptor;
 class WebMediaPlayerProxyAndroid;
 
 class MediaSourceDelegate : public media::DemuxerHost {
@@ -164,5 +163,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   DISALLOW_COPY_AND_ASSIGN(MediaSourceDelegate);
 };
 
-}  // namespace webkit_media
-#endif  // WEBKIT_RENDERER_MEDIA_ANDROID_MEDIA_SOURCE_DELEGATE_H_
+}  // namespace content
+
+#endif  // CONTENT_RENDERER_MEDIA_ANDROID_MEDIA_SOURCE_DELEGATE_H_

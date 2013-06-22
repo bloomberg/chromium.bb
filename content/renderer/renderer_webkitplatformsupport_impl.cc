@@ -85,6 +85,10 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "content/renderer/media/android/audio_decoder_android.h"
+#endif
+
 using WebKit::WebAudioDevice;
 using WebKit::WebBlobRegistry;
 using WebKit::WebFileInfo;
@@ -745,12 +749,11 @@ static void RunWebAudioMediaCodec(base::SharedMemoryHandle encoded_data_handle,
 bool RendererWebKitPlatformSupportImpl::loadAudioResource(
     WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
     size_t data_size, double sample_rate) {
-  return webkit_media::DecodeAudioFileData(
-      destination_bus,
-      audio_file_data,
-      data_size,
-      sample_rate,
-      base::Bind(&RunWebAudioMediaCodec));
+  return DecodeAudioFileData(destination_bus,
+                             audio_file_data,
+                             data_size,
+                             sample_rate,
+                             base::Bind(&RunWebAudioMediaCodec));
 }
 #else
 bool RendererWebKitPlatformSupportImpl::loadAudioResource(

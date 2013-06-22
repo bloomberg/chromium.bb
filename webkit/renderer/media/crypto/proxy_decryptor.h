@@ -20,10 +20,6 @@ class WebMediaPlayerClient;
 
 namespace webkit_media {
 
-#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
-class WebMediaPlayerProxyAndroid;
-#endif
-
 // A decryptor proxy that creates a real decryptor object on demand and
 // forwards decryptor calls to it.
 // TODO(xhwang): Currently we don't support run-time switching among decryptor
@@ -35,10 +31,8 @@ class ProxyDecryptor : public media::MediaKeys {
 #if defined(ENABLE_PEPPER_CDMS)
       WebKit::WebMediaPlayerClient* web_media_player_client,
       WebKit::WebFrame* web_frame,
-#endif
-#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
-      WebMediaPlayerProxyAndroid* proxy,
-      int media_keys_id,
+#elif defined(OS_ANDROID) && !defined(GOOGLE_TV)
+      scoped_ptr<media::MediaKeys> media_keys,
 #endif
       const media::KeyAddedCB& key_added_cb,
       const media::KeyErrorCB& key_error_cb,
@@ -92,12 +86,9 @@ class ProxyDecryptor : public media::MediaKeys {
   WebKit::WebFrame* web_frame_;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-#if defined(OS_ANDROID) && !defined(GOOGLE_TV)
-  // |proxy_| must outlive this object.
-  WebMediaPlayerProxyAndroid* proxy_;
-
-  int media_keys_id_;
-#endif  // defined(OS_ANDROID) && !defined(GOOGLE_TV)
+  // The real MediaKeys that manages key operations for the ProxyDecryptor.
+  // This pointer is protected by the |lock_|.
+  scoped_ptr<media::MediaKeys> media_keys_;
 
   // Callbacks for firing key events.
   media::KeyAddedCB key_added_cb_;
@@ -109,10 +100,6 @@ class ProxyDecryptor : public media::MediaKeys {
   base::Lock lock_;
 
   media::DecryptorReadyCB decryptor_ready_cb_;
-
-  // The real MediaKeys that manages key operations for the ProxyDecryptor.
-  // This pointer is protected by the |lock_|.
-  scoped_ptr<media::MediaKeys> media_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyDecryptor);
 };

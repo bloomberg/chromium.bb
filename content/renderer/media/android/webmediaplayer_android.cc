@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/android/webmediaplayer_android.h"
+#include "content/renderer/media/android/webmediaplayer_android.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -11,6 +11,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/video_layer.h"
+#include "content/renderer/media/android/proxy_media_keys.h"
+#include "content/renderer/media/android/webmediaplayer_manager_android.h"
+#include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_loop.h"
@@ -25,15 +28,13 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
-#include "webkit/renderer/media/android/webmediaplayer_manager_android.h"
-#include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "webkit/renderer/media/crypto/key_systems.h"
 #include "webkit/renderer/media/webmediaplayer_delegate.h"
 #include "webkit/renderer/media/webmediaplayer_util.h"
 
 #if defined(GOOGLE_TV)
-#include "webkit/renderer/media/media_stream_audio_renderer.h"
-#include "webkit/renderer/media/media_stream_client.h"
+#include "content/renderer/media/media_stream_audio_renderer.h"
+#include "content/renderer/media/media_stream_client.h"
 #endif
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
@@ -46,13 +47,18 @@ using WebKit::WebTimeRanges;
 using WebKit::WebURL;
 using media::MediaPlayerAndroid;
 using media::VideoFrame;
+using webkit_media::ConvertSecondsToTimestamp;
+using webkit_media::IsSupportedKeySystem;
+using webkit_media::KeySystemNameForUMA;
+using webkit_media::ProxyDecryptor;
+using webkit_media::WebMediaPlayerDelegate;
 
 namespace {
 // Prefix for histograms related to Encrypted Media Extensions.
 const char* kMediaEme = "Media.EME.";
 }  // namespace
 
-namespace webkit_media {
+namespace content {
 
 #define BIND_TO_RENDER_LOOP(function) \
   media::BindToLoop(main_loop_, base::Bind(function, AsWeakPtr()))
@@ -116,9 +122,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
         frame,
 #endif  // defined(ENABLE_PEPPER_CDMS)
 #if defined(OS_ANDROID) && !defined(GOOGLE_TV)
-        proxy_,
-        player_id_,  // TODO(xhwang): Use media_keys_id when MediaKeys are
-                     // separated from WebMediaPlayer.
+        // TODO(xhwang): Use media_keys_id when MediaKeys are separated from
+        // WebMediaPlayer.
+        scoped_ptr<media::MediaKeys>(new ProxyMediaKeys(proxy_, player_id_)),
 #endif // defined(OS_ANDROID) && !defined(GOOGLE_TV)
         base::Bind(&WebMediaPlayerAndroid::OnKeyAdded, base::Unretained(this)),
         base::Bind(&WebMediaPlayerAndroid::OnKeyError, base::Unretained(this)),
@@ -1110,4 +1116,4 @@ bool WebMediaPlayerAndroid::canEnterFullscreen() const {
   return manager_->CanEnterFullscreen(frame_);
 }
 
-}  // namespace webkit_media
+}  // namespace content

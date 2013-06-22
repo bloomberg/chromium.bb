@@ -4,14 +4,14 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "third_party/WebKit/public/web/WebMediaPlayer.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "content/renderer/media/android/media_info_loader.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebMediaPlayer.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/mocks/mock_webframeclient.h"
 #include "webkit/mocks/mock_weburlloader.h"
-#include "webkit/renderer/media/media_info_loader.h"
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -25,7 +25,7 @@ using WebKit::WebView;
 using webkit_glue::MockWebFrameClient;
 using webkit_glue::MockWebURLLoader;
 
-namespace webkit_media {
+namespace content {
 
 static const char* kHttpUrl = "http://test";
 static const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
@@ -190,4 +190,4 @@ TEST_F(MediaInfoLoaderTest, CORSAccessCheckFailed) {
   EXPECT_FALSE(loader_->DidPassCORSAccessCheck());
 }
 
-}  // namespace webkit_media
+}  // namespace content

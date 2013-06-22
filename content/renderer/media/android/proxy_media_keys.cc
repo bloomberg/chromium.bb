@@ -1,13 +1,13 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/android/proxy_media_keys.h"
+#include "content/renderer/media/android/proxy_media_keys.h"
 
 #include "base/logging.h"
-#include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
+#include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 
-namespace webkit_media {
+namespace content {
 
 ProxyMediaKeys::ProxyMediaKeys(WebMediaPlayerProxyAndroid* proxy,
                                int media_keys_id)
@@ -38,4 +38,4 @@ void ProxyMediaKeys::CancelKeyRequest(const std::string& session_id) {
   proxy_->CancelKeyRequest(media_keys_id_, session_id);
 }
 
-}  // namespace webkit_media
+}  // namespace content

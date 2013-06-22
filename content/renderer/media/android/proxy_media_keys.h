@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_ANDROID_PROXY_MEDIA_KEYS_H_
-#define WEBKIT_RENDERER_MEDIA_ANDROID_PROXY_MEDIA_KEYS_H_
+#ifndef CONTENT_RENDERER_MEDIA_ANDROID_PROXY_MEDIA_KEYS_H_
+#define CONTENT_RENDERER_MEDIA_ANDROID_PROXY_MEDIA_KEYS_H_
 
 #include "base/basictypes.h"
 #include "media/base/media_keys.h"
 
-namespace webkit_media {
+namespace content {
 
 class WebMediaPlayerProxyAndroid;
 
@@ -36,6 +36,6 @@ class ProxyMediaKeys : public media::MediaKeys {
   DISALLOW_COPY_AND_ASSIGN (ProxyMediaKeys);
 };
 
-}  // namespace webkit_media
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_MEDIA_ANDROID_PROXY_MEDIA_KEYS_H_
+#endif  // CONTENT_RENDERER_MEDIA_ANDROID_PROXY_MEDIA_KEYS_H_

@@ -94,12 +94,6 @@ class PluginInstance;
 
 }  // namespace webkit
 
-#if defined(OS_ANDROID)
-namespace webkit_media {
-class WebMediaPlayerManagerAndroid;
-}
-#endif
-
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -174,7 +168,8 @@ struct FileChooserParams;
 struct RenderViewImplParams;
 
 #if defined(OS_ANDROID)
-class WebMediaPlayerProxyImplAndroid;
+class WebMediaPlayerManagerAndroid;
+class WebMediaPlayerProxyAndroid;
 #endif
 
 // We need to prevent a page from trying to create infinite popups. It is not
@@ -259,7 +254,7 @@ class CONTENT_EXPORT RenderViewImpl
   }
 
 #if defined(OS_ANDROID)
-  webkit_media::WebMediaPlayerManagerAndroid* media_player_manager() {
+  WebMediaPlayerManagerAndroid* media_player_manager() {
     return media_player_manager_.get();
   }
 #endif
@@ -1460,10 +1455,10 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Proxy class for WebMediaPlayer to communicate with the real media player
   // objects in browser process.
-  WebMediaPlayerProxyImplAndroid* media_player_proxy_;
+  WebMediaPlayerProxyAndroid* media_player_proxy_;
 
   // The media player manager for managing all the media players on this view.
-  scoped_ptr<webkit_media::WebMediaPlayerManagerAndroid> media_player_manager_;
+  scoped_ptr<WebMediaPlayerManagerAndroid> media_player_manager_;
 
   // A date/time picker object for date and time related input elements.
   scoped_ptr<RendererDateTimePicker> date_time_picker_client_;

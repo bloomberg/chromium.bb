@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/android/media_source_delegate.h"
+#include "content/renderer/media/android/media_source_delegate.h"
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/demuxer_stream.h"
@@ -14,13 +15,15 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebMediaSource.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "webkit/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "webkit/renderer/media/webmediaplayer_util.h"
 #include "webkit/renderer/media/webmediasourceclient_impl.h"
 
 using media::DemuxerStream;
 using media::MediaPlayerHostMsg_DemuxerReady_Params;
 using media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params;
+using webkit_media::ConvertToWebTimeRanges;
+using webkit_media::PipelineErrorToNetworkState;
+using webkit_media::WebMediaSourceClientImpl;
 using WebKit::WebMediaPlayer;
 using WebKit::WebString;
 
@@ -34,7 +37,7 @@ const uint8 kVorbisPadding[] = { 0xff, 0xff, 0xff, 0xff };
 
 }  // namespace
 
-namespace webkit_media {
+namespace content {
 
 #define BIND_TO_RENDER_LOOP(function) \
   media::BindToLoop(base::MessageLoopProxy::current(), \
@@ -439,4 +442,4 @@ scoped_ptr<media::TextTrack> MediaSourceDelegate::OnAddTextTrack(
   return scoped_ptr<media::TextTrack>();
 }
 
-}  // namespace webkit_media
+}  // namespace content

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/audio_decoder.h"
+#include "content/renderer/media/android/audio_decoder_android.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -21,7 +21,7 @@
 #include "media/base/limits.h"
 #include "third_party/WebKit/public/platform/WebAudioBus.h"
 
-namespace webkit_media {
+namespace content {
 
 class AudioDecoderIO {
  public:
@@ -256,4 +256,4 @@ bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
   return true;
 }
 
-}  // namespace webkit_media
+}  // namespace content

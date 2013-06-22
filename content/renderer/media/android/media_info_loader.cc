@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/media_info_loader.h"
+#include "content/renderer/media/android/media_info_loader.h"
 
 #include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 using WebKit::WebFrame;
 using WebKit::WebURLError;
@@ -18,8 +18,9 @@ using WebKit::WebURLLoader;
 using WebKit::WebURLLoaderOptions;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
+using webkit_media::ActiveLoader;
 
-namespace webkit_media {
+namespace content {
 
 static const int kHttpOK = 200;
 
@@ -182,4 +183,4 @@ void MediaInfoLoader::DidBecomeReady(Status status) {
     base::ResetAndReturn(&ready_cb_).Run(status);
 }
 
-}  // namespace webkit_media
+}  // namespace content

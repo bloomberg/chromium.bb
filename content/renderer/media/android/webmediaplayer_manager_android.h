@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
-#define WEBKIT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
+#ifndef CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
+#define CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
 
 #include <map>
 
@@ -17,7 +17,7 @@ namespace gfx {
 class RectF;
 }
 
-namespace webkit_media {
+namespace content {
 
 class WebMediaPlayerAndroid;
 
@@ -67,6 +67,6 @@ class WebMediaPlayerManagerAndroid {
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerManagerAndroid);
 };
 
-}  // namespace webkit_media
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_
+#endif  // CONTENT_RENDERER_MEDIA_ANDROID_WEBMEDIAPLAYER_MANAGER_ANDROID_H_

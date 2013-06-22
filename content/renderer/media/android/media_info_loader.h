@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_MEDIA_INFO_LOADER_H_
-#define WEBKIT_RENDERER_MEDIA_MEDIA_INFO_LOADER_H_
+#ifndef CONTENT_RENDERER_MEDIA_ANDROID_MEDIA_INFO_LOADER_H_
+#define CONTENT_RENDERER_MEDIA_ANDROID_MEDIA_INFO_LOADER_H_
 
 #include <string>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "webkit/renderer/media/active_loader.h"
 
 namespace WebKit {
@@ -21,12 +22,12 @@ class WebURLLoader;
 class WebURLRequest;
 }
 
-namespace webkit_media {
+namespace content {
 
 // This class provides additional information about a media URL. Currently it
 // can be used to determine if a media URL has a single security origin and
 // whether the URL passes a CORS access check.
-class MediaInfoLoader : private WebKit::WebURLLoaderClient {
+class CONTENT_EXPORT MediaInfoLoader : private WebKit::WebURLLoaderClient {
  public:
   // Status codes for start operations on MediaInfoLoader.
   enum Status {
@@ -104,7 +105,7 @@ class MediaInfoLoader : private WebKit::WebURLLoaderClient {
   scoped_ptr<WebKit::WebURLLoader> test_loader_;
 
   // Keeps track of an active WebURLLoader and associated state.
-  scoped_ptr<ActiveLoader> active_loader_;
+  scoped_ptr<webkit_media::ActiveLoader> active_loader_;
 
   bool loader_failed_;
   GURL url_;
@@ -117,6 +118,6 @@ class MediaInfoLoader : private WebKit::WebURLLoaderClient {
   DISALLOW_COPY_AND_ASSIGN(MediaInfoLoader);
 };
 
-}  // namespace webkit_media
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_MEDIA_MEDIA_INFO_LOADER_H_
+#endif  // CONTENT_RENDERER_MEDIA_ANDROID_MEDIA_INFO_LOADER_H_

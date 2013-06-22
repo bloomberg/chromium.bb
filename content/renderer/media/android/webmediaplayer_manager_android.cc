@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/android/webmediaplayer_manager_android.h"
+#include "content/renderer/media/android/webmediaplayer_manager_android.h"
 
+#include "content/renderer/media/android/webmediaplayer_android.h"
 #include "ui/gfx/rect_f.h"
-#include "webkit/renderer/media/android/webmediaplayer_android.h"
 
-namespace webkit_media {
+namespace content {
 
 WebMediaPlayerManagerAndroid::WebMediaPlayerManagerAndroid()
     : next_media_player_id_(0),
@@ -94,4 +94,4 @@ void WebMediaPlayerManagerAndroid::RetrieveGeometryChanges(
 }
 #endif
 
-}  // namespace webkit_media
+}  // namespace content
