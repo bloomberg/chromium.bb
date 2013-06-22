@@ -13,7 +13,6 @@ class BrowserView;
 namespace ui {
 class MouseEvent;
 class ThemeProvider;
-class NativeTheme;
 }
 
 // AvatarLabel
@@ -27,8 +26,6 @@ class AvatarLabel : public views::TextButton {
 
   // views::TextButton:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void GetExtraParams(
-      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
 
   // Update the style of the label according to the provided theme.
   void UpdateLabelStyle();
