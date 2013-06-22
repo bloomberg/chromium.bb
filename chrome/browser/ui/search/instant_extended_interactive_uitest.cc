@@ -1467,8 +1467,8 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
   EXPECT_EQ(2, on_theme_changed_calls);
 }
 
-// Flaky on Mac Tests bot.
-#if defined(OS_MACOSX)
+// Flaky on Mac and Linux Tests bots.
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_UpdateSearchQueryOnBackNavigation DISABLED_UpdateSearchQueryOnBackNavigation
 #else
 #define MAYBE_UpdateSearchQueryOnBackNavigation UpdateSearchQueryOnBackNavigation
@@ -1519,8 +1519,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
 }
 
-// Flaky on Mac Tests bot.
-#if defined(OS_MACOSX)
+// Flaky on Mac and Linux Tests bots.
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_UpdateSearchQueryOnForwardNavigation DISABLED_UpdateSearchQueryOnForwardNavigation
 #else
 #define MAYBE_UpdateSearchQueryOnForwardNavigation UpdateSearchQueryOnForwardNavigation
