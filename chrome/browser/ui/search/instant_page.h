@@ -10,7 +10,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/search/instant_ipc_sender.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
@@ -111,6 +113,9 @@ class InstantPage : public content::WebContentsObserver,
   // The WebContents corresponding to the page we're talking to. May be NULL.
   content::WebContents* contents() const { return web_contents(); }
 
+  // Used to send IPC messages to the page.
+  InstantIPCSender* sender() const { return ipc_sender_.get(); }
+
   // Returns the Instant URL that was loaded for this page. Returns the empty
   // string if no URL was explicitly loaded as is the case for InstantTab.
   virtual const std::string& instant_url() const;
@@ -125,76 +130,11 @@ class InstantPage : public content::WebContentsObserver,
   // chrome::kChromeSearchLocalNTPURL).
   virtual bool IsLocal() const;
 
-  // Tells the page that the user typed |text| into the omnibox. If |verbatim|
-  // is false, the page predicts the query the user means to type and fetches
-  // results for the prediction. If |verbatim| is true, |text| is taken as the
-  // exact query (no prediction is made). |selection_start| and |selection_end|
-  // mark the inline autocompleted portion (i.e., blue highlighted text). The
-  // omnibox caret (cursor) is at |selection_end|.
-  virtual void Update(const string16& text,
-                      size_t selection_start,
-                      size_t selection_end,
-                      bool verbatim);
-
-  // Tells the page that the user pressed Enter in the omnibox.
-  void Submit(const string16& text);
-
-  // Tells the page that the user clicked on it. Nothing is being cancelled; the
-  // poor choice of name merely reflects the IPC of the same (poor) name.
-  void Cancel(const string16& text);
-
-  // Tells the page the bounds of the omnibox dropdown (in screen coordinates).
-  // This is used by the page to offset the results to avoid them being covered
-  // by the omnibox dropdown.
-  void SetPopupBounds(const gfx::Rect& bounds);
-
-  // Tells the page the bounds of the omnibox (in screen coordinates). This is
-  // used by the page to align text or assets properly with the omnibox.
-  void SetOmniboxBounds(const gfx::Rect& bounds);
-
-  // Tells the page about the font information.
   void InitializeFonts();
 
-  // Tells the page about the available autocomplete results.
-  void SendAutocompleteResults(
-      const std::vector<InstantAutocompleteResult>& results);
-
-  // Tells the page that the user pressed Up or Down in the omnibox. |count| is
-  // a repeat count, negative for moving up, positive for moving down.
-  void UpOrDownKeyPressed(int count);
-
-  // Tells the page that the user pressed Esc key in the omnibox.
-  void EscKeyPressed();
-
-  // Tells the page that the user pressed Esc in the omnibox after having
-  // arrowed down in the suggestions. The page should reset the selection to
-  // the first suggestion. Arguments are the same as those for Update().
-  void CancelSelection(const string16& user_text,
-                       size_t selection_start,
-                       size_t selection_end,
-                       bool verbatim);
-
-  // Tells the page about the current theme background.
-  void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
-
-  // Tells the page whether it is allowed to display Instant results.
-  void SetDisplayInstantResults(bool display_instant_results);
-
-  // Tells the page that the omnibox focus has changed.
-  void FocusChanged(OmniboxFocusState state, OmniboxFocusChangeReason reason);
-
-  // Tells the page that user input started or stopped.
-  void SetInputInProgress(bool input_in_progress);
-
-  // Tells the page about new Most Visited data.
-  void SendMostVisitedItems(
-      const std::vector<InstantMostVisitedItem>& items);
-
-  // Tells the page to toggle voice search.
-  void ToggleVoiceSearch();
-
  protected:
-  InstantPage(Delegate* delegate, const std::string& instant_url);
+  InstantPage(Delegate* delegate, const std::string& instant_url,
+              bool is_incognito);
 
   // Sets |web_contents| as the page to communicate with. |web_contents| may be
   // NULL, which effectively stops all communication.
@@ -228,6 +168,8 @@ class InstantPage : public content::WebContentsObserver,
                            IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
                            IgnoreMessageReceivedFromThePage);
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+                           IgnoreMessageReceivedFromIncognitoPage);
 
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewCreated(
@@ -276,7 +218,9 @@ class InstantPage : public content::WebContentsObserver,
   void ClearContents();
 
   Delegate* const delegate_;
+  scoped_ptr<InstantIPCSender> ipc_sender_;
   const std::string instant_url_;
+  const bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantPage);
 };

@@ -420,7 +420,7 @@ const SearchTestCase kInstantNTPTestCases[] = {
   {"http://foo.com/instant?strk=1",        false, "Insecure URL"},
   {"https://foo.com/instant",              false, "No search term replacement"},
   {"chrome://blank/",                      false, "Chrome scheme"},
-  {"chrome-search://foo",                   false, "Chrome-search scheme"},
+  {"chrome-search://foo",                  false, "Chrome-search scheme"},
   {chrome::kChromeSearchLocalNtpUrl,       true,  "Local new tab page"},
   {chrome::kChromeSearchLocalGoogleNtpUrl, true,  "Local new tab page"},
   {"https://bar.com/instant?strk=1",       false, "Random non-search page"},

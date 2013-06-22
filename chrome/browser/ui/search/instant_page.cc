@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/search/instant_ipc_sender.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/render_messages.h"
@@ -41,31 +42,6 @@ bool InstantPage::IsLocal() const {
        contents()->GetURL() == GURL(chrome::kChromeSearchLocalGoogleNtpUrl));
 }
 
-void InstantPage::Update(const string16& text,
-                         size_t selection_start,
-                         size_t selection_end,
-                         bool verbatim) {
-  Send(new ChromeViewMsg_SearchBoxChange(routing_id(), text, verbatim,
-                                         selection_start, selection_end));
-}
-
-void InstantPage::Submit(const string16& text) {
-  Send(new ChromeViewMsg_SearchBoxSubmit(routing_id(), text));
-}
-
-void InstantPage::Cancel(const string16& text) {
-  Send(new ChromeViewMsg_SearchBoxCancel(routing_id(), text));
-}
-
-void InstantPage::SetPopupBounds(const gfx::Rect& bounds) {
-  Send(new ChromeViewMsg_SearchBoxPopupResize(routing_id(), bounds));
-}
-
-void InstantPage::SetOmniboxBounds(const gfx::Rect& bounds) {
-  Send(new ChromeViewMsg_SearchBoxMarginChange(
-      routing_id(), bounds.x(), bounds.width()));
-}
-
 void InstantPage::InitializeFonts() {
 #if defined(OS_MACOSX)
   // This value should be kept in sync with OmniboxViewMac::GetFieldFont.
@@ -77,65 +53,16 @@ void InstantPage::InitializeFonts() {
       ui::ResourceBundle::GetSharedInstance().GetFont(
           ui::ResourceBundle::MediumFont);
 #endif
-  string16 omnibox_font_name = UTF8ToUTF16(omnibox_font.GetFontName());
-  size_t omnibox_font_size = omnibox_font.GetFontSize();
-  Send(new ChromeViewMsg_SearchBoxFontInformation(
-      routing_id(), omnibox_font_name, omnibox_font_size));
+  sender()->SetFontInformation(UTF8ToUTF16(omnibox_font.GetFontName()),
+                               omnibox_font.GetFontSize());
 }
 
-void InstantPage::SendAutocompleteResults(
-    const std::vector<InstantAutocompleteResult>& results) {
-  Send(new ChromeViewMsg_SearchBoxAutocompleteResults(routing_id(), results));
-}
-
-void InstantPage::UpOrDownKeyPressed(int count) {
-  Send(new ChromeViewMsg_SearchBoxUpOrDownKeyPressed(routing_id(), count));
-}
-
-void InstantPage::EscKeyPressed() {
-  Send(new ChromeViewMsg_SearchBoxEscKeyPressed(routing_id()));
-}
-
-void InstantPage::CancelSelection(const string16& user_text,
-                                  size_t selection_start,
-                                  size_t selection_end,
-                                  bool verbatim) {
-  Send(new ChromeViewMsg_SearchBoxCancelSelection(
-      routing_id(), user_text, verbatim, selection_start, selection_end));
-}
-
-void InstantPage::SendThemeBackgroundInfo(
-    const ThemeBackgroundInfo& theme_info) {
-  Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));
-}
-
-void InstantPage::SetDisplayInstantResults(bool display_instant_results) {
-  Send(new ChromeViewMsg_SearchBoxSetDisplayInstantResults(
-      routing_id(), display_instant_results));
-}
-
-void InstantPage::FocusChanged(OmniboxFocusState state,
-                               OmniboxFocusChangeReason reason) {
-  Send(new ChromeViewMsg_SearchBoxFocusChanged(routing_id(), state, reason));
-}
-
-void InstantPage::SetInputInProgress(bool input_in_progress) {
-  Send(new ChromeViewMsg_SearchBoxSetInputInProgress(
-      routing_id(), input_in_progress));
-}
-
-void InstantPage::SendMostVisitedItems(
-    const std::vector<InstantMostVisitedItem>& items) {
-  Send(new ChromeViewMsg_SearchBoxMostVisitedItemsChanged(routing_id(), items));
-}
-
-void InstantPage::ToggleVoiceSearch() {
-  Send(new ChromeViewMsg_SearchBoxToggleVoiceSearch(routing_id()));
-}
-
-InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url)
+InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url,
+                         bool is_incognito)
     : delegate_(delegate),
-      instant_url_(instant_url) {
+      ipc_sender_(InstantIPCSender::Create(is_incognito)),
+      instant_url_(instant_url),
+      is_incognito_(is_incognito) {
 }
 
 void InstantPage::SetContents(content::WebContents* web_contents) {
@@ -144,6 +71,7 @@ void InstantPage::SetContents(content::WebContents* web_contents) {
   if (!web_contents)
     return;
 
+  sender()->SetContents(web_contents);
   Observe(web_contents);
   SearchModel* model = SearchTabHelper::FromWebContents(contents())->model();
   model->AddObserver(this);
@@ -199,6 +127,9 @@ void InstantPage::RenderViewCreated(content::RenderViewHost* render_view_host) {
 }
 
 bool InstantPage::OnMessageReceived(const IPC::Message& message) {
+  if (is_incognito_)
+    return false;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InstantPage, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetSuggestions, OnSetSuggestions)
@@ -359,5 +290,6 @@ void InstantPage::ClearContents() {
   if (contents())
     SearchTabHelper::FromWebContents(contents())->model()->RemoveObserver(this);
 
+  sender()->SetContents(NULL);
   Observe(NULL);
 }

@@ -21,7 +21,8 @@ class Profile;
 class InstantNTP : public InstantPage,
                    public InstantLoader::Delegate {
  public:
-  InstantNTP(InstantPage::Delegate* delegate, const std::string& instant_url);
+  InstantNTP(InstantPage::Delegate* delegate, const std::string& instant_url,
+             bool is_incognito);
   virtual ~InstantNTP();
 
   // Creates a new WebContents and loads |instant_url_| into it. Uses

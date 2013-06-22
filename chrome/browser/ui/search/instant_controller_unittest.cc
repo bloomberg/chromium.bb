@@ -26,7 +26,7 @@ class TestableInstantOverlay : public InstantOverlay {
  public:
   TestableInstantOverlay(InstantController* controller,
                          const std::string& instant_url)
-      : InstantOverlay(controller, instant_url) {
+      : InstantOverlay(controller, instant_url, false) {
   }
 
   // Overrides from InstantPage
@@ -56,7 +56,7 @@ class TestableInstantNTP : public InstantNTP {
  public:
   TestableInstantNTP(InstantController* controller,
                      const std::string& instant_url)
-      : InstantNTP(controller, instant_url) {
+      : InstantNTP(controller, instant_url, false) {
   }
 
   // Overrides from InstantPage

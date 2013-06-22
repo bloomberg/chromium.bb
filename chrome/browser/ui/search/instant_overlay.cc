@@ -40,8 +40,9 @@ InstantOverlay* InstantOverlay::FromWebContents(
 }
 
 InstantOverlay::InstantOverlay(InstantController* controller,
-                               const std::string& instant_url)
-    : InstantPage(controller, instant_url),
+                               const std::string& instant_url,
+                               bool is_incognito)
+    : InstantPage(controller, instant_url, is_incognito),
       loader_(this),
       is_stale_(false),
       is_pointer_down_from_activate_(false) {
@@ -76,7 +77,7 @@ void InstantOverlay::Update(const string16& text,
                             size_t selection_end,
                             bool verbatim) {
   last_navigation_ = history::HistoryAddPageArgs();
-  InstantPage::Update(text, selection_start, selection_end, verbatim);
+  sender()->Update(text, selection_start, selection_end, verbatim);
 }
 
 bool InstantOverlay::ShouldProcessRenderViewCreated() {

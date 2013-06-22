@@ -32,7 +32,8 @@ class InstantOverlay : public InstantPage,
   static InstantOverlay* FromWebContents(const content::WebContents* contents);
 
   InstantOverlay(InstantController* controller,
-                 const std::string& instant_url);
+                 const std::string& instant_url,
+                 bool is_incognito);
   virtual ~InstantOverlay();
 
   // Creates a new WebContents and loads |instant_url_| into it. Uses
@@ -64,11 +65,12 @@ class InstantOverlay : public InstantPage,
   // to the history service had this WebContents not been used for Instant.
   void DidNavigate(const history::HistoryAddPageArgs& add_page_args);
 
-  // Overridden from InstantPage:
-  virtual void Update(const string16& text,
-                      size_t selection_start,
-                      size_t selection_end,
-                      bool verbatim) OVERRIDE;
+  // Wrapper around InstantIPCSender::Update that also clears
+  // |last_navigation_|.
+  void Update(const string16& text,
+              size_t selection_start,
+              size_t selection_end,
+              bool verbatim);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantOverlayRefresh);

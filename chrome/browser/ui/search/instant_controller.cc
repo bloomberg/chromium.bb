@@ -339,7 +339,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // when keyword search is in effect.
   if (is_keyword_search) {
     if (UseTabForSuggestions())
-      instant_tab_->Update(string16(), 0, 0, true);
+      instant_tab_->sender()->Update(string16(), 0, 0, true);
     else
       HideOverlay();
     last_match_was_search_ = false;
@@ -413,10 +413,10 @@ bool InstantController::Update(const AutocompleteMatch& match,
             // onsubmit(full_text). Fix.
             if (full_text.empty()) {
               // Call onchange("") to clear the query for the page.
-              instant_tab_->Update(string16(), 0, 0, true);
-              instant_tab_->EscKeyPressed();
+              instant_tab_->sender()->Update(string16(), 0, 0, true);
+              instant_tab_->sender()->EscKeyPressed();
              } else {
-              instant_tab_->Submit(full_text);
+              instant_tab_->sender()->Submit(full_text);
             }
           }
         } else if (!full_text.empty()) {
@@ -432,7 +432,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
         last_suggestion_ = InstantSuggestion();
         if (UseTabForSuggestions()) {
           // On a search results page, tell it to clear old results.
-          instant_tab_->Update(string16(), 0, 0, true);
+          instant_tab_->sender()->Update(string16(), 0, 0, true);
         } else if (overlay_ && search_mode_.is_origin_ntp()) {
           // On the NTP, tell the overlay to clear old results. Don't hide the
           // overlay so it can show a blank page or logo if it wants.
@@ -447,9 +447,10 @@ bool InstantController::Update(const AutocompleteMatch& match,
         // The new tab may or may not be a search results page; we don't know
         // since SearchModeChanged() hasn't been called yet. If it later turns
         // out to be, we should store |full_text| now, so that if the user hits
-        // Enter, we'll send the correct query to instant_tab_->Submit(). If the
-        // partial text is not a query (|last_match_was_search_| is false), we
-        // won't Submit(), so no need to worry about that.
+        // Enter, we'll send the correct query to
+        // instant_tab_->sender()->Submit(). If the partial text is not a query
+        // (|last_match_was_search_| is false), we won't Submit(), so no need to
+        // worry about that.
         last_user_text_ = user_text;
         last_suggestion_ = InstantSuggestion();
       }
@@ -460,7 +461,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
       last_user_text_.clear();
       last_suggestion_ = InstantSuggestion();
       if (UseTabForSuggestions())
-        instant_tab_->Update(string16(), 0, 0, true);
+        instant_tab_->sender()->Update(string16(), 0, 0, true);
       else if (overlay_ && search_mode_.is_origin_ntp())
         overlay_->Update(string16(), 0, 0, true);
       else
@@ -516,7 +517,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
     search_mode_.mode = SearchMode::MODE_SEARCH_SUGGESTIONS;
 
   if (UseTabForSuggestions()) {
-    instant_tab_->Update(user_text, selection_start, selection_end, verbatim);
+    instant_tab_->sender()->Update(user_text, selection_start,
+                                   selection_end, verbatim);
   } else if (overlay_) {
     allow_overlay_to_show_search_suggestions_ = true;
 
@@ -595,11 +597,11 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
 
   omnibox_bounds_ = bounds;
   if (overlay_)
-    overlay_->SetOmniboxBounds(omnibox_bounds_);
+    overlay_->sender()->SetOmniboxBounds(omnibox_bounds_);
   if (ntp_)
-    ntp_->SetOmniboxBounds(omnibox_bounds_);
+    ntp_->sender()->SetOmniboxBounds(omnibox_bounds_);
   if (instant_tab_)
-    instant_tab_->SetOmniboxBounds(omnibox_bounds_);
+    instant_tab_->sender()->SetOmniboxBounds(omnibox_bounds_);
 }
 
 void InstantController::HandleAutocompleteResults(
@@ -670,9 +672,9 @@ void InstantController::HandleAutocompleteResults(
       static_cast<int>(results.size())));
 
   if (UseTabForSuggestions())
-    instant_tab_->SendAutocompleteResults(results);
+    instant_tab_->sender()->SendAutocompleteResults(results);
   else if (overlay_)
-    overlay_->SendAutocompleteResults(results);
+    overlay_->sender()->SendAutocompleteResults(results);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_SENT_AUTOCOMPLETE_RESULTS,
@@ -706,9 +708,9 @@ bool InstantController::OnUpOrDownKeyPressed(int count) {
     return false;
 
   if (UseTabForSuggestions())
-    instant_tab_->UpOrDownKeyPressed(count);
+    instant_tab_->sender()->UpOrDownKeyPressed(count);
   else if (overlay_)
-    overlay_->UpOrDownKeyPressed(count);
+    overlay_->sender()->UpOrDownKeyPressed(count);
 
   return true;
 }
@@ -735,11 +737,11 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
   // user_text.size() to full_text.size(). The selection bounds are inverted
   // because the caret is at the end of |user_text|, not |full_text|.
   if (UseTabForSuggestions()) {
-    instant_tab_->CancelSelection(user_text, full_text.size(), user_text.size(),
-                                  last_verbatim_);
+    instant_tab_->sender()->CancelSelection(user_text, full_text.size(),
+                                            user_text.size(), last_verbatim_);
   } else if (overlay_) {
-    overlay_->CancelSelection(user_text, full_text.size(), user_text.size(),
-                              last_verbatim_);
+    overlay_->sender()->CancelSelection(user_text, full_text.size(),
+                                        user_text.size(), last_verbatim_);
   }
 }
 
@@ -748,12 +750,12 @@ void InstantController::OmniboxNavigateToURL() {
   if (!extended_enabled())
     return;
   if (UseTabForSuggestions())
-    instant_tab_->Submit(string16());
+    instant_tab_->sender()->Submit(string16());
 }
 
 void InstantController::ToggleVoiceSearch() {
   if (instant_tab_)
-    instant_tab_->ToggleVoiceSearch();
+    instant_tab_->sender()->ToggleVoiceSearch();
 }
 
 void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
@@ -816,7 +818,7 @@ bool InstantController::SubmitQuery(const string16& search_terms) {
       search_mode_.is_origin_search()) {
     // Use |instant_tab_| to run the query if we're already on a search results
     // page. (NOTE: in particular, we do not send the query to NTPs.)
-    instant_tab_->Submit(search_terms);
+    instant_tab_->sender()->Submit(search_terms);
     instant_tab_->contents()->GetView()->Focus();
     EnsureSearchTermsAreSet(instant_tab_->contents(), search_terms);
     return true;
@@ -842,7 +844,7 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
         (last_match_was_search_ ||
          last_suggestion_.behavior == INSTANT_COMPLETE_NEVER)) {
       last_suggestion_.text.clear();
-      instant_tab_->Submit(last_omnibox_text_);
+      instant_tab_->sender()->Submit(last_omnibox_text_);
       instant_tab_->contents()->GetView()->Focus();
       EnsureSearchTermsAreSet(instant_tab_->contents(), last_omnibox_text_);
       return true;
@@ -875,9 +877,9 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   if (type == INSTANT_COMMIT_FOCUS_LOST) {
     // Extended mode doesn't need or use the Cancel message.
     if (!extended_enabled())
-      overlay_->Cancel(last_omnibox_text_);
+      overlay_->sender()->Cancel(last_omnibox_text_);
   } else if (type != INSTANT_COMMIT_NAVIGATED) {
-    overlay_->Submit(last_omnibox_text_);
+    overlay_->sender()->Submit(last_omnibox_text_);
   }
 
   // We expect the WebContents to be in a valid state (i.e., has a last
@@ -989,15 +991,15 @@ void InstantController::OmniboxFocusChanged(
 
   if (extended_enabled()) {
     if (overlay_)
-      overlay_->FocusChanged(omnibox_focus_state_, reason);
+      overlay_->sender()->FocusChanged(omnibox_focus_state_, reason);
 
     if (instant_tab_) {
-      instant_tab_->FocusChanged(omnibox_focus_state_, reason);
+      instant_tab_->sender()->FocusChanged(omnibox_focus_state_, reason);
       // Don't send oninputstart/oninputend updates in response to focus changes
       // if there's a navigation in progress. This prevents Chrome from sending
       // a spurious oninputend when the user accepts a match in the omnibox.
       if (instant_tab_->contents()->GetController().GetPendingEntry() == NULL)
-        instant_tab_->SetInputInProgress(IsInputInProgress());
+        instant_tab_->sender()->SetInputInProgress(IsInputInProgress());
     }
   }
 
@@ -1031,7 +1033,7 @@ void InstantController::SearchModeChanged(const SearchMode& old_mode,
   ResetInstantTab();
 
   if (instant_tab_ && old_mode.is_ntp() != new_mode.is_ntp())
-    instant_tab_->SetInputInProgress(IsInputInProgress());
+    instant_tab_->sender()->SetInputInProgress(IsInputInProgress());
 }
 
 void InstantController::ActiveTabChanged() {
@@ -1085,7 +1087,7 @@ void InstantController::SetInstantEnabled(bool instant_enabled,
     ResetNTP(GetInstantURL());
 
   if (instant_tab_)
-    instant_tab_->SetDisplayInstantResults(instant_enabled_);
+    instant_tab_->sender()->SetDisplayInstantResults(instant_enabled_);
 }
 
 void InstantController::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
@@ -1093,11 +1095,11 @@ void InstantController::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
     return;
 
   if (overlay_)
-    overlay_->SendThemeBackgroundInfo(theme_info);
+    overlay_->sender()->SendThemeBackgroundInfo(theme_info);
   if (ntp_)
-    ntp_->SendThemeBackgroundInfo(theme_info);
+    ntp_->sender()->SendThemeBackgroundInfo(theme_info);
   if (instant_tab_)
-    instant_tab_->SendThemeBackgroundInfo(theme_info);
+    instant_tab_->sender()->SendThemeBackgroundInfo(theme_info);
 }
 
 void InstantController::SwappedOverlayContents() {
@@ -1165,19 +1167,19 @@ void InstantController::UpdateMostVisitedItems() {
   if (overlay_ && GetOverlayContents() &&
       SearchTabHelper::FromWebContents(overlay_->contents())->
           UpdateLastKnownMostVisitedItems(items)) {
-    overlay_->SendMostVisitedItems(items);
+    overlay_->sender()->SendMostVisitedItems(items);
   }
 
   if (ntp_ && ntp_->contents() &&
       SearchTabHelper::FromWebContents(ntp_->contents())->
           UpdateLastKnownMostVisitedItems(items)) {
-    ntp_->SendMostVisitedItems(items);
+    ntp_->sender()->SendMostVisitedItems(items);
   }
 
   if (instant_tab_ && instant_tab_->contents() &&
       SearchTabHelper::FromWebContents(instant_tab_->contents())->
           UpdateLastKnownMostVisitedItems(items)) {
-    instant_tab_->SendMostVisitedItems(items);
+    instant_tab_->sender()->SendMostVisitedItems(items);
   }
 
   content::NotificationService::current()->Notify(
@@ -1243,13 +1245,14 @@ void InstantController::InstantPageRenderViewCreated(
 
   // Ensure the searchbox API has the correct initial state.
   if (IsContentsFrom(overlay(), contents)) {
-    overlay_->SetDisplayInstantResults(instant_enabled_);
-    overlay_->FocusChanged(omnibox_focus_state_, omnibox_focus_change_reason_);
-    overlay_->SetOmniboxBounds(omnibox_bounds_);
+    overlay_->sender()->SetDisplayInstantResults(instant_enabled_);
+    overlay_->sender()->FocusChanged(omnibox_focus_state_,
+                                     omnibox_focus_change_reason_);
+    overlay_->sender()->SetOmniboxBounds(omnibox_bounds_);
     overlay_->InitializeFonts();
   } else if (IsContentsFrom(ntp(), contents)) {
-    ntp_->SetDisplayInstantResults(instant_enabled_);
-    ntp_->SetOmniboxBounds(omnibox_bounds_);
+    ntp_->sender()->SetDisplayInstantResults(instant_enabled_);
+    ntp_->sender()->SetOmniboxBounds(omnibox_bounds_);
     ntp_->InitializeFonts();
   } else {
     NOTREACHED();
@@ -1599,7 +1602,8 @@ void InstantController::ResetNTP(const std::string& instant_url) {
   // Instant NTP is only used in extended mode so we should always have a
   // non-empty URL to use.
   DCHECK(!instant_url.empty());
-  ntp_.reset(new InstantNTP(this, instant_url));
+  ntp_.reset(new InstantNTP(this, instant_url,
+                            browser_->profile()->IsOffTheRecord()));
   ntp_->InitContents(profile(), browser_->GetActiveWebContents(),
                      base::Bind(&InstantController::ReloadStaleNTP,
                                 base::Unretained(this)));
@@ -1661,13 +1665,11 @@ InstantController::ShouldSwitchToLocalOverlay() const {
 }
 
 void InstantController::ResetInstantTab() {
-  // Do not wire up the InstantTab in Incognito, to prevent it from sending data
-  // to the page.
-  if (!search_mode_.is_origin_default() &&
-      !browser_->profile()->IsOffTheRecord()) {
+  if (!search_mode_.is_origin_default()) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     if (!instant_tab_ || active_tab != instant_tab_->contents()) {
-      instant_tab_.reset(new InstantTab(this));
+      instant_tab_.reset(
+          new InstantTab(this, browser_->profile()->IsOffTheRecord()));
       instant_tab_->Init(active_tab);
       UpdateInfoForInstantTab();
       use_tab_for_suggestions_ = true;
@@ -1683,13 +1685,13 @@ void InstantController::ResetInstantTab() {
 void InstantController::UpdateInfoForInstantTab() {
   if (instant_tab_) {
     browser_->UpdateThemeInfo();
-    instant_tab_->SetDisplayInstantResults(instant_enabled_);
-    instant_tab_->SetOmniboxBounds(omnibox_bounds_);
+    instant_tab_->sender()->SetDisplayInstantResults(instant_enabled_);
+    instant_tab_->sender()->SetOmniboxBounds(omnibox_bounds_);
     instant_tab_->InitializeFonts();
     UpdateMostVisitedItems();
-    instant_tab_->FocusChanged(omnibox_focus_state_,
-                               omnibox_focus_change_reason_);
-    instant_tab_->SetInputInProgress(IsInputInProgress());
+    instant_tab_->sender()->FocusChanged(omnibox_focus_state_,
+                                         omnibox_focus_change_reason_);
+    instant_tab_->sender()->SetInputInProgress(IsInputInProgress());
   }
 }
 
@@ -1792,7 +1794,7 @@ void InstantController::SendPopupBoundsToPage() {
   DCHECK_LE(0, intersection.width());
   DCHECK_LE(0, intersection.height());
 
-  overlay_->SetPopupBounds(intersection);
+  overlay_->sender()->SetPopupBounds(intersection);
 }
 
 

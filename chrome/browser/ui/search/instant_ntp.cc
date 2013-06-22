@@ -8,8 +8,9 @@
 #include "content/public/browser/web_contents.h"
 
 InstantNTP::InstantNTP(InstantPage::Delegate* delegate,
-                       const std::string& instant_url)
-    : InstantPage(delegate, instant_url),
+                       const std::string& instant_url,
+                       bool is_incognito)
+    : InstantPage(delegate, instant_url, is_incognito),
       loader_(this) {
 }
 

@@ -1349,6 +1349,8 @@
         'browser/ui/search/instant_commit_type.h',
         'browser/ui/search/instant_controller.cc',
         'browser/ui/search/instant_controller.h',
+        'browser/ui/search/instant_ipc_sender.cc',
+        'browser/ui/search/instant_ipc_sender.h',
         'browser/ui/search/instant_loader.cc',
         'browser/ui/search/instant_loader.h',
         'browser/ui/search/instant_ntp.cc',
