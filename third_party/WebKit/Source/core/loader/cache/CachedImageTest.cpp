@@ -44,6 +44,9 @@
 #include "core/platform/graphics/Image.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLResponse.h"
+#include "public/platform/WebUnitTestSupport.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;
@@ -138,8 +141,16 @@ TEST(CachedImageTest, MultipartImage)
 
 TEST(CachedImageTest, CancelOnDetach)
 {
-    // Create enough of a mocked world to get a functioning ResourceLoader.
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
+
+    WebKit::WebURLResponse response;
+    response.initialize();
+    response.setMIMEType("text/html");
+    WTF::String localPath = WebKit::Platform::current()->unitTestSupport()->webKitRootDir();
+    localPath.append("/Source/WebKit/chromium/tests/data/cancelTest.html");
+    WebKit::Platform::current()->unitTestSupport()->registerMockedURL(testURL, response, localPath);
+
+    // Create enough of a mocked world to get a functioning ResourceLoader.
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     EmptyFrameLoaderClient frameLoaderClient;
@@ -168,6 +179,8 @@ TEST(CachedImageTest, CancelOnDetach)
     runPendingTasks();
     EXPECT_EQ(CachedResource::LoadError, cachedImage->status());
     EXPECT_EQ(reinterpret_cast<CachedResource*>(0), memoryCache()->resourceForURL(testURL));
+
+    WebKit::Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
 }
 
 } // namespace
