@@ -349,6 +349,9 @@ class UserManager {
 
   virtual void NotifyLocalStateChanged() = 0;
 
+  // Returns true if locally managed users allowed.
+  virtual bool AreLocallyManagedUsersAllowed() const = 0;
+
  private:
   friend class ScopedUserManagerEnabler;
 

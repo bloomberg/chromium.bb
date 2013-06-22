@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 218
+#   For your editing convenience: highest ID currently used: 219
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4981,6 +4981,24 @@
           'desc': '''A dictionary mapping URLs to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
 
           This policy is for internal use by Chrome itself.''',
+        },
+        {
+          'name': 'SupervisedUsersEnabled',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:29-'],
+          'device_only': True,
+          'features': {
+            'dynamic_refresh': False,
+          },
+          'example_value': True,
+          'id': 219,
+          'caption': '''Enable supervised users.''',
+          'desc': '''If set to true, it is possible to create and log in as a supervised user.
+
+          If set to false or not configured, supervised users creation and login will be disabled. All existing supervised users will be hidden.
+
+          NOTE: The default behavior for consumer and enterprise devices differs: on consumer devices supervised users are enabled by default, but on enterprice devices they aren't.'''
         },
       ],
     },

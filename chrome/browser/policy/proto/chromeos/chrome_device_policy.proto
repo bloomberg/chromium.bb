@@ -408,6 +408,11 @@ message AccessibilitySettingsProto {
   optional ScreenMagnifierType login_screen_default_screen_magnifier_type = 4;
 }
 
+message SupervisedUsersSettingsProto {
+  // Defines whether supervised users can be created on the device.
+  optional bool supervised_users_enabled = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -436,4 +441,5 @@ message ChromeDeviceSettingsProto {
   optional VariationsParameterProto variations_parameter = 25;
   optional AttestationSettingsProto attestation_settings = 26;
   optional AccessibilitySettingsProto accessibility_settings = 27;
+  optional SupervisedUsersSettingsProto supervised_users_settings = 28;
 }

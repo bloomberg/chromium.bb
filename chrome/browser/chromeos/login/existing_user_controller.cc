@@ -181,8 +181,13 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
   if (show_users_on_signin) {
     for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
       // TODO(xiyuan): Clean user profile whose email is not in whitelist.
-      if (LoginUtils::IsWhitelisted((*it)->email()) ||
-          (*it)->GetType() != User::USER_TYPE_REGULAR) {
+      bool meets_locally_managed_requirements =
+          (*it)->GetType() != User::USER_TYPE_LOCALLY_MANAGED ||
+          UserManager::Get()->AreLocallyManagedUsersAllowed();
+      bool meets_whitelist_requirements =
+          LoginUtils::IsWhitelisted((*it)->email()) ||
+          (*it)->GetType() != User::USER_TYPE_REGULAR;
+      if (meets_locally_managed_requirements && meets_whitelist_requirements) {
         filtered_users.push_back(*it);
       }
     }
@@ -438,6 +443,11 @@ void ExistingUserController::PerformLogin(
   is_login_in_progress_ = true;
   if (gaia::ExtractDomainName(user_context.username) ==
           UserManager::kLocallyManagedUserDomain) {
+    if (!UserManager::Get()->AreLocallyManagedUsersAllowed()) {
+      LOG(ERROR) << "Login attempt of locally managed user detected.";
+      login_display_->SetUIEnabled(true);
+      return;
+    }
     login_performer_->LoginAsLocallyManagedUser(
         UserContext(user_context.username,
                     user_context.password,

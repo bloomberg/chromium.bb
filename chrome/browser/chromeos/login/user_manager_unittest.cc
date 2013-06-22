@@ -47,12 +47,11 @@ class UserManagerTest : public testing::Test {
     cros_settings_->AddSettingsProvider(&stub_settings_provider_);
 
     // Populate the stub DeviceSettingsProvider with valid values.
-    SetDeviceSettings(false, "");
+    SetDeviceSettings(false, "", false);
 
     // Register an in-memory local settings instance.
     local_state_.reset(new TestingPrefServiceSimple);
-    reinterpret_cast<TestingBrowserProcess*>(g_browser_process)
-        ->SetLocalState(local_state_.get());
+    TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());
     UserManager::RegisterPrefs(local_state_->registry());
     // Wallpaper manager and user image managers prefs will be accessed by the
     // unit-test as well.
@@ -64,8 +63,7 @@ class UserManagerTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     // Unregister the in-memory local settings instance.
-    reinterpret_cast<TestingBrowserProcess*>(g_browser_process)
-        ->SetLocalState(0);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(0);
 
     // Restore the real DeviceSettingsProvider.
     EXPECT_TRUE(
@@ -78,24 +76,28 @@ class UserManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  UserManagerImpl* GetUserManagerImpl() const {
+    return static_cast<UserManagerImpl*>(UserManager::Get());
+  }
+
   bool GetUserManagerEphemeralUsersEnabled() const {
-    return reinterpret_cast<UserManagerImpl*>(UserManager::Get())->
-        ephemeral_users_enabled_;
+    return GetUserManagerImpl()->ephemeral_users_enabled_;
+  }
+
+  bool GetUserManagerLocallyManagedUsersEnabledByPolicy() const {
+    return GetUserManagerImpl()->locally_managed_users_enabled_by_policy_;
   }
 
   void SetUserManagerEphemeralUsersEnabled(bool ephemeral_users_enabled) {
-    reinterpret_cast<UserManagerImpl*>(UserManager::Get())->
-        ephemeral_users_enabled_ = ephemeral_users_enabled;
+    GetUserManagerImpl()->ephemeral_users_enabled_ = ephemeral_users_enabled;
   }
 
   const std::string& GetUserManagerOwnerEmail() const {
-    return reinterpret_cast<UserManagerImpl*>(UserManager::Get())->
-        owner_email_;
+    return GetUserManagerImpl()-> owner_email_;
   }
 
   void SetUserManagerOwnerEmail(const std::string& owner_email) {
-    reinterpret_cast<UserManagerImpl*>(UserManager::Get())->
-        owner_email_ = owner_email;
+    GetUserManagerImpl()->owner_email_ = owner_email;
   }
 
   void ResetUserManager() {
@@ -107,18 +109,20 @@ class UserManagerTest : public testing::Test {
   }
 
   void SetDeviceSettings(bool ephemeral_users_enabled,
-                         const std::string &owner) {
+                         const std::string &owner,
+                         bool locally_managed_users_enabled) {
     base::FundamentalValue
         ephemeral_users_enabled_value(ephemeral_users_enabled);
     stub_settings_provider_.Set(kAccountsPrefEphemeralUsersEnabled,
         ephemeral_users_enabled_value);
     base::StringValue owner_value(owner);
     stub_settings_provider_.Set(kDeviceOwner, owner_value);
+    stub_settings_provider_.Set(kAccountsPrefSupervisedUsersEnabled,
+        base::FundamentalValue(locally_managed_users_enabled));
   }
 
   void RetrieveTrustedDevicePolicies() {
-    reinterpret_cast<UserManagerImpl*>(UserManager::Get())->
-        RetrieveTrustedDevicePolicies();
+    GetUserManagerImpl()->RetrieveTrustedDevicePolicies();
   }
 
  protected:
@@ -142,7 +146,7 @@ TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {
   SetUserManagerEphemeralUsersEnabled(true);
   SetUserManagerOwnerEmail("");
 
-  SetDeviceSettings(false, "owner@invalid.domain");
+  SetDeviceSettings(false, "owner@invalid.domain", false);
   RetrieveTrustedDevicePolicies();
 
   EXPECT_FALSE(GetUserManagerEphemeralUsersEnabled());
@@ -166,7 +170,7 @@ TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
   EXPECT_EQ((*users)[1]->email(), "user0@invalid.domain");
   EXPECT_EQ((*users)[2]->email(), "owner@invalid.domain");
 
-  SetDeviceSettings(true, "owner@invalid.domain");
+  SetDeviceSettings(true, "owner@invalid.domain", false);
   RetrieveTrustedDevicePolicies();
 
   users = &UserManager::Get()->GetUsers();
@@ -175,7 +179,7 @@ TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
 }
 
 TEST_F(UserManagerTest, RegularUserLoggedInAsEphemeral) {
-  SetDeviceSettings(true, "owner@invalid.domain");
+  SetDeviceSettings(true, "owner@invalid.domain", false);
   RetrieveTrustedDevicePolicies();
 
   UserManager::Get()->UserLoggedIn(
@@ -188,6 +192,15 @@ TEST_F(UserManagerTest, RegularUserLoggedInAsEphemeral) {
   const UserList* users = &UserManager::Get()->GetUsers();
   EXPECT_EQ(1U, users->size());
   EXPECT_EQ((*users)[0]->email(), "owner@invalid.domain");
+}
+
+TEST_F(UserManagerTest, DisablingLMUByDeviceSettings) {
+  SetDeviceSettings(false, "owner@invalid.domain", false);
+  RetrieveTrustedDevicePolicies();
+  EXPECT_EQ(GetUserManagerLocallyManagedUsersEnabledByPolicy(), false);
+  SetDeviceSettings(false, "owner@invalid.domain", true);
+  RetrieveTrustedDevicePolicies();
+  EXPECT_EQ(GetUserManagerLocallyManagedUsersEnabledByPolicy(), true);
 }
 
 }  // namespace chromeos

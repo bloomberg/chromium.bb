@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -1005,11 +1004,12 @@ void SigninScreenHandler::UpdateAuthParams(DictionaryValue* params) {
   // bool single_user = users.size() == 1;
   // chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
 
-  bool managed_users_enabled = ManagedUserService::AreManagedUsersEnabled();
+  bool managed_users_allowed =
+      UserManager::Get()->AreLocallyManagedUsersAllowed();
   bool managed_users_can_create = false;
-  if (managed_users_enabled)
+  if (managed_users_allowed)
     managed_users_can_create = delegate_->GetUsers().size() > 0;
-  params->SetBoolean("managedUsersEnabled", managed_users_enabled);
+  params->SetBoolean("managedUsersEnabled", managed_users_allowed);
   params->SetBoolean("managedUsersCanCreate", managed_users_can_create);
 }
 
@@ -1128,8 +1128,8 @@ void SigninScreenHandler::HandleLaunchIncognito() {
 }
 
 void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
-  if (!ManagedUserService::AreManagedUsersEnabled()) {
-    LOG(ERROR) << "Managed users disabled.";
+  if (!UserManager::Get()->AreLocallyManagedUsersAllowed()) {
+    LOG(ERROR) << "Managed users not allowed.";
     return;
   }
   scoped_ptr<DictionaryValue> params(new DictionaryValue());

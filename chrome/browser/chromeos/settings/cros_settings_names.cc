@@ -32,6 +32,8 @@ const char kAccountsPrefDeviceLocalAccountAutoLoginDelay[] =
     "cros.accounts.deviceLocalAccountAutoLoginDelay";
 const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[] =
     "cros.accounts.deviceLocalAccountAutoLoginBailoutEnabled";
+const char kAccountsPrefSupervisedUsersEnabled[] =
+    "cros.accounts.supervisedUsersEnabled";
 
 // All cros.signed.* settings are stored in SignedSettings.
 const char kSignedDataRoamingEnabled[] = "cros.signed.data_roaming_enabled";

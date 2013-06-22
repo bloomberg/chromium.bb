@@ -1954,6 +1954,9 @@
   "AttestationEnabledForDevice": {
   },
 
+  "SupervisedUsersEnabled": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

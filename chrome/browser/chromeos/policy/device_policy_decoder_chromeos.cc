@@ -177,6 +177,19 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                         container.enable_auto_login_bailout()));
     }
   }
+
+  if (policy.has_supervised_users_settings()) {
+    const em::SupervisedUsersSettingsProto& container =
+        policy.supervised_users_settings();
+    if (container.has_supervised_users_enabled()) {
+      Value* value = Value::CreateBooleanValue(
+          container.supervised_users_enabled());
+      policies->Set(key::kSupervisedUsersEnabled,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    value);
+    }
+  }
 }
 
 void DecodeKioskPolicies(const em::ChromeDeviceSettingsProto& policy,

@@ -47,6 +47,7 @@ const char* kKnownSettings[] = {
   kAccountsPrefDeviceLocalAccountAutoLoginId,
   kAccountsPrefEphemeralUsersEnabled,
   kAccountsPrefShowUserNamesOnSignIn,
+  kAccountsPrefSupervisedUsersEnabled,
   kAccountsPrefUsers,
   kAllowRedeemChromeOsRegistrationOffers,
   kAllowedConnectionTypesForUpdate,
@@ -366,16 +367,17 @@ void DeviceSettingsProvider::SetInPolicy() {
   } else {
     // The remaining settings don't support Set(), since they are not
     // intended to be customizable by the user:
+    //   kAccountsPrefSupervisedUsersEnabled
     //   kAppPack
     //   kDeviceAttestationEnabled
     //   kDeviceOwner
     //   kIdleLogoutTimeout
     //   kIdleLogoutWarningDuration
     //   kReleaseChannelDelegated
-    //   kReportDeviceVersionInfo
     //   kReportDeviceActivityTimes
     //   kReportDeviceBootMode
     //   kReportDeviceLocation
+    //   kReportDeviceVersionInfo
     //   kScreenSaverExtensionId
     //   kScreenSaverTimeout
     //   kStartUpUrls
@@ -447,6 +449,11 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
       policy.has_ephemeral_users_enabled() &&
       policy.ephemeral_users_enabled().has_ephemeral_users_enabled() &&
       policy.ephemeral_users_enabled().ephemeral_users_enabled());
+
+  new_values_cache->SetBoolean(
+      kAccountsPrefSupervisedUsersEnabled,
+      policy.has_supervised_users_settings() &&
+      policy.supervised_users_settings().supervised_users_enabled());
 
   base::ListValue* list = new base::ListValue();
   const em::UserWhitelistProto& whitelist_proto = policy.user_whitelist();
