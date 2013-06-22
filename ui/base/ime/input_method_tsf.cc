@@ -89,6 +89,11 @@ void InputMethodTSF::SetFocusedTextInputClient(TextInputClient* client) {
   if (IsWindowFocused(client)) {
     ui::TSFBridge::GetInstance()->SetFocusedClient(
         GetAttachedWindowHandle(client), client);
+  } else if (!client) {
+    // SetFocusedTextInputClient(NULL) must be interpreted as
+    // "Remove the attached client".
+    ui::TSFBridge::GetInstance()->RemoveFocusedClient(
+        ui::TSFBridge::GetInstance()->GetFocusedTextInputClient());
   }
   InputMethodWin::SetFocusedTextInputClient(client);
 }
