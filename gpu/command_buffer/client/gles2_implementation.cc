@@ -813,6 +813,13 @@ void GLES2Implementation::Finish() {
   FinishHelper();
 }
 
+void GLES2Implementation::ShallowFinishCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  // Flush our command buffer (tell the service to execute up to the flush cmd
+  // and don't return until it completes).
+  helper_->CommandBufferHelper::Finish();
+}
+
 bool GLES2Implementation::MustBeContextLost() {
   bool context_lost = helper_->IsContextLost();
   if (!context_lost) {

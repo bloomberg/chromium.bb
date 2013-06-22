@@ -145,8 +145,6 @@ void GLES2InterfaceStub::Finish() {
 }
 void GLES2InterfaceStub::Flush() {
 }
-void GLES2InterfaceStub::ShallowFlushCHROMIUM() {
-}
 void GLES2InterfaceStub::FramebufferRenderbuffer(
     GLenum /* target */, GLenum /* attachment */,
     GLenum /* renderbuffertarget */, GLuint /* renderbuffer */) {
@@ -312,6 +310,10 @@ void GLES2InterfaceStub::ShaderBinary(
 void GLES2InterfaceStub::ShaderSource(
     GLuint /* shader */, GLsizei /* count */, const GLchar* const* /* str */,
     const GLint* /* length */) {
+}
+void GLES2InterfaceStub::ShallowFinishCHROMIUM() {
+}
+void GLES2InterfaceStub::ShallowFlushCHROMIUM() {
 }
 void GLES2InterfaceStub::StencilFunc(
     GLenum /* func */, GLint /* ref */, GLuint /* mask */) {

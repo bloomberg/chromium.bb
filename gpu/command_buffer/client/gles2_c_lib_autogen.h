@@ -167,9 +167,6 @@ void GLES2Finish() {
 void GLES2Flush() {
   gles2::GetGLContext()->Flush();
 }
-void GLES2ShallowFlushCHROMIUM() {
-  gles2::GetGLContext()->ShallowFlushCHROMIUM();
-}
 void GLES2FramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint renderbuffer) {
@@ -358,6 +355,12 @@ void GLES2ShaderSource(
     GLuint shader, GLsizei count, const GLchar* const* str,
     const GLint* length) {
   gles2::GetGLContext()->ShaderSource(shader, count, str, length);
+}
+void GLES2ShallowFinishCHROMIUM() {
+  gles2::GetGLContext()->ShallowFinishCHROMIUM();
+}
+void GLES2ShallowFlushCHROMIUM() {
+  gles2::GetGLContext()->ShallowFlushCHROMIUM();
 }
 void GLES2StencilFunc(GLenum func, GLint ref, GLuint mask) {
   gles2::GetGLContext()->StencilFunc(func, ref, mask);
@@ -827,8 +830,6 @@ NameToFunc g_gles2_function_table[] = {
       glEnableVertexAttribArray), },
   { "glFinish", reinterpret_cast<GLES2FunctionPointer>(glFinish), },
   { "glFlush", reinterpret_cast<GLES2FunctionPointer>(glFlush), },
-  { "glShallowFlushCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
-      glShallowFlushCHROMIUM), },
   { "glFramebufferRenderbuffer", reinterpret_cast<GLES2FunctionPointer>(
       glFramebufferRenderbuffer), },
   { "glFramebufferTexture2D", reinterpret_cast<GLES2FunctionPointer>(
@@ -914,6 +915,10 @@ NameToFunc g_gles2_function_table[] = {
       glShaderBinary), },
   { "glShaderSource", reinterpret_cast<GLES2FunctionPointer>(
       glShaderSource), },
+  { "glShallowFinishCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glShallowFinishCHROMIUM), },
+  { "glShallowFlushCHROMIUM", reinterpret_cast<GLES2FunctionPointer>(
+      glShallowFlushCHROMIUM), },
   { "glStencilFunc", reinterpret_cast<GLES2FunctionPointer>(glStencilFunc), },
   { "glStencilFuncSeparate", reinterpret_cast<GLES2FunctionPointer>(
       glStencilFuncSeparate), },

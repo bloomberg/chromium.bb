@@ -73,7 +73,6 @@ virtual void Enable(GLenum cap) = 0;
 virtual void EnableVertexAttribArray(GLuint index) = 0;
 virtual void Finish() = 0;
 virtual void Flush() = 0;
-virtual void ShallowFlushCHROMIUM() = 0;
 virtual void FramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint renderbuffer) = 0;
@@ -154,6 +153,8 @@ virtual void ShaderBinary(
 virtual void ShaderSource(
     GLuint shader, GLsizei count, const GLchar* const* str,
     const GLint* length) = 0;
+virtual void ShallowFinishCHROMIUM() = 0;
+virtual void ShallowFlushCHROMIUM() = 0;
 virtual void StencilFunc(GLenum func, GLint ref, GLuint mask) = 0;
 virtual void StencilFuncSeparate(
     GLenum face, GLenum func, GLint ref, GLuint mask) = 0;

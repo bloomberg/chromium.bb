@@ -120,8 +120,6 @@ virtual void Finish() OVERRIDE;
 
 virtual void Flush() OVERRIDE;
 
-virtual void ShallowFlushCHROMIUM() OVERRIDE;
-
 virtual void FramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint renderbuffer) OVERRIDE;
@@ -255,6 +253,10 @@ virtual void ShaderBinary(
 virtual void ShaderSource(
     GLuint shader, GLsizei count, const GLchar* const* str,
     const GLint* length) OVERRIDE;
+
+virtual void ShallowFinishCHROMIUM() OVERRIDE;
+
+virtual void ShallowFlushCHROMIUM() OVERRIDE;
 
 virtual void StencilFunc(GLenum func, GLint ref, GLuint mask) OVERRIDE;
 

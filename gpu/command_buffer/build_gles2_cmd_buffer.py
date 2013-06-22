@@ -1526,13 +1526,6 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'decoder_func': 'DoFlush',
   },
-  'ShallowFlushCHROMIUM': {
-    'impl_func': False,
-    'gen_cmd': False,
-    'extension': True,
-    'chromium': True,
-    'client_test': False,
-  },
   'FramebufferRenderbuffer': {
     'decoder_func': 'DoFramebufferRenderbuffer',
     'gl_test_func': 'glFramebufferRenderbufferEXT',
@@ -2361,6 +2354,20 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': True,
     'chromium': True,
+  },
+  'ShallowFinishCHROMIUM': {
+    'impl_func': False,
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
+  },
+  'ShallowFlushCHROMIUM': {
+    'impl_func': False,
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
   },
   'TraceBeginCHROMIUM': {
     'type': 'Custom',

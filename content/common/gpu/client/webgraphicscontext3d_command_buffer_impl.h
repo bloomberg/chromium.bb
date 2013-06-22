@@ -563,6 +563,7 @@ class WebGraphicsContext3DCommandBufferImpl
                                            const WGC3Dchar* uniform);
 
   virtual void shallowFlushCHROMIUM();
+  virtual void shallowFinishCHROMIUM();
 
   virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox);
   virtual void produceTextureCHROMIUM(WGC3Denum target,

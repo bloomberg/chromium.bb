@@ -1942,6 +1942,7 @@ DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)
 
 DELEGATE_TO_GL(shallowFlushCHROMIUM, ShallowFlushCHROMIUM)
+DELEGATE_TO_GL(shallowFinishCHROMIUM, ShallowFinishCHROMIUM)
 
 DELEGATE_TO_GL_1(genMailboxCHROMIUM, GenMailboxCHROMIUM, WGC3Dbyte*)
 DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,

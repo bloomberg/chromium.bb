@@ -267,11 +267,6 @@ void GLES2TraceImplementation::Flush() {
   gl_->Flush();
 }
 
-void GLES2TraceImplementation::ShallowFlushCHROMIUM() {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ShallowFlushCHROMIUM");
-  gl_->ShallowFlushCHROMIUM();
-}
-
 void GLES2TraceImplementation::FramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint renderbuffer) {
@@ -574,6 +569,16 @@ void GLES2TraceImplementation::ShaderSource(
     const GLint* length) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ShaderSource");
   gl_->ShaderSource(shader, count, str, length);
+}
+
+void GLES2TraceImplementation::ShallowFinishCHROMIUM() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ShallowFinishCHROMIUM");
+  gl_->ShallowFinishCHROMIUM();
+}
+
+void GLES2TraceImplementation::ShallowFlushCHROMIUM() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ShallowFlushCHROMIUM");
+  gl_->ShallowFlushCHROMIUM();
 }
 
 void GLES2TraceImplementation::StencilFunc(

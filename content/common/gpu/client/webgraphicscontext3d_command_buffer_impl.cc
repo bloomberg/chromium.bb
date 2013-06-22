@@ -1520,7 +1520,8 @@ DELEGATE_TO_GL_6(copyTextureCHROMIUM, CopyTextureCHROMIUM,  WGC3Denum,
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)
 
-DELEGATE_TO_GL(shallowFlushCHROMIUM,ShallowFlushCHROMIUM);
+DELEGATE_TO_GL(shallowFlushCHROMIUM, ShallowFlushCHROMIUM);
+DELEGATE_TO_GL(shallowFinishCHROMIUM, ShallowFinishCHROMIUM);
 
 DELEGATE_TO_GL_1(waitSyncPoint, WaitSyncPointCHROMIUM, GLuint)
 
