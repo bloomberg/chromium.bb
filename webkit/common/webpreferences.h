@@ -153,6 +153,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool spatial_navigation_enabled;
   bool experimental_websocket_enabled;
   bool pinch_virtual_viewport_enabled;
+  int pinch_overlay_scrollbar_thickness;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly

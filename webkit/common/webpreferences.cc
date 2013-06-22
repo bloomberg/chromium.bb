@@ -118,6 +118,7 @@ WebPreferences::WebPreferences()
       spatial_navigation_enabled(false),
       experimental_websocket_enabled(false),
       pinch_virtual_viewport_enabled(false),
+      pinch_overlay_scrollbar_thickness(0),
       cookie_enabled(true)
 #if defined(OS_ANDROID)
       ,

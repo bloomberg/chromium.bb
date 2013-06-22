@@ -341,6 +341,9 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
       prefs.experimental_websocket_enabled);
   settings->setPinchVirtualViewportEnabled(
       prefs.pinch_virtual_viewport_enabled);
+
+  settings->setPinchOverlayScrollbarThickness(
+      prefs.pinch_overlay_scrollbar_thickness);
 }
 
 
