@@ -10,17 +10,16 @@
 // TODO(rpaquay): This file is currently very similar to "web_view.js". Do we
 //                want to refactor to extract common pieces?
 
-var adViewCustom = require('adViewCustom');
+var process = requireNative('process');
 var watchForTag = require('tagWatcher').watchForTag;
 
 /**
- * Define "allowCustomAdNetworks" function such that it returns "true" if the
- * "adViewCustom" module was injected. This is so that the
+ * Define "allowCustomAdNetworks" function such that the
  * "kEnableAdviewSrcAttribute" flag is respected.
  */
-var allowCustomAdNetworks = (function(allow){
-  return function() { return Boolean(allow); }
-})(adViewCustom ? adViewCustom.enabled : false);
+function allowCustomAdNetworks() {
+  return process.HasSwitch('enable-adview-src-attribute');
+}
 
 /**
  * List of attribute names to "blindly" sync between <adview> tag and internal

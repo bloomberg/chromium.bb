@@ -51,9 +51,13 @@ class ChromeV8ContextSet {
   typedef std::set<ChromeV8Context*> ContextSet;
   ContextSet GetAll() const;
 
-  // Gets the ChromeV8Context corresponding to the v8::Context that is
-  // on the top of the stack, or NULL if no such context exists.
+  // Gets the ChromeV8Context corresponding to v8::Context::GetCurrent(), or
+  // NULL if no such context exists.
   ChromeV8Context* GetCurrent() const;
+
+  // Gets the ChromeV8Context corresponding to v8::Context::GetCalling(), or
+  // NULL if no such context exists.
+  ChromeV8Context* GetCalling() const;
 
   // Gets the ChromeV8Context corresponding to the specified
   // v8::Context or NULL if no such context exists.

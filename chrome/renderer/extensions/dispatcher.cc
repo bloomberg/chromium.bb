@@ -304,8 +304,12 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
     RouteFunction("IsSendRequestDisabled",
         base::Bind(&ProcessInfoNativeHandler::IsSendRequestDisabled,
                    base::Unretained(this)));
+    RouteFunction("HasSwitch",
+        base::Bind(&ProcessInfoNativeHandler::HasSwitch,
+                   base::Unretained(this)));
   }
 
+ private:
   void GetExtensionId(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(v8::String::New(extension_id_.c_str()));
   }
@@ -330,7 +334,13 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
     }
   }
 
- private:
+  void HasSwitch(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    CHECK(args.Length() == 1 && args[0]->IsString());
+    bool has_switch = CommandLine::ForCurrentProcess()->HasSwitch(
+        *v8::String::AsciiValue(args[0]));
+    args.GetReturnValue().Set(v8::Boolean::New(has_switch));
+  }
+
   std::string extension_id_;
   std::string context_type_;
   bool is_incognito_context_;
@@ -971,10 +981,6 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_WEB_VIEW_EXPERIMENTAL_JS);
   source_map_.RegisterSource("denyWebView", IDR_WEB_VIEW_DENY_JS);
   source_map_.RegisterSource("adView", IDR_AD_VIEW_JS);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAdviewSrcAttribute)) {
-    source_map_.RegisterSource("adViewCustom", IDR_AD_VIEW_CUSTOM_JS);
-  }
   source_map_.RegisterSource("denyAdView", IDR_AD_VIEW_DENY_JS);
   source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
   source_map_.RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
@@ -1114,10 +1120,6 @@ void Dispatcher::DidCreateScriptContext(
       is_within_platform_app) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAdview)) {
       if (extension->HasAPIPermission(APIPermission::kAdView)) {
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kEnableAdviewSrcAttribute)) {
-          module_system->Require("adViewCustom");
-        }
         module_system->Require("adView");
       } else {
         module_system->Require("denyAdView");
