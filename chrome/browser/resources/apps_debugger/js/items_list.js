@@ -239,7 +239,7 @@ cr.define('apps_dev_tool', function() {
       if (!item.terminated)
         this.setEnabledCheckbox_(item, node);
       else
-        this.setTerminatedReloadLink_(node, item);
+        this.setTerminatedReloadLink_(item, node);
 
       // Set remove button handler.
       this.setRemoveButton_(item, node);
@@ -312,10 +312,12 @@ cr.define('apps_dev_tool', function() {
      */
     setTerminatedReloadLink_: function(item, el) {
       var terminatedReload = el.querySelector('.terminated-reload-link');
-      terminatedReload.hidden = false;
-      chrome.developerPrivate.reload(item.id, function() {
-        ItemsList.loadItemsInfo();
+      terminatedReload.addEventListener('click', function(e) {
+        chrome.developerPrivate.reload(item.id, function() {
+          ItemsList.loadItemsInfo();
+        });
       });
+      terminatedReload.hidden = false;
     },
 
     /**
