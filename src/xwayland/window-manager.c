@@ -116,6 +116,7 @@ struct weston_wm_window {
 	int decorate;
 	int override_redirect;
 	int fullscreen;
+	int has_alpha;
 };
 
 static struct weston_wm_window *
@@ -901,13 +902,17 @@ weston_wm_window_draw_decoration(void *data)
 
 	if (window->surface) {
 		pixman_region32_fini(&window->surface->pending.opaque);
-		/* We leave an extra pixel around the X window area to
-		 * make sure we don't sample from the undefined alpha
-		 * channel when filtering. */
-		pixman_region32_init_rect(&window->surface->pending.opaque, 
-					  x - 1, y - 1,
-					  window->width + 2,
-					  window->height + 2);
+		if(window->has_alpha) {
+			pixman_region32_init(&window->surface->pending.opaque);
+		} else {
+			/* We leave an extra pixel around the X window area to
+			 * make sure we don't sample from the undefined alpha
+			 * channel when filtering. */
+			pixman_region32_init_rect(&window->surface->pending.opaque, 
+						  x - 1, y - 1,
+						  window->width + 2,
+						  window->height + 2);
+		}
 		weston_surface_geometry_dirty(window->surface);
 	}
 
@@ -930,8 +935,12 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 		if (window->surface != NULL) {
 			weston_wm_window_get_frame_size(window, &width, &height);
 			pixman_region32_fini(&window->surface->pending.opaque);
-			pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
-						  width, height);
+			if(window->has_alpha) {
+				pixman_region32_init(&window->surface->pending.opaque);
+			} else {
+				pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
+							  width, height);
+			}
 			weston_surface_geometry_dirty(window->surface);
 		}
 		return;
@@ -977,12 +986,16 @@ weston_wm_window_create(struct weston_wm *wm,
 {
 	struct weston_wm_window *window;
 	uint32_t values[1];
+	xcb_get_geometry_cookie_t geometry_cookie;
+	xcb_get_geometry_reply_t *geometry_reply;
 
 	window = malloc(sizeof *window);
 	if (window == NULL) {
 		wm_log("failed to allocate window\n");
 		return;
 	}
+
+	geometry_cookie = xcb_get_geometry(wm->conn, id);
 
 	values[0] = XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, id, XCB_CW_EVENT_MASK, values);
@@ -994,6 +1007,13 @@ weston_wm_window_create(struct weston_wm *wm,
 	window->override_redirect = override;
 	window->width = width;
 	window->height = height;
+
+	geometry_reply = xcb_get_geometry_reply(wm->conn, geometry_cookie, NULL);
+	/* technically we should use XRender and check the visual format's
+	alpha_mask, but checking depth is simpler and works in all known cases */
+	if(geometry_reply != NULL)
+		window->has_alpha = geometry_reply->depth == 32;
+	free(geometry_reply);
 
 	hash_table_insert(wm->window_hash, id, window);
 }
