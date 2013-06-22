@@ -32,6 +32,7 @@
 
 #include "WebMediaStreamRegistry.h"
 
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebString.h"
@@ -44,7 +45,7 @@ namespace WebKit {
 
 WebMediaStream WebMediaStreamRegistry::lookupMediaStreamDescriptor(const WebURL& url)
 {
-    return WebMediaStream(MediaStreamRegistry::registry().lookupWebMediaStream(KURL(url).string()));
+    return WebMediaStream(MediaStreamRegistry::registry().lookupMediaStreamDescriptor(KURL(url).string()));
 }
 
 } // namespace WebKit

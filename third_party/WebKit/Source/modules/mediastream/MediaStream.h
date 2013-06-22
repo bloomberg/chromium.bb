@@ -32,25 +32,25 @@
 #include "core/dom/ExceptionBase.h"
 #include "core/html/URLRegistry.h"
 #include "core/platform/Timer.h"
-#include "core/platform/chromium/support/WebMediaStreamClient.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public WebKit::WebMediaStreamClient, public EventTarget, public ContextLifecycleObserver {
+class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTarget, public ContextLifecycleObserver {
 public:
     static PassRefPtr<MediaStream> create(ScriptExecutionContext*);
     static PassRefPtr<MediaStream> create(ScriptExecutionContext*, PassRefPtr<MediaStream>);
     static PassRefPtr<MediaStream> create(ScriptExecutionContext*, const MediaStreamTrackVector&);
-    static PassRefPtr<MediaStream> create(ScriptExecutionContext*, WebKit::WebMediaStream);
+    static PassRefPtr<MediaStream> create(ScriptExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
     virtual ~MediaStream();
 
     // DEPRECATED
-    String label() const { return m_webStream.id(); }
+    String label() const { return m_descriptor->id(); }
 
-    String id() const { return m_webStream.id(); }
+    String id() const { return m_descriptor->id(); }
 
     void addTrack(PassRefPtr<MediaStreamTrack>, ExceptionCode&);
     void removeTrack(PassRefPtr<MediaStreamTrack>, ExceptionCode&);
@@ -66,11 +66,11 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
-    // WebMediaStreamClient
+    // MediaStreamDescriptorClient
     virtual void trackEnded() OVERRIDE;
     virtual void streamEnded() OVERRIDE;
 
-    WebKit::WebMediaStream webStream() const { return m_webStream; }
+    MediaStreamDescriptor* descriptor() const { return m_descriptor.get(); }
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -83,7 +83,7 @@ public:
     virtual URLRegistry& registry() const OVERRIDE;
 
 protected:
-    MediaStream(ScriptExecutionContext*, WebKit::WebMediaStream);
+    MediaStream(ScriptExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
 
     // EventTarget
     virtual EventTargetData* eventTargetData() OVERRIDE;
@@ -97,7 +97,7 @@ private:
     virtual void refEventTarget() OVERRIDE { ref(); }
     virtual void derefEventTarget() OVERRIDE { deref(); }
 
-    // WebMediaStreamClient
+    // MediaStreamDescriptorClient
     virtual void addRemoteTrack(MediaStreamComponent*) OVERRIDE;
     virtual void removeRemoteTrack(MediaStreamComponent*) OVERRIDE;
 
@@ -110,7 +110,7 @@ private:
 
     MediaStreamTrackVector m_audioTracks;
     MediaStreamTrackVector m_videoTracks;
-    WebKit::WebMediaStream m_webStream;
+    RefPtr<MediaStreamDescriptor> m_descriptor;
 
     Timer<MediaStream> m_scheduledEventTimer;
     Vector<RefPtr<Event> > m_scheduledEvents;

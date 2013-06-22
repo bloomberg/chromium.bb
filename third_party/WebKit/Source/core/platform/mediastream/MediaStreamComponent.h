@@ -32,23 +32,23 @@
 #ifndef MediaStreamComponent_h
 #define MediaStreamComponent_h
 
-#include "public/platform/WebMediaStream.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
+class MediaStreamDescriptor;
 class MediaStreamSource;
 
 class MediaStreamComponent : public RefCounted<MediaStreamComponent> {
 public:
     static PassRefPtr<MediaStreamComponent> create(PassRefPtr<MediaStreamSource>);
     static PassRefPtr<MediaStreamComponent> create(const String& id, PassRefPtr<MediaStreamSource>);
-    static PassRefPtr<MediaStreamComponent> create(WebKit::WebMediaStream, PassRefPtr<MediaStreamSource>);
+    static PassRefPtr<MediaStreamComponent> create(MediaStreamDescriptor*, PassRefPtr<MediaStreamSource>);
 
-    WebKit::WebMediaStream stream() const { return m_stream; }
-    void setStream(WebKit::WebMediaStream stream) { m_stream = stream; }
+    MediaStreamDescriptor* stream() const { return m_stream; }
+    void setStream(MediaStreamDescriptor* stream) { ASSERT(!m_stream && stream); m_stream = stream; }
 
     MediaStreamSource* source() const { return m_source.get(); }
 
@@ -57,10 +57,9 @@ public:
     void setEnabled(bool enabled) { m_enabled = enabled; }
 
 private:
-    MediaStreamComponent(const String& id, WebKit::WebMediaStream, PassRefPtr<MediaStreamSource>);
-    MediaStreamComponent(const String& id, PassRefPtr<MediaStreamSource>);
+    MediaStreamComponent(const String& id, MediaStreamDescriptor*, PassRefPtr<MediaStreamSource>);
 
-    WebKit::WebMediaStream m_stream;
+    MediaStreamDescriptor* m_stream;
     RefPtr<MediaStreamSource> m_source;
     String m_id;
     bool m_enabled;

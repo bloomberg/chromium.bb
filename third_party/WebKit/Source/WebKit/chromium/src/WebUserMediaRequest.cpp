@@ -42,6 +42,7 @@
 #include "WebSecurityOrigin.h"
 #include "core/dom/Document.h"
 #include "core/platform/mediastream/MediaConstraints.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "modules/mediastream/UserMediaRequest.h"
 #include "weborigin/SecurityOrigin.h"
@@ -101,10 +102,10 @@ WebDocument WebUserMediaRequest::ownerDocument() const
     return WebDocument(m_private->ownerDocument());
 }
 
-void WebUserMediaRequest::requestSucceeded(const WebMediaStream& webStream)
+void WebUserMediaRequest::requestSucceeded(const WebMediaStream& streamDescriptor)
 {
-    ASSERT(!isNull() && !webStream.isNull());
-    m_private->succeed(webStream);
+    ASSERT(!isNull() && !streamDescriptor.isNull());
+    m_private->succeed(streamDescriptor);
 }
 
 void WebUserMediaRequest::requestFailed(const WebString& description)

@@ -40,30 +40,22 @@ namespace WebCore {
 
 PassRefPtr<MediaStreamComponent> MediaStreamComponent::create(PassRefPtr<MediaStreamSource> source)
 {
-    return adoptRef(new MediaStreamComponent(createCanonicalUUIDString(), source));
+    return adoptRef(new MediaStreamComponent(createCanonicalUUIDString(), 0, source));
 }
 
 PassRefPtr<MediaStreamComponent> MediaStreamComponent::create(const String& id, PassRefPtr<MediaStreamSource> source)
 {
-    return adoptRef(new MediaStreamComponent(id, source));
+    return adoptRef(new MediaStreamComponent(id, 0, source));
 }
 
-PassRefPtr<MediaStreamComponent> MediaStreamComponent::create(WebKit::WebMediaStream stream, PassRefPtr<MediaStreamSource> source)
+PassRefPtr<MediaStreamComponent> MediaStreamComponent::create(MediaStreamDescriptor* stream, PassRefPtr<MediaStreamSource> source)
 {
     return adoptRef(new MediaStreamComponent(createCanonicalUUIDString(), stream, source));
 }
 
-MediaStreamComponent::MediaStreamComponent(const String& id, WebKit::WebMediaStream stream, PassRefPtr<MediaStreamSource> source)
+MediaStreamComponent::MediaStreamComponent(const String& id, MediaStreamDescriptor* stream, PassRefPtr<MediaStreamSource> source)
     : m_stream(stream)
     , m_source(source)
-    , m_id(id)
-    , m_enabled(true)
-{
-    ASSERT(m_id.length());
-}
-
-MediaStreamComponent::MediaStreamComponent(const String& id, PassRefPtr<MediaStreamSource> source)
-    : m_source(source)
     , m_id(id)
     , m_enabled(true)
 {

@@ -28,7 +28,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/platform/mediastream/RTCStatsRequest.h"
 #include "modules/mediastream/RTCStatsResponse.h"
-#include "public/platform/WebMediaStream.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -45,7 +44,7 @@ public:
 
     virtual PassRefPtr<RTCStatsResponseBase> createResponse() OVERRIDE;
     virtual bool hasSelector() OVERRIDE;
-    virtual WebKit::WebMediaStream stream() OVERRIDE;
+    virtual MediaStreamDescriptor* stream() OVERRIDE;
     virtual MediaStreamComponent* component() OVERRIDE;
 
     virtual void requestSucceeded(PassRefPtr<RTCStatsResponseBase>) OVERRIDE;
@@ -59,7 +58,7 @@ private:
     void clear();
 
     RefPtr<RTCStatsCallback> m_successCallback;
-    WebKit::WebMediaStream m_webStream;
+    RefPtr<MediaStreamDescriptor> m_stream;
     RefPtr<MediaStreamComponent> m_component;
 };
 

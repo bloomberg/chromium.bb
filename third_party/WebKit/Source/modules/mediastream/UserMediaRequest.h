@@ -41,16 +41,13 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebKit {
-class WebMediaStream;
-}
-
 namespace WebCore {
 
 class Dictionary;
 class Document;
 class MediaConstraints;
 class MediaConstraintsImpl;
+class MediaStreamDescriptor;
 class UserMediaController;
 
 class UserMediaRequest : public MediaStreamSourcesQueryClient, public ContextLifecycleObserver {
@@ -64,7 +61,7 @@ public:
 
     void start();
 
-    void succeed(WebKit::WebMediaStream);
+    void succeed(PassRefPtr<MediaStreamDescriptor>);
     void fail(const String& description);
     void failConstraint(const String& constraintName, const String& description);
 
