@@ -11,4 +11,10 @@ testRunner.dumpAsText = function() {};
 testRunner.notifyDone = function() {
   this.isDone = true;
 };
+
+window.GCController = {};
+
+GCController.collect = function() {
+  gc();
+};
 })();
