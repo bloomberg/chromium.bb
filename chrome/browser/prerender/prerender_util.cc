@@ -5,7 +5,7 @@
 #include "chrome/browser/prerender/prerender_util.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/resource_request_info.h"
 #include "googleurl/src/url_canon.h"
@@ -101,10 +101,10 @@ void URLRequestResponseStarted(net::URLRequest* request) {
   // Gather histogram information about the X-Mod-Pagespeed header.
   if (info->GetResourceType() == ResourceType::MAIN_FRAME &&
       IsWebURL(request->url())) {
-    UMA_HISTOGRAM_ENUMERATION(kModPagespeedHistogram, 0, 101);
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kModPagespeedHistogram, 0);
     if (request->response_headers() &&
         request->response_headers()->HasHeader(kModPagespeedHeader)) {
-      UMA_HISTOGRAM_ENUMERATION(kModPagespeedHistogram, 1, 101);
+      UMA_HISTOGRAM_SPARSE_SLOWLY(kModPagespeedHistogram, 1);
 
       // Attempt to parse the version number, and encode it in buckets
       // 2 through 99. 0 and 1 are used to store all pageviews and
@@ -126,7 +126,7 @@ void URLRequestResponseStarted(net::URLRequest* request) {
             output++;
           if (output < 2 || output >= 99)
             output = 99;
-          UMA_HISTOGRAM_ENUMERATION(kModPagespeedHistogram, output, 101);
+          UMA_HISTOGRAM_SPARSE_SLOWLY(kModPagespeedHistogram, output);
         }
       }
     }
