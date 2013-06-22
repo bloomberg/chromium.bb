@@ -16,7 +16,8 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaStreamMsgStart
 
-IPC_ENUM_TRAITS(content::MediaStreamType)
+IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamType,
+                          content::NUM_MEDIA_TYPES - 1)
 
 IPC_STRUCT_TRAITS_BEGIN(content::StreamOptions)
   IPC_STRUCT_TRAITS_MEMBER(audio_type)
