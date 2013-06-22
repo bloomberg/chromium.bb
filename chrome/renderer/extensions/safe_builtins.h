@@ -34,6 +34,8 @@ class SafeBuiltins {
   // NOTE(kalman): VS2010 won't compile "GetObject", it mysteriously renames it
   // to "GetObjectW" - hence GetObjekt. Sorry.
   v8::Local<v8::Object> GetObjekt() const;
+  v8::Local<v8::Object> GetRegExp() const;
+  v8::Local<v8::Object> GetString() const;
 
  private:
   ChromeV8Context* context_;

@@ -11,13 +11,13 @@
 var listeners = [];
 
 exports.addListener = function(listener) {
-  listeners.push(listener);
+  $Array.push(listeners, listener);
 };
 
 exports.removeListener = function(listener) {
   for (var i = 0; i < listeners.length; ++i) {
     if (listeners[i] == listener) {
-      listeners.splice(i, 1);
+      $Array.splice(listeners, i, 1);
       return;
     }
   }

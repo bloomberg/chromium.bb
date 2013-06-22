@@ -22,8 +22,8 @@ function wrapForLogging(fun) {
     // TODO(ataly): We need to make sure we use the right prototype for
     // fun.apply. Array slice can either be rewritten or similarly defined.
     logActivity.LogAPICall(id, "app." + fun.name,
-        Array.prototype.slice.call(arguments));
-    return fun.apply(this, arguments);
+        $Array.slice(arguments));
+    return $Function.apply(fun, this, arguments);
   });
 }
 

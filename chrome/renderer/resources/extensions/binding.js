@@ -40,9 +40,9 @@ APIFunctions.prototype.registerUnavailable = function(apiName) {
 
 APIFunctions.prototype.setHook_ =
     function(apiName, propertyName, customizedFunction) {
-  if (this.unavailableApiFunctions_.hasOwnProperty(apiName))
+  if ($Object.hasOwnProperty(this.unavailableApiFunctions_, apiName))
     return;
-  if (!this.apiFunctions_.hasOwnProperty(apiName))
+  if (!$Object.hasOwnProperty(this.apiFunctions_, apiName))
     throw new Error('Tried to set hook for unknown API "' + apiName + '"');
   this.apiFunctions_[apiName][propertyName] = customizedFunction;
 };
@@ -50,15 +50,14 @@ APIFunctions.prototype.setHook_ =
 APIFunctions.prototype.setHandleRequest =
     function(apiName, customizedFunction) {
   var prefix = this.namespace;
-  // TODO(ataly): Need to replace/redefine apply and slice.
   return this.setHook_(apiName, 'handleRequest',
     function() {
-      var ret = customizedFunction.apply(this, arguments);
+      var ret = $Function.apply(customizedFunction, this, arguments);
       // Logs API calls to the Activity Log if it doesn't go through an
       // ExtensionFunction.
       if (!sendRequestHandler.getCalledSendRequest())
         logActivity.LogAPICall(extensionId, prefix + "." + apiName,
-            Array.prototype.slice.call(arguments));
+            $Array.slice(arguments));
       return ret;
     });
 };
@@ -107,7 +106,7 @@ function getPlatform() {
   ];
 
   for (var i = 0; i < platforms.length; i++) {
-    if (platforms[i][0].test(navigator.appVersion)) {
+    if ($RegExp.test(platforms[i][0], navigator.appVersion)) {
       return platforms[i][1];
     }
   }
@@ -176,7 +175,7 @@ Binding.prototype = {
   // interact with, and second the current extension ID. See where
   // |customHooks| is used.
   registerCustomHook: function(fn) {
-    this.customHooks_.push(fn);
+    $Array.push(this.customHooks_, fn);
   },
 
   // TODO(kalman/cduvall): Refactor this so |runHooks_| is not needed.
@@ -207,7 +206,7 @@ Binding.prototype = {
         return shouldCheck;
 
       $Array.forEach(['functions', 'events'], function(type) {
-        if (schema.hasOwnProperty(type)) {
+        if ($Object.hasOwnProperty(schema, type)) {
           $Array.forEach(schema[type], function(node) {
             if ('unprivileged' in node)
               shouldCheck = true;
@@ -218,7 +217,7 @@ Binding.prototype = {
         return shouldCheck;
 
       for (var property in schema.properties) {
-        if (schema.hasOwnProperty(property) &&
+        if ($Object.hasOwnProperty(schema, property) &&
             'unprivileged' in schema.properties[property]) {
           shouldCheck = true;
           break;
@@ -238,7 +237,7 @@ Binding.prototype = {
 
     var mod = {};
 
-    var namespaces = schema.namespace.split('.');
+    var namespaces = $String.split(schema.namespace, '.');
     for (var index = 0, name; name = namespaces[index]; index++) {
       mod[name] = mod[name] || {};
       mod = mod[name];
@@ -301,19 +300,22 @@ Binding.prototype = {
         this.apiFunctions_.register(functionDef.name, apiFunction);
 
         mod[functionDef.name] = $Function.bind(function() {
-          var args = Array.prototype.slice.call(arguments);
+          var args = $Array.slice(arguments);
           if (this.updateArgumentsPreValidate)
-            args = this.updateArgumentsPreValidate.apply(this, args);
+            args = $Function.apply(this.updateArgumentsPreValidate, this, args);
 
           args = schemaUtils.normalizeArgumentsAndValidate(args, this);
-          if (this.updateArgumentsPostValidate)
-            args = this.updateArgumentsPostValidate.apply(this, args);
+          if (this.updateArgumentsPostValidate) {
+            args = $Function.apply(this.updateArgumentsPostValidate,
+                                   this,
+                                   args);
+          }
 
           sendRequestHandler.clearCalledSendRequest();
 
           var retval;
           if (this.handleRequest) {
-            retval = this.handleRequest.apply(this, args);
+            retval = $Function.apply(this.handleRequest, this, args);
           } else {
             var optArgs = {
               customCallback: this.customCallback
@@ -403,7 +405,7 @@ Binding.prototype = {
             // not as an array), so we have to fake calling |new| on the
             // constructor.
             value = { __proto__: constructor.prototype };
-            constructor.apply(value, args);
+            $Function.apply(constructor, value, args);
             // Recursively add properties.
             addProperties(value, propertyDef);
           } else if (type === 'object') {
@@ -421,7 +423,7 @@ Binding.prototype = {
     addProperties(mod, schema);
 
     var availability = GetAvailability(schema.namespace);
-    if (!availability.is_available && Object.keys(mod).length == 0) {
+    if (!availability.is_available && $Object.keys(mod).length == 0) {
       console.error('chrome.' + schema.namespace + ' is not available: ' +
                         availability.message);
       return;

@@ -76,7 +76,7 @@ binding.registerCustomHook(function(bindingsAPI) {
     apiFunctions.setUpdateArgumentsPostValidate(
         functionName, function(fileEntry, callback) {
       var fileSystemName = fileEntry.filesystem.name;
-      var relativePath = fileEntry.fullPath.slice(1);
+      var relativePath = $String.slice(fileEntry.fullPath, 1);
       return [fileSystemName, relativePath, callback];
     });
   }
@@ -93,7 +93,7 @@ binding.registerCustomHook(function(bindingsAPI) {
     if (!id)
       return '';
     var fileSystemName = fileEntry.filesystem.name;
-    var relativePath = fileEntry.fullPath.slice(1);
+    var relativePath = $String.slice(fileEntry.fullPath, 1);
 
     sendRequest(this.name, [id, fileSystemName, relativePath],
       this.definition.parameters, {});
@@ -129,19 +129,19 @@ binding.registerCustomHook(function(bindingsAPI) {
   fileSystem.getWritableFileEntry = function() {
     console.log("chrome.fileSystem.getWritableFileEntry is deprecated");
     console.log("Please use chrome.fileSystem.getWritableEntry instead");
-    fileSystem.getWritableEntry.apply(this, arguments);
+    $Function.apply(fileSystem.getWritableEntry, this, arguments);
   };
 
   fileSystem.isWritableFileEntry = function() {
     console.log("chrome.fileSystem.isWritableFileEntry is deprecated");
     console.log("Please use chrome.fileSystem.isWritableEntry instead");
-    fileSystem.isWritableEntry.apply(this, arguments);
+    $Function.apply(fileSystem.isWritableEntry, this, arguments);
   };
 
   fileSystem.chooseFile = function() {
     console.log("chrome.fileSystem.chooseFile is deprecated");
     console.log("Please use chrome.fileSystem.chooseEntry instead");
-    fileSystem.chooseEntry.apply(this, arguments);
+    $Function.apply(fileSystem.chooseEntry, this, arguments);
   };
 });
 

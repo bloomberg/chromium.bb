@@ -54,7 +54,7 @@ function run(name, message, stack, callback, args) {
   var targetChrome = GetGlobal(callback).chrome;
   set(name, message, stack, targetChrome);
   try {
-    callback.apply(undefined, args);
+    $Function.apply(callback, undefined, args);
   } finally {
     clear(targetChrome);
   }

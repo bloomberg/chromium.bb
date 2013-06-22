@@ -4,6 +4,62 @@
 
 window.assertions = (function() {
 
+// We are going to kill all of the builtins, so hold onto the ones we need.
+var defineGetter = Object.prototype.__defineGetter__;
+var defineSetter = Object.prototype.__defineSetter__;
+var Error = window.Error;
+var forEach = Array.prototype.forEach;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var getOwnPropertyNames = Object.getOwnPropertyNames;
+var stringify = JSON.stringify;
+
+// Kill all of the builtins functions to give us a fairly high confidence that
+// the environment our bindings run in can't interfere with our code.
+// These are taken from the ECMAScript spec.
+var builtinTypes = [
+  Object, Function, Array, String, Boolean, Number, Math, Date, RegExp, JSON,
+];
+
+function clobber(obj, name, qualifiedName) {
+  // Clobbering constructors would break everything.
+  // Clobbering toString is annoying.
+  // Clobbering __proto__ breaks in ways that grep can't find.
+  // Clobbering Function.call would make it impossible to implement these tests.
+  // Clobbering Object.valueOf breaks v8.
+  if (name == 'constructor' ||
+      name == 'toString' ||
+      name == '__proto__' ||
+      qualifiedName == 'Function.call' ||
+      qualifiedName == 'Object.valueOf') {
+    return;
+  }
+  if (typeof(obj[name]) == 'function') {
+    obj[name] = function() {
+      throw new Error('Clobbered ' + qualifiedName + ' function');
+    };
+  } else {
+    defineGetter.call(obj, name, function() {
+      throw new Error('Clobbered ' + qualifiedName + ' getter');
+    });
+  }
+}
+
+forEach.call(builtinTypes, function(builtin) {
+  var prototype = builtin.prototype;
+  var typename = '<unknown>';
+  if (prototype) {
+    typename = prototype.constructor.name;
+    forEach.call(getOwnPropertyNames(prototype), function(name) {
+      clobber(prototype, name, typename + '.' + name);
+    });
+  }
+  forEach.call(getOwnPropertyNames(builtin), function(name) {
+    clobber(builtin, name, typename + '.' + name);
+  });
+  if (builtin.name)
+    clobber(window, builtin.name, 'window.' + builtin.name);
+});
+
 // Codes for test results. Must match ExternallyConnectableMessagingTest::Result
 // in c/b/extensions/extension_messages_apitest.cc.
 var results = {
@@ -37,7 +93,7 @@ function checkResponse(response, reply) {
   //
   // First check the sender was correct.
   var incorrectSender = false;
-  if (!response.sender.hasOwnProperty('tab')) {
+  if (!hasOwnProperty.call(response.sender, 'tab')) {
     console.warn('Expected a tab, got none');
     incorrectSender = true;
   }
@@ -46,7 +102,7 @@ function checkResponse(response, reply) {
                  response.sender.tab.url);
     incorrectSender = true;
   }
-  if (response.sender.hasOwnProperty('id')) {
+  if (hasOwnProperty.call(response.sender, 'id')) {
     console.warn('Expected no id, got "' + response.sender.id + '"');
     incorrectSender = true;
   }
@@ -61,8 +117,8 @@ function checkResponse(response, reply) {
   }
 
   // Check the correct content was echoed.
-  var expectedJson = JSON.stringify(message);
-  var actualJson = JSON.stringify(response.message);
+  var expectedJson = stringify(message);
+  var actualJson = stringify(response.message);
   if (actualJson == expectedJson)
     return true;
   console.warn('Expected message ' + expectedJson + ' got ' + actualJson);
@@ -70,7 +126,9 @@ function checkResponse(response, reply) {
   return false;
 }
 
-var sendToBrowser = domAutomationController.send.bind(domAutomationController);
+function sendToBrowser(msg) {
+  domAutomationController.send(msg);
+}
 
 return {
   canConnectAndSendMessages: function(extensionId) {
@@ -120,7 +178,7 @@ return {
   areAnyRuntimePropertiesDefined: function(names) {
     var result = false;
     if (chrome.runtime) {
-      names.forEach(function(name) {
+      forEach.call(names, function(name) {
         if (chrome.runtime[name]) {
           console.log('runtime.' + name + ' is defined');
           result = true;

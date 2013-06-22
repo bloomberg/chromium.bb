@@ -39,7 +39,7 @@ binding.registerCustomHook(function(bindingsAPI) {
       var id = arguments[0].menuItemId;
       var onclick = contextMenus.handlersForId(id)[id];
       if (onclick) {
-        onclick.apply(null, arguments);
+        $Function.apply(onclick, null, arguments);
       }
     });
   };

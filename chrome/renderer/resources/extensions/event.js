@@ -109,14 +109,14 @@
   FilteredAttachmentStrategy.prototype.getListenersByIDs = function(ids) {
     var result = [];
     for (var i = 0; i < ids.length; i++)
-      result.push(this.listenerMap_[ids[i]]);
+      $Array.push(result, this.listenerMap_[ids[i]]);
     return result;
   };
 
   function parseEventOptions(opt_eventOptions) {
     function merge(dest, src) {
       for (var k in src) {
-        if (!dest.hasOwnProperty(k)) {
+        if (!$Object.hasOwnProperty(dest, k)) {
           dest[k] = src[k];
         }
       }
@@ -224,7 +224,7 @@
     }
     var listener = {callback: cb, filters: filters};
     this.attach_(listener);
-    this.listeners_.push(listener);
+    $Array.push(this.listeners_, listener);
   };
 
   Event.prototype.attach_ = function(listener) {
@@ -249,7 +249,7 @@
     if (idx == -1)
       return;
 
-    var removedListener = this.listeners_.splice(idx, 1)[0];
+    var removedListener = $Array.splice(this.listeners_, idx, 1)[0];
     this.attachmentStrategy_.onRemovedListener(removedListener);
 
     if (this.listeners_.length == 0) {
@@ -308,15 +308,15 @@
 
     // Make a copy of the listeners in case the listener list is modified
     // while dispatching the event.
-    var listeners =
-        this.attachmentStrategy_.getListenersByIDs(listenerIDs).slice();
+    var listeners = $Array.slice(
+        this.attachmentStrategy_.getListenersByIDs(listenerIDs));
 
     var results = [];
     for (var i = 0; i < listeners.length; i++) {
       try {
         var result = this.dispatchToListener(listeners[i].callback, args);
         if (result !== undefined)
-          results.push(result);
+          $Array.push(results, result);
       } catch (e) {
         var errorMessage = "Error in event handler";
         if (this.eventName_)
@@ -331,13 +331,13 @@
 
   // Can be overridden to support custom dispatching.
   Event.prototype.dispatchToListener = function(callback, args) {
-    return callback.apply(null, args);
+    return $Function.apply(callback, null, args);
   }
 
   // Dispatches this event object to all listeners, passing all supplied
   // arguments to this function each listener.
   Event.prototype.dispatch = function(varargs) {
-    return this.dispatch_(Array.prototype.slice.call(arguments), undefined);
+    return this.dispatch_($Array.slice(arguments), undefined);
   };
 
   // Detaches this event object from its name.
@@ -396,7 +396,8 @@
     // We remove the first parameter from the validation to give the user more
     // meaningful error messages.
     validate([rules, opt_cb],
-             ruleFunctionSchemas.addRules.parameters.slice().splice(1));
+             $Array.splice(
+                 $Array.slice(ruleFunctionSchemas.addRules.parameters), 1));
     sendRequest("events.addRules", [this.eventName_, rules, opt_cb],
                 ruleFunctionSchemas.addRules.parameters);
   }
@@ -408,7 +409,8 @@
     // We remove the first parameter from the validation to give the user more
     // meaningful error messages.
     validate([ruleIdentifiers, opt_cb],
-             ruleFunctionSchemas.removeRules.parameters.slice().splice(1));
+             $Array.splice(
+                 $Array.slice(ruleFunctionSchemas.removeRules.parameters), 1));
     sendRequest("events.removeRules",
                 [this.eventName_, ruleIdentifiers, opt_cb],
                 ruleFunctionSchemas.removeRules.parameters);
@@ -421,7 +423,8 @@
     // We remove the first parameter from the validation to give the user more
     // meaningful error messages.
     validate([ruleIdentifiers, cb],
-             ruleFunctionSchemas.getRules.parameters.slice().splice(1));
+             $Array.splice(
+                 $Array.slice(ruleFunctionSchemas.getRules.parameters), 1));
 
     sendRequest("events.getRules",
                 [this.eventName_, ruleIdentifiers, cb],

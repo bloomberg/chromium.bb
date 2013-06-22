@@ -29,7 +29,7 @@ binding.registerCustomHook(function(bindingsAPI) {
         functionName, function(entries, callback) {
       var fileSystemUrlArray = [];
       for (var i=0; i < entries.length; i++) {
-        fileSystemUrlArray.push(entries[i].toURL());
+        $Array.push(fileSystemUrlArray, entries[i].toURL());
       }
       return [fileSystemUrlArray, callback];
     });
@@ -76,7 +76,7 @@ binding.registerCustomHook(function(bindingsAPI) {
             entry.isDirectory);
         result.status = response[i].status;
         result.error = response[i].error;
-        results.push(result);
+        $Array.push(results, result);
       }
     }
     if (request.callback)

@@ -121,7 +121,7 @@ binding.registerCustomHook(function(api) {
 
   apiFunctions.setUpdateArgumentsPostValidate('getDevices',
       function() {
-        var args = Array.prototype.slice.call(arguments);
+        var args = $Array.slice(arguments);
 
         if (bluetooth.getDevicesState != null) {
           throw new Error('Concurrent calls to getDevices are not allowed.');
@@ -131,7 +131,7 @@ binding.registerCustomHook(function(api) {
 
         if (typeof(args[args.length - 1]) == 'function') {
           state.finalCallback = args.pop();
-          args.push(
+          $Array.push(args,
               function() {
                 if (chrome.runtime.lastError) {
                   finishDeviceSearch();

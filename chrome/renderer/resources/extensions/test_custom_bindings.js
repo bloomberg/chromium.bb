@@ -61,8 +61,10 @@ binding.registerCustomHook(function(api) {
         var redundantPrefix = 'Error\n';
         chrome.test.fail(
           'Callback has already been run. ' +
-          'First call:\n' + called.slice(redundantPrefix.length) + '\n' +
-          'Second call:\n' + new Error().stack.slice(redundantPrefix.length));
+          'First call:\n' +
+          $String.slice(called, redundantPrefix.length) + '\n' +
+          'Second call:\n' +
+          $String.slice(new Error().stack, redundantPrefix.length));
       }
       called = new Error().stack;
 
@@ -151,12 +153,16 @@ binding.registerCustomHook(function(api) {
       return false;
 
     for (var p in actual) {
-      if (actual.hasOwnProperty(p) && !expected.hasOwnProperty(p))
+      if ($Object.hasOwnProperty(actual, p) &&
+          !$Object.hasOwnProperty(expected, p)) {
         return false;
+      }
     }
     for (var p in expected) {
-      if (expected.hasOwnProperty(p) && !actual.hasOwnProperty(p))
+      if ($Object.hasOwnProperty(expected, p) &&
+          !$Object.hasOwnProperty(actual, p)) {
         return false;
+      }
     }
 
     for (var p in expected) {
@@ -225,7 +231,7 @@ binding.registerCustomHook(function(api) {
   function safeFunctionApply(func, args) {
     try {
       if (func)
-        func.apply(null, args);
+        $Function.apply(func, null, args);
     } catch (e) {
       var msg = "uncaught exception " + e;
       chromeTest.fail(msg);

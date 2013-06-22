@@ -27,7 +27,7 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
       if (err) {
         console.error('Error getting fileEntry, code: ' + err.code);
       } else {
-        items.push(item);
+        $Array.push(items, item);
       }
       if (--numItems === 0) {
         if (items.length === 0) {

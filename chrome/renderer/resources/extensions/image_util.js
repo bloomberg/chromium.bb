@@ -60,7 +60,7 @@ function on_complete_index(index, err, loading, finished, callbacks) {
     finished[index] = { width: width, height: height, data: imageData };
     if (err)
       callbacks.onerror(index);
-    if (Object.keys(loading).length == 0)
+    if ($Object.keys(loading).length == 0)
       callbacks.oncomplete(finished);
   }
 }

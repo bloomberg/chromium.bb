@@ -12,7 +12,7 @@ binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
 
   apiFunctions.setHandleRequest('handlerBehaviorChanged', function() {
-    var args = Array.prototype.slice.call(arguments);
+    var args = $Array.slice(arguments);
     sendRequest(this.name, args, this.definition.parameters,
                 {forIOThread: true});
   });

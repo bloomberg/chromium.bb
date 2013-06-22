@@ -167,18 +167,18 @@ JSONSchemaValidator.prototype.addTypes = function(typeOrTypeList) {
 JSONSchemaValidator.prototype.getAllTypesForSchema = function(schema) {
   var schemaTypes = [];
   if (schema.type)
-    schemaTypes.push(schema.type);
+    $Array.push(schemaTypes, schema.type);
   if (schema.choices) {
     for (var i = 0; i < schema.choices.length; i++) {
       var choiceTypes = this.getAllTypesForSchema(schema.choices[i]);
-      schemaTypes = schemaTypes.concat(choiceTypes);
+      schemaTypes = $Array.concat(schemaTypes, choiceTypes);
     }
   }
   var ref = schema['$ref'];
   if (ref) {
     var type = this.getOrAddType(ref);
     CHECK(type, 'Could not find type ' + ref);
-    schemaTypes = schemaTypes.concat(this.getAllTypesForSchema(type));
+    schemaTypes = $Array.concat(schemaTypes, this.getAllTypesForSchema(type));
   }
   return schemaTypes;
 };
@@ -341,7 +341,7 @@ JSONSchemaValidator.prototype.validateObject =
       // TODO(aa): If it ever turns out that we actually want this to work,
       // there are other checks we could put here, like requiring that schema
       // properties be objects that have a 'type' property.
-      if (!schema.properties.hasOwnProperty(prop))
+      if (!$Object.hasOwnProperty(schema.properties, prop))
         continue;
 
       var propPath = path ? path + "." + prop : prop;
@@ -377,7 +377,7 @@ JSONSchemaValidator.prototype.validateObject =
       continue;
 
     // Any properties inherited through the prototype are ignored.
-    if (!instance.hasOwnProperty(prop))
+    if (!$Object.hasOwnProperty(instance, prop))
       continue;
 
     var propPath = path ? path + "." + prop : prop;
@@ -502,7 +502,7 @@ JSONSchemaValidator.prototype.validateType = function(instance, schema, path) {
  * message.
  */
 JSONSchemaValidator.prototype.addError = function(path, key, replacements) {
-  this.errors.push({
+  $Array.push(this.errors, {
     path: path,
     message: JSONSchemaValidator.formatError(key, replacements)
   });

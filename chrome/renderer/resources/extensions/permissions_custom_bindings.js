@@ -21,7 +21,7 @@ binding.registerCustomHook(function(api) {
   var permissions = api.compiledApi;
 
   function maybeConvertToObject(str) {
-    var parts = str.split('|');
+    var parts = $String.split(str, '|');
     if (parts.length != 2)
       return str;
 
@@ -41,7 +41,7 @@ binding.registerCustomHook(function(api) {
     for (var i = 0; i < args.length; i += 1) {
       if (typeof(args[i]) == 'object') {
         var a = args[i];
-        var keys = Object.keys(a);
+        var keys = $Object.keys(a);
         if (keys.length != 1) {
           throw new Error("Too many keys in object-style permission.");
         }
@@ -75,7 +75,7 @@ binding.registerCustomHook(function(api) {
         // that handleResponse doesn't call it again.
         try {
           if (request.callback)
-            request.callback.apply(request, [response]);
+            $Function.apply(request.callback, request, [response]);
         } finally {
           delete request.callback;
         }

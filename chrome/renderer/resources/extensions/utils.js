@@ -32,7 +32,7 @@ function lookup(array_of_dictionaries, field, value) {
 }
 
 function loadTypeSchema(typeName, defaultSchema) {
-  var parts = typeName.split('.');
+  var parts = $String.split(typeName, '.');
   if (parts.length == 1) {
     if (defaultSchema == null) {
       WARNING('Trying to reference "' + typeName + '" ' +
@@ -41,7 +41,7 @@ function loadTypeSchema(typeName, defaultSchema) {
     }
     var types = defaultSchema.types;
   } else {
-    var schemaName = parts.slice(0, parts.length - 1).join('.')
+    var schemaName = $Array.join($Array.slice(parts, 0, parts.length - 1), '.');
     var types = schemaRegistry.GetSchema(schemaName).types;
   }
   for (var i = 0; i < types.length; ++i) {

@@ -26,7 +26,7 @@ binding.registerCustomHook(function(api) {
   // generated union dictionary against the schema for |typeId|.
   function setupInstance(instance, parameters, typeId) {
     for (var key in parameters) {
-      if (parameters.hasOwnProperty(key)) {
+      if ($Object.hasOwnProperty(parameters, key)) {
         instance[key] = parameters[key];
       }
     }

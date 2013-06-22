@@ -138,7 +138,7 @@ WebView.prototype.setupWebviewNodeMethods_ = function() {
   var self = this;
   $Array.forEach(WEB_VIEW_API_METHODS, function(apiMethod) {
     self.webviewNode_[apiMethod] = function(var_args) {
-      return self.browserPluginNode_[apiMethod].apply(
+      return $Function.apply(self.browserPluginNode_[apiMethod],
           self.browserPluginNode_, arguments);
     };
   }, this);
@@ -388,15 +388,15 @@ WebView.prototype.setupExecuteCodeAPI_ = function() {
 
   this.webviewNode_['executeScript'] = function(var_args) {
     validateCall();
-    var args = [self.browserPluginNode_.getGuestInstanceId()].concat(
-        Array.prototype.slice.call(arguments));
-    chrome.webview.executeScript.apply(null, args);
+    var args = $Array.concat([self.browserPluginNode_.getGuestInstanceId()],
+                             $Array.slice(arguments));
+    $Function.apply(chrome.webview.executeScript, null, args);
   }
   this.webviewNode_['insertCSS'] = function(var_args) {
     validateCall();
-    var args = [self.browserPluginNode_.getGuestInstanceId()].concat(
-        Array.prototype.slice.call(arguments));
-    chrome.webview.insertCSS.apply(null, args);
+    var args = $Array.concat([self.browserPluginNode_.getGuestInstanceId()],
+                             $Array.slice(arguments));
+    $Function.apply(chrome.webview.insertCSS, null, args);
   }
 };
 

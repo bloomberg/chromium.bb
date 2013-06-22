@@ -18,7 +18,7 @@ var calledSendRequest = false;
 // Runs a user-supplied callback safely.
 function safeCallbackApply(name, request, callback, args) {
   try {
-    callback.apply(request, args);
+    $Function.apply(callback, request, args);
   } catch (e) {
     var errorMessage = "Error in response to " + name + ": " + e;
     if (request.stack && request.stack != '')
@@ -44,7 +44,7 @@ function handleResponse(requestId, name, success, responseList, error) {
     if (request.callback) {
       var chromeForCallback = natives.GetGlobal(request.callback).chrome;
       if (chromeForCallback != chrome)
-        chromesForLastError.push(chromeForCallback);
+        $Array.push(chromesForLastError, chromeForCallback);
     }
 
     $Array.forEach(chromesForLastError, function(c) {lastError.clear(c)});
@@ -60,7 +60,7 @@ function handleResponse(requestId, name, success, responseList, error) {
       safeCallbackApply(name,
                         request,
                         request.customCallback,
-                        [name, request].concat(responseList));
+                        $Array.concat([name, request], responseList));
     }
 
     if (request.callback) {
@@ -82,7 +82,7 @@ function handleResponse(requestId, name, success, responseList, error) {
 };
 
 function getExtensionStackTrace(call_name) {
-  var stack = new Error().stack.split('\n');
+  var stack = $String.split(new Error().stack, '\n');
 
   // Remove stack frames before and after that weren't associated with the
   // extension.

@@ -100,7 +100,7 @@ if (!chrome.embeddedSearch) {
         }
         var dedupedResults = [];
         for (url in urlToResultMap) {
-          dedupedResults.push(urlToResultMap[url]);
+          $Array.push(dedupedResults, urlToResultMap[url]);
         }
         return dedupedResults;
       }

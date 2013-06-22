@@ -80,7 +80,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     // Checking existence isn't enough since some functions are disabled via
     // getters that throw exceptions. Assume that any getter is such a function.
     if (chrome.runtime &&
-        chrome.runtime.hasOwnProperty(alias) &&
+        $Object.hasOwnProperty(chrome.runtime, alias) &&
         chrome.runtime.__lookupGetter__(alias) === undefined) {
       extension[alias] = chrome.runtime[alias];
     }

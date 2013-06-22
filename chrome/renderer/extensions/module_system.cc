@@ -189,6 +189,8 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
 
   exports = v8::Object::New();
   v8::Handle<v8::Object> natives(NewInstance());
+  CHECK(!natives.IsEmpty());  // this can happen if v8 has issues
+
   // These must match the argument order in WrapSource.
   v8::Handle<v8::Value> args[] = {
     // CommonJS.
@@ -200,6 +202,8 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
     context_->safe_builtins()->GetFunction(),
     context_->safe_builtins()->GetJSON(),
     context_->safe_builtins()->GetObjekt(),
+    context_->safe_builtins()->GetRegExp(),
+    context_->safe_builtins()->GetString(),
   };
   {
     v8::TryCatch try_catch;
@@ -483,7 +487,7 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
   // Keep in order with the arguments in RequireForJsInner.
   v8::Handle<v8::String> left = v8::String::New(
       "(function(require, requireNative, exports,"
-                "$Array, $Function, $JSON, $Object) {"
+                "$Array, $Function, $JSON, $Object, $RegExp, $String) {"
        "'use strict';");
   v8::Handle<v8::String> right = v8::String::New("\n})");
   return handle_scope.Close(

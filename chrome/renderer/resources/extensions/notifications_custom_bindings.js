@@ -36,7 +36,7 @@ function replaceNotificationOptionURLs(notification_details, callback) {
 
   // |imageUrl| is optional.
   if (notification_details.imageUrl) {
-    url_specs.push({
+    $Array.push(url_specs, {
       path: notification_details.imageUrl,
       width: 360,
       height: 540,
@@ -50,7 +50,7 @@ function replaceNotificationOptionURLs(notification_details, callback) {
     var num_buttons = button_list.length;
     for (var i = 0; i < num_buttons; i++) {
       if (button_list[i].iconUrl) {
-        url_specs.push({
+        $Array.push(url_specs, {
           path: button_list[i].iconUrl,
           width: 16,
           height: 16,

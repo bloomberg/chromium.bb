@@ -45,8 +45,10 @@ binding.registerCustomHook(
   // We are making a copy of |arr|, but applying |func| to index 1.
   function validate(arr, func) {
     var newArr = [];
-    for (var i = 0; i < arr.length; i++)
-      newArr.push(i == 1 && typeof(arr) == 'object' ? func(arr[i]) : arr[i]);
+    for (var i = 0; i < arr.length; i++) {
+      $Array.push(newArr,
+                  i == 1 && typeof(arr) == 'object' ? func(arr[i]) : arr[i]);
+    }
     return newArr;
   }
 

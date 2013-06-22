@@ -10,7 +10,7 @@ exports.FindMatchingSelectors = function(cssSelectors) {
   $Array.forEach(cssSelectors, function(selector, index) {
     try {
       if (document.querySelector(selector) != null)
-        result.push(index);
+        $Array.push(result, index);
     } catch (exception) {
       throw new Error("query Selector failed on '" + selector + "': " +
                       exception.stack);

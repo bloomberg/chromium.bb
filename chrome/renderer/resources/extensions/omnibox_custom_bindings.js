@@ -65,7 +65,7 @@ function parseOmniboxDescription(input) {
           'type': child.nodeName,
           'offset': result.description.length
         };
-        result.descriptionStyles.push(style);
+        $Array.push(result.descriptionStyles, style);
         walk(child);
         style.length = result.description.length - style.offset;
         continue;
@@ -105,7 +105,7 @@ binding.registerCustomHook(function(bindingsAPI) {
       var parseResult = parseOmniboxDescription(
           userSuggestions[i].description);
       parseResult.content = userSuggestions[i].content;
-      suggestions.push(parseResult);
+      $Array.push(suggestions, parseResult);
     }
     return [requestId, suggestions];
   });

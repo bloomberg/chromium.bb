@@ -101,19 +101,19 @@
     var errorMsg = [];
     var eventName = isSendMessage ? "runtime.onMessage" : "extension.onRequest";
     if (isSendMessage && !responseCallbackPreserved) {
-      errorMsg.push(
+      $Array.push(errorMsg,
           "The chrome." + eventName + " listener must return true if you " +
           "want to send a response after the listener returns");
     } else {
-      errorMsg.push(
+      $Array.push(errorMsg,
           "Cannot send a response more than once per chrome." + eventName +
           " listener per document");
     }
-    errorMsg.push("(message was sent by extension" + sourceExtensionId);
+    $Array.push(errorMsg, "(message was sent by extension" + sourceExtensionId);
     if (sourceExtensionId != "" && sourceExtensionId != targetExtensionId)
-      errorMsg.push("for extension " + targetExtensionId);
+      $Array.push(errorMsg, "for extension " + targetExtensionId);
     if (sourceUrl != "")
-      errorMsg.push("for URL " + sourceUrl);
+      $Array.push(errorMsg, "for URL " + sourceUrl);
     lastError.set(eventName, errorMsg.join(" ") + ").", null, chrome);
   }
 
@@ -318,7 +318,7 @@
     // schema validation is expecting, e.g.
     //   extension.sendRequest(req)     -> extension.sendRequest(null, req)
     //   extension.sendRequest(req, cb) -> extension.sendRequest(null, req, cb)
-    var args = Array.prototype.splice.call(arguments, 1);  // skip functionName
+    var args = $Array.splice(arguments, 1);  // skip functionName
     var lastArg = args.length - 1;
 
     // responseCallback (last argument) is optional.

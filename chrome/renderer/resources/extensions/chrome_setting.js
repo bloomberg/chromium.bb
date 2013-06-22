@@ -7,7 +7,7 @@ var sendRequest = require('sendRequest').sendRequest;
 var validate = require('schemaUtils').validate;
 
 function extendSchema(schema) {
-  var extendedSchema = schema.slice();
+  var extendedSchema = $Array.slice(schema);
   extendedSchema.unshift({'type': 'string'});
   return extendedSchema;
 }
@@ -21,7 +21,8 @@ function ChromeSetting(prefKey, valueSchema) {
                        extendSchema(getSchema));
   };
   this.set = function(details, callback) {
-    var setSchema = this.functionSchemas.set.definition.parameters.slice();
+    var setSchema = $Array.slice(
+        this.functionSchemas.set.definition.parameters);
     setSchema[0].properties.value = valueSchema;
     validate([details, callback], setSchema);
     return sendRequest('types.ChromeSetting.set',

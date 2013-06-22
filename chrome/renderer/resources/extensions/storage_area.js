@@ -7,7 +7,7 @@ var normalizeArgumentsAndValidate =
 var sendRequest = require('sendRequest').sendRequest;
 
 function extendSchema(schema) {
-  var extendedSchema = schema.slice();
+  var extendedSchema = $Array.slice(schema);
   extendedSchema.unshift({'type': 'string'});
   return extendedSchema;
 }
@@ -24,11 +24,11 @@ function StorageArea(namespace, schema) {
   function bindApiFunction(functionName) {
     self[functionName] = function() {
       var funSchema = this.functionSchemas[functionName];
-      var args = Array.prototype.slice.call(arguments);
+      var args = $Array.slice(arguments);
       args = normalizeArgumentsAndValidate(args, funSchema);
       return sendRequest(
           'storage.' + functionName,
-          [namespace].concat(args),
+          $Array.concat([namespace], args),
           extendSchema(funSchema.definition.parameters),
           {preserveNullInObjects: true});
     };

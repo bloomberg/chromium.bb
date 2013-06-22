@@ -160,7 +160,7 @@ AdView.prototype.setupAdviewNodeMethods_ = function() {
   var self = this;
   $Array.forEach(AD_VIEW_API_METHODS, function(apiMethod) {
     self.adviewNode_[apiMethod] = function(var_args) {
-      return self.browserPluginNode_[apiMethod].apply(
+      return $Function.apply(self.browserPluginNode_[apiMethod],
         self.browserPluginNode_, arguments);
     };
   }, this);

@@ -44,11 +44,11 @@ function getSignatures(parameterSchemas) {
   if (parameterSchemas.length === 0)
     return [[]];
   var signatures = [];
-  var remaining = getSignatures(parameterSchemas.slice(1));
+  var remaining = getSignatures($Array.slice(parameterSchemas, 1));
   for (var i = 0; i < remaining.length; i++)
-    signatures.push([parameterSchemas[0]].concat(remaining[i]))
+    $Array.push(signatures, $Array.concat([parameterSchemas[0]], remaining[i]))
   if (parameterSchemas[0].optional)
-    return signatures.concat(remaining);
+    return $Array.concat(signatures, remaining);
   return signatures;
 };
 
@@ -119,9 +119,9 @@ function normalizeArgumentsAndValidate(args, funDef) {
   var ai = 0;
   for (var si = 0; si < definedSignature.length; si++) {
     if (definedSignature[si] === resolvedSignature[ai])
-      normalizedArgs.push(args[ai++]);
+      $Array.push(normalizedArgs, args[ai++]);
     else
-      normalizedArgs.push(null);
+      $Array.push(normalizedArgs, null);
   }
   return normalizedArgs;
 };

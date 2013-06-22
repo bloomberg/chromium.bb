@@ -134,5 +134,5 @@ Window.prototype.addEventListener = function(type) {
   if (type === 'unload' || type === 'beforeunload')
     generateDisabledMethodStub(type)();
   else
-    return windowAddEventListener.apply(window, arguments);
+    return $Function.apply(windowAddEventListener, window, arguments);
 };

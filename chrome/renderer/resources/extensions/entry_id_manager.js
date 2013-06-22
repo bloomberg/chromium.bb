@@ -17,7 +17,7 @@ function computeId(entry) {
   if (!fileSystemId)
     return null;
   // Strip the leading '/' from the path.
-  return fileSystemId + ':' + entry.fullPath.slice(1);
+  return fileSystemId + ':' + $String.slice(entry.fullPath, 1);
 }
 
 function registerEntry(id, entry) {

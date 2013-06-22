@@ -150,17 +150,21 @@ class ExtensionImpl : public v8::Extension {
   static void Apply(const v8::FunctionCallbackInfo<v8::Value>& info) {
     CHECK(info.Length() == 5 &&
           info[0]->IsFunction() &&  // function
-          // info[1]->Object()      // recv (will throw error not check)
+          // info[1] could be an object or a string
           info[2]->IsObject() &&    // args
           info[3]->IsInt32() &&     // first_arg_index
           info[4]->IsInt32());      // args_length
-    if (!info[1]->IsObject()) {
+    v8::Local<v8::Function> function = info[0].As<v8::Function>();
+    v8::Local<v8::Object> recv;
+    if (info[1]->IsObject()) {
+      recv = info[1]->ToObject();
+    } else if (info[1]->IsString()) {
+      recv = v8::StringObject::New(info[1]->ToString())->ToObject();
+    } else {
       v8::ThrowException(v8::Exception::TypeError(v8::String::New(
           "The first argument is the receiver and must be an object")));
       return;
     }
-    v8::Local<v8::Function> function = info[0].As<v8::Function>();
-    v8::Local<v8::Object> recv = info[1]->ToObject();
     v8::Local<v8::Object> args = info[2]->ToObject();
     int first_arg_index = static_cast<int>(info[3]->ToInt32()->Value());
     int args_length = static_cast<int>(info[4]->ToInt32()->Value());
@@ -212,6 +216,14 @@ v8::Local<v8::Object> SafeBuiltins::GetJSON() const {
 
 v8::Local<v8::Object> SafeBuiltins::GetObjekt() const {
   return Load("Object", context_->v8_context());
+}
+
+v8::Local<v8::Object> SafeBuiltins::GetRegExp() const {
+  return Load("RegExp", context_->v8_context());
+}
+
+v8::Local<v8::Object> SafeBuiltins::GetString() const {
+  return Load("String", context_->v8_context());
 }
 
 } //  namespace extensions

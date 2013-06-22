@@ -24,7 +24,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       for (var i = 0; i < response.length; i++) {
         var filesystem = mediaGalleriesNatives.GetMediaFileSystemObject(
             response[i].fsid);
-        result.push(filesystem);
+        $Array.push(result, filesystem);
         var metadata = response[i];
         delete metadata.fsid;
         mediaGalleriesMetadata[filesystem.name] = metadata;
