@@ -137,14 +137,23 @@ class BranchUtility(object):
 
     version_json = json.loads(self._history_result.Get().content)
     for entry in version_json['events']:
-      # Here, entry['title'] looks like: 'title - version#.#.branch#.#'
+      # Here, entry['title'] looks like: '<title> - <version>.##.<branch>.##'
       version_title = entry['title'].split(' - ')[1].split('.')
       if version_title[0] == str(version):
         self._branch_object_store.Set(str(version), version_title[2])
         return int(version_title[2])
 
-    raise ValueError(
-        'The branch for %s could not be found.' % version)
+    raise ValueError('The branch for %s could not be found.' % version)
+
+  def GetChannelForVersion(self, version):
+    '''Returns the name of the development channel corresponding to a given
+    version number.
+    '''
+    for channel_info in self.GetAllChannelInfo():
+      if channel_info.channel == 'stable' and version <= channel_info.version:
+        return channel_info.channel
+      if version == channel_info.version:
+        return channel_info.channel
 
   def GetLatestVersionNumber(self):
     '''Returns the most recent version number found using data stored on

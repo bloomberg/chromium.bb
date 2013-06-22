@@ -120,5 +120,26 @@ class BranchUtilityTest(unittest.TestCase):
     self.assertEquals(396,
         self._branch_util.GetBranchForVersion(5))
 
+  def testGetChannelForVersion(self):
+    self.assertEquals('trunk',
+        self._branch_util.GetChannelForVersion('trunk'))
+    self.assertEquals('dev',
+        self._branch_util.GetChannelForVersion(28))
+    self.assertEquals('beta',
+        self._branch_util.GetChannelForVersion(27))
+    self.assertEquals('stable',
+        self._branch_util.GetChannelForVersion(26))
+    self.assertEquals('stable',
+        self._branch_util.GetChannelForVersion(22))
+    self.assertEquals('stable',
+        self._branch_util.GetChannelForVersion(18))
+    self.assertEquals('stable',
+        self._branch_util.GetChannelForVersion(14))
+    self.assertEquals(None,
+        self._branch_util.GetChannelForVersion(30))
+    self.assertEquals(None,
+        self._branch_util.GetChannelForVersion(42))
+
+
 if __name__ == '__main__':
   unittest.main()

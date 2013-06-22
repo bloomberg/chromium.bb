@@ -19,7 +19,7 @@ class _TestDelegate(InstanceServlet.Delegate):
     self._file_system_type = file_system_type
 
   def CreateBranchUtility(self, object_store_creator):
-    return TestBranchUtility()
+    return TestBranchUtility.CreateWithCannedData()
 
   def CreateHostFileSystemForBranch(self, branch):
     return self._file_system_type()

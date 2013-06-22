@@ -1,0 +1,18 @@
+{
+  "devtools.inspectedWindow": {
+    "channel": "stable",
+    "version": 18
+  },
+  "devtools.network": {
+    "channel": "stable",
+    "version": 18
+  },
+  "devtools.panels": {
+    "channel": "stable",
+    "version": 18
+  },
+  "webstore": {
+    "channel": "stable",
+    "version": 15
+  }
+}

@@ -27,7 +27,7 @@ class _TestDelegate(CronServlet.Delegate):
     self._app_version = GetAppVersion()
 
   def CreateBranchUtility(self, object_store_creator):
-    return TestBranchUtility()
+    return TestBranchUtility.CreateWithCannedData()
 
   def CreateHostFileSystemForBranchAndRevision(self, branch, revision):
     file_system = self._create_file_system(revision)
