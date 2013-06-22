@@ -449,6 +449,7 @@ public:
 
     // GL_CHROMIUM_shallow_flush
     virtual void shallowFlushCHROMIUM() { }
+    virtual void shallowFinishCHROMIUM() { }
 
     // GL_CHROMIUM_texture_mailbox
     virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox) { }
