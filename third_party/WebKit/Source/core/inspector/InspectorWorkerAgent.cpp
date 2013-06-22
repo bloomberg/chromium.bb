@@ -34,8 +34,9 @@
 
 #include "InspectorFrontend.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/JSONParser.h"
+#include "core/platform/JSONValues.h"
 #include "core/workers/WorkerContextProxy.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
@@ -86,10 +87,10 @@ private:
     // WorkerContextProxy::PageInspector implementation
     virtual void dispatchMessageFromWorker(const String& message)
     {
-        RefPtr<InspectorValue> value = InspectorValue::parseJSON(message);
+        RefPtr<JSONValue> value = parseJSON(message);
         if (!value)
             return;
-        RefPtr<InspectorObject> messageObject = value->asObject();
+        RefPtr<JSONObject> messageObject = value->asObject();
         if (!messageObject)
             return;
         m_frontend->worker()->dispatchMessageFromWorker(m_id, messageObject);
@@ -178,7 +179,7 @@ void InspectorWorkerAgent::disconnectFromWorker(ErrorString* error, int workerId
         *error = "Worker is gone";
 }
 
-void InspectorWorkerAgent::sendMessageToWorker(ErrorString* error, int workerId, const RefPtr<InspectorObject>& message)
+void InspectorWorkerAgent::sendMessageToWorker(ErrorString* error, int workerId, const RefPtr<JSONObject>& message)
 {
     WorkerFrontendChannel* channel = m_idToChannel.get(workerId);
     if (channel)

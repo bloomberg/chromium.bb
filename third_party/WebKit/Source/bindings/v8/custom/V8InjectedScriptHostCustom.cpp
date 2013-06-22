@@ -56,7 +56,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorValues.h"
+#include "core/platform/JSONValues.h"
 #include "modules/webdatabase/Database.h"
 
 namespace WebCore {
@@ -301,7 +301,7 @@ void V8InjectedScriptHost::inspectMethodCustom(const v8::FunctionCallbackInfo<v8
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
     ScriptValue object(args[0]);
     ScriptValue hints(args[1]);
-    host->inspectImpl(object.toInspectorValue(ScriptState::current()), hints.toInspectorValue(ScriptState::current()));
+    host->inspectImpl(object.toJSONValue(ScriptState::current()), hints.toJSONValue(ScriptState::current()));
 }
 
 void V8InjectedScriptHost::databaseIdMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class InspectorValue;
+class JSONValue;
 class ScriptFunctionCall;
 
 typedef String ErrorString;
@@ -61,7 +61,7 @@ protected:
     bool canAccessInspectedWindow() const;
     const ScriptObject& injectedScriptObject() const;
     ScriptValue callFunctionWithEvalEnabled(ScriptFunctionCall&, bool& hadException) const;
-    void makeCall(ScriptFunctionCall&, RefPtr<InspectorValue>* result);
+    void makeCall(ScriptFunctionCall&, RefPtr<JSONValue>* result);
     void makeEvalCall(ErrorString*, ScriptFunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown);
 
 private:

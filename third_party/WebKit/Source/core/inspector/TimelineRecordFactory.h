@@ -31,7 +31,7 @@
 #ifndef TimelineRecordFactory_h
 #define TimelineRecordFactory_h
 
-#include "core/inspector/InspectorValues.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
@@ -42,67 +42,66 @@ namespace WebCore {
     class Event;
     class FloatQuad;
     class InspectorFrontend;
-    class InspectorObject;
     class IntRect;
     class ResourceRequest;
     class ResourceResponse;
 
     class TimelineRecordFactory {
     public:
-        static PassRefPtr<InspectorObject> createGenericRecord(double startTime, int maxCallStackDepth, const String& type);
-        static PassRefPtr<InspectorObject> createBackgroundRecord(double startTime, const String& thread);
+        static PassRefPtr<JSONObject> createGenericRecord(double startTime, int maxCallStackDepth, const String& type);
+        static PassRefPtr<JSONObject> createBackgroundRecord(double startTime, const String& thread);
 
-        static PassRefPtr<InspectorObject> createGCEventData(const size_t usedHeapSizeDelta);
+        static PassRefPtr<JSONObject> createGCEventData(const size_t usedHeapSizeDelta);
 
-        static PassRefPtr<InspectorObject> createFunctionCallData(const String& scriptName, int scriptLine);
+        static PassRefPtr<JSONObject> createFunctionCallData(const String& scriptName, int scriptLine);
 
-        static PassRefPtr<InspectorObject> createEventDispatchData(const Event&);
+        static PassRefPtr<JSONObject> createEventDispatchData(const Event&);
 
-        static PassRefPtr<InspectorObject> createGenericTimerData(int timerId);
+        static PassRefPtr<JSONObject> createGenericTimerData(int timerId);
 
-        static PassRefPtr<InspectorObject> createTimerInstallData(int timerId, int timeout, bool singleShot);
+        static PassRefPtr<JSONObject> createTimerInstallData(int timerId, int timeout, bool singleShot);
 
-        static PassRefPtr<InspectorObject> createXHRReadyStateChangeData(const String& url, int readyState);
+        static PassRefPtr<JSONObject> createXHRReadyStateChangeData(const String& url, int readyState);
 
-        static PassRefPtr<InspectorObject> createXHRLoadData(const String& url);
+        static PassRefPtr<JSONObject> createXHRLoadData(const String& url);
 
-        static PassRefPtr<InspectorObject> createEvaluateScriptData(const String&, double lineNumber);
+        static PassRefPtr<JSONObject> createEvaluateScriptData(const String&, double lineNumber);
 
-        static PassRefPtr<InspectorObject> createTimeStampData(const String&);
+        static PassRefPtr<JSONObject> createTimeStampData(const String&);
 
-        static PassRefPtr<InspectorObject> createResourceSendRequestData(const String& requestId, const ResourceRequest&);
+        static PassRefPtr<JSONObject> createResourceSendRequestData(const String& requestId, const ResourceRequest&);
 
-        static PassRefPtr<InspectorObject> createScheduleResourceRequestData(const String&);
+        static PassRefPtr<JSONObject> createScheduleResourceRequestData(const String&);
 
-        static PassRefPtr<InspectorObject> createResourceReceiveResponseData(const String& requestId, const ResourceResponse&);
+        static PassRefPtr<JSONObject> createResourceReceiveResponseData(const String& requestId, const ResourceResponse&);
 
-        static PassRefPtr<InspectorObject> createReceiveResourceData(const String& requestId, int length);
+        static PassRefPtr<JSONObject> createReceiveResourceData(const String& requestId, int length);
 
-        static PassRefPtr<InspectorObject> createResourceFinishData(const String& requestId, bool didFail, double finishTime);
+        static PassRefPtr<JSONObject> createResourceFinishData(const String& requestId, bool didFail, double finishTime);
 
-        static PassRefPtr<InspectorObject> createLayoutData(unsigned dirtyObjects, unsigned totalObjects, bool partialLayout);
+        static PassRefPtr<JSONObject> createLayoutData(unsigned dirtyObjects, unsigned totalObjects, bool partialLayout);
 
-        static PassRefPtr<InspectorObject> createDecodeImageData(const String& imageType);
+        static PassRefPtr<JSONObject> createDecodeImageData(const String& imageType);
 
-        static PassRefPtr<InspectorObject> createResizeImageData(bool shouldCache);
+        static PassRefPtr<JSONObject> createResizeImageData(bool shouldCache);
 
-        static PassRefPtr<InspectorObject> createMarkData(bool isMainFrame);
+        static PassRefPtr<JSONObject> createMarkData(bool isMainFrame);
 
-        static PassRefPtr<InspectorObject> createParseHTMLData(unsigned startLine);
+        static PassRefPtr<JSONObject> createParseHTMLData(unsigned startLine);
 
-        static PassRefPtr<InspectorObject> createAnimationFrameData(int callbackId);
+        static PassRefPtr<JSONObject> createAnimationFrameData(int callbackId);
 
-        static PassRefPtr<InspectorObject> createLayerData(long long layerRootNodeId);
+        static PassRefPtr<JSONObject> createLayerData(long long layerRootNodeId);
 
-        static PassRefPtr<InspectorObject> createPaintData(const FloatQuad&, long long layerRootNodeId);
+        static PassRefPtr<JSONObject> createPaintData(const FloatQuad&, long long layerRootNodeId);
 
-        static void appendLayoutRoot(InspectorObject* data, const FloatQuad&, long long rootNodeId);
+        static void appendLayoutRoot(JSONObject* data, const FloatQuad&, long long rootNodeId);
 
-        static void appendStyleRecalcDetails(InspectorObject* data, unsigned elementCount);
+        static void appendStyleRecalcDetails(JSONObject* data, unsigned elementCount);
 
-        static inline PassRefPtr<InspectorObject> createWebSocketCreateData(unsigned long identifier, const KURL& url, const String& protocol)
+        static inline PassRefPtr<JSONObject> createWebSocketCreateData(unsigned long identifier, const KURL& url, const String& protocol)
         {
-            RefPtr<InspectorObject> data = InspectorObject::create();
+            RefPtr<JSONObject> data = JSONObject::create();
             data->setNumber("identifier", identifier);
             data->setString("url", url.string());
             if (!protocol.isNull())
@@ -110,9 +109,9 @@ namespace WebCore {
             return data.release();
         }
 
-        static inline PassRefPtr<InspectorObject> createGenericWebSocketData(unsigned long identifier)
+        static inline PassRefPtr<JSONObject> createGenericWebSocketData(unsigned long identifier)
         {
-            RefPtr<InspectorObject> data = InspectorObject::create();
+            RefPtr<JSONObject> data = JSONObject::create();
             data->setNumber("identifier", identifier);
             return data.release();
         }

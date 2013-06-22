@@ -33,19 +33,19 @@
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Event.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createGenericRecord(double startTime, int maxCallStackDepth, const String& type)
+PassRefPtr<JSONObject> TimelineRecordFactory::createGenericRecord(double startTime, int maxCallStackDepth, const String& type)
 {
-    RefPtr<InspectorObject> record = InspectorObject::create();
+    RefPtr<JSONObject> record = JSONObject::create();
     record->setNumber("startTime", startTime);
 
     if (maxCallStackDepth) {
@@ -57,110 +57,110 @@ PassRefPtr<InspectorObject> TimelineRecordFactory::createGenericRecord(double st
     return record.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createBackgroundRecord(double startTime, const String& threadName)
+PassRefPtr<JSONObject> TimelineRecordFactory::createBackgroundRecord(double startTime, const String& threadName)
 {
-    RefPtr<InspectorObject> record = InspectorObject::create();
+    RefPtr<JSONObject> record = JSONObject::create();
     record->setNumber("startTime", startTime);
     record->setString("thread", threadName);
     return record.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createGCEventData(const size_t usedHeapSizeDelta)
+PassRefPtr<JSONObject> TimelineRecordFactory::createGCEventData(const size_t usedHeapSizeDelta)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setNumber("usedHeapSizeDelta", usedHeapSizeDelta);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createFunctionCallData(const String& scriptName, int scriptLine)
+PassRefPtr<JSONObject> TimelineRecordFactory::createFunctionCallData(const String& scriptName, int scriptLine)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("scriptName", scriptName);
     data->setNumber("scriptLine", scriptLine);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createEventDispatchData(const Event& event)
+PassRefPtr<JSONObject> TimelineRecordFactory::createEventDispatchData(const Event& event)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("type", event.type().string());
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createGenericTimerData(int timerId)
+PassRefPtr<JSONObject> TimelineRecordFactory::createGenericTimerData(int timerId)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setNumber("timerId", timerId);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createTimerInstallData(int timerId, int timeout, bool singleShot)
+PassRefPtr<JSONObject> TimelineRecordFactory::createTimerInstallData(int timerId, int timeout, bool singleShot)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setNumber("timerId", timerId);
     data->setNumber("timeout", timeout);
     data->setBoolean("singleShot", singleShot);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createXHRReadyStateChangeData(const String& url, int readyState)
+PassRefPtr<JSONObject> TimelineRecordFactory::createXHRReadyStateChangeData(const String& url, int readyState)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("url", url);
     data->setNumber("readyState", readyState);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createXHRLoadData(const String& url)
+PassRefPtr<JSONObject> TimelineRecordFactory::createXHRLoadData(const String& url)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("url", url);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createEvaluateScriptData(const String& url, double lineNumber)
+PassRefPtr<JSONObject> TimelineRecordFactory::createEvaluateScriptData(const String& url, double lineNumber)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("url", url);
     data->setNumber("lineNumber", lineNumber);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createTimeStampData(const String& message)
+PassRefPtr<JSONObject> TimelineRecordFactory::createTimeStampData(const String& message)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("message", message);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createScheduleResourceRequestData(const String& url)
+PassRefPtr<JSONObject> TimelineRecordFactory::createScheduleResourceRequestData(const String& url)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("url", url);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createResourceSendRequestData(const String& requestId, const ResourceRequest& request)
+PassRefPtr<JSONObject> TimelineRecordFactory::createResourceSendRequestData(const String& requestId, const ResourceRequest& request)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("requestId", requestId);
     data->setString("url", request.url().string());
     data->setString("requestMethod", request.httpMethod());
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createResourceReceiveResponseData(const String& requestId, const ResourceResponse& response)
+PassRefPtr<JSONObject> TimelineRecordFactory::createResourceReceiveResponseData(const String& requestId, const ResourceResponse& response)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("requestId", requestId);
     data->setNumber("statusCode", response.httpStatusCode());
     data->setString("mimeType", response.mimeType());
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createResourceFinishData(const String& requestId, bool didFail, double finishTime)
+PassRefPtr<JSONObject> TimelineRecordFactory::createResourceFinishData(const String& requestId, bool didFail, double finishTime)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("requestId", requestId);
     data->setBoolean("didFail", didFail);
     if (finishTime)
@@ -168,61 +168,61 @@ PassRefPtr<InspectorObject> TimelineRecordFactory::createResourceFinishData(cons
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createReceiveResourceData(const String& requestId, int length)
+PassRefPtr<JSONObject> TimelineRecordFactory::createReceiveResourceData(const String& requestId, int length)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("requestId", requestId);
     data->setNumber("encodedDataLength", length);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createLayoutData(unsigned dirtyObjects, unsigned totalObjects, bool partialLayout)
+PassRefPtr<JSONObject> TimelineRecordFactory::createLayoutData(unsigned dirtyObjects, unsigned totalObjects, bool partialLayout)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setNumber("dirtyObjects", dirtyObjects);
     data->setNumber("totalObjects", totalObjects);
     data->setBoolean("partialLayout", partialLayout);
     return data.release();
 }
     
-PassRefPtr<InspectorObject> TimelineRecordFactory::createDecodeImageData(const String& imageType)
+PassRefPtr<JSONObject> TimelineRecordFactory::createDecodeImageData(const String& imageType)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setString("imageType", imageType);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createResizeImageData(bool shouldCache)
+PassRefPtr<JSONObject> TimelineRecordFactory::createResizeImageData(bool shouldCache)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setBoolean("cached", shouldCache);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createMarkData(bool isMainFrame)
+PassRefPtr<JSONObject> TimelineRecordFactory::createMarkData(bool isMainFrame)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setBoolean("isMainFrame", isMainFrame);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createParseHTMLData(unsigned startLine)
+PassRefPtr<JSONObject> TimelineRecordFactory::createParseHTMLData(unsigned startLine)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setNumber("startLine", startLine);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createAnimationFrameData(int callbackId)
+PassRefPtr<JSONObject> TimelineRecordFactory::createAnimationFrameData(int callbackId)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     data->setNumber("id", callbackId);
     return data.release();
 }
 
-static PassRefPtr<InspectorArray> createQuad(const FloatQuad& quad)
+static PassRefPtr<JSONArray> createQuad(const FloatQuad& quad)
 {
-    RefPtr<InspectorArray> array = InspectorArray::create();
+    RefPtr<JSONArray> array = JSONArray::create();
     array->pushNumber(quad.p1().x());
     array->pushNumber(quad.p1().y());
     array->pushNumber(quad.p2().x());
@@ -234,29 +234,29 @@ static PassRefPtr<InspectorArray> createQuad(const FloatQuad& quad)
     return array.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createLayerData(long long layerRootNodeId)
+PassRefPtr<JSONObject> TimelineRecordFactory::createLayerData(long long layerRootNodeId)
 {
-    RefPtr<InspectorObject> data = InspectorObject::create();
+    RefPtr<JSONObject> data = JSONObject::create();
     if (layerRootNodeId)
         data->setNumber("layerRootNode", layerRootNodeId);
     return data.release();
 }
 
-PassRefPtr<InspectorObject> TimelineRecordFactory::createPaintData(const FloatQuad& quad, long long layerRootNodeId)
+PassRefPtr<JSONObject> TimelineRecordFactory::createPaintData(const FloatQuad& quad, long long layerRootNodeId)
 {
-    RefPtr<InspectorObject> data = TimelineRecordFactory::createLayerData(layerRootNodeId);
+    RefPtr<JSONObject> data = TimelineRecordFactory::createLayerData(layerRootNodeId);
     data->setArray("clip", createQuad(quad));
     return data.release();
 }
 
-void TimelineRecordFactory::appendLayoutRoot(InspectorObject* data, const FloatQuad& quad, long long rootNodeId)
+void TimelineRecordFactory::appendLayoutRoot(JSONObject* data, const FloatQuad& quad, long long rootNodeId)
 {
     data->setArray("root", createQuad(quad));
     if (rootNodeId)
         data->setNumber("rootNode", rootNodeId);
 }
 
-void TimelineRecordFactory::appendStyleRecalcDetails(InspectorObject* data, unsigned elementCount)
+void TimelineRecordFactory::appendStyleRecalcDetails(JSONObject* data, unsigned elementCount)
 {
     data->setNumber("elementCount", elementCount);
 }

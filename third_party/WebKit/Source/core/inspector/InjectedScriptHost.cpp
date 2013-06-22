@@ -37,8 +37,8 @@
 #include "core/inspector/InspectorDOMStorageAgent.h"
 #include "core/inspector/InspectorDatabaseAgent.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/Pasteboard.h"
 
 #include "wtf/RefPtr.h"
@@ -72,7 +72,7 @@ void InjectedScriptHost::disconnect()
     m_scriptDebugServer = 0;
 }
 
-void InjectedScriptHost::inspectImpl(PassRefPtr<InspectorValue> object, PassRefPtr<InspectorValue> hints)
+void InjectedScriptHost::inspectImpl(PassRefPtr<JSONValue> object, PassRefPtr<JSONValue> hints)
 {
     if (InspectorAgent* inspectorAgent = m_instrumentingAgents ? m_instrumentingAgents->inspectorAgent() : 0) {
         RefPtr<TypeBuilder::Runtime::RemoteObject> remoteObject = TypeBuilder::Runtime::RemoteObject::runtimeCast(object);

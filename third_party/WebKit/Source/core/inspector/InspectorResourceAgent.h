@@ -54,13 +54,12 @@ class DocumentLoader;
 class FormData;
 class Frame;
 class HTTPHeaderMap;
-class InspectorArray;
 class InspectorClient;
 class InspectorFrontend;
-class InspectorObject;
 class InspectorPageAgent;
 class InspectorState;
 class InstrumentingAgents;
+class JSONObject;
 class KURL;
 class NetworkResourcesData;
 class Page;
@@ -138,7 +137,7 @@ public:
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void setUserAgentOverride(ErrorString*, const String& userAgent);
-    virtual void setExtraHTTPHeaders(ErrorString*, const RefPtr<InspectorObject>&);
+    virtual void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&);
     virtual void getResponseBody(ErrorString*, const String& requestId, String* content, bool* base64Encoded);
 
     virtual void replayXHR(ErrorString*, const String& requestId);

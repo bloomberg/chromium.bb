@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,45 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScriptProfile_h
-#define ScriptProfile_h
+#ifndef JSONParser_h
+#define JSONParser_h
 
-#include "InspectorTypeBuilder.h"
-#include "wtf/RefCounted.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
-
-namespace v8 {
-class CpuProfile;
-}
 
 namespace WebCore {
 
-class ScriptProfile : public RefCounted<ScriptProfile> {
-public:
-    static PassRefPtr<ScriptProfile> create(const v8::CpuProfile* profile, double idleTime)
-    {
-        return adoptRef(new ScriptProfile(profile, idleTime));
-    }
-    virtual ~ScriptProfile();
+class JSONValue;
 
-    String title() const;
-    unsigned int uid() const;
-    double idleTime() const;
-
-    PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectForHead() const;
-    PassRefPtr<TypeBuilder::Array<int> > buildInspectorObjectForSamples() const;
-
-private:
-    ScriptProfile(const v8::CpuProfile* profile, double idleTime)
-        : m_profile(profile)
-        , m_idleTime(idleTime)
-    {
-    }
-
-    const v8::CpuProfile* m_profile;
-    double m_idleTime;
-};
+PassRefPtr<JSONValue> parseJSON(const String& json);
 
 } // namespace WebCore
 
-#endif // ScriptProfile_h
+#endif // !defined(JSONParser_h)

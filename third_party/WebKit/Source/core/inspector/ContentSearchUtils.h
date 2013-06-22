@@ -38,7 +38,6 @@
 
 namespace WebCore {
 
-class InspectorArray;
 class RegularExpression;
 
 namespace ContentSearchUtils {

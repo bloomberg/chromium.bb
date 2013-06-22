@@ -30,14 +30,13 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/InspectorStyleTextEditor.h"
-#include "core/inspector/InspectorValues.h"
-
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "core/platform/JSONValues.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 class ParsedStyleSheet;
 
@@ -63,12 +62,12 @@ public:
     {
     }
 
-    explicit InspectorCSSId(RefPtr<InspectorObject> value)
+    explicit InspectorCSSId(PassRefPtr<JSONObject> value)
     {
         if (!value->getString("styleSheetId", &m_styleSheetId))
             return;
         
-        RefPtr<InspectorValue> ordinalValue = value->get("ordinal");
+        RefPtr<JSONValue> ordinalValue = value->get("ordinal");
         if (!ordinalValue || !ordinalValue->asNumber(&m_ordinal))
             m_styleSheetId = "";
     }

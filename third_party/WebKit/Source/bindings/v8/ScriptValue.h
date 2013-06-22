@@ -49,7 +49,7 @@ class ArrayBuffer;
 
 namespace WebCore {
 
-class InspectorValue;
+class JSONValue;
 class MessagePort;
 class SerializedScriptValue;
 typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
@@ -144,7 +144,7 @@ public:
     bool getString(String& result, v8::Isolate*) const;
     String toString(ScriptState*) const;
 
-    PassRefPtr<InspectorValue> toInspectorValue(ScriptState*) const;
+    PassRefPtr<JSONValue> toJSONValue(ScriptState*) const;
 
 private:
     RefPtr<SharedPersistent<v8::Value> > m_value;

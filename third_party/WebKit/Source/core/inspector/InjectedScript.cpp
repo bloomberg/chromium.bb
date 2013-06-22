@@ -35,8 +35,8 @@
 
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "core/inspector/InjectedScriptHost.h"
-#include "core/inspector/InspectorValues.h"
-#include <wtf/text/WTFString.h>
+#include "core/platform/JSONValues.h"
+#include "wtf/text/WTFString.h"
 
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Debugger::CallFrame;
@@ -92,19 +92,19 @@ void InjectedScript::evaluateOnCallFrame(ErrorString* errorString, const ScriptV
     makeEvalCall(errorString, function, result, wasThrown);
 }
 
-void InjectedScript::restartFrame(ErrorString* errorString, const ScriptValue& callFrames, const String& callFrameId, RefPtr<InspectorObject>* result)
+void InjectedScript::restartFrame(ErrorString* errorString, const ScriptValue& callFrames, const String& callFrameId, RefPtr<JSONObject>* result)
 {
     ScriptFunctionCall function(injectedScriptObject(), "restartFrame");
     function.appendArgument(callFrames);
     function.appendArgument(callFrameId);
-    RefPtr<InspectorValue> resultValue;
+    RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
     if (resultValue) {
-        if (resultValue->type() == InspectorValue::TypeString) {
+        if (resultValue->type() == JSONValue::TypeString) {
             resultValue->asString(errorString);
             return;
         }
-        if (resultValue->type() == InspectorValue::TypeObject) {
+        if (resultValue->type() == JSONValue::TypeObject) {
             *result = resultValue->asObject();
             return;
         }
@@ -129,13 +129,13 @@ void InjectedScript::setVariableValue(ErrorString* errorString, const ScriptValu
     function.appendArgument(scopeNumber);
     function.appendArgument(variableName);
     function.appendArgument(newValueStr);
-    RefPtr<InspectorValue> resultValue;
+    RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
     if (!resultValue) {
         *errorString = "Internal error";
         return;
     }
-    if (resultValue->type() == InspectorValue::TypeString) {
+    if (resultValue->type() == JSONValue::TypeString) {
         resultValue->asString(errorString);
         return;
     }
@@ -146,9 +146,9 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& 
 {
     ScriptFunctionCall function(injectedScriptObject(), "getFunctionDetails");
     function.appendArgument(functionId);
-    RefPtr<InspectorValue> resultValue;
+    RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != InspectorValue::TypeObject) {
+    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
         if (!resultValue->asString(errorString))
             *errorString = "Internal error";
         return;
@@ -163,9 +163,9 @@ void InjectedScript::getProperties(ErrorString* errorString, const String& objec
     function.appendArgument(ownProperties);
     function.appendArgument(accessorPropertiesOnly);
 
-    RefPtr<InspectorValue> result;
+    RefPtr<JSONValue> result;
     makeCall(function, &result);
-    if (!result || result->type() != InspectorValue::TypeArray) {
+    if (!result || result->type() != JSONValue::TypeArray) {
         *errorString = "Internal error";
         return;
     }
@@ -177,9 +177,9 @@ void InjectedScript::getInternalProperties(ErrorString* errorString, const Strin
     ScriptFunctionCall function(injectedScriptObject(), "getInternalProperties");
     function.appendArgument(objectId);
 
-    RefPtr<InspectorValue> result;
+    RefPtr<JSONValue> result;
     makeCall(function, &result);
-    if (!result || result->type() != InspectorValue::TypeArray) {
+    if (!result || result->type() != JSONValue::TypeArray) {
         *errorString = "Internal error";
         return;
     }
@@ -207,7 +207,7 @@ void InjectedScript::releaseObject(const String& objectId)
 {
     ScriptFunctionCall function(injectedScriptObject(), "releaseObject");
     function.appendArgument(objectId);
-    RefPtr<InspectorValue> result;
+    RefPtr<JSONValue> result;
     makeCall(function, &result);
 }
 
@@ -219,8 +219,8 @@ PassRefPtr<Array<CallFrame> > InjectedScript::wrapCallFrames(const ScriptValue& 
     bool hadException = false;
     ScriptValue callFramesValue = callFunctionWithEvalEnabled(function, hadException);
     ASSERT(!hadException);
-    RefPtr<InspectorValue> result = callFramesValue.toInspectorValue(scriptState());
-    if (result->type() == InspectorValue::TypeArray)
+    RefPtr<JSONValue> result = callFramesValue.toJSONValue(scriptState());
+    if (result->type() == JSONValue::TypeArray)
         return Array<CallFrame>::runtimeCast(result);
     return Array<CallFrame>::create();
 }
@@ -237,7 +237,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const 
     ScriptValue r = callFunctionWithEvalEnabled(wrapFunction, hadException);
     if (hadException)
         return 0;
-    RefPtr<InspectorObject> rawResult = r.toInspectorValue(scriptState())->asObject();
+    RefPtr<JSONObject> rawResult = r.toJSONValue(scriptState())->asObject();
     return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
 }
 
@@ -255,7 +255,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(const S
     ScriptValue r = callFunctionWithEvalEnabled(wrapFunction, hadException);
     if (hadException)
         return 0;
-    RefPtr<InspectorObject> rawResult = r.toInspectorValue(scriptState())->asObject();
+    RefPtr<JSONObject> rawResult = r.toJSONValue(scriptState())->asObject();
     return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
 }
 
@@ -281,7 +281,7 @@ void InjectedScript::inspectNode(Node* node)
     ASSERT(!hasNoValue());
     ScriptFunctionCall function(injectedScriptObject(), "inspectNode");
     function.appendArgument(nodeAsScriptValue(node));
-    RefPtr<InspectorValue> result;
+    RefPtr<JSONValue> result;
     makeCall(function, &result);
 }
 

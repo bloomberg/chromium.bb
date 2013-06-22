@@ -49,15 +49,14 @@
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/text/RegularExpression.h"
-
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Vector.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
 
 using WebCore::TypeBuilder::Array;
 using WebCore::RuleSourceDataList;

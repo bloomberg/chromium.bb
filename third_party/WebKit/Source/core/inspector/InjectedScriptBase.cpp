@@ -35,8 +35,8 @@
 
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorValues.h"
-#include <wtf/text/WTFString.h>
+#include "core/platform/JSONValues.h"
+#include "wtf/text/WTFString.h"
 
 using WebCore::TypeBuilder::Runtime::RemoteObject;
 
@@ -94,10 +94,10 @@ ScriptValue InjectedScriptBase::callFunctionWithEvalEnabled(ScriptFunctionCall& 
     return resultValue;
 }
 
-void InjectedScriptBase::makeCall(ScriptFunctionCall& function, RefPtr<InspectorValue>* result)
+void InjectedScriptBase::makeCall(ScriptFunctionCall& function, RefPtr<JSONValue>* result)
 {
     if (hasNoValue() || !canAccessInspectedWindow()) {
-        *result = InspectorValue::null();
+        *result = JSONValue::null();
         return;
     }
 
@@ -106,32 +106,33 @@ void InjectedScriptBase::makeCall(ScriptFunctionCall& function, RefPtr<Inspector
 
     ASSERT(!hadException);
     if (!hadException) {
-        *result = resultValue.toInspectorValue(m_injectedScriptObject.scriptState());
+        *result = resultValue.toJSONValue(m_injectedScriptObject.scriptState());
         if (!*result)
-            *result = InspectorString::create(String::format("Object has too long reference chain(must not be longer than %d)", InspectorValue::maxDepth));
-    } else
-        *result = InspectorString::create("Exception while making a call.");
+            *result = JSONString::create(String::format("Object has too long reference chain(must not be longer than %d)", JSONValue::maxDepth));
+    } else {
+        *result = JSONString::create("Exception while making a call.");
+    }
 }
 
 void InjectedScriptBase::makeEvalCall(ErrorString* errorString, ScriptFunctionCall& function, RefPtr<TypeBuilder::Runtime::RemoteObject>* objectResult, TypeBuilder::OptOutput<bool>* wasThrown)
 {
-    RefPtr<InspectorValue> result;
+    RefPtr<JSONValue> result;
     makeCall(function, &result);
     if (!result) {
         *errorString = "Internal error: result value is empty";
         return;
     }
-    if (result->type() == InspectorValue::TypeString) {
+    if (result->type() == JSONValue::TypeString) {
         result->asString(errorString);
         ASSERT(errorString->length());
         return;
     }
-    RefPtr<InspectorObject> resultPair = result->asObject();
+    RefPtr<JSONObject> resultPair = result->asObject();
     if (!resultPair) {
         *errorString = "Internal error: result is not an Object";
         return;
     }
-    RefPtr<InspectorObject> resultObj = resultPair->getObject("result");
+    RefPtr<JSONObject> resultObj = resultPair->getObject("result");
     bool wasThrownVal = false;
     if (!resultObj || !resultPair->getBoolean("wasThrown", &wasThrownVal)) {
         *errorString = "Internal error: result is not a pair of value and wasThrown flag";

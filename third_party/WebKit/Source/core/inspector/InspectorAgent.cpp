@@ -31,8 +31,6 @@
 #include "config.h"
 #include "core/inspector/InspectorAgent.h"
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
 #include "InspectorFrontend.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
@@ -41,11 +39,11 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "core/platform/JSONValues.h"
 #include "weborigin/SecurityOrigin.h"
 
 using namespace std;
@@ -162,7 +160,7 @@ void InspectorAgent::setInjectedScriptForOrigin(const String& origin, const Stri
     m_injectedScriptForOrigin.set(origin, source);
 }
 
-void InspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<InspectorObject> hints)
+void InspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)
 {
     if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled) && m_frontend) {
         m_frontend->inspector()->inspect(objectToInspect, hints);

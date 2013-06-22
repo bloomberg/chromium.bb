@@ -70,8 +70,8 @@ public:
         m_nodes = chunkPart("nodes");
 
         // Reset platform depended size field values.
-        for (InspectorArray::iterator i = m_nodes->begin(); i != m_nodes->end(); i += s_nodeFieldCount)
-            *(i + s_sizeOffset) = InspectorBasicValue::create(0);
+        for (JSONArray::iterator i = m_nodes->begin(); i != m_nodes->end(); i += s_nodeFieldCount)
+            *(i + s_sizeOffset) = JSONBasicValue::create(0);
 
         m_id2index.clear();
 
@@ -95,12 +95,12 @@ public:
     HeapGraphSerializer* serializer() { return &m_serializer; }
 
 private:
-    PassRefPtr<InspectorArray> chunkPart(String partName)
+    PassRefPtr<JSONArray> chunkPart(String partName)
     {
         EXPECT_TRUE(m_heapSnapshotChunk);
-        RefPtr<InspectorObject> chunk = *reinterpret_cast<RefPtr<InspectorObject>*>(&m_heapSnapshotChunk);
-        RefPtr<InspectorValue> partValue = chunk->get(partName);
-        RefPtr<InspectorArray> partArray;
+        RefPtr<JSONObject> chunk = *reinterpret_cast<RefPtr<JSONObject>*>(&m_heapSnapshotChunk);
+        RefPtr<JSONValue> partValue = chunk->get(partName);
+        RefPtr<JSONArray> partArray;
         EXPECT_TRUE(partValue->asArray(&partArray));
         return partArray.release();
     }
@@ -110,17 +110,17 @@ private:
         return chunkPart(partName)->toJSONString().replace("\"", "'");
     }
 
-    String stringValue(InspectorArray* array, int index)
+    String stringValue(JSONArray* array, int index)
     {
-        RefPtr<InspectorValue> inspectorValue = array->get(index);
+        RefPtr<JSONValue> inspectorValue = array->get(index);
         String value;
         EXPECT_TRUE(inspectorValue->asString(&value));
         return value;
     }
 
-    int intValue(InspectorArray* array, int index)
+    int intValue(JSONArray* array, int index)
     {
-        RefPtr<InspectorValue> inspectorValue = array->get(index);
+        RefPtr<JSONValue> inspectorValue = array->get(index);
         int value;
         EXPECT_TRUE(inspectorValue->asNumber(&value));
         return value;
@@ -169,9 +169,9 @@ private:
     HeapGraphSerializer m_serializer;
     RefPtr<TypeBuilder::Memory::HeapSnapshotChunk> m_heapSnapshotChunk;
 
-    RefPtr<InspectorArray> m_strings;
-    RefPtr<InspectorArray> m_nodes;
-    RefPtr<InspectorArray> m_edges;
+    RefPtr<JSONArray> m_strings;
+    RefPtr<JSONArray> m_nodes;
+    RefPtr<JSONArray> m_edges;
     HashMap<int, int> m_id2index;
 
     static const int s_nodeFieldCount = 5;

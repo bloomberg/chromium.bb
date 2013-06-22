@@ -32,10 +32,10 @@
 #define InspectorState_h
 
 
-#include "core/inspector/InspectorValues.h"
-#include <wtf/HashMap.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/JSONValues.h"
+#include "wtf/HashMap.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -50,7 +50,7 @@ public:
 class InspectorState {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    InspectorState(InspectorStateUpdateListener*, PassRefPtr<InspectorObject>);
+    InspectorState(InspectorStateUpdateListener*, PassRefPtr<JSONObject>);
     virtual ~InspectorState() {}
 
     void loadFromCookie(const String& inspectorStateCookie);
@@ -62,33 +62,33 @@ public:
     String getString(const String& propertyName);
     long getLong(const String& propertyName);
     double getDouble(const String& propertyName);
-    PassRefPtr<InspectorObject> getObject(const String& propertyName);
+    PassRefPtr<JSONObject> getObject(const String& propertyName);
 
-    void setBoolean(const String& propertyName, bool value) { setValue(propertyName, InspectorBasicValue::create(value)); }
-    void setString(const String& propertyName, const String& value) { setValue(propertyName, InspectorString::create(value)); }
-    void setLong(const String& propertyName, long value) { setValue(propertyName, InspectorBasicValue::create((double)value)); }
-    void setDouble(const String& propertyName, double value) { setValue(propertyName, InspectorBasicValue::create(value)); }
-    void setObject(const String& propertyName, PassRefPtr<InspectorObject> value) { setValue(propertyName, value); }
+    void setBoolean(const String& propertyName, bool value) { setValue(propertyName, JSONBasicValue::create(value)); }
+    void setString(const String& propertyName, const String& value) { setValue(propertyName, JSONString::create(value)); }
+    void setLong(const String& propertyName, long value) { setValue(propertyName, JSONBasicValue::create((double)value)); }
+    void setDouble(const String& propertyName, double value) { setValue(propertyName, JSONBasicValue::create(value)); }
+    void setObject(const String& propertyName, PassRefPtr<JSONObject> value) { setValue(propertyName, value); }
 
     void remove(const String&);
 private:
     void updateCookie();
-    void setValue(const String& propertyName, PassRefPtr<InspectorValue>);
+    void setValue(const String& propertyName, PassRefPtr<JSONValue>);
 
     // Gets called from InspectorCompositeState::loadFromCookie().
-    void setFromCookie(PassRefPtr<InspectorObject>);
+    void setFromCookie(PassRefPtr<JSONObject>);
 
     friend class InspectorCompositeState;
 
     InspectorStateUpdateListener* m_listener;
-    RefPtr<InspectorObject> m_properties;
+    RefPtr<JSONObject> m_properties;
 };
 
 class InspectorCompositeState : public InspectorStateUpdateListener {
 public:
     InspectorCompositeState(InspectorStateClient* inspectorClient)
         : m_client(inspectorClient)
-        , m_stateObject(InspectorObject::create())
+        , m_stateObject(JSONObject::create())
         , m_isMuted(false)
     {
     }
@@ -107,7 +107,7 @@ private:
     virtual void inspectorStateUpdated();
 
     InspectorStateClient* m_client;
-    RefPtr<InspectorObject> m_stateObject;
+    RefPtr<JSONObject> m_stateObject;
     bool m_isMuted;
     InspectorStateMap m_inspectorStateMap;
 };

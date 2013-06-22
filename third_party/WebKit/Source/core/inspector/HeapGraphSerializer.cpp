@@ -34,11 +34,12 @@
 #include "core/inspector/HeapGraphSerializer.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/MemoryObjectInfo.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+#include "core/inspector/JSONParser.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/MemoryObjectInfo.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -49,7 +50,7 @@ HeapGraphSerializer::HeapGraphSerializer(Client* client)
     , m_nodeEdgesCount(0)
     , m_nodes(Nodes::create())
     , m_baseToRealNodeIdMap(BaseToRealNodeIdMap::create())
-    , m_typeStrings(InspectorObject::create())
+    , m_typeStrings(JSONObject::create())
     , m_leafCount(0)
 {
     ASSERT(m_client);
@@ -157,7 +158,7 @@ void HeapGraphSerializer::reportBaseAddress(const void* base, const void* real)
     m_baseToRealNodeIdMap->addItem(toNodeId(real));
 }
 
-PassRefPtr<InspectorObject> HeapGraphSerializer::finish()
+PassRefPtr<JSONObject> HeapGraphSerializer::finish()
 {
     addRootNode();
     pushUpdate();
@@ -189,8 +190,8 @@ PassRefPtr<InspectorObject> HeapGraphSerializer::finish()
             "]"
         "}";
 
-    RefPtr<InspectorValue> metaValue = InspectorValue::parseJSON(metaString);
-    RefPtr<InspectorObject> meta;
+    RefPtr<JSONValue> metaValue = parseJSON(metaString);
+    RefPtr<JSONObject> meta;
     metaValue->asObject(&meta);
     ASSERT(meta);
     meta->setObject("type_strings", m_typeStrings);

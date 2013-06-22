@@ -37,9 +37,9 @@
 
 namespace WebCore {
 class InspectorFrontend;
-class InspectorObject;
 class InspectorState;
 class InstrumentingAgents;
+class JSONObject;
 class KURL;
 class WorkerContextProxy;
 
@@ -65,7 +65,7 @@ public:
     virtual void canInspectWorkers(ErrorString*, bool*);
     virtual void connectToWorker(ErrorString*, int workerId);
     virtual void disconnectFromWorker(ErrorString*, int workerId);
-    virtual void sendMessageToWorker(ErrorString*, int workerId, const RefPtr<InspectorObject>& message);
+    virtual void sendMessageToWorker(ErrorString*, int workerId, const RefPtr<JSONObject>& message);
     virtual void setAutoconnectToWorkers(ErrorString*, bool value);
 
 private:

@@ -59,7 +59,7 @@ public:
     virtual ~InspectorMemoryAgent();
 
     virtual void getDOMCounters(ErrorString*, int* documents, int* nodes, int* jsEventListeners);
-    virtual void getProcessMemoryDistribution(ErrorString*, const bool* reportGraph, RefPtr<TypeBuilder::Memory::MemoryBlock>& out_processMemory, RefPtr<InspectorObject>& graphMetaInformation);
+    virtual void getProcessMemoryDistribution(ErrorString*, const bool* reportGraph, RefPtr<TypeBuilder::Memory::MemoryBlock>& out_processMemory, RefPtr<JSONObject>& graphMetaInformation);
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -71,7 +71,7 @@ public:
 private:
     InspectorMemoryAgent(InstrumentingAgents*, InspectorClient*, InspectorCompositeState*, Page*);
 
-    PassRefPtr<InspectorObject> getProcessMemoryDistributionImpl(bool reportGraph, HashMap<String, size_t>* memoryInfo);
+    PassRefPtr<JSONObject> getProcessMemoryDistributionImpl(bool reportGraph, HashMap<String, size_t>* memoryInfo);
 
     InspectorClient* m_inspectorClient;
     Page* m_page;

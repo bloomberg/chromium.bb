@@ -40,8 +40,8 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/page/Frame.h"
+#include "core/platform/JSONValues.h"
 #include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
@@ -320,7 +320,7 @@ private:
     RefPtr<RequestDatabaseCallback> m_requestCallback;
 };
 
-static PassRefPtr<IDBKey> idbKeyFromInspectorObject(InspectorObject* key)
+static PassRefPtr<IDBKey> idbKeyFromInspectorObject(JSONObject* key)
 {
     RefPtr<IDBKey> idbKey;
 
@@ -350,10 +350,10 @@ static PassRefPtr<IDBKey> idbKeyFromInspectorObject(InspectorObject* key)
         idbKey = IDBKey::createDate(date);
     } else if (type == array) {
         IDBKey::KeyArray keyArray;
-        RefPtr<InspectorArray> array = key->getArray("array");
+        RefPtr<JSONArray> array = key->getArray("array");
         for (size_t i = 0; i < array->length(); ++i) {
-            RefPtr<InspectorValue> value = array->get(i);
-            RefPtr<InspectorObject> object;
+            RefPtr<JSONValue> value = array->get(i);
+            RefPtr<JSONObject> object;
             if (!value->asObject(&object))
                 return 0;
             keyArray.append(idbKeyFromInspectorObject(object.get()));
@@ -365,14 +365,14 @@ static PassRefPtr<IDBKey> idbKeyFromInspectorObject(InspectorObject* key)
     return idbKey.release();
 }
 
-static PassRefPtr<IDBKeyRange> idbKeyRangeFromKeyRange(InspectorObject* keyRange)
+static PassRefPtr<IDBKeyRange> idbKeyRangeFromKeyRange(JSONObject* keyRange)
 {
-    RefPtr<InspectorObject> lower = keyRange->getObject("lower");
+    RefPtr<JSONObject> lower = keyRange->getObject("lower");
     RefPtr<IDBKey> idbLower = lower ? idbKeyFromInspectorObject(lower.get()) : 0;
     if (lower && !idbLower)
         return 0;
 
-    RefPtr<InspectorObject> upper = keyRange->getObject("upper");
+    RefPtr<JSONObject> upper = keyRange->getObject("upper");
     RefPtr<IDBKey> idbUpper = upper ? idbKeyFromInspectorObject(upper.get()) : 0;
     if (upper && !idbUpper)
         return 0;
@@ -652,7 +652,7 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
     databaseLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
-void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<InspectorObject>* keyRange, PassRefPtr<RequestDataCallback> requestCallback)
+void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtr<RequestDataCallback> requestCallback)
 {
     Frame* frame = m_pageAgent->findFrameWithSecurityOrigin(securityOrigin);
     Document* document = assertDocument(errorString, frame);

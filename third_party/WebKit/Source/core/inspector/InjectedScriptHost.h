@@ -40,8 +40,8 @@ namespace WebCore {
 
 class Database;
 class InjectedScript;
-class InspectorValue;
 class InstrumentingAgents;
+class JSONValue;
 class Node;
 class ScriptDebugServer;
 class ScriptValue;
@@ -80,7 +80,7 @@ public:
     void clearInspectedObjects();
     InspectableObject* inspectedObject(unsigned int num);
 
-    void inspectImpl(PassRefPtr<InspectorValue> objectToInspect, PassRefPtr<InspectorValue> hints);
+    void inspectImpl(PassRefPtr<JSONValue> objectToInspect, PassRefPtr<JSONValue> hints);
     void getEventListenersImpl(Node*, Vector<EventListenerInfo>& listenersArray);
 
     void clearConsoleMessages();

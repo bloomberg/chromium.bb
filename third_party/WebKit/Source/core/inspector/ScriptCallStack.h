@@ -40,8 +40,6 @@
 
 namespace WebCore {
 
-class InspectorArray;
-
 class ScriptCallStack : public RefCounted<ScriptCallStack> {
 public:
     static const size_t maxCallStackSizeToCapture = 200;

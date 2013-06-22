@@ -60,7 +60,7 @@ public:
     void reportBaseAddress(const void*, const void*);
     int registerString(const char*);
 
-    PassRefPtr<InspectorObject> finish();
+    PassRefPtr<JSONObject> finish();
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
@@ -100,7 +100,7 @@ private:
     Address2NodeId m_address2NodeIdMap;
 
     Vector<const void*> m_roots;
-    RefPtr<InspectorObject> m_typeStrings;
+    RefPtr<JSONObject> m_typeStrings;
 
     size_t m_edgeTypes[WTF::LastMemberTypeEntry];
     int m_unknownClassNameId;

@@ -36,10 +36,10 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/platform/JSONValues.h"
 
 #include <v8-debug.h>
 

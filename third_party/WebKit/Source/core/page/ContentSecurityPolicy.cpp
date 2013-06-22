@@ -35,13 +35,13 @@
 #include "core/dom/SecurityPolicyViolationEvent.h"
 #include "core/html/FormDataList.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/PingLoader.h"
 #include "core/page/Console.h"
 #include "core/page/Frame.h"
 #include "core/page/PageConsole.h"
 #include "core/page/UseCounter.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/network/FormData.h"
 #include "weborigin/KURL.h"
 #include "weborigin/KnownPorts.h"
@@ -1734,7 +1734,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     // sent explicitly. As for which directive was violated, that's pretty
     // harmless information.
 
-    RefPtr<InspectorObject> cspReport = InspectorObject::create();
+    RefPtr<JSONObject> cspReport = JSONObject::create();
     cspReport->setString("document-uri", violationData.documentURI);
     cspReport->setString("referrer", violationData.referrer);
     cspReport->setString("violated-directive", violationData.violatedDirective);
@@ -1748,7 +1748,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
         cspReport->setNumber("column-number", violationData.columnNumber);
     }
 
-    RefPtr<InspectorObject> reportObject = InspectorObject::create();
+    RefPtr<JSONObject> reportObject = JSONObject::create();
     reportObject->setObject("csp-report", cspReport.release());
 
     RefPtr<FormData> report = FormData::create(reportObject->toJSONString().utf8());

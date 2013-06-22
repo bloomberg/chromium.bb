@@ -38,15 +38,15 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/cache/CachedResource.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/text/RegularExpression.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/text/WTFString.h"
 
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Debugger::FunctionDetails;
@@ -113,7 +113,7 @@ void InspectorDebuggerAgent::enable()
 
 void InspectorDebuggerAgent::disable()
 {
-    m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, InspectorObject::create());
+    m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, JSONObject::create());
     m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, ScriptDebugServer::DontPauseOnExceptions);
     m_instrumentingAgents->setInspectorDebuggerAgent(0);
 
@@ -214,9 +214,9 @@ void InspectorDebuggerAgent::addMessageToConsole(MessageSource source, MessageTy
 }
 
 
-static PassRefPtr<InspectorObject> buildObjectForBreakpointCookie(const String& url, int lineNumber, int columnNumber, const String& condition, bool isRegex)
+static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, int lineNumber, int columnNumber, const String& condition, bool isRegex)
 {
-    RefPtr<InspectorObject> breakpointObject = InspectorObject::create();
+    RefPtr<JSONObject> breakpointObject = JSONObject::create();
     breakpointObject->setString("url", url);
     breakpointObject->setNumber("lineNumber", lineNumber);
     breakpointObject->setNumber("columnNumber", columnNumber);
@@ -248,7 +248,7 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
     bool isRegex = optionalURLRegex;
 
     String breakpointId = (isRegex ? "/" + url + "/" : url) + ':' + String::number(lineNumber) + ':' + String::number(columnNumber);
-    RefPtr<InspectorObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
+    RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
     if (breakpointsCookie->find(breakpointId) != breakpointsCookie->end()) {
         *errorString = "Breakpoint at specified location already exists.";
         return;
@@ -268,7 +268,7 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
     *outBreakpointId = breakpointId;
 }
 
-static bool parseLocation(ErrorString* errorString, RefPtr<InspectorObject> location, String* scriptId, int* lineNumber, int* columnNumber)
+static bool parseLocation(ErrorString* errorString, PassRefPtr<JSONObject> location, String* scriptId, int* lineNumber, int* columnNumber)
 {
     if (!location->getString("scriptId", scriptId) || !location->getNumber("lineNumber", lineNumber)) {
         // FIXME: replace with input validation.
@@ -280,7 +280,7 @@ static bool parseLocation(ErrorString* errorString, RefPtr<InspectorObject> loca
     return true;
 }
 
-void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, const RefPtr<InspectorObject>& location, const String* const optionalCondition, TypeBuilder::Debugger::BreakpointId* outBreakpointId, RefPtr<TypeBuilder::Debugger::Location>& actualLocation)
+void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, const RefPtr<JSONObject>& location, const String* const optionalCondition, TypeBuilder::Debugger::BreakpointId* outBreakpointId, RefPtr<TypeBuilder::Debugger::Location>& actualLocation)
 {
     String scriptId;
     int lineNumber;
@@ -306,7 +306,7 @@ void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, const RefPt
 
 void InspectorDebuggerAgent::removeBreakpoint(ErrorString*, const String& breakpointId)
 {
-    RefPtr<InspectorObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
+    RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
     breakpointsCookie->remove(breakpointId);
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, breakpointsCookie);
 
@@ -326,7 +326,7 @@ void InspectorDebuggerAgent::removeBreakpoint(const String& breakpointId)
     m_breakpointIdToDebugServerBreakpointIds.remove(debugServerBreakpointIdsIterator);
 }
 
-void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString, const RefPtr<InspectorObject>& location)
+void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString, const RefPtr<JSONObject>& location)
 {
     if (!m_continueToLocationBreakpointId.isEmpty()) {
         scriptDebugServer().removeBreakpoint(m_continueToLocationBreakpointId);
@@ -374,11 +374,11 @@ PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreak
     return location;
 }
 
-static PassRefPtr<InspectorObject> scriptToInspectorObject(ScriptObject scriptObject)
+static PassRefPtr<JSONObject> scriptToInspectorObject(ScriptObject scriptObject)
 {
     if (scriptObject.hasNoValue())
         return 0;
-    RefPtr<InspectorValue> value = scriptObject.toInspectorValue(scriptObject.scriptState());
+    RefPtr<JSONValue> value = scriptObject.toJSONValue(scriptObject.scriptState());
     if (!value)
         return 0;
     return value->asObject();
@@ -396,18 +396,18 @@ void InspectorDebuggerAgent::searchInContent(ErrorString* error, const String& s
         *error = "No script for id: " + scriptId;
 }
 
-void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<InspectorObject>& result)
+void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<JSONObject>& result)
 {
     bool previewOnly = preview && *preview;
     ScriptObject resultObject;
     if (!scriptDebugServer().setScriptSource(scriptId, newContent, previewOnly, error, errorData, &m_currentCallStack, &resultObject))
         return;
     newCallFrames = currentCallFrames();
-    RefPtr<InspectorObject> object = scriptToInspectorObject(resultObject);
+    RefPtr<JSONObject> object = scriptToInspectorObject(resultObject);
     if (object)
         result = object;
 }
-void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<InspectorObject>& result)
+void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<JSONObject>& result)
 {
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(callFrameId);
     if (injectedScript.hasNoValue()) {
@@ -439,7 +439,7 @@ void InspectorDebuggerAgent::getFunctionDetails(ErrorString* errorString, const 
     injectedScript.getFunctionDetails(errorString, functionId, &details);
 }
 
-void InspectorDebuggerAgent::schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<InspectorObject> data)
+void InspectorDebuggerAgent::schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
 {
     if (m_javaScriptPauseScheduled)
         return;
@@ -616,7 +616,7 @@ void InspectorDebuggerAgent::setOverlayMessage(ErrorString*, const String*)
 {
 }
 
-void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scopeNumber, const String& variableName, const RefPtr<InspectorObject>& newValue, const String* callFrameId, const String* functionObjectId)
+void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scopeNumber, const String& variableName, const RefPtr<JSONObject>& newValue, const String* callFrameId, const String* functionObjectId)
 {
     InjectedScript injectedScript;
     if (callFrameId) {
@@ -643,7 +643,7 @@ void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scop
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
 {
     if (scriptDebugServer().pauseOnExceptionsState() != ScriptDebugServer::DontPauseOnExceptions) {
-        RefPtr<InspectorObject> directive = InspectorObject::create();
+        RefPtr<JSONObject> directive = JSONObject::create();
         directive->setString("directiveText", directiveText);
         breakProgram(InspectorFrontend::Debugger::Reason::CSPViolation, directive.release());
     }
@@ -705,9 +705,9 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
     if (scriptURL.isEmpty())
         return;
 
-    RefPtr<InspectorObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
-    for (InspectorObject::iterator it = breakpointsCookie->begin(); it != breakpointsCookie->end(); ++it) {
-        RefPtr<InspectorObject> breakpointObject = it->value->asObject();
+    RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
+    for (JSONObject::iterator it = breakpointsCookie->begin(); it != breakpointsCookie->end(); ++it) {
+        RefPtr<JSONObject> breakpointObject = it->value->asObject();
         bool isRegex;
         breakpointObject->getBoolean("isRegex", &isRegex);
         String url;
@@ -782,7 +782,7 @@ bool InspectorDebuggerAgent::canBreakProgram()
     return scriptDebugServer().canBreakProgram();
 }
 
-void InspectorDebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<InspectorObject> data)
+void InspectorDebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
 {
     m_breakReason = breakReason;
     m_breakAuxData = data;

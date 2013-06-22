@@ -39,7 +39,6 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Chrome.h"
@@ -48,6 +47,7 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PlatformTouchEvent.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -407,17 +407,17 @@ void InspectorOverlay::hide()
     update();
 }
 
-static PassRefPtr<InspectorObject> buildObjectForPoint(const FloatPoint& point)
+static PassRefPtr<JSONObject> buildObjectForPoint(const FloatPoint& point)
 {
-    RefPtr<InspectorObject> object = InspectorObject::create();
+    RefPtr<JSONObject> object = JSONObject::create();
     object->setNumber("x", point.x());
     object->setNumber("y", point.y());
     return object.release();
 }
 
-static PassRefPtr<InspectorArray> buildArrayForQuad(const FloatQuad& quad)
+static PassRefPtr<JSONArray> buildArrayForQuad(const FloatQuad& quad)
 {
-    RefPtr<InspectorArray> array = InspectorArray::create();
+    RefPtr<JSONArray> array = JSONArray::create();
     array->pushObject(buildObjectForPoint(quad.p1()));
     array->pushObject(buildObjectForPoint(quad.p2()));
     array->pushObject(buildObjectForPoint(quad.p3()));
@@ -425,10 +425,10 @@ static PassRefPtr<InspectorArray> buildArrayForQuad(const FloatQuad& quad)
     return array.release();
 }
 
-static PassRefPtr<InspectorObject> buildObjectForHighlight(const Highlight& highlight)
+static PassRefPtr<JSONObject> buildObjectForHighlight(const Highlight& highlight)
 {
-    RefPtr<InspectorObject> object = InspectorObject::create();
-    RefPtr<InspectorArray> array = InspectorArray::create();
+    RefPtr<JSONObject> object = JSONObject::create();
+    RefPtr<JSONArray> array = JSONArray::create();
     for (size_t i = 0; i < highlight.quads.size(); ++i)
         array->pushArray(buildArrayForQuad(highlight.quads[i]));
     object->setArray("quads", array.release());
@@ -442,9 +442,9 @@ static PassRefPtr<InspectorObject> buildObjectForHighlight(const Highlight& high
     return object.release();
 }
 
-static PassRefPtr<InspectorObject> buildObjectForSize(const IntSize& size)
+static PassRefPtr<JSONObject> buildObjectForSize(const IntSize& size)
 {
-    RefPtr<InspectorObject> result = InspectorObject::create();
+    RefPtr<JSONObject> result = JSONObject::create();
     result->setNumber("width", size.width());
     result->setNumber("height", size.height());
     return result.release();
@@ -467,11 +467,11 @@ void InspectorOverlay::drawNodeHighlight()
         buildNodeHighlight(m_eventTargetNode.get(), m_nodeHighlightConfig, &eventTargetHighlight);
         highlight.quads.append(eventTargetHighlight.quads[1]); // Add border from eventTargetNode to highlight.
     }
-    RefPtr<InspectorObject> highlightObject = buildObjectForHighlight(highlight);
+    RefPtr<JSONObject> highlightObject = buildObjectForHighlight(highlight);
 
     Node* node = m_highlightNode.get();
     if (node->isElementNode() && m_nodeHighlightConfig.showInfo && node->renderer() && node->document()->frame()) {
-        RefPtr<InspectorObject> elementInfo = InspectorObject::create();
+        RefPtr<JSONObject> elementInfo = JSONObject::create();
         Element* element = toElement(node);
         bool isXHTML = element->document()->isXHTMLDocument();
         elementInfo->setString("tagName", isXHTML ? element->nodeName() : element->nodeName().lower());
@@ -585,7 +585,7 @@ Page* InspectorOverlay::overlayPage()
 
 void InspectorOverlay::reset(const IntSize& viewportSize, const IntSize& frameViewFullSize, int scrollX, int scrollY)
 {
-    RefPtr<InspectorObject> resetData = InspectorObject::create();
+    RefPtr<JSONObject> resetData = JSONObject::create();
     resetData->setNumber("pageScaleFactor", m_page->pageScaleFactor());
     resetData->setNumber("deviceScaleFactor", m_page->deviceScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
@@ -598,15 +598,15 @@ void InspectorOverlay::reset(const IntSize& viewportSize, const IntSize& frameVi
 
 void InspectorOverlay::evaluateInOverlay(const String& method, const String& argument)
 {
-    RefPtr<InspectorArray> command = InspectorArray::create();
+    RefPtr<JSONArray> command = JSONArray::create();
     command->pushString(method);
     command->pushString(argument);
     overlayPage()->mainFrame()->script()->executeScriptInMainWorld(ScriptSourceCode("dispatch(" + command->toJSONString() + ")"));
 }
 
-void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<InspectorValue> argument)
+void InspectorOverlay::evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument)
 {
-    RefPtr<InspectorArray> command = InspectorArray::create();
+    RefPtr<JSONArray> command = JSONArray::create();
     command->pushString(method);
     command->pushValue(argument);
     overlayPage()->mainFrame()->script()->executeScriptInMainWorld(ScriptSourceCode("dispatch(" + command->toJSONString() + ")"));

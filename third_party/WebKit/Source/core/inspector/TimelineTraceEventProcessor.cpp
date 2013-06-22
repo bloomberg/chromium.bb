@@ -107,7 +107,7 @@ TimelineRecordStack::TimelineRecordStack(WeakPtr<InspectorTimelineAgent> timelin
 {
 }
 
-void TimelineRecordStack::addScopedRecord(PassRefPtr<InspectorObject> record)
+void TimelineRecordStack::addScopedRecord(PassRefPtr<JSONObject> record)
 {
     m_stack.append(Entry(record));
 }
@@ -124,7 +124,7 @@ void TimelineRecordStack::closeScopedRecord(double endTime)
     addInstantRecord(last.record);
 }
 
-void TimelineRecordStack::addInstantRecord(PassRefPtr<InspectorObject> record)
+void TimelineRecordStack::addInstantRecord(PassRefPtr<JSONObject> record)
 {
     if (m_stack.isEmpty())
         send(record);
@@ -140,7 +140,7 @@ bool TimelineRecordStack::isOpenRecordOfType(const String& type)
 }
 #endif
 
-void TimelineRecordStack::send(PassRefPtr<InspectorObject> record)
+void TimelineRecordStack::send(PassRefPtr<JSONObject> record)
 {
     InspectorTimelineAgent* timelineAgent = m_timelineAgent.get();
     if (!timelineAgent)
@@ -261,7 +261,7 @@ void TimelineTraceEventProcessor::onRasterTaskBegin(const TraceEvent& event)
         return;
     unsigned long long layerId = event.asUInt(InstrumentationEventArguments::LayerId);
     ASSERT(layerId);
-    RefPtr<InspectorObject> record = createRecord(event, TimelineRecordType::Rasterize);
+    RefPtr<JSONObject> record = createRecord(event, TimelineRecordType::Rasterize);
     record->setObject("data", TimelineRecordFactory::createLayerData(m_layerToNodeMap.get(layerId)));
     state.recordStack.addScopedRecord(record.release());
 }
@@ -340,19 +340,19 @@ void TimelineTraceEventProcessor::onPaint(const TraceEvent& event)
     m_layerToNodeMap.set(m_layerId, nodeId);
     InspectorTimelineAgent* timelineAgent = m_timelineAgent.get();
     if (timelineAgent && paintSetupStart) {
-        RefPtr<InspectorObject> paintSetupRecord = TimelineRecordFactory::createGenericRecord(paintSetupStart, 0, TimelineRecordType::PaintSetup);
+        RefPtr<JSONObject> paintSetupRecord = TimelineRecordFactory::createGenericRecord(paintSetupStart, 0, TimelineRecordType::PaintSetup);
         paintSetupRecord->setNumber("endTime", m_paintSetupEnd);
         paintSetupRecord->setObject("data", TimelineRecordFactory::createLayerData(nodeId));
         timelineAgent->addRecordToTimeline(paintSetupRecord);
     }
 }
 
-PassRefPtr<InspectorObject> TimelineTraceEventProcessor::createRecord(const TraceEvent& event, const String& recordType, PassRefPtr<InspectorObject> data)
+PassRefPtr<JSONObject> TimelineTraceEventProcessor::createRecord(const TraceEvent& event, const String& recordType, PassRefPtr<JSONObject> data)
 {
     double startTime = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
-    RefPtr<InspectorObject> record = TimelineRecordFactory::createBackgroundRecord(startTime, String::number(event.threadIdentifier()));
+    RefPtr<JSONObject> record = TimelineRecordFactory::createBackgroundRecord(startTime, String::number(event.threadIdentifier()));
     record->setString("type", recordType);
-    record->setObject("data", data ? data : InspectorObject::create());
+    record->setObject("data", data ? data : JSONObject::create());
     return record.release();
 }
 

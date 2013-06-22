@@ -33,15 +33,14 @@
 
 
 #include "core/inspector/InspectorTimelineAgent.h"
-#include "core/inspector/InspectorValues.h"
-
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Threading.h>
-#include <wtf/Vector.h>
-#include <wtf/WeakPtr.h>
+#include "core/platform/JSONValues.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/Threading.h"
+#include "wtf/Vector.h"
+#include "wtf/WeakPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -52,30 +51,30 @@ class Page;
 class TimelineRecordStack {
 private:
     struct Entry {
-        Entry(PassRefPtr<InspectorObject> record)
+        Entry(PassRefPtr<JSONObject> record)
             : record(record)
-            , children(InspectorArray::create())
+            , children(JSONArray::create())
         {
         }
 
-        RefPtr<InspectorObject> record;
-        RefPtr<InspectorArray> children;
+        RefPtr<JSONObject> record;
+        RefPtr<JSONArray> children;
     };
 
 public:
     TimelineRecordStack() { }
     TimelineRecordStack(WeakPtr<InspectorTimelineAgent>);
 
-    void addScopedRecord(PassRefPtr<InspectorObject> record);
+    void addScopedRecord(PassRefPtr<JSONObject> record);
     void closeScopedRecord(double endTime);
-    void addInstantRecord(PassRefPtr<InspectorObject> record);
+    void addInstantRecord(PassRefPtr<JSONObject> record);
 
 #ifndef NDEBUG
     bool isOpenRecordOfType(const String& type);
 #endif
 
 private:
-    void send(PassRefPtr<InspectorObject>);
+    void send(PassRefPtr<JSONObject>);
 
     WeakPtr<InspectorTimelineAgent> m_timelineAgent;
     Vector<Entry> m_stack;
@@ -226,7 +225,7 @@ private:
     void leaveLayerTask(TimelineThreadState&);
 
     void processBackgroundEvents();
-    PassRefPtr<InspectorObject> createRecord(const TraceEvent&, const String& recordType, PassRefPtr<InspectorObject> data = 0);
+    PassRefPtr<JSONObject> createRecord(const TraceEvent&, const String& recordType, PassRefPtr<JSONObject> data = 0);
 
     void registerHandler(const char* name, TraceEventPhase, TraceEventHandler);
 

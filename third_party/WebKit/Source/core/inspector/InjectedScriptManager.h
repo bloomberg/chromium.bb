@@ -40,7 +40,6 @@ namespace WebCore {
 class DOMWindow;
 class InjectedScript;
 class InjectedScriptHost;
-class InspectorObject;
 class ScriptObject;
 
 class InjectedScriptManager {

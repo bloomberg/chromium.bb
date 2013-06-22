@@ -47,8 +47,8 @@ class EmptyChromeClient;
 class GraphicsContext;
 class InspectorClient;
 class InspectorOverlayHost;
-class InspectorValue;
 class IntRect;
+class JSONValue;
 class Node;
 class Page;
 class PlatformMouseEvent;
@@ -154,7 +154,7 @@ private:
     Page* overlayPage();
     void reset(const IntSize& viewportSize, const IntSize& frameViewFullSize, int scrollX, int scrollY);
     void evaluateInOverlay(const String& method, const String& argument);
-    void evaluateInOverlay(const String& method, PassRefPtr<InspectorValue> argument);
+    void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
     void onTimer(Timer<InspectorOverlay>*);
 
     Page* m_page;

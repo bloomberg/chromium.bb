@@ -42,10 +42,8 @@
 namespace WebCore {
 
 class InjectedScriptManager;
-class InspectorArray;
 class InspectorConsoleAgent;
 class InspectorFrontend;
-class InspectorObject;
 class InspectorState;
 class InstrumentingAgents;
 class Page;

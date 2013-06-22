@@ -41,11 +41,9 @@ namespace WebCore {
 
 class InjectedScript;
 class InjectedScriptManager;
-class InspectorArray;
 class InspectorFrontend;
-class InspectorObject;
-class InspectorValue;
 class InstrumentingAgents;
+class JSONArray;
 class ScriptDebugServer;
 class WorkerContext;
 
@@ -73,7 +71,7 @@ public:
     virtual void callFunctionOn(ErrorString*,
                         const String& objectId,
                         const String& expression,
-                        const RefPtr<InspectorArray>* optionalArguments,
+                        const RefPtr<JSONArray>* optionalArguments,
                         const bool* doNotPauseOnExceptionsAndMuteConsole,
                         const bool* returnByValue,
                         const bool* generatePreview,

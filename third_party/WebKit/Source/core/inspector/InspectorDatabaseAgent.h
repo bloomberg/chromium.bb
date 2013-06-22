@@ -40,7 +40,6 @@ namespace WebCore {
 class Database;
 class DocumentLoader;
 class Frame;
-class InspectorArray;
 class InspectorDatabaseResource;
 class InspectorFrontend;
 class InspectorState;

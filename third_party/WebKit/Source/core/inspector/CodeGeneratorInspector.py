@@ -226,7 +226,11 @@ class RawTypes(object):
 
         @classmethod
         def get_raw_validator_call_text(cls):
-            return "RuntimeCastHelper::assertType<InspectorValue::Type%s>" % cls.get_validate_method_params().template_type
+            return "RuntimeCastHelper::assertType<JSONValue::Type%s>" % cls.get_validate_method_params().template_type
+
+        @staticmethod
+        def get_validate_method_params():
+            raise Exception("Abstract method")
 
     class String(BaseType):
         @staticmethod
@@ -393,7 +397,7 @@ class RawTypes(object):
 
         @staticmethod
         def get_c_initializer():
-            return "InspectorObject::create()"
+            return "JSONObject::create()"
 
         @staticmethod
         def get_output_argument_prefix():
@@ -415,7 +419,7 @@ class RawTypes(object):
 
         @staticmethod
         def get_array_item_raw_c_type_text():
-            return "InspectorObject"
+            return "JSONObject"
 
         @staticmethod
         def get_raw_type_model():
@@ -450,7 +454,7 @@ class RawTypes(object):
 
         @staticmethod
         def get_array_item_raw_c_type_text():
-            return "InspectorValue"
+            return "JSONValue"
 
         @staticmethod
         def get_raw_type_model():
@@ -471,7 +475,7 @@ class RawTypes(object):
 
         @staticmethod
         def get_c_initializer():
-            return "InspectorArray::create()"
+            return "JSONArray::create()"
 
         @staticmethod
         def get_output_argument_prefix():
@@ -493,7 +497,7 @@ class RawTypes(object):
 
         @staticmethod
         def get_array_item_raw_c_type_text():
-            return "InspectorArray"
+            return "JSONArray"
 
         @staticmethod
         def get_raw_type_model():
@@ -690,14 +694,14 @@ class TypeModel:
             cls.Int = cls.ValueType("int", False)
         cls.Number = cls.ValueType("double", False)
         cls.String = cls.ValueType("String", True,)
-        cls.Object = cls.RefPtrBased("InspectorObject")
-        cls.Array = cls.RefPtrBased("InspectorArray")
-        cls.Any = cls.RefPtrBased("InspectorValue")
+        cls.Object = cls.RefPtrBased("JSONObject")
+        cls.Array = cls.RefPtrBased("JSONArray")
+        cls.Any = cls.RefPtrBased("JSONValue")
 
 TypeModel.init_class()
 
 
-# Collection of InspectorObject class methods that are likely to be overloaded in generated class.
+# Collection of JSONObject class methods that are likely to be overloaded in generated class.
 # We must explicitly import all overloaded methods or they won't be available to user.
 INSPECTOR_OBJECT_SETTER_NAMES = frozenset(["setValue", "setBoolean", "setNumber", "setString", "setValue", "setObject", "setArray"])
 
@@ -893,14 +897,14 @@ class TypeBindings:
 
                                 if enum_binding_cls.need_internal_runtime_cast_:
                                     writer.append("#if %s\n" % VALIDATOR_IFDEF_NAME)
-                                    writer.newline("    static void assertCorrectValue(InspectorValue* value);\n")
+                                    writer.newline("    static void assertCorrectValue(JSONValue* value);\n")
                                     writer.append("#endif  // %s\n" % VALIDATOR_IFDEF_NAME)
 
                                     validator_writer = generate_context.validator_writer
 
                                     domain_fixes = DomainNameFixes.get_fixed_data(context_domain_name)
 
-                                    validator_writer.newline("void %s%s::assertCorrectValue(InspectorValue* value)\n" % (helper.full_name_prefix_for_impl, enum_name))
+                                    validator_writer.newline("void %s%s::assertCorrectValue(JSONValue* value)\n" % (helper.full_name_prefix_for_impl, enum_name))
                                     validator_writer.newline("{\n")
                                     validator_writer.newline("    WTF::String s;\n")
                                     validator_writer.newline("    bool cast_res = value->asString(&s);\n")
@@ -1131,9 +1135,9 @@ class TypeBindings:
                                 writer.append(class_name)
                                 writer.append(" : public ")
                                 if is_open_type:
-                                    writer.append("InspectorObject")
+                                    writer.append("JSONObject")
                                 else:
-                                    writer.append("InspectorObjectBase")
+                                    writer.append("JSONObjectBase")
                                 writer.append(" {\n")
                                 writer.newline("public:\n")
                                 ad_hoc_type_writer = writer.insert_writer("    ")
@@ -1210,25 +1214,25 @@ class TypeBindings:
 
 
                                     if setter_name in INSPECTOR_OBJECT_SETTER_NAMES:
-                                        writer.newline("    using InspectorObjectBase::%s;\n\n" % setter_name)
+                                        writer.newline("    using JSONObjectBase::%s;\n\n" % setter_name)
 
                                 if class_binding_cls.need_user_runtime_cast_:
-                                    writer.newline("    static PassRefPtr<%s> runtimeCast(PassRefPtr<InspectorValue> value)\n" % class_name)
+                                    writer.newline("    static PassRefPtr<%s> runtimeCast(PassRefPtr<JSONValue> value)\n" % class_name)
                                     writer.newline("    {\n")
-                                    writer.newline("        RefPtr<InspectorObject> object;\n")
+                                    writer.newline("        RefPtr<JSONObject> object;\n")
                                     writer.newline("        bool castRes = value->asObject(&object);\n")
                                     writer.newline("        ASSERT_UNUSED(castRes, castRes);\n")
                                     writer.append("#if %s\n" % VALIDATOR_IFDEF_NAME)
                                     writer.newline("        assertCorrectValue(object.get());\n")
                                     writer.append("#endif  // %s\n" % VALIDATOR_IFDEF_NAME)
-                                    writer.newline("        COMPILE_ASSERT(sizeof(%s) == sizeof(InspectorObjectBase), type_cast_problem);\n" % class_name)
-                                    writer.newline("        return static_cast<%s*>(static_cast<InspectorObjectBase*>(object.get()));\n" % class_name)
+                                    writer.newline("        COMPILE_ASSERT(sizeof(%s) == sizeof(JSONObjectBase), type_cast_problem);\n" % class_name)
+                                    writer.newline("        return static_cast<%s*>(static_cast<JSONObjectBase*>(object.get()));\n" % class_name)
                                     writer.newline("    }\n")
                                     writer.append("\n")
 
                                 if class_binding_cls.need_internal_runtime_cast_:
                                     writer.append("#if %s\n" % VALIDATOR_IFDEF_NAME)
-                                    writer.newline("    static void assertCorrectValue(InspectorValue* value);\n")
+                                    writer.newline("    static void assertCorrectValue(JSONValue* value);\n")
                                     writer.append("#endif  // %s\n" % VALIDATOR_IFDEF_NAME)
 
                                     closed_field_set = (context_domain_name + "." + class_name) not in TYPES_WITH_OPEN_FIELD_LIST_SET
@@ -1237,15 +1241,15 @@ class TypeBindings:
 
                                     domain_fixes = DomainNameFixes.get_fixed_data(context_domain_name)
 
-                                    validator_writer.newline("void %s%s::assertCorrectValue(InspectorValue* value)\n" % (helper.full_name_prefix_for_impl, class_name))
+                                    validator_writer.newline("void %s%s::assertCorrectValue(JSONValue* value)\n" % (helper.full_name_prefix_for_impl, class_name))
                                     validator_writer.newline("{\n")
-                                    validator_writer.newline("    RefPtr<InspectorObject> object;\n")
+                                    validator_writer.newline("    RefPtr<JSONObject> object;\n")
                                     validator_writer.newline("    bool castRes = value->asObject(&object);\n")
                                     validator_writer.newline("    ASSERT_UNUSED(castRes, castRes);\n")
                                     for prop_data in resolve_data.main_properties:
                                         validator_writer.newline("    {\n")
                                         it_name = "%sPos" % prop_data.p["name"]
-                                        validator_writer.newline("        InspectorObject::iterator %s;\n" % it_name)
+                                        validator_writer.newline("        JSONObject::iterator %s;\n" % it_name)
                                         validator_writer.newline("        %s = object->find(\"%s\");\n" % (it_name, prop_data.p["name"]))
                                         validator_writer.newline("        ASSERT(%s != object->end());\n" % it_name)
                                         validator_writer.newline("        %s(%s->value.get());\n" % (prop_data.param_type_binding.get_validator_call_text(), it_name))
@@ -1257,7 +1261,7 @@ class TypeBindings:
                                     for prop_data in resolve_data.optional_properties:
                                         validator_writer.newline("    {\n")
                                         it_name = "%sPos" % prop_data.p["name"]
-                                        validator_writer.newline("        InspectorObject::iterator %s;\n" % it_name)
+                                        validator_writer.newline("        JSONObject::iterator %s;\n" % it_name)
                                         validator_writer.newline("        %s = object->find(\"%s\");\n" % (it_name, prop_data.p["name"]))
                                         validator_writer.newline("        if (%s != object->end()) {\n" % it_name)
                                         validator_writer.newline("            %s(%s->value.get());\n" % (prop_data.param_type_binding.get_validator_call_text(), it_name))
@@ -1368,7 +1372,7 @@ class TypeBindings:
 
                     @staticmethod
                     def get_validator_call_text():
-                        return "RuntimeCastHelper::assertType<InspectorValue::TypeObject>"
+                        return "RuntimeCastHelper::assertType<JSONValue::TypeObject>"
 
                     @classmethod
                     def get_array_item_c_type_text(cls):
@@ -1868,7 +1872,7 @@ class Generator:
     class EventMethodStructTemplate:
         @staticmethod
         def append_prolog(line_list):
-            line_list.append("    RefPtr<InspectorObject> paramsObject = InspectorObject::create();\n")
+            line_list.append("    RefPtr<JSONObject> paramsObject = JSONObject::create();\n")
 
         @staticmethod
         def append_epilog(line_list):
@@ -1884,7 +1888,7 @@ class Generator:
 
         Generator.method_name_enum_list.append("        %s," % cmd_enum_name)
         Generator.method_handler_list.append("            &InspectorBackendDispatcherImpl::%s_%s," % (domain_name, json_command_name))
-        Generator.backend_method_declaration_list.append("    void %s_%s(long callId, InspectorObject* requestMessageObject);" % (domain_name, json_command_name))
+        Generator.backend_method_declaration_list.append("    void %s_%s(long callId, JSONObject* requestMessageObject);" % (domain_name, json_command_name))
 
         ad_hoc_type_output = []
         Generator.backend_agent_interface_list.append(ad_hoc_type_output)

@@ -36,13 +36,13 @@
 #include "bindings/v8/ScriptGCEvent.h"
 #include "core/dom/EventContext.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/ScriptGCEventListener.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/graphics/LayoutRect.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/WeakPtr.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 struct CachedResourceInitiatorInfo;
@@ -214,13 +214,13 @@ private:
     friend class TimelineTraceEventProcessor;
 
     struct TimelineRecordEntry {
-        TimelineRecordEntry(PassRefPtr<InspectorObject> record, PassRefPtr<InspectorObject> data, PassRefPtr<InspectorArray> children, const String& type, size_t usedHeapSizeAtStart)
+        TimelineRecordEntry(PassRefPtr<JSONObject> record, PassRefPtr<JSONObject> data, PassRefPtr<JSONArray> children, const String& type, size_t usedHeapSizeAtStart)
             : record(record), data(data), children(children), type(type), usedHeapSizeAtStart(usedHeapSizeAtStart)
         {
         }
-        RefPtr<InspectorObject> record;
-        RefPtr<InspectorObject> data;
-        RefPtr<InspectorArray> children;
+        RefPtr<JSONObject> record;
+        RefPtr<JSONObject> data;
+        RefPtr<JSONArray> children;
         String type;
         size_t usedHeapSizeAtStart;
     };
@@ -229,22 +229,22 @@ private:
 
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
 
-    void sendEvent(PassRefPtr<InspectorObject>);
-    void appendRecord(PassRefPtr<InspectorObject> data, const String& type, bool captureCallStack, Frame*);
-    void pushCurrentRecord(PassRefPtr<InspectorObject>, const String& type, bool captureCallStack, Frame*, bool hasLowLevelDetails = false);
+    void sendEvent(PassRefPtr<JSONObject>);
+    void appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame*);
+    void pushCurrentRecord(PassRefPtr<JSONObject>, const String& type, bool captureCallStack, Frame*, bool hasLowLevelDetails = false);
 
     void setDOMCounters(TypeBuilder::Timeline::TimelineEvent* record);
     void setNativeHeapStatistics(TypeBuilder::Timeline::TimelineEvent* record);
-    void setFrameIdentifier(InspectorObject* record, Frame*);
+    void setFrameIdentifier(JSONObject* record, Frame*);
     void pushGCEventRecords();
 
     void didCompleteCurrentRecord(const String& type);
 
-    void setHeapSizeStatistics(InspectorObject* record);
+    void setHeapSizeStatistics(JSONObject* record);
     void commitFrameRecord();
 
-    void addRecordToTimeline(PassRefPtr<InspectorObject>);
-    void innerAddRecordToTimeline(PassRefPtr<InspectorObject>);
+    void addRecordToTimeline(PassRefPtr<JSONObject>);
+    void innerAddRecordToTimeline(PassRefPtr<JSONObject>);
     void clearRecordStack();
 
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
@@ -279,7 +279,7 @@ private:
     GCEvents m_gcEvents;
     int m_maxCallStackDepth;
     unsigned m_platformInstrumentationClientInstalledAtStackDepth;
-    RefPtr<InspectorObject> m_pendingFrameRecord;
+    RefPtr<JSONObject> m_pendingFrameRecord;
     InspectorType m_inspectorType;
     InspectorClient* m_client;
     WeakPtrFactory<InspectorTimelineAgent> m_weakFactory;

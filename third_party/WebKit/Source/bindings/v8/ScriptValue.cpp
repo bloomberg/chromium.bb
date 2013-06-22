@@ -35,7 +35,7 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/MessagePort.h"
-#include "core/inspector/InspectorValues.h"
+#include "core/platform/JSONValues.h"
 #include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
@@ -84,7 +84,7 @@ String ScriptValue::toString(ScriptState*) const
     return v8StringToWebCoreString<String>(string, DoNotExternalize);
 }
 
-static PassRefPtr<InspectorValue> v8ToInspectorValue(v8::Handle<v8::Value> value, int maxDepth)
+static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxDepth)
 {
     if (value.IsEmpty()) {
         ASSERT_NOT_REACHED();
@@ -96,20 +96,20 @@ static PassRefPtr<InspectorValue> v8ToInspectorValue(v8::Handle<v8::Value> value
     maxDepth--;
 
     if (value->IsNull() || value->IsUndefined())
-        return InspectorValue::null();
+        return JSONValue::null();
     if (value->IsBoolean())
-        return InspectorBasicValue::create(value->BooleanValue());
+        return JSONBasicValue::create(value->BooleanValue());
     if (value->IsNumber())
-        return InspectorBasicValue::create(value->NumberValue());
+        return JSONBasicValue::create(value->NumberValue());
     if (value->IsString())
-        return InspectorString::create(toWebCoreString(value));
+        return JSONString::create(toWebCoreString(value));
     if (value->IsArray()) {
         v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
-        RefPtr<InspectorArray> inspectorArray = InspectorArray::create();
+        RefPtr<JSONArray> inspectorArray = JSONArray::create();
         uint32_t length = array->Length();
         for (uint32_t i = 0; i < length; i++) {
             v8::Local<v8::Value> value = array->Get(v8::Int32::New(i));
-            RefPtr<InspectorValue> element = v8ToInspectorValue(value, maxDepth);
+            RefPtr<JSONValue> element = v8ToJSONValue(value, maxDepth);
             if (!element)
                 return 0;
             inspectorArray->pushValue(element);
@@ -117,7 +117,7 @@ static PassRefPtr<InspectorValue> v8ToInspectorValue(v8::Handle<v8::Value> value
         return inspectorArray;
     }
     if (value->IsObject()) {
-        RefPtr<InspectorObject> inspectorObject = InspectorObject::create();
+        RefPtr<JSONObject> jsonObject = JSONObject::create();
         v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
         v8::Local<v8::Array> propertyNames = object->GetPropertyNames();
         uint32_t length = propertyNames->Length();
@@ -126,23 +126,23 @@ static PassRefPtr<InspectorValue> v8ToInspectorValue(v8::Handle<v8::Value> value
             // FIXME(yurys): v8::Object should support GetOwnPropertyNames
             if (name->IsString() && !object->HasRealNamedProperty(v8::Handle<v8::String>::Cast(name)))
                 continue;
-            RefPtr<InspectorValue> propertyValue = v8ToInspectorValue(object->Get(name), maxDepth);
+            RefPtr<JSONValue> propertyValue = v8ToJSONValue(object->Get(name), maxDepth);
             if (!propertyValue)
                 return 0;
-            inspectorObject->setValue(toWebCoreStringWithNullCheck(name), propertyValue);
+            jsonObject->setValue(toWebCoreStringWithNullCheck(name), propertyValue);
         }
-        return inspectorObject;
+        return jsonObject;
     }
     ASSERT_NOT_REACHED();
     return 0;
 }
 
-PassRefPtr<InspectorValue> ScriptValue::toInspectorValue(ScriptState* scriptState) const
+PassRefPtr<JSONValue> ScriptValue::toJSONValue(ScriptState* scriptState) const
 {
     v8::HandleScope handleScope(scriptState->isolate());
     // v8::Object::GetPropertyNames() expects current context to be not null.
     v8::Context::Scope contextScope(scriptState->context());
-    return v8ToInspectorValue(v8Value(), InspectorValue::maxDepth);
+    return v8ToJSONValue(v8Value(), JSONValue::maxDepth);
 }
 
 } // namespace WebCore

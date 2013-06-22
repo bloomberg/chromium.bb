@@ -43,7 +43,6 @@ namespace WebCore {
 class DOMWindow;
 class InjectedScriptManager;
 class InspectorFrontend;
-class InspectorObject;
 class ScriptArguments;
 class ScriptCallFrame;
 class ScriptCallStack;

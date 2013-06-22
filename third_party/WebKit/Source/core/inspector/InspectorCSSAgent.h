@@ -30,15 +30,14 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/page/ContentSecurityPolicy.h"
-
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "core/platform/JSONValues.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -130,13 +129,13 @@ public:
     virtual void getStyleSheet(ErrorString*, const String& styleSheetId, RefPtr<TypeBuilder::CSS::CSSStyleSheetBody>& result);
     virtual void getStyleSheetText(ErrorString*, const String& styleSheetId, String* result);
     virtual void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text);
-    virtual void setStyleText(ErrorString*, const RefPtr<InspectorObject>& styleId, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result);
-    virtual void setPropertyText(ErrorString*, const RefPtr<InspectorObject>& styleId, int propertyIndex, const String& text, bool overwrite, RefPtr<TypeBuilder::CSS::CSSStyle>& result);
-    virtual void toggleProperty(ErrorString*, const RefPtr<InspectorObject>& styleId, int propertyIndex, bool disable, RefPtr<TypeBuilder::CSS::CSSStyle>& result);
-    virtual void setRuleSelector(ErrorString*, const RefPtr<InspectorObject>& ruleId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result);
+    virtual void setStyleText(ErrorString*, const RefPtr<JSONObject>& styleId, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result);
+    virtual void setPropertyText(ErrorString*, const RefPtr<JSONObject>& styleId, int propertyIndex, const String& text, bool overwrite, RefPtr<TypeBuilder::CSS::CSSStyle>& result);
+    virtual void toggleProperty(ErrorString*, const RefPtr<JSONObject>& styleId, int propertyIndex, bool disable, RefPtr<TypeBuilder::CSS::CSSStyle>& result);
+    virtual void setRuleSelector(ErrorString*, const RefPtr<JSONObject>& ruleId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result);
     virtual void addRule(ErrorString*, int contextNodeId, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result);
     virtual void getSupportedCSSProperties(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSPropertyInfo> >& result);
-    virtual void forcePseudoState(ErrorString*, int nodeId, const RefPtr<InspectorArray>& forcedPseudoClasses);
+    virtual void forcePseudoState(ErrorString*, int nodeId, const RefPtr<JSONArray>& forcedPseudoClasses);
     virtual void getNamedFlowCollection(ErrorString*, int documentNodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::NamedFlow> >& result);
 
     virtual void startSelectorProfiler(ErrorString*);

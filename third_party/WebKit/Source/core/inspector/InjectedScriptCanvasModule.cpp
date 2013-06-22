@@ -89,7 +89,7 @@ ScriptObject InjectedScriptCanvasModule::callWrapContextFunction(const String& f
 void InjectedScriptCanvasModule::markFrameEnd()
 {
     ScriptFunctionCall function(injectedScriptObject(), "markFrameEnd");
-    RefPtr<InspectorValue> resultValue;
+    RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
     ASSERT(resultValue);
 }
@@ -107,9 +107,9 @@ void InjectedScriptCanvasModule::startCapturing(ErrorString* errorString, TraceL
 void InjectedScriptCanvasModule::callStartCapturingFunction(const String& functionName, ErrorString* errorString, TraceLogId* traceLogId)
 {
     ScriptFunctionCall function(injectedScriptObject(), functionName);
-    RefPtr<InspectorValue> resultValue;
+    RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != InspectorValue::TypeString || !resultValue->asString(traceLogId))
+    if (!resultValue || resultValue->type() != JSONValue::TypeString || !resultValue->asString(traceLogId))
         *errorString = "Internal error: " + functionName;
 }
 
@@ -142,9 +142,9 @@ void InjectedScriptCanvasModule::traceLog(ErrorString* errorString, const TraceL
         function.appendArgument(*startOffset);
     if (maxLength)
         function.appendArgument(*maxLength);
-    RefPtr<InspectorValue> resultValue;
+    RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != InspectorValue::TypeObject) {
+    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
         if (!resultValue->asString(errorString))
             *errorString = "Internal error: traceLog";
         return;
@@ -157,9 +157,9 @@ void InjectedScriptCanvasModule::replayTraceLog(ErrorString* errorString, const 
     ScriptFunctionCall function(injectedScriptObject(), "replayTraceLog");
     function.appendArgument(traceLogId);
     function.appendArgument(stepNo);
-    RefPtr<InspectorValue> resultValue;
+    RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != InspectorValue::TypeObject) {
+    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
         if (!resultValue->asString(errorString))
             *errorString = "Internal error: replayTraceLog";
         return;
@@ -171,9 +171,9 @@ void InjectedScriptCanvasModule::resourceInfo(ErrorString* errorString, const Re
 {
     ScriptFunctionCall function(injectedScriptObject(), "resourceInfo");
     function.appendArgument(resourceId);
-    RefPtr<InspectorValue> resultValue;
+    RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != InspectorValue::TypeObject) {
+    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
         if (!resultValue->asString(errorString))
             *errorString = "Internal error: resourceInfo";
         return;
@@ -186,9 +186,9 @@ void InjectedScriptCanvasModule::resourceState(ErrorString* errorString, const T
     ScriptFunctionCall function(injectedScriptObject(), "resourceState");
     function.appendArgument(traceLogId);
     function.appendArgument(resourceId);
-    RefPtr<InspectorValue> resultValue;
+    RefPtr<JSONValue> resultValue;
     makeCall(function, &resultValue);
-    if (!resultValue || resultValue->type() != InspectorValue::TypeObject) {
+    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
         if (!resultValue->asString(errorString))
             *errorString = "Internal error: resourceState";
         return;

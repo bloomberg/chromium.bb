@@ -35,11 +35,11 @@
 #include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorDatabaseResource.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/sql/SQLValue.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/SQLError.h"
@@ -89,14 +89,14 @@ public:
         for (size_t i = 0; i < columns.size(); ++i)
             columnNames->addItem(columns[i]);
 
-        RefPtr<TypeBuilder::Array<InspectorValue> > values = TypeBuilder::Array<InspectorValue>::create();
+        RefPtr<TypeBuilder::Array<JSONValue> > values = TypeBuilder::Array<JSONValue>::create();
         const Vector<SQLValue>& data = rowList->values();
         for (size_t i = 0; i < data.size(); ++i) {
             const SQLValue& value = rowList->values()[i];
             switch (value.type()) {
-            case SQLValue::StringValue: values->addItem(InspectorString::create(value.string())); break;
-            case SQLValue::NumberValue: values->addItem(InspectorBasicValue::create(value.number())); break;
-            case SQLValue::NullValue: values->addItem(InspectorValue::null()); break;
+            case SQLValue::StringValue: values->addItem(JSONString::create(value.string())); break;
+            case SQLValue::NumberValue: values->addItem(JSONBasicValue::create(value.number())); break;
+            case SQLValue::NullValue: values->addItem(JSONValue::null()); break;
             }
         }
         m_requestCallback->sendSuccess(columnNames.release(), values.release(), 0);

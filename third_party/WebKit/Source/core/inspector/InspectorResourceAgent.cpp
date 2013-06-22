@@ -40,7 +40,6 @@
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/NetworkResourcesData.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -57,6 +56,7 @@
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "core/platform/JSONValues.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -186,9 +186,9 @@ void InspectorResourceAgent::restore()
         enable();
 }
 
-static PassRefPtr<InspectorObject> buildObjectForHeaders(const HTTPHeaderMap& headers)
+static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers)
 {
-    RefPtr<InspectorObject> headersObject = InspectorObject::create();
+    RefPtr<JSONObject> headersObject = JSONObject::create();
     HTTPHeaderMap::const_iterator end = headers.end();
     for (HTTPHeaderMap::const_iterator it = headers.begin(); it != end; ++it)
         headersObject->setString(it->key.string(), it->value);
@@ -239,7 +239,7 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
         status = response.httpStatusCode();
         statusText = response.httpStatusText();
     }
-    RefPtr<InspectorObject> headers;
+    RefPtr<JSONObject> headers;
     if (response.resourceLoadInfo())
         headers = buildObjectForHeaders(response.resourceLoadInfo()->responseHeaders);
     else
@@ -296,11 +296,11 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, m_pageAgent->loaderId(loader));
 
-    RefPtr<InspectorObject> headers = m_state->getObject(ResourceAgentState::extraRequestHeaders);
+    RefPtr<JSONObject> headers = m_state->getObject(ResourceAgentState::extraRequestHeaders);
 
     if (headers) {
-        InspectorObject::const_iterator end = headers->end();
-        for (InspectorObject::const_iterator it = headers->begin(); it != end; ++it) {
+        JSONObject::const_iterator end = headers->end();
+        for (JSONObject::const_iterator it = headers->begin(); it != end; ++it) {
             String value;
             if (it->value->asString(&value))
                 request.setHTTPHeaderField(it->key, value);
@@ -615,7 +615,7 @@ void InspectorResourceAgent::setUserAgentOverride(ErrorString*, const String& us
     m_state->setString(ResourceAgentState::userAgentOverride, userAgent);
 }
 
-void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const RefPtr<InspectorObject>& headers)
+void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>& headers)
 {
     m_state->setObject(ResourceAgentState::extraRequestHeaders, headers);
 }

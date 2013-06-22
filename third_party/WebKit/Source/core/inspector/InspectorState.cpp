@@ -30,11 +30,12 @@
 #include "core/inspector/InspectorState.h"
 
 #include "core/inspector/InspectorStateClient.h"
-#include <wtf/PassOwnPtr.h>
+#include "core/inspector/JSONParser.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-InspectorState::InspectorState(InspectorStateUpdateListener* listener, PassRefPtr<InspectorObject> properties)
+InspectorState::InspectorState(InspectorStateUpdateListener* listener, PassRefPtr<JSONObject> properties)
     : m_listener(listener)
     , m_properties(properties)
 {
@@ -46,12 +47,12 @@ void InspectorState::updateCookie()
         m_listener->inspectorStateUpdated();
 }
 
-void InspectorState::setFromCookie(PassRefPtr<InspectorObject> properties)
+void InspectorState::setFromCookie(PassRefPtr<JSONObject> properties)
 {
     m_properties = properties;
 }
 
-void InspectorState::setValue(const String& propertyName, PassRefPtr<InspectorValue> value)
+void InspectorState::setValue(const String& propertyName, PassRefPtr<JSONValue> value)
 {
     m_properties->setValue(propertyName, value);
     updateCookie();
@@ -65,7 +66,7 @@ void InspectorState::remove(const String& propertyName)
 
 bool InspectorState::getBoolean(const String& propertyName)
 {
-    InspectorObject::iterator it = m_properties->find(propertyName);
+    JSONObject::iterator it = m_properties->find(propertyName);
     bool value = false;
     if (it != m_properties->end())
         it->value->asBoolean(&value);
@@ -74,7 +75,7 @@ bool InspectorState::getBoolean(const String& propertyName)
 
 String InspectorState::getString(const String& propertyName)
 {
-    InspectorObject::iterator it = m_properties->find(propertyName);
+    JSONObject::iterator it = m_properties->find(propertyName);
     String value;
     if (it != m_properties->end())
         it->value->asString(&value);
@@ -83,7 +84,7 @@ String InspectorState::getString(const String& propertyName)
 
 long InspectorState::getLong(const String& propertyName)
 {
-    InspectorObject::iterator it = m_properties->find(propertyName);
+    JSONObject::iterator it = m_properties->find(propertyName);
     long value = 0;
     if (it != m_properties->end())
         it->value->asNumber(&value);
@@ -92,18 +93,18 @@ long InspectorState::getLong(const String& propertyName)
 
 double InspectorState::getDouble(const String& propertyName)
 {
-    InspectorObject::iterator it = m_properties->find(propertyName);
+    JSONObject::iterator it = m_properties->find(propertyName);
     double value = 0;
     if (it != m_properties->end())
         it->value->asNumber(&value);
     return value;
 }
 
-PassRefPtr<InspectorObject> InspectorState::getObject(const String& propertyName)
+PassRefPtr<JSONObject> InspectorState::getObject(const String& propertyName)
 {
-    InspectorObject::iterator it = m_properties->find(propertyName);
+    JSONObject::iterator it = m_properties->find(propertyName);
     if (it == m_properties->end()) {
-        m_properties->setObject(propertyName, InspectorObject::create());
+        m_properties->setObject(propertyName, JSONObject::create());
         it = m_properties->find(propertyName);
     }
     return it->value->asObject();
@@ -113,7 +114,7 @@ InspectorState* InspectorCompositeState::createAgentState(const String& agentNam
 {
     ASSERT(m_stateObject->find(agentName) == m_stateObject->end());
     ASSERT(m_inspectorStateMap.find(agentName) == m_inspectorStateMap.end());
-    RefPtr<InspectorObject> stateProperties = InspectorObject::create();
+    RefPtr<JSONObject> stateProperties = JSONObject::create();
     m_stateObject->setObject(agentName, stateProperties);
     OwnPtr<InspectorState> statePtr = adoptPtr(new InspectorState(this, stateProperties));
     InspectorState* state = statePtr.get();
@@ -123,17 +124,17 @@ InspectorState* InspectorCompositeState::createAgentState(const String& agentNam
 
 void InspectorCompositeState::loadFromCookie(const String& inspectorCompositeStateCookie)
 {
-    RefPtr<InspectorValue> cookie = InspectorValue::parseJSON(inspectorCompositeStateCookie);
+    RefPtr<JSONValue> cookie = parseJSON(inspectorCompositeStateCookie);
     if (cookie)
         m_stateObject = cookie->asObject();
     if (!m_stateObject)
-        m_stateObject = InspectorObject::create();
+        m_stateObject = JSONObject::create();
 
     InspectorStateMap::iterator end = m_inspectorStateMap.end();
     for (InspectorStateMap::iterator it = m_inspectorStateMap.begin(); it != end; ++it) {
-        RefPtr<InspectorObject> agentStateObject = m_stateObject->getObject(it->key);
+        RefPtr<JSONObject> agentStateObject = m_stateObject->getObject(it->key);
         if (!agentStateObject) {
-            agentStateObject = InspectorObject::create();
+            agentStateObject = JSONObject::create();
             m_stateObject->setObject(it->key, agentStateObject);
         }
         it->value->setFromCookie(agentStateObject);
