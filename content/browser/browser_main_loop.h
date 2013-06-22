@@ -20,7 +20,6 @@ class SystemMonitor;
 
 namespace media {
 class AudioManager;
-class MIDIManager;
 }
 
 namespace net {
@@ -82,7 +81,6 @@ class BrowserMainLoop {
   MediaStreamManager* media_stream_manager() const {
     return media_stream_manager_.get();
   }
-  media::MIDIManager* midi_manager() const { return midi_manager_.get(); }
 
  private:
   class MemoryObserver;
@@ -108,7 +106,6 @@ class BrowserMainLoop {
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<media::AudioManager> audio_manager_;
-  scoped_ptr<media::MIDIManager> midi_manager_;
   scoped_ptr<AudioMirroringManager> audio_mirroring_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
   // Per-process listener for online state changes.

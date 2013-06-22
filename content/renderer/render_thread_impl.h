@@ -81,7 +81,6 @@ class InputEventFilter;
 class InputHandlerManager;
 class MediaStreamCenter;
 class MediaStreamDependencyFactory;
-class MIDIMessageFilter;
 class P2PSocketDispatcher;
 class PeerConnectionTracker;
 class RendererWebKitPlatformSupportImpl;
@@ -228,9 +227,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     return audio_message_filter_.get();
   }
 
-  MIDIMessageFilter* midi_message_filter() {
-    return midi_message_filter_.get();
-  }
 
   // Creates the embedder implementation of WebMediaStreamCenter.
   // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
@@ -383,7 +379,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_refptr<DBMessageFilter> db_message_filter_;
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
-  scoped_refptr<MIDIMessageFilter> midi_message_filter_;
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
 
   scoped_ptr<MediaStreamDependencyFactory> media_stream_factory_;

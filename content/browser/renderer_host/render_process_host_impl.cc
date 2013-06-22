@@ -73,7 +73,6 @@
 #include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
-#include "content/browser/renderer_host/media/midi_host.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/memory_benchmark_message_filter.h"
@@ -605,8 +604,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), audio_manager,
       BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
       media_internals, media_stream_manager));
-  channel_->AddFilter(
-      new MIDIHost(BrowserMainLoop::GetInstance()->midi_manager()));
   channel_->AddFilter(new VideoCaptureHost(media_stream_manager));
   channel_->AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(),

@@ -107,8 +107,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   virtual WebKit::WebContentDecryptionModule* createContentDecryptionModule(
       const WebKit::WebString& key_system);
-  virtual WebKit::WebMIDIAccessor*
-      createMIDIAccessor(WebKit::WebMIDIAccessorClient* client);
 
   virtual WebKit::WebBlobRegistry* blobRegistry();
   virtual void sampleGamepads(WebKit::WebGamepads&);

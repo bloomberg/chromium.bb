@@ -47,7 +47,6 @@ enum IPCMessageStart {
   DesktopNotificationMsgStart,
   GeolocationMsgStart,
   AudioMsgStart,
-  MIDIMsgStart,
   ChromeMsgStart,
   DragMsgStart,
   PrintMsgStart,
