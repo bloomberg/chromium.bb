@@ -1466,3 +1466,181 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
                            &on_theme_changed_calls));
   EXPECT_EQ(2, on_theme_changed_calls);
 }
+
+// Flaky on Mac Tests bot.
+#if defined(OS_MACOSX)
+#define MAYBE_UpdateSearchQueryOnBackNavigation DISABLED_UpdateSearchQueryOnBackNavigation
+#else
+#define MAYBE_UpdateSearchQueryOnBackNavigation UpdateSearchQueryOnBackNavigation
+#endif
+// Test to verify that the omnibox search query is updated on browser
+// back button press event.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       MAYBE_UpdateSearchQueryOnBackNavigation) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+
+  // Focus omnibox and confirm overlay isn't shown.
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Create an observer to wait for the instant tab to support Instant.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+
+  SetOmniboxText("flowers");
+  // Commit the search by pressing 'Enter'.
+  PressEnterAndWaitForNavigation();
+  observer.Wait();
+
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+
+  // Typing in the new search query in omnibox.
+  SetOmniboxText("cattles");
+  // Commit the search by pressing 'Enter'.
+  PressEnterAndWaitForNavigation();
+  // 'Enter' commits the query as it was typed. This creates a navigation entry
+  // in the history.
+  EXPECT_EQ(ASCIIToUTF16("cattles"), omnibox()->GetText());
+
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(active_tab->GetController().CanGoBack());
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &active_tab->GetController()));
+  active_tab->GetController().GoBack();
+  load_stop_observer.Wait();
+
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+  // Commit the search by pressing 'Enter'.
+  FocusOmnibox();
+  PressEnterAndWaitForNavigation();
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+}
+
+// Flaky on Mac Tests bot.
+#if defined(OS_MACOSX)
+#define MAYBE_UpdateSearchQueryOnForwardNavigation DISABLED_UpdateSearchQueryOnForwardNavigation
+#else
+#define MAYBE_UpdateSearchQueryOnForwardNavigation UpdateSearchQueryOnForwardNavigation
+#endif
+// Test to verify that the omnibox search query is updated on browser
+// forward button press events.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       MAYBE_UpdateSearchQueryOnForwardNavigation) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+
+  // Focus omnibox and confirm overlay isn't shown.
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Create an observer to wait for the instant tab to support Instant.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+
+  SetOmniboxText("flowers");
+  // Commit the search by pressing 'Enter'.
+  PressEnterAndWaitForNavigation();
+  observer.Wait();
+
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+
+  // Typing in the new search query in omnibox.
+  SetOmniboxText("cattles");
+  // Commit the search by pressing 'Enter'.
+  PressEnterAndWaitForNavigation();
+  // 'Enter' commits the query as it was typed. This creates a navigation entry
+  // in the history.
+  EXPECT_EQ(ASCIIToUTF16("cattles"), omnibox()->GetText());
+
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(active_tab->GetController().CanGoBack());
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &active_tab->GetController()));
+  active_tab->GetController().GoBack();
+  load_stop_observer.Wait();
+
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(active_tab->GetController().CanGoForward());
+  content::WindowedNotificationObserver load_stop_observer_2(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &active_tab->GetController()));
+  active_tab->GetController().GoForward();
+  load_stop_observer_2.Wait();
+
+  // Commit the search by pressing 'Enter'.
+  FocusOmnibox();
+  EXPECT_EQ(ASCIIToUTF16("cattles"), omnibox()->GetText());
+  PressEnterAndWaitForNavigation();
+  EXPECT_EQ(ASCIIToUTF16("cattles"), omnibox()->GetText());
+}
+
+// Flaky on Mac Tests bot.
+#if defined(OS_MACOSX)
+#define MAYBE_NavigateBackToNTP DISABLED_NavigateBackToNTP
+#else
+#define MAYBE_NavigateBackToNTP NavigateBackToNTP
+#endif
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_NavigateBackToNTP) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Open a new tab page.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+  SetOmniboxText("flowers");
+  PressEnterAndWaitForNavigation();
+  observer.Wait();
+
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+
+  // Typing in the new search query in omnibox.
+  // Commit the search by pressing 'Enter'.
+  SetOmniboxText("cattles");
+  PressEnterAndWaitForNavigation();
+
+  // 'Enter' commits the query as it was typed. This creates a navigation entry
+  // in the history.
+  EXPECT_EQ(ASCIIToUTF16("cattles"), omnibox()->GetText());
+
+  // Navigate back to "flowers" search result page.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(active_tab->GetController().CanGoBack());
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &active_tab->GetController()));
+  active_tab->GetController().GoBack();
+  load_stop_observer.Wait();
+
+  EXPECT_EQ(ASCIIToUTF16("flowers"), omnibox()->GetText());
+
+  // Navigate back to NTP.
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(active_tab->GetController().CanGoBack());
+  content::WindowedNotificationObserver load_stop_observer_2(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &active_tab->GetController()));
+  active_tab->GetController().GoBack();
+  load_stop_observer_2.Wait();
+
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
+}
