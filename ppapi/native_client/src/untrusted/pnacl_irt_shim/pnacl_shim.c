@@ -1573,9 +1573,9 @@ static PP_Resource Pnacl_M29_PPB_NetAddress_Dev_CreateFromIPv6Address(PP_Instanc
   return iface->CreateFromIPv6Address(instance, ipv6_addr);
 }
 
-static PP_Bool Pnacl_M29_PPB_NetAddress_Dev_IsNetAddress(PP_Resource addr) {
+static PP_Bool Pnacl_M29_PPB_NetAddress_Dev_IsNetAddress(PP_Resource resource) {
   const struct PPB_NetAddress_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1.real_iface;
-  return iface->IsNetAddress(addr);
+  return iface->IsNetAddress(resource);
 }
 
 static PP_NetAddress_Family_Dev Pnacl_M29_PPB_NetAddress_Dev_GetFamily(PP_Resource addr) {
@@ -4159,7 +4159,7 @@ struct PPB_IMEInputEvent_Dev_0_2 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_2 = {
 struct PPB_NetAddress_Dev_0_1 Pnacl_Wrappers_PPB_NetAddress_Dev_0_1 = {
     .CreateFromIPv4Address = (PP_Resource (*)(PP_Instance instance, const struct PP_NetAddress_IPv4_Dev* ipv4_addr))&Pnacl_M29_PPB_NetAddress_Dev_CreateFromIPv4Address,
     .CreateFromIPv6Address = (PP_Resource (*)(PP_Instance instance, const struct PP_NetAddress_IPv6_Dev* ipv6_addr))&Pnacl_M29_PPB_NetAddress_Dev_CreateFromIPv6Address,
-    .IsNetAddress = (PP_Bool (*)(PP_Resource addr))&Pnacl_M29_PPB_NetAddress_Dev_IsNetAddress,
+    .IsNetAddress = (PP_Bool (*)(PP_Resource resource))&Pnacl_M29_PPB_NetAddress_Dev_IsNetAddress,
     .GetFamily = (PP_NetAddress_Family_Dev (*)(PP_Resource addr))&Pnacl_M29_PPB_NetAddress_Dev_GetFamily,
     .DescribeAsString = (struct PP_Var (*)(PP_Resource addr, PP_Bool include_port))&Pnacl_M29_PPB_NetAddress_Dev_DescribeAsString,
     .DescribeAsIPv4Address = (PP_Bool (*)(PP_Resource addr, struct PP_NetAddress_IPv4_Dev* ipv4_addr))&Pnacl_M29_PPB_NetAddress_Dev_DescribeAsIPv4Address,
