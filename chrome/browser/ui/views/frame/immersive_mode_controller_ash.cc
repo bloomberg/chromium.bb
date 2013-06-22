@@ -461,6 +461,11 @@ void ImmersiveModeControllerAsh::OnMouseEvent(ui::MouseEvent* event) {
   if (!enabled_)
     return;
 
+  // Counterintuitively, we can still get synthesized mouse moves when
+  // aura::client::CursorClient::IsMouseEventsEnabled() == false.
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return;
+
   if (event->type() != ui::ET_MOUSE_MOVED &&
       event->type() != ui::ET_MOUSE_PRESSED &&
       event->type() != ui::ET_MOUSE_RELEASED &&
