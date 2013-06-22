@@ -89,9 +89,15 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordFormFillData)
   IPC_STRUCT_TRAITS_MEMBER(basic_data)
+  IPC_STRUCT_TRAITS_MEMBER(preferred_realm)
   IPC_STRUCT_TRAITS_MEMBER(additional_logins)
   IPC_STRUCT_TRAITS_MEMBER(other_possible_usernames)
   IPC_STRUCT_TRAITS_MEMBER(wait_for_username)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordAndRealm)
+  IPC_STRUCT_TRAITS_MEMBER(password)
+  IPC_STRUCT_TRAITS_MEMBER(realm)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(WebKit::WebFormElement::AutocompleteResult)
@@ -294,10 +300,11 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_AddPasswordFormMapping,
 
 // Instruct the browser to show a popup with the following suggestions from the
 // password manager.
-IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordSuggestions,
+IPC_MESSAGE_ROUTED4(AutofillHostMsg_ShowPasswordSuggestions,
                     autofill::FormFieldData /* the form field */,
                     gfx::RectF /* input field bounds, window-relative */,
-                    std::vector<base::string16> /* suggestions */)
+                    std::vector<base::string16> /* suggestions */,
+                    std::vector<base::string16> /* realms */)
 
 // Inform browser of data list values for the curent field.
 IPC_MESSAGE_ROUTED4(AutofillHostMsg_SetDataList,

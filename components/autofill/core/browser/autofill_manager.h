@@ -162,7 +162,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void OnShowPasswordSuggestions(
       const FormFieldData& field,
       const gfx::RectF& bounds,
-      const std::vector<base::string16>& suggestions);
+      const std::vector<base::string16>& suggestions,
+      const std::vector<base::string16>& realms);
   void OnSetDataList(const std::vector<base::string16>& values,
                      const std::vector<base::string16>& labels,
                      const std::vector<base::string16>& icons,

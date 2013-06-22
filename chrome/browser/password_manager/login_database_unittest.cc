@@ -36,6 +36,10 @@ class LoginDatabaseTest : public testing::Test {
     return db_.DeserializeVector(pickle);
   }
 
+  void SetPublicSuffixMatching(bool enabled) {
+    db_.public_suffix_domain_matching_ = enabled;
+  }
+
   LoginDatabase db_;
   base::FilePath file_;
   base::ScopedTempDir temp_dir_;
@@ -174,6 +178,275 @@ TEST_F(LoginDatabaseTest, Logins) {
   // Make sure everything can disappear.
   EXPECT_TRUE(db_.RemoveLogin(form4));
   EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(0U, result.size());
+}
+
+TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
+  SetPublicSuffixMatching(true);
+  std::vector<PasswordForm*> result;
+
+  // Verify the database is empty.
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(0U, result.size());
+
+  // Example password form.
+  PasswordForm form;
+  form.origin = GURL("https://foo.com/");
+  form.action = GURL("https://foo.com/login");
+  form.username_element = ASCIIToUTF16("username");
+  form.username_value = ASCIIToUTF16("test@gmail.com");
+  form.password_element = ASCIIToUTF16("password");
+  form.password_value = ASCIIToUTF16("test");
+  form.submit_element = ASCIIToUTF16("");
+  form.signon_realm = "https://foo.com/";
+  form.ssl_valid = true;
+  form.preferred = false;
+  form.scheme = PasswordForm::SCHEME_HTML;
+
+  // Add it and make sure it is there.
+  EXPECT_TRUE(db_.AddLogin(form));
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // Match against an exact copy.
+  EXPECT_TRUE(db_.GetLogins(form, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // We go to the mobile site.
+  PasswordForm form2(form);
+  form2.origin = GURL("https://mobile.foo.com/");
+  form2.action = GURL("https://mobile.foo.com/login");
+  form2.signon_realm = "https://mobile.foo.com/";
+
+  // Match against the mobile site.
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(1U, result.size());
+  EXPECT_EQ("https://mobile.foo.com/", result[0]->signon_realm);
+  EXPECT_EQ("https://foo.com/", result[0]->original_signon_realm);
+  delete result[0];
+  result.clear();
+}
+
+// This test fails if the implementation of GetLogins uses GetCachedStatement
+// instead of GetUniqueStatement, since REGEXP is in use. See
+// http://crbug.com/248608.
+TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
+  SetPublicSuffixMatching(true);
+  std::vector<PasswordForm*> result;
+
+  // Verify the database is empty.
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(0U, result.size());
+
+  // Example password form.
+  PasswordForm form;
+  form.origin = GURL("https://foo.com/");
+  form.action = GURL("https://foo.com/login");
+  form.username_element = ASCIIToUTF16("username");
+  form.username_value = ASCIIToUTF16("test@gmail.com");
+  form.password_element = ASCIIToUTF16("password");
+  form.password_value = ASCIIToUTF16("test");
+  form.submit_element = ASCIIToUTF16("");
+  form.signon_realm = "https://foo.com/";
+  form.ssl_valid = true;
+  form.preferred = false;
+  form.scheme = PasswordForm::SCHEME_HTML;
+
+  // Add it and make sure it is there.
+  EXPECT_TRUE(db_.AddLogin(form));
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // Match against an exact copy.
+  EXPECT_TRUE(db_.GetLogins(form, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // We go to the mobile site.
+  PasswordForm form2(form);
+  form2.origin = GURL("https://mobile.foo.com/");
+  form2.action = GURL("https://mobile.foo.com/login");
+  form2.signon_realm = "https://mobile.foo.com/";
+
+  // Match against the mobile site.
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(1U, result.size());
+  EXPECT_EQ("https://mobile.foo.com/", result[0]->signon_realm);
+  EXPECT_EQ("https://foo.com/", result[0]->original_signon_realm);
+  delete result[0];
+  result.clear();
+
+  // Add baz.com desktop site.
+  form.origin = GURL("https://baz.com/login/");
+  form.action = GURL("https://baz.com/login/");
+  form.username_element = ASCIIToUTF16("email");
+  form.username_value = ASCIIToUTF16("test@gmail.com");
+  form.password_element = ASCIIToUTF16("password");
+  form.password_value = ASCIIToUTF16("test");
+  form.submit_element = ASCIIToUTF16("");
+  form.signon_realm = "https://baz.com/";
+  form.ssl_valid = true;
+  form.preferred = false;
+  form.scheme = PasswordForm::SCHEME_HTML;
+
+  // Add it and make sure it is there.
+  EXPECT_TRUE(db_.AddLogin(form));
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(2U, result.size());
+  delete result[0];
+  delete result[1];
+  result.clear();
+
+  // We go to the mobile site of baz.com.
+  PasswordForm form3(form);
+  form3.origin = GURL("https://m.baz.com/login/");
+  form3.action = GURL("https://m.baz.com/login/");
+  form3.signon_realm = "https://m.baz.com/";
+
+  // Match against the mobile site of baz.com.
+  EXPECT_TRUE(db_.GetLogins(form3, &result));
+  EXPECT_EQ(1U, result.size());
+  EXPECT_EQ("https://m.baz.com/", result[0]->signon_realm);
+  EXPECT_EQ("https://baz.com/", result[0]->original_signon_realm);
+  delete result[0];
+  result.clear();
+}
+
+PasswordForm GetFormWithNewSignonRealm(PasswordForm form,
+                                       std::string signon_realm) {
+  PasswordForm form2(form);
+  form2.origin = GURL(signon_realm);
+  form2.action = GURL(signon_realm);
+  form2.signon_realm = signon_realm;
+  return form2;
+}
+
+TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
+  SetPublicSuffixMatching(true);
+  std::vector<PasswordForm*> result;
+
+  // Verify the database is empty.
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(0U, result.size());
+
+  // Example password form.
+  PasswordForm form;
+  form.origin = GURL("http://foo.com/");
+  form.action = GURL("http://foo.com/login");
+  form.username_element = ASCIIToUTF16("username");
+  form.username_value = ASCIIToUTF16("test@gmail.com");
+  form.password_element = ASCIIToUTF16("password");
+  form.password_value = ASCIIToUTF16("test");
+  form.submit_element = ASCIIToUTF16("");
+  form.signon_realm = "http://foo.com/";
+  form.ssl_valid = false;
+  form.preferred = false;
+  form.scheme = PasswordForm::SCHEME_HTML;
+
+  // Add it and make sure it is there.
+  EXPECT_TRUE(db_.AddLogin(form));
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // Example password form that has - in the domain name.
+  PasswordForm form_dash =
+      GetFormWithNewSignonRealm(form, "http://www.foo-bar.com/");
+
+  // Add it and make sure it is there.
+  EXPECT_TRUE(db_.AddLogin(form_dash));
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  EXPECT_EQ(2U, result.size());
+  delete result[0];
+  delete result[1];
+  result.clear();
+
+  // Match against an exact copy.
+  EXPECT_TRUE(db_.GetLogins(form, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // www.foo.com should match.
+  PasswordForm form2 = GetFormWithNewSignonRealm(form, "http://www.foo.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // a.b.foo.com should match.
+  form2 = GetFormWithNewSignonRealm(form, "http://a.b.foo.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // a-b.foo.com should match.
+  form2 = GetFormWithNewSignonRealm(form, "http://a-b.foo.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // foo-bar.com should match.
+  form2 = GetFormWithNewSignonRealm(form, "http://foo-bar.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // www.foo-bar.com should match.
+  form2 = GetFormWithNewSignonRealm(form, "http://www.foo-bar.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // a.b.foo-bar.com should match.
+  form2 = GetFormWithNewSignonRealm(form, "http://a.b.foo-bar.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // a-b.foo-bar.com should match.
+  form2 = GetFormWithNewSignonRealm(form, "http://a-b.foo-bar.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(1U, result.size());
+  delete result[0];
+  result.clear();
+
+  // foo.com with port 1337 should not match.
+  form2 = GetFormWithNewSignonRealm(form, "http://foo.com:1337/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(0U, result.size());
+
+  // http://foo.com should not match since the scheme is wrong.
+  form2 = GetFormWithNewSignonRealm(form, "https://foo.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(0U, result.size());
+
+  // notfoo.com should not match.
+  form2 = GetFormWithNewSignonRealm(form, "http://notfoo.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(0U, result.size());
+
+  // baz.com should not match.
+  form2 = GetFormWithNewSignonRealm(form, "http://baz.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
+  EXPECT_EQ(0U, result.size());
+
+  // foo-baz.com should not match.
+  form2 = GetFormWithNewSignonRealm(form, "http://foo-baz.com/");
+  EXPECT_TRUE(db_.GetLogins(form2, &result));
   EXPECT_EQ(0U, result.size());
 }
 

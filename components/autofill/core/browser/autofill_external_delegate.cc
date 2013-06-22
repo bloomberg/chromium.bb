@@ -133,6 +133,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 
 void AutofillExternalDelegate::OnShowPasswordSuggestions(
     const std::vector<base::string16>& suggestions,
+    const std::vector<base::string16>& realms,
     const FormFieldData& field,
     const gfx::RectF& element_bounds) {
   autofill_query_field_ = field;
@@ -150,7 +151,7 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
       element_bounds_,
       autofill_query_field_.text_direction,
       suggestions,
-      empty,
+      realms,
       empty,
       password_ids,
       GetWeakPtr());

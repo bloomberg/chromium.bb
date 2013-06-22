@@ -81,6 +81,7 @@ class AutofillExternalDelegate
 
   // Show password suggestions in the popup.
   void OnShowPasswordSuggestions(const std::vector<base::string16>& suggestions,
+                                 const std::vector<base::string16>& realms,
                                  const FormFieldData& field,
                                  const gfx::RectF& bounds);
 

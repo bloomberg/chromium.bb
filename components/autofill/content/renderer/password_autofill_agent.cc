@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -495,15 +496,20 @@ void PasswordAutofillAgent::OnFillPasswordForm(
 void PasswordAutofillAgent::GetSuggestions(
     const PasswordFormFillData& fill_data,
     const base::string16& input,
-    std::vector<base::string16>* suggestions) {
-  if (StartsWith(fill_data.basic_data.fields[0].value, input, false))
+    std::vector<base::string16>* suggestions,
+    std::vector<base::string16>* realms) {
+  if (StartsWith(fill_data.basic_data.fields[0].value, input, false)) {
     suggestions->push_back(fill_data.basic_data.fields[0].value);
+    realms->push_back(UTF8ToUTF16(fill_data.preferred_realm));
+  }
 
   for (PasswordFormFillData::LoginCollection::const_iterator iter =
            fill_data.additional_logins.begin();
        iter != fill_data.additional_logins.end(); ++iter) {
-    if (StartsWith(iter->first, input, false))
+    if (StartsWith(iter->first, input, false)) {
       suggestions->push_back(iter->first);
+      realms->push_back(UTF8ToUTF16(iter->second.realm));
+    }
   }
 
   for (PasswordFormFillData::UsernamesCollection::const_iterator iter =
@@ -530,7 +536,8 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
     return false;
 
   std::vector<base::string16> suggestions;
-  GetSuggestions(fill_data, user_input.value(), &suggestions);
+  std::vector<base::string16> realms;
+  GetSuggestions(fill_data, user_input.value(), &suggestions, &realms);
 
   if (disable_popup_) {
     FormData form;
@@ -549,7 +556,8 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
     Send(new AutofillHostMsg_ShowPasswordSuggestions(routing_id(),
                                                      field,
                                                      bounding_box_scaled,
-                                                     suggestions));
+                                                     suggestions,
+                                                     realms));
     return !suggestions.empty();
   }
 
@@ -592,7 +600,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
       if (DoUsernamesMatch(iter->first, current_username,
                            exact_username_match)) {
         username = iter->first;
-        password = iter->second;
+        password = iter->second.password;
         break;
       }
     }

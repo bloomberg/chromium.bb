@@ -1243,6 +1243,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnablePasswordGeneration)
   },
   {
+    "enable-password-autofill-public-suffix-domain-matching",
+    IDS_FLAGS_ENABLE_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_NAME,
+    IDS_FLAGS_ENABLE_PASSWORD_AUTOFILL_PUBLIC_SUFFIX_DOMAIN_MATCHING_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(
+        switches::kEnablePasswordAutofillPublicSuffixDomainMatching)
+  },
+  {
     "enable-deferred-image-decoding",
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_NAME,
     IDS_FLAGS_ENABLE_DEFERRED_IMAGE_DECODING_DESCRIPTION,

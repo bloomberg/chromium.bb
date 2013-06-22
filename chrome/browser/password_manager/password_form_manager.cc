@@ -153,6 +153,10 @@ bool PasswordFormManager::IsNewLogin() {
   return is_new_login_;
 }
 
+bool PasswordFormManager::IsPendingCredentialsPublicSuffixMatch() {
+  return pending_credentials_.IsPublicSuffixMatch();
+}
+
 void PasswordFormManager::SetHasGeneratedPassword() {
   has_generated_password_ = true;
 }
@@ -189,7 +193,10 @@ void PasswordFormManager::ProvisionallySave(
   if (it != best_matches_.end()) {
     // The user signed in with a login we autofilled.
     pending_credentials_ = *it->second;
-    is_new_login_ = false;
+
+    // Public suffix matches should always be new logins, since we want to store
+    // them so they can automatically be filled in later.
+    is_new_login_ = IsPendingCredentialsPublicSuffixMatch();
 
     // Check to see if we're using a known username but a new password.
     if (pending_credentials_.password_value != credentials.password_value)
@@ -337,12 +344,14 @@ void PasswordFormManager::OnRequestDone(
   SendNotBlacklistedToRenderer();
 
   // Proceed to autofill.
-  // Note that we provide the choices but don't actually prefill a value if
-  // either: (1) we are in Incognito mode, or (2) the ACTION paths don't match.
+  // Note that we provide the choices but don't actually prefill a value if:
+  // (1) we are in Incognito mode, (2) the ACTION paths don't match,
+  // or (3) if it matched using public suffix domain matching.
   bool wait_for_username =
       profile_->IsOffTheRecord() ||
       observed_form_.action.GetWithEmptyPath() !=
-          preferred_match_->action.GetWithEmptyPath();
+          preferred_match_->action.GetWithEmptyPath() ||
+          preferred_match_->IsPublicSuffixMatch();
   if (wait_for_username)
     manager_action_ = kManagerActionNone;
   else
@@ -528,19 +537,21 @@ int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
   // The most important element that should match is the origin, followed by
   // the action, the password name, the submit button name, and finally the
   // username input field name.
-  // Exact origin match gives an addition of 32 (1 << 5) + # of matching url
+  // Exact origin match gives an addition of 64 (1 << 6) + # of matching url
   // dirs.
-  // Partial match gives an addition of 16 (1 << 4) + # matching url dirs
+  // Partial match gives an addition of 32 (1 << 5) + # matching url dirs
   // That way, a partial match cannot trump an exact match even if
   // the partial one matches all other attributes (action, elements) (and
   // regardless of the matching depth in the URL path).
+  // If public suffix origin match was not used, it gives an addition of
+  // 16 (1 << 4).
   int score = 0;
   if (candidate.origin == observed_form_.origin) {
     // This check is here for the most common case which
     // is we have a single match in the db for the given host,
     // so we don't generally need to walk the entire URL path (the else
     // clause).
-    score += (1 << 5) + static_cast<int>(form_path_tokens_.size());
+    score += (1 << 6) + static_cast<int>(form_path_tokens_.size());
   } else {
     // Walk the origin URL paths one directory at a time to see how
     // deep the two match.
@@ -555,9 +566,11 @@ int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
       score++;
     }
     // do we have a partial match?
-    score += (depth > 0) ? 1 << 4 : 0;
+    score += (depth > 0) ? 1 << 5 : 0;
   }
   if (observed_form_.scheme == PasswordForm::SCHEME_HTML) {
+    if (!candidate.IsPublicSuffixMatch())
+      score += 1 << 4;
     if (candidate.action == observed_form_.action)
       score += 1 << 3;
     if (candidate.password_element == observed_form_.password_element)

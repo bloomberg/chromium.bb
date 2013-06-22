@@ -25,28 +25,40 @@ struct UsernamesCollectionKey {
   base::string16 password;
 };
 
+struct PasswordAndRealm {
+  base::string16 password;
+  std::string realm;
+};
+
 // Structure used for autofilling password forms.
-// basic_data identifies the HTML form on the page and preferred username/
-//            password for login, while
-// additional_logins is a list of other matching user/pass pairs for the form.
-// other_possible_usernames is a list of possible usernames in the case where we
-//     aren't completely sure that the original saved username is correct.
-//     This data is keyed by the saved username/password to ensure uniqueness,
-//     though the username is not used.
-// wait_for_username tells us whether we need to wait for the user to enter
-// a valid username before we autofill the password. By default, this is off
-// unless the PasswordManager determined there is an additional risk
-// associated with this form. This can happen, for example, if action URI's
-// of the observed form and our saved representation don't match up.
 struct PasswordFormFillData {
-  typedef std::map<base::string16, base::string16> LoginCollection;
+  typedef std::map<base::string16, PasswordAndRealm> LoginCollection;
   typedef std::map<UsernamesCollectionKey,
                    std::vector<base::string16> > UsernamesCollection;
 
+  // Identifies the HTML form on the page and preferred username/password for
+  // login.
   FormData basic_data;
+
+  // The signon realm of the preferred user/pass pair.
+  std::string preferred_realm;
+
+  // A list of other matching username->PasswordAndRealm pairs for the form.
   LoginCollection additional_logins;
+
+  // A list of possible usernames in the case where we aren't completely sure
+  // that the original saved username is correct. This data is keyed by the
+  // saved username/password to ensure uniqueness, though the username is not
+  // used.
   UsernamesCollection other_possible_usernames;
+
+  // Tells us whether we need to wait for the user to enter a valid username
+  // before we autofill the password. By default, this is off unless the
+  // PasswordManager determined there is an additional risk associated with this
+  // form. This can happen, for example, if action URI's of the observed form
+  // and our saved representation don't match up.
   bool wait_for_username;
+
   PasswordFormFillData();
   ~PasswordFormFillData();
 };

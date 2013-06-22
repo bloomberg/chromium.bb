@@ -19,4 +19,8 @@ PasswordForm::PasswordForm()
 PasswordForm::~PasswordForm() {
 }
 
+bool PasswordForm::IsPublicSuffixMatch() const {
+  return !original_signon_realm.empty();
+}
+
 }  // namespace content

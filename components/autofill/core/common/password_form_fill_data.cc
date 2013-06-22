@@ -5,7 +5,19 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_field_data.h"
+
+namespace {
+
+std::string GetPreferredSignonRealm(const content::PasswordForm& form) {
+  if (form.IsPublicSuffixMatch())
+    return form.original_signon_realm;
+  else
+    return form.signon_realm;
+}
+
+}  // namespace
 
 namespace autofill {
 
@@ -51,11 +63,17 @@ void InitPasswordFormFillData(
   result->basic_data.fields.push_back(password_field);
   result->wait_for_username = wait_for_username_before_autofill;
 
+  result->preferred_realm = GetPreferredSignonRealm(*preferred_match);
+
   // Copy additional username/value pairs.
   content::PasswordFormMap::const_iterator iter;
   for (iter = matches.begin(); iter != matches.end(); iter++) {
-    if (iter->second != preferred_match)
-      result->additional_logins[iter->first] = iter->second->password_value;
+    if (iter->second != preferred_match) {
+      PasswordAndRealm value;
+      value.password = iter->second->password_value;
+      value.realm = GetPreferredSignonRealm(*iter->second);
+      result->additional_logins[iter->first] = value;
+    }
     if (enable_other_possible_usernames &&
         !iter->second->other_possible_usernames.empty()) {
       // Note that there may be overlap between other_possible_usernames and

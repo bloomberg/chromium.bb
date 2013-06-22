@@ -79,6 +79,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // managed by this.
   bool IsNewLogin();
 
+  // Returns true if the current pending credentials were found using
+  // origin matching of the public suffix, instead of the signon realm of the
+  // form.
+  bool IsPendingCredentialsPublicSuffixMatch();
+
   // Checks if the form is a valid password form. Forms which lack either
   // login or password field are not considered valid.
   bool HasValidPasswordForm();

@@ -300,8 +300,11 @@ TEST_F(AutofillExternalDelegateUnitTest,
 // suggestions.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
   static const base::string16 kUsername = ASCIIToUTF16("username");
+  static const base::string16 kSignonRealm = ASCIIToUTF16("http://foo.com/");
   std::vector<base::string16> suggestions;
   suggestions.push_back(kUsername);
+  std::vector<base::string16> realms;
+  realms.push_back(kSignonRealm);
 
   FormFieldData field;
   field.is_focusable = true;
@@ -324,6 +327,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
                   _));
 
   external_delegate_->OnShowPasswordSuggestions(suggestions,
+                                                realms,
                                                 field,
                                                 element_bounds);
 

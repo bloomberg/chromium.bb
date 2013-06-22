@@ -102,6 +102,10 @@ class PasswordManager : public LoginModel,
   // the username for the form is ambigious.
   bool OtherPossibleUsernamesEnabled() const;
 
+  // Returns true if we should show an infobar instead of automatically saving
+  // the password, based on inspecting the state of |provisional_save_manager_|.
+  bool ShouldShowSavePasswordInfoBar() const;
+
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //

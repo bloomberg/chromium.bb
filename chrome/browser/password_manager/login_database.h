@@ -115,6 +115,9 @@ class LoginDatabase {
   mutable sql::Connection db_;
   sql::MetaTable meta_table_;
 
+  // Set to true if the public suffix based domain matching is enabled.
+  bool public_suffix_domain_matching_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };
 

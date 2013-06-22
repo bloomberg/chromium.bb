@@ -92,8 +92,12 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password_field.form_control_type = "password";
     fill_data_.basic_data.fields.push_back(password_field);
 
-    fill_data_.additional_logins[username2_] = password2_;
-    fill_data_.additional_logins[username3_] = password3_;
+    PasswordAndRealm password2;
+    password2.password = password2_;
+    fill_data_.additional_logins[username2_] = password2;
+    PasswordAndRealm password3;
+    password3.password = password3_;
+    fill_data_.additional_logins[username3_] = password3;
 
     UsernamesCollectionKey key;
     key.username = username3_;

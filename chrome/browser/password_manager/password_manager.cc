@@ -268,6 +268,12 @@ void PasswordManager::OnPasswordFormsParsed(
   }
 }
 
+bool PasswordManager::ShouldShowSavePasswordInfoBar() const {
+  return provisional_save_manager_->IsNewLogin() &&
+      !provisional_save_manager_->HasGeneratedPassword() &&
+      !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
+}
+
 void PasswordManager::OnPasswordFormsRendered(
     const std::vector<PasswordForm>& visible_forms) {
   if (!provisional_save_manager_.get())
@@ -302,8 +308,7 @@ void PasswordManager::OnPasswordFormsRendered(
   provisional_save_manager_->SubmitPassed();
   if (provisional_save_manager_->HasGeneratedPassword())
     UMA_HISTOGRAM_COUNTS("PasswordGeneration.Submitted", 1);
-  if (provisional_save_manager_->IsNewLogin() &&
-      !provisional_save_manager_->HasGeneratedPassword()) {
+  if (ShouldShowSavePasswordInfoBar()) {
     delegate_->AddSavePasswordInfoBarIfPermitted(
         provisional_save_manager_.release());
   } else {

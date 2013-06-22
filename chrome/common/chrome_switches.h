@@ -177,6 +177,7 @@ extern const char kEnableNpn[];
 extern const char kEnableNpnHttpOnly[];
 extern const char kEnableOmniboxAutoCompletionForIme[];
 extern const char kEnablePanels[];
+extern const char kEnablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kEnablePasswordGeneration[];
 extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];

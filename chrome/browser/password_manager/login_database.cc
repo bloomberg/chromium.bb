@@ -7,14 +7,18 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
+#include "chrome/common/chrome_switches.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -45,9 +49,45 @@ enum LoginTableColumns {
   COLUMN_TIMES_USED
 };
 
+std::string GetRegistryControlledDomain(const GURL& signon_realm) {
+  return net::registry_controlled_domains::GetDomainAndRegistry(
+      signon_realm,
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+std::string GetRegistryControlledDomain(const std::string& signon_realm_str) {
+  GURL signon_realm(signon_realm_str);
+  return net::registry_controlled_domains::GetDomainAndRegistry(
+      signon_realm,
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+bool RegistryControlledDomainMatches(const scoped_ptr<PasswordForm>& found,
+                                     const PasswordForm current) {
+  const std::string found_registry_controlled_domain =
+      GetRegistryControlledDomain(found->signon_realm);
+  const std::string form_registry_controlled_domain =
+      GetRegistryControlledDomain(current.signon_realm);
+  return found_registry_controlled_domain == form_registry_controlled_domain;
+}
+
+bool SchemeMatches(const scoped_ptr<PasswordForm>& found,
+                   const PasswordForm current) {
+  const std::string found_scheme = GURL(found->signon_realm).scheme();
+  const std::string form_scheme = GURL(current.signon_realm).scheme();
+  return found_scheme == form_scheme;
+}
+
+bool PortMatches(const scoped_ptr<PasswordForm>& found,
+                   const PasswordForm current) {
+  const std::string found_port = GURL(found->signon_realm).port();
+  const std::string form_port = GURL(current.signon_realm).port();
+  return found_port == form_port;
+}
+
 }  // namespace
 
-LoginDatabase::LoginDatabase() {
+LoginDatabase::LoginDatabase() : public_suffix_domain_matching_(false) {
 }
 
 LoginDatabase::~LoginDatabase() {
@@ -100,6 +140,10 @@ bool LoginDatabase::Init(const base::FilePath& db_path) {
     db_.Close();
     return false;
   }
+
+  public_suffix_domain_matching_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnablePasswordAutofillPublicSuffixDomainMatching);
+
   return true;
 }
 
@@ -357,19 +401,73 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
                               std::vector<PasswordForm*>* forms) const {
   DCHECK(forms);
   // You *must* change LoginTableColumns if this query changes.
-  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
-      "SELECT origin_url, action_url, "
+  const std::string sql_query = "SELECT origin_url, action_url, "
       "username_element, username_value, "
       "password_element, password_value, submit_element, "
       "signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
       "scheme, password_type, possible_usernames, times_used "
-      "FROM logins WHERE signon_realm == ? "));
-  s.BindString(0, form.signon_realm);
+      "FROM logins WHERE signon_realm == ? ";
+  sql::Statement s;
+  if (public_suffix_domain_matching_) {
+    // We are extending the original SQL query with one that includes more
+    // possible matches based on public suffix domain matching. Using a regexp
+    // here is just an optimization to not have to parse all the stored entries
+    // in the |logins| table. The result (scheme, domain and port) is verified
+    // further down using GURL. See the functions SchemeMatches,
+    // RegistryControlledDomainMatches and PortMatches.
+    const std::string extended_sql_query =
+        sql_query + "OR signon_realm REGEXP ? ";
+    // TODO(nyquist) Re-enable usage of GetCachedStatement when
+    // http://crbug.com/248608 is fixed.
+    s.Assign(db_.GetUniqueStatement(extended_sql_query.c_str()));
+    const GURL signon_realm(form.signon_realm);
+    std::string domain = GetRegistryControlledDomain(signon_realm);
+    // We need to escape . in the domain. Since the domain has already been
+    // sanitized using GURL, we do not need to escape any other characters.
+    ReplaceChars(domain, ".", "\\.", &domain);
+    std::string scheme = signon_realm.scheme();
+    // We need to escape . in the scheme. Since the scheme has already been
+    // sanitized using GURL, we do not need to escape any other characters.
+    // The scheme soap.beep is an example with '.'.
+    ReplaceChars(scheme, ".", "\\.", &scheme);
+    const std::string port = signon_realm.port();
+    // For a signon realm such as http://foo.bar/, this regexp will match
+    // domains on the form http://foo.bar/, http://www.foo.bar/,
+    // http://www.mobile.foo.bar/. It will not match http://notfoo.bar/.
+    // The scheme and port has to be the same as the observed form.
+    std::string regexp = "^(" + scheme + ":\\/\\/)([\\w-]+\\.)*" +
+                         domain + "(:" + port + ")?\\/$";
+    s.BindString(0, form.signon_realm);
+    s.BindString(1, regexp);
+  } else {
+    s.Assign(db_.GetCachedStatement(SQL_FROM_HERE, sql_query.c_str()));
+    s.BindString(0, form.signon_realm);
+  }
 
   while (s.Step()) {
     scoped_ptr<PasswordForm> new_form(new PasswordForm());
     if (!InitPasswordFormFromStatement(new_form.get(), s))
       return false;
+    if (public_suffix_domain_matching_) {
+      if (!SchemeMatches(new_form, form) ||
+          !RegistryControlledDomainMatches(new_form, form) ||
+          !PortMatches(new_form, form)) {
+        // The database returned results that should not match. Skipping result.
+        continue;
+      }
+      if (form.signon_realm != new_form->signon_realm) {
+        // This is not a perfect match, so we need to create a new valid result.
+        // We do this by copying over origin, signon realm and action from the
+        // observed form and setting the original signon realm to what we found
+        // in the database. We use the fact that |original_signon_realm| is
+        // non-empty to communicate that this match was found using public
+        // suffix matching.
+        new_form->original_signon_realm = new_form->signon_realm;
+        new_form->origin = form.origin;
+        new_form->signon_realm = form.signon_realm;
+        new_form->action = form.action;
+      }
+    }
     forms->push_back(new_form.release());
   }
   return s.Succeeded();

@@ -682,9 +682,14 @@ void AutofillManager::OnAddPasswordFormMapping(
 void AutofillManager::OnShowPasswordSuggestions(
     const FormFieldData& field,
     const gfx::RectF& bounds,
-    const std::vector<base::string16>& suggestions) {
-  if (external_delegate_)
-    external_delegate_->OnShowPasswordSuggestions(suggestions, field, bounds);
+    const std::vector<base::string16>& suggestions,
+    const std::vector<base::string16>& realms) {
+  if (external_delegate_) {
+    external_delegate_->OnShowPasswordSuggestions(suggestions,
+                                                  realms,
+                                                  field,
+                                                  bounds);
+  }
 }
 
 void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
