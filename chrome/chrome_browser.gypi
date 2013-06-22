@@ -658,8 +658,6 @@
         'browser/google_apis/gdata_wapi_parser.h',
         'browser/google_apis/gdata_wapi_url_generator.cc',
         'browser/google_apis/gdata_wapi_url_generator.h',
-        'browser/google_apis/request_registry.cc',
-        'browser/google_apis/request_registry.h',
         'browser/google_apis/request_sender.cc',
         'browser/google_apis/request_sender.h',
         'browser/google_apis/request_util.cc',

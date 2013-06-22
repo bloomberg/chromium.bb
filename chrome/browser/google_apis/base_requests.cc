@@ -93,12 +93,11 @@ void ParseJson(const std::string& json, const ParseJsonCallback& callback) {
 //============================ UrlFetchRequestBase ===========================
 
 UrlFetchRequestBase::UrlFetchRequestBase(
-    RequestSender* runner,
+    RequestSender* sender,
     net::URLRequestContextGetter* url_request_context_getter)
-    : RequestRegistry::Request(runner->request_registry()),
-      url_request_context_getter_(url_request_context_getter),
+    : url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
-      started_(false),
+      sender_(sender),
       save_temp_file_(false),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -191,11 +190,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
     }
   }
 
-  // Register to request registry.
-  NotifyStart();
-
   url_fetcher_->Start();
-  started_ = true;
 }
 
 URLFetcher::RequestType UrlFetchRequestBase::GetRequestType() const {
@@ -221,7 +216,7 @@ bool UrlFetchRequestBase::GetContentFile(base::FilePath* local_file_path,
 void UrlFetchRequestBase::Cancel() {
   url_fetcher_.reset(NULL);
   RunCallbackOnPrematureFailure(GDATA_CANCELLED);
-  NotifyFinish();
+  sender_->RequestFinished(this);
 }
 
 // static
@@ -240,7 +235,7 @@ GDataErrorCode UrlFetchRequestBase::GetErrorCode(const URLFetcher* source) {
 }
 
 void UrlFetchRequestBase::OnProcessURLFetchResultsComplete(bool result) {
-  NotifyFinish();
+  sender_->RequestFinished(this);
 }
 
 void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
@@ -266,16 +261,7 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
 
 void UrlFetchRequestBase::OnAuthFailed(GDataErrorCode code) {
   RunCallbackOnPrematureFailure(code);
-
-  // Check if this failed before we even started fetching. If so, register
-  // for start so we can properly unregister with finish.
-  if (!started_)
-    NotifyStart();
-
-  // Note: NotifyFinish() must be invoked at the end, after all other callbacks
-  // and notifications. Once NotifyFinish() is called, the current instance of
-  // request will be deleted from the RequestRegistry and become invalid.
-  NotifyFinish();
+  sender_->RequestFinished(this);
 }
 
 base::WeakPtr<AuthenticatedRequestInterface>

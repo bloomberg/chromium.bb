@@ -30,8 +30,6 @@ class FakeGetDataRequest : public GetDataRequest {
   virtual ~FakeGetDataRequest() {
   }
 
-  using RequestRegistry::Request::NotifyStart;
-
  protected:
   virtual GURL GetURL() const OVERRIDE {
     NOTREACHED();  // This method is not called in tests.
@@ -119,7 +117,6 @@ TEST_F(BaseRequestsTest, GetDataRequestParseValidResponse) {
           runner_.get(),
           base::Bind(&BaseRequestsTest::GetDataCallback,
                      base::Unretained(this)));
-  get_data_request->NotifyStart();
 
   get_data_request->ParseResponse(HTTP_SUCCESS, kValidJsonString);
   // Should wait for a blocking pool task, as the JSON parsing is done in the
@@ -137,7 +134,6 @@ TEST_F(BaseRequestsTest, GetDataRequestParseInvalidResponse) {
           runner_.get(),
           base::Bind(&BaseRequestsTest::GetDataCallback,
                      base::Unretained(this)));
-  get_data_request->NotifyStart();
 
   get_data_request->ParseResponse(HTTP_SUCCESS, kInvalidJsonString);
   // Should wait for a blocking pool task, as the JSON parsing is done in the

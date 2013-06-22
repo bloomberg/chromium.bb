@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "chrome/browser/google_apis/request_registry.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -75,7 +74,7 @@ class AuthenticatedRequestInterface {
   // deleted when it is canceled by user action, for posting asynchronous tasks
   // on the authentication request object, weak pointers have to be used.
   // TODO(kinaba): crbug.com/134814 use more clean life time management than
-  // using weak pointers, while deprecating RequestRegistry.
+  // using weak pointers.
   virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() = 0;
 
   // Cancels the request. It will invoke the callback object passed in
@@ -87,7 +86,6 @@ class AuthenticatedRequestInterface {
 
 // Base class for requests that are fetching URLs.
 class UrlFetchRequestBase : public AuthenticatedRequestInterface,
-                            public RequestRegistry::Request,
                             public net::URLFetcherDelegate {
  public:
   // AuthenticatedRequestInterface overrides.
@@ -98,7 +96,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   virtual void Cancel() OVERRIDE;
 
  protected:
-  UrlFetchRequestBase(RequestSender* runner,
+  UrlFetchRequestBase(RequestSender* sender,
                       net::URLRequestContextGetter* url_request_context_getter);
   virtual ~UrlFetchRequestBase();
 
@@ -170,7 +168,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   ReAuthenticateCallback re_authenticate_callback_;
   int re_authenticate_count_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
-  bool started_;
+  RequestSender* sender_;
 
   bool save_temp_file_;
   base::FilePath output_file_path_;
