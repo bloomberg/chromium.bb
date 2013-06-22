@@ -152,6 +152,8 @@ class ASH_EXPORT PanelLayoutManager
 
   // Parent window associated with this layout manager.
   aura::Window* panel_container_;
+  // Protect against recursive calls to OnWindowAddedToLayout().
+  bool in_add_window_;
   // Protect against recursive calls to Relayout().
   bool in_layout_;
   // Ordered list of unowned pointers to panel windows.

@@ -796,6 +796,8 @@ bool WindowsUpdateFunction::RunImpl() {
       error_ = keys::kInvalidWindowStateError;
       return false;
     }
+    // TODO(varkha): Updating bounds during a drag can cause problems and a more
+    // general solution is needed. See http://crbug.com/251813 .
     controller->window()->SetBounds(bounds);
   }
 

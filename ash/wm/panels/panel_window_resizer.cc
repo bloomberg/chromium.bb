@@ -64,13 +64,11 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     did_move_or_resize_ = true;
     StartedDragging();
   }
-  gfx::Point location_in_screen = location;
-  wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
 
   // Check if the destination has changed displays.
   gfx::Screen* screen = Shell::GetScreen();
   const gfx::Display dst_display =
-      screen->GetDisplayNearestPoint(location_in_screen);
+      screen->GetDisplayNearestPoint(last_location_);
   if (dst_display.id() !=
       screen->GetDisplayNearestWindow(panel_container_->GetRootWindow()).id()) {
     // The panel is being dragged to a new display. If the previous container is
@@ -198,9 +196,11 @@ void PanelWindowResizer::StartedDragging() {
     // Attach the panel while dragging placing it in front of other panels.
     GetTarget()->SetProperty(internal::kContinueDragAfterReparent, true);
     GetTarget()->SetProperty(internal::kPanelAttachedKey, true);
+    // We use root window coordinates to ensure that during the drag the panel
+    // is reparented to a container in the root window that has that window.
     GetTarget()->SetDefaultParentByRootWindow(
         GetTarget()->GetRootWindow(),
-        GetTarget()->GetBoundsInScreen());
+        GetTarget()->GetRootWindow()->GetBoundsInScreen());
   }
 }
 
@@ -210,9 +210,11 @@ void PanelWindowResizer::FinishDragging() {
   if (GetTarget()->GetProperty(internal::kPanelAttachedKey) !=
       should_attach_) {
     GetTarget()->SetProperty(internal::kPanelAttachedKey, should_attach_);
-    gfx::Rect near_last_location(last_location_, gfx::Size());
-    GetTarget()->SetDefaultParentByRootWindow(GetTarget()->GetRootWindow(),
-                                              near_last_location);
+    // We use last known location to ensure that after the drag the panel
+    // is reparented to a container in the root window that has that location.
+    GetTarget()->SetDefaultParentByRootWindow(
+        GetTarget()->GetRootWindow(),
+        gfx::Rect(last_location_, gfx::Size()));
   }
   if (panel_container_)
     GetPanelLayoutManager(panel_container_)->FinishDragging();

@@ -13,9 +13,11 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -250,6 +252,7 @@ class PanelCalloutWidget : public views::Widget {
 // PanelLayoutManager public implementation:
 PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
     : panel_container_(panel_container),
+      in_add_window_(false),
       in_layout_(false),
       dragged_panel_(NULL),
       launcher_(NULL),
@@ -328,6 +331,22 @@ void PanelLayoutManager::OnWindowResized() {
 void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   if (child->type() == aura::client::WINDOW_TYPE_POPUP)
     return;
+  if (in_add_window_)
+    return;
+  base::AutoReset<bool> auto_reset_in_add_window(&in_add_window_, true);
+  if (!child->GetProperty(kPanelAttachedKey)) {
+    // This should only happen when a window is added to panel container as a
+    // result of bounds change from within the application during a drag.
+    // If so we have already stopped the drag and should reparent the panel
+    // back to appropriate container and ignore it.
+    // TODO(varkha): Updating bounds during a drag can cause problems and a more
+    // general solution is needed. See http://crbug.com/251813 .
+    child->SetDefaultParentByRootWindow(
+        child->GetRootWindow(),
+        child->GetRootWindow()->GetBoundsInScreen());
+    DCHECK(child->parent()->id() != kShellWindowId_PanelContainer);
+    return;
+  }
   PanelInfo panel_info;
   panel_info.window = child;
   panel_info.callout_widget = new PanelCalloutWidget(panel_container_);
