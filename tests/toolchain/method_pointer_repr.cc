@@ -72,14 +72,11 @@ int main() {
   memcpy(&nonvirtual_mpr, &nonvirtual_mp, sizeof(method_ptr));
   memcpy(&virtual_mpr, &virtual_mp, sizeof(method_ptr));
 
-#if defined(__pnacl__)
-  // TODO(mseaborn): pnacl-clang is currently using the Itanium/x86
-  // scheme, but we want to switch it to use the ARM scheme.
-  // See https://code.google.com/p/nativeclient/issues/detail?id=3450
-#elif defined(__arm__)
+#if defined(__arm__) || defined(__pnacl__)
   // In the ARM scheme, adj & 1 indicates whether the method is
   // virtual.  This makes no assumption about the alignment of
-  // function pointers.
+  // function pointers.  PNaCl uses the same scheme (see
+  // https://code.google.com/p/nativeclient/issues/detail?id=3450).
 
   ASSERT_EQ(nonvirtual_mpr.ptr, (ptrdiff_t) NONVIRTUAL_METHOD);
   ASSERT_EQ(nonvirtual_mpr.adj, kThisOffset << 1);
