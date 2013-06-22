@@ -65,7 +65,6 @@
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/media_stream_center.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
-#include "content/renderer/media/midi_message_filter.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
@@ -368,9 +367,6 @@ void RenderThreadImpl::Init() {
 
   audio_message_filter_ = new AudioMessageFilter(GetIOMessageLoopProxy());
   AddFilter(audio_message_filter_.get());
-
-  midi_message_filter_ = new MIDIMessageFilter(GetIOMessageLoopProxy());
-  AddFilter(midi_message_filter_.get());
 
   AddFilter(new IndexedDBMessageFilter);
 

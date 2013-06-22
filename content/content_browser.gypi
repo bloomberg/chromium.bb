@@ -791,8 +791,6 @@
     'browser/renderer_host/media/media_stream_requester.h',
     'browser/renderer_host/media/media_stream_ui_proxy.cc',
     'browser/renderer_host/media/media_stream_ui_proxy.h',
-    'browser/renderer_host/media/midi_host.cc',
-    'browser/renderer_host/media/midi_host.h',
     'browser/renderer_host/media/video_capture_buffer_pool.cc',
     'browser/renderer_host/media/video_capture_buffer_pool.h',
     'browser/renderer_host/media/video_capture_controller.cc',
