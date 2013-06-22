@@ -793,7 +793,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
             mTouchCancelEventSent = false;
 
             if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(), type, pts)) {
-                mTouchEventTimeoutHandler.start(event.getEventTime(), pts);
+                if (event.getAction() != MotionEvent.ACTION_UP
+                        && event.getAction() != MotionEvent.ACTION_CANCEL) {
+                    mTouchEventTimeoutHandler.start(event.getEventTime(), pts);
+                }
                 return EVENT_FORWARDED_TO_NATIVE;
             }
         } else if (!mTouchCancelEventSent) {
