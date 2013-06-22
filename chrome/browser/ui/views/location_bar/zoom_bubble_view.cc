@@ -46,9 +46,11 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   DCHECK(browser && browser->window() && browser->fullscreen_controller());
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  bool is_fullscreen = browser->window()->IsFullscreen();
-  views::View* anchor_view = is_fullscreen ?
-      NULL : browser_view->GetLocationBarView()->zoom_view();
+  bool is_fullscreen = browser_view->IsFullscreen();
+  bool anchor_to_view = !is_fullscreen ||
+      browser_view->immersive_mode_controller()->IsRevealed();
+  views::View* anchor_view = anchor_to_view ?
+      browser_view->GetLocationBarView()->zoom_view() : NULL;
 
   // If the bubble is already showing in this window and its |auto_close_| value
   // is equal to |auto_close|, the bubble can be reused and only the label text
@@ -66,11 +68,11 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
     zoom_bubble_ = new ZoomBubbleView(anchor_view,
                                       web_contents,
                                       auto_close,
+                                      browser_view->immersive_mode_controller(),
                                       browser->fullscreen_controller());
 
-    // If we're fullscreen, there is no anchor view, so parent the bubble to
-    // the content area.
-    if (is_fullscreen) {
+    // If we do not have an anchor view, parent the bubble to the content area.
+    if (!anchor_to_view) {
       zoom_bubble_->set_parent_window(
           web_contents->GetView()->GetTopLevelNativeWindow());
     }
@@ -93,33 +95,58 @@ void ZoomBubbleView::CloseBubble() {
 
 // static
 bool ZoomBubbleView::IsShowing() {
-  return zoom_bubble_ != NULL;
+  // The bubble may be in the process of closing.
+  return zoom_bubble_ != NULL && zoom_bubble_->GetWidget()->IsVisible();
 }
 
-ZoomBubbleView::ZoomBubbleView(views::View* anchor_view,
-                               content::WebContents* web_contents,
-                               bool auto_close,
-                               FullscreenController* fullscreen_controller)
+// static
+const ZoomBubbleView* ZoomBubbleView::GetZoomBubbleForTest() {
+  return zoom_bubble_;
+}
+
+ZoomBubbleView::ZoomBubbleView(
+    views::View* anchor_view,
+    content::WebContents* web_contents,
+    bool auto_close,
+    ImmersiveModeController* immersive_mode_controller,
+    FullscreenController* fullscreen_controller)
     : BubbleDelegateView(anchor_view, anchor_view ?
           views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::NONE),
       label_(NULL),
       web_contents_(web_contents),
-      auto_close_(auto_close) {
+      auto_close_(auto_close),
+      immersive_mode_controller_(immersive_mode_controller) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   set_use_focusless(auto_close);
   set_notify_enter_exit_on_child(true);
 
+  if (anchor_view) {
+    // If we are in immersive fullscreen and the top-of-window views are
+    // already revealed, lock the top-of-window views in the revealed state
+    // as long as the zoom bubble is visible. ImmersiveModeController does
+    // not do this for us automatically because the zoom bubble is not
+    // activatable.
+    immersive_reveal_lock_.reset(immersive_mode_controller_->GetRevealedLock(
+        ImmersiveModeController::ANIMATE_REVEAL_NO));
+  }
+
+  // Add observers to close the bubble if the fullscreen state or immersive
+  // fullscreen revealed state changes.
   registrar_.Add(this,
                  chrome::NOTIFICATION_FULLSCREEN_CHANGED,
                  content::Source<FullscreenController>(fullscreen_controller));
+  immersive_mode_controller_->AddObserver(this);
 }
 
 ZoomBubbleView::~ZoomBubbleView() {
+  if (immersive_mode_controller_)
+    immersive_mode_controller_->RemoveObserver(this);
 }
 
 void ZoomBubbleView::AdjustForFullscreen(const gfx::Rect& screen_bounds) {
-  DCHECK(!anchor_view());
+  if (anchor_view())
+    return;
 
   // TODO(dbeam): should RTL logic be done in views::BubbleDelegateView?
   const size_t bubble_half_width = width() / 2;
@@ -216,6 +243,14 @@ void ZoomBubbleView::Observe(int type,
                              const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_FULLSCREEN_CHANGED);
   CloseBubble();
+}
+
+void ZoomBubbleView::OnImmersiveRevealStarted() {
+  CloseBubble();
+}
+
+void ZoomBubbleView::OnImmersiveModeControllerDestroyed() {
+  immersive_mode_controller_ = NULL;
 }
 
 void ZoomBubbleView::WindowClosing() {

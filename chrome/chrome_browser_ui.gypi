@@ -1690,6 +1690,7 @@
         'browser/ui/views/frame/browser_desktop_root_window_host_x11.h',
         'browser/ui/views/frame/glass_browser_frame_view.cc',
         'browser/ui/views/frame/glass_browser_frame_view.h',
+        'browser/ui/views/frame/immersive_mode_controller.cc',
         'browser/ui/views/frame/immersive_mode_controller.h',
         'browser/ui/views/frame/immersive_mode_controller_ash.cc',
         'browser/ui/views/frame/immersive_mode_controller_ash.h',

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_H_
 
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 
 class BookmarkBarView;
 class FullscreenController;
@@ -40,6 +41,18 @@ class ImmersiveModeController {
     ANIMATE_REVEAL_NO
   };
 
+  class Observer {
+   public:
+    // Called when a reveal of the top-of-window views has been initiated.
+    virtual void OnImmersiveRevealStarted() {}
+
+    // Called when the immersive mode controller has been destroyed.
+    virtual void OnImmersiveModeControllerDestroyed() {}
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   class Delegate {
    public:
     // Returns the bookmark bar, or NULL if the window does not support one.
@@ -58,7 +71,8 @@ class ImmersiveModeController {
     virtual ~Delegate() {}
   };
 
-  virtual ~ImmersiveModeController() {}
+  ImmersiveModeController();
+  virtual ~ImmersiveModeController();
 
   // Must initialize after browser view has a Widget and native window.
   virtual void Init(Delegate* delegate,
@@ -127,6 +141,15 @@ class ImmersiveModeController {
   // visible.
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) = 0;
+
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
+
+ protected:
+  ObserverList<Observer> observers_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveModeController);
 };
 
 namespace chrome {

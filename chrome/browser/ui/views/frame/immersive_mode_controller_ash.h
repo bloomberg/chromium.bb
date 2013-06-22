@@ -252,6 +252,10 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // the top edge of the screen.
   int mouse_x_when_hit_top_;
 
+  // Tracks if the controller has seen a ET_GESTURE_SCROLL_BEGIN, without the
+  // following events.
+  bool gesture_begun_;
+
   // The current visible bounds of the find bar, in screen coordinates. This is
   // an empty rect if the find bar is not visible.
   gfx::Rect find_bar_visible_bounds_in_screen_;
@@ -283,10 +287,6 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<ImmersiveModeControllerAsh> weak_ptr_factory_;
-
-  // Tracks if the controller has seen a ET_GESTURE_SCROLL_BEGIN, without the
-  // following events.
-  bool gesture_begun_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAsh);
 };

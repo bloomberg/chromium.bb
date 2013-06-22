@@ -288,11 +288,11 @@ ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
       revealed_lock_count_(0),
       tab_indicator_visibility_(TAB_INDICATORS_HIDE),
       mouse_x_when_hit_top_(-1),
+      gesture_begun_(false),
       native_window_(NULL),
       animation_(new ui::SlideAnimation(this)),
       animations_disabled_for_test_(false),
-      weak_ptr_factory_(this),
-      gesture_begun_(false) {
+      weak_ptr_factory_(this) {
 }
 
 ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() {
@@ -944,8 +944,11 @@ void ImmersiveModeControllerAsh::MaybeStartReveal(Animate animate) {
 
     // Do not do any more processing if LayoutBrowserView() changed
     // |reveal_state_|.
-    if (reveal_state_ != SLIDING_OPEN)
+    if (reveal_state_ != SLIDING_OPEN) {
+      if (reveal_state_ == REVEALED)
+        FOR_EACH_OBSERVER(Observer, observers_, OnImmersiveRevealStarted());
       return;
+    }
   }
   // Slide in the reveal view.
   if (animate == ANIMATE_NO) {
@@ -955,6 +958,9 @@ void ImmersiveModeControllerAsh::MaybeStartReveal(Animate animate) {
     animation_->SetSlideDuration(GetAnimationDuration(animate));
     animation_->Show();
   }
+
+   if (previous_reveal_state == CLOSED)
+     FOR_EACH_OBSERVER(Observer, observers_, OnImmersiveRevealStarted());
 }
 
 void ImmersiveModeControllerAsh::EnablePaintToLayer(bool enable) {
