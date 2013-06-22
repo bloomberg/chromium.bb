@@ -46,6 +46,8 @@ PASS getComputedStyle(gridElement, '').getPropertyValue('grid-rows') is "foo bar
 Test getting and setting invalid grid-columns and grid-rows through JS
 PASS getComputedStyle(gridElement, '').getPropertyValue('grid-columns') is "none"
 PASS getComputedStyle(gridElement, '').getPropertyValue('grid-rows') is "none"
+PASS getComputedStyle(gridElement, '').getPropertyValue('grid-columns') is "none"
+PASS getComputedStyle(gridElement, '').getPropertyValue('grid-rows') is "none"
 PASS successfullyParsed is true
 
 TEST COMPLETE

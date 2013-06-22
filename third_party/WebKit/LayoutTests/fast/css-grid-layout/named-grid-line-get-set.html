@@ -147,6 +147,12 @@ if (window.testRunner)
     element.style.gridColumns = "'foo'";
     element.style.gridRows = "'bar";
     testValue(element, "none", "none");
+
+    element = document.createElement("div");
+    document.body.appendChild(element);
+    element.style.gridColumns = "'foo' 'bar'";
+    element.style.gridRows = "'bar' 'foo'";
+    testValue(element, "none", "none");
 </script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>
