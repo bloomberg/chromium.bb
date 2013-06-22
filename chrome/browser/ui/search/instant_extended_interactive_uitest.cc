@@ -1582,13 +1582,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   EXPECT_EQ(ASCIIToUTF16("cattles"), omnibox()->GetText());
 }
 
-// Flaky on Mac Tests bot.
-#if defined(OS_MACOSX)
-#define MAYBE_NavigateBackToNTP DISABLED_NavigateBackToNTP
-#else
-#define MAYBE_NavigateBackToNTP NavigateBackToNTP
-#endif
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_NavigateBackToNTP) {
+// Flaky on all bots since re-enabled in r208032, crbug.com/253092
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NavigateBackToNTP) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
 
