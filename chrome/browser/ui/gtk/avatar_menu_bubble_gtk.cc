@@ -124,17 +124,6 @@ void AvatarMenuBubbleGtk::OnSwitchProfileLinkClicked(GtkWidget* link) {
   OnAvatarMenuModelChanged(avatar_menu_model_.get());
 }
 
-void AvatarMenuBubbleGtk::OnRealize(GtkWidget* parent_widget) {
-  if (!managed_user_info_ || !theme_service_->UsingNativeTheme())
-    return;
-
-  // Use the same background color for the GtkTextView as the background color
-  // of the enclosing widget.
-  GtkStyle* style = gtk_widget_get_style(parent_widget);
-  GdkColor bg_color = style->bg[GTK_STATE_NORMAL];
-  gtk_widget_modify_base(managed_user_info_, GTK_STATE_NORMAL, &bg_color);
-}
-
 void AvatarMenuBubbleGtk::InitMenuContents() {
   size_t profile_count = avatar_menu_model_->GetNumberOfItems();
   GtkWidget* items_vbox = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
@@ -183,40 +172,29 @@ void AvatarMenuBubbleGtk::InitManagedUserContents() {
   gtk_box_pack_start(GTK_BOX(inner_contents_),
                      gtk_hseparator_new(), TRUE, TRUE, 0);
 
-  // Add information about managed users.
-  managed_user_info_ = gtk_text_view_new();
-  gtk_text_view_set_editable(GTK_TEXT_VIEW(managed_user_info_), FALSE);
-  gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(managed_user_info_), FALSE);
-  GtkTextBuffer* text_buffer =
-      gtk_text_view_get_buffer(GTK_TEXT_VIEW(managed_user_info_));
-  std::string info =
-      UTF16ToUTF8(avatar_menu_model_->GetManagedUserInformation());
-  gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(managed_user_info_), GTK_WRAP_WORD);
-
-  // Insert the managed user icon. Insert it inside a hbox in order to be able
-  // to define a padding around it.
-  GtkTextIter start_iter;
-  gtk_text_buffer_get_start_iter(text_buffer, &start_iter);
-  GtkWidget* icon_box = gtk_hbox_new(FALSE, 0);
+  // Add information about managed users within a hbox.
+  GtkWidget* managed_user_info = gtk_hbox_new(FALSE, 5);
   GdkPixbuf* limited_user_pixbuf =
       avatar_menu_model_->GetManagedUserIcon().ToGdkPixbuf();
   GtkWidget* limited_user_img = gtk_image_new_from_pixbuf(limited_user_pixbuf);
-  gtk_box_pack_start(GTK_BOX(icon_box), limited_user_img, FALSE, FALSE, 5);
-  GtkTextChildAnchor* anchor =
-      gtk_text_buffer_create_child_anchor(text_buffer, &start_iter);
-  gtk_text_view_add_child_at_anchor(
-      GTK_TEXT_VIEW(managed_user_info_), icon_box, anchor);
-
-  // Insert the information text.
-  GtkTextIter end_iter;
-  gtk_text_buffer_get_end_iter(text_buffer, &end_iter);
-  GtkTextTag* text_tag = gtk_text_buffer_create_tag(
-      text_buffer, NULL, "size-set", TRUE, "size", 10 * PANGO_SCALE, NULL);
-  gtk_text_buffer_insert_with_tags(
-      text_buffer, &end_iter, info.c_str(), info.size(), text_tag, NULL);
-
+  GtkWidget* icon_align = gtk_alignment_new(0, 0, 0, 0);
+  gtk_container_add(GTK_CONTAINER(icon_align), limited_user_img);
+  gtk_box_pack_start(GTK_BOX(managed_user_info), icon_align, FALSE, FALSE, 0);
+  GtkWidget* status_label =
+      theme_service_->BuildLabel(std::string(), ui::kGdkBlack);
+  char* markup = g_markup_printf_escaped(
+      "<span size='small'>%s</span>",
+      UTF16ToUTF8(avatar_menu_model_->GetManagedUserInformation()).c_str());
+  const int kLabelWidth = 150;
+  gtk_widget_set_size_request(status_label, kLabelWidth, -1);
+  gtk_label_set_markup(GTK_LABEL(status_label), markup);
+  gtk_label_set_line_wrap(GTK_LABEL(status_label), TRUE);
+  gtk_misc_set_alignment(GTK_MISC(status_label), 0, 0);
+  g_free(markup);
+  gtk_box_pack_start(GTK_BOX(managed_user_info), status_label, FALSE, FALSE, 0);
   gtk_box_pack_start(
-      GTK_BOX(inner_contents_), managed_user_info_, FALSE, FALSE, 0);
+      GTK_BOX(inner_contents_), managed_user_info, FALSE, FALSE, 0);
+
   gtk_box_pack_start(
       GTK_BOX(inner_contents_), gtk_hseparator_new(), TRUE, TRUE, 0);
 
@@ -226,14 +204,10 @@ void AvatarMenuBubbleGtk::InitManagedUserContents() {
   g_signal_connect(switch_profile_link, "clicked",
                    G_CALLBACK(OnSwitchProfileLinkClickedThunk), this);
 
-  GtkWidget* link_align = gtk_alignment_new(0, 0, 0, 0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(link_align),
-                            0, 0, kNewProfileLinkLeftPadding, 0);
+  GtkWidget* link_align = gtk_alignment_new(0.5, 0, 0, 0);
   gtk_container_add(GTK_CONTAINER(link_align), switch_profile_link);
 
   gtk_box_pack_start(GTK_BOX(inner_contents_), link_align, FALSE, FALSE, 0);
-  g_signal_connect(
-      inner_contents_, "realize", G_CALLBACK(OnRealizeThunk), this);
 }
 
 void AvatarMenuBubbleGtk::InitContents() {

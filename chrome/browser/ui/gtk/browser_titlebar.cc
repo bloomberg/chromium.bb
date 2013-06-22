@@ -784,7 +784,7 @@ void BrowserTitlebar::UpdateAvatarLabel() {
     gtk_widget_modify_bg(
         GTK_WIDGET(avatar_label_bg_), GTK_STATE_NORMAL, &label_background);
     char* markup = g_markup_printf_escaped(
-        "<span size='small' weight='bold'>%s</span>",
+        "<span size='small'>%s</span>",
         l10n_util::GetStringUTF8(IDS_MANAGED_USER_AVATAR_LABEL).c_str());
     gtk_label_set_markup(GTK_LABEL(avatar_label_), markup);
     g_free(markup);
@@ -820,7 +820,7 @@ void BrowserTitlebar::UpdateAvatar() {
   Profile* profile = browser_window_->browser()->profile();
   if (ManagedUserService::ProfileIsManaged(profile)) {
     avatar_label_ = gtk_label_new(NULL);
-    gtk_misc_set_padding(GTK_MISC(avatar_label_), 2, 2);
+    gtk_misc_set_padding(GTK_MISC(avatar_label_), 10, 2);
     avatar_label_bg_ = gtk_event_box_new();
     gtk_container_add(GTK_CONTAINER(avatar_label_bg_), avatar_label_);
     g_signal_connect(avatar_label_bg_, "button-press-event",

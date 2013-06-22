@@ -51,7 +51,6 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
                        GtkRequisition*);
   CHROMEGTK_CALLBACK_0(AvatarMenuBubbleGtk, void, OnNewProfileLinkClicked);
   CHROMEGTK_CALLBACK_0(AvatarMenuBubbleGtk, void, OnSwitchProfileLinkClicked);
-  CHROMEGTK_CALLBACK_0(AvatarMenuBubbleGtk, void, OnRealize);
 
   // Create all widgets in this bubble.
   void InitContents();
@@ -74,10 +73,6 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   // A weak pointer to the only child widget of |contents_| which contains all
   // widgets in the bubble.
   GtkWidget* inner_contents_;
-
-  // A weak pointer to the GtkTextView which holds general information about
-  // managed users.
-  GtkWidget* managed_user_info_;
 
   // A weak pointer to the bubble window.
   BubbleGtk* bubble_;
