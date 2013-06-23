@@ -55,9 +55,6 @@ extern const int kNumKeySystemToUUIDMapping;
 // Returns whether |key_system| is compatible with the user's system.
 bool IsSystemCompatible(const std::string& key_system);
 
-// Returns true if canPlayType should return an empty string for |key_system|.
-bool IsCanPlayTypeSuppressed(const std::string& key_system);
-
 // Returns the name that UMA will use for the given |key_system|.
 // This function can be called frequently. Hence this function should be
 // implemented not to impact performance.

@@ -6,18 +6,11 @@
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
-// The following must be after widevine_cdm_version.h.
-
 #if defined(WIDEVINE_CDM_AVAILABLE) && \
     defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
 #include "base/logging.h"
 #include "base/version.h"
-#endif
-
-#if defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-#include "base/command_line.h"
-#include "media/base/media_switches.h"
 #endif
 
 namespace webkit_media {
@@ -30,6 +23,7 @@ static const char kExternalClearKeyKeySystem[] =
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // TODO(ddorwin): Automatically support parent systems: http://crbug.com/164303.
 static const char kWidevineBaseKeySystem[] = "com.widevine";
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 #if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
 // The supported codecs depend on what the CDM provides.
@@ -51,12 +45,6 @@ static const char kWidevineAudioMp4Codecs[] =
 #endif
 #endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
 
-static inline bool IsWidevine(const std::string& key_system) {
-  return key_system == kWidevineKeySystem ||
-         key_system == kWidevineBaseKeySystem;
-}
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
-
 const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   // Clear Key.
   { "video/webm", "vorbis,vp8,vp8.0", kClearKeyKeySystem },
@@ -76,6 +64,10 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
   // Widevine.
+  // See http://crbug.com/237627.
+#if defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
+  { "", "", kWidevineKeySystem },
+#else
   { "video/webm", "vorbis,vp8,vp8.0", kWidevineKeySystem },
   { "audio/webm", "vorbis", kWidevineKeySystem },
   { "video/webm", "vorbis,vp8,vp8.0", kWidevineBaseKeySystem },
@@ -88,6 +80,7 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   { "audio/mp4", kWidevineAudioMp4Codecs, kWidevineBaseKeySystem },
 #endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
 #endif  // defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#endif  // defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
 #endif  // WIDEVINE_CDM_AVAILABLE
 };
 
@@ -124,24 +117,14 @@ const int kNumKeySystemToUUIDMapping =
 bool IsSystemCompatible(const std::string& key_system) {
 #if defined(WIDEVINE_CDM_AVAILABLE) && \
     defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (IsWidevine(key_system)) {
+  if (key_system == kWidevineKeySystem ||
+      key_system == kWidevineBaseKeySystem) {
     Version glibc_version(gnu_get_libc_version());
     DCHECK(glibc_version.IsValid());
     return !glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION);
   }
 #endif
   return true;
-}
-
-bool IsCanPlayTypeSuppressed(const std::string& key_system) {
-#if defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-  // See http://crbug.com/237627.
-  if (IsWidevine(key_system) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEncryptedMediaCanPlayTypeOverride))
-    return true;
-#endif
-  return false;
 }
 
 std::string KeySystemNameForUMAGeneric(const std::string& key_system) {

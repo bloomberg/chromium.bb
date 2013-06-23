@@ -540,13 +540,7 @@ TEST_F(KeySystemsTest,
 //
 
 TEST_F(KeySystemsTest, Widevine_Basic) {
-#if defined(WIDEVINE_CDM_AVAILABLE) && \
-    defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-  EXPECT_TRUE(IsSupportedKeySystem(WebString::fromUTF8(kWidevineAlpha)));
-#else
   EXPECT_WV(IsSupportedKeySystem(WebString::fromUTF8(kWidevineAlpha)));
-#endif
-
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kWidevineAlpha));
 
@@ -577,12 +571,7 @@ TEST_F(KeySystemsTest, Widevine_Basic) {
 TEST_F(KeySystemsTest, Widevine_Parent) {
   const char* const kWidevineParent = kWidevine;
 
-#if defined(WIDEVINE_CDM_AVAILABLE) && \
-    defined(DISABLE_WIDEVINE_CDM_CANPLAYTYPE)
-  EXPECT_TRUE(IsSupportedKeySystem(WebString::fromUTF8(kWidevineParent)));
-#else
   EXPECT_WV(IsSupportedKeySystem(WebString::fromUTF8(kWidevineParent)));
-#endif
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kWidevineParent));
 

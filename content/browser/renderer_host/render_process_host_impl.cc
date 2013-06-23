@@ -894,7 +894,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableDelegatedRenderer,
     switches::kEnableEncryptedMedia,
     switches::kDisableLegacyEncryptedMedia,
-    switches::kOverrideEncryptedMediaCanPlayType,
     switches::kEnableExperimentalWebKitFeatures,
     switches::kEnableFixedLayout,
     switches::kEnableDeferredImageDecoding,

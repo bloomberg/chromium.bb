@@ -755,13 +755,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableLegacyEncryptedMedia)
   },
   {
-    "override-encrypted-media-canplaytype",
-    IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_NAME,
-    IDS_FLAGS_ENCRYPTED_MEDIA_CANPLAYTYPE_OVERRIDE_DESCRIPTION,
-    kOsMac | kOsWin,
-    SINGLE_VALUE_TYPE(switches::kOverrideEncryptedMediaCanPlayType)
-  },
-  {
     "enable-opus-playback",
     IDS_FLAGS_ENABLE_OPUS_PLAYBACK_NAME,
     IDS_FLAGS_ENABLE_OPUS_PLAYBACK_DESCRIPTION,
