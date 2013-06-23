@@ -33,11 +33,8 @@
     Conditional=NOTIFICATIONS|LEGACY_NOTIFICATIONS,
     ActiveDOMObject,
     EventTarget,
-#if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
     Constructor(DOMString title, [Default=Undefined] optional Dictionary options),
     ConstructorCallWith=ScriptExecutionContext,
-#else
-#endif
 ] interface Notification {
     void show();
     [Conditional=LEGACY_NOTIFICATIONS] void cancel();
