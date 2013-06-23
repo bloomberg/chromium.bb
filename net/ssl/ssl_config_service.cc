@@ -20,9 +20,9 @@ static uint16 g_default_version_min = SSL_PROTOCOL_VERSION_SSL3;
 
 static uint16 g_default_version_max =
 #if defined(USE_OPENSSL)
-#if defined(SSL_OP_NO_TLSv1_2)
-    SSL_PROTOCOL_VERSION_TLS1_2;
-#elif defined(SSL_OP_NO_TLSv1_1)
+// TODO(wtc): do not enable TLS 1.2 until we can keep ClientHello under 256
+// bytes. See http://crbug.com/245500 and http://crbug.com/247691.
+#if defined(SSL_OP_NO_TLSv1_1)
     SSL_PROTOCOL_VERSION_TLS1_1;
 #else
     SSL_PROTOCOL_VERSION_TLS1;
