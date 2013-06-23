@@ -585,9 +585,16 @@ bool OmniboxViewViews::IsImeShowingPopup() const {
 #if defined(OS_CHROMEOS)
   return ime_candidate_window_open_;
 #else
-  // TODO(yukishiino): Implement detection of candidate windows on Windows.
-  // We can detect whether any candidate window is open or not on Windows.
-  return OmniboxView::IsImeShowingPopup();
+  // We need const_cast here because there is no const version of
+  // View::GetInputMethod().  It's because Widget::GetInputMethod(), called from
+  // View::GetInputMethod(), creates a new views::InputMethod at the first-time
+  // call.  Except for this point, none of this method, View::GetInputMethod()
+  // or Widget::GetInputMethod() modifies the state of their instances.
+  // TODO(yukishiino): Make {View,Widget}::GetInputMethod() const and make the
+  // underlying input method object mutable.
+  const views::InputMethod* input_method =
+      const_cast<OmniboxViewViews*>(this)->GetInputMethod();
+  return input_method && input_method->IsCandidatePopupOpen();
 #endif
 }
 
