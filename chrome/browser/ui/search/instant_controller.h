@@ -308,6 +308,8 @@ class InstantController : public InstantPage::Delegate,
                            SearchDoesntReuseInstantTabWithoutSupport);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            TypedSearchURLDoesntReuseInstantTab);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           DispatchMVChangeEventWhileNavigatingBackToNTP);
 
   // Overridden from InstantPage::Delegate:
   // TODO(shishir): We assume that the WebContent's current RenderViewHost is

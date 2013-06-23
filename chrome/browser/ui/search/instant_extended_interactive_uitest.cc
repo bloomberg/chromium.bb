@@ -1639,3 +1639,52 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NavigateBackToNTP) {
   active_tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
 }
+
+// Flaky on Windows and Mac try bots.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DispatchMVChangeEventWhileNavigatingBackToNTP DispatchMVChangeEventWhileNavigatingBackToNTP
+#else
+#define MAYBE_DispatchMVChangeEventWhileNavigatingBackToNTP DISABLED_DispatchMVChangeEventWhileNavigatingBackToNTP
+#endif
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       MAYBE_DispatchMVChangeEventWhileNavigatingBackToNTP) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(UpdateSearchState(active_tab));
+  EXPECT_EQ(1, on_most_visited_change_calls_);
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  // Set the text and press enter to navigate from NTP.
+  SetOmniboxText("Pen");
+  PressEnterAndWaitForNavigation();
+  EXPECT_EQ(ASCIIToUTF16("Pen"), omnibox()->GetText());
+  observer.Wait();
+
+  // Navigate back to NTP.
+  content::WindowedNotificationObserver back_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(active_tab->GetController().CanGoBack());
+  active_tab->GetController().GoBack();
+  back_observer.Wait();
+
+  // Verify that onmostvisitedchange event is dispatched when we navigate from
+  // SRP to NTP.
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(UpdateSearchState(active_tab));
+  EXPECT_EQ(1, on_most_visited_change_calls_);
+}
