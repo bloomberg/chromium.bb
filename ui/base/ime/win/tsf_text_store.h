@@ -202,6 +202,12 @@ class UI_EXPORT TSFTextStore : public ITextStoreACP,
   // Removes currently focused TextInputClient.
   void RemoveFocusedTextInputClient(TextInputClient* text_input_client);
 
+  // Cancels the ongoing composition if exists.
+  bool CancelComposition();
+
+  // Confirms the ongoing composition if exists.
+  bool ConfirmComposition();
+
   // Sends OnLayoutChange() via |text_store_acp_sink_|.
   void SendOnLayoutChange();
 

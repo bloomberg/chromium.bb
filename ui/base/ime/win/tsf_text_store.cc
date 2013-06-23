@@ -831,6 +831,76 @@ void TSFTextStore::RemoveFocusedTextInputClient(
   }
 }
 
+bool TSFTextStore::CancelComposition() {
+  // There is an on-going document lock. We must not edit the text!
+  if (!edit_flag_)
+    return false;
+
+  if (string_buffer_.empty())
+    return true;
+
+  // Unlike ImmNotifyIME(NI_COMPOSITIONSTR, CPS_CANCEL, 0) in IMM32, TSF does
+  // not have a dedicated method to cancel composition. However, CUAS actually
+  // has a protocol conversion from CPS_CANCEL into TSF operations. According
+  // to the observations on Windows 7, TIPs are expected to cancel composition
+  // when an on-going composition text is replaced with an empty string. So
+  // we use the same operation to cancel composition here to minimize the risk
+  // of potential compatibility issues.
+
+  const size_t previous_buffer_size = string_buffer_.size();
+  string_buffer_.clear();
+  committed_size_ = 0;
+  selection_.set_start(0);
+  selection_.set_end(0);
+  if (text_store_acp_sink_mask_ & TS_AS_SEL_CHANGE)
+    text_store_acp_sink_->OnSelectionChange();
+  if (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE)
+    text_store_acp_sink_->OnLayoutChange(TS_LC_CHANGE, 0);
+  if (text_store_acp_sink_mask_ & TS_AS_TEXT_CHANGE) {
+    TS_TEXTCHANGE textChange = {};
+    textChange.acpStart = 0;
+    textChange.acpOldEnd = previous_buffer_size;
+    textChange.acpNewEnd = 0;
+    text_store_acp_sink_->OnTextChange(0, &textChange);
+  }
+  return true;
+}
+
+bool TSFTextStore::ConfirmComposition() {
+  // There is an on-going document lock. We must not edit the text!
+  if (!edit_flag_)
+    return false;
+
+  if (string_buffer_.empty())
+    return true;
+
+  // See the comment in TSFTextStore::CancelComposition.
+  // This logic is based on the observation about how to emulate
+  // ImmNotifyIME(NI_COMPOSITIONSTR, CPS_COMPLETE, 0) by CUAS.
+
+  const string16& composition_text = string_buffer_.substr(committed_size_);
+  if (!composition_text.empty())
+    text_input_client_->InsertText(composition_text);
+
+  const size_t previous_buffer_size = string_buffer_.size();
+  string_buffer_.clear();
+  committed_size_ = 0;
+  selection_.set_start(0);
+  selection_.set_end(0);
+  if (text_store_acp_sink_mask_ & TS_AS_SEL_CHANGE)
+    text_store_acp_sink_->OnSelectionChange();
+  if (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE)
+    text_store_acp_sink_->OnLayoutChange(TS_LC_CHANGE, 0);
+  if (text_store_acp_sink_mask_ & TS_AS_TEXT_CHANGE) {
+    TS_TEXTCHANGE textChange = {};
+    textChange.acpStart = 0;
+    textChange.acpOldEnd = previous_buffer_size;
+    textChange.acpNewEnd = 0;
+    text_store_acp_sink_->OnTextChange(0, &textChange);
+  }
+  return true;
+}
+
 void TSFTextStore::SendOnLayoutChange() {
   if (text_store_acp_sink_ && (text_store_acp_sink_mask_ & TS_AS_LAYOUT_CHANGE))
     text_store_acp_sink_->OnLayoutChange(TS_LC_CHANGE, 0);

@@ -55,8 +55,16 @@ class UI_EXPORT TSFBridge {
   virtual void OnTextLayoutChanged() = 0;
 
   // Cancels the ongoing composition if exists.
+  // Returns true if there is no composition.
+  // Returns false if an edit session is on-going.
   // Returns false if an error occures.
   virtual bool CancelComposition() = 0;
+
+  // Confirms the ongoing composition if exists.
+  // Returns true if there is no composition.
+  // Returns false if an edit session is on-going.
+  // Returns false if an error occures.
+  virtual bool ConfirmComposition() = 0;
 
   // Sets currently focused TextInputClient.
   // Caller must free |client|.

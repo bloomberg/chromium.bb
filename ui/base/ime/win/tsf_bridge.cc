@@ -39,6 +39,7 @@ class TSFBridgeDelegate : public TSFBridge {
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnTextLayoutChanged() OVERRIDE;
   virtual bool CancelComposition() OVERRIDE;
+  virtual bool ConfirmComposition() OVERRIDE;
   virtual void SetFocusedClient(HWND focused_window,
                                 TextInputClient* client) OVERRIDE;
   virtual void RemoveFocusedClient(TextInputClient* client) OVERRIDE;
@@ -213,38 +214,26 @@ bool TSFBridgeDelegate::CancelComposition() {
   DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
   DCHECK(IsInitialized());
 
-  base::win::ScopedComPtr<ITfDocumentMgr> focused_document_manager;
-  for (TSFDocumentMap::iterator it = tsf_document_map_.begin();
-       it != tsf_document_map_.end(); ++it) {
-    if (IsFocused(it->second.document_manager.get())) {
-      focused_document_manager = it->second.document_manager.get();
-      break;
-    }
-  }
-
-  if (focused_document_manager.get() == NULL)
+  TSFDocument* document = GetAssociatedDocument();
+  if (!document)
+    return false;
+  if (!document->text_store)
     return false;
 
-  base::win::ScopedComPtr<ITfContext> context;
-  // We should use ITfDocumentMgr::GetBase instead of ITfDocumentMgr::GetTop,
-  // which may return a temporal context created by an IME for its modal UI
-  // handling, to obtain a context against which on-going composition is
-  // canceled. This is because ITfDocumentMgr::GetBase always returns the
-  // context that is created by us and owns the on-going composition.
-  // See http://crbug.com/169664 for details.
-  if (FAILED(focused_document_manager->GetBase(context.Receive()))) {
-    DVLOG(1) << "Failed to get top context.";
-    return false;
-  }
+  return document->text_store->CancelComposition();
+}
 
-  base::win::ScopedComPtr<ITfContextOwnerCompositionServices> owner;
-  if (FAILED(owner.QueryFrom(context))) {
-    DVLOG(1) << "Failed to get ITfContextOwnerCompositionService.";
+bool TSFBridgeDelegate::ConfirmComposition() {
+  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  DCHECK(IsInitialized());
+
+  TSFDocument* document = GetAssociatedDocument();
+  if (!document)
     return false;
-  }
-  // Cancel all compositions.
-  owner->TerminateComposition(NULL);
-  return true;
+  if (!document->text_store)
+    return false;
+
+  return document->text_store->ConfirmComposition();
 }
 
 void TSFBridgeDelegate::SetFocusedClient(HWND focused_window,

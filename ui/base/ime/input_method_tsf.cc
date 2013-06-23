@@ -128,12 +128,8 @@ void InputMethodTSF::OnDidChangeFocusedClient(TextInputClient* focused_before,
 }
 
 void InputMethodTSF::ConfirmCompositionText() {
-  if (!IsTextInputTypeNone()) {
-    // TSFBridge has not implemented ConfirmComposition yet. So here cancel
-    // the composition instead as a workaround.
-    // TODO(ime): Implement ConfirmComposition for TSF.
-    ui::TSFBridge::GetInstance()->CancelComposition();
-  }
+  if (!IsTextInputTypeNone())
+    ui::TSFBridge::GetInstance()->ConfirmComposition();
 }
 
 bool InputMethodTSF::IsWindowFocused(const TextInputClient* client) const {

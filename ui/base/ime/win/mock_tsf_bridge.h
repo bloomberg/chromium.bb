@@ -21,6 +21,7 @@ class MockTSFBridge : public TSFBridge {
 
   // TSFBridge:
   virtual bool CancelComposition() OVERRIDE;
+  virtual bool ConfirmComposition() OVERRIDE;
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnTextLayoutChanged() OVERRIDE;
   virtual void SetFocusedClient(HWND focused_window,
@@ -41,6 +42,11 @@ class MockTSFBridge : public TSFBridge {
   // Call count of CancelComposition().
   int cancel_composition_call_count() const {
     return cancel_composition_call_count_;
+  }
+
+  // Call count of ConfirmComposition().
+  int confirm_composition_call_count() const {
+    return confirm_composition_call_count_;
   }
 
   // Call count of OnTextLayoutChanged().
@@ -76,6 +82,7 @@ class MockTSFBridge : public TSFBridge {
   int enable_ime_call_count_;
   int disalbe_ime_call_count_;
   int cancel_composition_call_count_;
+  int confirm_composition_call_count_;
   int on_text_layout_changed_;
   int associate_focus_call_count_;
   int set_focused_client_call_count_;
