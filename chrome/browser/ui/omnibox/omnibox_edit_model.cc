@@ -704,6 +704,15 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
     const GURL destination_url = autocomplete_controller()->
         GetDestinationURL(match, query_formulation_time);
 
+    // Track whether the destination URL sends us to a search results page
+    // using the default search provider.
+    TemplateURL* default_provider =
+        TemplateURLServiceFactory::GetForProfile(profile_)->
+            GetDefaultSearchProvider();
+    if (default_provider && default_provider->IsSearchURL(destination_url))
+      content::RecordAction(UserMetricsAction(
+          "OmniboxDestinationURLMatchesDefaultSearchProvider"));
+
 #if defined(HTML_INSTANT_EXTENDED_POPUP)
     // If running with instant, notify the instant controller that a navigation
     // is about to take place if we are navigating to a URL. This can be

@@ -188,6 +188,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_process_type.h"
@@ -705,9 +706,13 @@ void MetricsService::Observe(int type,
       LogLoadComplete(type, source, details);
       break;
 
-    case content::NOTIFICATION_LOAD_START:
-      LogLoadStarted();
+    case content::NOTIFICATION_LOAD_START: {
+      content::NavigationController* controller =
+          content::Source<content::NavigationController>(source).ptr();
+      content::WebContents* web_contents = controller->GetWebContents();
+      LogLoadStarted(web_contents);
       break;
+    }
 
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
         content::RenderProcessHost::RendererClosedDetails* process_details =
@@ -1573,13 +1578,23 @@ void MetricsService::IncrementLongPrefsValue(const char* path) {
   pref->SetInt64(path, value + 1);
 }
 
-void MetricsService::LogLoadStarted() {
+void MetricsService::LogLoadStarted(content::WebContents* web_contents) {
   content::RecordAction(content::UserMetricsAction("PageLoad"));
   HISTOGRAM_ENUMERATION("Chrome.UmaPageloadCounter", 1, 2);
   IncrementPrefValue(prefs::kStabilityPageLoadCount);
   IncrementLongPrefsValue(prefs::kUninstallMetricsPageLoadCount);
   // We need to save the prefs, as page load count is a critical stat, and it
   // might be lost due to a crash :-(.
+
+  // Track whether the page loaded is a search results page.
+  if (web_contents) {
+    SearchTabHelper* search_tab_helper =
+        SearchTabHelper::FromWebContents(web_contents);
+    if (search_tab_helper) {
+      if (search_tab_helper->model()->mode().is_search_results())
+        content::RecordAction(content::UserMetricsAction("PageLoadSRP"));
+    }
+  }
 }
 
 void MetricsService::LogRendererCrash(content::RenderProcessHost* host,

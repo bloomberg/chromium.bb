@@ -45,6 +45,7 @@ class MessageLoopProxy;
 
 namespace content {
 class RenderProcessHost;
+class WebContents;
 }
 
 namespace extensions {
@@ -385,8 +386,9 @@ class MetricsService
   // buffered plugin stability statistics.
   void RecordCurrentState(PrefService* pref);
 
-  // Logs the initiation of a page load
-  void LogLoadStarted();
+  // Logs the initiation of a page load and uses |web_contents| to do
+  // additional logging of the type of page loaded.
+  void LogLoadStarted(content::WebContents* web_contents);
 
   // Records a page load notification.
   void LogLoadComplete(int type,
