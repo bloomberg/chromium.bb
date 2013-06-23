@@ -368,6 +368,10 @@ class WebMediaPlayerAndroid
   scoped_ptr<webkit::WebLayerImpl> video_weblayer_;
 
 #if defined(GOOGLE_TV)
+  // Pixel threshold for external surface usage. Negative value means that the
+  // threshold is not defined, so that external surface is never used.
+  int external_surface_threshold_;
+
   // A rectangle represents the geometry of video frame, when computed last
   // time.
   gfx::RectF last_computed_rect_;

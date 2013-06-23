@@ -93,6 +93,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       needs_external_surface_(false),
       video_frame_provider_client_(NULL),
 #if defined(GOOGLE_TV)
+      external_surface_threshold_(-1),
       demuxer_(NULL),
 #endif  // defined(GOOGLE_TV)
       source_type_(MediaPlayerAndroid::SOURCE_TYPE_URL),
@@ -108,10 +109,28 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 
   player_id_ = manager_->RegisterMediaPlayer(this);
 
+#if defined(GOOGLE_TV)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseExternalVideoSurfaceThresholdInPixels)) {
+    if (!base::StringToInt(
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kUseExternalVideoSurfaceThresholdInPixels),
+        &external_surface_threshold_)) {
+      external_surface_threshold_ = -1;
+    }
+  }
+
+  // Defer stream texture creation until we are sure it's necessary.
+  stream_id_ = 0;
+  needs_establish_peer_ = false;
+  current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
+#endif
   if (stream_texture_factory_) {
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
-    stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
-    ReallocateVideoFrame();
+    if (needs_establish_peer_) {
+      stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
+      ReallocateVideoFrame();
+    }
   }
 
   if (WebKit::WebRuntimeFeatures::isLegacyEncryptedMediaEnabled()) {
@@ -578,28 +597,21 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
     return;
 
 #if defined(GOOGLE_TV)
-  static bool has_switch = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseExternalVideoSurfaceThresholdInPixels);
-  static int threshold = 0;
-  static bool parsed_arg =
-      has_switch &&
-      base::StringToInt(
-          CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kUseExternalVideoSurfaceThresholdInPixels),
-          &threshold);
-
-  if ((parsed_arg && threshold <= width * height) ||
+  if ((external_surface_threshold_ >= 0 &&
+       external_surface_threshold_ <= width * height) ||
       // Use H/W surface for MSE as the content is protected.
       media_source_delegate_) {
-    if (stream_texture_factory_) {
-      stream_texture_factory_->DestroyStreamTexture(texture_id_);
-      stream_id_ = 0;
-      texture_id_ = 0;
-    }
     needs_external_surface_ = true;
-    SetNeedsEstablishPeer(false);
     if (!paused())
       proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
+  } else if (stream_texture_factory_ && !stream_texture_proxy_) {
+    // Do deferred stream texture creation finally.
+    if (paused()) {
+      stream_id_ = stream_texture_factory_->CreateStreamTexture(&texture_id_);
+      SetNeedsEstablishPeer(true);
+    } else {
+      EstablishSurfaceTexturePeer();
+    }
   }
 #endif
 
@@ -626,7 +638,7 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
     SetNeedsEstablishPeer(true);
   // We had the fullscreen surface connected to Android MediaPlayer,
   // so reconnect our surface texture for embedded playback.
-  if (!paused())
+  if (!paused() && needs_establish_peer_)
     EstablishSurfaceTexturePeer();
 
   frame_->view()->willExitFullScreen();
