@@ -31,12 +31,14 @@
 #ifndef LinkedStack_h
 #define LinkedStack_h
 
+#include "wtf/FastAllocBase.h"
 #include "wtf/OwnPtr.h"
 
 namespace WTF {
 
 template <typename T>
 class LinkedStack {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     LinkedStack() : m_size(0) { }
 
@@ -49,7 +51,9 @@ public:
     size_t size();
 
 private:
-    struct Node {
+    class Node {
+        WTF_MAKE_FAST_ALLOCATED;
+    public:
         Node(const T&, PassOwnPtr<Node> next);
 
         T m_data;
