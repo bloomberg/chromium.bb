@@ -5,6 +5,7 @@
 [
   {
     "namespace": "pageAction",
+    "description": "Use the <code>chrome.pageAction</code> API to put icons inside the address bar. Page actions represent actions that can be taken on the current page, but that aren't applicable to all pages.",
     "types": [
       {
         "id": "ImageDataType",

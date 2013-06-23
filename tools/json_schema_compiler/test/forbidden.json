@@ -1,6 +1,7 @@
 [
   {
     "namespace": "forbidden",
+    "description": "The forbidden API... Careful.",
     "types": [],
     "functions": [
       {

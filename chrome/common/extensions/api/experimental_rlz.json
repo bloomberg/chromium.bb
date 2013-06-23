@@ -5,8 +5,7 @@
 [
   {
     "namespace": "experimental.rlz",
-    "nodoc": true,
-    "types": [],
+    "description": "none",
     "functions": [
       {
         "name": "recordProductEvent",

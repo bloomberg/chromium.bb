@@ -5,8 +5,7 @@
 [
   {
     "namespace": "experimental.input.virtualKeyboard",
-    "nodoc": true,
-    "types": [],
+    "description": "none",
     "functions": [
       {
         "name": "insertText",

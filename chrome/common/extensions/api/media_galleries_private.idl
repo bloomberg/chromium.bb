@@ -4,7 +4,8 @@
 
 // This is a private API for M23. This will be superceded by the
 // systeminfo.storage API in M24.
-
+// This API's description needs to be updated. Issue:
+// https://code.google.com/p/chromium/issues/detail?id=252048
 namespace mediaGalleriesPrivate {
   // A dictionary that describes an attached device.
   [inline_doc] dictionary DeviceAttachmentDetails {

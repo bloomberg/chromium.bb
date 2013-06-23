@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// The <code>chrome.experimental.identity</code> API.
 namespace experimental.identity {
 
   [inline_doc] dictionary ExperimentalTokenDetails {

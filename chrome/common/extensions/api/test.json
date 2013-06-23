@@ -5,8 +5,7 @@
 [
   {
     "namespace": "test",
-    "nodoc": true,
-    "types": [],
+    "description": "none",
     "functions": [
       {
         "name": "getConfig",

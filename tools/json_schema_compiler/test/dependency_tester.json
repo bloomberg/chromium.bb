@@ -5,6 +5,7 @@
 [
   {
     "namespace": "dependencyTester",
+    "description": "An API for testing dependencies.",
     "dependencies": [ "browserAction", "fontSettings" ],
     "types": [],
     "functions": [

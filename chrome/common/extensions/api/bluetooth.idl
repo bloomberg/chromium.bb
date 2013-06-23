@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Bluetooth API.
-
+// Use the <code>chrome.bluetooth</code> API to connect to a Bluetooth
+// device.
 namespace bluetooth {
   dictionary AdapterState {
     // The address of the adapter, in the format 'XX:XX:XX:XX:XX:XX'.

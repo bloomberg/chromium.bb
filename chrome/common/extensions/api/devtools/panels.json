@@ -5,6 +5,7 @@
 [
   {
     "namespace": "devtools.panels",
+    "description": "Use the <code>chrome.devtools.panels</code> API to integrate your extension into Developer Tools window UI: create your own panels, access existing panels, and add sidebars.",
     "nocompile": true,
     "types": [
       {

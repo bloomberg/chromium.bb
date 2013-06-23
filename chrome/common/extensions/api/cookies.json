@@ -5,6 +5,7 @@
 [
   {
     "namespace": "cookies",
+    "description": "Use the <code>chrome.cookies</code> API to query and modify cookies, and to be notified when they change.",
     "types": [
       {
         "id": "Cookie",

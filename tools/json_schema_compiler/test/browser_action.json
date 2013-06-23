@@ -5,6 +5,7 @@
 [
   {
     "namespace": "browserAction",
+    "description": "The browserAction API.",
     "dependencies": [ "tabs" ],
     "types": [
       {

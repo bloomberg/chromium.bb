@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// downloadsInternal
 [nodoc=true]
 namespace downloadsInternal {
   interface Functions {
@@ -9,8 +10,5 @@ namespace downloadsInternal {
     static void determineFilename(long downloadId,
                                   DOMString filename,
                                   DOMString conflict_action);
-  };
-
-  interface Events {
   };
 };

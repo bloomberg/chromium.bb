@@ -5,6 +5,7 @@
 [
   {
     "namespace": "webstore",
+    "description": "Use the <code>chrome.webstore</code> API to initiate app and extension installations \"inline\" from your site.",
     "functions": [
       {
         "name": "install",

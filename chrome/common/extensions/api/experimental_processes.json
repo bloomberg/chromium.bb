@@ -5,6 +5,7 @@
 [
   {
     "namespace": "experimental.processes",
+    "description": "Use the <code>chrome.experimental.processes</code> API to interact with the browser's processes.",
     "types": [
       {
         "id": "Process",
@@ -13,7 +14,7 @@
         "properties": {
           "id": {
             "type": "integer",
-            "description": "Unique ID of the process provided by the browser." 
+            "description": "Unique ID of the process provided by the browser."
           },
           "osProcessId": {
             "type": "integer",

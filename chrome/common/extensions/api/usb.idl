@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.usb</code> API to interact with connected USB
+// devices. This API provides access to USB operations from within the context
+// of an app. Using this API, apps can function as drivers for hardware devices.
 namespace usb {
 
   // Direction, Recipient, RequestType, and TransferType all map to their

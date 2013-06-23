@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>systemInfo.display</code> API to query display metadata.
 namespace systemInfo.display {
 
   dictionary Bounds {
@@ -35,16 +36,16 @@ namespace systemInfo.display {
   dictionary DisplayUnitInfo {
     // The unique identifier of the display.
     DOMString id;
-    
+
     // The user-friendly name (e.g. "HP LCD monitor").
     DOMString name;
-  
+
     // Identifier of the display that is being mirrored on the display unit.
     // If mirroring is not in progress, set to an empty string.
     // Currently exposed only on ChromeOS. Will be empty string on other
     // platforms.
     DOMString mirroringSourceId;
-  
+
     // True if this is the primary display.
     boolean isPrimary;
 
@@ -87,22 +88,22 @@ namespace systemInfo.display {
     // the specified id (if mirroring is in progress).
     // If set, no other parameter may be set.
     DOMString? mirroringSourceId;
-  
+
     // If set to true, makes the display primary. No-op if set to false.
     boolean? isPrimary;
- 
+
     // If set, sets the display's overscan insets to the provided values. Note
     // that overscan values may not be negative or larger than a half of the
     // screen's size. Overscan cannot be changed on the internal monitor.
     // It's applied after <code>isPrimary</code> parameter.
     Insets? overscan;
- 
+
     // If set, updates the display's rotation.
     // Legal values are [0, 90, 180, 270]. The rotation is set clockwise,
     // relative to the display's vertical position.
     // It's applied after <code>overscan</code> paramter.
     long? rotation;
- 
+
     // If set, updates the display's logical bounds origin along x-axis. Applied
     // together with <code>boundsOriginY</code>, if <code>boundsOriginY</code>
     // is set. Note that, when updating the display origin, some constraints
@@ -113,12 +114,12 @@ namespace systemInfo.display {
     // also invalid to set bounds origin values if <code>isPrimary</code> is
     // also set (as <code>isPrimary</code> parameter is applied first).
     long? boundsOriginX;
- 
+
     // If set, updates the display's logical bounds origin along y-axis.
     // See documentation for <code>boundsOriginX</code> parameter.
     long? boundsOriginY;
   };
-  
+
   callback DisplayInfoCallback = void (DisplayUnitInfo[] displayInfo);
   callback SetDisplayUnitInfoCallback = void();
 
@@ -135,13 +136,13 @@ namespace systemInfo.display {
     //     |info|.
     // |callback|: Empty function called when the function finishes. To find out
     //     whether the function succeeded, $ref:runtime.lastError should be
-    //     queried. 
+    //     queried.
     static void setDisplayProperties(
         DOMString id,
         DisplayProperties info,
         optional SetDisplayUnitInfoCallback callback);
   };
-  
+
   interface Events {
     // Fired when anything changes to the display configuration.
     static void onDisplayChanged();

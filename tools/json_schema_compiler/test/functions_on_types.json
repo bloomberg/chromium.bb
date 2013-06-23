@@ -1,6 +1,7 @@
 [
   {
     "namespace": "functionsOnTypes",
+    "description": "The functionsOnTypes API.",
     "types": [
       {
         "id": "StorageArea",

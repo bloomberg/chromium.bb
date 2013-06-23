@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This module allows platform apps an additional way of launching themselves
-// from the browser. To use this api, an app needs to specify the page_launcher
-// manifest property, then register to listen to pageLauncher.onClicked events.
+// Use the <code>chrome.pageLauncher</code> API to provide platform apps with
+// an additional way of launching themselves from the browser. To use this api,
+// an app needs to specify the page_launcher manifest property, then register to
+// listen to pageLauncher.onClicked events.
 namespace pageLauncher {
   // Information about the page the user was on when the event was fired.
   dictionary PageData {

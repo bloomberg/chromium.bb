@@ -1,6 +1,7 @@
 [
   {
     "namespace": "additionalProperties",
+    "description": "The additionalProperties API.",
     "types": [
       {
         "id": "AdditionalPropertiesType",

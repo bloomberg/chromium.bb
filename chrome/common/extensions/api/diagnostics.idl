@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.diagnostics</code> API to query various properties of
+// the environment that may be useful for diagnostics.
 namespace diagnostics {
   dictionary SendPacketOptions {
     // Target IP address.
@@ -20,7 +22,7 @@ namespace diagnostics {
     // The IP of the host which we recieves the ICMP reply from.
     // The IP may differs from our target IP if the packet's ttl is used up.
     DOMString ip;
-    
+
     // Latency in millisenconds.
     double latency;
   };

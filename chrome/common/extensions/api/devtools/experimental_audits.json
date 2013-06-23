@@ -5,6 +5,7 @@
 [
   {
     "namespace": "experimental.devtools.audits",
+    "description": "Use the <code>chrome.experimental.devtools.audits</code> API to add new audit categories to the Developer Tools' Audit panel.",
     "nocompile": true,
     "functions": [
       {

@@ -5,6 +5,7 @@
 [
   {
     "namespace": "activityLogPrivate",
+    "description": "none",
     "types": [
       {
         "id": "DomActivityDetail",

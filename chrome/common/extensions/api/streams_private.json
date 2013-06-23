@@ -5,9 +5,7 @@
 [
   {
     "namespace":"streamsPrivate",
-    "types": [
-    ],
-
+    "description": "none",
     "events": [
       {
         "name": "onExecuteMimeTypeHandler",

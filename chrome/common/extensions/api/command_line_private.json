@@ -5,6 +5,7 @@
 [
   {
     "namespace": "commandLinePrivate",
+    "description": "none",
     "functions": [
       {
         "name": "hasSwitch",

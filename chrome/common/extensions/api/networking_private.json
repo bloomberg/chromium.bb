@@ -5,6 +5,7 @@
 [
   {
     "namespace":"networkingPrivate",
+    "description": "none",
     "compiler_options": {
       "implemented_in": "chrome/browser/chromeos/extensions/networking_private_api.h"
     },

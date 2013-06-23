@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.serial</code> API to read from and write to a device
+// connected to a serial port.
 namespace serial {
 
   callback GetPortsCallback = void (DOMString[] ports);

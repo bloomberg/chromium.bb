@@ -5,7 +5,7 @@
 [
   {
     "namespace": "metricsPrivate",
-    "nodoc": true,
+    "description": "none",
     "types": [
       {
         "id": "MetricType",

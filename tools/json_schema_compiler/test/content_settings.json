@@ -5,6 +5,7 @@
 [
   {
     "namespace": "contentSettings",
+    "description": "The contentSettings API.",
     "types": [
       {
         "id": "ResourceIdentifier",

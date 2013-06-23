@@ -8,6 +8,7 @@
 [
   {
     "namespace": "manifestTypes",
+    "description": "Schemas for structured manfiest entries",
     "types": [
       {
         "id": "ExternallyConnectable",

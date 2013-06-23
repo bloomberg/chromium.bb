@@ -2,34 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// An API for discovery of devices that support DIAL.
+// Use the <code>chrome.dial</code> API to discover devices that support DIAL.
 // Protocol specification: http://www.dial-multiscreen.org/
-//
-// The API is backed by a service that multicasts discovery requests on the
-// local network to discover DIAL-capable devices and maintains a list of
-// devices that have responded.  Adding an onDeviceList listener causes the
-// service to periodically issue discovery requests to maintain the device list.
-// (No polling is done when there are no onDeviceList listeners.)
-//
-// The onDeviceList event is fired when discovery respnses are received and in
-// other circumstances; see the documentation for onDeviceList.
-//
-// The client can request that network discovery can be done immediately by
-// invoking discoverNow() which is useful for presenting the user with an
-// updated list of devices.
-//
-// On-demand use (updates when discoverNow() is called):
-// chrome.dial.onDeviceList.addListener(function (list) { updateMenu(list); });
-// chrome.dial.discoverNow();
-// (Remember to remove the listener when the menu closes.)
-//
-// Background use (updates only when periodic polling happens):
-// var myList;
-// chrome.dial.onDeviceList.addListener(function (list) { myList = list; });
-//
-// These can be combined to poll for devices to prime the device menu, then
-// refresh the menu when it is displayed.
-
 namespace dial {
 
   // Represents a unique device that responded to a DIAL discovery request.

@@ -5,7 +5,7 @@
 [
   {
     "namespace": "systemPrivate",
-    "nodoc": true,
+    "description": "none",
     "types": [
       {
         "id": "UpdateStatus",

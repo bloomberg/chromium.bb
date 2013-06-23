@@ -5,6 +5,7 @@
 [
   {
     "namespace": "types",
+    "description": "The <code>chrome.types</code> API contains type declarations for Chrome. Currently, this comprises only a prototype for giving other APIs access to manage Chrome browser settings. This prototype is used, for example, for $ref:proxy.settings.",
     "types": [
       {
         "id": "ChromeSetting",

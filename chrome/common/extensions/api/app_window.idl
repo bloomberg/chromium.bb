@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.app.window</code> API to create windows. Windows
+// have an optional frame with title bar and size controls. They are not
+// associated with any Chrome browser windows.
 namespace app.window {
   dictionary Bounds {
     long? left;

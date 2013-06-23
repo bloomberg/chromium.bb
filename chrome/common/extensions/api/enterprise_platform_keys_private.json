@@ -5,9 +5,8 @@
 [
   {
     "namespace": "enterprise.platformKeysPrivate",
-    "nodoc": true,
+    "description": "none",
     "platforms": ["chromeos"],
-    "types": [],
     "functions": [
       {
         "name": "challengeMachineKey",

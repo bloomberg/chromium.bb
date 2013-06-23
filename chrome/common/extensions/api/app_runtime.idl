@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.app.runtime</code> API to manage the app lifecycle.
+// The app runtime manages app installation, controls the event page, and can
+// shut down the app at anytime.
 namespace app.runtime {
 
   [inline_doc] dictionary LaunchItem {

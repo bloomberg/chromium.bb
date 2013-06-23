@@ -5,9 +5,8 @@
 [
   {
     "namespace": "inputMethodPrivate",
-    "nodoc": true,
     "platforms": ["chromeos"],
-    "types": [],
+    "description": "none",
     "functions": [
       {
         "name": "get",

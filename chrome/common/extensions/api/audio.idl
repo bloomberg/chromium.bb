@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.audio</code> API to query audio device configuration and
+// be notified when it changes.
 namespace audio {
 
   dictionary OutputDeviceInfo {

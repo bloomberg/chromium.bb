@@ -1,6 +1,7 @@
 [
   {
     "namespace": "enums",
+    "description": "The enums API.",
     "types": [
       {
         "id": "Enumeration",

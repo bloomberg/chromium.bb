@@ -5,6 +5,7 @@
 [
   {
     "namespace": "events",
+    "description": "Performance monitor events",
     "types": [
       {
         "id": "ExtensionEvent",

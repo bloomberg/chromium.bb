@@ -94,6 +94,7 @@
   ],
   "properties": [],
   "name": "tester",
+  "description": "a test api",
   "types": [
     {
       "properties": [

@@ -5,9 +5,8 @@
 [
   {
     "namespace": "pageActions",
-    "nodoc": true,
+    "description": "none",
     "maximumManifestVersion": 1,
-    "types": [],
     "functions": [
       {
         "name": "enableForTab",

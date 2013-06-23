@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.mediaGalleries</code> API to access media files (images,
+// video, audio) from the user's local disks (with the user's consent).
 namespace mediaGalleries {
 
   [inline_doc] enum GetMediaFileSystemsInteractivity {

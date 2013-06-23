@@ -5,6 +5,7 @@
 [
   {
     "namespace": "topSites",
+    "description": "Use the <code>chrome.topSites</code> API to access the top sites that are displayed on the new tab page.",
     "types": [
       {
         "id": "MostVisitedURL",

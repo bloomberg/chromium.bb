@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.socket</code> API to send and receive data over the
+// network using TCP and UDP connections.
 namespace socket {
   enum SocketType {
     tcp,
@@ -267,18 +269,18 @@ namespace socket {
     // before calling this method.
     // |socketId| : The socketId.
     // |address| : The group address to join. Domain names are not supported.
-    // |callback| : Called when the join group operation is done with an 
+    // |callback| : Called when the join group operation is done with an
     // integer parameter indicating the platform-independent error code.
     static void joinGroup(long socketId,
                           DOMString address,
                           JoinGroupCallback callback);
 
     // Leave the multicast group previously joined using <code>joinGroup</code>.
-    // It's not necessary to leave the multicast group before destroying the 
+    // It's not necessary to leave the multicast group before destroying the
     // socket or exiting. This is automatically called by the OS.
     //
-    // Leaving the group will prevent the router from sending multicast 
-    // datagrams to the local host, presuming no other process on the host is 
+    // Leaving the group will prevent the router from sending multicast
+    // datagrams to the local host, presuming no other process on the host is
     // still joined to the group.
     //
     // |socketId| : The socketId.
@@ -300,7 +302,7 @@ namespace socket {
         long ttl,
         SetMulticastTimeToLiveCallback callback);
 
-    // Set whether multicast packets sent from the host to the multicast 
+    // Set whether multicast packets sent from the host to the multicast
     // group will be looped back to the host.
     //
     // Note: the behavior of <code>setMulticastLoopbackMode</code> is slightly

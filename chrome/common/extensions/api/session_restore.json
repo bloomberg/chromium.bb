@@ -5,6 +5,7 @@
 [
   {
     "namespace": "sessionRestore",
+    "description": "Use the <code>chrome.sessionRestore</code> API to query and restore tabs and windows from a browsing session.",
     "types": [
       {
         "id": "ClosedEntry",
@@ -26,7 +27,7 @@
           {
             "type": "object",
             "name": "options",
-            "optional": true, 
+            "optional": true,
             "properties": {
               "maxResults": {
                 "type": "integer",

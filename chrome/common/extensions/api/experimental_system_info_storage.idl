@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.experimental.systemInfo.storage</code> API to query
+// storage device information and be notified when it changes.
 namespace experimental.systemInfo.storage {
 
   enum StorageUnitType {
@@ -73,6 +75,6 @@ namespace experimental.systemInfo.storage {
     // Fired when a removable storage is detached from the system.
     static void onDetached(DOMString id);
   };
- 
+
 };
 

@@ -1,6 +1,7 @@
 [
   {
     "namespace": "permissions",
+    "description": "A test API for the json_schema_compiler.",
     "types": [
       {
         "id": "Permissions",

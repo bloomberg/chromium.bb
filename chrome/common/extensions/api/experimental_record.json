@@ -1,6 +1,7 @@
 [
   {
     "namespace": "experimental.record",
+    "description": "The <code>chrome.experimental.record</code> API.",
     "types": [
       {
         "id": "SessionDetails",
@@ -10,7 +11,7 @@
           "extensionPath": {
             "type": "string",
             "optional": true,
-            "description": 
+            "description":
                 "Absolute path to an unpacked extension to run in the subbrowser session."
           }
         }
@@ -80,7 +81,7 @@
             "description": "Unique name of capture.  Use to determine cache."
           },
           {
-            "type": "integer", 
+            "type": "integer",
             "name": "repeatCount",
             "minimum": 0,
             "maximum": 100

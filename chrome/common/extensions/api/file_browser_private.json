@@ -5,7 +5,7 @@
 [
   {
     "namespace":"fileBrowserPrivate",
-    "nodoc": "true",
+    "description": "none",
     "types": [
       {
         "id": "FileBrowserTask",
@@ -450,7 +450,7 @@
             "optional": true,
             "parameters": []
           }
-        ]        
+        ]
       },
       {
         "name": "getFileTasks",
@@ -1136,7 +1136,7 @@
           {
             "name": "callback",
             "type": "function",
-            "description": "Called back when the check is finished.", 
+            "description": "Called back when the check is finished.",
             "parameters": [
               {
                 "name": "result",

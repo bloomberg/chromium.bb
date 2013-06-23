@@ -132,6 +132,7 @@ class _JSCModel(object):
       return {}
     return {
       'name': self._namespace.name,
+      'description': self._namespace.description,
       'types': self._GenerateTypes(self._namespace.types.values()),
       'functions': self._GenerateFunctions(self._namespace.functions),
       'events': self._GenerateEvents(self._namespace.events),

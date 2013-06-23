@@ -1,6 +1,7 @@
 [
   {
     "namespace": "crossref",
+    "description": "The crossref API.",
     "dependencies": ["simple_api"],
     "types": [
       {

@@ -1,6 +1,7 @@
 [
   {
     "namespace": "any",
+    "description": "The any API.",
     "types": [
       {
         "id": "AnyType",

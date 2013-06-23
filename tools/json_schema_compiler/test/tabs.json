@@ -1,6 +1,7 @@
 [
   {
     "namespace": "tabs",
+    "description": "The tabs API.",
     "types": [
       {
         "id": "Tab",

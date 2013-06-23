@@ -5,10 +5,10 @@
 [
   {
     "namespace": "mediaPlayerPrivate",
-    "nodoc": "true",
     "compiler_options": {
       "implemented_in": "chrome/browser/chromeos/extensions/media_player_api.h"
     },
+    "description": "none",
     "platforms": ["chromeos"],
     "types": [
       {

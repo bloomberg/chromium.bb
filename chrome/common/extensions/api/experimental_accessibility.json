@@ -8,7 +8,7 @@
     "compiler_options": {
       "implemented_in": "chrome/browser/accessibility/accessibility_extension_api.h"
     },
-    "nodoc": true,
+    "description": "none",
     "types": [
       {
         "id": "CheckboxDetails",

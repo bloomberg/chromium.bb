@@ -12,12 +12,14 @@ class JsonSchemaUnittest(unittest.TestCase):
     compiled = [
       {
         "namespace": "compile",
+        "description": "The compile API.",
         "functions": [],
         "types":     {}
       },
 
       {
         "namespace": "functions",
+        "description": "The functions API.",
         "functions": [
           {
             "id": "two"
@@ -34,6 +36,7 @@ class JsonSchemaUnittest(unittest.TestCase):
 
       {
         "namespace": "types",
+        "description": "The types API.",
         "functions": [
           { "id": "one" }
         ],
@@ -49,6 +52,7 @@ class JsonSchemaUnittest(unittest.TestCase):
 
       {
         "namespace": "nested",
+        "description": "The nested API.",
         "properties": {
           "sync": {
             "functions": [

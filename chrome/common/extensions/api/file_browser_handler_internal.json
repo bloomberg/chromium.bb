@@ -8,7 +8,7 @@
     "compiler_options": {
       "implemented_in": "chrome/browser/chromeos/extensions/file_manager/file_browser_handler_api.h"
     },
-    "nodoc": true,
+    "description": "none",
     "platforms": ["chromeos"],
     "types": [
       {

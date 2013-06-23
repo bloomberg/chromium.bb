@@ -5,7 +5,7 @@
 [
   {
     "namespace": "preferencesPrivate",
-    "nodoc": true,
+    "description": "none",
     "properties": {
       "googleGeolocationAccessEnabled": {
         "$ref": "types.ChromeSetting",

@@ -5,6 +5,8 @@
 [
   {
     "namespace": "declarativeContent",
+    "description": "Use the <code>chrome.declarativeContent</code> API to take actions depending on the content of a page, without requiring permission to read the page's content.",
+    "documentation_permissions_required": ["declarative", "declarativeContent"],
     "types": [
       {
         "id": "PageStateMatcher",

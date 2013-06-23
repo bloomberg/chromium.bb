@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// An experimental API that expands upon the <code>chrome.mediaGalleries</code>
+// API's functionality.
 namespace experimental.mediaGalleries {
 
   callback AssembleMediaFileCallback =

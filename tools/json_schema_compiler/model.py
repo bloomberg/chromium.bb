@@ -39,6 +39,7 @@ class Namespace(object):
 
   Properties:
   - |name| the name of the namespace
+  - |description| the description of the namespace
   - |unix_name| the unix_name of the namespace
   - |source_file| the file that contained the namespace definition
   - |source_file_dir| the directory component of |source_file|
@@ -54,6 +55,10 @@ class Namespace(object):
   """
   def __init__(self, json, source_file, include_compiler_options=False):
     self.name = json['namespace']
+    if 'description' not in json:
+      raise ValueError('%s must have a "description" field. This will appear '
+                       'on the API summary page.' % self.name)
+    self.description = json.get('description', None)
     self.unix_name = UnixName(self.name)
     self.source_file = source_file
     self.source_file_dir, self.source_file_filename = os.path.split(source_file)
