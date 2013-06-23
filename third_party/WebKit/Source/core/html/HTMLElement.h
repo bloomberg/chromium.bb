@@ -92,6 +92,8 @@ public:
 
     virtual bool isLabelable() const { return false; }
 
+    virtual void defaultEventHandler(Event*) OVERRIDE;
+
 protected:
     HTMLElement(const QualifiedName& tagName, Document*, ConstructionType);
 
@@ -127,6 +129,9 @@ private:
     TranslateAttributeMode translateAttributeMode() const;
 
     AtomicString eventNameForAttributeName(const QualifiedName& attrName) const;
+
+    void handleKeypressEvent(KeyboardEvent*);
+    bool supportsSpatialNavigationFocus() const;
 };
 
 inline HTMLElement* toHTMLElement(Node* node)
