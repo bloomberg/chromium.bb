@@ -69,6 +69,7 @@ class ShellWindowGeometryCache
   void SaveGeometry(const std::string& extension_id,
                     const std::string& window_id,
                     const gfx::Rect& bounds,
+                    const gfx::Rect& screen_bounds,
                     ui::WindowShowState state);
 
   // Get any saved geometry and state associated with |extension_id| and
@@ -77,6 +78,7 @@ class ShellWindowGeometryCache
   bool GetGeometry(const std::string& extension_id,
                    const std::string& window_id,
                    gfx::Rect* bounds,
+                   gfx::Rect* screen_bounds,
                    ui::WindowShowState* state);
 
   // BrowserContextKeyedService
@@ -96,8 +98,10 @@ class ShellWindowGeometryCache
  private:
   // Data stored for each window.
   struct WindowData {
-    WindowData() : window_state(ui::SHOW_STATE_DEFAULT) {}
+    WindowData();
+    ~WindowData();
     gfx::Rect bounds;
+    gfx::Rect screen_bounds;
     ui::WindowShowState window_state;
     base::Time last_change;
   };

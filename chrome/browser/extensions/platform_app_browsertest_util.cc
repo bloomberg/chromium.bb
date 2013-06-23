@@ -163,6 +163,20 @@ void PlatformAppBrowserTest::CloseShellWindow(ShellWindow* window) {
   destroyed_observer.Wait();
 }
 
+void PlatformAppBrowserTest::CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
+    ShellWindow* window,
+    const gfx::Rect& cached_bounds,
+    const gfx::Rect& cached_screen_bounds,
+    const gfx::Rect& current_screen_bounds,
+    const gfx::Size& minimum_size,
+    gfx::Rect* bounds) {
+  window->AdjustBoundsToBeVisibleOnScreen(cached_bounds,
+                                          cached_screen_bounds,
+                                          current_screen_bounds,
+                                          minimum_size,
+                                          bounds);
+}
+
 void ExperimentalPlatformAppBrowserTest::SetUpCommandLine(
     CommandLine* command_line) {
   PlatformAppBrowserTest::SetUpCommandLine(command_line);

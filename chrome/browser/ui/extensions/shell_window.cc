@@ -46,6 +46,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/screen.h"
 
 #if defined(USE_ASH)
 #include "ash/launcher/launcher_types.h"
@@ -160,9 +161,22 @@ void ShellWindow::Init(const GURL& url,
         apps::ShellWindowGeometryCache::Get(profile());
 
     gfx::Rect cached_bounds;
-    if (cache->GetGeometry(extension()->id(), params.window_key,
-                           &cached_bounds, &cached_state)) {
+    gfx::Rect cached_screen_bounds;
+    if (cache->GetGeometry(extension()->id(), params.window_key, &cached_bounds,
+                           &cached_screen_bounds, &cached_state)) {
       bounds = cached_bounds;
+      // App window has cached screen bounds, make sure it fits on screen in
+      // case the screen resolution changed.
+      if (!cached_screen_bounds.IsEmpty()) {
+        gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+        gfx::Display display = screen->GetDisplayMatching(cached_bounds);
+        gfx::Rect current_screen_bounds = display.work_area();
+        AdjustBoundsToBeVisibleOnScreen(cached_bounds,
+                                        cached_screen_bounds,
+                                        current_screen_bounds,
+                                        params.minimum_size,
+                                        &bounds);
+      }
     }
   }
 
@@ -621,8 +635,48 @@ void ShellWindow::SaveWindowPosition() {
 
   gfx::Rect bounds = native_app_window_->GetRestoredBounds();
   bounds.Inset(native_app_window_->GetFrameInsets());
+  gfx::Rect screen_bounds =
+      gfx::Screen::GetNativeScreen()->GetDisplayMatching(bounds).work_area();
   ui::WindowShowState window_state = native_app_window_->GetRestoredState();
-  cache->SaveGeometry(extension()->id(), window_key_, bounds, window_state);
+  cache->SaveGeometry(extension()->id(),
+                      window_key_,
+                      bounds,
+                      screen_bounds,
+                      window_state);
+}
+
+void ShellWindow::AdjustBoundsToBeVisibleOnScreen(
+    const gfx::Rect& cached_bounds,
+    const gfx::Rect& cached_screen_bounds,
+    const gfx::Rect& current_screen_bounds,
+    const gfx::Size& minimum_size,
+    gfx::Rect* bounds) const {
+  if (!bounds)
+    return;
+
+  *bounds = cached_bounds;
+
+  // Reposition and resize the bounds if the cached_screen_bounds is different
+  // from the current screen bounds and the current screen bounds doesn't
+  // completely contain the bounds.
+  if (!cached_screen_bounds.IsEmpty() &&
+      cached_screen_bounds != current_screen_bounds &&
+      !current_screen_bounds.Contains(cached_bounds)) {
+    bounds->set_width(
+        std::max(minimum_size.width(),
+                 std::min(bounds->width(), current_screen_bounds.width())));
+    bounds->set_height(
+        std::max(minimum_size.height(),
+                 std::min(bounds->height(), current_screen_bounds.height())));
+    bounds->set_x(
+        std::max(current_screen_bounds.x(),
+                 std::min(bounds->x(),
+                          current_screen_bounds.right() - bounds->width())));
+    bounds->set_y(
+        std::max(current_screen_bounds.y(),
+                 std::min(bounds->y(),
+                          current_screen_bounds.bottom() - bounds->height())));
+  }
 }
 
 // static

@@ -71,6 +71,15 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
   // Closes |window| and waits until it's gone.
   void CloseShellWindow(ShellWindow* window);
+
+  // Call AdjustBoundsToBeVisibleOnScreen of |window|.
+  void CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
+      ShellWindow* window,
+      const gfx::Rect& cached_bounds,
+      const gfx::Rect& cached_screen_bounds,
+      const gfx::Rect& current_screen_bounds,
+      const gfx::Size& minimum_size,
+      gfx::Rect* bounds);
 };
 
 class ExperimentalPlatformAppBrowserTest : public PlatformAppBrowserTest {
@@ -78,6 +87,6 @@ class ExperimentalPlatformAppBrowserTest : public PlatformAppBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 };
 
-}
+} // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_

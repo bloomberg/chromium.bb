@@ -50,6 +50,7 @@ void ShellWindowGeometryCache::SaveGeometry(
     const std::string& extension_id,
     const std::string& window_id,
     const gfx::Rect& bounds,
+    const gfx::Rect& screen_bounds,
     ui::WindowShowState window_state) {
   ExtensionData& extension_data = cache_[extension_id];
 
@@ -57,12 +58,14 @@ void ShellWindowGeometryCache::SaveGeometry(
   // already in the cache, just ignore it.
   if (extension_data[window_id].bounds == bounds &&
       extension_data[window_id].window_state == window_state &&
+      extension_data[window_id].screen_bounds == screen_bounds &&
       !ContainsKey(unsynced_extensions_, extension_id))
     return;
 
   base::Time now = base::Time::Now();
 
   extension_data[window_id].bounds = bounds;
+  extension_data[window_id].screen_bounds = screen_bounds;
   extension_data[window_id].window_state = window_state;
   extension_data[window_id].last_change = now;
 
@@ -107,10 +110,15 @@ void ShellWindowGeometryCache::SyncToStorage() {
          eit = extension_data.end(); it != eit; ++it) {
       base::DictionaryValue* value = new base::DictionaryValue;
       const gfx::Rect& bounds = it->second.bounds;
+      const gfx::Rect& screen_bounds = it->second.screen_bounds;
       value->SetInteger("x", bounds.x());
       value->SetInteger("y", bounds.y());
       value->SetInteger("w", bounds.width());
       value->SetInteger("h", bounds.height());
+      value->SetInteger("screen_bounds_x", screen_bounds.x());
+      value->SetInteger("screen_bounds_y", screen_bounds.y());
+      value->SetInteger("screen_bounds_w", screen_bounds.width());
+      value->SetInteger("screen_bounds_h", screen_bounds.height());
       value->SetInteger("state", it->second.window_state);
       value->SetString(
           "ts", base::Int64ToString(it->second.last_change.ToInternalValue()));
@@ -124,6 +132,7 @@ bool ShellWindowGeometryCache::GetGeometry(
     const std::string& extension_id,
     const std::string& window_id,
     gfx::Rect* bounds,
+    gfx::Rect* screen_bounds,
     ui::WindowShowState* window_state) {
 
   std::map<std::string, ExtensionData>::const_iterator
@@ -146,6 +155,8 @@ bool ShellWindowGeometryCache::GetGeometry(
 
   if (bounds)
     *bounds = window_data->second.bounds;
+  if (screen_bounds)
+    *screen_bounds = window_data->second.screen_bounds;
   if (window_state)
     *window_state = window_data->second.window_state;
   return true;
@@ -153,6 +164,14 @@ bool ShellWindowGeometryCache::GetGeometry(
 
 void ShellWindowGeometryCache::Shutdown() {
   SyncToStorage();
+}
+
+
+ShellWindowGeometryCache::WindowData::WindowData()
+  : window_state(ui::SHOW_STATE_DEFAULT) {
+}
+
+ShellWindowGeometryCache::WindowData::~WindowData() {
 }
 
 void ShellWindowGeometryCache::Observe(
@@ -212,6 +231,14 @@ void ShellWindowGeometryCache::LoadGeometryFromStorage(
           window_data.bounds.set_width(i);
         if (stored_window->GetInteger("h", &i))
           window_data.bounds.set_height(i);
+        if (stored_window->GetInteger("screen_bounds_x", &i))
+          window_data.screen_bounds.set_x(i);
+        if (stored_window->GetInteger("screen_bounds_y", &i))
+          window_data.screen_bounds.set_y(i);
+        if (stored_window->GetInteger("screen_bounds_w", &i))
+          window_data.screen_bounds.set_width(i);
+        if (stored_window->GetInteger("screen_bounds_h", &i))
+          window_data.screen_bounds.set_height(i);
         if (stored_window->GetInteger("state", &i)) {
           window_data.window_state =
               static_cast<ui::WindowShowState>(i);

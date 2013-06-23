@@ -646,6 +646,82 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/restore_state"));
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       ShellWindowAdjustBoundsToBeVisibleOnScreen) {
+  const Extension* extension = LoadAndLaunchPlatformApp("minimal");
+  ShellWindow* window = CreateShellWindow(extension);
+
+  // The screen bounds didn't change, the cached bounds didn't need to adjust.
+  gfx::Rect cached_bounds(80, 100, 400, 400);
+  gfx::Rect cached_screen_bounds(0, 0, 1600, 900);
+  gfx::Rect current_screen_bounds(0, 0, 1600, 900);
+  gfx::Size minimum_size(200, 200);
+  gfx::Rect bounds;
+  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(window,
+                                                    cached_bounds,
+                                                    cached_screen_bounds,
+                                                    current_screen_bounds,
+                                                    minimum_size,
+                                                    &bounds);
+  EXPECT_EQ(bounds, cached_bounds);
+
+  // We have an empty screen bounds, the cached bounds didn't need to adjust.
+  gfx::Rect empty_screen_bounds;
+  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(window,
+                                                    cached_bounds,
+                                                    empty_screen_bounds,
+                                                    current_screen_bounds,
+                                                    minimum_size,
+                                                    &bounds);
+  EXPECT_EQ(bounds, cached_bounds);
+
+  // Cached bounds is completely off the new screen bounds in horizontal
+  // locations. Expect to reposition the bounds.
+  gfx::Rect horizontal_out_of_screen_bounds(-800, 100, 400, 400);
+  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
+      window,
+      horizontal_out_of_screen_bounds,
+      gfx::Rect(-1366, 0, 1600, 900),
+      current_screen_bounds,
+      minimum_size,
+      &bounds);
+  EXPECT_EQ(bounds, gfx::Rect(0, 100, 400, 400));
+
+  // Cached bounds is completely off the new screen bounds in vertical
+  // locations. Expect to reposition the bounds.
+  gfx::Rect vertical_out_of_screen_bounds(10, 1000, 400, 400);
+  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
+      window,
+      vertical_out_of_screen_bounds,
+      gfx::Rect(-1366, 0, 1600, 900),
+      current_screen_bounds,
+      minimum_size,
+      &bounds);
+  EXPECT_EQ(bounds, gfx::Rect(10, 500, 400, 400));
+
+  // From a large screen resulotion to a small one. Expect it fit on screen.
+  gfx::Rect big_cache_bounds(10, 10, 1000, 1000);
+  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
+      window,
+      big_cache_bounds,
+      gfx::Rect(0, 0, 1600, 1000),
+      gfx::Rect(0, 0, 800, 600),
+      minimum_size,
+      &bounds);
+  EXPECT_EQ(bounds, gfx::Rect(0, 0, 800, 600));
+
+  // Don't resize the bounds smaller than minimum size, when the minimum size is
+  // larger than the screen.
+  CallAdjustBoundsToBeVisibleOnScreenForShellWindow(
+      window,
+      big_cache_bounds,
+      gfx::Rect(0, 0, 1600, 1000),
+      gfx::Rect(0, 0, 800, 600),
+      gfx::Size(900, 900),
+      &bounds);
+  EXPECT_EQ(bounds, gfx::Rect(0, 0, 900, 900));
+}
+
 namespace {
 
 class PlatformAppDevToolsBrowserTest : public PlatformAppBrowserTest {
