@@ -17,9 +17,6 @@
 namespace remoting {
 namespace protocol {
 
-// TODO(jamiewalch): This class is little more than a wrapper around the
-// Pairing and Delegate classes. Refactor it away.
-
 // PairingRegistry holds information about paired clients to support
 // PIN-less authentication. For each paired client, the registry holds
 // the following information:
@@ -62,60 +59,61 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
   typedef std::map<std::string, Pairing> PairedClients;
 
   // Delegate callbacks.
-  typedef base::Callback<void(Pairing client_information)> GetPairingCallback;
-  typedef base::Callback<void(bool success)> AddPairingCallback;
+  typedef base::Callback<void(const std::string& pairings_json)> LoadCallback;
+  typedef base::Callback<void(bool success)> SaveCallback;
+  typedef base::Callback<void(Pairing pariring)> GetPairingCallback;
 
   // Interface representing the persistent storage back-end.
   class Delegate {
    public:
     virtual ~Delegate() {}
 
-    // Add pairing information to persistent storage. If a non-NULL callback
-    // is provided, invoke it on completion to indicate success or failure.
-    // Must not block.
-    //
-    // TODO(jamiewalch): Plumb the callback into the RequestPairing flow so
-    // that the client isn't sent the pairing information until it has been
-    // saved.
-    virtual void AddPairing(const Pairing& new_paired_client,
-                            const AddPairingCallback& callback) = 0;
+    // Save JSON-encoded pairing information to persistent storage. If
+    // a non-NULL callback is provided, invoke it on completion to
+    // indicate success or failure. Must not block.
+    virtual void Save(const std::string& pairings_json,
+                      const SaveCallback& callback) = 0;
 
-    // Retrieve the Pairing for the specified client id. If none is found,
-    // invoke the callback with a default pairing. Must not block.
-    virtual void GetPairing(const std::string& client_id,
-                            const GetPairingCallback& callback) = 0;
+    // Retrieve the JSON-encoded pairing information from persistent
+    // storage. Must not block.
+    virtual void Load(const LoadCallback& callback) = 0;
   };
 
   explicit PairingRegistry(scoped_ptr<Delegate> delegate);
 
-  // Create a pairing for a new client and save it to disk.
+  // Creates a pairing for a new client and saves it to disk.
+  //
+  // TODO(jamiewalch): Plumb the Save callback into the RequestPairing flow
+  // so that the client isn't sent the pairing information until it has been
+  // saved.
   Pairing CreatePairing(const std::string& client_name);
 
-  // Get the pairing for the specified client id. See the corresponding
-  // Delegate method for details.
+  // Gets the pairing for the specified client id. See the corresponding
+  // Delegate method for details. If none is found, the callback is invoked
+  // with an invalid Pairing.
   void GetPairing(const std::string& client_id,
                   const GetPairingCallback& callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PairingRegistryTest, AddPairing);
+  friend class NegotiatingAuthenticatorTest;
   friend class base::RefCountedThreadSafe<PairingRegistry>;
 
   virtual ~PairingRegistry();
 
+  void AddPairing(const Pairing& pairing);;
+  void MergePairingAndSave(const Pairing& pairing,
+                           const std::string& pairings_json);
+  void DoGetPairing(const std::string& client_id,
+                    const GetPairingCallback& callback,
+                    const std::string& pairings_json);
+
+  static PairedClients DecodeJson(const std::string& pairings_json);
+  static std::string EncodeJson(const PairedClients& clients);
+
   scoped_ptr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PairingRegistry);
-};
-
-// Temporary delegate that just logs NOTIMPLEMENTED for Load/Save.
-// TODO(jamiewalch): Delete once Delegates are implemented for all platforms.
-class NotImplementedPairingRegistryDelegate : public PairingRegistry::Delegate {
- public:
-  virtual void AddPairing(
-      const PairingRegistry::Pairing& paired_clients,
-      const PairingRegistry::AddPairingCallback& callback) OVERRIDE;
-  virtual void GetPairing(
-      const std::string& client_id,
-      const PairingRegistry::GetPairingCallback& callback) OVERRIDE;
 };
 
 }  // namespace protocol

@@ -211,23 +211,22 @@ class MockPairingRegistryDelegate : public PairingRegistry::Delegate {
   MockPairingRegistryDelegate();
   virtual ~MockPairingRegistryDelegate();
 
-  const PairingRegistry::PairedClients& paired_clients() const {
-    return paired_clients_;
+  const std::string& pairings_json() const {
+    return pairings_json_;
   }
 
   // PairingRegistry::Delegate implementation.
-  virtual void AddPairing(
-      const PairingRegistry::Pairing& new_paired_client,
-      const PairingRegistry::AddPairingCallback& callback) OVERRIDE;
-  virtual void GetPairing(
-      const std::string& client_id,
-      const PairingRegistry::GetPairingCallback& callback) OVERRIDE;
+  virtual void Save(
+      const std::string& pairings_json,
+      const PairingRegistry::SaveCallback& callback) OVERRIDE;
+  virtual void Load(
+      const PairingRegistry::LoadCallback& callback) OVERRIDE;
 
   void RunCallback();
 
  private:
-  base::Closure saved_callback_;
-  PairingRegistry::PairedClients paired_clients_;
+  base::Closure load_callback_;
+  std::string pairings_json_;
 };
 
 }  // namespace protocol

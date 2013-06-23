@@ -54,31 +54,24 @@ MockPairingRegistryDelegate::MockPairingRegistryDelegate() {
 MockPairingRegistryDelegate::~MockPairingRegistryDelegate() {
 }
 
-void MockPairingRegistryDelegate::AddPairing(
-    const PairingRegistry::Pairing& new_paired_client,
-    const PairingRegistry::AddPairingCallback& callback) {
-  paired_clients_[new_paired_client.client_id()] = new_paired_client;
+void MockPairingRegistryDelegate::Save(
+    const std::string& pairings_json,
+    const PairingRegistry::SaveCallback& callback) {
+  pairings_json_ = pairings_json;
   if (!callback.is_null()) {
     callback.Run(true);
   }
 }
 
-void MockPairingRegistryDelegate::GetPairing(
-    const std::string& client_id,
-    const PairingRegistry::GetPairingCallback& callback) {
-  PairingRegistry::Pairing result;
-  PairingRegistry::PairedClients::const_iterator i =
-      paired_clients_.find(client_id);
-  if (i != paired_clients_.end()) {
-    result = i->second;
-  }
-  saved_callback_ = base::Bind(base::Bind(callback), result);
+void MockPairingRegistryDelegate::Load(
+    const PairingRegistry::LoadCallback& callback) {
+  load_callback_ = base::Bind(base::Bind(callback), pairings_json_);
 }
 
 void MockPairingRegistryDelegate::RunCallback() {
-  DCHECK(!saved_callback_.is_null());
-  saved_callback_.Run();
-  saved_callback_.Reset();
+  DCHECK(!load_callback_.is_null());
+  load_callback_.Run();
+  load_callback_.Reset();
 }
 
 }  // namespace protocol
