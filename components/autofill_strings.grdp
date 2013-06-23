@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+
+  <message name="IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM" desc="The entry in the suggestions dropdown that clears an auto-filled form.">
+    Clear form
+  </message>
+  <message name="IDS_AUTOFILL_WARNING_FORM_DISABLED" desc="Warning text to show when autofill is disabled by the website for a given form.">
+    This webpage has disabled automatic filling for this form.
+  </message>
+  <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
+    Automatic credit card filling is disabled because this form does not use a secure connection.
+  </message>
+  <message name="IDS_AUTOFILL_CC_AMEX" desc="American Express credit card name.">
+    American Express
+  </message>
+  <message name="IDS_AUTOFILL_CC_DINERS" desc="Diners Club credit card name.">
+    Diners Club
+  </message>
+  <message name="IDS_AUTOFILL_CC_DISCOVER" desc="Discover credit card name.">
+    Discover
+  </message>
+  <message name="IDS_AUTOFILL_CC_JCB" desc="JCB credit card name.">
+    JCB
+  </message>
+  <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name.">
+    MasterCard
+  </message>
+  <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name.">
+    Visa
+  </message>
+  <message name="IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses on the Mac.">
+    , '''
+  </message>
+  <message name="IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address.">
+    , '''
+  </message>
+  <message name="IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT" desc="Credit card preview format">
+    <ph name="OBFUSCATED_CC_NUMBER">$1<ex>************1234</ex>
+    </ph>, Exp: <ph name="CC_EXPIRATION_DATE">$2<ex>03/2020</ex>
+    </ph>
+  </message>
+
+  <!-- These are all variants of the same logical field: The major subdivision below the "country" level. -->
+  <message name="IDS_AUTOFILL_FIELD_LABEL_STATE" desc="The label of the State entry.">
+    State
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_AREA" desc="The label of the Area entry.">
+    Area
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_COUNTY" desc="The label of the County entry.">
+    County
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_DEPARTMENT" desc="The label of the Department entry.">
+    Department
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_DISTRICT" desc="The label of the District entry.">
+    District
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_EMIRATE" desc="The label of the Emirate entry.">
+    Emirate
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_ISLAND" desc="The label of the Island entry.">
+    Island
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_PARISH" desc="The label of the Parish entry.">
+    Parish
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_PREFECTURE" desc="The label of the Prefecture entry.">
+    Prefecture
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_PROVINCE" desc="The label of the Province entry.">
+    Province
+  </message>
+  <!-- End state variants. -->
+
+  <message name="IDS_AUTOFILL_FIELD_LABEL_ZIP_CODE" desc="The label of the ZIP code entry.">
+    ZIP code
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_POSTAL_CODE" desc="The label of the Postal code entry.">
+    Postal code
+  </message>
+  <message name="IDS_AUTOFILL_FIELD_LABEL_COUNTRY" desc="The label of the Country entry.">
+    Country
+  </message>
+
+  <message name="IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE" desc="The title for form elements when annotated with Autofill predictions.">
+    heuristic type: <ph name="HEURISTIC_TYPE">$1<ex>NAME_FIRST</ex></ph>
+    server type: <ph name="SERVER_TYPE">$2<ex>NAME_FIRST</ex></ph>
+    field signature: <ph name="FIELD_SIGNATURE">$3<ex>12345678</ex></ph>
+    form signature: <ph name="FORM_SIGNATURE">$4<ex>1234567812345678</ex></ph>
+    experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
+  </message>
+
+  <!-- Autofill dialog: legal documents -->
+  <message name="IDS_AUTOFILL_DIALOG_PRIVACY_POLICY_LINK" desc="The text of an extra link that is appended to the end of whatever other legal documents need to be accepted or updated.">
+    Privacy Policy
+  </message>
+
+  <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
+    Chrome Autofill settings
+  </message>
+
+</grit-part>
