@@ -31,7 +31,6 @@
 #include "core/css/CSSParser.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include <wtf/StdLibExtras.h>
 
 namespace WebCore {
 

@@ -33,7 +33,6 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/page/Frame.h"
-#include <wtf/unicode/CharacterNames.h>
 
 namespace WebCore {
 

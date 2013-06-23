@@ -51,8 +51,6 @@
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/text/StringBuilder.h>
-#include <wtf/unicode/Unicode.h>
 
 using namespace std;
 using namespace WTF::Unicode;

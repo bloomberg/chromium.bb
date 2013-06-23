@@ -30,14 +30,13 @@
 #include "core/html/parser/HTMLConstructionSite.h"
 #include "core/html/parser/HTMLElementStack.h"
 #include "core/html/parser/HTMLParserOptions.h"
-#include <wtf/Noncopyable.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/TextPosition.h>
-#include <wtf/unicode/Unicode.h>
-#include <wtf/Vector.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 

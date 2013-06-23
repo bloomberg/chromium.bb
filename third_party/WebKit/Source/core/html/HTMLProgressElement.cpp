@@ -29,7 +29,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ProgressShadowElement.h"
 #include "core/rendering/RenderProgress.h"
-#include <wtf/StdLibExtras.h>
 
 namespace WebCore {
 

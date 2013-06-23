@@ -30,7 +30,6 @@
 #include "core/dom/NodeRenderingContext.h"
 #include "core/html/HTMLDocument.h"
 #include "core/rendering/RenderIFrame.h"
-#include <wtf/text/TextPosition.h>
 
 namespace WebCore {
 

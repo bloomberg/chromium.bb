@@ -27,7 +27,6 @@
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMarquee.h"
 
 namespace WebCore {

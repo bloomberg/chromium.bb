@@ -33,7 +33,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include <wtf/text/AtomicString.h>
 
 namespace WebCore {
 

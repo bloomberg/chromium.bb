@@ -35,7 +35,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/MouseEvent.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLDivElement.h"
@@ -44,10 +43,9 @@
 #include "core/html/InputTypeNames.h"
 #include "core/page/Chrome.h"
 #include "core/platform/graphics/Color.h"
-#include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

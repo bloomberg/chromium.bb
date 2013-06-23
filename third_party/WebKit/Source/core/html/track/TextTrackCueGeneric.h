@@ -28,7 +28,6 @@
 
 #include "core/html/track/TextTrackCue.h"
 #include "core/platform/graphics/Color.h"
-#include <wtf/RefCounted.h>
 
 namespace WebCore {
 

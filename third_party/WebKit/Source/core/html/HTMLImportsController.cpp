@@ -32,8 +32,6 @@
 #include "core/html/HTMLImportsController.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/DocumentType.h"
-#include "core/dom/Range.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/loader/cache/CachedResourceLoader.h"

@@ -29,10 +29,9 @@
 #include "core/dom/QualifiedName.h"
 #include "core/html/parser/HTMLIdentifier.h"
 #include "core/platform/Decimal.h"
-#include <wtf/MathExtras.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/MathExtras.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

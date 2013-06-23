@@ -37,7 +37,6 @@
 #include "modules/mediastream/MediaStream.h"
 #include "weborigin/KURL.h"
 #include "wtf/MainThread.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

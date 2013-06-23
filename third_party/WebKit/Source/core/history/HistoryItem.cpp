@@ -30,9 +30,8 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/platform/network/ResourceRequest.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MathExtras.h>
-#include <wtf/text/CString.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

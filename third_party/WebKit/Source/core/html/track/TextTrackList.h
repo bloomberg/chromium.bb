@@ -34,8 +34,6 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-#include <algorithm>
-
 namespace WebCore {
 
 class HTMLMediaElement;

@@ -33,7 +33,6 @@
 
 #include "core/html/HTMLFormControlElement.h"
 #include "core/page/Page.h"
-#include "core/page/Settings.h"
 #include "core/page/ValidationMessageClient.h"
 #include "wtf/PassOwnPtr.h"
 

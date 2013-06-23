@@ -29,9 +29,8 @@
 
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/platform/graphics/IntPoint.h"
-#include <wtf/HashMap.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

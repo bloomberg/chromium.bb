@@ -28,7 +28,6 @@
 #define WebGLUniformLocation_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/html/canvas/WebGLObject.h"
 #include "core/html/canvas/WebGLProgram.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

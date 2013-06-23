@@ -29,7 +29,6 @@
 #include "core/html/HTMLCanvasElement.h"
 
 #include <math.h>
-#include <stdio.h>
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"

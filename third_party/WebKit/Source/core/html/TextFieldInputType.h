@@ -33,7 +33,6 @@
 
 #include "core/html/InputType.h"
 #include "core/html/shadow/SpinButtonElement.h"
-#include "core/html/shadow/TextControlInnerElements.h"
 
 namespace WebCore {
 

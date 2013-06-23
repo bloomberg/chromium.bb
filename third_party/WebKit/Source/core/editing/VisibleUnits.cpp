@@ -40,7 +40,6 @@
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/unicode/Unicode.h>
 
 namespace WebCore {
 

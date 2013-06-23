@@ -35,10 +35,8 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/WeakPtr.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 

@@ -31,8 +31,6 @@
 
 #include "core/platform/graphics/Path.h"
 
-#include <wtf/Noncopyable.h>
-
 namespace WebCore {
 
 class FloatRect;

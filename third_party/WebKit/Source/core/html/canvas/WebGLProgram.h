@@ -30,7 +30,6 @@
 #include "core/html/canvas/WebGLSharedObject.h"
 #include "core/html/canvas/WebGLShader.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

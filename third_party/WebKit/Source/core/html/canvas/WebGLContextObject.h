@@ -27,7 +27,6 @@
 #define WebGLContextObject_h
 
 #include "core/html/canvas/WebGLObject.h"
-#include "core/platform/graphics/GraphicsContext3D.h"
 
 namespace WebCore {
 

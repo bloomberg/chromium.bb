@@ -30,9 +30,6 @@
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/platform/graphics/Extensions3D.h"
 
-#include <wtf/Int32Array.h>
-#include <wtf/OwnArrayPtr.h>
-
 namespace WebCore {
 
 WebGLCompressedTextureS3TC::WebGLCompressedTextureS3TC(WebGLRenderingContext* context)

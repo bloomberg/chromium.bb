@@ -28,22 +28,18 @@
 #include "core/html/shadow/DateTimeEditElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Text.h"
 #include "core/html/DateTimeFieldsState.h"
 #include "core/html/shadow/DateTimeFieldElements.h"
-#include "core/html/shadow/DateTimeSymbolicFieldElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/page/EventHandler.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include <wtf/DateMath.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/DateMath.h"
 
 namespace WebCore {
 

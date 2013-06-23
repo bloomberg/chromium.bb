@@ -28,10 +28,8 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
-#include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

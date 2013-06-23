@@ -34,11 +34,10 @@
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/ImageBuffer.h"
 
-#include <wtf/Float32Array.h>
-#include <wtf/Int32Array.h>
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Uint8Array.h>
+#include "wtf/Float32Array.h"
+#include "wtf/Int32Array.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebKit { class WebLayer; }
 

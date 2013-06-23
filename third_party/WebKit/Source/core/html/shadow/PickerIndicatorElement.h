@@ -35,7 +35,6 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/DateTimeChooserClient.h"
-#include <wtf/OwnPtr.h>
 
 namespace WebCore {
 

@@ -31,7 +31,6 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/StdLibExtras.h>
 
 namespace WebCore {
 

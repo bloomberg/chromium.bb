@@ -77,11 +77,10 @@
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 #include "core/rendering/RenderBox.h"
 
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/PassOwnArrayPtr.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Uint16Array.h>
-#include <wtf/Uint32Array.h>
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/PassOwnArrayPtr.h"
+#include "wtf/Uint32Array.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

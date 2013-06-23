@@ -27,7 +27,6 @@
 #define MediaFragmentURIParser_h
 
 #include "weborigin/KURL.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

@@ -26,13 +26,6 @@
 #include "config.h"
 #include "core/html/HTMLMediaElement.h"
 
-#include <wtf/CurrentTime.h>
-#include <wtf/MathExtras.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/NonCopyingSort.h>
-#include <wtf/text/CString.h>
-#include <wtf/Uint8Array.h>
-#include <limits>
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
@@ -51,7 +44,6 @@
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/HTMLTrackElement.h"
 #include "core/html/MediaController.h"
-#include "core/html/MediaDocument.h"
 #include "core/html/MediaError.h"
 #include "core/html/MediaFragmentURIParser.h"
 #include "core/html/MediaKeyError.h"
@@ -64,9 +56,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
-#include "core/page/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "core/page/Settings.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/Language.h"
@@ -76,15 +66,19 @@
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/MediaPlayer.h"
-#include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
-#include "core/rendering/RenderView.h"
 #include "modules/mediasource/MediaSourceBase.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
-#include "weborigin/SecurityOrigin.h"
-#include "weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
+#include "weborigin/SecurityOrigin.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/MathExtras.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/NonCopyingSort.h"
+#include "wtf/Uint8Array.h"
+#include "wtf/text/CString.h"
+#include <limits>
 
 #if ENABLE(WEB_AUDIO)
 #include "core/platform/audio/AudioSourceProvider.h"

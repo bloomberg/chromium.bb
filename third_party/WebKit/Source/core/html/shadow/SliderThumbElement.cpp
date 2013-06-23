@@ -44,7 +44,6 @@
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderSlider.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/MathExtras.h>
 
 using namespace std;
 

@@ -32,8 +32,6 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLOptionElement.h"
 
-#include <utility>
-
 namespace WebCore {
 
 using namespace HTMLNames;

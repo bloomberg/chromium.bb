@@ -30,7 +30,6 @@
 #include "core/html/HTMLInputElement.h"
 
 #include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptEventListener.h"
@@ -68,11 +67,9 @@
 #include "core/platform/Language.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/MathExtras.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/MathExtras.h"
 
 using namespace std;
 

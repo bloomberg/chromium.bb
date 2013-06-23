@@ -29,7 +29,6 @@
 #include "HTMLNames.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/platform/Logging.h"
 

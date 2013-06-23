@@ -29,23 +29,19 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
-#include "core/dom/BeforeTextInsertedEvent.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/TextEvent.h"
 #include "core/dom/TextEventInputType.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLTextAreaElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
-#include "core/page/Page.h"
 #include "core/page/SpeechInput.h"
 #include "core/page/SpeechInputEvent.h"
 #include "core/rendering/RenderSearchField.h"
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {
 

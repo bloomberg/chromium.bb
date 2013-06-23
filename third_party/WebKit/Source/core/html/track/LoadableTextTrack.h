@@ -28,8 +28,7 @@
 
 #include "core/html/track/TextTrack.h"
 #include "core/loader/TextTrackLoader.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

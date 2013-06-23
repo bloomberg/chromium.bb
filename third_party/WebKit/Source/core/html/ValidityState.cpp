@@ -24,17 +24,7 @@
 #include "config.h"
 #include "core/html/ValidityState.h"
 
-#include "HTMLNames.h"
-#include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLSelectElement.h"
-#include "core/html/HTMLTextAreaElement.h"
-#include "core/html/parser/HTMLTreeBuilder.h"
-#include "core/platform/LocalizedStrings.h"
-#include <wtf/StdLibExtras.h>
-
 namespace WebCore {
-
-using namespace HTMLNames;
 
 String ValidityState::validationMessage() const
 {

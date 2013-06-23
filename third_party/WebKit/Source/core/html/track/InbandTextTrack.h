@@ -27,9 +27,8 @@
 #define InbandTextTrack_h
 
 #include "core/html/track/TextTrack.h"
-#include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/InbandTextTrackPrivateClient.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

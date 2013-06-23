@@ -27,9 +27,8 @@
 
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/DOMTokenList.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/RefCounted.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

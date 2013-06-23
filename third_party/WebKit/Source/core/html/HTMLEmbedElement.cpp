@@ -27,17 +27,13 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
-#include "core/page/Settings.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderWidget.h"
 
 namespace WebCore {

@@ -34,7 +34,6 @@
 
 #include <limits>
 #include "HTMLNames.h"
-#include "core/dom/BeforeTextInsertedEvent.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
@@ -43,9 +42,8 @@
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTextControl.h"
-#include <wtf/ASCIICType.h>
-#include <wtf/MathExtras.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/MathExtras.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

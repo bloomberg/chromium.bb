@@ -32,7 +32,6 @@
 #include "core/html/DOMFormData.h"
 
 #include "core/fileapi/Blob.h"
-#include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"

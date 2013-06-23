@@ -30,7 +30,6 @@
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/platform/graphics/Color.h"
-#include "core/platform/graphics/DashArray.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsTypes.h"

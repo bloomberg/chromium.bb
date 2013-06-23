@@ -28,7 +28,6 @@
 #include "core/html/HTMLOptionElement.h"
 
 #include "HTMLNames.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
@@ -38,9 +37,8 @@
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

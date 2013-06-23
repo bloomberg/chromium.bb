@@ -32,7 +32,6 @@
 #include "core/html/shadow/MediaControlElements.h"
 
 #include "core/dom/EventNames.h"
-#include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/FullscreenController.h"
 #include "core/dom/MouseEvent.h"
@@ -40,21 +39,14 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/TextTrack.h"
-#include "core/html/track/TextTrackList.h"
-#include "core/html/track/TextTrackRegionList.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "core/page/Settings.h"
-#include "core/platform/LocalizedStrings.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMediaControlElements.h"
 #include "core/rendering/RenderSlider.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderVideo.h"
-#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

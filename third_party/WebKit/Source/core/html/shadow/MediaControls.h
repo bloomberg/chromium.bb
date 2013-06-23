@@ -27,18 +27,11 @@
 #ifndef MediaControls_h
 #define MediaControls_h
 
-#include "HTMLNames.h"
 #include "core/dom/MouseEvent.h"
-#include "core/dom/Text.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControlElements.h"
-#include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/RefPtr.h>
-
-#include "core/html/track/TextTrackCue.h"
 
 namespace WebCore {
 

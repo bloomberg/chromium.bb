@@ -34,7 +34,6 @@
 #include "core/loader/LinkLoaderClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
-#include "core/platform/Timer.h"
 
 namespace WebCore {
 

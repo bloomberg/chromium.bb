@@ -23,13 +23,11 @@
 #ifndef HTMLCollection_h
 #define HTMLCollection_h
 
-#include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/LiveNodeList.h"
 #include "core/html/CollectionType.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

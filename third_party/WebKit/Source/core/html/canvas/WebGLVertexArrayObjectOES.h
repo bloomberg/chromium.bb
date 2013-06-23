@@ -29,8 +29,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLBuffer.h"
 #include "core/html/canvas/WebGLContextObject.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

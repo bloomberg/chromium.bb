@@ -30,9 +30,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/track/TrackBase.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

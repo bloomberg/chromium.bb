@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/editing/FrameSelection.h"
 
-#include <limits.h>
 #include <stdio.h>
 #include "HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -64,7 +63,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
-#include <wtf/text/CString.h>
+#include "wtf/text/CString.h"
 
 #define EDIT_DEBUG 0
 

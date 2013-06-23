@@ -33,7 +33,6 @@
 
 #include "core/css/CSSSelectorList.h"
 #include "core/dom/shadow/InsertionPoint.h"
-#include <wtf/Forward.h>
 
 namespace WebCore {
 

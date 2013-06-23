@@ -28,7 +28,6 @@
 #include "core/html/canvas/WebGLBuffer.h"
 
 #include "core/html/canvas/WebGLRenderingContext.h"
-#include <wtf/ArrayBufferView.h>
 
 namespace WebCore {
 

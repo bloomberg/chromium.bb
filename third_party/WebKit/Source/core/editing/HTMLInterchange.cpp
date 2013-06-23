@@ -29,9 +29,8 @@
 #include "core/dom/Text.h"
 #include "core/editing/TextIterator.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/text/StringBuilder.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 

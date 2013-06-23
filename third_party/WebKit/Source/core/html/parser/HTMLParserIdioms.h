@@ -27,9 +27,8 @@
 
 #include "core/dom/QualifiedName.h"
 #include "core/html/parser/HTMLIdentifier.h"
-#include <wtf/Forward.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

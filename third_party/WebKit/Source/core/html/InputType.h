@@ -36,11 +36,10 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/StepRange.h"
 #include "core/page/UseCounter.h"
-#include <wtf/FastAllocBase.h>
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

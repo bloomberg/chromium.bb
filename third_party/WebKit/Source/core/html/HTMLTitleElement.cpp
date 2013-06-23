@@ -25,11 +25,10 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

@@ -30,7 +30,6 @@
 
 #include "core/html/parser/HTMLIdentifier.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {

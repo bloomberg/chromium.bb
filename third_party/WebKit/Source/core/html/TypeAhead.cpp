@@ -29,8 +29,7 @@
 #include "core/html/TypeAhead.h"
 
 #include "core/dom/KeyboardEvent.h"
-#include <wtf/unicode/CharacterNames.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/unicode/CharacterNames.h"
 
 using namespace WTF::Unicode;
 

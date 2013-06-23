@@ -33,7 +33,6 @@
 
 #include "core/html/BaseChooserOnlyDateAndTimeInputType.h"
 #include "core/html/BaseMultipleFieldsDateAndTimeInputType.h"
-#include <wtf/RefPtr.h>
 
 namespace WebCore {
 

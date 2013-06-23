@@ -35,7 +35,6 @@
 
 #include "core/html/BaseButtonInputType.h"
 #include "core/platform/graphics/IntPoint.h"
-#include <wtf/OwnPtr.h>
 
 namespace WebCore {
 

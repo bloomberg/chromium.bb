@@ -34,7 +34,6 @@
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "core/dom/DocumentFragment.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/HTMLDocumentParser.h"
@@ -44,8 +43,8 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/NotImplemented.h"
-#include <wtf/MainThread.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/MainThread.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 

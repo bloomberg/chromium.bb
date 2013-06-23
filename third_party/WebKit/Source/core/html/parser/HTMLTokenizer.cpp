@@ -34,12 +34,9 @@
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/platform/NotImplemented.h"
 #include "core/xml/parser/MarkupTokenizerInlines.h"
-#include <wtf/ASCIICType.h>
-#include <wtf/CurrentTime.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/CString.h>
-#include <wtf/unicode/Unicode.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/unicode/Unicode.h"
 
 using namespace WTF;
 

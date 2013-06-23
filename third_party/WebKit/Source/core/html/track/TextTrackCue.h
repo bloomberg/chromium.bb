@@ -35,10 +35,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/track/TextTrack.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

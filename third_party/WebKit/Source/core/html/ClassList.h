@@ -29,9 +29,8 @@
 #include "core/dom/Element.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/DOMTokenList.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

@@ -27,10 +27,8 @@
 #include "core/html/HTMLTrackElement.h"
 
 #include "HTMLNames.h"
-#include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Event.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/platform/Logging.h"

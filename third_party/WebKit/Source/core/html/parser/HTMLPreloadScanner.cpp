@@ -33,8 +33,7 @@
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include <wtf/Functional.h>
-#include <wtf/MainThread.h>
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

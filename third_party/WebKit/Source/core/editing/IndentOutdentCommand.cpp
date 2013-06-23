@@ -33,7 +33,6 @@
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/StdLibExtras.h>
 
 namespace WebCore {
 

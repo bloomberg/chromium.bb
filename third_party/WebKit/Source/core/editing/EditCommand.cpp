@@ -27,14 +27,9 @@
 #include "core/editing/EditCommand.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/EventNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/CompositeEditCommand.h"
-#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/htmlediting.h"
 #include "core/page/Frame.h"
 
 namespace WebCore {

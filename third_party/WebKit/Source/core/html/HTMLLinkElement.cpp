@@ -25,7 +25,6 @@
 #include "config.h"
 #include "core/html/HTMLLinkElement.h"
 
-#include <wtf/StdLibExtras.h>
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/MediaList.h"
@@ -34,7 +33,6 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventSender.h"
@@ -45,6 +43,7 @@
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

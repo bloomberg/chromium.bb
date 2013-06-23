@@ -28,8 +28,7 @@
 
 #include "core/platform/graphics/GraphicsContext3D.h"
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

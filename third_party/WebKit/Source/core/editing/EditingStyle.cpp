@@ -52,7 +52,6 @@
 #include "core/page/Frame.h"
 #include "core/page/RuntimeCSSEnabled.h"
 #include "core/rendering/style/RenderStyle.h"
-#include <wtf/HashSet.h>
 
 namespace WebCore {
 

@@ -27,15 +27,13 @@
 #define MediaController_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
 #include "core/dom/Event.h"
-#include "core/dom/EventListener.h"
 #include "core/dom/EventTarget.h"
 #include "core/html/MediaControllerInterface.h"
 #include "core/platform/Timer.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

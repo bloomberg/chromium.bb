@@ -41,12 +41,11 @@
 #include "core/html/parser/XSSAuditor.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "core/loader/cache/CachedResourceClient.h"
-#include "core/platform/Timer.h"
 #include "core/platform/text/SegmentedString.h"
-#include <wtf/Deque.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/text/TextPosition.h>
-#include <wtf/WeakPtr.h>
+#include "wtf/Deque.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/WeakPtr.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 

@@ -34,10 +34,8 @@
 
 #include "HTMLNames.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/platform/graphics/FloatPoint.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/style/RenderStyleConstants.h"
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

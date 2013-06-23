@@ -31,8 +31,6 @@
 #include "core/html/canvas/WebGLShader.h"
 #include "core/platform/graphics/Extensions3D.h"
 
-#include <wtf/OwnArrayPtr.h>
-
 namespace WebCore {
 
 WebGLDebugShaders::WebGLDebugShaders(WebGLRenderingContext* context)

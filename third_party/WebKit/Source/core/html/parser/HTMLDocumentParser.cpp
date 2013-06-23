@@ -29,7 +29,6 @@
 #include "HTMLNames.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
-#include "core/html/HTMLDocument.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/BackgroundHTMLParser.h"
 #include "core/html/parser/CompactHTMLToken.h"
@@ -42,7 +41,7 @@
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"
-#include <wtf/Functional.h>
+#include "wtf/Functional.h"
 
 namespace WebCore {
 

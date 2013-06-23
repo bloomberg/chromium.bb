@@ -23,11 +23,10 @@
 #define FormController_h
 
 #include "core/dom/CheckedRadioButtons.h"
-#include <wtf/Deque.h>
-#include <wtf/Forward.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
