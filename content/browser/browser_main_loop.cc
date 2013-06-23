@@ -131,12 +131,20 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
       !parsed_command_line.HasSwitch(switches::kNoSandbox) &&
       !parsed_command_line.HasSwitch(switches::kDisableSetuidSandbox);
 
-  if (want_setuid_sandbox && !sandbox_binary) {
-    // TODO(jln): make this fatal (crbug.com/245376).
-    LOG(ERROR) << "Running without the SUID sandbox! See "
+  if (want_setuid_sandbox) {
+    static const char no_suid_error[] = "Running without the SUID sandbox! See "
         "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
-        "for more information on developing with the sandbox on.\n"
-        "This check will be made FATAL. Do it!";
+        "for more information on developing with the sandbox on.";
+    if (!sandbox_binary) {
+      // This needs to be fatal. Talk to security@chromium.org if you feel
+      // otherwise.
+      LOG(FATAL) << no_suid_error;
+    }
+    // TODO(jln): an empty CHROME_DEVEL_SANDBOX environment variable (as
+    // opposed to a non existing one) is not fatal yet. This is needed because
+    // of existing bots and scripts. Fix it (crbug.com/245376).
+    if (sandbox_binary && *sandbox_binary == '\0')
+      LOG(ERROR) << no_suid_error;
   }
 
   std::string sandbox_cmd;
