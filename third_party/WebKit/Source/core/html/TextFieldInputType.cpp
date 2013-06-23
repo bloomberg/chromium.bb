@@ -48,6 +48,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTheme.h"
@@ -83,9 +84,18 @@ bool TextFieldInputType::isTextField() const
     return true;
 }
 
+static inline bool shouldIgnoreRequiredAttribute(const HTMLInputElement& input)
+{
+    if (!input.document()->settings() || !input.document()->settings()->needsSiteSpecificQuirks())
+        return false;
+    if (!equalIgnoringCase(input.document()->url().host(), "egov.uscis.gov"))
+        return false;
+    return input.fastGetAttribute(requiredAttr) == "no";
+}
+
 bool TextFieldInputType::valueMissing(const String& value) const
 {
-    return element()->isRequired() && value.isEmpty();
+    return !shouldIgnoreRequiredAttribute(*element()) && element()->isRequired() && value.isEmpty();
 }
 
 bool TextFieldInputType::canSetSuggestedValue()
