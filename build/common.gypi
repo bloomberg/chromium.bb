@@ -962,6 +962,8 @@
     # Enable sampling based profiler.
     # See http://google-perftools.googlecode.com/svn/trunk/doc/cpuprofile.html
     'profiling%': '0',
+    # Profile without optimizing out stack frames when profiling==1.
+    'profiling_full_stack_frames%': '0',
 
     # Enable strict glibc debug mode.
     'glibcxx_debug%': 0,
@@ -2832,6 +2834,14 @@
                 'cflags': [
                   '-fno-omit-frame-pointer',
                   '-g',
+                ],
+                'conditions' : [
+                  ['profiling_full_stack_frames==1', {
+                    'cflags': [
+                      '-fno-inline',
+                      '-fno-optimize-sibling-calls',
+                    ],
+                  }],
                 ],
               }],
               # Can be omitted to reduce output size. Does not seem to affect
