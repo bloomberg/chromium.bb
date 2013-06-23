@@ -170,14 +170,8 @@ class MetricsLog : public MetricsLogBase {
   // chromium processes (ones that don't crash, and keep on running).
   void WriteRealtimeStabilityAttributes(PrefService* pref);
 
-  // Writes the list of installed plugins.  If |write_as_xml| is true, writes
-  // the XML version.  Otherwise, writes the protobuf version.
-  void WritePluginList(
-      const std::vector<webkit::WebPluginInfo>& plugin_list,
-      bool write_as_xml);
-
-  // Within the profile group, write basic install info including appversion.
-  void WriteInstallElement();
+  // Writes the list of installed plugins.
+  void WritePluginList(const std::vector<webkit::WebPluginInfo>& plugin_list);
 
   // Writes all profile metrics. This invokes WriteProfileMetrics for each key
   // in all_profiles_metrics that starts with kProfilePrefix.

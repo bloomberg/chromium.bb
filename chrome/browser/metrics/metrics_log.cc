@@ -420,8 +420,6 @@ void MetricsLog::RecordIncrementalStabilityElements(
   OPEN_ELEMENT_FOR_SCOPE("profile");
   WriteCommonEventAttributes();
 
-  WriteInstallElement();
-
   {
     OPEN_ELEMENT_FOR_SCOPE("stability");  // Minimal set of stability elements.
     WriteRequiredStabilityAttributes(pref);
@@ -688,11 +686,8 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
 }
 
 void MetricsLog::WritePluginList(
-    const std::vector<webkit::WebPluginInfo>& plugin_list,
-    bool write_as_xml) {
+    const std::vector<webkit::WebPluginInfo>& plugin_list) {
   DCHECK(!locked());
-
-  OPEN_ELEMENT_FOR_SCOPE("plugins");
 
 #if defined(ENABLE_PLUGINS)
   PluginPrefs* plugin_prefs = GetPluginPrefs();
@@ -700,42 +695,10 @@ void MetricsLog::WritePluginList(
   for (std::vector<webkit::WebPluginInfo>::const_iterator iter =
            plugin_list.begin();
        iter != plugin_list.end(); ++iter) {
-    if (write_as_xml) {
-      std::string base64_name_hash;
-      uint64 numeric_hash_ignored;
-      CreateHashes(UTF16ToUTF8(iter->name), &base64_name_hash,
-                   &numeric_hash_ignored);
-
-      std::string filename_bytes = iter->path.BaseName().AsUTF8Unsafe();
-      std::string base64_filename_hash;
-      CreateHashes(filename_bytes, &base64_filename_hash,
-                   &numeric_hash_ignored);
-
-      // Write the XML version.
-      OPEN_ELEMENT_FOR_SCOPE("plugin");
-
-      // Plugin name and filename are hashed for the privacy of those
-      // testing unreleased new extensions.
-      WriteAttribute("name", base64_name_hash);
-      WriteAttribute("filename", base64_filename_hash);
-      WriteAttribute("version", UTF16ToUTF8(iter->version));
-      if (plugin_prefs)
-        WriteIntAttribute("disabled", !plugin_prefs->IsPluginEnabled(*iter));
-    } else {
-      // Write the protobuf version.
-      SystemProfileProto::Plugin* plugin = system_profile->add_plugin();
-      SetPluginInfo(*iter, plugin_prefs, plugin);
-    }
+    SystemProfileProto::Plugin* plugin = system_profile->add_plugin();
+    SetPluginInfo(*iter, plugin_prefs, plugin);
   }
 #endif  // defined(ENABLE_PLUGINS)
-}
-
-void MetricsLog::WriteInstallElement() {
-  // Write the XML version.
-  // We'll write the protobuf version in RecordEnvironmentProto().
-  OPEN_ELEMENT_FOR_SCOPE("install");
-  WriteAttribute("installdate", GetMetricsEnabledDate(GetPrefService()));
-  WriteIntAttribute("buildid", 0);  // We're using appversion instead.
 }
 
 void MetricsLog::RecordEnvironment(
@@ -748,13 +711,6 @@ void MetricsLog::RecordEnvironment(
 
   OPEN_ELEMENT_FOR_SCOPE("profile");
   WriteCommonEventAttributes();
-
-  WriteInstallElement();
-
-  // Write the XML version.
-  // We'll write the protobuf version in RecordEnvironmentProto().
-  bool write_as_xml = true;
-  WritePluginList(plugin_list, write_as_xml);
 
   WriteStabilityElement(plugin_list, pref);
 
@@ -912,8 +868,7 @@ void MetricsLog::RecordEnvironmentProto(
 
   WriteGoogleUpdateProto(google_update_metrics);
 
-  bool write_as_xml = false;
-  WritePluginList(plugin_list, write_as_xml);
+  WritePluginList(plugin_list);
 
   std::vector<ActiveGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);
@@ -1020,55 +975,10 @@ void MetricsLog::WriteProfileMetrics(const std::string& profileidhash,
 void MetricsLog::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   DCHECK(!locked());
 
-  // Write the XML version.
-  OPEN_ELEMENT_FOR_SCOPE("uielement");
-  WriteAttribute("action", "autocomplete");
-  WriteAttribute("targetidhash", std::string());
-  // TODO(kochi): Properly track windows.
-  WriteIntAttribute("window", 0);
-  if (log.tab_id != -1) {
-    // If we know what tab the autocomplete URL was opened in, log it.
-    WriteIntAttribute("tab", static_cast<int>(log.tab_id));
-  }
-  WriteCommonEventAttributes();
-
   std::vector<string16> terms;
   const int num_terms =
       static_cast<int>(Tokenize(log.text, kWhitespaceUTF16, &terms));
-  {
-    OPEN_ELEMENT_FOR_SCOPE("autocomplete");
 
-    WriteIntAttribute("typedlength", static_cast<int>(log.text.length()));
-    WriteIntAttribute("numterms", num_terms);
-    WriteIntAttribute("selectedindex", static_cast<int>(log.selected_index));
-    WriteIntAttribute("completedlength",
-                      log.completed_length != string16::npos ?
-                      static_cast<int>(log.completed_length) : 0);
-    if (log.elapsed_time_since_user_first_modified_omnibox !=
-        base::TimeDelta::FromMilliseconds(-1)) {
-      // Only upload the typing duration if it is set/valid.
-      WriteInt64Attribute("typingduration",
-          log.elapsed_time_since_user_first_modified_omnibox.InMilliseconds());
-    }
-    const std::string input_type(
-        AutocompleteInput::TypeToString(log.input_type));
-    if (!input_type.empty())
-      WriteAttribute("inputtype", input_type);
-
-    for (AutocompleteResult::const_iterator i(log.result.begin());
-         i != log.result.end(); ++i) {
-      OPEN_ELEMENT_FOR_SCOPE("autocompleteitem");
-      if (i->provider)
-        WriteAttribute("provider", i->provider->GetName());
-      const std::string result_type(AutocompleteMatchType::ToString(i->type));
-      if (!result_type.empty())
-        WriteAttribute("resulttype", result_type);
-      WriteIntAttribute("relevance", i->relevance);
-      WriteIntAttribute("isstarred", i->starred ? 1 : 0);
-    }
-  }
-
-  // Write the protobuf version.
   OmniboxEventProto* omnibox_event = uma_proto()->add_omnibox_event();
   omnibox_event->set_time(MetricsLogBase::GetCurrentTime());
   if (log.tab_id != -1) {
