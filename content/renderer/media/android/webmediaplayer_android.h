@@ -42,17 +42,17 @@ class WebLayerImpl;
 
 namespace webkit_media {
 class WebMediaPlayerDelegate;
+
+#if defined(GOOGLE_TV)
+class MediaStreamAudioRenderer;
+class MediaStreamClient;
+#endif
 }
 
 namespace content {
 
-class MediaStreamClient;
 class WebMediaPlayerManagerAndroid;
 class WebMediaPlayerProxyAndroid;
-
-#if defined(GOOGLE_TV)
-class MediaStreamAudioRenderer;
-#endif
 
 // This class implements WebKit::WebMediaPlayer by keeping the android
 // media player in the browser process. It listens to all the status changes
@@ -226,7 +226,7 @@ class WebMediaPlayerAndroid
                  int init_data_size);
 
 #if defined(GOOGLE_TV)
-  bool InjectMediaStream(MediaStreamClient* media_stream_client,
+  bool InjectMediaStream(webkit_media::MediaStreamClient* media_stream_client,
                          media::Demuxer* demuxer,
                          const base::Closure& destroy_demuxer_cb);
 #endif
@@ -379,7 +379,8 @@ class WebMediaPlayerAndroid
   // Media Stream related fields.
   media::Demuxer* demuxer_;
   base::Closure destroy_demuxer_cb_;
-  scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;
+  scoped_refptr<webkit_media::MediaStreamAudioRenderer> audio_renderer_;
+  webkit_media::MediaStreamClient* media_stream_client_;
 #endif
 
   scoped_ptr<MediaSourceDelegate,
@@ -398,7 +399,6 @@ class WebMediaPlayerAndroid
   double current_time_;
 
   media::MediaLog* media_log_;
-  MediaStreamClient* media_stream_client_;
 
   scoped_ptr<MediaInfoLoader> info_loader_;
 

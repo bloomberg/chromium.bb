@@ -33,8 +33,8 @@
 #include "webkit/renderer/media/webmediaplayer_util.h"
 
 #if defined(GOOGLE_TV)
-#include "content/renderer/media/media_stream_audio_renderer.h"
-#include "content/renderer/media/media_stream_client.h"
+#include "webkit/renderer/media/media_stream_audio_renderer.h"
+#include "webkit/renderer/media/media_stream_client.h"
 #endif
 
 static const uint32 kGLTextureExternalOES = 0x8D65;
@@ -95,12 +95,12 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 #if defined(GOOGLE_TV)
       external_surface_threshold_(-1),
       demuxer_(NULL),
+      media_stream_client_(NULL),
 #endif  // defined(GOOGLE_TV)
       source_type_(MediaPlayerAndroid::SOURCE_TYPE_URL),
       proxy_(proxy),
       current_time_(0),
-      media_log_(media_log),
-      media_stream_client_(NULL) {
+      media_log_(media_log) {
   DCHECK(proxy_);
   DCHECK(manager_);
 
@@ -1094,7 +1094,7 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& session_id,
 
 #if defined(GOOGLE_TV)
 bool WebMediaPlayerAndroid::InjectMediaStream(
-    MediaStreamClient* media_stream_client,
+    webkit_media::MediaStreamClient* media_stream_client,
     media::Demuxer* demuxer,
     const base::Closure& destroy_demuxer_cb) {
   DCHECK(!demuxer);
