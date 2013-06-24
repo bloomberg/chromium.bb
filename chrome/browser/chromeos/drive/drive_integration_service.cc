@@ -118,13 +118,13 @@ FileError InitializeMetadata(
 
   util::MigrateCacheFilesFromOldDirectories(cache_root_directory);
 
-  if (!cache->Initialize()) {
-    LOG(WARNING) << "Failed to initialize the cache.";
+  if (!metadata_storage->Initialize()) {
+    LOG(WARNING) << "Failed to initialize the metadata storage.";
     return FILE_ERROR_FAILED;
   }
 
-  if (!metadata_storage->Initialize()) {
-    LOG(WARNING) << "Failed to initialize the metadata storage.";
+  if (!cache->Initialize()) {
+    LOG(WARNING) << "Failed to initialize the cache.";
     return FILE_ERROR_FAILED;
   }
 
