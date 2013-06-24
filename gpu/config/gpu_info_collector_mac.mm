@@ -35,13 +35,13 @@ const UInt32 kVendorIDAMD = 0x1002;
 // Return 0 if we couldn't find the property.
 // The property values we use should not be 0, so it's OK to use 0 as failure.
 UInt32 GetEntryProperty(io_registry_entry_t entry, CFStringRef property_name) {
-  base::mac::ScopedCFTypeRef<CFDataRef> data_ref(static_cast<CFDataRef>(
-      IORegistryEntrySearchCFProperty(entry,
-                                      kIOServicePlane,
-                                      property_name,
-                                      kCFAllocatorDefault,
-                                      kIORegistryIterateRecursively |
-                                      kIORegistryIterateParents)));
+  base::ScopedCFTypeRef<CFDataRef> data_ref(
+      static_cast<CFDataRef>(IORegistryEntrySearchCFProperty(
+          entry,
+          kIOServicePlane,
+          property_name,
+          kCFAllocatorDefault,
+          kIORegistryIterateRecursively | kIORegistryIterateParents)));
   if (!data_ref)
     return 0;
 

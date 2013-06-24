@@ -74,7 +74,7 @@ StorageInfo BuildStorageInfo(
       dict, kDADiskDescriptionVolumeUUIDKey);
   std::string unique_id;
   if (uuid) {
-    base::mac::ScopedCFTypeRef<CFStringRef> uuid_string(
+    base::ScopedCFTypeRef<CFStringRef> uuid_string(
         CFUUIDCreateString(NULL, uuid));
     if (uuid_string.get())
       unique_id = base::SysCFStringRefToUTF8(uuid_string);
@@ -105,7 +105,7 @@ StorageInfo BuildStorageInfo(
 
 void GetDiskInfoAndUpdateOnFileThread(
     const base::WeakPtr<StorageMonitorMac>& monitor,
-    base::mac::ScopedCFTypeRef<CFDictionaryRef> dict,
+    base::ScopedCFTypeRef<CFDictionaryRef> dict,
     StorageMonitorMac::UpdateType update_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -125,7 +125,7 @@ void GetDiskInfoAndUpdateOnFileThread(
 struct EjectDiskOptions {
   std::string bsd_name;
   base::Callback<void(StorageMonitor::EjectStatus)> callback;
-  base::mac::ScopedCFTypeRef<DADiskRef> disk;
+  base::ScopedCFTypeRef<DADiskRef> disk;
 };
 
 void PostEjectCallback(DADiskRef disk,
@@ -289,7 +289,7 @@ void StorageMonitorMac::EjectDevice(
 
   receiver()->ProcessDetach(device_id);
 
-  base::mac::ScopedCFTypeRef<DADiskRef> disk(
+  base::ScopedCFTypeRef<DADiskRef> disk(
       DADiskCreateFromBSDName(NULL, session_, bsd_name.c_str()));
   if (!disk.get()) {
     callback.Run(StorageMonitor::EJECT_FAILURE);
@@ -337,7 +337,7 @@ void StorageMonitorMac::GetDiskInfoAndUpdate(
 
   pending_disk_updates_++;
 
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> dict(DADiskCopyDescription(disk));
+  base::ScopedCFTypeRef<CFDictionaryRef> dict(DADiskCopyDescription(disk));
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,

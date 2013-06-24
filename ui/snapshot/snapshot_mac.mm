@@ -41,9 +41,11 @@ bool GrabViewSnapshot(gfx::NativeView view,
 
   png_representation->clear();
 
-  base::mac::ScopedCFTypeRef<CGImageRef> windowSnapshot(CGWindowListCreateImage(
-      screen_snapshot_bounds.ToCGRect(), kCGWindowListOptionIncludingWindow,
-      [window windowNumber], kCGWindowImageBoundsIgnoreFraming));
+  base::ScopedCFTypeRef<CGImageRef> windowSnapshot(
+      CGWindowListCreateImage(screen_snapshot_bounds.ToCGRect(),
+                              kCGWindowListOptionIncludingWindow,
+                              [window windowNumber],
+                              kCGWindowImageBoundsIgnoreFraming));
   if (CGImageGetWidth(windowSnapshot) <= 0)
     return false;
 

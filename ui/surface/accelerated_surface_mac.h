@@ -118,7 +118,7 @@ class SURFACE_EXPORT AcceleratedSurface {
   // to the shared region (IOSurface).
   scoped_refptr<gfx::GLSurface> gl_surface_;
   scoped_refptr<gfx::GLContext> gl_context_;
-  base::mac::ScopedCFTypeRef<CFTypeRef> io_surface_;
+  base::ScopedCFTypeRef<CFTypeRef> io_surface_;
 
   // The id of |io_surface_| or 0 if that's NULL.
   uint32 io_surface_id_;

@@ -503,7 +503,7 @@ void WebPluginProxy::CreateDIBAndCGContextFromHandle(
     const TransportDIB::Handle& dib_handle,
     const gfx::Rect& window_rect,
     scoped_ptr<TransportDIB>* dib_out,
-    base::mac::ScopedCFTypeRef<CGContextRef>* cg_context_out) {
+    base::ScopedCFTypeRef<CGContextRef>* cg_context_out) {
   // Convert the shared memory handle to a handle that works in our process,
   // and then use that to create a CGContextRef.
   TransportDIB* dib = TransportDIB::Map(dib_handle);

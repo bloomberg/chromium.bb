@@ -383,9 +383,8 @@ std::ostream& operator<<(std::ostream& o, const CFStringRef string) {
 }
 
 std::ostream& operator<<(std::ostream& o, const CFErrorRef err) {
-  base::mac::ScopedCFTypeRef<CFStringRef> desc(CFErrorCopyDescription(err));
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> user_info(
-      CFErrorCopyUserInfo(err));
+  base::ScopedCFTypeRef<CFStringRef> desc(CFErrorCopyDescription(err));
+  base::ScopedCFTypeRef<CFDictionaryRef> user_info(CFErrorCopyUserInfo(err));
   CFStringRef errorDesc = NULL;
   if (user_info.get()) {
     errorDesc = reinterpret_cast<CFStringRef>(

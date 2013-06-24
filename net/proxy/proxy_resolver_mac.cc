@@ -77,22 +77,18 @@ int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
                                      const CompletionCallback& /*callback*/,
                                      RequestHandle* /*request*/,
                                      const BoundNetLog& net_log) {
-  base::mac::ScopedCFTypeRef<CFStringRef> query_ref(
+  base::ScopedCFTypeRef<CFStringRef> query_ref(
       base::SysUTF8ToCFStringRef(query_url.spec()));
-  base::mac::ScopedCFTypeRef<CFURLRef> query_url_ref(
-      CFURLCreateWithString(kCFAllocatorDefault,
-                            query_ref.get(),
-                            NULL));
+  base::ScopedCFTypeRef<CFURLRef> query_url_ref(
+      CFURLCreateWithString(kCFAllocatorDefault, query_ref.get(), NULL));
   if (!query_url_ref.get())
     return ERR_FAILED;
-  base::mac::ScopedCFTypeRef<CFStringRef> pac_ref(
-      base::SysUTF8ToCFStringRef(
-          script_data_->type() == ProxyResolverScriptData::TYPE_AUTO_DETECT ?
-              std::string() : script_data_->url().spec()));
-  base::mac::ScopedCFTypeRef<CFURLRef> pac_url_ref(
-      CFURLCreateWithString(kCFAllocatorDefault,
-                            pac_ref.get(),
-                            NULL));
+  base::ScopedCFTypeRef<CFStringRef> pac_ref(base::SysUTF8ToCFStringRef(
+      script_data_->type() == ProxyResolverScriptData::TYPE_AUTO_DETECT
+          ? std::string()
+          : script_data_->url().spec()));
+  base::ScopedCFTypeRef<CFURLRef> pac_url_ref(
+      CFURLCreateWithString(kCFAllocatorDefault, pac_ref.get(), NULL));
   if (!pac_url_ref.get())
     return ERR_FAILED;
 
@@ -112,11 +108,9 @@ int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
 
   CFTypeRef result = NULL;
   CFStreamClientContext context = { 0, &result, NULL, NULL, NULL };
-  base::mac::ScopedCFTypeRef<CFRunLoopSourceRef> runloop_source(
-      CFNetworkExecuteProxyAutoConfigurationURL(pac_url_ref.get(),
-                                                query_url_ref.get(),
-                                                ResultCallback,
-                                                &context));
+  base::ScopedCFTypeRef<CFRunLoopSourceRef> runloop_source(
+      CFNetworkExecuteProxyAutoConfigurationURL(
+          pac_url_ref.get(), query_url_ref.get(), ResultCallback, &context));
   if (!runloop_source)
     return ERR_FAILED;
 
@@ -135,7 +129,7 @@ int ProxyResolverMac::GetProxyForURL(const GURL& query_url,
     CFRelease(result);
     return ERR_FAILED;
   }
-  base::mac::ScopedCFTypeRef<CFArrayRef> proxy_array_ref(
+  base::ScopedCFTypeRef<CFArrayRef> proxy_array_ref(
       base::mac::CFCastStrict<CFArrayRef>(result));
   DCHECK(proxy_array_ref != NULL);
 

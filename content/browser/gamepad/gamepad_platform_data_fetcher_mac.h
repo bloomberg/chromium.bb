@@ -38,7 +38,7 @@ class GamepadPlatformDataFetcherMac : public GamepadDataFetcher,
 
  private:
   bool enabled_;
-  base::mac::ScopedCFTypeRef<IOHIDManagerRef> hid_manager_ref_;
+  base::ScopedCFTypeRef<IOHIDManagerRef> hid_manager_ref_;
 
   static GamepadPlatformDataFetcherMac* InstanceFromContext(void* context);
   static void DeviceAddCallback(void* context,

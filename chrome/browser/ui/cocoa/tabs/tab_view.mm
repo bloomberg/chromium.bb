@@ -667,7 +667,7 @@ const CGFloat kRapidCloseDist = 2.5;
 
   // Image masks must be in the DeviceGray colorspace. Create a context and
   // draw the mask into it.
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> colorspace(
+  base::ScopedCFTypeRef<CGColorSpaceRef> colorspace(
       CGColorSpaceCreateDeviceGray());
   CGContextRef maskContext =
       CGBitmapContextCreate(NULL, tabWidth * scale, kMaskHeight * scale,

@@ -46,20 +46,20 @@ std::string FindBSDNameOfSystemDisk() {
 std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
   const CFAllocatorRef allocator = NULL;
 
-  base::mac::ScopedCFTypeRef<DASessionRef> session(DASessionCreate(allocator));
+  base::ScopedCFTypeRef<DASessionRef> session(DASessionCreate(allocator));
   if (session.get() == NULL) {
     VLOG(1) << "Error creating DA Session.";
     return std::string();
   }
 
-  base::mac::ScopedCFTypeRef<DADiskRef> disk(
+  base::ScopedCFTypeRef<DADiskRef> disk(
       DADiskCreateFromBSDName(allocator, session, bsd_name.c_str()));
   if (disk.get() == NULL) {
     VLOG(1) << "Error creating DA disk from BSD disk name.";
     return std::string();
   }
 
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> disk_description(
+  base::ScopedCFTypeRef<CFDictionaryRef> disk_description(
       DADiskCopyDescription(disk));
   if (disk_description.get() == NULL) {
     VLOG(1) << "Error getting disk description.";
@@ -74,7 +74,7 @@ std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
     return std::string();
   }
 
-  base::mac::ScopedCFTypeRef<CFStringRef> volume_uuid_string(
+  base::ScopedCFTypeRef<CFStringRef> volume_uuid_string(
       CFUUIDCreateString(allocator, volume_uuid));
   if (volume_uuid_string.get() == NULL) {
     VLOG(1) << "Error creating string from CSStringRef.";

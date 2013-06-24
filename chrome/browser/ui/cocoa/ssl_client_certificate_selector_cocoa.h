@@ -24,7 +24,7 @@ class SSLClientAuthObserverCocoaBridge;
     : NSObject<ConstrainedWindowSheet> {
  @private
   // The list of identities offered to the user.
-  base::mac::ScopedCFTypeRef<CFMutableArrayRef> identities_;
+  base::ScopedCFTypeRef<CFMutableArrayRef> identities_;
   // The corresponding list of certificates.
   std::vector<scoped_refptr<net::X509Certificate> > certificates_;
   // A C++ object to bridge SSLClientAuthObserver notifications to us.

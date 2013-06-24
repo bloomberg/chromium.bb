@@ -156,7 +156,7 @@ Boolean ChromeCFBundleLoadExecutableAndReturnError(CFBundleRef bundle,
 
   DCHECK(g_original_underscore_cfbundle_load_executable_and_return_error);
 
-  base::mac::ScopedCFTypeRef<CFURLRef> url_cf(CFBundleCopyBundleURL(bundle));
+  base::ScopedCFTypeRef<CFURLRef> url_cf(CFBundleCopyBundleURL(bundle));
   scoped_nsobject<NSString> path(base::mac::CFToNSCast(
       CFURLCopyFileSystemPath(url_cf, kCFURLPOSIXPathStyle)));
 
@@ -185,7 +185,7 @@ Boolean ChromeCFBundleLoadExecutableAndReturnError(CFBundleRef bundle,
               << [path fileSystemRepresentation];
 
     if (error) {
-      base::mac::ScopedCFTypeRef<CFStringRef> app_bundle_id(
+      base::ScopedCFTypeRef<CFStringRef> app_bundle_id(
           base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
 
       // 0xb10c10ad = "block load"

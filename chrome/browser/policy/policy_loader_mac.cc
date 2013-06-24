@@ -23,7 +23,7 @@
 #include "policy/policy_constants.h"
 
 using base::mac::CFCast;
-using base::mac::ScopedCFTypeRef;
+using base::ScopedCFTypeRef;
 
 namespace policy {
 
@@ -108,9 +108,9 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
   bool policy_present = false;
   const PolicyDefinitionList::Entry* current;
   for (current = policy_list_->begin; current != policy_list_->end; ++current) {
-    base::mac::ScopedCFTypeRef<CFStringRef> name(
+    base::ScopedCFTypeRef<CFStringRef> name(
         base::SysUTF8ToCFStringRef(current->name));
-    base::mac::ScopedCFTypeRef<CFPropertyListRef> value(
+    base::ScopedCFTypeRef<CFPropertyListRef> value(
         preferences_->CopyAppValue(name, kCFPreferencesCurrentApplication));
     if (!value.get())
       continue;
@@ -234,7 +234,7 @@ void PolicyLoaderMac::LoadPolicyForComponent(
   if (!schema)
     return;
 
-  base::mac::ScopedCFTypeRef<CFStringRef> bundle_id(
+  base::ScopedCFTypeRef<CFStringRef> bundle_id(
       base::SysUTF8ToCFStringRef(bundle_id_string));
   preferences_->AppSynchronize(bundle_id);
 
@@ -246,9 +246,9 @@ void PolicyLoaderMac::LoadPolicyForComponent(
 
   for (PolicySchemaMap::const_iterator it = map->begin();
        it != map->end(); ++it) {
-    base::mac::ScopedCFTypeRef<CFStringRef> pref_name(
+    base::ScopedCFTypeRef<CFStringRef> pref_name(
         base::SysUTF8ToCFStringRef(it->first));
-    base::mac::ScopedCFTypeRef<CFPropertyListRef> value(
+    base::ScopedCFTypeRef<CFPropertyListRef> value(
         preferences_->CopyAppValue(pref_name, bundle_id));
     if (!value.get())
       continue;

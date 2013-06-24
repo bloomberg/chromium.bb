@@ -25,7 +25,7 @@ bool OpenApplicationWithPath(const base::FilePath& bundle_path,
 
   std::vector<std::string> argv = command_line.argv();
   int argc = argv.size();
-  base::mac::ScopedCFTypeRef<CFMutableArrayRef> launch_args(
+  base::ScopedCFTypeRef<CFMutableArrayRef> launch_args(
       CFArrayCreateMutable(NULL, argc - 1, &kCFTypeArrayCallBacks));
   if (!launch_args) {
     LOG(ERROR) << "CFArrayCreateMutable failed, size was " << argc;
@@ -35,8 +35,7 @@ bool OpenApplicationWithPath(const base::FilePath& bundle_path,
   for (int i = 1; i < argc; ++i) {
     const std::string& arg(argv[i]);
 
-    base::mac::ScopedCFTypeRef<CFStringRef> arg_cf(
-        base::SysUTF8ToCFStringRef(arg));
+    base::ScopedCFTypeRef<CFStringRef> arg_cf(base::SysUTF8ToCFStringRef(arg));
     if (!arg_cf) {
       LOG(ERROR) << "base::SysUTF8ToCFStringRef failed for " << arg;
       return false;

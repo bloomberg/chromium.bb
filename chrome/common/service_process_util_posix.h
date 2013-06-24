@@ -68,7 +68,7 @@ struct ServiceProcessState::StateData
 #if defined(OS_MACOSX)
   bool WatchExecutable();
 
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
+  base::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
   base::FilePathWatcher executable_watcher_;
 #endif  // OS_MACOSX
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

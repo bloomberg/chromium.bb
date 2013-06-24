@@ -104,7 +104,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
     OSSTATUS_DCHECK(false, status) << "Error finding Carbon pasteboard";
     return nil;
   }
-  base::mac::ScopedCFTypeRef<PasteboardRef> pb_ref_scoper(pb_ref);
+  base::ScopedCFTypeRef<PasteboardRef> pb_ref_scoper(pb_ref);
   PasteboardSynchronize(pb_ref);
 
   CFURLRef drop_url = NULL;
@@ -113,7 +113,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
     OSSTATUS_DCHECK(false, status) << "Error finding drop location";
     return nil;
   }
-  base::mac::ScopedCFTypeRef<CFURLRef> drop_url_scoper(drop_url);
+  base::ScopedCFTypeRef<CFURLRef> drop_url_scoper(drop_url);
 
   NSString* drop_path = [base::mac::CFToNSCast(drop_url) path];
   return drop_path;
@@ -443,7 +443,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
     }
 
     if (!mimeType.empty()) {
-      base::mac::ScopedCFTypeRef<CFStringRef> mimeTypeCF(
+      base::ScopedCFTypeRef<CFStringRef> mimeTypeCF(
           base::SysUTF8ToCFStringRef(mimeType));
       fileUTI_.reset(UTTypeCreatePreferredIdentifierForTag(
           kUTTagClassMIMEType, mimeTypeCF.get(), NULL));

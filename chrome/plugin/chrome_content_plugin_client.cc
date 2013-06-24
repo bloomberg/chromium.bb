@@ -55,14 +55,16 @@ void ChromeContentPluginClient::PreSandboxInitialization() {
 void ChromeContentPluginClient::PluginProcessStarted(
     const string16& plugin_name) {
 #if defined(OS_MACOSX)
-  base::mac::ScopedCFTypeRef<CFStringRef> cf_plugin_name(
+  base::ScopedCFTypeRef<CFStringRef> cf_plugin_name(
       base::SysUTF16ToCFStringRef(plugin_name));
-  base::mac::ScopedCFTypeRef<CFStringRef> app_name(
-      base::SysUTF16ToCFStringRef(
-          l10n_util::GetStringUTF16(IDS_SHORT_PLUGIN_APP_NAME)));
-  base::mac::ScopedCFTypeRef<CFStringRef> process_name(
-      CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%@ (%@)"),
-                               cf_plugin_name.get(), app_name.get()));
+  base::ScopedCFTypeRef<CFStringRef> app_name(base::SysUTF16ToCFStringRef(
+      l10n_util::GetStringUTF16(IDS_SHORT_PLUGIN_APP_NAME)));
+  base::ScopedCFTypeRef<CFStringRef> process_name(
+      CFStringCreateWithFormat(kCFAllocatorDefault,
+                               NULL,
+                               CFSTR("%@ (%@)"),
+                               cf_plugin_name.get(),
+                               app_name.get()));
   base::mac::SetProcessName(process_name);
 #endif
 }

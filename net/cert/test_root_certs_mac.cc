@@ -94,8 +94,8 @@ OSStatus TestRootCerts::FixupSecTrustRef(SecTrustRef trust_ref) const {
   if (status)
     return status;
 
-  base::mac::ScopedCFTypeRef<CFArrayRef> scoped_system_roots(system_roots);
-  base::mac::ScopedCFTypeRef<CFMutableArrayRef> scoped_roots(
+  base::ScopedCFTypeRef<CFArrayRef> scoped_system_roots(system_roots);
+  base::ScopedCFTypeRef<CFMutableArrayRef> scoped_roots(
       CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, scoped_system_roots));
   CFArrayAppendArray(scoped_roots, temporary_roots_,
                      CFRangeMake(0, CFArrayGetCount(temporary_roots_)));

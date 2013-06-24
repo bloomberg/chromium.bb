@@ -74,7 +74,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 
   // A one-element mask image cache.  This cache makes drawing roughly 16%
   // faster.
-  base::mac::ScopedCFTypeRef<CGImageRef> maskCache_;
+  base::ScopedCFTypeRef<CGImageRef> maskCache_;
   CGFloat maskCacheWidth_;
   CGFloat maskCacheScale_;
 }

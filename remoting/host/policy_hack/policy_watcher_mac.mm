@@ -48,7 +48,7 @@ class PolicyWatcherMac : public PolicyWatcher {
       for (base::DictionaryValue::Iterator i(Defaults());
            !i.IsAtEnd(); i.Advance()) {
         const std::string& policy_name = i.key();
-        base::mac::ScopedCFTypeRef<CFStringRef> policy_key(
+        base::ScopedCFTypeRef<CFStringRef> policy_key(
             base::SysUTF8ToCFStringRef(policy_name));
 
         if (i.value().GetType() == base::DictionaryValue::TYPE_BOOLEAN) {
@@ -62,7 +62,7 @@ class PolicyWatcherMac : public PolicyWatcher {
         }
 
         if (i.value().GetType() == base::DictionaryValue::TYPE_STRING) {
-          base::mac::ScopedCFTypeRef<CFPropertyListRef> property_list(
+          base::ScopedCFTypeRef<CFPropertyListRef> property_list(
               CFPreferencesCopyAppValue(policy_key, policy_bundle_id));
           if (property_list.get() != NULL) {
             CFStringRef policy_value = base::mac::CFCast<CFStringRef>(

@@ -71,13 +71,13 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   base::ThreadChecker thread_checker_;
 
   // Context for rendering to the pdf.
-  base::mac::ScopedCFTypeRef<CGContextRef> context_;
+  base::ScopedCFTypeRef<CGContextRef> context_;
 
   // PDF backing store.
-  base::mac::ScopedCFTypeRef<CFMutableDataRef> pdf_data_;
+  base::ScopedCFTypeRef<CFMutableDataRef> pdf_data_;
 
   // Lazily-created CGPDFDocument representation of pdf_data_.
-  mutable base::mac::ScopedCFTypeRef<CGPDFDocumentRef> pdf_doc_;
+  mutable base::ScopedCFTypeRef<CGPDFDocumentRef> pdf_doc_;
 
   // Whether or not a page is currently open.
   bool page_is_open_;

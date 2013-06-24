@@ -82,7 +82,7 @@ class IOSurfaceImageTransportSurface
   uint32 fbo_id_;
   GLuint texture_id_;
 
-  base::mac::ScopedCFTypeRef<CFTypeRef> io_surface_;
+  base::ScopedCFTypeRef<CFTypeRef> io_surface_;
 
   // The id of |io_surface_| or 0 if that's NULL.
   uint64 io_surface_handle_;
@@ -120,7 +120,7 @@ void AddBooleanValue(CFMutableDictionaryRef dictionary,
 void AddIntegerValue(CFMutableDictionaryRef dictionary,
                      const CFStringRef key,
                      int32 value) {
-  base::mac::ScopedCFTypeRef<CFNumberRef> number(
+  base::ScopedCFTypeRef<CFNumberRef> number(
       CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
   CFDictionaryAddValue(dictionary, key, number.get());
 }
@@ -399,7 +399,7 @@ void IOSurfaceImageTransportSurface::CreateIOSurface() {
 
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
-  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
   properties.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,
                                              0,
                                              &kCFTypeDictionaryKeyCallBacks,

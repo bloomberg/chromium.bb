@@ -139,8 +139,8 @@ Time Time::FromExploded(bool is_local, const Exploded& exploded) {
   date.month = exploded.month;
   date.year = exploded.year;
 
-  base::mac::ScopedCFTypeRef<CFTimeZoneRef>
-      time_zone(is_local ? CFTimeZoneCopySystem() : NULL);
+  base::ScopedCFTypeRef<CFTimeZoneRef> time_zone(
+      is_local ? CFTimeZoneCopySystem() : NULL);
   CFAbsoluteTime seconds = CFGregorianDateGetAbsoluteTime(date, time_zone) +
       kCFAbsoluteTimeIntervalSince1970;
   return Time(static_cast<int64>(seconds * kMicrosecondsPerSecond) +
@@ -157,8 +157,8 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
                            kWindowsEpochDeltaSeconds -
                            kCFAbsoluteTimeIntervalSince1970;
 
-  base::mac::ScopedCFTypeRef<CFTimeZoneRef>
-      time_zone(is_local ? CFTimeZoneCopySystem() : NULL);
+  base::ScopedCFTypeRef<CFTimeZoneRef> time_zone(
+      is_local ? CFTimeZoneCopySystem() : NULL);
   CFGregorianDate date = CFAbsoluteTimeGetGregorianDate(seconds, time_zone);
   // 1 = Monday, ..., 7 = Sunday.
   int cf_day_of_week = CFAbsoluteTimeGetDayOfWeek(seconds, time_zone);

@@ -12,7 +12,7 @@
 #include "media/audio/audio_parameters.h"
 #include "media/audio/mac/audio_manager_mac.h"
 
-using base::mac::ScopedCFTypeRef;
+using base::ScopedCFTypeRef;
 
 namespace media {
 

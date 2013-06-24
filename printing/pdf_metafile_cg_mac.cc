@@ -16,7 +16,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-using base::mac::ScopedCFTypeRef;
+using base::ScopedCFTypeRef;
 
 namespace {
 

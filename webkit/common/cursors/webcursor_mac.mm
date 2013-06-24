@@ -158,18 +158,17 @@ CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
     data = NULL;
   }
 
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> cg_color(
+  base::ScopedCFTypeRef<CGColorSpaceRef> cg_color(
       CGColorSpaceCreateDeviceRGB());
   // The settings here match SetCustomData() below; keep in sync.
-  base::mac::ScopedCFTypeRef<CGContextRef> context(
-      CGBitmapContextCreate(data,
-                            size.width(),
-                            size.height(),
-                            8,
-                            size.width()*4,
-                            cg_color.get(),
-                            kCGImageAlphaPremultipliedLast |
-                            kCGBitmapByteOrder32Big));
+  base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
+      data,
+      size.width(),
+      size.height(),
+      8,
+      size.width() * 4,
+      cg_color.get(),
+      kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big));
   return CGBitmapContextCreateImage(context.get());
 }
 

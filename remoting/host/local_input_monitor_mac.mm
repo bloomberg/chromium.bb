@@ -60,7 +60,7 @@ class LocalInputMonitorMac : public base::NonThreadSafe,
  @private
   GTMCarbonHotKey* hotKey_;
   CFRunLoopSourceRef mouseRunLoopSource_;
-  base::mac::ScopedCFTypeRef<CFMachPortRef> mouseMachPort_;
+  base::ScopedCFTypeRef<CFMachPortRef> mouseMachPort_;
   remoting::LocalInputMonitorMac::EventHandler* monitor_;
 }
 

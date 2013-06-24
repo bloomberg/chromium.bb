@@ -31,7 +31,7 @@ class DesktopResizerMac : public DesktopResizer {
   bool GetSoleDisplayId(CGDirectDisplayID* display);
 
   void GetSupportedModesAndSizes(
-      base::mac::ScopedCFTypeRef<CFMutableArrayRef>* modes,
+      base::ScopedCFTypeRef<CFMutableArrayRef>* modes,
       std::list<SkISize>* sizes);
 
   DISALLOW_COPY_AND_ASSIGN(DesktopResizerMac);
@@ -50,7 +50,7 @@ SkISize DesktopResizerMac::GetCurrentSize() {
 
 std::list<SkISize> DesktopResizerMac::GetSupportedSizes(
     const SkISize& preferred) {
-  base::mac::ScopedCFTypeRef<CFMutableArrayRef> modes;
+  base::ScopedCFTypeRef<CFMutableArrayRef> modes;
   std::list<SkISize> sizes;
   GetSupportedModesAndSizes(&modes, &sizes);
   return sizes;
@@ -62,7 +62,7 @@ void DesktopResizerMac::SetSize(const SkISize& size) {
     return;
   }
 
-  base::mac::ScopedCFTypeRef<CFMutableArrayRef> modes;
+  base::ScopedCFTypeRef<CFMutableArrayRef> modes;
   std::list<SkISize> sizes;
   GetSupportedModesAndSizes(&modes, &sizes);
   // There may be many modes with the requested size. Pick the one with the
@@ -76,7 +76,7 @@ void DesktopResizerMac::SetSize(const SkISize& size) {
           static_cast<const CGDisplayMode*>(
               CFArrayGetValueAtIndex(modes, index)));
       int depth = 0;
-      base::mac::ScopedCFTypeRef<CFStringRef> encoding(
+      base::ScopedCFTypeRef<CFStringRef> encoding(
           CGDisplayModeCopyPixelEncoding(mode));
       if (CFStringCompare(encoding, CFSTR(IO32BitDirectPixels),
                           kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
@@ -108,12 +108,12 @@ void DesktopResizerMac::RestoreSize(const SkISize& original) {
 }
 
 void DesktopResizerMac::GetSupportedModesAndSizes(
-    base::mac::ScopedCFTypeRef<CFMutableArrayRef>* modes,
+    base::ScopedCFTypeRef<CFMutableArrayRef>* modes,
     std::list<SkISize>* sizes) {
   CGDirectDisplayID display;
   if (GetSoleDisplayId(&display)) {
-    base::mac::ScopedCFTypeRef<CFArrayRef>
-        all_modes(CGDisplayCopyAllDisplayModes(display, NULL));
+    base::ScopedCFTypeRef<CFArrayRef> all_modes(
+        CGDisplayCopyAllDisplayModes(display, NULL));
     modes->reset(CFArrayCreateMutableCopy(NULL, 0, all_modes));
     CFIndex count = CFArrayGetCount(*modes);
     for (CFIndex i = 0; i < count; ++i) {

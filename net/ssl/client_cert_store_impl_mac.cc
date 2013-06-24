@@ -23,7 +23,7 @@
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_mac.h"
 
-using base::mac::ScopedCFTypeRef;
+using base::ScopedCFTypeRef;
 
 namespace net {
 

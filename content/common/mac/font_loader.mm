@@ -168,7 +168,7 @@ bool FontLoader::CGFontRefFromBuffer(base::SharedMemoryHandle font_data,
 
   NSData* data = [NSData dataWithBytes:shm.memory()
                                 length:font_data_size];
-  base::mac::ScopedCFTypeRef<CGDataProviderRef> provider(
+  base::ScopedCFTypeRef<CGDataProviderRef> provider(
       CGDataProviderCreateWithCFData(base::mac::NSToCFCast(data)));
   if (!provider)
     return false;

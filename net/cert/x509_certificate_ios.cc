@@ -36,7 +36,7 @@
 #include "net/cert/x509_util_ios.h"
 #include "net/cert/x509_util_nss.h"
 
-using base::mac::ScopedCFTypeRef;
+using base::ScopedCFTypeRef;
 
 namespace net {
 namespace {

@@ -43,7 +43,7 @@ class NetworkConfigWatcherMacThread : public base::Thread {
   // on, so we invoke this function later on in startup to keep it fast.
   void InitNotifications();
 
-  base::mac::ScopedCFTypeRef<CFRunLoopSourceRef> run_loop_source_;
+  base::ScopedCFTypeRef<CFRunLoopSourceRef> run_loop_source_;
   NetworkConfigWatcherMac::Delegate* const delegate_;
   base::WeakPtrFactory<NetworkConfigWatcherMacThread> weak_factory_;
 
@@ -101,7 +101,7 @@ void NetworkConfigWatcherMacThread::InitNotifications() {
     NULL,       // This is not reference counted.  No release function.
     NULL,       // No description for this.
   };
-  base::mac::ScopedCFTypeRef<SCDynamicStoreRef> store(SCDynamicStoreCreate(
+  base::ScopedCFTypeRef<SCDynamicStoreRef> store(SCDynamicStoreCreate(
       NULL, CFSTR("org.chromium"), DynamicStoreCallback, &context));
   run_loop_source_.reset(SCDynamicStoreCreateRunLoopSource(
       NULL, store.get(), 0));

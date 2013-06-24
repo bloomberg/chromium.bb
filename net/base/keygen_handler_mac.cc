@@ -113,7 +113,7 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
     if (url_.has_host()) {
       // TODO(davidben): Use something like "Key generated for
       // example.com", but localize it.
-      base::mac::ScopedCFTypeRef<CFStringRef> label(
+      base::ScopedCFTypeRef<CFStringRef> label(
           base::SysUTF8ToCFStringRef(url_.host()));
       // Create an initial access object to set the SecAccessRef. This
       // sets a label on the Keychain dialogs. Pass NULL as the second
@@ -139,7 +139,7 @@ std::string KeygenHandler::GenKeyAndSignChallenge() {
       crypto::LogCSSMError("SecKeychainItemExpor", err);
       goto failure;
     }
-    base::mac::ScopedCFTypeRef<CFDataRef> scoped_key_data(key_data);
+    base::ScopedCFTypeRef<CFDataRef> scoped_key_data(key_data);
 
     // Create an ASN.1 encoder.
     err = SecAsn1CoderCreate(&coder);
@@ -234,7 +234,7 @@ static OSStatus CreateRSAKeyPair(int size_in_bits,
     crypto::LogCSSMError("SecKeychainCopyDefault", err);
     return err;
   }
-  base::mac::ScopedCFTypeRef<SecKeychainRef> scoped_keychain(keychain);
+  base::ScopedCFTypeRef<SecKeychainRef> scoped_keychain(keychain);
   {
     base::AutoLock locked(crypto::GetMacSecurityServicesLock());
     err = SecKeyCreatePair(

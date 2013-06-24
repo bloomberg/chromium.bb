@@ -130,7 +130,7 @@
 // Sets the layer contents by converting the NSImage to a CGImageRef.  This will
 // rasterize PDF resources.
 - (void)setLayerContents:(CALayer*)layer {
-  base::mac::ScopedCFTypeRef<CGImageRef> image(
+  base::ScopedCFTypeRef<CGImageRef> image(
       base::mac::CopyNSImageToCGImage(image_.get()));
   // Create the layer that will be animated.
   [layer setContents:(id)image.get()];

@@ -118,12 +118,10 @@ void KeychainReauthorize() {
   // use CSSM_DL_DB_RECORD_ALL_KEYS, but that doesn't work.
   // CSSM_DL_DB_RECORD_ANY (as used by SecurityTool's keychain-dump) does
   // work.
-  base::mac::ScopedCFTypeRef<SecKeychainSearchRef> search(
-    CrSKeychainSearchCreateFromAttributes(NULL,
-                                          CSSM_DL_DB_RECORD_ANY,
-                                          NULL));
+  base::ScopedCFTypeRef<SecKeychainSearchRef> search(
+      CrSKeychainSearchCreateFromAttributes(NULL, CSSM_DL_DB_RECORD_ANY, NULL));
 
-  base::mac::ScopedCFTypeRef<SecTrustedApplicationRef> this_application(
+  base::ScopedCFTypeRef<SecTrustedApplicationRef> this_application(
       CrSTrustedApplicationCreateFromPath(NULL));
 
   std::vector<std::string> requirement_matches =
@@ -178,9 +176,9 @@ namespace {
 
 std::string RequirementStringForApplication(
     SecTrustedApplicationRef application) {
-  base::mac::ScopedCFTypeRef<SecRequirementRef> requirement(
+  base::ScopedCFTypeRef<SecRequirementRef> requirement(
       CrSTrustedApplicationCopyRequirement(application));
-  base::mac::ScopedCFTypeRef<CFStringRef> requirement_string_cf(
+  base::ScopedCFTypeRef<CFStringRef> requirement_string_cf(
       CrSRequirementCopyString(requirement, kSecCSDefaultFlags));
   if (!requirement_string_cf) {
     return std::string();
@@ -298,7 +296,7 @@ std::vector<CrSKeychainItemAndAccess> KCSearchToKCItemsAndReauthorizedAccesses(
     SecTrustedApplicationRef this_application) {
   std::vector<CrSKeychainItemAndAccess> items_and_accesses;
 
-  base::mac::ScopedCFTypeRef<SecKeychainItemRef> item;
+  base::ScopedCFTypeRef<SecKeychainItemRef> item;
   while (item.reset(CrSKeychainSearchCopyNext(search)), item) {
     scoped_ptr<CrSKeychainItemAndAccess> item_and_access(
         KCItemToKCItemAndReauthorizedAccess(item,
@@ -321,10 +319,8 @@ CrSKeychainItemAndAccess* KCItemToKCItemAndReauthorizedAccess(
     return NULL;
   }
 
-  base::mac::ScopedCFTypeRef<SecAccessRef> access(
-      CrSKeychainItemCopyAccess(item));
-  base::mac::ScopedCFTypeRef<CFArrayRef> acl_list(
-      CrSAccessCopyACLList(access));
+  base::ScopedCFTypeRef<SecAccessRef> access(CrSKeychainItemCopyAccess(item));
+  base::ScopedCFTypeRef<CFArrayRef> acl_list(CrSAccessCopyACLList(access));
   if (!acl_list) {
     return NULL;
   }
@@ -444,7 +440,7 @@ void WriteKCItemsAndReauthorizedAccesses(
 void WriteKCItemAndReauthorizedAccess(
     const CrSKeychainItemAndAccess& item_and_reauthorized_access) {
   SecKeychainItemRef old_item = item_and_reauthorized_access.item();
-  base::mac::ScopedCFTypeRef<SecKeychainRef> keychain(
+  base::ScopedCFTypeRef<SecKeychainRef> keychain(
       CrSKeychainItemCopyKeychain(old_item));
 
   ScopedCrSKeychainItemAttributesAndData old_attributes_and_data(
@@ -501,7 +497,7 @@ void WriteKCItemAndReauthorizedAccess(
     return;
   }
 
-  base::mac::ScopedCFTypeRef<SecKeychainItemRef> new_item(
+  base::ScopedCFTypeRef<SecKeychainItemRef> new_item(
       CrSKeychainItemCreateFromContent(new_attributes_and_data,
                                        keychain,
                                        item_and_reauthorized_access.access()));

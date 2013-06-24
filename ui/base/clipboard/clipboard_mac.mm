@@ -159,21 +159,21 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
 
   // Safe because the image goes away before the call returns.
-  base::mac::ScopedCFTypeRef<CFDataRef> data(
+  base::ScopedCFTypeRef<CFDataRef> data(
       CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
                                   reinterpret_cast<const UInt8*>(pixel_data),
-                                  size->width()*size->height()*4,
+                                  size->width() * size->height() * 4,
                                   kCFAllocatorNull));
 
-  base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
+  base::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithCFData(data));
 
-  base::mac::ScopedCFTypeRef<CGImageRef> cgimage(
+  base::ScopedCFTypeRef<CGImageRef> cgimage(
       CGImageCreate(size->width(),
                     size->height(),
                     8,
                     32,
-                    size->width()*4,
+                    size->width() * 4,
                     base::mac::GetSRGBColorSpace(),  // TODO(avi): do better
                     kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
                     data_provider,

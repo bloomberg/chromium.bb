@@ -21,16 +21,16 @@
 + (void)submitPrint:(NSAppleEventDescriptor*)event {
   std::string silent = std::string("--") + switches::kNoStartupWindow;
   // Set up flag so that it can be passed along with the Apple Event.
-  base::mac::ScopedCFTypeRef<CFStringRef> silentLaunchFlag(
+  base::ScopedCFTypeRef<CFStringRef> silentLaunchFlag(
       base::SysUTF8ToCFStringRef(silent));
   CFStringRef flags[] = { silentLaunchFlag };
   // Argv array that will be passed.
-  base::mac::ScopedCFTypeRef<CFArrayRef> passArgv(
-      CFArrayCreate(NULL, (const void**) flags, 1, &kCFTypeArrayCallBacks));
+  base::ScopedCFTypeRef<CFArrayRef> passArgv(
+      CFArrayCreate(NULL, (const void**)flags, 1, &kCFTypeArrayCallBacks));
   FSRef ref;
   // Get Chrome's bundle ID.
   std::string bundleID = base::mac::BaseBundleID();
-  base::mac::ScopedCFTypeRef<CFStringRef> bundleIDCF(
+  base::ScopedCFTypeRef<CFStringRef> bundleIDCF(
       base::SysUTF8ToCFStringRef(bundleID));
   // Use Launch Services to locate Chrome using its bundleID.
   OSStatus status = LSFindApplicationForInfo(kLSUnknownCreator, bundleIDCF,

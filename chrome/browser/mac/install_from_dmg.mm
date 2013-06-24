@@ -121,17 +121,15 @@ bool MediaResidesOnDiskImage(io_service_t media, std::string* image_path) {
   }
 
   if (image_path) {
-    base::mac::ScopedCFTypeRef<CFTypeRef> image_path_cftyperef(
-        IORegistryEntryCreateCFProperty(hdix_drive,
-                                        CFSTR("image-path"),
-                                        NULL,
-                                        0));
+    base::ScopedCFTypeRef<CFTypeRef> image_path_cftyperef(
+        IORegistryEntryCreateCFProperty(
+            hdix_drive, CFSTR("image-path"), NULL, 0));
     if (!image_path_cftyperef) {
       LOG(ERROR) << "IORegistryEntryCreateCFProperty";
       return true;
     }
     if (CFGetTypeID(image_path_cftyperef) != CFDataGetTypeID()) {
-      base::mac::ScopedCFTypeRef<CFStringRef> observed_type_cf(
+      base::ScopedCFTypeRef<CFStringRef> observed_type_cf(
           CFCopyTypeIDDescription(CFGetTypeID(image_path_cftyperef)));
       std::string observed_type;
       if (observed_type_cf) {
@@ -516,7 +514,7 @@ struct SynchronousDACallbackData {
         run_loop_running(false) {
   }
 
-  base::mac::ScopedCFTypeRef<DADissenterRef> dissenter;
+  base::ScopedCFTypeRef<DADissenterRef> dissenter;
   bool callback_called;
   bool run_loop_running;
 
@@ -605,13 +603,13 @@ bool SynchronousDADiskEject(DADiskRef disk, DADiskEjectOptions options) {
 }  // namespace
 
 void EjectAndTrashDiskImage(const std::string& dmg_bsd_device_name) {
-  base::mac::ScopedCFTypeRef<DASessionRef> session(DASessionCreate(NULL));
+  base::ScopedCFTypeRef<DASessionRef> session(DASessionCreate(NULL));
   if (!session.get()) {
     LOG(ERROR) << "DASessionCreate";
     return;
   }
 
-  base::mac::ScopedCFTypeRef<DADiskRef> disk(
+  base::ScopedCFTypeRef<DADiskRef> disk(
       DADiskCreateFromBSDName(NULL, session, dmg_bsd_device_name.c_str()));
   if (!disk.get()) {
     LOG(ERROR) << "DADiskCreateFromBSDName";

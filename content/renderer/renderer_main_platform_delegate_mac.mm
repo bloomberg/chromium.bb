@@ -163,9 +163,9 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
     // After the sandbox is initialized, call into TIS. Doing this before
     // the sandbox is in place will open up renderer access to the
     // pasteboard and an XPC connection to "com.apple.hiservices-xpcservice".
-    base::mac::ScopedCFTypeRef<TISInputSourceRef> layout_source(
+    base::ScopedCFTypeRef<TISInputSourceRef> layout_source(
         TISCopyCurrentKeyboardLayoutInputSource());
-    base::mac::ScopedCFTypeRef<TISInputSourceRef> input_source(
+    base::ScopedCFTypeRef<TISInputSourceRef> input_source(
         TISCopyCurrentKeyboardInputSource());
 
     CFTypeRef source_list[] = { layout_source.get(), input_source.get() };

@@ -114,7 +114,7 @@ class PepperTrueTypeFontMac : public PepperTrueTypeFont {
                                 int32_t max_data_length,
                                 std::string* data);
 
-  base::mac::ScopedCFTypeRef<CTFontRef> font_ref_;
+  base::ScopedCFTypeRef<CTFontRef> font_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTrueTypeFontMac);
 };
@@ -122,13 +122,15 @@ class PepperTrueTypeFontMac : public PepperTrueTypeFont {
 PepperTrueTypeFontMac::PepperTrueTypeFontMac(
     const ppapi::proxy::SerializedTrueTypeFontDesc& desc) {
   // Create attributes and traits dictionaries.
-  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> attributes_ref(
-      CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> attributes_ref(
+      CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                0,
                                 &kCFTypeDictionaryKeyCallBacks,
                                 &kCFTypeDictionaryValueCallBacks));
 
-  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> traits_ref(
-      CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> traits_ref(
+      CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                0,
                                 &kCFTypeDictionaryKeyCallBacks,
                                 &kCFTypeDictionaryValueCallBacks));
   if (!attributes_ref || !traits_ref)
@@ -147,10 +149,8 @@ PepperTrueTypeFontMac::PepperTrueTypeFontMac(
   else if (desc.width == PP_TRUETYPEFONTWIDTH_EXPANDED)
     symbolic_traits |= kCTFontExpandedTrait;
 
-  base::mac::ScopedCFTypeRef<CFNumberRef> symbolic_traits_ref(
-      CFNumberCreate(kCFAllocatorDefault,
-                     kCFNumberSInt32Type,
-                     &symbolic_traits));
+  base::ScopedCFTypeRef<CFNumberRef> symbolic_traits_ref(CFNumberCreate(
+      kCFAllocatorDefault, kCFNumberSInt32Type, &symbolic_traits));
   if (!symbolic_traits_ref)
     return;
   CFDictionaryAddValue(traits_ref, kCTFontSymbolicTrait, symbolic_traits_ref);
@@ -178,7 +178,7 @@ PepperTrueTypeFontMac::PepperTrueTypeFontMac(
     }
   }
 
-  base::mac::ScopedCFTypeRef<CFStringRef> name_ref(
+  base::ScopedCFTypeRef<CFStringRef> name_ref(
       base::SysUTF8ToCFStringRef(family));
   if (name_ref)
     CFDictionaryAddValue(attributes_ref, kCTFontFamilyNameAttribute, name_ref);
@@ -186,10 +186,8 @@ PepperTrueTypeFontMac::PepperTrueTypeFontMac(
   if (desc.weight != PP_TRUETYPEFONTWEIGHT_NORMAL &&
       desc.weight != PP_TRUETYPEFONTWEIGHT_BOLD) {
     float weight = GetMacWeight(desc.weight);
-    base::mac::ScopedCFTypeRef<CFNumberRef> weight_trait_ref(
-        CFNumberCreate(kCFAllocatorDefault,
-                       kCFNumberFloat32Type,
-                       &weight));
+    base::ScopedCFTypeRef<CFNumberRef> weight_trait_ref(
+        CFNumberCreate(kCFAllocatorDefault, kCFNumberFloat32Type, &weight));
     if (weight_trait_ref)
       CFDictionaryAddValue(traits_ref, kCTFontWeightTrait, weight_trait_ref);
   }
@@ -198,15 +196,13 @@ PepperTrueTypeFontMac::PepperTrueTypeFontMac(
       desc.width != PP_TRUETYPEFONTWIDTH_CONDENSED &&
       desc.width != PP_TRUETYPEFONTWIDTH_EXPANDED) {
     float width = GetMacWidth(desc.width);
-    base::mac::ScopedCFTypeRef<CFNumberRef> width_trait_ref(
-        CFNumberCreate(kCFAllocatorDefault,
-                       kCFNumberFloat32Type,
-                       &width));
+    base::ScopedCFTypeRef<CFNumberRef> width_trait_ref(
+        CFNumberCreate(kCFAllocatorDefault, kCFNumberFloat32Type, &width));
     if (width_trait_ref)
       CFDictionaryAddValue(traits_ref, kCTFontWidthTrait, width_trait_ref);
   }
 
-  base::mac::ScopedCFTypeRef<CTFontDescriptorRef> desc_ref(
+  base::ScopedCFTypeRef<CTFontDescriptorRef> desc_ref(
       CTFontDescriptorCreateWithAttributes(attributes_ref));
 
   if (desc_ref)
@@ -225,15 +221,15 @@ int32_t PepperTrueTypeFontMac::Describe(
   if (!IsValid())
     return PP_ERROR_FAILED;
 
-  base::mac::ScopedCFTypeRef<CTFontDescriptorRef> desc_ref(
+  base::ScopedCFTypeRef<CTFontDescriptorRef> desc_ref(
       CTFontCopyFontDescriptor(font_ref_));
 
-  base::mac::ScopedCFTypeRef<CFStringRef> family_name_ref(
-      base::mac::CFCast<CFStringRef>(CTFontDescriptorCopyAttribute(
-          desc_ref, kCTFontFamilyNameAttribute)));
+  base::ScopedCFTypeRef<CFStringRef> family_name_ref(
+      base::mac::CFCast<CFStringRef>(
+          CTFontDescriptorCopyAttribute(desc_ref, kCTFontFamilyNameAttribute)));
   desc->family = base::SysCFStringRefToUTF8(family_name_ref);
 
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> traits_ref(
+  base::ScopedCFTypeRef<CFDictionaryRef> traits_ref(
       base::mac::CFCast<CFDictionaryRef>(
           CTFontDescriptorCopyAttribute(desc_ref, kCTFontTraitsAttribute)));
 
@@ -265,7 +261,7 @@ int32_t PepperTrueTypeFontMac::Describe(
 }
 
 int32_t PepperTrueTypeFontMac::GetTableTags(std::vector<uint32_t>* tags) {
-  base::mac::ScopedCFTypeRef<CFArrayRef> tag_array(
+  base::ScopedCFTypeRef<CFArrayRef> tag_array(
       CTFontCopyAvailableTables(font_ref_, kCTFontTableOptionNoOptions));
   if (!tag_array)
     return PP_ERROR_FAILED;
@@ -288,8 +284,9 @@ int32_t PepperTrueTypeFontMac::GetTable(uint32_t table_tag,
   if (!table_tag)
     return GetEntireFont(offset, max_data_length, data);
 
-  base::mac::ScopedCFTypeRef<CFDataRef> table_ref(
-      CTFontCopyTable(font_ref_, static_cast<CTFontTableTag>(table_tag),
+  base::ScopedCFTypeRef<CFDataRef> table_ref(
+      CTFontCopyTable(font_ref_,
+                      static_cast<CTFontTableTag>(table_tag),
                       kCTFontTableOptionNoOptions));
   if (!table_ref)
     return PP_ERROR_FAILED;
@@ -320,7 +317,7 @@ int32_t PepperTrueTypeFontMac::GetEntireFont(int32_t offset,
   std::string font(sizeof(FontHeader) +
                    sizeof(FontDirectoryEntry) * table_count, 0);
   // Map the OS X font type value to a TrueType scalar type.
-  base::mac::ScopedCFTypeRef<CFNumberRef> font_type_ref(
+  base::ScopedCFTypeRef<CFNumberRef> font_type_ref(
       base::mac::CFCast<CFNumberRef>(
           CTFontCopyAttribute(font_ref_, kCTFontFormatAttribute)));
   int32_t font_type;

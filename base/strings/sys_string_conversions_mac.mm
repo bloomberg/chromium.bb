@@ -78,14 +78,13 @@ static OutStringType STLStringToSTLStringWithEncodingsT(
   if (in_length == 0)
     return OutStringType();
 
-  base::mac::ScopedCFTypeRef<CFStringRef> cfstring(
-      CFStringCreateWithBytesNoCopy(NULL,
-                                    reinterpret_cast<const UInt8*>(in.data()),
-                                    in_length *
-                                      sizeof(typename InStringType::value_type),
-                                    in_encoding,
-                                    false,
-                                    kCFAllocatorNull));
+  base::ScopedCFTypeRef<CFStringRef> cfstring(CFStringCreateWithBytesNoCopy(
+      NULL,
+      reinterpret_cast<const UInt8*>(in.data()),
+      in_length * sizeof(typename InStringType::value_type),
+      in_encoding,
+      false,
+      kCFAllocatorNull));
   if (!cfstring)
     return OutStringType();
 

@@ -182,7 +182,7 @@ void InitCrashReporter() {
   if (is_browser) {
     // Since the configuration management infrastructure is possibly not
     // initialized when this code runs, read the policy preference directly.
-    base::mac::ScopedCFTypeRef<CFStringRef> key(
+    base::ScopedCFTypeRef<CFStringRef> key(
         base::SysUTF8ToCFStringRef(policy::key::kMetricsReportingEnabled));
     Boolean key_valid;
     Boolean metrics_reporting_enabled = CFPreferencesGetAppBooleanValue(key,

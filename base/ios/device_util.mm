@@ -119,9 +119,9 @@ std::string GetMacAddress(const std::string& interface_name) {
 }
 
 std::string GetRandomId() {
-  base::mac::ScopedCFTypeRef<CFUUIDRef>
-      uuid_object(CFUUIDCreate(kCFAllocatorDefault));
-  base::mac::ScopedCFTypeRef<CFStringRef> uuid_string(
+  base::ScopedCFTypeRef<CFUUIDRef> uuid_object(
+      CFUUIDCreate(kCFAllocatorDefault));
+  base::ScopedCFTypeRef<CFStringRef> uuid_string(
       CFUUIDCreateString(kCFAllocatorDefault, uuid_object));
   return base::SysCFStringRefToUTF8(uuid_string);
 }
@@ -154,9 +154,9 @@ std::string GetDeviceIdentifier(const char* salt) {
   CC_SHA256([hash_data bytes], [hash_data length], hash);
   CFUUIDBytes* uuid_bytes = reinterpret_cast<CFUUIDBytes*>(hash);
 
-  base::mac::ScopedCFTypeRef<CFUUIDRef>
-      uuid_object(CFUUIDCreateFromUUIDBytes(kCFAllocatorDefault, *uuid_bytes));
-  base::mac::ScopedCFTypeRef<CFStringRef> device_id(
+  base::ScopedCFTypeRef<CFUUIDRef> uuid_object(
+      CFUUIDCreateFromUUIDBytes(kCFAllocatorDefault, *uuid_bytes));
+  base::ScopedCFTypeRef<CFStringRef> device_id(
       CFUUIDCreateString(kCFAllocatorDefault, uuid_object));
   return base::SysCFStringRefToUTF8(device_id);
 }

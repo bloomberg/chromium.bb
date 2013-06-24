@@ -251,9 +251,8 @@ void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
   if (event.has_wheel_delta_x() && event.has_wheel_delta_y()) {
     int delta_x = static_cast<int>(event.wheel_delta_x());
     int delta_y = static_cast<int>(event.wheel_delta_y());
-    base::mac::ScopedCFTypeRef<CGEventRef> event(
-        CGEventCreateScrollWheelEvent(
-            NULL, kCGScrollEventUnitPixel, 2, delta_y, delta_x));
+    base::ScopedCFTypeRef<CGEventRef> event(CGEventCreateScrollWheelEvent(
+        NULL, kCGScrollEventUnitPixel, 2, delta_y, delta_x));
     if (event)
       CGEventPost(kCGSessionEventTap, event);
   }

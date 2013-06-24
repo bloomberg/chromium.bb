@@ -37,7 +37,7 @@
 #define kSecEVOrganizationName CFSTR("Organization")
 #endif
 
-using base::mac::ScopedCFTypeRef;
+using base::ScopedCFTypeRef;
 
 namespace net {
 

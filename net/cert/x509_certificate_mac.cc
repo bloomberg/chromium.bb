@@ -28,7 +28,7 @@
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_util_mac.h"
 
-using base::mac::ScopedCFTypeRef;
+using base::ScopedCFTypeRef;
 using base::Time;
 
 namespace net {

@@ -17,7 +17,7 @@
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::mac::ScopedCFTypeRef;
+using base::ScopedCFTypeRef;
 
 namespace policy {
 

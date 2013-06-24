@@ -252,23 +252,26 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
   base::mac::ScopedNSAutoreleasePool scoped_pool;
 
   { // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
-    base::mac::ScopedCFTypeRef<CGColorSpaceRef> rgb_colorspace(
+    base::ScopedCFTypeRef<CGColorSpaceRef> rgb_colorspace(
         CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
 
     // Allocate a 1x1 image.
     char data[4];
-    base::mac::ScopedCFTypeRef<CGContextRef> context(
-        CGBitmapContextCreate(data, 1, 1, 8, 1 * 4,
-                              rgb_colorspace,
-                              kCGImageAlphaPremultipliedFirst |
-                                  kCGBitmapByteOrder32Host));
+    base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
+        data,
+        1,
+        1,
+        8,
+        1 * 4,
+        rgb_colorspace,
+        kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
 
     // Load in the color profiles we'll need (as a side effect).
     (void) base::mac::GetSRGBColorSpace();
     (void) base::mac::GetSystemColorSpace();
 
     // CGColorSpaceCreateSystemDefaultCMYK - 10.6
-    base::mac::ScopedCFTypeRef<CGColorSpaceRef> cmyk_colorspace(
+    base::ScopedCFTypeRef<CGColorSpaceRef> cmyk_colorspace(
         CGColorSpaceCreateWithName(kCGColorSpaceGenericCMYK));
   }
 
@@ -293,9 +296,8 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
     char png_header[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
     NSData* data = [NSData dataWithBytes:png_header
                                   length:arraysize(png_header)];
-    base::mac::ScopedCFTypeRef<CGImageSourceRef> img(
-        CGImageSourceCreateWithData((CFDataRef)data,
-        NULL));
+    base::ScopedCFTypeRef<CGImageSourceRef> img(
+        CGImageSourceCreateWithData((CFDataRef)data, NULL));
     CGImageSourceGetStatus(img);
   }
 

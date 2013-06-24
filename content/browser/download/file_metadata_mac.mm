@@ -70,7 +70,7 @@ void AddOriginMetadataToFile(const base::FilePath& file, const GURL& source,
   if (!file_path)
     return;
 
-  base::mac::ScopedCFTypeRef<MDItemRef> md_item(
+  base::ScopedCFTypeRef<MDItemRef> md_item(
       MDItemCreate(NULL, base::mac::NSToCFCast(file_path)));
   if (!md_item)
     return;

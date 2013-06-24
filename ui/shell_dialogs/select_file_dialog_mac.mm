@@ -29,8 +29,7 @@ namespace {
 const int kFileTypePopupTag = 1234;
 
 CFStringRef CreateUTIFromExtension(const base::FilePath::StringType& ext) {
-  base::mac::ScopedCFTypeRef<CFStringRef> ext_cf(
-      base::SysUTF8ToCFStringRef(ext));
+  base::ScopedCFTypeRef<CFStringRef> ext_cf(base::SysUTF8ToCFStringRef(ext));
   return UTTypeCreatePreferredIdentifierForTag(
       kUTTagClassFilenameExtension, ext_cf.get(), NULL);
 }
@@ -226,7 +225,7 @@ void SelectFileDialogImpl::SelectFileImpl(
         const std::vector<base::FilePath::StringType>& ext_list =
             file_types->extensions[i];
         for (size_t j = 0; j < ext_list.size(); ++j) {
-          base::mac::ScopedCFTypeRef<CFStringRef> uti(
+          base::ScopedCFTypeRef<CFStringRef> uti(
               CreateUTIFromExtension(ext_list[j]));
           [file_type_set addObject:base::mac::CFToNSCast(uti.get())];
 
@@ -234,7 +233,7 @@ void SelectFileDialogImpl::SelectFileImpl(
           // back to the original extension correctly. This occurs with dynamic
           // UTIs on 10.7 and 10.8.
           // See http://crbug.com/148840, http://openradar.me/12316273
-          base::mac::ScopedCFTypeRef<CFStringRef> ext_cf(
+          base::ScopedCFTypeRef<CFStringRef> ext_cf(
               base::SysUTF8ToCFStringRef(ext_list[j]));
           [file_type_set addObject:base::mac::CFToNSCast(ext_cf.get())];
         }
@@ -340,9 +339,9 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
       const std::vector<base::FilePath::StringType>& ext_list =
           file_types->extensions[type];
       DCHECK(!ext_list.empty());
-      base::mac::ScopedCFTypeRef<CFStringRef> uti(
+      base::ScopedCFTypeRef<CFStringRef> uti(
           CreateUTIFromExtension(ext_list[0]));
-      base::mac::ScopedCFTypeRef<CFStringRef> description(
+      base::ScopedCFTypeRef<CFStringRef> description(
           UTTypeCopyDescription(uti.get()));
 
       type_description =

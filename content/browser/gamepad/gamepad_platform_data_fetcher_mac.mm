@@ -269,7 +269,7 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   [as16 getBytes:data_.items[slot].id
           length:kOutputLengthBytes - sizeof(WebKit::WebUChar)];
 
-  base::mac::ScopedCFTypeRef<CFArrayRef> elements(
+  base::ScopedCFTypeRef<CFArrayRef> elements(
       IOHIDDeviceCopyMatchingElements(device, NULL, kIOHIDOptionsTypeNone));
   AddButtonsAndAxes(CFToNSCast(elements), slot);
 

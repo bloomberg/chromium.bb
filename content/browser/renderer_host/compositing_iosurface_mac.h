@@ -322,7 +322,7 @@ class CompositingIOSurfaceMac {
 
   // IOSurface data.
   uint64 io_surface_handle_;
-  base::mac::ScopedCFTypeRef<CFTypeRef> io_surface_;
+  base::ScopedCFTypeRef<CFTypeRef> io_surface_;
 
   // The width and height of the io surface.
   gfx::Size pixel_io_surface_size_;  // In pixels.

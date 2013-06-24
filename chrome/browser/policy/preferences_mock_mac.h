@@ -26,8 +26,8 @@ class MockPreferences : public MacPreferences {
   void AddTestItem(CFStringRef key, CFPropertyListRef value, bool is_forced);
 
  private:
-  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> values_;
-  base::mac::ScopedCFTypeRef<CFMutableSetRef> forced_;
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> values_;
+  base::ScopedCFTypeRef<CFMutableSetRef> forced_;
 };
 
 #endif  // CHROME_BROWSER_POLICY_PREFERENCES_MOCK_MAC_H_

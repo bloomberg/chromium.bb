@@ -105,11 +105,9 @@ void StorageInfoProviderMac::BuildStorageTypeMap() {
   for (base::mac::ScopedIOObject<io_service_t> media(IOIteratorNext(iterator));
        media;
        media.reset(IOIteratorNext(iterator))) {
-    base::mac::ScopedCFTypeRef<CFTypeRef> dev_path_cf(
-        IORegistryEntryCreateCFProperty(media,
-                                        CFSTR(kIOBSDNameKey),
-                                        kCFAllocatorDefault,
-                                        0));
+    base::ScopedCFTypeRef<CFTypeRef> dev_path_cf(
+        IORegistryEntryCreateCFProperty(
+            media, CFSTR(kIOBSDNameKey), kCFAllocatorDefault, 0));
 
     if (!dev_path_cf)
       continue;
@@ -119,11 +117,9 @@ void StorageInfoProviderMac::BuildStorageTypeMap() {
         base::SysCFStringRefToUTF8(
             base::mac::CFCast<CFStringRef>(dev_path_cf)));
 
-    base::mac::ScopedCFTypeRef<CFTypeRef> removable_cf(
-        IORegistryEntryCreateCFProperty(media,
-                                        CFSTR(kIOMediaEjectableKey),
-                                        kCFAllocatorDefault,
-                                        0));
+    base::ScopedCFTypeRef<CFTypeRef> removable_cf(
+        IORegistryEntryCreateCFProperty(
+            media, CFSTR(kIOMediaEjectableKey), kCFAllocatorDefault, 0));
     if (!removable_cf)
       dev_path_to_type_map_[dev_path] = systeminfo::kStorageTypeUnknown;
     else if (CFBooleanGetValue(base::mac::CFCast<CFBooleanRef>(removable_cf)))

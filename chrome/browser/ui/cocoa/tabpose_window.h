@@ -54,8 +54,8 @@ class TabStripModelObserverBridge;
   CALayer* selectionHighlight_;  // weak
 
   // Colors used by the layers.
-  base::mac::ScopedCFTypeRef<CGColorRef> gray_;
-  base::mac::ScopedCFTypeRef<CGColorRef> darkBlue_;
+  base::ScopedCFTypeRef<CGColorRef> gray_;
+  base::ScopedCFTypeRef<CGColorRef> darkBlue_;
 
   TabStripModel* tabStripModel_;  // weak
 
@@ -77,7 +77,7 @@ class TabStripModelObserverBridge;
   scoped_ptr<TabStripModelObserverBridge> tabStripModelObserverBridge_;
 
   // The icon used for the closebutton layers.
-  base::mac::ScopedCFTypeRef<CGImageRef> closeIcon_;
+  base::ScopedCFTypeRef<CGImageRef> closeIcon_;
 
   // True if all close layers should be shown (as opposed to just the close
   // layer of the currently selected thumbnail).

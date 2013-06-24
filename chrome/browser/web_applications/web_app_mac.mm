@@ -533,7 +533,7 @@ bool WebAppShortcutCreator::UpdateInternalBundleIdentifier() const {
 
 base::FilePath WebAppShortcutCreator::GetAppBundleById(
     const std::string& bundle_id) const {
-  base::mac::ScopedCFTypeRef<CFStringRef> bundle_id_cf(
+  base::ScopedCFTypeRef<CFStringRef> bundle_id_cf(
       base::SysUTF8ToCFStringRef(bundle_id));
   CFURLRef url_ref = NULL;
   OSStatus status = LSFindApplicationForInfo(
@@ -541,7 +541,7 @@ base::FilePath WebAppShortcutCreator::GetAppBundleById(
   if (status != noErr)
     return base::FilePath();
 
-  base::mac::ScopedCFTypeRef<CFURLRef> url(url_ref);
+  base::ScopedCFTypeRef<CFURLRef> url(url_ref);
   NSString* path_string = [base::mac::CFToNSCast(url.get()) path];
   return base::FilePath([path_string fileSystemRepresentation]);
 }

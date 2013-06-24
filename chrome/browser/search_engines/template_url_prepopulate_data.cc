@@ -618,7 +618,7 @@ int GetCurrentCountryID() {
 #elif defined(OS_MACOSX)
 
 int GetCurrentCountryID() {
-  base::mac::ScopedCFTypeRef<CFLocaleRef> locale(CFLocaleCopyCurrent());
+  base::ScopedCFTypeRef<CFLocaleRef> locale(CFLocaleCopyCurrent());
   CFStringRef country = (CFStringRef)CFLocaleGetValue(locale.get(),
                                                       kCFLocaleCountryCode);
   if (!country)

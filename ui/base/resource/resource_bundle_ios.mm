@@ -135,15 +135,16 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
       CGSize source_size = [ui_image size];
       CGSize target_size = CGSizeMake(source_size.width * target_scale,
                                       source_size.height * target_scale);
-      base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+      base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
           CGColorSpaceCreateDeviceRGB());
-      base::mac::ScopedCFTypeRef<CGContextRef> context(
-          CGBitmapContextCreate(
-              NULL,
-              target_size.width, target_size.height,
-              8, target_size.width * 4,
-              color_space,
-              kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
+      base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
+          NULL,
+          target_size.width,
+          target_size.height,
+          8,
+          target_size.width * 4,
+          color_space,
+          kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
 
       CGRect target_rect = CGRectMake(0, 0,
                                       target_size.width, target_size.height);
@@ -158,7 +159,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
         CGContextFillRect(context, target_rect);
       }
 
-      base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
+      base::ScopedCFTypeRef<CGImageRef> cg_image(
           CGBitmapContextCreateImage(context));
       ui_image.reset([[UIImage alloc] initWithCGImage:cg_image
                                                 scale:target_scale

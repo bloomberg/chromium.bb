@@ -134,7 +134,7 @@ void SessionWatcher::ActivateCurtain() {
     return;
   }
 
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
+  base::ScopedCFTypeRef<CFDictionaryRef> session(
       CGSessionCopyCurrentDictionary());
 
   // CGSessionCopyCurrentDictionary has been observed to return NULL in some

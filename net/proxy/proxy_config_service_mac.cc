@@ -42,7 +42,7 @@ bool GetBoolFromDictionary(CFDictionaryRef dict,
 }
 
 void GetCurrentProxyConfig(ProxyConfig* config) {
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> config_dict(
+  base::ScopedCFTypeRef<CFDictionaryRef> config_dict(
       SCDynamicStoreCopyProxies(NULL));
   DCHECK(config_dict);
 

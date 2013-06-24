@@ -186,7 +186,7 @@ PlatformImage CreatePlatformImage() {
   ui::ScaleFactor scale_factor = ui::GetMaxScaleFactor();
   float scale = ui::GetScaleFactorScale(scale_factor);
 
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
   UIImage* image =
       gfx::SkBitmapToUIImageWithColorSpace(bitmap, scale, color_space);

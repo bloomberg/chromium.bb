@@ -81,7 +81,7 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop {
     bool is_persistent_;  // false if this event is one-shot.
     base::mac::ScopedCFFileDescriptorRef fdref_;
     CFOptionFlags callback_types_;
-    base::mac::ScopedCFTypeRef<CFRunLoopSourceRef> fd_source_;
+    base::ScopedCFTypeRef<CFRunLoopSourceRef> fd_source_;
     scoped_refptr<MessagePumpIOSForIO> pump_;
     Watcher* watcher_;
 

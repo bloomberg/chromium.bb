@@ -49,7 +49,7 @@ CONTENT_EXPORT
   GURL downloadURL_;
 
   // The file UTI associated with the file drag, if any.
-  base::mac::ScopedCFTypeRef<CFStringRef> fileUTI_;
+  base::ScopedCFTypeRef<CFStringRef> fileUTI_;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given

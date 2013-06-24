@@ -85,12 +85,8 @@ const int kWhitelistedPaths[] = {
 // Retrieves the localized display name for the base name of the given path.
 // If the path is not localized, this will just return the base name.
 std::string GetDisplayBaseName(const base::FilePath& path) {
-  base::mac::ScopedCFTypeRef<CFURLRef> url(
-      CFURLCreateFromFileSystemRepresentation(
-          NULL,
-          (const UInt8*)path.value().c_str(),
-          path.value().length(),
-          true));
+  base::ScopedCFTypeRef<CFURLRef> url(CFURLCreateFromFileSystemRepresentation(
+      NULL, (const UInt8*)path.value().c_str(), path.value().length(), true));
   if (!url)
     return path.BaseName().value();
 

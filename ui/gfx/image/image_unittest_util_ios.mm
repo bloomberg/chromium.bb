@@ -14,19 +14,20 @@ namespace test {
 
 SkColor GetPlatformImageColor(PlatformImage image, int x, int y) {
   // Start by extracting the target pixel into a 1x1 CGImage.
-  base::mac::ScopedCFTypeRef<CGImageRef> pixel_image(
+  base::ScopedCFTypeRef<CGImageRef> pixel_image(
       CGImageCreateWithImageInRect(image.CGImage, CGRectMake(x, y, 1, 1)));
 
   // Draw that pixel into a 1x1 bitmap context.
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
-  base::mac::ScopedCFTypeRef<CGContextRef> bitmap_context(
-      CGBitmapContextCreate(/*data=*/ NULL,
-                            /*width=*/ 1, /*height=*/ 1,
-                            /*bitsPerComponent=*/ 8, /*bytesPerRow=*/ 4,
-                            color_space,
-                            kCGImageAlphaPremultipliedFirst |
-                                kCGBitmapByteOrder32Host));
+  base::ScopedCFTypeRef<CGContextRef> bitmap_context(CGBitmapContextCreate(
+      /*data=*/ NULL,
+      /*width=*/ 1,
+      /*height=*/ 1,
+      /*bitsPerComponent=*/ 8,
+      /*bytesPerRow=*/ 4,
+      color_space,
+      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
   CGContextDrawImage(bitmap_context, CGRectMake(0, 0, 1, 1), pixel_image);
 
   // The CGBitmapContext has the same memory layout as SkColor, so we can just

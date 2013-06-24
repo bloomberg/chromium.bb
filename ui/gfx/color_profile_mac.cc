@@ -10,7 +10,7 @@ namespace gfx {
 
 void ReadColorProfile(std::vector<char>* profile) {
   CGColorSpaceRef monitor_color_space(base::mac::GetSystemColorSpace());
-  base::mac::ScopedCFTypeRef<CFDataRef> icc_profile(
+  base::ScopedCFTypeRef<CFDataRef> icc_profile(
       CGColorSpaceCopyICCProfile(monitor_color_space));
   if (icc_profile) {
     size_t length = CFDataGetLength(icc_profile);

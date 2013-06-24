@@ -98,7 +98,7 @@ class XboxController {
   bool device_is_open_;
   bool interface_is_open_;
 
-  base::mac::ScopedCFTypeRef<CFRunLoopSourceRef> source_;
+  base::ScopedCFTypeRef<CFRunLoopSourceRef> source_;
 
   // This will be set to the max packet size reported by the interface, which
   // is 32 bytes. I would have expected USB to do message framing itself, but

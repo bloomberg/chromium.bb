@@ -96,7 +96,7 @@ class NET_EXPORT_PRIVATE TestRootCerts {
 #elif defined(OS_WIN)
   HCERTSTORE temporary_roots_;
 #elif defined(OS_MACOSX)
-  base::mac::ScopedCFTypeRef<CFMutableArrayRef> temporary_roots_;
+  base::ScopedCFTypeRef<CFMutableArrayRef> temporary_roots_;
   bool allow_system_trust_;
 #endif
 

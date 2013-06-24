@@ -214,7 +214,7 @@ bool PrintingContextMac::SetPrinter(const std::string& device_name) {
   if (!current_printer_id)
     return false;
 
-  base::mac::ScopedCFTypeRef<CFStringRef> new_printer_id(
+  base::ScopedCFTypeRef<CFStringRef> new_printer_id(
       base::SysUTF8ToCFStringRef(device_name));
   if (!new_printer_id.get())
     return false;
@@ -385,9 +385,9 @@ bool PrintingContextMac::SetOutputColor(int color_mode) {
   std::string color_setting_name;
   std::string color_value;
   GetColorModelForMode(color_mode, &color_setting_name, &color_value);
-  base::mac::ScopedCFTypeRef<CFStringRef> color_setting(
+  base::ScopedCFTypeRef<CFStringRef> color_setting(
       base::SysUTF8ToCFStringRef(color_setting_name));
-  base::mac::ScopedCFTypeRef<CFStringRef> output_color(
+  base::ScopedCFTypeRef<CFStringRef> output_color(
       base::SysUTF8ToCFStringRef(color_value));
 
   return PMPrintSettingsSetValue(pmPrintSettings,
@@ -432,7 +432,7 @@ PrintingContext::Result PrintingContextMac::NewDocument(
   PMPageFormat page_format =
       static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
 
-  base::mac::ScopedCFTypeRef<CFStringRef> job_title(
+  base::ScopedCFTypeRef<CFStringRef> job_title(
       base::SysUTF16ToCFStringRef(document_name));
   PMPrintSettingsSetJobName(print_settings, job_title.get());
 

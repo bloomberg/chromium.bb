@@ -62,8 +62,8 @@ class BackingStoreMac : public BackingStore {
   // result.
   CGContextRef CreateCGBitmapContext();
 
-  base::mac::ScopedCFTypeRef<CGContextRef> cg_bitmap_;
-  base::mac::ScopedCFTypeRef<CGLayerRef> cg_layer_;
+  base::ScopedCFTypeRef<CGContextRef> cg_bitmap_;
+  base::ScopedCFTypeRef<CGLayerRef> cg_layer_;
 
   // Number of physical pixels per view unit. This is 1 or 2 in practice.
   float device_scale_factor_;

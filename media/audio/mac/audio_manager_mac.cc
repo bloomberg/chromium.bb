@@ -203,8 +203,8 @@ static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
                                         &audio_device_id);
   } else {
     // Non-default device.
-    base::mac::ScopedCFTypeRef<CFStringRef>
-        uid(base::SysUTF8ToCFStringRef(device_id));
+    base::ScopedCFTypeRef<CFStringRef> uid(
+        base::SysUTF8ToCFStringRef(device_id));
     AudioValueTranslation value;
     value.mInputData = &uid;
     value.mInputDataSize = sizeof(CFStringRef);

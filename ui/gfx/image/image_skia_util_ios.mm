@@ -49,7 +49,7 @@ UIImage* UIImageFromImageSkiaRep(const gfx::ImageSkiaRep& image_skia_rep) {
     return nil;
 
   float scale = ui::GetScaleFactorScale(image_skia_rep.scale_factor());
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
   return gfx::SkBitmapToUIImageWithColorSpace(image_skia_rep.sk_bitmap(), scale,
                                               color_space);

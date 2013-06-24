@@ -45,8 +45,8 @@ class CrSKeychainItemAndAccess {
   SecAccessRef access() const { return access_; }
 
  private:
-  base::mac::ScopedCFTypeRef<SecKeychainItemRef> item_;
-  base::mac::ScopedCFTypeRef<SecAccessRef> access_;
+  base::ScopedCFTypeRef<SecKeychainItemRef> item_;
+  base::ScopedCFTypeRef<SecAccessRef> access_;
 };
 
 // Holds the return value from CrSACLCopySimpleContents and an argument to
@@ -56,8 +56,8 @@ struct CrSACLSimpleContents {
   CrSACLSimpleContents();
   ~CrSACLSimpleContents();
 
-  base::mac::ScopedCFTypeRef<CFArrayRef> application_list;
-  base::mac::ScopedCFTypeRef<CFStringRef> description;
+  base::ScopedCFTypeRef<CFArrayRef> application_list;
+  base::ScopedCFTypeRef<CFStringRef> description;
   CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR prompt_selector;
 };
 

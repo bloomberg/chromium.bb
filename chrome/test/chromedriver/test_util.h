@@ -27,7 +27,7 @@ class RestoreKeyboardLayoutOnDestruct {
 #if defined(OS_WIN)
   HKL layout_;
 #elif defined(OS_MACOSX)
-  base::mac::ScopedCFTypeRef<TISInputSourceRef> layout_;
+  base::ScopedCFTypeRef<TISInputSourceRef> layout_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RestoreKeyboardLayoutOnDestruct);

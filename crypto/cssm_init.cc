@@ -184,7 +184,7 @@ void CSSMFree(void* ptr) {
 void LogCSSMError(const char* fn_name, CSSM_RETURN err) {
   if (!err)
     return;
-  base::mac::ScopedCFTypeRef<CFStringRef> cfstr(
+  base::ScopedCFTypeRef<CFStringRef> cfstr(
       SecCopyErrorMessageString(err, NULL));
   LOG(ERROR) << fn_name << " returned " << err
              << " (" << base::SysCFStringRefToUTF8(cfstr) << ")";

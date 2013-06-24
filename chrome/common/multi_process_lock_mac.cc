@@ -33,7 +33,7 @@ class MultiProcessLockMac : public MultiProcessLock {
     }
 
     CFStringRef cf_name(base::SysUTF8ToCFStringRef(name_));
-    base::mac::ScopedCFTypeRef<CFStringRef> scoped_cf_name(cf_name);
+    base::ScopedCFTypeRef<CFStringRef> scoped_cf_name(cf_name);
     port_.reset(CFMessagePortCreateLocal(NULL, cf_name, NULL, NULL, NULL));
     return port_ != NULL;
   }
@@ -48,7 +48,7 @@ class MultiProcessLockMac : public MultiProcessLock {
 
  private:
   std::string name_;
-  base::mac::ScopedCFTypeRef<CFMessagePortRef> port_;
+  base::ScopedCFTypeRef<CFMessagePortRef> port_;
   DISALLOW_COPY_AND_ASSIGN(MultiProcessLockMac);
 };
 

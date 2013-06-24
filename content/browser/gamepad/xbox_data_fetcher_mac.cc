@@ -495,12 +495,12 @@ void XboxDataFetcher::DeviceRemoved(void* context, io_iterator_t iterator) {
   io_service_t ref;
   while ((ref = IOIteratorNext(iterator))) {
     base::mac::ScopedIOObject<io_service_t> scoped_ref(ref);
-    base::mac::ScopedCFTypeRef<CFNumberRef> number(
-        base::mac::CFCastStrict<CFNumberRef>(IORegistryEntryCreateCFProperty(
-            ref,
-            CFSTR(kUSBDevicePropertyLocationID),
-            kCFAllocatorDefault,
-            kNilOptions)));
+    base::ScopedCFTypeRef<CFNumberRef> number(
+        base::mac::CFCastStrict<CFNumberRef>(
+            IORegistryEntryCreateCFProperty(ref,
+                                            CFSTR(kUSBDevicePropertyLocationID),
+                                            kCFAllocatorDefault,
+                                            kNilOptions)));
     UInt32 location_id = 0;
     CFNumberGetValue(number, kCFNumberSInt32Type, &location_id);
     fetcher->RemoveControllerByLocationID(location_id);
@@ -510,13 +510,11 @@ void XboxDataFetcher::DeviceRemoved(void* context, io_iterator_t iterator) {
 bool XboxDataFetcher::RegisterForNotifications() {
   if (listening_)
     return true;
-  base::mac::ScopedCFTypeRef<CFNumberRef> vendor_cf(
-      CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type,
-                     &kVendorMicrosoft));
-  base::mac::ScopedCFTypeRef<CFNumberRef> product_cf(
-      CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type,
-                     &kProduct360Controller));
-  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> matching_dict(
+  base::ScopedCFTypeRef<CFNumberRef> vendor_cf(CFNumberCreate(
+      kCFAllocatorDefault, kCFNumberSInt32Type, &kVendorMicrosoft));
+  base::ScopedCFTypeRef<CFNumberRef> product_cf(CFNumberCreate(
+      kCFAllocatorDefault, kCFNumberSInt32Type, &kProduct360Controller));
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> matching_dict(
       IOServiceMatching(kIOUSBDeviceClassName));
   if (!matching_dict)
     return false;

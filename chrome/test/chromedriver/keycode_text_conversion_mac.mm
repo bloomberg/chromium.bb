@@ -44,7 +44,7 @@ bool ConvertKeyCodeToText(
   // on UCKeyTranslate for more info.
   UInt32 modifier_key_state = (mac_modifiers >> 8) & 0xFF;
 
-  base::mac::ScopedCFTypeRef<TISInputSourceRef> input_source_copy(
+  base::ScopedCFTypeRef<TISInputSourceRef> input_source_copy(
       TISCopyCurrentKeyboardLayoutInputSource());
   CFDataRef layout_data = static_cast<CFDataRef>(TISGetInputSourceProperty(
       input_source_copy, kTISPropertyUnicodeKeyLayoutData));

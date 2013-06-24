@@ -47,7 +47,7 @@ NSString* const kDockFileDataKey = @"file-data";
 // Foundation data types and returns an autoreleased NSDictionary.
 NSDictionary* NSURLCopyDictionary(NSURL* url) {
   CFURLRef url_cf = base::mac::NSToCFCast(url);
-  base::mac::ScopedCFTypeRef<CFPropertyListRef> property_list(
+  base::ScopedCFTypeRef<CFPropertyListRef> property_list(
       _CFURLCopyPropertyListRepresentation(url_cf));
   CFDictionaryRef dictionary_cf =
       base::mac::CFCast<CFDictionaryRef>(property_list);
@@ -65,7 +65,7 @@ NSDictionary* NSURLCopyDictionary(NSURL* url) {
 // on Foundation data types and returns an autoreleased NSURL.
 NSURL* NSURLCreateFromDictionary(NSDictionary* dictionary) {
   CFDictionaryRef dictionary_cf = base::mac::NSToCFCast(dictionary);
-  base::mac::ScopedCFTypeRef<CFURLRef> url_cf(
+  base::ScopedCFTypeRef<CFURLRef> url_cf(
       _CFURLCreateFromPropertyListRepresentation(NULL, dictionary_cf));
   NSURL* url = base::mac::CFToNSCast(url_cf);
 

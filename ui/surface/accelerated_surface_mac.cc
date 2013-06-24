@@ -116,7 +116,7 @@ static void AddBooleanValue(CFMutableDictionaryRef dictionary,
 static void AddIntegerValue(CFMutableDictionaryRef dictionary,
                             const CFStringRef key,
                             int32 value) {
-  base::mac::ScopedCFTypeRef<CFNumberRef> number(
+  base::ScopedCFTypeRef<CFNumberRef> number(
       CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
   CFDictionaryAddValue(dictionary, key, number.get());
 }
@@ -215,7 +215,7 @@ uint32 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
 
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
-  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
   properties.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,
                                              0,
                                              &kCFTypeDictionaryKeyCallBacks,

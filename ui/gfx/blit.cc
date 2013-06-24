@@ -71,9 +71,9 @@ void BlitContextToContext(NativeDrawingContext dst_context,
                             : transform.ty;
   src_rect.Offset(transform.tx, delta_y);
 
-  base::mac::ScopedCFTypeRef<CGImageRef>
-      src_image(CGBitmapContextCreateImage(src_context));
-  base::mac::ScopedCFTypeRef<CGImageRef> src_sub_image(
+  base::ScopedCFTypeRef<CGImageRef> src_image(
+      CGBitmapContextCreateImage(src_context));
+  base::ScopedCFTypeRef<CGImageRef> src_sub_image(
       CGImageCreateWithImageInRect(src_image, src_rect.ToCGRect()));
   CGContextDrawImage(dst_context, dst_rect.ToCGRect(), src_sub_image);
 #elif defined(OS_ANDROID)

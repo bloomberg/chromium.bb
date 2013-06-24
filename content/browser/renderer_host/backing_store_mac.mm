@@ -53,7 +53,7 @@ void BackingStoreMac::ScaleFactorChanged(float device_scale_factor) {
 
   device_scale_factor_ = device_scale_factor;
 
-  base::mac::ScopedCFTypeRef<CGLayerRef> new_layer(CreateCGLayer());
+  base::ScopedCFTypeRef<CGLayerRef> new_layer(CreateCGLayer());
   // If we have a layer, copy the old contents. A pixelated flash is better
   // than a white flash.
   if (new_layer && cg_layer_) {
@@ -98,16 +98,22 @@ void BackingStoreMac::PaintToBackingStore(
       pixel_bitmap_rect.width() * pixel_bitmap_rect.height() * 4;
   DCHECK_GE(dib->size(), bitmap_byte_count);
 
-  base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
-      CGDataProviderCreateWithData(NULL, dib->memory(),
-      bitmap_byte_count, NULL));
+  base::ScopedCFTypeRef<CGDataProviderRef> data_provider(
+      CGDataProviderCreateWithData(
+          NULL, dib->memory(), bitmap_byte_count, NULL));
 
-  base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
-      CGImageCreate(pixel_bitmap_rect.width(), pixel_bitmap_rect.height(),
-          8, 32, 4 * pixel_bitmap_rect.width(),
-          base::mac::GetSystemColorSpace(),
-          kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
-          data_provider, NULL, false, kCGRenderingIntentDefault));
+  base::ScopedCFTypeRef<CGImageRef> bitmap_image(
+      CGImageCreate(pixel_bitmap_rect.width(),
+                    pixel_bitmap_rect.height(),
+                    8,
+                    32,
+                    4 * pixel_bitmap_rect.width(),
+                    base::mac::GetSystemColorSpace(),
+                    kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
+                    data_provider,
+                    NULL,
+                    false,
+                    kCGRenderingIntentDefault));
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& copy_rect = copy_rects[i];
@@ -115,19 +121,19 @@ void BackingStoreMac::PaintToBackingStore(
         gfx::ScaleRect(copy_rect, scale_factor));
 
     // Only the subpixels given by copy_rect have pixels to copy.
-    base::mac::ScopedCFTypeRef<CGImageRef> image(
-        CGImageCreateWithImageInRect(bitmap_image, CGRectMake(
-            pixel_copy_rect.x() - pixel_bitmap_rect.x(),
-            pixel_copy_rect.y() - pixel_bitmap_rect.y(),
-            pixel_copy_rect.width(),
-            pixel_copy_rect.height())));
+    base::ScopedCFTypeRef<CGImageRef> image(CGImageCreateWithImageInRect(
+        bitmap_image,
+        CGRectMake(pixel_copy_rect.x() - pixel_bitmap_rect.x(),
+                   pixel_copy_rect.y() - pixel_bitmap_rect.y(),
+                   pixel_copy_rect.width(),
+                   pixel_copy_rect.height())));
 
     if (!cg_layer()) {
       // The view may have moved to a window.  Try to get a CGLayer.
       cg_layer_.reset(CreateCGLayer());
       if (cg_layer()) {
         // Now that we have a layer, copy the cached image into it.
-        base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
+        base::ScopedCFTypeRef<CGImageRef> bitmap_image(
             CGBitmapContextCreateImage(cg_bitmap_));
         CGContextDrawImage(CGLayerGetContext(cg_layer()),
                            CGRectMake(0, 0, size().width(), size().height()),
@@ -204,7 +210,7 @@ void BackingStoreMac::ScrollBackingStore(const gfx::Vector2d& delta,
                                 CGPointMake(delta.x(), -delta.y()), cg_layer());
     } else {
       // We don't have a layer, so scroll the contents of the CGBitmapContext.
-      base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
+      base::ScopedCFTypeRef<CGImageRef> bitmap_image(
           CGBitmapContextCreateImage(cg_bitmap_));
       gfx::ScopedCGContextSaveGState save_gstate(cg_bitmap_);
       CGContextClipToRect(cg_bitmap_,
@@ -227,7 +233,7 @@ void BackingStoreMac::CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
   if (cg_layer_) {
     CGContextDrawLayerInRect(context, dest_rect, cg_layer_);
   } else {
-    base::mac::ScopedCFTypeRef<CGImageRef> image(
+    base::ScopedCFTypeRef<CGImageRef> image(
         CGBitmapContextCreateImage(cg_bitmap_));
     CGContextDrawImage(context, dest_rect, image);
   }

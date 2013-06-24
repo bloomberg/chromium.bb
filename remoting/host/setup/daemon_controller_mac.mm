@@ -299,9 +299,8 @@ bool DaemonControllerMac::DoShowPreferencePane(const std::string& config_data) {
 
   CFNotificationCenterRef center =
       CFNotificationCenterGetDistributedCenter();
-  base::mac::ScopedCFTypeRef<CFStringRef> service_name(
-        CFStringCreateWithCString(kCFAllocatorDefault, remoting::kServiceName,
-                                  kCFStringEncodingUTF8));
+  base::ScopedCFTypeRef<CFStringRef> service_name(CFStringCreateWithCString(
+      kCFAllocatorDefault, remoting::kServiceName, kCFStringEncodingUTF8));
   CFNotificationCenterPostNotification(center, service_name, NULL, NULL,
                                        TRUE);
   return true;

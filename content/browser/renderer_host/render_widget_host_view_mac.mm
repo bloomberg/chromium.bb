@@ -2623,7 +2623,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
         // if we haven't created a layer yet, draw the cached bitmap into
         // the window.  The CGLayer will be created the next time the renderer
         // paints.
-        base::mac::ScopedCFTypeRef<CGImageRef> image(
+        base::ScopedCFTypeRef<CGImageRef> image(
             CGBitmapContextCreateImage(backingStore->cg_bitmap()));
         CGRect imageRect = bitmapRect.ToCGRect();
         imageRect.origin.y = yOffset;

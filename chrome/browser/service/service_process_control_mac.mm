@@ -14,7 +14,7 @@
 using content::BrowserThread;
 
 void ServiceProcessControl::Launcher::DoRun() {
-  base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_plist(
+  base::ScopedCFTypeRef<CFDictionaryRef> launchd_plist(
       CreateServiceProcessLaunchdPlist(cmd_line_.get(), false));
   CFErrorRef error = NULL;
   if (!GTMSMJobSubmit(launchd_plist, &error)) {
