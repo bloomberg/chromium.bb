@@ -118,6 +118,36 @@ class RenderViewHostManagerTest
     return manager->ShouldSwapProcessesForNavigation(cur_entry, new_entry);
   }
 
+  // Creates a test RenderViewHost that's swapped out.
+  TestRenderViewHost* CreateSwappedOutRenderViewHost() {
+    const GURL kChromeURL("chrome://foo");
+    const GURL kDestUrl("http://www.google.com/");
+
+    // Navigate our first tab to a chrome url and then to the destination.
+    NavigateActiveAndCommit(kChromeURL);
+    TestRenderViewHost* ntp_rvh = static_cast<TestRenderViewHost*>(
+        contents()->GetRenderManagerForTesting()->current_host());
+
+    // Navigate to a cross-site URL.
+    contents()->GetController().LoadURL(
+        kDestUrl, Referrer(), PAGE_TRANSITION_LINK, std::string());
+    EXPECT_TRUE(contents()->cross_navigation_pending());
+
+    TestRenderViewHost* dest_rvh = static_cast<TestRenderViewHost*>(
+        contents()->GetRenderManagerForTesting()->pending_render_view_host());
+    CHECK(dest_rvh);
+    EXPECT_NE(ntp_rvh, dest_rvh);
+
+    // BeforeUnload finishes.
+    ntp_rvh->SendShouldCloseACK(true);
+
+    // Assume SwapOutACK times out, so the dest_rvh proceeds and commits.
+    dest_rvh->SendNavigate(101, kDestUrl);
+
+    EXPECT_TRUE(ntp_rvh->is_swapped_out());
+    return ntp_rvh;
+  }
+
  private:
   RenderViewHostManagerTestWebUIControllerFactory factory_;
 };
@@ -261,6 +291,35 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   js_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rvh->OnMessageReceived(js_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
+}
+
+TEST_F(RenderViewHostManagerTest, WhiteListSwapCompositorFrame) {
+  TestRenderViewHost* swapped_out_rvh = CreateSwappedOutRenderViewHost();
+  TestRenderWidgetHostView* swapped_out_rwhv =
+      static_cast<TestRenderWidgetHostView*>(swapped_out_rvh->GetView());
+  EXPECT_FALSE(swapped_out_rwhv->did_swap_compositor_frame());
+
+  MockRenderProcessHost* process_host =
+      static_cast<MockRenderProcessHost*>(swapped_out_rvh->GetProcess());
+  process_host->sink().ClearMessages();
+
+  cc::CompositorFrame frame;
+  ViewHostMsg_SwapCompositorFrame msg(rvh()->GetRoutingID(), frame);
+
+  EXPECT_TRUE(swapped_out_rvh->OnMessageReceived(msg));
+  EXPECT_TRUE(swapped_out_rwhv->did_swap_compositor_frame());
+}
+
+TEST_F(RenderViewHostManagerTest, WhiteListDidActivateAcceleratedCompositing) {
+  TestRenderViewHost* swapped_out_rvh = CreateSwappedOutRenderViewHost();
+
+  MockRenderProcessHost* process_host =
+      static_cast<MockRenderProcessHost*>(swapped_out_rvh->GetProcess());
+  process_host->sink().ClearMessages();
+  ViewHostMsg_DidActivateAcceleratedCompositing msg(
+      rvh()->GetRoutingID(), true);
+  EXPECT_TRUE(swapped_out_rvh->OnMessageReceived(msg));
+  EXPECT_TRUE(swapped_out_rvh->is_accelerated_compositing_active());
 }
 
 // When there is an error with the specified page, renderer exits view-source
