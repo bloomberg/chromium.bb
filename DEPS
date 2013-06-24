@@ -66,8 +66,9 @@ deps = {
   "src/testing/gmock":
     (Var("googlecode_url") % "googlemock") + "/trunk@410",
 
-  "src/third_party/angle":
-    (Var("googlecode_url") % "angleproject") + "/trunk@2249",
+  "src/third_party/angle_dx11":
+    Var("chromium_git") +
+    "/external/angle.git@f576cb24c8fc02d3f2fb90faebdcf333fb27892f",
 
   "src/third_party/trace-viewer":
     (Var("googlecode_url") % "trace-viewer") + "/trunk@623",
@@ -341,6 +342,7 @@ deps_os = {
     "src/native_client": None,
     "src/native_client/src/third_party/ppapi": None,
     "src/third_party/angle": None,
+    "src/third_party/angle_dx11": None,
     "src/third_party/bidichecker": None,
     "src/third_party/webgl_conformance": None,
     "src/third_party/ffmpeg": None,
