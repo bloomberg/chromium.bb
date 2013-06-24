@@ -83,6 +83,7 @@ SPECULATIVE_REBUILD_SET=""
 readonly PNACL_SUPPORT="${PNACL_ROOT}/support"
 
 readonly THIRD_PARTY="${NACL_ROOT}"/../third_party
+readonly NACL_SRC_THIRD_PARTY_MOD="${NACL_ROOT}/src/third_party_mod"
 
 # The location of Mercurial sources (absolute)
 readonly TC_SRC="${PNACL_ROOT}/src"
@@ -2933,7 +2934,12 @@ libs-support-native() {
   rm -rf "${tmpdir}"
   mkdir -p "${tmpdir}"
   ${cc_cmd} -c setjmp_${arch/-/_}.S -o "${tmpdir}"/setjmp.o
-  ${cc_cmd} -c string.c -o "${tmpdir}"/string.o
+
+  # Some of the support code lives in third_party/ because it's based on code
+  # from other open-source projects.
+  ${cc_cmd} \
+    -c "${NACL_SRC_THIRD_PARTY_MOD}/pnacl_native_newlib_subset/string.c" \
+    -O3 -std=c99 -o "${tmpdir}"/string.o
 
   # For ARM, also compile aeabi_read_tp.S
   if  [ ${arch} == arm ] ; then
