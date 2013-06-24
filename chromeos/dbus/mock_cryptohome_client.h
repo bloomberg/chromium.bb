@@ -42,6 +42,10 @@ class MockCryptohomeClient : public CryptohomeClient {
                                 const std::string& key,
                                 int flags,
                                 const AsyncMethodCallback& callback));
+  MOCK_METHOD4(AsyncAddKey, void(const std::string& username,
+                                 const std::string& key,
+                                 const std::string& new_key,
+                                 const AsyncMethodCallback& callback));
   MOCK_METHOD1(AsyncMountGuest,
                void(const AsyncMethodCallback& callback));
   MOCK_METHOD1(TpmIsReady, void(const BoolDBusMethodCallback& callback));

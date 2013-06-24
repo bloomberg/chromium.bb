@@ -90,6 +90,7 @@ void LocallyManagedUserCreationController::SetManagerProfile(
 
 void LocallyManagedUserCreationController::StartCreation() {
   DCHECK(creation_context_);
+  VLOG(1) << "Starting supervised user creation";
   UserManager::Get()->StartLocallyManagedUserCreationTransaction(
       creation_context_->display_name);
 
@@ -102,7 +103,7 @@ void LocallyManagedUserCreationController::StartCreation() {
 
   UserManager::Get()->SetLocallyManagedUserCreationTransactionUserId(
       creation_context_->user_id);
-
+  VLOG(1) << "Creating cryptohome";
   authenticator_ = new ManagedUserAuthenticator(this);
   authenticator_->AuthenticateToCreate(user->email(),
                                        creation_context_->password);
@@ -138,9 +139,13 @@ void LocallyManagedUserCreationController::OnMountSuccess(
   creation_context_->master_key = StringToLowerASCII(base::HexEncode(
       reinterpret_cast<const void*>(master_key_bytes),
       sizeof(master_key_bytes)));
-  // TODO(antrim): Add this key as secondary as soon as wad@ adds API in
-  // cryptohome.
+  VLOG(1) << "Adding master key";
+  authenticator_->AddMasterKey(creation_context_->user_id,
+                               creation_context_->password,
+                               creation_context_->master_key);
+}
 
+void LocallyManagedUserCreationController::OnAddKeySuccess() {
   timeout_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
       this,
@@ -150,6 +155,7 @@ void LocallyManagedUserCreationController::OnMountSuccess(
       ManagedUserRegistrationServiceFactory::GetForProfile(
           creation_context_->manager_profile);
 
+  VLOG(1) << "Creating user on server";
   ManagedUserRegistrationInfo info(creation_context_->display_name);
   info.master_key = creation_context_->master_key;
   creation_context_->service->Register(

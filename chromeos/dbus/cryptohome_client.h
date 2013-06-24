@@ -113,6 +113,14 @@ class CHROMEOS_EXPORT CryptohomeClient {
                           int flags,
                           const AsyncMethodCallback& callback) = 0;
 
+  // Calls the AsyncAddKey method to asynchronously add another |new_key| for
+  // |username|, using |key| to unlock it first.
+  // |callback| is called after the method call succeeds.
+  virtual void AsyncAddKey(const std::string& username,
+                           const std::string& key,
+                           const std::string& new_key,
+                           const AsyncMethodCallback& callback) = 0;
+
   // Calls AsyncMountGuest method.  |callback| is called after the method call
   // succeeds.
   virtual void AsyncMountGuest(const AsyncMethodCallback& callback) = 0;

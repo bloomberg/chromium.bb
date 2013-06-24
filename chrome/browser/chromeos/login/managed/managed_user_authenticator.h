@@ -35,7 +35,8 @@ class ManagedUserAuthenticator
    public:
     AuthAttempt(const std::string& username,
                 const std::string& password,
-                const std::string& hashed_password);
+                const std::string& hashed_password,
+                bool add_key_attempt);
     ~AuthAttempt();
 
     // Copy |cryptohome_code| and |cryptohome_outcome| into this object,
@@ -58,6 +59,7 @@ class ManagedUserAuthenticator
     const std::string username;
     const std::string password;
     const std::string hashed_password;
+    const bool add_key;
 
    private:
     bool cryptohome_complete_;
@@ -76,6 +78,8 @@ class ManagedUserAuthenticator
     virtual void OnAuthenticationFailure(AuthState state) = 0;
     // The current login attempt has ended succesfully.
     virtual void OnMountSuccess(const std::string& mount_hash) = 0;
+    // The current add key attempt has ended succesfully.
+    virtual void OnAddKeySuccess() = 0;
   };
 
   explicit ManagedUserAuthenticator(AuthStatusConsumer* consumer);
@@ -85,6 +89,10 @@ class ManagedUserAuthenticator
 
   void AuthenticateToCreate(const std::string& username,
                             const std::string& password);
+
+  void AddMasterKey(const std::string& username,
+                    const std::string& password,
+                    const std::string& master_key);
   void Resolve();
 
  private:
@@ -95,7 +103,7 @@ class ManagedUserAuthenticator
   AuthState ResolveState();
   AuthState ResolveCryptohomeFailureState();
   AuthState ResolveCryptohomeSuccessState();
-  void OnAuthenticationSuccess(const std::string& mount_hash);
+  void OnAuthenticationSuccess(const std::string& mount_hash, bool add_key);
   void OnAuthenticationFailure(AuthState state);
 
   scoped_ptr<AuthAttempt> current_state_;

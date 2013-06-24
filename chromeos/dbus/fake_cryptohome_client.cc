@@ -97,6 +97,22 @@ void FakeCryptohomeClient::AsyncMount(const std::string& username,
                                                 cryptohome::MOUNT_ERROR_NONE));
 }
 
+void FakeCryptohomeClient::AsyncAddKey(const std::string& username,
+                                       const std::string& key,
+                                       const std::string& new_key,
+                                       const AsyncMethodCallback& callback) {
+  DCHECK(!callback.is_null());
+
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                   base::Bind(callback, 1 /* async_id */));
+  if (!handler_.is_null())
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(handler_,
+                                                1,     // async_id
+                                                true,  // return_status
+                                                cryptohome::MOUNT_ERROR_NONE));
+}
+
 void FakeCryptohomeClient::AsyncMountGuest(
     const AsyncMethodCallback& callback) {
 }

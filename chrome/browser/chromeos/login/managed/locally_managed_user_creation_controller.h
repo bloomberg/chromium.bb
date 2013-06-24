@@ -94,6 +94,7 @@ class LocallyManagedUserCreationController
   virtual void OnAuthenticationFailure(
       ManagedUserAuthenticator::AuthState error) OVERRIDE;
   virtual void OnMountSuccess(const std::string& mount_hash) OVERRIDE;
+  virtual void OnAddKeySuccess() OVERRIDE;
 
   void CreationTimedOut();
   void RegistrationCallback(const GoogleServiceAuthError& error,

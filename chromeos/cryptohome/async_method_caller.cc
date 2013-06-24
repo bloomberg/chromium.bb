@@ -70,6 +70,18 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
             "Couldn't initiate async mount of cryptohome."));
   }
 
+  virtual void AsyncAddKey(const std::string& user_email,
+                           const std::string& passhash,
+                           const std::string& new_passhash,
+                           Callback callback) OVERRIDE {
+    DBusThreadManager::Get()->GetCryptohomeClient()->
+        AsyncAddKey(user_email, passhash, new_passhash, base::Bind(
+            &AsyncMethodCallerImpl::RegisterAsyncCallback,
+            weak_ptr_factory_.GetWeakPtr(),
+            callback,
+            "Couldn't initiate async key addition."));
+  }
+
   virtual void AsyncMountGuest(Callback callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncMountGuest(base::Bind(

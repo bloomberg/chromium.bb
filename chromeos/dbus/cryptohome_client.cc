@@ -22,6 +22,8 @@ namespace {
 // stub_hash = "[user_id]-hash";
 static const char kUserIdStubHashSuffix[] = "-hash";
 
+static const char kCryptohomeAsyncAddKey[] = "AddKey";
+
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
  public:
@@ -165,6 +167,23 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
     // deprecated_tracked_subdirectories
     writer.AppendArrayOfStrings(std::vector<std::string>());
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncAddKey(const std::string& username,
+                           const std::string& key,
+                           const std::string& new_key,
+                           const AsyncMethodCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 /*cryptohome::*/kCryptohomeAsyncAddKey);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(username);
+    writer.AppendString(key);
+    writer.AppendString(new_key);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -869,6 +888,14 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
                           const std::string& key,
                           int flags,
                           const AsyncMethodCallback& callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback, false);
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncAddKey(const std::string& username,
+                           const std::string& key,
+                           const std::string& new_key,
+                           const AsyncMethodCallback& callback) OVERRIDE {
     ReturnAsyncMethodResult(callback, false);
   }
 

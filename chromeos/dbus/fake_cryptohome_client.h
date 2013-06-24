@@ -42,6 +42,10 @@ class FakeCryptohomeClient : public CryptohomeClient {
                           const std::string& key,
                           int flags,
                           const AsyncMethodCallback& callback) OVERRIDE;
+  virtual void AsyncAddKey(const std::string& username,
+                           const std::string& key,
+                           const std::string& new_key,
+                           const AsyncMethodCallback& callback) OVERRIDE;
   virtual void AsyncMountGuest(const AsyncMethodCallback& callback) OVERRIDE;
   virtual void TpmIsReady(const BoolDBusMethodCallback& callback) OVERRIDE;
   virtual void TpmIsEnabled(const BoolDBusMethodCallback& callback) OVERRIDE;
