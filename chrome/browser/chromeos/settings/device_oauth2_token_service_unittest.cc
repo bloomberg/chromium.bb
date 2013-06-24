@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/signin/oauth2_token_service_test_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -83,6 +84,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     CryptohomeLibrary::SetForTest(NULL);
+    base::RunLoop().RunUntilIdle();
   }
 
   // Utility method to set a value in Local State for the device refresh token
