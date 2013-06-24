@@ -420,7 +420,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
           'gotit',
           'managedUserCreationFlow',
           this.gotItButtonPressed_.bind(this),
-          ['created-1', 'created-2', 'created-3'],
+          ['created-1'],
           ['custom-appearance', 'button-fancy', 'button-blue']));
       return buttons;
     },
@@ -617,14 +617,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
                        'manager',
                        'username',
                        'error',
-                       'created-1',
-                       'created-2',
-                       'created-3'];
+                       'created-1'];
       var pageButtons = {'intro' : 'start',
                          'error' : 'error',
-                         'created-1' : 'gotit',
-                         'created-2' : 'gotit',
-                         'created-3' : 'gotit'};
+                         'created-1' : 'gotit'};
       this.hideStatus_();
       for (i in pageNames) {
         var pageName = pageNames[i];
@@ -657,14 +653,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     gotItButtonPressed_: function() {
-      if (this.currentPage_ == 'created-1') {
-        this.setVisiblePage_('created-2');
-        return;
-      }
-      if (this.currentPage_ == 'created-2') {
-        this.setVisiblePage_('created-3');
-        return;
-      }
       chrome.send('finishLocalManagedUserCreation');
     },
 
@@ -775,7 +763,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     cancel: function() {
       var notSignedInPages = ['intro', 'manager'];
-      var postCreationPages = ['created-1', 'created-2', 'created-3'];
+      var postCreationPages = ['created-1'];
       if (notSignedInPages.indexOf(this.currentPage_) >= 0) {
         // Make sure no manager password is kept:
         this.managerList_.clearPods();
@@ -803,13 +791,6 @@ login.createScreen('LocallyManagedUserCreationScreen',
           loadTimeData.getString('managementURL'), this.context_.managedName);
       this.updateElementText_('created-1-text-3',
           'createManagedUserCreated1Text3',
-          managerId);
-      this.updateElementText_('created-3-text-2',
-          'createManagedUserCreated3Text2',
-          loadTimeData.getString('managementURL'),
-          managerId);
-      this.updateElementText_('created-3-text-3',
-          'createManagedUserCreated3Text3',
           managerId);
       this.updateElementText_('name-explanation',
           'createManagedUserNameExplanation',

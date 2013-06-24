@@ -542,23 +542,6 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_3" desc="Supervised user dialog, getting started page 1, paragraph 3">
     Please check your email at <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> for further instructions.
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_2_TEXT_1" desc="Supervised user dialog, getting started page 2, paragraph 1">
-    You will see the supervised users on your Chromebook's sign-in screen.
-  </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_2_TEXT_2" desc="Supervised user dialog, getting started page 2, paragraph 2">
-    Lorem ipsum lorem ipsum lorem ipsum lorem ipsum.
-  </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_1" desc="Supervised user dialog, getting started page 3, paragraph 1">
-    Manage your supervised user's activity
-  </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_2" desc="Supervised user dialog, getting started page 3, paragraph 2">
-    As a manager of this supervised user, you can review the supervised user's visited web sites, determine sites you wish to allow or restrict, and configure other settings
-    by visiting <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> and signing in as
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$2<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
-  </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_3" desc="Supervised user dialog, getting started page 3, paragraph 3">
-    For help, please check your email at <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> for further instructions.
-  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_GOT_IT_BUTTON_TITLE" desc="Text for button on a screen with successful supervised user creation text">
     Got it!
   </message>

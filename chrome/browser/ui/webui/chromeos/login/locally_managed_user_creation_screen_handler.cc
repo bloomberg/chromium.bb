@@ -99,19 +99,7 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
   builder->Add("createManagedUserCreated1Text2",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_2);
   builder->Add("createManagedUserCreated1Text3",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_3);
-
-  builder->Add("createManagedUserCreated2Text1",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_2_TEXT_1);
-  builder->Add("createManagedUserCreated2Text2",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_2_TEXT_2);
-
-  builder->Add("createManagedUserCreated3Text1",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_1);
-  builder->Add("createManagedUserCreated3Text2",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_2);
-  builder->Add("createManagedUserCreated3Text3",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_3);
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_3);
 
   builder->Add("managementURL", chrome::kSupervisedUserManagementDisplayURL);
 }
