@@ -130,10 +130,9 @@ const std::string DateTimeFormatter::FormatString() const {
       calendar.set(UCAL_MINUTE, minute_);
       calendar.set(UCAL_SECOND, second_);
     }
-    UDate time = calendar.getTime(success);
     icu::SimpleDateFormat formatter(*pattern_, success);
     icu::UnicodeString formatted_time;
-    formatter.format(time, formatted_time, success);
+    formatter.format(calendar, formatted_time, NULL, success);
     UTF16ToUTF8(formatted_time.getBuffer(),
                 static_cast<size_t>(formatted_time.length()),
                 &result);

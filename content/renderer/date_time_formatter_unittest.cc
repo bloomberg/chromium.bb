@@ -138,9 +138,8 @@ TEST(RendererDateTimePickerTest, TestParserValidDateInputs) {
                          2013, 3, 23, 15, 47, 0, 0, 0);
   EXPECT_EQ("2013-04-23T15:47", sut2.GetFormattedValue());
 
-  // Disabling this case due to crbug.com/253231
-  //DateTimeFormatter sut3(ui::TEXT_INPUT_TYPE_WEEK, 0, 0, 0, 0, 0, 0, 2012, 2);
-  //EXPECT_EQ("2012-W02", sut3.GetFormattedValue());
+  DateTimeFormatter sut3(ui::TEXT_INPUT_TYPE_WEEK, 0, 0, 0, 0, 0, 0, 2012, 2);
+  EXPECT_EQ("2012-W02", sut3.GetFormattedValue());
 }
 
 TEST(RendererDateTimePickerTest, TestParserInvalidDateInputs) {
