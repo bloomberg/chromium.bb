@@ -129,7 +129,13 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                ssl_client_auth, ssl_client_cas, ssl_bulk_ciphers,
                record_resume_info, tls_intolerant):
     self.cert_chain = tlslite.api.X509CertChain().parseChain(pem_cert_and_key)
-    self.private_key = tlslite.api.parsePEMKey(pem_cert_and_key, private=True)
+    # Force using only python implementation - otherwise behavior is different
+    # depending on whether m2crypto Python module is present (error is thrown
+    # when it is). m2crypto uses a C (based on OpenSSL) implementation under
+    # the hood.
+    self.private_key = tlslite.api.parsePEMKey(pem_cert_and_key,
+                                               private=True,
+                                               implementations=['python'])
     self.ssl_client_auth = ssl_client_auth
     self.ssl_client_cas = []
     self.tls_intolerant = tls_intolerant
