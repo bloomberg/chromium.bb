@@ -62,3 +62,12 @@ def ChromeRevision():
     The Chrome revision as a string. e.g. "12345"
   '''
   return lastchange.FetchVersionInfo(None).revision
+
+def NaClRevision():
+  '''Extract NaCl revision from svn.
+
+  Returns:
+    The NaCl revision as a string. e.g. "12345"
+  '''
+  nacl_dir = os.path.join(SRC_DIR, 'native_client')
+  return lastchange.FetchVersionInfo(None, nacl_dir).revision

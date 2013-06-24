@@ -161,14 +161,16 @@ TEXT_FILES = [
   'README.Makefiles',
 ]
 
-def BuildStepCopyTextFiles(pepperdir, pepper_ver, revision):
+def BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision,
+                           nacl_revision):
   buildbot_common.BuildStep('Add Text Files')
   InstallFiles(SDK_SRC_DIR, pepperdir, TEXT_FILES)
 
   # Replace a few placeholders in README
   readme_text = open(os.path.join(SDK_SRC_DIR, 'README')).read()
   readme_text = readme_text.replace('${VERSION}', pepper_ver)
-  readme_text = readme_text.replace('${REVISION}', revision)
+  readme_text = readme_text.replace('${CHROME_REVISION}', chrome_revision)
+  readme_text = readme_text.replace('${NACL_REVISION}', nacl_revision)
 
   # Year/Month/Day Hour:Minute:Second
   time_format = '%Y/%m/%d %H:%M:%S'
@@ -749,7 +751,8 @@ def BuildStepTarBundle(pepper_ver, tarfile):
 
 
 
-def GetManifestBundle(pepper_ver, revision, tarfile, archive_url):
+def GetManifestBundle(pepper_ver, chrome_revision, nacl_revision, tarfile,
+                      archive_url):
   with open(tarfile, 'rb') as tarfile_stream:
     archive_sha1, archive_size = manifest_util.DownloadAndComputeHash(
         tarfile_stream)
@@ -760,17 +763,20 @@ def GetManifestBundle(pepper_ver, revision, tarfile, archive_url):
   archive.checksum = archive_sha1
 
   bundle = manifest_util.Bundle('pepper_' + pepper_ver)
-  bundle.revision = int(revision)
+  bundle.revision = int(chrome_revision)
   bundle.repath = 'pepper_' + pepper_ver
   bundle.version = int(pepper_ver)
-  bundle.description = 'Chrome %s bundle, revision %s' % (pepper_ver, revision)
+  bundle.description = (
+      'Chrome %s bundle. Chrome revision: %s. NaCl revision: %s' % (
+            pepper_ver, chrome_revision, nacl_revision))
   bundle.stability = 'dev'
   bundle.recommended = 'no'
   bundle.archives = [archive]
   return bundle
 
 
-def BuildStepArchiveBundle(name, pepper_ver, revision, tarfile):
+def BuildStepArchiveBundle(name, pepper_ver, chrome_revision, nacl_revision,
+                           tarfile):
   buildbot_common.BuildStep('Archive %s' % name)
   bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s' % (
       build_version.ChromeVersion(),)
@@ -781,7 +787,8 @@ def BuildStepArchiveBundle(name, pepper_ver, revision, tarfile):
   # generate "manifest snippet" for this archive.
   archive_url = GSTORE + 'nacl_sdk/%s/%s' % (
       build_version.ChromeVersion(), tarname)
-  bundle = GetManifestBundle(pepper_ver, revision, tarfile, archive_url)
+  bundle = GetManifestBundle(pepper_ver, chrome_revision, nacl_revision,
+                             tarfile, archive_url)
 
   manifest_snippet_file = os.path.join(OUT_DIR, tarname + '.json')
   with open(manifest_snippet_file, 'wb') as manifest_snippet_stream:
@@ -902,7 +909,8 @@ def main(args):
     parser.error('Incompatible arguments with archive.')
 
   chrome_version = int(build_version.ChromeMajorVersion())
-  clnumber = build_version.ChromeRevision()
+  chrome_revision = build_version.ChromeRevision()
+  nacl_revision = build_version.NaClRevision()
   pepper_ver = str(chrome_version)
   pepper_old = str(chrome_version - 1)
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
@@ -912,7 +920,7 @@ def main(args):
 
   if options.release:
     pepper_ver = options.release
-  print 'Building PEPPER %s at %s' % (pepper_ver, clnumber)
+  print 'Building PEPPER %s at %s' % (pepper_ver, chrome_revision)
 
   if 'NACL_SDK_ROOT' in os.environ:
     # We don't want the currently configured NACL_SDK_ROOT to have any effect
@@ -926,7 +934,7 @@ def main(args):
     BuildStepDownloadToolchains()
     BuildStepUntarToolchains(pepperdir, platform, arch, toolchains)
 
-  BuildStepCopyTextFiles(pepperdir, pepper_ver, clnumber)
+  BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision, nacl_revision)
   BuildStepBuildToolchains(pepperdir, platform, toolchains)
 
   BuildStepUpdateHelpers(pepperdir, platform, True)
@@ -952,9 +960,11 @@ def main(args):
 
   # Archive on non-trybots.
   if options.archive:
-    BuildStepArchiveBundle('build', pepper_ver, clnumber, tarfile)
+    BuildStepArchiveBundle('build', pepper_ver, chrome_revision, nacl_revision,
+                           tarfile)
     if options.build_ports and platform == 'linux':
-      BuildStepArchiveBundle('naclports', pepper_ver, clnumber, ports_tarfile)
+      BuildStepArchiveBundle('naclports', pepper_ver, chrome_revision,
+                             nacl_revision, ports_tarfile)
     BuildStepArchiveSDKTools()
 
   return 0

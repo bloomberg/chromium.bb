@@ -3,7 +3,8 @@ Welcome to the Native Client SDK
 
 Native Client Tools Bundle
 Version: ${VERSION}
-Revision: ${REVISION}
+Chrome Revision: ${CHROME_REVISION}
+Native Client Revision: ${NACL_REVISION}
 Build Date: ${DATE}
 
 Please refer to the online documentation here:
