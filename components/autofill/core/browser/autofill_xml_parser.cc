@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/core/browser/autofill_server_field_info.h"
 #include "third_party/libjingle/source/talk/xmllite/qname.h"
@@ -42,7 +43,9 @@ AutofillQueryXmlParser::AutofillQueryXmlParser(
       upload_required_(upload_required),
       experiment_id_(experiment_id),
       page_meta_data_(page_meta_data),
-      current_click_element_(NULL) {
+      current_click_element_(NULL),
+      current_page_number_for_page_types_(0),
+      is_in_type_section_(false) {
   DCHECK(upload_required_);
   DCHECK(experiment_id_);
   DCHECK(page_meta_data_);
@@ -140,6 +143,17 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
         back();
   } else if (element.compare("web_element") == 0) {
     ParseElementDescriptor(context, attrs, current_click_element_);
+  } else if (element.compare("flow_page") == 0) {
+    while (*attrs) {
+      buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
+      ++attrs;
+      const std::string& attribute_name = attribute_qname.LocalPart();
+      if (attribute_name.compare("page_no") == 0)
+        current_page_number_for_page_types_ = GetIntValue(context, *attrs);
+      ++attrs;
+    }
+  } else if (element.compare("type") == 0) {
+    is_in_type_section_ = true;
   }
 }
 
@@ -168,6 +182,27 @@ void AutofillQueryXmlParser::ParseElementDescriptor(
       element_descriptor->descriptor = attribute_value;
       break;
     }
+  }
+}
+
+void AutofillQueryXmlParser::EndElement(buzz::XmlParseContext* context,
+                                   const char* name) {
+  is_in_type_section_ = false;
+}
+
+void AutofillQueryXmlParser::CharacterData(
+    buzz::XmlParseContext* context, const char* text, int len) {
+  if (!is_in_type_section_)
+    return;
+
+  int type = -1;
+  base::StringToInt(text, &type);
+  if (type >= AUTOCHECKOUT_STEP_MIN_VALUE &&
+      type <= AUTOCHECKOUT_STEP_MAX_VALUE) {
+    AutocheckoutStepType step_type =
+        static_cast<AutocheckoutStepType>(type);
+    page_meta_data_->page_types[current_page_number_for_page_types_]
+        .push_back(step_type);
   }
 }
 

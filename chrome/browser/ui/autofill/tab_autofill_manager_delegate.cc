@@ -168,10 +168,15 @@ void TabAutofillManagerDelegate::HideAutofillPopup() {
     popup_controller_->Hide();
 }
 
-void TabAutofillManagerDelegate::UpdateProgressBar(double value) {
-  // |dialog_controller_| is a WeakPtr, but we require it to be present when
-  // |UpdateProgressBar| is called, so we intentionally do not do NULL check.
-  dialog_controller_->UpdateProgressBar(value);
+void TabAutofillManagerDelegate::AddAutocheckoutStep(
+    AutocheckoutStepType step_type) {
+  dialog_controller_->AddAutocheckoutStep(step_type);
+}
+
+void TabAutofillManagerDelegate::UpdateAutocheckoutStep(
+    AutocheckoutStepType step_type,
+    AutocheckoutStepStatus step_status) {
+  dialog_controller_->UpdateAutocheckoutStep(step_type, step_status);
 }
 
 bool TabAutofillManagerDelegate::IsAutocompleteEnabled() {

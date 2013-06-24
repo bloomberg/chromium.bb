@@ -312,11 +312,6 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     }
 
     @Override
-    public String getProgressBarText() {
-        return nativeGetProgressBarText(mNativeDialogPopup);
-    }
-
-    @Override
     public boolean isTheAddItem(int section, int position) {
         return nativeIsTheAddItem(mNativeDialogPopup, section, position);
     }
@@ -439,7 +434,6 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
             int dialogButtonId);
     private native String nativeGetSaveLocallyText(int nativeAutofillDialogViewAndroid);
     private native String nativeGetLegalDocumentsText(int nativeAutofillDialogViewAndroid);
-    private native String nativeGetProgressBarText(int nativeAutofillDialogViewAndroid);
     private native boolean nativeIsTheAddItem(
             int nativeAutofillDialogViewAndroid, int section, int index);
 }

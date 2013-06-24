@@ -202,11 +202,6 @@ public class AutofillDialog extends Dialog
         public String getLegalDocumentsText();
 
         /**
-         * @return The progress bar label.
-         */
-        public String getProgressBarText();
-
-        /**
          * @param section The section.
          * @param position The index of an item.
          * @return Whether an item is the "Add..." item.

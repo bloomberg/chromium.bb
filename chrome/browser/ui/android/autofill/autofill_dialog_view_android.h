@@ -29,6 +29,7 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateDetailArea() OVERRIDE;
   virtual void UpdateForErrors() OVERRIDE;
+  virtual void UpdateAutocheckoutStepsArea() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void FillSection(DialogSection section,
                            const DetailInput& originating_input) OVERRIDE;
@@ -96,8 +97,6 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
                                                                 jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetLegalDocumentsText(JNIEnv* env,
                                                                    jobject obj);
-  base::android::ScopedJavaLocalRef<jstring> GetProgressBarText(JNIEnv* env,
-                                                                jobject obj);
   jboolean IsTheAddItem(JNIEnv* env, jobject obj, jint section, jint index);
 
   static bool RegisterAutofillDialogViewAndroid(JNIEnv* env);

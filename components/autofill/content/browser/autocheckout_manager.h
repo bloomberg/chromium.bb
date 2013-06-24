@@ -120,6 +120,9 @@ class AutocheckoutManager {
   // field type specified by |field|.
   void SetValue(const AutofillField& field, FormFieldData* field_to_fill);
 
+  // Sets the progress of all steps for the given page to the provided value.
+  void SetStepProgressForPage(int page_number, AutocheckoutStepStatus status);
+
   AutofillManager* autofill_manager_;  // WEAK; owns us
 
   // Credit card verification code.
@@ -149,6 +152,9 @@ class AutocheckoutManager {
 
   // Whether or not the user is in an Autocheckout flow.
   bool in_autocheckout_flow_;
+
+  // AutocheckoutStepTypes for the various pages of the flow.
+  std::map<int, std::vector<AutocheckoutStepType> > page_types_;
 
   std::string google_transaction_id_;
 

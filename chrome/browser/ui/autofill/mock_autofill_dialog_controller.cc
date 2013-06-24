@@ -45,10 +45,6 @@ string16 MockAutofillDialogController::SaveLocallyText() const {
   return string16();
 }
 
-string16 MockAutofillDialogController::ProgressBarText() const {
-  return string16();
-}
-
 string16 MockAutofillDialogController::LegalDocumentsText() {
   return string16();
 }
@@ -159,6 +155,11 @@ void MockAutofillDialogController::ViewClosed() {}
 std::vector<DialogNotification> MockAutofillDialogController::
     CurrentNotifications() {
   return std::vector<DialogNotification>();
+}
+
+std::vector<DialogAutocheckoutStep> MockAutofillDialogController::
+    CurrentAutocheckoutSteps() const {
+  return std::vector<DialogAutocheckoutStep>();
 }
 
 void MockAutofillDialogController::SignInLinkClicked() {}

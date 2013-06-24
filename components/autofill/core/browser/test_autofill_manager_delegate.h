@@ -51,8 +51,12 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
       const std::vector<int>& identifiers,
       base::WeakPtr<AutofillPopupDelegate> delegate) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
-  virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
+
+  virtual void AddAutocheckoutStep(AutocheckoutStepType step_type) OVERRIDE;
+  virtual void UpdateAutocheckoutStep(
+      AutocheckoutStepType step_type,
+      AutocheckoutStepStatus step_status) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManagerDelegate);

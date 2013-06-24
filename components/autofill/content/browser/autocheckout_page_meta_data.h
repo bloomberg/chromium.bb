@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_PAGE_META_DATA_H_
 #define COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_PAGE_META_DATA_H_
 
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "components/autofill/content/browser/autocheckout_steps.h"
 #include "components/autofill/core/common/web_element_descriptor.h"
 
 namespace autofill {
@@ -60,6 +62,11 @@ struct AutocheckoutPageMetaData {
   // |proceed_element_descriptor| is optional, we separate it from
   // |click_elements_after_form_fill|.
   WebElementDescriptor proceed_element_descriptor;
+
+  // Mapping of page numbers to the types of Autocheckout actions that will be
+  // performed on the given page of a multipage Autofill flow.
+  // If this form doesn't belong to such a flow, the map will be empty.
+  std::map<int, std::vector<AutocheckoutStepType> > page_types;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutocheckoutPageMetaData);

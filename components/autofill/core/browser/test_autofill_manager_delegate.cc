@@ -60,7 +60,12 @@ void TestAutofillManagerDelegate::ShowAutofillPopup(
 
 void TestAutofillManagerDelegate::HideAutofillPopup() {}
 
-void TestAutofillManagerDelegate::UpdateProgressBar(double value) {}
+void TestAutofillManagerDelegate::AddAutocheckoutStep(
+    AutocheckoutStepType step_type) {}
+
+void TestAutofillManagerDelegate::UpdateAutocheckoutStep(
+    AutocheckoutStepType step_type,
+    AutocheckoutStepStatus step_status) {}
 
 bool TestAutofillManagerDelegate::IsAutocompleteEnabled() {
   return true;

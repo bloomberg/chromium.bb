@@ -171,6 +171,13 @@ TEST_F(AutofillQueryXmlParserTest, ParseAutofillFlow) {
                     "<field autofilltype=\"55\"/>"
                     "<autofill_flow page_no=\"1\" total_pages=\"10\">"
                     "<page_advance_button id=\"foo\"/>"
+                    "<flow_page page_no=\"0\">"
+                    "<type>1</type>"
+                    "<type>2</type>"
+                    "</flow_page>"
+                    "<flow_page page_no=\"1\">"
+                    "<type>3</type>"
+                    "</flow_page>"
                     "</autofill_flow>"
                     "</autofillqueryresponse>";
 
@@ -183,6 +190,12 @@ TEST_F(AutofillQueryXmlParserTest, ParseAutofillFlow) {
   EXPECT_EQ("foo", page_meta_data_.proceed_element_descriptor.descriptor);
   EXPECT_EQ(autofill::WebElementDescriptor::ID,
             page_meta_data_.proceed_element_descriptor.retrieval_method);
+  EXPECT_EQ(2U, page_meta_data_.page_types.size());
+  EXPECT_EQ(2U, page_meta_data_.page_types[0].size());
+  EXPECT_EQ(1U, page_meta_data_.page_types[1].size());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_SHIPPING, page_meta_data_.page_types[0][0]);
+  EXPECT_EQ(AUTOCHECKOUT_STEP_DELIVERY, page_meta_data_.page_types[0][1]);
+  EXPECT_EQ(AUTOCHECKOUT_STEP_BILLING, page_meta_data_.page_types[1][0]);
 
   // Clear |field_infos_| for the next test;
   field_infos_.clear();

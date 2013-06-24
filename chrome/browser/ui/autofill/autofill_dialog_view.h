@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_VIEW_H_
 
-#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 
 namespace content {
 class NavigationController;
@@ -38,6 +38,10 @@ class AutofillDialogView {
   // Called when account details may have changed (user logs in to GAIA, creates
   // a new account, etc.).
   virtual void UpdateAccountChooser() = 0;
+
+  // Updates the container displaying detailed steps for Autocheckout. Called
+  // as progress is made through the buyflow.
+  virtual void UpdateAutocheckoutStepsArea() = 0;
 
   // Updates the button strip based on the current controller state.
   virtual void UpdateButtonStrip() = 0;

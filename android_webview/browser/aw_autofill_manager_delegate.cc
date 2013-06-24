@@ -100,7 +100,13 @@ void AwAutofillManagerDelegate::ShowAutofillPopup(
 void AwAutofillManagerDelegate::HideAutofillPopup() {
 }
 
-void AwAutofillManagerDelegate::UpdateProgressBar(double value) {
+void AwAutofillManagerDelegate::AddAutocheckoutStep(
+    autofill::AutocheckoutStepType step_type) {
+}
+
+void AwAutofillManagerDelegate::UpdateAutocheckoutStep(
+    autofill::AutocheckoutStepType step_type,
+    autofill::AutocheckoutStepStatus step_status) {
 }
 
 bool AwAutofillManagerDelegate::IsAutocompleteEnabled() {

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
+#include "components/autofill/content/browser/autocheckout_steps.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
 #include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
@@ -89,12 +90,15 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void Show();
   void Hide();
 
-  // Updates the progress bar based on the Autocheckout progress. |value| should
-  // be in [0.0, 1.0].
-  void UpdateProgressBar(double value);
-
   // Whether Autocheckout is currently running.
   bool AutocheckoutIsRunning() const;
+
+  // Adds a step in the flow to the Autocheckout UI.
+  void AddAutocheckoutStep(AutocheckoutStepType step_type);
+
+  // Updates the status of a step in the Autocheckout UI.
+  void UpdateAutocheckoutStep(AutocheckoutStepType step_type,
+                              AutocheckoutStepStatus step_status);
 
   // Called when there is an error in an active Autocheckout flow.
   void OnAutocheckoutError();
@@ -114,7 +118,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 CancelButtonText() const OVERRIDE;
   virtual string16 ConfirmButtonText() const OVERRIDE;
   virtual string16 SaveLocallyText() const OVERRIDE;
-  virtual string16 ProgressBarText() const OVERRIDE;
   virtual string16 LegalDocumentsText() OVERRIDE;
   virtual DialogSignedInState SignedInState() const OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
@@ -162,6 +165,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual gfx::Image SplashPageImage() const OVERRIDE;
   virtual void ViewClosed() OVERRIDE;
   virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE;
+  virtual std::vector<DialogAutocheckoutStep> CurrentAutocheckoutSteps()
+      const OVERRIDE;
   virtual void SignInLinkClicked() OVERRIDE;
   virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
                                                 bool checked) OVERRIDE;
@@ -673,6 +678,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Whether the latency to display to the UI was logged to UMA yet.
   bool was_ui_latency_logged_;
+
+  // State of steps in the current Autocheckout flow, or empty if not an
+  // Autocheckout use case.
+  std::vector<DialogAutocheckoutStep> steps_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };

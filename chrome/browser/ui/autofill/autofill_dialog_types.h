@@ -128,6 +128,35 @@ class DialogNotification {
   bool interactive_;
 };
 
+// A notification to show in the autofill dialog. Ranges from information to
+// seriously scary security messages, and will give you the color it should be
+// displayed (if you ask it).
+class DialogAutocheckoutStep {
+ public:
+  DialogAutocheckoutStep(AutocheckoutStepType type,
+                         AutocheckoutStepStatus status);
+
+  // Returns the appropriate color for the display text based on |status_|.
+  SkColor GetTextColor() const;
+
+  // Returns the appropriate font for the display text based on |status_|.
+  gfx::Font GetTextFont() const;
+
+  // Returns whether the icon for the view should be visable based on |status_|.
+  bool IsIconVisible() const;
+
+  // Returns the display text based on |type_| and |status_|.
+  string16 GetDisplayText() const;
+
+  AutocheckoutStepStatus status() { return status_; }
+
+  AutocheckoutStepType type() { return type_; }
+
+ private:
+  AutocheckoutStepType type_;
+  AutocheckoutStepStatus status_;
+};
+
 extern SkColor const kWarningColor;
 
 enum DialogSignedInState {

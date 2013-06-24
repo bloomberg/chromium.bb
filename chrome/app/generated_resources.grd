@@ -10788,6 +10788,56 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Google Wallet has encounted an unknown error.
       </message>
 
+      <!-- Autofill dialog: step progress -->
+      <message name="IDS_AUTOFILL_STEP_SHIPPING_DETAILS_UNSTARTED" desc="Text describing the task of filling out shipping details in an Autocheckout flow.">
+        Shipping details
+      </message>
+      <message name="IDS_AUTOFILL_STEP_SHIPPING_DETAILS_STARTED" desc="Text describing that the task of filling out shipping details in an Autocheckout flow is in progress.">
+        Submitting shipping details
+      </message>
+      <message name="IDS_AUTOFILL_STEP_SHIPPING_DETAILS_COMPLETE" desc="Text describing that the task of filling out shipping details in an Autocheckout flow is complete.">
+        Shipping details submitted
+      </message>
+      <message name="IDS_AUTOFILL_STEP_SHIPPING_DETAILS_FAILED" desc="Text describing that the task of filling out shipping details in an Autocheckout flow has failed.">
+        Error filling shipping details
+      </message>
+      <message name="IDS_AUTOFILL_STEP_DELIVERY_DETAILS_UNSTARTED" desc="Text describing the task of filling out delivery details in an Autocheckout flow.">
+        Delivery details
+      </message>
+      <message name="IDS_AUTOFILL_STEP_DELIVERY_DETAILS_STARTED" desc="Text describing that the task of filling out delivery details in an Autocheckout flow is in progress.">
+        Submitting delivery details
+      </message>
+      <message name="IDS_AUTOFILL_STEP_DELIVERY_DETAILS_COMPLETE" desc="Text describing that the task of filling out delivery details in an Autocheckout flow is complete.">
+        Delivery details submitted
+      </message>
+      <message name="IDS_AUTOFILL_STEP_DELIVERY_DETAILS_FAILED" desc="Text describing that the task of filling out delivery details in an Autocheckout flow has failed.">
+        Error filling delivery details
+      </message>
+      <message name="IDS_AUTOFILL_STEP_BILLING_DETAILS_UNSTARTED" desc="Text describing the task of filling out billing details in an Autocheckout flow.">
+        Billing details
+      </message>
+      <message name="IDS_AUTOFILL_STEP_BILLING_DETAILS_STARTED" desc="Text describing that the task of filling out billing details in an Autocheckout flow is in progress.">
+        Submitting billing details
+      </message>
+      <message name="IDS_AUTOFILL_STEP_BILLING_DETAILS_COMPLETE" desc="Text describing that the task of filling out billing details in an Autocheckout flow is complete.">
+        Billing details submitted
+      </message>
+      <message name="IDS_AUTOFILL_STEP_BILLING_DETAILS_FAILED" desc="Text describing that the task of filling out billing details in an Autocheckout flow has failed.">
+        Error filling billing details
+      </message>
+      <message name="IDS_AUTOFILL_STEP_PROXY_CARD_UNSTARTED" desc="Text describing the task of generating a proxy card in an Autocheckout flow.">
+        Google Google Wallet Virtual OneTime Card
+      </message>
+      <message name="IDS_AUTOFILL_STEP_PROXY_CARD_STARTED" desc="Text describing that the task of generating a proxy card in an Autocheckout flow is in progress.">
+        Generating Google Wallet Virtual OneTime Card
+      </message>
+      <message name="IDS_AUTOFILL_STEP_PROXY_CARD_COMPLETE" desc="Text describing that the task of generating a proxy card in an Autocheckout flow is complete.">
+        Google Wallet Virtual OneTime Card generated
+      </message>
+      <message name="IDS_AUTOFILL_STEP_PROXY_CARD_FAILED" desc="Text describing that the task of generating a proxy card in an Autocheckout flow has failed.">
+        Error generating Google Wallet Virtual OneTime Card
+      </message>
+
       <!-- Autofill dialog: detail section -->
       <message name="IDS_AUTOFILL_DIALOG_EDIT" desc="Text of link in autofill dialog which allows user to edit address + payment info.">
         Edit

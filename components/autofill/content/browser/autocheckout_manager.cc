@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/browser/autocheckout_request_manager.h"
+#include "components/autofill/content/browser/autocheckout_steps.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -204,6 +205,9 @@ void AutocheckoutManager::OnClickFailed(AutocheckoutStatus status) {
   DCHECK_NE(MISSING_FIELDMAPPING, status);
 
   SendAutocheckoutStatus(status);
+  SetStepProgressForPage(page_meta_data_->current_page_number,
+                         AUTOCHECKOUT_STEP_FAILED);
+
   autofill_manager_->delegate()->OnAutocheckoutError();
   in_autocheckout_flow_ = false;
 }
@@ -248,20 +252,29 @@ void AutocheckoutManager::OnLoadedPageMetaData(
     status = CANNOT_PROCEED;
   }
 
-  // Encountered an error during the Autocheckout flow.
+  // Encountered an error during the Autocheckout flow, probably to
+  // do with a problem on the previous page.
   if (!in_autocheckout_flow_) {
+    if (old_meta_data) {
+      SetStepProgressForPage(old_meta_data->current_page_number,
+                             AUTOCHECKOUT_STEP_FAILED);
+    }
     SendAutocheckoutStatus(status);
     autofill_manager_->delegate()->OnAutocheckoutError();
     return;
   }
 
-  // Add 1.0 since page numbers are 0-indexed.
-  autofill_manager_->delegate()->UpdateProgressBar(
-      (1.0 + page_meta_data_->current_page_number) /
-          page_meta_data_->total_pages);
+  SetStepProgressForPage(old_meta_data->current_page_number,
+                         AUTOCHECKOUT_STEP_COMPLETED);
+  SetStepProgressForPage(page_meta_data_->current_page_number,
+                         AUTOCHECKOUT_STEP_STARTED);
+
   FillForms();
-  // If the current page is the last page in the flow, close the dialog.
+  // If the current page is the last page in the flow, set in-progress
+  // steps to 'completed', and send status.
   if (page_meta_data_->IsEndOfAutofillableFlow()) {
+    SetStepProgressForPage(page_meta_data_->current_page_number,
+                           AUTOCHECKOUT_STEP_COMPLETED);
     SendAutocheckoutStatus(status);
     autofill_manager_->delegate()->OnAutocheckoutSuccess();
     in_autocheckout_flow_ = false;
@@ -352,14 +365,19 @@ void AutocheckoutManager::ReturnAutocheckoutData(
     }
   }
 
-  // Add 1.0 since page numbers are 0-indexed.
-  autofill_manager_->delegate()->UpdateProgressBar(
-      (1.0 + page_meta_data_->current_page_number) /
-          page_meta_data_->total_pages);
+  // Page types only available in first-page meta data, so save
+  // them for use later as we navigate.
+  page_types_ = page_meta_data_->page_types;
+  SetStepProgressForPage(page_meta_data_->current_page_number,
+                         AUTOCHECKOUT_STEP_STARTED);
+
   FillForms();
 
-  // If the current page is the last page in the flow, close the dialog.
+  // If the current page is the last page in the flow, set in-progress
+  // steps to 'completed', and send status.
   if (page_meta_data_->IsEndOfAutofillableFlow()) {
+    SetStepProgressForPage(page_meta_data_->current_page_number,
+                           AUTOCHECKOUT_STEP_COMPLETED);
     SendAutocheckoutStatus(SUCCESS);
     autofill_manager_->delegate()->OnAutocheckoutSuccess();
     in_autocheckout_flow_ = false;
@@ -387,6 +405,14 @@ void AutocheckoutManager::MaybeShowAutocheckoutDialog(
                  weak_ptr_factory_.GetWeakPtr());
   autofill_manager_->ShowRequestAutocompleteDialog(
       form, frame_url, DIALOG_TYPE_AUTOCHECKOUT, callback);
+
+  for (std::map<int, std::vector<AutocheckoutStepType> >::const_iterator
+          it = page_meta_data_->page_types.begin();
+      it != page_meta_data_->page_types.end(); ++it) {
+    for (size_t i = 0; i < it->second.size(); ++i) {
+      autofill_manager_->delegate()->AddAutocheckoutStep(it->second[i]);
+    }
+  }
 }
 
 void AutocheckoutManager::ShowAutocheckoutBubble(
@@ -486,6 +512,17 @@ void AutocheckoutManager::SendAutocheckoutStatus(AutocheckoutStatus status) {
       AutocheckoutStatusToUmaMetric(status));
 
   google_transaction_id_ = kTransactionIdNotSet;
+}
+
+void AutocheckoutManager::SetStepProgressForPage(
+    int page_number,
+    AutocheckoutStepStatus status) {
+  if (page_types_.count(page_number) == 1) {
+    for (size_t i = 0; i < page_types_[page_number].size(); ++i) {
+      autofill_manager_->delegate()->UpdateAutocheckoutStep(
+          page_types_[page_number][i], status);
+    }
+  }
 }
 
 }  // namespace autofill

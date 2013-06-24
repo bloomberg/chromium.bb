@@ -566,10 +566,6 @@ void AutofillDialogControllerImpl::Hide() {
     view_->Hide();
 }
 
-void AutofillDialogControllerImpl::UpdateProgressBar(double value) {
-  view_->UpdateProgressBar(value);
-}
-
 bool AutofillDialogControllerImpl::AutocheckoutIsRunning() const {
   return autocheckout_state_ == AUTOCHECKOUT_IN_PROGRESS;
 }
@@ -583,6 +579,7 @@ void AutofillDialogControllerImpl::OnAutocheckoutError() {
   autocheckout_started_timestamp_ = base::Time();
   view_->UpdateNotificationArea();
   view_->UpdateButtonStrip();
+  view_->UpdateAutocheckoutStepsArea();
   view_->UpdateDetailArea();
 }
 
@@ -597,8 +594,46 @@ void AutofillDialogControllerImpl::OnAutocheckoutSuccess() {
   view_->UpdateButtonStrip();
 }
 
+
 TestableAutofillDialogView* AutofillDialogControllerImpl::GetTestableView() {
   return view_ ? view_->GetTestableView() : NULL;
+}
+
+void AutofillDialogControllerImpl::AddAutocheckoutStep(
+    AutocheckoutStepType step_type) {
+  for (size_t i = 0; i < steps_.size(); ++i) {
+    if (steps_[i].type() == step_type)
+      return;
+  }
+  steps_.push_back(
+      DialogAutocheckoutStep(step_type, AUTOCHECKOUT_STEP_UNSTARTED));
+}
+
+void AutofillDialogControllerImpl::UpdateAutocheckoutStep(
+    AutocheckoutStepType step_type,
+    AutocheckoutStepStatus step_status) {
+  int total_steps = 0;
+  int completed_steps = 0;
+  for (size_t i = 0; i < steps_.size(); ++i) {
+    ++total_steps;
+    if (steps_[i].status() == AUTOCHECKOUT_STEP_COMPLETED)
+      ++completed_steps;
+    if (steps_[i].type() == step_type && steps_[i].status() != step_status)
+      steps_[i] = DialogAutocheckoutStep(step_type, step_status);
+  }
+  if (view_) {
+    view_->UpdateAutocheckoutStepsArea();
+    view_->UpdateProgressBar(1.0 * completed_steps / total_steps);
+  }
+}
+
+std::vector<DialogAutocheckoutStep>
+    AutofillDialogControllerImpl::CurrentAutocheckoutSteps() const {
+  if (autocheckout_state_ != AUTOCHECKOUT_NOT_STARTED)
+    return steps_;
+
+  std::vector<DialogAutocheckoutStep> empty_steps;
+  return empty_steps;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -627,11 +662,6 @@ string16 AutofillDialogControllerImpl::ConfirmButtonText() const {
 
 string16 AutofillDialogControllerImpl::SaveLocallyText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX);
-}
-
-string16 AutofillDialogControllerImpl::ProgressBarText() const {
-  return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_PROGRESS_BAR);
 }
 
 string16 AutofillDialogControllerImpl::LegalDocumentsText() {
@@ -682,14 +712,10 @@ string16 AutofillDialogControllerImpl::SignInLinkText() const {
 }
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
-  // If Autocheckout is running, hide this checkbox so the progress bar has some
-  // room. If Autocheckout had an error, neither the [X] Save details in chrome
-  // nor the progress bar should show.
   return !IsPayingWithWallet() &&
       !profile_->IsOffTheRecord() &&
       IsManuallyEditingAnySection() &&
-      !ShouldShowProgressBar() &&
-      autocheckout_state_ != AUTOCHECKOUT_ERROR;
+      ShouldShowDetailArea();
 }
 
 int AutofillDialogControllerImpl::GetDialogButtons() const {
@@ -1676,6 +1702,21 @@ void AutofillDialogControllerImpl::OnAccept() {
   choose_another_instrument_or_address_ = false;
   wallet_server_validation_recoverable_ = true;
   HidePopup();
+  if (IsPayingWithWallet()) {
+    bool has_proxy_card_step = false;
+    for (size_t i = 0; i < steps_.size(); ++i) {
+      if (steps_[i].type() == AUTOCHECKOUT_STEP_PROXY_CARD) {
+        has_proxy_card_step = true;
+        break;
+      }
+    }
+    if (!has_proxy_card_step) {
+      steps_.insert(steps_.begin(),
+                    DialogAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD,
+                                           AUTOCHECKOUT_STEP_UNSTARTED));
+    }
+  }
+
   SetIsSubmitting(true);
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
     DCHECK(!active_instrument_id_.empty());
@@ -1821,10 +1862,16 @@ void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
 
   // TODO(dbeam): use the returned full wallet. b/8332329
-  if (success)
+  if (success) {
     GetFullWallet();
-  else
+  } else {
     DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
+    SuggestionsUpdated();
+    view_->UpdateNotificationArea();
+    view_->UpdateButtonStrip();
+    view_->UpdateAutocheckoutStepsArea();
+    view_->UpdateDetailArea();
+  }
 }
 
 void AutofillDialogControllerImpl::OnDidGetFullWallet(
@@ -1834,9 +1881,14 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
   full_wallet_ = full_wallet.Pass();
 
   if (full_wallet_->required_actions().empty()) {
+    UpdateAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD,
+                           AUTOCHECKOUT_STEP_COMPLETED);
     FinishSubmit();
     return;
   }
+
+  autocheckout_state_ = AUTOCHECKOUT_NOT_STARTED;
+  view_->UpdateAutocheckoutStepsArea();
 
   switch (full_wallet_->required_actions()[0]) {
     case wallet::CHOOSE_ANOTHER_INSTRUMENT_OR_ADDRESS:
@@ -1857,6 +1909,8 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
       DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
       break;
   }
+
+  view_->UpdateDetailArea();
 }
 
 void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
@@ -2154,6 +2208,14 @@ void AutofillDialogControllerImpl::DisableWallet(
   wallet_items_.reset();
   wallet_errors_.clear();
   GetWalletClient()->CancelRequests();
+  autocheckout_state_ = AUTOCHECKOUT_NOT_STARTED;
+  for (std::vector<DialogAutocheckoutStep>::iterator it = steps_.begin();
+      it != steps_.end(); ++it) {
+    if (it->type() == AUTOCHECKOUT_STEP_PROXY_CARD) {
+      steps_.erase(it);
+      break;
+    }
+  }
   SetIsSubmitting(false);
   account_chooser_model_.SetHadWalletError(WalletErrorMessage(error_type));
 }
@@ -2706,6 +2768,16 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
     DCHECK(!active_address_id_.empty());
   }
 
+  if (GetDialogType() == DIALOG_TYPE_AUTOCHECKOUT) {
+    DCHECK_EQ(AUTOCHECKOUT_NOT_STARTED, autocheckout_state_);
+    autocheckout_state_ = AUTOCHECKOUT_IN_PROGRESS;
+    if (view_) {
+      view_->UpdateButtonStrip();
+      view_->UpdateAutocheckoutStepsArea();
+      view_->UpdateDetailArea();
+    }
+  }
+
   scoped_ptr<wallet::Instrument> inputted_instrument =
       CreateTransientInstrument();
   scoped_ptr<wallet::WalletClient::UpdateInstrumentRequest> update_request =
@@ -2835,6 +2907,9 @@ void AutofillDialogControllerImpl::GetFullWallet() {
   std::vector<wallet::WalletClient::RiskCapability> capabilities;
   capabilities.push_back(wallet::WalletClient::VERIFY_CVC);
 
+  UpdateAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD,
+                         AUTOCHECKOUT_STEP_STARTED);
+
   GetWalletClient()->GetFullWallet(wallet::WalletClient::FullWalletRequest(
       active_instrument_id_,
       active_address_id_,
@@ -2923,9 +2998,9 @@ void AutofillDialogControllerImpl::FinishSubmit() {
     // in an Autocheckout flow.
     GetManager()->RemoveObserver(this);
     autocheckout_started_timestamp_ = base::Time::Now();
-    DCHECK_EQ(AUTOCHECKOUT_NOT_STARTED, autocheckout_state_);
     autocheckout_state_ = AUTOCHECKOUT_IN_PROGRESS;
     view_->UpdateButtonStrip();
+    view_->UpdateAutocheckoutStepsArea();
     view_->UpdateDetailArea();
     view_->UpdateNotificationArea();
   }

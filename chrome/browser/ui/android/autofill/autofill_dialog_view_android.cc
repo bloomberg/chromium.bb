@@ -135,6 +135,10 @@ void AutofillDialogViewAndroid::UpdateForErrors() {
   NOTIMPLEMENTED();
 }
 
+void AutofillDialogViewAndroid::UpdateAutocheckoutStepsArea() {
+  NOTIMPLEMENTED();
+}
+
 void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
   UpdateOrFillSectionToJava(section, true, UNKNOWN_TYPE);
 }
@@ -296,14 +300,6 @@ ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetLegalDocumentsText(
   return base::android::ConvertUTF16ToJavaString(
       env,
       controller_->LegalDocumentsText());
-}
-
-ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetProgressBarText(
-    JNIEnv* env,
-    jobject obj) {
-  return base::android::ConvertUTF16ToJavaString(
-      env,
-      controller_->ProgressBarText());
 }
 
 jboolean AutofillDialogViewAndroid::IsTheAddItem(

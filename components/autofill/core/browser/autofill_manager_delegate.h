@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "components/autofill/content/browser/autocheckout_steps.h"
 
 namespace content {
 struct PasswordForm;
@@ -127,11 +128,14 @@ class AutofillManagerDelegate {
   // Hide the Autofill popup if one is currently showing.
   virtual void HideAutofillPopup() = 0;
 
-  // Updates the Autocheckout progress bar. |value| must be in [0.0, 1.0].
-  virtual void UpdateProgressBar(double value) = 0;
-
   // Whether the Autocomplete feature of Autofill should be enabled.
   virtual bool IsAutocompleteEnabled() = 0;
+
+  // Update progress of the Autocheckout flow as displayed to the user.
+  virtual void AddAutocheckoutStep(AutocheckoutStepType step_type) = 0;
+  virtual void UpdateAutocheckoutStep(
+      AutocheckoutStepType step_type,
+      AutocheckoutStepStatus step_status) = 0;
 };
 
 }  // namespace autofill

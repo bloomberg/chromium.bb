@@ -46,7 +46,6 @@ class AutofillDialogController {
   virtual string16 CancelButtonText() const = 0;
   virtual string16 ConfirmButtonText() const = 0;
   virtual string16 SaveLocallyText() const = 0;
-  virtual string16 ProgressBarText() const = 0;
   virtual string16 LegalDocumentsText() = 0;
 
   // State ---------------------------------------------------------------------
@@ -172,6 +171,11 @@ class AutofillDialogController {
   // Returns dialog notifications that the view should currently be showing in
   // order from top to bottom.
   virtual std::vector<DialogNotification> CurrentNotifications() = 0;
+
+  // Returns Autocheckout steps that the view should currently be showing in
+  // order from first to last.
+  virtual std::vector<DialogAutocheckoutStep> CurrentAutocheckoutSteps()
+      const = 0;
 
   // Begins or aborts the flow to sign into Wallet.
   virtual void SignInLinkClicked() = 0;

@@ -79,6 +79,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void UpdateAccountChooser() OVERRIDE;
+  virtual void UpdateAutocheckoutStepsArea() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateDetailArea() OVERRIDE;
   virtual void UpdateForErrors() OVERRIDE;
@@ -463,13 +464,26 @@ class AutofillDialogViews : public AutofillDialogView,
     views::ImageButton* suggested_button;
   };
 
+  // Area for displaying that status of various steps in an Autocheckout flow.
+  class AutocheckoutStepsArea : public views::View {
+   public:
+    AutocheckoutStepsArea();
+    virtual ~AutocheckoutStepsArea() {}
+
+    // Display the given steps.
+    void SetSteps(const std::vector<DialogAutocheckoutStep>& steps);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(AutocheckoutStepsArea);
+  };
+
   class AutocheckoutProgressBar : public views::ProgressBar {
    public:
     AutocheckoutProgressBar();
     virtual ~AutocheckoutProgressBar();
 
    private:
-    // Overidden from View:
+    // Overriden from View
     virtual gfx::Size GetPreferredSize() OVERRIDE;
 
     DISALLOW_COPY_AND_ASSIGN(AutocheckoutProgressBar);
@@ -610,6 +624,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // This checkbox controls whether new details are saved to the Autofill
   // database. It lives in |extra_view_|.
   views::Checkbox* save_in_chrome_checkbox_;
+
+  // View to host Autocheckout steps.
+  AutocheckoutStepsArea* autocheckout_steps_area_;
 
   // View to host |autocheckout_progress_bar_| and its label.
   views::View* autocheckout_progress_bar_view_;

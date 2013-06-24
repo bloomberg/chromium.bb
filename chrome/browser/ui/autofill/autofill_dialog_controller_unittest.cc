@@ -125,6 +125,7 @@ class TestAutofillDialogView : public AutofillDialogView {
   virtual void UpdateAccountChooser() OVERRIDE {}
   virtual void UpdateButtonStrip() OVERRIDE {}
   virtual void UpdateDetailArea() OVERRIDE {}
+  virtual void UpdateAutocheckoutStepsArea() OVERRIDE {}
   virtual void UpdateSection(DialogSection section) OVERRIDE {}
   virtual void FillSection(DialogSection section,
                            const DetailInput& originating_input) OVERRIDE {};
@@ -2015,7 +2016,6 @@ TEST_F(AutofillDialogControllerTest, ChooseAnotherInstrumentOrAddress) {
 
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::REQUIRED_ACTION).size());
-
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetWalletItems(_)).Times(1);
   controller()->OnDidGetFullWallet(
@@ -2026,6 +2026,97 @@ TEST_F(AutofillDialogControllerTest, ChooseAnotherInstrumentOrAddress) {
   controller()->OnAccept();
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::REQUIRED_ACTION).size());
+}
+
+// Make sure detailed steps for Autocheckout are added
+// and updated correctly.
+TEST_F(AutofillDialogControllerTest, DetailedSteps) {
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+            GetFullWallet(_)).Times(1);
+
+  controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
+
+  // Add steps as would normally be done by the AutocheckoutManager.
+  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_SHIPPING);
+  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_DELIVERY);
+  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_BILLING);
+
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  // Initiate flow - should add proxy card step since the user is using wallet
+  // data.
+  controller()->OnAccept();
+  controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
+
+  SuggestionState suggestion_state =
+      controller()->SuggestionStateForSection(SECTION_CC_BILLING);
+  EXPECT_TRUE(suggestion_state.extra_text.empty());
+
+  // There should be four steps total, with the first being the card generation
+  // step added by the dialog controller.
+  EXPECT_EQ(4U, controller()->CurrentAutocheckoutSteps().size());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_PROXY_CARD,
+            controller()->CurrentAutocheckoutSteps()[0].type());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_STARTED,
+            controller()->CurrentAutocheckoutSteps()[0].status());
+
+  // Simulate a wallet error. This should remove the card generation step from
+  // the flow, as we will have to proceed with local data.
+  controller()->OnWalletError(wallet::WalletClient::UNKNOWN_ERROR);
+
+  AutofillProfile shipping_profile(test::GetVerifiedProfile());
+  AutofillProfile billing_profile(test::GetVerifiedProfile2());
+  CreditCard credit_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingProfile(&shipping_profile);
+  controller()->GetTestingManager()->AddTestingProfile(&billing_profile);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+  ui::MenuModel* billing_model =
+      controller()->MenuModelForSection(SECTION_BILLING);
+  billing_model->ActivatedAt(1);
+
+  // Re-initiate flow.
+  controller()->OnAccept();
+
+  // All steps should be initially unstarted.
+  EXPECT_EQ(3U, controller()->CurrentAutocheckoutSteps().size());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_SHIPPING,
+            controller()->CurrentAutocheckoutSteps()[0].type());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_UNSTARTED,
+            controller()->CurrentAutocheckoutSteps()[0].status());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_DELIVERY,
+            controller()->CurrentAutocheckoutSteps()[1].type());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_UNSTARTED,
+            controller()->CurrentAutocheckoutSteps()[1].status());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_BILLING,
+            controller()->CurrentAutocheckoutSteps()[2].type());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_UNSTARTED,
+            controller()->CurrentAutocheckoutSteps()[2].status());
+
+  // Update steps in the same manner that we would expect to see from the
+  // AutocheckoutManager while progressing through a flow.
+  controller()->UpdateAutocheckoutStep(AUTOCHECKOUT_STEP_SHIPPING,
+                                       AUTOCHECKOUT_STEP_STARTED);
+  controller()->UpdateAutocheckoutStep(AUTOCHECKOUT_STEP_SHIPPING,
+                                       AUTOCHECKOUT_STEP_COMPLETED);
+  controller()->UpdateAutocheckoutStep(AUTOCHECKOUT_STEP_DELIVERY,
+                                       AUTOCHECKOUT_STEP_STARTED);
+
+  // Verify that the steps were appropriately updated.
+  EXPECT_EQ(3U, controller()->CurrentAutocheckoutSteps().size());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_SHIPPING,
+            controller()->CurrentAutocheckoutSteps()[0].type());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_COMPLETED,
+            controller()->CurrentAutocheckoutSteps()[0].status());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_DELIVERY,
+            controller()->CurrentAutocheckoutSteps()[1].type());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_STARTED,
+            controller()->CurrentAutocheckoutSteps()[1].status());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_BILLING,
+            controller()->CurrentAutocheckoutSteps()[2].type());
+  EXPECT_EQ(AUTOCHECKOUT_STEP_UNSTARTED,
+            controller()->CurrentAutocheckoutSteps()[2].status());
 }
 
 }  // namespace autofill

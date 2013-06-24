@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
+#include "components/autofill/content/browser/autocheckout_steps.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -68,8 +69,12 @@ class TabAutofillManagerDelegate
       const std::vector<int>& identifiers,
       base::WeakPtr<AutofillPopupDelegate> delegate) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
-  virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
+
+  virtual void AddAutocheckoutStep(AutocheckoutStepType step_type) OVERRIDE;
+  virtual void UpdateAutocheckoutStep(
+      AutocheckoutStepType step_type,
+      AutocheckoutStepStatus step_status) OVERRIDE;
 
   // content::WebContentsObserver implementation.
   virtual void DidNavigateMainFrame(

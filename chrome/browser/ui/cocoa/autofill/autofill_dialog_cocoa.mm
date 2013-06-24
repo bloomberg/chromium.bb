@@ -77,6 +77,9 @@ void AutofillDialogCocoa::UpdateForErrors() {
 void AutofillDialogCocoa::UpdateNotificationArea() {
 }
 
+void AutofillDialogCocoa::UpdateAutocheckoutStepsArea() {
+}
+
 void AutofillDialogCocoa::UpdateSection(DialogSection section) {
   [sheet_controller_ updateSection:section];
 }

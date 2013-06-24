@@ -456,29 +456,37 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   }
 }
 
-// Test that the Autocheckout progress bar is showing after submitting the
+// Test that Autocheckout steps are shown after submitting the
 // dialog for controller with type DIALOG_TYPE_AUTOCHECKOUT.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       AutocheckoutShowsProgressBar) {
+                       AutocheckoutShowsSteps) {
   InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
+  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD);
+
   EXPECT_TRUE(controller()->ShouldShowDetailArea());
+  EXPECT_TRUE(controller()->CurrentAutocheckoutSteps().empty());
   EXPECT_FALSE(controller()->ShouldShowProgressBar());
 
   controller()->GetTestableView()->SubmitForTesting();
   EXPECT_FALSE(controller()->ShouldShowDetailArea());
+  EXPECT_FALSE(controller()->CurrentAutocheckoutSteps().empty());
   EXPECT_TRUE(controller()->ShouldShowProgressBar());
 }
 
-// Test that the Autocheckout progress bar is not showing after submitting the
+// Test that Autocheckout steps are not showing after submitting the
 // dialog for controller with type DIALOG_TYPE_REQUEST_AUTOCOMPLETE.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       RequestAutocompleteDoesntShowProgressBar) {
+                       RequestAutocompleteDoesntShowSteps) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->AddAutocheckoutStep(AUTOCHECKOUT_STEP_PROXY_CARD);
+
   EXPECT_TRUE(controller()->ShouldShowDetailArea());
+  EXPECT_TRUE(controller()->CurrentAutocheckoutSteps().empty());
   EXPECT_FALSE(controller()->ShouldShowProgressBar());
 
   controller()->GetTestableView()->SubmitForTesting();
   EXPECT_TRUE(controller()->ShouldShowDetailArea());
+  EXPECT_TRUE(controller()->CurrentAutocheckoutSteps().empty());
   EXPECT_FALSE(controller()->ShouldShowProgressBar());
 }
 

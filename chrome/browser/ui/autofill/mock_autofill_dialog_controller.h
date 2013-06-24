@@ -22,7 +22,6 @@ class MockAutofillDialogController : public AutofillDialogController {
   virtual string16 CancelButtonText() const OVERRIDE;
   virtual string16 ConfirmButtonText() const OVERRIDE;
   virtual string16 SaveLocallyText() const OVERRIDE;
-  virtual string16 ProgressBarText() const OVERRIDE;
   virtual string16 LegalDocumentsText() OVERRIDE;
   virtual DialogSignedInState SignedInState() const OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
@@ -71,6 +70,9 @@ class MockAutofillDialogController : public AutofillDialogController {
   virtual void ViewClosed() OVERRIDE;
 
   virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE;
+
+  virtual std::vector<DialogAutocheckoutStep> CurrentAutocheckoutSteps()
+      const OVERRIDE;
 
   virtual void SignInLinkClicked() OVERRIDE;
   virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
