@@ -80,13 +80,12 @@
                 '<(PRODUCT_DIR)/widevinecdm.dll.lib',
               ],
             }],
-            [ 'OS == "mac"', {
+            [ 'OS == "mac" and target_arch == "ia32"', {
               'type': 'loadable_module',
               'product_extension': 'plugin',
               'libraries': [
                 # Copied by widevine_cdm_binaries.
-                # See http://crbug.com/237636.
-                #'<(PRODUCT_DIR)/libwidevinecdm.dylib',
+                '<(PRODUCT_DIR)/libwidevinecdm.dylib',
               ],
               'xcode_settings': {
                 'OTHER_LDFLAGS': [
@@ -94,8 +93,6 @@
                   '-Wl,-exported_symbol,_PPP_GetInterface',
                   '-Wl,-exported_symbol,_PPP_InitializeModule',
                   '-Wl,-exported_symbol,_PPP_ShutdownModule',
-                  # See http://crbug.com/237636.
-                  '-Wl,-undefined,dynamic_lookup',
                 ],
                 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
               },
