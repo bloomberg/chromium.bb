@@ -13,6 +13,7 @@
 #include <ppapi/cpp/rect.h>
 #include <ppapi/cpp/size.h>
 #include <ppapi/cpp/var.h>
+#include <ppapi/cpp/var_dictionary.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -133,6 +134,8 @@ class Voronoi : public pp::Instance {
   // contents of |image_data_| to the 2D graphics context.
   void Update();
 
+  // Helper to post small update messages to JS.
+  void PostUpdateMessage(const char* message_name, double value);
   // Create and initialize the 2D context used for drawing.
   void CreateContext(const pp::Size& size);
   // Destroy the 2D drawing context.
@@ -466,8 +469,8 @@ void Voronoi::EndBenchmark() {
       benchmark_end_time_ - benchmark_start_time_);
   benchmarking_ = false;
   benchmark_frame_counter_ = 0;
-  pp::Var result(benchmark_end_time_ - benchmark_start_time_);
-  PostMessage(result);
+  double result = benchmark_end_time_ - benchmark_start_time_;
+  PostUpdateMessage("benchmark_result", result);
 }
 
 // Handle input events from the user.
@@ -488,28 +491,33 @@ bool Voronoi::HandleInputEvent(const pp::InputEvent& event) {
 }
 
 // Handle messages sent from Javascript.
-void Voronoi::HandleMessage(const pp::Var& message) {
-  if (message.is_string()) {
-    std::string message_string = message.AsString();
-    if (message_string == "run benchmark" && !benchmarking_)
+void Voronoi::HandleMessage(const pp::Var& var) {
+  if (var.is_dictionary()) {
+    pp::VarDictionary dictionary = pp::VarDictionary(var);
+    std::string message = dictionary.Get("message").AsString();
+    if (message == "run_benchmark" && !benchmarking_)
       StartBenchmark();
-    else if (message_string == "with points")
-      draw_points_ = true;
-    else if (message_string == "without points")
-      draw_points_ = false;
-    else if (message_string == "with interiors")
-      draw_interiors_ = true;
-    else if (message_string == "without interiors")
-      draw_interiors_ = false;
-    else if (strstr(message_string.c_str(), "points:")) {
-      int num_points = atoi(strstr(message_string.c_str(), " "));
+    else if (message == "draw_points")
+      draw_points_ = dictionary.Get(pp::Var("value")).AsBool();
+    else if (message == "draw_interiors")
+      draw_interiors_ = dictionary.Get(pp::Var("value")).AsBool();
+    else if (message == "set_points") {
+      int num_points = dictionary.Get(pp::Var("value")).AsInt();
       point_count_ = std::min(kMaxPointCount, std::max(0, num_points));
-    } else if (strstr(message_string.c_str(), "threads:")) {
-      int thread_count = atoi(strstr(message_string.c_str(), " "));
+    } else if (message == "set_threads") {
+      int thread_count = dictionary.Get(pp::Var("value")).AsInt();
       delete workers_;
       workers_ = new ThreadPool(thread_count);
     }
   }
+}
+
+// PostUpdateMessage() helper function for sendimg small messages to JS.
+void Voronoi::PostUpdateMessage(const char* message_name, double value) {
+  pp::VarDictionary message;
+  message.Set(pp::Var("message"), pp::Var(message_name));
+  message.Set(pp::Var("value"), pp::Var(value));
+  PostMessage(message);
 }
 
 void Voronoi::FlushCallback(void* thiz, int32_t result) {
