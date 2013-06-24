@@ -104,7 +104,7 @@ class TestFailure(object):
         return cPickle.dumps(self)
 
     def driver_needs_restart(self):
-        """Returns True if we should kill DumpRenderTree/WebKitTestRunner before the next test."""
+        """Returns True if we should kill the driver before the next test."""
         return False
 
 
@@ -121,7 +121,7 @@ class FailureTimeout(TestFailure):
 
 
 class FailureCrash(TestFailure):
-    def __init__(self, is_reftest=False, process_name='DumpRenderTree', pid=None):
+    def __init__(self, is_reftest=False, process_name='content_shell', pid=None):
         super(FailureCrash, self).__init__()
         self.process_name = process_name
         self.pid = pid

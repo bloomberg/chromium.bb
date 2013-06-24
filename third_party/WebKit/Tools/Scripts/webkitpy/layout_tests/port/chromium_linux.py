@@ -54,11 +54,14 @@ class ChromiumLinuxPort(chromium.ChromiumPort):
         build_directory = getattr(options, 'build_directory', None)
         webkit_base = WebKitFinder(host.filesystem).webkit_base()
         chromium_base = cls._chromium_base_dir(host.filesystem)
+        driver_name = getattr(options, 'driver_name', None)
+        if driver_name is None:
+            driver_name = cls.CONTENT_SHELL_NAME
         if hasattr(options, 'configuration') and options.configuration:
             configuration = options.configuration
         else:
             configuration = config_object.default_configuration()
-        return cls._static_build_path(host.filesystem, build_directory, chromium_base, webkit_base, configuration, [cls.CONTENT_SHELL_NAME])
+        return cls._static_build_path(host.filesystem, build_directory, chromium_base, webkit_base, configuration, [driver_name])
 
     @staticmethod
     def _determine_architecture(filesystem, executive, driver_path):

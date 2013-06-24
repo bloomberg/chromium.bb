@@ -177,7 +177,7 @@ class Printer(object):
         self._print_statistics_for_test_timings("PER TEST TIME IN TESTSHELL (seconds):", times_for_dump_render_tree)
 
     def _print_individual_test_times(self, run_results):
-        # Reverse-sort by the time spent in DumpRenderTree.
+        # Reverse-sort by the time spent in the driver.
 
         individual_test_timings = sorted(run_results.results_by_name.values(), key=lambda result: result.test_run_time, reverse=True)
         num_printed = 0

@@ -185,7 +185,7 @@ class Port(object):
         return self.get_option('retry_crashes', False)
 
     def default_child_processes(self):
-        """Return the number of DumpRenderTree instances to use for this port."""
+        """Return the number of drivers to use for this port."""
         return self._executive.cpu_count()
 
     def default_max_locked_shards(self):
@@ -411,8 +411,6 @@ class Port(object):
     def driver_name(self):
         if self.get_option('driver_name'):
             return self.get_option('driver_name')
-        if self.get_option('dump_render_tree'):
-            return 'DumpRenderTree'
         return self.CONTENT_SHELL_NAME
 
     def expected_baselines_by_extension(self, test_name):
@@ -1252,7 +1250,7 @@ class Port(object):
         return self._filesystem.join(self._filesystem.abspath(root_directory), *comps)
 
     def _path_to_driver(self, configuration=None):
-        """Returns the full path to the test driver (DumpRenderTree)."""
+        """Returns the full path to the test driver."""
         return self._build_path(self.driver_name())
 
     def _path_to_webcore_library(self):

@@ -318,7 +318,7 @@ class Worker(object):
 
     def _timeout(self, test_input):
         """Compute the appropriate timeout value for a test."""
-        # The DumpRenderTree watchdog uses 2.5x the timeout; we want to be
+        # The driver watchdog uses 2.5x the timeout; we want to be
         # larger than that. We also add a little more padding if we're
         # running tests in a separate thread.
         #
@@ -350,7 +350,7 @@ class Worker(object):
         test_name = test_input.test_name
 
         if result.failures:
-            # Check and kill DumpRenderTree if we need to.
+            # Check and kill the driver if we need to.
             if any([f.driver_needs_restart() for f in result.failures]):
                 self._kill_driver()
                 # Reset the batch count since the shell just bounced.
@@ -397,14 +397,14 @@ class Worker(object):
         failures = []
         if thread.isAlive():
             # If join() returned with the thread still running, the
-            # DumpRenderTree is completely hung and there's nothing
+            # driver is completely hung and there's nothing
             # more we can do with it.  We have to kill all the
-            # DumpRenderTrees to free it up. If we're running more than
-            # one DumpRenderTree thread, we'll end up killing the other
-            # DumpRenderTrees too, introducing spurious crashes. We accept
+            # drivers to free it up. If we're running more than
+            # one driver thread, we'll end up killing the other
+            # drivers too, introducing spurious crashes. We accept
             # that tradeoff in order to avoid losing the rest of this
             # thread's results.
-            _log.error('Test thread hung: killing all DumpRenderTrees')
+            _log.error('Test thread hung: killing all drivers')
             failures = [test_failures.FailureTimeout()]
 
         driver.stop()
@@ -414,7 +414,7 @@ class Worker(object):
         return result
 
     def _run_test_in_this_thread(self, test_input, stop_when_done):
-        """Run a single test file using a shared DumpRenderTree process.
+        """Run a single test file using a shared driver process.
 
         Args:
           test_input: Object containing the test filename, uri and timeout

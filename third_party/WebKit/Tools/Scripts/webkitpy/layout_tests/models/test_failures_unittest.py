@@ -69,5 +69,5 @@ class TestFailuresTest(unittest.TestCase):
         self.assertEqual(len(crash_set), 2)
 
     def test_crashes(self):
-        self.assertEqual(FailureCrash().message(), 'DumpRenderTree crashed')
+        self.assertEqual(FailureCrash().message(), 'content_shell crashed')
         self.assertEqual(FailureCrash(process_name='foo', pid=1234).message(), 'foo crashed [pid=1234]')

@@ -535,7 +535,7 @@ class TestPort(Port):
 
 
 class TestDriver(Driver):
-    """Test/Dummy implementation of the DumpRenderTree interface."""
+    """Test/Dummy implementation of the driver interface."""
     next_pid = 1
 
     def __init__(self, *args, **kwargs):

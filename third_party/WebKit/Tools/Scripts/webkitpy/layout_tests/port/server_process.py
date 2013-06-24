@@ -61,7 +61,7 @@ class ServerProcess(object):
 
     def __init__(self, port_obj, name, cmd, env=None, universal_newlines=False, treat_no_data_as_crash=False):
         self._port = port_obj
-        self._name = name  # Should be the command name (e.g. DumpRenderTree, ImageDiff)
+        self._name = name  # Should be the command name (e.g. content_shell, ImageDiff)
         self._cmd = cmd
         self._env = env
         # Set if the process outputs non-standard newlines like '\r\n' or '\r'.

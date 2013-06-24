@@ -144,14 +144,10 @@ def parse_args(args):
                  "Note: When using this option, you might miss new crashes "
                  "in these tests."),
         optparse.make_option("--additional-drt-flag", action="append",
-            default=[], help="Additional command line flag to pass to DumpRenderTree "
+            default=[], help="Additional command line flag to pass to the driver "
                  "Specify multiple times to add multiple flags."),
         optparse.make_option("--driver-name", type="string",
-            help="Alternative DumpRenderTree binary to use"),
-        optparse.make_option("--content-shell", action="store_true",
-            help="Use Content Shell instead of DumpRenderTree"),
-        optparse.make_option("--dump-render-tree", action="store_true",
-            help="Use DumpRenderTree instead of Content Shell"),
+            help="Alternative driver binary to use"),
         optparse.make_option("--additional-platform-directory", action="append",
             default=[], help="Additional directory where to look for test "
                  "baselines (will take precendence over platform baselines). "
@@ -175,17 +171,15 @@ def parse_args(args):
     option_group_definitions.append(("Testing Options", [
         optparse.make_option("--build", dest="build",
             action="store_true", default=True,
-            help="Check to ensure the DumpRenderTree build is up-to-date "
-                 "(default)."),
+            help="Check to ensure the build is up-to-date (default)."),
         optparse.make_option("--no-build", dest="build",
-            action="store_false", help="Don't check to see if the "
-                                       "DumpRenderTree build is up-to-date."),
+            action="store_false", help="Don't check to see if the build is up-to-date."),
         optparse.make_option("-n", "--dry-run", action="store_true",
             default=False,
             help="Do everything but actually run the tests or upload results."),
         optparse.make_option("--wrapper",
             help="wrapper command to insert before invocations of "
-                 "DumpRenderTree; option is split on whitespace before "
+                 "the driver; option is split on whitespace before "
                  "running. (Example: --wrapper='valgrind --smc-check=all')"),
         optparse.make_option("-i", "--ignore-tests", action="append", default=[],
             help="directories or test to ignore (may specify multiple times)"),
@@ -219,11 +213,11 @@ def parse_args(args):
                   "the nth of m parts, of the layout tests")),
         optparse.make_option("--batch-size",
             help=("Run a the tests in batches (n), after every n tests, "
-                  "DumpRenderTree is relaunched."), type="int", default=None),
+                  "the driver is relaunched."), type="int", default=None),
         optparse.make_option("--run-singly", action="store_true",
-            default=False, help="run a separate DumpRenderTree for each test (implies --verbose)"),
+            default=False, help="run a separate driver for each test (implies --verbose)"),
         optparse.make_option("--child-processes",
-            help="Number of DumpRenderTrees to run in parallel."),
+            help="Number of drivers to run in parallel."),
         # FIXME: Display default number of child processes that will run.
         optparse.make_option("-f", "--fully-parallel", action="store_true",
             help="run all tests in parallel"),

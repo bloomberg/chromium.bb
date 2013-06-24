@@ -79,12 +79,12 @@ class DriverOutput(object):
 
 
 class Driver(object):
-    """object for running test(s) using DumpRenderTree/WebKitTestRunner."""
+    """object for running test(s) using content_shell or other driver."""
 
     def __init__(self, port, worker_number, pixel_tests, no_timeout=False):
         """Initialize a Driver to subsequently run tests.
 
-        Typically this routine will spawn DumpRenderTree in a config
+        Typically this routine will spawn content_shell in a config
         ready for subsequent input.
 
         port - reference back to the port object.
@@ -258,8 +258,6 @@ class Driver(object):
     def _setup_environ_for_driver(self, environment):
         environment['DYLD_LIBRARY_PATH'] = self._port._build_path()
         environment['DYLD_FRAMEWORK_PATH'] = self._port._build_path()
-        # FIXME: We're assuming that WebKitTestRunner checks this DumpRenderTree-named environment variable.
-        environment['DUMPRENDERTREE_TEMP'] = str(self._driver_tempdir)
         environment['LOCAL_RESOURCE_ROOT'] = self._port.layout_tests_dir()
         if 'WEBKITOUTPUTDIR' in os.environ:
             environment['WEBKITOUTPUTDIR'] = os.environ['WEBKITOUTPUTDIR']
@@ -307,13 +305,9 @@ class Driver(object):
         cmd.append(self._port._path_to_driver())
         if self._no_timeout:
             cmd.append('--no-timeout')
-        # FIXME: We need to pass --timeout=SECONDS to WebKitTestRunner for WebKit2.
-
         cmd.extend(self._port.get_option('additional_drt_flag', []))
         cmd.extend(self._port.additional_drt_flag())
-
         cmd.extend(per_test_args)
-
         cmd.append('-')
         return cmd
 
