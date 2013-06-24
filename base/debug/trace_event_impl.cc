@@ -89,6 +89,7 @@ LazyInstance<ThreadLocalPointer<const char> >::Leaky
 
 const char kRecordUntilFull[] = "record-until-full";
 const char kRecordContinuously[] = "record-continuously";
+const char kEnableSampling[] = "enable-sampling";
 
 size_t NextIndex(size_t index) {
   index++;
@@ -761,6 +762,8 @@ TraceLog::Options TraceLog::TraceOptionsFromString(const std::string& options) {
       ret |= RECORD_UNTIL_FULL;
     } else if (*iter == kRecordContinuously) {
       ret |= RECORD_CONTINUOUSLY;
+    } else if (*iter == kEnableSampling) {
+      ret |= ENABLE_SAMPLING;
     } else {
       NOTREACHED();  // Unknown option provided.
     }

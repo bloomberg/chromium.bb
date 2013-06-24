@@ -1781,6 +1781,11 @@ TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
             TraceLog::TraceOptionsFromString("record-until-full"));
   EXPECT_EQ(TraceLog::RECORD_CONTINUOUSLY,
             TraceLog::TraceOptionsFromString("record-continuously"));
+  EXPECT_EQ(TraceLog::RECORD_UNTIL_FULL | TraceLog::ENABLE_SAMPLING,
+            TraceLog::TraceOptionsFromString("enable-sampling"));
+  EXPECT_EQ(TraceLog::RECORD_CONTINUOUSLY | TraceLog::ENABLE_SAMPLING,
+            TraceLog::TraceOptionsFromString(
+                "record-continuously,enable-sampling"));
 }
 
 // Not supported in split dll build. http://crbug.com/237249

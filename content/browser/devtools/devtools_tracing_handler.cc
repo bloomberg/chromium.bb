@@ -28,6 +28,7 @@ const char kCategoriesParam[] = "categories";
 const char kTraceOptionsParam[] = "trace-options";
 const char kRecordUntilFull[]   = "record-until-full";
 const char kRecordContinuously[] = "record-continuously";
+const char kEnableSampling[] = "enable-sampling";
 
 }  // namespace
 
@@ -74,6 +75,8 @@ base::debug::TraceLog::Options DevToolsTracingHandler::TraceOptionsFromString(
       ret |= base::debug::TraceLog::RECORD_UNTIL_FULL;
     } else if (*iter == kRecordContinuously) {
       ret |= base::debug::TraceLog::RECORD_CONTINUOUSLY;
+    } else if (*iter == kEnableSampling) {
+      ret |= base::debug::TraceLog::ENABLE_SAMPLING;
     }
   }
   if (!(ret & base::debug::TraceLog::RECORD_UNTIL_FULL) &&
