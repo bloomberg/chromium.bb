@@ -1803,6 +1803,44 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
                 reinterpret_cast<LPARAM>(&msg));
   }
 
+  // Due to a bug in Windows, the simulated mouse events for a touch event
+  // outside our bounds are delivered to us if we were previously focused
+  // causing crbug.com/159982. As a workaround, we check if this event is a
+  // simulated mouse event outside our bounds, and if so, we send it to the
+  // right window.
+  if ((message == WM_LBUTTONDOWN || message == WM_LBUTTONUP) &&
+      ui::IsMouseEventFromTouch(message)) {
+    CPoint cursor_pos(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+    ClientToScreen(&cursor_pos);
+    if (!GetPixelBounds().Contains(cursor_pos.x, cursor_pos.y)) {
+      HWND window = WindowFromPoint(cursor_pos);
+      if (window) {
+        LRESULT nc_hit_result = SendMessage(window, WM_NCHITTEST, 0,
+            MAKELPARAM(cursor_pos.x, cursor_pos.y));
+        const bool in_client_area = (nc_hit_result == HTCLIENT);
+        int event_type;
+        if (message == WM_LBUTTONDOWN)
+          event_type = in_client_area ? WM_LBUTTONDOWN : WM_NCLBUTTONDOWN;
+        else
+          event_type = in_client_area ? WM_LBUTTONUP : WM_NCLBUTTONUP;
+
+        // Convert the coordinates to the target window.
+        RECT window_bounds;
+        ::GetWindowRect(window, &window_bounds);
+        int window_x = cursor_pos.x - window_bounds.left;
+        int window_y = cursor_pos.y - window_bounds.top;
+        if (in_client_area) {
+          ::PostMessage(window, event_type, wparam,
+              MAKELPARAM(window_x, window_y));
+        } else {
+          ::PostMessage(window, event_type, nc_hit_result,
+              MAKELPARAM(cursor_pos.x, cursor_pos.y));
+        }
+        return 0;
+      }
+    }
+  }
+
   // TODO(jcampan): I am not sure if we should forward the message to the
   // WebContentsImpl first in the case of popups.  If we do, we would need to
   // convert the click from the popup window coordinates to the WebContentsImpl'
