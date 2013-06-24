@@ -24,6 +24,7 @@ crbug.com/24182 http/tests/navigation/slowtimerredirect-basic.html [ Pass Timeou
 crbug.com/24182 [ Debug ] http/tests/security/xss-DENIED-iframe-src-alias.html [ Slow ]
 crbug.com/24182 [ Win ] http/tests/xmlhttprequest/simple-cross-origin-progress-events.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] http/tests/xmlhttprequest/supported-xml-content-types.html [ Pass Timeout ]
+crbug.com/24182 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-aborted.html [ Slow ]
 crbug.com/24182 [ Debug ] jquery/attributes.html [ Timeout ]
 crbug.com/24182 [ Debug ] jquery/core.html [ Timeout ]
 crbug.com/24182 [ Debug ] jquery/data.html [ Slow ]
