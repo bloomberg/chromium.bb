@@ -582,16 +582,6 @@ bool WebRuntimeFeatures::isWebMIDIEnabled()
     return RuntimeEnabledFeatures::webMIDIEnabled();
 }
 
-void WebRuntimeFeatures::enableWebPInAcceptHeader(bool enable)
-{
-    RuntimeEnabledFeatures::setWebPInAcceptHeaderEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isWebPInAcceptHeaderEnabled()
-{
-    return RuntimeEnabledFeatures::webPInAcceptHeaderEnabled();
-}
-
 void WebRuntimeFeatures::enableDataListElement(bool enable)
 {
     RuntimeEnabledFeatures::setDataListElementEnabled(enable);
