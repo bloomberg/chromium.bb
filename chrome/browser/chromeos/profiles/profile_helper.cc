@@ -19,6 +19,16 @@
 
 namespace chromeos {
 
+namespace {
+
+base::FilePath GetSigninProfileDir() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath user_data_dir = profile_manager->user_data_dir();
+  return user_data_dir.AppendASCII(chrome::kInitialProfile);
+}
+
+}  // anonymous namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, public
 
@@ -61,10 +71,7 @@ base::FilePath ProfileHelper::GetProfilePathByUserIdHash(
 // static
 Profile* ProfileHelper::GetSigninProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath user_data_dir = profile_manager->user_data_dir();
-  base::FilePath signin_profile_dir =
-      user_data_dir.AppendASCII(chrome::kInitialProfile);
-  return profile_manager->GetProfile(signin_profile_dir)->
+  return profile_manager->GetProfile(GetSigninProfileDir())->
       GetOffTheRecordProfile();
 }
 
@@ -123,6 +130,12 @@ void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
   on_clear_callbacks_.push_back(on_clear_callback);
   if (signin_profile_clear_requested_)
     return;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // Check if signin profile was loaded.
+  if (!profile_manager->GetProfileByPath(GetSigninProfileDir())) {
+    OnBrowsingDataRemoverDone();
+    return;
+  }
   signin_profile_clear_requested_ = true;
   BrowsingDataRemover* remover =
       BrowsingDataRemover::CreateForUnboundedRange(GetSigninProfile());
