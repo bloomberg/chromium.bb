@@ -120,7 +120,7 @@ FileCopyManager.Task.prototype.getNextEntry = function() {
     // traversal order, we just keep the ordering.
     if (this.pendingDirectories.length)
       nextEntry = this.pendingDirectories[0];
-    if (this.pendingFiles.length)
+    else if (this.pendingFiles.length)
       nextEntry = this.pendingFiles[0];
   }
   if (nextEntry)
