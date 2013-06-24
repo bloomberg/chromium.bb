@@ -4,12 +4,14 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -130,39 +132,39 @@ class FirstRunMasterPrefsBrowserTestT
   DISALLOW_COPY_AND_ASSIGN(FirstRunMasterPrefsBrowserTestT);
 };
 
-}  // namespace
-
-// TODO(tapted): Investigate why this fails on Linux bots but does not
-// reproduce locally. See http://crbug.com/178062 .
-// TODO(tapted): Investigate why this fails on mac_asan flakily
-// http://crbug.com/181499 .
-#if defined(OS_LINUX) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
-#define MAYBE_ImportDefault DISABLED_ImportDefault
-#else
-#define MAYBE_ImportDefault ImportDefault
+// Returns the true expected import state, derived from the original
+// |expected_import_state|, for the current test machine's configuration. Some
+// bot configurations do not have another profile (browser) to import from and
+// thus the import must not be expected to have occurred.
+int MaskExpectedImportState(int expected_import_state) {
+  scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
+  importer_list->DetectSourceProfilesHack(
+      g_browser_process->GetApplicationLocale());
+  int source_profile_count = importer_list->count();
+#if defined(OS_WIN)
+  // On Windows, the importer's DetectIEProfiles() will always add to the count.
+  // Internet Explorer always exists and always has something to import.
+  EXPECT_GT(source_profile_count, 0);
 #endif
+  if (source_profile_count == 0)
+    return expected_import_state & ~first_run::AUTO_IMPORT_PROFILE_IMPORTED;
+
+  return expected_import_state;
+}
+
+}  // namespace
 
 extern const char kImportDefault[] =
     "{\n"
     "}\n";
 typedef FirstRunMasterPrefsBrowserTestT<kImportDefault>
     FirstRunMasterPrefsImportDefault;
-IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportDefault, MAYBE_ImportDefault) {
+IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportDefault, ImportDefault) {
   int auto_import_state = first_run::auto_import_state();
-  EXPECT_EQ(first_run::AUTO_IMPORT_CALLED |
-                first_run::AUTO_IMPORT_PROFILE_IMPORTED,
+  EXPECT_EQ(MaskExpectedImportState(first_run::AUTO_IMPORT_CALLED |
+                                    first_run::AUTO_IMPORT_PROFILE_IMPORTED),
             auto_import_state);
 }
-
-// TODO(tapted): Investigate why this fails on Linux bots but does not
-// reproduce locally. See http://crbug.com/178062 .
-// TODO(tapted): Investigate why this fails on mac_asan flakily
-// http://crbug.com/181499 .
-#if defined(OS_LINUX) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
-#define MAYBE_ImportBookmarksFile DISABLED_ImportBookmarksFile
-#else
-#define MAYBE_ImportBookmarksFile ImportBookmarksFile
-#endif
 
 // The bookmarks file doesn't actually need to exist for this integration test
 // to trigger the interaction being tested.
@@ -175,12 +177,13 @@ extern const char kImportBookmarksFile[] =
 typedef FirstRunMasterPrefsBrowserTestT<kImportBookmarksFile>
     FirstRunMasterPrefsImportBookmarksFile;
 IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportBookmarksFile,
-                       MAYBE_ImportBookmarksFile) {
+                       ImportBookmarksFile) {
   int auto_import_state = first_run::auto_import_state();
-  EXPECT_EQ(first_run::AUTO_IMPORT_CALLED |
-                first_run::AUTO_IMPORT_PROFILE_IMPORTED |
-                first_run::AUTO_IMPORT_BOOKMARKS_FILE_IMPORTED,
-            auto_import_state);
+  EXPECT_EQ(
+      MaskExpectedImportState(first_run::AUTO_IMPORT_CALLED |
+                              first_run::AUTO_IMPORT_PROFILE_IMPORTED |
+                              first_run::AUTO_IMPORT_BOOKMARKS_FILE_IMPORTED),
+      auto_import_state);
 }
 
 // Test an import with all import options disabled. This is a regression test
