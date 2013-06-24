@@ -13940,7 +13940,7 @@ other types of suffix sets.
   <int value="138" label="BLUETOOTH_GETLOCALOUTOFBANDPAIRINGDATA"/>
   <int value="139" label="SYSTEMPRIVATE_GETUPDATESTATUS"/>
   <int value="140" label="FONTSETTINGS_CLEARMINIMUMFONTSIZE"/>
-  <int value="141" label="FILEBROWSERPRIVATE_GETFILELOCATIONS"/>
+  <int value="141" label="DELETED_FILEBROWSERPRIVATE_GETFILELOCATIONS"/>
   <int value="142" label="EXPERIMENTAL_DISCOVERY_SUGGEST"/>
   <int value="143" label="FILEBROWSERPRIVATE_SETDEFAULTTASK"/>
   <int value="144" label="BROWSERACTION_GETBADGETEXT"/>
@@ -14260,9 +14260,43 @@ other types of suffix sets.
   <int value="458" label="AUDIO_SETACTIVEDEVICES"/>
   <int value="459" label="AUDIO_SETPROPERTIES"/>
   <int value="460" label="USB_RESETDEVICE"/>
-  <int value="461" label="SYSTEMINFO_CPU_GET"/>
-  <int value="462" label="SYSTEMINFO_MEMORY_GET"/>
-  <int value="463" label="ACTIVITYLOGPRIVATE_GETEXTENSIONACTIVITIES"/>
+  <int value="461" label="SOCKET_MULTICAST_JOIN_GROUP"/>
+  <int value="462" label="SOCKET_MULTICAST_LEAVE_GROUP"/>
+  <int value="463" label="SOCKET_MULTICAST_SET_TIME_TO_LIVE"/>
+  <int value="464" label="SOCKET_MULTICAST_SET_LOOPBACK_MODE"/>
+  <int value="465" label="SOCKET_MULTICAST_GET_JOINED_GROUPS"/>
+  <int value="466"
+      label="EXPERIMENTAL_ACCESSIBILITY_SETNATIVEACCESSIBILITYENABLED"/>
+  <int value="467" label="RUNTIME_GETPLATFORMINFO"/>
+  <int value="468" label="WEBVIEW_INSERTCSS"/>
+  <int value="469" label="METRICSPRIVATE_GETISCRASHRECORDINGENABLED"/>
+  <int value="470" label="IDENTITYPRIVATE_GETRESOURCES"/>
+  <int value="471" label="NOTIFICATIONS_GET_ALL"/>
+  <int value="472" label="USB_LISTINTERFACES"/>
+  <int value="473" label="FILESYSTEM_RETAINENTRY"/>
+  <int value="474" label="FILESYSTEM_ISRESTORABLE"/>
+  <int value="475" label="FILESYSTEM_RESTOREENTRY"/>
+  <int value="476" label="RUNTIME_SETUNINSTALLURL"/>
+  <int value="477" label="INPUTMETHODPRIVATE_STARTIME"/>
+  <int value="478" label="MUSICMANAGERPRIVATE_GETDEVICEID"/>
+  <int value="479" label="TTS_PAUSE"/>
+  <int value="480" label="TTS_RESUME"/>
+  <int value="481" label="SYSTEMINFO_CPU_GET"/>
+  <int value="482" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_ADDWATCH"/>
+  <int value="483" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_REMOVEWATCH"/>
+  <int value="484" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_GETALLWATCH"/>
+  <int value="485" label="EXPERIMENTAL_SYSTEMINFO_STORAGE_REMOVEALLWATCH"/>
+  <int value="486" label="SYSTEMINFO_MEMORY_GET"/>
+  <int value="487" label="ACTIVITYLOGPRIVATE_GETEXTENSIONACTIVITIES"/>
+  <int value="488" label="RUNTIME_GETPACKAGEDIRECTORYENTRY"/>
+  <int value="489" label="SYSTEMINFO_DISPLAY_SETDISPLAYPROPERTIES"/>
+  <int value="490" label="FEEDBACKPRIVATE_GETUSEREMAIL"/>
+  <int value="491" label="FEEDBACKPRIVATE_GETSYSTEMINFORMATION"/>
+  <int value="492" label="FEEDBACKPRIVATE_SENDFEEDBACK"/>
+  <int value="493" label="EXPERIMENTAL_INPUT_VIRTUALKEYBOARD_INSERTTEXT"/>
+  <int value="494" label="DIAGNOSTICS_SENDPACKET"/>
+  <int value="495" label="METRICSPRIVATE_GETFIELDTRIAL"/>
+  <int value="496" label="FILEBROWSERPRIVATE_ZOOM"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
