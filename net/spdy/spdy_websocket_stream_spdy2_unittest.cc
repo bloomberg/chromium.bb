@@ -16,11 +16,8 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
-#include "net/spdy/spdy_test_util_spdy2.h"
-#include "net/spdy/spdy_websocket_test_util_spdy2.h"
+#include "net/spdy/spdy_websocket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using namespace net::test_spdy2;
 
 namespace net {
 
@@ -189,7 +186,12 @@ class SpdyWebSocketStreamSpdy2Test : public testing::Test {
  protected:
   SpdyWebSocketStreamSpdy2Test()
       : spdy_util_(kProtoSPDY2),
-        session_deps_(kProtoSPDY2) {}
+        spdy_settings_id_to_set_(SETTINGS_MAX_CONCURRENT_STREAMS),
+        spdy_settings_flags_to_set_(SETTINGS_FLAG_PLEASE_PERSIST),
+        spdy_settings_value_to_set_(1),
+        session_deps_(kProtoSPDY2),
+        stream_id_(0),
+        created_stream_id_(0) {}
   virtual ~SpdyWebSocketStreamSpdy2Test() {}
 
   virtual void SetUp() {
@@ -198,10 +200,6 @@ class SpdyWebSocketStreamSpdy2Test : public testing::Test {
     spdy_session_key_ = SpdySessionKey(host_port_pair_,
                                        ProxyServer::Direct(),
                                        kPrivacyModeDisabled);
-
-    spdy_settings_id_to_set_ = SETTINGS_MAX_CONCURRENT_STREAMS;
-    spdy_settings_flags_to_set_ = SETTINGS_FLAG_PLEASE_PERSIST;
-    spdy_settings_value_to_set_ = 1;
 
     spdy_settings_to_send_[spdy_settings_id_to_set_] =
         SettingsFlagsAndValue(
@@ -215,21 +213,22 @@ class SpdyWebSocketStreamSpdy2Test : public testing::Test {
   void Prepare(SpdyStreamId stream_id) {
     stream_id_ = stream_id;
 
-    request_frame_.reset(ConstructSpdyWebSocketSynStream(
+    request_frame_.reset(spdy_util_.ConstructSpdyWebSocketSynStream(
         stream_id_,
         "/echo",
         "example.com",
         "http://example.com/wsdemo"));
 
-    response_frame_.reset(ConstructSpdyWebSocketSynReply(stream_id_));
+    response_frame_.reset(
+        spdy_util_.ConstructSpdyWebSocketSynReply(stream_id_));
 
-    message_frame_.reset(ConstructSpdyWebSocketDataFrame(
+    message_frame_.reset(spdy_util_.ConstructSpdyWebSocketDataFrame(
         kMessageFrame,
         kMessageFrameLength,
         stream_id_,
         false));
 
-    closing_frame_.reset(ConstructSpdyWebSocketDataFrame(
+    closing_frame_.reset(spdy_util_.ConstructSpdyWebSocketDataFrame(
         kClosingFrame,
         kClosingFrameLength,
         stream_id_,
@@ -283,7 +282,7 @@ class SpdyWebSocketStreamSpdy2Test : public testing::Test {
     websocket_stream_->SendRequest(headers.Pass());
   }
 
-  SpdyTestUtil spdy_util_;
+  SpdyWebSocketTestUtil spdy_util_;
   SpdySettingsIds spdy_settings_id_to_set_;
   SpdySettingsFlags spdy_settings_flags_to_set_;
   uint32 spdy_settings_value_to_set_;

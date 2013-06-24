@@ -27,16 +27,13 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket_stream/socket_stream.h"
 #include "net/spdy/spdy_session.h"
-#include "net/spdy/spdy_test_util_spdy3.h"
-#include "net/spdy/spdy_websocket_test_util_spdy3.h"
+#include "net/spdy/spdy_websocket_test_util.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_throttle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-using namespace net::test_spdy3;
 
 namespace net {
 
@@ -331,6 +328,8 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
 
 class WebSocketJobSpdy3Test : public PlatformTest {
  public:
+  WebSocketJobSpdy3Test() : spdy_util_(kProtoSPDY3) {}
+
   virtual void SetUp() {
     stream_type_ = STREAM_INVALID;
     cookie_store_ = new MockCookieStore;
@@ -454,6 +453,7 @@ class WebSocketJobSpdy3Test : public PlatformTest {
   void TestConnectByWebSocket(ThrottlingOption throttling);
   void TestConnectBySpdy(SpdyOption spdy, ThrottlingOption throttling);
 
+  SpdyWebSocketTestUtil spdy_util_;
   StreamType stream_type_;
   scoped_refptr<MockCookieStore> cookie_store_;
   scoped_refptr<WebSocketJob> websocket_;
@@ -904,25 +904,25 @@ void WebSocketJobSpdy3Test::TestConnectBySpdy(
 
   const SpdyStreamId kStreamId = 1;
   scoped_ptr<SpdyFrame> request_frame(
-      ConstructSpdyWebSocketHandshakeRequestFrame(
+      spdy_util_.ConstructSpdyWebSocketHandshakeRequestFrame(
           kHandshakeRequestForSpdy,
           arraysize(kHandshakeRequestForSpdy) / 2,
           kStreamId,
           MEDIUM));
   scoped_ptr<SpdyFrame> response_frame(
-      ConstructSpdyWebSocketHandshakeResponseFrame(
+      spdy_util_.ConstructSpdyWebSocketHandshakeResponseFrame(
           kHandshakeResponseForSpdy,
           arraysize(kHandshakeResponseForSpdy) / 2,
           kStreamId,
           MEDIUM));
   scoped_ptr<SpdyFrame> data_hello_frame(
-      ConstructSpdyWebSocketDataFrame(
+      spdy_util_.ConstructSpdyWebSocketDataFrame(
           kDataHello,
           kDataHelloLength,
           kStreamId,
           false));
   scoped_ptr<SpdyFrame> data_world_frame(
-      ConstructSpdyWebSocketDataFrame(
+      spdy_util_.ConstructSpdyWebSocketDataFrame(
           kDataWorld,
           kDataWorldLength,
           kStreamId,
