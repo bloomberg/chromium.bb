@@ -53,6 +53,10 @@ def lint(host, options, logging_stream):
     logger.addHandler(handler)
 
     try:
+        # FIXME: Remove this when we remove the --chromium flag (crbug.com/245504).
+        if options.platform == 'chromium':
+            options.platform = None
+
         ports_to_lint = [host.port_factory.get(name) for name in host.port_factory.all_port_names(options.platform)]
         files_linted = set()
         lint_failed = False
