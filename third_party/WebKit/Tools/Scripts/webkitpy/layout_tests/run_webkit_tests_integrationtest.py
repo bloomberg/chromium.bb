@@ -742,12 +742,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['--no-pixel-tests', 'passes/reftest.html'])
         self.assertEqual(['passes/reftest.html'], tests_run)
 
-    def test_reftest_skip_reftests_if_no_ref_tests(self):
-        tests_run = get_tests_run(['--no-ref-tests', 'passes/reftest.html'])
-        self.assertEqual([], tests_run)
-        tests_run = get_tests_run(['--no-ref-tests', '--no-pixel-tests', 'passes/reftest.html'])
-        self.assertEqual([], tests_run)
-
     def test_reftest_expected_html_should_be_ignored(self):
         tests_run = get_tests_run(['passes/reftest-expected.html'])
         self.assertEqual([], tests_run)

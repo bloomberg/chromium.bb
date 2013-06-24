@@ -94,7 +94,7 @@ class SingleTestRunner(object):
 
     def run(self):
         if self._reference_files:
-            if self._port.get_option('no_ref_tests') or self._options.reset_results:
+            if self._options.reset_results:
                 reftest_type = set([reference_file[0] for reference_file in self._reference_files])
                 result = TestResult(self._test_name, reftest_type=reftest_type)
                 result.type = test_expectations.SKIP
