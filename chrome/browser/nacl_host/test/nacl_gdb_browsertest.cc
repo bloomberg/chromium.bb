@@ -9,6 +9,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ppapi/ppapi_test.h"
+#include "components/nacl/common/nacl_switches.h"
 
 static const base::FilePath::CharType kMockNaClGdb[] =
 #if defined(OS_WIN)

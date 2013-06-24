@@ -5,6 +5,8 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/nacl/common/nacl_switches.h"
+#include "content/public/common/content_switches.h"
 
 namespace nacl {
 
