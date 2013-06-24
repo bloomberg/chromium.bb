@@ -521,9 +521,6 @@ const char kEnableContacts[]                = "enable-contacts";
 // Enables desktop guest mode.
 const char kEnableDesktopGuestMode[]        = "enable-desktop-guest-mode";
 
-// Enables device discovery.
-const char kEnableDeviceDiscovery[]        = "enable-device-discovery";
-
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 
