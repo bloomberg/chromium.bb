@@ -305,6 +305,8 @@ cr.define('cr.ui.login', function() {
               innerContainer.classList.remove('animation');
               oldStep.classList.add('hidden');
             }
+            // Refresh defaultControl. It could have changed.
+            var defaultControl = newStep.defaultControl;
             if (defaultControl)
               defaultControl.focus();
           });
@@ -323,6 +325,8 @@ cr.define('cr.ui.login', function() {
                 innerContainer.removeEventListener('webkitTransitionEnd', f);
                 $('progress-dots').classList.remove('down');
                 chrome.send('loginVisible', ['oobe']);
+                // Refresh defaultControl. It could have changed.
+                var defaultControl = newStep.defaultControl;
                 if (defaultControl)
                   defaultControl.focus();
               });
