@@ -377,6 +377,32 @@ bool Connection::RazeAndClose() {
   return result;
 }
 
+// TODO(shess): To the extent possible, figure out the optimal
+// ordering for these deletes which will prevent other connections
+// from seeing odd behavior.  For instance, it may be necessary to
+// manually lock the main database file in a SQLite-compatible fashion
+// (to prevent other processes from opening it), then delete the
+// journal files, then delete the main database file.  Another option
+// might be to lock the main database file and poison the header with
+// junk to prevent other processes from opening it successfully (like
+// Gears "SQLite poison 3" trick).
+//
+// static
+bool Connection::Delete(const base::FilePath& path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  base::FilePath journal_path(path.value() + FILE_PATH_LITERAL("-journal"));
+  base::FilePath wal_path(path.value() + FILE_PATH_LITERAL("-wal"));
+
+  file_util::Delete(journal_path, false);
+  file_util::Delete(wal_path, false);
+  file_util::Delete(path, false);
+
+  return !file_util::PathExists(journal_path) &&
+      !file_util::PathExists(wal_path) &&
+      !file_util::PathExists(path);
+}
+
 bool Connection::BeginTransaction() {
   if (needs_rollback_) {
     DCHECK_GT(transaction_nesting_, 0);

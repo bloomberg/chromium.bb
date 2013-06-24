@@ -411,3 +411,18 @@ TEST_F(SQLConnectionTest, SetTempDirForSQL) {
   ASSERT_TRUE(meta_table.Init(&db(), 4, 4));
 }
 #endif
+
+TEST_F(SQLConnectionTest, Delete) {
+  EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
+  db().Close();
+
+  // Should have both a main database file and a journal file because
+  // of journal_mode PERSIST.
+  base::FilePath journal(db_path().value() + FILE_PATH_LITERAL("-journal"));
+  ASSERT_TRUE(file_util::PathExists(db_path()));
+  ASSERT_TRUE(file_util::PathExists(journal));
+
+  sql::Connection::Delete(db_path());
+  EXPECT_FALSE(file_util::PathExists(db_path()));
+  EXPECT_FALSE(file_util::PathExists(journal));
+}

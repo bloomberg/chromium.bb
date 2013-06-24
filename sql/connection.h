@@ -224,6 +224,18 @@ class SQL_EXPORT Connection {
   // cases.
   bool RazeAndClose();
 
+  // Delete the underlying database files associated with |path|.
+  // This should be used on a database which has no existing
+  // connections.  If any other connections are open to the same
+  // database, this could cause odd results or corruption (for
+  // instance if a hot journal is deleted but the associated database
+  // is not).
+  //
+  // Returns true if the database file and associated journals no
+  // longer exist, false otherwise.  If the database has never
+  // existed, this will return true.
+  static bool Delete(const base::FilePath& path);
+
   // Transactions --------------------------------------------------------------
 
   // Transaction management. We maintain a virtual transaction stack to emulate
