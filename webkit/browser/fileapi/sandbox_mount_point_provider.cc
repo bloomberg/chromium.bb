@@ -133,14 +133,6 @@ const base::FilePath::CharType
 SandboxMountPointProvider::kFileSystemDirectory[] =
     FILE_PATH_LITERAL("File System");
 
-// static
-bool SandboxMountPointProvider::IsSandboxType(FileSystemType type) {
-  return type == kFileSystemTypeTemporary ||
-         type == kFileSystemTypePersistent ||
-         type == kFileSystemTypeSyncable ||
-         type == kFileSystemTypeSyncableForInternalSync;
-}
-
 SandboxMountPointProvider::SandboxMountPointProvider(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* file_task_runner,
@@ -208,7 +200,10 @@ SandboxMountPointProvider::~SandboxMountPointProvider() {
 }
 
 bool SandboxMountPointProvider::CanHandleType(FileSystemType type) const {
-  return IsSandboxType(type);
+  return type == kFileSystemTypeTemporary ||
+         type == kFileSystemTypePersistent ||
+         type == kFileSystemTypeSyncable ||
+         type == kFileSystemTypeSyncableForInternalSync;
 }
 
 void SandboxMountPointProvider::OpenFileSystem(

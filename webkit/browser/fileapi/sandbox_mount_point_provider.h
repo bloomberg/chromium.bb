@@ -69,8 +69,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
   // The FileSystem directory name.
   static const base::FilePath::CharType kFileSystemDirectory[];
 
-  static bool IsSandboxType(FileSystemType type);
-
   // |file_task_runner| is used to validate the root directory and delete the
   // obfuscated file util.
   SandboxMountPointProvider(
