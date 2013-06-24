@@ -31,6 +31,7 @@
 
 #include "ppapi_simple/ps_event.h"
 #include "ppapi_simple/ps_instance.h"
+#include "ppapi_simple/ps_interface.h"
 #include "ppapi_simple/ps_main.h"
 
 #if defined(WIN32)
@@ -84,6 +85,8 @@ int PSInstance::MainThread(int argc, char *argv[]) {
 
 PSInstance::PSInstance(PP_Instance instance, const char *argv[])
     : pp::Instance(instance),
+      pp::MouseLock(this),
+      pp::Graphics3DClient(this),
       main_loop_(NULL),
       verbosity_(PSV_LOG),
       events_enabled_(PSE_NONE) {
@@ -105,15 +108,6 @@ PSInstance::PSInstance(PP_Instance instance, const char *argv[])
                      PP_INPUTEVENT_CLASS_KEYBOARD |
                      PP_INPUTEVENT_CLASS_WHEEL |
                      PP_INPUTEVENT_CLASS_TOUCH);
-
-  ppb_core_ = static_cast<const PPB_Core*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_CORE_INTERFACE));
-
-  ppb_var_ = static_cast<const PPB_Var*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
-
-  ppb_view_ = static_cast<const PPB_View*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_VIEW_INTERFACE));
 }
 
 PSInstance::~PSInstance() {}
@@ -176,6 +170,8 @@ bool PSInstance::Init(uint32_t arg,
     strcpy(name, "NMF?");
     si->argv_[0] = name;
   }
+
+  PSInterfaceInit();
 
   if (ProcessProperties()) {
     pthread_t main_thread;
@@ -290,7 +286,7 @@ void PSInstance::PostEvent(PSEventType type, PP_Resource resource) {
 
   if (events_enabled_ & type) {
     if (resource) {
-      ppb_core_->AddRefResource(resource);
+      PSInterfaceCore()->AddRefResource(resource);
     }
     PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
     memset(env, 0, sizeof(*env));
@@ -304,7 +300,7 @@ void PSInstance::PostEvent(PSEventType type, const PP_Var& var) {
   assert(PSE_INSTANCE_HANDLEMESSAGE == type);
 
   if (events_enabled_ & type) {
-    ppb_var_->AddRef(var);
+    PSInterfaceVar()->AddRef(var);
     PSEvent *env = (PSEvent *) malloc(sizeof(PSEvent));
     memset(env, 0, sizeof(*env));
     env->type = type;
@@ -325,12 +321,12 @@ void PSInstance::ReleaseEvent(PSEvent* event) {
   if (event) {
     switch(event->type) {
       case PSE_INSTANCE_HANDLEMESSAGE:
-        ppb_var_->Release(event->as_var);
+        PSInterfaceVar()->Release(event->as_var);
         break;
       case PSE_INSTANCE_HANDLEINPUT:
       case PSE_INSTANCE_DIDCHANGEVIEW:
         if (event->as_resource) {
-          ppb_core_->ReleaseResource(event->as_resource);
+          PSInterfaceCore()->ReleaseResource(event->as_resource);
         }
         break;
       default:
@@ -346,7 +342,6 @@ void PSInstance::HandleMessage(const pp::Var& message) {
 }
 
 bool PSInstance::HandleInputEvent(const pp::InputEvent& event) {
-  Log("Got Input\n");
   PostEvent(PSE_INSTANCE_HANDLEINPUT, event.pp_resource());
   return true;
 }
@@ -362,3 +357,12 @@ void PSInstance::DidChangeFocus(bool focus) {
   PostEvent(PSE_INSTANCE_DIDCHANGEFOCUS, focus ? PP_TRUE : PP_FALSE);
 }
 
+void PSInstance::Graphics3DContextLost() {
+  Log("Graphics3DContextLost\n");
+  PostEvent(PSE_GRAPHICS3D_GRAPHICS3DCONTEXTLOST);
+}
+
+void PSInstance::MouseLockLost() {
+  Log("MouseLockLost\n");
+  PostEvent(PSE_MOUSELOCK_MOUSELOCKLOST);
+}

@@ -1,6 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 
 #ifndef PPAPI_SIMPLE_PS_INSTANCE_H_
 #define PPAPI_SIMPLE_PS_INSTANCE_H_
@@ -14,6 +16,7 @@
 #include "ppapi/c/ppb_view.h"
 
 #include "ppapi/cpp/fullscreen.h"
+#include "ppapi/cpp/graphics_3d_client.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/message_loop.h"
 #include "ppapi/cpp/mouse_lock.h"
@@ -28,7 +31,9 @@
 
 typedef std::map<std::string, std::string> PropertyMap_t;
 
-class PSInstance : public pp::Instance {
+// The basic instance class which also inherits the MouseLock and
+// Graphics3DClient interfaces.
+class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
  public:
   enum Verbosity {
     PSV_SILENT,
@@ -95,6 +100,12 @@ class PSInstance : public pp::Instance {
   // and can later be processed on a sperate processing thread.
   virtual bool HandleInputEvent(const pp::InputEvent& event);
 
+  // Called by the browser when the 3D context is lost.
+  virtual void Graphics3DContextLost();
+
+  // Called by the browser when the mouselock is lost.
+  virtual void MouseLockLost();
+
   // Called by Init to processes default and embed tag arguments prior to
   // launching the 'ppapi_main' thread.
   virtual bool ProcessProperties();
@@ -112,9 +123,8 @@ class PSInstance : public pp::Instance {
 
   PSMainFunc_t main_cb_;
 
-  const PPB_Core* ppb_core_;
-  const PPB_Var* ppb_var_;
-  const PPB_View* ppb_view_;
+  friend class PSGraphics3DClient;
+  friend class PSMouseLock;
 };
 
 #endif  // PPAPI_MAIN_PS_INSTANCE_H_
