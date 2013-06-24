@@ -55,10 +55,24 @@ other types of suffix sets.
 
 <histograms>
 
+<histogram name="Accessibility.CrosAlwaysShowA11yMenu" enum="BooleanEnabled">
+  <summary>
+    Whether the Chrome OS Accessibility Menu is set to be shown regardless of
+    the state of a11y features.(checked once 45 secs after startup).
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.CrosHighContrast" enum="BooleanEnabled">
   <summary>
     Whether the Chrome OS High Constrast mode feature is on (checked once 45
     secs after startup).
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.CrosLargeCursor" enum="BooleanEnabled">
+  <summary>
+    Whether the Chrome OS Large Cursor feature is on (checked once 45 secs after
+    startup).
   </summary>
 </histogram>
 
