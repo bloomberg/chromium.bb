@@ -124,6 +124,9 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 // Shows the selecting checkboxes in the Files.app.
 const char kFileManagerShowCheckboxes[]     = "file-manager-show-checkboxes";
 
+// Enables the sharing feature in the Files.app.
+const char kFileManagerEnableSharing[]      = "file-manager-enable-sharing";
+
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[]                     = "first-boot";
 

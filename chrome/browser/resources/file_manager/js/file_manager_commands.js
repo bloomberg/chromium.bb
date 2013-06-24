@@ -475,3 +475,19 @@ Commands.zipSelectionCommand = {
         selection && selection.totalCount > 0;
   }
 };
+
+/**
+ * Shows the share dialog for the current selection (single only).
+ */
+Commands.shareCommand = {
+  execute: function(event, fileManager) {
+    fileManager.shareSelection();
+  },
+  canExecute: function(event, fileManager) {
+    var selection = fileManager.getSelection();
+    event.canExecute = fileManager.isOnDrive() &&
+        !fileManager.isDriveOffline() &&
+        selection && selection.totalCount == 1;
+    event.command.setHidden(!fileManager.isOnDrive());
+  }
+};

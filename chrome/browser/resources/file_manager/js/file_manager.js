@@ -673,6 +673,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     CommandUtil.registerCommand(doc, 'zip-selection',
         Commands.zipSelectionCommand, this, this.directoryModel_);
 
+    CommandUtil.registerCommand(doc, 'share', Commands.shareCommand, this);
+
     CommandUtil.registerCommand(doc, 'search', Commands.searchCommand, this,
         this.dialogDom_.querySelector('#search-box'));
 
@@ -2156,6 +2158,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.directoryModel_.getCurrentDirEntry();
   };
 
+  /**
+   * Deletes the selected file and directories recursively.
+   */
   FileManager.prototype.deleteSelection = function() {
     // TODO(mtomasz): Remove this temporary dialog. crbug.com/167364
     var entries = this.getSelection().entries;
@@ -2167,6 +2172,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }.bind(this));
   };
 
+  /**
+   * Shows the share dialog for the selected file.
+   */
+  FileManager.prototype.shareSelection = function() {
+    // TODO(mtomasz): Implement it. crbug.com/141396
+  };
+
+  /**
+   * Blinks the selection. Used to give feedback when copying or cutting the
+   * selection.
+   */
   FileManager.prototype.blinkSelection = function() {
     var selection = this.getSelection();
     if (!selection || selection.totalCount == 0)
