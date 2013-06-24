@@ -34,8 +34,6 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url_request_job_factory.h"
 #include "webkit/common/user_agent/user_agent.h"
-#include "webkit/support/simple_file_system.h"
-#include "webkit/support/simple_resource_loader_bridge.h"
 
 class TestShellHttpUserAgentSettings : public net::HttpUserAgentSettings {
  public:

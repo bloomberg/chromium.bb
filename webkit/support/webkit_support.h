@@ -78,13 +78,6 @@ WebKit::Platform* GetWebKitPlatformSupport();
 WebKit::WebPlugin* CreateWebPlugin(WebKit::WebFrame* frame,
                                    const WebKit::WebPluginParams& params);
 
-// This is used by WebFrameClient::createApplicationCacheHost().
-WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
-    WebKit::WebFrame* frame, WebKit::WebApplicationCacheHostClient* client);
-
-// This is used by WebViewHost::createSessionStorageNamespace().
-WebKit::WebStorageNamespace* CreateSessionStorageNamespace(unsigned quota);
-
 // Returns the root directory of the WebKit code.
 WebKit::WebString GetWebKitRootDir();
 
@@ -215,13 +208,6 @@ WebKit::WebURLError CreateCancelledError(const WebKit::WebURLRequest& request);
 WebKit::WebURLRequest::ExtraData* CreateWebURLRequestExtraData(
     WebKit::WebReferrerPolicy referrer_policy);
 
-// - Database
-void SetDatabaseQuota(int quota);
-void ClearAllDatabases();
-
-// - Resource loader
-void SetAcceptAllCookies(bool accept);
-
 // - Theme engine
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void SetThemeEngine(WebKit::WebThemeEngine* engine);
@@ -230,16 +216,6 @@ WebKit::WebThemeEngine* GetThemeEngine();
 
 // - DevTools
 WebKit::WebURL GetDevToolsPathAsURL();
-
-// - FileSystem
-void OpenFileSystem(WebKit::WebFrame* frame,
-                    WebKit::WebFileSystemType type,
-                    long long size,
-                    bool create,
-                    WebKit::WebFileSystemCallbacks* callbacks);
-void DeleteFileSystem(WebKit::WebFrame* frame,
-                      WebKit::WebFileSystemType type,
-                      WebKit::WebFileSystemCallbacks* callbacks);
 
 // Returns a filesystem ID for the newly created isolated filesystem.
 WebKit::WebString RegisterIsolatedFileSystem(

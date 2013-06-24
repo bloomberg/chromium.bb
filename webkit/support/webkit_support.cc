@@ -62,11 +62,6 @@
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/support/platform_support.h"
-#include "webkit/support/simple_appcache_system.h"
-#include "webkit/support/simple_database_system.h"
-#include "webkit/support/simple_dom_storage_system.h"
-#include "webkit/support/simple_file_system.h"
-#include "webkit/support/simple_resource_loader_bridge.h"
 #include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/support/web_layer_tree_view_impl_for_testing.h"
@@ -148,10 +143,6 @@ class TestEnvironment {
 
     // TestWebKitPlatformSupport must be instantiated after MessageLoopType.
     webkit_platform_support_.reset(new TestWebKitPlatformSupport);
-  }
-
-  ~TestEnvironment() {
-    SimpleResourceLoaderBridge::Shutdown();
   }
 
   TestWebKitPlatformSupport* webkit_platform_support() const {
@@ -324,15 +315,6 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
   new_params.mimeType = WebString::fromUTF8(mime_types.front());
   return new WebPluginImplWithPageDelegate(
       frame, new_params, plugins.front().path);
-}
-
-WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
-    WebFrame*, WebKit::WebApplicationCacheHostClient* client) {
-  return SimpleAppCacheSystem::CreateApplicationCacheHost(client);
-}
-
-WebKit::WebStorageNamespace* CreateSessionStorageNamespace(unsigned quota) {
-  return SimpleDomStorageSystem::instance().CreateSessionStorageNamespace();
 }
 
 WebKit::WebString GetWebKitRootDir() {
@@ -652,22 +634,6 @@ WebKit::WebURLRequest::ExtraData* CreateWebURLRequestExtraData(
                                                      WebKit::WebString());
 }
 
-// Bridge for SimpleDatabaseSystem
-
-void SetDatabaseQuota(int quota) {
-  SimpleDatabaseSystem::GetInstance()->SetDatabaseQuota(quota);
-}
-
-void ClearAllDatabases() {
-  SimpleDatabaseSystem::GetInstance()->ClearAllDatabases();
-}
-
-// Bridge for SimpleResourceLoaderBridge
-
-void SetAcceptAllCookies(bool accept) {
-  SimpleResourceLoaderBridge::SetAcceptAllCookies(accept);
-}
-
 // Theme engine
 #if defined(OS_WIN) || defined(OS_MACOSX)
 
@@ -696,23 +662,6 @@ WebURL GetDevToolsPathAsURL() {
   base::FilePath devToolsPath = dirExe.AppendASCII(
       "resources/inspector/devtools.html");
   return net::FilePathToFileURL(devToolsPath);
-}
-
-// FileSystem
-void OpenFileSystem(WebFrame* frame,
-    WebKit::WebFileSystemType type,
-    long long size, bool create, WebFileSystemCallbacks* callbacks) {
-  SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
-      test_environment->webkit_platform_support()->fileSystem());
-  fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
-}
-
-void DeleteFileSystem(WebFrame* frame,
-                      WebKit::WebFileSystemType type,
-                      WebFileSystemCallbacks* callbacks) {
-  SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
-      test_environment->webkit_platform_support()->fileSystem());
-  fileSystem->DeleteFileSystem(frame, type, callbacks);
 }
 
 WebKit::WebString RegisterIsolatedFileSystem(

@@ -6,6 +6,7 @@
 #define WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_
 
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
@@ -15,11 +16,6 @@
 #include "webkit/mocks/mock_webhyphenator.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/support/mock_webclipboard_impl.h"
-#include "webkit/support/simple_appcache_system.h"
-#include "webkit/support/simple_database_system.h"
-#include "webkit/support/simple_dom_storage_system.h"
-#include "webkit/support/simple_file_system.h"
-#include "webkit/support/simple_webcookiejar_impl.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 
 class TestShellWebBlobRegistryImpl;
@@ -46,23 +42,11 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebFileUtilities* fileUtilities();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
-  virtual WebKit::WebCookieJar* cookieJar();
   virtual WebKit::WebBlobRegistry* blobRegistry();
-  virtual WebKit::WebFileSystem* fileSystem();
   virtual WebKit::WebHyphenator* hyphenator();
   virtual WebKit::WebIDBFactory* idbFactory();
 
   virtual bool sandboxEnabled();
-  virtual WebKit::Platform::FileHandle databaseOpenFile(
-      const WebKit::WebString& vfs_file_name, int desired_flags);
-  virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
-                                 bool sync_dir);
-  virtual long databaseGetFileAttributes(
-      const WebKit::WebString& vfs_file_name);
-  virtual long long databaseGetFileSize(
-      const WebKit::WebString& vfs_file_name);
-  virtual long long databaseGetSpaceAvailableForOrigin(
-      const WebKit::WebString& origin_identifier);
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
                                              size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
@@ -80,8 +64,6 @@ class TestWebKitPlatformSupport :
       const WebKit::WebString& value1,
       const WebKit::WebString& value2);
   virtual WebKit::WebString defaultLocale();
-  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path, unsigned quota);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void SetThemeEngine(WebKit::WebThemeEngine* engine);
@@ -167,12 +149,7 @@ class TestWebKitPlatformSupport :
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
   base::ScopedTempDir appcache_dir_;
-  SimpleAppCacheSystem appcache_system_;
-  SimpleDatabaseSystem database_system_;
-  SimpleDomStorageSystem dom_storage_system_;
-  SimpleWebCookieJarImpl cookie_jar_;
   scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
-  SimpleFileSystem file_system_;
   base::ScopedTempDir file_system_root_;
   webkit_glue::MockWebHyphenator hyphenator_;
   WebURLLoaderMockFactory url_loader_factory_;

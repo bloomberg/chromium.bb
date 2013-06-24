@@ -13,7 +13,6 @@
 #include "cc/output/context_provider.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
-#include "net/http/http_cache.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -42,13 +41,6 @@
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/support/gc_extension.h"
 #include "webkit/support/mock_webclipboard_impl.h"
-#include "webkit/support/simple_appcache_system.h"
-#include "webkit/support/simple_database_system.h"
-#include "webkit/support/simple_file_system.h"
-#include "webkit/support/simple_resource_loader_bridge.h"
-#include "webkit/support/simple_socket_stream_bridge.h"
-#include "webkit/support/simple_webcookiejar_impl.h"
-#include "webkit/support/test_shell_request_context.h"
 #include "webkit/support/test_shell_webblobregistry_impl.h"
 #include "webkit/support/test_webmessageportchannel.h"
 #include "webkit/support/web_audio_device_mock.h"
@@ -113,9 +105,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
                     "using in-memory storage.";
     DCHECK(appcache_dir_.path().empty());
   }
-  SimpleAppCacheSystem::InitializeOnUIThread(appcache_dir_.path());
-
-  WebKit::WebDatabase::setObserver(&database_system_);
 
   blob_registry_ = new TestShellWebBlobRegistryImpl();
 
@@ -143,12 +132,7 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   SetThemeEngine(NULL);
 #endif
 
-  net::HttpCache::Mode cache_mode = net::HttpCache::NORMAL;
   net::CookieMonster::EnableFileScheme();
-
-  // Initializing with a default context, which means no on-disk cookie DB,
-  // and no support for directory listings.
-  SimpleResourceLoaderBridge::Init(base::FilePath(), cache_mode, true);
 
   // Test shell always exposes the GC.
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
@@ -177,16 +161,8 @@ WebKit::WebSandboxSupport* TestWebKitPlatformSupport::sandboxSupport() {
   return NULL;
 }
 
-WebKit::WebCookieJar* TestWebKitPlatformSupport::cookieJar() {
-  return &cookie_jar_;
-}
-
 WebKit::WebBlobRegistry* TestWebKitPlatformSupport::blobRegistry() {
   return blob_registry_.get();
-}
-
-WebKit::WebFileSystem* TestWebKitPlatformSupport::fileSystem() {
-  return &file_system_;
 }
 
 WebKit::WebHyphenator* TestWebKitPlatformSupport::hyphenator() {
@@ -201,36 +177,6 @@ WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
 
 bool TestWebKitPlatformSupport::sandboxEnabled() {
   return true;
-}
-
-WebKit::Platform::FileHandle
-TestWebKitPlatformSupport::databaseOpenFile(
-    const WebKit::WebString& vfs_file_name, int desired_flags) {
-  return SimpleDatabaseSystem::GetInstance()->OpenFile(
-      vfs_file_name, desired_flags);
-}
-
-int TestWebKitPlatformSupport::databaseDeleteFile(
-    const WebKit::WebString& vfs_file_name, bool sync_dir) {
-  return SimpleDatabaseSystem::GetInstance()->DeleteFile(
-      vfs_file_name, sync_dir);
-}
-
-long TestWebKitPlatformSupport::databaseGetFileAttributes(
-    const WebKit::WebString& vfs_file_name) {
-  return SimpleDatabaseSystem::GetInstance()->GetFileAttributes(
-      vfs_file_name);
-}
-
-long long TestWebKitPlatformSupport::databaseGetFileSize(
-    const WebKit::WebString& vfs_file_name) {
-  return SimpleDatabaseSystem::GetInstance()->GetFileSize(vfs_file_name);
-}
-
-long long TestWebKitPlatformSupport::databaseGetSpaceAvailableForOrigin(
-    const WebKit::WebString& origin_identifier) {
-  return SimpleDatabaseSystem::GetInstance()->GetSpaceAvailable(
-      origin_identifier.utf8());
 }
 
 unsigned long long TestWebKitPlatformSupport::visitedLinkHash(
@@ -322,12 +268,6 @@ WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
 
 WebKit::WebString TestWebKitPlatformSupport::defaultLocale() {
   return ASCIIToUTF16("en-US");
-}
-
-WebKit::WebStorageNamespace*
-TestWebKitPlatformSupport::createLocalStorageNamespace(
-    const WebKit::WebString& path, unsigned quota) {
-  return dom_storage_system_.CreateLocalStorageNamespace();
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -425,14 +365,16 @@ void TestWebKitPlatformSupport::GetPlugins(
 webkit_glue::ResourceLoaderBridge*
 TestWebKitPlatformSupport::CreateResourceLoader(
     const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
-  return SimpleResourceLoaderBridge::Create(request_info);
+  NOTREACHED();
+  return NULL;
 }
 
 webkit_glue::WebSocketStreamHandleBridge*
 TestWebKitPlatformSupport::CreateWebSocketBridge(
     WebKit::WebSocketStreamHandle* handle,
     webkit_glue::WebSocketStreamHandleDelegate* delegate) {
-  return SimpleSocketStreamBridge::Create(handle, delegate);
+  NOTREACHED();
+  return NULL;
 }
 
 WebKit::WebMediaStreamCenter*
