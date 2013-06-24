@@ -1209,6 +1209,7 @@
         'browser/chromeos/accessibility/accessibility_manager_browsertest.cc',
         'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
         'browser/chromeos/app_mode/kiosk_app_manager_browsertest.cc',
+        'browser/chromeos/app_mode/kiosk_app_update_service_browsertest.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.h',
         'browser/chromeos/cros/cros_mock.cc',

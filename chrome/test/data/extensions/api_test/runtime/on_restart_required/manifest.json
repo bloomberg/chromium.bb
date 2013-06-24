@@ -1,0 +1,10 @@
+{
+  "name": "chrome.runtime.onRestartRequired test app",
+  "version": "0.1",
+  "description": "Test for chrome.runtime.onRestartRequired.",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  }
+}

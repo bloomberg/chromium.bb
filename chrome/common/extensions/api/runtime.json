@@ -372,9 +372,12 @@
         ]
       },
       {
+        // TODO(xiyuan): onBrowserUpdateAvailable is deprecated in favor of
+        // onRestartRequired. We should remove it when we are sure it is unused.
         "name": "onBrowserUpdateAvailable",
         "type": "function",
         "description": "Fired when a Chrome update is available, but isn't installed immediately because a browser restart is required.",
+        "nodoc": true,
         "parameters": []
       },
       {
@@ -428,10 +431,20 @@
           "optional": "true",
           "description": "Return true from the event listener if you wish to call <code>sendResponse</code> after the event listener returns."
         }
+      },
+      {
+        "name": "onRestartRequired",
+        "type": "function",
+        "description": "Fired when an app or the device that it runs on needs to be restarted. The app should close all its windows at its earliest convenient time to let the restart to happen. If the app does nothing, a restart will be enforced after a 24-hour grace period has passed. Currently, this event is only fired for Chrome OS kiosk apps.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "reason",
+            "description": "The reason that the event is being dispatched. 'app_update' is used when the restart is needed because the application is updated to a newer version. 'os_update' is used when the restart is needed because the browser/OS is updated to a newer version. 'periodic' is used when the system runs for more than the permitted uptime set in the enterprise policy.",
+            "enum": ["app_update", "os_update", "periodic"]
+          }
+        ]
       }
-
-
-
     ]
   }
 ]

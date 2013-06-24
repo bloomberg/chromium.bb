@@ -175,6 +175,7 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
         "onConnectExternal",
         "onMessage",
         "onMessageExternal",
+        "onRestartRequired",
         "id",
     };
 

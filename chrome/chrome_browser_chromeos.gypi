@@ -737,6 +737,7 @@
         'browser/chromeos/system/ash_system_tray_delegate.h',
         'browser/chromeos/system/automatic_reboot_manager.cc',
         'browser/chromeos/system/automatic_reboot_manager.h',
+        'browser/chromeos/system/automatic_reboot_manager_observer.h',
         'browser/chromeos/system/device_change_handler.cc',
         'browser/chromeos/system/device_change_handler.h',
         'browser/chromeos/system/input_device_settings.cc',

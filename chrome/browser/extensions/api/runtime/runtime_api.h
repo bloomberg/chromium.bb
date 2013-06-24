@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_RUNTIME_RUNTIME_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_RUNTIME_RUNTIME_API_H_
 
+#include <string>
+
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/extensions/api/runtime.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -39,6 +42,12 @@ class RuntimeEventRouter {
 
   // Dispatches the onBrowserUpdateAvailable event to all extensions.
   static void DispatchOnBrowserUpdateAvailableEvent(Profile* profile);
+
+  // Dispatches the onRestartRequired event to the given app.
+  static void DispatchOnRestartRequiredEvent(
+      Profile* profile,
+      const std::string& app_id,
+      api::runtime::OnRestartRequired::Reason reason);
 
   // Does any work needed at extension uninstall (e.g. load uninstall url).
   static void OnExtensionUninstalled(Profile* profile,

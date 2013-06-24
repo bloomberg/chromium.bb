@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
+#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -22,15 +26,37 @@ const int kForceRestartWaitTimeMs = 24 * 3600 * 1000;  // 24 hours.
 
 }  // namespace
 
-KioskAppUpdateService::KioskAppUpdateService(Profile* profile)
-    : profile_(profile) {
+KioskAppUpdateService::KioskAppUpdateService(
+    Profile* profile,
+    system::AutomaticRebootManager* automatic_reboot_manager)
+    : profile_(profile),
+      automatic_reboot_manager_(automatic_reboot_manager) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (service)
     service->AddUpdateObserver(this);
+
+  if (automatic_reboot_manager_)
+    automatic_reboot_manager_->AddObserver(this);
 }
 
 KioskAppUpdateService::~KioskAppUpdateService() {
+}
+
+void KioskAppUpdateService::StartAppUpdateRestartTimer() {
+  if (restart_timer_.IsRunning())
+    return;
+
+  // Setup timer to force restart once the wait period expires.
+  restart_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kForceRestartWaitTimeMs),
+      this, &KioskAppUpdateService::ForceAppUpdateRestart);
+}
+
+void KioskAppUpdateService::ForceAppUpdateRestart() {
+  // Force a chrome restart (not a logout or reboot) by closing all browsers.
+  LOG(WARNING) << "Force closing all browsers to update kiosk app.";
+  chrome::CloseAllBrowsers();
 }
 
 void KioskAppUpdateService::Shutdown() {
@@ -44,23 +70,38 @@ void KioskAppUpdateService::OnAppUpdateAvailable(const std::string& app_id) {
   if (app_id != app_id_)
     return;
 
-  StartRestartTimer();
+  extensions::RuntimeEventRouter::DispatchOnRestartRequiredEvent(
+      profile_,
+      app_id_,
+      extensions::api::runtime::OnRestartRequired::REASON_APP_UPDATE);
+
+  StartAppUpdateRestartTimer();
 }
 
-void KioskAppUpdateService::StartRestartTimer() {
-  if (restart_timer_.IsRunning())
-    return;
+void KioskAppUpdateService::OnRebootScheduled(Reason reason) {
+  extensions::api::runtime::OnRestartRequired::Reason restart_reason =
+      extensions::api::runtime::OnRestartRequired::REASON_NONE;
+  switch (reason) {
+    case REBOOT_REASON_OS_UPDATE:
+      restart_reason =
+          extensions::api::runtime::OnRestartRequired::REASON_OS_UPDATE;
+      break;
+    case REBOOT_REASON_PERIODIC:
+      restart_reason =
+          extensions::api::runtime::OnRestartRequired::REASON_PERIODIC;
+      break;
+    default:
+      NOTREACHED() << "Unknown reboot reason=" << reason;
+      return;
+  }
 
-  // Setup timer to force restart once the wait period expires.
-  restart_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kForceRestartWaitTimeMs),
-      this, &KioskAppUpdateService::ForceRestart);
+  extensions::RuntimeEventRouter::DispatchOnRestartRequiredEvent(
+      profile_, app_id_, restart_reason);
 }
 
-void KioskAppUpdateService::ForceRestart() {
-  // Force a chrome restart (not a logout or reboot) by closing all browsers.
-  LOG(WARNING) << "Force closing all browsers to update kiosk app.";
-  chrome::CloseAllBrowsers();
+void KioskAppUpdateService::WillDestroyAutomaticRebootManager() {
+  automatic_reboot_manager_->RemoveObserver(this);
+  automatic_reboot_manager_ = NULL;
 }
 
 KioskAppUpdateServiceFactory::KioskAppUpdateServiceFactory()
@@ -92,8 +133,10 @@ KioskAppUpdateServiceFactory* KioskAppUpdateServiceFactory::GetInstance() {
 
 BrowserContextKeyedService*
 KioskAppUpdateServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new KioskAppUpdateService(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  return new KioskAppUpdateService(
+      Profile::FromBrowserContext(context),
+      g_browser_process->platform_part()->automatic_reboot_manager());
 }
 
 }  // namespace chromeos

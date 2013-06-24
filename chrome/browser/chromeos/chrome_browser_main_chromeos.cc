@@ -21,8 +21,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/time/default_tick_clock.h"
-#include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -72,7 +70,6 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
-#include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #include "chrome/browser/chromeos/system/device_change_handler.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
@@ -699,8 +696,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   display_configuration_observer_.reset(
       new DisplayConfigurationObserver());
 
-  automatic_reboot_manager_.reset(new system::AutomaticRebootManager(
-      scoped_ptr<base::TickClock>(new base::DefaultTickClock)));
+  g_browser_process->platform_part()->InitializeAutomaticRebootManager();
 
   // This observer cannot be created earlier because it requires the shell to be
   // available.
@@ -841,7 +837,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Let the AutomaticRebootManager unregister itself as an observer of several
   // subsystems.
-  automatic_reboot_manager_.reset();
+  g_browser_process->platform_part()->ShutdownAutomaticRebootManager();
 
   // Clean up dependency on CrosSettings and stop pending data fetches.
   KioskAppManager::Shutdown();

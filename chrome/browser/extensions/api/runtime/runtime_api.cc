@@ -4,7 +4,11 @@
 
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 
+#include <utility>
+
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -19,7 +23,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/api/runtime.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
@@ -42,6 +45,7 @@ const char kOnInstalledEvent[] = "runtime.onInstalled";
 const char kOnUpdateAvailableEvent[] = "runtime.onUpdateAvailable";
 const char kOnBrowserUpdateAvailableEvent[] =
     "runtime.onBrowserUpdateAvailable";
+const char kOnRestartRequiredEvent[] = "runtime.onRestartRequired";
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
 const char kInstallReason[] = "reason";
@@ -193,8 +197,25 @@ void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
 }
 
 // static
+void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
+    Profile* profile,
+    const std::string& app_id,
+    api::runtime::OnRestartRequired::Reason reason) {
+  ExtensionSystem* system = ExtensionSystem::Get(profile);
+  if (!system)
+    return;
+
+  scoped_ptr<Event> event(
+      new Event(kOnRestartRequiredEvent,
+                api::runtime::OnRestartRequired::Create(reason)));
+
+  DCHECK(system->event_router());
+  system->event_router()->DispatchEventToExtension(app_id, event.Pass());
+}
+
+// static
 void RuntimeEventRouter::OnExtensionUninstalled(
-    Profile *profile,
+    Profile* profile,
     const std::string& extension_id) {
 #if defined(ENABLE_EXTENSIONS)
   GURL uninstall_url(GetUninstallUrl(ExtensionPrefs::Get(profile),

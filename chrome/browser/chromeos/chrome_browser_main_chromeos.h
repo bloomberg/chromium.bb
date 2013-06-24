@@ -44,7 +44,6 @@ class DBusServices;
 }
 
 namespace system {
-class AutomaticRebootManager;
 class DeviceChangeHandler;
 }
 
@@ -86,7 +85,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<VideoActivityNotifier> video_activity_notifier_;
   scoped_ptr<StorageMonitorCros> storage_monitor_;
-  scoped_ptr<system::AutomaticRebootManager> automatic_reboot_manager_;
   scoped_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
   scoped_ptr<system::DeviceChangeHandler> device_change_handler_;
 

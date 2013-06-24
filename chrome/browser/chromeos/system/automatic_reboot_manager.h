@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -26,6 +27,8 @@ class TickClock;
 
 namespace chromeos {
 namespace system {
+
+class AutomaticRebootManagerObserver;
 
 // Schedules and executes automatic reboots.
 //
@@ -89,6 +92,9 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
 
   explicit AutomaticRebootManager(scoped_ptr<base::TickClock> clock);
   virtual ~AutomaticRebootManager();
+
+  void AddObserver(AutomaticRebootManagerObserver* observer);
+  void RemoveObserver(AutomaticRebootManagerObserver* observer);
 
   // PowerManagerClient::Observer:
   virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
@@ -159,6 +165,8 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   scoped_ptr<base::OneShotTimer<AutomaticRebootManager> > grace_end_timer_;
 
   base::WeakPtrFactory<AutomaticRebootManager> weak_ptr_factory_;
+
+  ObserverList<AutomaticRebootManagerObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomaticRebootManager);
 };

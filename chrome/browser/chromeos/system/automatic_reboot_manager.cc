@@ -33,6 +33,7 @@
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/system/automatic_reboot_manager_observer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_paths.h"
@@ -194,11 +195,25 @@ AutomaticRebootManager::AutomaticRebootManager(
 }
 
 AutomaticRebootManager::~AutomaticRebootManager() {
+  FOR_EACH_OBSERVER(AutomaticRebootManagerObserver,
+                    observers_,
+                    WillDestroyAutomaticRebootManager());
+
   DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
   dbus_thread_manager->GetPowerManagerClient()->RemoveObserver(this);
   dbus_thread_manager->GetUpdateEngineClient()->RemoveObserver(this);
   if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
+}
+
+void AutomaticRebootManager::AddObserver(
+    AutomaticRebootManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AutomaticRebootManager::RemoveObserver(
+    AutomaticRebootManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void AutomaticRebootManager::SystemResumed(
@@ -303,6 +318,8 @@ void AutomaticRebootManager::Reschedule() {
   reboot_requested_ = false;
 
   const base::TimeDelta kZeroTimeDelta;
+  AutomaticRebootManagerObserver::Reason reboot_reason =
+      AutomaticRebootManagerObserver::REBOOT_REASON_UNKNOWN;
 
   // If an uptime limit is set, calculate the time at which it should cause a
   // reboot to be requested.
@@ -310,6 +327,8 @@ void AutomaticRebootManager::Reschedule() {
       local_state_registrar_.prefs()->GetInteger(prefs::kUptimeLimit));
   base::TimeTicks reboot_request_time = boot_time_ + uptime_limit;
   bool have_reboot_request_time = uptime_limit != kZeroTimeDelta;
+  if (have_reboot_request_time)
+    reboot_reason = AutomaticRebootManagerObserver::REBOOT_REASON_PERIODIC;
 
   // If the policy to automatically reboot after an update is enabled and an
   // update has been applied, set the time at which a reboot should be
@@ -321,6 +340,7 @@ void AutomaticRebootManager::Reschedule() {
        update_reboot_needed_time_ < reboot_request_time)) {
     reboot_request_time = update_reboot_needed_time_;
     have_reboot_request_time = true;
+    reboot_reason = AutomaticRebootManagerObserver::REBOOT_REASON_OS_UPDATE;
   }
 
   // If no reboot should be requested, remove any grace period.
@@ -355,6 +375,12 @@ void AutomaticRebootManager::Reschedule() {
                           std::max(grace_end_time - now, kZeroTimeDelta),
                           base::Bind(&AutomaticRebootManager::Reboot,
                                      base::Unretained(this)));
+
+  DCHECK_NE(AutomaticRebootManagerObserver::REBOOT_REASON_UNKNOWN,
+            reboot_reason);
+  FOR_EACH_OBSERVER(AutomaticRebootManagerObserver,
+                    observers_,
+                    OnRebootScheduled(reboot_reason));
 }
 
 void AutomaticRebootManager::RequestReboot() {

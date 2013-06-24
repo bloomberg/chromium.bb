@@ -15,11 +15,20 @@ class OomPriorityManager;
 class ProfileHelper;
 }
 
+namespace chromeos {
+namespace system {
+class AutomaticRebootManager;
+}
+}
+
 class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
                                    public base::NonThreadSafe {
  public:
   BrowserProcessPlatformPart();
   virtual ~BrowserProcessPlatformPart();
+
+  void InitializeAutomaticRebootManager();
+  void ShutdownAutomaticRebootManager();
 
   // Returns the out-of-memory priority manager.
   virtual chromeos::OomPriorityManager* oom_priority_manager();
@@ -31,6 +40,10 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   // Overridden from BrowserProcessPlatformPartBase:
   virtual void StartTearDown() OVERRIDE;
 
+  chromeos::system::AutomaticRebootManager* automatic_reboot_manager() {
+    return automatic_reboot_manager_.get();
+  }
+
  protected:
   virtual void CreateProfileHelper();
 
@@ -39,6 +52,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
 
  private:
   scoped_ptr<chromeos::OomPriorityManager> oom_priority_manager_;
+
+  scoped_ptr<chromeos::system::AutomaticRebootManager>
+      automatic_reboot_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };
