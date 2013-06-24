@@ -1,0 +1,64 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* Derived from /ui/webui/resources/css/table.css. */
+
+html.col-resize * {
+  cursor: col-resize !important;
+}
+
+.table[hasElementFocus] > list > [lead] {
+  z-index: 2;
+}
+
+.table-row {
+  display: -webkit-box;
+  text-align: start;
+  width: 100%;
+}
+
+.table-row-cell {
+  display: -webkit-box;
+  overflow: hidden;
+}
+
+.table-row-cell > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-header {
+  overflow: hidden;
+  position: relative;
+}
+
+.table-header-inner {
+  -webkit-user-select: none;
+  cursor: default;
+  display: -webkit-box;
+  position: relative;
+  text-align: start;
+}
+
+.table-header-cell {
+  font-weight: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-header-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-header-splitter {
+  cursor: col-resize;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+}

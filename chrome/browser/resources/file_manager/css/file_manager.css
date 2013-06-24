@@ -209,11 +209,7 @@ div.splitter {
 }
 
 #volume-list > * {
-  background-color: rgb(240, 240, 240);
-  background-image: none;
-  border: none;
   height: 40px;
-  margin: 0;
   padding: 0 5px;
 }
 
@@ -236,7 +232,6 @@ div.splitter {
 
 #volume-list li.root-item {
   -webkit-box-align: center;
-  border-radius: 0;
   display: -webkit-box;
   line-height: 22px;  /* To accomodate for icons. */
   padding-left: 11px;
@@ -281,14 +276,9 @@ div.splitter {
 }
 
 #directory-tree .tree-row {
-  background-color: white;
-  background-image: none;
-  border: none;
-  border-radius: 0;
   cursor: pointer;
   display: -webkit-box;
   line-height: 29px;
-  margin: 0;
   padding: 0 3px;
 }
 
@@ -301,7 +291,6 @@ div.splitter {
   height: 37px;
   left: 3px;
   margin: -13px;
-  opacity: 1;
   top: 0;
   vertical-align: middle;
   width: 37px;
@@ -361,8 +350,6 @@ div.splitter {
 }
 
 #volume-list .root-item > div.root-eject {
-  /* The transition commented out to work around crbug.com/157813 */
-  /* transition: opacity 70ms linear; */
   background-image: -webkit-image-set(
     url('../images/files/ui/eject.png') 1x,
     url('../images/files/ui/2x/eject.png') 2x);
@@ -372,6 +359,7 @@ div.splitter {
   height: 20px;
   margin-right: 6px;
   opacity: 0.7;
+  transition: opacity 70ms linear;
   vertical-align: middle;
   width: 20px;
 }
@@ -764,9 +752,7 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   -webkit-box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.3);
   border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: 0; /* Override the style of cr.ui.List */
   outline: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 0; /* Override the style of cr.ui.List */
   position: absolute;
   z-index: 2;
 }
@@ -941,7 +927,6 @@ body[type='full-page'] .detail-name .detail-icon {
   -webkit-margin-start: 8px;
   border: 3px solid transparent;  /* Selection will make the border visible. */
   margin-top: 7px;
-  padding: 0;
   position: relative;
 }
 
@@ -998,15 +983,6 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
   background-repeat: no-repeat;
   background-size: 16px 16px;
   padding-left: 26px;
-}
-
-#list-container list > li,
-#list-container grid > *,
-#default-actions-list > * {
-  background-color: transparent;
-  background-image: none;
-  border-color: transparent;
-  border-radius: 0;
 }
 
 #list-container list > li[selected],
@@ -1107,7 +1083,6 @@ input.rename {
 
 /* The cr.ui.Table representing the detailed file list. */
 .detail-table {
-  border: 0;
   width: 100%;
 }
 
@@ -1210,21 +1185,13 @@ input.rename {
   opacity: 0;
 }
 
-/* cr.ui.Table has a black focus border by default, which we don't want. */
-.detail-table:focus {
-  border: 0;
-}
-
 /* Table splitter element */
 .table-header-splitter {
-  -webkit-border-start: 1px #d4d4d4 solid;
-  background-color: inherit;
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/vertical_separator.png') 1x,
     url('../images/files/ui/new-ui/2x/vertical_separator.png') 2x);
   background-position: center;
   background-repeat: repeat-y;
-  border: none;
   height: 20px;
   top: 10px;
   width: 5px;
@@ -1236,8 +1203,6 @@ input.rename {
 
 /* Container for a table header. */
 .table-header {
-  background-color: transparent;
-  border-bottom: none;
   box-sizing: border-box;
   height: 47px;
 }
@@ -1276,13 +1241,13 @@ input.rename {
 .table-header-label {
   color: rgb(100, 100, 100);
   line-height: 40px;
+  margin: 0 7px;
 }
 
 .table-row-cell > * {
   -webkit-box-align: center;
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
-  margin: 0;
   padding: 0 10px;
 }
 
@@ -1363,14 +1328,8 @@ input.rename {
 
 #list-container li.table-row,
 #default-actions-list li {
-  border-left-width: 0;
-  border-right-width: 0;
-  border-style: none;
   height: 29px;
   line-height: 29px;
-  margin: 0;
-  padding-bottom: 0;
-  padding-top: 0;
 }
 
 /* The icon in the name column. See file_types.css for specific icons. */
@@ -1849,12 +1808,7 @@ list.autocomplete-suggestions {
 
 list.autocomplete-suggestions > li {
   -webkit-box-align: center;
-  background-color: transparent;
-  background-image: none;
-  border: none;
-  border-radius: 0;
   display: -webkit-box;
-  margin: 0;  /* To prevent vertical overflow. */
   padding: 3px 0;
 }
 

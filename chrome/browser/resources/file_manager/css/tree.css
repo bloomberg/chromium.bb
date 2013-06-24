@@ -1,0 +1,83 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* Derived from /ui/webui/resources/css/table.css. */
+
+tree {
+  display: block;
+  outline: none;
+  overflow: auto;
+}
+
+.tree-item > .tree-row {
+  -webkit-user-select: none;
+  cursor: default;
+  position: relative;
+  white-space: nowrap;
+}
+
+.expand-icon {
+  -webkit-transform: rotate(-90deg);
+  -webkit-transition: all 150ms;
+  background-image: -webkit-canvas(tree-triangle);
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-size: 8px 5px;
+  display: inline-block;
+  height: 16px;
+  position: relative;
+  vertical-align: top;
+}
+
+html[dir=rtl] .expand-icon {
+  -webkit-transform: rotate(90deg);
+}
+
+.tree-item[expanded] > .tree-row > .expand-icon {
+  -webkit-transform: rotate(0);
+  background-image: -webkit-canvas(tree-triangle);
+}
+
+.tree-row .expand-icon {
+  visibility: hidden;
+}
+
+.tree-row[may-have-children] .expand-icon {
+  visibility: visible;
+}
+
+.tree-row[has-children=false] .expand-icon {
+  visibility: hidden;
+}
+
+.tree-row[selected] {
+  z-index: 2;
+}
+
+.tree-children[expanded] {
+  display: block;
+}
+
+.tree-children {
+  display: none;
+}
+
+.tree-item > .tree-row > * {
+  display: inline-block;
+}
+
+.tree-label {
+  white-space: pre;
+}
+
+/* We need to ensure that even empty labels take up space */
+.tree-label:empty::after {
+  content: ' ';
+  white-space: pre;
+}
+
+.tree-rename > .tree-row > .tree-label {
+  -webkit-user-modify: read-write-plaintext-only;
+  -webkit-user-select: auto;
+}
