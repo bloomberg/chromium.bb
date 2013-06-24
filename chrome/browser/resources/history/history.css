@@ -342,12 +342,12 @@ html[dir='rtl'] .site-domain {
 }
 
 .no-checkboxes .entry .time {
-  min-width: 68px;
+  min-width: 73px;
 }
 
 .entry .time {
   color: rgb(151, 156, 160);
-  min-width: 55px;
+  min-width: 60px;
   overflow: hidden;
   text-align: right;
   text-overflow: ellipsis;
