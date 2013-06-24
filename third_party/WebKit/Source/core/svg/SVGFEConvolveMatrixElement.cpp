@@ -115,7 +115,7 @@ bool SVGFEConvolveMatrixElement::isSupportedAttribute(const QualifiedName& attrN
         supportedAttributes.add(SVGNames::kernelUnitLengthAttr);
         supportedAttributes.add(SVGNames::preserveAlphaAttr);
     }
-    return supportedAttributes.contains<QualifiedName, SVGAttributeHashTranslator>(attrName);
+    return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
 void SVGFEConvolveMatrixElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
