@@ -47,6 +47,7 @@ Layer::Layer()
       anchor_point_z_(0.f),
       is_container_for_fixed_position_layers_(false),
       is_drawable_(false),
+      hide_layer_and_subtree_(false),
       masks_to_bounds_(false),
       contents_opaque_(false),
       double_sided_(true),
@@ -612,6 +613,15 @@ void Layer::SetIsDrawable(bool is_drawable) {
   SetNeedsCommit();
 }
 
+void Layer::SetHideLayerAndSubtree(bool hide) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (hide_layer_and_subtree_ == hide)
+    return;
+
+  hide_layer_and_subtree_ = hide;
+  SetNeedsCommit();
+}
+
 void Layer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
   update_rect_.Union(dirty_rect);
   needs_display_ = true;
@@ -682,6 +692,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
       draw_checkerboard_for_missing_tiles_);
   layer->SetForceRenderSurface(force_render_surface_);
   layer->SetDrawsContent(DrawsContent());
+  layer->SetHideLayerAndSubtree(hide_layer_and_subtree_);
   layer->SetFilters(filters());
   layer->SetFilter(filter());
   layer->SetBackgroundFilters(background_filters());

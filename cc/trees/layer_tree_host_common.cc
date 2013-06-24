@@ -232,6 +232,10 @@ static bool LayerShouldBeSkipped(LayerType* layer) {
 }
 
 static inline bool SubtreeShouldBeSkipped(LayerImpl* layer) {
+  // The embedder can request to hide the entire layer's subtree.
+  if (layer->hide_layer_and_subtree())
+    return true;
+
   // If layer is on the pending tree and opacity is being animated then
   // this subtree can't be skipped as we need to create, prioritize and
   // include tiles for this layer when deciding if tree can be activated.
@@ -245,6 +249,10 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer) {
 }
 
 static inline bool SubtreeShouldBeSkipped(Layer* layer) {
+  // The embedder can request to hide the entire layer's subtree.
+  if (layer->hide_layer_and_subtree())
+    return true;
+
   // If the opacity is being animated then the opacity on the main thread is
   // unreliable (since the impl thread may be using a different opacity), so it
   // should not be trusted.
@@ -1491,6 +1499,7 @@ static void CalculateDrawPropertiesInternal(
   }
 
   UpdateTilePrioritiesForLayer(layer);
+  SavePaintPropertiesLayer(layer);
 
   // If neither this layer nor any of its children were added, early out.
   if (sorting_start_index == descendants.size())
@@ -1518,8 +1527,6 @@ static void CalculateDrawPropertiesInternal(
     layer->render_target()->render_surface()->
         AddContributingDelegatedRenderPassLayer(layer);
   }
-
-  SavePaintPropertiesLayer(layer);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(

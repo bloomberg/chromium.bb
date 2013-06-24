@@ -134,6 +134,9 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void SetDrawsContent(bool draws_content);
   bool DrawsContent() const { return draws_content_; }
 
+  void SetHideLayerAndSubtree(bool hide);
+  bool hide_layer_and_subtree() const { return hide_layer_and_subtree_; }
+
   bool force_render_surface() const { return force_render_surface_; }
   void SetForceRenderSurface(bool force) { force_render_surface_ = force; }
 
@@ -513,6 +516,7 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   gfx::Transform transform_;
 
   bool draws_content_;
+  bool hide_layer_and_subtree_;
   bool force_render_surface_;
 
   // Set for the layer that other layers are fixed to.
