@@ -50,9 +50,9 @@ deps = {
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@92306ca4073ee0a9df9dc4a87e40a7b3fd595d02',
     'src/third_party/hunspell':
-        Var('git_url') + '/chromium/deps/hunspell.git@37403978cd939a2b396a5d49944af54623e4795e',
+        Var('git_url') + '/chromium/deps/hunspell.git@b7195d9c26be6dac1d236023189f366a9c750083',
     'src/third_party/hunspell_dictionaries':
-        Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@bc7edb352e97fa71e387b9a5522f1bbd5b11a5eb',
+        Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@a078a87551eb3e36e74cf3c550e69c4be7ad7da7',
     'src/third_party/icu':
         Var('git_url') + '/chromium/deps/icu46.git@7db4750b5716130b07ca503840fa4bd0a73ffbd3',
     'src/third_party/jsoncpp/source/include':
@@ -319,7 +319,7 @@ deps_os = {
         'src/third_party/bison':
             Var('git_url') + '/chromium/deps/bison.git@083c9a45e4affdd5464ee2b224c2df649c6e26c3',
         'src/third_party/cygwin':
-            Var('git_url') + '/chromium/deps/cygwin.git@3711a17ddd629317f40676bdcc564f32fd7a4fd2',
+            Var('git_url') + '/chromium/deps/cygwin.git@2fe44d1878e9d989ac46f09364752f633e171e7d',
         'src/third_party/gnu_binutils':
             Var('git_url') + '/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
         'src/third_party/gperf':
