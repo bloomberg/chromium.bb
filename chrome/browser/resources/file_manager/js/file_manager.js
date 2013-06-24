@@ -896,7 +896,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.table_ = dom.querySelector('.detail-table');
     this.grid_ = dom.querySelector('.thumbnail-grid');
     this.spinner_ = dom.querySelector('#spinner-with-text');
-    this.showSpinner_(false);
+    this.showSpinner_(true);
 
     this.searchBreadcrumbs_ = new BreadcrumbsController(
          dom.querySelector('#search-breadcrumbs'), this.metadataCache_);
@@ -2614,15 +2614,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       clearTimeout(this.scanCompletedTimer_);
       this.scanCompletedTimer_ = null;
     }
+
     if (this.scanUpdatedTimer_) {
       clearTimeout(this.scanUpdatedTimer_);
       this.scanUpdatedTimer_ = null;
     }
 
-    this.cancelSpinnerTimeout_();
-    this.showSpinner_(false);
-    this.showSpinnerTimeout_ =
-        setTimeout(this.showSpinner_.bind(this, true), 500);
+    if (!this.spinner_.hidden) {
+      this.cancelSpinnerTimeout_();
+      this.showSpinner_(false);
+      this.showSpinnerTimeout_ =
+          setTimeout(this.showSpinner_.bind(this, true), 500);
+    }
   };
 
   /**
