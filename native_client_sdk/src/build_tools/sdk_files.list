@@ -643,6 +643,7 @@ lib/pnacl/Release/libsdk_util.a
 LICENSE
 NOTICE
 README
+README.Makefiles
 src/error_handling/error_handling.c
 [win]src/error_handling/make.bat
 src/error_handling/Makefile

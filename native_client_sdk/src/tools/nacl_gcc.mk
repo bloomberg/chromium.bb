@@ -373,10 +373,11 @@ ifeq ($(CONFIG),Debug)
 NMF_FLAGS += --debug-libs
 endif
 
+EXECUTABLES=$(foreach arch,$(ARCH_SUFFIXES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
 
 define NMF_RULE
 all: $(OUTDIR)/$(1).nmf
-$(OUTDIR)/$(1).nmf: $(foreach arch,$(ARCH_SUFFIXES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
+$(OUTDIR)/$(1).nmf: $(EXECUTABLES)
 	$(call LOG,CREATE_NMF,$$@,$(NMF) $(NMF_FLAGS) -o $$@ $$^ $(GLIBC_PATHS) -s $(OUTDIR) $(2) $(GLIBC_REMAP))
 endef
 
@@ -387,6 +388,6 @@ CREATE_HTML := python $(NACL_SDK_ROOT)/tools/create_html.py
 
 define HTML_RULE
 all: $(OUTDIR)/$(1).html
-$(OUTDIR)/$(1).html: $(foreach arch,$(ARCH_SUFFIXES),$(OUTDIR)/$(1)$(arch)) $(GLIBC_SO_LIST)
+$(OUTDIR)/$(1).html: $(EXECUTABLES)
 	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) -o $$@ $$^)
 endef

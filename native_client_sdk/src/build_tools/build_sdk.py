@@ -154,12 +154,16 @@ def BuildStepMakePepperDirs(pepperdir, subdirs):
   for subdir in subdirs:
     buildbot_common.MakeDir(os.path.join(pepperdir, subdir))
 
+TEXT_FILES = [
+  'AUTHORS',
+  'COPYING',
+  'LICENSE',
+  'README.Makefiles',
+]
 
 def BuildStepCopyTextFiles(pepperdir, pepper_ver, revision):
   buildbot_common.BuildStep('Add Text Files')
-  files = ['AUTHORS', 'COPYING', 'LICENSE']
-  files = [os.path.join(SDK_SRC_DIR, filename) for filename in files]
-  oshelpers.Copy(['-v'] + files + [pepperdir])
+  InstallFiles(SDK_SRC_DIR, pepperdir, TEXT_FILES)
 
   # Replace a few placeholders in README
   readme_text = open(os.path.join(SDK_SRC_DIR, 'README')).read()
