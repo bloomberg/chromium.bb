@@ -217,6 +217,14 @@ const AccessObserverList* FileSystemContext::GetAccessObservers(
   return NULL;
 }
 
+void FileSystemContext::GetFileSystemTypes(
+    std::vector<FileSystemType>* types) const {
+  types->clear();
+  for (MountPointProviderMap::const_iterator iter = provider_map_.begin();
+       iter != provider_map_.end(); ++iter)
+    types->push_back(iter->first);
+}
+
 ExternalFileSystemMountPointProvider*
 FileSystemContext::external_provider() const {
   return external_provider_.get();

@@ -139,6 +139,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
   const AccessObserverList* GetAccessObservers(FileSystemType type) const;
 
+  // Returns all registered filesystem types.
+  void GetFileSystemTypes(std::vector<FileSystemType>* types) const;
+
   // Returns a FileSystemMountPointProvider instance for external filesystem
   // type, which is used only by chromeos for now.  This is equivalent to
   // calling GetMountPointProvider(kFileSystemTypeExternal).
