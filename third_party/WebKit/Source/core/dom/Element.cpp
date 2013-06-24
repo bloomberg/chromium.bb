@@ -1809,6 +1809,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionCode& ec)
     setAttributeInternal(index, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
 
     attrNode->attachToElement(this);
+    treeScope()->adoptIfNeeded(attrNode);
     ensureAttrNodeListForElement(this)->append(attrNode);
 
     return oldAttrNode.release();
