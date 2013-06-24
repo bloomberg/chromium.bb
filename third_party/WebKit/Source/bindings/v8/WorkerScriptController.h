@@ -93,6 +93,12 @@ namespace WebCore {
         // Returns a local handle of the context.
         v8::Local<v8::Context> context() { return m_context.newLocal(v8::Isolate::GetCurrent()); }
 
+        // Send a notification about current thread is going to be idle.
+        // hint suggests the upcoming idleness interval duration.
+        // The return value of true means that the script engine has done
+        // most of the work and there's no need to call it again for a while.
+        bool idleNotification(int hint = 1000) { return v8::V8::IdleNotification(hint); }
+
     private:
         bool initializeContextIfNeeded();
         void disposeContext();
