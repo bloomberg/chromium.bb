@@ -1379,6 +1379,11 @@ input.rename {
   width: 24px;
 }
 
+#detail-table .detail-icon {
+  /* To shift the icon position. */
+  margin-bottom: 2px;
+}
+
 .metadata-item {
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
