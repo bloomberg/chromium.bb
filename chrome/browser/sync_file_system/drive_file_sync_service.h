@@ -149,7 +149,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   friend class SyncTaskManager;
   friend class drive::LocalChangeProcessorDelegate;
 
-  friend class DriveFileSyncServiceMockTest;
+  friend class DriveFileSyncServiceFakeTest;
   friend class DriveFileSyncServiceSyncTest;
   friend class DriveFileSyncServiceTest;
   struct ApplyLocalChangeParam;

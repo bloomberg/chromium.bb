@@ -112,7 +112,6 @@ class APIUtil : public drive::APIUtilInterface,
   typedef std::map<UploadKey, UploadFileCallback> UploadCallbackMap;
 
   friend class APIUtilTest;
-  friend class DriveFileSyncServiceMockTest;
 
   // Constructor for test use.
   APIUtil(Profile* profile,

@@ -1266,7 +1266,7 @@
         'browser/sync_file_system/drive/fake_api_util.h',
         'browser/sync_file_system/drive/fake_api_util_unittest.cc',
         'browser/sync_file_system/drive/metadata_db_migration_util_unittest.cc',
-        'browser/sync_file_system/drive_file_sync_service_mock_unittest.cc',
+        'browser/sync_file_system/drive_file_sync_service_fake_unittest.cc',
         'browser/sync_file_system/drive_file_sync_service_sync_unittest.cc',
         'browser/sync_file_system/drive_file_sync_service_unittest.cc',
         'browser/sync_file_system/drive_metadata_store_unittest.cc',
