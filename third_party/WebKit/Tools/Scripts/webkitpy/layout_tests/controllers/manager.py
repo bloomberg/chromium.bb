@@ -138,7 +138,7 @@ class Manager(object):
         return self._expectations.has_modifier(test_file, test_expectations.SLOW)
 
     def needs_servers(self, test_names):
-        return any(self._test_requires_lock(test_name) for test_name in test_names) and self._options.http
+        return any(self._test_requires_lock(test_name) for test_name in test_names)
 
     def _set_up_run(self, test_names):
         self._printer.write_update("Checking build ...")

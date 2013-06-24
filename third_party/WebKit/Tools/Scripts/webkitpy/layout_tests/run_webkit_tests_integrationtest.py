@@ -781,27 +781,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue(passing_run(['--additional-expectations', '/tmp/overrides.txt', 'failures/unexpected/mismatch.html'],
                                     tests_included=True, host=host))
 
-    def test_no_http_and_force(self):
-        # See test_run_force, using --force raises an exception.
-        # FIXME: We would like to check the warnings generated.
-        self.assertRaises(ValueError, logging_run, ['--force', '--no-http'])
-
     @staticmethod
     def has_test_of_type(tests, type):
         return [test for test in tests if type in test]
-
-    def test_no_http_tests(self):
-        batch_tests_dryrun = get_tests_run(['LayoutTests/http', 'websocket/'])
-        self.assertTrue(RunTest.has_test_of_type(batch_tests_dryrun, 'http'))
-        self.assertTrue(RunTest.has_test_of_type(batch_tests_dryrun, 'websocket'))
-
-        batch_tests_run_no_http = get_tests_run(['--no-http', 'LayoutTests/http', 'websocket/'])
-        self.assertFalse(RunTest.has_test_of_type(batch_tests_run_no_http, 'http'))
-        self.assertFalse(RunTest.has_test_of_type(batch_tests_run_no_http, 'websocket'))
-
-        batch_tests_run_http = get_tests_run(['--http', 'LayoutTests/http', 'websocket/'])
-        self.assertTrue(RunTest.has_test_of_type(batch_tests_run_http, 'http'))
-        self.assertTrue(RunTest.has_test_of_type(batch_tests_run_http, 'websocket'))
 
     def test_platform_directories_ignored_when_searching_for_tests(self):
         tests_run = get_tests_run(['--platform', 'test-mac-leopard'])

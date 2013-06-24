@@ -109,10 +109,6 @@ class LayoutTestFinder(object):
             # make sure we're explicitly running any tests passed on the command line; equivalent to 'default'.
             tests_to_skip -= set(paths)
 
-        # unless of course we don't want to run the HTTP tests :)
-        if not self._options.http:
-            tests_to_skip.update(set(http_tests))
-
         return tests_to_skip
 
     def split_into_chunks(self, test_names):

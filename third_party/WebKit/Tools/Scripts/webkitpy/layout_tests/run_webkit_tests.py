@@ -175,10 +175,6 @@ def parse_args(args):
             help="Show all failures in results.html, rather than only regressions"),
         optparse.make_option("--clobber-old-results", action="store_true",
             default=False, help="Clobbers test results from previous runs."),
-        optparse.make_option("--http", action="store_true", dest="http",
-            default=True, help="Run HTTP and WebSocket tests (default)"),
-        optparse.make_option("--no-http", action="store_false", dest="http",
-            help="Don't run HTTP and WebSocket tests"),
         optparse.make_option("--ignore-metrics", action="store_true", dest="ignore_metrics",
             default=False, help="Ignore rendering metrics related information from test "
             "output, only compare the structure of the rendertree."),
@@ -324,10 +320,6 @@ def _set_up_derived_options(port, options):
         for path in options.additional_platform_directory:
             additional_platform_directories.append(port.host.filesystem.abspath(path))
         options.additional_platform_directory = additional_platform_directories
-
-    if not options.http and options.skipped in ('ignore', 'only'):
-        _log.warning("--force/--skipped=%s overrides --no-http." % (options.skipped))
-        options.http = True
 
     if options.ignore_metrics and (options.new_baseline or options.reset_results):
         _log.warning("--ignore-metrics has no effect with --new-baselines or with --reset-results")

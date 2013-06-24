@@ -116,7 +116,7 @@ class LayoutTestRunner(object):
 
         all_shards = locked_shards + unlocked_shards
         self._remaining_locked_shards = locked_shards
-        if self._port.requires_http_server() or (locked_shards and self._options.http):
+        if self._port.requires_http_server() or locked_shards:
             self.start_servers_with_lock(2 * min(num_workers, len(locked_shards)))
 
         num_workers = min(num_workers, len(all_shards))
