@@ -13,6 +13,6 @@ Some functions from newlib used as part of the native support library for nexes
 produced by the PNaCl toolchain.
 
 Local Modifications:
-* strinc.c: functions rewritten to use C99, less duplication and conform to
+* string.c: functions rewritten to use C99, less duplication and conform to
   the NaCl coding style.
 
