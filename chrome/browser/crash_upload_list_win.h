@@ -12,11 +12,11 @@
 // from the Windows Event Log.
 class CrashUploadListWin : public CrashUploadList {
  public:
-  explicit CrashUploadListWin(Delegate* delegate);
+  CrashUploadListWin(Delegate* delegate, const base::FilePath& upload_log_path);
 
  protected:
   // Loads the list of crashes from the Windows Event Log.
-  virtual void LoadCrashList() OVERRIDE;
+  virtual void LoadUploadList() OVERRIDE;
 
  private:
   // Returns whether the event record is likely a Chrome crash log.

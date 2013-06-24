@@ -2290,6 +2290,8 @@
         'browser/upgrade_detector.h',
         'browser/upgrade_detector_impl.cc',
         'browser/upgrade_detector_impl.h',
+        'browser/upload_list.cc',
+        'browser/upload_list.h',
         'browser/usb/usb_device.cc',
         'browser/usb/usb_device.h',
         'browser/usb/usb_interface.cc',

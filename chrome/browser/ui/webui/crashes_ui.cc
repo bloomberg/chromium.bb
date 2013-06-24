@@ -78,7 +78,7 @@ class CrashesDOMHandler : public WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // CrashUploadList::Delegate implemenation.
-  virtual void OnCrashListAvailable() OVERRIDE;
+  virtual void OnUploadListAvailable() OVERRIDE;
 
  private:
   // Asynchronously fetches the list of crashes. Called from JS.
@@ -104,7 +104,7 @@ CrashesDOMHandler::~CrashesDOMHandler() {
 }
 
 void CrashesDOMHandler::RegisterMessages() {
-  upload_list_->LoadCrashListAsynchronously();
+  upload_list_->LoadUploadListAsynchronously();
 
   web_ui()->RegisterMessageCallback("requestCrashList",
       base::Bind(&CrashesDOMHandler::HandleRequestCrashes,
@@ -118,7 +118,7 @@ void CrashesDOMHandler::HandleRequestCrashes(const ListValue* args) {
     js_request_pending_ = true;
 }
 
-void CrashesDOMHandler::OnCrashListAvailable() {
+void CrashesDOMHandler::OnUploadListAvailable() {
   list_available_ = true;
   if (js_request_pending_)
     UpdateUI();
@@ -129,15 +129,14 @@ void CrashesDOMHandler::UpdateUI() {
   ListValue crash_list;
 
   if (crash_reporting_enabled) {
-    std::vector<CrashUploadList::CrashInfo> crashes;
-    upload_list_->GetUploadedCrashes(50, &crashes);
+    std::vector<CrashUploadList::UploadInfo> crashes;
+    upload_list_->GetUploads(50, &crashes);
 
-    for (std::vector<CrashUploadList::CrashInfo>::iterator i = crashes.begin();
+    for (std::vector<CrashUploadList::UploadInfo>::iterator i = crashes.begin();
          i != crashes.end(); ++i) {
       DictionaryValue* crash = new DictionaryValue();
-      crash->SetString("id", i->crash_id);
-      crash->SetString("time",
-                       base::TimeFormatFriendlyDateAndTime(i->crash_time));
+      crash->SetString("id", i->id);
+      crash->SetString("time", base::TimeFormatFriendlyDateAndTime(i->time));
       crash_list.Append(crash);
     }
   }

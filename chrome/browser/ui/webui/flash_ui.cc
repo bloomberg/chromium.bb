@@ -90,7 +90,7 @@ class FlashDOMHandler : public WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // CrashUploadList::Delegate implementation.
-  virtual void OnCrashListAvailable() OVERRIDE;
+  virtual void OnUploadListAvailable() OVERRIDE;
 
   // GpuDataManager::Observer implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;
@@ -142,7 +142,7 @@ FlashDOMHandler::FlashDOMHandler()
       has_plugin_info_(false) {
   // Request Crash data asynchronously.
   upload_list_ = CrashUploadList::Create(this);
-  upload_list_->LoadCrashListAsynchronously();
+  upload_list_->LoadUploadListAsynchronously();
 
   // Watch for changes in GPUInfo.
   GpuDataManager::GetInstance()->AddObserver(this);
@@ -167,6 +167,7 @@ FlashDOMHandler::FlashDOMHandler()
 
 FlashDOMHandler::~FlashDOMHandler() {
   GpuDataManager::GetInstance()->RemoveObserver(this);
+  upload_list_->ClearDelegate();
 }
 
 void FlashDOMHandler::RegisterMessages() {
@@ -175,7 +176,7 @@ void FlashDOMHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void FlashDOMHandler::OnCrashListAvailable() {
+void FlashDOMHandler::OnUploadListAvailable() {
   crash_list_available_ = true;
   MaybeRespondToPage();
 }
@@ -295,14 +296,14 @@ void FlashDOMHandler::MaybeRespondToPage() {
   AddPair(list, string16(), "--- Crash data ---");
   bool crash_reporting_enabled = CrashesUI::CrashReportingUIEnabled();
   if (crash_reporting_enabled) {
-    std::vector<CrashUploadList::CrashInfo> crashes;
-    upload_list_->GetUploadedCrashes(10, &crashes);
+    std::vector<CrashUploadList::UploadInfo> crashes;
+    upload_list_->GetUploads(10, &crashes);
 
-    for (std::vector<CrashUploadList::CrashInfo>::iterator i = crashes.begin();
+    for (std::vector<CrashUploadList::UploadInfo>::iterator i = crashes.begin();
          i != crashes.end(); ++i) {
-      string16 crash_string(ASCIIToUTF16(i->crash_id));
+      string16 crash_string(ASCIIToUTF16(i->id));
       crash_string += ASCIIToUTF16(" ");
-      crash_string += base::TimeFormatFriendlyDateAndTime(i->crash_time);
+      crash_string += base::TimeFormatFriendlyDateAndTime(i->time);
       AddPair(list, ASCIIToUTF16("crash id"), crash_string);
     }
   } else {
