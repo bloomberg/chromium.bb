@@ -139,11 +139,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
   const AccessObserverList* GetAccessObservers(FileSystemType type) const;
 
-  // Returns a FileSystemMountPointProvider instance for sandboxed filesystem
-  // types (e.g. TEMPORARY or PERSISTENT).  This is equivalent to calling
-  // GetMountPointProvider(kFileSystemType{Temporary, Persistent}).
-  SandboxMountPointProvider* sandbox_provider() const;
-
   // Returns a FileSystemMountPointProvider instance for external filesystem
   // type, which is used only by chromeos for now.  This is equivalent to
   // calling GetMountPointProvider(kFileSystemTypeExternal).
@@ -235,12 +230,20 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
                                            FileSystemType type,
                                            const base::FilePath& path) const;
 
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+  // Used only on ChromeOS for now.
+  void EnableTemporaryFileSystemInIncognito();
+#endif
+
  private:
   typedef std::map<FileSystemType, FileSystemMountPointProvider*>
       MountPointProviderMap;
 
   // For CreateFileSystemOperation.
   friend class FileSystemOperationRunner;
+
+  // For sandbox_provider().
+  friend class SandboxFileSystemTestHelper;
 
   // Deleters.
   friend struct DefaultContextDeleter;
@@ -274,6 +277,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   // For initial provider_map construction. This must be called only from
   // the constructor.
   void RegisterMountPointProvider(FileSystemMountPointProvider* provider);
+
+  // Returns a FileSystemMountPointProvider, used only by test code.
+  SandboxMountPointProvider* sandbox_provider() const {
+    return sandbox_provider_.get();
+  }
 
   scoped_ptr<FileSystemTaskRunners> task_runners_;
 

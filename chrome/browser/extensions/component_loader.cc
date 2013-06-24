@@ -394,9 +394,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
         fileapi::FileSystemContext* context =
             content::BrowserContext::GetStoragePartitionForSite(profile, site)->
                 GetFileSystemContext();
-        fileapi::SandboxMountPointProvider* provider =
-            context->sandbox_provider();
-        provider->set_enable_temporary_file_system_in_incognito(true);
+        context->EnableTemporaryFileSystemInIncognito();
       }
     }
 #endif  // defined(GOOGLE_CHROME_BUILD)

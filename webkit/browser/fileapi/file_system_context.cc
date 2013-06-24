@@ -217,11 +217,6 @@ const AccessObserverList* FileSystemContext::GetAccessObservers(
   return NULL;
 }
 
-SandboxMountPointProvider*
-FileSystemContext::sandbox_provider() const {
-  return sandbox_provider_.get();
-}
-
 ExternalFileSystemMountPointProvider*
 FileSystemContext::external_provider() const {
   return external_provider_.get();
@@ -341,6 +336,12 @@ FileSystemURL FileSystemContext::CreateCrackedFileSystemURL(
     const base::FilePath& path) const {
   return CrackFileSystemURL(FileSystemURL(origin, type, path));
 }
+
+#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+void FileSystemContext::EnableTemporaryFileSystemInIncognito() {
+  sandbox_provider_->set_enable_temporary_file_system_in_incognito(true);
+}
+#endif
 
 FileSystemContext::~FileSystemContext() {
   task_runners_->file_task_runner()->DeleteSoon(
