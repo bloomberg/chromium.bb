@@ -239,8 +239,9 @@ Commands.newFolderCommand = {
   },
   canExecute: function(event, fileManager, directoryModel) {
     event.canExecute = !fileManager.isOnReadonlyDirectory() &&
+                       !fileManager.isRenamingInProgress() &&
                        !directoryModel.isSearching() &&
-                       !fileManager.isRenamingInProgress();
+                       !directoryModel.isScanning();
   }
 };
 
