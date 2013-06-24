@@ -768,12 +768,15 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     bool is_nacl_unrestricted,
     const Extension* extension,
     WebPluginParams* params) {
-  // Temporarily allow these URLs to run NaCl apps. We should remove this
-  // code when PNaCl ships.
+  // Temporarily allow these URLs to run NaCl apps, as long as the manifest is
+  // also whitelisted. We should remove this code when PNaCl ships.
   bool is_whitelisted_url =
       app_url.SchemeIs("https") &&
       (app_url.host() == "plus.google.com" ||
-       app_url.host() == "plus.sandbox.google.com");
+       app_url.host() == "plus.sandbox.google.com") &&
+      manifest_url.SchemeIs("https") &&
+      manifest_url.host() == "ssl.gstatic.com" &&
+      (manifest_url.path().find("s2/oz/nacl/") == 1);
 
   bool is_extension_from_webstore =
       extension && extension->from_webstore();
