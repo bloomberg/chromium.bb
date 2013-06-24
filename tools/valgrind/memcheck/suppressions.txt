@@ -7315,3 +7315,9 @@
    fun:_ZN7content15LevelDBDatabase4OpenERKN4base8FilePathEPKNS_17LevelDBComparatorEPb
    fun:_ZN7content12_GLOBAL__N_139LevelDBDatabaseTest_CorruptionTest_Test8TestBodyEv
 }
+{
+   bug_253434
+   Memcheck:Leak
+   ...
+   fun:_ZN8chromeos*DeviceOAuth2TokenServiceTest_RefreshTokenValidation_*_Test8TestBodyEv
+}
