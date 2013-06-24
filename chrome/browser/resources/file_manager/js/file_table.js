@@ -240,7 +240,7 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
 
   var tableColumnModelClass;
   tableColumnModelClass = FileTableColumnModel;
-  if (!self.noCheckboxes) {
+  if (self.showCheckboxes) {
     columns.push(new cr.ui.table.TableColumn('selection',
                                              '',
                                              50, true));

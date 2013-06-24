@@ -1086,11 +1086,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableNewLockAnimations),
   },
   {
-    "file-manager-no-checkboxes",
-    IDS_FLAGS_FILE_MANAGER_NO_CHECKBOXES_NAME,
-    IDS_FLAGS_FILE_MANAGER_NO_CHECKBOXES_DESCRIPTION,
+    "file-manager-show-checkboxes",
+    IDS_FLAGS_FILE_MANAGER_SHOW_CHECKBOXES_NAME,
+    IDS_FLAGS_FILE_MANAGER_SHOW_CHECKBOXES_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerNoCheckboxes)
+    SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerShowCheckboxes)
   },
   {
     "disable-app-mode",

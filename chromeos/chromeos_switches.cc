@@ -121,8 +121,8 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
-// Hides the selecting checkboxes in the Files.app.
-const char kFileManagerNoCheckboxes[]       = "file-manager-no-checkboxes";
+// Shows the selecting checkboxes in the Files.app.
+const char kFileManagerShowCheckboxes[]     = "file-manager-show-checkboxes";
 
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[]                     = "first-boot";
