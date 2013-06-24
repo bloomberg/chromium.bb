@@ -3067,6 +3067,10 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 	struct input *input = data;
 	xkb_mod_mask_t mask;
 
+	/* If we're not using a keymap, then we don't handle PC-style modifiers */
+	if (!input->xkb.keymap)
+		return;
+
 	xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
 			      mods_locked, 0, 0, group);
 	mask = xkb_state_serialize_mods(input->xkb.state,
