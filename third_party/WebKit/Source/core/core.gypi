@@ -3616,7 +3616,6 @@
             'platform/chromium/support/WebMediaConstraints.cpp',
             'platform/chromium/support/WebMediaStream.cpp',
             'platform/chromium/support/WebMediaStreamSource.cpp',
-            'platform/chromium/support/WebMediaStreamSourcesRequest.cpp',
             'platform/chromium/support/WebMediaStreamTrack.cpp',
             'platform/chromium/support/WebPrerender.cpp',
             'platform/chromium/support/WebPrerenderingSupport.cpp',

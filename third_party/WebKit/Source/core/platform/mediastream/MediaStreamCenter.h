@@ -49,7 +49,6 @@ namespace WebCore {
 
 class MediaStreamComponent;
 class MediaStreamDescriptor;
-class MediaStreamSourcesQueryClient;
 class MediaStreamTrackSourcesRequest;
 
 class MediaStreamCenter : public WebKit::WebMediaStreamCenterClient {

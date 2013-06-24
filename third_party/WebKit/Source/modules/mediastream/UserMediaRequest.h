@@ -34,7 +34,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExceptionBase.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
-#include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "wtf/PassRefPtr.h"
@@ -50,7 +49,7 @@ class MediaConstraintsImpl;
 class MediaStreamDescriptor;
 class UserMediaController;
 
-class UserMediaRequest : public MediaStreamSourcesQueryClient, public ContextLifecycleObserver {
+class UserMediaRequest : public RefCounted<UserMediaRequest>, public ContextLifecycleObserver {
 public:
     static PassRefPtr<UserMediaRequest> create(ScriptExecutionContext*, UserMediaController*, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback>, PassRefPtr<NavigatorUserMediaErrorCallback>, ExceptionCode&);
     ~UserMediaRequest();
@@ -65,13 +64,10 @@ public:
     void fail(const String& description);
     void failConstraint(const String& constraintName, const String& description);
 
+    bool audio() const;
+    bool video() const;
     MediaConstraints* audioConstraints() const;
     MediaConstraints* videoConstraints() const;
-
-    // MediaStreamSourcesQueryClient
-    virtual bool audio() const;
-    virtual bool video() const;
-    virtual void didCompleteQuery(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources) { }
 
     // ContextLifecycleObserver
     virtual void contextDestroyed();

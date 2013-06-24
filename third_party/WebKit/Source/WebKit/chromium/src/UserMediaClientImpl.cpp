@@ -47,17 +47,10 @@ UserMediaClientImpl::UserMediaClientImpl(WebViewImpl* webView)
 {
 }
 
-void UserMediaClientImpl::requestUserMedia(PassRefPtr<UserMediaRequest> prpRequest)
+void UserMediaClientImpl::requestUserMedia(PassRefPtr<UserMediaRequest> request)
 {
-    if (m_client) {
-        RefPtr<UserMediaRequest> request = prpRequest;
-
-        MediaStreamSourceVector audioSources;
-        MediaStreamSourceVector videoSources;
-        m_client->requestUserMedia(request.get(), audioSources, videoSources);
-
-        m_client->requestUserMedia(request.release());
-    }
+    if (m_client)
+        m_client->requestUserMedia(request);
 }
 
 void UserMediaClientImpl::cancelUserMediaRequest(UserMediaRequest* request)

@@ -34,7 +34,6 @@
 #include "core/platform/mediastream/MediaStreamCenter.h"
 
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
-#include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
 #include "modules/mediastream/MediaStreamTrackSourcesRequest.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
