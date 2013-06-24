@@ -11,7 +11,10 @@
 #include "base/synchronization/lock.h"
 #include "net/base/net_log.h"
 
+namespace net {
 class NetLogLogger;
+}
+
 class NetLogTempFile;
 
 // ChromeNetLog is an implementation of NetLog that dispatches network log
@@ -30,7 +33,7 @@ class ChromeNetLog : public net::NetLog {
   }
 
  private:
-  scoped_ptr<NetLogLogger> net_log_logger_;
+  scoped_ptr<net::NetLogLogger> net_log_logger_;
   scoped_ptr<NetLogTempFile> net_log_temp_file_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetLog);

@@ -16,8 +16,11 @@ namespace base {
 class DictionaryValue;
 }
 
-class ChromeNetLog;
+namespace net {
 class NetLogLogger;
+}
+
+class ChromeNetLog;
 
 // NetLogTempFile logs all the NetLog entries into a temporary file
 // "chrome-net-export-log.json" created in file_util::GetTempDir() directory.
@@ -123,7 +126,7 @@ class NetLogTempFile {
 
   // |net_log_logger_| watches the NetLog event stream, and sends all entries to
   // the file created in StartNetLog().
-  scoped_ptr<NetLogLogger> net_log_logger_;
+  scoped_ptr<net::NetLogLogger> net_log_logger_;
 
   // The |chrome_net_log_| is owned by the browser process, cached here to avoid
   // using global (g_browser_process).

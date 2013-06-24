@@ -11,9 +11,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/net/net_log_logger.h"
 #include "chrome/browser/net/net_log_temp_file.h"
+#include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/common/chrome_switches.h"
+#include "net/base/net_log_logger.h"
 
 ChromeNetLog::ChromeNetLog()
     : net_log_temp_file_(new NetLogTempFile(this)) {
@@ -52,7 +53,8 @@ ChromeNetLog::ChromeNetLog()
       LOG(ERROR) << "Could not open file " << log_path.value()
                  << " for net logging";
     } else {
-      net_log_logger_.reset(new NetLogLogger(file));
+      scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
+      net_log_logger_.reset(new net::NetLogLogger(file, *constants));
       net_log_logger_->StartObserving(this);
     }
   }

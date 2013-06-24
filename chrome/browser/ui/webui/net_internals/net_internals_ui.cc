@@ -61,6 +61,7 @@
 #include "grit/generated_resources.h"
 #include "grit/net_internals_resources.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log_logger.h"
 #include "net/base/net_util.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_cache.h"
@@ -103,11 +104,6 @@ namespace {
 // page.  All events that occur during this period are grouped together and
 // sent to the page at once, which reduces context switching and CPU usage.
 const int kNetLogEventDelayMilliseconds = 100;
-
-// about:net-internals will not even attempt to load a log dump when it
-// encounters a new version.  This should be incremented when significant
-// changes are made that will invalidate the old loading code.
-const int kLogFormatVersion = 1;
 
 // Returns the HostCache for |context|'s primary HostResolver, or NULL if
 // there is none.
@@ -1854,14 +1850,8 @@ void NetInternalsMessageHandler::IOThreadImpl::PrePopulateEventList() {
 
 // static
 Value* NetInternalsUI::GetConstants() {
-  DictionaryValue* constants_dict = new DictionaryValue();
-
-  // Version of the file format.
-  constants_dict->SetInteger("logFormatVersion", kLogFormatVersion);
-
-  // Add a dictionary with information on the relationship between event type
-  // enums and their symbolic names.
-  constants_dict->Set("logEventTypes", net::NetLog::GetEventTypesAsValue());
+  DictionaryValue* constants_dict = net::NetLogLogger::GetConstants();
+  DCHECK(constants_dict);
 
   // Add a dictionary with the version of the client and its command line
   // arguments.
@@ -1890,141 +1880,6 @@ Value* NetInternalsUI::GetConstants() {
     constants_dict->Set("clientInfo", dict);
   }
 
-  // Add a dictionary with information about the relationship between load flag
-  // enums and their symbolic names.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-#define LOAD_FLAG(label, value) \
-    dict->SetInteger(# label, static_cast<int>(value));
-#include "net/base/load_flags_list.h"
-#undef LOAD_FLAG
-
-    constants_dict->Set("loadFlag", dict);
-  }
-
-  // Add a dictionary with information about the relationship between load state
-  // enums and their symbolic names.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-#define LOAD_STATE(label) \
-    dict->SetInteger(# label, net::LOAD_STATE_ ## label);
-#include "net/base/load_states_list.h"
-#undef LOAD_STATE
-
-    constants_dict->Set("loadState", dict);
-  }
-
-  // Add information on the relationship between net error codes and their
-  // symbolic names.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-#define NET_ERROR(label, value) \
-    dict->SetInteger(# label, static_cast<int>(value));
-#include "net/base/net_error_list.h"
-#undef NET_ERROR
-
-    constants_dict->Set("netError", dict);
-  }
-
-  // Add information on the relationship between QUIC error codes and their
-  // symbolic names.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-    for (net::QuicErrorCode error = net::QUIC_NO_ERROR;
-         error < net::QUIC_LAST_ERROR;
-         error = static_cast<net::QuicErrorCode>(error + 1)) {
-      dict->SetInteger(net::QuicUtils::ErrorToString(error),
-                       static_cast<int>(error));
-    }
-
-    constants_dict->Set("quicError", dict);
-  }
-
-  // Add information on the relationship between QUIC RST_STREAM error codes
-  // and their symbolic names.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-    for (net::QuicRstStreamErrorCode error = net::QUIC_STREAM_NO_ERROR;
-         error < net::QUIC_STREAM_LAST_ERROR;
-         error = static_cast<net::QuicRstStreamErrorCode>(error + 1)) {
-      dict->SetInteger(net::QuicUtils::StreamErrorToString(error),
-                       static_cast<int>(error));
-    }
-
-    constants_dict->Set("quicRstStreamError", dict);
-  }
-
-  // Information about the relationship between event phase enums and their
-  // symbolic names.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-    dict->SetInteger("PHASE_BEGIN", net::NetLog::PHASE_BEGIN);
-    dict->SetInteger("PHASE_END", net::NetLog::PHASE_END);
-    dict->SetInteger("PHASE_NONE", net::NetLog::PHASE_NONE);
-
-    constants_dict->Set("logEventPhase", dict);
-  }
-
-  // Information about the relationship between source type enums and
-  // their symbolic names.
-  constants_dict->Set("logSourceType", net::NetLog::GetSourceTypesAsValue());
-
-  // Information about the relationship between LogLevel enums and their
-  // symbolic names.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-    dict->SetInteger("LOG_ALL", net::NetLog::LOG_ALL);
-    dict->SetInteger("LOG_ALL_BUT_BYTES", net::NetLog::LOG_ALL_BUT_BYTES);
-    dict->SetInteger("LOG_BASIC", net::NetLog::LOG_BASIC);
-
-    constants_dict->Set("logLevelType", dict);
-  }
-
-  // Information about the relationship between address family enums and
-  // their symbolic names.
-  {
-    DictionaryValue* dict = new DictionaryValue();
-
-    dict->SetInteger("ADDRESS_FAMILY_UNSPECIFIED",
-                     net::ADDRESS_FAMILY_UNSPECIFIED);
-    dict->SetInteger("ADDRESS_FAMILY_IPV4",
-                     net::ADDRESS_FAMILY_IPV4);
-    dict->SetInteger("ADDRESS_FAMILY_IPV6",
-                     net::ADDRESS_FAMILY_IPV6);
-
-    constants_dict->Set("addressFamily", dict);
-  }
-
-  // Information about how the "time ticks" values we have given it relate to
-  // actual system times. (We used time ticks throughout since they are stable
-  // across system clock changes).
-  {
-    int64 cur_time_ms = (base::Time::Now() - base::Time()).InMilliseconds();
-
-    int64 cur_time_ticks_ms =
-        (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds();
-
-    // If we add this number to a time tick value, it gives the timestamp.
-    int64 tick_to_time_ms = cur_time_ms - cur_time_ticks_ms;
-
-    // Chrome on all platforms stores times using the Windows epoch
-    // (Jan 1 1601), but the javascript wants a unix epoch.
-    // TODO(eroman): Getting the timestamp relative to the unix epoch should
-    //               be part of the time library.
-    const int64 kUnixEpochMs = 11644473600000LL;
-    int64 tick_to_unix_time_ms = tick_to_time_ms - kUnixEpochMs;
-
-    // Pass it as a string, since it may be too large to fit in an integer.
-    constants_dict->SetString("timeTickOffset",
-                              base::Int64ToString(tick_to_unix_time_ms));
-  }
   return constants_dict;
 }
 

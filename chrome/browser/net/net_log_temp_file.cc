@@ -7,8 +7,9 @@
 #include "base/file_util.h"
 #include "base/values.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/net/net_log_logger.h"
+#include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/net_log_logger.h"
 
 using content::BrowserThread;
 
@@ -99,7 +100,8 @@ void NetLogTempFile::StartNetLog() {
   if (file == NULL)
     return;
 
-  net_log_logger_.reset(new NetLogLogger(file));
+  scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
+  net_log_logger_.reset(new net::NetLogLogger(file, *constants));
   net_log_logger_->StartObserving(chrome_net_log_);
   state_ = STATE_ALLOW_STOP;
 }

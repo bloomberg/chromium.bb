@@ -976,7 +976,6 @@
         'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
         'browser/net/http_pipelining_compatibility_client_unittest.cc',
         'browser/net/http_server_properties_manager_unittest.cc',
-        'browser/net/net_log_logger_unittest.cc',
         'browser/net/net_log_temp_file_unittest.cc',
         'browser/net/network_stats_unittest.cc',
         'browser/net/network_time_tracker_unittest.cc',

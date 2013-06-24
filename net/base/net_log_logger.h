@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_NET_LOG_LOGGER_H_
-#define CHROME_BROWSER_NET_NET_LOG_LOGGER_H_
+#ifndef NET_BASE_NET_LOG_LOGGER_H_
+#define NET_BASE_NET_LOG_LOGGER_H_
 
 #include <stdio.h>
 
@@ -12,33 +12,36 @@
 
 namespace base {
 class FilePath;
+class Value;
 }
 
+namespace net {
+
 // NetLogLogger watches the NetLog event stream, and sends all entries to
-// a file specified on creation.  This is to debug errors in cases where
-// about:net-internals doesn't work well (Mobile, startup / shutdown errors,
-// errors that prevent getting to the about:net-internals).
+// a file specified on creation.
 //
 // The text file will contain a single JSON object.
-//
-// Relies on ChromeNetLog only calling an Observer once at a time for
-// thread-safety.
-class NetLogLogger : public net::NetLog::ThreadSafeObserver {
+class NET_EXPORT NetLogLogger : public NetLog::ThreadSafeObserver {
  public:
   // Takes ownership of |file| and will write network events to it once logging
   // starts.  |file| must be non-NULL handle and be open for writing.
-  explicit NetLogLogger(FILE* file);
+  // |constants| is a legend for decoding constant values used in the log.
+  NetLogLogger(FILE* file, const base::Value& constants);
   virtual ~NetLogLogger();
 
   // Starts observing specified NetLog.  Must not already be watching a NetLog.
   // Separate from constructor to enforce thread safety.
-  void StartObserving(net::NetLog* net_log);
+  void StartObserving(NetLog* net_log);
 
   // Stops observing net_log().  Must already be watching.
   void StopObserving();
 
   // net::NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
+  virtual void OnAddEntry(const NetLog::Entry& entry) OVERRIDE;
+
+  // Create a dictionary containing legend for net/ constants.  Caller takes
+  // ownership of returned value.
+  static base::DictionaryValue* GetConstants();
 
  private:
   ScopedStdioHandle file_;
@@ -49,4 +52,6 @@ class NetLogLogger : public net::NetLog::ThreadSafeObserver {
   DISALLOW_COPY_AND_ASSIGN(NetLogLogger);
 };
 
-#endif  // CHROME_BROWSER_NET_NET_LOG_LOGGER_H_
+}  // namespace net
+
+#endif  // NET_BASE_NET_LOG_LOGGER_H_

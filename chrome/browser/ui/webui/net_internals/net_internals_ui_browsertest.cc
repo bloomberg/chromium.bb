@@ -14,12 +14,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "chrome/browser/net/net_log_logger.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
@@ -29,6 +29,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
+#include "net/base/net_log_logger.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
@@ -344,7 +345,9 @@ void NetInternalsTest::MessageHandler::GetNetLogLoggerLog(
   FILE* temp_file_handle = file_util::OpenFile(temp_file, "w");
   ASSERT_TRUE(temp_file_handle);
 
-  scoped_ptr<NetLogLogger> net_log_logger(new NetLogLogger(temp_file_handle));
+  scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
+  scoped_ptr<net::NetLogLogger> net_log_logger(new net::NetLogLogger(
+      temp_file_handle, *constants));
   net_log_logger->StartObserving(g_browser_process->net_log());
   g_browser_process->net_log()->AddGlobalEntry(
       net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
