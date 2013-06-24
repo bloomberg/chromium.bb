@@ -181,7 +181,7 @@ DirectoryTreeUtil.updateSubDirectories = function(
           DirectoryTreeUtil.updateSubDirectories(
               item, dm, successCallback, opt_errorCallback);
         },
-        opt_errorCallback);
+        opt_errorCallback || function() {});
     return;
   }
 

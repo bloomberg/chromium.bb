@@ -125,7 +125,7 @@
   left: 0;
   position: absolute;
   right: 0;
-  top: 28px;  /* Leave room for the file list header. */
+  top: 0;
 }
 
 .dialog-container:not([drive-welcome='page']) .drive-welcome.page {
@@ -139,7 +139,6 @@
 .drive-welcome.page .drive-welcome-wrapper {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
-  background-position: 0 50px;
   background-size: 520px 173px;
   bottom: 0;
   display: -webkit-box;

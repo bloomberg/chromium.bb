@@ -803,12 +803,13 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
 /**
  * Resolves absolute directory path. Handles Drive stub. If the drive is
  * mounting, callbacks will be called after the mount is completed.
+ *
  * @param {string} path Path to the directory.
  * @param {function(DirectoryEntry} successCallback Success callback.
  * @param {function(FileError} errorCallback Error callback.
  */
-DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
-                                                     errorCallback) {
+DirectoryModel.prototype.resolveDirectory = function(
+    path, successCallback, errorCallback) {
   if (PathUtil.getRootType(path) == RootType.DRIVE) {
     var driveStatus = this.volumeManager_.getDriveStatus();
     if (!this.isDriveMounted() &&
@@ -826,8 +827,24 @@ DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
     return;
   }
 
+  var onError = function(error) {
+    // Handle the special case, when in offline mode, and there are no cached
+    // contents on the C++ side. In such case, let's display the stub.
+    // The INVALID_STATE_ERR error code is returned from the drive filesystem
+    // in such situation.
+    //
+    // TODO(mtomasz, hashimoto): Consider rewriting this logic.
+    //     crbug.com/253464.
+    if (PathUtil.getRootType(path) == RootType.DRIVE &&
+        error.code == FileError.INVALID_STATE_ERR) {
+      successCallback(DirectoryModel.fakeDriveEntry_);
+      return;
+    }
+    errorCallback(error);
+  }.bind(this);
+
   this.root_.getDirectory(path, {create: false},
-                          successCallback, errorCallback);
+                          successCallback, onError);
 };
 
 /**
