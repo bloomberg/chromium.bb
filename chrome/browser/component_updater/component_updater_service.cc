@@ -63,11 +63,15 @@ const CrxComponent::UrlSource kManifestSources[] = {
 bool AddQueryString(const std::string& id,
                     const std::string& version,
                     const std::string& fingerprint,
+                    bool ondemand,
                     size_t limit,
                     std::string* query) {
   std::string additional =
-      base::StringPrintf("id=%s&v=%s&fp=%s&uc",
-                         id.c_str(), version.c_str(), fingerprint.c_str());
+      base::StringPrintf("id=%s&v=%s&fp=%s&uc%s",
+                         id.c_str(),
+                         version.c_str(),
+                         fingerprint.c_str(),
+                         ondemand ? "&installsource=ondemand" : "");
   additional = "x=" + net::EscapeQueryParamValue(additional, true);
   if ((additional.size() + query->size() + 1) > limit)
     return false;
@@ -567,15 +571,20 @@ ComponentUpdateService::Status CrxUpdateService::RegisterComponent(
 }
 
 // Sets a component to be checked for updates.
-// The component to add is |crxit| and the |query| string is modified with the
-// required omaha compatible query. Returns false when the query strings
-// is longer than specified by UrlSizeLimit().
+// The component to add is |item| and the |query| string is modified with the
+// required omaha compatible query. Returns false when the query string is
+// longer than specified by UrlSizeLimit().
+// If the item is currently on the requested_work_items_ list, the update check
+// is considered to be "on-demand": the server may honor on-demand checks by
+// serving updates at 100% rather than a gated fraction.
 bool CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
                                             std::string* query) {
   if (!AddQueryString(item->id,
                       item->component.version.GetString(),
                       item->component.fingerprint,
-                      config_->UrlSizeLimit(), query))
+                      requested_work_items_.count(item) > 0,  // is_ondemand
+                      config_->UrlSizeLimit(),
+                      query))
     return false;
 
   item->status = CrxUpdateItem::kChecking;

@@ -519,6 +519,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   const GURL expected_update_url_2(
       "http://localhost/upd?extra=foo"
       "&x=id%3Djebgalgnebhfojomionfpkfelancnnkf%26v%3D0.9%26fp%3D%26uc"
+      "%26installsource%3Dondemand"
       "&x=id%3Dabagagagagagagagagagagagagagagag%26v%3D2.2%26fp%3D%26uc");
 
   interceptor.SetResponse(expected_update_url_1,
