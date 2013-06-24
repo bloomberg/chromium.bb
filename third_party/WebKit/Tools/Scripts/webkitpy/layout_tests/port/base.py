@@ -59,7 +59,6 @@ from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestEx
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.port import config as port_config
 from webkitpy.layout_tests.port import driver
-from webkitpy.layout_tests.port import http_lock
 from webkitpy.layout_tests.port import server_process
 from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.servers import apache_http_server
@@ -954,10 +953,6 @@ class Port(object):
             return False
         return True
 
-    def acquire_http_lock(self):
-        self._http_lock = http_lock.HttpLock(None, filesystem=self._filesystem, executive=self._executive)
-        self._http_lock.wait_for_httpd_lock()
-
     def stop_helper(self):
         """Shut down the test helper if it is running. Do nothing if
         it isn't, or it isn't available. If a port overrides start_helper()
@@ -975,10 +970,6 @@ class Port(object):
         if self._websocket_server:
             self._websocket_server.stop()
             self._websocket_server = None
-
-    def release_http_lock(self):
-        if self._http_lock:
-            self._http_lock.cleanup_http_lock()
 
     def exit_code_from_summarized_results(self, unexpected_results):
         """Given summarized results, compute the exit code to be returned by new-run-webkit-tests.

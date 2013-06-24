@@ -40,7 +40,6 @@ import time
 from webkitpy.common.system import executive
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
 from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
-from webkitpy.layout_tests.port.http_lock import HttpLock
 
 
 _log = logging.getLogger(__name__)
@@ -324,17 +323,12 @@ class ChromiumPort(Port):
         if stderr and 'AddressSanitizer' in stderr:
             # Running the AddressSanitizer take a lot of memory, so we need to
             # serialize access to it across all the concurrently running drivers.
-            lock = HttpLock(lock_path=None, lock_file_prefix='WebKitASAN.lock.',
-                            filesystem=self._filesystem, executive=self._executive,
-                            name='ASAN')
-            try:
-                lock.wait_for_httpd_lock()
-                asan_filter_path = self.path_from_chromium_base('tools', 'valgrind', 'asan', 'asan_symbolize.py')
-                if self._filesystem.exists(asan_filter_path):
-                    output = self._executive.run_command([asan_filter_path], input=stderr, decode_output=False)
-                    stderr = self._executive.run_command(['c++filt'], input=output, decode_output=False)
-            finally:
-                lock.cleanup_http_lock()
+
+            # FIXME: investigate using LLVM_SYMBOLIZER_PATH here to reduce the overhead.
+            asan_filter_path = self.path_from_chromium_base('tools', 'valgrind', 'asan', 'asan_symbolize.py')
+            if self._filesystem.exists(asan_filter_path):
+                output = self._executive.run_command(['flock', asan_filter_path], input=stderr, decode_output=False)
+                stderr = self._executive.run_command(['c++filt'], input=output, decode_output=False)
 
         return super(ChromiumPort, self)._get_crash_log(name, pid, stdout, stderr, newer_than)
 

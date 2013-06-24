@@ -75,6 +75,56 @@ class ManagerTest(unittest.TestCase):
             manager = get_manager()
             self.assertTrue(manager.needs_servers(['http\\tests\\mime']))
 
+    def test_servers_started(self):
+        def get_manager(port):
+            manager = Manager(port, options=MockOptions(http=True, max_locked_shards=1), printer=Mock())
+            return manager
+
+        def start_http_server(number_of_servers=None):
+            self.http_started = True
+
+        def start_websocket_server():
+            self.websocket_started = True
+
+        def stop_http_server():
+            self.http_stopped = True
+
+        def stop_websocket_server():
+            self.websocket_stopped = True
+
+        host = MockHost()
+        port = host.port_factory.get('test-mac-leopard')
+        port.start_http_server = start_http_server
+        port.start_websocket_server = start_websocket_server
+        port.stop_http_server = stop_http_server
+        port.stop_websocket_server = stop_websocket_server
+
+        self.http_started = self.http_stopped = self.websocket_started = self.websocket_stopped = False
+        manager = get_manager(port)
+        manager._start_servers(['http/tests/foo.html'])
+        self.assertEqual(self.http_started, True)
+        self.assertEqual(self.websocket_started, False)
+        manager._stop_servers()
+        self.assertEqual(self.http_stopped, True)
+        self.assertEqual(self.websocket_stopped, False)
+
+        self.http_started = self.http_stopped = self.websocket_started = self.websocket_stopped = False
+        manager._start_servers(['http/tests/websocket/foo.html'])
+        self.assertEqual(self.http_started, True)
+        self.assertEqual(self.websocket_started, True)
+        manager._stop_servers()
+        self.assertEqual(self.http_stopped, True)
+        self.assertEqual(self.websocket_stopped, True)
+
+        self.http_started = self.http_stopped = self.websocket_started = self.websocket_stopped = False
+        manager._start_servers(['fast/html/foo.html'])
+        self.assertEqual(self.http_started, False)
+        self.assertEqual(self.websocket_started, False)
+        manager._stop_servers()
+        self.assertEqual(self.http_stopped, False)
+        self.assertEqual(self.websocket_stopped, False)
+
+
     def test_look_for_new_crash_logs(self):
         def get_manager():
             host = MockHost()

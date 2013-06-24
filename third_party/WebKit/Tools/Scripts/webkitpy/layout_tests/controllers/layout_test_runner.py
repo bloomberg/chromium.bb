@@ -72,26 +72,18 @@ class LayoutTestRunner(object):
 
         self._expectations = None
         self._test_inputs = []
-        self._needs_http = None
-        self._needs_websockets = None
         self._retrying = False
 
         self._current_run_results = None
-        self._remaining_locked_shards = []
-        self._has_http_lock = False
 
-    def run_tests(self, expectations, test_inputs, tests_to_skip, num_workers, needs_http, needs_websockets, retrying):
+    def run_tests(self, expectations, test_inputs, tests_to_skip, num_workers, retrying):
         self._expectations = expectations
         self._test_inputs = test_inputs
-        self._needs_http = needs_http
-        self._needs_websockets = needs_websockets
         self._retrying = retrying
 
         # FIXME: rename all variables to test_run_results or some such ...
         run_results = TestRunResults(self._expectations, len(test_inputs) + len(tests_to_skip))
         self._current_run_results = run_results
-        self._remaining_locked_shards = []
-        self._has_http_lock = False
         self._printer.num_tests = len(test_inputs)
         self._printer.num_completed = 0
 
@@ -106,19 +98,10 @@ class LayoutTestRunner(object):
         self._printer.write_update('Sharding tests ...')
         locked_shards, unlocked_shards = self._sharder.shard_tests(test_inputs, int(self._options.child_processes), self._options.fully_parallel)
 
-        # FIXME: We don't have a good way to coordinate the workers so that
-        # they don't try to run the shards that need a lock if we don't actually
-        # have the lock. The easiest solution at the moment is to grab the
-        # lock at the beginning of the run, and then run all of the locked
-        # shards first. This minimizes the time spent holding the lock, but
-        # means that we won't be running tests while we're waiting for the lock.
-        # If this becomes a problem in practice we'll need to change this.
-
+        # We don't have a good way to coordinate the workers so that they don't
+        # try to run the shards that need a lock. The easiest solution is to
+        # run all of the locked shards first.
         all_shards = locked_shards + unlocked_shards
-        self._remaining_locked_shards = locked_shards
-        if self._port.requires_http_server() or locked_shards:
-            self.start_servers_with_lock(2 * min(num_workers, len(locked_shards)))
-
         num_workers = min(num_workers, len(all_shards))
         self._printer.print_workers_and_shards(num_workers, len(all_shards), len(locked_shards))
 
@@ -140,8 +123,6 @@ class LayoutTestRunner(object):
         except Exception, e:
             _log.debug('%s("%s") raised, exiting' % (e.__class__.__name__, str(e)))
             raise
-        finally:
-            self.stop_servers_with_lock()
 
         return run_results
 
@@ -193,29 +174,6 @@ class LayoutTestRunner(object):
 
         self._interrupt_if_at_failure_limits(run_results)
 
-    def start_servers_with_lock(self, number_of_servers):
-        self._printer.write_update('Acquiring http lock ...')
-        self._port.acquire_http_lock()
-        if self._needs_http:
-            self._printer.write_update('Starting HTTP server ...')
-            self._port.start_http_server(number_of_servers=number_of_servers)
-        if self._needs_websockets:
-            self._printer.write_update('Starting WebSocket server ...')
-            self._port.start_websocket_server()
-        self._has_http_lock = True
-
-    def stop_servers_with_lock(self):
-        if self._has_http_lock:
-            if self._needs_http:
-                self._printer.write_update('Stopping HTTP server ...')
-                self._port.stop_http_server()
-            if self._needs_websockets:
-                self._printer.write_update('Stopping WebSocket server ...')
-                self._port.stop_websocket_server()
-            self._printer.write_update('Releasing server lock ...')
-            self._port.release_http_lock()
-            self._has_http_lock = False
-
     def handle(self, name, source, *args):
         method = getattr(self, '_handle_' + name)
         if method:
@@ -226,17 +184,7 @@ class LayoutTestRunner(object):
         self._printer.print_started_test(test_input.test_name)
 
     def _handle_finished_test_list(self, worker_name, list_name):
-        def find(name, test_lists):
-            for i in range(len(test_lists)):
-                if test_lists[i].name == name:
-                    return i
-            return -1
-
-        index = find(list_name, self._remaining_locked_shards)
-        if index >= 0:
-            self._remaining_locked_shards.pop(index)
-            if not self._remaining_locked_shards and not self._port.requires_http_server():
-                self.stop_servers_with_lock()
+        pass
 
     def _handle_finished_test(self, worker_name, result, log_messages=[]):
         self._update_summary_with_result(self._current_run_results, result)
