@@ -365,6 +365,9 @@ template<typename T, size_t inlineCapacity> void reportMemoryUsage(const Vector<
 template<typename KeyArg, typename MappedArg, typename HashArg, typename KeyTraitsArg, typename MappedTraitsArg> class HashMap;
 template<typename KeyArg, typename MappedArg, typename HashArg, typename KeyTraitsArg, typename MappedTraitsArg> void reportMemoryUsage(const HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg>*, MemoryObjectInfo*);
 
+template<typename Value, typename HashArg, typename TraitsArg> class HashSet;
+template<typename Value, typename HashArg, typename TraitsArg> void reportMemoryUsage(const HashSet<Value, HashArg, TraitsArg>*, MemoryObjectInfo*);
+
 template<typename ValueArg, typename HashArg, typename TraitsArg> class HashCountedSet;
 template<typename ValueArg, typename HashArg, typename TraitsArg> void reportMemoryUsage(const HashCountedSet<ValueArg, HashArg, TraitsArg>*, MemoryObjectInfo*);
 

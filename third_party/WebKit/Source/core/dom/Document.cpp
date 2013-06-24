@@ -173,6 +173,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/MemoryInstrumentationHashCountedSet.h"
 #include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/StdLibExtras.h"

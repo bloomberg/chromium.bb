@@ -31,6 +31,7 @@
 
 #include "core/css/CSSSelector.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {

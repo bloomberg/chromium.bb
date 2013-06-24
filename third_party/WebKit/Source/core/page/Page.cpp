@@ -76,6 +76,7 @@
 #include "core/storage/StorageNamespace.h"
 #include "weborigin/SchemeRegistry.h"
 #include "wtf/HashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/Base64.h"

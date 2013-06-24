@@ -33,6 +33,7 @@
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/SuspendableTimer.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/MemoryInstrumentationListHashSet.h"
 
 namespace WebCore {

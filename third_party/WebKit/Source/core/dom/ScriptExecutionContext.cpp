@@ -40,9 +40,10 @@
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/webdatabase/DatabaseContext.h"
-#include <wtf/MainThread.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
+#include "wtf/MainThread.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WTF {
 

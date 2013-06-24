@@ -42,6 +42,7 @@
 #include "core/rendering/RenderLazyBlock.h"
 #include "core/rendering/RenderSelectionInfo.h"
 #include "core/rendering/RenderWidget.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
 
 namespace WebCore {
 

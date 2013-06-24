@@ -60,11 +60,12 @@
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/TemporaryChange.h>
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/TemporaryChange.h"
 
 #if !LOG_DISABLED
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 #endif
 
 #ifndef NDEBUG

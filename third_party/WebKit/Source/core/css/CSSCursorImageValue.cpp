@@ -36,6 +36,7 @@
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGURIReference.h"
 #include "wtf/MathExtras.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
