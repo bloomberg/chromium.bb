@@ -179,6 +179,7 @@ extern const char kEnablePanels[];
 extern const char kEnablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kEnablePasswordGeneration[];
 extern const char kEnablePnacl[];
+extern const char kDisablePnaclInstall[];
 extern const char kEnableProfiling[];
 extern const char kEnableQuic[];
 extern const char kEnableQuickofficeEdit[];

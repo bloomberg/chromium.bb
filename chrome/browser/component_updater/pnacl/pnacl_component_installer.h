@@ -47,10 +47,14 @@ class PnaclComponentInstaller : public ComponentInstaller {
   // updater service.
   void ReRegisterPnacl();
 
+  // Return true if PNaCl installs are separated by user.
   bool per_user() const { return per_user_; }
 
   // If per_user, function to call when profile is changed.
   void OnProfileChange();
+
+  // Return true if PNaCl updates are disabled.
+  bool updates_disabled() const { return updates_disabled_; }
 
   // Determine the base directory for storing each version of PNaCl.
   base::FilePath GetPnaclBaseDirectory();
@@ -75,6 +79,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
   void NotifyAllWithResult(bool status);
 
   bool per_user_;
+  bool updates_disabled_;
   scoped_ptr<PnaclProfileObserver> profile_observer_;
   base::FilePath current_profile_path_;
   base::Version current_version_;

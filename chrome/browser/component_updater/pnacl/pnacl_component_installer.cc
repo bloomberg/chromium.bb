@@ -190,6 +190,7 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
 
 PnaclComponentInstaller::PnaclComponentInstaller()
     : per_user_(false),
+      updates_disabled_(false),
       cus_(NULL),
       callback_nums_(0) {
 #if defined(OS_CHROMEOS)
@@ -400,6 +401,13 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
     }
   }
 
+  // If updates are disabled, only discover the current version
+  // and OverrideDirPnaclComponent. That way, developers can use
+  // a pinned version. Do not actually finish registration with
+  // the component update service.
+  if (pci->updates_disabled())
+    return;
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&FinishPnaclUpdateRegistration, version, pci));
@@ -430,30 +438,25 @@ void GetProfileInformation(PnaclComponentInstaller* pci) {
 void PnaclComponentInstaller::RegisterPnaclComponent(
                             ComponentUpdateService* cus,
                             const CommandLine& command_line) {
-  // Only register when given the right flag, for now.
-  if (command_line.HasSwitch(switches::kEnablePnacl)) {
-    cus_ = cus;
-    // If per_user, create a profile observer to watch for logins.
-    // Only do so after cus_ is set to something non-null.
-    if (per_user_ && !profile_observer_) {
-      profile_observer_.reset(new PnaclProfileObserver(this));
-    }
-    if (per_user_) {
-      // Figure out profile information, before proceeding to look for files.
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(&GetProfileInformation, this));
-    } else {
-      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                              base::Bind(&StartPnaclUpdateRegistration, this));
-    }
+  // Register PNaCl by default (can be disabled).
+  updates_disabled_ = command_line.HasSwitch(switches::kDisablePnaclInstall);
+  cus_ = cus;
+  // If per_user, create a profile observer to watch for logins.
+  // Only do so after cus_ is set to something non-null.
+  if (per_user_ && !profile_observer_) {
+    profile_observer_.reset(new PnaclProfileObserver(this));
+  }
+  if (per_user_) {
+    // Figure out profile information, before proceeding to look for files.
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&GetProfileInformation, this));
+  } else {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&StartPnaclUpdateRegistration, this));
   }
 }
 
 void PnaclComponentInstaller::ReRegisterPnacl() {
-  // No need to check the commandline flags again here.
-  // We could only have gotten here after RegisterPnaclComponent
-  // found --enable-pnacl, since that is where we create the profile_observer_,
-  // which in turn calls ReRegisterPnacl.
   DCHECK(per_user_);
   // Figure out profile information, before proceeding to look for files.
   BrowserThread::PostTask(

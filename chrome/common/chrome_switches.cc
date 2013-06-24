@@ -628,8 +628,11 @@ const char kEnablePanels[]                  = "enable-panels";
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
 
-// Enables the installation and usage of Portable Native Client.
+// Enables the usage of Portable Native Client.
 const char kEnablePnacl[]                   = "enable-pnacl";
+
+// Disables the installation of Portable Native Client.
+const char kDisablePnaclInstall[]           = "disable-pnacl-install";
 
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:
