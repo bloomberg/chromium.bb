@@ -1225,8 +1225,9 @@ void DriveFileSyncService::HandleConflictForRemoteSync(
   DCHECK_EQ(CONFLICT_RESOLUTION_LAST_WRITE_WIN, conflict_resolution_);
   if (param->remote_change.updated_time.is_null()) {
     // Get remote file time and call this method again.
+    const std::string& resource_id = param->remote_change.resource_id;
     api_util_->GetResourceEntry(
-        param->remote_change.resource_id,
+        resource_id,
         base::Bind(
             &DriveFileSyncService::DidGetRemoteFileMetadataForRemoteUpdatedTime,
             AsWeakPtr(),
