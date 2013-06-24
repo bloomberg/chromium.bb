@@ -457,12 +457,6 @@ bool AUHALStream::ConfigureAUHAL() {
     return false;
   }
 
-  result = AudioUnitInitialize(audio_unit_);
-  if (result != noErr) {
-    OSSTATUS_DLOG(WARNING, result) << "AudioUnitInitialize() failed.";
-    return false;
-  }
-
   // Enable input and output as appropriate.
   if (!EnableIO(input_channels_ > 0, kAudioUnitScope_Input))
     return false;
@@ -535,6 +529,12 @@ bool AUHALStream::ConfigureAUHAL() {
       sizeof(callback));
   if (result != noErr)
     return false;
+
+  result = AudioUnitInitialize(audio_unit_);
+  if (result != noErr) {
+    OSSTATUS_DLOG(WARNING, result) << "AudioUnitInitialize() failed.";
+    return false;
+  }
 
   return true;
 }
