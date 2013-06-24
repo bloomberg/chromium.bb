@@ -73,8 +73,8 @@ class AudioDecoderJob : public MediaDecoderJob {
   virtual ~AudioDecoderJob() {}
 
   static AudioDecoderJob* Create(
-      const AudioCodec audio_codec, int sample_rate,
-      int channel_count, const uint8* extra_data, size_t extra_data_size);
+      const AudioCodec audio_codec, int sample_rate, int channel_count,
+      const uint8* extra_data, size_t extra_data_size, jobject media_crypto);
 
  private:
   AudioDecoderJob(MediaCodecBridge* media_codec_bridge);
@@ -86,7 +86,8 @@ class VideoDecoderJob : public MediaDecoderJob {
   virtual ~VideoDecoderJob() {}
 
   static VideoDecoderJob* Create(
-      const VideoCodec video_codec, const gfx::Size& size, jobject surface);
+      const VideoCodec video_codec, const gfx::Size& size, jobject surface,
+      jobject media_crypto);
 
  private:
   VideoDecoderJob(MediaCodecBridge* media_codec_bridge);
@@ -234,9 +235,10 @@ void MediaDecoderJob::Release() {
 }
 
 VideoDecoderJob* VideoDecoderJob::Create(
-    const VideoCodec video_codec, const gfx::Size& size, jobject surface) {
+    const VideoCodec video_codec, const gfx::Size& size, jobject surface,
+    jobject media_crypto) {
   scoped_ptr<VideoCodecBridge> codec(VideoCodecBridge::Create(video_codec));
-  if (codec->Start(video_codec, size, surface))
+  if (codec->Start(video_codec, size, surface, media_crypto))
     return new VideoDecoderJob(codec.release());
   return NULL;
 }
@@ -251,10 +253,11 @@ AudioDecoderJob* AudioDecoderJob::Create(
     int sample_rate,
     int channel_count,
     const uint8* extra_data,
-    size_t extra_data_size) {
+    size_t extra_data_size,
+    jobject media_crypto) {
   scoped_ptr<AudioCodecBridge> codec(AudioCodecBridge::Create(audio_codec));
   if (codec->Start(audio_codec, sample_rate, channel_count, extra_data,
-                   extra_data_size, true)) {
+                   extra_data_size, true, media_crypto)) {
     return new AudioDecoderJob(codec.release());
   }
   return NULL;
@@ -675,8 +678,8 @@ void MediaSourcePlayer::ConfigureAudioDecoderJob() {
   // Create audio decoder job only if config changes.
   if (HasAudio() && (reconfig_audio_decoder_ || !audio_decoder_job_)) {
     audio_decoder_job_.reset(AudioDecoderJob::Create(
-        audio_codec_, sampling_rate_, num_channels_,
-        &audio_extra_data_[0], audio_extra_data_.size()));
+        audio_codec_, sampling_rate_, num_channels_, &audio_extra_data_[0],
+        audio_extra_data_.size(), NULL));
     if (audio_decoder_job_)
       reconfig_audio_decoder_ =  false;
   }
@@ -693,7 +696,8 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
     video_decoder_job_.reset();
     // Create the new VideoDecoderJob.
     video_decoder_job_.reset(VideoDecoderJob::Create(
-        video_codec_, gfx::Size(width_, height_), surface_.j_surface().obj()));
+        video_codec_, gfx::Size(width_, height_), surface_.j_surface().obj(),
+        NULL));
     if (video_decoder_job_)
       reconfig_video_decoder_ = false;
   }

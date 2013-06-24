@@ -391,7 +391,7 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   // phase. Here, we set 720p by default.
   // TODO(dwkang): find out a way to remove the following hard-coded value.
   media_codec_->Start(
-      codec_, gfx::Size(1280, 720), surface.j_surface().obj());
+      codec_, gfx::Size(1280, 720), surface.j_surface().obj(), NULL);
   media_codec_->GetOutputBuffers();
   return true;
 }

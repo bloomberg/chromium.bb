@@ -107,7 +107,7 @@ TEST(MediaCodecBridgeTest, DoNormal) {
   scoped_ptr<media::AudioCodecBridge> media_codec;
   media_codec.reset(AudioCodecBridge::Create(kCodecMP3));
 
-  media_codec->Start(kCodecMP3, 44100, 2, NULL, 0, false);
+  media_codec->Start(kCodecMP3, 44100, 2, NULL, 0, false, NULL);
 
   int input_buf_index = media_codec->DequeueInputBuffer(
       MediaCodecBridge::kTimeOutInfinity);
@@ -168,12 +168,12 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
   uint8 invalid_first_byte[] = { 0x00, 0xff, 0xff, 0xff, 0xff };
   EXPECT_FALSE(media_codec->Start(
       kCodecVorbis, 44100, 2, invalid_first_byte, sizeof(invalid_first_byte),
-      false));
+      false, NULL));
 
   // Size of the header does not match with the data we passed in.
   uint8 invalid_size[] = { 0x02, 0x01, 0xff, 0x01, 0xff };
   EXPECT_FALSE(media_codec->Start(
-      kCodecVorbis, 44100, 2, invalid_size, sizeof(invalid_size), false));
+      kCodecVorbis, 44100, 2, invalid_size, sizeof(invalid_size), false, NULL));
 
   // Size of the header is too large.
   size_t large_size = 8 * 1024 * 1024 + 2;
@@ -183,7 +183,7 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
     very_large_header[i] = 0xff;
   very_large_header[large_size - 1] = 0xfe;
   EXPECT_FALSE(media_codec->Start(
-      kCodecVorbis, 44100, 2, very_large_header, 0x80000000, false));
+      kCodecVorbis, 44100, 2, very_large_header, 0x80000000, false, NULL));
   delete[] very_large_header;
 }
 

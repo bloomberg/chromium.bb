@@ -183,7 +183,8 @@ AudioCodecBridge::AudioCodecBridge(const char* mime)
 
 bool AudioCodecBridge::Start(
     const AudioCodec codec, int sample_rate, int channel_count,
-    const uint8* extra_data, size_t extra_data_size, bool play_audio) {
+    const uint8* extra_data, size_t extra_data_size, bool play_audio,
+    jobject media_crypto) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(AudioCodecToMimeType(codec));
 
@@ -198,7 +199,7 @@ bool AudioCodecBridge::Start(
     return false;
 
   if (!Java_MediaCodecBridge_configureAudio(
-      env, media_codec(), j_format.obj(), NULL, 0, play_audio)) {
+      env, media_codec(), j_format.obj(), media_crypto, 0, play_audio)) {
     return false;
   }
   StartInternal();
@@ -328,7 +329,8 @@ VideoCodecBridge::VideoCodecBridge(const char* mime)
 }
 
 bool VideoCodecBridge::Start(
-    const VideoCodec codec, const gfx::Size& size, jobject surface) {
+    const VideoCodec codec, const gfx::Size& size, jobject surface,
+    jobject media_crypto) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(VideoCodecToMimeType(codec));
 
@@ -339,7 +341,7 @@ bool VideoCodecBridge::Start(
           env, j_mime.obj(), size.width(), size.height()));
   DCHECK(!j_format.is_null());
   if (!Java_MediaCodecBridge_configureVideo(
-      env, media_codec(), j_format.obj(), surface, NULL, 0)) {
+      env, media_codec(), j_format.obj(), surface, media_crypto, 0)) {
     return false;
   }
   StartInternal();
