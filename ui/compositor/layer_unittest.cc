@@ -629,6 +629,50 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
   DISALLOW_COPY_AND_ASSIGN(LayerWithNullDelegateTest);
 };
 
+class FakeTexture : public Texture {
+ public:
+  FakeTexture(bool flipped, const gfx::Size& size, float device_scale_factor)
+      : Texture(flipped, size, device_scale_factor) {}
+
+  virtual unsigned int PrepareTexture() OVERRIDE { return 0; }
+  virtual WebKit::WebGraphicsContext3D* HostContext3D() OVERRIDE {
+    return NULL;
+  }
+
+ protected:
+  virtual ~FakeTexture() {}
+};
+
+TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
+  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
+                                        gfx::Rect(20, 20, 400, 400)));
+  l1->SetFillsBoundsOpaquely(true);
+  l1->SetForceRenderSurface(true);
+  l1->SetVisible(false);
+
+  EXPECT_EQ(gfx::PointF().ToString(),
+            l1->cc_layer()->anchor_point().ToString());
+  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
+  EXPECT_TRUE(l1->cc_layer()->contents_opaque());
+  EXPECT_TRUE(l1->cc_layer()->force_render_surface());
+  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
+
+  cc::Layer* before_layer = l1->cc_layer();
+
+  scoped_refptr<Texture> texture =
+      new FakeTexture(false, gfx::Size(10, 10), 1.f);
+  l1->SetExternalTexture(texture.get());
+
+  EXPECT_NE(before_layer, l1->cc_layer());
+
+  EXPECT_EQ(gfx::PointF().ToString(),
+            l1->cc_layer()->anchor_point().ToString());
+  EXPECT_TRUE(l1->cc_layer()->DrawsContent());
+  EXPECT_TRUE(l1->cc_layer()->contents_opaque());
+  EXPECT_TRUE(l1->cc_layer()->force_render_surface());
+  EXPECT_TRUE(l1->cc_layer()->hide_layer_and_subtree());
+}
+
 // Various visibile/drawn assertions.
 TEST_F(LayerWithNullDelegateTest, Visibility) {
   scoped_ptr<Layer> l1(new Layer(LAYER_TEXTURED));
