@@ -25,7 +25,6 @@ namespace google_apis {
 
 namespace {
 
-
 const char kUploadContentRange[] = "Content-Range: bytes ";
 
 const char kFeedField[] = "feed";
@@ -36,7 +35,6 @@ const char kUploadResponseRange[] = "range";
 // Parses the JSON value to ResourceList.
 scoped_ptr<ResourceList> ParseResourceListOnBlockingPool(
     scoped_ptr<base::Value> value) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(value);
 
   return ResourceList::ExtractAndParse(*value);

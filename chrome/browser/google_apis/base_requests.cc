@@ -44,8 +44,6 @@ const char kUploadResponseRange[] = "range";
 
 // Parse JSON string to base::Value object.
 scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& json) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   int error_code = -1;
   std::string error_message;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
