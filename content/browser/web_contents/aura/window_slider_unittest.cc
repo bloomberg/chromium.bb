@@ -182,7 +182,8 @@ TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   aura::test::EventGenerator generator(root_window());
 
   // Generate a horizontal overscroll.
-  new WindowSlider(&slider_delegate, root_window(), window.get());
+  WindowSlider* slider =
+      new WindowSlider(&slider_delegate, root_window(), window.get());
   generator.GestureScrollSequence(gfx::Point(10, 10),
                                   gfx::Point(160, 10),
                                   base::TimeDelta::FromMilliseconds(10),
@@ -191,12 +192,10 @@ TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   EXPECT_TRUE(slider_delegate.slide_completed());
   EXPECT_FALSE(slider_delegate.created_front_layer());
   EXPECT_FALSE(slider_delegate.slide_aborted());
-  EXPECT_TRUE(slider_delegate.slider_destroyed());
+  EXPECT_FALSE(slider_delegate.slider_destroyed());
+  EXPECT_FALSE(slider->IsSlideInProgress());
   slider_delegate.Reset();
   window->SetTransform(gfx::Transform());
-
-  // Since the slider has been destroyed, recreate a new one.
-  new WindowSlider(&slider_delegate, root_window(), window.get());
 
   // Generat a horizontal overscroll in the reverse direction.
   generator.GestureScrollSequence(gfx::Point(160, 10),
@@ -207,11 +206,9 @@ TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   EXPECT_TRUE(slider_delegate.slide_completed());
   EXPECT_FALSE(slider_delegate.created_back_layer());
   EXPECT_FALSE(slider_delegate.slide_aborted());
-  EXPECT_TRUE(slider_delegate.slider_destroyed());
+  EXPECT_FALSE(slider_delegate.slider_destroyed());
+  EXPECT_FALSE(slider->IsSlideInProgress());
   slider_delegate.Reset();
-
-  // Since the slider has been destroyed, recreate a new one.
-  new WindowSlider(&slider_delegate, root_window(), window.get());
 
   // Generate a vertical overscroll.
   generator.GestureScrollSequence(gfx::Point(10, 10),
@@ -222,6 +219,7 @@ TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   EXPECT_FALSE(slider_delegate.slide_completed());
   EXPECT_FALSE(slider_delegate.created_front_layer());
   EXPECT_FALSE(slider_delegate.slide_aborted());
+  EXPECT_FALSE(slider->IsSlideInProgress());
   slider_delegate.Reset();
 
   // Generate a horizontal scroll that starts overscroll, but doesn't scroll
@@ -235,6 +233,7 @@ TEST_F(WindowSliderTest, WindowSlideUsingGesture) {
   EXPECT_FALSE(slider_delegate.created_front_layer());
   EXPECT_FALSE(slider_delegate.slide_completed());
   EXPECT_FALSE(slider_delegate.slider_destroyed());
+  EXPECT_FALSE(slider->IsSlideInProgress());
   slider_delegate.Reset();
 
   // Destroy the window. This should destroy the slider.
@@ -294,8 +293,8 @@ TEST_F(WindowSliderTest, OwnerWindowChangesDuringWindowSlide) {
                                                      &window_delegate));
 
   WindowSliderDelegateTest slider_delegate;
-  WindowSlider* slider = new WindowSlider(&slider_delegate, parent.get(),
-                                          window.get());
+  scoped_ptr<WindowSlider> slider(
+      new WindowSlider(&slider_delegate, parent.get(), window.get()));
 
   // Generate a horizontal scroll, and change the owner in the middle of the
   // scroll.
@@ -308,7 +307,7 @@ TEST_F(WindowSliderTest, OwnerWindowChangesDuringWindowSlide) {
       1,
       base::Bind(&ChangeSliderOwnerDuringScrollCallback,
                  base::Unretained(&window),
-                 slider));
+                 slider.get()));
   aura::Window* new_window = window.get();
   EXPECT_NE(old_window, new_window);
 
@@ -316,7 +315,7 @@ TEST_F(WindowSliderTest, OwnerWindowChangesDuringWindowSlide) {
   EXPECT_TRUE(slider_delegate.slide_completed());
   EXPECT_FALSE(slider_delegate.created_front_layer());
   EXPECT_FALSE(slider_delegate.slide_aborted());
-  EXPECT_TRUE(slider_delegate.slider_destroyed());
+  EXPECT_FALSE(slider_delegate.slider_destroyed());
 }
 
 TEST_F(WindowSliderTest, NoSlideWhenLayerCantBeCreated) {
@@ -328,7 +327,8 @@ TEST_F(WindowSliderTest, NoSlideWhenLayerCantBeCreated) {
   aura::test::EventGenerator generator(root_window());
 
   // Generate a horizontal overscroll.
-  new WindowSlider(&slider_delegate, root_window(), window.get());
+  scoped_ptr<WindowSlider> slider(
+      new WindowSlider(&slider_delegate, root_window(), window.get()));
   generator.GestureScrollSequence(gfx::Point(10, 10),
                                   gfx::Point(160, 10),
                                   base::TimeDelta::FromMilliseconds(10),
@@ -349,7 +349,7 @@ TEST_F(WindowSliderTest, NoSlideWhenLayerCantBeCreated) {
   EXPECT_TRUE(slider_delegate.slide_completed());
   EXPECT_FALSE(slider_delegate.created_front_layer());
   EXPECT_FALSE(slider_delegate.slide_aborted());
-  EXPECT_TRUE(slider_delegate.slider_destroyed());
+  EXPECT_FALSE(slider_delegate.slider_destroyed());
 }
 
 // Tests that the owner window can be destroyed from |OnWindowSliderDestroyed()|
@@ -364,7 +364,8 @@ TEST_F(WindowSliderTest, OwnerIsDestroyedOnSliderDestroy) {
   aura::test::EventGenerator generator(root_window());
 
   // Generate a horizontal overscroll.
-  new WindowSlider(&slider_delegate, root_window(), window);
+  scoped_ptr<WindowSlider> slider(
+      new WindowSlider(&slider_delegate, root_window(), window));
   generator.GestureScrollSequence(gfx::Point(10, 10),
                                   gfx::Point(160, 10),
                                   base::TimeDelta::FromMilliseconds(10),
@@ -373,8 +374,9 @@ TEST_F(WindowSliderTest, OwnerIsDestroyedOnSliderDestroy) {
   EXPECT_TRUE(slider_delegate.slide_completed());
   EXPECT_FALSE(slider_delegate.created_front_layer());
   EXPECT_FALSE(slider_delegate.slide_aborted());
-  EXPECT_TRUE(slider_delegate.slider_destroyed());
+  EXPECT_FALSE(slider_delegate.slider_destroyed());
 
+  slider.reset();
   // Destroying the slider would have destroyed |window| too. So |window| should
   // not need to be destroyed here.
   EXPECT_EQ(child_windows, root_window()->children().size());

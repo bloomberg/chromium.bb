@@ -83,7 +83,6 @@ class CONTENT_EXPORT WindowSlider : public ui::EventHandler,
   void CancelScroll();
 
   // The following callbacks are triggered after an animation.
-  // The |Complete| callback destroys the |WindowSlider| itself.
   void CompleteWindowSlideAfterAnimation();
 
   void AbortWindowSlideAfterAnimation();

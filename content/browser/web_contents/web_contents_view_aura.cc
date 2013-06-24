@@ -509,11 +509,8 @@ class OverscrollNavigationOverlay :
   }
 
   virtual void OnWindowSlideComplete() OVERRIDE {
-    // The |WindowSlider| deletes itself when the slide is completed. So release
-    // the ownership here.
-    WindowSlider* slider ALLOW_UNUSED = window_slider_.release();
-
     if (slide_direction_ == SLIDE_UNKNOWN) {
+      window_slider_.reset();
       StopObservingIfDone();
       return;
     }
@@ -523,11 +520,6 @@ class OverscrollNavigationOverlay :
     window_->layer()->SetTransform(gfx::Transform());
     window_->SchedulePaintInRect(gfx::Rect(window_->bounds().size()));
 
-    // At the end of the slide, the slider gets destroyed. So create a new one
-    // here.
-    window_slider_.reset(new WindowSlider(this,
-                                          window_->parent(),
-                                          window_.get()));
     SlideDirection direction = slide_direction_;
     slide_direction_ = SLIDE_UNKNOWN;
 

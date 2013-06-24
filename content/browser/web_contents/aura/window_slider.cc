@@ -119,29 +119,25 @@ void WindowSlider::UpdateForScroll(float x_offset, float y_offset) {
   float translate = 0.f;
   ui::Layer* translate_layer = NULL;
 
+  if (!slider_.get()) {
+    slider_.reset(delta_x_ < 0 ? delegate_->CreateFrontLayer() :
+                                 delegate_->CreateBackLayer());
+    if (!slider_.get())
+      return;
+    SetupSliderLayer();
+  }
+
   if (delta_x_ <= -min_start_threshold_) {
-    if (!slider_.get()) {
-      slider_.reset(delegate_->CreateFrontLayer());
-      if (!slider_.get())
-        return;
-      SetupSliderLayer();
-    }
     translate = owner_->bounds().width() +
         std::max(delta_x_ + min_start_threshold_,
                  static_cast<float>(-owner_->bounds().width()));
     translate_layer = slider_.get();
   } else if (delta_x_ >= min_start_threshold_) {
-    if (!slider_.get()) {
-      slider_.reset(delegate_->CreateBackLayer());
-      if (!slider_.get())
-        return;
-      SetupSliderLayer();
-    }
     translate = std::min(delta_x_ - min_start_threshold_,
                          static_cast<float>(owner_->bounds().width()));
     translate_layer = owner_->layer();
   } else {
-    NOTREACHED();
+    return;
   }
 
   if (!shadow_.get())
@@ -225,19 +221,17 @@ void WindowSlider::CancelScroll() {
 }
 
 void WindowSlider::CompleteWindowSlideAfterAnimation() {
-  // The delegate may delete the |owner_| from the |OnWindowSlideComplete()|
-  // callback, which would trigger the
-  // |WindowSlider::OnWindowRemovingFromRootWindow()| callback, which would try
-  // to delete itself again. So avoid that by resetting |owner_| before calling
-  // the |OnWindowSlideComplete()| callback on the delegate.
-  owner_->RemoveObserver(this);
-  owner_ = NULL;
+  weak_factory_.InvalidateWeakPtrs();
+  shadow_.reset();
+  slider_.reset();
+  delta_x_ = 0.f;
 
   delegate_->OnWindowSlideComplete();
-  delete this;
 }
 
 void WindowSlider::AbortWindowSlideAfterAnimation() {
+  weak_factory_.InvalidateWeakPtrs();
+
   delegate_->OnWindowSlideAborted();
 }
 
