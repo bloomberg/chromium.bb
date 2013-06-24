@@ -832,8 +832,8 @@ void TSFTextStore::RemoveFocusedTextInputClient(
 }
 
 bool TSFTextStore::CancelComposition() {
-  // There is an on-going document lock. We must not edit the text!
-  if (!edit_flag_)
+  // If there is an on-going document lock, we must not edit the text.
+  if (edit_flag_)
     return false;
 
   if (string_buffer_.empty())
@@ -867,8 +867,8 @@ bool TSFTextStore::CancelComposition() {
 }
 
 bool TSFTextStore::ConfirmComposition() {
-  // There is an on-going document lock. We must not edit the text!
-  if (!edit_flag_)
+  // If there is an on-going document lock, we must not edit the text.
+  if (edit_flag_)
     return false;
 
   if (string_buffer_.empty())
