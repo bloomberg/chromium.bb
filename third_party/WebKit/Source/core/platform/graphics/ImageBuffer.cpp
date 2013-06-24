@@ -129,7 +129,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, const Graph
 
     m_canvas = adoptPtr(new SkCanvas(device));
     m_context = adoptPtr(new GraphicsContext(m_canvas.get()));
-    m_context->setShouldSmoothFonts(false);
+    m_context->setCertainlyOpaque(!hasAlpha);
     m_context->scale(FloatSize(m_resolutionScale, m_resolutionScale));
 
     success = true;
@@ -154,7 +154,7 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, RenderingMo
     }
 
     m_context = adoptPtr(new GraphicsContext(m_canvas.get()));
-    m_context->setShouldSmoothFonts(opacityMode == Opaque);
+    m_context->setCertainlyOpaque(opacityMode == Opaque);
     m_context->setAccelerated(renderingMode == Accelerated);
     m_context->scale(FloatSize(m_resolutionScale, m_resolutionScale));
 

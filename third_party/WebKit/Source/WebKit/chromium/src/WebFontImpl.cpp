@@ -102,7 +102,7 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
     GraphicsContext gc(canvas);
 
     gc.save();
-    gc.setShouldSmoothFonts(canvasIsOpaque);
+    gc.setCertainlyOpaque(canvasIsOpaque);
     gc.setFillColor(color);
     gc.clip(textClipRect);
     m_font.drawText(&gc, runInfo, leftBaseline);

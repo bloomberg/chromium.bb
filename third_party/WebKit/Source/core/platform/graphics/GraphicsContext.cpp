@@ -344,7 +344,7 @@ bool GraphicsContext::couldUseLCDRenderedText()
     // rendered text cannot be composited correctly when the layer is
     // collapsed. Therefore, subpixel text is disabled when we are drawing
     // onto a layer.
-    if (paintingDisabled() || isDrawingToLayer())
+    if (paintingDisabled() || isDrawingToLayer() || !isCertainlyOpaque())
         return false;
 
     return shouldSmoothFonts();

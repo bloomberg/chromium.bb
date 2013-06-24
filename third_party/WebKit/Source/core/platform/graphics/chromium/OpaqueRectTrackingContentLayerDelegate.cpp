@@ -52,7 +52,7 @@ void OpaqueRectTrackingContentLayerDelegate::paintContents(SkCanvas* canvas, con
     GraphicsContext context(canvas);
     context.setTrackOpaqueRegion(!m_opaque);
     context.setCertainlyOpaque(m_opaque);
-    context.setShouldSmoothFonts(canPaintLCDText && m_opaque);
+    context.setShouldSmoothFonts(canPaintLCDText);
 
     // Record transform prior to painting, as all opaque tracking will be
     // relative to this current value.
