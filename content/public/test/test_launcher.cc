@@ -63,7 +63,7 @@ namespace {
 
 int DoRunTestInternal(const testing::TestCase* test_case,
                       const std::string& test_name,
-                      CommandLine* command_line,
+                      const CommandLine& command_line,
                       base::TimeDelta default_timeout,
                       bool* was_timeout) {
   if (test_case) {
@@ -87,7 +87,7 @@ int DoRunTestInternal(const testing::TestCase* test_case,
     }
   }
 
-  CommandLine new_cmd_line(*command_line);
+  CommandLine new_cmd_line(command_line);
 
   // Always enable disabled tests.  This method is not called with disabled
   // tests unless this flag was specified to the browser test executable.
@@ -95,57 +95,13 @@ int DoRunTestInternal(const testing::TestCase* test_case,
   new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
   new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
 
-  const char* browser_wrapper = getenv("BROWSER_WRAPPER");
-  if (browser_wrapper) {
-#if defined(OS_WIN)
-    new_cmd_line.PrependWrapper(ASCIIToWide(browser_wrapper));
-#elif defined(OS_POSIX)
-    new_cmd_line.PrependWrapper(browser_wrapper);
-#endif
-    VLOG(1) << "BROWSER_WRAPPER was set, prefixing command_line with "
-            << browser_wrapper;
-  }
-
-  base::ProcessHandle process_handle;
-  base::LaunchOptions options;
-
-#if defined(OS_POSIX)
-  // On POSIX, we launch the test in a new process group with pgid equal to
-  // its pid. Any child processes that the test may create will inherit the
-  // same pgid. This way, if the test is abruptly terminated, we can clean up
-  // any orphaned child processes it may have left behind.
-  options.new_process_group = true;
-#endif
-
-  if (!base::LaunchProcess(new_cmd_line, options, &process_handle))
-    return -1;
-
-  int exit_code = 0;
-  if (!base::WaitForExitCodeWithTimeout(process_handle,
-                                        &exit_code,
-                                        default_timeout)) {
+  int exit_code = base::LaunchChildGTestProcess(new_cmd_line,
+                                                default_timeout,
+                                                was_timeout);
+  if (*was_timeout) {
     LOG(ERROR) << "Test timeout (" << default_timeout.InMilliseconds()
                << " ms) exceeded for " << test_name;
-
-    if (was_timeout)
-      *was_timeout = true;
-    exit_code = -1;  // Set a non-zero exit code to signal a failure.
-
-    // Ensure that the process terminates.
-    base::KillProcess(process_handle, -1, true);
   }
-
-#if defined(OS_POSIX)
-  if (exit_code != 0) {
-    // On POSIX, in case the test does not exit cleanly, either due to a crash
-    // or due to it timing out, we need to clean up any child processes that
-    // it might have created. On Windows, child processes are automatically
-    // cleaned up using JobObjects.
-    base::KillProcessGroup(process_handle);
-  }
-#endif
-
-  base::CloseProcessHandle(process_handle);
 
   return exit_code;
 }
@@ -166,30 +122,24 @@ int DoRunTest(TestLauncherDelegate* launcher_delegate,
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  CommandLine new_cmd_line(cmd_line->GetProgram());
-  CommandLine::SwitchMap switches = cmd_line->GetSwitches();
-
-  // Strip out gtest_output flag because otherwise we would overwrite results
-  // of the previous test. We will generate the final output file later
-  // in RunTests().
-  switches.erase(base::kGTestOutputFlag);
-
-  // Strip out gtest_repeat flag because we can only run one test in the child
-  // process (restarting the browser in the same process is illegal after it
-  // has been shut down and will actually crash).
-  switches.erase(base::kGTestRepeatFlag);
-
-  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
-       iter != switches.end(); ++iter) {
-    new_cmd_line.AppendSwitchNative((*iter).first, (*iter).second);
-  }
-
   base::ScopedTempDir temp_dir;
   // Create a new data dir and pass it to the child.
   if (!temp_dir.CreateUniqueTempDir() || !temp_dir.IsValid()) {
     LOG(ERROR) << "Error creating temp data directory";
     return -1;
+  }
+
+  CommandLine new_cmd_line(*CommandLine::ForCurrentProcess());
+
+  const char* browser_wrapper = getenv("BROWSER_WRAPPER");
+  if (browser_wrapper) {
+#if defined(OS_WIN)
+    new_cmd_line.PrependWrapper(ASCIIToWide(browser_wrapper));
+#elif defined(OS_POSIX)
+    new_cmd_line.PrependWrapper(browser_wrapper);
+#endif
+    VLOG(1) << "BROWSER_WRAPPER was set, prefixing command_line with "
+            << browser_wrapper;
   }
 
   if (!launcher_delegate->AdjustChildProcessCommandLine(&new_cmd_line,
@@ -198,7 +148,7 @@ int DoRunTest(TestLauncherDelegate* launcher_delegate,
   }
 
   return DoRunTestInternal(
-      test_case, test_name, &new_cmd_line, default_timeout, was_timeout);
+      test_case, test_name, new_cmd_line, default_timeout, was_timeout);
 }
 
 void PrintUsage() {

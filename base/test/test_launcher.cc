@@ -13,6 +13,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/time.h"
@@ -346,6 +347,64 @@ TestResult::TestResult() {
 }
 
 TestLauncherDelegate::~TestLauncherDelegate() {
+}
+
+int LaunchChildGTestProcess(const CommandLine& command_line,
+                            base::TimeDelta timeout,
+                            bool* was_timeout) {
+  CommandLine new_command_line(command_line.GetProgram());
+  CommandLine::SwitchMap switches = command_line.GetSwitches();
+
+  // Strip out gtest_output flag because otherwise we would overwrite results
+  // of the other tests.
+  switches.erase(kGTestOutputFlag);
+
+  // Strip out gtest_repeat flag - this is handled by the launcher process.
+  switches.erase(kGTestRepeatFlag);
+
+  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
+       iter != switches.end(); ++iter) {
+    new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
+  }
+
+  base::ProcessHandle process_handle;
+  base::LaunchOptions options;
+
+#if defined(OS_POSIX)
+  // On POSIX, we launch the test in a new process group with pgid equal to
+  // its pid. Any child processes that the test may create will inherit the
+  // same pgid. This way, if the test is abruptly terminated, we can clean up
+  // any orphaned child processes it may have left behind.
+  options.new_process_group = true;
+#endif
+
+  if (!base::LaunchProcess(new_command_line, options, &process_handle))
+    return -1;
+
+  int exit_code = 0;
+  if (!base::WaitForExitCodeWithTimeout(process_handle,
+                                        &exit_code,
+                                        timeout)) {
+    *was_timeout = true;
+    exit_code = -1;  // Set a non-zero exit code to signal a failure.
+
+    // Ensure that the process terminates.
+    base::KillProcess(process_handle, -1, true);
+  }
+
+#if defined(OS_POSIX)
+  if (exit_code != 0) {
+    // On POSIX, in case the test does not exit cleanly, either due to a crash
+    // or due to it timing out, we need to clean up any child processes that
+    // it might have created. On Windows, child processes are automatically
+    // cleaned up using JobObjects.
+    base::KillProcessGroup(process_handle);
+  }
+#endif
+
+  base::CloseProcessHandle(process_handle);
+
+  return exit_code;
 }
 
 int LaunchTests(TestLauncherDelegate* launcher_delegate,

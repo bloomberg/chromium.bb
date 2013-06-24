@@ -12,6 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/time.h"
 
+class CommandLine;
+
 namespace testing {
 class TestCase;
 class TestInfo;
@@ -69,6 +71,10 @@ class TestLauncherDelegate {
  protected:
   virtual ~TestLauncherDelegate();
 };
+
+int LaunchChildGTestProcess(const CommandLine& command_line,
+                            base::TimeDelta timeout,
+                            bool* was_timeout);
 
 // Launches GTest-based tests from the current executable
 // using |launcher_delegate|.
