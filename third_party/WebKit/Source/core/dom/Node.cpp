@@ -1003,8 +1003,10 @@ bool Node::isDescendantOf(const Node *other) const
     // Return true if other is an ancestor of this, otherwise false
     if (!other || !other->hasChildNodes() || inDocument() != other->inDocument())
         return false;
-    if (other->isDocumentNode())
-        return document() == other && !isDocumentNode() && inDocument() && !isInShadowTree();
+    if (other->treeScope() != treeScope())
+        return false;
+    if (other->isTreeScope())
+        return !isTreeScope();
     for (const ContainerNode* n = parentNode(); n; n = n->parentNode()) {
         if (n == other)
             return true;
