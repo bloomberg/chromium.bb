@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -23,20 +24,6 @@
 namespace drive {
 
 namespace {
-
-class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
- public:
-  FakeNetworkChangeNotifier() : type_(CONNECTION_NONE) {}
-
-  void set_connection_type(ConnectionType type) { type_ = type; }
-
-  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
-    return type_;
-  }
-
- private:
-  net::NetworkChangeNotifier::ConnectionType type_;
-};
 
 void CopyResourceIdFromGetResourceEntryCallback(
     std::vector<std::string>* id_list_out,
@@ -105,7 +92,8 @@ class JobSchedulerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    fake_network_change_notifier_.reset(new FakeNetworkChangeNotifier);
+    fake_network_change_notifier_.reset(
+        new test_util::FakeNetworkChangeNotifier);
 
     fake_drive_service_.reset(new FakeDriveService());
     fake_drive_service_->LoadResourceListForWapi(
@@ -134,7 +122,7 @@ class JobSchedulerTest : public testing::Test {
   // Sets up FakeNetworkChangeNotifier as if it's connected to a network with
   // the specified connection type.
   void ChangeConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
-    fake_network_change_notifier_->set_connection_type(type);
+    fake_network_change_notifier_->SetConnectionType(type);
     // Notify the sync client that the network is changed. This is done via
     // NetworkChangeNotifier in production, but here, we simulate the behavior
     // by directly calling OnConnectionTypeChanged().
@@ -163,9 +151,10 @@ class JobSchedulerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<FakeNetworkChangeNotifier> fake_network_change_notifier_;
+  scoped_ptr<test_util::FakeNetworkChangeNotifier>
+      fake_network_change_notifier_;
   scoped_ptr<FakeDriveService> fake_drive_service_;
+  scoped_ptr<JobScheduler> scheduler_;
 };
 
 TEST_F(JobSchedulerTest, GetAboutResource) {

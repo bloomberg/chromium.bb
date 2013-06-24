@@ -12,6 +12,7 @@
 #include "chrome/browser/google_apis/test_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 
 namespace net {
@@ -80,6 +81,20 @@ int ReadAllData(Reader* reader, std::string* content) {
 bool PrepareTestCacheResources(
     internal::FileCache* cache,
     const std::vector<TestCacheResource>& resources);
+
+// Fake NetworkChangeNotifier implementation.
+class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  FakeNetworkChangeNotifier();
+
+  void SetConnectionType(ConnectionType type);
+
+  // NetworkChangeNotifier override.
+  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE;
+
+ private:
+  net::NetworkChangeNotifier::ConnectionType type_;
+};
 
 }  // namespace test_util
 }  // namespace drive

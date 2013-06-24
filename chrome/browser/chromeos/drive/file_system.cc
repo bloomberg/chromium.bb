@@ -629,12 +629,8 @@ void FileSystem::ReadDirectoryByPathAfterLoad(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error,
-                 hide_hosted_docs_,
-                 scoped_ptr<ResourceEntryVector>());
-    return;
-  }
+  DLOG_IF(INFO, error != FILE_ERROR_OK) << "LoadIfNeeded failed. "
+                                        << FileErrorToString(error);
 
   resource_metadata_->ReadDirectoryByPathOnUIThread(
       directory_path,

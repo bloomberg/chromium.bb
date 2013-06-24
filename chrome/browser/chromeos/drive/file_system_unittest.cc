@@ -65,6 +65,9 @@ class FileSystemTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
 
+    fake_network_change_notifier_.reset(
+        new test_util::FakeNetworkChangeNotifier);
+
     // The fake object will be manually deleted in TearDown().
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadResourceListForWapi(
@@ -132,7 +135,8 @@ class FileSystemTest : public testing::Test {
     scheduler_.reset();
     fake_drive_service_.reset();
     cache_.reset();
-    profile_.reset(NULL);
+    fake_network_change_notifier_.reset();
+    profile_.reset();
   }
 
   // Loads the full resource list via FakeDriveService.
@@ -287,6 +291,8 @@ class FileSystemTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<test_util::FakeNetworkChangeNotifier>
+      fake_network_change_notifier_;
 
   scoped_ptr<internal::ResourceMetadataStorage,
              test_util::DestroyHelperForTests> metadata_storage_;
@@ -533,11 +539,17 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
   // Make GetResourceList fail for simulating offline situation. This will
   // leave the file system "loaded from cache, but not synced with server"
   // state.
+  fake_network_change_notifier_->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
   fake_drive_service_->set_offline(true);
 
-  // Kicks loading of cached file system and query for server update.
-  EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
+  // Load the root.
+  EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveGrandRootPath()));
   // Loading of about resource should not happen as it's offline.
+  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
+
+  // Load "My Drive".
+  EXPECT_TRUE(ReadDirectoryByPathSync(util::GetDriveMyDriveRootPath()));
   EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
 
   // Tests that cached data can be loaded even if the server is not reachable.
@@ -556,6 +568,8 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
   // the file system should be able to start periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check
   // updates, which will cause directory changes.
+  fake_network_change_notifier_->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
   fake_drive_service_->set_offline(false);
 
   file_system_->CheckForUpdates();
