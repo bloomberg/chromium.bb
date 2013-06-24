@@ -401,26 +401,12 @@
       "B8F61FD1B25DE03706DBB8906A73261E4DBB992A"  // Test
     ]
   },
-  "nativeMessaging": [
-    {
-      "channel": "beta",
-      "extension_types": [
-        "extension", "packaged_app", "platform_app"
-      ]
-    },
-    {
-      "channel": "stable",
-      "extension_types": [
-        "extension", "packaged_app", "platform_app"
-      ],
-      "whitelist": [
-        "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
-        "kgngmbheleoaphbjbaiobfdepmghbfah",  // Dogfood Chrome Remote Desktop
-        "odkaodonbgfohohmklejpjiejmcipmib",  // QA Chrome Remote Desktop
-        "ojoimpklfciegopdfgeenehpalipignm"   // Chromoting canary
-      ]
-    }
-  ],
+  "nativeMessaging": {
+    "channel": "stable",
+    "extension_types": [
+      "extension", "packaged_app", "platform_app"
+    ]
+  },
   "networkingPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],
