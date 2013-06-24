@@ -355,7 +355,7 @@ TEST_F(BackgroundApplicationListModelTest, RandomTest) {
       new BackgroundApplicationListModel(profile_.get()));
   ASSERT_EQ(0U, model->size());
 
-  static const int kIterations = 500;
+  static const int kIterations = 20;
   ExtensionCollection extensions;
   size_t count = 0;
   size_t expected = 0;
