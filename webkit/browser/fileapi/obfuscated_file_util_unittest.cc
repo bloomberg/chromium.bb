@@ -24,6 +24,7 @@
 #include "webkit/browser/fileapi/mock_file_change_observer.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
+#include "webkit/browser/fileapi/sandbox_directory_database.h"
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/browser/fileapi/test_file_set.h"
@@ -130,15 +131,14 @@ class ObfuscatedFileUtilTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
-    scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
-        new quota::MockSpecialStoragePolicy();
+    storage_policy_ = new quota::MockSpecialStoragePolicy();
 
     quota_manager_ =
         new quota::QuotaManager(false /* is_incognito */,
                                 data_dir_.path(),
                                 base::MessageLoopProxy::current().get(),
                                 base::MessageLoopProxy::current().get(),
-                                storage_policy.get());
+                                storage_policy_.get());
 
     // Every time we create a new sandbox_file_system helper,
     // it creates another context, which creates another path manager,
@@ -658,9 +658,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return data_dir_.path();
   }
 
- private:
+ protected:
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
+  scoped_refptr<quota::MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;
   GURL origin_;
@@ -2286,6 +2287,44 @@ TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAlreadyDeletedCase) {
 
   // At this point the callback is still in the message queue but OFU is gone.
   base::MessageLoop::current()->RunUntilIdle();
+}
+
+TEST_F(ObfuscatedFileUtilTest, DestroyDirectoryDatabase_Isolated) {
+  storage_policy_->AddIsolated(origin_);
+  ObfuscatedFileUtil file_util(
+      storage_policy_.get(), data_dir_path(),
+      base::MessageLoopProxy::current().get());
+
+  // Create DirectoryDatabase for isolated origin.
+  SandboxDirectoryDatabase* db = file_util.GetDirectoryDatabase(
+      origin_, kFileSystemTypePersistent, true /* create */);
+  ASSERT_TRUE(db != NULL);
+
+  // Destory it.
+  ASSERT_TRUE(
+      file_util.DestroyDirectoryDatabase(origin_, kFileSystemTypePersistent));
+  ASSERT_TRUE(file_util.directories_.empty());
+}
+
+TEST_F(ObfuscatedFileUtilTest, GetDirectoryDatabase_Isolated) {
+  storage_policy_->AddIsolated(origin_);
+  ObfuscatedFileUtil file_util(
+      storage_policy_.get(), data_dir_path(),
+      base::MessageLoopProxy::current().get());
+
+  // Create DirectoryDatabase for isolated origin.
+  SandboxDirectoryDatabase* db = file_util.GetDirectoryDatabase(
+      origin_, kFileSystemTypePersistent, true /* create */);
+  ASSERT_TRUE(db != NULL);
+  ASSERT_EQ(1U, file_util.directories_.size());
+
+  // Remove isolated.
+  storage_policy_->RemoveIsolated(origin_);
+
+  // This should still get the same database.
+  SandboxDirectoryDatabase* db2 = file_util.GetDirectoryDatabase(
+      origin_, kFileSystemTypePersistent, false /* create */);
+  ASSERT_EQ(db, db2);
 }
 
 }  // namespace fileapi

@@ -969,14 +969,9 @@ ObfuscatedFileUtil::CreateOriginEnumerator() {
 
 bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
     const GURL& origin, FileSystemType type) {
-  std::string type_string = GetFileSystemTypeString(type);
-  if (type_string.empty()) {
-    LOG(WARNING) << "Unknown filesystem type requested:" << type;
+  std::string key = GetDirectoryDatabaseKey(origin, type);
+  if (key.empty())
     return true;
-  }
-  std::string key =
-      webkit_database::GetIdentifierFromOrigin(origin) +
-      type_string;
   DirectoryMap::iterator iter = directories_.find(key);
   if (iter != directories_.end()) {
     SandboxDirectoryDatabase* database = iter->second;
@@ -1176,8 +1171,8 @@ std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
     return std::string();
   }
   // For isolated origin we just use a type string as a key.
-  if (special_storage_policy_.get() &&
-      special_storage_policy_->HasIsolatedStorage(origin)) {
+  if (HasIsolatedStorage(origin)) {
+    CHECK_EQ(isolated_origin_.spec(), origin.spec());
     return type_string;
   }
   return webkit_database::GetIdentifierFromOrigin(origin) +
@@ -1215,12 +1210,8 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
 
 base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
     const GURL& origin, bool create, base::PlatformFileError* error_code) {
-  if (special_storage_policy_.get() &&
-      special_storage_policy_->HasIsolatedStorage(origin)) {
-    if (isolated_origin_.is_empty())
-      isolated_origin_ = origin;
-    CHECK_EQ(isolated_origin_.spec(), origin.spec())
-        << "multiple origins for an isolated site";
+  if (HasIsolatedStorage(origin)) {
+    CHECK_EQ(isolated_origin_.spec(), origin.spec());
   }
 
   if (!InitOriginDatabase(create)) {
@@ -1316,7 +1307,6 @@ bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
   }
 
   if (!isolated_origin_.is_empty()) {
-    DCHECK(special_storage_policy_->HasIsolatedStorage(isolated_origin_));
     origin_database_.reset(
         new SandboxIsolatedOriginDatabase(
             webkit_database::GetIdentifierFromOrigin(isolated_origin_),
@@ -1441,6 +1431,25 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpenInternal(
         &FileChangeObserver::OnModifyFile, MakeTuple(url));
   }
   return error;
+}
+
+bool ObfuscatedFileUtil::HasIsolatedStorage(const GURL& origin) {
+  if (special_storage_policy_.get() &&
+      special_storage_policy_->HasIsolatedStorage(origin)) {
+    if (isolated_origin_.is_empty())
+      isolated_origin_ = origin;
+    CHECK_EQ(isolated_origin_.spec(), origin.spec())
+        << "multiple origins for an isolated site";
+    return true;
+  }
+  // This could happen when the origin is already unloaded and
+  // special_storage_policy_->HasIsolatedStorage(origin) returns false
+  // for the same origin.
+  if (!isolated_origin_.is_empty()) {
+    CHECK_EQ(isolated_origin_.spec(), origin.spec());
+    return true;
+  }
+  return false;
 }
 
 }  // namespace fileapi

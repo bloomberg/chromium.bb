@@ -53,6 +53,10 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     isolated_.insert(origin);
   }
 
+  void RemoveIsolated(const GURL& origin) {
+    isolated_.erase(origin);
+  }
+
   void SetAllUnlimited(bool all_unlimited) {
     all_unlimited_ = all_unlimited;
   }

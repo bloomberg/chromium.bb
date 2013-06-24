@@ -189,6 +189,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase);
   FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
                            MaybeDropDatabasesAlreadyDeletedCase);
+  FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
+                           DestroyDirectoryDatabase_Isolated);
+  FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
+                           GetDirectoryDatabase_Isolated);
 
   base::PlatformFileError GetFileInfoInternal(
       SandboxDirectoryDatabase* db,
@@ -263,6 +267,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
       int file_flags,
       base::PlatformFile* file_handle,
       bool* created);
+
+  bool HasIsolatedStorage(const GURL& origin);
 
   typedef std::map<std::string, SandboxDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;
