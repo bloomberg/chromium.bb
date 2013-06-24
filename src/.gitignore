@@ -4,6 +4,7 @@ weston
 weston-launch
 screenshooter-protocol.c
 screenshooter-server-protocol.h
+spring-tool
 text-cursor-position-protocol.c
 text-cursor-position-server-protocol.h
 tablet-shell-protocol.c
