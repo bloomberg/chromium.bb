@@ -1125,14 +1125,13 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     if (type == FrameLoadTypeRedirectWithLockedBackForwardList)
         loader->setIsClientRedirect(true);
 
-    m_loadType = type;
     bool isFormSubmission = formState;
 
     if (shouldPerformFragmentNavigation(isFormSubmission, request.httpMethod(), type, request.url()))
-        checkNavigationPolicyAndContinueFragmentScroll(action);
+        checkNavigationPolicyAndContinueFragmentScroll(action, type != FrameLoadTypeRedirectWithLockedBackForwardList);
     else {
         setPolicyDocumentLoader(loader.get());
-        checkNavigationPolicyAndContinueLoad(formState);
+        checkNavigationPolicyAndContinueLoad(formState, type);
     }
 }
 
@@ -1930,7 +1929,7 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
         checkLoadComplete();
 }
 
-void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction& action)
+void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction& action, bool isNewNavigation)
 {
     m_documentLoader->setTriggeringAction(action);
 
@@ -1943,7 +1942,7 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
         m_provisionalDocumentLoader->stopLoading();
         setProvisionalDocumentLoader(0);
     }
-    loadInSameDocument(request.url(), 0, m_loadType != FrameLoadTypeRedirectWithLockedBackForwardList);
+    loadInSameDocument(request.url(), 0, isNewNavigation);
 }
 
 bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType loadType, const KURL& url)
@@ -2040,7 +2039,7 @@ bool FrameLoader::fireBeforeUnloadEvent(Chrome& chrome)
     return chrome.runBeforeUnloadConfirmPanel(text, m_frame);
 }
 
-void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> formState)
+void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> formState, FrameLoadType type)
 {
     // If we loaded an alternate page to replace an unreachableURL, we'll get in here with a
     // nil policyDataSource because loading the alternate page will have passed
@@ -2080,7 +2079,7 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
         // If the navigation request came from the back/forward menu, and we punt on it, we have the 
         // problem that we have optimistically moved the b/f cursor already, so move it back.  For sanity, 
         // we only do this when punting a navigation for the target frame or top-level frame.  
-        if ((isTargetItem || isLoadingMainFrame()) && isBackForwardLoadType(m_loadType)) {
+        if ((isTargetItem || isLoadingMainFrame()) && isBackForwardLoadType(type)) {
             if (Page* page = m_frame->page()) {
                 Frame* mainFrame = page->mainFrame();
                 if (HistoryItem* resetItem = mainFrame->loader()->history()->currentItem())
@@ -2104,6 +2103,7 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
     }
 
     setProvisionalDocumentLoader(m_policyDocumentLoader.get());
+    m_loadType = type;
     setState(FrameStateProvisional);
 
     setPolicyDocumentLoader(0);
