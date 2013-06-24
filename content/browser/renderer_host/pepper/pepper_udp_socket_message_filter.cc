@@ -110,7 +110,7 @@ int32_t PepperUDPSocketMessageFilter::OnResourceMessageReceived(
 
 int32_t PepperUDPSocketMessageFilter::OnMsgSetOption(
     const ppapi::host::HostMessageContext* context,
-    PP_UDPSocket_Option_Dev name,
+    PP_UDPSocket_Option name,
     const ppapi::SocketOptionData& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 

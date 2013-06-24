@@ -288,7 +288,6 @@ include/ppapi/c/dev/ppb_testing_dev.h
 include/ppapi/c/dev/ppb_text_input_dev.h
 include/ppapi/c/dev/ppb_trace_event_dev.h
 include/ppapi/c/dev/ppb_truetype_font_dev.h
-include/ppapi/c/dev/ppb_udp_socket_dev.h
 include/ppapi/c/dev/ppb_url_util_dev.h
 include/ppapi/c/dev/ppb_var_deprecated.h
 include/ppapi/c/dev/ppb_video_capture_dev.h
@@ -341,6 +340,7 @@ include/ppapi/c/ppb_net_address.h
 include/ppapi/c/pp_bool.h
 include/ppapi/c/ppb_opengles2.h
 include/ppapi/c/ppb_tcp_socket.h
+include/ppapi/c/ppb_udp_socket.h
 include/ppapi/c/ppb_url_loader.h
 include/ppapi/c/ppb_url_request_info.h
 include/ppapi/c/ppb_url_response_info.h
@@ -391,7 +391,6 @@ include/ppapi/cpp/dev/scrollbar_dev.h
 include/ppapi/cpp/dev/selection_dev.h
 include/ppapi/cpp/dev/text_input_dev.h
 include/ppapi/cpp/dev/truetype_font_dev.h
-include/ppapi/cpp/dev/udp_socket_dev.h
 include/ppapi/cpp/dev/url_util_dev.h
 include/ppapi/cpp/dev/video_capture_client_dev.h
 include/ppapi/cpp/dev/video_capture_dev.h
@@ -459,6 +458,7 @@ include/ppapi/cpp/tcp_socket.h
 include/ppapi/c/pp_time.h
 include/ppapi/c/pp_touch_point.h
 include/ppapi/cpp/touch_point.h
+include/ppapi/cpp/udp_socket.h
 include/ppapi/cpp/url_loader.h
 include/ppapi/cpp/url_request_info.h
 include/ppapi/cpp/url_response_info.h
@@ -738,7 +738,7 @@ src/ppapi_cpp/socket_dev.cc
 src/ppapi_cpp/tcp_socket.cc
 src/ppapi_cpp/text_input_dev.cc
 src/ppapi_cpp/truetype_font_dev.cc
-src/ppapi_cpp/udp_socket_dev.cc
+src/ppapi_cpp/udp_socket.cc
 src/ppapi_cpp/url_loader.cc
 src/ppapi_cpp/url_request_info.cc
 src/ppapi_cpp/url_response_info.cc

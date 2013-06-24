@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_UDP_SOCKET_DEV_H_
-#define PPAPI_CPP_DEV_UDP_SOCKET_DEV_H_
+#ifndef PPAPI_CPP_UDP_SOCKET_H_
+#define PPAPI_CPP_UDP_SOCKET_H_
 
-#include "ppapi/c/dev/ppb_udp_socket_dev.h"
+#include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/resource.h"
@@ -18,48 +18,48 @@ class Var;
 
 template <typename T> class CompletionCallbackWithOutput;
 
-/// The <code>UDPSocket_Dev</code> class provides UDP socket operations.
+/// The <code>UDPSocket</code> class provides UDP socket operations.
 ///
 /// Permissions: Apps permission <code>socket</code> with subrule
 /// <code>udp-bind</code> is required for <code>Bind()</code>; subrule
 /// <code>udp-send-to</code> is required for <code>SendTo()</code>.
 /// For more details about network communication permissions, please see:
 /// http://developer.chrome.com/apps/app_network.html
-class UDPSocket_Dev: public Resource {
+class UDPSocket : public Resource {
  public:
-  /// Default constructor for creating an is_null() <code>UDPSocket_Dev</code>
+  /// Default constructor for creating an is_null() <code>UDPSocket</code>
   /// object.
-  UDPSocket_Dev();
+  UDPSocket();
 
-  /// A constructor used to create a <code>UDPSocket_Dev</code> object.
+  /// A constructor used to create a <code>UDPSocket</code> object.
   ///
   /// @param[in] instance The instance with which this resource will be
   /// associated.
-  explicit UDPSocket_Dev(const InstanceHandle& instance);
+  explicit UDPSocket(const InstanceHandle& instance);
 
   /// A constructor used when you have received a <code>PP_Resource</code> as a
   /// return value that has had 1 ref added for you.
   ///
-  /// @param[in] resource A <code>PPB_UDPSocket_Dev</code> resource.
-  UDPSocket_Dev(PassRef, PP_Resource resource);
+  /// @param[in] resource A <code>PPB_UDPSocket</code> resource.
+  UDPSocket(PassRef, PP_Resource resource);
 
-  /// The copy constructor for <code>UDPSocket_Dev</code>.
+  /// The copy constructor for <code>UDPSocket</code>.
   ///
-  /// @param[in] other A reference to another <code>UDPSocket_Dev</code>.
-  UDPSocket_Dev(const UDPSocket_Dev& other);
+  /// @param[in] other A reference to another <code>UDPSocket</code>.
+  UDPSocket(const UDPSocket& other);
 
   /// The destructor.
-  virtual ~UDPSocket_Dev();
+  virtual ~UDPSocket();
 
-  /// The assignment operator for <code>UDPSocket_Dev</code>.
+  /// The assignment operator for <code>UDPSocket</code>.
   ///
-  /// @param[in] other A reference to another <code>UDPSocket_Dev</code>.
+  /// @param[in] other A reference to another <code>UDPSocket</code>.
   ///
-  /// @return A reference to this <code>UDPSocket_Dev</code> object.
-  UDPSocket_Dev& operator=(const UDPSocket_Dev& other);
+  /// @return A reference to this <code>UDPSocket</code> object.
+  UDPSocket& operator=(const UDPSocket& other);
 
   /// Static function for determining whether the browser supports the
-  /// <code>PPB_UDPSocket_Dev</code> interface.
+  /// <code>PPB_UDPSocket</code> interface.
   ///
   /// @return true if the interface is available, false otherwise.
   static bool IsAvailable();
@@ -92,7 +92,7 @@ class UDPSocket_Dev: public Resource {
   /// of your class. When your class goes out of scope, the callback factory
   /// will not actually cancel the operation, but will rather just skip issuing
   /// the callback on your class. This means that if the underlying
-  /// <code>PPB_UDPSocket_Dev</code> resource outlives your class, the browser
+  /// <code>PPB_UDPSocket</code> resource outlives your class, the browser
   /// will still try to write into your buffer when the operation completes.
   /// The buffer must be kept valid until then to avoid memory corruption.
   /// If you want to release the buffer while the <code>RecvFrom()</code> call
@@ -141,7 +141,7 @@ class UDPSocket_Dev: public Resource {
   void Close();
 
   /// Sets a socket option on the UDP socket.
-  /// Please see the <code>PP_UDPSocket_Option_Dev</code> description for option
+  /// Please see the <code>PP_UDPSocket_Option</code> description for option
   /// names, value types and allowed values.
   ///
   /// @param[in] name The option to set.
@@ -150,11 +150,11 @@ class UDPSocket_Dev: public Resource {
   /// completion.
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
-  int32_t SetOption(PP_UDPSocket_Option_Dev name,
+  int32_t SetOption(PP_UDPSocket_Option name,
                     const Var& value,
                     const CompletionCallback& callback);
 };
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_UDP_SOCKET_DEV_H_
+#endif  // PPAPI_CPP_UDP_SOCKET_H_

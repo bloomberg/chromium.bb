@@ -23,7 +23,6 @@
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
-#include "ppapi/c/dev/ppb_udp_socket_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_bool.h"
@@ -38,6 +37,7 @@
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_tcp_socket.h"
+#include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -104,7 +104,7 @@ IPC_ENUM_TRAITS(PP_TrueTypeFontStyle_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontWeight_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontWidth_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontCharset_Dev)
-IPC_ENUM_TRAITS_MAX_VALUE(PP_UDPSocket_Option_Dev,
+IPC_ENUM_TRAITS_MAX_VALUE(PP_UDPSocket_Option,
                           PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
@@ -1583,7 +1583,7 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocket_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocket_CreatePrivate)
 
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocket_SetOption,
-                     PP_UDPSocket_Option_Dev /* name */,
+                     PP_UDPSocket_Option /* name */,
                      ppapi::SocketOptionData /* value */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_UDPSocket_SetOptionReply)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocket_Bind,

@@ -6,7 +6,7 @@
 #define PPAPI_THUNK_PPB_UDP_SOCKET_API_H_
 
 #include "base/memory/ref_counted.h"
-#include "ppapi/c/dev/ppb_udp_socket_dev.h"
+#include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -31,7 +31,7 @@ class PPAPI_THUNK_EXPORT PPB_UDPSocket_API {
                          PP_Resource addr,
                          scoped_refptr<TrackedCallback> callback) = 0;
   virtual void Close() = 0;
-  virtual int32_t SetOption(PP_UDPSocket_Option_Dev name,
+  virtual int32_t SetOption(PP_UDPSocket_Option name,
                             const PP_Var& value,
                             scoped_refptr<TrackedCallback> callback) = 0;
 };

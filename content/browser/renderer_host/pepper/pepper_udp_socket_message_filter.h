@@ -16,9 +16,9 @@
 #include "content/public/common/process_type.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
-#include "ppapi/c/dev/ppb_udp_socket_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/host/resource_message_filter.h"
 
 struct PP_NetAddress_Private;
@@ -63,7 +63,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
 
   int32_t OnMsgSetOption(
       const ppapi::host::HostMessageContext* context,
-      PP_UDPSocket_Option_Dev name,
+      PP_UDPSocket_Option name,
       const ppapi::SocketOptionData& value);
   int32_t OnMsgBind(const ppapi::host::HostMessageContext* context,
                     const PP_NetAddress_Private& addr);

@@ -12,7 +12,7 @@
 #include "ppapi/tests/test_case.h"
 
 namespace pp {
-class UDPSocket_Dev;
+class UDPSocket;
 }
 
 class TestUDPSocket: public TestCase {
@@ -25,17 +25,17 @@ class TestUDPSocket: public TestCase {
 
  private:
   std::string GetLocalAddress(pp::NetAddress* address);
-  std::string SetBroadcastOptions(pp::UDPSocket_Dev* socket);
-  std::string BindUDPSocket(pp::UDPSocket_Dev* socket,
+  std::string SetBroadcastOptions(pp::UDPSocket* socket);
+  std::string BindUDPSocket(pp::UDPSocket* socket,
                             const pp::NetAddress& address);
-  std::string LookupPortAndBindUDPSocket(pp::UDPSocket_Dev* socket,
+  std::string LookupPortAndBindUDPSocket(pp::UDPSocket* socket,
                                          pp::NetAddress* address);
-  std::string ReadSocket(pp::UDPSocket_Dev* socket,
+  std::string ReadSocket(pp::UDPSocket* socket,
                          pp::NetAddress* address,
                          size_t size,
                          std::string* message);
-  std::string PassMessage(pp::UDPSocket_Dev* target,
-                          pp::UDPSocket_Dev* source,
+  std::string PassMessage(pp::UDPSocket* target,
+                          pp::UDPSocket* source,
                           const pp::NetAddress& target_address,
                           const std::string& message,
                           pp::NetAddress* recvfrom_address);

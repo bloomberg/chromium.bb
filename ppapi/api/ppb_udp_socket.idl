@@ -3,48 +3,35 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_udp_socket_dev.idl modified Thu Jun 20 15:15:36 2013. */
-
-#ifndef PPAPI_C_DEV_PPB_UDP_SOCKET_DEV_H_
-#define PPAPI_C_DEV_PPB_UDP_SOCKET_DEV_H_
-
-#include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/pp_var.h"
-
-#define PPB_UDPSOCKET_DEV_INTERFACE_0_1 "PPB_UDPSocket(Dev);0.1"
-#define PPB_UDPSOCKET_DEV_INTERFACE PPB_UDPSOCKET_DEV_INTERFACE_0_1
-
 /**
- * @file
- * This file defines the <code>PPB_UDPSocket_Dev</code> interface.
+ * This file defines the <code>PPB_UDPSocket</code> interface.
  */
 
+[generate_thunk]
 
-/**
- * @addtogroup Enums
- * @{
- */
+label Chrome {
+  M29 = 1.0
+};
+
 /**
  * Option names used by <code>SetOption()</code>.
  */
-typedef enum {
+[assert_size(4)]
+enum PP_UDPSocket_Option {
   /**
    * Allows the socket to share the local address to which it will be bound with
    * other processes. Value's type should be <code>PP_VARTYPE_BOOL</code>.
    * This option can only be set before calling <code>Bind()</code>.
    */
   PP_UDPSOCKET_OPTION_ADDRESS_REUSE = 0,
+
   /**
    * Allows sending and receiving packets to and from broadcast addresses.
    * Value's type should be <code>PP_VARTYPE_BOOL</code>.
    * This option can only be set before calling <code>Bind()</code>.
    */
   PP_UDPSOCKET_OPTION_BROADCAST = 1,
+
   /**
    * Specifies the total per-socket buffer space reserved for sends. Value's
    * type should be <code>PP_VARTYPE_INT32</code>.
@@ -55,6 +42,7 @@ typedef enum {
    * guarantee it will conform to the size.
    */
   PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE = 2,
+
   /**
    * Specifies the total per-socket buffer space reserved for receives. Value's
    * type should be <code>PP_VARTYPE_INT32</code>.
@@ -65,18 +53,10 @@ typedef enum {
    * guarantee it will conform to the size.
    */
   PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE = 3
-} PP_UDPSocket_Option_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_UDPSocket_Option_Dev, 4);
-/**
- * @}
- */
+};
 
 /**
- * @addtogroup Interfaces
- * @{
- */
-/**
- * The <code>PPB_UDPSocket_Dev</code> interface provides UDP socket operations.
+ * The <code>PPB_UDPSocket</code> interface provides UDP socket operations.
  *
  * Permissions: Apps permission <code>socket</code> with subrule
  * <code>udp-bind</code> is required for <code>Bind()</code>; subrule
@@ -84,7 +64,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_UDPSocket_Option_Dev, 4);
  * For more details about network communication permissions, please see:
  * http://developer.chrome.com/apps/app_network.html
  */
-struct PPB_UDPSocket_Dev_0_1 {
+interface PPB_UDPSocket {
   /**
    * Creates a UDP socket resource.
    *
@@ -94,17 +74,18 @@ struct PPB_UDPSocket_Dev_0_1 {
    * @return A <code>PP_Resource</code> corresponding to a UDP socket or 0
    * on failure.
    */
-  PP_Resource (*Create)(PP_Instance instance);
+  PP_Resource Create([in] PP_Instance instance);
+
   /**
    * Determines if a given resource is a UDP socket.
    *
    * @param[in] resource A <code>PP_Resource</code> to check.
    *
-   * @return <code>PP_TRUE</code> if the input is a
-   * <code>PPB_UDPSocket_Dev</code> resource; <code>PP_FALSE</code>
-   * otherwise.
+   * @return <code>PP_TRUE</code> if the input is a <code>PPB_UDPSocket</code>
+   * resource; <code>PP_FALSE</code> otherwise.
    */
-  PP_Bool (*IsUDPSocket)(PP_Resource resource);
+  PP_Bool IsUDPSocket([in] PP_Resource resource);
+
   /**
    * Binds the socket to the given address.
    *
@@ -119,9 +100,10 @@ struct PPB_UDPSocket_Dev_0_1 {
    * required permissions. <code>PP_ERROR_ADDRESS_IN_USE</code> will be returned
    * if the address is already in use.
    */
-  int32_t (*Bind)(PP_Resource udp_socket,
-                  PP_Resource addr,
-                  struct PP_CompletionCallback callback);
+  int32_t Bind([in] PP_Resource udp_socket,
+               [in] PP_Resource addr,
+               [in] PP_CompletionCallback callback);
+
   /**
    * Gets the address that the socket is bound to. The socket must be bound.
    *
@@ -130,7 +112,8 @@ struct PPB_UDPSocket_Dev_0_1 {
    *
    * @return A <code>PPB_NetAddress</code> resource on success or 0 on failure.
    */
-  PP_Resource (*GetBoundAddress)(PP_Resource udp_socket);
+  PP_Resource GetBoundAddress([in] PP_Resource udp_socket);
+
   /**
    * Receives data from the socket and stores the source address. The socket
    * must be bound.
@@ -148,11 +131,12 @@ struct PPB_UDPSocket_Dev_0_1 {
    * @return A non-negative number on success to indicate how many bytes have
    * been received; otherwise, an error code from <code>pp_errors.h</code>.
    */
-  int32_t (*RecvFrom)(PP_Resource udp_socket,
-                      char* buffer,
-                      int32_t num_bytes,
-                      PP_Resource* addr,
-                      struct PP_CompletionCallback callback);
+  int32_t RecvFrom([in] PP_Resource udp_socket,
+                   [out] str_t buffer,
+                   [in] int32_t num_bytes,
+                   [out] PP_Resource addr,
+                   [in] PP_CompletionCallback callback);
+
   /**
    * Sends data to a specific destination. The socket must be bound.
    *
@@ -170,11 +154,12 @@ struct PPB_UDPSocket_Dev_0_1 {
    * <code>PP_ERROR_NOACCESS</code> will be returned if the caller doesn't have
    * required permissions.
    */
-  int32_t (*SendTo)(PP_Resource udp_socket,
-                    const char* buffer,
-                    int32_t num_bytes,
-                    PP_Resource addr,
-                    struct PP_CompletionCallback callback);
+  int32_t SendTo([in] PP_Resource udp_socket,
+                 [in] str_t buffer,
+                 [in] int32_t num_bytes,
+                 [in] PP_Resource addr,
+                 [in] PP_CompletionCallback callback);
+
   /**
    * Cancels all pending reads and writes, and closes the socket. Any pending
    * callbacks will still run, reporting <code>PP_ERROR_ABORTED</code> if
@@ -188,10 +173,11 @@ struct PPB_UDPSocket_Dev_0_1 {
    * @param[in] udp_socket A <code>PP_Resource</code> corresponding to a UDP
    * socket.
    */
-  void (*Close)(PP_Resource udp_socket);
+  void Close([in] PP_Resource udp_socket);
+
   /**
    * Sets a socket option on the UDP socket.
-   * Please see the <code>PP_UDPSocket_Option_Dev</code> description for option
+   * Please see the <code>PP_UDPSocket_Option</code> description for option
    * names, value types and allowed values.
    *
    * @param[in] udp_socket A <code>PP_Resource</code> corresponding to a UDP
@@ -203,16 +189,8 @@ struct PPB_UDPSocket_Dev_0_1 {
    *
    * @return An int32_t containing an error code from <code>pp_errors.h</code>.
    */
-  int32_t (*SetOption)(PP_Resource udp_socket,
-                       PP_UDPSocket_Option_Dev name,
-                       struct PP_Var value,
-                       struct PP_CompletionCallback callback);
+  int32_t SetOption([in] PP_Resource udp_socket,
+                    [in] PP_UDPSocket_Option name,
+                    [in] PP_Var value,
+                    [in] PP_CompletionCallback callback);
 };
-
-typedef struct PPB_UDPSocket_Dev_0_1 PPB_UDPSocket_Dev;
-/**
- * @}
- */
-
-#endif  /* PPAPI_C_DEV_PPB_UDP_SOCKET_DEV_H_ */
-

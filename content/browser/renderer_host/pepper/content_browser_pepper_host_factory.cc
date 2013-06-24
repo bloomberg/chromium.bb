@@ -73,6 +73,12 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
       return scoped_ptr<ResourceHost>(new PepperFileRefHost(
           host_, instance, params.pp_resource(), file_system, internal_path));
     }
+    case PpapiHostMsg_UDPSocket_Create::ID: {
+      scoped_refptr<ResourceMessageFilter> udp_socket(
+          new PepperUDPSocketMessageFilter(host_, instance, false));
+      return scoped_ptr<ResourceHost>(new MessageFilterHost(
+          host_->GetPpapiHost(), instance, params.pp_resource(), udp_socket));
+    }
   }
 
   // Dev interfaces.
@@ -95,12 +101,6 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
       case PpapiHostMsg_TrueTypeFontSingleton_Create::ID: {
         return scoped_ptr<ResourceHost>(new PepperTrueTypeFontListHost(
             host_, instance, params.pp_resource()));
-      }
-      case PpapiHostMsg_UDPSocket_Create::ID: {
-        scoped_refptr<ResourceMessageFilter> udp_socket(
-            new PepperUDPSocketMessageFilter(host_, instance, false));
-        return scoped_ptr<ResourceHost>(new MessageFilterHost(
-            host_->GetPpapiHost(), instance, params.pp_resource(), udp_socket));
       }
     }
   }

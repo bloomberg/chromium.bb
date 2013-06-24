@@ -27,7 +27,6 @@
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_trace_event_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
-#include "ppapi/c/dev/ppb_udp_socket_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_video_capture_dev.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
@@ -66,6 +65,7 @@
 #include "ppapi/c/ppb_mouse_lock.h"
 #include "ppapi/c/ppb_net_address.h"
 #include "ppapi/c/ppb_tcp_socket.h"
+#include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
@@ -152,6 +152,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseLock_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoader_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0;
@@ -176,7 +177,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_9;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_91;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_92;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3;
@@ -976,6 +976,50 @@ static int32_t Pnacl_M29_PPB_TCPSocket_SetOption(PP_Resource tcp_socket, PP_TCPS
 }
 
 /* End wrapper methods for PPB_TCPSocket_1_0 */
+
+/* Begin wrapper methods for PPB_UDPSocket_1_0 */
+
+static PP_Resource Pnacl_M29_PPB_UDPSocket_Create(PP_Instance instance) {
+  const struct PPB_UDPSocket_1_0 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_0.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M29_PPB_UDPSocket_IsUDPSocket(PP_Resource resource) {
+  const struct PPB_UDPSocket_1_0 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_0.real_iface;
+  return iface->IsUDPSocket(resource);
+}
+
+static int32_t Pnacl_M29_PPB_UDPSocket_Bind(PP_Resource udp_socket, PP_Resource addr, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_0 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_0.real_iface;
+  return iface->Bind(udp_socket, addr, *callback);
+}
+
+static PP_Resource Pnacl_M29_PPB_UDPSocket_GetBoundAddress(PP_Resource udp_socket) {
+  const struct PPB_UDPSocket_1_0 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_0.real_iface;
+  return iface->GetBoundAddress(udp_socket);
+}
+
+static int32_t Pnacl_M29_PPB_UDPSocket_RecvFrom(PP_Resource udp_socket, char* buffer, int32_t num_bytes, PP_Resource* addr, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_0 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_0.real_iface;
+  return iface->RecvFrom(udp_socket, buffer, num_bytes, addr, *callback);
+}
+
+static int32_t Pnacl_M29_PPB_UDPSocket_SendTo(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, PP_Resource addr, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_0 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_0.real_iface;
+  return iface->SendTo(udp_socket, buffer, num_bytes, addr, *callback);
+}
+
+static void Pnacl_M29_PPB_UDPSocket_Close(PP_Resource udp_socket) {
+  const struct PPB_UDPSocket_1_0 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_0.real_iface;
+  iface->Close(udp_socket);
+}
+
+static int32_t Pnacl_M29_PPB_UDPSocket_SetOption(PP_Resource udp_socket, PP_UDPSocket_Option name, struct PP_Var* value, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_0 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_0.real_iface;
+  return iface->SetOption(udp_socket, name, *value, *callback);
+}
+
+/* End wrapper methods for PPB_UDPSocket_1_0 */
 
 /* Begin wrapper methods for PPB_URLLoader_1_0 */
 
@@ -1847,50 +1891,6 @@ static int32_t Pnacl_M26_PPB_TrueTypeFont_Dev_GetTable(PP_Resource font, uint32_
 }
 
 /* End wrapper methods for PPB_TrueTypeFont_Dev_0_1 */
-
-/* Begin wrapper methods for PPB_UDPSocket_Dev_0_1 */
-
-static PP_Resource Pnacl_M29_PPB_UDPSocket_Dev_Create(PP_Instance instance) {
-  const struct PPB_UDPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1.real_iface;
-  return iface->Create(instance);
-}
-
-static PP_Bool Pnacl_M29_PPB_UDPSocket_Dev_IsUDPSocket(PP_Resource resource) {
-  const struct PPB_UDPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1.real_iface;
-  return iface->IsUDPSocket(resource);
-}
-
-static int32_t Pnacl_M29_PPB_UDPSocket_Dev_Bind(PP_Resource udp_socket, PP_Resource addr, struct PP_CompletionCallback* callback) {
-  const struct PPB_UDPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1.real_iface;
-  return iface->Bind(udp_socket, addr, *callback);
-}
-
-static PP_Resource Pnacl_M29_PPB_UDPSocket_Dev_GetBoundAddress(PP_Resource udp_socket) {
-  const struct PPB_UDPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1.real_iface;
-  return iface->GetBoundAddress(udp_socket);
-}
-
-static int32_t Pnacl_M29_PPB_UDPSocket_Dev_RecvFrom(PP_Resource udp_socket, char* buffer, int32_t num_bytes, PP_Resource* addr, struct PP_CompletionCallback* callback) {
-  const struct PPB_UDPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1.real_iface;
-  return iface->RecvFrom(udp_socket, buffer, num_bytes, addr, *callback);
-}
-
-static int32_t Pnacl_M29_PPB_UDPSocket_Dev_SendTo(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, PP_Resource addr, struct PP_CompletionCallback* callback) {
-  const struct PPB_UDPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1.real_iface;
-  return iface->SendTo(udp_socket, buffer, num_bytes, addr, *callback);
-}
-
-static void Pnacl_M29_PPB_UDPSocket_Dev_Close(PP_Resource udp_socket) {
-  const struct PPB_UDPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1.real_iface;
-  iface->Close(udp_socket);
-}
-
-static int32_t Pnacl_M29_PPB_UDPSocket_Dev_SetOption(PP_Resource udp_socket, PP_UDPSocket_Option_Dev name, struct PP_Var* value, struct PP_CompletionCallback* callback) {
-  const struct PPB_UDPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1.real_iface;
-  return iface->SetOption(udp_socket, name, *value, *callback);
-}
-
-/* End wrapper methods for PPB_UDPSocket_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_URLUtil_Dev_0_6 */
 
@@ -3967,6 +3967,17 @@ struct PPB_TCPSocket_1_0 Pnacl_Wrappers_PPB_TCPSocket_1_0 = {
     .SetOption = (int32_t (*)(PP_Resource tcp_socket, PP_TCPSocket_Option name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_TCPSocket_SetOption
 };
 
+struct PPB_UDPSocket_1_0 Pnacl_Wrappers_PPB_UDPSocket_1_0 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M29_PPB_UDPSocket_Create,
+    .IsUDPSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M29_PPB_UDPSocket_IsUDPSocket,
+    .Bind = (int32_t (*)(PP_Resource udp_socket, PP_Resource addr, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_UDPSocket_Bind,
+    .GetBoundAddress = (PP_Resource (*)(PP_Resource udp_socket))&Pnacl_M29_PPB_UDPSocket_GetBoundAddress,
+    .RecvFrom = (int32_t (*)(PP_Resource udp_socket, char* buffer, int32_t num_bytes, PP_Resource* addr, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_UDPSocket_RecvFrom,
+    .SendTo = (int32_t (*)(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, PP_Resource addr, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_UDPSocket_SendTo,
+    .Close = (void (*)(PP_Resource udp_socket))&Pnacl_M29_PPB_UDPSocket_Close,
+    .SetOption = (int32_t (*)(PP_Resource udp_socket, PP_UDPSocket_Option name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_UDPSocket_SetOption
+};
+
 struct PPB_URLLoader_1_0 Pnacl_Wrappers_PPB_URLLoader_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M14_PPB_URLLoader_Create,
     .IsURLLoader = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_URLLoader_IsURLLoader,
@@ -4238,17 +4249,6 @@ struct PPB_TrueTypeFont_Dev_0_1 Pnacl_Wrappers_PPB_TrueTypeFont_Dev_0_1 = {
     .Describe = (int32_t (*)(PP_Resource font, struct PP_TrueTypeFontDesc_Dev* desc, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_Describe,
     .GetTableTags = (int32_t (*)(PP_Resource font, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_GetTableTags,
     .GetTable = (int32_t (*)(PP_Resource font, uint32_t table, int32_t offset, int32_t max_data_length, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M26_PPB_TrueTypeFont_Dev_GetTable
-};
-
-struct PPB_UDPSocket_Dev_0_1 Pnacl_Wrappers_PPB_UDPSocket_Dev_0_1 = {
-    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M29_PPB_UDPSocket_Dev_Create,
-    .IsUDPSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M29_PPB_UDPSocket_Dev_IsUDPSocket,
-    .Bind = (int32_t (*)(PP_Resource udp_socket, PP_Resource addr, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_UDPSocket_Dev_Bind,
-    .GetBoundAddress = (PP_Resource (*)(PP_Resource udp_socket))&Pnacl_M29_PPB_UDPSocket_Dev_GetBoundAddress,
-    .RecvFrom = (int32_t (*)(PP_Resource udp_socket, char* buffer, int32_t num_bytes, PP_Resource* addr, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_UDPSocket_Dev_RecvFrom,
-    .SendTo = (int32_t (*)(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, PP_Resource addr, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_UDPSocket_Dev_SendTo,
-    .Close = (void (*)(PP_Resource udp_socket))&Pnacl_M29_PPB_UDPSocket_Dev_Close,
-    .SetOption = (int32_t (*)(PP_Resource udp_socket, PP_UDPSocket_Option_Dev name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_UDPSocket_Dev_SetOption
 };
 
 struct PPB_URLUtil_Dev_0_6 Pnacl_Wrappers_PPB_URLUtil_Dev_0_6 = {
@@ -4878,6 +4878,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_1_0 = {
+  .iface_macro = PPB_UDPSOCKET_INTERFACE_1_0,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_UDPSocket_1_0,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoader_1_0 = {
   .iface_macro = PPB_URLLOADER_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_URLLoader_1_0,
@@ -5019,12 +5025,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_92 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1 = {
   .iface_macro = PPB_TRUETYPEFONT_DEV_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TrueTypeFont_Dev_0_1,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1 = {
-  .iface_macro = PPB_UDPSOCKET_DEV_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_UDPSocket_Dev_0_1,
   .real_iface = NULL
 };
 
@@ -5319,6 +5319,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_MouseLock_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_1_0,
   &Pnacl_WrapperInfo_PPB_TCPSocket_1_0,
+  &Pnacl_WrapperInfo_PPB_UDPSocket_1_0,
   &Pnacl_WrapperInfo_PPB_URLLoader_1_0,
   &Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0,
   &Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0,
@@ -5342,7 +5343,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_91,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_92,
   &Pnacl_WrapperInfo_PPB_TrueTypeFont_Dev_0_1,
-  &Pnacl_WrapperInfo_PPB_UDPSocket_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_URLUtil_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_VideoCapture_Dev_0_3,

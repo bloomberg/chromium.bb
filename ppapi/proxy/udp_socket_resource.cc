@@ -76,7 +76,7 @@ void UDPSocketResource::Close() {
 }
 
 int32_t UDPSocketResource::SetOption(
-    PP_UDPSocket_Option_Dev name,
+    PP_UDPSocket_Option name,
     const PP_Var& value,
     scoped_refptr<TrackedCallback> callback) {
   return SetOptionImpl(name, value, callback);

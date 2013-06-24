@@ -237,7 +237,7 @@
           'thunk/ppb_truetype_font_singleton_api.h',
           'thunk/ppb_truetype_font_dev_thunk.cc',
           'thunk/ppb_udp_socket_api.h',
-          'thunk/ppb_udp_socket_dev_thunk.cc',
+          'thunk/ppb_udp_socket_thunk.cc',
           'thunk/ppb_udp_socket_private_api.h',
           'thunk/ppb_udp_socket_private_thunk.cc',
           'thunk/ppb_url_loader_api.h',

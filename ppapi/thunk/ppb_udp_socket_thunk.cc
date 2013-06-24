@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_udp_socket_dev.idl modified Fri Jun 07 14:22:41 2013.
+// From ppb_udp_socket.idl modified Thu Jun 20 14:03:55 2013.
 
-#include "ppapi/c/dev/ppb_udp_socket_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
@@ -20,7 +20,7 @@ namespace thunk {
 namespace {
 
 PP_Resource Create(PP_Instance instance) {
-  VLOG(4) << "PPB_UDPSocket_Dev::Create()";
+  VLOG(4) << "PPB_UDPSocket::Create()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -28,7 +28,7 @@ PP_Resource Create(PP_Instance instance) {
 }
 
 PP_Bool IsUDPSocket(PP_Resource resource) {
-  VLOG(4) << "PPB_UDPSocket_Dev::IsUDPSocket()";
+  VLOG(4) << "PPB_UDPSocket::IsUDPSocket()";
   EnterResource<PPB_UDPSocket_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
@@ -36,7 +36,7 @@ PP_Bool IsUDPSocket(PP_Resource resource) {
 int32_t Bind(PP_Resource udp_socket,
              PP_Resource addr,
              struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_UDPSocket_Dev::Bind()";
+  VLOG(4) << "PPB_UDPSocket::Bind()";
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -44,7 +44,7 @@ int32_t Bind(PP_Resource udp_socket,
 }
 
 PP_Resource GetBoundAddress(PP_Resource udp_socket) {
-  VLOG(4) << "PPB_UDPSocket_Dev::GetBoundAddress()";
+  VLOG(4) << "PPB_UDPSocket::GetBoundAddress()";
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, true);
   if (enter.failed())
     return 0;
@@ -56,7 +56,7 @@ int32_t RecvFrom(PP_Resource udp_socket,
                  int32_t num_bytes,
                  PP_Resource* addr,
                  struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_UDPSocket_Dev::RecvFrom()";
+  VLOG(4) << "PPB_UDPSocket::RecvFrom()";
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -71,7 +71,7 @@ int32_t SendTo(PP_Resource udp_socket,
                int32_t num_bytes,
                PP_Resource addr,
                struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_UDPSocket_Dev::SendTo()";
+  VLOG(4) << "PPB_UDPSocket::SendTo()";
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -82,7 +82,7 @@ int32_t SendTo(PP_Resource udp_socket,
 }
 
 void Close(PP_Resource udp_socket) {
-  VLOG(4) << "PPB_UDPSocket_Dev::Close()";
+  VLOG(4) << "PPB_UDPSocket::Close()";
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, true);
   if (enter.failed())
     return;
@@ -90,10 +90,10 @@ void Close(PP_Resource udp_socket) {
 }
 
 int32_t SetOption(PP_Resource udp_socket,
-                  PP_UDPSocket_Option_Dev name,
+                  PP_UDPSocket_Option name,
                   struct PP_Var value,
                   struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_UDPSocket_Dev::SetOption()";
+  VLOG(4) << "PPB_UDPSocket::SetOption()";
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
@@ -102,7 +102,7 @@ int32_t SetOption(PP_Resource udp_socket,
                                                    enter.callback()));
 }
 
-const PPB_UDPSocket_Dev_0_1 g_ppb_udpsocket_dev_thunk_0_1 = {
+const PPB_UDPSocket_1_0 g_ppb_udpsocket_thunk_1_0 = {
   &Create,
   &IsUDPSocket,
   &Bind,
@@ -115,8 +115,8 @@ const PPB_UDPSocket_Dev_0_1 g_ppb_udpsocket_dev_thunk_0_1 = {
 
 }  // namespace
 
-const PPB_UDPSocket_Dev_0_1* GetPPB_UDPSocket_Dev_0_1_Thunk() {
-  return &g_ppb_udpsocket_dev_thunk_0_1;
+const PPB_UDPSocket_1_0* GetPPB_UDPSocket_1_0_Thunk() {
+  return &g_ppb_udpsocket_thunk_1_0;
 }
 
 }  // namespace thunk

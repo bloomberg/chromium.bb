@@ -70,7 +70,7 @@ UDPSocketResourceBase::~UDPSocketResourceBase() {
 }
 
 int32_t UDPSocketResourceBase::SetOptionImpl(
-    PP_UDPSocket_Option_Dev name,
+    PP_UDPSocket_Option name,
     const PP_Var& value,
     scoped_refptr<TrackedCallback> callback) {
   if (closed_)

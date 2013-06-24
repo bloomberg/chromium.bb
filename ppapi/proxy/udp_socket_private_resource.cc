@@ -5,7 +5,7 @@
 #include "ppapi/proxy/udp_socket_private_resource.h"
 
 #include "base/logging.h"
-#include "ppapi/c/dev/ppb_udp_socket_dev.h"
+#include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 
 namespace ppapi {
@@ -27,7 +27,7 @@ UDPSocketPrivateResource::AsPPB_UDPSocket_Private_API() {
 int32_t UDPSocketPrivateResource::SetSocketFeature(
     PP_UDPSocketFeature_Private name,
     PP_Var value) {
-  PP_UDPSocket_Option_Dev public_name = PP_UDPSOCKET_OPTION_ADDRESS_REUSE;
+  PP_UDPSocket_Option public_name = PP_UDPSOCKET_OPTION_ADDRESS_REUSE;
   switch (name) {
     case PP_UDPSOCKETFEATURE_ADDRESS_REUSE:
       // |public_name| has been initialized above.

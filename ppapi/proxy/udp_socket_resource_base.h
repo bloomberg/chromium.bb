@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "ppapi/c/dev/ppb_udp_socket_dev.h"
+#include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -47,7 +47,7 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
                         bool private_api);
   virtual ~UDPSocketResourceBase();
 
-  int32_t SetOptionImpl(PP_UDPSocket_Option_Dev name,
+  int32_t SetOptionImpl(PP_UDPSocket_Option name,
                         const PP_Var& value,
                         scoped_refptr<TrackedCallback> callback);
   int32_t BindImpl(const PP_NetAddress_Private* addr,

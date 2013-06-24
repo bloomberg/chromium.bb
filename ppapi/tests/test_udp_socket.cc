@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "ppapi/cpp/dev/udp_socket_dev.h"
 #include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/tcp_socket.h"
+#include "ppapi/cpp/udp_socket.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
@@ -55,7 +55,7 @@ bool TestUDPSocket::Init() {
   if (!tcp_socket_is_available)
     instance_->AppendError("PPB_TCPSocket interface not available");
 
-  bool udp_socket_is_available = pp::UDPSocket_Dev::IsAvailable();
+  bool udp_socket_is_available = pp::UDPSocket::IsAvailable();
   if (!udp_socket_is_available)
     instance_->AppendError("PPB_UDPSocket interface not available");
 
@@ -97,7 +97,7 @@ std::string TestUDPSocket::GetLocalAddress(pp::NetAddress* address) {
   PASS();
 }
 
-std::string TestUDPSocket::SetBroadcastOptions(pp::UDPSocket_Dev* socket) {
+std::string TestUDPSocket::SetBroadcastOptions(pp::UDPSocket* socket) {
   TestCompletionCallback callback_1(instance_->pp_instance(), callback_type());
   callback_1.WaitForResult(socket->SetOption(
       PP_UDPSOCKET_OPTION_ADDRESS_REUSE, pp::Var(true),
@@ -114,7 +114,7 @@ std::string TestUDPSocket::SetBroadcastOptions(pp::UDPSocket_Dev* socket) {
   PASS();
 }
 
-std::string TestUDPSocket::BindUDPSocket(pp::UDPSocket_Dev* socket,
+std::string TestUDPSocket::BindUDPSocket(pp::UDPSocket* socket,
                                          const pp::NetAddress& address) {
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(socket->Bind(address, callback.GetCallback()));
@@ -124,7 +124,7 @@ std::string TestUDPSocket::BindUDPSocket(pp::UDPSocket_Dev* socket,
 }
 
 std::string TestUDPSocket::LookupPortAndBindUDPSocket(
-    pp::UDPSocket_Dev* socket,
+    pp::UDPSocket* socket,
     pp::NetAddress* address) {
   pp::NetAddress base_address;
   ASSERT_SUBTEST_SUCCESS(GetLocalAddress(&base_address));
@@ -147,7 +147,7 @@ std::string TestUDPSocket::LookupPortAndBindUDPSocket(
   PASS();
 }
 
-std::string TestUDPSocket::ReadSocket(pp::UDPSocket_Dev* socket,
+std::string TestUDPSocket::ReadSocket(pp::UDPSocket* socket,
                                       pp::NetAddress* address,
                                       size_t size,
                                       std::string* message) {
@@ -164,8 +164,8 @@ std::string TestUDPSocket::ReadSocket(pp::UDPSocket_Dev* socket,
   PASS();
 }
 
-std::string TestUDPSocket::PassMessage(pp::UDPSocket_Dev* target,
-                                       pp::UDPSocket_Dev* source,
+std::string TestUDPSocket::PassMessage(pp::UDPSocket* target,
+                                       pp::UDPSocket* source,
                                        const pp::NetAddress& target_address,
                                        const std::string& message,
                                        pp::NetAddress* recvfrom_address) {
@@ -186,7 +186,7 @@ std::string TestUDPSocket::PassMessage(pp::UDPSocket_Dev* target,
 }
 
 std::string TestUDPSocket::TestReadWrite() {
-  pp::UDPSocket_Dev server_socket(instance_), client_socket(instance_);
+  pp::UDPSocket server_socket(instance_), client_socket(instance_);
   pp::NetAddress server_address, client_address;
 
   ASSERT_SUBTEST_SUCCESS(LookupPortAndBindUDPSocket(&server_socket,
@@ -210,7 +210,7 @@ std::string TestUDPSocket::TestReadWrite() {
 }
 
 std::string TestUDPSocket::TestBroadcast() {
-  pp::UDPSocket_Dev server1(instance_), server2(instance_);
+  pp::UDPSocket server1(instance_), server2(instance_);
 
   ASSERT_SUBTEST_SUCCESS(SetBroadcastOptions(&server1));
   ASSERT_SUBTEST_SUCCESS(SetBroadcastOptions(&server2));
@@ -256,7 +256,7 @@ std::string TestUDPSocket::TestBroadcast() {
 }
 
 std::string TestUDPSocket::TestSetOption() {
-  pp::UDPSocket_Dev socket(instance_);
+  pp::UDPSocket socket(instance_);
 
   ASSERT_SUBTEST_SUCCESS(SetBroadcastOptions(&socket));
 
