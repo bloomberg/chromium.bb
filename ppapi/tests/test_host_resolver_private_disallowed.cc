@@ -39,8 +39,8 @@ void TestHostResolverPrivateDisallowed::RunTests(const std::string& filter) {
 std::string TestHostResolverPrivateDisallowed::TestResolve() {
   pp::HostResolverPrivate host_resolver(instance_);
   PP_HostResolver_Private_Hint hint;
-  hint.family = PP_NETADDRESSFAMILY_UNSPECIFIED;
-  hint.flags = PP_HOST_RESOLVER_FLAGS_CANONNAME;
+  hint.family = PP_NETADDRESSFAMILY_PRIVATE_UNSPECIFIED;
+  hint.flags = PP_HOST_RESOLVER_PRIVATE_FLAGS_CANONNAME;
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(
       host_resolver.Resolve(host_, port_, hint, callback.GetCallback()));

@@ -19,22 +19,22 @@ PP_HostResolver_Private_Hint ConvertToHostResolverPrivateHint(
   PP_HostResolver_Private_Hint private_hint;
   switch (hint.family) {
     case PP_NETADDRESS_FAMILY_UNSPECIFIED:
-      private_hint.family = PP_NETADDRESSFAMILY_UNSPECIFIED;
+      private_hint.family = PP_NETADDRESSFAMILY_PRIVATE_UNSPECIFIED;
       break;
     case PP_NETADDRESS_FAMILY_IPV4:
-      private_hint.family = PP_NETADDRESSFAMILY_IPV4;
+      private_hint.family = PP_NETADDRESSFAMILY_PRIVATE_IPV4;
       break;
     case PP_NETADDRESS_FAMILY_IPV6:
-      private_hint.family = PP_NETADDRESSFAMILY_IPV6;
+      private_hint.family = PP_NETADDRESSFAMILY_PRIVATE_IPV6;
       break;
     default:
       NOTREACHED();
-      private_hint.family = PP_NETADDRESSFAMILY_UNSPECIFIED;
+      private_hint.family = PP_NETADDRESSFAMILY_PRIVATE_UNSPECIFIED;
   }
 
   private_hint.flags = 0;
   if (hint.flags & PP_HOSTRESOLVER_FLAG_CANONNAME)
-    private_hint.flags |= PP_HOST_RESOLVER_FLAGS_CANONNAME;
+    private_hint.flags |= PP_HOST_RESOLVER_PRIVATE_FLAGS_CANONNAME;
 
   return private_hint;
 }

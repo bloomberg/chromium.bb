@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_host_resolver_private.idl,
- *   modified Mon Mar  5 17:39:57 2012.
+ *   modified Mon Jun 24 09:49:40 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_HOST_RESOLVER_PRIVATE_H_
@@ -42,11 +42,11 @@ typedef enum {
   /**
    * AI_CANONNAME
    */
-  PP_HOST_RESOLVER_FLAGS_CANONNAME = 1 << 0,
+  PP_HOST_RESOLVER_PRIVATE_FLAGS_CANONNAME = 1 << 0,
   /**
    * Hint to the resolver that only loopback addresses are configured.
    */
-  PP_HOST_RESOLVER_FLAGS_LOOPBACK_ONLY = 1 << 1
+  PP_HOST_RESOLVER_PRIVATE_FLAGS_LOOPBACK_ONLY = 1 << 1
 } PP_HostResolver_Private_Flags;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_HostResolver_Private_Flags, 4);
 /**

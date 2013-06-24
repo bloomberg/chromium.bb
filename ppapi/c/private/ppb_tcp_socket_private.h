@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_tcp_socket_private.idl modified Sun Feb 10 00:28:07 2013. */
+/* From private/ppb_tcp_socket_private.idl modified Mon Jun 24 09:53:12 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_TCP_SOCKET_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_TCP_SOCKET_PRIVATE_H_
@@ -34,11 +34,11 @@
  */
 typedef enum {
   /* Special value used for testing. Guaranteed to fail SetOption(). */
-  PP_TCPSOCKETOPTION_INVALID = 0,
+  PP_TCPSOCKETOPTION_PRIVATE_INVALID = 0,
   /* Disable coalescing of small writes to make TCP segments, and instead
    * deliver data immediately. For SSL sockets, this option must be set before
    * SSLHandshake() is called. Value type is PP_VARTYPE_BOOL. */
-  PP_TCPSOCKETOPTION_NO_DELAY = 1
+  PP_TCPSOCKETOPTION_PRIVATE_NO_DELAY = 1
 } PP_TCPSocketOption_Private;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TCPSocketOption_Private, 4);
 /**

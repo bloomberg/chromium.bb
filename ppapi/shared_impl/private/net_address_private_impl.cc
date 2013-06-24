@@ -133,9 +133,9 @@ bool IsValid(const NetAddress* net_addr) {
 PP_NetAddressFamily_Private GetFamily(const PP_NetAddress_Private* addr) {
   const NetAddress* net_addr = ToNetAddress(addr);
   if (!IsValid(net_addr))
-    return PP_NETADDRESSFAMILY_UNSPECIFIED;
+    return PP_NETADDRESSFAMILY_PRIVATE_UNSPECIFIED;
   return net_addr->is_ipv6 ?
-         PP_NETADDRESSFAMILY_IPV6 : PP_NETADDRESSFAMILY_IPV4;
+         PP_NETADDRESSFAMILY_PRIVATE_IPV6 : PP_NETADDRESSFAMILY_PRIVATE_IPV4;
 }
 
 uint16_t GetPort(const PP_NetAddress_Private* addr) {

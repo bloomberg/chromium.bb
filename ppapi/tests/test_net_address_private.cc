@@ -231,11 +231,13 @@ std::string TestNetAddressPrivate::TestDescribeIPv6() {
 std::string TestNetAddressPrivate::TestGetFamily() {
   uint8_t localhost_ip[4] = { 127, 0, 0, 1 };
   PP_NetAddress_Private ipv4 = MakeIPv4NetAddress(localhost_ip, 80);
-  ASSERT_EQ(NetAddressPrivate::GetFamily(ipv4), PP_NETADDRESSFAMILY_IPV4);
+  ASSERT_EQ(NetAddressPrivate::GetFamily(ipv4),
+            PP_NETADDRESSFAMILY_PRIVATE_IPV4);
 
   uint16_t ipv6_address[8] = { 0x1234, 0xabcd, 0, 0, 0xff, 0, 0, 0xcdef };
   PP_NetAddress_Private ipv6 = MakeIPv6NetAddress(ipv6_address, 123, 0);
-  ASSERT_EQ(NetAddressPrivate::GetFamily(ipv6), PP_NETADDRESSFAMILY_IPV6);
+  ASSERT_EQ(NetAddressPrivate::GetFamily(ipv6),
+            PP_NETADDRESSFAMILY_PRIVATE_IPV6);
 
   PASS();
 }

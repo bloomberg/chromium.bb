@@ -75,12 +75,13 @@ std::string TestUDPSocketPrivate::GetLocalAddress(
 
 std::string TestUDPSocketPrivate::SetBroadcastOptions(
     pp::UDPSocketPrivate* socket) {
-  int32_t rv = socket->SetSocketFeature(PP_UDPSOCKETFEATURE_ADDRESS_REUSE,
-                                        pp::Var(true));
+  int32_t rv = socket->SetSocketFeature(
+      PP_UDPSOCKETFEATURE_PRIVATE_ADDRESS_REUSE, pp::Var(true));
   if (rv != PP_OK)
     return ReportError("PPB_UDPSocket_Private::SetSocketFeature", rv);
 
-  rv = socket->SetSocketFeature(PP_UDPSOCKETFEATURE_BROADCAST, pp::Var(true));
+  rv = socket->SetSocketFeature(PP_UDPSOCKETFEATURE_PRIVATE_BROADCAST,
+                                pp::Var(true));
   if (rv != PP_OK)
     return ReportError("PPB_UDPSocket_Private::SetSocketFeature", rv);
 
@@ -246,12 +247,13 @@ std::string TestUDPSocketPrivate::TestBroadcast() {
 std::string TestUDPSocketPrivate::TestSetSocketFeatureErrors() {
   pp::UDPSocketPrivate socket(instance_);
   // Try to pass incorrect feature name.
-  int32_t rv = socket.SetSocketFeature(PP_UDPSOCKETFEATURE_COUNT,
+  int32_t rv = socket.SetSocketFeature(PP_UDPSOCKETFEATURE_PRIVATE_COUNT,
                                        pp::Var(true));
   ASSERT_EQ(PP_ERROR_BADARGUMENT, rv);
 
   // Try to pass incorrect feature value's type.
-  rv = socket.SetSocketFeature(PP_UDPSOCKETFEATURE_ADDRESS_REUSE, pp::Var(1));
+  rv = socket.SetSocketFeature(PP_UDPSOCKETFEATURE_PRIVATE_ADDRESS_REUSE,
+                               pp::Var(1));
   ASSERT_EQ(PP_ERROR_BADARGUMENT, rv);
   PASS();
 }

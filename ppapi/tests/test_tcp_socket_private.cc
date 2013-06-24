@@ -155,7 +155,8 @@ std::string TestTCPSocketPrivate::TestSetOption() {
   TestCompletionCallback cb(instance_->pp_instance(), callback_type());
 
   cb.WaitForResult(
-      socket.SetOption(PP_TCPSOCKETOPTION_NO_DELAY, true, cb.GetCallback()));
+      socket.SetOption(PP_TCPSOCKETOPTION_PRIVATE_NO_DELAY, true,
+                       cb.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(cb);
   ASSERT_EQ(PP_ERROR_FAILED, cb.result());
 
@@ -164,12 +165,14 @@ std::string TestTCPSocketPrivate::TestSetOption() {
   ASSERT_EQ(PP_OK, cb.result());
 
   cb.WaitForResult(
-      socket.SetOption(PP_TCPSOCKETOPTION_NO_DELAY, true, cb.GetCallback()));
+      socket.SetOption(PP_TCPSOCKETOPTION_PRIVATE_NO_DELAY, true,
+                       cb.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(cb);
   ASSERT_EQ(PP_OK, cb.result());
 
   cb.WaitForResult(
-      socket.SetOption(PP_TCPSOCKETOPTION_INVALID, true, cb.GetCallback()));
+      socket.SetOption(PP_TCPSOCKETOPTION_PRIVATE_INVALID, true,
+                       cb.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(cb);
   ASSERT_EQ(PP_ERROR_BADARGUMENT, cb.result());
 

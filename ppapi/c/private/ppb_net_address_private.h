@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_net_address_private.idl,
- *   modified Sat Oct 20 12:39:54 2012.
+ *   modified Mon Jun 24 09:52:39 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NET_ADDRESS_PRIVATE_H_
@@ -35,15 +35,15 @@ typedef enum {
   /**
    * The address family is unspecified.
    */
-  PP_NETADDRESSFAMILY_UNSPECIFIED = 0,
+  PP_NETADDRESSFAMILY_PRIVATE_UNSPECIFIED = 0,
   /**
    * The Internet Protocol version 4 (IPv4) address family.
    */
-  PP_NETADDRESSFAMILY_IPV4 = 1,
+  PP_NETADDRESSFAMILY_PRIVATE_IPV4 = 1,
   /**
    * The Internet Protocol version 6 (IPv6) address family.
    */
-  PP_NETADDRESSFAMILY_IPV6 = 2
+  PP_NETADDRESSFAMILY_PRIVATE_IPV6 = 2
 } PP_NetAddressFamily_Private;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetAddressFamily_Private, 4);
 /**

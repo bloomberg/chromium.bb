@@ -150,7 +150,7 @@ PP_NetAddressFamily_Private NetAddressPrivate::GetFamily(
     return get_interface<PPB_NetAddress_Private_1_1>()->GetFamily(&addr);
   if (has_interface<PPB_NetAddress_Private_1_0>())
     return get_interface<PPB_NetAddress_Private_1_0>()->GetFamily(&addr);
-  return PP_NETADDRESSFAMILY_UNSPECIFIED;
+  return PP_NETADDRESSFAMILY_PRIVATE_UNSPECIFIED;
 }
 
 // static

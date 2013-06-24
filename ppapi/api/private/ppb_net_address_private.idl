@@ -19,15 +19,15 @@ enum PP_NetAddressFamily_Private {
   /**
    * The address family is unspecified.
    */
-  PP_NETADDRESSFAMILY_UNSPECIFIED = 0,
+  PP_NETADDRESSFAMILY_PRIVATE_UNSPECIFIED = 0,
   /**
    * The Internet Protocol version 4 (IPv4) address family.
    */
-  PP_NETADDRESSFAMILY_IPV4 = 1,
+  PP_NETADDRESSFAMILY_PRIVATE_IPV4 = 1,
   /**
    * The Internet Protocol version 6 (IPv6) address family.
    */
-  PP_NETADDRESSFAMILY_IPV6 = 2
+  PP_NETADDRESSFAMILY_PRIVATE_IPV6 = 2
 };
 
 /**

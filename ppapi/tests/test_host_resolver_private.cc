@@ -171,14 +171,14 @@ std::string TestHostResolverPrivate::ParametrizedTestResolve(
 
 std::string TestHostResolverPrivate::TestResolve() {
   PP_HostResolver_Private_Hint hint;
-  hint.family = PP_NETADDRESSFAMILY_UNSPECIFIED;
-  hint.flags = PP_HOST_RESOLVER_FLAGS_CANONNAME;
+  hint.family = PP_NETADDRESSFAMILY_PRIVATE_UNSPECIFIED;
+  hint.flags = PP_HOST_RESOLVER_PRIVATE_FLAGS_CANONNAME;
   return ParametrizedTestResolve(hint);
 }
 
 std::string TestHostResolverPrivate::TestResolveIPv4() {
   PP_HostResolver_Private_Hint hint;
-  hint.family = PP_NETADDRESSFAMILY_IPV4;
-  hint.flags = PP_HOST_RESOLVER_FLAGS_CANONNAME;
+  hint.family = PP_NETADDRESSFAMILY_PRIVATE_IPV4;
+  hint.flags = PP_HOST_RESOLVER_PRIVATE_FLAGS_CANONNAME;
   return ParametrizedTestResolve(hint);
 }

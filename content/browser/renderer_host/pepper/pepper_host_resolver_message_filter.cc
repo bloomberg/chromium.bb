@@ -38,10 +38,10 @@ void PrepareRequestInfo(const PP_HostResolver_Private_Hint& hint,
 
   net::AddressFamily address_family;
   switch (hint.family) {
-    case PP_NETADDRESSFAMILY_IPV4:
+    case PP_NETADDRESSFAMILY_PRIVATE_IPV4:
       address_family = net::ADDRESS_FAMILY_IPV4;
       break;
-    case PP_NETADDRESSFAMILY_IPV6:
+    case PP_NETADDRESSFAMILY_PRIVATE_IPV6:
       address_family = net::ADDRESS_FAMILY_IPV6;
       break;
     default:
@@ -50,9 +50,9 @@ void PrepareRequestInfo(const PP_HostResolver_Private_Hint& hint,
   request_info->set_address_family(address_family);
 
   net::HostResolverFlags host_resolver_flags = 0;
-  if (hint.flags & PP_HOST_RESOLVER_FLAGS_CANONNAME)
+  if (hint.flags & PP_HOST_RESOLVER_PRIVATE_FLAGS_CANONNAME)
     host_resolver_flags |= net::HOST_RESOLVER_CANONNAME;
-  if (hint.flags & PP_HOST_RESOLVER_FLAGS_LOOPBACK_ONLY)
+  if (hint.flags & PP_HOST_RESOLVER_PRIVATE_FLAGS_LOOPBACK_ONLY)
     host_resolver_flags |= net::HOST_RESOLVER_LOOPBACK_ONLY;
   request_info->set_host_resolver_flags(host_resolver_flags);
 }

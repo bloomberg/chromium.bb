@@ -100,8 +100,8 @@ std::string TestNetworkMonitorPrivate::VerifyNetworkList(
       PP_NetAddressFamily_Private family =
           pp::NetAddressPrivate::GetFamily(addresses[i]);
 
-      ASSERT_TRUE(family == PP_NETADDRESSFAMILY_IPV4 ||
-                  family == PP_NETADDRESSFAMILY_IPV6);
+      ASSERT_TRUE(family == PP_NETADDRESSFAMILY_PRIVATE_IPV4 ||
+                  family == PP_NETADDRESSFAMILY_PRIVATE_IPV6);
 
       char ip[16] = { 0 };
       ASSERT_TRUE(pp::NetAddressPrivate::GetAddress(

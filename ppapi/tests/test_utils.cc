@@ -137,7 +137,8 @@ bool ResolveHost(PP_Instance instance,
   // TODO(yzshen): Change to use the public host resolver once it is supported.
   pp::InstanceHandle instance_handle(instance);
   pp::HostResolverPrivate host_resolver(instance_handle);
-  PP_HostResolver_Private_Hint hint = { PP_NETADDRESSFAMILY_UNSPECIFIED, 0 };
+  PP_HostResolver_Private_Hint hint =
+      { PP_NETADDRESSFAMILY_PRIVATE_UNSPECIFIED, 0 };
 
   TestCompletionCallback callback(instance);
   callback.WaitForResult(
@@ -150,7 +151,7 @@ bool ResolveHost(PP_Instance instance,
   }
 
   switch (pp::NetAddressPrivate::GetFamily(addr_private)) {
-    case PP_NETADDRESSFAMILY_IPV4: {
+    case PP_NETADDRESSFAMILY_PRIVATE_IPV4: {
       PP_NetAddress_IPv4 ipv4_addr;
       ipv4_addr.port = ConvertToNetEndian16(
           pp::NetAddressPrivate::GetPort(addr_private));
@@ -161,7 +162,7 @@ bool ResolveHost(PP_Instance instance,
       *addr = pp::NetAddress(instance_handle, ipv4_addr);
       return true;
     }
-    case PP_NETADDRESSFAMILY_IPV6: {
+    case PP_NETADDRESSFAMILY_PRIVATE_IPV6: {
       PP_NetAddress_IPv6 ipv6_addr;
       ipv6_addr.port = ConvertToNetEndian16(
           pp::NetAddressPrivate::GetPort(addr_private));

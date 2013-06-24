@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_udp_socket_private.idl modified Thu Aug 23 12:32:12 2012. */
+/* From private/ppb_udp_socket_private.idl modified Mon Jun 24 09:53:43 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_UDP_SOCKET_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_UDP_SOCKET_PRIVATE_H_
@@ -36,13 +36,13 @@ typedef enum {
   /* Allow the socket to share the local address to which socket will
    * be bound with other processes. Value's type should be
    * PP_VARTYPE_BOOL. */
-  PP_UDPSOCKETFEATURE_ADDRESS_REUSE = 0,
+  PP_UDPSOCKETFEATURE_PRIVATE_ADDRESS_REUSE = 0,
   /* Allow sending and receiving packets sent to and from broadcast
    * addresses. Value's type should be PP_VARTYPE_BOOL. */
-  PP_UDPSOCKETFEATURE_BROADCAST = 1,
+  PP_UDPSOCKETFEATURE_PRIVATE_BROADCAST = 1,
   /* Special value for counting the number of available
    * features. Should not be passed to SetSocketFeature(). */
-  PP_UDPSOCKETFEATURE_COUNT = 2
+  PP_UDPSOCKETFEATURE_PRIVATE_COUNT = 2
 } PP_UDPSocketFeature_Private;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_UDPSocketFeature_Private, 4);
 /**

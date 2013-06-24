@@ -18,15 +18,15 @@ enum PP_UDPSocketFeature_Private {
   // Allow the socket to share the local address to which socket will
   // be bound with other processes. Value's type should be
   // PP_VARTYPE_BOOL.
-  PP_UDPSOCKETFEATURE_ADDRESS_REUSE = 0,
+  PP_UDPSOCKETFEATURE_PRIVATE_ADDRESS_REUSE = 0,
 
   // Allow sending and receiving packets sent to and from broadcast
   // addresses. Value's type should be PP_VARTYPE_BOOL.
-  PP_UDPSOCKETFEATURE_BROADCAST = 1,
+  PP_UDPSOCKETFEATURE_PRIVATE_BROADCAST = 1,
 
   // Special value for counting the number of available
   // features. Should not be passed to SetSocketFeature().
-  PP_UDPSOCKETFEATURE_COUNT = 2
+  PP_UDPSOCKETFEATURE_PRIVATE_COUNT = 2
 };
 
 interface PPB_UDPSocket_Private {

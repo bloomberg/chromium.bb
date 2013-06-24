@@ -21,11 +21,11 @@ enum PP_HostResolver_Private_Flags {
   /**
    * AI_CANONNAME
    */
-  PP_HOST_RESOLVER_FLAGS_CANONNAME = 1 << 0,
+  PP_HOST_RESOLVER_PRIVATE_FLAGS_CANONNAME = 1 << 0,
   /**
    * Hint to the resolver that only loopback addresses are configured.
    */
-  PP_HOST_RESOLVER_FLAGS_LOOPBACK_ONLY = 1 << 1
+  PP_HOST_RESOLVER_PRIVATE_FLAGS_LOOPBACK_ONLY = 1 << 1
 };
 
 [assert_size(8)]

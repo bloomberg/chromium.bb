@@ -16,12 +16,12 @@ label Chrome {
 [assert_size(4)]
 enum PP_TCPSocketOption_Private {
   // Special value used for testing. Guaranteed to fail SetOption().
-  PP_TCPSOCKETOPTION_INVALID = 0,
+  PP_TCPSOCKETOPTION_PRIVATE_INVALID = 0,
 
   // Disable coalescing of small writes to make TCP segments, and instead
   // deliver data immediately. For SSL sockets, this option must be set before
   // SSLHandshake() is called. Value type is PP_VARTYPE_BOOL.
-  PP_TCPSOCKETOPTION_NO_DELAY = 1
+  PP_TCPSOCKETOPTION_PRIVATE_NO_DELAY = 1
 };
 
 /**

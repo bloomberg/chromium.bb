@@ -65,11 +65,11 @@ bool PpAddressToSocketAddress(const PP_NetAddress_Private& pp_address,
 
   if (result) {
     switch (pp::NetAddressPrivate::GetFamily(pp_address)) {
-      case PP_NETADDRESSFAMILY_IPV4:
+      case PP_NETADDRESSFAMILY_PRIVATE_IPV4:
         address->SetIP(talk_base::IPAddress(
             *reinterpret_cast<in_addr*>(addr_storage)));
         break;
-      case PP_NETADDRESSFAMILY_IPV6:
+      case PP_NETADDRESSFAMILY_PRIVATE_IPV6:
         address->SetIP(talk_base::IPAddress(
             *reinterpret_cast<in6_addr*>(addr_storage)));
         break;

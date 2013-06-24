@@ -29,13 +29,13 @@ int32_t UDPSocketPrivateResource::SetSocketFeature(
     PP_Var value) {
   PP_UDPSocket_Option public_name = PP_UDPSOCKET_OPTION_ADDRESS_REUSE;
   switch (name) {
-    case PP_UDPSOCKETFEATURE_ADDRESS_REUSE:
+    case PP_UDPSOCKETFEATURE_PRIVATE_ADDRESS_REUSE:
       // |public_name| has been initialized above.
       break;
-    case PP_UDPSOCKETFEATURE_BROADCAST:
+    case PP_UDPSOCKETFEATURE_PRIVATE_BROADCAST:
       public_name = PP_UDPSOCKET_OPTION_BROADCAST;
       break;
-    case PP_UDPSOCKETFEATURE_COUNT:
+    case PP_UDPSOCKETFEATURE_PRIVATE_COUNT:
       return PP_ERROR_BADARGUMENT;
     default:
       NOTREACHED();

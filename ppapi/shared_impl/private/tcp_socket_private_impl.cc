@@ -89,9 +89,9 @@ int32_t TCPSocketPrivateImpl::SetOption(
     const PP_Var& value,
     scoped_refptr<TrackedCallback> callback) {
   switch (name) {
-    case PP_TCPSOCKETOPTION_INVALID:
+    case PP_TCPSOCKETOPTION_PRIVATE_INVALID:
       return PP_ERROR_BADARGUMENT;
-    case PP_TCPSOCKETOPTION_NO_DELAY:
+    case PP_TCPSOCKETOPTION_PRIVATE_NO_DELAY:
       return SetOptionImpl(PP_TCPSOCKET_OPTION_NO_DELAY, value, callback);
     default:
       NOTREACHED();

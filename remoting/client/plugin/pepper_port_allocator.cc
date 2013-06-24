@@ -155,7 +155,7 @@ void PepperPortAllocatorSession::ResolveStunServerAddress() {
 
   PP_HostResolver_Private_Hint hint;
   hint.flags = 0;
-  hint.family = PP_NETADDRESSFAMILY_IPV4;
+  hint.family = PP_NETADDRESSFAMILY_PRIVATE_IPV4;
   int result = stun_address_resolver_.Resolve(
       hostname, port, hint,
       PpCompletionCallback(base::Bind(
