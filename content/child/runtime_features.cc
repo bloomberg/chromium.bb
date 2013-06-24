@@ -124,11 +124,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableWebGLDraftExtensions))
     WebRuntimeFeatures::enableWebGLDraftExtensions(true);
-
-  // Enabled by default for testing.
-  // TODO(urvang): Go back to using the command-line option after a few days.
-  // https://code.google.com/p/chromium/issues/detail?id=234437
-  WebRuntimeFeatures::enableWebPInAcceptHeader(true);
 }
 
 }  // namespace content
