@@ -335,9 +335,8 @@ void ZeroSuggestProvider::AddMatchToMap(const string16& query_string,
   // Try to add |match| to |map|.  If a match for |query_string| is already in
   // |map|, replace it if |match| is more relevant.
   // NOTE: Keep this ToLower() call in sync with url_database.cc.
-  const std::pair<SearchProvider::MatchMap::iterator, bool> i = map->insert(
-      std::pair<string16, AutocompleteMatch>(
-          base::i18n::ToLower(query_string), match));
+  const std::pair<SearchProvider::MatchMap::iterator, bool> i(map->insert(
+      std::make_pair(base::i18n::ToLower(query_string), match)));
   // NOTE: We purposefully do a direct relevance comparison here instead of
   // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items added
   // first" rather than "items alphabetically first" when the scores are equal.
@@ -462,16 +461,13 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches(
       0 : string16::npos;
   matches_.push_back(current_url_match_);
 
-  for (SearchProvider::MatchMap::const_iterator it = query_matches_map_.begin();
-       it != query_matches_map_.end(); ++it) {
+  for (SearchProvider::MatchMap::const_iterator it(query_matches_map_.begin());
+       it != query_matches_map_.end(); ++it)
     matches_.push_back(it->second);
-  }
 
-  for (SearchProvider::NavigationResults::const_iterator it =
-           navigation_results_.begin();
-       it != navigation_results_.end(); ++it) {
+  for (SearchProvider::NavigationResults::const_iterator it(
+       navigation_results_.begin()); it != navigation_results_.end(); ++it)
     matches_.push_back(NavigationToMatch(*it));
-  }
 }
 
 AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {

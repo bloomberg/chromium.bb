@@ -51,8 +51,8 @@
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using base::Time;
-using base::TimeDelta;
+
+// Helpers --------------------------------------------------------------------
 
 namespace {
 
@@ -115,14 +115,127 @@ const TemplateURL* SearchProvider::Providers::GetKeywordProviderURL() const {
 }
 
 
+// SearchProvider::Result -----------------------------------------------------
+
+SearchProvider::Result::Result(bool from_keyword_provider,
+                               int relevance)
+    : from_keyword_provider_(from_keyword_provider),
+      relevance_(relevance) {
+}
+
+SearchProvider::Result::~Result() {
+}
+
+
+// SearchProvider::SuggestResult ----------------------------------------------
+
+SearchProvider::SuggestResult::SuggestResult(const string16& suggestion,
+                                             bool from_keyword_provider,
+                                             int relevance)
+    : Result(from_keyword_provider, relevance),
+      suggestion_(suggestion) {
+}
+
+SearchProvider::SuggestResult::~SuggestResult() {
+}
+
+bool SearchProvider::SuggestResult::IsInlineable(const string16& input) const {
+  return StartsWith(suggestion_, input, false);
+}
+
+int SearchProvider::SuggestResult::CalculateRelevance(
+    const AutocompleteInput& input,
+    bool keyword_provider_requested) const {
+  if (!from_keyword_provider_ && keyword_provider_requested)
+    return 100;
+  return ((input.type() == AutocompleteInput::URL) ? 300 : 600);
+}
+
+
+// SearchProvider::NavigationResult -------------------------------------------
+
+SearchProvider::NavigationResult::NavigationResult(
+    const AutocompleteProvider& provider,
+    const GURL& url,
+    const string16& description,
+    bool from_keyword_provider,
+    int relevance)
+    : Result(from_keyword_provider, relevance),
+      url_(url),
+      formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
+          url, provider.StringForURLDisplay(url, true, false))),
+      description_(description) {
+  DCHECK(url_.is_valid());
+}
+
+SearchProvider::NavigationResult::~NavigationResult() {
+}
+
+bool SearchProvider::NavigationResult::IsInlineable(
+    const string16& input) const {
+  return URLPrefix::BestURLPrefix(formatted_url_, input) != NULL;
+}
+
+int SearchProvider::NavigationResult::CalculateRelevance(
+    const AutocompleteInput& input,
+    bool keyword_provider_requested) const {
+  return (from_keyword_provider_ || !keyword_provider_requested) ? 800 : 150;
+}
+
+
+// SearchProvider::CompareScoredResults ---------------------------------------
+
+class SearchProvider::CompareScoredResults {
+ public:
+  bool operator()(const Result& a, const Result& b) {
+    // Sort in descending relevance order.
+    return a.relevance() > b.relevance();
+  }
+};
+
+
+// SearchProvider::Results ----------------------------------------------------
+
+SearchProvider::Results::Results()
+    : has_suggested_relevance(false),
+      verbatim_relevance(-1) {
+}
+
+SearchProvider::Results::~Results() {
+}
+
+void SearchProvider::Results::Clear() {
+  suggest_results.clear();
+  navigation_results.clear();
+  has_suggested_relevance = false;
+  verbatim_relevance = -1;
+}
+
+bool SearchProvider::Results::HasServerProvidedScores() const {
+  if (verbatim_relevance >= 0)
+    return true;
+
+  return has_suggested_relevance;
+}
 // SearchProvider -------------------------------------------------------------
 
 // static
 const int SearchProvider::kDefaultProviderURLFetcherID = 1;
-// static
 const int SearchProvider::kKeywordProviderURLFetcherID = 2;
-// static
 int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
+
+SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
+                               Profile* profile)
+    : AutocompleteProvider(listener, profile,
+          AutocompleteProvider::TYPE_SEARCH),
+      providers_(TemplateURLServiceFactory::GetForProfile(profile)),
+      suggest_results_pending_(0),
+      instant_finalized_(false),
+      field_trial_triggered_(false),
+      field_trial_triggered_in_session_(false),
+      suppress_search_suggestions_(false),
+      omnibox_start_margin_(-1) {
+}
 
 // static
 AutocompleteMatch SearchProvider::CreateSearchSuggestion(
@@ -219,17 +332,25 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
   return match;
 }
 
-SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
-                               Profile* profile)
-    : AutocompleteProvider(listener, profile,
-          AutocompleteProvider::TYPE_SEARCH),
-      providers_(TemplateURLServiceFactory::GetForProfile(profile)),
-      suggest_results_pending_(0),
-      instant_finalized_(false),
-      field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false),
-      suppress_search_suggestions_(false),
-      omnibox_start_margin_(-1) {
+void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
+  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
+  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
+  new_entry.set_provider(AsOmniboxEventProviderType());
+  new_entry.set_provider_done(done_);
+  std::vector<uint32> field_trial_hashes;
+  OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
+  for (size_t i = 0; i < field_trial_hashes.size(); ++i) {
+    if (field_trial_triggered_)
+      new_entry.mutable_field_trial_triggered()->Add(field_trial_hashes[i]);
+    if (field_trial_triggered_in_session_) {
+      new_entry.mutable_field_trial_triggered_in_session()->Add(
+          field_trial_hashes[i]);
+    }
+  }
+}
+
+void SearchProvider::ResetSession() {
+  field_trial_triggered_in_session_ = false;
 }
 
 void SearchProvider::FinalizeInstantQuery(const string16& input_text,
@@ -291,12 +412,9 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
     // it gets autocompleted; use kNonURLVerbatimRelevance rather than
     // verbatim_relevance so that the score does not change if the user keeps
     // typing and the input changes from type UNKNOWN to URL.
-    matches_.push_back(NavigationToMatch(
-        NavigationResult(*this,
-                         GURL(UTF16ToUTF8(suggestion.text)),
-                         string16(),
-                         false,
-                         kNonURLVerbatimRelevance + 1)));
+    matches_.push_back(NavigationToMatch(NavigationResult(
+        *this, GURL(UTF16ToUTF8(suggestion.text)), string16(), false,
+        kNonURLVerbatimRelevance + 1)));
     results_updated = true;
   }
 
@@ -319,6 +437,85 @@ void SearchProvider::SuppressSearchSuggestions() {
 
 void SearchProvider::SetOmniboxStartMargin(int omnibox_start_margin) {
   omnibox_start_margin_ = omnibox_start_margin;
+}
+
+bool SearchProvider::IsNonInstantSearchDone() const {
+  return !timer_.IsRunning() && (suggest_results_pending_ == 0);
+}
+
+SearchProvider::~SearchProvider() {
+}
+
+// static
+void SearchProvider::RemoveStaleResults(const string16& input,
+                                        int verbatim_relevance,
+                                        SuggestResults* suggest_results,
+                                        NavigationResults* navigation_results) {
+  DCHECK_GE(verbatim_relevance, 0);
+  // Keep pointers to the head of (the highest scoring elements of)
+  // |suggest_results| and |navigation_results|.  Iterate down the lists
+  // removing non-inlineable results in order of decreasing relevance
+  // scores.  Stop when the highest scoring element among those remaining
+  // is inlineable or the element is less than |verbatim_relevance|.
+  // This allows non-inlineable lower-scoring results to remain
+  // because (i) they are guaranteed to not be inlined and (ii)
+  // letting them remain reduces visual jank.  For instance, as the
+  // user types the mis-spelled query "fpobar" (for foobar), the
+  // suggestion "foobar" will be suggested on every keystroke.  If the
+  // SearchProvider always removes all non-inlineable results, the user will
+  // see visual jitter/jank as the result disappears and re-appears moments
+  // later as the suggest server returns results.
+  SuggestResults::iterator sug_it = suggest_results->begin();
+  NavigationResults::iterator nav_it = navigation_results->begin();
+  while ((sug_it != suggest_results->end()) ||
+         (nav_it != navigation_results->end())) {
+    const int sug_rel =
+        (sug_it != suggest_results->end()) ? sug_it->relevance() : -1;
+    const int nav_rel =
+        (nav_it != navigation_results->end()) ? nav_it->relevance() : -1;
+    if (std::max(sug_rel, nav_rel) < verbatim_relevance)
+      break;
+    if (sug_rel > nav_rel) {
+      // The current top result is a search suggestion.
+      if (sug_it->IsInlineable(input))
+        break;
+      sug_it = suggest_results->erase(sug_it);
+    } else if (sug_rel == nav_rel) {
+      // Have both results and they're tied.
+      const bool sug_inlineable = sug_it->IsInlineable(input);
+      const bool nav_inlineable = nav_it->IsInlineable(input);
+      if (!sug_inlineable)
+        sug_it = suggest_results->erase(sug_it);
+      if (!nav_inlineable)
+        nav_it = navigation_results->erase(nav_it);
+      if (sug_inlineable || nav_inlineable)
+        break;
+    } else {
+      // The current top result is a navigational suggestion.
+      if (nav_it->IsInlineable(input))
+        break;
+      nav_it = navigation_results->erase(nav_it);
+    }
+  }
+}
+
+// static
+int SearchProvider::CalculateRelevanceForKeywordVerbatim(
+    AutocompleteInput::Type type,
+    bool prefer_keyword) {
+  // This function is responsible for scoring verbatim query matches
+  // for non-extension keywords.  KeywordProvider::CalculateRelevance()
+  // scores verbatim query matches for extension keywords, as well as
+  // for keyword matches (i.e., suggestions of a keyword itself, not a
+  // suggestion of a query on a keyword search engine).  These two
+  // functions are currently in sync, but there's no reason we
+  // couldn't decide in the future to score verbatim matches
+  // differently for extension and non-extension keywords.  If you
+  // make such a change, however, you should update this comment to
+  // describe it, so it's clear why the functions diverge.
+  if (prefer_keyword)
+    return 1500;
+  return (type == AutocompleteInput::QUERY) ? 1450 : 1100;
 }
 
 void SearchProvider::Start(const AutocompleteInput& input,
@@ -420,104 +617,6 @@ void SearchProvider::Start(const AutocompleteInput& input,
   UpdateMatches();
 }
 
-SearchProvider::Result::Result(bool from_keyword_provider, int relevance)
-    : from_keyword_provider_(from_keyword_provider),
-      relevance_(relevance) {
-}
-
-SearchProvider::Result::~Result() {}
-
-SearchProvider::SuggestResult::SuggestResult(const string16& suggestion,
-                                             bool from_keyword_provider,
-                                             int relevance)
-    : Result(from_keyword_provider, relevance),
-      suggestion_(suggestion) {
-}
-
-SearchProvider::SuggestResult::~SuggestResult() {}
-
-bool SearchProvider::SuggestResult::IsInlineable(const string16& input) const {
-  return StartsWith(suggestion_, input, false);
-}
-
-int SearchProvider::SuggestResult::CalculateRelevance(
-    const AutocompleteInput& input,
-    bool keyword_provider_requested) const {
-  if (!from_keyword_provider_ && keyword_provider_requested)
-    return 100;
-  return ((input.type() == AutocompleteInput::URL) ? 300 : 600);
-}
-
-SearchProvider::NavigationResult::NavigationResult(
-    const AutocompleteProvider& provider,
-    const GURL& url,
-    const string16& description,
-    bool from_keyword_provider,
-    int relevance)
-    : Result(from_keyword_provider, relevance),
-      url_(url),
-      formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url, provider.StringForURLDisplay(url, true, false))),
-      description_(description) {
-  DCHECK(url_.is_valid());
-}
-
-SearchProvider::NavigationResult::~NavigationResult() {}
-
-bool SearchProvider::NavigationResult::IsInlineable(
-    const string16& input) const {
-  return URLPrefix::BestURLPrefix(formatted_url_, input) != NULL;
-}
-
-int SearchProvider::NavigationResult::CalculateRelevance(
-    const AutocompleteInput& input,
-    bool keyword_provider_requested) const {
-  return (from_keyword_provider_ || !keyword_provider_requested) ? 800 : 150;
-}
-
-SearchProvider::Results::Results()
-    : has_suggested_relevance(false),
-      verbatim_relevance(-1) {
-}
-
-SearchProvider::Results::~Results() {
-}
-
-void SearchProvider::Results::Clear() {
-  suggest_results.clear();
-  navigation_results.clear();
-  has_suggested_relevance = false;
-  verbatim_relevance = -1;
-}
-
-class SearchProvider::CompareScoredResults {
- public:
-  bool operator()(const Result& a, const Result& b) {
-    // Sort in descending relevance order.
-    return a.relevance() > b.relevance();
-  }
-};
-
-void SearchProvider::Run() {
-  // Start a new request with the current input.
-  suggest_results_pending_ = 0;
-  time_suggest_request_sent_ = base::TimeTicks::Now();
-
-  default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
-      providers_.GetDefaultProviderURL(), input_));
-  keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
-      providers_.GetKeywordProviderURL(), keyword_input_));
-
-  // Both the above can fail if the providers have been modified or deleted
-  // since the query began.
-  if (suggest_results_pending_ == 0) {
-    UpdateDone();
-    // We only need to update the listener if we're actually done.
-    if (done_)
-      listener_->OnProviderUpdate(false);
-  }
-}
-
 void SearchProvider::Stop(bool clear_cached_results) {
   StopSuggest();
   done_ = true;
@@ -525,27 +624,6 @@ void SearchProvider::Stop(bool clear_cached_results) {
 
   if (clear_cached_results)
     ClearAllResults();
-}
-
-void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
-  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
-  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
-  new_entry.set_provider(AsOmniboxEventProviderType());
-  new_entry.set_provider_done(done_);
-  std::vector<uint32> field_trial_hashes;
-  OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
-  for (size_t i = 0; i < field_trial_hashes.size(); ++i) {
-    if (field_trial_triggered_)
-      new_entry.mutable_field_trial_triggered()->Add(field_trial_hashes[i]);
-    if (field_trial_triggered_in_session_) {
-      new_entry.mutable_field_trial_triggered_in_session()->Add(
-          field_trial_hashes[i]);
-    }
-  }
-}
-
-void SearchProvider::ResetSession() {
-  field_trial_triggered_in_session_ = false;
 }
 
 void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -576,9 +654,10 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   // Ensure the request succeeded and that the provider used is still available.
   // A verbatim match cannot be generated without this provider, causing errors.
   const bool request_succeeded =
-      source->GetStatus().is_success() && source->GetResponseCode() == 200 &&
-      ((is_keyword && providers_.GetKeywordProviderURL()) ||
-       (!is_keyword && providers_.GetDefaultProviderURL()));
+      source->GetStatus().is_success() && (source->GetResponseCode() == 200) &&
+      (is_keyword ?
+          providers_.GetKeywordProviderURL() :
+          providers_.GetDefaultProviderURL());
 
   // Record response time for suggest requests sent to Google.  We care
   // only about the common case: the Google default provider used in
@@ -587,7 +666,7 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!is_keyword && default_url &&
       (TemplateURLPrepopulateData::GetEngineType(default_url->url()) ==
        SEARCH_ENGINE_GOOGLE)) {
-    const TimeDelta elapsed_time =
+    const base::TimeDelta elapsed_time =
         base::TimeTicks::Now() - time_suggest_request_sent_;
     if (request_succeeded) {
       UMA_HISTOGRAM_TIMES("Omnibox.SuggestRequest.Success.GoogleResponseTime",
@@ -611,11 +690,24 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     listener_->OnProviderUpdate(results_updated);
 }
 
-bool SearchProvider::IsNonInstantSearchDone() const {
-  return !timer_.IsRunning() && (suggest_results_pending_ == 0);
-}
+void SearchProvider::Run() {
+  // Start a new request with the current input.
+  suggest_results_pending_ = 0;
+  time_suggest_request_sent_ = base::TimeTicks::Now();
 
-SearchProvider::~SearchProvider() {
+  default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
+      providers_.GetDefaultProviderURL(), input_));
+  keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
+      providers_.GetKeywordProviderURL(), keyword_input_));
+
+  // Both the above can fail if the providers have been modified or deleted
+  // since the query began.
+  if (suggest_results_pending_ == 0) {
+    UpdateDone();
+    // We only need to update the listener if we're actually done.
+    if (done_)
+      listener_->OnProviderUpdate(false);
+  }
 }
 
 void SearchProvider::DoHistoryQuery(bool minimal_changes) {
@@ -688,7 +780,7 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
   // To avoid flooding the suggest server, don't send a query until at
   // least 100 ms since the last query.
   base::TimeTicks next_suggest_time(time_suggest_request_sent_ +
-      TimeDelta::FromMilliseconds(kMinimumTimeBetweenSuggestQueriesMs));
+      base::TimeDelta::FromMilliseconds(kMinimumTimeBetweenSuggestQueriesMs));
   base::TimeTicks now(base::TimeTicks::Now());
   if (now >= next_suggest_time) {
     Run();
@@ -791,69 +883,13 @@ void SearchProvider::RemoveAllStaleResults() {
   }
 }
 
-// static
-void SearchProvider::RemoveStaleResults(const string16& input,
-                                        int verbatim_relevance,
-                                        SuggestResults* suggest_results,
-                                        NavigationResults* navigation_results) {
-  DCHECK_GE(verbatim_relevance, 0);
-  // Keep pointers to the head of (the highest scoring elements of)
-  // |suggest_results| and |navigation_results|.  Iterate down the lists
-  // removing non-inlineable results in order of decreasing relevance
-  // scores.  Stop when the highest scoring element among those remaining
-  // is inlineable or the element is less than |verbatim_relevance|.
-  // This allows non-inlineable lower-scoring results to remain
-  // because (i) they are guaranteed to not be inlined and (ii)
-  // letting them remain reduces visual jank.  For instance, as the
-  // user types the mis-spelled query "fpobar" (for foobar), the
-  // suggestion "foobar" will be suggested on every keystroke.  If the
-  // SearchProvider always removes all non-inlineable results, the user will
-  // see visual jitter/jank as the result disappears and re-appears moments
-  // later as the suggest server returns results.
-  SuggestResults::iterator sug_it = suggest_results->begin();
-  NavigationResults::iterator nav_it = navigation_results->begin();
-  while ((sug_it != suggest_results->end()) ||
-         (nav_it != navigation_results->end())) {
-    const int sug_rel =
-        (sug_it != suggest_results->end()) ? sug_it->relevance() : -1;
-    const int nav_rel =
-        (nav_it != navigation_results->end()) ? nav_it->relevance() : -1;
-    if (std::max(sug_rel, nav_rel) < verbatim_relevance)
-      break;
-    if (sug_rel > nav_rel) {
-      // The current top result is a search suggestion.
-      if (sug_it->IsInlineable(input))
-        break;
-      sug_it = suggest_results->erase(sug_it);
-    } else if (sug_rel == nav_rel) {
-      // Have both results and they're tied.
-      const bool sug_inlineable = sug_it->IsInlineable(input);
-      const bool nav_inlineable = nav_it->IsInlineable(input);
-      if (!sug_inlineable)
-        sug_it = suggest_results->erase(sug_it);
-      if (!nav_inlineable)
-        nav_it = navigation_results->erase(nav_it);
-      if (sug_inlineable || nav_inlineable)
-        break;
-    } else {
-      // The current top result is a navigational suggestion.
-      if (nav_it->IsInlineable(input))
-        break;
-      nav_it = navigation_results->erase(nav_it);
-    }
-  }
-}
-
 void SearchProvider::AdjustDefaultProviderSuggestion(
     const string16& previous_input,
     const string16& current_input) {
   if (default_provider_suggestion_.type == INSTANT_SUGGESTION_URL) {
     // Description and relevance do not matter in the check for staleness.
-    NavigationResult result(*this,
-                            GURL(default_provider_suggestion_.text),
-                            string16(),
-                            false,
-                            100);
+    NavigationResult result(*this, GURL(default_provider_suggestion_.text),
+                            string16(), false, 100);
     // If navigation suggestion is stale, clear |default_provider_suggestion_|.
     if (!result.IsInlineable(current_input))
       default_provider_suggestion_ = InstantSuggestion();
@@ -1038,7 +1074,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   // Convert all the results to matches and add them to a map, so we can keep
   // the most relevant match for each result.
   MatchMap map;
-  const Time no_time;
+  const base::Time no_time;
   int did_not_accept_keyword_suggestion =
       keyword_results_.suggest_results.empty() ?
       TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
@@ -1099,15 +1135,12 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       !input_.prevent_inline_autocomplete()) {
     // See comment in FinalizeInstantQuery() for why we don't use
     // |verbatim_relevance| here.
-    matches_.push_back(NavigationToMatch(
-        NavigationResult(*this,
-                         GURL(UTF16ToUTF8(default_provider_suggestion_.text)),
-                         string16(),
-                         false,
-                         kNonURLVerbatimRelevance + 1)));
+    matches_.push_back(NavigationToMatch(NavigationResult(
+        *this, GURL(UTF16ToUTF8(default_provider_suggestion_.text)), string16(),
+        false, kNonURLVerbatimRelevance + 1)));
   }
-  AddNavigationResultsToMatches(keyword_results_.navigation_results, true);
-  AddNavigationResultsToMatches(default_results_.navigation_results, false);
+  AddNavigationResultsToMatches(keyword_results_.navigation_results);
+  AddNavigationResultsToMatches(default_results_.navigation_results);
 
   // Allow additional match(es) for verbatim results if present.
   const size_t max_total_matches = kMaxMatches + verbatim_matches_size;
@@ -1164,10 +1197,8 @@ void SearchProvider::UpdateMatches() {
 
   // Check constraints that may be violated by suggested relevances.
   if (!matches_.empty() &&
-      (default_results_.has_suggested_relevance ||
-       default_results_.verbatim_relevance >= 0 ||
-       keyword_results_.has_suggested_relevance ||
-       keyword_results_.verbatim_relevance >= 0)) {
+      (default_results_.HasServerProvidedScores() ||
+       keyword_results_.HasServerProvidedScores())) {
     // These blocks attempt to repair undesirable behavior by suggested
     // relevances with minimal impact, preserving other suggested relevances.
     if (IsTopMatchNavigationInKeywordMode()) {
@@ -1223,23 +1254,16 @@ void SearchProvider::UpdateMatches() {
 }
 
 void SearchProvider::AddNavigationResultsToMatches(
-    const NavigationResults& navigation_results,
-    bool is_keyword) {
-  if (navigation_results.empty())
-    return;
-
-  if (is_keyword ?
-          keyword_results_.has_suggested_relevance :
-          default_results_.has_suggested_relevance) {
-    for (NavigationResults::const_iterator it = navigation_results.begin();
-         it != navigation_results.end(); ++it)
-      matches_.push_back(NavigationToMatch(*it));
-  } else {
-    // Pick the highest-scoring element only in absence of the
-    // suggested relevance scores.  (The results are already sorted.)
-    // TODO(kochi|msw): Add more navigational results if they get more
-    //                  meaningful relevance values; see http://b/1170574.
-    matches_.push_back(NavigationToMatch(navigation_results.front()));
+    const NavigationResults& navigation_results) {
+  for (NavigationResults::const_iterator it = navigation_results.begin();
+        it != navigation_results.end(); ++it) {
+    matches_.push_back(NavigationToMatch(*it));
+    // In the absence of suggested relevance scores, use only the single
+    // highest-scoring result.  (The results are already sorted by relevance.)
+    if (!(it->from_keyword_provider() ?
+        keyword_results_.has_suggested_relevance :
+        default_results_.has_suggested_relevance))
+      return;
   }
 }
 
@@ -1363,14 +1387,14 @@ int SearchProvider::GetVerbatimRelevance() const {
   // left unable to search using their default provider from the omnibox.
   // Check for results on each verbatim calculation, as results from older
   // queries (on previous input) may be trimmed for failing to inline new input.
-  if (default_results_.verbatim_relevance >= 0 &&
+  bool use_server_relevance =
+      (default_results_.verbatim_relevance >= 0) &&
       !input_.prevent_inline_autocomplete() &&
-      (default_results_.verbatim_relevance > 0 ||
+      ((default_results_.verbatim_relevance > 0) ||
        !default_results_.suggest_results.empty() ||
-       !default_results_.navigation_results.empty())) {
-    return default_results_.verbatim_relevance;
-  }
-  return CalculateRelevanceForVerbatim();
+       !default_results_.navigation_results.empty());
+  return use_server_relevance ?
+      default_results_.verbatim_relevance : CalculateRelevanceForVerbatim();
 }
 
 int SearchProvider::CalculateRelevanceForVerbatim() const {
@@ -1405,38 +1429,20 @@ int SearchProvider::GetKeywordVerbatimRelevance() const {
   // left unable to search using their keyword provider from the omnibox.
   // Check for results on each verbatim calculation, as results from older
   // queries (on previous input) may be trimmed for failing to inline new input.
-  if (keyword_results_.verbatim_relevance >= 0 &&
+  bool use_server_relevance =
+      (keyword_results_.verbatim_relevance >= 0) &&
       !input_.prevent_inline_autocomplete() &&
-      (keyword_results_.verbatim_relevance > 0 ||
+      ((keyword_results_.verbatim_relevance > 0) ||
        !keyword_results_.suggest_results.empty() ||
-       !keyword_results_.navigation_results.empty())) {
-    return keyword_results_.verbatim_relevance;
-  }
-  return CalculateRelevanceForKeywordVerbatim(
-      keyword_input_.type(), keyword_input_.prefer_keyword());
-}
-
-// static
-int SearchProvider::CalculateRelevanceForKeywordVerbatim(
-    AutocompleteInput::Type type,
-    bool prefer_keyword) {
-  // This function is responsible for scoring verbatim query matches
-  // for non-extension keywords.  KeywordProvider::CalculateRelevance()
-  // scores verbatim query matches for extension keywords, as well as
-  // for keyword matches (i.e., suggestions of a keyword itself, not a
-  // suggestion of a query on a keyword search engine).  These two
-  // functions are currently in sync, but there's no reason we
-  // couldn't decide in the future to score verbatim matches
-  // differently for extension and non-extension keywords.  If you
-  // make such a change, however, you should update this comment to
-  // describe it, so it's clear why the functions diverge.
-  if (prefer_keyword)
-    return 1500;
-  return (type == AutocompleteInput::QUERY) ? 1450 : 1100;
+       !keyword_results_.navigation_results.empty());
+  return use_server_relevance ?
+      keyword_results_.verbatim_relevance :
+      CalculateRelevanceForKeywordVerbatim(keyword_input_.type(),
+                                           keyword_input_.prefer_keyword());
 }
 
 int SearchProvider::CalculateRelevanceForHistory(
-    const Time& time,
+    const base::Time& time,
     bool is_keyword,
     bool prevent_inline_autocomplete) const {
   // The relevance of past searches falls off over time. There are two distinct
@@ -1445,7 +1451,7 @@ int SearchProvider::CalculateRelevanceForHistory(
   // falls to 1300. If the second equation is used the relevance of a search 15
   // minutes ago is discounted 50 points, while the relevance of a search two
   // weeks ago is discounted 450 points.
-  double elapsed_time = std::max((Time::Now() - time).InSecondsF(), 0.);
+  double elapsed_time = std::max((base::Time::Now() - time).InSecondsF(), 0.0);
   bool is_primary_provider = is_keyword || !providers_.has_keyword_provider();
   if (is_primary_provider && !prevent_inline_autocomplete) {
     // Searches with the past two days get a different curve.
@@ -1481,6 +1487,11 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   // -- they should always use grey text if they are to autocomplete at all. So
   // we clamp non-verbatim results to just below the verbatim score to ensure
   // that none of them are inline autocompleted.
+  // TODO(pkasting): This shouldn't depend on instant extended.  If we think
+  // this change is a win, let's change the suggest server to not send
+  // high-ranking suggest scores, and change CalculateRelevanceForHistory() to
+  // use lower curves.  This code is also buggy as-is because it can demote many
+  // matches to the same relevance score.
   if (type != AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED &&
       type != AutocompleteMatchType::SEARCH_OTHER_ENGINE &&
       chrome::IsInstantExtendedAPIEnabled()) {
@@ -1498,9 +1509,8 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
   // Try to add |match| to |map|.  If a match for |query_string| is already in
   // |map|, replace it if |match| is more relevant.
   // NOTE: Keep this ToLower() call in sync with url_database.cc.
-  const std::pair<MatchMap::iterator, bool> i = map->insert(
-      std::pair<string16, AutocompleteMatch>(
-          base::i18n::ToLower(query_string), match));
+  const std::pair<MatchMap::iterator, bool> i(
+      map->insert(std::make_pair(base::i18n::ToLower(query_string), match)));
   // NOTE: We purposefully do a direct relevance comparison here instead of
   // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items added
   // first" rather than "items alphabetically first" when the scores are equal.

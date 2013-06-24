@@ -51,9 +51,9 @@ class SearchProviderTest : public testing::Test,
  public:
   SearchProviderTest()
       : default_t_url_(NULL),
-        term1_(UTF8ToUTF16("term1")),
+        term1_(ASCIIToUTF16("term1")),
         keyword_t_url_(NULL),
-        keyword_term_(UTF8ToUTF16("keyword")),
+        keyword_term_(ASCIIToUTF16("keyword")),
         ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO),
         quit_when_done_(false) {
@@ -438,7 +438,7 @@ TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
 // is queried as well as URLFetchers getting created.
 TEST_F(SearchProviderTest, QueryKeywordProvider) {
   string16 term = keyword_term_.substr(0, keyword_term_.length() - 1);
-  QueryForInput(keyword_t_url_->keyword() + UTF8ToUTF16(" ") + term,
+  QueryForInput(keyword_t_url_->keyword() + ASCIIToUTF16(" ") + term,
                 false,
                 false);
 
@@ -1201,7 +1201,7 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     RunTillProviderDone();
 
-   const std::string description = "for input with json=" + cases[i].json;
+    const std::string description = "for input with json=" + cases[i].json;
     const ACMatches& matches = provider_->matches();
     // The top match must inline and score as highly as calculated verbatim.
     EXPECT_NE(string16::npos, matches[0].inline_autocomplete_offset) <<
@@ -1571,8 +1571,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     // we abandon suggested relevance scores entirely.  One consequence is
     // that this means we restore the keyword verbatim match.  Note
     // that in this case of abandoning suggested relevance scores, we still
-    // keep the navsuggestions in order by their original scores (just
-    // not at their original scores), and continue to allow multiple
+    // keep the navsuggestions in the same order, and continue to allow multiple
     // navsuggestions to appear.
     { "[\"a\",[\"http://a1.com\", \"http://a2.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
@@ -1928,9 +1927,9 @@ TEST_F(SearchProviderTest, NavigationInline) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
-    SearchProvider::NavigationResult result(
-        *provider_.get(), GURL(cases[i].url), string16(), false, 0);
-    AutocompleteMatch match(provider_->NavigationToMatch(result));
+    AutocompleteMatch match(
+        provider_->NavigationToMatch(SearchProvider::NavigationResult(
+            *provider_.get(), GURL(cases[i].url), string16(), false, 0)));
     EXPECT_EQ(cases[i].inline_offset, match.inline_autocomplete_offset);
     EXPECT_EQ(ASCIIToUTF16(cases[i].fill_into_edit), match.fill_into_edit);
   }
@@ -1961,10 +1960,9 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
 // Verifies that input "w" marks a more significant domain label than "www.".
 TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(ASCIIToUTF16("w"), false, false);
-  const GURL url("http://www.wow.com");
-  const SearchProvider::NavigationResult result(
-      *provider_.get(), url, string16(), false, 0);
-  AutocompleteMatch match(provider_->NavigationToMatch(result));
+  AutocompleteMatch match(
+      provider_->NavigationToMatch(SearchProvider::NavigationResult(
+          *provider_.get(), GURL("http://www.wow.com"), string16(), false, 0)));
   EXPECT_EQ(5U, match.inline_autocomplete_offset);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.fill_into_edit);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.contents);
@@ -2124,11 +2122,9 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
         break;
       if (cases[i].results[j].is_navigation_result) {
         provider_->default_results_.navigation_results.push_back(
-            SearchProvider::NavigationResult(*provider_.get(),
-                                             GURL(suggestion),
-                                             string16(),
-                                             false,
-                                             cases[i].results[j].relevance));
+            SearchProvider::NavigationResult(
+                *provider_.get(), GURL(suggestion), string16(), false,
+                cases[i].results[j].relevance));
       } else {
         provider_->default_results_.suggest_results.push_back(
             SearchProvider::SuggestResult(ASCIIToUTF16(suggestion), false,

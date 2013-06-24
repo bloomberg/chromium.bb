@@ -9,7 +9,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
@@ -421,14 +420,14 @@ TemplateURL* AutocompleteMatch::GetTemplateURL(
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                                              const std::string& value) {
-  DCHECK(property.size());
-  DCHECK(value.size());
+  DCHECK(!property.empty());
+  DCHECK(!value.empty());
   additional_info[property] = value;
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                                              int value) {
-  RecordAdditionalInfo(property, base::StringPrintf("%d", value));
+  RecordAdditionalInfo(property, base::IntToString(value));
 }
 
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,

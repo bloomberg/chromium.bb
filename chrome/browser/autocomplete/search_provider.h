@@ -59,6 +59,8 @@ class SearchProvider : public AutocompleteProvider,
   // ID used in creating URLFetcher for keyword provider's suggest results.
   static const int kKeywordProviderURLFetcherID;
 
+  SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
+
   // Returns an AutocompleteMatch representing a search for |query_string|
   // using the provider identified by |keyword|. |is_keyword| should be true if
   // |input| represents a keyword search (even if it's for the default search
@@ -78,7 +80,9 @@ class SearchProvider : public AutocompleteProvider,
       const string16& keyword,
       int omnibox_start_margin);
 
-  SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
+  // AutocompleteProvider:
+  virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
+  virtual void ResetSession() OVERRIDE;
 
   // Marks the instant query as done. If |input_text| is non-empty this changes
   // the 'search what you typed' results text to |input_text| +
@@ -104,20 +108,6 @@ class SearchProvider : public AutocompleteProvider,
   // Update the omnibox start margin used to generate search suggestion URLs.
   void SetOmniboxStartMargin(int omnibox_start_margin);
 
-  // AutocompleteProvider:
-  virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes) OVERRIDE;
-  virtual void Stop(bool clear_cached_results) OVERRIDE;
-
-  // Adds search-provider-specific information to omnibox event logs.
-  virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
-
-  // Sets |field_trial_triggered_in_session_| to false.
-  virtual void ResetSession() OVERRIDE;
-
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
   // Returns whether the provider is done processing the query with the
   // exception of waiting for Instant to finish.
   bool IsNonInstantSearchDone() const;
@@ -137,12 +127,6 @@ class SearchProvider : public AutocompleteProvider,
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveStaleResultsTest);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
-
-  // The amount of time to wait before sending a new suggest request after
-  // the previous one.
-  static int kMinimumTimeBetweenSuggestQueriesMs;
-
-  virtual ~SearchProvider();
 
   // Manages the providers (TemplateURLs) used by SearchProvider. Two providers
   // may be used:
@@ -200,9 +184,7 @@ class SearchProvider : public AutocompleteProvider,
   //           highly fragmented SearchProvider logic for each Result type.
   class Result {
    public:
-    // Takes whether the result is from the keyword provider and its
-    // assigned relevance score.
-    explicit Result(bool from_keyword_provider, int relevance);
+    Result(bool from_keyword_provider, int relevance);
     virtual ~Result();
 
     bool from_keyword_provider() const { return from_keyword_provider_; }
@@ -262,9 +244,7 @@ class SearchProvider : public AutocompleteProvider,
 
     const GURL& url() const { return url_; }
     const string16& description() const { return description_; }
-    const string16& formatted_url() const {
-      return formatted_url_;
-    }
+    const string16& formatted_url() const { return formatted_url_; }
 
     // Result:
     virtual bool IsInlineable(const string16& input) const OVERRIDE;
@@ -284,12 +264,18 @@ class SearchProvider : public AutocompleteProvider,
     string16 description_;
   };
 
+  class CompareScoredResults;
+
   typedef std::vector<SuggestResult> SuggestResults;
   typedef std::vector<NavigationResult> NavigationResults;
+  typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
+  typedef std::map<string16, AutocompleteMatch> MatchMap;
 
   // A simple structure bundling most of the information (including
   // both SuggestResults and NavigationResults) returned by a call to
   // the suggest server.
+  //
+  // This has to be declared after the typedefs since it relies on some of them.
   struct Results {
     Results();
     ~Results();
@@ -298,6 +284,10 @@ class SearchProvider : public AutocompleteProvider,
     // |has_suggested_relevance| and |verbatim_relevance| to default
     // values (false and -1 (implies unset), respectively).
     void Clear();
+
+    // Returns whether any of the results (including verbatim) have
+    // server-provided scores.
+    bool HasServerProvidedScores() const;
 
     // Query suggestions sorted by relevance score.
     SuggestResults suggest_results;
@@ -317,10 +307,27 @@ class SearchProvider : public AutocompleteProvider,
     DISALLOW_COPY_AND_ASSIGN(Results);
   };
 
-  typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
-  typedef std::map<string16, AutocompleteMatch> MatchMap;
+  virtual ~SearchProvider();
 
-  class CompareScoredResults;
+  // Removes non-inlineable results until either the top result can inline
+  // autocomplete the current input or verbatim outscores the top result.
+  static void RemoveStaleResults(const string16& input,
+                                 int verbatim_relevance,
+                                 SuggestResults* suggest_results,
+                                 NavigationResults* navigation_results);
+
+  // Calculates the relevance score for the keyword verbatim result (if the
+  // input matches one of the profile's keyword).
+  static int CalculateRelevanceForKeywordVerbatim(AutocompleteInput::Type type,
+                                                  bool prefer_keyword);
+
+  // AutocompleteProvider:
+  virtual void Start(const AutocompleteInput& input,
+                     bool minimal_changes) OVERRIDE;
+  virtual void Stop(bool clear_cached_results) OVERRIDE;
+
+  // net::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Called when timer_ expires.
   void Run();
@@ -346,13 +353,9 @@ class SearchProvider : public AutocompleteProvider,
   // Clears the current results.
   void ClearAllResults();
 
-  // Removes non-inlineable results until either the top result can inline
-  // autocomplete the current input or verbatim outscores the top result.
+  // Removes stale results for both default and keyword providers.  See comments
+  // on RemoveStaleResults().
   void RemoveAllStaleResults();
-  static void RemoveStaleResults(const string16& input,
-                                 int verbatim_relevance,
-                                 SuggestResults* suggest_results,
-                                 NavigationResults* navigation_results);
 
   // If |default_provider_suggestion_| (which was suggested for
   // |previous_input|) is still applicable given the |current_input|, adjusts it
@@ -390,12 +393,10 @@ class SearchProvider : public AutocompleteProvider,
   // if suggested relevances cause undesriable behavior. Updates |done_|.
   void UpdateMatches();
 
-  // Converts the top navigation result in |navigation_results| to an
-  // AutocompleteMatch and adds it to |matches_|. |is_keyword| must be true if
-  // the results come from the keyword provider.
+  // Converts an appropriate number of navigation results in
+  // |navigation_results| to matches and adds them to |matches_|.
   void AddNavigationResultsToMatches(
-      const NavigationResults& navigation_results,
-      bool is_keyword);
+      const NavigationResults& navigation_results);
 
   // Adds a match for each result in |results| to |map|. |is_keyword| indicates
   // whether the results correspond to the keyword provider or default provider.
@@ -414,30 +415,28 @@ class SearchProvider : public AutocompleteProvider,
   // Adds matches for |results| to |map|.
   void AddSuggestResultsToMap(const SuggestResults& results, MatchMap* map);
 
-  // Gets the relevance score for the verbatim result; this value may be
-  // provided by the suggest server; otherwise it is calculated locally.
+  // Gets the relevance score for the verbatim result.  This value may be
+  // provided by the suggest server or calculated locally.
   int GetVerbatimRelevance() const;
+
   // Calculates the relevance score for the verbatim result from the
   // default search engine.  This version takes into account context:
   // i.e., whether the user has entered a keyword-based search or not.
   int CalculateRelevanceForVerbatim() const;
+
   // Calculates the relevance score for the verbatim result from the default
   // search engine *ignoring* whether the input is a keyword-based search
   // or not.  This function should only be used to determine the minimum
   // relevance score that the best result from this provider should have.
   // For normal use, prefer the above function.
   int CalculateRelevanceForVerbatimIgnoringKeywordModeState() const;
-  // Gets the relevance score for the keyword verbatim result; this
-  // value may be provided by the suggest server; otherwise it is
-  // calculated locally.
+
+  // Gets the relevance score for the keyword verbatim result.
   // TODO(mpearson): Refactor so this duplication isn't necesary or
   // restructure so one static function takes all the parameters it needs
   // (rather than looking at internal state).
   int GetKeywordVerbatimRelevance() const;
-  // Calculates the relevance score for the keyword verbatim result (if the
-  // input matches one of the profile's keyword).
-  static int CalculateRelevanceForKeywordVerbatim(AutocompleteInput::Type type,
-                                                  bool prefer_keyword);
+
   // |time| is the time at which this query was last seen.  |is_keyword|
   // indicates whether the results correspond to the keyword provider or default
   // provider. |prevent_inline_autocomplete| is true if we should not inline
@@ -472,6 +471,10 @@ class SearchProvider : public AutocompleteProvider,
 
   // Updates the value of |done_| from the internal state.
   void UpdateDone();
+
+  // The amount of time to wait before sending a new suggest request after the
+  // previous one.  Non-const because some unittests modify this value.
+  static int kMinimumTimeBetweenSuggestQueriesMs;
 
   // Maintains the TemplateURLs used.
   Providers providers_;
