@@ -220,8 +220,26 @@ def IsWindows():
   return os.name == 'nt'
 
 
-def RunProcess(command, print_output=False):
-  """Run an arbitrary command, returning its output and return code.
+def RunProcess(command):
+  """Run an arbitrary command. If output from the call is needed, use
+  RunProcessAndRetrieveOutput instead.
+
+  Args:
+    command: A list containing the command and args to execute.
+
+  Returns:
+    The return code of the call.
+  """
+  # On Windows, use shell=True to get PATH interpretation.
+  shell = IsWindows()
+  return subprocess.call(command, shell=shell)
+
+
+def RunProcessAndRetrieveOutput(command):
+  """Run an arbitrary command, returning its output and return code. Since
+  output is collected via communicate(), there will be no output until the
+  call terminates. If you need output while the program runs (ie. so
+  that the buildbot doesn't terminate the script), consider RunProcess().
 
   Args:
     command: A list containing the command and args to execute.
@@ -231,34 +249,16 @@ def RunProcess(command, print_output=False):
   Returns:
     A tuple of the output and return code.
   """
-  if print_output:
-    print 'Running: [%s]' % ' '.join(command)
-
   # On Windows, use shell=True to get PATH interpretation.
   shell = IsWindows()
   proc = subprocess.Popen(command,
                           shell=shell,
                           stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
-                          bufsize=0)
+                          stderr=subprocess.PIPE)
 
-  out = ['']
-  def ReadOutputWhileProcessRuns(stdout, print_output, out):
-    while True:
-      line = stdout.readline()
-      out[0] += line
-      if line == '':
-        break
-      if print_output:
-        sys.stdout.write(line)
+  (output, _) = proc.communicate()
 
-  thread = threading.Thread(target=ReadOutputWhileProcessRuns,
-                            args=(proc.stdout, print_output, out))
-  thread.start()
-  proc.wait()
-  thread.join()
-
-  return (out[0], proc.returncode)
+  return (output, proc.returncode)
 
 
 def RunGit(command):
@@ -272,7 +272,7 @@ def RunGit(command):
   """
   command = ['git'] + command
 
-  return RunProcess(command)
+  return RunProcessAndRetrieveOutput(command)
 
 
 def CheckRunGit(command):
@@ -292,24 +292,24 @@ def CheckRunGit(command):
   return output
 
 
-def BuildWithMake(threads, targets, print_output):
+def BuildWithMake(threads, targets):
   cmd = ['make', 'BUILDTYPE=Release', '-j%d' % threads] + targets
 
-  (output, return_code) = RunProcess(cmd, print_output)
+  return_code = RunProcess(cmd)
 
   return not return_code
 
 
-def BuildWithNinja(threads, targets, print_output):
+def BuildWithNinja(threads, targets):
   cmd = ['ninja', '-C', os.path.join('out', 'Release'),
       '-j%d' % threads] + targets
 
-  (output, return_code) = RunProcess(cmd, print_output)
+  return_code = RunProcess(cmd)
 
   return not return_code
 
 
-def BuildWithVisualStudio(targets, print_output):
+def BuildWithVisualStudio(targets):
   path_to_devenv = os.path.abspath(
       os.path.join(os.environ['VS100COMNTOOLS'], '..', 'IDE', 'devenv.com'))
   path_to_sln = os.path.join(os.getcwd(), 'chrome', 'chrome.sln')
@@ -318,7 +318,7 @@ def BuildWithVisualStudio(targets, print_output):
   for t in targets:
     cmd.extend(['/Project', t])
 
-  (output, return_code) = RunProcess(cmd, print_output)
+  return_code = RunProcess(cmd)
 
   return not return_code
 
@@ -351,17 +351,14 @@ class DesktopBuilder(Builder):
 
     build_success = False
     if opts.build_preference == 'make':
-      build_success = BuildWithMake(threads, targets,
-          opts.output_buildbot_annotations)
+      build_success = BuildWithMake(threads, targets)
     elif opts.build_preference == 'ninja':
       if IsWindows():
         targets = [t + '.exe' for t in targets]
-      build_success = BuildWithNinja(threads, targets,
-          opts.output_buildbot_annotations)
+      build_success = BuildWithNinja(threads, targets)
     elif opts.build_preference == 'msvs':
       assert IsWindows(), 'msvs is only supported on Windows.'
-      build_success = BuildWithVisualStudio(targets,
-          opts.output_buildbot_annotations)
+      build_success = BuildWithVisualStudio(targets)
     else:
       assert False, 'No build system defined.'
     return build_success
@@ -381,7 +378,7 @@ class AndroidBuilder(Builder):
     path_to_tool = os.path.join('build', 'android', 'adb_install_apk.py')
     cmd = [path_to_tool, '--apk', 'ContentShell.apk', '--apk_package',
         'org.chromium.content_shell_apk', '--release']
-    (_, return_code) = RunProcess(cmd, opts.output_buildbot_annotations)
+    return_code = RunProcess(cmd)
     return not return_code
 
   def Build(self, depot, opts):
@@ -433,7 +430,7 @@ class CrosBuilder(Builder):
              '--remote=%s' % opts.cros_remote_ip,
              '--board=%s' % opts.cros_board, '--test', '--verbose']
 
-      (_, return_code) = RunProcess(cmd, opts.output_buildbot_annotations)
+      return_code = RunProcess(cmd)
       return not return_code
     except OSError, e:
       return False
@@ -461,7 +458,7 @@ class CrosBuilder(Builder):
 
     cmd += ['BUILDTYPE=Release', './build_packages',
         '--board=%s' % opts.cros_board]
-    (_, return_code) = RunProcess(cmd, True)
+    return_code = RunProcess(cmd)
 
     return not return_code
 
@@ -489,7 +486,7 @@ class CrosBuilder(Builder):
     cmd += ['BUILDTYPE=Release', '--', './build_image',
         '--board=%s' % opts.cros_board, 'test']
 
-    (_, return_code) = RunProcess(cmd, opts.output_buildbot_annotations)
+    return_code = RunProcess(cmd)
 
     return not return_code
 
@@ -822,7 +819,7 @@ class BisectPerformanceMetrics(object):
       cmd = ['repo', 'forall', '-c',
           'git log --format=%%ct --before=%d --after=%d' % (
           revision_range_end, revision_range_start)]
-      (output, return_code) = RunProcess(cmd)
+      (output, return_code) = RunProcessAndRetrieveOutput(cmd)
 
       assert not return_code, 'An error occurred while running'\
                               ' "%s"' % ' '.join(cmd)
@@ -875,7 +872,7 @@ class BisectPerformanceMetrics(object):
       cmd = [CROS_SDK_PATH, '--', 'portageq-%s' % self.opts.cros_board,
              'best_visible', '/build/%s' % self.opts.cros_board, 'ebuild',
              CROS_CHROMEOS_PATTERN]
-      (output, return_code) = RunProcess(cmd)
+      (output, return_code) = RunProcessAndRetrieveOutput(cmd)
 
       assert not return_code, 'An error occurred while running'\
                               ' "%s"' % ' '.join(cmd)
@@ -1023,8 +1020,10 @@ class BisectPerformanceMetrics(object):
     metric_values = []
     for i in xrange(self.opts.repeat_test_count):
       # Can ignore the return code since if the tests fail, it won't return 0.
-      (output, return_code) = RunProcess(args,
-          self.opts.output_buildbot_annotations)
+      (output, return_code) = RunProcessAndRetrieveOutput(args)
+
+      if self.opts.output_buildbot_annotations:
+        print output
 
       metric_values += self.ParseMetricValuesFromOutput(metric, output)
 
@@ -1151,7 +1150,7 @@ class BisectPerformanceMetrics(object):
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory('cros')
     cmd = [CROS_SDK_PATH, '--delete']
-    (_, return_code) = RunProcess(cmd, self.opts.output_buildbot_annotations)
+    return_code = RunProcess(cmd)
     os.chdir(cwd)
     return not return_code
 
@@ -1164,7 +1163,7 @@ class BisectPerformanceMetrics(object):
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory('cros')
     cmd = [CROS_SDK_PATH, '--create']
-    (_, return_code) = RunProcess(cmd, self.opts.output_buildbot_annotations)
+    return_code = RunProcess(cmd)
     os.chdir(cwd)
     return not return_code
 
@@ -1860,7 +1859,7 @@ class BisectPerformanceMetrics(object):
         cmd = ['repo', 'forall', '-c',
             'pwd ; git log --pretty=oneline --before=%d --after=%d' % (
             last_broken_revision, first_working_revision + 1)]
-        (output, return_code) = RunProcess(cmd)
+        (output, return_code) = RunProcessAndRetrieveOutput(cmd)
 
         changes = []
 
