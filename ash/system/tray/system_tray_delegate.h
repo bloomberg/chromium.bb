@@ -167,6 +167,10 @@ class SystemTrayDelegate {
   // Shows settings related to multiple displays.
   virtual void ShowDisplaySettings() = 0;
 
+  // Returns true if the notification for the display configuration change
+  // should appear.
+  virtual bool ShouldShowDisplayNotification() = 0;
+
   // Shows settings related to Google Drive.
   virtual void ShowDriveSettings() = 0;
 

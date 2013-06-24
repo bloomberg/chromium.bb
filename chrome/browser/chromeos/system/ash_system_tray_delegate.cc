@@ -84,6 +84,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -104,6 +105,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -126,6 +128,9 @@ const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 
 // The maximum session length limit that can be set.
 const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
+
+const char kDisplaySettingsSubPageName[] = "display";
+const char kDisplayOverscanSettingsSubPageName[] = "displayOverscan";
 
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
@@ -526,7 +531,32 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowDisplaySettings() OVERRIDE {
     content::RecordAction(content::UserMetricsAction("ShowDisplayOptions"));
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), "display");
+    chrome::ShowSettingsSubPage(GetAppropriateBrowser(),
+                                kDisplaySettingsSubPageName);
+  }
+
+  virtual bool ShouldShowDisplayNotification() OVERRIDE {
+    // Packaged app is not counted as 'last active', so if a browser opening the
+    // display settings is in background of a packaged app, it will return true.
+    // TODO(mukai): fix this.
+    Browser* active_browser = chrome::FindLastActiveWithHostDesktopType(
+        chrome::HOST_DESKTOP_TYPE_ASH);
+    if (!active_browser)
+      return true;
+
+    content::WebContents* active_contents =
+        active_browser->tab_strip_model()->GetActiveWebContents();
+    if (!active_contents)
+      return true;
+
+    GURL active_url = active_contents->GetActiveURL();
+    std::string display_settings_url =
+        std::string(chrome::kChromeUISettingsURL) + kDisplaySettingsSubPageName;
+    std::string display_overscan_url =
+        std::string(chrome::kChromeUISettingsURL) +
+        kDisplayOverscanSettingsSubPageName;
+    return (active_url.spec() != display_settings_url) &&
+        (active_url.spec() != display_overscan_url);
   }
 
   virtual void ShowDriveSettings() OVERRIDE {

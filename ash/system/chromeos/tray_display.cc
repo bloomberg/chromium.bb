@@ -26,8 +26,6 @@ namespace ash {
 namespace internal {
 namespace {
 
-bool display_notifications_disabled = false;
-
 DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
@@ -309,8 +307,10 @@ bool TrayDisplay::ShouldShowLauncher() const {
 }
 
 void TrayDisplay::OnDisplayConfigurationChanged() {
-  if (display_notifications_disabled)
+  if (!Shell::GetInstance()->system_tray_delegate()->
+          ShouldShowDisplayNotification()) {
     return;
+  }
 
   // TODO(mukai): do not show the notification when the configuration changed
   // due to the user operation on display settings page.
@@ -319,11 +319,6 @@ void TrayDisplay::OnDisplayConfigurationChanged() {
     notification_->Update(current_message_);
   else if (!current_message_.empty())
     ShowNotificationView();
-}
-
-// static
-void TrayDisplay::SetDisplayNotificationsDisabledForTest(bool disabled) {
-  display_notifications_disabled = disabled;
 }
 
 base::string16 TrayDisplay::GetDefaultViewMessage() {

@@ -9,6 +9,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/test_system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -88,7 +89,6 @@ void TrayDisplayTest::SetUp() {
   tray_ = Shell::GetPrimaryRootWindowController()->GetSystemTray();
   tray_display_ = new TrayDisplay(tray_);
   tray_->AddTrayItem(tray_display_);
-  TrayDisplay::SetDisplayNotificationsDisabledForTest(false);
 }
 
 void TrayDisplayTest::CloseNotification() {
@@ -247,6 +247,11 @@ TEST_F(TrayDisplayTest, ExternalDisplayResized) {
 }
 
 TEST_F(TrayDisplayTest, DisplayNotifications) {
+  test::TestSystemTrayDelegate* tray_delegate =
+      static_cast<test::TestSystemTrayDelegate*>(
+          Shell::GetInstance()->system_tray_delegate());
+  tray_delegate->set_should_show_display_notification(true);
+
   UpdateDisplay("400x400");
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Display::SetInternalDisplayId(display_manager->first_display_id());

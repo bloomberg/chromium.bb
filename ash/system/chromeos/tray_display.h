@@ -30,7 +30,6 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
   virtual ~TrayDisplay();
 
  private:
-  friend class test::AshTestBase;
   friend class TrayDisplayTest;
 
   typedef std::map<int64, DisplayInfo> DisplayInfoMap;
@@ -49,10 +48,6 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
 
   // Overridden from DisplayControllerObserver:
   virtual void OnDisplayConfigurationChanged() OVERRIDE;
-
-  // Call this with |diabled| = false when the test case wants to see the
-  // display notification.
-  static void SetDisplayNotificationsDisabledForTest(bool disabled);
 
   // Test accessors.
   base::string16 GetDefaultViewMessage();

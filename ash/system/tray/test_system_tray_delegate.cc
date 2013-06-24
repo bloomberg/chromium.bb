@@ -53,6 +53,7 @@ class TestVolumeControlDelegate : public VolumeControlDelegate {
 TestSystemTrayDelegate::TestSystemTrayDelegate()
     : bluetooth_enabled_(true),
       caps_lock_enabled_(false),
+      should_show_display_notification_(false),
       volume_control_delegate_(new TestVolumeControlDelegate) {
 }
 
@@ -136,6 +137,10 @@ void TestSystemTrayDelegate::ShowBluetoothSettings() {
 }
 
 void TestSystemTrayDelegate::ShowDisplaySettings() {
+}
+
+bool TestSystemTrayDelegate::ShouldShowDisplayNotification() {
+  return should_show_display_notification_;
 }
 
 void TestSystemTrayDelegate::ShowDriveSettings() {

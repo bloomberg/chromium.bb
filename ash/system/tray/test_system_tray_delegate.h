@@ -42,6 +42,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE;
   virtual void ShowBluetoothSettings() OVERRIDE;
   virtual void ShowDisplaySettings() OVERRIDE;
+  virtual bool ShouldShowDisplayNotification() OVERRIDE;
   virtual void ShowDriveSettings() OVERRIDE;
   virtual void ShowIMESettings() OVERRIDE;
   virtual void ShowHelp() OVERRIDE;
@@ -95,9 +96,14 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
       const base::TimeDelta& delta) const OVERRIDE;
   virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE;
 
+  void set_should_show_display_notification(bool should_show) {
+    should_show_display_notification_ = should_show;
+  }
+
  private:
   bool bluetooth_enabled_;
   bool caps_lock_enabled_;
+  bool should_show_display_notification_;
   scoped_ptr<VolumeControlDelegate> volume_control_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSystemTrayDelegate);
