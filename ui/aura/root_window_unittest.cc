@@ -12,6 +12,7 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -641,6 +642,40 @@ TEST_F(RootWindowTest, TouchMovesHeld) {
   filter->events().clear();
   root_window()->ReleasePointerMoves();
   RunAllPendingInMessageLoop();
+  EXPECT_TRUE(filter->events().empty());
+}
+
+// Tests that synthetic mouse events are ignored when mouse
+// events are disabled.
+TEST_F(RootWindowTest, DispatchSyntheticMouseEvents) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1234, gfx::Rect(5, 5, 100, 100), root_window()));
+  window->Show();
+  window->SetCapture();
+
+  test::TestCursorClient cursor_client(root_window());
+
+  // Dispatch a non-synthetic mouse event when mouse events are enabled.
+  ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                        gfx::Point(10, 10), 0);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse1);
+  EXPECT_FALSE(filter->events().empty());
+  filter->events().clear();
+
+  // Dispatch a synthetic mouse event when mouse events are enabled.
+  ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+                        gfx::Point(10, 10), ui::EF_IS_SYNTHESIZED);
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse2);
+  EXPECT_FALSE(filter->events().empty());
+  filter->events().clear();
+
+  // Dispatch a synthetic mouse event when mouse events are disabled.
+  cursor_client.DisableMouseEvents();
+  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse2);
   EXPECT_TRUE(filter->events().empty());
 }
 

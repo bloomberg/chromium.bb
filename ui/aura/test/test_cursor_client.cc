@@ -9,12 +9,15 @@
 namespace aura {
 namespace test {
 
-TestCursorClient::TestCursorClient()
+TestCursorClient::TestCursorClient(aura::Window* root_window)
     : visible_(true),
-      mouse_events_enabled_(true) {
+      mouse_events_enabled_(true),
+      root_window_(root_window) {
+  client::SetCursorClient(root_window, this);
 }
 
 TestCursorClient::~TestCursorClient() {
+  client::SetCursorClient(root_window_, NULL);
 }
 
 void TestCursorClient::SetCursor(gfx::NativeCursor cursor) {

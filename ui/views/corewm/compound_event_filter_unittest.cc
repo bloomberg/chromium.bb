@@ -57,8 +57,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   window->Show();
   window->SetCapture();
 
-  aura::test::TestCursorClient cursor_client;
-  aura::client::SetCursorClient(root_window(), &cursor_client);
+  aura::test::TestCursorClient cursor_client(root_window());
 
   ui::MouseEvent mouse0(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), 0);
@@ -135,8 +134,7 @@ TEST_F(CompoundEventFilterTest, DontHideWhenMouseDown) {
       gfx::Rect(5, 5, 100, 100), root_window()));
   window->Show();
 
-  aura::test::TestCursorClient cursor_client;
-  aura::client::SetCursorClient(root_window(), &cursor_client);
+  aura::test::TestCursorClient cursor_client(root_window());
 
   // Move and press the mouse over the window.
   event_generator.MoveMouseTo(10, 10);

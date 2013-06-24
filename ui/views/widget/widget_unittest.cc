@@ -1675,9 +1675,8 @@ TEST_F(WidgetTest, MouseEventsHandled) {
   View* root_view = widget->GetRootView();
 
 #if defined(USE_AURA)
-  aura::test::TestCursorClient cursor_client;
-  aura::client::SetCursorClient(
-      widget->GetNativeView()->GetRootWindow(), &cursor_client);
+  aura::test::TestCursorClient cursor_client(
+      widget->GetNativeView()->GetRootWindow());
 #endif
 
   EventCountView* v1 = new EventCountView();
@@ -1726,8 +1725,6 @@ TEST_F(WidgetTest, MouseEventsHandled) {
   EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_ENTERED));
   EXPECT_EQ(0, v1->GetEventCount(ui::ET_MOUSE_EXITED));
   EXPECT_EQ(0, v2->GetEventCount(ui::ET_MOUSE_EXITED));
-
-  cursor_client.EnableMouseEvents();
 #endif
 }
 

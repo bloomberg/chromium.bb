@@ -14,7 +14,7 @@ namespace test {
 
 class TestCursorClient : public aura::client::CursorClient {
  public:
-  TestCursorClient();
+  explicit TestCursorClient(aura::Window* root_window);
   virtual ~TestCursorClient();
 
   // Overridden from aura::client::CursorClient:
@@ -39,6 +39,7 @@ class TestCursorClient : public aura::client::CursorClient {
   bool visible_;
   bool mouse_events_enabled_;
   ObserverList<aura::client::CursorClientObserver> observers_;
+  aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCursorClient);
 };

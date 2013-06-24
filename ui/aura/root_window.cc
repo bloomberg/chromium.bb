@@ -1032,6 +1032,12 @@ bool RootWindow::DispatchMouseEventRepost(ui::MouseEvent* event) {
 
 bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
                                             Window* target) {
+  client::CursorClient* cursor_client = client::GetCursorClient(this);
+  if (cursor_client &&
+      !cursor_client->IsMouseEventsEnabled() &&
+      (event->flags() & ui::EF_IS_SYNTHESIZED))
+    return false;
+
   static const int kMouseButtonFlagMask =
       ui::EF_LEFT_MOUSE_BUTTON |
       ui::EF_MIDDLE_MOUSE_BUTTON |

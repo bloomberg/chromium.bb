@@ -46,9 +46,8 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
   widget->Show();
 
 #if defined(USE_AURA)
-  aura::test::TestCursorClient cursor_client;
-  aura::client::SetCursorClient(
-      widget->GetNativeView()->GetRootWindow(), &cursor_client);
+  aura::test::TestCursorClient cursor_client(
+      widget->GetNativeView()->GetRootWindow());
 #endif
 
   // Position the widget in a way so that it is under the cursor.
@@ -98,8 +97,6 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
 
   button->SetVisible(true);
   EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
-
-  cursor_client.EnableMouseEvents();
 #endif
 }
 

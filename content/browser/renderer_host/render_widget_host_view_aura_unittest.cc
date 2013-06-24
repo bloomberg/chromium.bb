@@ -436,9 +436,8 @@ TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
       parent_view_->GetNativeView()->GetRootWindow(), gfx::Rect());
   view_->SetSize(gfx::Size(100, 100));
 
-  aura::test::TestCursorClient cursor_client;
-  aura::client::SetCursorClient(
-      parent_view_->GetNativeView()->GetRootWindow(), &cursor_client);
+  aura::test::TestCursorClient cursor_client(
+      parent_view_->GetNativeView()->GetRootWindow());
 
   cursor_client.AddObserver(view_);
 
@@ -508,8 +507,6 @@ TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
       InputMsg_CursorVisibilityChange::ID));
 
   cursor_client.RemoveObserver(view_);
-  aura::client::SetCursorClient(
-      parent_view_->GetNativeView()->GetRootWindow(), NULL);
 }
 
 }  // namespace content
