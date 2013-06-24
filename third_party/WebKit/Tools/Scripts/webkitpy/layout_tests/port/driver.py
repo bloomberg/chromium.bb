@@ -55,27 +55,6 @@ class DriverOutput(object):
     """Groups information about a output from driver for easy passing
     and post-processing of data."""
 
-    strip_patterns = []
-    strip_patterns.append((re.compile('at \(-?[0-9]+,-?[0-9]+\) *'), ''))
-    strip_patterns.append((re.compile('size -?[0-9]+x-?[0-9]+ *'), ''))
-    strip_patterns.append((re.compile('text run width -?[0-9]+: '), ''))
-    strip_patterns.append((re.compile('text run width -?[0-9]+ [a-zA-Z ]+: '), ''))
-    strip_patterns.append((re.compile('RenderButton {BUTTON} .*'), 'RenderButton {BUTTON}'))
-    strip_patterns.append((re.compile('RenderImage {INPUT} .*'), 'RenderImage {INPUT}'))
-    strip_patterns.append((re.compile('RenderBlock {INPUT} .*'), 'RenderBlock {INPUT}'))
-    strip_patterns.append((re.compile('RenderTextControl {INPUT} .*'), 'RenderTextControl {INPUT}'))
-    strip_patterns.append((re.compile('\([0-9]+px'), 'px'))
-    strip_patterns.append((re.compile(' *" *\n +" *'), ' '))
-    strip_patterns.append((re.compile('" +$'), '"'))
-    strip_patterns.append((re.compile('- '), '-'))
-    strip_patterns.append((re.compile('\n( *)"\s+'), '\n\g<1>"'))
-    strip_patterns.append((re.compile('\s+"\n'), '"\n'))
-    strip_patterns.append((re.compile('scrollWidth [0-9]+'), 'scrollWidth'))
-    strip_patterns.append((re.compile('scrollHeight [0-9]+'), 'scrollHeight'))
-    strip_patterns.append((re.compile('scrollX [0-9]+'), 'scrollX'))
-    strip_patterns.append((re.compile('scrollY [0-9]+'), 'scrollY'))
-    strip_patterns.append((re.compile('scrolled to [0-9]+,[0-9]+'), 'scrolled'))
-
     def __init__(self, text, image, image_hash, audio, crash=False,
             test_time=0, measurements=None, timeout=False, error='', crashed_process_name='??',
             crashed_pid=None, crash_log=None, pid=None):
@@ -97,12 +76,6 @@ class DriverOutput(object):
 
     def has_stderr(self):
         return bool(self.error)
-
-    def strip_metrics(self):
-        if not self.text:
-            return
-        for pattern in self.strip_patterns:
-            self.text = re.sub(pattern[0], pattern[1], self.text)
 
 
 class Driver(object):

@@ -173,9 +173,6 @@ def parse_args(args):
             help="Show all failures in results.html, rather than only regressions"),
         optparse.make_option("--clobber-old-results", action="store_true",
             default=False, help="Clobbers test results from previous runs."),
-        optparse.make_option("--ignore-metrics", action="store_true", dest="ignore_metrics",
-            default=False, help="Ignore rendering metrics related information from test "
-            "output, only compare the structure of the rendertree."),
     ]))
 
     option_group_definitions.append(("Testing Options", [
@@ -318,9 +315,6 @@ def _set_up_derived_options(port, options):
         for path in options.additional_platform_directory:
             additional_platform_directories.append(port.host.filesystem.abspath(path))
         options.additional_platform_directory = additional_platform_directories
-
-    if options.ignore_metrics and (options.new_baseline or options.reset_results):
-        _log.warning("--ignore-metrics has no effect with --new-baselines or with --reset-results")
 
     if options.new_baseline:
         options.reset_results = True
