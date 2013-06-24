@@ -9,6 +9,8 @@
     "unhooked-absent",
     "unhooked-anonymous",
     "unhooked-file-exec",
+    "unhooked-file-nonexec-others",
+    "unhooked-file-nonexec-group",
     "unhooked-file-nonexec",
     "unhooked-stack",
     "unhooked-other",
@@ -115,6 +117,18 @@
       "mappedpathname": "^/.*",
       "mappedpermission": "..x.",
       "allocator": "unhooked"
+    },
+    {
+      "name": "unhooked-file-nonexec-others",
+      "mappedpathname": "^/.*",
+      "allocator": "unhooked",
+      "sharedwith": ["others"]
+    },
+    {
+      "name": "unhooked-file-nonexec-group",
+      "mappedpathname": "^/.*",
+      "allocator": "unhooked",
+      "sharedwith": ["group"]
     },
     {
       "name": "unhooked-file-nonexec",

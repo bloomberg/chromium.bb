@@ -11,6 +11,7 @@ import logging
 import optparse
 import os
 import re
+import struct
 import subprocess
 import sys
 import tempfile
@@ -382,7 +383,8 @@ class Rule(object):
                stacksourcefile_pattern=None,
                typeinfo_pattern=None,
                mappedpathname_pattern=None,
-               mappedpermission_pattern=None):
+               mappedpermission_pattern=None,
+               sharedwith=None):
     self._name = name
     self._allocator_type = allocator_type
 
@@ -408,6 +410,10 @@ class Rule(object):
     if mappedpermission_pattern:
       self._mappedpermission_pattern = re.compile(
           mappedpermission_pattern + r'\Z')
+
+    self._sharedwith = list()
+    if sharedwith:
+      self._sharedwith = sharedwith
 
   @property
   def name(self):
@@ -436,6 +442,10 @@ class Rule(object):
   @property
   def mappedpermission_pattern(self):
     return self._mappedpermission_pattern
+
+  @property
+  def sharedwith(self):
+    return self._sharedwith
 
 
 class Policy(object):
@@ -499,10 +509,12 @@ class Policy(object):
 
     assert False
 
-  def find_mmap(self, region, bucket_set):
+  def find_mmap(self, region, bucket_set,
+                pageframe=None, group_pfn_counts=None):
     """Finds a matching component which a given mmap |region| belongs to.
 
-    It uses |bucket_set| to match with backtraces.
+    It uses |bucket_set| to match with backtraces.  If |pageframe| is given,
+    it considers memory sharing among processes.
 
     NOTE: Don't use Bucket's |component_cache| for mmap regions because they're
     classified not only with bucket information (mappedpathname for example).
@@ -510,6 +522,10 @@ class Policy(object):
     Args:
         region: A tuple representing a memory region.
         bucket_set: A BucketSet object to look up backtraces.
+        pageframe: A PageFrame object representing a pageframe maybe including
+            a pagecount.
+        group_pfn_counts: A dict mapping a PFN to the number of times the
+            the pageframe is mapped by the known "group (Chrome)" processes.
 
     Returns:
         A string representing a component name.
@@ -523,6 +539,7 @@ class Policy(object):
 
     stackfunction = bucket.symbolized_joined_stackfunction
     stacksourcefile = bucket.symbolized_joined_stacksourcefile
+    sharedwith = self._categorize_pageframe(pageframe, group_pfn_counts)
 
     for rule in self._rules:
       if (rule.allocator_type == 'mmap' and
@@ -537,21 +554,30 @@ class Policy(object):
                region[1]['vma']['readable'] +
                region[1]['vma']['writable'] +
                region[1]['vma']['executable'] +
-               region[1]['vma']['private']))):
+               region[1]['vma']['private'])) and
+          (not rule.sharedwith or
+           not pageframe or sharedwith in rule.sharedwith)):
         return rule.name, bucket
 
     assert False
 
-  def find_unhooked(self, region):
+  def find_unhooked(self, region, pageframe=None, group_pfn_counts=None):
     """Finds a matching component which a given unhooked |region| belongs to.
+
+    If |pageframe| is given, it considers memory sharing among processes.
 
     Args:
         region: A tuple representing a memory region.
+        pageframe: A PageFrame object representing a pageframe maybe including
+            a pagecount.
+        group_pfn_counts: A dict mapping a PFN to the number of times the
+            the pageframe is mapped by the known "group (Chrome)" processes.
 
     Returns:
         A string representing a component name.
     """
     assert region[0] == 'unhooked'
+    sharedwith = self._categorize_pageframe(pageframe, group_pfn_counts)
 
     for rule in self._rules:
       if (rule.allocator_type == 'unhooked' and
@@ -562,7 +588,9 @@ class Policy(object):
                region[1]['vma']['readable'] +
                region[1]['vma']['writable'] +
                region[1]['vma']['executable'] +
-               region[1]['vma']['private']))):
+               region[1]['vma']['private'])) and
+          (not rule.sharedwith or
+           not pageframe or sharedwith in rule.sharedwith)):
         return rule.name
 
     assert False
@@ -626,9 +654,35 @@ class Policy(object):
           stacksourcefile,
           rule['typeinfo'] if 'typeinfo' in rule else None,
           rule.get('mappedpathname'),
-          rule.get('mappedpermission')))
+          rule.get('mappedpermission'),
+          rule.get('sharedwith')))
 
     return Policy(rules, policy['version'], policy['components'])
+
+  @staticmethod
+  def _categorize_pageframe(pageframe, group_pfn_counts):
+    """Categorizes a pageframe based on its sharing status.
+
+    Returns:
+        'private' if |pageframe| is not shared with other processes.  'group'
+        if |pageframe| is shared only with group (Chrome-related) processes.
+        'others' if |pageframe| is shared with non-group processes.
+    """
+    if not pageframe:
+      return 'private'
+
+    if pageframe.pagecount:
+      if pageframe.pagecount == 1:
+        return 'private'
+      elif pageframe.pagecount <= group_pfn_counts.get(pageframe.pfn, 0) + 1:
+        return 'group'
+      else:
+        return 'others'
+    else:
+      if pageframe.pfn in group_pfn_counts:
+        return 'group'
+      else:
+        return 'private'
 
 
 class PolicySet(object):
@@ -870,6 +924,158 @@ class BucketSet(object):
         yield function
 
 
+class PageFrame(object):
+  """Represents a pageframe and maybe its shared count."""
+  def __init__(self, pfn, size, pagecount, start_truncated, end_truncated):
+    self._pfn = pfn
+    self._size = size
+    self._pagecount = pagecount
+    self._start_truncated = start_truncated
+    self._end_truncated = end_truncated
+
+  def __str__(self):
+    result = str()
+    if self._start_truncated:
+      result += '<'
+    result += '%06x#%d' % (self._pfn, self._pagecount)
+    if self._end_truncated:
+      result += '>'
+    return result
+
+  def __repr__(self):
+    return str(self)
+
+  @staticmethod
+  def parse(encoded_pfn, size):
+    start = 0
+    end = len(encoded_pfn)
+    end_truncated = False
+    if encoded_pfn.endswith('>'):
+      end = len(encoded_pfn) - 1
+      end_truncated = True
+    pagecount_found = encoded_pfn.find('#')
+    pagecount = None
+    if pagecount_found >= 0:
+      encoded_pagecount = 'AAA' + encoded_pfn[pagecount_found+1 : end]
+      pagecount = struct.unpack(
+          '>I', '\x00' + encoded_pagecount.decode('base64'))[0]
+      end = pagecount_found
+    start_truncated = False
+    if encoded_pfn.startswith('<'):
+      start = 1
+      start_truncated = True
+
+    pfn = struct.unpack(
+        '>I', '\x00' + (encoded_pfn[start:end]).decode('base64'))[0]
+
+    return PageFrame(pfn, size, pagecount, start_truncated, end_truncated)
+
+  @property
+  def pfn(self):
+    return self._pfn
+
+  @property
+  def size(self):
+    return self._size
+
+  def set_size(self, size):
+    self._size = size
+
+  @property
+  def pagecount(self):
+    return self._pagecount
+
+  @property
+  def start_truncated(self):
+    return self._start_truncated
+
+  @property
+  def end_truncated(self):
+    return self._end_truncated
+
+
+class PFNCounts(object):
+  """Represents counts of PFNs in a process."""
+
+  _PATH_PATTERN = re.compile(r'^(.*)\.([0-9]+)\.([0-9]+)\.heap$')
+
+  def __init__(self, path, modified_time):
+    matched = self._PATH_PATTERN.match(path)
+    if matched:
+      self._pid = int(matched.group(2))
+    else:
+      self._pid = 0
+    self._command_line = ''
+    self._pagesize = 4096
+    self._path = path
+    self._pfn_meta = ''
+    self._pfnset = dict()
+    self._reason = ''
+    self._time = modified_time
+
+  @staticmethod
+  def load(path, log_header='Loading PFNs from a heap profile dump: '):
+    pfnset = PFNCounts(path, float(os.stat(path).st_mtime))
+    LOGGER.info('%s%s' % (log_header, path))
+
+    with open(path, 'r') as pfnset_f:
+      pfnset.load_file(pfnset_f)
+
+    return pfnset
+
+  @property
+  def path(self):
+    return self._path
+
+  @property
+  def pid(self):
+    return self._pid
+
+  @property
+  def time(self):
+    return self._time
+
+  @property
+  def reason(self):
+    return self._reason
+
+  @property
+  def iter_pfn(self):
+    for pfn, count in self._pfnset.iteritems():
+      yield pfn, count
+
+  def load_file(self, pfnset_f):
+    prev_pfn_end_truncated = None
+    for line in pfnset_f:
+      line = line.strip()
+      if line.startswith('GLOBAL_STATS:') or line.startswith('STACKTRACES:'):
+        break
+      elif line.startswith('PF: '):
+        for encoded_pfn in line[3:].split():
+          page_frame = PageFrame.parse(encoded_pfn, self._pagesize)
+          if page_frame.start_truncated and (
+              not prev_pfn_end_truncated or
+              prev_pfn_end_truncated != page_frame.pfn):
+            LOGGER.error('Broken page frame number: %s.' % encoded_pfn)
+          self._pfnset[page_frame.pfn] = self._pfnset.get(page_frame.pfn, 0) + 1
+          if page_frame.end_truncated:
+            prev_pfn_end_truncated = page_frame.pfn
+          else:
+            prev_pfn_end_truncated = None
+      elif line.startswith('PageSize: '):
+        self._pagesize = int(line[10:])
+      elif line.startswith('PFN: '):
+        self._pfn_meta = line[5:]
+      elif line.startswith('PageFrame: '):
+        self._pfn_meta = line[11:]
+      elif line.startswith('Time: '):
+        self._time = float(line[6:])
+      elif line.startswith('CommandLine: '):
+        self._command_line = line[13:]
+      elif line.startswith('Reason: '):
+        self._reason = line[8:]
+
+
 class Dump(object):
   """Represents a heap profile dump."""
 
@@ -902,6 +1108,11 @@ class Dump(object):
     self._stacktrace_lines = []
     self._global_stats = {} # used only in apply_policy
 
+    self._pagesize = 4096
+    self._pageframe_length = 0
+    self._pageframe_encoding = ''
+    self._has_pagecount = False
+
     self._version = ''
     self._lines = []
 
@@ -933,6 +1144,22 @@ class Dump(object):
 
   def global_stat(self, name):
     return self._global_stats[name]
+
+  @property
+  def pagesize(self):
+    return self._pagesize
+
+  @property
+  def pageframe_length(self):
+    return self._pageframe_length
+
+  @property
+  def pageframe_encoding(self):
+    return self._pageframe_encoding
+
+  @property
+  def has_pagecount(self):
+    return self._has_pagecount
 
   @staticmethod
   def load(path, log_header='Loading a heap profile dump: '):
@@ -1055,6 +1282,23 @@ class Dump(object):
           self._time = float(matched_seconds.group(1))
       elif self._lines[ln].startswith('Reason:'):
         pass  # Nothing to do for 'Reason:'
+      elif self._lines[ln].startswith('PageSize: '):
+        self._pagesize = int(self._lines[ln][10:])
+      elif self._lines[ln].startswith('CommandLine:'):
+        pass
+      elif (self._lines[ln].startswith('PageFrame: ') or
+            self._lines[ln].startswith('PFN: ')):
+        if self._lines[ln].startswith('PageFrame: '):
+          words = self._lines[ln][11:].split(',')
+        else:
+          words = self._lines[ln][5:].split(',')
+        for word in words:
+          if word == '24':
+            self._pageframe_length = 24
+          elif word == 'Base64':
+            self._pageframe_encoding = 'base64'
+          elif word == 'PageCount':
+            self._has_pagecount = True
       else:
         break
       ln += 1
@@ -1068,8 +1312,9 @@ class Dump(object):
       return {}
 
     ln += 1
-    self._map = {}
+    self._map = dict()
     current_vma = dict()
+    pageframe_list = list()
     while True:
       entry = proc_maps.ProcMaps.parse_line(self._lines[ln])
       if entry:
@@ -1082,6 +1327,8 @@ class Dump(object):
         continue
 
       if self._lines[ln].startswith('  PF: '):
+        for pageframe in self._lines[ln][5:].split():
+          pageframe_list.append(PageFrame.parse(pageframe, self._pagesize))
         ln += 1
         continue
 
@@ -1122,6 +1369,15 @@ class Dump(object):
         end = current_vma['end']
       else:
         end = int(matched.group(5), 16)
+
+      if pageframe_list and pageframe_list[0].start_truncated:
+        pageframe_list[0].set_size(
+            pageframe_list[0].size - start % self._pagesize)
+      if pageframe_list and pageframe_list[-1].end_truncated:
+        pageframe_list[-1].set_size(
+            pageframe_list[-1].size - (self._pagesize - end % self._pagesize))
+      region_info['pageframe'] = pageframe_list
+      pageframe_list = list()
 
       self._map[(start, end)] = (matched.group(7), region_info)
       ln += 1
@@ -1323,7 +1579,7 @@ class Command(object):
 
   def _parse_args(self, sys_argv, required):
     options, args = self._parser.parse_args(sys_argv)
-    if len(args) != required + 1:
+    if len(args) < required + 1:
       self._parser.error('needs %d argument(s).\n' % required)
       return None
     return (options, args)
@@ -1396,7 +1652,8 @@ class StacktraceCommand(Command):
 class PolicyCommands(Command):
   def __init__(self, command):
     super(PolicyCommands, self).__init__(
-        'Usage: %%prog %s [-p POLICY] <first-dump>' % command)
+        'Usage: %%prog %s [-p POLICY] <first-dump> [shared-first-dumps...]' %
+        command)
     self._parser.add_option('-p', '--policy', type='string', dest='policy',
                             help='profile with POLICY', metavar='POLICY')
     self._parser.add_option('--alternative-dirs', dest='alternative_dirs',
@@ -1407,6 +1664,7 @@ class PolicyCommands(Command):
   def _set_up(self, sys_argv):
     options, args = self._parse_args(sys_argv, 1)
     dump_path = args[1]
+    shared_first_dump_paths = args[2:]
     alternative_dirs_dict = {}
     if options.alternative_dirs:
       for alternative_dir_pair in options.alternative_dirs.split(':'):
@@ -1415,11 +1673,20 @@ class PolicyCommands(Command):
     (bucket_set, dumps) = Command.load_basic_files(
         dump_path, True, alternative_dirs=alternative_dirs_dict)
 
+    pfn_counts_dict = dict()
+    for shared_first_dump_path in shared_first_dump_paths:
+      shared_dumps = Command._find_all_dumps(shared_first_dump_path)
+      for shared_dump in shared_dumps:
+        pfn_counts = PFNCounts.load(shared_dump)
+        if pfn_counts.pid not in pfn_counts_dict:
+          pfn_counts_dict[pfn_counts.pid] = list()
+        pfn_counts_dict[pfn_counts.pid].append(pfn_counts)
+
     policy_set = PolicySet.load(Command._parse_policy_list(options.policy))
-    return policy_set, dumps, bucket_set
+    return policy_set, dumps, pfn_counts_dict, bucket_set
 
   @staticmethod
-  def _apply_policy(dump, policy, bucket_set, first_dump_time):
+  def _apply_policy(dump, pfn_counts_dict, policy, bucket_set, first_dump_time):
     """Aggregates the total memory size of each component.
 
     Iterate through all stacktraces and attribute them to one of the components
@@ -1427,6 +1694,7 @@ class PolicyCommands(Command):
 
     Args:
         dump: A Dump object.
+        pfn_counts_dict: A dict mapping a pid to a list of PFNCounts.
         policy: A Policy object.
         bucket_set: A BucketSet object.
         first_dump_time: An integer representing time when the first dump is
@@ -1436,11 +1704,37 @@ class PolicyCommands(Command):
         A dict mapping components and their corresponding sizes.
     """
     LOGGER.info('  %s' % dump.path)
+    all_pfn_dict = dict()
+    if pfn_counts_dict:
+      LOGGER.info('    shared with...')
+      for pid, pfnset_list in pfn_counts_dict.iteritems():
+        closest_pfnset_index = None
+        closest_pfnset_difference = 1024.0
+        for index, pfnset in enumerate(pfnset_list):
+          time_difference = pfnset.time - dump.time
+          if time_difference >= 3.0:
+            break
+          elif ((time_difference < 0.0 and pfnset.reason != 'Exiting') or
+                (0.0 <= time_difference and time_difference < 3.0)):
+            closest_pfnset_index = index
+            closest_pfnset_difference = time_difference
+          elif time_difference < 0.0 and pfnset.reason == 'Exiting':
+            closest_pfnset_index = None
+            break
+        if closest_pfnset_index:
+          for pfn, count in pfnset_list[closest_pfnset_index].iter_pfn:
+            all_pfn_dict[pfn] = all_pfn_dict.get(pfn, 0) + count
+          LOGGER.info('      %s (time difference = %f)' %
+                      (pfnset_list[closest_pfnset_index].path,
+                       closest_pfnset_difference))
+        else:
+          LOGGER.info('      (no match with pid:%d)' % pid)
+
     sizes = dict((c, 0) for c in policy.components)
 
     PolicyCommands._accumulate_malloc(dump, policy, bucket_set, sizes)
     verify_global_stats = PolicyCommands._accumulate_maps(
-        dump, policy, bucket_set, sizes)
+        dump, all_pfn_dict, policy, bucket_set, sizes)
 
     # TODO(dmikurube): Remove the verifying code when GLOBAL_STATS is removed.
     # http://crbug.com/245603.
@@ -1533,7 +1827,7 @@ class PolicyCommands(Command):
         sizes['other-total-log'] += int(words[COMMITTED])
 
   @staticmethod
-  def _accumulate_maps(dump, policy, bucket_set, sizes):
+  def _accumulate_maps(dump, pfn_dict, policy, bucket_set, sizes):
     # TODO(dmikurube): Remove the dict when GLOBAL_STATS is removed.
     # http://crbug.com/245603.
     global_stats = {
@@ -1551,7 +1845,7 @@ class PolicyCommands(Command):
         'profiled-mmap': 0,
         }
 
-    for _, value in dump.iter_map:
+    for key, value in dump.iter_map:
       # TODO(dmikurube): Remove the subtotal code when GLOBAL_STATS is removed.
       # It's temporary verification code for transition described in
       # http://crbug.com/245603.
@@ -1577,16 +1871,31 @@ class PolicyCommands(Command):
         global_stats['profiled-mmap'] += committed
 
       if value[0] == 'unhooked':
-        component_match = policy.find_unhooked(value)
-        sizes[component_match] += int(value[1]['committed'])
-      elif value[0] == 'hooked':
-        component_match, _ = policy.find_mmap(value, bucket_set)
-        sizes[component_match] += int(value[1]['committed'])
-        assert not component_match.startswith('tc-')
-        if component_match.startswith('mmap-'):
-          sizes['mmap-total-log'] += int(value[1]['committed'])
+        if pfn_dict and dump.pageframe_length:
+          for pageframe in value[1]['pageframe']:
+            component_match = policy.find_unhooked(value, pageframe, pfn_dict)
+            sizes[component_match] += pageframe.size
         else:
-          sizes['other-total-log'] += int(value[1]['committed'])
+          component_match = policy.find_unhooked(value)
+          sizes[component_match] += int(value[1]['committed'])
+      elif value[0] == 'hooked':
+        if pfn_dict and dump.pageframe_length:
+          for pageframe in value[1]['pageframe']:
+            component_match, _ = policy.find_mmap(
+                value, bucket_set, pageframe, pfn_dict)
+            sizes[component_match] += pageframe.size
+            assert not component_match.startswith('tc-')
+            if component_match.startswith('mmap-'):
+              sizes['mmap-total-log'] += pageframe.size
+            else:
+              sizes['other-total-log'] += pageframe.size
+        else:
+          component_match, _ = policy.find_mmap(value, bucket_set)
+          sizes[component_match] += int(value[1]['committed'])
+          if component_match.startswith('mmap-'):
+            sizes['mmap-total-log'] += int(value[1]['committed'])
+          else:
+            sizes['other-total-log'] += int(value[1]['committed'])
       else:
         LOGGER.error('Unrecognized mapping status: %s' % value[0])
 
@@ -1598,11 +1907,12 @@ class CSVCommand(PolicyCommands):
     super(CSVCommand, self).__init__('csv')
 
   def do(self, sys_argv):
-    policy_set, dumps, bucket_set = self._set_up(sys_argv)
-    return CSVCommand._output(policy_set, dumps, bucket_set, sys.stdout)
+    policy_set, dumps, pfn_counts_dict, bucket_set = self._set_up(sys_argv)
+    return CSVCommand._output(
+        policy_set, dumps, pfn_counts_dict, bucket_set, sys.stdout)
 
   @staticmethod
-  def _output(policy_set, dumps, bucket_set, out):
+  def _output(policy_set, dumps, pfn_counts_dict, bucket_set, out):
     max_components = 0
     for label in policy_set:
       max_components = max(max_components, len(policy_set[label].components))
@@ -1617,7 +1927,7 @@ class CSVCommand(PolicyCommands):
       LOGGER.info('Applying a policy %s to...' % label)
       for dump in dumps:
         component_sizes = PolicyCommands._apply_policy(
-            dump, policy_set[label], bucket_set, dumps[0].time)
+            dump, pfn_counts_dict, policy_set[label], bucket_set, dumps[0].time)
         s = []
         for c in components:
           if c in ('hour', 'minute', 'second'):
@@ -1637,11 +1947,12 @@ class JSONCommand(PolicyCommands):
     super(JSONCommand, self).__init__('json')
 
   def do(self, sys_argv):
-    policy_set, dumps, bucket_set = self._set_up(sys_argv)
-    return JSONCommand._output(policy_set, dumps, bucket_set, sys.stdout)
+    policy_set, dumps, pfn_counts_dict, bucket_set = self._set_up(sys_argv)
+    return JSONCommand._output(
+        policy_set, dumps, pfn_counts_dict, bucket_set, sys.stdout)
 
   @staticmethod
-  def _output(policy_set, dumps, bucket_set, out):
+  def _output(policy_set, dumps, pfn_counts_dict, bucket_set, out):
     json_base = {
       'version': 'JSON_DEEP_2',
       'policies': {},
@@ -1656,7 +1967,7 @@ class JSONCommand(PolicyCommands):
       LOGGER.info('Applying a policy %s to...' % label)
       for dump in dumps:
         component_sizes = PolicyCommands._apply_policy(
-            dump, policy_set[label], bucket_set, dumps[0].time)
+            dump, pfn_counts_dict, policy_set[label], bucket_set, dumps[0].time)
         component_sizes['dump_path'] = dump.path
         component_sizes['dump_time'] = datetime.datetime.fromtimestamp(
             dump.time).strftime('%Y-%m-%d %H:%M:%S')
@@ -1674,16 +1985,17 @@ class ListCommand(PolicyCommands):
     super(ListCommand, self).__init__('list')
 
   def do(self, sys_argv):
-    policy_set, dumps, bucket_set = self._set_up(sys_argv)
-    return ListCommand._output(policy_set, dumps, bucket_set, sys.stdout)
+    policy_set, dumps, pfn_counts_dict, bucket_set = self._set_up(sys_argv)
+    return ListCommand._output(
+        policy_set, dumps, pfn_counts_dict, bucket_set, sys.stdout)
 
   @staticmethod
-  def _output(policy_set, dumps, bucket_set, out):
+  def _output(policy_set, dumps, pfn_counts_dict, bucket_set, out):
     for label in sorted(policy_set):
       LOGGER.info('Applying a policy %s to...' % label)
       for dump in dumps:
         component_sizes = PolicyCommands._apply_policy(
-            dump, policy_set[label], bucket_set, dump.time)
+            dump, pfn_counts_dict, policy_set[label], bucket_set, dump.time)
         out.write('%s for %s:\n' % (label, dump.path))
         for c in policy_set[label].components:
           if c in ['hour', 'minute', 'second']:
