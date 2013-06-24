@@ -8,6 +8,7 @@ var appWindowNatives = requireNative('app_window_natives');
 var Binding = require('binding').Binding;
 var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
+var renderViewObserverNatives = requireNative('renderViewObserverNatives');
 var sendRequest = require('sendRequest').sendRequest;
 
 var appWindowData = null;
@@ -56,14 +57,16 @@ appWindow.registerCustomHook(function(bindingsAPI) {
         return;
       }
 
-      var willCallback = appWindowNatives.OnContextReady(windowParams.viewId,
-                                                         function(success) {
-        if (success) {
-          callback(view.chrome.app.window.current());
-        } else {
-          callback(undefined);
-        }
-      });
+      var willCallback =
+          renderViewObserverNatives.OnDocumentElementCreated(
+              windowParams.viewId,
+              function(success) {
+                if (success) {
+                  callback(view.chrome.app.window.current());
+                } else {
+                  callback(undefined);
+                }
+              });
       if (!willCallback) {
         callback(undefined);
       }

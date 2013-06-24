@@ -77,6 +77,8 @@ v8::Local<v8::Value> ChromeV8Context::CallFunction(
     int argc,
     v8::Handle<v8::Value> argv[]) const {
   v8::HandleScope handle_scope;
+  v8::Context::Scope scope(v8_context());
+
   WebKit::WebScopedMicrotaskSuppression suppression;
   if (!is_valid())
     return handle_scope.Close(v8::Undefined());

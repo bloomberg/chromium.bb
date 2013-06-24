@@ -56,6 +56,7 @@
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
+#include "chrome/renderer/extensions/render_view_observer_natives.h"
 #include "chrome/renderer/extensions/request_sender.h"
 #include "chrome/renderer/extensions/runtime_custom_bindings.h"
 #include "chrome/renderer/extensions/safe_builtins.h"
@@ -836,6 +837,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       content_watcher_->MakeNatives(context));
   module_system->RegisterNativeHandler("activityLogger",
       scoped_ptr<NativeHandler>(new APIActivityLogger(this, context)));
+  module_system->RegisterNativeHandler("renderViewObserverNatives",
+      scoped_ptr<NativeHandler>(new RenderViewObserverNatives(this, context)));
 
   // Natives used by multiple APIs.
   module_system->RegisterNativeHandler("file_system_natives",

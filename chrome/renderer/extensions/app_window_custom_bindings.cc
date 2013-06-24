@@ -16,7 +16,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -56,71 +55,6 @@ AppWindowCustomBindings::AppWindowCustomBindings(
   RouteFunction("GetView",
       base::Bind(&AppWindowCustomBindings::GetView,
                  base::Unretained(this)));
-  RouteFunction("OnContextReady",
-      base::Bind(&AppWindowCustomBindings::OnContextReady,
-                 base::Unretained(this)));
-}
-
-namespace {
-class LoadWatcher : public content::RenderViewObserver {
- public:
-  LoadWatcher(v8::Isolate* isolate,
-              content::RenderView* view,
-              v8::Handle<v8::Function> cb)
-      : content::RenderViewObserver(view),
-        callback_(cb) {
-  }
-
-  virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE {
-    CallbackAndDie(frame, true);
-  }
-
-  virtual void DidFailProvisionalLoad(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLError& error) OVERRIDE {
-    CallbackAndDie(frame, false);
-  }
-
- private:
-  ScopedPersistent<v8::Function> callback_;
-
-  void CallbackAndDie(WebKit::WebFrame* frame, bool succeeded) {
-    v8::HandleScope handle_scope;
-    v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-    v8::Context::Scope scope(context);
-    v8::Local<v8::Object> global = context->Global();
-    {
-      WebKit::WebScopedMicrotaskSuppression suppression;
-      v8::Handle<v8::Value> args[] = {
-        succeeded ? v8::True() : v8::False()
-      };
-      callback_->Call(global, 1, args);
-    }
-    delete this;
-  }
-};
-}  // namespace
-
-void AppWindowCustomBindings::OnContextReady(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (args.Length() != 2)
-    return;
-
-  if (!args[0]->IsInt32())
-    return;
-  if (!args[1]->IsFunction())
-    return;
-
-  int view_id = args[0]->Int32Value();
-
-  content::RenderView* view = content::RenderView::FromRoutingID(view_id);
-  if (!view)
-    return;
-
-  v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(args[1]);
-  new LoadWatcher(args.GetIsolate(), view, func);
-
-  args.GetReturnValue().Set(true);
 }
 
 void AppWindowCustomBindings::GetView(
