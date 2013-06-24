@@ -277,7 +277,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         if self.should_test_processes:
             self.assertRaises(BaseException, logging_run,
-                ['--child-processes', '2', '--force', 'failures/expected/exception.html', 'passes/text.html'], tests_included=True, shared_port=False)
+                ['--child-processes', '2', '--skipped=ignore', 'failures/expected/exception.html', 'passes/text.html'], tests_included=True, shared_port=False)
 
     def test_full_results_html(self):
         host = MockHost()
@@ -299,7 +299,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         if self.should_test_processes:
             self.assertRaises(KeyboardInterrupt, logging_run,
-                ['failures/expected/keyboard.html', 'passes/text.html', '--child-processes', '2', '--force'], tests_included=True, shared_port=False)
+                ['failures/expected/keyboard.html', 'passes/text.html', '--child-processes', '2', '--skipped=ignore'], tests_included=True, shared_port=False)
 
     def test_no_tests_found(self):
         details, err, _ = logging_run(['resources'], tests_included=True)
@@ -402,12 +402,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
         chunk_tests_run = get_tests_run(['--run-chunk', '1:3'] + tests_to_run)
         self.assertEqual(['passes/text.html', 'passes/error.html', 'passes/image.html'], chunk_tests_run)
-
-    def test_run_force(self):
-        # This raises an exception because we run
-        # failures/expected/exception.html, which is normally SKIPped.
-
-        self.assertRaises(ValueError, logging_run, ['--force'])
 
     def test_run_part(self):
         # Test that we actually select the right part
