@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/cache_type.h"
@@ -83,6 +84,15 @@ void AwURLRequestContextGetter::Init() {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);
+
+  scoped_refptr<net::CookieStore> cookie_store =
+      content::CreatePersistentCookieStore(
+          browser_context_->GetPath().Append(FILE_PATH_LITERAL("Cookies")),
+          false,
+          NULL,
+          NULL);
+  cookie_store->GetCookieMonster()->SetPersistSessionCookies(true);
+  url_request_context_->set_cookie_store(cookie_store.get());
 
   // The CookieMonster must be passed here so it happens synchronously to
   // the main thread initialization (to avoid race condition in another
