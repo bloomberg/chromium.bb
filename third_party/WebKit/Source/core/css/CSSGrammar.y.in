@@ -367,8 +367,8 @@ internal_value:
 ;
 
 internal_medialist:
-    INTERNAL_MEDIALIST_SYM maybe_space maybe_media_list TOKEN_EOF {
-        parser->m_mediaList = $3;
+    INTERNAL_MEDIALIST_SYM maybe_space location_label maybe_media_list TOKEN_EOF {
+        parser->m_mediaList = $4;
     }
 ;
 
@@ -534,10 +534,10 @@ before_import_rule:
     ;
 
 import:
-    before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space maybe_media_list semi_or_eof {
-        $$ = parser->createImportRule($4, $6);
+    before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space location_label maybe_media_list semi_or_eof {
+        $$ = parser->createImportRule($4, $7);
     }
-  | before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space maybe_media_list invalid_block {
+  | before_import_rule IMPORT_SYM at_import_header_end_maybe_space string_or_uri maybe_space location_label maybe_media_list invalid_block {
         $$ = 0;
         parser->endRuleBody(true);
     }
@@ -642,10 +642,11 @@ valid_media_query:
 media_query:
     valid_media_query
     | valid_media_query error error_location rule_error_recovery {
+        parser->reportError(parser->lastLocationLabel(), CSSParser::InvalidMediaQueryError);
         $$ = parser->createFloatingNotAllQuery();
     }
     | error error_location rule_error_recovery {
-        parser->reportError($2);
+        parser->reportError(parser->lastLocationLabel(), CSSParser::InvalidMediaQueryError);
         $$ = parser->createFloatingNotAllQuery();
     }
     ;
@@ -673,11 +674,11 @@ media_list:
     ;
 
 mq_list:
-    media_query ',' maybe_space {
+    media_query ',' maybe_space location_label {
         $$ = parser->createMediaQuerySet();
         $$->addMediaQuery(parser->sinkFloatingMediaQuery($1));
     }
-    | mq_list media_query ',' maybe_space {
+    | mq_list media_query ',' maybe_space location_label {
         $$ = $1;
         $$->addMediaQuery(parser->sinkFloatingMediaQuery($2));
     }
@@ -702,13 +703,13 @@ at_rule_header_end_maybe_space:
     ;
 
 media:
-    before_media_rule MEDIA_SYM maybe_space media_list at_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
-        $$ = parser->createMediaRule($4, $9);
+    before_media_rule MEDIA_SYM maybe_space location_label media_list at_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
+        $$ = parser->createMediaRule($5, $10);
     }
     | before_media_rule MEDIA_SYM at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createMediaRule(0, $7);
     }
-    | before_media_rule MEDIA_SYM maybe_space media_list semi_or_eof {
+    | before_media_rule MEDIA_SYM maybe_space location_label media_list semi_or_eof {
         $$ = 0;
         parser->endRuleBody(true);
     }
@@ -818,8 +819,8 @@ before_keyframes_rule:
     ;
 
 keyframes:
-    before_keyframes_rule WEBKIT_KEYFRAMES_SYM maybe_space keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space keyframes_rule closing_brace {
-        $$ = parser->createKeyframesRule($4, parser->sinkFloatingKeyframeVector($9));
+    before_keyframes_rule WEBKIT_KEYFRAMES_SYM maybe_space keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
+        $$ = parser->createKeyframesRule($4, parser->sinkFloatingKeyframeVector($10));
     }
   | before_keyframes_rule WEBKIT_KEYFRAMES_SYM at_rule_recovery {
         $$ = 0;
@@ -841,14 +842,15 @@ keyframes_rule:
 keyframe_rule_list:
     /* empty */ {
         $$ = parser->createFloatingKeyframeVector();
+        parser->resumeErrorLogging();
     }
-    |  keyframe_rule_list keyframe_rule maybe_space {
+    |  keyframe_rule_list keyframe_rule maybe_space location_label {
         $$ = $1;
-        if ($2)
-            $$->append($2);
+        $$->append($2);
     }
-    | keyframe_rule_list keyframes_error_recovery invalid_block {
+    | keyframe_rule_list keyframes_error_recovery invalid_block maybe_space location_label {
         parser->clearProperties();
+        parser->resumeErrorLogging();
     }
     ;
 
@@ -865,8 +867,7 @@ key_list:
     }
     | key_list ',' maybe_space key maybe_space {
         $$ = $1;
-        if ($$)
-            $$->addValue(parser->sinkFloatingValue($4));
+        $$->addValue(parser->sinkFloatingValue($4));
     }
     ;
 
@@ -886,7 +887,10 @@ key:
     ;
 
 keyframes_error_recovery:
-    error error_location rule_error_recovery;
+    error rule_error_recovery {
+        parser->reportError(parser->lastLocationLabel(), CSSParser::InvalidKeyframeSelectorError);
+    }
+    ;
 
 before_page_rule:
     /* empty */ {
@@ -1836,6 +1840,11 @@ opening_parenthesis:
 
 error_location: {
         $$ = parser->currentLocation();
+    }
+    ;
+
+location_label: {
+        parser->setLocationLabel(parser->currentLocation());
     }
     ;
 

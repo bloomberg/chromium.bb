@@ -67,7 +67,10 @@ class StyleKeyframe;
 class StyleSheetContents;
 class StyledElement;
 
-struct CSSParserLocation;
+struct CSSParserLocation {
+    int lineNumber;
+    CSSParserString token;
+};
 
 class CSSParser {
     friend inline int cssyylex(void*, CSSParser*);
@@ -82,6 +85,8 @@ public:
         InvalidSelectorError,
         InvalidSupportsConditionError,
         InvalidRuleError,
+        InvalidMediaQueryError,
+        InvalidKeyframeSelectorError,
         GeneralError
     };
 
@@ -395,6 +400,8 @@ public:
     void endInvalidRuleHeader();
     void reportError(const CSSParserLocation&, ErrorType = GeneralError);
     void resumeErrorLogging() { m_ignoreErrors = false; }
+    void setLocationLabel(const CSSParserLocation& location) { m_locationLabel = location; }
+    const CSSParserLocation& lastLocationLabel() const { return m_locationLabel; }
 
     inline int lex(void* yylval) { return (this->*m_lexFunc)(yylval); }
 
@@ -588,6 +595,8 @@ private:
     bool inViewport() const { return m_inViewport; }
     bool m_inViewport;
 
+    CSSParserLocation m_locationLabel;
+
     int (CSSParser::*m_lexFunc)(void*);
 
     Vector<RefPtr<StyleRuleBase> > m_parsedRules;
@@ -681,11 +690,6 @@ public:
 
 private:
     CSSParser* m_parser;
-};
-
-struct CSSParserLocation {
-    int lineNumber;
-    CSSParserString token;
 };
 
 class CSSParser::SourceDataHandler {

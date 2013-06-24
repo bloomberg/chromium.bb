@@ -11041,7 +11041,7 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
 
     m_ignoreErrors = true;
     CSSParserString content = location.token;
-    if (error == InvalidPropertyValueError || error == InvalidSelectorError) {
+    if (error == InvalidPropertyValueError || error == InvalidSelectorError || error == InvalidMediaQueryError || error == InvalidKeyframeSelectorError) {
         if (m_source) {
             if (is8BitSource())
                 content.init(*m_source, location.token.characters8() - m_dataStart8.get(), tokenStart<LChar>() - location.token.characters8());
@@ -11078,6 +11078,14 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
 
     case InvalidRuleError:
         builder.appendLiteral("Invalid CSS rule at: ");
+        break;
+
+    case InvalidMediaQueryError:
+        builder.appendLiteral("Invalid CSS media query: ");
+        break;
+
+    case InvalidKeyframeSelectorError:
+        builder.appendLiteral("Invalid CSS keyframe selector: ");
         break;
 
     default:
