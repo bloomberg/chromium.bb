@@ -161,12 +161,6 @@
 
     [Replaceable] readonly attribute Performance performance;
 
-    // Timers
-    [Custom] long setTimeout(any handler, [Default=Undefined] optional long timeout);
-    void clearTimeout([Default=Undefined] optional long handle);
-    [Custom] long setInterval(any handler, [Default=Undefined] optional long timeout);
-    void clearInterval([Default=Undefined] optional long handle);
-
     [MeasureAs=UnprefixedRequestAnimationFrame] long requestAnimationFrame(RequestAnimationFrameCallback callback);
     void cancelAnimationFrame(long id);
     [MeasureAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(RequestAnimationFrameCallback callback);
@@ -313,4 +307,6 @@
     [ImplementedAs=anonymousIndexedGetter, NotEnumerable] getter Window(unsigned long index);
     [Custom, NotEnumerable] getter Window (DOMString name);
 };
+
+Window implements WindowTimers;
 

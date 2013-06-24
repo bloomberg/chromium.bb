@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -20,39 +22,15 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
- *
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 [
-    NoInterfaceObject,
-    EventTarget,
-    CustomToV8,
-    DoNotGenerateWrap
-] interface WorkerContext {
-
-    // WorkerGlobalScope
-             [Replaceable] readonly attribute  WorkerContext self;
-             [Replaceable] readonly attribute WorkerLocation location;
-    void close();
-             attribute EventListener onerror;
-
-    // WorkerUtils
-    [Custom] void importScripts(/*[Variadic] in DOMString urls */);
-             [Replaceable] readonly attribute WorkerNavigator navigator;
-
-    // EventTarget interface
-    void addEventListener(DOMString type, 
-                          EventListener listener, 
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type, 
-                             EventListener listener, 
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event evt);
-
-    // Additional constructors
-    attribute URLConstructor webkitURL; // FIXME: deprecate this.
+    NoInterfaceObject
+] interface WindowTimers {
+    [Custom] long setTimeout(any handler, [Default=Undefined] optional long timeout);
+    void clearTimeout([Default=Undefined] optional long handle);
+    [Custom] long setInterval(any handler, [Default=Undefined] optional long timeout);
+    void clearInterval([Default=Undefined] optional long handle);
 };
-
-WorkerContext implements WindowTimers;
 

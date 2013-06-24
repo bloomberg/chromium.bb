@@ -295,6 +295,7 @@
             'page/WebKitPoint.idl',
             'page/Window.idl',
             'page/WindowPagePopup.idl',
+            'page/WindowTimers.idl',
             'page/WorkerNavigator.idl',
             'plugins/MimeType.idl',
             'plugins/MimeTypeArray.idl',
