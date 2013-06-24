@@ -378,6 +378,10 @@ const char kDisableLegacyEncryptedMedia[] = "disable-legacy-encrypted-media";
 // Use fake device for MediaStream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 
+// Bypass the media stream infobar by selecting the default device for media
+// streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
+const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
+
 // On Windows, converts the page to the currently-installed monitor profile.
 // This does NOT enable color management for images. The source is still
 // assumed to be sRGB.

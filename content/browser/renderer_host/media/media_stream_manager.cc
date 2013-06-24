@@ -198,6 +198,10 @@ std::string MediaStreamManager::GenerateStream(
           switches::kUseFakeDeviceForMediaStream)) {
     UseFakeDevice();
   }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeUIForMediaStream)) {
+    UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy>());
+  }
 
   int target_render_process_id = render_process_id;
   int target_render_view_id = render_view_id;
@@ -930,7 +934,6 @@ void MediaStreamManager::UseFakeDevice() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   video_capture_manager()->UseFakeDevice();
   audio_input_device_manager()->UseFakeDevice();
-  UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy>());
 }
 
 void MediaStreamManager::UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy> fake_ui) {

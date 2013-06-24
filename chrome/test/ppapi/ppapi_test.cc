@@ -317,6 +317,7 @@ OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
 void OutOfProcessPPAPITest::SetUpCommandLine(CommandLine* command_line) {
   PPAPITest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+  command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 }
 
 void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
@@ -331,6 +332,7 @@ void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnablePnacl);
   command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
   command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+  command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 }
 
 // Append the correct mode and testcase string

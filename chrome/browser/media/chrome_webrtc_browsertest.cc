@@ -58,6 +58,8 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
     // device; it will not work with fake devices.
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
+    EXPECT_FALSE(command_line->HasSwitch(
+        switches::kUseFakeUIForMediaStream));
   }
 
   // TODO(phoglund): This ugly poll method is only here while we transition

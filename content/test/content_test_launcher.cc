@@ -111,6 +111,7 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
     command_line->AppendSwitchPath(switches::kContentShellDataPath,
                                    temp_data_dir);
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+    command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
     return true;
   }
 

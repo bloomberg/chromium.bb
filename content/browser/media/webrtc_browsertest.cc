@@ -25,9 +25,11 @@ class WebrtcBrowserTest: public ContentBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // We need fake devices in this test since we want to run on naked VMs. We
-    // assume this switch is set by default in content_browsertests.
+    // assume these switches are set by default in content_browsertests.
     ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
+    ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kUseFakeUIForMediaStream));
 
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   }

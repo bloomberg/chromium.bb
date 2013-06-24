@@ -143,11 +143,12 @@ class CONTENT_EXPORT MediaStreamManager
       base::SystemMonitor::DeviceType device_type) OVERRIDE;
 
   // Used by unit test to make sure fake devices are used instead of a real
-  // devices, which is needed for server based testing.
+  // devices, which is needed for server based testing or certain tests (which
+  // can pass --use-fake-device-for-media-stream).
   void UseFakeDevice();
 
-  // Called by the unittests to specify fake UI that should be used for next
-  // generated stream.
+  // Called by the tests to specify a fake UI that should be used for next
+  // generated stream (or when using --use-fake-ui-for-media-stream).
   void UseFakeUI(scoped_ptr<FakeMediaStreamUIProxy> fake_ui);
 
   // This object gets deleted on the UI thread after the IO thread has been
