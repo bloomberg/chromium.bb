@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
@@ -233,34 +234,19 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
   }
 
   // Determine the output size preserving aspect, and center in output buffer.
-  webrtc::DesktopSize scaled_size;
-  uint8* scaled_data = scaled_frame_->data();
-  if (frame->size().width() * output_size_.height() >
-      frame->size().height() * output_size_.width()) {
-    // Source has wider aspect ratio than output.
-    scaled_size.set(
-        output_size_.width(),
-        (frame->size().height() * output_size_.width()) /
-            frame->size().width());
-    scaled_data += scaled_frame_->stride() *
-        ((output_size_.height() - scaled_size.height()) / 2);
-  } else {
-    // Source has taller aspect ratio than output.
-    scaled_size.set(
-        (frame->size().width() * output_size_.height()) /
-            frame->size().height(),
-        output_size_.height());
-    scaled_data += webrtc::DesktopFrame::kBytesPerPixel *
-        ((output_size_.width() - scaled_size.width()) / 2);
-  }
+  gfx::Rect scaled_rect = media::ComputeLetterboxRegion(
+      gfx::Rect(0, 0, output_size_.width(), output_size_.height()),
+      gfx::Size(frame->size().width(), frame->size().height()));
+  uint8* scaled_data = scaled_frame_->data() +
+      scaled_frame_->stride() * scaled_rect.y() +
+      webrtc::DesktopFrame::kBytesPerPixel * scaled_rect.x();
 
   // TODO(wez): Optimize this to scale only changed portions of the output,
   // using ARGBScaleClip().
   libyuv::ARGBScale(frame->data(), frame->stride(),
                     frame->size().width(), frame->size().height(),
                     scaled_data, scaled_frame_->stride(),
-                    scaled_size.width(),
-                    scaled_size.height(),
+                    scaled_rect.width(), scaled_rect.height(),
                     libyuv::kFilterBilinear);
 
   base::AutoLock auto_lock(event_handler_lock_);
