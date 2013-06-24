@@ -184,10 +184,13 @@ int QuicStreamRequest::Request(
   } else {
     factory_ = NULL;
   }
+  if (rv == OK)
+    DCHECK(stream_);
   return rv;
 }
 
 void QuicStreamRequest::set_stream(scoped_ptr<QuicHttpStream> stream) {
+  DCHECK(stream);
   stream_ = stream.Pass();
 }
 
@@ -273,6 +276,7 @@ int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
   }
   if (rv == OK) {
     DCHECK(HasActiveSession(host_port_proxy_pair));
+    request->set_stream(CreateIfSessionExists(host_port_proxy_pair, net_log));
   }
   return rv;
 }
@@ -282,6 +286,7 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     // Create all the streams, but do not notify them yet.
     for (RequestSet::iterator it = job_requests_map_[job].begin();
          it != job_requests_map_[job].end() ; ++it) {
+      DCHECK(HasActiveSession(job->host_port_proxy_pair()));
       (*it)->set_stream(CreateIfSessionExists(job->host_port_proxy_pair(),
                                               (*it)->net_log()));
     }
@@ -308,6 +313,7 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
     const HostPortProxyPair& host_port_proxy_pair,
     const BoundNetLog& net_log) {
   if (!HasActiveSession(host_port_proxy_pair)) {
+    DLOG(INFO) << "No active session";
     return scoped_ptr<QuicHttpStream>();
   }
 
