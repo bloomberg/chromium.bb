@@ -56,6 +56,7 @@
   F(PPB_NetAddress_API) \
   F(PPB_NetworkList_API) \
   F(PPB_NetworkMonitor_Private_API) \
+  F(PPB_NetworkProxy_API) \
   F(PPB_PDF_API) \
   F(PPB_Printing_API) \
   F(PPB_ResourceArray_API) \
@@ -194,8 +195,11 @@ class PPAPI_SHARED_EXPORT Resource : public base::RefCounted<Resource> {
   FOR_ALL_PPAPI_RESOURCE_APIS(DEFINE_TYPE_GETTER)
   #undef DEFINE_TYPE_GETTER
 
-  // Template-based dynamic casting. See specializations below.
-  template <typename T> T* GetAs() { return NULL; }
+  // Template-based dynamic casting. See specializations below. This is
+  // unimplemented for the default case. This way, for anything that's not a
+  // resource (or if a developer forgets to add the resource to the list in
+  // this file), the result is a linker error.
+  template <typename T> T* GetAs();
 
   // Called when a PpapiPluginMsg_ResourceReply reply is received for a
   // previous CallRenderer. The message is the nested reply message, which may

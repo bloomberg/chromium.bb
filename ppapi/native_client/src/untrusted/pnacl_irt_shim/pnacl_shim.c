@@ -19,6 +19,7 @@
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/c/dev/ppb_network_proxy_dev.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
@@ -172,6 +173,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkProxy_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_9;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_91;
@@ -1692,6 +1694,15 @@ static void Pnacl_M21_PPB_IMEInputEvent_Dev_GetSelection(PP_Resource ime_event, 
 /* Not generating wrapper methods for PPB_KeyboardInputEvent_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Memory_Dev_0_1 */
+
+/* Begin wrapper methods for PPB_NetworkProxy_Dev_0_1 */
+
+static int32_t Pnacl_M29_PPB_NetworkProxy_Dev_GetProxyForURL(PP_Instance instance, struct PP_Var* url, struct PP_Var* proxy_string, struct PP_CompletionCallback* callback) {
+  const struct PPB_NetworkProxy_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_NetworkProxy_Dev_0_1.real_iface;
+  return iface->GetProxyForURL(instance, *url, proxy_string, *callback);
+}
+
+/* End wrapper methods for PPB_NetworkProxy_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_Printing_Dev_0_7 */
 
@@ -4189,6 +4200,10 @@ struct PPB_IMEInputEvent_Dev_0_2 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_2 = {
 
 /* Not generating wrapper interface for PPB_Memory_Dev_0_1 */
 
+struct PPB_NetworkProxy_Dev_0_1 Pnacl_Wrappers_PPB_NetworkProxy_Dev_0_1 = {
+    .GetProxyForURL = (int32_t (*)(PP_Instance instance, struct PP_Var url, struct PP_Var* proxy_string, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_NetworkProxy_Dev_GetProxyForURL
+};
+
 struct PPB_Printing_Dev_0_7 Pnacl_Wrappers_PPB_Printing_Dev_0_7 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M23_PPB_Printing_Dev_Create,
     .GetDefaultPrintSettings = (int32_t (*)(PP_Resource resource, struct PP_PrintSettings_Dev* print_settings, struct PP_CompletionCallback callback))&Pnacl_M23_PPB_Printing_Dev_GetDefaultPrintSettings
@@ -4998,6 +5013,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetworkProxy_Dev_0_1 = {
+  .iface_macro = PPB_NETWORKPROXY_DEV_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_NetworkProxy_Dev_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7 = {
   .iface_macro = PPB_PRINTING_DEV_INTERFACE_0_7,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Printing_Dev_0_7,
@@ -5338,6 +5359,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Font_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
+  &Pnacl_WrapperInfo_PPB_NetworkProxy_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_7,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_9,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_91,

@@ -80,6 +80,8 @@
           'proxy/locking_resource_releaser.h',
           'proxy/net_address_resource.cc',
           'proxy/net_address_resource.h',
+          'proxy/network_proxy_resource.cc',
+          'proxy/network_proxy_resource.h',
           'proxy/pdf_resource.cc',
           'proxy/pdf_resource.h',
           'proxy/plugin_array_buffer_var.cc',

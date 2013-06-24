@@ -26,6 +26,7 @@
 #include "ppapi/proxy/flash_resource.h"
 #include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/network_proxy_resource.h"
 #include "ppapi/proxy/pdf_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -370,17 +371,20 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
     case BROKER_SINGLETON_ID:
       new_singleton = new BrokerResource(connection, instance);
       break;
+    case CRX_FILESYSTEM_SINGLETON_ID:
+      new_singleton = new ExtCrxFileSystemPrivateResource(connection, instance);
+      break;
     case EXTENSIONS_COMMON_SINGLETON_ID:
       new_singleton = new ExtensionsCommonResource(connection, instance);
       break;
     case GAMEPAD_SINGLETON_ID:
       new_singleton = new GamepadResource(connection, instance);
       break;
+    case NETWORK_PROXY_SINGLETON_ID:
+      new_singleton = new NetworkProxyResource(connection, instance);
+      break;
     case TRUETYPE_FONT_SINGLETON_ID:
       new_singleton = new TrueTypeFontSingletonResource(connection, instance);
-      break;
-    case CRX_FILESYSTEM_SINGLETON_ID:
-      new_singleton = new ExtCrxFileSystemPrivateResource(connection, instance);
       break;
 // Flash/trusted resources aren't needed for NaCl.
 #if !defined(OS_NACL) && !defined(NACL_WIN64)

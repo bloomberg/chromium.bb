@@ -25,6 +25,7 @@
 #include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_graphics_2d_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/c/dev/ppb_network_proxy_dev.h"
 #include "ppapi/c/dev/ppb_opengles2ext_dev.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"

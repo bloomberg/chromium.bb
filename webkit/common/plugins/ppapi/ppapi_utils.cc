@@ -19,6 +19,7 @@
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
+#include "ppapi/c/dev/ppb_network_proxy_dev.h"
 #include "ppapi/c/dev/ppb_opengles2ext_dev.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"

@@ -1525,6 +1525,17 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,
                      PP_Point /* top_left */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_ReadImageDataAck)
 
+// NetworkProxy ----------------------------------------------------------------
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_NetworkProxy_Create)
+
+// Query the browser for the proxy server to use for the given URL.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_NetworkProxy_GetProxyForURL,
+                     std::string /* url */)
+
+// Reply message for GetProxyForURL containing the proxy server.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_NetworkProxy_GetProxyForURLReply,
+                     std::string /* proxy */)
+
 // TrueTypeFont.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_TrueTypeFontSingleton_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_TrueTypeFontSingleton_GetFontFamilies)

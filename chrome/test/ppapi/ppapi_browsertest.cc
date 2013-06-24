@@ -1396,6 +1396,10 @@ TEST_PPAPI_IN_PROCESS(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
 TEST_PPAPI_NACL(MouseCursor)
 
+// PPB_NetworkProxy is not supported in-process.
+TEST_PPAPI_OUT_OF_PROCESS(NetworkProxy)
+TEST_PPAPI_NACL(NetworkProxy)
+
 TEST_PPAPI_OUT_OF_PROCESS(TrueTypeFont)
 TEST_PPAPI_NACL(TrueTypeFont)
 

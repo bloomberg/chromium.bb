@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_gamepad_host.h"
 #include "content/browser/renderer_host/pepper/pepper_host_resolver_message_filter.h"
+#include "content/browser/renderer_host/pepper/pepper_network_proxy_host.h"
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 #include "content/browser/renderer_host/pepper/pepper_printing_host.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list_host.h"
@@ -92,6 +93,10 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
   // Dev interfaces.
   if (GetPermissions().HasPermission(ppapi::PERMISSION_DEV)) {
     switch (message.type()) {
+      case PpapiHostMsg_NetworkProxy_Create::ID: {
+        return scoped_ptr<ResourceHost>(new PepperNetworkProxyHost(
+            host_, instance, params.pp_resource()));
+      }
       case PpapiHostMsg_Printing_Create::ID: {
          scoped_ptr<PepperPrintSettingsManager> manager(
              new PepperPrintSettingsManagerImpl());
