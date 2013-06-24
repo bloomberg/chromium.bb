@@ -2086,6 +2086,8 @@ bool Segment::Init(IMkvWriter* ptr_writer) {
 
 bool Segment::CopyAndMoveCuesBeforeClusters(mkvparser::IMkvReader* reader,
                                             IMkvWriter* writer) {
+  if (!writer->Seekable())
+    return false;
   const int64 cluster_offset = cluster_list_[0]->size_position() -
                                GetUIntSize(kMkvCluster);
 
@@ -2107,6 +2109,14 @@ bool Segment::CopyAndMoveCuesBeforeClusters(mkvparser::IMkvReader* reader,
   // Copy the Clusters.
   if (!ChunkedCopy(reader, writer, cluster_offset,
                    cluster_end_offset_ - cluster_offset))
+    return false;
+
+  // Update the Segment size in case the Cues size has changed.
+  int64 pos = writer->Position();
+  int64 segment_size = writer->Position() - payload_pos_;
+  if (writer->Position(size_position_) ||
+      WriteUIntSize(writer, segment_size, 8) ||
+      writer->Position(pos))
     return false;
   return true;
 }
